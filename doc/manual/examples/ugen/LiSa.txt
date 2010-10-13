@@ -1,0 +1,9 @@
+    LiSa provides basic live sampling functionality.  An internal
+    buffer stores samples chucked to LiSa's input.  Segments of
+    this buffer can be played back, with ramping and speed/direction
+    control.  Multiple voice facility is built in, allowing for a
+    single LiSa object to serve as a source for sample layering and
+    granular textures.  by Dan Trueman (2007) see LiSa Examples
+    <http://wiki.cs.princeton.edu/index.php/LiSa_examples> wiki for
+    more, and also a slowly growing tutorial
+    <http://music.princeton.edu/~dan/LiSa/LiSa_tutorial.html>

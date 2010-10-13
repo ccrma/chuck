@@ -1,0 +1,4 @@
+This UAna computes the inverse Fast Fourier Transform on incoming spectral
+frames (on demand), and overlap-adds the results into its internal buffer,
+ready to be sent to other UGen's connected via =>.  The window size
+(along with an arbitry window shape) is controlled via the .window method.

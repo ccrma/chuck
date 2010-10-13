@@ -1,0 +1,31 @@
+    This class provides input support for various
+    audio file formats.  It also serves as a base
+    class for "realtime" streaming subclasses.
+
+    WvIn loads the contents of an audio file for
+    subsequent output.  Linear interpolation is
+    used for fractional "read rates".
+
+    WvIn supports multi-channel data in interleaved
+    format.  It is important to distinguish the
+    tick() methods, which return samples produced
+    by averaging across sample frames, from the 
+    tickFrame() methods, which return pointers to
+    multi-channel sample frames.  For single-channel
+    data, these methods return equivalent values.
+
+    Small files are completely read into local memory
+    during instantiation.  Large files are read
+    incrementally from disk.  The file size threshold
+    and the increment size values are defined in
+    WvIn.h.
+
+    WvIn currently supports WAV, AIFF, SND (AU),
+    MAT-file (Matlab), and STK RAW file formats.
+    Signed integer (8-, 16-, and 32-bit) and floating-
+    point (32- and 64-bit) data types are supported.
+    Uncompressed data types are not supported.  If
+    using MAT-files, data should be saved in an array
+    with each data channel filling a matrix row.
+
+    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.

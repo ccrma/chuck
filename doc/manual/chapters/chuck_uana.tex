@@ -1,0 +1,491 @@
+\chapter{Unit Analyzers} 
+Unit Analyzers (UAnae) are analyis building blocks, similar in concept to unit
+generators. They perform analysis functions on audio signals and/or metadata
+input, and produce metadata analysis results as output. Unit analyzers can be
+linked together and with unit generators to form analysis/synthesis networks.
+Like unit generators, several unit analyzers may run concurrently, each
+dynamically controlled at different rates. Because data passed between UAnae is
+not necessarily audio samples, and the relationship of UAna computation to time
+is fundamentally different than that of UGens (e.g., UAnae might compute on
+blocks of samples, or on metadata), the connections between UAnae have
+a different meaning from the connections between UGens formed with the ChucK
+operator, \chuckop.This difference is reflected in the choice of a new connection
+operator, the upChucK operator: \upchuckop. Another key difference between UGens and
+UAnae is that UAnae perform analysis (only) on demand, via the upchuck()
+function (see below).
+Some more quick facts about ChucK unit analyzers:
+\begin{itemize}
+    \item All ChucK unit analyzers are objects (not primitive types). (see objects)
+    \item  All ChucK unit analyzers inherit from the UAna class.
+     The operation foo \upchuckop yah, where foo and yah are UAnae, connects foo
+      to yah.
+    \item   Unit analyzer parameters and behaviors are controlled by calling /
+      chucking to member functions over time, just like unit generators.
+    \item   Analysis results are always stored in an object called a UAnaBlob. The
+      UAnaBlob contains a time-stamp indicating when it was computed, and it
+      may store an array of floats and/or complex values. Each UAna specifies
+      what information is present in the UAnaBlob it produces.
+    \item   All unit analyzers have the function upchuck(), which when called issues
+      a cascade of analysis computations for the unit analyzer and any
+      "upstream" unit analyzers on which its analysis depends.  In the example
+      of foo \upchuckop yah,  yah.upchuck() will result in foo first performing its
+      analysis (possibly requesting analysis results from unit analyzers
+      further upstream), then yah, using foo's analysis results in its
+      computation. upchuck() returns the analysis results in the form of
+      a UAnaBlob.
+    \item   Unit analyzers are specially integrated into the virtual machine such
+      that each unit analyzer performs its analysis on its input whenever it or
+      a downstream UAna is upchuck()-ed. Therefore, we have the ability to
+      assert control over the analysis process at any point in time and at any
+      desired control rate.
+\end{itemize}
+%View a list of ChucK's built-in unit analyzer classes
+%View sample code for unit analyzers
+\section{declaring} 
+Unit analyzers (UAnae) are objects, and they need to be instantiated before
+they can be used. We declare unit analyzers the same way we declare UGens and
+other objects.
+\begin{verbatim}
+ // instantiate an FFT, assign reference to variable f
+ FFT f;
+\end{verbatim}
+\section{connecting} 
+The upChucK operator (\upchuckop) is only meaningful for unit analyzers. Similar to the
+behavior of the ChucK operator between UGens, using \upchuckop to connect one UAna to
+another connects the analysis results of the first to the analysis input of the
+second. 
+\begin{verbatim}
+ // instantiate FFT and flux objects,
+ // connect to allow computation of spectrum and spectral flux on adc input
+ adc => FFT fft =^ Flux flux => blackhole;
+\end{verbatim}
+Note that the last UAna in any chain must be chucked to the blackhole or dac to
+"pull" audio samples from the aaddcc or other unit generators upstream.
+It is also possible to linearly chain many UAnae together in a single
+statement. In the example below, the 
+analysis of flux\_capacitor depends on the results of flux, so the flux object
+will always perform its analysis computation before the computation
+of flux\_capacitor.
+\begin{verbatim}
+ // Set up analysis on adc, via an FFT object, a spectral flux object, and a
+ // made-up object called a FluxCapacitor that operates on the flux value.
+ adc => FFT f =^ Flux flux =^ FluxCapacitor flux_capacitor => blackhole;
+\end{verbatim}
+Very importantly, it is possible to create connection networks containing both
+UAane and UGens. In the example below, an FFT transforms two (added) sinusoidal
+inputs, one of which has reverb added. An IFFT transforms the spectrum back
+into the time domain, and the result is processed with a third sinusoid by a
+gain object before being played through the dac. (No, this example is not
+supposed to do anything musically interesting, only help you get a feel for the
+syntax. Notice that any connection through which audio samples are passed is
+denoted with the \chuckop operator, and the connection through which spectral data is
+passed (from the FFT to the IFFT) is denoted with the \upchuckop operator.
+
+\begin{verbatim}
+ //Chain a sine into a reverb, then perform FFT, then IFFT, then apply gain,
+then output
+ SinOsc s => JCRev r => FFT f =^ IFFT i => Gain g => dac;
+ // Chuck a second sine into the FFT
+ SinOsc s2 => f;
+ // Chuck a third sine into the final gain
+ SinOsc s3 => g;
+\end{verbatim}
+
+FFT, IFFT, and other UAnae that perform transforms between the audio domain and
+another domain play a special role, as illustrated above. FFT takes audio
+samples as input, so unit generators connect to it with the ChucK operator \chuckop.
+However, it outputs analysis results in the spectral domain, so it connects to
+other UAnae with the upChucK operator \upchuckop. Conversely, UAnae producing spectral
+domain output connect to the IFFT using \chuckop, and IFFT can connect to the ddaacc or
+other UGens using \chuckop. This syntax allows the programmer to clearly reason about
+the expected behavior of an analysis/synthesis network, while it hides the
+internal mechanics of ChucK timing and sample buffering from the programmer.
+Finally, just as with unit generators, it is possible to dynamically disconnect
+unit analyzers, using the UnChucK operator (\unchuckopp or \unchuckop).
+
+\section{controlling (over time)}
+
+In any ChucK program, it is necessary to advance time in order to pull audio
+samples through the UGen network and create sound. Additionally, it is
+necessary to trigger analysis computations explicitly in order for any analysis
+to be performed, and for sound synthesis that depends on analysis results
+(e.g., IFFT) to be performed. To explicitly trigger computation at a point in
+time, the UAna's upchuck() member function is called. In the example below, an
+FFT computation is triggered every 1024 samples.
+
+\begin{verbatim}
+ adc => FFT fft => dac;
+ // set the FFT to be of of size 2048 samples
+ 2048 => fft.size;
+
+ while (true) {
+// let 1024 samples pass
+ 	1024::samp => now;
+// trigger the FFT computation on the last 2048 samples (the FFT size)
+ 	fft.upchuck();
+ }
+\end{verbatim}
+
+In the example above, because the FFT size is 2048 samples, the while-loop
+causes a standard "sliding-window" FFT to be computed, where the hop size is
+equal to half a window. However, ChucK allows you to perform analysis using
+nonstandard, dynamically set, or even multiple hop sizes with the same object.
+For example, in the code below, the FFT object fft performs computation every 5
+seconds as triggered by shred1, and it additionally performs computation at a
+variable rate as triggered by shred2.
+
+\begin{verbatim}
+ adc => FFT fft => dac;
+ 2048 => fft.size;
+
+ // spork two shreds: shred1 and shred2
+ spork ~shred1();
+ spork ~shred2();
+
+ // shred1 computes FFT every 5 seconds
+ shred1() {
+while (true) {
+5::second => now;
+fft.upchuck();
+}
+ }
+
+ // shred2 computes FFT every n seconds, where n is a random number between 1
+and 10
+ shred2() {
+while (true) {
+Std.Rand2f(1, 10)::second => now;
+fft.upchuck();
+}
+ }
+\end{verbatim}
+
+Parameters of unit analyzers may be controlled and altered at any point in time
+and at any control rate. We only have to assert control at the appropriate
+points as we move through time, by setting various parameters of the unit
+analyzer. To set the a value for a parameter of a UAna, a value of the proper
+type should be ChucKed to the corresponding control function.
+
+\begin{verbatim}
+ // connect the input to an FFT
+ adc => FFT fft => blackhole;
+
+ //start with a size of 1024 and a Blackman-Harris window
+ 1024 => fft.size;
+ Windowing.blackmanHarris(512) => fft.window;
+
+ //advance time and compute FFT
+ 1::minute => now;
+ fft.upchuck();
+
+ // change window to Hamming
+ Windowing.hamming(512) => fft.window;
+
+ // let time pass... and carry on.
+\end{verbatim}
+
+Since the control functions are member functions of the unit analyzer, the
+above syntax is equilavent to calling functions. For example, the line below
+could alternatively be used to change the FFT window to a Hamming window, as
+above.
+
+\begin{verbatim}
+ fft.window(Windowing.hamming(512));
+\end{verbatim}
+
+For a list of unit analyzers and their control methods, consult UAna reference.
+Just like unit generators, to read the current value of certain parameters of a
+Uana, we may call an overloaded function of the same name. Additionally,
+assignments can be chained together when assigning one value to multiple
+targets.
+
+\begin{verbatim}
+ // connect adc to FFT
+ adc => FFT fft => blackhole;
+
+ // store the current value of the FFT size
+ fft.size() => int fft_size;
+\end{verbatim}
+
+What if a UAna that performs analysis on a group of audio samples is upchuck()-
+ed before its internal buffer is filled? This is possible if an FFT of size
+1024 is instantiated, then upchuck()-ed after only 1000 samples, for example.
+In this case, the empty buffer slots are treated as 0's (that is, zero-padding
+is applied). This same behavior will occur if the FFT object's size is
+increased from 1024 to 2048, and then only 1023 samples pass after this change
+is applied; the last sample in the new (larger) buffer will be 0. Keep in mind,
+then, that certain analysis computations near the beginning of time and
+analysis computations after certain parameters have changed will logically
+involve a short "transient" period.
+
+\begin{verbatim}
+ // connect adc to FFT to blackhole
+ adc => FFT fft => blackhole;
+ // set the FFT size to 1024 samples
+ 1024 => fft.size;
+
+ // allow 1000 samples to pass
+ 1000::samp => now;
+
+ // compute the FFT: the last 24 spots in the FFT buffer haven't been filled, so they are zero-ed out
+ // the computation is nevertheless valid and proceeds.
+ fft.upchuck();
+
+ 1::minute => now; // let time pass for a while
+
+ // increase the size of the FFT, and therefore the size of the sample buffer it uses
+ 2048 => fft.size;
+
+ // let 1023 samples pass
+ 1023::samp => now;
+
+ // at this point, only 2047 of the 2048 buffer spots have been filled
+ // the following computation therefore zeros out the last audio buffer spot
+ fft.upchuck();
+
+ 1::minute => now; //let time pass for a while
+
+ // now the buffer is happy and full
+ fft.upchuck(); // proceeds normally on a full buffer
+\end{verbatim}
+
+\section{representing metadata: the UAnaBlob}
+
+It is great to be able to trigger analysis computations like we've been doing
+above, but what if you want to actually use the analysis results? Luckily,
+calling the upchuck() function on a UAna returns a reference to an object that
+stores the results of any UAna analysis, called a UanaBlob. UanaBlobs can
+contain an array of floats, and/or an array of complex numbers (see the next
+section). The meaning and formatting of the UanaBlob fields is different for
+each UAna subtype. FFT, for example (see specification), fills in the complex
+array with the spectrum and the floating point array with the magnitude
+spectrum. Additionally, all UanaBlobs store the time when the blob was last
+computed.
+
+The example below demonstrates how one might access the results of an FFT:
+
+\begin{verbatim}
+ adc => FFT fft => blackhole;
+ // ... set FFT parameters here ...
+
+ UAnaBlob blob;
+
+ while (true) {
+ 	50::ms => now; // use hop size of 50 ms
+fft.upchuck() @=> blob; // store the result in blob.
+blob.fvals @=> float mag_spec[]; // get the magnitude spectrum as float array
+blob.cvals @=> complex spec[]; // get the whole spectrum as complex array
+mag_spec[0] => float first_mag; // get the first bin of the magnitude spectrum
+blob.fvals(0) => float first_mag2; // equivalent way to get first bin of mag spectrum
+fft.upchuck().fvals(0) => float first_mag3 // yet another equivalent way
+
+fft.upchuck().cvals(0) => float first_spec // similarly, get 1st spectrum bin	
+
+        blob.when => time when_computed; // get the time it was computed
+}
+\end{verbatim}
+
+Beware: whenever a UAna is upchuck()-ed, the contents of its previous UAnaBlob
+are overwritten. In the following code, blob1 and blob2 refer to the same
+UAnaBlob. When fft.upchuck() is called the second time, the contents of the
+UAnaBlob referred to by blob1 are overwritten.
+
+\begin{verbatim}
+ adc => FFT fft => blackhole;
+
+ UAnaBlob blob1, blob2;
+ 1::minute => now; //let time pass for a while
+ fft.upchuck() @=> blob1; // blob1 points to the analysis results
+ 1::minute => now; // let time pass again
+ fft.upchuck() @=> blob2; // now both blob1 and blob2 refer to the same object: the new results!
+\end{verbatim}
+
+Also beware: if time is not advanced between subsequent upchuck()s of a UAna,
+any upchuck() after the first will not re-compute the analysis, even if UAna
+parameters have been changed. After the code below, blob refers to a UAnaBlob
+that is the result of computing the first (size 1024) FFT.
+
+\begin{verbatim}
+ adc => FFT fft => blackhole;
+ 1024 => fft.size;
+
+ UAnaBlob blob;
+ 1::minute => now; //let time pass for a while
+ fft.upchuck() @=> blob; // blob holds the result of the FFT
+
+ 512 => fft.size;
+ fft.upchuck() @=> blob; // time hasn't advanced since the last computation, so no re-computation is done
+\end{verbatim}
+
+\section{representing complex data: the complex and polar types} 
+
+In order to represent complex data, such as the output of an FFT, two new
+datatypes have been added to ChucK: complex and polar. These types are described
+with examples here.
+
+\section{performing analysis in UAna networks }
+
+Often, the computation of one UAna will depend on the computation results of
+"upstream" UAnae. For example, in the UAna network below, the spectral flux is
+computed using the results of an FFT.
+
+\begin{verbatim}
+ adc => FFT fft =^ Flux flux => blackhole;
+\end{verbatim}
+
+The flow of computation in UAna networks is set up so that every time a UAna aa
+is upchuck()-ed, each UAna whose output is connected to aa's input via \upchuckop
+is upchuck()-ed first, passing the results to aa for it to use. For example, a
+call to flux.upchuck() will first force fft to compute an FFT on the audio
+samples in its buffer, then flux will use the UanaBlob from fft to compute the
+spectral flux. This flow of computation is handled internally by ChucK; you
+should understand the flow of control, but you don't need to do fft.upchuck()
+explicitly. Just writing code like that below will do the trick:
+
+\begin{verbatim}
+ adc => FFT fft =^ Flux flux => blackhole;
+ UAnaBlob blob;
+ while (true) {
+100::ms => now;
+flux.upchuck() @=> blob; // causes fft to compute, then computes flux and
+stores result in blob
+ }
+\end{verbatim}
+
+Additionally, each time a UAna upchuck()s, its results are cached until time
+passes. This means that a UAna will only perform its computation once for a
+particular point in time.
+
+\begin{verbatim}
+ adc => FFT fft =^ Flux flux => blackhole;
+ fft =^ Centroid c => blackhole;
+
+ UAnaBlob blob, blob2;
+ while (true) {
+100::ms => now;
+flux.upchuck() @=> blob; // causes fft to compute, then computes flux and stores result in blob
+ 	c.upchuck() @=> blob2; // uses cached fft results from previous line to compute centroid
+ }
+\end{verbatim}
+
+When no upchuck() is performed on a UAna, or on UAnae that depend on it, it
+will not do computation. For example, in the network below, the flux is never
+computed.
+
+\begin{verbatim}
+ adc => FFT fft =^ Flux flux => blackhole;
+ UAnaBlob blob;
+ while (true) {
+100::ms => now;
+fft.upchuck() @=> blob; // compute fft only
+ }
+\end{verbatim}
+
+The combination of  this "compute-on-demand" behavior and UAna caching means
+that different UAnae in a network can be upchuck()-ed at various/varying
+control rates, with maximum efficiency. In the example below, the FFT,
+centroid, and flux are all computed at different rates. When the analysis times
+for flux and fft or centroid and fft overlap, fft is computed just once due to
+its internal caching. When it is an analysis time point for fft but not
+for flux, flux will not be computed.
+
+\begin{verbatim}
+ adc => FFT fft =^ Flux flux => blackhole;
+ fft =^ Centroid c => blackhole;
+ UAnaBlob blob1, blob2, blob3;
+
+ spork ~do_fft();
+ spork ~do_flux();
+ spork ~do_centroid();
+
+ do_fft() {
+while (true) {
+50::ms => now;
+fft.upchuck() @=> blob1;
+}
+ }
+
+ do_flux() {
+while (true) {
+110::ms => now;
+flux.upchuck() @=> blob2;
+}
+ }
+ do_centroid() {
+while (true) {
+250::ms => now;
+c.upchuck() @=> blob3;
+}
+ }
+\end{verbatim}
+
+An easy way to synchronize analysis of many UAnae is to upchuck() an
+"agglomerator" UAna. In the example below, agglom.upchuck() triggers analysis
+of all upstream UAnae in the network. Because agglom is only a member of
+the UAna base class, it does no computation of its own. However,
+after agglom.upcuck() all other UAnae will have up-to-date results that are
+synchronized, computed, and cached so that they are available to be accessed
+via upchuck()on each UAna (possibly by a different shred waiting for an event-
+- see below).
+
+\begin{verbatim}
+ adc => FFT fft =^ Flux flux =^ UAna agglom => blackhole;
+ fft =^ Centroid centroid => agglom;
+ // could add abitrarily many more UAnae that connect to agglom via =^
+
+ while (true) {
+ 	100::ms => now;
+agglom.upchuck(); // forces computation of both centroid and flux (and
+therefore fft, too)
+ }
+\end{verbatim}
+
+Because of the dependency and caching behavior of upchuck()-ing in UAna
+networks, UAna feedback loops should be used with caution. In the network
+below, each time cc is upchuck()-ed, it forces bb to compute, which forces aa to
+compute, which then recognizes that bb has been traversed in this upChucK path
+but has not been able to complete its computation-- thereby recognizing a loop
+in the network. aa then uses bb's last computed UAnaBlob to perform its
+computation. This may or may not be desirable, so be careful.
+
+\begin{verbatim}
+ adc => UAna a =^ UAna b =^ Uana c => blackhole;
+ b =^ a; // creates a feedback loop
+
+ while (true) {
+100::ms => now;
+c.upchuck(); // involves a using b's analysis results from 100 ms ago
+ }
+\end{verbatim}
+
+\section{using events} 
+When a UAna is upchuck()-ed, it triggers an event. In the example below, a
+separate shred prints the results of FFT whenever it is computed.
+
+\begin{verbatim}
+ adc => FFT fft => blackhole;
+ spork ~printer(); // spork a printing shred
+ while (true) {
+50::ms => now; // perform FFT every 50 ms
+fft.upchuck();
+ }
+
+ printer() {
+ 	UAnaBlob blob;
+while (true) {
+// wait until fft has been computed
+fft => now;
+fft.upchuck() @=> blob; // get (cached) fft result
+for (int i = 0; i < blob.fvals().cap(); i++)
+<<< blob.fvals(i) >>>;
+}	
+ }
+\end{verbatim}
+
+\section{built--in unit analyzers} 
+ChucK has a number of built-in UAna classes. These classes perform many basic
+transform functions (FFT, IFFT) and feature extraction methods (both spectral
+and time-domain features). A list of built-in ChucK unit analyzers can be found
+here.
+\section{creating} 
+( someday soon you will be able to implement your own unit analyzers! )

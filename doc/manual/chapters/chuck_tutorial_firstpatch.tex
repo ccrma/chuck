@@ -1,0 +1,74 @@
+% OLD STUFF -- duplicated by "chuck_tutorial.tex"
+\section{Writing Your First Patch}
+
+The first thing we are going to do is do generate a sine wave and send to the speaker so we can hear it. We can do this easily ChucK by connecting audio processing modules (unit generators) and having them work together to compute the sound. 
+
+We start with a blank ChucK program, and add the following line of code: (by default, a ChucK program starts executing from the first instruction in the top-level (global) scope).
+\begin{verbatim}
+        // connect sine oscillator to D/A convertor (sound card)
+        SinOsc s => dac;
+\end{verbatim}
+
+The above does several things: 
+
+(1) it creates a new unit generator of type `SinOsc' (sine oscillator), and store its reference in variable `s'. 
+
+(2) `dac' (D/A convertor) is a special unit generator (created by the system) which is our abstraction for the underlying audio interface. 
+
+(3) we are using the ChucK operator (\chuckop) to ChucK `s' to `dac'. In ChucK, when one unit generator is ChucKed to another, we connect them. We can think of this line as setting up a data flow from `s', a signal generator, to `dac', the sound card/speaker. 
+
+Collectively, we will call this a `patch'. 
+
+The above is a valid ChucK program, but all it does so far is make the connection (if we ran this program, it would exit immediately). In order for this to do what we want, we need to take care of one more very important thing: time. Unlike many other languages, we don't have to explicitly say "play" to hear the result. In ChucK, we simply have to ``allow time to pass'' for data to be computed. As we will see, time and audio data are both inextricably related in ChucK (as in reality), and separated in the way they are manipulated. But for now, let's generate our sine wave and hear it by adding one more line:
+
+\begin{verbatim}
+        // connect sine oscillator to D/A convertor (sound card)
+        SinOsc s => dac;
+
+        // allow 2 seconds to pass
+        2::second => now;
+\end{verbatim}
+
+Let's now run this (assuming you saved the file as `foo.ck'):
+
+\chuckterm{\prompt chuck foo.ck}
+
+This would cause the sound to play for 2 seconds, during which time audio data is processed (and heard), after which the program exits (since it has reached the end). For now, we can just take the second line of code to mean ``let time pass for 2 seconds (and let audio compute during that time)''. If you want to play it indefinitely, we could write a loop:
+
+\begin{verbatim}
+        // connect sine oscillator to D/A convertor (sound card)
+        SinOsc s => dac;
+
+        // loop in time
+        while( true ) {
+            2::second => now;
+        }
+\end{verbatim}
+
+In ChucK, this is called a `time-loop' (in fact this is an `infinite time loop'). This program executes (and generate/process audio) indefinitely. Try runnig this program. (Remember CONTROL-C can kill ChucK when you get sick of this patch.)
+
+So far, since all we are doing is advancing time, it doesn't really matter (for now) what value we advance time by - (we used 2::second here, but we could have used any number of `ms', `second', `minute', `hour', `day', and even `week'), and the result would be the same. It is good to keep in mind from this example that almost everything in ChucK happens naturally from the timing. 
+
+Now, let's try changing the frequency randomly every 100ms:
+\begin{verbatim}
+
+        // make our patch
+        SinOsc s => dac;
+
+        // time-loop, in which the Osc's frequency is changed every 100 ms
+        while( true ) {
+            100::ms => now;
+            Std.rand2f(30.0, 1000.0) => s.freq;
+        }
+\end{verbatim}
+
+This should sound like computer mainframes in old sci-fi movies. Two more things to note here. 
+
+(1) We are advancing time inside the loop by 100::ms durations. 
+
+(2) A random value between 0.0 and 800.0 is generated and 'assigned' to the oscillator's frequency, every 100::ms. 
+
+Go ahead and run this (again replace foo.ck with your filename):
+\chuckterm{\prompt chuck foo.ck}
+
+Play with the parameters in the program. Change 100::ms to something else (like 50::ms or 500::ms), or change 400.0 to 4000.0. Experiment and have fun!

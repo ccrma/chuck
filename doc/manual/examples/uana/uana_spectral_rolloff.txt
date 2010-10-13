@@ -1,0 +1,2 @@
+This UAna computes the spectral rolloff from a magnitude spectrum (either
+from incoming UAna, or given manually), and outputs one value in its blob.

@@ -1,0 +1,40 @@
+
+CC=gcc
+SYS_FLAGS= -D__WINDOWS_DS__ -D__WINDOWS_PTHREAD__ $(INCLUDES) -O3 -g -c
+
+MS_COMPILER     = /cygdrive/c/Program\ Files/Microsoft\ Visual\ Studio/VC98/
+CHUCK_DIR=../src/
+
+GL_INC_FLAGS    =
+GL_LIB_FLAGS    =-L$(MS_COMPILER)/Lib/ -lOpenGL 
+GLU_LIB_FLAGS   =$(GL_LIB_FLAGS) -lglu32
+
+GLUT_INC_FLAGS  =$(GL_INC_FLAGS) -Ifreeglut-2.2.0/include/
+GLUT_LIB_FLAGS  =$(GLU_LIB_FLAGS) -Lfreeglut-2.2.0/Release -lfreeglut
+
+all: ckdl ckx
+
+ckdl: ckdl.cpp
+	gcc -D__CKDL_NO_BBQ__ -g -I$(CHUCK_DIR) ckdl.cpp $(CHUCK_DIR)chuck_dl.cpp -o ckdl -lstdc++
+
+ckx: foo.ckx gl
+
+
+foo.ckx: foo.cpp
+	$(CC) $(SYS_FLAGS) -shared  -I$(CHUCK_DIR) foo.cpp -o foo.ckx -lstdc++
+
+gl: gl.ckx glu.ckx gluck.ckx
+
+gl.ckx: ulib_gl.cpp ulib_gl.h
+	gcc $(SYS_FLAGS) -shared  -I$(CHUCK_DIR) $(GL_INC_FLAGS) ulib_gl.cpp -o gl.ckx -lstdc++ $(GL_LIB_FLAGS)
+
+glu.ckx: ulib_glu.cpp ulib_glu.h
+	gcc $(SYS_FLAGS) -shared -I$(CHUCK_DIR) $(GL_INC_FLAGS) ulib_glu.cpp -o glu.ckx -lstdc++ $(GLU_LIB_FLAGS)
+
+gluck.ckx: ulib_gluck.cpp ulib_gluck.h
+	gcc $(SYS_FLAGS) -shared -I$(CHUCK_DIR) $(GLUT_INC_FLAGS) ulib_gluck.cpp -o gluck.ckx -lstdc++ $(GLUT_LIB_FLAGS)
+
+
+
+clean:
+	rm -f *~ ckdl.exe *.ckx

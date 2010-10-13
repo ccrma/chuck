@@ -1,0 +1,202 @@
+\chapter{Events}
+
+
+In addition to the built-in timing mechanisms for internal control, ChucK has an event class to allow exact synchronization across an arbitrary number of shreds.
+
+\section{what they are}
+
+ChucK events are a native class within the ChucK language. We can create an event objects, and then chuck (=>) that event to now. The event places the current shred on the event's waiting list, suspends the current shred (letting time advance from that shred's point of view). When the the event is triggered, one or more of the shreds on its waiting list is shreduled to run immediately. This trigger may originate from another ChucK shred, or from activities taking place outside the Virtual Machine ( MIDI, OSC, or IPC ).
+\begin{verbatim}
+    // declare event
+    Event e;
+
+    // function for shred
+    fun void eventshred( Event event, string msg )
+    {
+        // infinite loop
+        while ( true )
+        {
+            // wait on event
+            event => now;
+            // print
+            <<<msg>>>;
+        }
+    }
+
+    // create shreds
+    spork ~ eventshred ( e, "fee" );
+    spork ~ eventshred ( e, "fi" );
+    spork ~ eventshred ( e, "fo" );
+    spork ~ eventshred ( e, "fum" );
+
+    // infinite time loop
+    while ( true )
+    {
+        // either signal or broadcast
+        if( maybe )
+        { 
+            <<<"signaling...">>>;
+            e.signal();
+        }
+        else
+        { 
+            <<<"broadcasting...">>>;
+            e.broadcast();
+        }
+
+        // advance time
+        0.5::second => now;
+    }
+\end{verbatim}
+ 
+
+\section{use}
+
+Chucking an event to now suspends the current shred, letting time advance:
+\begin{verbatim}
+    // declare Event
+    Event e;
+
+    // ...
+
+    // wait on the event
+    e => now;
+
+    // after the event is trigger
+    <<< "I just woke up" >>>;
+\end{verbatim}
+
+as shown above, events can be triggered in two ways, depending on the desired behavior.
+\begin{verbatim}
+    // signal one shred waiting on the event e
+    e.signal();
+\end{verbatim}
+
+signal() releases the  first shred in that event's queue, and shredule it to run at the current time, respecting the order in which shreds were added to the queue.
+\begin{verbatim}
+    // wake up all shreds waiting on the event e
+    e.broadcast();
+\end{verbatim}
+
+broadcast() releases  all shreds queued by that event, in the order they were added, and at the same instant in time
+
+The released shreds are shreduled to run immediately. But of course they will respect other shreds also shreduled to run at the same time. Furthermore, the shred that called signal() or broadcast() will continue to run until it advances time itself, or yield the virtual machine without advancing time. (see me.yield() under concurrency)
+ 
+
+\section{MIDI events}
+
+ChucK contains built-in MIDI classes to allow for interaction with MIDI based software or devices.
+\begin{verbatim}
+    MidiIn min;
+    MidiMsg msg;
+
+    // open midi receiver, exit on fail
+    if ( !min.open(0) ) me.exit(); 
+
+    while( true )
+    {
+        // wait on midi event
+        min => now;
+
+        // receive midimsg(s)
+        while( min.recv( msg ) )
+        {
+            // print content
+            <<< msg.data1, msg.data2, msg.data3 >>>;
+        }
+    }
+
+    ...
+\end{verbatim}
+
+
+MidiIn is a subclass of Event, as as such can be ChucKed to now. MidiIn then takes a MidiMsg object to its .recv() method to access the MIDI data.
+ As a default, MidiIn events trigger the broadcast() event behavior.
+ 
+
+\section{OSC events}
+
+In addition to MIDI, ChucK has OSC communication classes as well:
+\begin{verbatim}
+    ...
+
+    // create our OSC receiver
+    OscRecv orec;
+    // port 6449
+    6449 => orec.port;
+    // start listening (launch thread)
+    orec.listen();
+
+    function void rate_control_shred()
+    { 
+        // create an address in the receiver 
+        // and store it in a new variable.
+        orec.event("/sndbuf/buf/rate,f") @=> OscEvent oscdata; 
+
+        while ( true )
+        { 
+            oscdata => now; //wait for events to arrive.
+
+            // grab the next message from the queue. 
+            while( oscdata.nextMsg() != 0 )
+            { 
+                // getFloat fetches the expected float
+                // as indicated in the type string ",f"
+                buf.rate( oscdata.getFloat() );
+                0 => buf.pos;
+            }
+        }       
+    }
+
+    ...
+\end{verbatim}
+
+The OscRecv class listens for incoming OSC packets on the specified port. Each instance of OscRecv can create OscEvent objects using its event() method to listen for packets at any valid OSC address pattern.
+
+An OscEvent event can then be ChucKed to now to wait for messages to arrive, after which the nextMsg() and get\{Float\textbar String\textbar Int\}() methods can be used to fetch message data.
+ 
+
+\section{creating custom events}
+
+Events, like any other class, can be subclassed to add functionality and transmit data:
+\begin{verbatim}
+    // extended event
+    class TheEvent extends Event
+    {
+        int value;
+    }
+
+    // the event
+    TheEvent e;
+
+    // handler
+    fun int hi( TheEvent event )
+    {
+        while( true )
+        {
+            // wait on event
+            event => now;
+            // get the data
+            <<<e.value>>>;
+        }
+    }
+
+    // spork
+    spork ~ hi( e );
+    spork ~ hi( e );
+    spork ~ hi( e );
+    spork ~ hi( e );
+
+    // infinite time loop
+    while( true )
+    {
+        // advance time
+        1::second => now;
+
+        // set data
+        Math.rand2( 0, 5 ) => e.value;
+
+        // signal one waiting shred
+        e.signal();
+     }
+\end{verbatim}

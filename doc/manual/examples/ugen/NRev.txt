@@ -1,0 +1,11 @@
+    This class is derived from the CLM NRev
+    function, which is based on the use of
+    networks of simple allpass and comb delay
+    filters.  This particular arrangement consists
+    of 6 comb filters in parallel, followed by 3
+    allpass filters, a lowpass filter, and another
+    allpass in series, followed by two allpass
+    filters in parallel with corresponding right
+    and left outputs.
+
+    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.

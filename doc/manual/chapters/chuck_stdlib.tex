@@ -1,0 +1,326 @@
+\chapter{Standard Libraries API}
+
+ChucK Standard Libraries API 
+these libraries are provide by default with ChucK - new ones can also be 
+imported with ChucK dynamic linking (soon to be documented...). 
+The existing libraries are organized by namespaces in ChucK. 
+They are as follows. 
+
+
+\chucknamespace{Std}
+
+{\bf Std} is a standard library in ChucK, which includes utility functions, random number generation, unit conversions and absolute value.
+
+\example
+
+\begin{verbatim}
+    /* a simple example... */
+    // infinite time-loop
+    while( true )
+    {
+        // generate random float (and print)
+        <<< Std.rand2f( 100.0, 1000.0 ) >>>;
+        // wait a bit
+        50::ms => now;
+    }
+\end{verbatim}
+
+
+\chuckmultifunction{ int abs ( int value );}{
+returns absolute value of integer
+}
+
+
+\chuckmultifunction{ float fabs ( float value );}{
+returns absolute value of floating point number
+}
+
+\chuckmultifunction{ int rand ( );}{
+generates random integer
+}
+
+
+\chuckmultifunction{ int rand2 ( int min, int max );}{
+generates random integer in the range [min, max]
+}
+
+
+\chuckmultifunction{ float randf ( );}{
+generates random floating point number in the range [-1, 1]
+}
+
+
+\chuckmultifunction{ float rand2f ( float min, float max );}{
+generates random floating point number in the range [min, max]
+}
+
+\chuckmultifunction{float srand (int value)}{
+seeds value for random number generation
+}
+\chuckmultifunction{ float sgn ( float value );}{
+computes the sign of the input as -1.0 (negative), 0 (zero), or 1.0 (positive)
+}
+
+
+\chuckmultifunction{ int system ( string cmd );}{
+pass a command to be executed in the shell
+}
+
+
+\chuckmultifunction{ int atoi ( string value );}{
+converts ascii (string) to integer (int)
+}
+
+
+\chuckmultifunction{ float atof ( string value );}{
+converts ascii (string) to floating point value (float)
+}
+
+\chuckmultifunction{ string getenv ( string value );}{
+returns the value of an environment variable, such as of "PATH"
+}
+
+
+\chuckmultifunction{ int setenv ( string key, string value );}{
+sets environment variable named 'key' to 'value'
+}
+
+
+\chuckmultifunction{ float mtof ( float value );}{
+converts a MIDI note number to frequency (Hz)\\
+note the input value is of type 'float' (supports fractional note number)
+}
+
+
+\chuckmultifunction{ float ftom ( float value );}{
+converts frequency (Hz) to MIDI note number space
+}
+
+
+\chuckmultifunction{ float powtodb ( float value );}{
+converts signal power ratio to decibels (dB)
+}
+
+
+\chuckmultifunction{ float rmstodb ( float value );}{
+converts linear amplitude to decibels (dB)
+}
+
+\chuckmultifunction{ float dbtopow ( float value );}{
+converts decibels (dB) to signal power ratio
+}
+
+
+\chuckmultifunction{ float dbtorms ( float value );}{
+converts decibles (dB) to linear amplitude
+}
+
+
+\chucknamespace{ Machine }
+
+{\bf Machine} is ChucK runtime interface to the virtual machine. this interface can be used to manage shreds. They are similar to the On-the-fly Programming Commands, except these are invoked from within a ChucK program, and are subject to the timing mech
+anism.
+
+\example 
+
+\begin{verbatim}
+    //add a file foo.ck to the VM
+    machine.add("foo.ck");
+    //check the virtual machine like chuck ^
+    machine.status();
+    //wait a week and cause ChucK to crash
+    1::week => now;
+    machine.crash();
+\end{verbatim}
+
+
+\chuckmultifunction{ int add ( string path );}{
+compile and spork a new shred from file at 'path' into the VM now\\
+returns the shred ID\\
+(see example/machine.ck)
+}
+
+\chuckmultifunction{ int spork ( string path );}{
+same as add/+
+}
+
+\chuckmultifunction{ int remove ( int id );}{
+
+remove shred from VM by shred ID (returned by add/spork)
+}
+
+\chuckmultifunction{ int replace ( int id, string path );}{
+replace shred with new shred from file\\
+returns shred ID , or 0 on error
+}
+
+\chuckmultifunction{ int status ( );}{
+display current status of VM \\
+same functionality as status/\^ \\
+(see example/status.ck)
+}
+
+\chuckmultifunction{ void crash ( );}{
+iterally causes the VM to crash. the very last resort; use with care. Thanks.
+}
+
+
+\chucknamespace{ Math }
+
+
+{\bf Math} contains the standard math functions. all trignometric functions expects angles to be in radians. 
+
+\example
+
+\begin{verbatim}
+    // print sine of pi/2
+    <<<< Math.sin( pi / 2.0 ) >>>;
+\end{verbatim}
+
+\chuckmultifunction{ float sin ( float x );}{
+computes the sine of x
+}
+
+
+\chuckmultifunction{ float cos ( float x );}{
+computes the cosine of x
+}
+
+
+\chuckmultifunction{ float tan ( float x );}{
+computes the tangent of x
+}
+
+\chuckmultifunction{ float asin ( float x );}{
+computes the arc sine of x
+}
+
+
+\chuckmultifunction{ float acos ( float x );}{
+computes the arc cosine of x
+}
+
+
+\chuckmultifunction{ float atan ( float x );}{
+computes the arc tangent of x
+}
+
+
+\chuckmultifunction{ float atan2 ( float x );}{
+computes the principal value of the arc tangent of y/x, using the signs of both arguments to determine the quadrant of the return value
+}
+
+
+\chuckmultifunction{ float sinh ( float x );}{
+computes the hyperbolic sine of x
+}
+
+
+\chuckmultifunction{ float cosh ( float x );}{
+computes the hyperbolic cosine of x
+}
+
+
+\chuckmultifunction{ float tanh ( float x );}{
+computes the hyperbolic tangent of x
+}
+
+
+\chuckmultifunction{ float hypot ( float x, float y );}{
+computes the euclidean distance of the orthogonal vectors (x,0) and (0,y)
+}
+
+
+\chuckmultifunction{ float pow ( float x, float y );}{
+computes x taken to the y-th power
+}
+
+
+\chuckmultifunction{ float sqrt ( float x );}{
+computes the nonnegative square root of x (x must be >= 0)
+}
+
+
+\chuckmultifunction{ float exp ( float x );}{
+computes e\^x, the base-e exponential of x
+}
+
+
+\chuckmultifunction{ float log ( float x );}{
+computes the natural logarithm of x
+}
+
+
+\chuckmultifunction{ float log2 ( float x );}{
+computes the logarithm of x to base 2
+}
+
+
+\chuckmultifunction{ float log10 ( float x );}{
+computes the logarithm of x to base 10
+}
+
+\chuckmultifunction{ float floor ( float x );}{
+round to largest integral value (returned as float) not greater than x
+}
+
+
+\chuckmultifunction{ float ceil ( float x );}{
+round to smallest integral value (returned as float) not less than x
+}
+
+
+\chuckmultifunction{ float round ( float x );}{
+round to nearest integral value (returned as float)
+}
+
+
+\chuckmultifunction{ float trunc ( float x );}{
+round to largest integral value (returned as float) no greater in magnitude than x
+}
+
+
+\chuckmultifunction{ float fmod ( float x, float y );}{
+computes the floating point remainder of x / y
+}
+
+
+\chuckmultifunction{ float remainder ( float x, float y );}{
+computes the value r such that r = x - n * y, where n is the integer nearest the exact value of x / y. If there are two integers closest to x / y, n shall be the even one. If r is zero, it is given the same sign as x
+}
+
+
+\chuckmultifunction{ float min ( float x, float y );}{
+choose lesser of two values
+}
+
+\chuckmultifunction{ float max ( float x, float y );}{
+choose greater of two values
+}
+
+
+\chuckmultifunction{ int nextpow2 ( int n );}{
+computes the integeral (returned as int) smallest power of 2 greater than the value of x
+}
+
+\chuckmultifunction{int isinf ( float x );}{
+is x infinity?
+}
+
+\chuckmultifunction{int isnan ( float x )}{
+is x "not a number"?
+}
+
+\chuckmultifunction{ float pi ;}{
+(currently disabled - use pi)
+}
+
+
+\chuckmultifunction{ float twopi ;}{
+(currently disabled)
+}
+
+
+\chuckmultifunction{ float e ;}{
+(currently disabled - use Math.exp(1) )
+}

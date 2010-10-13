@@ -1,0 +1,28 @@
+    This class provides output support for various
+    audio file formats.  It also serves as a base
+    class for "realtime" streaming subclasses.
+
+    WvOut writes samples to an audio file.  It
+    supports multi-channel data in interleaved
+    format.  It is important to distinguish the
+    tick() methods, which output single samples
+    to all channels in a sample frame, from the
+    tickFrame() method, which takes a pointer
+    to multi-channel sample frame data.
+
+    WvOut currently supports WAV, AIFF, AIFC, SND
+    (AU), MAT-file (Matlab), and STK RAW file
+    formats.  Signed integer (8-, 16-, and 32-bit)
+    and floating- point (32- and 64-bit) data types
+    are supported.  STK RAW files use 16-bit
+    integers by definition.  MAT-files will always
+    be written as 64-bit floats.  If a data type
+    specification does not match the specified file
+    type, the data type will automatically be
+    modified.  Uncompressed data types are not
+    supported.
+
+    Currently, WvOut is non-interpolating and the
+    output rate is always Stk::sampleRate().
+
+    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.

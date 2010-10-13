@@ -1,0 +1,96 @@
+\section{Tutorial 1: Writing To Disk}
+
+Here is a brief tutorial on writing to disk...
+
+---
+1. recording your ChucK session to file is easy!
+
+example:  you want to record the following:
+
+\chuckterm{\prompt chuck foo.ck bar.ck}
+
+all you's got to do is ChucK a shred that writes to file:
+
+\chuckterm{\prompt chuck foo.ck bar.ck rec.ck}
+
+no changes to existing files are necessary.
+an example rec.ck can be found in examples/, this
+guy/gal writes to ``foo.wav''.  edit the file to change.
+if you don't want to worry about overwriting the same
+file everytime, you can:
+
+\chuckterm{\prompt chuck foo.ck bar.ck rec2.ck}
+
+rec2.ck will generate a file name using the current
+time.  You can change the prefix of the filename by
+\begin{verbatim}
+        "data/session" => w.autoPrefix;
+\end{verbatim}
+w is the WvOut in the patch.
+
+Oh yeah, you can of course chuck the rec.ck on-the-fly...
+
+from terminal 1
+\chuckterm{\prompt chuck -\,-loop}
+
+from terminal 2
+\chuckterm{\prompt chuck + rec.ck}
+
+
+---
+2. silent mode
+
+you can write directly to disk without having real-time audio
+by using -\,-silent or -s
+
+\chuckterm{\prompt chuck foo.ck bar.ck rec2.ck -s}
+
+this will not synchronize to the audio card, and will generate
+samples as fast as it can.
+
+
+---
+3. start and stop
+
+you can start and stop the writing to file by:
+\begin{verbatim}
+        1 => w.record;  // start
+        0 => w.record;  // stop
+\end{verbatim}
+as with all thing ChucKian, this can be done
+sample-synchronously.
+
+
+---
+4. another halting problem
+
+what if I have infinite time loop, and want to terminate
+the VM, will my file be written out correctly?  the answer:
+
+Ctrl-C works just fine.
+
+ChucK STK module keeps track of open file handles and
+closes them even upon abnormal termination, like Ctrl-C.
+Actually for many, Ctrl-C is the natural way to end your
+ChucK session.  At any rate, this is quite ghetto, but it works.
+As for seg-faults and other catastrophic events, like computer
+catching on fire from ChucK exploding, the file probably is
+toast.
+
+hmmmm, toast...
+
+
+---
+5. the silent sample sucker strikes again
+
+as in rec.ck, one patch to write to file is:
+\begin{verbatim}
+        dac => Gain g => WvOut w => blackhole;
+\end{verbatim}
+the blackhole drives the WvOut, which in turns sucks
+samples from Gain and then the dac.  The WvOut
+can also be placed before the dac:
+\begin{verbatim}
+        Noise n => WvOut w => dac;
+\end{verbatim}
+The WvOut writes to file, and also pass through the incoming samples.

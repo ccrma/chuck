@@ -1,0 +1,15 @@
+    This class implements a simple brass instrument
+    waveguide model, a la Cook (TBone, HosePlayer).
+
+    This is a digital waveguide model, making its
+    use possibly subject to patents held by
+    Stanford University, Yamaha, and others.
+
+    Control Change Numbers: 
+       - Lip Tension = 2
+       - Slide Length = 4
+       - Vibrato Frequency = 11
+       - Vibrato Gain = 1
+       - Volume = 128
+
+    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.
