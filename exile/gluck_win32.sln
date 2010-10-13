@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual C++ Express 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gl_ckx", "ckx_gl_win32.vcproj", "{9B1DDF1B-EC55-414D-B656-DFB90C2AC960}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glu_ckx", "ckx_glu_win32.vcproj", "{0F1FB1A0-F1BF-4452-BB61-EC58ED5F1944}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gluck_ckx", "ckx_gluck_win32.vcproj", "{D3499CF5-8886-469E-9708-68D6739939CD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9B1DDF1B-EC55-414D-B656-DFB90C2AC960}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9B1DDF1B-EC55-414D-B656-DFB90C2AC960}.Debug|Win32.Build.0 = Debug|Win32
+		{9B1DDF1B-EC55-414D-B656-DFB90C2AC960}.Release|Win32.ActiveCfg = Release|Win32
+		{9B1DDF1B-EC55-414D-B656-DFB90C2AC960}.Release|Win32.Build.0 = Release|Win32
+		{0F1FB1A0-F1BF-4452-BB61-EC58ED5F1944}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0F1FB1A0-F1BF-4452-BB61-EC58ED5F1944}.Debug|Win32.Build.0 = Debug|Win32
+		{0F1FB1A0-F1BF-4452-BB61-EC58ED5F1944}.Release|Win32.ActiveCfg = Release|Win32
+		{0F1FB1A0-F1BF-4452-BB61-EC58ED5F1944}.Release|Win32.Build.0 = Release|Win32
+		{D3499CF5-8886-469E-9708-68D6739939CD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D3499CF5-8886-469E-9708-68D6739939CD}.Debug|Win32.Build.0 = Debug|Win32
+		{D3499CF5-8886-469E-9708-68D6739939CD}.Release|Win32.ActiveCfg = Release|Win32
+		{D3499CF5-8886-469E-9708-68D6739939CD}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,83 @@
+{\rtf1\mac\ansicpg10000\cocoartf102
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww11940\viewh14860\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural
+
+\f0\fs30 \cf0 Master Plan\
+\
+lock down code.\
+(except lib bug fixes/repairs, examples ) \
+\
+document and check-in examples. \
+finish gluck documentation - release GLUCK \
+\
+DRUM example.ck\
+\
+
+\fs56 code review SNDBUF\
+resolve libsndfile - osx/ win32.  \
+	-  document for build/install\
+	-  makefile switch to allow native libsndfile.\
+\
+
+\fs30 \
+Format code - tabs to whitespace ( included examples ) \
+tab = 4 space, line endings 2 unix\
+\
+
+\fs84 LANGUAGE:\
+
+\fs30 \
+
+\fs42 ELIMINATE / FORWARD DECLARATIONS ;\
+
+\fs38 MULTI-CHUCK / CROSS CHUCK\
+	- MULTIPLE ARGUMENTS INTO UGEN FUNCTIONS\
+CONTEXT LOCAL ADC/DAC\
+SYNCHRONIZED DURATION HEIRARCHY OF THE FUTURE ( 2005)\
+\
+
+\fs80 multichannel \
+
+\fs42 	- syntax. \
+	- specs.\
+\
+PRE-TIME init\
+	.init.ck - \
+		- dac to machine mappings before time starts\
+		- sample rates\
+		- midi  / input \
+\
+REWRITE\
+\
+
+\fs74 VM:
+\fs42 \
+TYPE\
+EMIT\
+
+\fs30 \
+-switch;\
+-break;\
+\
+exceptions? \
+\
+\
+EVENTS / SYNCHRO  ( 0=>now )\
+\
+Module ( file level ) context sharing \
+	-other means for context exchange?\
+	-shred sporks module - parent / child namespace ? \
+\
+\
+fast string hashing library?\
+for global dictionary search for data exchange.\
+\
+\
+\
+\
+\
+\
+\
+}

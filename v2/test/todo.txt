@@ -1,0 +1,24 @@
+--Information--
+
+
+
+apr 12		scan functions to allow forward referencing, recursion, etc...	
+apr 11		SPORKING
+apr 10	       p84,p84_4 - postincrement is not 'post'
+apr 9          FIXED p86,88   type error for 'continue'
+apr 9	       FIXED p85,87   parse error on 'break'
+apr 9	       PREINC FIXED, 84,84_2 post-preincrement w comparison smells fishy...
+apr 9	       FIXED p80-p83 - "do" construction unrecognized
+apr 9	       FIXED p76 - scoping error in for statement 
+apr 9	       p15.ck - cast from child to parent should be accepted ( unless we 
+		      want explicit casts
+apr 5	       FIXED p71 class cannot return object of its own type ) parse error 
+apr 3 -        FIXED p16 - typing needs to be check for array comparisons. 
+mar 31: 3pm    p16 bug still up - ( assigning parent array to subclass array )
+mar 31, 9:50am windows : p37, p30
+mar 31, 9:00am FIXEDfloat comparisions proper on Windows, error on OSX ( FIXED NOW );
+mar 30, 9:00   FIXED float comparisons appear to be broken ( p52.ck ) 
+mar 30, 4:00   FIXED p30,31,32,37 - calling member functions causes a bus error.
+mar 30, 3:00   FIXED p34 - global modified inside function doesn't persist outside function.
+mar 29, 7:55pm FIXED : p21 - 25 all give an error from defining a function taking an argument.
+mar 29, 2:56am FIXED : changed p02.ck to a @=> instead of =>  : success!
