@@ -1,9 +1,0 @@
-../hid/joy.ck
-
-../midi/gomidi.ck
-../midi/polyfony.ck
-../midi/polyfony2.ck
-
-../osc/OSC_send.ck
-../osc/OSC_recv.ck
-../osc/OSC_xmit.ck
