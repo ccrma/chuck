@@ -1,0 +1,119 @@
+--Information--
+
+Test		Status			Description
+
+01.ck		emitted			assignment (int)
+02.ck		emitted			assignment (float)
+03.ck		emitted			arithmetic ( addition )
+04.ck		emitted, loops		infinite loop ( while true )
+05.ck		emitted			time
+06.ck		emitted			durations
+07.ck		emitted			division
+08.ck		emitted			variable lookup
+09.ck		emitted			+=>
+10.ck		emitted			void function
+11.ck		emitted			function returning float
+12.ck		emitted			class def and instantiate
+13.ck		emitted			class inheritance
+14.ck		emitted			array instantiation
+15.ck		emitted			multi-dim array instantiation
+16.ck		emitted			multi-array assignment
+17.ck		emitted			partial array
+18.ck		emitted			array out of bounds
+19.ck		emitted			array passed to function
+
+
+p01.ck		emitted			assignment from multi-array to a value
+p02.ck		emitted			array to array sub-assignment ( like 17.ck )
+p03.ck		parse at 9:9(correct)	function definition outside class decl
+p04.ck		emitted, correct	assignment to class members
+p05.ck		line 7, class Obj has no member 'x'  member function taking class instance as argument
+p07.ck		emitted			array of a particular class
+p08.ck		emitted         	class with self as member
+p09.ck		emitted			class with declared, defined class as member
+p10.ck		undefined type at 6	class with udeclared, undefined class as member
+p11.ck		parse at 3:16		class with declared, undefined class as member
+p12.ck		type fails(correct)	type mismatch in object assignment
+p13.ck		emitted			cast subclass to parent class
+p14.ck		type fails(correct)	assign parent class to subclass
+p15.ck		emitted			cast subclass array to parent array
+p16.ck		emitted ( should fail type check ) cast parent class array to subclass array
+p17.ck		emitted		        array assignment - length mismatch ( large to small ) 
+p18.ck		emitted			array assignment - length mismatch ( small to large )
+p19.ck		fail type ( correct )   array => array ( should fail ) 
+p20.ck		emitted			for loop with -=>, *=>
+p21.ck		emit, correct		functional of p20 modify argument in function
+p22.ck		emit, correct		functional of p20 modify local variable..
+p23.ck		emit			function taking argument, return product of expression
+p24.ck		emit,			function taking two arguments, return product of expression
+p25.ck		emit, correct		test pass by value
+p26.ck		emit, correct		array pass by reference
+p27.ck		emitted, correct	function calling second function
+p28.ck		emit, correct 		recursive function
+p29.ck		type error ( correct )	variable access outside defining block
+p30.ck		emit, correct		member function with another class as argument
+p31.ck		emit, correct		call member function of a class			
+p32.ck		emit, correct		member function that doesn't call a member
+p33.ck		error			class Constructor ( okay, they don't exist )
+p34.ck		emit, correct		modify global inside function
+p35.ck		emit, correct		function returning simple value
+p36.ck		emit, correct		function returning value of a variable..
+p37.ck		emit, correct		call empty member function
+p38.ck		emit, correct		5 seconds => now;
+p39.ck		emit, correct		chuck to now, via duration
+p40.ck		emit, correct		wait via class member function	
+p41.ck		emit, correct		wait via standalone function
+p42.ck		emit, correct		wait via returned variable
+p45.ck		emit, accuracy issue?	test float equivalence operator
+p46.ck		emit, seems correct	test float equivalence operator
+p47.ck		emit, correct		int equivalence ops
+p48.ck		emit, correct		int equivalence ops
+p49.ck		emit, correct		pass integer through assignment in a function
+p50.ck		emit, correct		pass float through assignment in a function
+p51.ck		emit, correct		int comparision operator test
+p52.ck		emit, correct		float comparison operator test
+p53.ck		fail line 15		test implicit casts
+p55.ck		emit, correct		member function returning value
+p56.ck		emit, correct		member set via function, direct access
+p57.ck		emit, correct		test that two instances of class are distinct ( via direct access )
+p58.ck		emit, correct		test that two instances are distinct ( via function call )
+p59.ck		emit, correct		member set via function, access via function
+p60.ck		declaration must have code  function declaration, later definition
+p61.ck		function name already used  function overloading (not yet!)
+p62.ck		type fail assertion (unary->op = ae_op_new') spork function(void) that waits 10 sec
+p63.ck		"			 spork 10sec function and 5sec function
+p64.ck		"			 spork functions with wait time as argument
+
+p75.ck		emit, correct		 for loop
+p76.ck		correct			 scoping of for statements			 
+p77.ck		emit, correct		 while ( check for <  )
+p78.ck		emit, correct		 until ( check for >= )
+p79.ck		emit, correct		 until ( check for == )
+p80.ck		correct			 do-while
+p81.ck		correct			 do-while ( test initial execution )
+p82.ck		correct			 do-until
+p83.ck		correct			 do-until ( test initial execution )
+p84.ck		incorrect result	 while with post-increment
+p84_2.ck	correct			 while with pre-increment
+p85.ck		correct			 break;;
+p86.ck		correct			 continue;
+p87.ck		correct			 statement in nested loops;
+p88.ck		correct			 continue statement in nested loops;
+p89.ck		correct			 'this' for member access
+p90.ck		correct			 'this' example;
+p91.ck		correct			 'this' test 2;
+
+
+--Notes--
+
+apr 3	       p30,31,32,37 fixed
+apr 3 -        p16 - typing needs to be check for array comparisons. 
+mar 31: 3pm    p16 bug still up - ( assigning parent array to subclass array )
+mar 31, 9:50am windows : p37, p30
+mar 31, 9:00am float comparisions proper on Windows, error on OSX ( FIXED NOW );
+mar 30, 9:00   float comparisons appear to be broken ( p52.ck ) 
+mar 30, 4:00   p30,31,32,37 - calling member functions causes a bus error.
+mar 30, 3:00   p34 - global modified inside function doesn't persist outside function.
+mar 30, 3:00   functions take arguments, but functions returning variable don't work
+mar 29, 7:55pm FIXED : p21 - 25 all give an error from defining a function taking an argument.
+mar 29, 2:56am : changed p02.ck to a @=> instead of =>  : success!

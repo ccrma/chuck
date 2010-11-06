@@ -1,0 +1,150 @@
+todo - 2006.2.20
+---
+- multi-channel audio
+- stereo and multi-channel file out
+- fix static data
+- fix sporking member function
+- project: garbage collection
+  - release objects from all scopes
+  - implement destructors
+  - clean up type checker
+- project: finalize strings
+- project: exception handling
+
+- project: HID
+- project: file I/O
+- project: gluck
+- project: miniAudicle (osx fix)
+- project: miniAudicle (win32)
+- project: fix audicle
+- project: audicle linux build
+
+
+- array initialization
+  - multi-type [ 1, "foo" ] (done)
+  - optimize reduce if static
+
+
+todo - 2005
+---
+- release objects from all scopes
+- array initialization
+  - multi-type [ 1, "foo" ] (done)
+  - optimize reduce if static
+
+class library:
+- string
+  - check
+- array (done)
+- OSC event (done)
+- exception (done)
+- ugen
+  - make it work (done)
+  - stereo (done)
+  - multichannel
+- IO
+  - file input
+  - file output
+  - OSC (also events) (done)
+  - MIDI (also events) (done)
+
+objects
+  - obj_size (done)
+  - virtual table (done)
+  - global classes (done)
+  - function overloading (done)
+  - instantiation (done)
+  - constructors (done)
+  - destructor
+
+Bugs
+- none
+
+- Midi files (Miaiy!be)
+- Wvout
+- shred (done)
+- boost cb priority (done)
+- update todo (doing) //(done)
+
+done - dot member
+done - arrays
+done - add pre_ctor for all types, imports or user
+done - add ability to add member variables, and get back something to look 
+them up, such as index of data segment.
+done - overload functions
+
+class library
+done - object
+done - Event
+       - MIDI
+       - other shreds
+
+done - MidiIn and MidiOut classes 
+done - multimidi
+done - on the fly programming
+
+done - <<<Adam>>>;
+done - Ajay$int
+
+bye.
+
+
+for( each f in files )
+{
+    do_entire_file( f );
+}
+
+do_entire_file( file f )
+{
+    Context context;
+    // look up in recent table
+    if( recent.find( f.path ) )
+    {
+        context = recent.find( f.path );
+        if( context.progress == classes_only )
+        {
+            check_context( env, context, all_except_classes );
+            context.progress = all;
+        }
+        else if( context.progress == all )
+        {
+            // do nothing?
+        }
+        else
+        {
+            internal error
+        }
+    }
+    else // can't find the context
+    {
+        check_context( env, f, all );
+        return false on error?
+        context.progress = all;
+        add to recent table;
+    }
+
+    if( context.emit_progess == ? )
+        // emit the thing
+
+    // unload context?
+}
+
+do_just_classes( file f )
+{
+    Context context;
+    // look up in recent table
+    if( recent.find( f.path ) )
+    {
+        // nothing
+    }
+    else // can't find the context
+    {
+        check_context( env, f, all );
+        return false on error?
+        context.progress = class_only;
+    }
+
+    if( context.emit_progress == ? )
+        // emit just the classes
+}
+
