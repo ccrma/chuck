@@ -1,0 +1,4 @@
+This object contains results associated with UAna analysis.  There is a
+UAnaBlob associated with every UAna.  As a UAna is upchucked, the result
+is stored in the UAnaBlob's floating point vector and/or complex vector.
+The intended interpretation of the results depends on the specific UAna.

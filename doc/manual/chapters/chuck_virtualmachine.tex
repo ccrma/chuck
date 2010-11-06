@@ -1,0 +1,97 @@
+\chapter{The ChucK Compiler + Virtual Machine}
+
+Let's start with the compiler/virtual machine, both of which runs in the same process. By now, you should have built/installed ChucK (guide), and perhaps taken the tutorial. This guide is intended to be more complete and referential than the tutorial. 
+
+{\bf SYNOPSIS} (a man-esque page) 
+
+\begin{center}
+{\bf usage:}
+\end{center}
+
+
+\chucktermbig{
+chuck \doubledash\myleft options\textbar commands\myright \myleft +-=\^ \myright file1 file2 file3 ... \\
+   \hspace*{0.2in}\myleft options \myright = halt\textbar loop\textbar audio\textbar silent\textbar dump\textbar nodump\textbar about\textbar \\
+               \hspace*{0.6in}srate\textless N\textgreater \textbar bufsize\textless N\textgreater \textbar bufnum\textless N\textgreater \textbar dac\textless N\textgreater \textbar adc\textless N\textgreater \textbar \\
+               \hspace*{0.6in}remote\textless hostname\textgreater \textbar port\textless N\textgreater \textbar verbose\textless N\textgreater \textbar probe
+               \hspace*{0.6in}remote\textless hostname\textgreater \textbar port\textless N\textgreater \\
+   \hspace*{0.2in}\myleft commands \myright = add\textbar remove\textbar replace\textbar status\textbar time\textbar kill \\
+   \hspace*{0.2in}\myleft +-=\^ \myright = shortcuts for add, remove, replace, status
+}
+
+
+{\bf DESCRIPTION}
+
+{\bf \myleft source ChucK files\myright:}
+ChucK can run 1 or more processes in parallel and interactively. The programmer only needs to specify them all on the command line, and they will be compiled and run in the VM. Each input source file (.ck suffix by convention) will be run as a separate 'shred' (user-level ChucK threads) in the VM. They can 'spork' additional shreds and interact with existing shreds. Thanks to the ChucK timing mechanism, shreds don't necessarily need to know about each other in order to be precisely 'shreduled' in time - they only need to keep track of they own time, so to speak. 
+
+Addtionally, more shreds can be added/removed/replaced manually at run-time, using on-the-fly programming \myleft Wang and Cook 2004 \myright - (see publications and http://on-the-fly.cs.princeton.edu/). 
+
+
+\myleft options\myright: 
+
+{\bf \doubledash halt / -h}\\
+(on by default) - tells the vm to halt and exit if there are no more shreds in the VM. 
+
+{\bf \doubledash loop / -l}\\
+tells the ChucK VM to continue executing even if there no shreds currently in the VM. This is useful because shreds can be added later on-the-fly. Furthermore, it is legal to specify this option without any input files. For example: 
+
+\chuckterm{\prompt chuck \doubledash loop}
+
+the above will 'infinite time-loop' the VM, waiting for incoming shreds. 
+
+{\bf \doubledash audio / -a}\\
+(on by default) - enable real-time audio output 
+
+{\bf \doubledash silent / -s}\\
+disable real-time audio output - computations in the VM is not changed, except that the actual timing is no longer clocked by the real-time audio engine. Timing manipulations (such as operations on 'now') still function fully. This is useful for synthesizing audio to disk or network. Also, it is handy for running a non-audio program. 
+
+{\bf \doubledash dump / +d}\\
+dump the virtual instructions emitted to stderr, for all the files after this flag on the command line, until a 'nodump' is encountered (see below). For example: 
+
+\chuckterm{\prompt chuck foo.ck +d bar.ck}
+
+will dump the virtual ChucK instructions for bar.ck (only), with argument values, to stderr. \doubledash dump can be used in conjunction with \doubledash nodump to selectively dump files. 
+
+{\bf \doubledash nodump / -d}\\
+(default state) cease the dumping of virtual instructions for files that comes after this flag on the command line, until a 'dump' is encountered (see above). For example: 
+
+\chuckterm{\prompt chuck +d foo.ck -d bar.ck +d doo.ck}
+
+will dump foo.ck, then doo.ck - but not bar.ck. 
+
+These are useful for debug ChucK itself, and for other entertainment purposes. 
+
+{\bf \doubledash srate(N)}\\
+set the internal sample rate to (N) Hz. by default,  ChucK runs at 44100Hz on OS X and Windows, and 48000Hz on linux/ALSA. even if the VM is running in \doubledash silent mode, the sample rate is still used by some unit generaters to compute audio, this is important for computing samples and writing to file. Not all sample rates are supported by all devices! 
+
+{\bf \doubledash bufsize(N)}\\
+set the internal audio buffer size to (N) sample frames. larger buffer size often reduce audio artifacts due to system/program timing. smaller buffers reduce audio latency. The default is 512. If (N) is not a power of 2, the next power of 2 larger than (N) is used. For example: 
+
+\chuckterm{\prompt chuck \doubledash bufsize950}
+
+sets the buffer size to 1024. 
+
+{\bf \doubledash dac(N)}\\
+opens audio output device \#(N) for real-time audio. by default,  (N) is 0. 
+
+{\bf \doubledash adc(N)}\\
+opens audio input device \#(N) for real-time audio input. by default, (N) is 0. 
+
+{\bf \doubledash chan(N) / -c(N)}\\
+opens N number of input and output channels on the audio device. by default, (N) is 2.
+
+{\bf \doubledash in(N) / -i(N)}\\
+opens N number of input channels on the audio device. by default (N) is 2.
+
+{\bf \doubledash out(N) \ -o(N)}\\
+opens N number of output channels on the audio device. by default (N) is 2.
+
+{\bf \doubledash about / \doubledash help}\\
+prints the usage message, with the ChucK URL
+
+{\bf \doubledash callback}\\
+Utilizes a callback for buffering (default).
+
+{\bf \doubledash blocking}\\
+Utilizes blocking for buffering.

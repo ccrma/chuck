@@ -1,0 +1,75 @@
+\chapter{Functions}
+
+Functions provide ways to break up code/common tasks into individual units. This helps to promote code re-usability and readability.
+
+\section{writing}
+
+Declare functions with the keyword fun (or  function) followed by the return type and then the name of the function. After the name of the function parentheses must be opened to declare the types of the input arguments.
+\begin{verbatim}
+    // define function call 'funk'
+    fun void funk( int arg )
+    {
+        // insert code here
+    }
+\end{verbatim}
+
+The above function returns no values (the return type is void). If the function is declared to return any other type of values, the function body must return a value of the appropriate type.
+\begin{verbatim}
+    // define function 'addOne'
+    fun int addOne(int x)
+    {
+        // result
+        return x + 1;
+    }
+\end{verbatim}
+ 
+\section{calling}
+
+To call a function use the name of the function with appropriate arugments.
+\begin{verbatim}
+    // define 'hey'
+    fun int hey( int a, int b )
+    {
+        // do something
+        return a + b;
+    }
+
+    // call the function; store result
+    hey( 1, 2 ) => int result;
+\end{verbatim}
+
+You can also use the ChucK operator to call functions!
+\begin{verbatim}
+    // call hey
+    ( 1, 2 ) => hey => int result;
+
+    // same
+    hey( 1, 2 ) => int result;
+
+    // several in a row
+    ( 10, 100 ) => Std.rand2 => Std.mtof => float foo;
+
+    // same
+    Std.mtof( Std.rand2( 10, 100 ) ) => float foo;
+\end{verbatim}
+ 
+\section{overloading}
+
+Overloading a function allows functions with the same name to be defined with different arguments. The function must be written in separate instances to handle the input, and the return type must agree.
+\begin{verbatim}
+    // funk( int )
+    fun int add(int x)
+    {
+        return x + x;
+    }
+
+    // funk( int, int )
+    fun int add(int x, int y)
+    {
+        return x + y;
+    }
+
+    // compiler automatically choose the right one to call
+    add( 1 ) => int foo;
+    add( 1, 2 ) => int bar;
+\end{verbatim}

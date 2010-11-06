@@ -1,0 +1,61 @@
+// even more music for replicants
+
+// patch
+Wurley voc=> JCRev r => dac;
+
+// initial settings
+220.0 => voc.freq;
+0.95 => voc.gain;
+.8 => r.gain;
+.1 => r.mix;
+
+// scale
+[ 0, 3, 7, 8, 11 ] @=> int scale[];
+
+// our main time loop
+while( true )
+{
+    // scale
+    scale[Std.rand2(0,scale.cap()-1)] => int freq;
+    Std.mtof( ( 45 + Std.rand2(0,1) * 12 + freq ) ) => voc.freq;
+    Std.rand2f( 0.6, 0.8 ) => voc.noteOn;
+
+    if( Std.randf() > 0.8 )
+    {
+        // 1000::ms => now;
+        repeat( 100 )
+        {
+            voc.freq() * 1.01 => voc.freq;
+            10::ms => now;
+        }
+    }
+    else if( Std.randf() > .5 )
+    {
+        // 500::ms => now;
+        repeat( 50 )
+        {
+            voc.freq() * .99 => voc.freq;
+            10::ms => now;
+        }
+    }
+    else if( Std.randf() > -0.8 )
+    {
+        250::ms => now;
+
+    }
+    else
+    {
+        0 => int i;
+        2 * Std.rand2( 1, 3 ) => int pick;
+        0 => int pick_dir;
+        0.0 => float pluck;
+
+	for( ; i < pick; i++ )
+        {
+            Std.rand2f(.4,.6) + i*.035 => pluck;
+            pluck + 0.03 * (i * pick_dir) => voc.noteOn;
+            !pick_dir => pick_dir;
+            250::ms => now;
+        }
+    }
+}

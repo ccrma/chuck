@@ -1,0 +1,70 @@
+-      - StkError
+- virt - Stk
+- DONE - Envelope : public Stk
+- DONE - ADSR : public Envelope
+- virt - Instrmnt : public Stk
+- STAR - Filter : public Stk
+- DONE - Delay : public Filter
+- DONE - DelayL : public Delay
+-      - BowTabl : public Stk
+- DONE - BiQuad : public Filter
+-      - BandedWG : public Instrmnt
+- DONE - WvIn : public Stk
+- DONE - WaveLoop : public WvIn
+- DONE - TwoZero : protected Filter
+- virt - FM : public Instrmnt
+- DONE - BeeThree : public FM
+-      - JetTabl : public Stk
+- DONE - PoleZero : protected Filter
+-      - xxxNoise : public Stk
+-      - BlowBotl : public Instrmnt
+-      - ReedTabl : public Stk
+- DONE - OneZero : protected Filter
+-      - BlowHole : public Instrmnt
+- DONE - OnePole : protected Filter
+-      - Bowed : public Instrmnt
+- DONE - DelayA : public Delay
+-      - Brass: public Instrmnt
+- DONE - Chorus : public Stk
+-      - Clarinet : public Instrmnt
+-      - Drummer : public Instrmnt
+- DONE - Echo : public Stk
+- DONE - FMVoices : public FM
+-      - Flute : public Instrmnt
+-      - FormSwep : public BiQuad
+- DONE - HevyMetl : public FM
+- DONE - Reverb : public Stk
+- DONE - JCRev : public Reverb
+- virt - PluckTwo : public Instrmnt
+- DONE - Mandolin : public PluckTwo
+-      - Mesh2D : public Instrmnt
+- virt - Modal : public Instrmnt
+-      - ModalBar : public Modal
+- DONE - SubNoise : public Noise
+-      - Modulate : public Stk
+-      - Sampler : public Instrmnt
+- DONE - Moog : public Sampler
+- DONE - NRev : public Reverb
+- DONE - PRCRev : public Reverb
+- DONE - PercFlut : public FM
+-      - Phonemes
+- DONE - PitShift : public Stk
+-      - Plucked : public Instrmnt
+-      - Resonate : public Instrmnt
+- DONE - Rhodey : public FM
+-      - SKINI : public Stk
+-      - Saxofony : public Instrmnt
+- DONE - Shakers : public Instrmnt
+-      - Simple : public Instrmnt
+-      - SingWave : public Stk
+-      - Sitar : public Instrmnt
+-      - Socket : public Stk
+-      - StifKarp : public Instrmnt
+-      - Table : public Stk
+- DONE - WvOut : public Stk
+- DONE - TubeBell : public FM
+- DONE - TwoPole : protected Filter
+- DONE - VoicForm : public Instrmnt
+-      - Voicer : public Stk
+-      - Whistle : public Instrmnt
+- DONE - Wurley : public FM

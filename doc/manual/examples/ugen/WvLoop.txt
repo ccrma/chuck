@@ -1,0 +1,13 @@
+    This class inherits from WvIn and provides
+    audio file looping functionality.
+
+    WaveLoop supports multi-channel data in
+    interleaved format.  It is important to
+    distinguish the tick() methods, which return
+    samples produced by averaging across sample
+    frames, from the tickFrame() methods, which
+    return pointers to multi-channel sample frames.
+    For single-channel data, these methods return
+    equivalent values.
+
+    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.

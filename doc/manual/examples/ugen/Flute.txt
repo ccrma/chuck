@@ -1,0 +1,17 @@
+    This class implements a simple flute
+    physical model, as discussed by Karjalainen,
+    Smith, Waryznyk, etc.  The jet model uses
+    a polynomial, a la Cook.
+
+    This is a digital waveguide model, making its
+    use possibly subject to patents held by Stanford
+    University, Yamaha, and others.
+
+    Control Change Numbers: 
+       - Jet Delay = 2
+       - Noise Gain = 4
+       - Vibrato Frequency = 11
+       - Vibrato Gain = 1
+       - Breath Pressure = 128
+
+    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.

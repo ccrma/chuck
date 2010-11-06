@@ -1,0 +1,154 @@
+\chapter{Types, Values, and Variables}
+
+ChucK is a strongly-typed language, meaning that types are resolved at compile-time. However, it is not quite statically-typed, because the compiler/type system is a part of the ChucK virtual machine, and is a runtime component. This type system helps to impose precision and clarity in the code, and naturally lends to organization of complex programs. At the same time, it is also dynamic in that changes to the type system can take place (in a well-defined manner) at runtime. This dynamic aspect forms the basis for on-the-fly programming.
+
+This section deals with types, values, and the declaration and usage of variables. As in other strongly-typed programming languages, we can think of a type as associated behaviors of data. (For example, an 'int' is a type that means integer, and adding two integer is defined to produce a third integer representing the sum.) Classes and objects allow us to extend the type system with our own custom types, but we won't cover them in this section. We will focus mainly on primitive types here, and leave the discussion of more complex types for classes and objects.
+ 
+\section{primitive types}
+
+The primitive, or intrinsic types are those which are simple datatypes (they have no additional data attributes). Objects are not primitive types. Primitive types are passed by value. Primitive types cannot be extended. The primitive types in ChucK are:
+\begin{chuckitemize}
+\item  int : integer (signed)
+\item  float : floating point number (in ChucK, a float is by default double-precision)
+\item  time : ChucKian time
+\item  dur : ChucKian duration
+\item  void : (no type)
+\end{chuckitemize}
+For a summary of operations on these types, go to operations and operators.
+
+All other types are derived from 'object', either as part of the ChucK standard library, or as a new class that you create. For specification, go to classes and objects.
+ 
+
+\section{values (literals)}
+
+Literal values are specified explicitly in code and are assigned a type by the compiler. The following are some examples of literal values:
+
+int:
+\chuckterm{42}
+
+int (hexidecimal):
+\chuckterm{0xaf30}
+
+float:
+\chuckterm{1.323}
+
+dur:
+\chuckterm{5.5::second}
+ In the above code, second is an existing duration variable. For more on durations, see the manipulating time section.
+ 
+
+\section{variables}
+
+Variables are locations in memory that hold data. Variables have to be declared in ChucK before they are used. For example, to declare a variable of type int called foo:
+\begin{verbatim}
+    // declare an 'int' called 'foo'
+    int foo;
+\end{verbatim}
+
+We can assign a value to an existing variable by using the ChucK operator (\chuckop). This is one of the most commonly used operators in ChucK, it's the way to do work and take action! We will discuss this family of operators in operators and operations.
+\begin{verbatim}
+    // assign value of 2 to 'foo'
+    2 => foo;
+\end{verbatim}
+
+It is possible to combine the two statements into one:
+\begin{verbatim}
+    // assign 2 to a new variable 'foo' of type 'int'
+    2 => int foo;
+\end{verbatim}
+
+To use a variable, just refer to it by name:
+\begin{verbatim}
+    // debug-print the value of foo
+    <<< foo >>>;
+\end{verbatim}
+
+To update the value of foo, for example:
+\begin{verbatim}
+    // multiply 'foo' by 10, assign back to 'foo'
+    foo * 10 => foo;
+\end{verbatim}
+
+You can also do the above using a *=\textgreater (mult-chuck):
+\begin{verbatim}
+    // multiply 'foo' by 10, and then assign to 'foo'
+    10 *=> foo;
+\end{verbatim}
+
+Here is an example of a duration:
+\begin{verbatim}
+    // assign value of '5 seconds' to new variable bar
+    5::second => dur bar;
+\end{verbatim}
+
+Once you have bar, you can inductively use it to construct new durations:
+\begin{verbatim}
+    // 4 bar, a measure?
+    4::bar => dur measure;
+\end{verbatim}
+
+ Since time is central to programming ChucK, it is important to understand time, dur, the relationship and operations between them. There is more information in the manipulating time section.
+ 
+\section{reference types}
+
+Reference types are types which inherit from the object class. Some default reference types include:
+\begin{chuckitemize}
+\item  Object : base type that all classes inherit from (directly or indirectly)
+\item  array : N-dimensional ordered set of data (of the same type)
+\item  Event : fundamental, extendable, synchronization mechanism
+\item  UGen : extendable unit generator base class
+\item  string : string (of characters)
+\end{chuckitemize}
+ New classes can be created. All classes are reference types. We will leave the full discussion to the objects and classes section.
+
+\section{complex types}
+
+Two special primitive types are available to to represent complex data, such as
+the output of an FFT: complex and polar. A complex number of the form a + bi can
+be declared as
+\begin{verbatim}
+ #(2,3) => complex cmp; //cmp is now 2 + 3i
+\end{verbatim}
+
+where the \#(...) syntax explicitly denotes a complex number in rectangular
+form. Similarly, explicit complex numbers can be manipulated directly:
+
+\begin{verbatim}
+ #(5, -1.5) => complex cmp; // cmp is 5 - 1.5i
+ #(2,3) + #(5,6) + cmp => complex sum; // sum is now 12 + 7.5i
+\end{verbatim}
+
+The (floating point) real and imaginary parts of a complex number can be
+accessed with the .re and .im components of a complex number:
+
+\begin{verbatim}
+ #(2.0,3.5) => complex cmp;
+ cmp.re => float x; // x is 2.0
+ cmp.im => float y; //y is 3.5
+\end{verbatim}
+
+The polar type offers an equivalent, alternative representation of complex
+numbers in terms of a magnitude and phase value. A polar representation of a
+complex number can be declared as
+
+\begin{verbatim}
+ %(2, .5*pi) => polar pol; // pol is 2-V.5p
+\end{verbatim}
+
+The magnitude and phase values can be accessed via .mag and .phase:
+
+\begin{verbatim}
+ %(2, .5*pi) => polar pol;
+ pol.mag => float m; // m is 2
+ pol.phase => float p; //p is .5p
+\end{verbatim}
+
+polar and complex representations can be cast to each other and multiplied/
+added/assigned/etc.:
+
+\begin{verbatim}
+ %(2, .5*pi) => polar pol;
+ #(3, 4) => complex cmp;
+ pol $ complex + #(10, 3) + cmp => complex cmp2;
+ cmp $ polar + %(10, .25*pi) - pol => polar pol2;
+\end{verbatim}

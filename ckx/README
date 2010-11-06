@@ -1,0 +1,9 @@
+
+.ckx - chuck extension files
+
+ckdl - ckx file reader/tester
+usgae: ckdl foo.ckx
+usage: ckdl foo.ckx entry_point
+
+by default, entry_point is ck_query
+ 

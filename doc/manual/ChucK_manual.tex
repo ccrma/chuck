@@ -1,0 +1,109 @@
+\documentclass[11pt]{report}
+\usepackage{styles/chuck_manual}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%% TITLE PAGE
+% this is a little too hacky..... but it works
+\thispagestyle{coverplain}
+\vskip 6in
+{\huge
+
+\makebox[\textwidth][s]{{\underline{T} h e \ \underline{C} h u c K \ \underline{M} a n u a l}}
+
+}
+
+\begin{center}
+ 1.2.1.3
+\end{center}
+\vskip 1.5in
+\begin{center}
+  \includegraphics[height=4in]{images/chuck_logo.pdf}
+
+  \vskip 1in
+
+  \Large{\href{http://chuck.cs.princeton.edu/}{http://chuck.cs.princeton.edu/}}\\
+  $|$
+  \Large{\href{http://chuck.stanford.edu/}{http://chuck.stanford.edu/}}
+\end{center}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%  OPENING MATTER
+%\colorbox{lightgray}{\parbox{\textwidth}{here is may text which goes over many lines}}
+
+\pagenumbering{roman}
+
+\include{chapters/authors}
+
+\include{chapters/chuck_places}
+
+\tableofcontents
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%  MAIN MATTER
+\pagestyle{fancy}
+
+\part*{Getting Started}
+
+\pagenumbering{arabic}
+
+\include{chapters/chuck_intro}
+
+\include{chapters/chuck_install}
+
+%%% tutorials
+  \include{chapters/chuck_tutorial}
+  \include{chapters/chuck_tutorial_conventions}
+  \include{chapters/chuck_tutorial_otf}
+%  \include{chapters/chuck_tutorial_firstpatch}
+  \include{chapters/chuck_tutorial_makingmods}
+  \include{chapters/chuck_tutorial_lfo}
+  \include{chapters/chuck_tutorial_midi}
+  %\include{chapters/chuck_tutorial_beats}
+  %\include{chapters/chuck_tutorial_scope}
+  \include{chapters/chuck_tutorial_writing}
+
+  \include{chapters/chuck_tutorial_stereo}
+  %\include{chapters/chuck_tutorial_hacktips}
+  \include{chapters/chuck_tutorial_osc}
+%%%%%%%% Reference
+
+\part*{Reference}
+
+\include{chapters/chuck_overview}
+
+%\include{chapters/chuck_reserved}
+
+\include{chapters/chuck_types}
+
+\include{chapters/chuck_array}
+
+\include{chapters/chuck_oper}
+
+\include{chapters/chuck_control}
+
+\include{chapters/chuck_functions}
+
+\include{chapters/chuck_shred}
+
+\include{chapters/chuck_time}
+
+\include{chapters/chuck_events}
+
+\include{chapters/chuck_objects}
+
+\include{chapters/chuck_virtualmachine}
+
+\include{chapters/chuck_uana}
+
+\include{chapters/chuck_uana_full}
+
+\include{chapters/chuck_onthefly}
+
+\include{chapters/chuck_stdlib}
+
+\include{chapters/chuck_ugen}
+\include{chapters/chuck_ugen_genx}
+
+\end{document}
