@@ -1,8 +1,0 @@
-Ported from rtcmix. See http://www.music.columbia.edu/cmix/makegens.html
-for more information on the GenX family of UGens. Currently coefficients
-past the 100th are ignored.
-
-Lookup can either be done using the lookup() function, or by driving the
-table with an input UGen, typically a Phasor. For an input signal
-between [ -1, 1 ], using the absolute value for [ -1, 0 ], GenX will
-output the table value indexed by the current input.

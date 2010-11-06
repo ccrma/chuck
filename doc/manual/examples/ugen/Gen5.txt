@@ -1,8 +1,0 @@
-
-Constructs a lookup table composed of sequential exponential curves. For
-a table with N curves, starting value of y', and value y_n for lookup
-index x_n , set the coefficients to [ y', y_0 , x_0 , ..., y_N-1 , x_N-1
- ]. Note that there must be an odd number of coefficients. If an even
-number of coefficients is specified, behavior is undefined. The sum of
-x_n for 0 ? n < N must be 1. y_n  = 0 is approximated as 0.000001 to
-avoid strange results arising from the nature of exponential curves.

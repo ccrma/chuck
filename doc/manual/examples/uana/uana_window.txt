@@ -1,4 +1,0 @@
-This class contains static methods for generating common transform
-windows for use with FFT/IFFT.  The windows are returned in a static
-array associated with the Windowing class (note: do not use the returned
-array for anything other than reading/setting windows in FFT/IFFT).

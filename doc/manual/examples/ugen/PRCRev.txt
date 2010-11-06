@@ -1,9 +1,0 @@
-    This class is based on some of the famous
-    Stanford/CCRMA reverbs (NRev, KipRev), which
-    were based on the Chowning/Moorer/Schroeder
-    reverberators using networks of simple allpass
-    and comb delay filters.  This class implements
-    two series allpass units and two parallel comb
-    filters.
-
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.
