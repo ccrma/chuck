@@ -1,3 +1,0 @@
-Constructs a lookup table of partials with specified amplitudes, phases,
-and harmonic ratios to the fundamental. Coefficients are specified in
-triplets of [ ratio, amplitude, phase ] arranged in a single linear array.

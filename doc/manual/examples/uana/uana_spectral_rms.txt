@@ -1,3 +1,0 @@
-This UAna computes the RMS power mean from a magnitude spectrum (either
-from an incoming UAna, or given manually), and outputs one value in
-its blob.

@@ -1,2 +1,0 @@
-This UAna computes the spectral flux between successive magnitude spectra
-(via incoming UAna, or given manually), and outputs one value in its blob.

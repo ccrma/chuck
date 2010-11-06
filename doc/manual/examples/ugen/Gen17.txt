@@ -1,7 +1,0 @@
-Constructs a Chebyshev polynomial wavetable with harmonic partials of
-specified weights. The weight of partial n is specified by the n^th
-element of the coefficients.
-
-Primarily used for waveshaping, driven by a SinOsc instead of a Phasor.
-See http://crca.ucsd.edu/~msp/techniques/v0.08/book-html/node74.html and
-http://en.wikipedia.org/wiki/Distortion_synthesis for more information.

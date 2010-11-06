@@ -1,2 +1,0 @@
-This UAna computes the spectral centroid from a magnitude spectrum (either
-from incoming UAna or manually given), and outputs one value in its blob.

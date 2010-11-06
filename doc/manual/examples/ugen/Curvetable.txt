@@ -1,7 +1,0 @@
-Constructs a wavetable composed of segments of variable times, values,
-and curvatures. Coefficients are specified as a single linear array of
-triplets of [ time, value, curvature ] followed by a final duple of [
-time, value ] to specify the final value of the table. time values are
-expressed in unitless, ascending values. For curvature equal to 0, the
-segment is a line; for curvature less than 0, the segment is a convex
-curve; for curvature greater than 0, the segment is a concave curve.
