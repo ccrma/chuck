@@ -1,0 +1,4 @@
+Constructs a lookup table of harmonic partials with specified
+amplitudes. The amplitude of partial n is specified by the n^th
+element of the coefficients. For example, setting coefs to [ 1 ]
+will produce a sine wave.

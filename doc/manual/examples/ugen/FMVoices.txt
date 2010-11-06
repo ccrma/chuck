@@ -1,0 +1,25 @@
+    This class implements 3 carriers and a common
+    modulator, also referred to as algorithm 6 of
+    the TX81Z.
+
+    \code
+    Algorithm 6 is :
+                        /->1 -\
+                     4-|-->2 - +-> Out
+                        \->3 -/
+    \endcode
+
+    Control Change Numbers: 
+       - Vowel = 2
+       - Spectral Tilt = 4
+       - LFO Speed = 11
+       - LFO Depth = 1
+       - ADSR 2 & 4 Target = 128
+
+    The basic Chowning/Stanford FM patent expired
+    in 1995, but there exist follow-on patents,
+    mostly assigned to Yamaha.  If you are of the
+    type who should worry about this (making
+    money) worry away.
+
+    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.

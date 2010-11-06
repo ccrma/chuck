@@ -1,0 +1,280 @@
+\chapter{Arrays}
+
+Arrays are used represent N-dimensional ordered sets of data (of the same type). This sections specifies how arrays are declared and used in ChucK. Some quick notes:
+\begin{chuckitemize}
+\item  arrays can be indexed by integer (0-indexed).
+\item  any array can also be used as an associative map, indexed by strings.
+\item  it is important to note that the integer-indexed portion and the associative portion of an array are stored in separate namespaces
+\item  arrays are objects (see objects and classes), and will behave similarly under reference assignment and other operations common to objects.
+\end{chuckitemize}
+
+\section{declaration}
+
+Arrays can be declared in the following way:
+\begin{verbatim}
+    // declare 10 element array of int, called foo
+    int foo[10];
+
+    // since array of int (primitive type), the contents
+    // are automatically initialized to 0
+\end{verbatim}
+
+Arrays can also be initialized:
+\begin{verbatim}
+    // chuck intializer to array reference
+    [ 1, 1, 2, 3, 5, 8 ] @=> int foo[];
+\end{verbatim}
+
+ In the above code, there are several things to note.
+\begin{chuckitemize}
+\item  initializers must contain the same or similar types. the compiler will attempt to find the highest common base type of all the elements. if no such common element is found, an error is reported.
+\item  the type of the initializer [ 1, 1, 2, 3, 5, 8 ] is int[~]. the intializer is an array that can be used directly when arrays are expected.
+\item  the at-chuck operator (\atchuckop) means assignment, and is discussed at length in operators and operations.
+\item int foo[~] is declaring an empty reference to an array. the statement assigns the initializer array to foo.
+\item  arrays are objects.
+\end{chuckitemize}
+
+When declaring an array of objects, the objects inside the array are automatically instantiated.
+\begin{verbatim}
+    // objects in arrays are automatically instantiated
+    Object group[10];
+\end{verbatim}
+
+If you only want an array of object references:
+\begin{verbatim}
+    // array of null object references
+    Object @ group[10];
+\end{verbatim}
+Check here more information on object declaration and instantation in Chuck.
+
+The above examples are 1-dimensional arrays (or vectors). Coming up next are multi-dimensional arrays!
+ 
+
+\section{multi-dimensional arrays}
+
+It is possible (and equally easy) to declare multi-dimensional arrays:
+\begin{verbatim}
+    // declare 4 by 6 by 8 array of float
+    float foo3D[4][6][8];
+\end{verbatim}
+
+Initializers work in similar ways:
+\begin{verbatim}
+    // declare 2 by 2 array of int
+    [ [1,3], [2,4] ] @=> int bar[][];
+\end{verbatim}
+ In the above code, note the two [~][~] since we make a matrix.
+ 
+
+\section{lookup}
+
+Elements in an array can be accessed using [~] (in the appropriate quantities).
+\begin{verbatim}
+    // declare an array of floats
+    [ 3.2, 5.0, 7 ] @=> float foo[];
+
+    // access the 0th element (debug print)
+    <<< foo[0] >>>; // hopefully 3.2
+
+    // set the 2nd element
+    8.5 => foo[2];
+\end{verbatim}
+
+Looping over the elements of an array:
+\begin{verbatim}
+    // array of floats again
+    [ 1, 2, 3, 4, 5, 6 ] @=> float foo[];
+
+    // loop over the entire array
+    for( 0 => int i; i < foo.cap(); i++ )
+    {
+        // do something (debug print)
+        <<< foo[i] >>>;
+    }
+\end{verbatim}
+
+Accessing multi-dimensional array:
+\begin{verbatim}
+    // 2D array
+    int foo[4][4];
+
+    // set an element
+    10 => foo[2][2];
+\end{verbatim}
+
+If the index exceeds the bounds of the array in any dimension, an exception is issued and the current shred is halted.
+\begin{verbatim}
+    // array capacity is 5
+    int foo[5];
+
+    // this should cause ArrayOutOfBoundsException
+    // access element 6 (index 5)
+    <<< foo[5] >>>;
+\end{verbatim}
+
+a longer program: otf\_06.ck from examples:
+\begin{verbatim}
+    // the period
+    .5::second => dur T;
+    // synchronize to period (for on-the-fly synchronization)
+    T - (now % T) => now;
+
+    // our patch
+    SinOsc s => JCRev r => dac;
+    // initialize
+    .05 => s.gain;
+    .25 => r.mix;
+
+    // scale (pentatonic; in semitones)
+    [ 0, 2, 4, 7, 9 ] @=> int scale[];
+
+    // infinite time loop
+    while( true )
+    {
+        // pick something from the scale
+        scale[ Math.rand2(0,4) ] => float freq;
+        // get the final freq
+        Std.mtof( 69 + (Std.rand2(0,3)*12 + freq) ) => s.freq;
+        // reset phase for extra bandwidth
+        0 => s.phase;
+
+        // advance time
+        if( Std.randf() > -.5 ) .25::T => now;
+        else .5::T => now;
+    }
+\end{verbatim}
+ 
+
+\section{associative arrays}
+
+Any array can be used also as an associative array, indexed on strings. Once the regular array is instantiated, no further work has to be done to make it associative as well - just start using it as such.
+\begin{verbatim}
+    // declare regular array (capacity doesn't matter so much)
+    float foo[4];
+
+    // use as integer-indexed array
+    2.5 => foo[0];
+
+    // use as associative array
+    4.0 => foo["yoyo"];
+
+    // access as associative (print)
+    <<< foo["yoyo"] >>>;
+
+    // access empty element
+    <<< foo["gaga"] >>>;  // -> should print 0.0
+\end{verbatim}
+
+It is important to note (again), that the address space of the integer portion and the associative portion of the array are completely separate. For example:
+\begin{verbatim}
+    // declare array
+    int foo[2];
+
+    // put something in element 0
+    10 => foo[0];
+
+    // put something in element "0"
+    20 => foo["0"];
+
+    // this should print out 10 20
+    <<< foo[0], foo["0"] >>>;
+\end{verbatim}
+
+The capacity of an array relates only to the integer portion of it. An array with an integer portion of capacity 0, for example, can still have any number of associative indexes.
+\begin{verbatim}
+    // declare array of 0 capacity
+    int foo[0];
+
+    // put something in element "here"
+    20 => foo["here"];
+
+    // this should print out 20
+    <<< foo["here"] >>>
+
+    // this should cause an exception
+    <<< foo[0] >>>
+\end{verbatim}
+
+Note: The associative capacity of an array is not defined, so objects used in the associative namespace must be explicitly instantiated, in contrast to those in the integer namespace
+
+ Accessing an uninstantiated element of the associate array will return a null reference. Please check the class documentation page for an explanation of ChucK objects and references.
+\begin{verbatim}
+    class Item { 
+       float weight; 
+    }
+    
+    Item box[10]; 
+
+    // integer indices ( up to capacity ) are pre-instantiated.
+    1.2 => box[1].weight; 
+
+    // instantiate element "lamp";
+    new Item @=> box["lamp"]; 
+
+    // access allowed to "lamp"
+    2.0 => box["lamp"].weight; 
+
+    // access causes a NullPointerException    
+    2.0 => box["sweater"].weight; 
+\end{verbatim}
+ 
+
+\section{array assignment}
+
+Arrays are objects. So when we declare an array, we are actually (1) declaring a reference to array (reference variable) and (2) instantiating a new array and reference assigned to the variable. A (null) reference is a reference variable that points to no
+ object or null. A null reference to an array can be created in this fasion:
+\begin{verbatim}
+    // declare array reference (by not specifying a capacity)
+    int foo[];
+
+    // we can now assign any int[] to foo
+    [ 1, 2, 3 ] @=> foo;
+
+    // print out 0th element
+    <<< foo[0] >>>;
+\end{verbatim}
+
+This is also useful in declaring functions that have arrays as arguments or return type.
+\begin{verbatim}
+    // our function
+    fun void print( int bar[] )
+    {
+        // print it
+        for( 0 => int i; i < bar.cap(); i++ )
+            <<< bar[0] >>>;
+    }
+
+    // we can call the function with a literal
+    print( [ 1, 2, 3, 4, 5 ] );
+
+    // or can we can pass a reference variable
+    int foo[10];
+    print( foo );
+\end{verbatim}
+
+Like other objects, it is possible make multiple references to a single array. Like other objects, all assignments are reference assignments, meaning the contents are NOT copied, only a reference to array is duplicated.
+\begin{verbatim}
+    // our single array
+    int the_array[10];
+
+    // assign reference to foo and bar
+    the_array => int foo[] => int bar[];
+
+    // (the_array, foo, and bar now all reference the same array)
+
+    // we change the_array and print foo...
+    // they reference the same array, changing one is like changing the other
+    5 => the_array[0];
+    <<< foo[0] >>>; // should be 5
+\end{verbatim}
+
+It is possible to reference sub-sections of multi-dimensional arrays.
+\begin{verbatim}
+    // a 3D array
+    int foo3D[4][4][4];
+
+    // we can make a reference to a sub-section
+    foo3D[2] => int bar[][];
+
+    // (note that the dimensions must add up!)
+\end{verbatim}

@@ -1,0 +1,22 @@
+    This class inherits from PluckTwo and uses
+    "commuted synthesis" techniques to model a
+    mandolin instrument.
+
+    This is a digital waveguide model, making its
+    use possibly subject to patents held by
+    Stanford University, Yamaha, and others.
+    Commuted Synthesis, in particular, is covered
+    by patents, granted, pending, and/or
+    applied-for.  All are assigned to the Board of
+    Trustees, Stanford University.  For
+    information, contact the Office of Technology
+    Licensing, Stanford University.
+
+    Control Change Numbers: 
+       - Body Size = 2
+       - Pluck Position = 4
+       - String Sustain = 11
+       - String Detuning = 1
+       - Microphone Position = 128
+
+    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.

@@ -1,0 +1,231 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ----------- 
+%  chuck_manual.sty
+%  
+%  Adam R. Tindale and the ChucK Team
+%  November 2007
+%  
+%  send suggestions or improvements to the chuck_dev list
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ----------- 
+\textwidth = 6.5 in
+\textheight = 8.0 in
+\oddsidemargin = 0.0 in
+\evensidemargin = 0.0 in
+\topmargin = 0.0 in
+\headheight = 1.0 in
+\headsep = 0.3 in
+\parskip = 0.1in
+\parindent = 0.0in
+\voffset = -.75in
+\itemsep = 0.0in
+%\labelsep = 0.0in
+\setcounter{secnumdepth}{0}
+\setcounter{tocdepth}{1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ----------- 
+\usepackage[Glenn]{styles/fncychap}
+\ChNameVar{\fontsize{14}{16}\usefont{OT1}{phv}{m}{n}\selectfont} 
+\ChNumVar{\fontsize{60}{62}\usefont{OT1}{ptm}{m}{n}\selectfont} 
+\ChTitleVar{\Huge\bfseries\rm}
+\ChRuleWidth{2pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ----------- 
+\usepackage[pdftex]{graphicx}
+\usepackage{wasysym}
+\usepackage{textcomp}
+\usepackage{fancybox}
+\usepackage{verbatim}
+\usepackage[normalem]{ulem}% good for underlining
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ----------- 
+\usepackage{color}
+\definecolor{codecolor}{rgb}{0.1,0.8,0}
+\definecolor{functionnames}{rgb}{0,.6,0}
+\definecolor{libnames}{rgb}{.25,.5,.25}
+\definecolor{ugennames}{rgb}{.25,.5,.25}
+\definecolor{functionboxcolor}{rgb}{.9,.9,.9}
+\definecolor{otherfunctionboxcolor}{rgb}{.8,.9,.8}
+\definecolor{termboxcolor}{rgb}{.01,.3,.01}
+
+\definecolor{urlcolors}{rgb}{0.3,0.3,1.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ----------- 
+\usepackage{fancyhdr}
+\fancyhf{} % delete current setting for header and footer  
+
+\fancypagestyle{plain}{% 
+ \fancyhead{} % get rid of headers on plain pages 
+ \renewcommand{\headrulewidth}{0pt} % and the line 
+} 
+\fancypagestyle{coverplain}{% 
+ \fancyhead{} % get rid of headers on plain pages 
+ \renewcommand{\headrulewidth}{0pt} % and the line 
+ \renewcommand{\footrulewidth}{1pt}
+ \fancyfoot[C]{Copyright 2007 \copyright~ Ge Wang and Perry Cook}
+ \fancyfoot[LR]{}
+}
+
+\pagestyle{fancy} % with this we ensure that the chapter and section 
+                  % headings are in lowercase. 
+ \renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+ \renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}} 
+ 
+ \fancyfoot[L]{The {\bf ChucK} Manual\twonotes}
+ \fancyfoot[R]{\thepage}
+
+ \fancyhead[L]{\textcolor{functionnames}{=\textgreater}}
+ \fancyhead[R]{\bfseries\leftmark} 
+ \renewcommand{\headrulewidth}{0.6pt} 
+ \renewcommand{\footrulewidth}{0.2pt} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ----------- 
+% this command has to be used in order make the chuck operator show up
+\newcommand{\chuckop}{=\textgreater~}
+
+\newcommand{\atchuckop}{@=\textgreater~}
+
+\newcommand{\unchuckop}{=\textless~}
+
+\newcommand{\unchuckopp}{!=\textgreater~}
+
+\newcommand{\upchuckop}{=\^~}
+
+% some smaller functions for \chuckfunction
+\newcommand{\function}{ \textcolor{functionnames}
+{\begin{ensuremath}[\end{ensuremath} function \begin{ensuremath}]\end{ensuremath} }}
+\newcommand{\chuckfunctiontext}[1]{\function #1}
+
+% use this command for namespace titles
+\newcommand{\chucknamespace}[1]{{\LARGE \textcolor{functionnames}{namespace: #1}  }}
+
+% use this command for making the functions
+% puts a nice box around them and prints the word function
+\newcommand{\chuckfunction}[1]{
+    \colorbox{functionboxcolor}{\parbox{\textwidth}{\chuckfunctiontext{#1}}}
+}
+
+\newcommand{\chuckmultifunction}[2]{
+   \colorbox{functionboxcolor}{\parbox{6.5in}{\chuckfunctiontext{#1}\newline
+\colorbox{otherfunctionboxcolor}{\parbox{6.43in}{#2}}}}     
+}
+%%%%%%%%%%%
+%UGEN format functions
+
+\newcommand{\ugen}[1]{ 
+  {\bf  #1  } \\ 
+  \rule{1in}{.5pt} 
+}
+
+%%%%%%%%%fix colors
+\newcommand{\chuckugen}[1]{
+#1
+}
+\newcommand{\ugenheading}[1]{
+        {\Large{\textcolor{blue}{#1}}}\\
+        \rule{3in}{1pt}  
+}
+
+
+%%%% this looks crappy%%%%%%%%%%%%
+% maybe just a simple underline?
+%
+% 
+\newcommand{\bigugenheading}[1]{
+%{\LARGE{\textcolor{green}{#1}}}
+{\LARGE #1}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ----------- 
+% prints the word example in a nice format
+\newcommand{\example}{
+\textcolor{functionnames}
+{\begin{ensuremath}[\end{ensuremath}example\begin{ensuremath}]\end{ensuremath}}
+}
+
+% prints ctrl param in a nice format
+\newcommand{\control}{
+\textcolor{functionnames}
+{\begin{ensuremath}[\end{ensuremath}ctrl param\begin{ensuremath}]\end{ensuremath}}
+%\rule{1in}{1pt}
+}
+% all this to do this [chuck]
+\newcommand{\chuckbuild}{
+\begin{ensuremath}[\end{ensuremath}chuck\begin{ensuremath}]\end{ensuremath}
+}
+%damn double dashes --
+\newcommand{\doubledash}{-\,-}
+%damn square brackets
+\newcommand{\myleft} { \begin{ensuremath} [ \end{ensuremath} }
+\newcommand{\myright}{ \begin{ensuremath} ] \end{ensuremath} }
+%the prompt is all escape characters!!!!!
+\newcommand{\prompt}{\%\textgreater}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ----------- 
+% makes it easier to change the global spacing
+\newcommand{\urltab}{\hspace*{.4in}}
+\newcommand{\authtab}{\hspace*{.25in}}
+\newcommand{\extab}{\hspace*{2in}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ----------- 
+% put your chuck code in a nice box
+\newcommand{\chuckexample}[1]{
+%\begin{center}
+%\fcolorbox{functionnames}{white}{
+%\rule{0pt}{.03in}%strut
+%\begin{center}\texttt{#1}\end{center}
+#1
+%\rule{0pt}{.5em}%strut
+%}
+%\end{center}
+}
+
+%%%%add typewriter font and fix spacing
+\newcommand{\chuckexamplelong}[1]{
+\begin{center}
+\texttt{#1}
+\fcolorbox{functionnames}{white}{
+\rule{0pt}{.03in}%strut
+}
+\end{center}
+}
+
+% put your chuck command in a nice box
+\newcommand{\chuckterm}[1]{
+\begin{center}
+\fcolorbox{termboxcolor}{white}{
+\begin{minipage}{4in}
+#1
+\end{minipage}
+}
+\end{center}
+}
+% put your chuck output in a nice box
+\newcommand{\chucktermbig}[1]{
+\begin{center}
+\fcolorbox{termboxcolor}{white}{
+\begin{minipage}{6in}
+#1
+\end{minipage}
+}
+\end{center}
+}
+%
+% better itemize environment 
+% fixes spacing issues
+\newenvironment{chuckitemize}
+  {\begin{itemize}%
+    \setlength{\itemsep}{0pt}%
+    \setlength{\parskip}{0pt}}%
+  {\end{itemize}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ----------- 
+% if this isn't loaded last it can cause problems...
+\usepackage[pdftex]{hyperref}
+\hypersetup{
+  colorlinks=true,
+  urlcolor=urlcolors,
+  linkcolor=urlcolors,
+  citecolor=urlcolors,
+  filecolor=urlcolors,
+  menucolor=urlcolors,
+  pagecolor=urlcolors
+}

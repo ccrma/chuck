@@ -1,0 +1,134 @@
+\chapter{Concurrency and Shreds}
+
+ChucK is able to run many processes concurrently (the process behave as if they are running in parallel). A ChucKian process is called a shred. To spork a shred means creating and adding a new process to the virtual machine. Shreds may be sporked from a variety of places, and may themselves spork new shreds.
+
+ChucK supports sample-synchronous, non-preemptive concurrency. Via the timing mechanism. any number of programs/shreds can be automatically shreduled and synchronized use the timing information. A shreduler in the virtual machine does the shreduling. The concurrency is 'sample-synchronous', meaning that inter-process audio timing is guaranteed to be precise to the sample. Note that each process/shred does not necessarily need to know about each other - it only has to deal with time locally. The virtual machine will make sure things happen correctly "across the board". Finally, concurrency - like timing - is deterministic in ChucK.
+
+The simplest way to to run shreds concurrently is to specify them on the command line:
+\chuckterm{\prompt chuck foo.ck bar.ck boo.ck}
+
+
+The above command runs chuck on foo.ck, bar.ck, and boo.ck concurrently. There are other ways to run shreds concurrently (see on-the-fly programming commands). Next, we show how to create new shreds from within ChucK programs.
+
+\section{sporking shreds (in code)}
+
+To {\it spork} means to shredule a new shred.
+
+To spork a shred, use the spork keyword/operator:
+\begin{chuckitemize}
+\item spork dynamically sporks shred from a function call
+\item  this operation is sample-synchronous, the new shred is shreduled to execute immediately
+\item  the parent shred continues to execute, until time is advanced (see manipulating time) or until the parent explicitly yields (see next section).
+\item  in the current implementation, when a parent shred exits, all child shreds all exit (this behavior will be enhanced in the future.)
+\item sporking a functions returns reference to the new shred, note that this operation does not return what functions returns - the ability to get back the return value at some later point in time will be provided in a future release.
+\end{chuckitemize}
+\begin{verbatim}
+    // define function go()
+    fun void go()
+    {
+        // insert code
+    }
+
+    // spork a new shred to start running from go()
+    spork ~ go();
+
+    // spork another, store reference to new shred in offspring
+    spork ~ go() => Shred @ offspring;
+\end{verbatim}
+
+a slightly longer example:
+\begin{verbatim}
+   // define function
+   fun void foo( string s )
+   {
+       // infinite time loop
+       while( true )
+       {
+           // print s
+           <<< s >>>;
+           // advance time
+           500::ms => now;
+       }
+   }
+   
+   // spork shred, passing in "you" as argument to foo
+   spork ~ foo( "you" );
+   // advance time by 250 ms
+   250::ms => now;
+   // spork another shred
+   spork ~ foo( "me" );
+   
+   // infinite time loop - to keep child shreds around
+   while( true )
+        1::second => now;
+\end{verbatim}
+
+also see function section for more information on working with functions.
+ 
+
+\section{the 'me' keyword}
+
+The me keyword (type Shred) refers the current shred.
+
+Sometimes it is useful to suspend the current shred without advancing time, and let other shreds shreduled for the current time to execute.  me.yield() does exactly that. This is often useful immediately after sporking a new shred, and you would like for that shred to have a chance to run but you do not want to advance time yet for yourself.
+\begin{verbatim}
+    // spork shred
+    spork ~ go();
+
+    // suspend the current shred ...
+    // ... give other shreds (shreduled for 'now') a chance to run
+    me.yield();
+\end{verbatim}
+
+It may also be useful to exit the current shred. For example if a MIDI device fails to open, you may exit the current shred.
+\begin{verbatim}
+    // make a MidiIn object
+    MidiIn min;
+
+    // try to open device 0 (chuck --probe to list all device)
+    if( !min.open( 0 ) )
+    {
+        // print error message
+        <<< "can't open MIDI device" >>>;
+        // exit the current shred
+        me.exit();
+    }
+\end{verbatim}
+
+You can get the shred id:
+\begin{verbatim}
+    // print out the shred id
+    <<< me.id(); >>>;
+\end{verbatim}
+
+These functions are common to all shreds, but yield() and exit() are commonly used with the current shred.
+ 
+\section{using Machine.add()}
+
+Machine.add( string path ) takes the path to a chuck program, and sporks it. Unlike spork ~, there is no parent-child relationship between the shred that calls the function and the new shred that is added. This is useful for dynamically running stored programs.
+\begin{verbatim}
+    // spork "foo.ck"
+    Machine.add( "foo.ck" );
+\end{verbatim}
+
+Presently, this returns the id of the new shred, not a reference to the shred. This will likely be changed in the future.
+
+Similarly, you can remove shreds from the virtual machine.
+\begin{verbatim}
+    // add
+    Machine.add( "foo.ck" ) => int id;
+
+    // remove shred with id
+    Machine.remove( id );
+
+    // add
+    Machine.add( "boo.ck" ) => id
+
+    // replace shred with "bar.ck"
+    Machine.replace( id, "bar.ck" );
+\end{verbatim}
+ 
+
+\section{inter-shred communication}
+
+Shreds sporked in the same file can share the same global variables. They can use time and events to synchronize to each other. (see events) Shreds sporked from different files can share data (including events). For now, this is done through a public class with static data (see  classes). Static data is not completely implemented! We will fix this very soon!

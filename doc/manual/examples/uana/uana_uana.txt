@@ -1,0 +1,7 @@
+Base class from which all unit analyzers (UAnae) inherit; UAnae (note
+plural form) can be interconnected via => (standard chuck operator) or via
+=^ (upchuck operator), specify the the types of and when data is passed
+between UAnae and UGens.  When .upchuck() is invoked on a given UAna,
+the UAna-chain (UAnae connected via =^) is traversed backwards from the
+upchucked UAna, and analysis is performed at each UAna along the chain;
+the updated analysis results are stored in UAnaBlobs.

@@ -1,0 +1,22 @@
+
+TODO:
+---
+Fully implement garbage collector!
+Fix static data!
+Add file support!
+Add protected/private!
+Put stdout and chout back!
+Add OpenGL API (almost there) - GlucK
+Add automatic type resolution
+Add more unit generators
+  - import more filters
+  - DCT/DWT
+  - analysis
+  - Marsyas
+  - File support
+Add more tutorials
+Add net language support
+Performance enhancement
+Improve documentation
+
+too many to name.  Need more developers.  Thanks.
