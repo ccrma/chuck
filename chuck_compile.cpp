@@ -53,6 +53,7 @@ using namespace std;
 
 // function prototypes
 t_CKBOOL load_internal_modules( Chuck_Compiler * compiler );
+t_CKBOOL load_external_modules( Chuck_Compiler * compiler, const char * extension, const char * _search_path );
 t_CKBOOL load_module( Chuck_Env * env, f_ck_query query, const char * name, const char * nspc );
 
 
@@ -110,6 +111,10 @@ t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm )
 
     // load internal libs
     if( !load_internal_modules( this ) )
+        goto error;
+    
+    // load external libs
+    if( !load_external_modules( this, ".ckx", "." ) )
         goto error;
     
     // pop indent
@@ -516,7 +521,7 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     EM_log( CK_LOG_SEVERE, "loading built-in modules..." );
     // push indent level
     EM_pushlog();
-
+    
     // get env
     Chuck_Env * env = compiler->env;
     // make context
@@ -525,7 +530,7 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     env->reset();
     // load it
     type_engine_load_context( env, context );
-
+    
     // load
     EM_log( CK_LOG_SEVERE, "module osc..." );
     load_module( env, osc_query, "osc", "global" );
@@ -539,7 +544,7 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     load_module( env, xform_query, "xform", "global" );
     EM_log( CK_LOG_SEVERE, "module extract..." );
     load_module( env, extract_query, "extract", "global" );
-
+    
     // load
     EM_log( CK_LOG_SEVERE, "class 'machine'..." );
     if( !load_module( env, machine_query, "Machine", "global" ) ) goto error;
@@ -551,34 +556,149 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     EM_log( CK_LOG_SEVERE, "class 'opsc'..." );
     if( !load_module( env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
     // if( !load_module( env, net_query, "net", "global" ) ) goto error;
-
+    
 #ifndef __DISABLE_MIDI__
     if( !init_class_Midi( env ) ) goto error;
     if( !init_class_MidiRW( env ) ) goto error;
 #endif // __DISABLE_MIDI__
     if( !init_class_HID( env ) ) goto error;
-
+        
     // clear context
     type_engine_unload_context( env );
-
+    
     // commit what is in the type checker at this point
     env->global()->commit();
-
+    
     // pop indent level
     EM_poplog();
     
     return TRUE;
-
+    
 error:
-
+    
     // probably dangerous: rollback
     env->global()->rollback();
-
+    
     // clear context
     type_engine_unload_context( env );
-
+    
     // pop indent level
     EM_poplog();
-
+    
     return FALSE;
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: load_external_modules()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL load_external_modules( Chuck_Compiler * compiler, const char * extension, const char * _search_path )
+{
+    // log
+    EM_log( CK_LOG_SEVERE, "loading external modules" );
+    // push indent level
+    EM_pushlog();
+    
+    // get env
+    Chuck_Env * env = compiler->env;
+    // make context
+    Chuck_Context * context = type_engine_make_context( NULL, "@[external]" );
+    // reset env - not needed since we just created the env
+    env->reset();
+    // load it
+    type_engine_load_context( env, context );
+    
+    // copy search path to char * buffer, because strtok requires/mutates it
+    static char search_path[255];
+    strncpy(search_path, _search_path, 255);
+#define PATH_BUF_SIZE (1024)
+    static char path_buf[PATH_BUF_SIZE];
+    char *strtok_arg = search_path;
+    const char *strtok_result = NULL;
+    
+    t_CKBOOL no_extension = (extension == NULL || *extension == '\0');
+    t_CKUINT extension_length = 0;
+    if(!no_extension)
+        extension_length = strlen(extension);
+    
+    while(strtok_result = strtok(strtok_arg, ":"))
+    {
+        // pass NULL to strtok in subsequent calls to get the next token
+        strtok_arg = NULL;
+        
+        DIR * dir = opendir(strtok_result);
+        
+        if(dir)
+        {
+            EM_log(CK_LOG_INFO, "examining directory '%s' for external modules", strtok_result);
+            
+            struct dirent *de = NULL;
+            
+            while(de = readdir(dir))
+            {
+                if((de->d_type == DT_REG) && // TODO: follow links?
+                   (no_extension || // no extension required
+                    strncmp(extension, 
+                            de->d_name+(strlen(de->d_name)-extension_length), 
+                            extension_length) == 0)) // check matching extension
+                {
+                    EM_log(CK_LOG_SEVERE, "loading external module '%s'", de->d_name);
+                    
+                    snprintf(path_buf, PATH_BUF_SIZE, "%s/%s", strtok_result, de->d_name);
+                    
+                    Chuck_DLL * dll = new Chuck_DLL(de->d_name);
+                    t_CKBOOL query_failed = FALSE;
+                    
+                    if(!dll->load(path_buf) || 
+                       (query_failed = !dll->query()) ||
+                       !type_engine_add_dll(env, dll, "global"))
+                    {
+                        EM_log(CK_LOG_SEVERE, "error loading external module '%s', skipping", de->d_name);
+                        if(query_failed)
+                            EM_log(CK_LOG_SEVERE, "error from chuck_dl: '%s'\n", dll->last_error());
+                        delete dll;
+                    }
+                    else
+                    {
+                        compiler->m_dlls.push_back(dll);
+                    }
+                }
+            }
+            
+            closedir(dir);
+        }
+        else
+        {
+            EM_log(CK_LOG_INFO, "unable to open directory '%s', ignoring for external modules", strtok_result);
+        }
+    }
+    
+    // clear context
+    type_engine_unload_context( env );
+    
+    // commit what is in the type checker at this point
+    env->global()->commit();
+    
+    // pop indent level
+    EM_poplog();
+    
+    return TRUE;
+    
+error:
+    
+    // probably dangerous: rollback
+    env->global()->rollback();
+    
+    // clear context
+    type_engine_unload_context( env );
+    
+    // pop indent level
+    EM_poplog();
+    
+    return FALSE;
+}
+
+

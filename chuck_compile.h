@@ -40,7 +40,9 @@
 #include "chuck_emit.h"
 #include "chuck_vm.h"
 
+#include <list>
 
+class Chuck_DLL;
 
 
 //-----------------------------------------------------------------------------
@@ -61,6 +63,8 @@ public: // data
     t_CKBOOL m_auto_depend;
     // recent map
     std::map<std::string, Chuck_Context *> m_recent;
+    
+    std::list<Chuck_DLL *> m_dlls;
 
 public: // to all
     // contructor
