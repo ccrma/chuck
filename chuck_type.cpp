@@ -5689,6 +5689,76 @@ error:
 }
 
 
+t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll, const string & dest )
+{
+    const Chuck_DL_Query * query = NULL;
+    
+    // get the query
+    query = dll->query();
+    
+    for( int i = 0; i < query->classes.size(); i++ )
+    {
+        Chuck_DL_Class * c = query->classes[i];
+        
+        Chuck_DL_Func * ctor = NULL, * dtor = c->dtor;
+        if(c->ctors.size() > 0)
+            ctor = c->ctors[0]; // TODO: uh, is more than one possible?
+        
+        if(!type_engine_import_class_begin(env, c->name.c_str(), 
+                                           c->parent.c_str(), env->global(), 
+                                           (f_ctor) ctor->addr, 
+                                           (f_dtor) dtor->addr))
+            goto error;
+        
+        for(int j = 0; j < c->mvars.size(); j++)
+        {
+            Chuck_DL_Value * mvar = c->mvars[j];
+            if(!type_engine_import_mvar(env, mvar->type.c_str(), 
+                                        mvar->name.c_str(), 
+                                        mvar->is_const))
+                goto error;
+        }
+        
+        for(int j = 0; j < c->svars.size(); j++)
+        {
+            Chuck_DL_Value * svar = c->svars[j];
+            if(!type_engine_import_svar(env, svar->type.c_str(), 
+                                        svar->name.c_str(), 
+                                        svar->is_const, 
+                                        (t_CKUINT) svar->static_addr))
+                goto error;
+        }
+        
+        for(int j = 0; j < c->mfuns.size(); j++)
+        {
+            Chuck_DL_Func * func = c->mfuns[j];
+            if(!type_engine_import_mfun(env, func)) goto error;
+        }
+        
+        for(int j = 0; j < c->sfuns.size(); j++)
+        {
+            Chuck_DL_Func * func = c->sfuns[j];
+            if(!type_engine_import_sfun(env, func)) goto error;
+        }
+        
+        type_engine_import_class_end(env);
+        
+        continue;
+        
+    error:
+        
+        EM_log(CK_LOG_SEVERE, 
+               "error importing class '%s' from dynamic library (%s)",
+               c->name.c_str(), dll->name());
+        
+        type_engine_import_class_end(env);
+        
+        return FALSE;
+    }
+    
+    return TRUE;
+}
+
 
 
 static const char * g_howmuch[] = { "ALL", "CLASSES_ONLY", "ALL_EXCEPT_CLASSES" };

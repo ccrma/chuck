@@ -654,7 +654,7 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler, const char * extensio
                     
                     if(!dll->load(path_buf) || 
                        (query_failed = !dll->query()) ||
-                       !type_engine_add_dll(env, dll, "global"))
+                       !type_engine_add_dll2(env, dll, "global"))
                     {
                         EM_log(CK_LOG_SEVERE, "error loading external module '%s', skipping", de->d_name);
                         if(query_failed)

@@ -728,6 +728,8 @@ t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt );
 t_CKTYPE type_engine_check_exp( Chuck_Env * env, a_Exp exp );
 // add an chuck dll into the env
 t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const std::string & nspc );
+// second version: use type_engine functions instead of constructing AST
+t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll, const std::string & dest );
 // type equality
 t_CKBOOL operator ==( const Chuck_Type & lhs, const Chuck_Type & rhs );
 t_CKBOOL operator !=( const Chuck_Type & lhs, const Chuck_Type & rhs );
