@@ -83,6 +83,16 @@ CHUCK_THREAD g_tid_shell = 0;
 char g_host[256] = "127.0.0.1";
 
 
+#if defined(__MACOSX_CORE__)
+char g_dl_search_path[] = "/usr/lib/chuck";
+#elif defined(__PLATFORM_WIN32__)
+char g_dl_search_path[] = ""; // uhh
+#else
+char g_dl_search_path[] = "/usr/lib/chuck";
+#endif
+
+char g_dl_search_path_envvar[] = "CK_LIB_SEARCH_PATH";
+
 
 
 //-----------------------------------------------------------------------------
@@ -297,7 +307,14 @@ static void usage()
     t_CKINT  adaptive_size = 0;
     t_CKINT  log_level = CK_LOG_CORE;
     t_CKINT  deprecate_level = 1; // warn
-
+    
+    std::string dl_search_path;
+    if(getenv(g_dl_search_path_envvar))
+        dl_search_path = getenv(g_dl_search_path_envvar);
+    else
+        dl_search_path = g_dl_search_path;
+    std::list<std::string> named_dls;
+    
     string   filename = "";
     vector<string> args;
 
@@ -422,6 +439,26 @@ static void usage()
                     exit( 1 );
                 }
             }
+            else if( !strncmp(argv[i], "--libpath", sizeof("--libpath")-1) )
+            {
+                // get the rest
+                string arg = argv[i]+sizeof("--libpath")-1;
+                if(dl_search_path.length() > 0)
+                    dl_search_path += ":";
+                dl_search_path += arg;
+            }
+            else if( !strncmp(argv[i], "-L", sizeof("-L")-1) )
+            {
+                // get the rest
+                string arg = argv[i]+sizeof("-L")-1;
+                if(dl_search_path.length() > 0)
+                    dl_search_path += ":";
+                dl_search_path += arg;
+            }
+            else if( !strncmp(argv[i], "--lib", sizeof("--lib")-1) )
+            {
+                named_dls.push_back(argv[i]+sizeof("--lib")-1);
+            }
             else if( !strcmp( argv[i], "--probe" ) )
                 probe = TRUE;
             else if( !strcmp( argv[i], "--poop" ) )
@@ -538,11 +575,11 @@ static void usage()
         fprintf( stderr, "[chuck]: %s\n", vm->last_error() );
         exit( 1 );
     }
-
+    
     // allocate the compiler
     compiler = g_compiler = new Chuck_Compiler;
     // initialize the compiler
-    if( !compiler->initialize( vm ) )
+    if( !compiler->initialize( vm, dl_search_path, named_dls ) )
     {
         fprintf( stderr, "[chuck]: error initializing compiler...\n" );
         exit( 1 );

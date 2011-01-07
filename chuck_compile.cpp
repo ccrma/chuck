@@ -53,7 +53,10 @@ using namespace std;
 
 // function prototypes
 t_CKBOOL load_internal_modules( Chuck_Compiler * compiler );
-t_CKBOOL load_external_modules( Chuck_Compiler * compiler, const char * extension, const char * _search_path );
+t_CKBOOL load_external_modules( Chuck_Compiler * compiler, 
+                               const char * extension, 
+                               const char * _search_path,
+                               std::list<std::string> & named_dls);
 t_CKBOOL load_module( Chuck_Env * env, f_ck_query query, const char * name, const char * nspc );
 
 
@@ -90,7 +93,8 @@ Chuck_Compiler::~Chuck_Compiler()
 // name: initialize()
 // desc: initialize the compiler
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm )
+t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm, std::string lib_search_path,
+                                     std::list<std::string> & named_dls )
 {
     // log
     EM_log( CK_LOG_SYSTEM, "initializing compiler..." );
@@ -114,7 +118,8 @@ t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm )
         goto error;
     
     // load external libs
-    if( !load_external_modules( this, ".ckx", "." ) )
+    if( !load_external_modules( this, ".ckx", lib_search_path.c_str(), 
+                               named_dls ) )
         goto error;
     
     // pop indent
@@ -154,6 +159,14 @@ void Chuck_Compiler::shutdown()
     code = NULL;
     m_auto_depend = FALSE;
     m_recent.clear();
+    
+    for(std::list<Chuck_DLL *>::iterator i = m_dlls.begin();
+        i != m_dlls.end(); i++)
+    {
+        delete (*i);
+    }
+    
+    m_dlls.clear();
 
     // pop indent
     EM_poplog();
@@ -590,12 +603,120 @@ error:
 
 
 
+//-----------------------------------------------------------------------------
+// name: load_external_module_at_path()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler, 
+                                       const char * name,
+                                       const char * dl_path )
+{
+    Chuck_Env * env = compiler->env;
+    
+    EM_log(CK_LOG_SEVERE, "loading external module '%s'", name);
+    
+    Chuck_DLL * dll = new Chuck_DLL(name);
+    t_CKBOOL query_failed = FALSE;
+    
+    if(!dll->load(dl_path) || 
+       (query_failed = !dll->query()) ||
+       !type_engine_add_dll2(env, dll, "global"))
+    {
+        EM_log(CK_LOG_SEVERE, "error loading external module '%s', skipping", name);
+        if(query_failed)
+            EM_log(CK_LOG_SEVERE, "error from chuck_dl: '%s'\n", dll->last_error());
+        delete dll;
+        
+        return FALSE;
+    }
+    else
+    {
+        compiler->m_dlls.push_back(dll);
+        return TRUE;
+    }        
+}
+
+
+
+static t_CKBOOL extension_matches(const char *filename, const char *extension)
+{
+    t_CKUINT extension_length = strlen(extension);
+    t_CKUINT filename_length = strlen(filename);
+    
+    return strncmp(extension, filename+(filename_length-extension_length), 
+                   extension_length) == 0;
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: load_external_modules_in_directory()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
+                                            const char * directory,
+                                            const char * extension)
+{
+    DIR * dir = opendir(directory);
+    
+    if(dir)
+    {
+        EM_log(CK_LOG_INFO, "examining directory '%s' for external modules", directory);
+        
+        struct dirent *de = NULL;
+        
+        while(de = readdir(dir))
+        {
+            if((de->d_type == DT_REG)) // TODO: follow links?
+            {
+                if(extension_matches(de->d_name, extension))
+                {
+                    EM_log(CK_LOG_SEVERE, "loading external module '%s'", de->d_name);
+                    
+                    std::string absolute_path = std::string(directory) + "/" + de->d_name;
+                    
+                    load_external_module_at_path(compiler, de->d_name, 
+                                                 absolute_path.c_str());
+                }
+                else if(extension_matches(de->d_name, ".ck"))
+                {
+                    EM_log(CK_LOG_SEVERE, "loading ChucK class file '%s'", de->d_name);
+                    
+                    // TODO
+                }
+                
+            }
+            else if(de->d_type == DT_DIR)
+            {
+                // recurse
+                // TODO: max depth?
+                std::string absolute_path = std::string(directory) + "/" + de->d_name;
+                load_external_modules_in_directory(compiler, 
+                                                   absolute_path.c_str(),
+                                                   extension);
+            }
+        }
+        
+        closedir(dir);
+    }
+    else
+    {
+        EM_log(CK_LOG_INFO, "unable to open directory '%s', ignoring for external modules", directory);
+    }
+    
+    return TRUE;
+}
+
+
 
 //-----------------------------------------------------------------------------
 // name: load_external_modules()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL load_external_modules( Chuck_Compiler * compiler, const char * extension, const char * _search_path )
+t_CKBOOL load_external_modules( Chuck_Compiler * compiler, 
+                                const char * extension, 
+                                const char * _search_path,
+                                std::list<std::string> & named_dls )
 {
     // log
     EM_log( CK_LOG_SEVERE, "loading external modules" );
@@ -611,69 +732,34 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler, const char * extensio
     // load it
     type_engine_load_context( env, context );
     
-    // copy search path to char * buffer, because strtok requires/mutates it
+    /* first load dynamic libraries explicitly named on the command line */
+    
+    for(std::list<std::string>::iterator i_dl = named_dls.begin();
+        i_dl != named_dls.end(); i_dl++)
+    {
+        std::string & dl_path = *i_dl;
+        if(!extension_matches(dl_path.c_str(), extension))
+            dl_path += extension;
+        
+        load_external_module_at_path(compiler, dl_path.c_str(),
+                                     dl_path.c_str());
+    }
+    
+    /* now recurse through search paths and load any DLs or .ck files found */
+    
+    // copy search path to char * buffer, because strtok requires non-const
+    // TODO: dynamic allocation of these buffers?
     static char search_path[255];
     strncpy(search_path, _search_path, 255);
-#define PATH_BUF_SIZE (1024)
-    static char path_buf[PATH_BUF_SIZE];
     char *strtok_arg = search_path;
     const char *strtok_result = NULL;
-    
-    t_CKBOOL no_extension = (extension == NULL || *extension == '\0');
-    t_CKUINT extension_length = 0;
-    if(!no_extension)
-        extension_length = strlen(extension);
     
     while(strtok_result = strtok(strtok_arg, ":"))
     {
         // pass NULL to strtok in subsequent calls to get the next token
         strtok_arg = NULL;
         
-        DIR * dir = opendir(strtok_result);
-        
-        if(dir)
-        {
-            EM_log(CK_LOG_INFO, "examining directory '%s' for external modules", strtok_result);
-            
-            struct dirent *de = NULL;
-            
-            while(de = readdir(dir))
-            {
-                if((de->d_type == DT_REG) && // TODO: follow links?
-                   (no_extension || // no extension required
-                    strncmp(extension, 
-                            de->d_name+(strlen(de->d_name)-extension_length), 
-                            extension_length) == 0)) // check matching extension
-                {
-                    EM_log(CK_LOG_SEVERE, "loading external module '%s'", de->d_name);
-                    
-                    snprintf(path_buf, PATH_BUF_SIZE, "%s/%s", strtok_result, de->d_name);
-                    
-                    Chuck_DLL * dll = new Chuck_DLL(de->d_name);
-                    t_CKBOOL query_failed = FALSE;
-                    
-                    if(!dll->load(path_buf) || 
-                       (query_failed = !dll->query()) ||
-                       !type_engine_add_dll2(env, dll, "global"))
-                    {
-                        EM_log(CK_LOG_SEVERE, "error loading external module '%s', skipping", de->d_name);
-                        if(query_failed)
-                            EM_log(CK_LOG_SEVERE, "error from chuck_dl: '%s'\n", dll->last_error());
-                        delete dll;
-                    }
-                    else
-                    {
-                        compiler->m_dlls.push_back(dll);
-                    }
-                }
-            }
-            
-            closedir(dir);
-        }
-        else
-        {
-            EM_log(CK_LOG_INFO, "unable to open directory '%s', ignoring for external modules", strtok_result);
-        }
+        load_external_modules_in_directory(compiler, strtok_result, extension);
     }
     
     // clear context

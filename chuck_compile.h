@@ -73,7 +73,8 @@ public: // to all
     virtual ~Chuck_Compiler();
 
     // initialize
-    t_CKBOOL initialize( Chuck_VM * vm );
+    t_CKBOOL initialize( Chuck_VM * vm, std::string lib_search_path, 
+                         std::list<std::string> & named_dls );
     // shutdown
     void shutdown();
 
