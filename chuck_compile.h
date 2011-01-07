@@ -65,7 +65,8 @@ public: // data
     std::map<std::string, Chuck_Context *> m_recent;
     
     std::list<Chuck_DLL *> m_dlls;
-
+    std::list<std::string> m_cklibs_to_preload;
+    
 public: // to all
     // contructor
     Chuck_Compiler();

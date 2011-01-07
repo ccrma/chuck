@@ -671,8 +671,6 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
             {
                 if(extension_matches(de->d_name, extension))
                 {
-                    EM_log(CK_LOG_SEVERE, "loading external module '%s'", de->d_name);
-                    
                     std::string absolute_path = std::string(directory) + "/" + de->d_name;
                     
                     load_external_module_at_path(compiler, de->d_name, 
@@ -680,20 +678,22 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
                 }
                 else if(extension_matches(de->d_name, ".ck"))
                 {
-                    EM_log(CK_LOG_SEVERE, "loading ChucK class file '%s'", de->d_name);
-                    
-                    // TODO
+                    std::string absolute_path = std::string(directory) + "/" + de->d_name;
+                    compiler->m_cklibs_to_preload.push_back(absolute_path);
                 }
-                
             }
             else if(de->d_type == DT_DIR)
             {
                 // recurse
                 // TODO: max depth?
-                std::string absolute_path = std::string(directory) + "/" + de->d_name;
-                load_external_modules_in_directory(compiler, 
-                                                   absolute_path.c_str(),
-                                                   extension);
+                if(strncmp(de->d_name, ".", sizeof(".")) &&
+                   strncmp(de->d_name, "..", sizeof("..")))
+                   {
+                       std::string absolute_path = std::string(directory) + "/" + de->d_name;
+                       load_external_modules_in_directory(compiler, 
+                                                          absolute_path.c_str(),
+                                                          extension);
+                   }
             }
         }
         
@@ -748,7 +748,7 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
     /* now recurse through search paths and load any DLs or .ck files found */
     
     // copy search path to char * buffer, because strtok requires non-const
-    // TODO: dynamic allocation of these buffers?
+    // TODO: dynamic allocation of this buffer?
     static char search_path[255];
     strncpy(search_path, _search_path, 255);
     char *strtok_arg = search_path;

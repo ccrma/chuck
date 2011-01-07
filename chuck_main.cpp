@@ -623,12 +623,49 @@ static void usage()
 
     // reset count
     count = 1;
-
+    
+    // log
+    EM_log( CK_LOG_SEVERE, "preloading ChucK libs" );
+    EM_pushlog();
+    
+    for( std::list<std::string>::iterator j = compiler->m_cklibs_to_preload.begin();
+        j != compiler->m_cklibs_to_preload.end(); j++)
+    {
+        std::string filename = *j;
+        
+        // log
+        EM_log( CK_LOG_SEVERE, "preloading '%s'...", filename.c_str() );
+        // push indent
+        EM_pushlog();
+        
+        // parse, type-check, and emit
+        if( compiler->go( filename, NULL ) )
+        {
+            // TODO: how to compilation handle?
+            //return 1;
+            
+            // get the code
+            code = compiler->output();
+            // name it - TODO?
+            // code->name += string(argv[i]);
+            
+            // spork it
+            shred = vm->spork( code, NULL );
+        }
+        
+        // pop indent
+        EM_poplog();
+    }
+    
+    compiler->m_cklibs_to_preload.clear();
+    
+    EM_poplog();
+    
     // log
     EM_log( CK_LOG_SEVERE, "starting compilation..." );
     // push indent
     EM_pushlog();
-
+    
     // loop through and process each file
     for( i = 1; i < argc; i++ )
     {
