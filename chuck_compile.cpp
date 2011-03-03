@@ -657,6 +657,8 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
                                             const char * directory,
                                             const char * extension)
 {
+    static const bool RECURSIVE_SEARCH = false;
+    
     DIR * dir = opendir(directory);
     
     if(dir)
@@ -682,7 +684,7 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
                     compiler->m_cklibs_to_preload.push_back(absolute_path);
                 }
             }
-            else if(de->d_type == DT_DIR)
+            else if(RECURSIVE_SEARCH && de->d_type == DT_DIR)
             {
                 // recurse
                 // TODO: max depth?

@@ -225,7 +225,7 @@ typedef void (CK_DLL_CALL * f_add_mfun)( Chuck_DL_Query * query, f_mfun mfun, co
 // add static function - args to follow
 typedef void (CK_DLL_CALL * f_add_sfun)( Chuck_DL_Query * query, f_sfun sfun, const char * type, const char * name );
 // add member variable
-typedef void (CK_DLL_CALL * f_add_mvar)( Chuck_DL_Query * query,
+typedef t_CKUINT (CK_DLL_CALL * f_add_mvar)( Chuck_DL_Query * query,
              const char * type, const char * name, t_CKBOOL is_const ); // TODO: public/protected/private
 // add static variable
 typedef void (CK_DLL_CALL * f_add_svar)( Chuck_DL_Query * query,
@@ -342,9 +342,11 @@ struct Chuck_DL_Class
     f_tock uana_tock;
     // collection of recursive classes
     std::vector<Chuck_DL_Class *> classes;
+    // current mvar offset
+    t_CKUINT current_mvar_offset;
     
     // constructor
-    Chuck_DL_Class() { dtor = NULL; ugen_tick = NULL; ugen_pmsg = NULL; uana_tock = NULL; ugen_pmsg = NULL; }
+    Chuck_DL_Class() { dtor = NULL; ugen_tick = NULL; ugen_pmsg = NULL; uana_tock = NULL; ugen_pmsg = NULL; current_mvar_offset = 0; }
     // destructor
     ~Chuck_DL_Class();
 };

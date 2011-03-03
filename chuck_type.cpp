@@ -2886,7 +2886,14 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
             // offset
             value->offset = env->curr->offset;
             // move the offset (TODO: check the size)
-            env->curr->offset += type->size;
+/*******************************************************************************
+ * spencer: added this into function to provide the same logic path
+ * for type_engine_check_exp_decl() and ck_add_mvar() when they determine
+ * offsets for mvars 
+ ******************************************************************************/
+            env->curr->offset = type_engine_next_offset( env->curr->offset, 
+                                                         type );
+            // env->curr->offset += type->size;
         }
         else if( decl->is_static ) // static
         {
@@ -4532,6 +4539,16 @@ Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List path )
 
 
 
+//-----------------------------------------------------------------------------
+// name: type_engine_compat_func()
+// desc: see if two function signatures are compatible
+//-----------------------------------------------------------------------------
+t_CKUINT type_engine_next_offset( t_CKUINT current_offset, Chuck_Type * type )
+{
+    return current_offset + type->size;
+}
+
+
 
 //-----------------------------------------------------------------------------
 // name: type_engine_compat_func()
@@ -5689,7 +5706,12 @@ error:
 }
 
 
-t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll, const string & dest )
+//-----------------------------------------------------------------------------
+// name: type_engine_add_dll2()
+// desc: add the DLL using type_engine functions
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll, 
+                               const string & dest )
 {
     const Chuck_DL_Query * query = NULL;
     
@@ -5713,9 +5735,10 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll, const string & 
         for(int j = 0; j < c->mvars.size(); j++)
         {
             Chuck_DL_Value * mvar = c->mvars[j];
-            if(!type_engine_import_mvar(env, mvar->type.c_str(), 
-                                        mvar->name.c_str(), 
-                                        mvar->is_const))
+            // SPENCER TODO: - shouldnt this check for CK_INVALID_OFFSET?
+            if(type_engine_import_mvar(env, mvar->type.c_str(), 
+                                       mvar->name.c_str(), 
+                                       mvar->is_const) == CK_INVALID_OFFSET)
                 goto error;
         }
         

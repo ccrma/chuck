@@ -779,6 +779,12 @@ Chuck_Value * type_engine_find_value( Chuck_Type * type, const std::string & xid
 Chuck_Value * type_engine_find_value( Chuck_Type * type, S_Symbol xid );
 Chuck_Value * type_engine_find_value( Chuck_Env * env, const std::string & xid, t_CKBOOL climb, int linepos = 0 );
 Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List path );
+/*******************************************************************************
+ * spencer: added this into function to provide the same logic path
+ * for type_engine_check_exp_decl() and ck_add_mvar() when they determine
+ * offsets for mvars 
+ ******************************************************************************/
+t_CKUINT type_engine_next_offset( t_CKUINT current_offset, Chuck_Type * type );
 // array verify
 t_CKBOOL verify_array( a_Array_Sub array );
 // make array type
