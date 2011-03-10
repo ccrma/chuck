@@ -506,14 +506,14 @@ t_CKBOOL load_module( Chuck_Env * env, f_ck_query query,
     
     // load osc
     dll = new Chuck_DLL( name );
-    if( !dll->load( query ) || (query_failed = !dll->query()) || 
+    if( (query_failed = !(dll->load( query ) && dll->query())) ||
         !type_engine_add_dll( env, dll, nspc ) )
     {
         fprintf( stderr, 
                  "[chuck]: internal error loading module '%s.%s'...\n", 
                  nspc, name );
         if( query_failed )
-            fprintf( stderr, "       %s\n", dll->last_error() );
+            fprintf( stderr, "       %s", dll->last_error() );
 
         return FALSE;
     }
@@ -618,13 +618,12 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
     Chuck_DLL * dll = new Chuck_DLL(name);
     t_CKBOOL query_failed = FALSE;
     
-    if(!dll->load(dl_path) || 
-       (query_failed = !dll->query()) ||
+    if((query_failed = !(dll->load(dl_path) && dll->query())) ||
        !type_engine_add_dll2(env, dll, "global"))
     {
         EM_log(CK_LOG_SEVERE, "error loading external module '%s', skipping", name);
         if(query_failed)
-            EM_log(CK_LOG_SEVERE, "error from chuck_dl: '%s'\n", dll->last_error());
+            EM_log(CK_LOG_SEVERE, "error from chuck_dl: '%s'", dll->last_error());
         delete dll;
         
         return FALSE;

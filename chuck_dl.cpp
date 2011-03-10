@@ -38,6 +38,7 @@
 #include "chuck_errmsg.h"
 #include "chuck_bbq.h"
 #include "chuck_type.h"
+#include <sstream>
 using namespace std;
 
 
@@ -47,6 +48,9 @@ using namespace std;
 // internal implementation of query functions
 //-----------------------------------------------------------------------------
 
+
+
+t_CKUINT ck_builtin_declversion() { return CK_DLL_VERSION; }
 
 
 
@@ -515,6 +519,7 @@ t_CKBOOL Chuck_DLL::load( const char * filename, const char * func, t_CKBOOL laz
 t_CKBOOL Chuck_DLL::load( f_ck_query query_func, t_CKBOOL lazy )
 {
     m_query_func = query_func;
+    m_version_func = ck_builtin_declversion;
     m_done_query = FALSE;
     m_func = "ck_query";
     
@@ -555,6 +560,37 @@ const Chuck_DL_Query * Chuck_DLL::query( )
     // return if there already
     if( m_done_query )
         return &m_query;
+    
+    // get the address of the DL version function from the DLL
+    if( !m_version_func )
+        m_version_func = (f_ck_declversion)this->get_addr( CK_DECLVERSION_FUNC );
+    if( !m_version_func )
+        m_version_func = (f_ck_declversion)this->get_addr( (string("_")+CK_DECLVERSION_FUNC).c_str() );
+    if( !m_version_func )
+    {
+        m_last_error = string("no version function found in dll '") 
+        + m_filename + string("'");
+        return NULL;
+    }
+    
+    // check version
+    t_CKUINT dll_version = m_version_func();
+    if(CK_DLL_VERSION_GETMAJOR(dll_version) != CK_DLL_VERSION_MAJOR)
+        // SPENCERTODO: do they need to be equal, or can dll_version be < ?
+    {
+        ostringstream oss;
+        oss << "DL version not supported: " 
+        << CK_DLL_VERSION_GETMAJOR(dll_version)
+        << "."
+        << CK_DLL_VERSION_GETMINOR(dll_version)
+        << " in '"
+        << m_filename
+        << "'";
+        
+        m_last_error = oss.str();
+        
+        return NULL;
+    }
     
     // get the address of the query function from the DLL
     if( !m_query_func )

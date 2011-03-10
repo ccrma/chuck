@@ -130,12 +130,22 @@ struct Chuck_UAnaBlobProxy;
   #define CK_DLL_CALL
 #endif
 
+#define CK_DLL_VERSION_MAJOR (0x0001)
+#define CK_DLL_VERSION_MINOR (0x0000)
+#define CK_DLL_VERSION_MAKE(maj,min) ((t_CKUINT)(((maj) << 16) | (min)))
+#define CK_DLL_VERSION_GETMAJOR(v) (((v) >> 16) & 0xFFFF)
+#define CK_DLL_VERSION_GETMINOR(v) ((v) & 0xFFFF)
+#define CK_DLL_VERSION (CK_DLL_VERSION_MAKE(CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR))
+
 // macro for defining ChucK DLL export functions
 // example: CK_DLL_EXPORT(int) foo() { return 1; }
 #define CK_DLL_EXPORT(type) CK_DLL_LINKAGE type CK_DLL_CALL
+// macro for declaring version of ChucK DL a given DLL links to
+// example: CK_DLL_DECLVERSION
+#define CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKUINT) ck_version() { return CK_DLL_VERSION; }
 // macro for defining ChucK DLL export query-functions
 // example: CK_DLL_QUERY
-#define CK_DLL_QUERY CK_DLL_EXPORT(t_CKBOOL) ck_query( Chuck_DL_Query * QUERY )
+#define CK_DLL_QUERY CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKBOOL) ck_query( Chuck_DL_Query * QUERY )
 // macro for defining ChucK DLL export constructors
 // example: CK_DLL_CTOR(foo)
 #define CK_DLL_CTOR(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_VM_Shred * SHRED )
@@ -185,6 +195,7 @@ struct Chuck_UAnaBlobProxy;
 //-----------------------------------------------------------------------------
 extern "C" {
 // query
+typedef t_CKUINT (CK_DLL_CALL * f_ck_declversion)();
 typedef t_CKBOOL (CK_DLL_CALL * f_ck_query)( Chuck_DL_Query * QUERY );
 // object
 typedef t_CKVOID (CK_DLL_CALL * f_ctor)( Chuck_Object * SELF, void * ARGS, Chuck_VM_Shred * SHRED );
@@ -203,6 +214,8 @@ typedef t_CKBOOL (CK_DLL_CALL * f_tock)( Chuck_Object * SELF, Chuck_UAna * UANA,
 
 // default name in DLL/ckx to look for
 #define CK_QUERY_FUNC        "ck_query"
+// default name in DLL/ckx to look for
+#define CK_DECLVERSION_FUNC  "ck_version"
 // bad object data offset
 #define CK_INVALID_OFFSET    0xffffffff
 
@@ -479,7 +492,7 @@ public:
     // constructor
     Chuck_DLL( const char * xid = NULL )
         : m_handle(NULL), m_id(xid ? xid : ""),
-        m_done_query(FALSE), m_query_func(NULL) 
+        m_done_query(FALSE), m_query_func(NULL), m_version_func(NULL)
     { }
     // destructor
     ~Chuck_DLL() { this->unload(); }
@@ -493,6 +506,7 @@ protected:
     std::string m_func;
     t_CKBOOL m_done_query;
 
+    f_ck_declversion m_version_func;
     f_ck_query m_query_func;
     Chuck_DL_Query m_query;
 };
