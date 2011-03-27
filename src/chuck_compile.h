@@ -40,7 +40,9 @@
 #include "chuck_emit.h"
 #include "chuck_vm.h"
 
+#include <list>
 
+class Chuck_DLL;
 
 
 //-----------------------------------------------------------------------------
@@ -61,7 +63,10 @@ public: // data
     t_CKBOOL m_auto_depend;
     // recent map
     std::map<std::string, Chuck_Context *> m_recent;
-
+    
+    std::list<Chuck_DLL *> m_dlls;
+    std::list<std::string> m_cklibs_to_preload;
+    
 public: // to all
     // contructor
     Chuck_Compiler();
@@ -69,7 +74,8 @@ public: // to all
     virtual ~Chuck_Compiler();
 
     // initialize
-    t_CKBOOL initialize( Chuck_VM * vm );
+    t_CKBOOL initialize( Chuck_VM * vm, std::string lib_search_path, 
+                         std::list<std::string> & named_dls );
     // shutdown
     void shutdown();
 

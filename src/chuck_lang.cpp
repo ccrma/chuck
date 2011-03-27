@@ -3294,6 +3294,7 @@ CK_DLL_MFUN( HidIn_open )
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     t_CKINT type = GET_NEXT_INT(ARGS);
     t_CKINT num = GET_NEXT_INT(ARGS);
+    fprintf(stderr, "HidIn_open %i %i\n", type, num);
     RETURN->v_int = min->open( type, num );
 }
 
