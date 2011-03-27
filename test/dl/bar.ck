@@ -29,5 +29,5 @@ b.floatArg(1.2);
 b.durArg(20::second);
 b.timeArg(now+5::second);
 b.stringArg("howdy");
-b.intFloatStringArg(-5, 1.2);
+b.intFloatStringArg(-5, 1.2, "whatup");
 

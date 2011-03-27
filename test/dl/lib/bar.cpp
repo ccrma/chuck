@@ -73,7 +73,7 @@ CK_DLL_QUERY
     QUERY->add_mfun(QUERY, bar_intFloatStringArg, "void", "intFloatStringArg");
     QUERY->add_arg(QUERY, "int", "intArg");
     QUERY->add_arg(QUERY, "float", "floatArg");
-    //QUERY->add_arg(QUERY, "string", "stringArg");
+    QUERY->add_arg(QUERY, "string", "stringArg");
         
         
     bar_mvarInt_offset = QUERY->add_mvar(QUERY, "int", "mvarInt", false);
@@ -81,6 +81,7 @@ CK_DLL_QUERY
     bar_mvarDur_offset = QUERY->add_mvar(QUERY, "dur", "mvarDur", false);
     bar_mvarTime_offset = QUERY->add_mvar(QUERY, "time", "mvarTime", false);
     bar_mvarString_offset = QUERY->add_mvar(QUERY, "string", "mvarString", false);
+    
     
     QUERY->end_class(QUERY);
 }
@@ -176,10 +177,11 @@ CK_DLL_MFUN(bar_objectArg)
 
 CK_DLL_MFUN(bar_intFloatStringArg)
 {
-//    fprintf(stderr, "calling bar_intFloatStringArg with args: %li %lf %s\n", 
-//            GET_NEXT_INT(ARGS), GET_NEXT_FLOAT(ARGS), 
-//            GET_NEXT_STRING(ARGS)->str.c_str());
-    fprintf(stderr, "calling bar_intFloatStringArg with args: %li %lf\n", 
-            GET_NEXT_INT(ARGS), GET_NEXT_FLOAT(ARGS));
+    t_CKINT intArg = GET_NEXT_INT(ARGS);
+    t_CKFLOAT floatArg = GET_NEXT_FLOAT(ARGS);
+    Chuck_String * stringArg = GET_NEXT_STRING(ARGS);
+    
+    fprintf(stderr, "calling bar_intFloatStringArg with args: %li %lf %s\n", 
+            intArg, floatArg, stringArg->str.c_str());
 }
 
