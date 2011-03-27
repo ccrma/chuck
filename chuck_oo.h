@@ -39,6 +39,7 @@
 #include <map>
 #include <queue>
 #include <fstream>
+#include "util_thread.h"
 
 #ifndef __PLATFORM_WIN32__
   #include <dirent.h>

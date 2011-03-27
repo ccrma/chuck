@@ -37,6 +37,8 @@
 #include "chuck_dl.h"
 #include "chuck_errmsg.h"
 #include "chuck_bbq.h"
+#include "chuck_type.h"
+#include <sstream>
 using namespace std;
 
 
@@ -46,6 +48,9 @@ using namespace std;
 // internal implementation of query functions
 //-----------------------------------------------------------------------------
 
+
+
+t_CKUINT ck_builtin_declversion() { return CK_DLL_VERSION; }
 
 
 
@@ -68,6 +73,33 @@ void CK_DLL_CALL ck_setname( Chuck_DL_Query * query, const char * name )
 //-----------------------------------------------------------------------------
 void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, const char * parent )
 {
+    // find parent mvar offset
+    t_CKINT parent_offset = 0;
+    if(parent && parent[0] != '\0')
+    {
+        a_Id_List parent_path = str2list( parent );
+        if( !parent_path )
+        {
+            // error
+            EM_error2( 0, "class import: ck_begin_class: unknown parent type '%s'", 
+                      query->curr_class->name.c_str(), name, parent );
+            return;
+        }
+        
+        Chuck_Type * ck_parent_type = type_engine_find_type( Chuck_Env::instance(), parent_path );
+        
+        delete_id_list( parent_path );
+        
+        if( !ck_parent_type )
+        {
+            // error
+            EM_error2( 0, "class import: ck_begin_class: unable to find parent type '%s'", ck_parent_type );
+            return;
+        }
+        
+        parent_offset = ck_parent_type->obj_size;
+    }
+    
     // push
     query->stack.push_back( query->curr_class );
     // allocate
@@ -84,7 +116,8 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
     // remember info
     c->name = name;
     c->parent = parent;
-
+    c->current_mvar_offset = parent_offset;
+    
     // curr
     query->curr_class = c;
     query->curr_func = NULL;
@@ -220,17 +253,38 @@ void CK_DLL_CALL ck_add_sfun( Chuck_DL_Query * query, f_sfun addr,
 // name: ck_add_mvar()
 // desc: add member var
 //-----------------------------------------------------------------------------
-void CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query, const char * type, const char * name,
-                              t_CKBOOL is_const )
+t_CKUINT CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query, 
+                                  const char * type, const char * name,
+                                  t_CKBOOL is_const )
 {
     // make sure there is class
     if( !query->curr_class )
     {
         // error
         EM_error2( 0, "class import: add_mvar invoked without begin_class..." );
-        return;
+        return CK_INVALID_OFFSET;
     }
 
+    a_Id_List path = str2list( type );
+    if( !path )
+    {
+        // error
+        EM_error2( 0, "class import: add_mvar: mvar %s.%s has unknown type '%s'", 
+                   query->curr_class->name.c_str(), name, type );
+        return CK_INVALID_OFFSET;
+    }
+    
+    Chuck_Type * ck_type = type_engine_find_type( Chuck_Env::instance(), path );
+    
+    delete_id_list( path );
+    
+    if( !ck_type )
+    {
+        // error
+        EM_error2( 0, "class import: add_mvar: unable to find type '%s'", type );
+        return CK_INVALID_OFFSET;
+    }
+       
     // allocate
     Chuck_DL_Value * v = new Chuck_DL_Value;
     v->name = name;
@@ -240,6 +294,12 @@ void CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query, const char * type, const c
     // add
     query->curr_class->mvars.push_back( v );
     query->curr_func = NULL;
+    
+    t_CKUINT offset = query->curr_class->current_mvar_offset;
+    query->curr_class->current_mvar_offset = type_engine_next_offset( query->curr_class->current_mvar_offset,
+                                                                      ck_type );
+    
+    return offset;
 }
 
 
@@ -459,6 +519,7 @@ t_CKBOOL Chuck_DLL::load( const char * filename, const char * func, t_CKBOOL laz
 t_CKBOOL Chuck_DLL::load( f_ck_query query_func, t_CKBOOL lazy )
 {
     m_query_func = query_func;
+    m_version_func = ck_builtin_declversion;
     m_done_query = FALSE;
     m_func = "ck_query";
     
@@ -499,6 +560,37 @@ const Chuck_DL_Query * Chuck_DLL::query( )
     // return if there already
     if( m_done_query )
         return &m_query;
+    
+    // get the address of the DL version function from the DLL
+    if( !m_version_func )
+        m_version_func = (f_ck_declversion)this->get_addr( CK_DECLVERSION_FUNC );
+    if( !m_version_func )
+        m_version_func = (f_ck_declversion)this->get_addr( (string("_")+CK_DECLVERSION_FUNC).c_str() );
+    if( !m_version_func )
+    {
+        m_last_error = string("no version function found in dll '") 
+        + m_filename + string("'");
+        return NULL;
+    }
+    
+    // check version
+    t_CKUINT dll_version = m_version_func();
+    if(CK_DLL_VERSION_GETMAJOR(dll_version) != CK_DLL_VERSION_MAJOR)
+        // SPENCERTODO: do they need to be equal, or can dll_version be < ?
+    {
+        ostringstream oss;
+        oss << "DL version not supported: " 
+        << CK_DLL_VERSION_GETMAJOR(dll_version)
+        << "."
+        << CK_DLL_VERSION_GETMINOR(dll_version)
+        << " in '"
+        << m_filename
+        << "'";
+        
+        m_last_error = oss.str();
+        
+        return NULL;
+    }
     
     // get the address of the query function from the DLL
     if( !m_query_func )

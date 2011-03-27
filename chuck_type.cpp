@@ -2886,7 +2886,14 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
             // offset
             value->offset = env->curr->offset;
             // move the offset (TODO: check the size)
-            env->curr->offset += type->size;
+/*******************************************************************************
+ * spencer: added this into function to provide the same logic path
+ * for type_engine_check_exp_decl() and ck_add_mvar() when they determine
+ * offsets for mvars 
+ ******************************************************************************/
+            env->curr->offset = type_engine_next_offset( env->curr->offset, 
+                                                         type );
+            // env->curr->offset += type->size;
         }
         else if( decl->is_static ) // static
         {
@@ -4532,6 +4539,16 @@ Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List path )
 
 
 
+//-----------------------------------------------------------------------------
+// name: type_engine_compat_func()
+// desc: see if two function signatures are compatible
+//-----------------------------------------------------------------------------
+t_CKUINT type_engine_next_offset( t_CKUINT current_offset, Chuck_Type * type )
+{
+    return current_offset + type->size;
+}
+
+
 
 //-----------------------------------------------------------------------------
 // name: type_engine_compat_func()
@@ -5688,6 +5705,82 @@ error:
     return FALSE;
 }
 
+
+//-----------------------------------------------------------------------------
+// name: type_engine_add_dll2()
+// desc: add the DLL using type_engine functions
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll, 
+                               const string & dest )
+{
+    const Chuck_DL_Query * query = NULL;
+    
+    // get the query
+    query = dll->query();
+    
+    for( int i = 0; i < query->classes.size(); i++ )
+    {
+        Chuck_DL_Class * c = query->classes[i];
+        
+        Chuck_DL_Func * ctor = NULL, * dtor = c->dtor;
+        if(c->ctors.size() > 0)
+            ctor = c->ctors[0]; // TODO: uh, is more than one possible?
+        
+        if(!type_engine_import_class_begin(env, c->name.c_str(), 
+                                           c->parent.c_str(), env->global(), 
+                                           (f_ctor) ctor->addr, 
+                                           (f_dtor) dtor->addr))
+            goto error;
+        
+        for(int j = 0; j < c->mvars.size(); j++)
+        {
+            Chuck_DL_Value * mvar = c->mvars[j];
+            // SPENCER TODO: - shouldnt this check for CK_INVALID_OFFSET?
+            if(type_engine_import_mvar(env, mvar->type.c_str(), 
+                                       mvar->name.c_str(), 
+                                       mvar->is_const) == CK_INVALID_OFFSET)
+                goto error;
+        }
+        
+        for(int j = 0; j < c->svars.size(); j++)
+        {
+            Chuck_DL_Value * svar = c->svars[j];
+            if(!type_engine_import_svar(env, svar->type.c_str(), 
+                                        svar->name.c_str(), 
+                                        svar->is_const, 
+                                        (t_CKUINT) svar->static_addr))
+                goto error;
+        }
+        
+        for(int j = 0; j < c->mfuns.size(); j++)
+        {
+            Chuck_DL_Func * func = c->mfuns[j];
+            if(!type_engine_import_mfun(env, func)) goto error;
+        }
+        
+        for(int j = 0; j < c->sfuns.size(); j++)
+        {
+            Chuck_DL_Func * func = c->sfuns[j];
+            if(!type_engine_import_sfun(env, func)) goto error;
+        }
+        
+        type_engine_import_class_end(env);
+        
+        continue;
+        
+    error:
+        
+        EM_log(CK_LOG_SEVERE, 
+               "error importing class '%s' from dynamic library (%s)",
+               c->name.c_str(), dll->name());
+        
+        type_engine_import_class_end(env);
+        
+        return FALSE;
+    }
+    
+    return TRUE;
+}
 
 
 
