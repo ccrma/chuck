@@ -64,6 +64,7 @@ extern const t_CKUINT CK_HID_DEV_KEYBOARD;
 extern const t_CKUINT CK_HID_DEV_WIIREMOTE;
 extern const t_CKUINT CK_HID_DEV_TILTSENSOR;
 extern const t_CKUINT CK_HID_DEV_TABLET;
+extern const t_CKUINT CK_HID_DEV_MULTITOUCH;
 extern const t_CKUINT CK_HID_DEV_COUNT;
 
 /* message types */
@@ -84,6 +85,7 @@ extern const t_CKUINT CK_HID_SPEAKER;
 extern const t_CKUINT CK_HID_TABLET_PRESSURE;
 extern const t_CKUINT CK_HID_TABLET_MOTION;
 extern const t_CKUINT CK_HID_TABLET_ROTATION;
+extern const t_CKUINT CK_HID_MULTITOUCH_TOUCH;
 extern const t_CKUINT CK_HID_MSG_COUNT;
 
 /* keys */
@@ -175,10 +177,19 @@ extern int TiltSensor_open( int ts );
 extern int TiltSensor_close( int ts );
 extern int TiltSensor_read( int ts, int type, int num, HidMsg * msg );
 extern const char * TiltSensor_name( int ts );
-
 // ge: SMS multi-thread poll rate
 t_CKINT TiltSensor_setPollRate( t_CKINT usec );
 t_CKINT TiltSensor_getPollRate( );
+
+
+extern void MultiTouchDevice_init();
+extern void MultiTouchDevice_quit();
+extern void MultiTouchDevice_probe();
+extern int MultiTouchDevice_count();
+extern int MultiTouchDevice_open( int ts );
+extern int MultiTouchDevice_close( int ts );
+extern const char * MultiTouchDevice_name( int ts );
+
 
 
 

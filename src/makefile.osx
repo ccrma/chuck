@@ -1,3 +1,11 @@
+
+ifeq ($(shell sw_vers -productVersion | egrep '10\.6(\.[0-9]+)?'),)
+LINK_EXTRAS=
+else
+LINK_EXTRAS=-F/System/Library/PrivateFrameworks \
+    -weak_framework MultitouchSupport
+endif
+
 CXX=gcc
 CXX_LINK=g++
 LEX=flex
@@ -5,7 +13,7 @@ YACC=bison
 INCLUDES=
 FLAGS=-D__MACOSX_CORE__ -c -m32
 LIBS=-framework CoreAudio -framework CoreMIDI -framework CoreFoundation \
-	-framework IOKit -framework Carbon -lstdc++ -lm -m32
+	-framework IOKit -framework Carbon $(LINK_EXTRAS) -lstdc++ -lm -m32
 SF_OBJ=util_sndfile.o
 
 ifneq ($(CHUCK_STAT),)
