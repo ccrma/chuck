@@ -5732,7 +5732,9 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
                                            (f_dtor) dtor->addr))
             goto error;
         
-        for(int j = 0; j < c->mvars.size(); j++)
+        int j;
+
+        for(j = 0; j < c->mvars.size(); j++)
         {
             Chuck_DL_Value * mvar = c->mvars[j];
             // SPENCER TODO: - shouldnt this check for CK_INVALID_OFFSET?
@@ -5742,7 +5744,7 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
                 goto error;
         }
         
-        for(int j = 0; j < c->svars.size(); j++)
+        for(j = 0; j < c->svars.size(); j++)
         {
             Chuck_DL_Value * svar = c->svars[j];
             if(!type_engine_import_svar(env, svar->type.c_str(), 
@@ -5752,13 +5754,13 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
                 goto error;
         }
         
-        for(int j = 0; j < c->mfuns.size(); j++)
+        for(j = 0; j < c->mfuns.size(); j++)
         {
             Chuck_DL_Func * func = c->mfuns[j];
             if(!type_engine_import_mfun(env, func)) goto error;
         }
         
-        for(int j = 0; j < c->sfuns.size(); j++)
+        for(j = 0; j < c->sfuns.size(); j++)
         {
             Chuck_DL_Func * func = c->sfuns[j];
             if(!type_engine_import_sfun(env, func)) goto error;
