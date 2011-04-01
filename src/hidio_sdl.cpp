@@ -556,6 +556,14 @@ void HidInManager::init_default_drivers()
     default_drivers[CK_HID_DEV_TILTSENSOR].read = TiltSensor_read;
     default_drivers[CK_HID_DEV_TILTSENSOR].name = TiltSensor_name;
     default_drivers[CK_HID_DEV_TILTSENSOR].driver_name = "tilt sensor";
+    
+    default_drivers[CK_HID_DEV_MULTITOUCH].init = MultiTouchDevice_init;
+    default_drivers[CK_HID_DEV_MULTITOUCH].quit = MultiTouchDevice_quit;
+    default_drivers[CK_HID_DEV_MULTITOUCH].count = MultiTouchDevice_count;
+    default_drivers[CK_HID_DEV_MULTITOUCH].open = MultiTouchDevice_open;
+    default_drivers[CK_HID_DEV_MULTITOUCH].close = MultiTouchDevice_close;
+    default_drivers[CK_HID_DEV_MULTITOUCH].name = MultiTouchDevice_name;
+    default_drivers[CK_HID_DEV_MULTITOUCH].driver_name = "multitouch";
 }
 
 void HidInManager::cleanup()

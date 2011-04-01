@@ -1,3 +1,13 @@
+
+ifeq ($(shell sw_vers -productVersion | egrep '10\.6(\.[0-9]+)?'),)
+ISYSROOT=-isysroot /Developer/SDKs/MacOSX10.4u.sdk
+LINK_EXTRAS=
+else
+ISYSROOT=-isysroot /Developer/SDKs/MacOSX10.6.sdk
+LINK_EXTRAS=-F/System/Library/PrivateFrameworks \
+    -weak_framework MultitouchSupport
+endif
+
 ifeq ($(shell gcc --version | head -1 | awk -F" " '{ printf $3 }' | grep '4\.[1-9]'),)
 CXX=gcc
 CXX_LINK=g++
@@ -9,11 +19,10 @@ endif
 LEX=flex
 YACC=bison
 INCLUDES=
-FLAGS=-D__MACOSX_CORE__ -D__MACOSX_UB__ -c -arch ppc -arch i386 \
-      -isysroot /Developer/SDKs/MacOSX10.4u.sdk
+FLAGS=-D__MACOSX_CORE__ -D__MACOSX_UB__ -c -arch ppc -arch i386 $(ISYSROOT)
 LIBS=-framework CoreAudio -framework CoreMIDI -framework CoreFoundation \
-	-framework IOKit -framework Carbon -lstdc++ -lm \
-	-arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk 
+	-framework IOKit -framework Carbon $(ISYSROOT) $(LINK_EXTRAS) -lstdc++ -lm \
+	-arch ppc -arch i386 
 SF_OBJ=util_sndfile.o
 
 ifneq ($(CHUCK_STAT),)

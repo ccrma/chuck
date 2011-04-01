@@ -1251,6 +1251,9 @@ static t_CKUINT HidMsg_offset_scaledcursory = 0;
 static t_CKUINT HidMsg_offset_x = 0;
 static t_CKUINT HidMsg_offset_y = 0;
 static t_CKUINT HidMsg_offset_z = 0;
+static t_CKUINT HidMsg_offset_touchx = 0;
+static t_CKUINT HidMsg_offset_touchy = 0;
+static t_CKUINT HidMsg_offset_touchsize = 0;
 static t_CKUINT HidMsg_offset_ascii = 0;
 static t_CKUINT HidMsg_offset_key = 0;
 
@@ -1332,6 +1335,18 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
     // add member variable
     HidMsg_offset_z = type_engine_import_mvar( env, "int", "z", FALSE );
     if( HidMsg_offset_z == CK_INVALID_OFFSET ) goto error;
+    
+    // add member variable
+    HidMsg_offset_touchx = type_engine_import_mvar( env, "float", "touchX", FALSE );
+    if( HidMsg_offset_touchx == CK_INVALID_OFFSET ) goto error;
+    
+    // add member variable
+    HidMsg_offset_touchy = type_engine_import_mvar( env, "float", "touchY", FALSE );
+    if( HidMsg_offset_touchy == CK_INVALID_OFFSET ) goto error;
+    
+    // add member variable
+    HidMsg_offset_touchsize = type_engine_import_mvar( env, "float", "touchSize", FALSE );
+    if( HidMsg_offset_touchsize == CK_INVALID_OFFSET ) goto error;
     
     // add member variable
     HidMsg_offset_axis_position = type_engine_import_mvar( env, "int", "axis_position", FALSE );
@@ -3402,7 +3417,11 @@ CK_DLL_MFUN( HidIn_recv )
         // accelerometer (tilt sensor, wii remote) specific members
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_x) = the_msg.idata[0];
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_y) = the_msg.idata[1];
-        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_z) = the_msg.idata[2];        
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_z) = the_msg.idata[2];
+        
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchx) = the_msg.fdata[0];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchy) = the_msg.fdata[1];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchsize) = the_msg.fdata[2];
     }
 }
 
