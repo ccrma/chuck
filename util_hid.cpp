@@ -49,7 +49,8 @@ const t_CKUINT CK_HID_DEV_KEYBOARD = 3;
 const t_CKUINT CK_HID_DEV_WIIREMOTE = 4;
 const t_CKUINT CK_HID_DEV_TILTSENSOR = 5;
 const t_CKUINT CK_HID_DEV_TABLET = 6;
-const t_CKUINT CK_HID_DEV_COUNT = 7;
+const t_CKUINT CK_HID_DEV_MULTITOUCH = 7;
+const t_CKUINT CK_HID_DEV_COUNT = 8;
 
 /* message types */
 const t_CKUINT CK_HID_JOYSTICK_AXIS = 0;
@@ -69,7 +70,8 @@ const t_CKUINT CK_HID_SPEAKER = 13;
 const t_CKUINT CK_HID_TABLET_PRESSURE = 14;
 const t_CKUINT CK_HID_TABLET_MOTION = 15;
 const t_CKUINT CK_HID_TABLET_ROTATION = 16;
-const t_CKUINT CK_HID_MSG_COUNT = 17;
+const t_CKUINT CK_HID_MULTITOUCH_TOUCH = 17;
+const t_CKUINT CK_HID_MSG_COUNT = 18;
 
 #if defined(__PLATFORM_MACOSX__) && !defined(__CHIP_MODE__)
 #pragma mark OS X General HID support
@@ -3057,6 +3059,207 @@ int TiltSensor_read( int ts, int type, int num, HidMsg * msg )
     
     return 0;
 }
+
+
+typedef struct { float x,y; } mtPoint;
+typedef struct { mtPoint pos,vel; } mtReadout;
+
+typedef struct {
+    int frame;
+    double timestamp;
+    int identifier, state, foo3, foo4;
+    mtReadout normalized;
+    float size;
+    int zero1;
+    float angle, majorAxis, minorAxis; // ellipsoid
+    mtReadout mm;
+    int zero2[2];
+    float unk2;
+} Finger;
+
+typedef void *MTDeviceRef;
+typedef int (*MTContactCallbackFunction)(MTDeviceRef,Finger*,int,double,int);
+
+extern "C"
+{
+//    MTDeviceRef MTDeviceCreateDefault();
+    CFMutableArrayRef MTDeviceCreateList(void);
+    void MTRegisterContactFrameCallback(MTDeviceRef, MTContactCallbackFunction);
+    void MTUnregisterContactFrameCallback(MTDeviceRef, MTContactCallbackFunction);
+    void MTDeviceStart(MTDeviceRef, int);
+    void MTDeviceStop(MTDeviceRef);
+}
+
+
+class MTDManager
+{
+public:
+    static bool checkedAvailability;
+    static bool available;
+    
+    static bool inited;
+    static int numDevices;
+    static CFMutableArrayRef deviceList;
+    static map<MTDeviceRef, bool> openDevices;
+};
+
+
+bool MTDManager::checkedAvailability = false;
+bool MTDManager::available = false;
+bool MTDManager::inited = false;
+int MTDManager::numDevices = -1;
+CFMutableArrayRef MTDManager::deviceList = NULL;
+map<MTDeviceRef, bool> MTDManager::openDevices;
+
+
+int MultiTouchDevice_callback(MTDeviceRef device, Finger *data, int nFingers, double timestamp, int frame)
+{
+    int device_num = CFArrayGetFirstIndexOfValue(MTDManager::deviceList, 
+                                                 CFRangeMake(0, MTDManager::numDevices),
+                                                 device);
+    
+    for (int i=0; i<nFingers; i++)
+    {
+        Finger *f = &data[i];
+//        printf("Frame %7d: Angle %6.2f, ellipse %6.3f x%6.3f; "
+//               "position (%6.3f,%6.3f) vel (%6.3f,%6.3f) "
+//               "ID %d, state %d [%d %d?] size %6.3f, %6.3f?\n",
+//               f->frame,
+//               f->angle * 90 / atan2(1,0),
+//               f->majorAxis,
+//               f->minorAxis,
+//               f->normalized.pos.x,
+//               f->normalized.pos.y,
+//               f->normalized.vel.x,
+//               f->normalized.vel.y,
+//               f->identifier, f->state, f->foo3, f->foo4,
+//               f->size, f->unk2);
+        
+        HidMsg msg;
+        
+        msg.device_type = CK_HID_DEV_MULTITOUCH;
+        msg.device_num = device_num;
+        msg.type = CK_HID_MULTITOUCH_TOUCH;
+        msg.eid = f->identifier;
+        msg.fdata[0] = f->normalized.pos.x;
+        msg.fdata[1] = f->normalized.pos.y;
+        msg.fdata[2] = f->size;
+        
+        HidInManager::push_message( msg );
+    }
+//    
+//    printf("\n");
+//    
+    return 0;
+}
+
+
+void MultiTouchDevice_init()
+{
+    if(!MTDManager::checkedAvailability)
+        MTDManager::available = (MTDeviceCreateList != NULL &&
+                                 MTRegisterContactFrameCallback != NULL &&
+                                 MTUnregisterContactFrameCallback != NULL &&
+                                 MTDeviceStart != NULL &&
+                                 MTDeviceStop != NULL);
+    
+    if(!MTDManager::available)
+        return;
+    
+    if(MTDManager::inited == false)
+    {
+        MTDManager::deviceList = MTDeviceCreateList();
+        if(MTDManager::deviceList)
+        {
+            MTDManager::numDevices = CFArrayGetCount(MTDManager::deviceList);
+            
+            MTDManager::inited = true;
+        }
+    }
+}
+
+
+void MultiTouchDevice_quit()
+{
+    if(!MTDManager::available)
+        return;
+
+    if(MTDManager::inited)
+    {
+        if(MTDManager::deviceList)
+        {
+            CFRelease(MTDManager::deviceList);
+            MTDManager::deviceList = NULL;
+        }
+        MTDManager::numDevices = -1;
+        MTDManager::inited = false;
+    }
+}
+
+
+void MultiTouchDevice_probe()
+{
+}
+
+
+int MultiTouchDevice_count()
+{
+    if(!MTDManager::available)
+        return 0;
+
+    return MTDManager::numDevices;
+}
+
+
+int MultiTouchDevice_open( int ts )
+{
+    if(!MTDManager::available)
+        return -1;
+
+    if(!MTDManager::inited || ts < 0 || ts >= MTDManager::numDevices)
+        return -1;
+    
+    MTDeviceRef device = (MTDeviceRef) CFArrayGetValueAtIndex(MTDManager::deviceList, ts);
+    MTRegisterContactFrameCallback(device, MultiTouchDevice_callback);
+    MTDeviceStart(device, 0);
+    
+    MTDManager::openDevices[device] = true;
+    
+    return 0;
+}
+
+
+int MultiTouchDevice_close( int ts )
+{
+    if(!MTDManager::available)
+        return -1;
+
+    if(MTDManager::numDevices == -1 || ts < 0 || ts >= MTDManager::numDevices)
+        return -1;
+    
+    MTDeviceRef device = (MTDeviceRef) CFArrayGetValueAtIndex(MTDManager::deviceList, ts);
+    if(MTDManager::openDevices.count(device))
+    {
+        MTDeviceStop(device);
+        //MTUnregisterContactFrameCallback(device, MultiTouchDevice_callback);
+        MTDManager::openDevices[device] = false;
+    }
+    
+    return 0;
+}
+
+
+const char * MultiTouchDevice_name( int ts )
+{
+    if(!MTDManager::available)
+        return NULL;
+
+    return "MultiTouch Device";
+}
+
+
+
+
 
 #ifdef __CK_HID_WIIREMOTE__
 #pragma mark OS X Wii Remote support
@@ -7401,6 +7604,14 @@ int TiltSensor_close( int ts ){ return -1; }
 int TiltSensor_read( int ts, int type, int num, HidMsg * msg ){ return -1; }
 const char * TiltSensor_name( int ts ){ return NULL; }
 
+
+void MultiTouchDevice_init() { }
+void MultiTouchDevice_quit() { }
+void MultiTouchDevice_probe() { }
+int MultiTouchDevice_count() { return 0; }
+int MultiTouchDevice_open( int ts ) { return -1; }
+int MultiTouchDevice_close( int ts ) { return -1; }
+const char * MultiTouchDevice_name( int ts ) { return NULL; }
 
 #endif
 
