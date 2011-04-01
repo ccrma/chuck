@@ -46,6 +46,10 @@
 #include "ulib_std.h"
 #include "ulib_opsc.h"
 
+#if defined(__PLATFORM_WIN32__)
+#include "dirent_win32.h"
+#endif
+
 using namespace std;
 
 
@@ -647,6 +651,16 @@ static t_CKBOOL extension_matches(const char *filename, const char *extension)
 }
 
 
+#if defined(__PLATFORM_WIN32__)
+#define DIRENT_IS_DIRECTORY(de) ((de)->data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+#define DIRENT_IS_REGULAR(de) (((de)->data.dwFileAttributes & FILE_ATTRIBUTE_NORMAL) || \
+    ((de)->data.dwFileAttributes & FILE_ATTRIBUTE_READONLY))
+#else
+#define DIRENT_IS_DIRECTORY(de) ((de)->d_type == DT_DIR)
+#define DIRENT_IS_REGULAR(de) ((de)->d_type == DT_REG)
+#endif
+
+
 
 //-----------------------------------------------------------------------------
 // name: load_external_modules_in_directory()
@@ -668,7 +682,7 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
         
         while(de = readdir(dir))
         {
-            if((de->d_type == DT_REG)) // TODO: follow links?
+            if(DIRENT_IS_REGULAR(de)) // TODO: follow links?
             {
                 if(extension_matches(de->d_name, extension))
                 {
@@ -683,7 +697,7 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
                     compiler->m_cklibs_to_preload.push_back(absolute_path);
                 }
             }
-            else if(RECURSIVE_SEARCH && de->d_type == DT_DIR)
+            else if(RECURSIVE_SEARCH && DIRENT_IS_REGULAR(de))
             {
                 // recurse
                 // TODO: max depth?
@@ -773,7 +787,7 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
     EM_poplog();
     
     return TRUE;
-    
+   /* 
 error:
     
     // probably dangerous: rollback
@@ -786,6 +800,7 @@ error:
     EM_poplog();
     
     return FALSE;
+	*/
 }
 
 

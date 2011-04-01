@@ -4142,9 +4142,11 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicepan )
 	t_CKINT which = GET_NEXT_INT(ARGS);
     d->voicePan[which] = (t_CKFLOAT)GET_NEXT_FLOAT(ARGS);
 	
-	for(t_CKINT i=0; i<d->num_chans; i++) d->channelGain[which][i] = 0.;
+    t_CKINT i;
+
+	for(i=0; i<d->num_chans; i++) d->channelGain[which][i] = 0.;
 	
-	for(t_CKINT i=0; i<d->num_chans; i++) {
+	for(i=0; i<d->num_chans; i++) {
 		t_CKINT panTrunc = (t_CKINT)d->voicePan[which];
 		//fprintf(stderr, "panTrunc = %d, panFloat = %f, i = %d\n", panTrunc, d->voicePan[which], i);
 		if(i == panTrunc) {
@@ -4188,9 +4190,11 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicepan0 )
 	t_CKINT which = 0; //voice 0 for this one
     d->voicePan[which] = (t_CKFLOAT)GET_NEXT_FLOAT(ARGS);
 	
-	for(t_CKINT i=0; i<d->num_chans; i++) d->channelGain[which][i] = 0.;
+    t_CKINT i;
+
+	for(i=0; i<d->num_chans; i++) d->channelGain[which][i] = 0.;
 	
-	for(t_CKINT i=0; i<d->num_chans; i++) {
+	for(i=0; i<d->num_chans; i++) {
 		t_CKINT panTrunc = (t_CKINT)d->voicePan[which];
 		//fprintf(stderr, "panTrunc = %d, panFloat = %f, i = %d\n", panTrunc, d->voicePan[which], i);
 		if(i == panTrunc) {
