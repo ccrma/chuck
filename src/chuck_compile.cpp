@@ -49,6 +49,9 @@
 #if defined(__PLATFORM_WIN32__)
 #include "dirent_win32.h"
 #endif
+//#if defined(__WINDOWS_PTHREAD__)
+#include <sys/stat.h>
+//#endif
 
 using namespace std;
 
@@ -651,15 +654,6 @@ static t_CKBOOL extension_matches(const char *filename, const char *extension)
 }
 
 
-#if defined(__PLATFORM_WIN32__)
-#define DIRENT_IS_DIRECTORY(de) ((de)->data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-#define DIRENT_IS_REGULAR(de) (((de)->data.dwFileAttributes & FILE_ATTRIBUTE_NORMAL) || \
-    ((de)->data.dwFileAttributes & FILE_ATTRIBUTE_READONLY))
-#else
-#define DIRENT_IS_DIRECTORY(de) ((de)->d_type == DT_DIR)
-#define DIRENT_IS_REGULAR(de) ((de)->d_type == DT_REG)
-#endif
-
 
 
 //-----------------------------------------------------------------------------
@@ -682,7 +676,35 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
         
         while(de = readdir(dir))
         {
-            if(DIRENT_IS_REGULAR(de)) // TODO: follow links?
+            bool is_regular = false;
+            bool is_directory = false;
+            
+#if defined(__PLATFORM_WIN32__)
+            is_directory = de->data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+            is_regular = ((de->data.dwFileAttributes & FILE_ATTRIBUTE_NORMAL) || 
+                          (de->data.dwFileAttributes & FILE_ATTRIBUTE_READONLY));
+#elif defined(__WINDOWS_PTHREAD__) // Cygwin -- doesn't have dirent d_type
+            std::string absolute_path = std::string(directory) + "/" + de->d_name;
+            struct stat st;
+            if(stat(absolute_path.c_str(), &st) == 0)
+            {
+                is_directory = st.st_mode & S_IFDIR;
+                is_regular = st.st_mode & S_IFREG;
+            }
+            else
+            {
+                // uhh ... 
+                EM_log(CK_LOG_INFO, 
+                       "unable to stat file '%s', ignoring for external modules", 
+                       absolute_path.c_str());
+                continue;
+            }
+#else
+            is_directory = de->d_type == DT_DIR;
+            is_regular = de->d_type == DT_REG;
+#endif
+            
+            if(is_regular) // TODO: follow links?
             {
                 if(extension_matches(de->d_name, extension))
                 {
@@ -697,18 +719,18 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
                     compiler->m_cklibs_to_preload.push_back(absolute_path);
                 }
             }
-            else if(RECURSIVE_SEARCH && DIRENT_IS_REGULAR(de))
+            else if(RECURSIVE_SEARCH && is_directory)
             {
                 // recurse
                 // TODO: max depth?
-                if(strncmp(de->d_name, ".", sizeof(".")) &&
-                   strncmp(de->d_name, "..", sizeof("..")))
-                   {
-                       std::string absolute_path = std::string(directory) + "/" + de->d_name;
-                       load_external_modules_in_directory(compiler, 
-                                                          absolute_path.c_str(),
-                                                          extension);
-                   }
+                if(strncmp(de->d_name, ".", sizeof(".") != 0) &&
+                   strncmp(de->d_name, "..", sizeof("..")) != 0)
+                {
+                    std::string absolute_path = std::string(directory) + "/" + de->d_name;
+                    load_external_modules_in_directory(compiler, 
+                                                       absolute_path.c_str(),
+                                                       extension);
+                }
             }
         }
         
