@@ -373,7 +373,7 @@ void CK_DLL_CALL ck_add_arg( Chuck_DL_Query * query, const char * type, const ch
 // name: ck_add_ugen_func()
 // desc: (ugen only) add tick and pmsg functions
 //-----------------------------------------------------------------------------
-void CK_DLL_CALL ck_add_ugen_func( Chuck_DL_Query * query, f_tick ugen_tick, f_pmsg ugen_pmsg )
+void CK_DLL_CALL ck_add_ugen_func( Chuck_DL_Query * query, f_tick ugen_tick, f_pmsg ugen_pmsg, t_CKUINT num_in, t_CKUINT num_out )
 {
     // make sure there is class
     if( !query->curr_class )
@@ -402,6 +402,8 @@ void CK_DLL_CALL ck_add_ugen_func( Chuck_DL_Query * query, f_tick ugen_tick, f_p
     // set
     if( ugen_tick ) query->curr_class->ugen_tick = ugen_tick;
     if( ugen_pmsg ) query->curr_class->ugen_pmsg = ugen_pmsg;
+    query->curr_class->ugen_num_in = num_in;
+    query->curr_class->ugen_num_out = num_out;
     query->curr_func = NULL;
 }
 

@@ -5726,11 +5726,24 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
         if(c->ctors.size() > 0)
             ctor = c->ctors[0]; // TODO: uh, is more than one possible?
         
-        if(!type_engine_import_class_begin(env, c->name.c_str(), 
-                                           c->parent.c_str(), env->global(), 
-                                           (f_ctor) ctor->addr, 
-                                           (f_dtor) dtor->addr))
-            goto error;
+        if(c->ugen_tick && c->ugen_num_out)
+        {
+            if(!type_engine_import_ugen_begin(env, c->name.c_str(), 
+                                              c->parent.c_str(), env->global(), 
+                                              (f_ctor) ctor->addr, 
+                                              (f_dtor) dtor->addr,
+                                              c->ugen_tick, c->ugen_pmsg,
+                                              c->ugen_num_in, c->ugen_num_out))
+                goto error;
+        }
+        else
+        {
+            if(!type_engine_import_class_begin(env, c->name.c_str(), 
+                                               c->parent.c_str(), env->global(), 
+                                               (f_ctor) ctor->addr, 
+                                               (f_dtor) dtor->addr))
+                goto error;
+        }
         
         int j;
 
