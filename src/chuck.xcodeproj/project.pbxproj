@@ -250,10 +250,10 @@
 		09812B980C6E394A00D1D68C /* uana_extract.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = uana_extract.cpp; sourceTree = SOURCE_ROOT; };
 		09812B990C6E394A00D1D68C /* uana_extract.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = uana_extract.h; sourceTree = SOURCE_ROOT; };
 		098C58470B2A1E9A00931934 /* mouse.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = mouse.ck; path = examples/hid/mouse.ck; sourceTree = SOURCE_ROOT; };
-		09A1E6120CBA1AEC001FAD6F /* makefile.alsa */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = makefile.alsa; sourceTree = SOURCE_ROOT; };
-		09A1E6130CBA1AEC001FAD6F /* makefile.jack */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = makefile.jack; sourceTree = SOURCE_ROOT; };
-		09A1E6140CBA1AEC001FAD6F /* makefile.oss */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = makefile.oss; sourceTree = SOURCE_ROOT; };
-		09A1E6170CBA1AEC001FAD6F /* makefile.win32 */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = makefile.win32; sourceTree = SOURCE_ROOT; };
+		09A1E6120CBA1AEC001FAD6F /* makefile.alsa */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.alsa; sourceTree = SOURCE_ROOT; };
+		09A1E6130CBA1AEC001FAD6F /* makefile.jack */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.jack; sourceTree = SOURCE_ROOT; };
+		09A1E6140CBA1AEC001FAD6F /* makefile.oss */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.oss; sourceTree = SOURCE_ROOT; };
+		09A1E6170CBA1AEC001FAD6F /* makefile.win32 */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.win32; sourceTree = SOURCE_ROOT; };
 		09A40B060A9A54DA007604EA /* chuck_absyn.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = chuck_absyn.cpp; sourceTree = SOURCE_ROOT; };
 		09A40B070A9A54DA007604EA /* chuck_absyn.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = chuck_absyn.h; sourceTree = SOURCE_ROOT; };
 		09A40B080A9A54DA007604EA /* chuck_bbq.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = chuck_bbq.cpp; sourceTree = SOURCE_ROOT; };
@@ -1038,7 +1038,6 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = chuck;
-				ZERO_LINK = YES;
 			};
 			name = Debug;
 		};
@@ -1065,7 +1064,6 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = chuck;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
@@ -1075,14 +1073,12 @@
 				GCC_ENABLE_PASCAL_STRINGS = NO;
 				GCC_MODEL_TUNING = "";
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_VERSION = 4.0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.3;
 				PREBINDING = NO;
 				SDKROOT = macosx10.6;
 				YACC_GENERATED_FILE_STEM = InputFileStem;
-				ZERO_LINK = NO;
 			};
 			name = Debug;
 		};
@@ -1096,7 +1092,6 @@
 				GCC_ENABLE_PASCAL_STRINGS = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_VERSION = 4.0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;

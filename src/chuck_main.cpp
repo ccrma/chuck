@@ -91,7 +91,7 @@ char g_dl_search_path[] = ""; // uhh
 char g_dl_search_path[] = "/usr/lib/chuck";
 #endif
 
-char g_dl_search_path_envvar[] = "CK_LIB_SEARCH_PATH";
+char g_dl_search_path_envvar[] = "CHUCK_CHUGIN_PATH";
 
 
 
