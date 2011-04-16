@@ -1,6 +1,16 @@
 
 CK_SRC_PATH=../../../
+CHUGIN_PATH=/usr/lib/chuck
 
-bar.ckx: bar.cpp $(CK_SRC_PATH)/chuck_dl.h
-	gcc -m32 -rdynamic -bundle -g -o bar.ckx bar.cpp -D__MACOSX_CORE__ \
+CHUGINS=bar Bitcrusher
+CHUGS=$(addsuffix .chug,$(CHUGINS))
+
+all: $(CHUGS)
+
+$(CHUGS): %.chug: %.cpp $(CK_SRC_PATH)/chuck_dl.h
+	gcc -m32 -rdynamic -bundle -o $@ $< -D__MACOSX_CORE__ \
     -lstdc++ -I$(CK_SRC_PATH)
+
+install: $(CHUGS)
+	mkdir -p $(CHUGIN_PATH)
+	cp $^ $(CHUGIN_PATH)

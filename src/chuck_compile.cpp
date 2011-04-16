@@ -125,8 +125,8 @@ t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm, std::string lib_search_path,
         goto error;
     
     // load external libs
-    if( !load_external_modules( this, ".ckx", lib_search_path.c_str(), 
-                               named_dls ) )
+    if( !load_external_modules( this, ".chug", lib_search_path.c_str(), 
+                                named_dls ) )
         goto error;
     
     // pop indent
@@ -620,7 +620,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
 {
     Chuck_Env * env = compiler->env;
     
-    EM_log(CK_LOG_SEVERE, "loading external module '%s'", name);
+    EM_log(CK_LOG_SEVERE, "loading chugin '%s'", name);
     
     Chuck_DLL * dll = new Chuck_DLL(name);
     t_CKBOOL query_failed = FALSE;
@@ -628,7 +628,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
     if((query_failed = !(dll->load(dl_path) && dll->query())) ||
        !type_engine_add_dll2(env, dll, "global"))
     {
-        EM_log(CK_LOG_SEVERE, "error loading external module '%s', skipping", name);
+        EM_log(CK_LOG_SEVERE, "error loading chugin '%s', skipping", name);
         if(query_failed)
             EM_log(CK_LOG_SEVERE, "error from chuck_dl: '%s'", dll->last_error());
         delete dll;
@@ -670,7 +670,7 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
     
     if(dir)
     {
-        EM_log(CK_LOG_INFO, "examining directory '%s' for external modules", directory);
+        EM_log(CK_LOG_INFO, "examining directory '%s' for chugins", directory);
         
         struct dirent *de = NULL;
         
@@ -695,7 +695,7 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
             {
                 // uhh ... 
                 EM_log(CK_LOG_INFO, 
-                       "unable to stat file '%s', ignoring for external modules", 
+                       "unable to stat file '%s', ignoring for chugins", 
                        absolute_path.c_str());
                 continue;
             }
@@ -738,7 +738,7 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
     }
     else
     {
-        EM_log(CK_LOG_INFO, "unable to open directory '%s', ignoring for external modules", directory);
+        EM_log(CK_LOG_INFO, "unable to open directory '%s', ignoring for chugins", directory);
     }
     
     return TRUE;
@@ -756,7 +756,7 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
                                 std::list<std::string> & named_dls )
 {
     // log
-    EM_log( CK_LOG_SEVERE, "loading external modules" );
+    EM_log( CK_LOG_SEVERE, "loading chugins" );
     // push indent level
     EM_pushlog();
     
