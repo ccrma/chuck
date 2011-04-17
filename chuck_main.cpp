@@ -84,14 +84,14 @@ char g_host[256] = "127.0.0.1";
 
 
 #if defined(__MACOSX_CORE__)
-char g_dl_search_path[] = "/usr/lib/chuck";
+char g_default_chugin_path[] = "/usr/lib/chuck";
 #elif defined(__PLATFORM_WIN32__)
-char g_dl_search_path[] = ""; // uhh
+char g_default_chugin_path[] = "/WINDOWS/system32/chuck"; // uhh
 #else
-char g_dl_search_path[] = "/usr/lib/chuck";
+char g_default_chugin_path[] = "/usr/lib/chuck";
 #endif
 
-char g_dl_search_path_envvar[] = "CHUCK_CHUGIN_PATH";
+char g_chugin_path_envvar[] = "CHUCK_CHUGIN_PATH";
 
 
 
@@ -307,12 +307,13 @@ static void usage()
     t_CKINT  adaptive_size = 0;
     t_CKINT  log_level = CK_LOG_CORE;
     t_CKINT  deprecate_level = 1; // warn
+    t_CKINT  chugin_load = 1; // auto
     
     std::string dl_search_path;
-    if(getenv(g_dl_search_path_envvar))
-        dl_search_path = getenv(g_dl_search_path_envvar);
+    if(getenv(g_chugin_path_envvar))
+        dl_search_path = getenv(g_chugin_path_envvar);
     else
-        dl_search_path = g_dl_search_path;
+        dl_search_path = g_default_chugin_path;
     std::list<std::string> named_dls;
     
     string   filename = "";
@@ -439,25 +440,43 @@ static void usage()
                     exit( 1 );
                 }
             }
-            else if( !strncmp(argv[i], "--libpath", sizeof("--libpath")-1) )
+            else if( !strncmp(argv[i], "--chugin-load", sizeof("--chugin-load")-1) )
             {
                 // get the rest
-                string arg = argv[i]+sizeof("--libpath")-1;
+                string arg = argv[i]+sizeof("--chugin-load")-1;
+                if( arg == ":off" ) chugin_load = 0;
+                else if( arg == ":auto" ) chugin_load = 1;
+                else
+                {
+                    // error
+                    fprintf( stderr, "[chuck]: invalid arguments for '--chugin-load'...\n" );
+                    fprintf( stderr, "[chuck]: ... (looking for :auto or :off)\n" );
+                    exit( 1 );
+                }
+            }
+            else if( !strncmp(argv[i], "--chugin-path", sizeof("--chugin-path")-1) )
+            {
+                // get the rest
+                string arg = argv[i]+sizeof("--chugin-path")-1;
                 if(dl_search_path.length() > 0)
                     dl_search_path += ":";
                 dl_search_path += arg;
             }
-            else if( !strncmp(argv[i], "-L", sizeof("-L")-1) )
+            else if( !strncmp(argv[i], "-G", sizeof("-G")-1) )
             {
                 // get the rest
-                string arg = argv[i]+sizeof("-L")-1;
+                string arg = argv[i]+sizeof("-G")-1;
                 if(dl_search_path.length() > 0)
                     dl_search_path += ":";
                 dl_search_path += arg;
             }
-            else if( !strncmp(argv[i], "--lib", sizeof("--lib")-1) )
+            else if( !strncmp(argv[i], "--chugin", sizeof("--chugin")-1) )
             {
-                named_dls.push_back(argv[i]+sizeof("--lib")-1);
+                named_dls.push_back(argv[i]+sizeof("--chugin")-1);
+            }
+            else if( !strncmp(argv[i], "-g", sizeof("-g")-1) )
+            {
+                named_dls.push_back(argv[i]+sizeof("-g")-1);
             }
             else if( !strcmp( argv[i], "--probe" ) )
                 probe = TRUE;
@@ -576,6 +595,14 @@ static void usage()
         exit( 1 );
     }
     
+    
+    if(chugin_load == 0)
+    {
+        // turn off chugin load
+        dl_search_path = "";
+        named_dls.clear();
+    }
+    
     // allocate the compiler
     compiler = g_compiler = new Chuck_Compiler;
     // initialize the compiler
@@ -624,42 +651,45 @@ static void usage()
     // reset count
     count = 1;
     
-    // log
-    EM_log( CK_LOG_SEVERE, "preloading ChucK libs" );
-    EM_pushlog();
-    
-    for( std::list<std::string>::iterator j = compiler->m_cklibs_to_preload.begin();
-        j != compiler->m_cklibs_to_preload.end(); j++)
+    if(chugin_load)
     {
-        std::string filename = *j;
-        
         // log
-        EM_log( CK_LOG_SEVERE, "preloading '%s'...", filename.c_str() );
-        // push indent
+        EM_log( CK_LOG_SEVERE, "preloading ChucK libs" );
         EM_pushlog();
         
-        // parse, type-check, and emit
-        if( compiler->go( filename, NULL ) )
+        for( std::list<std::string>::iterator j = compiler->m_cklibs_to_preload.begin();
+            j != compiler->m_cklibs_to_preload.end(); j++)
         {
-            // TODO: how to compilation handle?
-            //return 1;
+            std::string filename = *j;
             
-            // get the code
-            code = compiler->output();
-            // name it - TODO?
-            // code->name += string(argv[i]);
+            // log
+            EM_log( CK_LOG_SEVERE, "preloading '%s'...", filename.c_str() );
+            // push indent
+            EM_pushlog();
             
-            // spork it
-            shred = vm->spork( code, NULL );
+            // parse, type-check, and emit
+            if( compiler->go( filename, NULL ) )
+            {
+                // TODO: how to compilation handle?
+                //return 1;
+                
+                // get the code
+                code = compiler->output();
+                // name it - TODO?
+                // code->name += string(argv[i]);
+                
+                // spork it
+                shred = vm->spork( code, NULL );
+            }
+            
+            // pop indent
+            EM_poplog();
         }
         
-        // pop indent
+        compiler->m_cklibs_to_preload.clear();
+        
         EM_poplog();
     }
-    
-    compiler->m_cklibs_to_preload.clear();
-    
-    EM_poplog();
     
     // log
     EM_log( CK_LOG_SEVERE, "starting compilation..." );
