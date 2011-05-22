@@ -181,6 +181,7 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
     // emit->code->name = "(main)";
     // whether code need this
     emit->code->need_this = TRUE;
+    emit->code->filename = emit->context->full_path;
 
     // loop over the program sections
     while( prog && ret )
@@ -270,6 +271,8 @@ Chuck_VM_Code * emit_to_code( Chuck_Code * in,
     code->need_this = in->need_this;
     // set name
     code->name = in->name;
+    // set filename
+    code->filename = in->filename;
 
     // copy
     for( t_CKUINT i = 0; i < code->num_instr; i++ )
@@ -3795,6 +3798,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     emit->code->name += func->name + "( ... )";
     // set whether need this
     emit->code->need_this = func->is_member;
+    emit->code->filename = emit->context->full_path;
 
     // go through the args
     a_Arg_List a = func_def->arg_list;
@@ -3918,7 +3922,8 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     emit->code->need_this = TRUE;
     // if has constructor
     // if( type->has_constructor ) type->info->pre_ctor = new Chuck_VM_Code;
-
+    emit->code->filename = emit->context->full_path;
+ 
     // get the size
     emit->code->stack_depth += sizeof(t_CKUINT);
     // add this
@@ -4039,6 +4044,7 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     emit->code->need_this = exp->ck_func->is_member;
     // name it
     emit->code->name = "spork~exp";
+    emit->code->filename = emit->context->full_path;
     // push op
     op = new Chuck_Instr_Mem_Push_Imm( 0 );
     // emit the stack depth - we don't know this yet

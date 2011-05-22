@@ -82,7 +82,8 @@ public: // to all
     // set auto depend
     void set_auto_depend( t_CKBOOL v );
     // parse, type-check, and emit a program
-    t_CKBOOL go( const std::string & filename, FILE * fd = NULL, const char * str_src = NULL );
+    t_CKBOOL go( const std::string & filename, FILE * fd = NULL, 
+                 const char * str_src = NULL, const std::string full_path = "" );
     // resolve a type automatically, if auto_depend is on
     t_CKBOOL resolve( const std::string & type );
     // get the code generated from the last go()
@@ -96,7 +97,8 @@ protected: // internal
     // do all excect classes
     t_CKBOOL do_all_except_classes( Chuck_Context * context );
     // do normal compile
-    t_CKBOOL do_normal( const std::string & path, FILE * fd = NULL, const char * str_src = NULL );
+    t_CKBOOL do_normal( const std::string & path, FILE * fd = NULL, 
+                        const char * str_src = NULL, const std::string full_path = "" );
     // look up in recent
     Chuck_Context * find_recent_path( const std::string & path );
     // look up in recent

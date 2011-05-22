@@ -162,6 +162,7 @@ CK_DLL_MFUN( shred_running );
 CK_DLL_MFUN( shred_done );
 CK_DLL_MFUN( shred_numArgs );
 CK_DLL_MFUN( shred_getArg );
+CK_DLL_MFUN( shred_sourcePath );
 
 
 //-----------------------------------------------------------------------------

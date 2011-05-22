@@ -5730,8 +5730,8 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
         {
             if(!type_engine_import_ugen_begin(env, c->name.c_str(), 
                                               c->parent.c_str(), env->global(), 
-                                              (f_ctor) ctor->addr, 
-                                              (f_dtor) dtor->addr,
+                                              ctor ? (f_ctor) ctor->addr : NULL, 
+                                              dtor ? (f_dtor) dtor->addr : NULL,
                                               c->ugen_tick, c->ugen_pmsg,
                                               c->ugen_num_in, c->ugen_num_out))
                 goto error;
@@ -5740,8 +5740,8 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
         {
             if(!type_engine_import_class_begin(env, c->name.c_str(), 
                                                c->parent.c_str(), env->global(), 
-                                               (f_ctor) ctor->addr, 
-                                               (f_dtor) dtor->addr))
+                                               ctor ? (f_ctor) ctor->addr : NULL, 
+                                               dtor ? (f_dtor) dtor->addr : NULL))
                 goto error;
         }
         
