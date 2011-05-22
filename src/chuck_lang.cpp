@@ -449,7 +449,11 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     func = make_new_mfun( "string", "arg", shred_getArg );
     func->add_arg( "int", "index" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-
+    
+    // add sourcePath()
+    func = make_new_mfun( "string", "sourcePath", shred_sourcePath );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
     // end the class import
     type_engine_import_class_end( env );
     
@@ -2903,6 +2907,16 @@ CK_DLL_MFUN( shred_getArg )
     str->str = ( i < num ? derhs->args[i] : "" );
     RETURN->v_string = str; 
 }
+
+CK_DLL_MFUN( shred_sourcePath )
+{
+    Chuck_VM_Shred * derhs = (Chuck_VM_Shred *)SELF;
+    
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    str->str = derhs->code->filename;
+    RETURN->v_string = str; 
+}
+
 
 CK_DLL_MFUN( string_length )
 {

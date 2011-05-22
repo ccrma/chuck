@@ -201,7 +201,7 @@ void Chuck_Compiler::set_auto_depend( t_CKBOOL v )
 // name: go()
 // desc: parse, type-check, and emit a program
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * str_src )
+t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * str_src, const string full_path )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Context * context = NULL;
@@ -210,7 +210,7 @@ t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * st
     if( !m_auto_depend )
     {
         // normal
-        ret = this->do_normal( filename, fd, str_src );
+        ret = this->do_normal( filename, fd, str_src, full_path );
         return ret;
     }
     else // auto
@@ -392,7 +392,7 @@ t_CKBOOL Chuck_Compiler::do_all_except_classes( Chuck_Context * context )
 // name: do_normal()
 // desc: compile normally without auto-depend
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::do_normal( const string & filename, FILE * fd, const char * str_src )
+t_CKBOOL Chuck_Compiler::do_normal( const string & filename, FILE * fd, const char * str_src, const string full_path )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Context * context = NULL;
@@ -404,6 +404,8 @@ t_CKBOOL Chuck_Compiler::do_normal( const string & filename, FILE * fd, const ch
     // make the context
     context = type_engine_make_context( g_program, filename );
     if( !context ) return FALSE;
+    
+    context->full_path = full_path;
 
     // reset the env
     env->reset();
