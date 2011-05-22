@@ -300,6 +300,8 @@ struct Chuck_Context : public Chuck_VM_Object
 {
     // src_name
     std::string filename;
+    // full filepath (if available)
+    std::string full_path;
     // parse tree
     a_Program parse_tree;
     // context namespace

@@ -73,6 +73,9 @@ public:
     // return stack
     std::vector<Chuck_Instr_Goto *> stack_return;
     
+    // filename this code came from
+    std::string filename;
+    
     // constructor
     Chuck_Code( )
     {

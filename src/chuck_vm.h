@@ -131,6 +131,9 @@ public:
     t_CKUINT native_func;
     // is ctor?
     t_CKUINT native_func_type;
+    
+    // filename this code came from
+    std::string filename;
 
     // native func types
     enum { NATIVE_UNKNOWN, NATIVE_CTOR, NATIVE_DTOR, NATIVE_MFUN, NATIVE_SFUN };

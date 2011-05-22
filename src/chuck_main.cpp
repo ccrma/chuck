@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <sys/param.h>
 
 #include "chuck_compile.h"
 #include "chuck_vm.h"
@@ -84,7 +85,7 @@ char g_host[256] = "127.0.0.1";
 
 
 #if defined(__MACOSX_CORE__)
-char g_default_chugin_path[] = "/usr/lib/chuck";
+char g_default_chugin_path[] = "/usr/lib/chuck:/Library/Application Support/ChuGins";
 #elif defined(__PLATFORM_WIN32__)
 char g_default_chugin_path[] = "/WINDOWS/system32/chuck"; // uhh
 #else
@@ -651,6 +652,18 @@ static void usage()
     // reset count
     count = 1;
     
+    // figure out current working directory
+    std::string cwd;
+    {
+        // TODO: Win32
+        char cstr_cwd[MAXPATHLEN];
+        if(getcwd(cstr_cwd, MAXPATHLEN) == NULL)
+            // uh...
+            EM_log( CK_LOG_SEVERE, "error: unable to determine current working directory!" );
+        else
+            cwd = cstr_cwd;
+    }
+    
     if(chugin_load)
     {
         // log
@@ -667,8 +680,10 @@ static void usage()
             // push indent
             EM_pushlog();
             
+            std::string full_path = cwd + filename;
+            
             // parse, type-check, and emit
-            if( compiler->go( filename, NULL ) )
+            if( compiler->go( filename, NULL, NULL, full_path ) )
             {
                 // TODO: how to compilation handle?
                 //return 1;
@@ -726,8 +741,10 @@ static void usage()
         // push indent
         EM_pushlog();
 
+        std::string full_path = cwd + filename;
+        
         // parse, type-check, and emit
-        if( !compiler->go( filename, NULL ) )
+        if( !compiler->go( filename, NULL, NULL, full_path ) )
             return 1;
 
         // get the code
