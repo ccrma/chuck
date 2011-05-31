@@ -673,6 +673,14 @@ t_CKBOOL Chuck_VM::compute()
         // broadcast queued events
         while( m_event_buffer->get( &event, 1 ) )
         { event->broadcast(); iterate = TRUE; }
+        
+        // loop over thread-specific queued event buffers
+        for( list<CBufferSimple *>::const_iterator i = m_event_buffers.begin();
+             i != m_event_buffers.end(); i++ )
+        {
+            while( (*i)->get( &event, 1 ) )
+            { event->broadcast(); iterate = TRUE; }
+        }
 
         // process messages
         while( m_msg_buffer->get( &msg, 1 ) )
@@ -800,13 +808,44 @@ t_CKBOOL Chuck_VM::queue_msg( Chuck_Msg * msg, int count )
 // name: queue_event()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::queue_event( Chuck_Event * event, int count )
+t_CKBOOL Chuck_VM::queue_event( Chuck_Event * event, int count, 
+                                CBufferSimple * buffer )
 {
     assert( count == 1 );
-    m_event_buffer->put( &event, count );
+    if( buffer == NULL )
+        buffer = m_event_buffer;
+    buffer->put( &event, count );
     return TRUE;
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: create_event_buffer()
+// desc: ...
+//-----------------------------------------------------------------------------
+CBufferSimple * Chuck_VM::create_event_buffer()
+{
+    CBufferSimple * buffer = new CBufferSimple;
+    buffer->initialize( 1024, sizeof(Chuck_Event *) );
+    m_event_buffers.push_back(buffer);
+    
+    return buffer;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: destroy_event_buffer()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_VM::destroy_event_buffer( CBufferSimple * buffer )
+{
+    m_event_buffers.remove( buffer );
+    delete buffer;
+}
 
 
 

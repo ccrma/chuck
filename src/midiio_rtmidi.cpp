@@ -36,6 +36,8 @@
 #ifndef __DISABLE_MIDI__
 
 #include "chuck_errmsg.h"
+#include "chuck_globals.h"
+#include "chuck_vm.h"
 #include <vector>
 #include <map>
 #include <fstream>
@@ -51,6 +53,7 @@
 std::vector<RtMidiIn *> MidiInManager::the_mins;
 std::vector<CBufferAdvance *> MidiInManager::the_bufs;
 std::vector<RtMidiOut *> MidiOutManager::the_mouts;
+CBufferSimple * MidiInManager::m_event_buffer = NULL;
 
 
 
@@ -368,6 +371,7 @@ MidiInManager::MidiInManager()
 MidiInManager::~MidiInManager()
 {
     // yeah right
+    //vm->destroy_event_buffer( m_event_buffer );
 }
 
 
@@ -376,9 +380,14 @@ t_CKBOOL MidiInManager::open( MidiIn * min, t_CKINT device_num )
     // see if port not already open
     if( device_num >= (t_CKINT)the_mins.capacity() || !the_mins[device_num] )
     {
+        if( m_event_buffer == NULL )
+        {
+            m_event_buffer = g_vm->create_event_buffer();
+        }
+        
         // allocate the buffer
         CBufferAdvance * cbuf = new CBufferAdvance;
-        if( !cbuf->initialize( BUFFER_SIZE, sizeof(MidiMsg) ) )
+        if( !cbuf->initialize( BUFFER_SIZE, sizeof(MidiMsg), m_event_buffer ) )
         {
             if( !min->m_suppress_output )
                 EM_error2( 0, "MidiIn: couldn't allocate CBuffer for port %i...", device_num );

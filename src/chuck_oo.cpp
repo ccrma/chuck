@@ -1354,7 +1354,7 @@ t_CKBOOL Chuck_Event::remove( Chuck_VM_Shred * shred )
 // desc: queue the event to broadcast a event/condition variable, by the owner
 //       of the queue
 //-----------------------------------------------------------------------------
-void Chuck_Event::queue_broadcast()
+void Chuck_Event::queue_broadcast( CBufferSimple * event_buffer )
 {
     // TODO: handle multiple VM
     m_queue_lock.acquire();
@@ -1362,7 +1362,7 @@ void Chuck_Event::queue_broadcast()
     {
         Chuck_VM_Shred * shred = m_queue.front();
         m_queue_lock.release();
-        shred->vm_ref->queue_event( this, 1 );
+        shred->vm_ref->queue_event( this, 1, event_buffer );
     }
     else
         m_queue_lock.release();

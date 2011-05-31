@@ -38,6 +38,7 @@
 #include "util_thread.h"
 
 #include "chuck_errmsg.h"
+#include "chuck_globals.h"
 #include "chuck_vm.h"
 
 #include <algorithm>
@@ -1606,7 +1607,8 @@ OSC_Receiver::OSC_Receiver():
     _in_write(1),
     _address_space (NULL),
     _address_size ( 2 ),
-    _address_num ( 0 )
+    _address_num ( 0 ),
+    m_event_buffer( NULL )
 { 
 
     _inbox = (OSCMesg*) malloc (sizeof(OSCMesg) * _inbox_size);
@@ -1645,6 +1647,13 @@ OSC_Receiver::~OSC_Receiver()
         free ( _inbox );
     }
 
+    // TODO: do this thread-safely
+//    if( m_event_buffer )
+//    {
+//        g_vm->destroy_event_buffer( m_event_buffer );
+//        m_event_buffer = NULL;
+//    }
+    
     //delete _in;
 }
 
@@ -1692,6 +1701,9 @@ OSC_Receiver::stopListening() {
 
 bool
 OSC_Receiver::listen() { 
+    if( m_event_buffer == NULL )
+        m_event_buffer = g_vm->create_event_buffer();
+    
     unsubscribe(); //in case we're connected. 
     return subscribe( _tmp_port );
     /*
@@ -2003,7 +2015,7 @@ OSC_Receiver::distribute_message( OSCMesg * msg ) {
         if( _address_space[i]->try_queue_mesg( msg ) ) {
             // fprintf ( stderr, "broadcasting %x from %x\n", (uint)_address_space[i]->SELF, (uint)_address_space[i] );
             // if the event has any shreds queued, fire them off..
-            ( (Chuck_Event *) _address_space[i]->SELF )->queue_broadcast();
+            ( (Chuck_Event *) _address_space[i]->SELF )->queue_broadcast( m_event_buffer );
         }
     }
 }

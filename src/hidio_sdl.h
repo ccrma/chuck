@@ -141,7 +141,9 @@ public:
 #endif
 
     static void push_message( HidMsg & msg );
-        
+    
+    static CBufferSimple * m_event_buffer;
+    
 protected:
     static std::vector< std::vector<PhyHidDevIn *> > the_matrix;
     static XThread * the_thread;

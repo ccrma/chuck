@@ -462,6 +462,8 @@ protected:
 };
 
 
+class CBufferSimple;
+
 class OSC_Receiver : private UDP_Subscriber
 {
 protected:
@@ -488,7 +490,9 @@ protected:
     OSC_Address_Space **      _address_space;
     int            _address_size;
     int            _address_num;
-
+    
+    CBufferSimple * m_event_buffer;
+    
 public:
     
     OSC_Receiver();
