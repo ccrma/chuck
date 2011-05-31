@@ -258,13 +258,12 @@ static void version()
 static void usage()
 {
     fprintf( stderr, "usage: chuck --[options|commands] [+-=^] file1 file2 file3 ...\n" );
-    fprintf( stderr, "   [options] = halt|loop|audio|silent|dump|nodump|server|about|\n" );
-    fprintf( stderr, "               srate<N>|bufsize<N>|bufnum<N>|dac<N>|adc<N>|\n" );
-    fprintf( stderr, "               remote<hostname>|port<N>|verbose<N>|probe|\n" );
-    fprintf( stderr, "               channels<N>|out<N>|in<N>|shell|empty|level<N>|\n" );
-    fprintf( stderr, "               blocking|callback|deprecate:{stop|warn|ignore}\n" );
-    fprintf( stderr, "               chugin-load:{auto|off}|chugin-path:<PATH>\n" );
-    fprintf( stderr, "               chugin:<NAME>\n" );
+    fprintf( stderr, "   [options] = halt|loop|audio|silent|dump|nodump|server|about|probe|\n" );
+    fprintf( stderr, "               channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|\n" );
+    fprintf( stderr, "               srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
+    fprintf( stderr, "               remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
+    fprintf( stderr, "               blocking|callback|deprecate:{stop|warn|ignore}|\n" );
+    fprintf( stderr, "               chugin-load:{auto|off}|chugin-path:<path>|chugin:<name>\n" );
     fprintf( stderr, "   [commands] = add|remove|replace|remove.all|status|time|kill\n" );
     fprintf( stderr, "   [+-=^] = shortcuts for add, remove, replace, status\n" );
     version();
