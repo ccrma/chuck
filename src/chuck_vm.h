@@ -44,6 +44,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <list>
 
 
 
@@ -396,9 +397,12 @@ public: // garbage collection
 
 public: // msg
     t_CKBOOL queue_msg( Chuck_Msg * msg, int num_msg );
-    t_CKBOOL queue_event( Chuck_Event * event, int num_msg );
+    t_CKBOOL queue_event( Chuck_Event * event, int num_msg, CBufferSimple * buffer = NULL );
     t_CKUINT process_msg( Chuck_Msg * msg );
     Chuck_Msg * get_reply( );
+    
+    CBufferSimple * create_event_buffer();
+    void destroy_event_buffer( CBufferSimple * buffer );
 
 public: // static/dynamic function table
     //void set_env( void * env ) { m_env = env; }
@@ -458,6 +462,9 @@ protected:
     CBufferSimple * m_msg_buffer;
     CBufferSimple * m_reply_buffer;
     CBufferSimple * m_event_buffer;
+    
+    // TODO: vector?
+    std::list<CBufferSimple *> m_event_buffers;
 
 public:
     // running

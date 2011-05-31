@@ -71,7 +71,7 @@ CBufferAdvance::~CBufferAdvance()
 // name: initialize()
 // desc: initialize
 //-----------------------------------------------------------------------------
-BOOL__ CBufferAdvance::initialize( UINT__ num_elem, UINT__ width )
+BOOL__ CBufferAdvance::initialize( UINT__ num_elem, UINT__ width, CBufferSimple * event_buffer )
 {
     // cleanup
     cleanup();
@@ -85,6 +85,8 @@ BOOL__ CBufferAdvance::initialize( UINT__ num_elem, UINT__ width )
     //m_read_offset = 0;
     m_write_offset = 0;
     m_max_elem = (SINT__)num_elem;
+    
+    m_event_buffer = event_buffer;
 
     return true;
 }
@@ -231,7 +233,7 @@ void CBufferAdvance::put( void * data, UINT__ num_elem )
             }
 
             if( m_read_offsets[j].event )
-                m_read_offsets[j].event->queue_broadcast();
+                m_read_offsets[j].event->queue_broadcast( m_event_buffer );
         }
     }
 
