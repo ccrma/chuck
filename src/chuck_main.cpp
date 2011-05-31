@@ -263,6 +263,8 @@ static void usage()
     fprintf( stderr, "               remote<hostname>|port<N>|verbose<N>|probe|\n" );
     fprintf( stderr, "               channels<N>|out<N>|in<N>|shell|empty|level<N>|\n" );
     fprintf( stderr, "               blocking|callback|deprecate:{stop|warn|ignore}\n" );
+    fprintf( stderr, "               chugin-load:{auto|off}|chugin-path:<PATH>\n" );
+    fprintf( stderr, "               chugin:<NAME>\n" );
     fprintf( stderr, "   [commands] = add|remove|replace|remove.all|status|time|kill\n" );
     fprintf( stderr, "   [+-=^] = shortcuts for add, remove, replace, status\n" );
     version();
@@ -372,34 +374,52 @@ static void usage()
                 no_vm = TRUE;
             else if( !strncmp(argv[i], "--srate", 7) )
                 srate = atoi( argv[i]+7 ) > 0 ? atoi( argv[i]+7 ) : srate;
+            else if( !strncmp(argv[i], "--srate:", 8) )
+                srate = atoi( argv[i]+8 ) > 0 ? atoi( argv[i]+8 ) : srate;
             else if( !strncmp(argv[i], "-r", 2) )
                 srate = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : srate;
             else if( !strncmp(argv[i], "--bufsize", 9) )
                 buffer_size = atoi( argv[i]+9 ) > 0 ? atoi( argv[i]+9 ) : buffer_size;
+            else if( !strncmp(argv[i], "--bufsize:", 10) )
+                buffer_size = atoi( argv[i]+10 ) > 0 ? atoi( argv[i]+10 ) : buffer_size;
             else if( !strncmp(argv[i], "-b", 2) )
                 buffer_size = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : buffer_size;
             else if( !strncmp(argv[i], "--bufnum", 8) )
                 num_buffers = atoi( argv[i]+8 ) > 0 ? atoi( argv[i]+8 ) : num_buffers;
+            else if( !strncmp(argv[i], "--bufnum:", 9) )
+                num_buffers = atoi( argv[i]+9 ) > 0 ? atoi( argv[i]+9 ) : num_buffers;
             else if( !strncmp(argv[i], "-n", 2) )
                 num_buffers = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : num_buffers;
             else if( !strncmp(argv[i], "--dac", 5) )
                 dac = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 0;
+            else if( !strncmp(argv[i], "--dac:", 6) )
+                dac = atoi( argv[i]+6 ) > 0 ? atoi( argv[i]+6 ) : 0;
             else if( !strncmp(argv[i], "--adc", 5) )
                 adc = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 0;
+            else if( !strncmp(argv[i], "--adc:", 6) )
+                adc = atoi( argv[i]+6 ) > 0 ? atoi( argv[i]+6 ) : 0;
             else if( !strncmp(argv[i], "--channels", 10) )
                 dac_chans = adc_chans = atoi( argv[i]+10 ) > 0 ? atoi( argv[i]+10 ) : 2;
+            else if( !strncmp(argv[i], "--channels:", 11) )
+                dac_chans = adc_chans = atoi( argv[i]+11 ) > 0 ? atoi( argv[i]+11 ) : 2;
             else if( !strncmp(argv[i], "-c", 2) )
                 dac_chans = adc_chans = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : 2;
             else if( !strncmp(argv[i], "--out", 5) )
                 dac_chans = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 2;
+            else if( !strncmp(argv[i], "--out:", 6) )
+                dac_chans = atoi( argv[i]+6 ) > 0 ? atoi( argv[i]+6 ) : 2;
             else if( !strncmp(argv[i], "-o", 2) )
                 dac_chans = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : 2;
             else if( !strncmp(argv[i], "--in", 4) )
                 adc_chans = atoi( argv[i]+4 ) > 0 ? atoi( argv[i]+4 ) : 2;
+            else if( !strncmp(argv[i], "--in:", 5) )
+                adc_chans = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 2;
             else if( !strncmp(argv[i], "-i", 2) )
                 adc_chans = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : 2;
             else if( !strncmp(argv[i], "--level", 7) )
             {   g_priority = atoi( argv[i]+7 ); set_priority = TRUE; }
+            else if( !strncmp(argv[i], "--level:", 8) )
+            {   g_priority = atoi( argv[i]+8 ); set_priority = TRUE; }
             else if( !strncmp(argv[i], "--watchdog", 10) )
             {   g_watchdog_timeout = atof( argv[i]+10 );
                 if( g_watchdog_timeout <= 0 ) g_watchdog_timeout = 0.5;
@@ -408,10 +428,14 @@ static void usage()
                 do_watchdog = FALSE;
             else if( !strncmp(argv[i], "--remote", 8) )
                 strcpy( g_host, argv[i]+8 );
+            else if( !strncmp(argv[i], "--remote:", 9) )
+                strcpy( g_host, argv[i]+9 );
             else if( !strncmp(argv[i], "@", 1) )
                 strcpy( g_host, argv[i]+1 );
             else if( !strncmp(argv[i], "--port", 6) )
                 g_port = atoi( argv[i]+6 );
+            else if( !strncmp(argv[i], "--port:", 7) )
+                g_port = atoi( argv[i]+7 );
             else if( !strncmp(argv[i], "-p", 2) )
                 g_port = atoi( argv[i]+2 );
             else if( !strncmp(argv[i], "--auto", 6) )
@@ -420,12 +444,18 @@ static void usage()
                 auto_depend = TRUE;
             else if( !strncmp(argv[i], "--log", 5) )
                 log_level = argv[i][5] ? atoi( argv[i]+5 ) : CK_LOG_INFO;
+            else if( !strncmp(argv[i], "--log:", 6) )
+                log_level = argv[i][6] ? atoi( argv[i]+6 ) : CK_LOG_INFO;
             else if( !strncmp(argv[i], "--verbose", 9) )
                 log_level = argv[i][9] ? atoi( argv[i]+9 ) : CK_LOG_INFO;
+            else if( !strncmp(argv[i], "--verbose:", 10) )
+                log_level = argv[i][10] ? atoi( argv[i]+10 ) : CK_LOG_INFO;
             else if( !strncmp(argv[i], "-v", 2) )
                 log_level = argv[i][2] ? atoi( argv[i]+2 ) : CK_LOG_INFO;
             else if( !strncmp(argv[i], "--adaptive", 10) )
                 adaptive_size = argv[i][10] ? atoi( argv[i]+10 ) : -1;
+            else if( !strncmp(argv[i], "--adaptive:", 11) )
+                adaptive_size = argv[i][11] ? atoi( argv[i]+11 ) : -1;
             else if( !strncmp(argv[i], "--deprecate", 11) )
             {
                 // get the rest
@@ -441,12 +471,12 @@ static void usage()
                     exit( 1 );
                 }
             }
-            else if( !strncmp(argv[i], "--chugin-load", sizeof("--chugin-load")-1) )
+            else if( !strncmp(argv[i], "--chugin-load:", sizeof("--chugin-load:")-1) )
             {
                 // get the rest
-                string arg = argv[i]+sizeof("--chugin-load")-1;
-                if( arg == ":off" ) chugin_load = 0;
-                else if( arg == ":auto" ) chugin_load = 1;
+                string arg = argv[i]+sizeof("--chugin-load:")-1;
+                if( arg == "off" ) chugin_load = 0;
+                else if( arg == "auto" ) chugin_load = 1;
                 else
                 {
                     // error
@@ -455,10 +485,10 @@ static void usage()
                     exit( 1 );
                 }
             }
-            else if( !strncmp(argv[i], "--chugin-path", sizeof("--chugin-path")-1) )
+            else if( !strncmp(argv[i], "--chugin-path:", sizeof("--chugin-path:")-1) )
             {
                 // get the rest
-                string arg = argv[i]+sizeof("--chugin-path")-1;
+                string arg = argv[i]+sizeof("--chugin-path:")-1;
                 if(dl_search_path.length() > 0)
                     dl_search_path += ":";
                 dl_search_path += arg;
@@ -471,9 +501,9 @@ static void usage()
                     dl_search_path += ":";
                 dl_search_path += arg;
             }
-            else if( !strncmp(argv[i], "--chugin", sizeof("--chugin")-1) )
+            else if( !strncmp(argv[i], "--chugin:", sizeof("--chugin:")-1) )
             {
-                named_dls.push_back(argv[i]+sizeof("--chugin")-1);
+                named_dls.push_back(argv[i]+sizeof("--chugin:")-1);
             }
             else if( !strncmp(argv[i], "-g", sizeof("-g")-1) )
             {
@@ -597,7 +627,7 @@ static void usage()
     }
     
     
-    if(chugin_load == 0)
+    if( chugin_load == 0 )
     {
         // turn off chugin load
         dl_search_path = "";
@@ -663,11 +693,12 @@ static void usage()
         else
             cwd = cstr_cwd;
     }
-    
-    if(chugin_load)
+
+    // whether or not chug should be enabled
+    if( chugin_load )
     {
         // log
-        EM_log( CK_LOG_SEVERE, "preloading ChucK libs" );
+        EM_log( CK_LOG_SEVERE, "pre-loading ChucK libs..." );
         EM_pushlog();
         
         for( std::list<std::string>::iterator j = compiler->m_cklibs_to_preload.begin();
