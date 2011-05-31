@@ -52,6 +52,9 @@
 #endif
 
 
+class CBufferSimple;
+
+
 //-----------------------------------------------------------------------------
 // name: class CBufferAdvance
 // desc: circular buffer
@@ -63,7 +66,7 @@ public:
     ~CBufferAdvance();
 
 public:
-    BOOL__ initialize( UINT__ num_elem, UINT__ width );
+    BOOL__ initialize( UINT__ num_elem, UINT__ width, CBufferSimple * event_buffer = NULL );
     void cleanup();
 
 public:
@@ -95,6 +98,8 @@ protected:
 
     // TODO: necessary?
     XMutex m_mutex;
+    
+    CBufferSimple * m_event_buffer;
 };
 
 

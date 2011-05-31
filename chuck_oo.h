@@ -318,6 +318,9 @@ public:
 
 
 #include "util_thread.h"
+
+class CBufferSimple;
+
 //-----------------------------------------------------------------------------
 // name: Chuck_Event
 // desc: base Chuck Event class
@@ -331,7 +334,7 @@ public:
     t_CKBOOL remove( Chuck_VM_Shred * shred );
 
 public: // internal
-    void queue_broadcast();
+    void queue_broadcast( CBufferSimple * event_buffer = NULL );
     static t_CKUINT our_can_wait;
 
     std::queue<Chuck_VM_Shred *> m_queue;

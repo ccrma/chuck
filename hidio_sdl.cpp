@@ -36,6 +36,8 @@
 #include "hidio_sdl.h"
 #include "util_hid.h"
 #include "chuck_errmsg.h"
+#include "chuck_globals.h"
+#include "chuck_vm.h"
 
 #ifndef __PLATFORM_WIN32__
 #include <unistd.h>
@@ -95,6 +97,7 @@ t_CKBOOL HidInManager::thread_going = FALSE;
 t_CKBOOL HidInManager::has_init = FALSE;
 CBufferSimple * HidInManager::msg_buffer = NULL;
 std::vector<PhyHidDevOut *> HidOutManager::the_phouts;
+CBufferSimple * HidInManager::m_event_buffer = NULL;
 
 //-----------------------------------------------------------------------------
 // name: PhyHidDevIn()
@@ -164,7 +167,7 @@ t_CKBOOL PhyHidDevIn::open( t_CKINT type, t_CKUINT number )
     
     // allocate the buffer
     cbuf = new CBufferAdvance;
-    if( !cbuf->initialize( BUFFER_SIZE, sizeof(HidMsg) ) )
+    if( !cbuf->initialize( BUFFER_SIZE, sizeof(HidMsg), HidInManager::m_event_buffer ) )
     {
         // log
         EM_log( CK_LOG_WARNING, "PhyHidDevIn: open operation failed: cannot initialize buffer" );
@@ -498,6 +501,8 @@ void HidInManager::init()
             the_thread->start( cb_hid_input, NULL );
         }
 #endif
+        
+        m_event_buffer = g_vm->create_event_buffer();
         
         has_init = TRUE;
         

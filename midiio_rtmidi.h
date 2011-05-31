@@ -184,6 +184,8 @@ protected:
 
     static std::vector<RtMidiIn *> the_mins;
     static std::vector<CBufferAdvance *> the_bufs;
+    
+    static CBufferSimple * m_event_buffer;
 };
 
 
