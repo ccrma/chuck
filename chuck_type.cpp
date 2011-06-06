@@ -2007,6 +2007,12 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
         t = type_engine_check_exp( env, unary->exp );
         if( !t ) return NULL;
     }
+    
+    // check code stmt
+    if( unary->code )
+    {
+        if( !type_engine_check_stmt( env, unary->code ) ) return NULL;
+    }
 
     // check the op
     switch( unary->op )
@@ -2045,7 +2051,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             // spork shred (by function call)
             if( unary->exp && unary->exp->s_type == ae_exp_func_call ) return &t_shred;
             // spork shred (by code segment)
-            // else if( unary->code ) return &t_shred;
+            else if( unary->code ) return &t_shred;
             // got a problem
             else
             {

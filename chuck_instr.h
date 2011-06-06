@@ -2400,6 +2400,21 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Spork_Stmt
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Spork_Stmt : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Spork_Stmt( t_CKUINT v = 0 ) { this->set( v ); }
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Time_Advance
 // desc: ...
 //-----------------------------------------------------------------------------
