@@ -4116,7 +4116,7 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
     // make a new one (spork~exp shred)
     emit->code = new Chuck_Code;
     // handle need this
-    emit->code->need_this = FALSE;
+    emit->code->need_this = emit->env->class_def ? TRUE : FALSE;
     // name it
     emit->code->name = "spork~exp";
     emit->code->filename = emit->context->full_path;
@@ -4137,6 +4137,11 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
     // pop
     emit->stack.pop_back();
     
+    if( code->need_this )
+    {
+        // push this if needed
+        emit->append( new Chuck_Instr_Reg_Push_This );
+    }
     // emit instruction that will put the code on the stack
     emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)code ) );
     // emit spork instruction - this will copy, func, args, this

@@ -1536,7 +1536,7 @@ void Chuck_Instr_Reg_Push_This::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
     t_CKUINT *& mem_sp = (t_CKUINT *&)shred->mem->sp;
-
+    
     // push val into reg stack
     push_( reg_sp, *(mem_sp) );
 }
@@ -3515,6 +3515,15 @@ void Chuck_Instr_Spork_Stmt::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     Chuck_VM_Code * code = *(Chuck_VM_Code **)reg_sp;
     // spork it
     Chuck_VM_Shred * sh = vm->spork( code, shred );
+    
+    if( code->need_this )
+    {
+        // pop the stack
+        pop_( reg_sp, 1 );
+        // copy this from local stack to top of new shred mem
+        *( ( t_CKUINT * ) sh->mem->sp ) = *reg_sp;
+    }
+        
     // push the stack
     push_( reg_sp, (t_CKUINT)sh );
 }
