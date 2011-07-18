@@ -684,7 +684,8 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
 #if defined(__PLATFORM_WIN32__)
             is_directory = de->data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
             is_regular = ((de->data.dwFileAttributes & FILE_ATTRIBUTE_NORMAL) || 
-                          (de->data.dwFileAttributes & FILE_ATTRIBUTE_READONLY));
+                          (de->data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) ||
+                          (de->data.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE));
 #elif defined(__WINDOWS_PTHREAD__) // Cygwin -- doesn't have dirent d_type
             std::string absolute_path = std::string(directory) + "/" + de->d_name;
             struct stat st;
