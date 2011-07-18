@@ -61,9 +61,9 @@ using namespace std;
 // function prototypes
 t_CKBOOL load_internal_modules( Chuck_Compiler * compiler );
 t_CKBOOL load_external_modules( Chuck_Compiler * compiler, 
-                               const char * extension, 
-                               const char * _search_path,
-                               std::list<std::string> & named_dls);
+                                const char * extension, 
+                                std::list<std::string> & chugin_search_paths,
+                                std::list<std::string> & named_dls);
 t_CKBOOL load_module( Chuck_Env * env, f_ck_query query, const char * name, const char * nspc );
 
 
@@ -100,7 +100,8 @@ Chuck_Compiler::~Chuck_Compiler()
 // name: initialize()
 // desc: initialize the compiler
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm, std::string lib_search_path,
+t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm, 
+                                     std::list<std::string> & chugin_search_paths,
                                      std::list<std::string> & named_dls )
 {
     // log
@@ -125,8 +126,7 @@ t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm, std::string lib_search_path,
         goto error;
     
     // load external libs
-    if( !load_external_modules( this, ".chug", lib_search_path.c_str(), 
-                                named_dls ) )
+    if( !load_external_modules( this, ".chug", chugin_search_paths, named_dls ) )
         goto error;
     
     // pop indent
@@ -755,7 +755,7 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
 //-----------------------------------------------------------------------------
 t_CKBOOL load_external_modules( Chuck_Compiler * compiler, 
                                 const char * extension, 
-                                const char * _search_path,
+                                std::list<std::string> & chugin_search_paths,
                                 std::list<std::string> & named_dls )
 {
     // log
@@ -787,21 +787,12 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
     
     /* now recurse through search paths and load any DLs or .ck files found */
     
-    // copy search path to char * buffer, because strtok requires non-const
-    // TODO: dynamic allocation of this buffer?
-    static char search_path[255];
-    strncpy(search_path, _search_path, 255);
-    char *strtok_arg = search_path;
-    const char *strtok_result = NULL;
-    
-    while(strtok_result = strtok(strtok_arg, ":"))
+    for(std::list<std::string>::iterator i_sp = chugin_search_paths.begin();
+        i_sp != chugin_search_paths.end(); i_sp++)
     {
-        // pass NULL to strtok in subsequent calls to get the next token
-        strtok_arg = NULL;
+        load_external_modules_in_directory(compiler, (*i_sp).c_str(), extension);
+    }    
         
-        load_external_modules_in_directory(compiler, strtok_result, extension);
-    }
-    
     // clear context
     type_engine_unload_context( env );
     
