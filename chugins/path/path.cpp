@@ -14,11 +14,9 @@ CK_DLL_SFUN(path_dirname);
 CK_DLL_SFUN(path_extension);
 
 
-CK_DLL_QUERY
+CK_DLL_QUERY(path)
 {
     QUERY->setname(QUERY, "path");
-    
-    fprintf(stderr, "here\n");
     
     QUERY->begin_class(QUERY, "Path", "Object");
     
@@ -32,6 +30,8 @@ CK_DLL_QUERY
     QUERY->add_arg(QUERY, "string", "path");
     
     QUERY->end_class(QUERY);
+    
+    return TRUE;
 }
 
 
