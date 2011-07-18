@@ -48,6 +48,8 @@ CK_DLL_QUERY
     bitcrusher_data_offset = QUERY->add_mvar(QUERY, "int", "@data", false);
     
     QUERY->end_class(QUERY);
+
+    return TRUE;
 }
 
 
@@ -104,6 +106,8 @@ CK_DLL_TICK(bitcrusher_tick)
     q32 = (q32 >> shift) << shift;
     
     *out = q32 / ((float) INT_MAX);
+
+    return TRUE;
 }
 
 CK_DLL_MFUN(bitcrusher_setBits)
