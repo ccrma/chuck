@@ -145,7 +145,11 @@ struct Chuck_UAnaBlobProxy;
 #define CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKUINT) ck_version() { return CK_DLL_VERSION; }
 // macro for defining ChucK DLL export query-functions
 // example: CK_DLL_QUERY
-#define CK_DLL_QUERY CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKBOOL) ck_query( Chuck_DL_Query * QUERY )
+#ifndef __CK_DLL_STATIC__
+#define CK_DLL_QUERY(name) CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKBOOL) ck_query( Chuck_DL_Query * QUERY )
+#else 
+#define CK_DLL_QUERY(name) CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKBOOL) ck_##name_query( Chuck_DL_Query * QUERY )
+#endif // __CK_DLL_STATIC__
 // macro for defining ChucK DLL export constructors
 // example: CK_DLL_CTOR(foo)
 #define CK_DLL_CTOR(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_VM_Shred * SHRED )
