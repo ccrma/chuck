@@ -85,10 +85,10 @@ char g_host[256] = "127.0.0.1";
 
 
 #if defined(__MACOSX_CORE__)
-char g_default_chugin_path[] = "/usr/lib/chuck:/Library/Application Support/ChuGins";
+char g_default_chugin_path[] = "/usr/lib/chuck:/Library/Application Support/ChucK";
 #elif defined(__PLATFORM_WIN32__)
-char g_default_chugin_path[] = "/WINDOWS/system32/chuck"; // uhh
-#else
+char g_default_chugin_path[] = "C:\WINDOWS\system32\ChucK";
+#else // LINUX
 char g_default_chugin_path[] = "/usr/lib/chuck";
 #endif
 
@@ -273,6 +273,30 @@ static void usage()
 
 
 //-----------------------------------------------------------------------------
+// name: parse_path_list()
+// desc: split "x:y:z"-style path list into {"x","y","z"}
+//-----------------------------------------------------------------------------
+static void parse_path_list( std::string & str, std::list<std::string> & list )
+{
+#if defined(__PLATFORM_WIN32__)
+    const char separator = ';';
+#else
+    const char separator = ':';
+#endif
+    std::string::size_type i = 0, last = 0;
+    while( last < str.size() && 
+           ( i = str.find( separator, last ) ) != std::string::npos )
+    {
+        list.push_back( str.substr( last, i - last ) );
+        last = i + 1;
+    }
+    
+    list.push_back( str.substr( last, str.size() - last ) );
+}
+
+
+
+//-----------------------------------------------------------------------------
 // name: main()
 // desc: entry point
 //-----------------------------------------------------------------------------
@@ -311,11 +335,13 @@ static void usage()
     t_CKINT  deprecate_level = 1; // warn
     t_CKINT  chugin_load = 1; // auto
     
-    std::string dl_search_path;
-    if(getenv(g_chugin_path_envvar))
-        dl_search_path = getenv(g_chugin_path_envvar);
+    std::list<std::string> dl_search_path;
+    std::string initial_chugin_path;
+    if( getenv( g_chugin_path_envvar ) )
+        initial_chugin_path = getenv( g_chugin_path_envvar );
     else
-        dl_search_path = g_default_chugin_path;
+        initial_chugin_path = g_default_chugin_path;
+    parse_path_list( initial_chugin_path, dl_search_path );
     std::list<std::string> named_dls;
     
     string   filename = "";
@@ -487,18 +513,12 @@ static void usage()
             else if( !strncmp(argv[i], "--chugin-path:", sizeof("--chugin-path:")-1) )
             {
                 // get the rest
-                string arg = argv[i]+sizeof("--chugin-path:")-1;
-                if(dl_search_path.length() > 0)
-                    dl_search_path += ":";
-                dl_search_path += arg;
+                dl_search_path.push_back( argv[i]+sizeof("--chugin-path:")-1 );
             }
             else if( !strncmp(argv[i], "-G", sizeof("-G")-1) )
             {
                 // get the rest
-                string arg = argv[i]+sizeof("-G")-1;
-                if(dl_search_path.length() > 0)
-                    dl_search_path += ":";
-                dl_search_path += arg;
+                dl_search_path.push_back( argv[i]+sizeof("-G")-1 );
             }
             else if( !strncmp(argv[i], "--chugin:", sizeof("--chugin:")-1) )
             {
@@ -629,7 +649,7 @@ static void usage()
     if( chugin_load == 0 )
     {
         // turn off chugin load
-        dl_search_path = "";
+        dl_search_path.clear();
         named_dls.clear();
     }
     
