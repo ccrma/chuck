@@ -54,9 +54,9 @@ CK_DLL_SFUN(path_basename)
         basename.erase(0, dirname_length);
     }
     
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
-    str->str = basename;
-    RETURN->v_string = str; 
+    Chuck_DL_Api::String str = API.object.create_string( basename );
+    
+    RETURN->v_string = ( Chuck_String * ) str; 
 }
 
 CK_DLL_SFUN(path_dirname)
@@ -78,9 +78,9 @@ CK_DLL_SFUN(path_dirname)
         dirname.erase(dirname_length, dirname.size() - dirname_length);
     }
     
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
-    str->str = dirname;
-    RETURN->v_string = str; 
+    Chuck_DL_Api::String str = API.object.create_string( dirname );
+    
+    RETURN->v_string = ( Chuck_String * ) str; 
 }
 
 CK_DLL_SFUN(path_extension)
@@ -101,9 +101,9 @@ CK_DLL_SFUN(path_extension)
         extension.erase(0, (last_dot - path + 1) * sizeof(char));
     }
     
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
-    str->str = extension;
-    RETURN->v_string = str; 
+    Chuck_DL_Api::String str = API.object.create_string( extension );
+    
+    RETURN->v_string = ( Chuck_String * ) str; 
 }
 
 
