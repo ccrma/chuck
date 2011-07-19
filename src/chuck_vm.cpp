@@ -1051,7 +1051,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     {
         t_CKUINT n = m_shreduler->highest();
         m_shred_id = n;
-        fprintf( stderr, "[chuck](VM): reseting shred id to %d...\n", m_shred_id + 1 );
+        fprintf( stderr, "[chuck](VM): reseting shred id to %lu...\n", m_shred_id + 1 );
     }
 
 done:
@@ -1423,7 +1423,7 @@ out_of_memory:
 
     // we have a problem
     fprintf( stderr, 
-        "[chuck](VM): OutOfMemory: while allocating stack '%s'\n" );
+        "[chuck](VM): OutOfMemory: while allocating stack\n" );
 
     // return FALSE
     return FALSE;

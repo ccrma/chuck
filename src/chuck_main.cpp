@@ -851,7 +851,7 @@ static void parse_path_list( std::string & str, std::list<std::string> & list )
         g_sock = ck_tcp_create( 1 );
         if( !g_sock || !ck_bind( g_sock, g_port ) || !ck_listen( g_sock, 10 ) )
         {
-            fprintf( stderr, "[chuck]: cannot bind to tcp port %i...\n", g_port );
+            fprintf( stderr, "[chuck]: cannot bind to tcp port %li...\n", g_port );
             ck_close( g_sock );
             g_sock = NULL;
         }

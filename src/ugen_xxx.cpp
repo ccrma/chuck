@@ -2683,7 +2683,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         t_CKINT er = sf_error( d->fd );
         if( er )
         {
-            fprintf( stderr, "[chuck](via SndBuf): sndfile error '%i' opening '%s'...\n", er, filename );
+            fprintf( stderr, "[chuck](via SndBuf): sndfile error '%li' opening '%s'...\n", er, filename );
             fprintf( stderr, "[chuck](via SndBuf): (reason: %s)\n", sf_strerror( d->fd ) );
             if( d->fd ) sf_close( d->fd );
             // escape
@@ -2720,7 +2720,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
             // check
             if( f != (t_CKUINT)d->num_frames )
             {
-                fprintf( stderr, "[chuck](via SndBuf): read %d rather than %d frames from %s\n",
+                fprintf( stderr, "[chuck](via SndBuf): read %lu rather than %ld frames from %s\n",
                          f, size, filename );
                 sf_close( d->fd ); d->fd = NULL;
                 return;

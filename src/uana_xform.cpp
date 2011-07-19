@@ -936,7 +936,7 @@ CK_DLL_CTRL( FFT_ctrl_size )
 invalid_size:
     // we have a problem
     fprintf( stderr, 
-        "[chuck](IFFT): InvalidTransformSizeException (%d)\n", size );
+        "[chuck](IFFT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
 done:
@@ -1469,7 +1469,7 @@ CK_DLL_CTRL( IFFT_ctrl_size )
 invalid_size:
     // we have a problem
     fprintf( stderr, 
-        "[chuck](IFFT): InvalidTransformSizeException (%d)\n", size );
+        "[chuck](IFFT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
 done:
@@ -1556,7 +1556,7 @@ static t_CKBOOL prepare_window( void * ARGS, Chuck_VM_Shred * SHRED, t_CKINT & s
 out_of_memory:
     // we have a problem
     fprintf( stderr, 
-        "[chuck](Windowing): OutOfMemoryException (allocating FLOAT[%d])\n",
+        "[chuck](Windowing): OutOfMemoryException (allocating FLOAT[%ld])\n",
         float_array_size );
     goto done;
 
@@ -2111,7 +2111,7 @@ CK_DLL_CTRL( Flip_ctrl_size )
 invalid_size:
     // we have a problem
     fprintf( stderr, 
-        "[chuck](IFFT): InvalidTransformSizeException (%d)\n", size );
+        "[chuck](IFFT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
 done:
@@ -2620,7 +2620,7 @@ CK_DLL_CTRL( UnFlip_ctrl_size )
 invalid_size:
     // we have a problem
     fprintf( stderr, 
-        "[chuck](UnFlip): InvalidTransformSizeException (%d)\n", size );
+        "[chuck](UnFlip): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
 done:
@@ -3098,7 +3098,7 @@ CK_DLL_CTRL( DCT_ctrl_size )
 invalid_size:
     // we have a problem
     fprintf( stderr, 
-        "[chuck](IDCT): InvalidTransformSizeException (%d)\n", size );
+        "[chuck](IDCT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
 done:
@@ -3627,7 +3627,7 @@ CK_DLL_CTRL( IDCT_ctrl_size )
 invalid_size:
     // we have a problem
     fprintf( stderr, 
-        "[chuck](IDCT): InvalidTransformSizeException (%d)\n", size );
+        "[chuck](IDCT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
 done:
