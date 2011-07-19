@@ -1,0 +1,56 @@
+
+# chugin name
+CHUGIN_NAME=Bitcrusher
+
+# all of the c/cpp files that compose this chugin
+MODULES=Bitcrusher.cpp
+
+# where the chuck source code is
+CK_SRC_PATH=../../../
+
+# you won't generally need to change anything below this line for a new chugin
+
+# default: build a dynamic chugin
+CK_CHUGIN_STATIC?=0
+
+CHUGIN_PATH=/usr/lib/chuck
+
+FLAGS=-D__LINUX_ALSA__ -I$(CK_SRC_PATH)
+LDFLAGS=-shared -lstdc++
+
+ifeq ($(CK_CHUGIN_STATIC),0)
+SUFFIX=.chug
+else
+SUFFIX=.schug
+FLAGS+= -D__CK_DLL_STATIC__
+endif
+
+ifneq ($(CHUCK_DEBUG),)
+FLAGS+= -g
+else
+FLAGS+= -O3
+endif
+
+OBJECTS=$(addsuffix .o,$(basename $(MODULES)))
+CHUG=$(addsuffix $(SUFFIX),$(CHUGIN_NAME))
+
+all: $(CHUG)
+
+$(CHUG): $(OBJECTS)
+ifeq ($(CK_CHUGIN_STATIC),0)
+	gcc $(LDFLAGS) -o $@ $?
+else
+	ar rv $@ $?
+	ranlib $@
+endif
+
+$(OBJECTS): %.o: %.cpp $(CK_SRC_PATH)/chuck_dl.h
+	gcc $(FLAGS) -c -o $@ $<
+
+install: $(CHUG)
+	mkdir -p $(CHUGIN_PATH)
+	cp $^ $(CHUGIN_PATH)
+
+clean: 
+	rm -rf $(OBJECTS) $(CHUG)
+
