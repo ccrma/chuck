@@ -8,10 +8,10 @@ MODULES=path.cpp
 # where the chuck source code is
 CK_SRC_PATH=../../src/
 
+# you won't generally need to change anything below this line for a new chugin
+
 # default: build a dynamic chugin
 CK_CHUGIN_STATIC?=0
-
-# you won't generally need to change anything below this line for a new chugin
 
 CHUGIN_PATH=/usr/lib/chuck
 
