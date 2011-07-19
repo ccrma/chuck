@@ -2929,7 +2929,7 @@ static int TiltSensor_detect()
     else
         powerbookKernFunc = 21;
 		
-	fprintf( stdout, "osx_version = %d \n", osx_version );
+	fprintf( stdout, "osx_version = %ld \n", osx_version );
     
     // ibook/powerbook (OS X 10.4.x) tilt sensor interface
     if( TiltSensor_test( powerbookKernFunc, "IOI2CMotionSensor", kSMSPowerbookDataType ) )

@@ -1725,7 +1725,7 @@ t_CKINT Chuck_Shell::Command_VMAdd::execute( vector< string > & argv,
     caller->vms.push_back( caller->current_vm->copy() );
     
 #ifndef __PLATFORM_WIN32__
-    snprintf( buf, 16, "%u", caller->vms.size() - 1 );
+    snprintf( buf, 16, "%lu", caller->vms.size() - 1 );
 #else
     sprintf( buf, "%u", caller->vms.size() - 1 );   
 #endif // __PLATFORM_WIN32__
@@ -1815,9 +1815,9 @@ t_CKINT Chuck_Shell::Command_VMList::execute( vector< string > & argv,
         if( caller->vms[i] != NULL )
         {
 #ifndef __PLATFORM_WIN32__
-            snprintf( buf, 16, "%u", i );
+            snprintf( buf, 16, "%lu", i );
 #else
-            sprintf( buf, "%u", i );
+            sprintf( buf, "%lu", i );
 #endif // __PLATFORM_WIN32__
             out += string( "VM " ) + buf + ": " + 
                    caller->vms[i]->fullname() + "\n";
