@@ -217,7 +217,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
     }
     else
     {
-        fprintf( stderr, "[chuck]: unrecognized incoming command from network: '%i'\n", cmd->type );
+        fprintf( stderr, "[chuck]: unrecognized incoming command from network: '%li'\n", cmd->type );
         SAFE_DELETE(cmd);
         goto cleanup;
     }

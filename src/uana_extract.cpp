@@ -1064,7 +1064,7 @@ struct Corr_Object
         if( fbuf == NULL || gbuf == NULL || buffy == NULL )
         {
             // error
-            fprintf( stderr, "[chuck]: Corr failed to allocate %d-element buffer(s)...",
+            fprintf( stderr, "[chuck]: Corr failed to allocate %ld-element buffer(s)...",
                 mincap );
             // clean up
             this->reset();
