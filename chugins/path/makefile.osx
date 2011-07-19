@@ -16,12 +16,12 @@ CK_CHUGIN_STATIC?=0
 CHUGIN_PATH=/usr/lib/chuck
 
 FLAGS=-m32 -D__MACOSX_CORE__ -I$(CK_SRC_PATH)
-LDFLAGS=-m32 -Wl,-undefined,dynamic_lookup -rdynamic -bundle -lstdc++
+LDFLAGS=-m32 -bundle -lstdc++
 
 ifeq ($(CK_CHUGIN_STATIC),0)
 SUFFIX=.chug
 else
-SUFFIX=.chuga
+SUFFIX=.schug
 FLAGS+= -D__CK_DLL_STATIC__
 endif
 
