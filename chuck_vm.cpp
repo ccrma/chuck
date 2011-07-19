@@ -361,9 +361,9 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     g_t_dac->ugen_info->num_outs = 
         g_t_dac->ugen_info->num_ins = m_num_dac_channels;
     m_dac = (Chuck_UGen *)instantiate_and_initialize_object( g_t_dac, NULL );
-    object_ctor( m_dac, NULL, NULL ); // TODO: this can't be the place to do this
-    stereo_ctor( m_dac, NULL, NULL ); // TODO: is the NULL shred a problem?
-    multi_ctor( m_dac, NULL, NULL );  // TODO: remove and let type system do this
+    object_ctor( m_dac, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: this can't be the place to do this
+    stereo_ctor( m_dac, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: is the NULL shred a problem?
+    multi_ctor( m_dac, NULL, NULL, Chuck_DL_Api::Api::instance() );  // TODO: remove and let type system do this
     m_dac->add_ref();
     // lock it
     m_dac->lock();
@@ -373,9 +373,9 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     g_t_adc->ugen_info->num_ins = 
         g_t_adc->ugen_info->num_outs = m_num_adc_channels;
     m_adc = (Chuck_UGen *)instantiate_and_initialize_object( g_t_adc, NULL );
-    object_ctor( m_adc, NULL, NULL ); // TODO: this can't be the place to do this
-    stereo_ctor( m_adc, NULL, NULL );
-    multi_ctor( m_adc, NULL, NULL ); // TODO: remove and let type system do this
+    object_ctor( m_adc, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: this can't be the place to do this
+    stereo_ctor( m_adc, NULL, NULL, Chuck_DL_Api::Api::instance() );
+    multi_ctor( m_adc, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: remove and let type system do this
     m_adc->add_ref();
     // lock it
     m_adc->lock();
