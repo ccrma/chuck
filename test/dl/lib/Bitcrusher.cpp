@@ -28,7 +28,7 @@ struct BitcrusherData
 };
 
 
-CK_DLL_QUERY
+CK_DLL_QUERY(Bitcrusher)
 {
     QUERY->setname(QUERY, "Bitcrusher");
     

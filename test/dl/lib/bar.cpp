@@ -33,7 +33,7 @@ static t_CKUINT bar_mvarTime_offset = 0;
 static t_CKUINT bar_mvarString_offset = 0;
 
 
-CK_DLL_QUERY
+CK_DLL_QUERY(bar)
 {
     QUERY->setname(QUERY, "bar");
     
