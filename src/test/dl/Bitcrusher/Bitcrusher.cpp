@@ -4,7 +4,7 @@
 #include "chuck_def.h"
 
 #include <stdio.h>
-
+#include <limits.h>
 
 
 CK_DLL_CTOR(bitcrusher_ctor);
