@@ -55,6 +55,7 @@ struct Chuck_DLL;
 struct Chuck_UGen;
 struct Chuck_UAna;
 struct Chuck_UAnaBlobProxy;
+namespace Chuck_DL_Api { struct Api; }
 
 
 // param conversion - to extract values from ARGS to functions
@@ -152,31 +153,31 @@ struct Chuck_UAnaBlobProxy;
 #endif // __CK_DLL_STATIC__
 // macro for defining ChucK DLL export constructors
 // example: CK_DLL_CTOR(foo)
-#define CK_DLL_CTOR(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_VM_Shred * SHRED )
+#define CK_DLL_CTOR(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API )
 // macro for defining ChucK DLL export destructors
 // example: CK_DLL_DTOR(foo)
-#define CK_DLL_DTOR(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, Chuck_VM_Shred * SHRED )
+#define CK_DLL_DTOR(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API )
 // macro for defining ChucK DLL export member functions
 // example: CK_DLL_MFUN(foo)
-#define CK_DLL_MFUN(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED )
+#define CK_DLL_MFUN(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API )
 // macro for defining ChucK DLL export static functions
 // example: CK_DLL_SFUN(foo)
-#define CK_DLL_SFUN(name) CK_DLL_EXPORT(void) name( void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED )
+#define CK_DLL_SFUN(name) CK_DLL_EXPORT(void) name( void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API )
 // macro for defining ChucK DLL export ugen tick functions
 // example: CK_DLL_TICK(foo)
-#define CK_DLL_TICK(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, SAMPLE in, SAMPLE * out, Chuck_VM_Shred * SHRED )
+#define CK_DLL_TICK(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, SAMPLE in, SAMPLE * out, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API )
 // macro for defining ChucK DLL export ugen ctrl functions
 // example: CK_DLL_CTRL(foo)
-#define CK_DLL_CTRL(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED )
+#define CK_DLL_CTRL(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API )
 // macro for defining ChucK DLL export ugen cget functions
 // example: CK_DLL_CGET(foo)
-#define CK_DLL_CGET(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED )
+#define CK_DLL_CGET(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API )
 // macro for defining ChucK DLL export ugen pmsg functions
 // example: CK_DLL_PMSG(foo)
-#define CK_DLL_PMSG(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, const char * MSG, void * ARGS, Chuck_VM_Shred * SHRED )
+#define CK_DLL_PMSG(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, const char * MSG, void * ARGS, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API )
 // macro for defining ChucK DLL export uana tock functions
 // example: CK_DLL_TOCK(foo)
-#define CK_DLL_TOCK(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, Chuck_UAna * UANA, Chuck_UAnaBlobProxy * BLOB, Chuck_VM_Shred * SHRED )
+#define CK_DLL_TOCK(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, Chuck_UAna * UANA, Chuck_UAnaBlobProxy * BLOB, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API )
 
 
 // macros for DLL exports
@@ -202,17 +203,17 @@ extern "C" {
 typedef t_CKUINT (CK_DLL_CALL * f_ck_declversion)();
 typedef t_CKBOOL (CK_DLL_CALL * f_ck_query)( Chuck_DL_Query * QUERY );
 // object
-typedef t_CKVOID (CK_DLL_CALL * f_ctor)( Chuck_Object * SELF, void * ARGS, Chuck_VM_Shred * SHRED );
-typedef t_CKVOID (CK_DLL_CALL * f_dtor)( Chuck_Object * SELF, Chuck_VM_Shred * SHRED );
-typedef t_CKVOID (CK_DLL_CALL * f_mfun)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED );
-typedef t_CKVOID (CK_DLL_CALL * f_sfun)( void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED );
+typedef t_CKVOID (CK_DLL_CALL * f_ctor)( Chuck_Object * SELF, void * ARGS, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API );
+typedef t_CKVOID (CK_DLL_CALL * f_dtor)( Chuck_Object * SELF, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API );
+typedef t_CKVOID (CK_DLL_CALL * f_mfun)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API );
+typedef t_CKVOID (CK_DLL_CALL * f_sfun)( void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API );
 // ugen specific
-typedef t_CKBOOL (CK_DLL_CALL * f_tick)( Chuck_Object * SELF, SAMPLE in, SAMPLE * out, Chuck_VM_Shred * SHRED );
-typedef t_CKVOID (CK_DLL_CALL * f_ctrl)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED );
-typedef t_CKVOID (CK_DLL_CALL * f_cget)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED );
-typedef t_CKBOOL (CK_DLL_CALL * f_pmsg)( Chuck_Object * SELF, const char * MSG, void * ARGS, Chuck_VM_Shred * SHRED );
+typedef t_CKBOOL (CK_DLL_CALL * f_tick)( Chuck_Object * SELF, SAMPLE in, SAMPLE * out, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API );
+typedef t_CKVOID (CK_DLL_CALL * f_ctrl)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API );
+typedef t_CKVOID (CK_DLL_CALL * f_cget)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API );
+typedef t_CKBOOL (CK_DLL_CALL * f_pmsg)( Chuck_Object * SELF, const char * MSG, void * ARGS, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API );
 // uana specific
-typedef t_CKBOOL (CK_DLL_CALL * f_tock)( Chuck_Object * SELF, Chuck_UAna * UANA, Chuck_UAnaBlobProxy * BLOB, Chuck_VM_Shred * SHRED );
+typedef t_CKBOOL (CK_DLL_CALL * f_tock)( Chuck_Object * SELF, Chuck_UAna * UANA, Chuck_UAnaBlobProxy * BLOB, Chuck_VM_Shred * SHRED, const Chuck_DL_Api::Api & API );
 }
 
 
@@ -517,6 +518,51 @@ protected:
     Chuck_DL_Query m_query;
 };
 
+
+/* API to ChucK's innards */
+
+
+namespace Chuck_DL_Api
+{
+    
+typedef void * Object;
+typedef void * Type;
+typedef void * String;
+
+struct Api
+{
+public:
+    Api() {}
+
+    static Api g_api;
+    static inline const Api & instance() { return g_api; }
+    
+    struct ObjectApi
+    {
+        ObjectApi();
+        
+        Type (* const get_type)( std::string & );
+
+        Object (* const create)( Type );
+        String (* const create_string)( std::string & );
+        
+        t_CKBOOL (* const get_mvar_int)( Object, std::string &, t_CKINT & );
+        t_CKBOOL (* const get_mvar_float)( Object, std::string &, t_CKFLOAT & );
+        t_CKBOOL (* const get_mvar_dur)( Object, std::string &, t_CKDUR & );
+        t_CKBOOL (* const get_mvar_time)( Object, std::string &, t_CKTIME & );
+        t_CKBOOL (* const get_mvar_string)( Object, std::string &, String & );
+        t_CKBOOL (* const get_mvar_object)( Object, std::string &, Object & );
+        
+        t_CKBOOL (* const set_string)( String, std::string & );
+        
+    } object;
+    
+private:
+    Api(Api &a) { assert(0); };
+    Api &operator=(Api &a) { assert(0); return a; }
+};
+    
+}
 
 
 

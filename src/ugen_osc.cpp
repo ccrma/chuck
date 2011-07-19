@@ -255,7 +255,7 @@ CK_DLL_CTOR( osc_ctor )
     Chuck_DL_Return r;
     // return data to be used later
     OBJ_MEMBER_UINT(SELF, osc_offset_data) = (t_CKUINT)d;
-    osc_ctrl_freq( SELF, &(d->freq), &r, SHRED );
+    osc_ctrl_freq( SELF, &(d->freq), &r, SHRED, Chuck_DL_Api::Api::instance() );
 }
 
 
@@ -727,7 +727,7 @@ CK_DLL_CTOR( sqrosc_ctor )
 {
     Osc_Data * d = new Osc_Data;
     Chuck_DL_Return r;
-    sqrosc_ctrl_width( SELF, &(d->width), &r, SHRED );
+    sqrosc_ctrl_width( SELF, &(d->width), &r, SHRED, Chuck_DL_Api::Api::instance() );
 }
 
 
@@ -758,7 +758,7 @@ CK_DLL_CTOR( sawosc_ctor )
 {
     Osc_Data * d = new Osc_Data;
     Chuck_DL_Return r;
-    sawosc_ctrl_width( SELF, &(d->width), &r, SHRED );
+    sawosc_ctrl_width( SELF, &(d->width), &r, SHRED, Chuck_DL_Api::Api::instance() );
 }
 
 

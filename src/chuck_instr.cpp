@@ -3288,14 +3288,14 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // cast to right type
         f_ctor f = (f_ctor)func->native_func;
         // call
-        f( (Chuck_Object *)(*mem_sp), mem_sp + 1, shred );
+        f( (Chuck_Object *)(*mem_sp), mem_sp + 1, shred, Chuck_DL_Api::Api::instance() );
     }
     else
     {
         // cast to right type
         f_mfun f = (f_mfun)func->native_func;
         // call the function
-        f( (Chuck_Object *)(*mem_sp), mem_sp + 1, &retval, shred );
+        f( (Chuck_Object *)(*mem_sp), mem_sp + 1, &retval, shred, Chuck_DL_Api::Api::instance() );
     }
     // pop (TODO: check if this is right)
     mem_sp -= push;
@@ -3390,7 +3390,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     if( overflow_( shred->mem ) ) goto error_overflow;
 
     // call the function
-    f( mem_sp, &retval, shred );
+    f( mem_sp, &retval, shred, Chuck_DL_Api::Api::instance() );
     mem_sp -= push;
 
     // push the return
@@ -4893,7 +4893,7 @@ void Chuck_Instr_Cast_object2string::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     // return
     Chuck_DL_Return RETURN;
     // get toString from it
-    object_toString( obj, NULL, &RETURN, NULL );
+    object_toString( obj, NULL, &RETURN, NULL, Chuck_DL_Api::Api::instance() );
     Chuck_String * str = RETURN.v_string;
     // set it
     push_( sp, (t_CKUINT)str );

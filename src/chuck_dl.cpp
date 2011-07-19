@@ -38,6 +38,7 @@
 #include "chuck_errmsg.h"
 #include "chuck_bbq.h"
 #include "chuck_type.h"
+#include "chuck_instr.h"
 #include <sstream>
 using namespace std;
 
@@ -841,6 +842,113 @@ Chuck_DL_Func::~Chuck_DL_Func()
 }
 
 
+
+
+/*******************************************************************************
+ 
+ Chuck_DL_Api stuff 
+ 
+*******************************************************************************/
+
+namespace Chuck_DL_Api
+{
+    Api Api::g_api;
+    
+//    Api * g_api = NULL;
+//    
+//    Api * Api::instance()
+//    {
+//        if( g_api == NULL )
+//            g_api = new Api;
+//        return g_api;
+//    }
+}
+
+
+static Chuck_DL_Api::Type ck_get_type( std::string & name )
+{
+    Chuck_Env * env = Chuck_Env::instance();
+    a_Id_List list = new_id_list( name.c_str(), 0 ); // TODO: nested types
+    
+    Chuck_Type * t = type_engine_find_type( env, list );
+    
+    delete_id_list( list );
+    
+    return ( Chuck_DL_Api::Type ) t;
+}
+
+static Chuck_DL_Api::Object ck_create( Chuck_DL_Api::Type t )
+{
+    assert( t != NULL );
+    
+    Chuck_Type * type = ( Chuck_Type * ) t;
+    Chuck_Object * o = instantiate_and_initialize_object( type, NULL );
+    
+    return ( Chuck_DL_Api::Object ) o;
+}
+
+static Chuck_DL_Api::String ck_create_string( std::string & str )
+{
+    Chuck_String * string = ( Chuck_String * ) instantiate_and_initialize_object( &t_string, NULL );
+    
+    string->str = str;
+    
+    return ( Chuck_DL_Api::String ) string;
+}
+
+static t_CKBOOL ck_get_mvar_int( Chuck_DL_Api::Object, std::string &, t_CKINT & )
+{
+    return TRUE;
+}
+
+static t_CKBOOL ck_get_mvar_float( Chuck_DL_Api::Object, std::string &, t_CKFLOAT & )
+{
+    return TRUE;
+}
+
+static t_CKBOOL ck_get_mvar_dur( Chuck_DL_Api::Object, std::string &, t_CKDUR & )
+{
+    return TRUE;
+}
+
+static t_CKBOOL ck_get_mvar_time( Chuck_DL_Api::Object, std::string &, t_CKTIME & )
+{
+    return TRUE;
+}
+
+static t_CKBOOL ck_get_mvar_string( Chuck_DL_Api::Object, std::string &, Chuck_DL_Api::String & )
+{
+    return TRUE;
+}
+
+static t_CKBOOL ck_get_mvar_object( Chuck_DL_Api::Object, std::string &, Chuck_DL_Api::Object & )
+{
+    return TRUE;
+}
+
+static t_CKBOOL ck_set_string( Chuck_DL_Api::String s, std::string & str )
+{
+    assert( s != NULL );
+    
+    Chuck_String * string = ( Chuck_String * ) s;
+    string->str = str;
+    
+    return TRUE;
+}
+
+
+Chuck_DL_Api::Api::ObjectApi::ObjectApi() :
+get_type(ck_get_type),
+create(ck_create),
+create_string(ck_create_string),
+get_mvar_int(ck_get_mvar_int),
+get_mvar_float(ck_get_mvar_float),
+get_mvar_dur(ck_get_mvar_dur),
+get_mvar_time(ck_get_mvar_time),
+get_mvar_string(ck_get_mvar_string),
+get_mvar_object(ck_get_mvar_object),
+set_string(ck_set_string)
+{ }
 
 
 // windows
