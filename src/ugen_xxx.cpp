@@ -1288,7 +1288,7 @@ CK_DLL_TICK( cnoise_tick )
   CNoise_Data * d = ( CNoise_Data * )OBJ_MEMBER_UINT(SELF, cnoise_offset_data);
   switch( d->mode ) { 
   case NOISE_WHITE: 
-    return noise_tick(SELF,in,out,SHRED);
+    return noise_tick(SELF,in,out,SHRED, Chuck_DL_Api::Api::instance());
     break;
   case NOISE_PINK:
     return d->pink_tick(out);

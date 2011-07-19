@@ -1877,7 +1877,7 @@ CK_DLL_MFUN( ugen_op )
     // for multiple channels
     Chuck_DL_Return ret;
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
-        ugen_op( ugen->m_multi_chan[i], ARGS, &ret, SHRED );
+        ugen_op( ugen->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
 }
 
 CK_DLL_MFUN( ugen_cget_op )
@@ -1911,7 +1911,7 @@ CK_DLL_MFUN( ugen_next )
     // for multiple channels
     Chuck_DL_Return ret;
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
-        ugen_next( ugen->m_multi_chan[i], ARGS, &ret, SHRED );
+        ugen_next( ugen->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
 }
 
 CK_DLL_MFUN( ugen_cget_next )
@@ -1936,7 +1936,7 @@ CK_DLL_MFUN( ugen_gain )
     // for multiple channels
     Chuck_DL_Return ret;
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
-        ugen_gain( ugen->m_multi_chan[i], ARGS, &ret, SHRED );
+        ugen_gain( ugen->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
 }
 
 CK_DLL_MFUN( ugen_cget_gain )
@@ -2010,7 +2010,7 @@ CK_DLL_CTOR( uana_ctor )
     // remember it
     OBJ_MEMBER_INT(SELF, uana_offset_blob) = (t_CKINT)proxy;
     // HACK: DANGER: manually call blob's ctor
-    uanablob_ctor( blob, NULL, NULL );
+    uanablob_ctor( blob, NULL, NULL, Chuck_DL_Api::Api::instance() );
 }
 
 CK_DLL_DTOR( uana_dtor )
@@ -2046,7 +2046,7 @@ CK_DLL_MFUN( uana_upchuck )
         // for multiple channels
         Chuck_DL_Return ret;
         for( t_CKUINT i = 0; i < uana->m_multi_chan_size; i++ )
-            uana_upchuck( uana->m_multi_chan[i], ARGS, &ret, SHRED );
+            uana_upchuck( uana->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
 
         // tock it (TODO: order relative to multiple channels?)
         uana->system_tock( vm->shreduler()->now_system );

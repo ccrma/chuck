@@ -700,7 +700,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     if( m_op > 0 )  // UGEN_OP_TICK
     {
         // tick the ugen
-        if( tick ) m_valid = tick( this, m_sum, &m_current, NULL );
+        if( tick ) m_valid = tick( this, m_sum, &m_current, NULL, Chuck_DL_Api::Api::instance() );
         if( !m_valid ) m_current = 0.0f;
 		// apply gain and pan
         m_current *= m_gain * m_pan;
@@ -803,7 +803,7 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
         // tick the ugen
         if( tick ) 
             for( j = 0; j < numFrames; j++ )
-                m_valid = tick( this, m_sum_v[j], &(m_current_v[j]), NULL );
+                m_valid = tick( this, m_sum_v[j], &(m_current_v[j]), NULL, Chuck_DL_Api::Api::instance() );
         if( !m_valid )
             for( j = 0; j < numFrames; j++ )
                 m_current_v[j] = 0.0f;
@@ -1017,7 +1017,7 @@ t_CKBOOL Chuck_UAna::system_tock( t_CKTIME now )
     if( m_op > 0 )  // UGEN_OP_TOCK
     {
         // tock the uana
-        if( tock ) m_valid = tock( this, this, blobProxy(), NULL );
+        if( tock ) m_valid = tock( this, this, blobProxy(), NULL, Chuck_DL_Api::Api::instance() );
         if( !m_valid ) { /* clear out blob? */ }
 		// timestamp the blob
 		blobProxy()->when() = now;

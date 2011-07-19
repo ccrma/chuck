@@ -1404,7 +1404,7 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
     
     Chuck_DL_Return RETURN;
     f_mfun canwaitplease = (f_mfun)this->vtable->funcs[our_can_wait]->code->native_func;
-    canwaitplease( this, NULL, &RETURN, shred ); // TODO: check this is right shred
+    canwaitplease( this, NULL, &RETURN, shred, Chuck_DL_Api::Api::instance() ); // TODO: check this is right shred
     // RETURN.v_int = 1;
 
     // see if we can wait
