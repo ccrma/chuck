@@ -37,7 +37,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#if !defined(__PLATFORM_WIN32__)
 #include <sys/param.h>
+#endif // !defined(__PLATFORM_WIN32__)
 
 #include "chuck_compile.h"
 #include "chuck_vm.h"
@@ -87,8 +89,8 @@ char g_host[256] = "127.0.0.1";
 #if defined(__MACOSX_CORE__)
 char g_default_chugin_path[] = "/usr/lib/chuck:/Library/Application Support/ChucK";
 #elif defined(__PLATFORM_WIN32__)
-char g_default_chugin_path[] = "C:\WINDOWS\system32\ChucK";
-#else // LINUX
+char g_default_chugin_path[] = "C:\\WINDOWS\\system32\\ChucK";
+#else // Linux/Cygwin
 char g_default_chugin_path[] = "/usr/lib/chuck";
 #endif
 
@@ -276,7 +278,7 @@ static void usage()
 // name: parse_path_list()
 // desc: split "x:y:z"-style path list into {"x","y","z"}
 //-----------------------------------------------------------------------------
-static void parse_path_list( std::string & str, std::list<std::string> & list )
+static void parse_path_list( std::string & str, std::list<std::string> & lst )
 {
 #if defined(__PLATFORM_WIN32__)
     const char separator = ';';
@@ -287,11 +289,11 @@ static void parse_path_list( std::string & str, std::list<std::string> & list )
     while( last < str.size() && 
            ( i = str.find( separator, last ) ) != std::string::npos )
     {
-        list.push_back( str.substr( last, i - last ) );
+        lst.push_back( str.substr( last, i - last ) );
         last = i + 1;
     }
     
-    list.push_back( str.substr( last, str.size() - last ) );
+    lst.push_back( str.substr( last, str.size() - last ) );
 }
 
 
@@ -704,6 +706,7 @@ static void parse_path_list( std::string & str, std::list<std::string> & list )
     // figure out current working directory
     std::string cwd;
     {
+#ifndef __PLATFORM_WIN32__
         // TODO: Win32
         char cstr_cwd[MAXPATHLEN];
         if(getcwd(cstr_cwd, MAXPATHLEN) == NULL)
@@ -711,6 +714,7 @@ static void parse_path_list( std::string & str, std::list<std::string> & list )
             EM_log( CK_LOG_SEVERE, "error: unable to determine current working directory!" );
         else
             cwd = cstr_cwd;
+#endif // __PLATFORM_WIN32__
     }
 
     // whether or not chug should be enabled
