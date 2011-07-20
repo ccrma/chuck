@@ -84,6 +84,8 @@ CK_DLL_QUERY(bar)
     
     
     QUERY->end_class(QUERY);
+
+    return TRUE;
 }
 
 CK_DLL_CTOR(bar_ctor)
