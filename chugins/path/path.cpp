@@ -8,6 +8,12 @@
 #include <stdio.h>
 
 
+#ifndef __PLATFORM_WIN32__
+static const char path_separator = '/';
+#else
+static const char path_separator = '\\';
+#endif // __PLATFORM_WIN32__
+
 
 CK_DLL_SFUN(path_basename);
 CK_DLL_SFUN(path_dirname);
@@ -37,9 +43,8 @@ CK_DLL_QUERY(path)
 
 CK_DLL_SFUN(path_basename)
 {
-    // TODO: win32
     const char *path = GET_NEXT_STRING(ARGS)->str.c_str();
-    const char *last_slash = strrchr(path, '/');
+    const char *last_slash = strrchr(path, path_separator);
     
     std::string basename;
     
@@ -61,9 +66,8 @@ CK_DLL_SFUN(path_basename)
 
 CK_DLL_SFUN(path_dirname)
 {
-    // TODO: win32
     const char *path = GET_NEXT_STRING(ARGS)->str.c_str();
-    const char *last_slash = strrchr(path, '/');
+    const char *last_slash = strrchr(path, path_separator);
     
     std::string dirname;
     
@@ -85,7 +89,6 @@ CK_DLL_SFUN(path_dirname)
 
 CK_DLL_SFUN(path_extension)
 {
-    // TODO: win32
     const char *path = GET_NEXT_STRING(ARGS)->str.c_str();
     const char *last_dot = strrchr(path, '.');
     
