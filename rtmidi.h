@@ -40,7 +40,7 @@
 #ifndef RTMIDI_H
 #define RTMIDI_H
 
-#include "rterror.h"
+#include "RtAudio/RtAudio.h"
 #include <string>
 
 class RtMidi
