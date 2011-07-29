@@ -34,6 +34,7 @@
 #define __DIGITAL_IO_H__
 
 #include "chuck_def.h"
+#include "RtAudio/RtAudio.h"
 
 
 
@@ -129,11 +130,19 @@ public:
     static RtAudio * audio( ) { return m_rtaudio; }
     static BOOL__  start( );
     static BOOL__  stop( );
-    static BOOL__  tick( );
+    //static BOOL__  tick( );
     static void    set_extern( SAMPLE * in, SAMPLE * out )
                    { m_extern_in = in; m_extern_out = out; } 
-    static int cb( char * buffer, int buffer_size, void * user_data );
-    static int cb2( char * buffer, int buffer_size, void * user_data );
+    static int cb( void *output_buffer, void *input_buffer,
+                   unsigned int buffer_size,
+                   double streamTime,
+                   RtAudioStreamStatus status,
+                   void *user_data );
+    static int cb2( void *output_buffer, void *input_buffer,
+                    unsigned int buffer_size,
+                    double streamTime,
+                    RtAudioStreamStatus status,
+                    void *user_data );
 
 public: // data
     static BOOL__ m_init;
