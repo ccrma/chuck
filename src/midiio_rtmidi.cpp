@@ -568,7 +568,7 @@ void probeMidiIn()
     try {
         min = new RtMidiIn;;
     } catch( RtError & err ) {
-        EM_error2b( 0, "%s", err.getMessageString() );
+        EM_error2b( 0, "%s", err.getMessage().c_str() );
         return;
     }
 
@@ -599,7 +599,7 @@ void probeMidiOut()
     try {
         mout = new RtMidiOut;
     } catch( RtError & err ) {
-        EM_error2b( 0, "%s", err.getMessageString() );
+        EM_error2b( 0, "%s", err.getMessage().c_str() );
         return;
     }
 

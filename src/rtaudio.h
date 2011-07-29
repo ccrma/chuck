@@ -42,7 +42,7 @@
 #ifndef __RTAUDIO_H
 #define __RTAUDIO_H
 
-#include "rterror.h"
+#include "RtAudio/RtAudio.h"
 #include <string>
 #include <vector>
 
