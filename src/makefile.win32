@@ -127,7 +127,7 @@ chuck_globals.o: chuck_globals.h chuck_globals.cpp
 chuck_main.o: chuck_main.cpp chuck_absyn.h chuck_type.h chuck_emit.h chuck_vm.h chuck_errmsg.h chuck_utils.h
 	$(CXX) $(FLAGS) chuck_main.cpp
 
-digiio_rtaudio.o: digiio_rtaudio.h digiio_rtaudio.cpp rtaudio.h
+digiio_rtaudio.o: digiio_rtaudio.h digiio_rtaudio.cpp RtAudio/RtAudio.h
 	$(CXX) $(FLAGS) digiio_rtaudio.cpp
 
 hidio_sdl.o: hidio_sdl.h hidio_sdl.cpp
@@ -136,8 +136,8 @@ hidio_sdl.o: hidio_sdl.h hidio_sdl.cpp
 midiio_rtmidi.o: midiio_rtmidi.h midiio_rtmidi.cpp
 	$(CXX) $(FLAGS) midiio_rtmidi.cpp
 
-rtaudio.o: rtaudio.h rtaudio.cpp rterror.h
-	$(CXX) $(FLAGS) rtaudio.cpp
+rtaudio.o: RtAudio/RtAudio.h RtAudio/RtAudio.cpp RtAudio/RtAudio.h
+	$(CXX) $(FLAGS) RtAudio/RtAudio.cpp
 
 rtmidi.o: rtmidi.h rtmidi.cpp
 	$(CXX) $(FLAGS) rtmidi.cpp
