@@ -6357,7 +6357,9 @@ extern "C" void *alsaCallbackHandler( void *ptr )
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "soundcard.h"
+//#include "soundcard.h"
+// chuck
+#include <sys/soundcard.h>
 #include <errno.h>
 #include <math.h>
 
@@ -6975,6 +6977,7 @@ void RtApiOss :: closeStream()
   if ( handle ) {
     pthread_cond_destroy( &handle->runnable );
     if ( handle->id[0] ) close( handle->id[0] );
+
     if ( handle->id[1] ) close( handle->id[1] );
     delete handle;
     stream_.apiHandle = 0;
