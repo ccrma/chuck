@@ -41,6 +41,7 @@
 #include "rtmidi.h"
 #include <sstream>
 #include <iostream>
+#include <stdio.h>
 
 
 //*********************************************************************//
