@@ -1,5 +1,5 @@
 
-ifeq ($(shell sw_vers -productVersion | egrep '10\.6(\.[0-9]+)?'),)
+ifeq ($(shell sw_vers -productVersion | egrep '10\.[67](\.[0-9]+)?'),)
 LINK_EXTRAS=
 else
 LINK_EXTRAS=-F/System/Library/PrivateFrameworks \
