@@ -412,23 +412,60 @@ struct CoreHandle {
     :deviceBuffer(0), drainCounter(0), internalDrain(false) { nStreams[0] = 1; nStreams[1] = 1; id[0] = 0; id[1] = 0; xrun[0] = false; xrun[1] = false; }
 };
 
+// chuck: make compile-time check for >=10.6 at runtime
+#include <CoreServices/CoreServices.h>
+inline void getSystemVersion( unsigned & major, unsigned & minor, unsigned & bugfix )
+{
+    OSErr err;
+    SInt32 systemVersion, versionMajor, versionMinor, versionBugFix;
+    if ((err = Gestalt(gestaltSystemVersion, &systemVersion)) != noErr) goto fail;
+    if (systemVersion < 0x1040)
+    {
+        major = ((systemVersion & 0xF000) >> 12) * 10 +
+        ((systemVersion & 0x0F00) >> 8);
+        minor = (systemVersion & 0x00F0) >> 4;
+        bugfix = (systemVersion & 0x000F);
+    }
+    else
+    {
+        if ((err = Gestalt(gestaltSystemVersionMajor, &versionMajor)) != noErr) goto fail;
+        if ((err = Gestalt(gestaltSystemVersionMinor, &versionMinor)) != noErr) goto fail;
+        if ((err = Gestalt(gestaltSystemVersionBugFix, &versionBugFix)) != noErr) goto fail;
+        major = versionMajor;
+        minor = versionMinor;
+        bugfix = versionBugFix;
+    }
+    
+fail:
+    // um
+    major = 10;
+    minor = 0;
+    bugfix = 0;
+}
+
 RtApiCore :: RtApiCore()
 {
-#if defined( AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER )
-  // This is a largely undocumented but absolutely necessary
-  // requirement starting with OS-X 10.6.  If not called, queries and
-  // updates to various audio device properties are not handled
-  // correctly.
-  CFRunLoopRef theRunLoop = NULL;
-  AudioObjectPropertyAddress property = { kAudioHardwarePropertyRunLoop,
-                                          kAudioObjectPropertyScopeGlobal,
-                                          kAudioObjectPropertyElementMaster };
-  OSStatus result = AudioObjectSetPropertyData( kAudioObjectSystemObject, &property, 0, NULL, sizeof(CFRunLoopRef), &theRunLoop);
-  if ( result != noErr ) {
-    errorText_ = "RtApiCore::RtApiCore: error setting run loop property!";
-    error( RtError::WARNING );
-  }
-#endif
+    //#if defined( AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER )
+    unsigned versionMajor = 0, versionMinor = 0, versionBugfix = 0;
+    getSystemVersion( versionMajor, versionMinor, versionBugfix );
+    
+    if( versionMajor >= 10 && versionMinor >= 6 )
+    {
+        // This is a largely undocumented but absolutely necessary
+        // requirement starting with OS-X 10.6.  If not called, queries and
+        // updates to various audio device properties are not handled
+        // correctly.
+        CFRunLoopRef theRunLoop = NULL;
+        AudioObjectPropertyAddress property = { kAudioHardwarePropertyRunLoop,
+            kAudioObjectPropertyScopeGlobal,
+            kAudioObjectPropertyElementMaster };
+        OSStatus result = AudioObjectSetPropertyData( kAudioObjectSystemObject, &property, 0, NULL, sizeof(CFRunLoopRef), &theRunLoop);
+        if ( result != noErr ) {
+            errorText_ = "RtApiCore::RtApiCore: error setting run loop property!";
+            error( RtError::WARNING );
+        }
+    }
+    //#endif
 }
 
 RtApiCore :: ~RtApiCore()
@@ -3661,9 +3698,12 @@ unsigned int RtApiDs :: getDeviceCount( void )
   }
 
   // Clean out any devices that may have disappeared.
-  std::vector< DsDevice > :: iterator it;
-  for ( it=dsDevices.begin(); it < dsDevices.end(); it++ )
-    if ( it->found == false ) dsDevices.erase( it );
+  std::vector< int > indices;
+  for ( unsigned int i=0; i<dsDevices.size(); i++ )
+    if ( dsDevices[i].found == false ) indices.push_back( i );
+  for ( unsigned int nErased=0, unsigned int i=0; i<indices.size(); i++, nErased++ ) {
+    dsDevices.erase( dsDevices.begin()-nErased );
+  }
 
   return dsDevices.size();
 }
@@ -4992,23 +5032,12 @@ extern "C" unsigned __stdcall callbackHandler( void *ptr )
 
 std::string convertTChar( LPCTSTR name )
 {
-  std::string s;
-
 #if defined( UNICODE ) || defined( _UNICODE )
-  // Yes, this conversion doesn't make sense for two-byte characters
-  // but RtAudio is currently written to return an std::string of
-  // one-byte chars for the device name.
-  // Perhaps we should use WideCharToMultiByte() here?
-  /*
-  for ( unsigned int i=0; i<wcslen( name ); i++ )
-    s.push_back( name[i] );
-  */
-  int length = wcslen( name );
-  char buf[256];
-  length = WideCharToMultiByte(CP_UTF8, 0, name, length, buf, 256, NULL, NULL);
-  s.append( std::string( buf ) );
+  int length = WideCharToMultiByte(CP_UTF8, 0, name, -1, NULL, 0, NULL, NULL);
+  std::string s( length, 0 );
+  length = WideCharToMultiByte(CP_UTF8, 0, name, wcslen(name), &s[0], length, NULL, NULL);
 #else
-  s.append( std::string( name ) );
+  std::string s( name );
 #endif
 
   return s;
