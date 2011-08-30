@@ -541,19 +541,19 @@ public:
     {
         ObjectApi();
         
-        Type (* const get_type)( std::string & );
+        Type (* const get_type)( std::string &name );
 
-        Object (* const create)( Type );
-        String (* const create_string)( std::string & );
+        Object (* const create)( Type type );
+        String (* const create_string)( std::string &value );
         
-        t_CKBOOL (* const get_mvar_int)( Object, std::string &, t_CKINT & );
-        t_CKBOOL (* const get_mvar_float)( Object, std::string &, t_CKFLOAT & );
-        t_CKBOOL (* const get_mvar_dur)( Object, std::string &, t_CKDUR & );
-        t_CKBOOL (* const get_mvar_time)( Object, std::string &, t_CKTIME & );
-        t_CKBOOL (* const get_mvar_string)( Object, std::string &, String & );
-        t_CKBOOL (* const get_mvar_object)( Object, std::string &, Object & );
+        t_CKBOOL (* const get_mvar_int)( Object object, std::string &name, t_CKINT &value );
+        t_CKBOOL (* const get_mvar_float)( Object object, std::string &name, t_CKFLOAT &value );
+        t_CKBOOL (* const get_mvar_dur)( Object object, std::string &name, t_CKDUR &value );
+        t_CKBOOL (* const get_mvar_time)( Object object, std::string &name, t_CKTIME &value );
+        t_CKBOOL (* const get_mvar_string)( Object object, std::string &name, String &value );
+        t_CKBOOL (* const get_mvar_object)( Object object, std::string &name, Object &value );
         
-        t_CKBOOL (* const set_string)( String, std::string & );
+        t_CKBOOL (* const set_string)( String string, std::string &value );
         
     } object;
     
