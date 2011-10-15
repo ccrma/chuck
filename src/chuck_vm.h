@@ -494,7 +494,8 @@ enum Chuck_Msg_Type
     MSG_TIME,
     MSG_RESET_ID,
     MSG_DONE,
-    MSG_ABORT
+    MSG_ABORT,
+    MSG_ERROR,
 };
 
 
@@ -522,8 +523,10 @@ struct Chuck_Msg
 
     std::vector<std::string> * args;
 
-    Chuck_Msg() { memset( this, 0, sizeof(*this) ); }
+    Chuck_Msg() : args(NULL) { clear(); }
     ~Chuck_Msg() { SAFE_DELETE( args ); }
+    
+    void clear() { SAFE_DELETE( args ); memset( this, 0, sizeof(*this) ); }
     
     void set( const std::vector<std::string> & vargs )
     {

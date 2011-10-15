@@ -138,9 +138,23 @@ error:
 // desc: ...
 //-----------------------------------------------------------------------------
 t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler, 
-                          Net_Msg * msg, t_CKBOOL immediate, void * data )
+                          Net_Msg * msg, Chuck_Msg * reply, t_CKBOOL immediate, 
+                          void * data )
 {
-    Chuck_Msg * cmd = new Chuck_Msg;
+    //Chuck_Msg * cmd = new Chuck_Msg;
+    Chuck_Msg * cmd;
+    t_CKBOOL delete_cmd = FALSE;
+    if( reply == NULL )
+    {
+        cmd = new Chuck_Msg;
+        delete_cmd = TRUE;
+    }
+    else
+    {
+        cmd = reply;
+        cmd->reply = (ck_msg_func) 1;
+    }
+    
     Chuck_VM_Code * code = NULL;
     FILE * fd = NULL;
     t_CKUINT ret = 0;
@@ -157,7 +171,8 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
             // error
             fprintf( stderr, "[chuck]: malformed filename with argument list...\n" );
             fprintf( stderr, "    -->  '%s'", msg->buffer );
-            SAFE_DELETE(cmd);
+            if( delete_cmd )
+                SAFE_DELETE(cmd);
             goto cleanup;
         }
 
@@ -177,7 +192,8 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
             {
                 fprintf( stderr, "[chuck]: incoming source transfer '%s' failed...\n",
                     mini(msg->buffer) );
-                SAFE_DELETE(cmd);
+                if( delete_cmd )
+                    SAFE_DELETE(cmd);
                 goto cleanup;
             }
         }
@@ -185,7 +201,8 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         // parse, type-check, and emit
         if( !compiler->go( msg->buffer, fd ) )
         {
-            SAFE_DELETE(cmd);
+            if( delete_cmd )
+                SAFE_DELETE(cmd);
             goto cleanup;
         }
 
@@ -212,19 +229,23 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         vm->abort_current_shred();
         // short circuit
         ret = 1;
-        SAFE_DELETE(cmd);
+        if( delete_cmd )
+            SAFE_DELETE(cmd);
         goto cleanup;
     }
     else
     {
         fprintf( stderr, "[chuck]: unrecognized incoming command from network: '%li'\n", cmd->type );
-        SAFE_DELETE(cmd);
+        if( delete_cmd )
+            SAFE_DELETE(cmd);
         goto cleanup;
     }
-
+    
     // immediate
     if( immediate )
+    {
         ret = vm->process_msg( cmd );
+    }
     else
     {
         // queue message
@@ -232,6 +253,13 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         // return code
         ret = 1;
     }
+    
+    // wait for reply
+    // reply msg == cmd msg, so we don't need to retrieve the actual msg pointer
+    while( vm->get_reply() == NULL )
+    {
+        usleep(1000);
+    }    
 
 cleanup:
     // close file handle
@@ -414,6 +442,15 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
             msg.param = 1;
             tasks_done += otf_send_file( argv[i], msg, "add", dest );
             tasks_total++;
+            
+            Net_Msg reply;
+            ck_recv( dest, (char*) &reply, sizeof(reply) );
+            otf_ntoh( &reply );
+            
+            if( reply.type != MSG_ERROR )
+            {
+                EM_log( CK_LOG_SYSTEM, "added '%s' (%i)", mini(argv[i]), reply.param );
+            }
         } while( ++i < argc );
         // log
         EM_poplog();
@@ -438,6 +475,10 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
             msg.type = MSG_REMOVE;
             otf_hton( &msg );
             ck_send( dest, (char *)&msg, sizeof(msg) );
+            
+            Net_Msg reply;
+            ck_recv( dest, (char*) &reply, sizeof(reply) );
+            otf_ntoh( &reply );
         } while( ++i < argc );
         // log
         EM_poplog();
@@ -454,6 +495,10 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
         ck_send( dest, (char *)&msg, sizeof(msg) );
         // log
         EM_poplog();
+        
+        Net_Msg reply;
+        ck_recv( dest, (char*) &reply, sizeof(reply) );
+        otf_ntoh( &reply );        
     }
     else if( !strcmp( argv[i], "--replace" ) || !strcmp( argv[i], "=" ) )
     {
@@ -481,6 +526,10 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
         if( !otf_send_file( argv[i], msg, "replace", dest ) )
             goto error;
         EM_poplog();
+        
+        Net_Msg reply;
+        ck_recv( dest, (char*) &reply, sizeof(reply) );
+        otf_ntoh( &reply );        
     }
     else if( !strcmp( argv[i], "--removeall" ) || !strcmp( argv[i], "--remall" ) || !strcmp( argv[i], "--remove.all" ) )
     {
@@ -492,6 +541,10 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
         EM_poplog();
+        
+        Net_Msg reply;
+        ck_recv( dest, (char*) &reply, sizeof(reply) );
+        otf_ntoh( &reply );        
     }
     else if( !strcmp( argv[i], "--kill" ) )
     {
@@ -500,10 +553,18 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
+                
+        Net_Msg reply;
+        ck_recv( dest, (char*) &reply, sizeof(reply) );
+        otf_ntoh( &reply );        
+        
         msg.type = MSG_KILL;
         msg.param = (i+1)<argc ? atoi(argv[++i]) : 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
+        
+        ck_recv( dest, (char*) &reply, sizeof(reply) );
+        otf_ntoh( &reply );        
     }
     else if( !strcmp( argv[i], "--time" ) )
     {
@@ -512,6 +573,10 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
+        
+        Net_Msg reply;
+        ck_recv( dest, (char*) &reply, sizeof(reply) );
+        otf_ntoh( &reply );        
     }
     else if( !strcmp( argv[i], "--rid" ) )
     {
@@ -520,6 +585,10 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
+        
+        Net_Msg reply;
+        ck_recv( dest, (char*) &reply, sizeof(reply) );
+        otf_ntoh( &reply );        
     }
     else if( !strcmp( argv[i], "--status" ) || !strcmp( argv[i], "^" ) )
     {
@@ -528,6 +597,28 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
+        
+        Net_Msg reply;
+        ck_recv( dest, (char*) &reply, sizeof(reply) );
+        otf_ntoh( &reply );
+        fprintf( stdout, "[chuck]: remote status (now == %ldh%ldm%lds, %s samps) ...\n",
+                 reply.param, reply.param2, reply.param3, reply.buffer );
+        
+        char time_buf[NET_BUFFER_SIZE]; time_buf[0] = '\0';
+        char name_buf[NET_BUFFER_SIZE]; name_buf[0] = '\0';
+        
+        t_CKUINT length = reply.length;
+        for( int i = 0; i < length; i++ )
+        {
+            ck_recv( dest, (char*) &reply, sizeof(reply) );
+            otf_ntoh( &reply );
+            
+            sscanf( reply.buffer, "%512[^:]:%512[^\n]", time_buf, name_buf );
+            
+            fprintf( stdout, 
+                     "    [shred id]: %ld  [source]: %s [spork time]: %ss ago\n",
+                     reply.param, mini( name_buf ), time_buf );
+        }
     }
     else if( !strcmp( argv[i], "--abort.shred" ) )
     {
@@ -536,6 +627,10 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
+        
+        Net_Msg reply;
+        ck_recv( dest, (char*) &reply, sizeof(reply) );
+        otf_ntoh( &reply );        
     }
     else
     {
@@ -617,7 +712,7 @@ void * otf_cb( void * p )
     // catch SIGPIPE
     signal( SIGPIPE, signal_pipe );
 #endif
-
+        
     while( true )
     {
         client = ck_accept( g_sock );
@@ -652,7 +747,12 @@ void * otf_cb( void * p )
         {
             if( g_vm )
             {
-                if( !otf_process_msg( g_vm, g_compiler, &msg, FALSE, client ) )
+                Chuck_VM_Status vm_status;
+                vm_status.clear();
+                Chuck_Msg vm_reply;
+                vm_reply.user = &vm_status;
+                
+                if( !otf_process_msg( g_vm, g_compiler, &msg, &vm_reply, FALSE, client ) )
                 {
                     ret.param = FALSE;
                     strcpy( (char *)ret.buffer, EM_lasterror() );
@@ -660,6 +760,13 @@ void * otf_cb( void * p )
                     {
                         n = ck_recv( client, (char *)&msg, sizeof(msg) );
                         otf_ntoh( &msg );
+                        
+                        // send reply back
+                        Net_Msg net_reply;
+                        net_reply.type = MSG_ERROR;
+                        
+                        otf_hton( &net_reply );
+                        ck_send( client, (char *) &net_reply, sizeof(net_reply) );
                     }
                     break;
                 }
@@ -667,6 +774,39 @@ void * otf_cb( void * p )
                 {
                     ret.param = TRUE;
                     strcpy( (char *)ret.buffer, "success" );
+                    
+                    // send reply back
+                    Net_Msg net_reply;
+                    net_reply.type = msg.type;
+                    if( msg.type == MSG_STATUS )
+                    {
+                        net_reply.length = vm_status.list.size();
+                        net_reply.param = vm_status.t_hour;
+                        net_reply.param2 = vm_status.t_minute;
+                        net_reply.param3 = vm_status.t_second;
+                        snprintf( net_reply.buffer, NET_BUFFER_SIZE, "%.1f", vm_status.now_system );
+                        
+                        otf_hton( &net_reply );
+                        ck_send( client, (char *) &net_reply, sizeof(net_reply) );
+                        
+                        for( std::vector<Chuck_VM_Shred_Status *>::iterator i = vm_status.list.begin();
+                             i != vm_status.list.end(); i++ )
+                        {
+                            net_reply.param = (*i)->xid;
+                            snprintf( net_reply.buffer, NET_BUFFER_SIZE, "%.2f:%s\n", 
+                                      (vm_status.now_system - (*i)->start) / vm_status.srate, 
+                                      (*i)->name.c_str() );
+                            ck_send( client, (char *) &net_reply, sizeof(net_reply) );
+                        }
+                    }
+                    else
+                    {
+                        net_reply.param = vm_reply.replyA;
+                        
+                        otf_hton( &net_reply );
+                        ck_send( client, (char *) &net_reply, sizeof(net_reply) );
+                    }
+                    
                     n = ck_recv( client, (char *)&msg, sizeof(msg) );
                     otf_ntoh( &msg );
                 }
