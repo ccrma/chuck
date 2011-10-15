@@ -852,6 +852,7 @@ void Chuck_VM::destroy_event_buffer( CBufferSimple * buffer )
 //-----------------------------------------------------------------------------
 // name: get_reply()
 // desc: ...
+// TODO: make thread safe for multiple consumers
 //-----------------------------------------------------------------------------
 Chuck_Msg * Chuck_VM::get_reply( )
 {
@@ -866,6 +867,7 @@ Chuck_Msg * Chuck_VM::get_reply( )
 //-----------------------------------------------------------------------------
 // name: process_msg()
 // desc: ...
+// TODO: make thread safe for multiple consumers
 //-----------------------------------------------------------------------------
 t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
 {
