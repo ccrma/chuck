@@ -1044,6 +1044,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = __MACOSX_CORE__;
 				INSTALL_PATH = "$(HOME)/bin";
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-lm",
 					"-lstdc++",
@@ -1070,6 +1071,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = __MACOSX_CORE__;
 				INSTALL_PATH = "$(HOME)/bin";
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-lm",
 					"-lstdc++",
