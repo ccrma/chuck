@@ -29,20 +29,20 @@ void Chuck_UI_Manager::go()
     
     NSApplication * app = [NSApplication sharedApplication];
     [app setDelegate:nil];
-    NSWindow* window  = [[NSWindow alloc] initWithContentRect:frame
-                                                    styleMask:NSBorderlessWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask|NSResizableWindowMask
-                                                      backing:NSBackingStoreBuffered
-                                                        defer:NO];
-    [window setBackgroundColor:[NSColor blueColor]];
-    
-    NSButton *button = [ [ NSButton alloc ] initWithFrame: NSMakeRect( 30.0, 20.0, 80.0, 50.0 ) ];
-    [ button setBezelStyle:NSRoundedBezelStyle];
-    [ button setTitle: @"Click" ];
-//    [ button setAction:@selector(doSomething:)];
-//    [ button setTarget:controller];
-    [ [ window contentView ] addSubview: button ];
-    
-    [window makeKeyAndOrderFront:NSApp];
+//    NSWindow* window  = [[NSWindow alloc] initWithContentRect:frame
+//                                                    styleMask:NSBorderlessWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask|NSResizableWindowMask
+//                                                      backing:NSBackingStoreBuffered
+//                                                        defer:NO];
+//    [window setBackgroundColor:[NSColor blueColor]];
+//    
+//    NSButton *button = [ [ NSButton alloc ] initWithFrame: NSMakeRect( 30.0, 20.0, 80.0, 50.0 ) ];
+//    [ button setBezelStyle:NSRoundedBezelStyle];
+//    [ button setTitle: @"Click" ];
+////    [ button setAction:@selector(doSomething:)];
+////    [ button setTarget:controller];
+//    [ [ window contentView ] addSubview: button ];
+//    
+//    [window makeKeyAndOrderFront:NSApp];
     
     
     NSMenu * mainMenu = [[NSMenu new] autorelease];
