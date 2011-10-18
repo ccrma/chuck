@@ -108,5 +108,5 @@ $(OBJCXXOBJS): %.o: %.mm
 	@$(CXX) -MM $(CFLAGSDEPEND) $< > $*.d
 
 clean: 
-	rm -f $(wildcard chuck chuck.exe) $(OBJS) $(patsubst %.o,%.d,$(OBJS)) \
-	*~ chuck.output chuck.tab.h chuck.tab.c chuck.yy.c
+	@rm -f $(wildcard chuck chuck.exe) $(OBJS) $(patsubst %.o,%.d,$(OBJS)) \
+*~ chuck.output chuck.tab.h chuck.tab.c chuck.yy.c

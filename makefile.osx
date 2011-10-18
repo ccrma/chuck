@@ -6,14 +6,14 @@ LINK_EXTRAS=-F/System/Library/PrivateFrameworks \
     -weak_framework MultitouchSupport
 endif
 
-CFLAGS=-D__MACOSX_CORE__ -m32 -Iui -I`pwd`
+CFLAGS=-D__MACOSX_CORE__ -m32
 LDFLAGS=-framework CoreAudio -framework CoreMIDI -framework CoreFoundation \
 	-framework IOKit -framework Carbon -framework AppKit \
 	$(LINK_EXTRAS) -lstdc++ -lm -m32
 
 CSRCS+= util_sndfile.c
-CXXSRCS+= ui/miniAudicle_ui_elements.cpp ui/miniAudicle_import.cpp
-OBJCXXSRCS+= ui/macosx/chuck_ui.mm ui/macosx/miniAudicle_ui_elements.mm
+CXXSRCS+= miniAudicle_ui_elements.cpp miniAudicle_import.cpp
+OBJCXXSRCS+= chuck_ui_mac.mm miniAudicle_ui_elements_mac.mm
 
 ifneq ($(CHUCK_STAT),)
 CFLAGS+= -D__CHUCK_STAT_TRACK__

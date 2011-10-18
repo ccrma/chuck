@@ -14,15 +14,15 @@ CXX=gcc-4.0
 LD=g++-4.0
 endif
 
-CFLAGS+= -D__MACOSX_CORE__ -D__MACOSX_UB__ -Iui -I`pwd` -arch ppc -arch i386 $(ISYSROOT)
+CFLAGS+= -D__MACOSX_CORE__ -D__MACOSX_UB__ -arch ppc -arch i386 $(ISYSROOT)
 CFLAGSDEPEND+= -D__MACOSX_CORE__ -D__MACOSX_UB__ $(ISYSROOT)
 LDFLAGS+= -framework CoreAudio -framework CoreMIDI -framework CoreFoundation \
 	-framework IOKit -framework Carbon -framework AppKit -framework Foundation \
 	$(ISYSROOT) $(LINK_EXTRAS) -lstdc++ -lm -arch ppc -arch i386
 
 CSRCS+= util_sndfile.c
-CXXSRCS+= ui/miniAudicle_ui_elements.cpp ui/miniAudicle_import.cpp
-OBJCXXSRCS+= ui/macosx/chuck_ui.mm ui/macosx/miniAudicle_ui_elements.mm
+CXXSRCS+= miniAudicle_ui_elements.cpp miniAudicle_import.cpp
+OBJCXXSRCS+= chuck_ui_mac.mm miniAudicle_ui_elements_mac.mm
 
 # this is to link properly on leopard...
 MACOSX_DEPLOYMENT_TARGET=10.4
