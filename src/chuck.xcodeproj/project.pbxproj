@@ -309,8 +309,6 @@
 		09A40B3A0A9A54DA007604EA /* hidio_sdl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = hidio_sdl.h; sourceTree = SOURCE_ROOT; };
 		09A40B3B0A9A54DA007604EA /* midiio_rtmidi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = midiio_rtmidi.cpp; sourceTree = SOURCE_ROOT; };
 		09A40B3C0A9A54DA007604EA /* midiio_rtmidi.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = midiio_rtmidi.h; sourceTree = SOURCE_ROOT; };
-		09A40B3E0A9A54DA007604EA /* rtaudio.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = rtaudio.h; sourceTree = SOURCE_ROOT; };
-		09A40B3F0A9A54DA007604EA /* rterror.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = rterror.h; sourceTree = SOURCE_ROOT; };
 		09A40B400A9A54DA007604EA /* rtmidi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = rtmidi.cpp; sourceTree = SOURCE_ROOT; };
 		09A40B410A9A54DA007604EA /* rtmidi.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = rtmidi.h; sourceTree = SOURCE_ROOT; };
 		09A40B420A9A54DA007604EA /* ugen_filter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ugen_filter.cpp; sourceTree = SOURCE_ROOT; };
@@ -788,8 +786,6 @@
 				09A40B3A0A9A54DA007604EA /* hidio_sdl.h */,
 				09A40B3B0A9A54DA007604EA /* midiio_rtmidi.cpp */,
 				09A40B3C0A9A54DA007604EA /* midiio_rtmidi.h */,
-				09A40B3E0A9A54DA007604EA /* rtaudio.h */,
-				09A40B3F0A9A54DA007604EA /* rterror.h */,
 				09A40B400A9A54DA007604EA /* rtmidi.cpp */,
 				09A40B410A9A54DA007604EA /* rtmidi.h */,
 				09A40B420A9A54DA007604EA /* ugen_filter.cpp */,
