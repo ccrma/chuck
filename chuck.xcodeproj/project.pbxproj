@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		090A4AC1144D04F900D48B1E /* chuck_ui.mm in Sources */ = {isa = PBXBuildFile; fileRef = 090A4AC0144D04F900D48B1E /* chuck_ui.mm */; };
+		090A4ACF144D078900D48B1E /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 090A4ACE144D078900D48B1E /* AppKit.framework */; };
+		090A4B19144D593400D48B1E /* miniAudicle_ui_elements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090A4B17144D593400D48B1E /* miniAudicle_ui_elements.cpp */; };
+		090A4B1B144D594E00D48B1E /* miniAudicle_ui_elements.mm in Sources */ = {isa = PBXBuildFile; fileRef = 090A4B1A144D594E00D48B1E /* miniAudicle_ui_elements.mm */; };
+		090A4B28144D59BC00D48B1E /* miniAudicle_import.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090A4B26144D59BC00D48B1E /* miniAudicle_import.cpp */; };
 		090A5BE80AA75AEA005DC04D /* util_hid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090A5BE70AA75AEA005DC04D /* util_hid.cpp */; };
 		090B4B1E0C4F038E00DF5577 /* uana_xform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */; };
 		095D14591341476200BBD9EB /* MultitouchSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 095D14581341476200BBD9EB /* MultitouchSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -80,6 +85,14 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXFileReference section */
+		090A4ABF144D04F900D48B1E /* chuck_ui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chuck_ui.h; sourceTree = "<group>"; };
+		090A4AC0144D04F900D48B1E /* chuck_ui.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = chuck_ui.mm; sourceTree = "<group>"; };
+		090A4ACE144D078900D48B1E /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		090A4B17144D593400D48B1E /* miniAudicle_ui_elements.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = miniAudicle_ui_elements.cpp; sourceTree = "<group>"; };
+		090A4B18144D593400D48B1E /* miniAudicle_ui_elements.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = miniAudicle_ui_elements.h; sourceTree = "<group>"; };
+		090A4B1A144D594E00D48B1E /* miniAudicle_ui_elements.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = miniAudicle_ui_elements.mm; sourceTree = "<group>"; };
+		090A4B26144D59BC00D48B1E /* miniAudicle_import.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = miniAudicle_import.cpp; sourceTree = "<group>"; };
+		090A4B27144D59BC00D48B1E /* miniAudicle_import.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = miniAudicle_import.h; sourceTree = "<group>"; };
 		090A5BE70AA75AEA005DC04D /* util_hid.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = util_hid.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = uana_xform.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1B0C4F038E00DF5577 /* uana_xform.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = uana_xform.h; sourceTree = SOURCE_ROOT; };
@@ -378,12 +391,35 @@
 				098060350AA14E8800915136 /* Foundation.framework in Frameworks */,
 				098060360AA14E8900915136 /* IOKit.framework in Frameworks */,
 				095D14591341476200BBD9EB /* MultitouchSupport.framework in Frameworks */,
+				090A4ACF144D078900D48B1E /* AppKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		090A4B45144D5B5D00D48B1E /* ui */ = {
+			isa = PBXGroup;
+			children = (
+				090A4ABF144D04F900D48B1E /* chuck_ui.h */,
+				090A4B26144D59BC00D48B1E /* miniAudicle_import.cpp */,
+				090A4B27144D59BC00D48B1E /* miniAudicle_import.h */,
+				090A4B17144D593400D48B1E /* miniAudicle_ui_elements.cpp */,
+				090A4B18144D593400D48B1E /* miniAudicle_ui_elements.h */,
+				090A4B46144D5B6200D48B1E /* macosx */,
+			);
+			path = ui;
+			sourceTree = "<group>";
+		};
+		090A4B46144D5B6200D48B1E /* macosx */ = {
+			isa = PBXGroup;
+			children = (
+				090A4AC0144D04F900D48B1E /* chuck_ui.mm */,
+				090A4B1A144D594E00D48B1E /* miniAudicle_ui_elements.mm */,
+			);
+			path = macosx;
+			sourceTree = "<group>";
+		};
 		0980603D0AA158F600915136 /* Examples */ = {
 			isa = PBXGroup;
 			children = (
@@ -861,6 +897,7 @@
 		09A40E130A9AC96C007604EA /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				090A4B45144D5B5D00D48B1E /* ui */,
 				09A5C88413DDFB350082DF50 /* RtAudio */,
 				09A40B000A9A52FC007604EA /* ChucK */,
 			);
@@ -915,6 +952,7 @@
 			children = (
 				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
 				095D14581341476200BBD9EB /* MultitouchSupport.framework */,
+				090A4ACE144D078900D48B1E /* AppKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1020,6 +1058,10 @@
 				090B4B1E0C4F038E00DF5577 /* uana_xform.cpp in Sources */,
 				09812B9C0C6E394A00D1D68C /* uana_extract.cpp in Sources */,
 				09A5C88D13DDFB350082DF50 /* RtAudio.cpp in Sources */,
+				090A4AC1144D04F900D48B1E /* chuck_ui.mm in Sources */,
+				090A4B19144D593400D48B1E /* miniAudicle_ui_elements.cpp in Sources */,
+				090A4B1B144D594E00D48B1E /* miniAudicle_ui_elements.mm in Sources */,
+				090A4B28144D59BC00D48B1E /* miniAudicle_import.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

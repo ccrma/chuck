@@ -57,6 +57,8 @@
 #include "util_network.h"
 #include "hidio_sdl.h"
 
+#include "chuck_ui.h"
+
 #include <signal.h>
 #ifndef __PLATFORM_WIN32__
   #include <unistd.h>
@@ -294,6 +296,42 @@ static void parse_path_list( std::string & str, std::list<std::string> & lst )
     }
     
     lst.push_back( str.substr( last, str.size() - last ) );
+}
+
+
+struct vm_cb_arg
+{
+    vm_cb_arg() { memset(this, 0, sizeof(vm_cb_arg)); }
+    
+    Chuck_VM * vm;
+    Chuck_Compiler * compiler;
+    t_CKBOOL enable_shell;
+};
+
+void * vm_cb(void * _arg)
+{
+    vm_cb_arg * arg = (vm_cb_arg *) _arg;
+    
+    Chuck_VM * vm = arg->vm;
+    Chuck_Compiler * compiler = arg->compiler;
+    t_CKBOOL enable_shell = arg->enable_shell;
+    
+    SAFE_DELETE(arg);
+    
+    vm->run();
+    
+    all_detach();
+    
+    // free vm
+    vm = NULL; SAFE_DELETE( g_vm );
+    // free the compiler
+    compiler = NULL; SAFE_DELETE( g_compiler );
+    
+    // wait for the shell, if it is running
+    // does the VM reset its priority to normal before exiting?
+    if( enable_shell )
+        while( g_shell != NULL )
+            usleep(10000);
 }
 
 
@@ -884,23 +922,20 @@ static void parse_path_list( std::string & str, std::list<std::string> & lst )
         g_tid_shell = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)shell_cb, g_shell, 0, 0 );
 #endif
     }
-
-    // run the vm
-    vm->run();
-
-    // detach
-    all_detach();
-
-    // free vm
-    vm = NULL; SAFE_DELETE( g_vm );
-    // free the compiler
-    compiler = NULL; SAFE_DELETE( g_compiler );
-
-    // wait for the shell, if it is running
-    // does the VM reset its priority to normal before exiting?
-    if( enable_shell )
-        while( g_shell != NULL )
-            usleep(10000);
-
+    
+    
+    XThread * vm_thread = new XThread;
+    vm_cb_arg * arg = new vm_cb_arg();
+    arg->vm = vm;
+    arg->compiler = compiler;
+    arg->enable_shell = enable_shell;
+    vm_thread->start(vm_cb, arg);
+    
+    
+    Chuck_UI_Manager * ui_manager = new Chuck_UI_Manager();
+    ui_manager->go();
+    
+    
     return 0;
 }
+

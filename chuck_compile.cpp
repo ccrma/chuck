@@ -45,6 +45,7 @@
 #include "ulib_math.h"
 #include "ulib_std.h"
 #include "ulib_opsc.h"
+#include "miniAudicle_import.h"
 
 #if defined(__PLATFORM_WIN32__)
 #include "dirent_win32.h"
@@ -590,6 +591,9 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     
     // commit what is in the type checker at this point
     env->global()->commit();
+    
+    EM_log( CK_LOG_SEVERE, "class 'MAUI'..." );
+    if( !init_maui( compiler->env ) ) goto error;
     
     // pop indent level
     EM_poplog();

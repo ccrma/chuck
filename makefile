@@ -74,10 +74,12 @@ CXXSRCS+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	ulib_opsc.cpp util_buffers.cpp util_console.cpp \
 	util_string.cpp util_thread.cpp util_opsc.cpp \
 	util_hid.cpp uana_xform.cpp uana_extract.cpp
+OBJCXXSRCS+= 
 
 COBJS=$(CSRCS:.c=.o)
 CXXOBJS=$(CXXSRCS:.cpp=.o)
-OBJS=$(COBJS) $(CXXOBJS)
+OBJCXXOBJS=$(OBJCXXSRCS:.mm=.o)
+OBJS=$(COBJS) $(CXXOBJS) $(OBJCXXOBJS)
 
 CFLAGSDEPEND?=$(CFLAGS)
 
@@ -98,6 +100,10 @@ $(COBJS): %.o: %.c
 	@$(CXX) -MM $(CFLAGSDEPEND) $< > $*.d
 
 $(CXXOBJS): %.o: %.cpp
+	$(CXX) $(CFLAGS) -c $< -o $@
+	@$(CXX) -MM $(CFLAGSDEPEND) $< > $*.d
+
+$(OBJCXXOBJS): %.o: %.mm
 	$(CXX) $(CFLAGS) -c $< -o $@
 	@$(CXX) -MM $(CFLAGSDEPEND) $< > $*.d
 
