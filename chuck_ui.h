@@ -11,7 +11,11 @@
 class Chuck_UI_Manager
 {
 public:
-    Chuck_UI_Manager();
+    static Chuck_UI_Manager * instance();
     
     void go();
+    void shutdown();
+    
+private:
+    Chuck_UI_Manager();
 };

@@ -138,6 +138,8 @@ extern "C" void signal_int( int sig_num )
         // will this work for windows?
         SAFE_DELETE( vm );
         SAFE_DELETE( compiler );
+        
+        Chuck_UI_Manager::instance()->shutdown();
 
         // ck_close( g_sock );
     }
@@ -332,6 +334,10 @@ void * vm_cb(void * _arg)
     if( enable_shell )
         while( g_shell != NULL )
             usleep(10000);
+    
+    Chuck_UI_Manager::instance()->shutdown();
+    
+    return NULL;
 }
 
 
@@ -932,8 +938,7 @@ void * vm_cb(void * _arg)
     vm_thread->start(vm_cb, arg);
     
     
-    Chuck_UI_Manager * ui_manager = new Chuck_UI_Manager();
-    ui_manager->go();
+    Chuck_UI_Manager::instance()->go();
     
     
     return 0;

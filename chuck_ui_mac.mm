@@ -12,9 +12,20 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
+
+static Chuck_UI_Manager * g_ui_manager = NULL;
+
+
 Chuck_UI_Manager::Chuck_UI_Manager()
 {
     
+}
+
+Chuck_UI_Manager * Chuck_UI_Manager::instance()
+{
+    if(g_ui_manager == NULL)
+        g_ui_manager = new Chuck_UI_Manager;
+    return g_ui_manager;
 }
 
 void Chuck_UI_Manager::go()
@@ -23,27 +34,8 @@ void Chuck_UI_Manager::go()
     
     NSAutoreleasePool * temp_pool = [NSAutoreleasePool new];
     
-    NSRect frame = NSMakeRect(0, 0, 200, 200);
-    
-    //AppController *controller = [[AppController alloc] init];
-    
     NSApplication * app = [NSApplication sharedApplication];
-    [app setDelegate:nil];
-//    NSWindow* window  = [[NSWindow alloc] initWithContentRect:frame
-//                                                    styleMask:NSBorderlessWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask|NSResizableWindowMask
-//                                                      backing:NSBackingStoreBuffered
-//                                                        defer:NO];
-//    [window setBackgroundColor:[NSColor blueColor]];
-//    
-//    NSButton *button = [ [ NSButton alloc ] initWithFrame: NSMakeRect( 30.0, 20.0, 80.0, 50.0 ) ];
-//    [ button setBezelStyle:NSRoundedBezelStyle];
-//    [ button setTitle: @"Click" ];
-////    [ button setAction:@selector(doSomething:)];
-////    [ button setTarget:controller];
-//    [ [ window contentView ] addSubview: button ];
-//    
-//    [window makeKeyAndOrderFront:NSApp];
-    
+    [app setDelegate:nil];    
     
     NSMenu * mainMenu = [[NSMenu new] autorelease];
     NSMenu * chuckMenu = [[NSMenu new] autorelease];
@@ -73,11 +65,22 @@ void Chuck_UI_Manager::go()
     
     [NSMenu setMenuBarVisible:YES];
     
-    
     [temp_pool release];
     
     //[[NSRunLoop currentRunLoop] run];
     [[NSApplication sharedApplication] run];
+    
+    [arpool release];
+}
+
+
+void Chuck_UI_Manager::shutdown()
+{
+    NSAutoreleasePool * arpool = [NSAutoreleasePool new];
+    
+    [[NSApplication sharedApplication] performSelectorOnMainThread:@selector(terminate:)
+                                                        withObject:NSApp
+                                                     waitUntilDone:NO];
     
     [arpool release];
 }
