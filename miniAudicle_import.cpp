@@ -619,6 +619,15 @@ t_CKBOOL init_class_mauibutton( Chuck_Env * env )
     func = make_new_mfun( "void", "toggleType", mauibutton_toggle_type );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
+    // add unsetImage()
+    func = make_new_mfun( "void", "unsetImage", mauibutton_unset_image );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add setImage()
+    func = make_new_mfun( "int", "setImage", mauibutton_set_image );
+    func->add_arg( "string", "filepath" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
     // wrap up
     type_engine_import_class_end( env );
     
@@ -676,6 +685,19 @@ CK_DLL_MFUN( mauibutton_toggle_type )
 {
     UI::Button * button = (UI::Button *)OBJ_MEMBER_INT(SELF, mauielement_offset_data);
     button->set_action_type( UI::Button::toggle_type );
+}
+
+CK_DLL_MFUN( mauibutton_set_image )
+{
+    UI::Button * button = (UI::Button *)OBJ_MEMBER_INT(SELF, mauielement_offset_data);
+    Chuck_String * s = GET_NEXT_STRING(ARGS);
+    RETURN->v_int = button->set_image(s->str);
+}
+
+CK_DLL_MFUN( mauibutton_unset_image )
+{
+    UI::Button * button = (UI::Button *)OBJ_MEMBER_INT(SELF, mauielement_offset_data);
+    button->unset_image();
 }
 
 // MAUI_LED implementation

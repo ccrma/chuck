@@ -247,6 +247,9 @@ public:
     };
     virtual t_CKBOOL set_action_type( action_type t );
     virtual action_type get_action_type();
+    
+    virtual t_CKBOOL unset_image();
+    virtual t_CKBOOL set_image( std::string & path );
      
     /* enum text_position
      {

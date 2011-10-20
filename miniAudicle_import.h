@@ -93,6 +93,8 @@ CK_DLL_MFUN( mauibutton_set_state );
 CK_DLL_MFUN( mauibutton_get_state );
 CK_DLL_MFUN( mauibutton_push_type );
 CK_DLL_MFUN( mauibutton_toggle_type );
+CK_DLL_MFUN( mauibutton_set_image );
+CK_DLL_MFUN( mauibutton_unset_image );
 
 //-----------------------------------------------------------------------------
 // MAUILED API

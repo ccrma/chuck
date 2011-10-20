@@ -761,6 +761,7 @@ void Slider::slider_changed( t_CKDOUBLE v )
 - (void)setActionType;
 - (void)setState;
 - (void)setName;
+- (void)setImage:(NSImage *)i;
 - (void)buttonDidChange;
 
 @end
@@ -862,6 +863,11 @@ void Slider::slider_changed( t_CKDOUBLE v )
         [button setTitle:[NSString stringWithUTF8String:owner->get_name().c_str()]];
 }
 
+- (void)setImage:(NSImage *)i
+{
+    [button setImage:i];
+}
+
 - (void)buttonDidChange
 {
     if( !b_owner )
@@ -940,6 +946,36 @@ t_CKBOOL Button::set_action_type( action_type t )
 Button::action_type Button::get_action_type()
 {
     return at;
+}
+
+t_CKBOOL Button::unset_image()
+{
+    [native_button performSelectorOnMainThread:@selector(setImage:)
+                                    withObject:nil
+                                 waitUntilDone:NO];
+    return TRUE;
+}
+    
+t_CKBOOL Button::set_image( std::string & path )
+{
+    NSAutoreleasePool * arpool = [NSAutoreleasePool new];
+    
+    NSImage * i = [[NSImage alloc] initWithContentsOfFile:[NSString stringWithUTF8String:path.c_str()]];
+    
+    if(i == NULL)
+    {
+        return FALSE;
+    }
+    
+    [native_button performSelectorOnMainThread:@selector(setImage:)
+                                    withObject:i
+                                 waitUntilDone:NO];
+    
+    [i release];
+    
+    [arpool release];
+    
+    return TRUE;
 }
 
 void Button::button_changed()
