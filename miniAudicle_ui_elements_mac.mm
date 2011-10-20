@@ -313,7 +313,7 @@ t_CKBOOL Element::set_position( t_CKFLOAT x, t_CKFLOAT y )
 - (void)setName
 {
     if( owner )
-        [panel setTitle:[NSString stringWithCString:(owner->get_name()).c_str()]];
+        [panel setTitle:[NSString stringWithUTF8String:(owner->get_name()).c_str()]];
 }
 
 - (void)setSize
@@ -545,7 +545,7 @@ t_CKBOOL View::remove_element( Element * e )
 {
     if( !owner )
         return;
-    [title setStringValue:[NSString stringWithCString:owner->get_name().c_str()]];
+    [title setStringValue:[NSString stringWithUTF8String:owner->get_name().c_str()]];
 }
 
 - (void)setValue
@@ -789,7 +789,7 @@ void Slider::slider_changed( t_CKDOUBLE v )
         [button setBezelStyle:NSShadowlessSquareBezelStyle];
         
         if( owner )
-            [button setTitle:[NSString stringWithCString:owner->get_name().c_str()]];
+            [button setTitle:[NSString stringWithUTF8String:owner->get_name().c_str()]];
         [button setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
         
         master_view = [[NSView alloc] initWithFrame:NSMakeRect( 0, 0, w, h )];
@@ -857,7 +857,7 @@ void Slider::slider_changed( t_CKDOUBLE v )
         return;
     
     if( button != nil )
-        [button setTitle:[NSString stringWithCString:owner->get_name().c_str()]];
+        [button setTitle:[NSString stringWithUTF8String:owner->get_name().c_str()]];
 }
 
 - (void)buttonDidChange
@@ -950,10 +950,10 @@ void Button::button_changed()
 
 } /* namespace UI */
 
-const static NSString * off_image_name = @"led-off.png";
-const static NSString * red_image_name = @"led-red.png";
-const static NSString * green_image_name = @"led-green.png";
-const static NSString * blue_image_name = @"led-blue.png";
+static NSString * const off_image_name = @"led-off.png";
+static NSString * const red_image_name = @"led-red.png";
+static NSString * const green_image_name = @"led-green.png";
+static NSString * const blue_image_name = @"led-blue.png";
 
 @interface mAUILED : mAUIElement
 {
@@ -1192,7 +1192,7 @@ LED::color LED::get_color()
 
         [master_view addSubview:text];
         
-        [text setStringValue:[NSString stringWithCString:owner->get_name().c_str()]];
+        [text setStringValue:[NSString stringWithUTF8String:owner->get_name().c_str()]];
     }
     
     return self;
@@ -1211,7 +1211,7 @@ LED::color LED::get_color()
 {
     if( owner )
     {
-        [text setStringValue:[NSString stringWithCString:owner->get_name().c_str()]];
+        [text setStringValue:[NSString stringWithUTF8String:owner->get_name().c_str()]];
         [text sizeToFit];
     }
 }
