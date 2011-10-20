@@ -70,6 +70,7 @@
 		098061AE0AA15BDB00915136 /* chuck_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 098061AD0AA15BDB00915136 /* chuck_main.cpp */; };
 		09812B9C0C6E394A00D1D68C /* uana_extract.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09812B980C6E394A00D1D68C /* uana_extract.cpp */; };
 		09A5C88D13DDFB350082DF50 /* RtAudio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A5C88913DDFB350082DF50 /* RtAudio.cpp */; };
+		09F9E0D2144FD3F900389ED1 /* util_icon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09F9E0D1144FD3F900389ED1 /* util_icon.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -377,6 +378,8 @@
 		09A5C88A13DDFB350082DF50 /* RtAudio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RtAudio.h; sourceTree = "<group>"; };
 		09A5C88B13DDFB350082DF50 /* RtError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RtError.h; sourceTree = "<group>"; };
 		09F05F580B74558400023899 /* tilt.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = tilt.ck; path = examples/hid/tilt.ck; sourceTree = SOURCE_ROOT; };
+		09F9E0D1144FD3F900389ED1 /* util_icon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = util_icon.cpp; sourceTree = "<group>"; };
+		09F9E0D3144FD40B00389ED1 /* util_icon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util_icon.h; sourceTree = "<group>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -882,6 +885,8 @@
 				090A4B27144D59BC00D48B1E /* miniAudicle_import.h */,
 				090A4B17144D593400D48B1E /* miniAudicle_ui_elements.cpp */,
 				090A4B18144D593400D48B1E /* miniAudicle_ui_elements.h */,
+				09F9E0D1144FD3F900389ED1 /* util_icon.cpp */,
+				09F9E0D3144FD40B00389ED1 /* util_icon.h */,
 				09A5C88413DDFB350082DF50 /* RtAudio */,
 				09A40B000A9A52FC007604EA /* ChucK */,
 			);
@@ -1049,6 +1054,7 @@
 				090A4B19144D593400D48B1E /* miniAudicle_ui_elements.cpp in Sources */,
 				090A4B1B144D594E00D48B1E /* miniAudicle_ui_elements_mac.mm in Sources */,
 				090A4B28144D59BC00D48B1E /* miniAudicle_import.cpp in Sources */,
+				09F9E0D2144FD3F900389ED1 /* util_icon.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

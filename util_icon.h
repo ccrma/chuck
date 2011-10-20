@@ -23,26 +23,31 @@
  -----------------------------------------------------------------------------*/
 
 //-----------------------------------------------------------------------------
-// file: chuck_ui.h
-// desc: UI setup
+// file: util_icon.h
+// desc: icon/image data
 //
 // author: Spencer Salazar (spencer@ccrma.stanford.edu
 // date: October 2011
 //-----------------------------------------------------------------------------
 
-#ifndef __CHUCK_UI_H__
-#define __CHUCK_UI_H__
+#ifndef __UTIL_ICON_H__
+#define __UTIL_ICON_H__
 
-class Chuck_UI_Manager
-{
-public:
-    static Chuck_UI_Manager * instance();
-    
-    void go();
-    void shutdown();
-    
-private:
-    Chuck_UI_Manager();
-};
+#include <sys/types.h>
 
-#endif 
+extern const unsigned char miniAudicle_png[];
+extern const size_t miniAudicle_png_length;
+
+extern const unsigned char led_red_png[];
+extern const size_t led_red_png_length;
+
+extern const unsigned char led_blue_png[];
+extern const size_t led_blue_png_length;
+
+extern const unsigned char led_green_png[];
+extern const size_t led_green_png_length;
+
+extern const unsigned char led_off_png[];
+extern const size_t led_off_png_length;
+
+#endif

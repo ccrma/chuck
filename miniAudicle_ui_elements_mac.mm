@@ -32,6 +32,8 @@ U.S.A.
 #import <Cocoa/Cocoa.h>
 
 #include "miniAudicle_ui_elements.h"
+#include "util_icon.h"
+
 using namespace std;
 //using namespace miniAudicle::UI;
 using namespace UI;
@@ -955,6 +957,7 @@ static NSString * const red_image_name = @"led-red.png";
 static NSString * const green_image_name = @"led-green.png";
 static NSString * const blue_image_name = @"led-blue.png";
 
+
 @interface mAUILED : mAUIElement
 {
     NSImage * off_image;
@@ -963,6 +966,11 @@ static NSString * const blue_image_name = @"led-blue.png";
     
     LED * l_owner;
 }
+
++ (NSImage *)offImage;
++ (NSImage *)redImage;
++ (NSImage *)greenImage;
++ (NSImage *)blueImage;
 
 - (void)link:( LED * )l;
 - (void)unlink;
@@ -975,6 +983,58 @@ static NSString * const blue_image_name = @"led-blue.png";
 @end
 
 @implementation mAUILED
+
++ (NSImage *)offImage
+{
+    static NSImage * g_off_image = nil;
+    if(g_off_image == nil)
+    {
+        g_off_image = [[NSImage alloc] initWithData:[NSData dataWithBytesNoCopy:(void *)led_off_png 
+                                                                         length:led_off_png_length
+                                                                   freeWhenDone:NO]];
+    }
+    
+    return g_off_image;
+}
+
++ (NSImage *)redImage
+{
+    static NSImage * g_red_image = nil;
+    if(g_red_image == nil)
+    {
+        g_red_image = [[NSImage alloc] initWithData:[NSData dataWithBytesNoCopy:(void *)led_red_png 
+                                                                         length:led_red_png_length
+                                                                   freeWhenDone:NO]];
+    }
+    
+    return g_red_image;
+}
+
++ (NSImage *)greenImage
+{
+    static NSImage * g_green_image = nil;
+    if(g_green_image == nil)
+    {
+        g_green_image = [[NSImage alloc] initWithData:[NSData dataWithBytesNoCopy:(void *)led_green_png 
+                                                                           length:led_green_png_length
+                                                                     freeWhenDone:NO]];
+    }
+    
+    return g_green_image;
+}
+
++ (NSImage *)blueImage
+{
+    static NSImage * g_blue_image = nil;
+    if(g_blue_image == nil)
+    {
+        g_blue_image = [[NSImage alloc] initWithData:[NSData dataWithBytesNoCopy:(void *)led_blue_png 
+                                                                          length:led_blue_png_length
+                                                                    freeWhenDone:NO]];
+    }
+    
+    return g_blue_image;
+}
 
 - (void)link:( LED * )l
 {
@@ -990,8 +1050,8 @@ static NSString * const blue_image_name = @"led-blue.png";
 {
     if( self = [super init] )
     {
-        on_image = [[NSImage imageNamed:red_image_name] retain];
-        off_image = [[NSImage imageNamed:off_image_name] retain];
+        on_image = [mAUILED redImage];
+        off_image = [mAUILED offImage];
         
         image_view = [[NSImageView alloc] initWithFrame:NSMakeRect( LED::default_margin,
                                                                     LED::default_margin,
@@ -1051,20 +1111,17 @@ static NSString * const blue_image_name = @"led-blue.png";
     
     if( c == LED::red )
     {
-        [on_image autorelease];
-        on_image = [[NSImage imageNamed:red_image_name] retain];
+        on_image = [mAUILED redImage];
     }
     
     else if( c == LED::green )
     {
-        [on_image autorelease];
-        on_image = [[NSImage imageNamed:green_image_name] retain];
+        on_image = [mAUILED greenImage];
     }
     
     else if( c == LED::blue )
     {
-        [on_image autorelease];
-        on_image = [[NSImage imageNamed:blue_image_name] retain];
+        on_image = [mAUILED blueImage];
     }
 }
 
