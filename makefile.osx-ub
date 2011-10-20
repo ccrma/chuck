@@ -21,7 +21,7 @@ LDFLAGS+= -framework CoreAudio -framework CoreMIDI -framework CoreFoundation \
 	$(ISYSROOT) $(LINK_EXTRAS) -lstdc++ -lm -arch ppc -arch i386
 
 CSRCS+= util_sndfile.c
-CXXSRCS+= miniAudicle_ui_elements.cpp miniAudicle_import.cpp
+CXXSRCS+= miniAudicle_ui_elements.cpp miniAudicle_import.cpp util_icon.cpp
 OBJCXXSRCS+= chuck_ui_mac.mm miniAudicle_ui_elements_mac.mm
 
 # this is to link properly on leopard...

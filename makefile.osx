@@ -12,7 +12,7 @@ LDFLAGS=-framework CoreAudio -framework CoreMIDI -framework CoreFoundation \
 	$(LINK_EXTRAS) -lstdc++ -lm -m32
 
 CSRCS+= util_sndfile.c
-CXXSRCS+= miniAudicle_ui_elements.cpp miniAudicle_import.cpp
+CXXSRCS+= miniAudicle_ui_elements.cpp miniAudicle_import.cpp util_icon.cpp
 OBJCXXSRCS+= chuck_ui_mac.mm miniAudicle_ui_elements_mac.mm
 
 ifneq ($(CHUCK_STAT),)
