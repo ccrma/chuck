@@ -71,6 +71,9 @@ Chuck_UI_Manager::Chuck_UI_Manager()
 
 void Chuck_UI_Manager::go()
 {
+    // TODO: handle case where VM shuts down before this function finishes,
+    // which seems to cause crashes
+    
     NSAutoreleasePool * arpool = [NSAutoreleasePool new];
     
     NSAutoreleasePool * temp_pool = [NSAutoreleasePool new];
