@@ -76,6 +76,8 @@ CK_DLL_MFUN( maslider_set_precision );
 CK_DLL_MFUN( maslider_get_precision );
 CK_DLL_MFUN( maslider_set_display_format );
 CK_DLL_MFUN( maslider_get_display_format );
+CK_DLL_MFUN( maslider_set_orientation );
+CK_DLL_MFUN( maslider_get_orientation );
 
 //-----------------------------------------------------------------------------
 // MAUIView API

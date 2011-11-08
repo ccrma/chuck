@@ -467,6 +467,7 @@ t_CKBOOL View::remove_element( Element * e )
 - (void)setValue;
 - (void)setRange;
 - (void)setDisplayFormat;
+- (void)setOrientation;
 - (void)updateDisplay;
 - (void)sliderDidChange;
 
@@ -505,6 +506,7 @@ t_CKBOOL View::remove_element( Element * e )
         [title setBezeled:NO];
         [title setDrawsBackground:NO];
         [title setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin | NSViewMaxYMargin];
+        [title setAlignment:NSLeftTextAlignment];
         
         value = [[NSTextField alloc] initWithFrame:NSMakeRect( Slider::default_margin,
                                                                Slider::default_margin + Slider::default_slider_height + Slider::default_inner_margin,
@@ -528,6 +530,7 @@ t_CKBOOL View::remove_element( Element * e )
         
         [self setDisplayFormat];
         [self updateDisplay];
+        [self setOrientation];
     }
     
     return self;
@@ -591,6 +594,52 @@ t_CKBOOL View::remove_element( Element * e )
         display_format = @"%.*e";
 }
 
+- (void)setOrientation
+{
+    t_CKFLOAT width = s_owner->get_width();
+    t_CKFLOAT height = s_owner->get_height();
+    
+    if( s_owner->get_orientation() == Slider::horizontal )
+    {
+        
+        [slider setFrame:NSMakeRect(Slider::default_margin, 
+                                    Slider::default_margin,
+                                    width - Slider::default_margin*2, 
+                                    Slider::default_slider_height)];
+        
+        [title setFrame:NSMakeRect(Slider::default_margin,
+                                   Slider::default_margin + Slider::default_slider_height + Slider::default_inner_margin,
+                                   width - Slider::default_margin*2,
+                                   Slider::default_text_height)];
+        [title setAlignment:NSLeftTextAlignment];
+        
+        [value setFrame:NSMakeRect(Slider::default_margin,
+                                   Slider::default_margin + Slider::default_slider_height + Slider::default_inner_margin,
+                                   width - Slider::default_margin*2,
+                                   Slider::default_text_height)];
+        [value setAlignment:NSRightTextAlignment];
+    }
+    else if( s_owner->get_orientation() == Slider::vertical )
+    {
+        [slider setFrame:NSMakeRect(width/2 - Slider::default_slider_height/2, // default_slider_height -> width
+                                    Slider::default_margin + Slider::default_text_height + Slider::default_inner_margin,
+                                    Slider::default_slider_height,  // default_slider_height -> width)
+                                    height - Slider::default_inner_margin*2 - Slider::default_margin*2 - Slider::default_text_height*2)];
+        
+        [title setFrame:NSMakeRect(Slider::default_margin,
+                                   height - Slider::default_margin - Slider::default_text_height,
+                                   width - Slider::default_margin*2,
+                                   Slider::default_text_height)];
+        [title setAlignment:NSCenterTextAlignment];
+        
+        [value setFrame:NSMakeRect(Slider::default_margin,
+                                   Slider::default_margin,
+                                   width - Slider::default_margin*2,
+                                   Slider::default_text_height)];
+        [value setAlignment:NSCenterTextAlignment];
+    }
+}
+
 - (void)updateDisplay
 {
     if( !s_owner )
@@ -624,7 +673,7 @@ const t_CKUINT Slider::default_inner_margin = 5;
 const t_CKUINT Slider::default_text_height = 17;
 
 t_CKBOOL Slider::init()
-{   
+{
     w = default_width + default_margin * 2;
     h = default_slider_height + default_inner_margin + 
         default_text_height + default_margin * 2;
@@ -634,12 +683,13 @@ t_CKBOOL Slider::init()
     
     df = best_format;
     precision = 4;
+    m_orientation = Slider::horizontal;
         
     native_element = native_slider = [mAUISlider alloc];
     [native_slider link:this];
     [native_slider performSelectorOnMainThread:@selector(init)
-                                          withObject:nil
-                                       waitUntilDone:NO];
+                                    withObject:nil
+                                 waitUntilDone:NO];
     
     return TRUE;
 }
@@ -726,6 +776,27 @@ Slider::display_format Slider::get_display_format()
     return df;
 }
 
+t_CKBOOL Slider::set_orientation( orientation o )
+{
+    if( o == horizontal || o == vertical )
+    {
+        m_orientation = o;
+        
+        [native_slider performSelectorOnMainThread:@selector(setOrientation)
+                                        withObject:nil
+                                     waitUntilDone:NO];
+        
+        return TRUE;
+    }
+    
+    return FALSE;
+}
+    
+Slider::orientation Slider::get_orientation()
+{
+    return m_orientation;
+}
+    
 void Slider::slider_changed( t_CKDOUBLE v )
 {
     if( df == integer_format )
@@ -738,8 +809,8 @@ void Slider::slider_changed( t_CKDOUBLE v )
     
     // refresh
     [native_slider performSelectorOnMainThread:@selector(updateDisplay)
-                                          withObject:nil
-                                       waitUntilDone:NO];
+                                    withObject:nil
+                                 waitUntilDone:NO];
 }
 
 } /* namespace UI */
@@ -810,11 +881,15 @@ void Slider::slider_changed( t_CKDOUBLE v )
 - (void)destroy
 {
     if( button != nil )
+    {
         [button release];
+        button = nil;
+    }
     if( master_view != nil )
     {
         [master_view removeFromSuperview];
         [master_view release];
+        master_view = nil;
     }
     
     [self autorelease];

@@ -264,6 +264,9 @@ const Slider::display_format Slider::integer_format = 0;
 const Slider::display_format Slider::decimal_format = 1;
 const Slider::display_format Slider::scientific_format = 2;
 const Slider::display_format Slider::best_format = 3;
+    
+const Slider::orientation Slider::horizontal = 1;
+const Slider::orientation Slider::vertical = 2;
 
 const LED::color LED::red = 0;
 const LED::color LED::green = 1;

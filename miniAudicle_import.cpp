@@ -381,6 +381,15 @@ t_CKBOOL init_class_maslider( Chuck_Env * env )
     func->add_arg( "int", "df" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
+    // add get_orientation()
+    func = make_new_mfun( "int", "orientation", maslider_get_orientation );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add set_orientation()
+    func = make_new_mfun( "int", "orientation", maslider_set_orientation );
+    func->add_arg( "int", "o" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
     // add bestFormat
     if( !type_engine_import_svar( env, "int", "bestFormat", TRUE, (t_CKUINT)&UI::Slider::best_format ) )
         goto error;
@@ -395,6 +404,14 @@ t_CKBOOL init_class_maslider( Chuck_Env * env )
     
     // add integerFormat
     if( !type_engine_import_svar( env, "int", "integerFormat", TRUE, (t_CKUINT)&UI::Slider::integer_format ) )
+        goto error;
+    
+    // add vertical
+    if( !type_engine_import_svar( env, "int", "vertical", TRUE, (t_CKUINT)&UI::Slider::vertical ) )
+        goto error;
+    
+    // add horizontal
+    if( !type_engine_import_svar( env, "int", "horizontal", TRUE, (t_CKUINT)&UI::Slider::horizontal ) )
         goto error;
     
     // wrap up
@@ -515,6 +532,21 @@ CK_DLL_MFUN( maslider_set_display_format )
     UI::Slider * slider = (UI::Slider *)OBJ_MEMBER_INT(SELF, mauielement_offset_data);
     slider->set_display_format( GET_NEXT_INT( ARGS ) );
     RETURN->v_int = slider->get_display_format();
+}
+
+// get_orientation
+CK_DLL_MFUN( maslider_get_orientation )
+{
+    UI::Slider * slider = (UI::Slider *)OBJ_MEMBER_INT(SELF, mauielement_offset_data);
+    RETURN->v_int = slider->get_orientation();
+}
+
+// set_orientation
+CK_DLL_MFUN( maslider_set_orientation )
+{
+    UI::Slider * slider = (UI::Slider *)OBJ_MEMBER_INT(SELF, mauielement_offset_data);
+    slider->set_orientation( GET_NEXT_INT( ARGS ) );
+    RETURN->v_int = slider->get_orientation();
 }
 
 // MAUI_View implementation
