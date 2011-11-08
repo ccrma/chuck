@@ -489,6 +489,8 @@ t_CKBOOL View::remove_element( Element * e )
 {
     if( self = [super init] )
     {
+        assert(owner != NULL);
+        
         slider = [[NSSlider alloc] initWithFrame:NSMakeRect( Slider::default_margin, 
                                                              Slider::default_margin,
                                                              Slider::default_width, 
@@ -518,11 +520,7 @@ t_CKBOOL View::remove_element( Element * e )
         [value setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin | NSViewMaxYMargin];
         [value setAlignment:NSRightTextAlignment];
         
-        t_CKFLOAT w = Slider::default_width + Slider::default_margin * 2,
-            h = Slider::default_slider_height + Slider::default_inner_margin + 
-            Slider::default_text_height + 
-            Slider::default_margin * 2;
-        master_view = [[NSView alloc] initWithFrame:NSMakeRect( 0, 0, w, h )];
+        master_view = [[NSView alloc] initWithFrame:NSMakeRect( 0, 0, owner->get_width(), owner->get_height() )];
         [master_view setAutoresizingMask:NSViewNotSizable];
         [master_view addSubview:slider];
         [master_view addSubview:title];
@@ -606,18 +604,21 @@ t_CKBOOL View::remove_element( Element * e )
                                     Slider::default_margin,
                                     width - Slider::default_margin*2, 
                                     Slider::default_slider_height)];
+        [slider setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin | NSViewMaxYMargin];
         
         [title setFrame:NSMakeRect(Slider::default_margin,
                                    Slider::default_margin + Slider::default_slider_height + Slider::default_inner_margin,
                                    width - Slider::default_margin*2,
                                    Slider::default_text_height)];
         [title setAlignment:NSLeftTextAlignment];
-        
+        [title setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
+
         [value setFrame:NSMakeRect(Slider::default_margin,
                                    Slider::default_margin + Slider::default_slider_height + Slider::default_inner_margin,
                                    width - Slider::default_margin*2,
                                    Slider::default_text_height)];
         [value setAlignment:NSRightTextAlignment];
+        [value setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
     }
     else if( s_owner->get_orientation() == Slider::vertical )
     {
@@ -625,18 +626,21 @@ t_CKBOOL View::remove_element( Element * e )
                                     Slider::default_margin + Slider::default_text_height + Slider::default_inner_margin,
                                     Slider::default_slider_height,  // default_slider_height -> width)
                                     height - Slider::default_inner_margin*2 - Slider::default_margin*2 - Slider::default_text_height*2)];
+        [slider setAutoresizingMask:NSViewHeightSizable | NSViewMinXMargin | NSViewMaxXMargin];
         
         [title setFrame:NSMakeRect(Slider::default_margin,
                                    height - Slider::default_margin - Slider::default_text_height,
                                    width - Slider::default_margin*2,
                                    Slider::default_text_height)];
         [title setAlignment:NSCenterTextAlignment];
-        
+        [title setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
+
         [value setFrame:NSMakeRect(Slider::default_margin,
                                    Slider::default_margin,
                                    width - Slider::default_margin*2,
                                    Slider::default_text_height)];
         [value setAlignment:NSCenterTextAlignment];
+        [value setAutoresizingMask:NSViewWidthSizable | NSViewMaxYMargin];
     }
 }
 
