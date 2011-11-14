@@ -4342,8 +4342,8 @@ t_CKBOOL type_engine_get_deprecate( Chuck_Env * env,
 //-----------------------------------------------------------------------------
 Chuck_Type * type_engine_find_deprecated_type( Chuck_Env * env, a_Id_List path )
 {
-    S_Symbol xid = NULL;
-    Chuck_Type * t = NULL;
+//    S_Symbol xid = NULL;
+//    Chuck_Type * t = NULL;
     std::string actual;
 
     // find mapping
@@ -5701,7 +5701,7 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
 error:
     // error
     EM_error2( 0, "...(in object import '%s' in DLL '%s')", 
-        query ? ( query->dll_name.c_str() == "" ? query->dll_name.c_str() : "[empty]" ) : "[null]", dll->name() );
+        query ? ( strlen(query->dll_name.c_str()) == 0  ? query->dll_name.c_str() : "[empty]" ) : "[null]", dll->name() );
 
     // free the path
     delete_id_list( path );

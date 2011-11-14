@@ -271,7 +271,7 @@ static t_CKINT uanablob_offset_cvals = 0;
 t_CKBOOL init_class_blob( Chuck_Env * env, Chuck_Type * type )
 {
     Chuck_DL_Func * func = NULL;
-    Chuck_Value * value = NULL;
+    //Chuck_Value * value = NULL;
     
     // log
     EM_log( CK_LOG_SEVERE, "class 'uanablob'" );
@@ -387,7 +387,7 @@ error:
 
 
 
-static t_CKUINT shred_offset_args = 0;
+//static t_CKUINT shred_offset_args = 0;
 //-----------------------------------------------------------------------------
 // name: init_class_shred()
 // desc: ...
@@ -1950,7 +1950,7 @@ CK_DLL_MFUN( ugen_cget_gain )
 CK_DLL_CTRL( ugen_numChannels )
 {
     // get ugen
-    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    //Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     // error
     EM_error3( "setting .numChannels is not yet supported (use the command line)..." );
 }
@@ -3632,7 +3632,7 @@ CK_DLL_MFUN( HidOut_num )
 
 CK_DLL_MFUN( HidOut_name )
 {
-    HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
+    //HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
     // TODO: memory leak, please fix, Thanks.
     Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
     // only if valid
@@ -3651,7 +3651,7 @@ CK_DLL_MFUN( HidOut_printerr )
 CK_DLL_MFUN( HidOut_send )
 {
     HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
-    Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
+    //Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
     HidMsg the_msg;
 /*    the_msg.data[0] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data1);
     the_msg.data[1] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data2);

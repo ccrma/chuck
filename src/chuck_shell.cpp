@@ -1750,7 +1750,7 @@ t_CKINT Chuck_Shell::Command_VMRemove::execute( vector< string > & argv,
     for( ; i < len; i++ )
     {
         vm_no = strtoul( argv[i].c_str(), NULL, 10 );
-        if( vm_no == 0 && errno == EINVAL || caller->vms.size() <= vm_no || 
+        if( ( vm_no == 0 && errno == EINVAL ) || caller->vms.size() <= vm_no || 
             caller->vms[vm_no] == NULL )
         {
             out += "error: invalid VM id: " + argv[i] + "\n";
@@ -1780,8 +1780,7 @@ t_CKINT Chuck_Shell::Command_VMSwap::execute( vector< string > & argv,
     }
     
     new_vm = strtol( argv[0].c_str(), NULL, 10 );
-    if( new_vm >= caller->vms.size() || new_vm < 0 || 
-        caller->vms[new_vm] == NULL )
+    if( new_vm >= caller->vms.size() || caller->vms[new_vm] == NULL )
     {
         out += string( "error: invalid VM: " ) + argv[0] + "\n";
         return -1;

@@ -156,7 +156,7 @@ UINT__ CBufferAdvance::join( Chuck_Event * event )
 void CBufferAdvance::resign( UINT__ read_offset_index )
 {
     // make sure read_offset_index passed in is valid
-    if( read_offset_index < 0 || read_offset_index >= m_read_offsets.size() )
+    if( read_offset_index >= m_read_offsets.size() )
         return;
 
     // TODO: necessary?

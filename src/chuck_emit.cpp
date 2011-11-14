@@ -2716,6 +2716,9 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
 
             break;
         }
+            
+        case ae_primary_nil:
+            break;
     }
     
     return TRUE;

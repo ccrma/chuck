@@ -1103,7 +1103,7 @@ CK_DLL_TICK( genX_tick )
     // get the data
     genX_Data * d = (genX_Data *)OBJ_MEMBER_UINT(SELF, genX_offset_data );
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
-    t_CKBOOL inc_phase = TRUE;
+//    t_CKBOOL inc_phase = TRUE;
     
     t_CKDOUBLE in_index = 0.0;
     t_CKDOUBLE scaled_index = 0.0;
@@ -1459,7 +1459,7 @@ CK_DLL_CTRL( curve_coeffs )
     // get data
     genX_Data * d = (genX_Data *)OBJ_MEMBER_UINT(SELF, genX_offset_data);
     t_CKINT i, points, nargs, seglen = 0, len = genX_tableSize;
-    t_CKDOUBLE factor, *ptr, xmax=0.0;
+    t_CKDOUBLE factor, *ptr;//, xmax=0.0;
     t_CKDOUBLE time[MAX_CURVE_PTS], value[MAX_CURVE_PTS], alpha[MAX_CURVE_PTS];
     t_CKFLOAT coeffs[genX_MAX_COEFFS];
     t_CKUINT ii = 0;
@@ -1633,7 +1633,7 @@ t_CKDOUBLE _symwarp(t_CKDOUBLE inval, t_CKDOUBLE k)
 //-----------------------------------------------------------------------------
 CK_DLL_PMSG( genX_pmsg )
 {
-    genX_Data * d = (genX_Data *)OBJ_MEMBER_UINT(SELF, genX_offset_data );
+    //genX_Data * d = (genX_Data *)OBJ_MEMBER_UINT(SELF, genX_offset_data );
     if( !strcmp( MSG, "print" ) )
     {
         // fprintf( stdout, "genX:" );
