@@ -155,14 +155,18 @@ CK_DLL_MFUN(bar_floatArg)
 
 CK_DLL_MFUN(bar_durArg)
 {
-    fprintf(stderr, "calling bar_durArg with arg: %lf\n", 
-            GET_NEXT_DUR(ARGS));
+    t_CKFLOAT samples = GET_NEXT_DUR(ARGS);
+    t_CKFLOAT seconds = samples / API->vm->get_srate();
+    fprintf(stderr, "calling bar_durArg with arg: %lf (%lf seconds)\n", 
+            samples, seconds);
 }
 
 CK_DLL_MFUN(bar_timeArg)
 {
-    fprintf(stderr, "calling bar_timeArg with arg: %lf\n", 
-            GET_NEXT_TIME(ARGS));
+    t_CKFLOAT samples = GET_NEXT_DUR(ARGS);
+    t_CKFLOAT seconds = samples / API->vm->get_srate();
+    fprintf(stderr, "calling bar_timeArg with arg: %lf (%lf seconds)\n", 
+            samples, seconds);
 }
 
 CK_DLL_MFUN(bar_stringArg)
