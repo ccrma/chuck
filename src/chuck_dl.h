@@ -535,15 +535,21 @@ typedef void * String;
 struct Api
 {
 public:
-    Api() {}
-
     static Api g_api;
     static inline const Api * instance() { return &g_api; }
+    
+    struct VMApi
+    {
+        VMApi();
+        
+        t_CKUINT (* const get_srate)();
+    } * const vm;
     
     struct ObjectApi
     {
         ObjectApi();
         
+    private:
         Type (* const get_type)( std::string &name );
 
         Object (* const create)( Type type );
@@ -558,10 +564,19 @@ public:
         
         t_CKBOOL (* const set_string)( String string, std::string &value );
         
-    } object;
+    } * const object;
+    
+    Api() :
+    vm(new VMApi),
+    object(new ObjectApi)
+    {}
     
 private:
-    Api(Api &a) { assert(0); };
+    Api(Api &a) :
+    vm(a.vm),
+    object(a.object)
+    { assert(0); };
+    
     Api &operator=(Api &a) { assert(0); return a; }
 };
     

@@ -39,6 +39,8 @@
 #include "chuck_bbq.h"
 #include "chuck_type.h"
 #include "chuck_instr.h"
+#include "chuck_globals.h"
+#include "chuck_vm.h"
 #include <sstream>
 using namespace std;
 
@@ -853,17 +855,13 @@ Chuck_DL_Func::~Chuck_DL_Func()
 namespace Chuck_DL_Api
 {
     Api Api::g_api;
-    
-//    Api * g_api = NULL;
-//    
-//    Api * Api::instance()
-//    {
-//        if( g_api == NULL )
-//            g_api = new Api;
-//        return g_api;
-//    }
 }
 
+
+static t_CKUINT ck_get_srate()
+{
+    return g_vm->srate();
+}
 
 static Chuck_DL_Api::Type ck_get_type( std::string & name )
 {
@@ -935,6 +933,11 @@ static t_CKBOOL ck_set_string( Chuck_DL_Api::String s, std::string & str )
     
     return TRUE;
 }
+
+
+Chuck_DL_Api::Api::VMApi::VMApi() :
+get_srate(ck_get_srate)
+{ }
 
 
 Chuck_DL_Api::Api::ObjectApi::ObjectApi() :
