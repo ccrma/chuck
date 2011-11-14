@@ -2085,7 +2085,7 @@ void Chuck_Instr_Branch_Neq_int_IO_good::execute( Chuck_VM * vm, Chuck_VM_Shred 
     if( (*ppIO) != NULL )
     {
         // TODO: verify this logic
-        t_CKINT result = (*ppIO)->good() && !(*ppIO)->eof();
+        //t_CKINT result = (*ppIO)->good() && !(*ppIO)->eof();
     }
 
     if( result != val_(sp+1) || !(ppIO) )

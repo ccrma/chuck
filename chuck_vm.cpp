@@ -2239,7 +2239,7 @@ void Chuck_VM_Shreduler::status( Chuck_VM_Status * status )
     }
 
     // get current shred
-    if( temp = m_current_shred )
+    if( ( temp = m_current_shred ) )
         list.push_back( temp );
 
     // sort the list

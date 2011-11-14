@@ -129,7 +129,7 @@ t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func proc_msg )
 CK_DLL_SFUN( machine_crash_impl )
 {
     fprintf( stderr, "[chuck]: crashing...\n" );
-    *(int *)0 = 0;
+    *(volatile int *)0 = 0;
 }
 
 

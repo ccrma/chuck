@@ -207,7 +207,7 @@ static void readable_name(MIDIEndpointRef end, char *buffer, int bufsize)
 {  
     MIDIEntityRef ent = NULL;
     MIDIDeviceRef dev = NULL;
-    int ii, count, length, ret;
+    int ii, count, length;//, ret;
     SInt32 *idarray;
     CFDataRef data = NULL;
     CFStringRef s;
@@ -585,7 +585,7 @@ unsigned int RtMidiIn :: getPortCount()
 
 std::string RtMidiIn :: getPortName( unsigned int portNumber )
 {
-  CFStringRef nameRef;
+//  CFStringRef nameRef;
   MIDIEndpointRef portRef;
   std::ostringstream ost;
   char name[128];
@@ -619,7 +619,7 @@ unsigned int RtMidiOut :: getPortCount()
 
 std::string RtMidiOut :: getPortName( unsigned int portNumber )
 {
-  CFStringRef nameRef;
+//  CFStringRef nameRef;
   MIDIEndpointRef portRef;
   std::ostringstream ost;
   char name[128];

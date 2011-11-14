@@ -17567,7 +17567,7 @@ CK_DLL_CTRL( Instrmnt_ctrl_freq )
 CK_DLL_CGET( Instrmnt_cget_freq )
 {
     Instrmnt * i = (Instrmnt *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
+//    t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
     RETURN->v_float = (t_CKFLOAT)i->m_frequency;
 }
 

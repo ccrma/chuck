@@ -3033,9 +3033,9 @@ CK_DLL_TOCK( DCT_tock )
 CK_DLL_MFUN( DCT_transform )
 {
     // get object
-    DCT_object * dct = (DCT_object *)OBJ_MEMBER_UINT(SELF, DCT_offset_data);
+//    DCT_object * dct = (DCT_object *)OBJ_MEMBER_UINT(SELF, DCT_offset_data);
     // get array
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+//    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
 }
 
 
