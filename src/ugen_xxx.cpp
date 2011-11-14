@@ -797,7 +797,7 @@ error:
 
 
 // LiSa (live sampling data offset)
-static t_CKUINT LiSaBasic_offset_data = 0;
+//static t_CKUINT LiSaBasic_offset_data = 0;
 static t_CKUINT LiSaMulti_offset_data = 0;
 
 //-----------------------------------------------------------------------------
@@ -2827,7 +2827,7 @@ CK_DLL_CGET( sndbuf_cget_phase )
 CK_DLL_CTRL( sndbuf_ctrl_channel )
 { 
     sndbuf_data * d = ( sndbuf_data * ) OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
-    unsigned long chan = (unsigned long)GET_CK_INT(ARGS);
+    t_CKINT chan = GET_CK_INT(ARGS);
     if ( chan >= 0 && chan < d->num_channels ) { 
         d->chan = chan;
     }

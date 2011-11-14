@@ -1576,7 +1576,7 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
         this->close();
     
     // try to open as a dir first
-    if (m_dir = opendir( path.c_str() ) ) {
+    if ((m_dir = opendir( path.c_str() ))) {
         EM_poplog();
         return TRUE;
     }
@@ -1851,7 +1851,7 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     rewinddir( m_dir );
     std::vector<Chuck_String *> entrylist;
     struct dirent *ent;
-    while ( ent = readdir( m_dir ) )
+    while ( (ent = readdir( m_dir )) )
     {
         Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
         s->str = std::string( ent->d_name );

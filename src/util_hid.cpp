@@ -1420,8 +1420,8 @@ void Hid_init2()
         
     IOReturn result = kIOReturnSuccess;
     io_iterator_t hidObjectIterator = 0;
-    CFTypeRef refCF;
-    t_CKINT filter_usage_page = kHIDPage_GenericDesktop;
+//    CFTypeRef refCF;
+//    t_CKINT filter_usage_page = kHIDPage_GenericDesktop;
     
     // allocate vectors of device records
     joysticks = new xvector< OSX_Hid_Device * >;
@@ -2714,7 +2714,7 @@ static void * sms_loop( void * )
 static unsigned int __stdcall sms_loop( void * )
 #endif
 {
-    t_CKINT c;
+//    t_CKINT c;
     EM_log( CK_LOG_INFO, "starting SMS multi-threaded loop..." );
 
     // go
@@ -2799,7 +2799,7 @@ void SMSManager::off()
 }
 
 
-static int TiltSensor_test( int kernFunc, char * servMatch, int dataType )
+static int TiltSensor_test( int kernFunc, const char * servMatch, int dataType )
 {
     kern_return_t result;
     io_iterator_t iterator;
