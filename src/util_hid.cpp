@@ -7024,7 +7024,9 @@ void Hid_quit()
         return;
     
     hid_channel_msg hcm = { HID_CHANNEL_QUIT, NULL };
-    write( hid_channel_w, &hcm, sizeof( hcm ) );
+    if (write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1)
+      EM_log( CK_LOG_WARNING, "HID_CHANNEL_QUIT message failed: %s" , strerror( errno ) );
+
     close( hid_channel_w );
         
     delete[] pollfds;
@@ -7161,7 +7163,12 @@ int Joystick_open( int js )
         }
         
         hid_channel_msg hcm = { HID_CHANNEL_OPEN, joystick };
-        write( hid_channel_w, &hcm, sizeof( hcm ) );
+        if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1) 
+        {
+            EM_log( CK_LOG_SEVERE, "joystick: unable to write channel message %s: %s", 
+                joystick->filename, strerror( errno ) );
+            return -1;
+        }
     }
     
     joystick->refcount++;
@@ -7181,7 +7188,9 @@ int Joystick_close( int js )
     if( joystick->refcount == 0 )
     {
         hid_channel_msg hcm = { HID_CHANNEL_CLOSE, joystick };
-        write( hid_channel_w, &hcm, sizeof( hcm ) );
+        if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1) return -1;
+            EM_log( CK_LOG_SEVERE, "joystick: unable complete close message: %s", 
+                 strerror( errno ) );
     }
     
     
@@ -7359,7 +7368,11 @@ int Mouse_open( int m )
         
         mouse->needs_open = TRUE;
         hid_channel_msg hcm = { HID_CHANNEL_OPEN, mouse };
-        write( hid_channel_w, &hcm, sizeof( hcm ) );
+        if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1) 
+        {
+            EM_log( CK_LOG_SEVERE, "mouse: unable to complete open message %: %s", strerror( errno ) );
+            return -1;
+        }
     }
     
     mouse->refcount++;
@@ -7380,7 +7393,8 @@ int Mouse_close( int m )
     {
         mouse->needs_close = TRUE;
         hid_channel_msg hcm = { HID_CHANNEL_CLOSE, mouse };
-        write( hid_channel_w, &hcm, sizeof( hcm ) );
+        if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1)
+          EM_log( CK_LOG_WARNING, "mouse: HID_CHANNEL_CLOSE message failed: %s" , strerror( errno ) );
     }
     
     return 0;
@@ -7531,7 +7545,11 @@ int Keyboard_open( int k )
         }
         
         hid_channel_msg hcm = { HID_CHANNEL_OPEN, keyboard };
-        write( hid_channel_w, &hcm, sizeof( hcm ) );
+        if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1) 
+        {
+            EM_log( CK_LOG_SEVERE, "keyboard: unable to write open message: %s", strerror( errno ) );
+            return -1;
+        }
     }
     
     keyboard->refcount++;
@@ -7551,7 +7569,8 @@ int Keyboard_close( int k )
     if( keyboard->refcount == 0 )
     {
         hid_channel_msg hcm = { HID_CHANNEL_CLOSE, keyboard };
-        write( hid_channel_w, &hcm, sizeof( hcm ) );
+        if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1)
+          EM_log( CK_LOG_WARNING, "keyboard: HID_CHANNEL_CLOSE message failed: %s" , strerror( errno ) );
     }
     
     return 0;
