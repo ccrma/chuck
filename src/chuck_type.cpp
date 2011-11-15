@@ -4231,7 +4231,7 @@ t_CKBOOL type_engine_check_reserved( Chuck_Env * env, S_Symbol xid, int pos )
 t_CKBOOL type_engine_check_primitive( Chuck_Type * type )
 {
     return ( isa(type, &t_int) || isa(type, &t_float) || isa(type, &t_dur) ||
-             isa(type, &t_time) ) || isa(type, &t_complex) || isa(type, &t_polar)
+             isa(type, &t_time) || isa(type, &t_complex) || isa(type, &t_polar) )
              && ( type->array_depth == 0 );
 }
 t_CKBOOL isprim( Chuck_Type * type )
