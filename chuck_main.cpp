@@ -56,6 +56,7 @@
 #include "util_thread.h"
 #include "util_network.h"
 #include "hidio_sdl.h"
+#include "util_path.h"
 
 #include "chuck_ui.h"
 
@@ -97,6 +98,17 @@ char g_default_chugin_path[] = "/usr/lib/chuck";
 #endif
 
 char g_chugin_path_envvar[] = "CHUCK_CHUGIN_PATH";
+
+
+#if defined(__MACOSX_CORE__)
+char g_default_chuck_path[] = ".";
+#elif defined(__PLATFORM_WIN32__)
+char g_default_chugin_path[] = ".";
+#else // Linux/Cygwin
+char g_default_chugin_path[] = ".";
+#endif
+
+char g_chuck_path_envvar[] = "CHUCK_PATH";
 
 
 
@@ -389,6 +401,21 @@ void * vm_cb(void * _arg)
         initial_chugin_path = g_default_chugin_path;
     parse_path_list( initial_chugin_path, dl_search_path );
     std::list<std::string> named_dls;
+    
+    /* parse CHUCK_PATH */
+    std::string chuck_path;
+    if( getenv( g_chuck_path_envvar ) )
+        chuck_path = getenv( g_chuck_path_envvar );
+    else
+        chuck_path = g_default_chuck_path;
+    std::list<std::string> chuck_path_list;
+    parse_path_list( chuck_path, chuck_path_list );
+    for( std::list<std::string>::iterator iter = chuck_path_list.begin();
+         iter != chuck_path_list.end(); iter++ )
+    {
+        Chuck_Path_Manager::instance()->addPath(*iter);
+    }
+    
     
     string   filename = "";
     vector<string> args;

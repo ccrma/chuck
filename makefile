@@ -73,7 +73,7 @@ CXXSRCS+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	ugen_stk.cpp ugen_xxx.cpp ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
 	ulib_opsc.cpp util_buffers.cpp util_console.cpp \
 	util_string.cpp util_thread.cpp util_opsc.cpp \
-	util_hid.cpp uana_xform.cpp uana_extract.cpp
+	util_hid.cpp uana_xform.cpp uana_extract.cpp util_path.cpp
 OBJCXXSRCS+= 
 
 COBJS=$(CSRCS:.c=.o)

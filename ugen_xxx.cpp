@@ -50,6 +50,7 @@
 #include "chuck_ugen.h"
 #include "chuck_vm.h"
 #include "chuck_globals.h"
+#include "util_path.h"
 
 #include <fstream>
 using namespace std;
@@ -2658,6 +2659,8 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
     }
     else // read file
     {
+        filename = Chuck_Path_Manager::instance()->resolveFilename( filename ).c_str();
+        
         // stat the file first
         struct stat s;
         if( stat( filename, &s ) )

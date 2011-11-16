@@ -14,6 +14,7 @@
 		090A4B28144D59BC00D48B1E /* miniAudicle_import.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090A4B26144D59BC00D48B1E /* miniAudicle_import.cpp */; };
 		090A5BE80AA75AEA005DC04D /* util_hid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090A5BE70AA75AEA005DC04D /* util_hid.cpp */; };
 		090B4B1E0C4F038E00DF5577 /* uana_xform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */; };
+		09520DB0147339DD002B6E09 /* util_path.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09520DAF147339DD002B6E09 /* util_path.cpp */; };
 		095D14591341476200BBD9EB /* MultitouchSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 095D14581341476200BBD9EB /* MultitouchSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		09805FFA0AA10D3800915136 /* chuck.lex in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B350A9A54DA007604EA /* chuck.lex */; };
 		09805FFB0AA10D3900915136 /* chuck.y in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B360A9A54DA007604EA /* chuck.y */; };
@@ -97,6 +98,8 @@
 		090A5BE70AA75AEA005DC04D /* util_hid.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = util_hid.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = uana_xform.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1B0C4F038E00DF5577 /* uana_xform.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = uana_xform.h; sourceTree = SOURCE_ROOT; };
+		09520DAF147339DD002B6E09 /* util_path.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = util_path.cpp; sourceTree = "<group>"; };
+		09520DB1147339F5002B6E09 /* util_path.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util_path.h; sourceTree = "<group>"; };
 		095D14581341476200BBD9EB /* MultitouchSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultitouchSupport.framework; path = System/Library/PrivateFrameworks/MultitouchSupport.framework; sourceTree = SDKROOT; };
 		09805FE70AA10D0C00915136 /* chuck */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = chuck; sourceTree = BUILT_PRODUCTS_DIR; };
 		0980604F0AA159A100915136 /* array_argument.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = array_argument.ck; path = examples/array/array_argument.ck; sourceTree = SOURCE_ROOT; };
@@ -847,6 +850,8 @@
 				09A40B650A9A54DA007604EA /* util_thread.h */,
 				09A40B660A9A54DA007604EA /* util_xforms.c */,
 				09A40B670A9A54DA007604EA /* util_xforms.h */,
+				09520DAF147339DD002B6E09 /* util_path.cpp */,
+				09520DB1147339F5002B6E09 /* util_path.h */,
 			);
 			name = ChucK;
 			sourceTree = "<group>";
@@ -1055,6 +1060,7 @@
 				090A4B1B144D594E00D48B1E /* miniAudicle_ui_elements_mac.mm in Sources */,
 				090A4B28144D59BC00D48B1E /* miniAudicle_import.cpp in Sources */,
 				09F9E0D2144FD3F900389ED1 /* util_icon.cpp in Sources */,
+				09520DB0147339DD002B6E09 /* util_path.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
