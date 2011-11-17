@@ -26,7 +26,7 @@
 // file: chuck_ui_mac.mm
 // desc: ui boilerplate for mac os x 
 //
-// author: Spencer Salazar (spencer@ccrma.stanford.edu
+// author: Spencer Salazar (spencer@ccrma.stanford.edu)
 // date: October 2011
 //-----------------------------------------------------------------------------
 
@@ -49,13 +49,12 @@ static Chuck_UI_Controller * g_ui_controller = nil;
 @interface Chuck_UI_Controller : NSObject<NSApplicationDelegate>
 {
 @private
+    Chuck_UI_Manager * uiManager;
 }
 
 - (void)quit;
 
 @end
-
-
 
 Chuck_UI_Manager * Chuck_UI_Manager::instance()
 {
@@ -66,11 +65,31 @@ Chuck_UI_Manager * Chuck_UI_Manager::instance()
 
 Chuck_UI_Manager::Chuck_UI_Manager()
 {
+    init();
+    
     g_ui_controller = [Chuck_UI_Controller new];
 }
 
-void Chuck_UI_Manager::go()
+void Chuck_UI_Manager::init()
 {
+    m_hasStarted = false;
+    m_doStart = false;
+    m_doShutdown = false;
+}
+
+void Chuck_UI_Manager::run()
+{
+    while( !m_doStart && !m_doShutdown )
+    {
+        // TODO: semaphore?
+        usleep(10000);
+    }
+    
+    if( m_doShutdown )
+        return;
+    
+    m_doStart = false;
+    
     // TODO: handle case where VM shuts down before this function finishes,
     // which seems to cause crashes
     
@@ -123,21 +142,35 @@ void Chuck_UI_Manager::go()
     
     [temp_pool release];
     
+    m_hasStarted = true;
+    m_doStart = false;
+    
     [app run];
     
     [arpool release];
 }
 
 
+void Chuck_UI_Manager::start()
+{
+    if( !m_hasStarted )
+        m_doStart = true;
+}
+
 void Chuck_UI_Manager::shutdown()
 {
-    NSAutoreleasePool * arpool = [NSAutoreleasePool new];
+    m_doShutdown = true;
     
-    [[NSApplication sharedApplication] performSelectorOnMainThread:@selector(terminate:)
-                                                        withObject:NSApp
-                                                     waitUntilDone:NO];
-    
-    [arpool release];
+    if( m_hasStarted || m_doStart )
+    {
+        NSAutoreleasePool * arpool = [NSAutoreleasePool new];
+        
+        [[NSApplication sharedApplication] performSelectorOnMainThread:@selector(terminate:)
+                                                            withObject:NSApp
+                                                         waitUntilDone:NO];
+        
+        [arpool release];
+    }
 }
 
 

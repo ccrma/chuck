@@ -38,11 +38,23 @@ class Chuck_UI_Manager
 public:
     static Chuck_UI_Manager * instance();
     
-    void go();
+    // init before starting the VM
+    void init();
+    // run in a parallel thread to the VM
+    // wait for VM thread to make calls to UI functions before bringing up UI
+    void run();
+    
+    // actually bring up the UI
+    void start();
+    // shutdown the UI
     void shutdown();
     
 private:
     Chuck_UI_Manager();
+    
+    bool m_doStart;
+    bool m_hasStarted;
+    bool m_doShutdown;
 };
 
 #endif 

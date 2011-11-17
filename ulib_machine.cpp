@@ -35,6 +35,7 @@
 #include "chuck_vm.h"
 #include "chuck_errmsg.h"
 #include "chuck_globals.h"
+#include "util_path.h"
 
 
 
@@ -136,7 +137,9 @@ CK_DLL_SFUN( machine_crash_impl )
 // add
 CK_DLL_SFUN( machine_add_impl )
 {
-    const char * v = GET_CK_STRING(ARGS)->str.c_str();
+    std::string &name = GET_CK_STRING(ARGS)->str;
+    const char * v = Chuck_Path_Manager::instance()->resolveFilename(name).c_str();
+    
     Net_Msg msg;
 
     msg.type = MSG_ADD;
@@ -159,7 +162,8 @@ CK_DLL_SFUN( machine_remove_impl )
 CK_DLL_SFUN( machine_replace_impl )
 {
     t_CKINT v = GET_NEXT_INT(ARGS);
-    const char * v2 = GET_NEXT_STRING(ARGS)->str.c_str();
+    std::string &name = GET_CK_STRING(ARGS)->str;
+    const char * v2 = Chuck_Path_Manager::instance()->resolveFilename(name).c_str();
     Net_Msg msg;
     
     msg.type = MSG_REPLACE;

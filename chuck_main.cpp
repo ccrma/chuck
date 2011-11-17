@@ -956,6 +956,7 @@ void * vm_cb(void * _arg)
 #endif
     }
     
+    Chuck_UI_Manager::instance()->init();
     
     XThread * vm_thread = new XThread;
     vm_cb_arg * arg = new vm_cb_arg();
@@ -965,7 +966,7 @@ void * vm_cb(void * _arg)
     vm_thread->start(vm_cb, arg);
     
     
-    Chuck_UI_Manager::instance()->go();
+    Chuck_UI_Manager::instance()->run();
     
     
     return 0;

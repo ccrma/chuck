@@ -32,6 +32,7 @@ U.S.A.
 
 #include "miniAudicle_ui_elements.h"
 #include "chuck_errmsg.h"
+#include "chuck_ui.h"
 
 using namespace std;
 
@@ -49,6 +50,8 @@ Element::Element()
     x = y = 0;
     w = h = 0;
     lmargin = rmargin = tmargin = bmargin = 0;
+    
+    Chuck_UI_Manager::instance()->start();
 }
 
 Element::~Element()
