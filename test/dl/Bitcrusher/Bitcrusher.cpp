@@ -11,7 +11,9 @@ CK_DLL_CTOR(bitcrusher_ctor);
 CK_DLL_DTOR(bitcrusher_dtor);
 
 CK_DLL_MFUN(bitcrusher_setBits);
+CK_DLL_MFUN(bitcrusher_getBits);
 CK_DLL_MFUN(bitcrusher_setDownsampleFactor);
+CK_DLL_MFUN(bitcrusher_getDownsampleFactor);
 
 CK_DLL_TICK(bitcrusher_tick);
 
@@ -39,11 +41,15 @@ CK_DLL_QUERY(Bitcrusher)
     
     QUERY->add_ugen_func(QUERY, bitcrusher_tick, NULL, 1, 1);
     
-    QUERY->add_mfun(QUERY, bitcrusher_setBits, "void", "bits");
+    QUERY->add_mfun(QUERY, bitcrusher_setBits, "int", "bits");
     QUERY->add_arg(QUERY, "int", "arg");
     
-    QUERY->add_mfun(QUERY, bitcrusher_setDownsampleFactor, "void", "downsampleFactor");
+    QUERY->add_mfun(QUERY, bitcrusher_getBits, "int", "bits");
+    
+    QUERY->add_mfun(QUERY, bitcrusher_setDownsampleFactor, "int", "downsampleFactor");
     QUERY->add_arg(QUERY, "int", "arg");
+    
+    QUERY->add_mfun(QUERY, bitcrusher_getDownsampleFactor, "int", "downsampleFactor");
     
     bitcrusher_data_offset = QUERY->add_mvar(QUERY, "int", "@data", false);
     
@@ -115,6 +121,13 @@ CK_DLL_MFUN(bitcrusher_setBits)
     BitcrusherData * bcdata = (BitcrusherData *) OBJ_MEMBER_INT(SELF, bitcrusher_data_offset);
     // TODO: sanity check
     bcdata->bits = GET_NEXT_INT(ARGS);
+    RETURN->v_int = bcdata->bits;
+}
+
+CK_DLL_MFUN(bitcrusher_getBits)
+{
+    BitcrusherData * bcdata = (BitcrusherData *) OBJ_MEMBER_INT(SELF, bitcrusher_data_offset);
+    RETURN->v_int = bcdata->bits;
 }
 
 CK_DLL_MFUN(bitcrusher_setDownsampleFactor)
@@ -122,6 +135,13 @@ CK_DLL_MFUN(bitcrusher_setDownsampleFactor)
     BitcrusherData * bcdata = (BitcrusherData *) OBJ_MEMBER_INT(SELF, bitcrusher_data_offset);
     // TODO: sanity check
     bcdata->downsampleFactor = GET_NEXT_INT(ARGS);
+    RETURN->v_int = bcdata->downsampleFactor;
+}
+
+CK_DLL_MFUN(bitcrusher_getDownsampleFactor)
+{
+    BitcrusherData * bcdata = (BitcrusherData *) OBJ_MEMBER_INT(SELF, bitcrusher_data_offset);
+    RETURN->v_int = bcdata->downsampleFactor;
 }
 
 
