@@ -7,6 +7,8 @@ adc => Delay d => Bitcrusher bc => dac;
 5 => bc.bits;
 12 => bc.downsampleFactor;
 
+<<< "bits:", bc.bits(), "downsampling:", bc.downsampleFactor() >>>;
+
 while(true)
 {
     1::second => now;
