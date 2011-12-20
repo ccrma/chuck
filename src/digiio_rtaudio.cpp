@@ -37,7 +37,7 @@
 #include "RtAudio/RtAudio.h"
 #endif // __DISABLE_RTAUDIO__
 #if defined(__CHIP_MODE__)
-#include "../small.h">
+#include "momu/mo_audio.h"
 #endif // __CHIP_MODE__
 #ifndef __DISABLE_MIDI__
 #include "rtmidi.h"
@@ -555,9 +555,9 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
 #endif // __DISABLE_RTAUDIO__
 
 #if defined(__CHIP_MODE__)
-    if( !SMALL::init( sampling_rate, buffer_size, 2 ) )
+    if( !MoAudio::init( sampling_rate, buffer_size, 2 ) )
     {
-        EM_error2( 0, "%s", "(chuck)error: unable to initialize SMALL..." );
+        EM_error2( 0, "%s", "(chuck)error: unable to initialize MoAudio..." );
         return m_init = FALSE;
     }
 #endif // __CHIP_MODE__
@@ -755,16 +755,16 @@ int Digitalio::cb2( void *output_buffer, void *input_buffer,
 
 
 
-#ifdef __SMALL_MODE__
+#ifdef __CHIP_MODE__
 //-----------------------------------------------------------------------------
-// name: small_cb()
+// name: MoAudio_cb()
 // desc: ...
 //-----------------------------------------------------------------------------
-void small_cb( Float32 * buffer, UInt32 numFrames, void * userData )
+void MoAudio_cb( Float32 * buffer, UInt32 numFrames, void * userData )
 {
-    Digitalio::cb2( (char *)buffer, numFrames, userData );
+    Digitalio::cb2( (char *)buffer, (char *)buffer, numFrames, 0, 0, userData );
 }
-#endif // __SMALL_MODE__
+#endif // __CHIP_MODE__
 
 
 
@@ -784,7 +784,7 @@ BOOL__ Digitalio::start( )
 
 #if defined(__CHIP_MODE__)
     if( !m_start )
-        m_start = SMALL::start( small_cb, g_vm );
+        m_start = MoAudio::start( MoAudio_cb, g_vm );
 #endif // __CHIP_MODE__
 
     return m_start;
@@ -808,7 +808,7 @@ BOOL__ Digitalio::stop( )
 
 #if defined(__CHIP_MODE__)
     if( m_start )
-        SMALL::stop();
+        MoAudio::stop();
     m_start = FALSE;
 #endif
 

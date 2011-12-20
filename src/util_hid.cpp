@@ -7639,12 +7639,12 @@ const char * MultiTouchDevice_name( int ts ) { return NULL; }
 
 // #include "util_iphone.h"
 
-extern int get_tilt_sensor_x();
-extern int get_tilt_sensor_y();
-extern int get_tilt_sensor_z();
+int get_tilt_sensor_x() { return 0; }
+int get_tilt_sensor_y() { return 0; }
+int get_tilt_sensor_z() { return 0; }
 
-extern void start_hid_multi_touch();
-extern void stop_hid_multi_touch();
+void start_hid_multi_touch() { }
+void stop_hid_multi_touch() { }
 
 void Hid_init(){}
 void Hid_poll(){}
@@ -7915,6 +7915,14 @@ const char * WiiRemote_name( int wr )
 {
     return NULL;
 }
+
+void MultiTouchDevice_init() { }
+void MultiTouchDevice_quit() { }
+void MultiTouchDevice_probe() { }
+int MultiTouchDevice_count() { return 0; }
+int MultiTouchDevice_open( int ts ) { return -1; }
+int MultiTouchDevice_close( int ts ) { return -1; }
+const char * MultiTouchDevice_name( int ts ) { return NULL; }
 
 
 #endif // __CHIP_MODE__
