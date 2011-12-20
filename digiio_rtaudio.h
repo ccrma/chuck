@@ -34,7 +34,12 @@
 #define __DIGITAL_IO_H__
 
 #include "chuck_def.h"
+#ifndef __CHIP_MODE__
 #include "RtAudio/RtAudio.h"
+#else
+class RtAudio;
+typedef unsigned int RtAudioStreamStatus;
+#endif // __CHIP_MODE__
 
 
 
