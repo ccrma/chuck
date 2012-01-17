@@ -57,5 +57,8 @@ std::string rtrim( const std::string & val );
 t_CKBOOL extract_args( const std::string & token, 
                        std::string & filename, std::vector<std::string> & args );
 
+// currently just expands ~ to HOME and ~user to user's home directory
+std::string expand_filepath( std::string & fp );
+
 
 #endif
