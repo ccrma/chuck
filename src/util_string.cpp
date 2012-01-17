@@ -291,3 +291,53 @@ done:
 
     return ret;
 }
+
+
+/* from http://developer.apple.com/library/mac/#qa/qa1549/_index.html */
+
+#include <glob.h>
+
+char* CreatePathByExpandingTildePath(const char* path)
+{
+    glob_t globbuf;
+    char **v;
+    char *expandedPath = NULL, *result = NULL;
+    
+    assert(path != NULL);
+    
+    if (glob(path, GLOB_TILDE, NULL, &globbuf) == 0) //success
+    {
+        v = globbuf.gl_pathv; //list of matched pathnames
+        expandedPath = v[0]; //number of matched pathnames, gl_pathc == 1
+        
+        result = (char*)calloc(1, strlen(expandedPath) + 1); //the extra char is for the null-termination
+        if(result)
+            strncpy(result, expandedPath, strlen(expandedPath) + 1); //copy the null-termination as well
+        
+        globfree(&globbuf);
+    }
+    
+    return result;
+}
+
+std::string expand_filepath( std::string & fp )
+{
+#if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__)
+    // no expansion in Windows systems
+    return fp;
+#else
+    
+    char * expanded_cstr = CreatePathByExpandingTildePath( fp.c_str() );
+    
+    if(expanded_cstr == NULL)
+        return fp;
+    
+    std::string expanded_stdstr = expanded_cstr;
+    
+    free(expanded_cstr);
+    
+    return expanded_stdstr;
+    
+#endif
+}
+
