@@ -36,6 +36,7 @@
 #include "chuck_def.h"
 #include <string>
 #include <vector>
+#include <list>
 
 
 // itoa
@@ -59,6 +60,12 @@ t_CKBOOL extract_args( const std::string & token,
 
 // currently just expands ~ to HOME and ~user to user's home directory
 std::string expand_filepath( std::string & fp );
+
+//-----------------------------------------------------------------------------
+// name: parse_path_list()
+// desc: split "x:y:z"-style path list into {"x","y","z"}
+//-----------------------------------------------------------------------------
+void parse_path_list( std::string & str, std::list<std::string> & lst );
 
 
 #endif
