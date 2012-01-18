@@ -275,30 +275,6 @@ static void usage()
 
 
 //-----------------------------------------------------------------------------
-// name: parse_path_list()
-// desc: split "x:y:z"-style path list into {"x","y","z"}
-//-----------------------------------------------------------------------------
-static void parse_path_list( std::string & str, std::list<std::string> & lst )
-{
-#if defined(__PLATFORM_WIN32__)
-    const char separator = ';';
-#else
-    const char separator = ':';
-#endif
-    std::string::size_type i = 0, last = 0;
-    while( last < str.size() && 
-           ( i = str.find( separator, last ) ) != std::string::npos )
-    {
-        lst.push_back( str.substr( last, i - last ) );
-        last = i + 1;
-    }
-    
-    lst.push_back( str.substr( last, str.size() - last ) );
-}
-
-
-
-//-----------------------------------------------------------------------------
 // name: main()
 // desc: entry point
 //-----------------------------------------------------------------------------
