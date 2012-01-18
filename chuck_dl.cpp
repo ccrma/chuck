@@ -47,6 +47,19 @@ using namespace std;
 
 
 
+#if defined(__MACOSX_CORE__)
+char g_default_chugin_path[] = "/usr/lib/chuck:/Library/Application Support/ChucK/ChuGins:~/Library/Application Support/ChucK/ChuGins";
+#elif defined(__PLATFORM_WIN32__)
+char g_default_chugin_path[] = "C:\\WINDOWS\\system32\\ChucK";
+#else // Linux/Cygwin
+char g_default_chugin_path[] = "/usr/lib/chuck";
+#endif
+
+char g_chugin_path_envvar[] = "CHUCK_CHUGIN_PATH";
+
+
+
+
 //-----------------------------------------------------------------------------
 // internal implementation of query functions
 //-----------------------------------------------------------------------------
