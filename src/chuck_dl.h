@@ -44,6 +44,12 @@
 #include <map>
 
 
+
+extern char g_default_chugin_path[];
+extern char g_chugin_path_envvar[];
+
+
+
 // forward references
 struct Chuck_DL_Query;
 struct Chuck_DL_Class;
