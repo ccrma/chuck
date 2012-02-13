@@ -86,17 +86,6 @@ CHUCK_THREAD g_tid_shell = 0;
 char g_host[256] = "127.0.0.1";
 
 
-#if defined(__MACOSX_CORE__)
-char g_default_chugin_path[] = "/usr/lib/chuck:/Library/Application Support/ChucK/ChuGins";
-#elif defined(__PLATFORM_WIN32__)
-char g_default_chugin_path[] = "C:\\WINDOWS\\system32\\ChucK";
-#else // Linux/Cygwin
-char g_default_chugin_path[] = "/usr/lib/chuck";
-#endif
-
-char g_chugin_path_envvar[] = "CHUCK_CHUGIN_PATH";
-
-
 
 //-----------------------------------------------------------------------------
 // name: signal_int()

@@ -342,6 +342,25 @@ std::string expand_filepath( std::string & fp )
 }
 
 
+std::string extract_filepath_dir(std::string &filepath)
+{
+    char path_separator = '/';
+    
+#ifdef __WINDOWS_DS__
+    path_separator = '\\';
+#else
+    path_separator = '/';
+#endif
+    
+    // if the last character is a slash, skip it
+    int i = filepath.rfind(path_separator);
+    
+    if(i == std::string::npos)
+        return std::string();
+    
+    return std::string(filepath, 0, i);
+}
+
 //-----------------------------------------------------------------------------
 // name: parse_path_list()
 // desc: split "x:y:z"-style path list into {"x","y","z"}
