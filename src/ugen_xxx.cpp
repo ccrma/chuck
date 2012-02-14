@@ -50,9 +50,14 @@
 #include "chuck_ugen.h"
 #include "chuck_vm.h"
 #include "chuck_globals.h"
+#include "chuck_instr.h"
 
 #include <fstream>
 using namespace std;
+
+
+// subgraph
+CK_DLL_CTOR( subgraph_ctor );
 
 
 // LiSa query
@@ -62,6 +67,8 @@ DLL_QUERY lisa_query( Chuck_DL_Query * query );
 t_CKUINT g_srate;
 
 // offset
+static t_CKUINT subgraph_offset_inlet = 0;
+static t_CKUINT subgraph_offset_outlet = 0;
 static t_CKUINT stereo_offset_left = 0;
 static t_CKUINT stereo_offset_right = 0;
 static t_CKUINT stereo_offset_pan = 0;
@@ -108,17 +115,31 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //! \section audio output
     
     //-------------------------------------------------------------------------
+    // init as base class: Subgraph
+    //-------------------------------------------------------------------------
+    if( !type_engine_import_ugen_begin( env, "Subgraph", "UGen", env->global(),
+                                        subgraph_ctor, NULL, NULL, NULL, 1, 1 ) )
+        return FALSE;
+    
+    subgraph_offset_inlet = type_engine_import_mvar( env, "UGen", "inlet", TRUE );
+    if( subgraph_offset_inlet == CK_INVALID_OFFSET ) goto error;
+    
+    subgraph_offset_outlet = type_engine_import_mvar( env, "UGen", "outlet", TRUE );
+    if( subgraph_offset_outlet == CK_INVALID_OFFSET ) goto error;
+    
+    
+    //-------------------------------------------------------------------------
     // init as base class: UGen_Multi
     //-------------------------------------------------------------------------
     if( !type_engine_import_ugen_begin( env, "UGen_Multi", "UGen", env->global(),
                                         multi_ctor, NULL, NULL, 0, 0 ) )
         return FALSE;
-
+    
     // add chan
     func = make_new_mfun( "UGen", "chan", multi_cget_chan );
     func->add_arg( "int", "which" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-
+    
     // add pan
     /* func = make_new_mfun( "float", "pan", multi_ctrl_pan );
     func->add_arg( "float", "val" );
@@ -1085,6 +1106,28 @@ error:
     return FALSE;
 }
 
+
+//-----------------------------------------------------------------------------
+// name: subgraph_ctor()
+// desc: ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( subgraph_ctor )
+{
+    // get ugen
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    
+    ugen->init_subgraph();
+    
+    if( ugen->inlet() )
+    {
+        OBJ_MEMBER_OBJECT(SELF, subgraph_offset_inlet) = ugen->inlet();
+    }
+    
+    if( ugen->outlet() )
+    {
+        OBJ_MEMBER_OBJECT(SELF, subgraph_offset_outlet) = ugen->outlet();
+    }
+}
 
 
 
