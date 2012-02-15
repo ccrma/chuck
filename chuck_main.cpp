@@ -678,7 +678,7 @@ static void usage()
             // uh...
             EM_log( CK_LOG_SEVERE, "error: unable to determine current working directory!" );
         else
-            cwd = cstr_cwd;
+            cwd = std::string(cstr_cwd) + "/";
 #endif // __PLATFORM_WIN32__
     }
 
@@ -699,7 +699,8 @@ static void usage()
             // push indent
             EM_pushlog();
             
-            std::string full_path = cwd + filename;
+            // SPENCERTODO: what to do for full path
+            std::string full_path = filename;
             
             // parse, type-check, and emit
             if( compiler->go( filename, NULL, NULL, full_path ) )
