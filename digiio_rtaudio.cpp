@@ -171,7 +171,7 @@ void Digitalio::probe()
         }
         
         // print
-        EM_error2b( 0, "------( chuck -- dac%d )---------------", i );
+        EM_error2b( 0, "------( chuck -- dac%d )---------------", i+1 );
         print( info );
         // skip
         if( i < devices ) EM_error2( 0, "" );
@@ -183,6 +183,52 @@ void Digitalio::probe()
     return;
 }
 
+
+DWORD__ Digitalio::device_named(std::string &name)
+{
+#ifndef __DISABLE_RTAUDIO__
+    RtAudio * rta = NULL;
+    RtAudio::DeviceInfo info;
+    
+    // allocate RtAudio
+    try { rta = new RtAudio( ); }
+    catch( RtError err )
+    {
+        // problem finding audio devices, most likely
+        EM_error2b( 0, "%s", err.getMessage().c_str() );
+        return -1;
+    }
+    
+    // get count    
+    int devices = rta->getDeviceCount();
+    
+    int device_no = -1;
+    
+    // loop
+    for( int i = 0; i < devices; i++ )
+    {
+        try { info = rta->getDeviceInfo(i); }
+        catch( RtError & error )
+        {
+            error.printMessage();
+            break;
+        }
+        
+        if(info.name.compare(name) == 0)
+        {
+            device_no = i+1;
+            break;
+        }
+    }
+    
+    delete rta;
+    
+    return device_no;
+    
+#endif // __DISABLE_RTAUDIO__
+    
+    return -1;
+}
 
 
 
