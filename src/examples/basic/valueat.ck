@@ -1,6 +1,6 @@
 // (see sndbuf.ck or otf_01.ck for non-insane usage of sndbuf)
 SndBuf buf;
-"../data/kick.wav" => buf.read;
+me.sourceDir() + "/../data/kick.wav" => buf.read;
 
 // the patch (no sndbuf involved)
 Impulse i => dac;

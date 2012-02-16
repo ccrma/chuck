@@ -14,7 +14,7 @@ T - (now % T) => now;
 
 // construct the patch
 SndBuf buf => Gain g => Dyno dy => JCRev r => dac;
-"../data/kick.wav" => buf.read;
+me.sourceDir() + "/../data/kick.wav" => buf.read;
 .01 => r.mix;
 
 // make gain way too high, i.e. force clipping
