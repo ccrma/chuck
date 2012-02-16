@@ -3,7 +3,7 @@
 // the patch
 SndBuf buf => dac;
 // load the file
-"../data/snare.wav" => buf.read;
+me.sourceDir() + "/../data/snare.wav" => buf.read;
 // don't play yet
 0 => buf.play; 
 

@@ -9,7 +9,7 @@
 
 // A kick drum that will get quieter when the SinOsc swells.
 SndBuf buf => Gain g1 => Dyno dy => JCRev r => dac;
-"../data/kick.wav" => buf.read;
+me.sourceDir() + "/../data/kick.wav" => buf.read;
 .05 => r.mix;
 
 // A SinOsc that, when its volume swells, will make the kick drum get quieter.
