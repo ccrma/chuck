@@ -124,6 +124,8 @@ public:
     static BOOL__ watchdog_stop();
     static void shutdown();
     static void probe();
+    
+    static DWORD__ device_named(std::string &name);
 
 public:
     static DWORD__ sampling_rate( ) { return m_sampling_rate; }
