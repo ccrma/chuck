@@ -17,10 +17,11 @@ endif
 CFLAGS+= -D__MACOSX_CORE__ -D__MACOSX_UB__ -arch ppc -arch i386 $(ISYSROOT)
 CFLAGSDEPEND+= -D__MACOSX_CORE__ -D__MACOSX_UB__ $(ISYSROOT)
 LDFLAGS+= -framework CoreAudio -framework CoreMIDI -framework CoreFoundation \
-	-framework IOKit -framework Carbon $(ISYSROOT) $(LINK_EXTRAS) -lstdc++ -lm \
-	-arch ppc -arch i386
+	-framework IOKit -framework Carbon -framework AppKit -framework Foundation \
+	$(ISYSROOT) $(LINK_EXTRAS) -lstdc++ -lm -arch ppc -arch i386
 
 CSRCS+= util_sndfile.c
+
 
 # this is to link properly on leopard...
 MACOSX_DEPLOYMENT_TARGET=10.4
