@@ -457,6 +457,8 @@ struct Chuck_UGen_Info : public Chuck_VM_Object
 {
     // tick function pointer
     f_tick tick;
+    // multichannel/vector tick function pointer
+    f_tickv tickv;
     // pmsg function pointer
     f_pmsg pmsg;
     // number of incoming channels
@@ -473,7 +475,7 @@ struct Chuck_UGen_Info : public Chuck_VM_Object
 
     // constructor
     Chuck_UGen_Info()
-    { tick = NULL; pmsg = NULL; num_ins = num_outs = 1; 
+    { tick = NULL; tickv = NULL; pmsg = NULL; num_ins = num_outs = 1; 
       tock = NULL; num_ins_ana = num_outs_ana = 1; }
 };
 
@@ -747,6 +749,10 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
                                              Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor = NULL );
 Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, const char * name, const char * parent,
                                              Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor = NULL );
+Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, const char * parent,
+                                            Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
+                                            f_tick tick, f_tickv tickv, f_pmsg pmsg,
+                                            t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff );
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
                                             f_tick tick, f_pmsg pmsg,
