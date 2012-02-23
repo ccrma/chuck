@@ -427,6 +427,47 @@ void CK_DLL_CALL ck_add_ugen_func( Chuck_DL_Query * query, f_tick ugen_tick, f_p
 
 
 //-----------------------------------------------------------------------------
+// name: ck_add_ugen_func()
+// desc: (ugen only) add tick and pmsg functions
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_add_ugen_funcv( Chuck_DL_Query * query, f_tickv ugen_tickv, f_pmsg ugen_pmsg, t_CKUINT num_in, t_CKUINT num_out )
+{
+    // make sure there is class
+    if( !query->curr_class )
+    {
+        // error
+        EM_error2( 0, "class import: add_ugen_func invoked without begin_class..." );
+        return;
+    }
+    
+    // make sure tick not defined already
+    if( query->curr_class->ugen_tickv && ugen_tickv )
+    {
+        // error
+        EM_error2( 0, "class import: ugen_tick already defined..." );
+        return;
+    }
+    
+    // make sure pmsg not defined already
+    if( query->curr_class->ugen_pmsg && ugen_pmsg )
+    {
+        // error
+        EM_error2( 0, "class import: ugen_pmsg already defined..." );
+        return;
+    }
+    
+    // set
+    if( ugen_tickv ) query->curr_class->ugen_tickv = ugen_tickv;
+    if( ugen_pmsg ) query->curr_class->ugen_pmsg = ugen_pmsg;
+    query->curr_class->ugen_num_in = num_in;
+    query->curr_class->ugen_num_out = num_out;
+    query->curr_func = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_add_ugen_ctrl()
 // desc: (ugen only) add ctrl parameters
 //-----------------------------------------------------------------------------
@@ -785,6 +826,7 @@ Chuck_DL_Query::Chuck_DL_Query( )
     add_svar = ck_add_svar;
     add_arg = ck_add_arg;
     add_ugen_func = ck_add_ugen_func;
+    add_ugen_funcv = ck_add_ugen_funcv;
     add_ugen_ctrl = ck_add_ugen_ctrl;
     end_class = ck_end_class;
     dll_name = "[noname]";

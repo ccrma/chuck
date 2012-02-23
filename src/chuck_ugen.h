@@ -82,6 +82,8 @@ protected:
 public:
     // tick function
     f_tick tick;
+    // multichannel/vectorized tick function
+    f_tickv tickv;
     // msg function
     f_pmsg pmsg;
     // channels (if more than one is required)
@@ -121,6 +123,10 @@ public: // data
     SAMPLE m_gain;
     SAMPLE m_pan;
     t_CKINT m_op;
+    
+    // SPENCERTODO: combine with block processing
+    SAMPLE * m_multi_in_v;
+    SAMPLE * m_multi_out_v;
     
     // SPENCERTODO: better way to handle this
     t_CKBOOL m_is_subgraph;
