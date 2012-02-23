@@ -177,6 +177,7 @@ Chuck_UGen::~Chuck_UGen()
 void Chuck_UGen::init()
 {
     tick = NULL;
+    tickv = NULL;
     pmsg = NULL;
     m_multi_chan = NULL;
     m_multi_chan_size = 0;
@@ -214,6 +215,7 @@ void Chuck_UGen::init()
     // what another hack
     m_is_subgraph = FALSE;
     m_inlet = m_outlet = NULL;
+    m_multi_in_v = m_multi_out_v = NULL;
 }
 
 
@@ -248,6 +250,9 @@ void Chuck_UGen::done()
     // SPENCERTODO: is this okay???
     SAFE_DELETE(m_inlet);
     SAFE_DELETE(m_outlet);
+    
+    SAFE_DELETE_ARRAY(m_multi_in_v);
+    SAFE_DELETE_ARRAY(m_multi_out_v);
 }
 
 
@@ -301,6 +306,12 @@ void Chuck_UGen::alloc_multi_chan( t_CKUINT num_ins, t_CKUINT num_outs )
         m_multi_chan[0] = this;
     }
     
+    if(tickv)
+    {
+        m_multi_in_v = new SAMPLE[m_multi_chan_size];
+        m_multi_out_v = new SAMPLE[m_multi_chan_size];
+    }
+                              
     // remember
     m_num_ins = num_ins;
     m_num_outs = num_outs;
@@ -754,12 +765,34 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     multi = 0.0f;
     if( m_multi_chan_size )
     {
-        for( i = 0; i < m_multi_chan_size; i++ )
+        if(tickv) // multichannel tick function available
         {
-            ugen = m_multi_chan[i];
-            if( ugen->m_time < now ) ugen->system_tick( now );
-            // multiple channels are added
-            multi += ugen->m_current;
+            for( i = 0; i < m_multi_chan_size; i++ )
+            {
+                ugen = m_multi_chan[i];
+                if( ugen->m_time < now ) ugen->system_tick( now );
+                m_multi_in_v[i] = ugen->m_sum;
+            }
+            
+            m_valid = tickv( this, m_multi_in_v, m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
+            
+            for( i = 0; i < m_multi_chan_size; i++ )
+            {
+                ugen = m_multi_chan[i];
+                ugen->m_current = m_multi_out_v[i];
+                // multiple channels are added
+                //multi += ugen->m_current;
+            }
+        }
+        else
+        {
+            for( i = 0; i < m_multi_chan_size; i++ )
+            {
+                ugen = m_multi_chan[i];
+                if( ugen->m_time < now ) ugen->system_tick( now );
+                // multiple channels are added
+                multi += ugen->m_current;
+            }
         }
     
         // scale multi
@@ -769,8 +802,16 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
 
     // if owner
     if( owner != NULL && owner->m_time < now )
+    {
         owner->system_tick( now );
-
+        
+        if(owner->tickv)
+        {
+            m_last = m_current;
+            return TRUE;
+        }
+    }
+    
     if( m_op > 0 )  // UGEN_OP_TICK
     {
         // tick the ugen

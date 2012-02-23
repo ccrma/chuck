@@ -123,7 +123,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //-------------------------------------------------------------------------
     // init as base class: Subgraph
     //-------------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "Subgraph", "UGen", env->global(),
+    if( !type_engine_import_ugen_begin( env, "Chubgraph", "UGen", env->global(),
                                         subgraph_ctor, NULL, NULL, NULL, 1, 1 ) )
         return FALSE;
     
@@ -141,7 +141,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //-------------------------------------------------------------------------
     // init as base class: FooGen
     //-------------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "FooGen", "UGen", env->global(),
+    if( !type_engine_import_ugen_begin( env, "Chugen", "UGen", env->global(),
                                         foogen_ctor, foogen_dtor, foogen_tick, NULL, 1, 1 ) )
         return FALSE;
     
@@ -157,7 +157,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // init as base class: UGen_Multi
     //-------------------------------------------------------------------------
     if( !type_engine_import_ugen_begin( env, "UGen_Multi", "UGen", env->global(),
-                                        multi_ctor, NULL, NULL, 0, 0 ) )
+                                        multi_ctor, (f_dtor)NULL, (f_tick)NULL, (f_pmsg)NULL, 0, 0 ) )
         return FALSE;
     
     // add chan
@@ -228,7 +228,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // init as base class: adc
     //---------------------------------------------------------------------
     if( !(g_t_adc = type_engine_import_ugen_begin( env, "ADC", "UGen_Stereo", env->global(), 
-                                                   NULL, NULL, NULL, NULL, 0, 2 )) )
+                                                   (f_ctor)NULL, (f_dtor)NULL, (f_tick)NULL, (f_pmsg)NULL, 0, 2 )) )
         return FALSE;
 
     // end import
