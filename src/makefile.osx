@@ -16,9 +16,10 @@ endif
 
 CFLAGS+= -D__MACOSX_CORE__ -m32 $(ISYSROOT)
 CFLAGSDEPEND+= -D__MACOSX_CORE__ $(ISYSROOT)
-LDFLAGS+= -framework CoreAudio -framework CoreMIDI -framework CoreFoundation \
-	-framework IOKit -framework Carbon -framework AppKit -framework Foundation \
-	$(ISYSROOT) $(LINK_EXTRAS) -lstdc++ -lm -m32
+
+FRAMEWORKS+= CoreAudio CoreMIDI CoreFoundation IOKit Carbon AppKit Foundation
+LDFLAGS+= $(addprefix -framework ,$(FRAMEWORKS)) \
+    $(ISYSROOT) $(LINK_EXTRAS) -lstdc++ -lm -m32
 
 CSRCS+= util_sndfile.c
 

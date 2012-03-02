@@ -1551,6 +1551,21 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     }
     m_ugen_map.clear();
 
+    // release object refs from assignment instructions
+    for(vector<t_CKUINT>::iterator i = m_obj_refs.begin(); i < m_obj_refs.end(); i++)
+    {
+        t_CKUINT mem = *i;
+        
+        // retrieve 
+        // ISSUE: 64-bit
+        Chuck_VM_Object * obj = (Chuck_VM_Object *) *((t_CKUINT *)mem);
+        // release
+        if(obj != NULL)
+            obj->release();
+        // zero
+        *( (t_CKUINT *)mem ) = 0;
+    }
+    
     SAFE_DELETE( mem );
     SAFE_DELETE( reg );
     base_ref = NULL;
@@ -1563,7 +1578,7 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     code_orig->release();
     code_orig = code = NULL;
     // what to do with next and prev?
-
+    
     return TRUE;
 }
 
@@ -1640,6 +1655,20 @@ t_CKBOOL Chuck_VM_Shred::run( Chuck_VM * vm )
     // is the shred finished
     return !is_done;
 }
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_VM_Shred::register_reference()
+// desc: called by Chuck_Instr_Alloc_Word to indicate an object that will 
+//       later need to have its reference released. 
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM_Shred::register_reference(t_CKUINT ref_location)
+{
+    m_obj_refs.push_back(ref_location);
+    return TRUE;
+}
+
 
 
 

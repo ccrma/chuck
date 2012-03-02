@@ -48,6 +48,15 @@
 
 
 
+#define CK_DEBUG_MEMORY_MGMT (0)
+
+#if CK_DEBUG_MEMORY_MGMT
+#define CK_GC_LOG(s,...) EM_log(1, s, ##__VA_ARGS__)
+#else
+#define CK_GC_LOG(s,...)
+#endif
+
+
 
 //-----------------------------------------------------------------------------
 // vm defines
@@ -163,6 +172,8 @@ public:
     t_CKBOOL run( Chuck_VM * vm );
     t_CKBOOL add( Chuck_UGen * ugen );
     t_CKBOOL remove( Chuck_UGen * ugen );
+    
+    t_CKBOOL register_reference(t_CKUINT ref_location);
 
 //-----------------------------------------------------------------------------
 // data
@@ -193,6 +204,12 @@ public: // machine components
     // state (no longer needed, see array_alloc)
     // t_CKUINT * obj_array;
     // t_CKUINT obj_array_size;
+    
+private:
+    // list of object references allocated on this shred
+    // references are released on shred exit
+    // SPENCERTODO: release on scope exit
+    std::vector<t_CKUINT> m_obj_refs;
 
 public:
     t_CKTIME wake_time;
