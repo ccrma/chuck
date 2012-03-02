@@ -184,7 +184,7 @@ void Digitalio::probe()
 }
 
 
-DWORD__ Digitalio::device_named(std::string &name)
+DWORD__ Digitalio::device_named(std::string &name, t_CKBOOL needs_dac, t_CKBOOL needs_adc)
 {
 #ifndef __DISABLE_RTAUDIO__
     RtAudio * rta = NULL;
@@ -218,6 +218,29 @@ DWORD__ Digitalio::device_named(std::string &name)
         {
             device_no = i+1;
             break;
+        }
+    }
+    
+    if(device_no == -1)
+    {
+        // no exact match found; try partial match
+        for( int i = 0; i < devices; i++ )
+        {
+            try { info = rta->getDeviceInfo(i); }
+            catch( RtError & error )
+            {
+                error.printMessage();
+                break;
+            }
+            
+            if(info.name.find(name) != std::string::npos)
+            {
+                if((needs_dac && info.outputChannels == 0) ||
+                   (needs_adc && info.inputChannels == 0))
+                    continue;
+                device_no = i+1;
+                break;
+            }
         }
     }
     
