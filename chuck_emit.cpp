@@ -3634,7 +3634,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 // BAD:
                 // FIX:
                 if( type->size == 4 ) // ISSUE: 64-bit
-                    emit->append( new Chuck_Instr_Alloc_Word( local->offset ) );
+                    emit->append( new Chuck_Instr_Alloc_Word( local->offset, is_obj ) );
                 else if( type->size == 8 ) // ISSUE: 64-bit
                     emit->append( new Chuck_Instr_Alloc_Word2( local->offset ) );
                 else if( type->size == 16 ) // ISSUE: 64-bit
