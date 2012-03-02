@@ -37,7 +37,7 @@
 #include "RtAudio/RtAudio.h"
 #endif // __DISABLE_RTAUDIO__
 #if defined(__CHIP_MODE__)
-#include "../small.h">
+#include "momu/mo_audio.h"
 #endif // __CHIP_MODE__
 #ifndef __DISABLE_MIDI__
 #include "rtmidi.h"
@@ -171,7 +171,7 @@ void Digitalio::probe()
         }
         
         // print
-        EM_error2b( 0, "------( chuck -- dac%d )---------------", i );
+        EM_error2b( 0, "------( chuck -- dac%d )---------------", i+1 );
         print( info );
         // skip
         if( i < devices ) EM_error2( 0, "" );
@@ -183,6 +183,52 @@ void Digitalio::probe()
     return;
 }
 
+
+DWORD__ Digitalio::device_named(std::string &name)
+{
+#ifndef __DISABLE_RTAUDIO__
+    RtAudio * rta = NULL;
+    RtAudio::DeviceInfo info;
+    
+    // allocate RtAudio
+    try { rta = new RtAudio( ); }
+    catch( RtError err )
+    {
+        // problem finding audio devices, most likely
+        EM_error2b( 0, "%s", err.getMessage().c_str() );
+        return -1;
+    }
+    
+    // get count    
+    int devices = rta->getDeviceCount();
+    
+    int device_no = -1;
+    
+    // loop
+    for( int i = 0; i < devices; i++ )
+    {
+        try { info = rta->getDeviceInfo(i); }
+        catch( RtError & error )
+        {
+            error.printMessage();
+            break;
+        }
+        
+        if(info.name.compare(name) == 0)
+        {
+            device_no = i+1;
+            break;
+        }
+    }
+    
+    delete rta;
+    
+    return device_no;
+    
+#endif // __DISABLE_RTAUDIO__
+    
+    return -1;
+}
 
 
 
@@ -555,9 +601,9 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
 #endif // __DISABLE_RTAUDIO__
 
 #if defined(__CHIP_MODE__)
-    if( !SMALL::init( sampling_rate, buffer_size, 2 ) )
+    if( !MoAudio::init( sampling_rate, buffer_size, 2 ) )
     {
-        EM_error2( 0, "%s", "(chuck)error: unable to initialize SMALL..." );
+        EM_error2( 0, "%s", "(chuck)error: unable to initialize MoAudio..." );
         return m_init = FALSE;
     }
 #endif // __CHIP_MODE__
@@ -755,16 +801,16 @@ int Digitalio::cb2( void *output_buffer, void *input_buffer,
 
 
 
-#ifdef __SMALL_MODE__
+#ifdef __CHIP_MODE__
 //-----------------------------------------------------------------------------
-// name: small_cb()
+// name: MoAudio_cb()
 // desc: ...
 //-----------------------------------------------------------------------------
-void small_cb( Float32 * buffer, UInt32 numFrames, void * userData )
+void MoAudio_cb( Float32 * buffer, UInt32 numFrames, void * userData )
 {
-    Digitalio::cb2( (char *)buffer, numFrames, userData );
+    Digitalio::cb2( (char *)buffer, (char *)buffer, numFrames, 0, 0, userData );
 }
-#endif // __SMALL_MODE__
+#endif // __CHIP_MODE__
 
 
 
@@ -784,7 +830,7 @@ BOOL__ Digitalio::start( )
 
 #if defined(__CHIP_MODE__)
     if( !m_start )
-        m_start = SMALL::start( small_cb, g_vm );
+        m_start = MoAudio::start( MoAudio_cb, g_vm );
 #endif // __CHIP_MODE__
 
     return m_start;
@@ -808,7 +854,7 @@ BOOL__ Digitalio::stop( )
 
 #if defined(__CHIP_MODE__)
     if( m_start )
-        SMALL::stop();
+        MoAudio::stop();
     m_start = FALSE;
 #endif
 

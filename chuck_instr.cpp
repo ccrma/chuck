@@ -2085,7 +2085,7 @@ void Chuck_Instr_Branch_Neq_int_IO_good::execute( Chuck_VM * vm, Chuck_VM_Shred 
     if( (*ppIO) != NULL )
     {
         // TODO: verify this logic
-        t_CKINT result = (*ppIO)->good() && !(*ppIO)->eof();
+        //t_CKINT result = (*ppIO)->good() && !(*ppIO)->eof();
     }
 
     if( result != val_(sp+1) || !(ppIO) )
@@ -2705,6 +2705,7 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
         // ugen
         Chuck_UGen * ugen = (Chuck_UGen *)object;
         if( type->ugen_info->tick ) ugen->tick = type->ugen_info->tick;
+        if( type->ugen_info->tickv ) ugen->tickv = type->ugen_info->tickv;
         if( type->ugen_info->pmsg ) ugen->pmsg = type->ugen_info->pmsg;
         // TODO: another hack!
         if( type->ugen_info->tock ) ((Chuck_UAna *)ugen)->tock = type->ugen_info->tock;

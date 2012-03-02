@@ -131,7 +131,7 @@ CK_DLL_MFUN( LPC_cget_power );
 CK_DLL_MFUN( LPC_ctrl_coefs );
 CK_DLL_MFUN( LPC_cget_coefs );
 // offset
-static t_CKUINT LPC_offset_data = 0;
+//static t_CKUINT LPC_offset_data = 0;
 
 
 // utility functions

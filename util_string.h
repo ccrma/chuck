@@ -36,6 +36,7 @@
 #include "chuck_def.h"
 #include <string>
 #include <vector>
+#include <list>
 
 
 // itoa
@@ -56,6 +57,17 @@ std::string rtrim( const std::string & val );
 // argument extraction
 t_CKBOOL extract_args( const std::string & token, 
                        std::string & filename, std::vector<std::string> & args );
+
+// currently just expands ~ to HOME and ~user to user's home directory
+std::string expand_filepath( std::string & fp );
+
+std::string extract_filepath_dir(std::string &filepath);
+
+//-----------------------------------------------------------------------------
+// name: parse_path_list()
+// desc: split "x:y:z"-style path list into {"x","y","z"}
+//-----------------------------------------------------------------------------
+void parse_path_list( std::string & str, std::list<std::string> & lst );
 
 
 #endif

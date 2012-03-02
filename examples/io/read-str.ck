@@ -1,5 +1,5 @@
 // default file
-"str.txt" => string filename;
+me.sourceDir() + "/str.txt" => string filename;
 
 // look at command line
 if( me.args() > 0 ) me.arg(0) => filename;

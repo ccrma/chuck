@@ -34,7 +34,12 @@
 #define __DIGITAL_IO_H__
 
 #include "chuck_def.h"
+#ifndef __CHIP_MODE__
 #include "RtAudio/RtAudio.h"
+#else
+class RtAudio;
+typedef unsigned int RtAudioStreamStatus;
+#endif // __CHIP_MODE__
 
 
 
@@ -119,6 +124,8 @@ public:
     static BOOL__ watchdog_stop();
     static void shutdown();
     static void probe();
+    
+    static DWORD__ device_named(std::string &name);
 
 public:
     static DWORD__ sampling_rate( ) { return m_sampling_rate; }

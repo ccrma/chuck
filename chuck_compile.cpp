@@ -680,7 +680,7 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
         
         struct dirent *de = NULL;
         
-        while(de = readdir(dir))
+        while((de = readdir(dir)))
         {
             bool is_regular = false;
             bool is_directory = false;

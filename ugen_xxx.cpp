@@ -51,9 +51,19 @@
 #include "chuck_vm.h"
 #include "chuck_globals.h"
 #include "util_path.h"
+#include "chuck_instr.h"
 
 #include <fstream>
 using namespace std;
+
+
+// subgraph
+CK_DLL_CTOR( subgraph_ctor );
+
+// foogen
+CK_DLL_CTOR( foogen_ctor );
+CK_DLL_DTOR( foogen_dtor );
+CK_DLL_TICK( foogen_tick );
 
 
 // LiSa query
@@ -63,6 +73,9 @@ DLL_QUERY lisa_query( Chuck_DL_Query * query );
 t_CKUINT g_srate;
 
 // offset
+static t_CKUINT subgraph_offset_inlet = 0;
+static t_CKUINT subgraph_offset_outlet = 0;
+static t_CKUINT foogen_offset_data = 0;
 static t_CKUINT stereo_offset_left = 0;
 static t_CKUINT stereo_offset_right = 0;
 static t_CKUINT stereo_offset_pan = 0;
@@ -109,17 +122,50 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //! \section audio output
     
     //-------------------------------------------------------------------------
+    // init as base class: Subgraph
+    //-------------------------------------------------------------------------
+    if( !type_engine_import_ugen_begin( env, "Chubgraph", "UGen", env->global(),
+                                        subgraph_ctor, NULL, NULL, NULL, 1, 1 ) )
+        return FALSE;
+    
+    subgraph_offset_inlet = type_engine_import_mvar( env, "UGen", "inlet", TRUE );
+    if( subgraph_offset_inlet == CK_INVALID_OFFSET ) goto error;
+    
+    subgraph_offset_outlet = type_engine_import_mvar( env, "UGen", "outlet", TRUE );
+    if( subgraph_offset_outlet == CK_INVALID_OFFSET ) goto error;
+    
+    // end import
+    if( !type_engine_import_class_end( env ) )
+        return FALSE;
+    
+
+    //-------------------------------------------------------------------------
+    // init as base class: FooGen
+    //-------------------------------------------------------------------------
+    if( !type_engine_import_ugen_begin( env, "Chugen", "UGen", env->global(),
+                                        foogen_ctor, foogen_dtor, foogen_tick, NULL, 1, 1 ) )
+        return FALSE;
+    
+    foogen_offset_data = type_engine_import_mvar( env, "int", "@foogen_data", FALSE );
+    if( foogen_offset_data == CK_INVALID_OFFSET ) goto error;
+    
+    // end import
+    if( !type_engine_import_class_end( env ) )
+        return FALSE;
+    
+
+    //-------------------------------------------------------------------------
     // init as base class: UGen_Multi
     //-------------------------------------------------------------------------
     if( !type_engine_import_ugen_begin( env, "UGen_Multi", "UGen", env->global(),
-                                        multi_ctor, NULL, NULL, 0, 0 ) )
+                                        multi_ctor, (f_dtor)NULL, (f_tick)NULL, (f_pmsg)NULL, 0, 0 ) )
         return FALSE;
-
+    
     // add chan
     func = make_new_mfun( "UGen", "chan", multi_cget_chan );
     func->add_arg( "int", "which" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-
+    
     // add pan
     /* func = make_new_mfun( "float", "pan", multi_ctrl_pan );
     func->add_arg( "float", "val" );
@@ -127,7 +173,11 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "float", "pan", multi_cget_pan );
     if( !type_engine_import_mfun( env, func ) ) goto error; */
 
+    // end import
+    if( !type_engine_import_class_end( env ) )
+        return FALSE;
     
+
     //---------------------------------------------------------------------
     // init as base class: UGen_Stereo
     //---------------------------------------------------------------------
@@ -179,7 +229,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // init as base class: adc
     //---------------------------------------------------------------------
     if( !(g_t_adc = type_engine_import_ugen_begin( env, "ADC", "UGen_Stereo", env->global(), 
-                                                   NULL, NULL, NULL, NULL, 0, 2 )) )
+                                                   (f_ctor)NULL, (f_dtor)NULL, (f_tick)NULL, (f_pmsg)NULL, 0, 2 )) )
         return FALSE;
 
     // end import
@@ -798,7 +848,7 @@ error:
 
 
 // LiSa (live sampling data offset)
-static t_CKUINT LiSaBasic_offset_data = 0;
+//static t_CKUINT LiSaBasic_offset_data = 0;
 static t_CKUINT LiSaMulti_offset_data = 0;
 
 //-----------------------------------------------------------------------------
@@ -1086,6 +1136,163 @@ error:
     return FALSE;
 }
 
+
+//-----------------------------------------------------------------------------
+// name: subgraph_ctor()
+// desc: ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( subgraph_ctor )
+{
+    // get ugen
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    
+    ugen->init_subgraph();
+    
+    if( ugen->inlet() )
+    {
+        OBJ_MEMBER_OBJECT(SELF, subgraph_offset_inlet) = ugen->inlet();
+    }
+    
+    if( ugen->outlet() )
+    {
+        OBJ_MEMBER_OBJECT(SELF, subgraph_offset_outlet) = ugen->outlet();
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+// name: FooGen_Data
+// desc: ...
+//-----------------------------------------------------------------------------
+struct FooGen_Data
+{
+    Chuck_VM_Shred * shred;
+    Chuck_VM * vm;
+    
+    t_CKFLOAT input;
+    t_CKFLOAT output;
+};
+
+
+//-----------------------------------------------------------------------------
+// name: foogen_ctor()
+// desc: ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( foogen_ctor )
+{
+    FooGen_Data * data = new FooGen_Data;
+    
+    data->shred = NULL;
+    data->vm = SHRED->vm_ref;
+    
+    OBJ_MEMBER_UINT(SELF, foogen_offset_data) = (unsigned int) data;
+
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    int tick_fun_index = -1;
+    
+    for(int i = 0; i < ugen->vtable->funcs.size(); i++)
+    {
+        std::string &name = ugen->vtable->funcs[i]->name;
+        if(name.find("tick") == 0)
+        {
+            tick_fun_index = i;
+            break;
+        }
+    }
+    
+    if(tick_fun_index != -1)
+    {
+        vector<Chuck_Instr *> instrs;
+        // push arg (float input)
+        instrs.push_back(new Chuck_Instr_Reg_Push_Deref((t_CKUINT) &data->input, 8));
+        // push this (as func arg)
+        instrs.push_back(new Chuck_Instr_Reg_Push_Imm((unsigned int) SELF));
+        // reg dup last (push this again) (for member func resolution)
+        instrs.push_back(new Chuck_Instr_Reg_Dup_Last);
+        // dot member func
+        instrs.push_back(new Chuck_Instr_Dot_Member_Func(tick_fun_index));
+        // func to code
+        instrs.push_back(new Chuck_Instr_Func_To_Code);
+        // push stack depth
+        instrs.push_back(new Chuck_Instr_Reg_Push_Imm(12));
+        // func call
+        instrs.push_back(new Chuck_Instr_Func_Call());
+        // push immediate
+        instrs.push_back(new Chuck_Instr_Reg_Push_Imm((unsigned int) &data->output));
+        // assign primitive
+        instrs.push_back(new Chuck_Instr_Assign_Primitive2);
+        // pop
+        instrs.push_back(new Chuck_Instr_Reg_Pop_Word2);
+        // EOC
+        instrs.push_back(new Chuck_Instr_EOC);
+        
+        Chuck_VM_Code * code = new Chuck_VM_Code;
+        
+        code->instr = new Chuck_Instr*[instrs.size()];
+        code->num_instr = instrs.size();
+        for(int i = 0; i < instrs.size(); i++) code->instr[i] = instrs[i];
+        code->stack_depth = 0;
+        code->need_this = 0;
+        
+        data->shred = new Chuck_VM_Shred;
+        data->shred->initialize(code);
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+// name: foogen_dtor()
+// desc: ...
+//-----------------------------------------------------------------------------
+CK_DLL_DTOR( foogen_dtor )
+{
+    FooGen_Data * data = (FooGen_Data *) OBJ_MEMBER_UINT(SELF, foogen_offset_data);
+    OBJ_MEMBER_UINT(SELF, foogen_offset_data) = 0;
+    SAFE_DELETE(data);
+}
+
+//-----------------------------------------------------------------------------
+// name: foogen_tick()
+// desc: ...
+//-----------------------------------------------------------------------------
+CK_DLL_TICK( foogen_tick )
+{
+    FooGen_Data * data = (FooGen_Data *) OBJ_MEMBER_UINT(SELF, foogen_offset_data);
+        
+    // default: passthru
+    data->output = in;
+    
+    if(data->shred)
+    {
+        // reset shred
+        
+        // program counter
+        data->shred->pc = 0;
+        data->shred->next_pc = 1;
+        // shred in dump (all done)
+        data->shred->is_dumped = FALSE;
+        // shred done
+        data->shred->is_done = FALSE;
+        // shred running
+        data->shred->is_running = FALSE;
+        // shred abort
+        data->shred->is_abort = FALSE;
+        // set the instr
+        data->shred->instr = data->shred->code->instr;
+        // zero out the id
+        data->shred->xid = 0;
+        
+        // set input
+        data->input = in;
+        
+        // run shred
+        data->shred->run( data->vm );
+    }
+    
+    *out = data->output;
+    
+    return TRUE;
+}
 
 
 
@@ -2830,7 +3037,7 @@ CK_DLL_CGET( sndbuf_cget_phase )
 CK_DLL_CTRL( sndbuf_ctrl_channel )
 { 
     sndbuf_data * d = ( sndbuf_data * ) OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
-    unsigned long chan = (unsigned long)GET_CK_INT(ARGS);
+    t_CKINT chan = GET_CK_INT(ARGS);
     if ( chan >= 0 && chan < d->num_channels ) { 
         d->chan = chan;
     }

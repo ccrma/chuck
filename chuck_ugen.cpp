@@ -32,6 +32,8 @@
 //       spring 2005 - 1.2
 //-----------------------------------------------------------------------------
 #include "chuck_ugen.h"
+#include "chuck_instr.h"
+#include "chuck_type.h"
 #include "chuck_vm.h"
 #include "chuck_lang.h"
 #include "chuck_errmsg.h"
@@ -175,6 +177,7 @@ Chuck_UGen::~Chuck_UGen()
 void Chuck_UGen::init()
 {
     tick = NULL;
+    tickv = NULL;
     pmsg = NULL;
     m_multi_chan = NULL;
     m_multi_chan_size = 0;
@@ -209,6 +212,10 @@ void Chuck_UGen::init()
     
     // what a hack
     m_is_uana = FALSE;
+    // what another hack
+    m_is_subgraph = FALSE;
+    m_inlet = m_outlet = NULL;
+    m_multi_in_v = m_multi_out_v = NULL;
 }
 
 
@@ -239,6 +246,13 @@ void Chuck_UGen::done()
     SAFE_DELETE_ARRAY( m_current_v );
 
     // TODO: m_multi_chan, break ref count loop
+    
+    // SPENCERTODO: is this okay???
+    SAFE_DELETE(m_inlet);
+    SAFE_DELETE(m_outlet);
+    
+    SAFE_DELETE_ARRAY(m_multi_in_v);
+    SAFE_DELETE_ARRAY(m_multi_out_v);
 }
 
 
@@ -292,6 +306,12 @@ void Chuck_UGen::alloc_multi_chan( t_CKUINT num_ins, t_CKUINT num_outs )
         m_multi_chan[0] = this;
     }
     
+    if(tickv)
+    {
+        m_multi_in_v = new SAMPLE[m_multi_chan_size];
+        m_multi_out_v = new SAMPLE[m_multi_chan_size];
+    }
+                              
     // remember
     m_num_ins = num_ins;
     m_num_outs = num_outs;
@@ -331,6 +351,17 @@ t_CKUINT Chuck_UGen::get_num_src()
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::add( Chuck_UGen * src, t_CKBOOL isUpChuck )
 {
+    if(m_is_subgraph)
+    {
+        if(inlet() == NULL) return FALSE;
+        return inlet()->add(src, isUpChuck);
+    }
+    else if(src->m_is_subgraph)
+    {
+        if(src->outlet() == NULL) return FALSE;
+        return add(src->outlet(), isUpChuck);
+    }
+    
     // examine ins and outs
     t_CKUINT outs = src->m_num_outs;
     t_CKUINT ins = this->m_num_ins;
@@ -405,6 +436,17 @@ t_CKBOOL Chuck_UGen::add( Chuck_UGen * src, t_CKBOOL isUpChuck )
 //-----------------------------------------------------------------------------
 void Chuck_UGen::add_by( Chuck_UGen * dest, t_CKBOOL isUpChuck )
 {
+    if(m_is_subgraph)
+    {
+        outlet()->add_by(dest, isUpChuck);
+        return;
+    }
+    if(dest->m_is_subgraph)
+    {
+        add_by(dest->inlet(), isUpChuck);
+        return;
+    }
+    
     // append
     fa_push_back( m_dest_list, m_dest_cap, m_num_dest, dest );
     dest->add_ref();
@@ -429,6 +471,15 @@ void Chuck_UGen::add_by( Chuck_UGen * dest, t_CKBOOL isUpChuck )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::remove( Chuck_UGen * src )
 {
+    if(m_is_subgraph)
+    {
+        return inlet()->remove(src);
+    }
+    if(src->m_is_subgraph)
+    {
+        return remove(src->outlet());
+    }
+    
     // ins and outs
     t_CKUINT outs = src->m_num_outs;
     t_CKUINT ins = this->m_num_ins;
@@ -510,6 +561,17 @@ t_CKBOOL Chuck_UGen::remove( Chuck_UGen * src )
 //-----------------------------------------------------------------------------
 void Chuck_UGen::remove_by( Chuck_UGen * dest )
 {
+    if(m_is_subgraph)
+    {
+        outlet()->remove_by(dest);
+        return;
+    }
+    if(dest->m_is_subgraph)
+    {
+        remove_by(dest->outlet());
+        return;
+    }
+    
     // remove from uana list (first due to reference count)
     for( t_CKUINT j = 0; j < m_num_uana_dest; j++ )
         if( m_dest_uana_list[j] == dest )
@@ -548,6 +610,12 @@ void Chuck_UGen::remove_by( Chuck_UGen * dest )
 //-----------------------------------------------------------------------------
 void Chuck_UGen::remove_all( )
 {
+    if(m_is_subgraph)
+    {
+        inlet()->remove_all();
+        return;
+    }
+
     assert( this->m_num_dest == 0 );
     
     // remove
@@ -577,6 +645,11 @@ void Chuck_UGen::remove_all( )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::disconnect( t_CKBOOL recursive )
 {
+    if(m_is_subgraph)
+    {
+        return inlet()->disconnect(recursive);
+    }
+    
     // remove
     while( m_num_dest > 0 )
     {
@@ -624,6 +697,18 @@ t_CKBOOL Chuck_UGen::is_connected_from( Chuck_UGen * src )
                            m_multi_chan[i]->m_num_src, src ) )
                 return TRUE;
         }
+    }
+    
+    if( m_is_subgraph )
+    {
+        if( inlet() ) return inlet()->is_connected_from( src );
+        else return FALSE;
+    }
+    
+    if( src->m_is_subgraph )
+    {
+        if( src->outlet() ) return is_connected_from( src->outlet() );
+        else return FALSE;
     }
 
     return FALSE;
@@ -680,12 +765,34 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     multi = 0.0f;
     if( m_multi_chan_size )
     {
-        for( i = 0; i < m_multi_chan_size; i++ )
+        if(tickv) // multichannel tick function available
         {
-            ugen = m_multi_chan[i];
-            if( ugen->m_time < now ) ugen->system_tick( now );
-            // multiple channels are added
-            multi += ugen->m_current;
+            for( i = 0; i < m_multi_chan_size; i++ )
+            {
+                ugen = m_multi_chan[i];
+                if( ugen->m_time < now ) ugen->system_tick( now );
+                m_multi_in_v[i] = ugen->m_sum;
+            }
+            
+            m_valid = tickv( this, m_multi_in_v, m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
+            
+            for( i = 0; i < m_multi_chan_size; i++ )
+            {
+                ugen = m_multi_chan[i];
+                ugen->m_current = m_multi_out_v[i];
+                // multiple channels are added
+                //multi += ugen->m_current;
+            }
+        }
+        else
+        {
+            for( i = 0; i < m_multi_chan_size; i++ )
+            {
+                ugen = m_multi_chan[i];
+                if( ugen->m_time < now ) ugen->system_tick( now );
+                // multiple channels are added
+                multi += ugen->m_current;
+            }
         }
     
         // scale multi
@@ -695,8 +802,16 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
 
     // if owner
     if( owner != NULL && owner->m_time < now )
+    {
         owner->system_tick( now );
-
+        
+        if(owner->tickv)
+        {
+            m_last = m_current;
+            return TRUE;
+        }
+    }
+    
     if( m_op > 0 )  // UGEN_OP_TICK
     {
         // tick the ugen
@@ -839,6 +954,43 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
     return TRUE;
 }
 
+
+void Chuck_UGen::init_subgraph()
+{
+    m_is_subgraph = TRUE;
+    
+    Chuck_Object * obj;
+    
+    obj = instantiate_and_initialize_object( &t_ugen, this->shred );
+    m_inlet = (Chuck_UGen *)obj;
+    // additional reference count
+    m_inlet->add_ref();
+    // owner
+    m_inlet->owner = this;
+    // ref count
+    this->add_ref();
+    
+    obj = instantiate_and_initialize_object( &t_ugen, this->shred );
+    m_outlet = (Chuck_UGen *)obj;
+    // additional reference count
+    m_outlet->add_ref();
+    // owner
+    m_outlet->owner = this;
+    // ref count
+    this->add_ref();
+}
+
+
+Chuck_UGen * Chuck_UGen::inlet()
+{
+    return m_inlet;
+}
+
+
+Chuck_UGen * Chuck_UGen::outlet()
+{
+    return m_outlet;
+}
 
 
 

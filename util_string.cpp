@@ -291,3 +291,98 @@ done:
 
     return ret;
 }
+
+
+/* from http://developer.apple.com/library/mac/#qa/qa1549/_index.html */
+
+#include <glob.h>
+
+char* CreatePathByExpandingTildePath(const char* path)
+{
+    glob_t globbuf;
+    char **v;
+    char *expandedPath = NULL, *result = NULL;
+    
+    assert(path != NULL);
+    
+    if (glob(path, GLOB_TILDE, NULL, &globbuf) == 0) //success
+    {
+        v = globbuf.gl_pathv; //list of matched pathnames
+        expandedPath = v[0]; //number of matched pathnames, gl_pathc == 1
+        
+        result = (char*)calloc(1, strlen(expandedPath) + 1); //the extra char is for the null-termination
+        if(result)
+            strncpy(result, expandedPath, strlen(expandedPath) + 1); //copy the null-termination as well
+        
+        globfree(&globbuf);
+    }
+    
+    return result;
+}
+
+std::string expand_filepath( std::string & fp )
+{
+#if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__)
+    // no expansion in Windows systems
+    return fp;
+#else
+    
+    char * expanded_cstr = CreatePathByExpandingTildePath( fp.c_str() );
+    
+    if(expanded_cstr == NULL)
+        return fp;
+    
+    std::string expanded_stdstr = expanded_cstr;
+    
+    free(expanded_cstr);
+    
+    return expanded_stdstr;
+    
+#endif
+}
+
+
+std::string extract_filepath_dir(std::string &filepath)
+{
+    char path_separator = '/';
+    
+#ifdef __WINDOWS_DS__
+    path_separator = '\\';
+#else
+    path_separator = '/';
+#endif
+    
+    // if the last character is a slash, skip it
+    int i = filepath.rfind(path_separator);
+    
+    if(i == std::string::npos)
+        return std::string();
+    
+    return std::string(filepath, 0, i);
+}
+
+//-----------------------------------------------------------------------------
+// name: parse_path_list()
+// desc: split "x:y:z"-style path list into {"x","y","z"}
+//-----------------------------------------------------------------------------
+void parse_path_list( std::string & str, std::list<std::string> & lst )
+{
+#if defined(__PLATFORM_WIN32__)
+    const char separator = ';';
+#else
+    const char separator = ':';
+#endif
+    std::string::size_type i = 0, last = 0;
+    while( last < str.size() && 
+          ( i = str.find( separator, last ) ) != std::string::npos )
+    {
+        lst.push_back( str.substr( last, i - last ) );
+        last = i + 1;
+    }
+    
+    lst.push_back( str.substr( last, str.size() - last ) );
+}
+
+
+
+

@@ -44,6 +44,12 @@
 #include <map>
 
 
+
+extern char g_default_chugin_path[];
+extern char g_chugin_path_envvar[];
+
+
+
 // forward references
 struct Chuck_DL_Query;
 struct Chuck_DL_Class;
@@ -131,7 +137,7 @@ namespace Chuck_DL_Api { struct Api; }
   #define CK_DLL_CALL
 #endif
 
-#define CK_DLL_VERSION_MAJOR (0x0001)
+#define CK_DLL_VERSION_MAJOR (0x0002)
 #define CK_DLL_VERSION_MINOR (0x0000)
 #define CK_DLL_VERSION_MAKE(maj,min) ((t_CKUINT)(((maj) << 16) | (min)))
 #define CK_DLL_VERSION_GETMAJOR(v) (((v) >> 16) & 0xFFFF)
@@ -169,6 +175,8 @@ typedef const Chuck_DL_Api::Api *CK_DL_API;
 // macro for defining ChucK DLL export ugen tick functions
 // example: CK_DLL_TICK(foo)
 #define CK_DLL_TICK(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, SAMPLE in, SAMPLE * out, Chuck_VM_Shred * SHRED, CK_DL_API API )
+// example: CK_DLL_TICK(foo)
+#define CK_DLL_TICKV(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, SAMPLE * in, SAMPLE * out, t_CKUINT nframes, Chuck_VM_Shred * SHRED, CK_DL_API API )
 // macro for defining ChucK DLL export ugen ctrl functions
 // example: CK_DLL_CTRL(foo)
 #define CK_DLL_CTRL(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, CK_DL_API API )
@@ -212,6 +220,7 @@ typedef t_CKVOID (CK_DLL_CALL * f_mfun)( Chuck_Object * SELF, void * ARGS, Chuck
 typedef t_CKVOID (CK_DLL_CALL * f_sfun)( void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, CK_DL_API API );
 // ugen specific
 typedef t_CKBOOL (CK_DLL_CALL * f_tick)( Chuck_Object * SELF, SAMPLE in, SAMPLE * out, Chuck_VM_Shred * SHRED, CK_DL_API API );
+typedef t_CKBOOL (CK_DLL_CALL * f_tickv)( Chuck_Object * SELF, SAMPLE * in, SAMPLE * out, t_CKUINT nframes, Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKVOID (CK_DLL_CALL * f_ctrl)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKVOID (CK_DLL_CALL * f_cget)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKBOOL (CK_DLL_CALL * f_pmsg)( Chuck_Object * SELF, const char * MSG, void * ARGS, Chuck_VM_Shred * SHRED, CK_DL_API API );
@@ -256,6 +265,7 @@ typedef void (CK_DLL_CALL * f_add_svar)( Chuck_DL_Query * query,
 typedef void (CK_DLL_CALL * f_add_arg)( Chuck_DL_Query * query, const char * type, const char * name );
 // ** functions for adding unit generators, must extend ugen
 typedef void (CK_DLL_CALL * f_add_ugen_func)( Chuck_DL_Query * query, f_tick tick, f_pmsg pmsg, t_CKUINT num_in, t_CKUINT num_out );
+typedef void (CK_DLL_CALL * f_add_ugen_funcv)( Chuck_DL_Query * query, f_tickv tickv, f_pmsg pmsg, t_CKUINT num_in, t_CKUINT num_out );
 // ** add a ugen control
 typedef void (CK_DLL_CALL * f_add_ugen_ctrl)( Chuck_DL_Query * query, f_ctrl ctrl, f_cget cget, 
                                               const char * type, const char * name );
@@ -293,6 +303,8 @@ struct Chuck_DL_Query
     f_add_arg add_arg;
     // (ugen only) add tick and pmsg functions
     f_add_ugen_func add_ugen_func;
+    // (ugen only) add tick and pmsg functions
+    f_add_ugen_funcv add_ugen_funcv;
     // (ugen only) add ctrl parameters
     f_add_ugen_ctrl add_ugen_ctrl;
     // end class/namespace, compile it
@@ -355,6 +367,8 @@ struct Chuck_DL_Class
     std::vector<Chuck_DL_Value *> svars;
     // ugen_tick
     f_tick ugen_tick;
+    // ugen_tickv
+    f_tickv ugen_tickv;
     // ugen_pmsg
     f_pmsg ugen_pmsg;
     // ugen_ctrl/cget
@@ -369,7 +383,7 @@ struct Chuck_DL_Class
     t_CKUINT ugen_num_in, ugen_num_out;
     
     // constructor
-    Chuck_DL_Class() { dtor = NULL; ugen_tick = NULL; ugen_pmsg = NULL; uana_tock = NULL; ugen_pmsg = NULL; current_mvar_offset = 0; ugen_num_in = ugen_num_out = 0; }
+    Chuck_DL_Class() { dtor = NULL; ugen_tick = NULL; ugen_tickv = NULL; ugen_pmsg = NULL; uana_tock = NULL; ugen_pmsg = NULL; current_mvar_offset = 0; ugen_num_in = ugen_num_out = 0; }
     // destructor
     ~Chuck_DL_Class();
 };
@@ -535,15 +549,21 @@ typedef void * String;
 struct Api
 {
 public:
-    Api() {}
-
     static Api g_api;
     static inline const Api * instance() { return &g_api; }
+    
+    struct VMApi
+    {
+        VMApi();
+        
+        t_CKUINT (* const get_srate)();
+    } * const vm;
     
     struct ObjectApi
     {
         ObjectApi();
         
+    private:
         Type (* const get_type)( std::string &name );
 
         Object (* const create)( Type type );
@@ -558,10 +578,19 @@ public:
         
         t_CKBOOL (* const set_string)( String string, std::string &value );
         
-    } object;
+    } * const object;
+    
+    Api() :
+    vm(new VMApi),
+    object(new ObjectApi)
+    {}
     
 private:
-    Api(Api &a) { assert(0); };
+    Api(Api &a) :
+    vm(a.vm),
+    object(a.object)
+    { assert(0); };
+    
     Api &operator=(Api &a) { assert(0); return a; }
 };
     

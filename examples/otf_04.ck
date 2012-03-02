@@ -24,7 +24,7 @@ T => now;
 
 // construct the patch
 SndBuf buf => Gain g => dac;
-"data/snare-hop.wav" => buf.read;
+me.sourceDir() + "/data/snare-hop.wav" => buf.read;
 .6 => g.gain;
 
 // where we actually want to start

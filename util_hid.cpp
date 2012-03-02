@@ -1420,8 +1420,8 @@ void Hid_init2()
         
     IOReturn result = kIOReturnSuccess;
     io_iterator_t hidObjectIterator = 0;
-    CFTypeRef refCF;
-    t_CKINT filter_usage_page = kHIDPage_GenericDesktop;
+//    CFTypeRef refCF;
+//    t_CKINT filter_usage_page = kHIDPage_GenericDesktop;
     
     // allocate vectors of device records
     joysticks = new xvector< OSX_Hid_Device * >;
@@ -2714,7 +2714,7 @@ static void * sms_loop( void * )
 static unsigned int __stdcall sms_loop( void * )
 #endif
 {
-    t_CKINT c;
+//    t_CKINT c;
     EM_log( CK_LOG_INFO, "starting SMS multi-threaded loop..." );
 
     // go
@@ -2799,7 +2799,7 @@ void SMSManager::off()
 }
 
 
-static int TiltSensor_test( int kernFunc, char * servMatch, int dataType )
+static int TiltSensor_test( int kernFunc, const char * servMatch, int dataType )
 {
     kern_return_t result;
     io_iterator_t iterator;
@@ -7024,7 +7024,9 @@ void Hid_quit()
         return;
     
     hid_channel_msg hcm = { HID_CHANNEL_QUIT, NULL };
-    write( hid_channel_w, &hcm, sizeof( hcm ) );
+    if (write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1)
+      EM_log( CK_LOG_WARNING, "HID_CHANNEL_QUIT message failed: %s" , strerror( errno ) );
+
     close( hid_channel_w );
         
     delete[] pollfds;
@@ -7161,7 +7163,12 @@ int Joystick_open( int js )
         }
         
         hid_channel_msg hcm = { HID_CHANNEL_OPEN, joystick };
-        write( hid_channel_w, &hcm, sizeof( hcm ) );
+        if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1) 
+        {
+            EM_log( CK_LOG_SEVERE, "joystick: unable to write channel message %s: %s", 
+                joystick->filename, strerror( errno ) );
+            return -1;
+        }
     }
     
     joystick->refcount++;
@@ -7181,7 +7188,9 @@ int Joystick_close( int js )
     if( joystick->refcount == 0 )
     {
         hid_channel_msg hcm = { HID_CHANNEL_CLOSE, joystick };
-        write( hid_channel_w, &hcm, sizeof( hcm ) );
+        if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1) return -1;
+            EM_log( CK_LOG_SEVERE, "joystick: unable complete close message: %s", 
+                 strerror( errno ) );
     }
     
     
@@ -7359,7 +7368,11 @@ int Mouse_open( int m )
         
         mouse->needs_open = TRUE;
         hid_channel_msg hcm = { HID_CHANNEL_OPEN, mouse };
-        write( hid_channel_w, &hcm, sizeof( hcm ) );
+        if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1) 
+        {
+            EM_log( CK_LOG_SEVERE, "mouse: unable to complete open message %: %s", strerror( errno ) );
+            return -1;
+        }
     }
     
     mouse->refcount++;
@@ -7380,7 +7393,8 @@ int Mouse_close( int m )
     {
         mouse->needs_close = TRUE;
         hid_channel_msg hcm = { HID_CHANNEL_CLOSE, mouse };
-        write( hid_channel_w, &hcm, sizeof( hcm ) );
+        if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1)
+          EM_log( CK_LOG_WARNING, "mouse: HID_CHANNEL_CLOSE message failed: %s" , strerror( errno ) );
     }
     
     return 0;
@@ -7531,7 +7545,11 @@ int Keyboard_open( int k )
         }
         
         hid_channel_msg hcm = { HID_CHANNEL_OPEN, keyboard };
-        write( hid_channel_w, &hcm, sizeof( hcm ) );
+        if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1) 
+        {
+            EM_log( CK_LOG_SEVERE, "keyboard: unable to write open message: %s", strerror( errno ) );
+            return -1;
+        }
     }
     
     keyboard->refcount++;
@@ -7551,7 +7569,8 @@ int Keyboard_close( int k )
     if( keyboard->refcount == 0 )
     {
         hid_channel_msg hcm = { HID_CHANNEL_CLOSE, keyboard };
-        write( hid_channel_w, &hcm, sizeof( hcm ) );
+        if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1)
+          EM_log( CK_LOG_WARNING, "keyboard: HID_CHANNEL_CLOSE message failed: %s" , strerror( errno ) );
     }
     
     return 0;
@@ -7620,12 +7639,12 @@ const char * MultiTouchDevice_name( int ts ) { return NULL; }
 
 // #include "util_iphone.h"
 
-extern int get_tilt_sensor_x();
-extern int get_tilt_sensor_y();
-extern int get_tilt_sensor_z();
+int get_tilt_sensor_x() { return 0; }
+int get_tilt_sensor_y() { return 0; }
+int get_tilt_sensor_z() { return 0; }
 
-extern void start_hid_multi_touch();
-extern void stop_hid_multi_touch();
+void start_hid_multi_touch() { }
+void stop_hid_multi_touch() { }
 
 void Hid_init(){}
 void Hid_poll(){}
@@ -7896,6 +7915,14 @@ const char * WiiRemote_name( int wr )
 {
     return NULL;
 }
+
+void MultiTouchDevice_init() { }
+void MultiTouchDevice_quit() { }
+void MultiTouchDevice_probe() { }
+int MultiTouchDevice_count() { return 0; }
+int MultiTouchDevice_open( int ts ) { return -1; }
+int MultiTouchDevice_close( int ts ) { return -1; }
+const char * MultiTouchDevice_name( int ts ) { return NULL; }
 
 
 #endif // __CHIP_MODE__

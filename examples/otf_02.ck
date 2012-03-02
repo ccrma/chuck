@@ -21,7 +21,7 @@ T - (now % T) => now;
 
 // construct the patch
 SndBuf buf => Gain g => dac;
-"data/hihat.wav" => buf.read;
+me.sourceDir() + "/data/hihat.wav" => buf.read;
 .25 => g.gain;
 
 // time loop

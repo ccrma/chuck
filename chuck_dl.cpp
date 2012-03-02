@@ -39,8 +39,23 @@
 #include "chuck_bbq.h"
 #include "chuck_type.h"
 #include "chuck_instr.h"
+#include "chuck_globals.h"
+#include "chuck_vm.h"
 #include <sstream>
 using namespace std;
+
+
+
+
+#if defined(__MACOSX_CORE__)
+char g_default_chugin_path[] = "/usr/lib/chuck:/Library/Application Support/ChucK/ChuGins:~/Library/Application Support/ChucK/ChuGins";
+#elif defined(__PLATFORM_WIN32__)
+char g_default_chugin_path[] = "C:\\WINDOWS\\system32\\ChucK";
+#else // Linux/Cygwin
+char g_default_chugin_path[] = "/usr/lib/chuck";
+#endif
+
+char g_chugin_path_envvar[] = "CHUCK_CHUGIN_PATH";
 
 
 
@@ -412,6 +427,47 @@ void CK_DLL_CALL ck_add_ugen_func( Chuck_DL_Query * query, f_tick ugen_tick, f_p
 
 
 //-----------------------------------------------------------------------------
+// name: ck_add_ugen_func()
+// desc: (ugen only) add tick and pmsg functions
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_add_ugen_funcv( Chuck_DL_Query * query, f_tickv ugen_tickv, f_pmsg ugen_pmsg, t_CKUINT num_in, t_CKUINT num_out )
+{
+    // make sure there is class
+    if( !query->curr_class )
+    {
+        // error
+        EM_error2( 0, "class import: add_ugen_func invoked without begin_class..." );
+        return;
+    }
+    
+    // make sure tick not defined already
+    if( query->curr_class->ugen_tickv && ugen_tickv )
+    {
+        // error
+        EM_error2( 0, "class import: ugen_tick already defined..." );
+        return;
+    }
+    
+    // make sure pmsg not defined already
+    if( query->curr_class->ugen_pmsg && ugen_pmsg )
+    {
+        // error
+        EM_error2( 0, "class import: ugen_pmsg already defined..." );
+        return;
+    }
+    
+    // set
+    if( ugen_tickv ) query->curr_class->ugen_tickv = ugen_tickv;
+    if( ugen_pmsg ) query->curr_class->ugen_pmsg = ugen_pmsg;
+    query->curr_class->ugen_num_in = num_in;
+    query->curr_class->ugen_num_out = num_out;
+    query->curr_func = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_add_ugen_ctrl()
 // desc: (ugen only) add ctrl parameters
 //-----------------------------------------------------------------------------
@@ -770,6 +826,7 @@ Chuck_DL_Query::Chuck_DL_Query( )
     add_svar = ck_add_svar;
     add_arg = ck_add_arg;
     add_ugen_func = ck_add_ugen_func;
+    add_ugen_funcv = ck_add_ugen_funcv;
     add_ugen_ctrl = ck_add_ugen_ctrl;
     end_class = ck_end_class;
     dll_name = "[noname]";
@@ -853,17 +910,13 @@ Chuck_DL_Func::~Chuck_DL_Func()
 namespace Chuck_DL_Api
 {
     Api Api::g_api;
-    
-//    Api * g_api = NULL;
-//    
-//    Api * Api::instance()
-//    {
-//        if( g_api == NULL )
-//            g_api = new Api;
-//        return g_api;
-//    }
 }
 
+
+static t_CKUINT ck_get_srate()
+{
+    return g_vm->srate();
+}
 
 static Chuck_DL_Api::Type ck_get_type( std::string & name )
 {
@@ -935,6 +988,11 @@ static t_CKBOOL ck_set_string( Chuck_DL_Api::String s, std::string & str )
     
     return TRUE;
 }
+
+
+Chuck_DL_Api::Api::VMApi::VMApi() :
+get_srate(ck_get_srate)
+{ }
 
 
 Chuck_DL_Api::Api::ObjectApi::ObjectApi() :

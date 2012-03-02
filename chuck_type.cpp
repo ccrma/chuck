@@ -4231,7 +4231,7 @@ t_CKBOOL type_engine_check_reserved( Chuck_Env * env, S_Symbol xid, int pos )
 t_CKBOOL type_engine_check_primitive( Chuck_Type * type )
 {
     return ( isa(type, &t_int) || isa(type, &t_float) || isa(type, &t_dur) ||
-             isa(type, &t_time) ) || isa(type, &t_complex) || isa(type, &t_polar)
+             isa(type, &t_time) || isa(type, &t_complex) || isa(type, &t_polar) )
              && ( type->array_depth == 0 );
 }
 t_CKBOOL isprim( Chuck_Type * type )
@@ -4342,8 +4342,8 @@ t_CKBOOL type_engine_get_deprecate( Chuck_Env * env,
 //-----------------------------------------------------------------------------
 Chuck_Type * type_engine_find_deprecated_type( Chuck_Env * env, a_Id_List path )
 {
-    S_Symbol xid = NULL;
-    Chuck_Type * t = NULL;
+//    S_Symbol xid = NULL;
+//    Chuck_Type * t = NULL;
     std::string actual;
 
     // find mapping
@@ -4779,8 +4779,6 @@ cleanup:
 }
 
 
-
-
 //-----------------------------------------------------------------------------
 // name: type_engine_import_ugen_begin()
 // desc: ...
@@ -4788,7 +4786,7 @@ cleanup:
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, 
                                             const char * parent, Chuck_Namespace * where,
                                             f_ctor pre_ctor, f_dtor dtor,
-                                            f_tick tick, f_pmsg pmsg,
+                                            f_tick tick, f_tickv tickv, f_pmsg pmsg,
                                             t_CKUINT num_ins, t_CKUINT num_outs )
 {
     Chuck_Type * type = NULL;
@@ -4813,10 +4811,12 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
     info = new Chuck_UGen_Info;
     info->add_ref();
     info->tick = type->parent->ugen_info->tick;
+    info->tickv = type->parent->ugen_info->tickv;
     info->pmsg = type->parent->ugen_info->pmsg;
     info->num_ins = type->parent->ugen_info->num_ins;
     info->num_outs = type->parent->ugen_info->num_outs;
     if( tick ) info->tick = tick;
+    if( tickv ) info->tickv = tickv;
     if( pmsg ) info->pmsg = pmsg;
     if( num_ins != 0xffffffff ) info->num_ins = num_ins;
     if( num_outs != 0xffffffff ) info->num_outs = num_outs;
@@ -4826,6 +4826,21 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
     return type;
 }
 
+
+//-----------------------------------------------------------------------------
+// name: type_engine_import_ugen_begin()
+// desc: old version
+//-----------------------------------------------------------------------------
+Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, 
+                                           const char * parent, Chuck_Namespace * where,
+                                           f_ctor pre_ctor, f_dtor dtor,
+                                           f_tick tick, f_pmsg pmsg,
+                                           t_CKUINT num_ins, t_CKUINT num_outs )
+{
+    return type_engine_import_ugen_begin( env, name, parent, where,
+                                         pre_ctor, dtor, tick, NULL, pmsg, 
+                                         num_ins, num_outs );
+}
 
 
 
@@ -5701,7 +5716,7 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
 error:
     // error
     EM_error2( 0, "...(in object import '%s' in DLL '%s')", 
-        query ? ( query->dll_name.c_str() == "" ? query->dll_name.c_str() : "[empty]" ) : "[null]", dll->name() );
+        query ? ( strlen(query->dll_name.c_str()) == 0  ? query->dll_name.c_str() : "[empty]" ) : "[null]", dll->name() );
 
     // free the path
     delete_id_list( path );
@@ -5732,13 +5747,13 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
         if(c->ctors.size() > 0)
             ctor = c->ctors[0]; // TODO: uh, is more than one possible?
         
-        if(c->ugen_tick && c->ugen_num_out)
+        if((c->ugen_tick || c->ugen_tickv) && c->ugen_num_out)
         {
             if(!type_engine_import_ugen_begin(env, c->name.c_str(), 
                                               c->parent.c_str(), env->global(), 
                                               ctor ? (f_ctor) ctor->addr : NULL, 
                                               dtor ? (f_dtor) dtor->addr : NULL,
-                                              c->ugen_tick, c->ugen_pmsg,
+                                              c->ugen_tick, c->ugen_tickv, c->ugen_pmsg,
                                               c->ugen_num_in, c->ugen_num_out))
                 goto error;
         }
@@ -5756,7 +5771,6 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
         for(j = 0; j < c->mvars.size(); j++)
         {
             Chuck_DL_Value * mvar = c->mvars[j];
-            // SPENCER TODO: - shouldnt this check for CK_INVALID_OFFSET?
             if(type_engine_import_mvar(env, mvar->type.c_str(), 
                                        mvar->name.c_str(), 
                                        mvar->is_const) == CK_INVALID_OFFSET)

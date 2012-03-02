@@ -983,7 +983,7 @@ CK_DLL_MFUN( KBHit_state )
 // hit
 CK_DLL_MFUN( KBHit_hit )
 {
-    KBHit * kb = (KBHit *)(OBJ_MEMBER_INT(SELF, KBHit_offset_data));
+    //KBHit * kb = (KBHit *)(OBJ_MEMBER_INT(SELF, KBHit_offset_data));
     RETURN->v_object = SELF;
 }
 

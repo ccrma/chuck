@@ -89,15 +89,7 @@ CHUCK_THREAD g_tid_shell = 0;
 char g_host[256] = "127.0.0.1";
 
 
-#if defined(__MACOSX_CORE__)
-char g_default_chugin_path[] = "/usr/lib/chuck:/Library/Application Support/ChucK";
-#elif defined(__PLATFORM_WIN32__)
-char g_default_chugin_path[] = "C:\\WINDOWS\\system32\\ChucK";
-#else // Linux/Cygwin
-char g_default_chugin_path[] = "/usr/lib/chuck";
-#endif
 
-char g_chugin_path_envvar[] = "CHUCK_CHUGIN_PATH";
 
 
 #if defined(__MACOSX_CORE__)
@@ -290,29 +282,6 @@ static void usage()
 
 
 
-//-----------------------------------------------------------------------------
-// name: parse_path_list()
-// desc: split "x:y:z"-style path list into {"x","y","z"}
-//-----------------------------------------------------------------------------
-static void parse_path_list( std::string & str, std::list<std::string> & lst )
-{
-#if defined(__PLATFORM_WIN32__)
-    const char separator = ';';
-#else
-    const char separator = ':';
-#endif
-    std::string::size_type i = 0, last = 0;
-    while( last < str.size() && 
-           ( i = str.find( separator, last ) ) != std::string::npos )
-    {
-        lst.push_back( str.substr( last, i - last ) );
-        last = i + 1;
-    }
-    
-    lst.push_back( str.substr( last, str.size() - last ) );
-}
-
-
 struct vm_cb_arg
 {
     vm_cb_arg() { memset(this, 0, sizeof(vm_cb_arg)); }
@@ -375,7 +344,9 @@ void * vm_cb(void * _arg)
     t_CKUINT buffer_size = BUFFER_SIZE_DEFAULT;
     t_CKUINT num_buffers = NUM_BUFFERS_DEFAULT;
     t_CKUINT dac = 0;
+    std::string dac_name = "";
     t_CKUINT adc = 0;
+    std::string adc_name = "";
     t_CKUINT dac_chans = 2;
     t_CKUINT adc_chans = 2;
     t_CKBOOL dump = FALSE;
@@ -470,90 +441,136 @@ void * vm_cb(void * _arg)
             {   enable_shell = TRUE; vm_halt = FALSE; }
             else if( !strcmp(argv[i], "--empty") )
                 no_vm = TRUE;
-            else if( !strncmp(argv[i], "--srate", 7) )
-                srate = atoi( argv[i]+7 ) > 0 ? atoi( argv[i]+7 ) : srate;
             else if( !strncmp(argv[i], "--srate:", 8) )
                 srate = atoi( argv[i]+8 ) > 0 ? atoi( argv[i]+8 ) : srate;
+            else if( !strncmp(argv[i], "--srate", 7) )
+                srate = atoi( argv[i]+7 ) > 0 ? atoi( argv[i]+7 ) : srate;
             else if( !strncmp(argv[i], "-r", 2) )
                 srate = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : srate;
-            else if( !strncmp(argv[i], "--bufsize", 9) )
-                buffer_size = atoi( argv[i]+9 ) > 0 ? atoi( argv[i]+9 ) : buffer_size;
             else if( !strncmp(argv[i], "--bufsize:", 10) )
                 buffer_size = atoi( argv[i]+10 ) > 0 ? atoi( argv[i]+10 ) : buffer_size;
+            else if( !strncmp(argv[i], "--bufsize", 9) )
+                buffer_size = atoi( argv[i]+9 ) > 0 ? atoi( argv[i]+9 ) : buffer_size;
             else if( !strncmp(argv[i], "-b", 2) )
                 buffer_size = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : buffer_size;
-            else if( !strncmp(argv[i], "--bufnum", 8) )
-                num_buffers = atoi( argv[i]+8 ) > 0 ? atoi( argv[i]+8 ) : num_buffers;
             else if( !strncmp(argv[i], "--bufnum:", 9) )
                 num_buffers = atoi( argv[i]+9 ) > 0 ? atoi( argv[i]+9 ) : num_buffers;
+            else if( !strncmp(argv[i], "--bufnum", 8) )
+                num_buffers = atoi( argv[i]+8 ) > 0 ? atoi( argv[i]+8 ) : num_buffers;
             else if( !strncmp(argv[i], "-n", 2) )
                 num_buffers = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : num_buffers;
-            else if( !strncmp(argv[i], "--dac", 5) )
-                dac = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 0;
             else if( !strncmp(argv[i], "--dac:", 6) )
+            {
+                const char *str = argv[i]+6;
+                char *endptr = NULL;
+                long dev = strtol(str, &endptr, 10);
+                
+                if(endptr != NULL && *endptr == '\0')
+                {
+                    // successful conversion to # -- clear adc_name
+                    dac = dev;
+                    dac_name = "";
+                }
+                else if(*str != '\0')
+                {
+                    // incomplete conversion to #; see if its a possible device name
+                    dac_name = std::string(str);
+                }
+                else
+                {
+                    // error
+                    fprintf( stderr, "[chuck]: invalid arguments for '--dac:'\n" );
+                    fprintf( stderr, "[chuck]: (see 'chuck --help' for more info)\n" );
+                    exit( 1 );
+                }
+            }
+            else if( !strncmp(argv[i], "--dac", 5) )
                 dac = atoi( argv[i]+6 ) > 0 ? atoi( argv[i]+6 ) : 0;
+            else if( !strncmp(argv[i], "--adc:", 6) )
+            {
+                const char *str = argv[i]+6;
+                char *endptr = NULL;
+                long dev = strtol(str, &endptr, 10);
+                
+                if(endptr != NULL && *endptr != '\0')
+                {
+                    // successful conversion to # -- clear adc_name
+                    adc = dev;
+                    adc_name = "";
+                }
+                else if(*str != '\0')
+                {
+                    // incomplete conversion to #; see if its a possible device name
+                    adc_name = std::string(str);
+                }
+                else
+                {
+                    // error
+                    fprintf( stderr, "[chuck]: invalid arguments for '--adc:'\n" );
+                    fprintf( stderr, "[chuck]: (see 'chuck --help' for more info)\n" );
+                    exit( 1 );
+                }
+            }
             else if( !strncmp(argv[i], "--adc", 5) )
                 adc = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 0;
-            else if( !strncmp(argv[i], "--adc:", 6) )
-                adc = atoi( argv[i]+6 ) > 0 ? atoi( argv[i]+6 ) : 0;
-            else if( !strncmp(argv[i], "--channels", 10) )
-                dac_chans = adc_chans = atoi( argv[i]+10 ) > 0 ? atoi( argv[i]+10 ) : 2;
             else if( !strncmp(argv[i], "--channels:", 11) )
                 dac_chans = adc_chans = atoi( argv[i]+11 ) > 0 ? atoi( argv[i]+11 ) : 2;
+            else if( !strncmp(argv[i], "--channels", 10) )
+                dac_chans = adc_chans = atoi( argv[i]+10 ) > 0 ? atoi( argv[i]+10 ) : 2;
             else if( !strncmp(argv[i], "-c", 2) )
                 dac_chans = adc_chans = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : 2;
-            else if( !strncmp(argv[i], "--out", 5) )
-                dac_chans = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 2;
             else if( !strncmp(argv[i], "--out:", 6) )
                 dac_chans = atoi( argv[i]+6 ) > 0 ? atoi( argv[i]+6 ) : 2;
+            else if( !strncmp(argv[i], "--out", 5) )
+                dac_chans = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 2;
             else if( !strncmp(argv[i], "-o", 2) )
                 dac_chans = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : 2;
-            else if( !strncmp(argv[i], "--in", 4) )
-                adc_chans = atoi( argv[i]+4 ) > 0 ? atoi( argv[i]+4 ) : 2;
             else if( !strncmp(argv[i], "--in:", 5) )
                 adc_chans = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 2;
+            else if( !strncmp(argv[i], "--in", 4) )
+                adc_chans = atoi( argv[i]+4 ) > 0 ? atoi( argv[i]+4 ) : 2;
             else if( !strncmp(argv[i], "-i", 2) )
                 adc_chans = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : 2;
-            else if( !strncmp(argv[i], "--level", 7) )
-            {   g_priority = atoi( argv[i]+7 ); set_priority = TRUE; }
             else if( !strncmp(argv[i], "--level:", 8) )
             {   g_priority = atoi( argv[i]+8 ); set_priority = TRUE; }
+            else if( !strncmp(argv[i], "--level", 7) )
+            {   g_priority = atoi( argv[i]+7 ); set_priority = TRUE; }
             else if( !strncmp(argv[i], "--watchdog", 10) )
             {   g_watchdog_timeout = atof( argv[i]+10 );
                 if( g_watchdog_timeout <= 0 ) g_watchdog_timeout = 0.5;
                 do_watchdog = TRUE; }
             else if( !strncmp(argv[i], "--nowatchdog", 12) )
                 do_watchdog = FALSE;
-            else if( !strncmp(argv[i], "--remote", 8) )
-                strcpy( g_host, argv[i]+8 );
             else if( !strncmp(argv[i], "--remote:", 9) )
                 strcpy( g_host, argv[i]+9 );
+            else if( !strncmp(argv[i], "--remote", 8) )
+                strcpy( g_host, argv[i]+8 );
             else if( !strncmp(argv[i], "@", 1) )
                 strcpy( g_host, argv[i]+1 );
-            else if( !strncmp(argv[i], "--port", 6) )
-                g_port = atoi( argv[i]+6 );
             else if( !strncmp(argv[i], "--port:", 7) )
                 g_port = atoi( argv[i]+7 );
+            else if( !strncmp(argv[i], "--port", 6) )
+                g_port = atoi( argv[i]+6 );
             else if( !strncmp(argv[i], "-p", 2) )
                 g_port = atoi( argv[i]+2 );
             else if( !strncmp(argv[i], "--auto", 6) )
                 auto_depend = TRUE;
             else if( !strncmp(argv[i], "-u", 2) )
                 auto_depend = TRUE;
-            else if( !strncmp(argv[i], "--log", 5) )
-                log_level = argv[i][5] ? atoi( argv[i]+5 ) : CK_LOG_INFO;
             else if( !strncmp(argv[i], "--log:", 6) )
                 log_level = argv[i][6] ? atoi( argv[i]+6 ) : CK_LOG_INFO;
-            else if( !strncmp(argv[i], "--verbose", 9) )
-                log_level = argv[i][9] ? atoi( argv[i]+9 ) : CK_LOG_INFO;
+            else if( !strncmp(argv[i], "--log", 5) )
+                log_level = argv[i][5] ? atoi( argv[i]+5 ) : CK_LOG_INFO;
             else if( !strncmp(argv[i], "--verbose:", 10) )
                 log_level = argv[i][10] ? atoi( argv[i]+10 ) : CK_LOG_INFO;
+            else if( !strncmp(argv[i], "--verbose", 9) )
+                log_level = argv[i][9] ? atoi( argv[i]+9 ) : CK_LOG_INFO;
             else if( !strncmp(argv[i], "-v", 2) )
                 log_level = argv[i][2] ? atoi( argv[i]+2 ) : CK_LOG_INFO;
-            else if( !strncmp(argv[i], "--adaptive", 10) )
-                adaptive_size = argv[i][10] ? atoi( argv[i]+10 ) : -1;
             else if( !strncmp(argv[i], "--adaptive:", 11) )
                 adaptive_size = argv[i][11] ? atoi( argv[i]+11 ) : -1;
+            else if( !strncmp(argv[i], "--adaptive", 10) )
+                adaptive_size = argv[i][10] ? atoi( argv[i]+10 ) : -1;
             else if( !strncmp(argv[i], "--deprecate", 11) )
             {
                 // get the rest
@@ -708,6 +725,36 @@ void * vm_cb(void * _arg)
         exit( 1 );
     }
     
+    // find dac_name if appropriate
+    if( dac_name.size() > 0 )
+    {
+        int dev = Digitalio::device_named(dac_name);
+        if( dev >= 0 )
+        {
+            dac = dev;
+        }
+        else
+        {
+            fprintf( stderr, "[chuck]: unable to find dac '%s'\n", dac_name.c_str() );
+            exit( 1 );
+        }
+    }
+    
+    // find adc_name if appropriate
+    if( adc_name.size() > 0 )
+    {
+        int dev = Digitalio::device_named(adc_name);
+        if( dev >= 0 )
+        {
+            adc = dev;
+        }
+        else
+        {
+            fprintf( stderr, "[chuck]: unable to find adc '%s'\n", adc_name.c_str() );
+            exit( 1 );
+        }
+    }
+    
     // allocate the vm - needs the type system
     vm = g_vm = new Chuck_VM;
     if( !vm->initialize( enable_audio, vm_halt, srate, buffer_size,
@@ -784,7 +831,7 @@ void * vm_cb(void * _arg)
             // uh...
             EM_log( CK_LOG_SEVERE, "error: unable to determine current working directory!" );
         else
-            cwd = cstr_cwd;
+            cwd = std::string(cstr_cwd) + "/";
 #endif // __PLATFORM_WIN32__
     }
 
@@ -805,7 +852,8 @@ void * vm_cb(void * _arg)
             // push indent
             EM_pushlog();
             
-            std::string full_path = cwd + filename;
+            // SPENCERTODO: what to do for full path
+            std::string full_path = filename;
             
             // parse, type-check, and emit
             if( compiler->go( filename, NULL, NULL, full_path ) )

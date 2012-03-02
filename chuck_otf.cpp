@@ -256,13 +256,10 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
     
     // wait for reply
     // reply msg == cmd msg, so we don't need to retrieve the actual msg pointer
-    if( reply )
+    while( vm->get_reply() == NULL )
     {
-        while( vm->get_reply() == NULL )
-        {
-            usleep(1000);
-        }
-    }
+        usleep(1000);
+    }    
 
 cleanup:
     // close file handle
