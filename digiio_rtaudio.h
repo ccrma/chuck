@@ -125,7 +125,7 @@ public:
     static void shutdown();
     static void probe();
     
-    static DWORD__ device_named(std::string &name);
+    static DWORD__ device_named(std::string &name, t_CKBOOL needs_dac = FALSE, t_CKBOOL needs_adc = FALSE);
 
 public:
     static DWORD__ sampling_rate( ) { return m_sampling_rate; }

@@ -728,7 +728,7 @@ void * vm_cb(void * _arg)
     // find dac_name if appropriate
     if( dac_name.size() > 0 )
     {
-        int dev = Digitalio::device_named(dac_name);
+        int dev = Digitalio::device_named(dac_name, TRUE, FALSE);
         if( dev >= 0 )
         {
             dac = dev;
@@ -743,7 +743,7 @@ void * vm_cb(void * _arg)
     // find adc_name if appropriate
     if( adc_name.size() > 0 )
     {
-        int dev = Digitalio::device_named(adc_name);
+        int dev = Digitalio::device_named(adc_name, FALSE, TRUE);
         if( dev >= 0 )
         {
             adc = dev;
