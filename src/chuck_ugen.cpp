@@ -244,6 +244,8 @@ void Chuck_UGen::done()
     // reclaim
     SAFE_DELETE_ARRAY( m_sum_v );
     SAFE_DELETE_ARRAY( m_current_v );
+    
+    SAFE_DELETE_ARRAY(m_multi_chan);
 
     // TODO: m_multi_chan, break ref count loop
     

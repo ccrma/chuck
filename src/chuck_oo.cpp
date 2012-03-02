@@ -105,6 +105,8 @@ void Chuck_VM_Object::add_ref()
         // add to vm allocator
         Chuck_VM_Alloc::instance()->add_object( this );
     }
+    
+    CK_GC_LOG("Chuck_VM_Object::add_ref() : 0x%08x, %s, %i", this, typeid(*this).name(), m_ref_count);
 }
 
 
@@ -121,6 +123,8 @@ void Chuck_VM_Object::release()
     // decrement
     m_ref_count--;
     
+    CK_GC_LOG("Chuck_VM_Object::release() : 0x%08x, %s, %i", this, typeid(*this).name(), m_ref_count);
+
     // if no more references
     if( m_ref_count == 0 )
     {
@@ -300,6 +304,20 @@ Chuck_Object::Chuck_Object()
 //-----------------------------------------------------------------------------
 Chuck_Object::~Chuck_Object()
 {
+    // call destructors, from latest descended child to oldest parent
+    Chuck_Type * type = this->type_ref;
+    while(type != NULL)
+    {
+        // SPENCERTODO: HACK! is there a better way to call the dtor?
+        if(type->has_destructor)
+        {
+            assert(type->info->dtor && type->info->dtor->native_func);
+            ((f_dtor)(type->info->dtor->native_func))(this, NULL, Chuck_DL_Api::Api::instance());
+        }
+        
+        type = type->parent;
+    }
+    
     // free
     if( vtable ) { delete vtable; vtable = NULL; }
     if( type_ref ) { type_ref->release(); type_ref = NULL; }
