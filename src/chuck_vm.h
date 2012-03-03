@@ -48,7 +48,7 @@
 
 
 
-#define CK_DEBUG_MEMORY_MGMT (0)
+#define CK_DEBUG_MEMORY_MGMT (1)
 
 #if CK_DEBUG_MEMORY_MGMT
 #define CK_GC_LOG(s,...) EM_log(1, s, ##__VA_ARGS__)
