@@ -508,6 +508,31 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
             if( m_dac_n == 0 )
             {
                 m_dac_n = m_rtaudio->getDefaultOutputDevice();
+                
+                // ensure correct channel count if default device is requested
+                RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo(m_dac_n);
+                
+                if(device_info.outputChannels < m_num_channels_out)
+                {
+                    // find first device with at least the requested channeel count
+                    m_dac_n = -1;
+                    int num_devices = m_rtaudio->getDeviceCount();
+                    for(int i = 0; i < num_devices; i++)
+                    {
+                        device_info = m_rtaudio->getDeviceInfo(i);
+                        if(device_info.outputChannels >= m_num_channels_out)
+                        {
+                            m_dac_n = i;
+                            break;
+                        }
+                    }
+                    
+                    if(m_dac_n == -1)
+                    {
+                        EM_error2( 0, "unable to find audio output device with requested channel count (%i)", m_num_channels_out);
+                        return m_init = FALSE;
+                    }
+                }
             }
             else
             {
@@ -521,6 +546,32 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
             if( m_adc_n == 0 )
             {
                 m_adc_n = m_rtaudio->getDefaultInputDevice();
+                
+                // ensure correct channel count if default device is requested
+                RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo(m_adc_n);
+                
+                if(device_info.inputChannels < m_num_channels_in)
+                {
+                    // find first device with at least the requested channeel count
+                    m_adc_n = -1;
+                    int num_devices = m_rtaudio->getDeviceCount();
+                    for(int i = 0; i < num_devices; i++)
+                    {
+                        device_info = m_rtaudio->getDeviceInfo(i);
+                        if(device_info.inputChannels >= m_num_channels_in)
+                        {
+                            m_adc_n = i;
+                            break;
+                        }
+                    }
+                    
+                    if(m_adc_n == -1)
+                    {
+                        // problem finding audio devices, most likely
+                        EM_error2( 0, "unable to find audio input device with requested channel count (%i)", m_num_channels_in);
+                        return m_init = FALSE;
+                    }
+                }
             }
             else
             {

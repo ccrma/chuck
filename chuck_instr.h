@@ -2012,9 +2012,11 @@ public:
 struct Chuck_Instr_Alloc_Word : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Alloc_Word( t_CKUINT offset )
-    { this->set( offset ); }
-
+    Chuck_Instr_Alloc_Word( t_CKUINT offset, t_CKBOOL is_object )
+    { this->set( offset ); m_is_object = is_object; }
+    
+    t_CKBOOL m_is_object;
+    
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };
 

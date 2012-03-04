@@ -1542,15 +1542,48 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::shutdown()
 {
+    // can't dealloc ugens while they are still keys to a map; 
+    // add reference, store them in a vector, and release them after
+    // SPENCERTODO: is there a better way to do this????
+    std::vector<Chuck_UGen *> release_v(m_ugen_map.size());
+    
     // get iterator to our map
     map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
     while( iter != m_ugen_map.end() )
     {
-        (*iter).first->disconnect( TRUE );
+        Chuck_UGen * ugen = iter->first;
+        CK_GC_LOG("Chuck_VM_Shred::shutdown() disconnect: 0x%08x", ugen);
+        
+        ugen->add_ref();
+        release_v.push_back(ugen);
+        
+        ugen->disconnect( TRUE );
+        
         iter++;
     }
     m_ugen_map.clear();
 
+    for(vector<Chuck_UGen *>::iterator rvi = release_v.begin(); 
+        rvi != release_v.end(); rvi++)
+    {
+        (*rvi)->release();
+    }
+    
+    // release object refs from assignment instructions
+    for(vector<t_CKUINT>::iterator ori = m_obj_refs.begin(); ori != m_obj_refs.end(); ori++)
+    {
+        t_CKUINT mem = *ori;
+        
+        // retrieve 
+        // ISSUE: 64-bit
+        Chuck_VM_Object * obj = (Chuck_VM_Object *) *((t_CKUINT *)mem);
+        // release
+        if(obj != NULL)
+            obj->release();
+        // zero
+        *( (t_CKUINT *)mem ) = 0;
+    }
+    
     SAFE_DELETE( mem );
     SAFE_DELETE( reg );
     base_ref = NULL;
@@ -1563,7 +1596,7 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     code_orig->release();
     code_orig = code = NULL;
     // what to do with next and prev?
-
+    
     return TRUE;
 }
 
@@ -1640,6 +1673,20 @@ t_CKBOOL Chuck_VM_Shred::run( Chuck_VM * vm )
     // is the shred finished
     return !is_done;
 }
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_VM_Shred::register_reference()
+// desc: called by Chuck_Instr_Alloc_Word to indicate an object that will 
+//       later need to have its reference released. 
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM_Shred::register_reference(t_CKUINT ref_location)
+{
+    m_obj_refs.push_back(ref_location);
+    return TRUE;
+}
+
 
 
 
