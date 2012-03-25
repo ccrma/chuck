@@ -15,6 +15,7 @@ osx osx-intel osx-ppc osx-ub linux-oss linux-jack linux-alsa win32 osx-rl: chuck
 
 LEX=flex
 YACC=bison
+CC=gcc
 CXX=gcc
 LD=g++
 
@@ -94,8 +95,8 @@ chuck.yy.c: chuck.lex
 	$(LEX) -ochuck.yy.c chuck.lex
 
 $(COBJS): %.o: %.c
-	$(CXX) $(CFLAGS) -c $< -o $@
-	@$(CXX) -MM $(CFLAGSDEPEND) $< > $*.d
+	$(CC) $(CFLAGS) -c $< -o $@
+	@$(CC) -MM $(CFLAGSDEPEND) $< > $*.d
 
 $(CXXOBJS): %.o: %.cpp
 	$(CXX) $(CFLAGS) -c $< -o $@
