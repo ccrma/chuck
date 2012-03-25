@@ -3288,7 +3288,11 @@ extern "C" unsigned __stdcall asioStopStream( void *ptr )
 
   object->stopStream();
 
+#ifdef __CYGWIN__
+  ExitThread(0);
+#else
   _endthreadex( 0 );
+#endif
   return 0;
 }
 
@@ -3582,7 +3586,7 @@ static const char* getAsioErrorString( ASIOError result )
 #include <assert.h>
 #include <algorithm>
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(__CYGWIN__)
   // missing from latest mingw winapi
 #define WAVE_FORMAT_96M08 0x00010000 /* 96 kHz, Mono, 8-bit */
 #define WAVE_FORMAT_96S08 0x00020000 /* 96 kHz, Stereo, 8-bit */
@@ -3701,7 +3705,7 @@ unsigned int RtApiDs :: getDeviceCount( void )
   std::vector< int > indices;
   for ( unsigned int i=0; i<dsDevices.size(); i++ )
     if ( dsDevices[i].found == false ) indices.push_back( i );
-  for ( unsigned int nErased=0, unsigned int i=0; i<indices.size(); i++, nErased++ ) {
+  for ( unsigned int nErased=0, i=0; i<indices.size(); i++, nErased++ ) {
     dsDevices.erase( dsDevices.begin()-nErased );
   }
 
@@ -4336,8 +4340,13 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     unsigned threadId;
     stream_.callbackInfo.isRunning = true;
     stream_.callbackInfo.object = (void *) this;
+#ifdef __CYGWIN__
+    stream_.callbackInfo.thread = (ThreadHandle) CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE) &callbackHandler,
+                                                               &stream_.callbackInfo, 0, (DWORD*) &threadId );
+#else
     stream_.callbackInfo.thread = _beginthreadex( NULL, 0, &callbackHandler,
                                                   &stream_.callbackInfo, 0, &threadId );
+#endif
     if ( stream_.callbackInfo.thread == 0 ) {
       errorText_ = "RtApiDs::probeDeviceOpen: error creating callback thread!";
       goto error;
@@ -5024,15 +5033,21 @@ extern "C" unsigned __stdcall callbackHandler( void *ptr )
     object->callbackEvent();
   }
 
+#ifdef __CYGWIN__
+  ExitThread(0);
+#else
   _endthreadex( 0 );
+#endif
   return 0;
 }
 
+#ifndef __CYGWIN__
 #include "tchar.h"
+#endif
 
 std::string convertTChar( LPCTSTR name )
 {
-#if defined( UNICODE ) || defined( _UNICODE )
+#if !defined(__CYGWIN__) && (defined( UNICODE ) || defined( _UNICODE ))
   int length = WideCharToMultiByte(CP_UTF8, 0, name, -1, NULL, 0, NULL, NULL);
   std::string s( length, 0 );
   length = WideCharToMultiByte(CP_UTF8, 0, name, wcslen(name), &s[0], length, NULL, NULL);
