@@ -1553,7 +1553,7 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     while( iter != m_ugen_map.end() )
     {
         Chuck_UGen * ugen = iter->first;
-        CK_GC_LOG("Chuck_VM_Shred::shutdown() disconnect: 0x%08x", ugen);
+        //CK_GC_LOG("Chuck_VM_Shred::shutdown() disconnect: 0x%08x", ugen);
         
         ugen->add_ref();
         release_v.push_back(ugen);
