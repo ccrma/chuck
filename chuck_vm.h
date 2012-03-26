@@ -48,13 +48,13 @@
 
 
 
-#define CK_DEBUG_MEMORY_MGMT (0)
-
-#if CK_DEBUG_MEMORY_MGMT
-#define CK_GC_LOG(s,...) EM_log(1, s, ##__VA_ARGS__)
-#else
-#define CK_GC_LOG(s,...)
-#endif
+//#define CK_DEBUG_MEMORY_MGMT (0)
+//
+//#if CK_DEBUG_MEMORY_MGMT
+//#define CK_GC_LOG(s,...) EM_log(1, s, ##__VA_ARGS__)
+//#else
+//#define CK_GC_LOG(s,...)
+//#endif
 
 
 

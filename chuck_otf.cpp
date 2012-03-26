@@ -45,6 +45,8 @@
 
 #ifndef __PLATFORM_WIN32__
 #include <unistd.h>
+#else
+#define snprintf _snprintf
 #endif
 
 using namespace std;
