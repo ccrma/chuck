@@ -167,6 +167,7 @@ void CBufferAdvance::resign( UINT__ read_offset_index )
 
     // "invalidate" the pointer at that index
     m_read_offsets[read_offset_index].read_offset = -1;
+    m_read_offsets[read_offset_index].event = NULL;
 
     // TODO: necessary?
     m_mutex.release();
