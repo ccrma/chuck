@@ -295,6 +295,8 @@ done:
 
 /* from http://developer.apple.com/library/mac/#qa/qa1549/_index.html */
 
+#ifndef __PLATFORM_WIN32__
+
 #include <glob.h>
 
 char* CreatePathByExpandingTildePath(const char* path)
@@ -319,6 +321,9 @@ char* CreatePathByExpandingTildePath(const char* path)
     
     return result;
 }
+
+#endif // __PLATFORM_WIN32__
+
 
 std::string expand_filepath( std::string & fp )
 {

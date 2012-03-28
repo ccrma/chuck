@@ -1545,14 +1545,15 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     // can't dealloc ugens while they are still keys to a map; 
     // add reference, store them in a vector, and release them after
     // SPENCERTODO: is there a better way to do this????
-    std::vector<Chuck_UGen *> release_v(m_ugen_map.size());
+    std::vector<Chuck_UGen *> release_v;
+    release_v.reserve(m_ugen_map.size());
     
     // get iterator to our map
     map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
     while( iter != m_ugen_map.end() )
     {
         Chuck_UGen * ugen = iter->first;
-        CK_GC_LOG("Chuck_VM_Shred::shutdown() disconnect: 0x%08x", ugen);
+        //CK_GC_LOG("Chuck_VM_Shred::shutdown() disconnect: 0x%08x", ugen);
         
         ugen->add_ref();
         release_v.push_back(ugen);

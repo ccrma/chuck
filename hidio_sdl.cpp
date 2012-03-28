@@ -401,7 +401,7 @@ HidIn::HidIn()
     phin = NULL;
     m_device_num = 0;
     m_valid = FALSE;
-    m_read_index = 0;
+    m_read_index = UINT_MAX;
     m_buffer = NULL;
     m_suppress_output = FALSE;
     SELF = NULL;
@@ -768,13 +768,31 @@ t_CKBOOL HidInManager::open( HidIn * hin, t_CKINT device_type, std::string & dev
 // name: close()
 // desc: close
 //-----------------------------------------------------------------------------
+t_CKBOOL HidInManager::close( HidIn * hin )
+{
+    return TRUE;
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: close()
+// desc: close
+//-----------------------------------------------------------------------------
 t_CKBOOL HidIn::close()
 {
     if( !m_valid )
         return FALSE;
 
+    if(m_read_index != UINT_MAX && m_buffer)
+    {
+        m_buffer->resign(m_read_index);
+        m_read_index = UINT_MAX;
+        m_buffer = NULL;
+    }
+    
     // close
-    //HidInManager::close( this );
+    HidInManager::close( this );
 
     m_valid = FALSE;
 

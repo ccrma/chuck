@@ -199,7 +199,7 @@ SOURCE=.\midiio_rtmidi.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\rtaudio.cpp
+SOURCE=.\RtAudio\RtAudio.cpp
 # End Source File
 # Begin Source File
 
@@ -420,11 +420,11 @@ SOURCE=.\midiio_rtmidi.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\rtaudio.h
+SOURCE=.\RtAudio\RtAudio.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\rterror.h
+SOURCE=.\RtAudio\RtError.h
 # End Source File
 # Begin Source File
 
