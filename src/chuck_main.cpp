@@ -750,7 +750,7 @@ static void usage()
     std::string cwd;
     {
 #ifndef __PLATFORM_WIN32__
-        // TODO: Win32
+        // SPENCERTODO: Win32
         char cstr_cwd[MAXPATHLEN];
         if(getcwd(cstr_cwd, MAXPATHLEN) == NULL)
             // uh...
