@@ -776,14 +776,14 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
                 m_multi_in_v[i] = ugen->m_sum;
             }
             
-            m_valid = tickv( this, m_multi_in_v, m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
+            m_valid = tickv( this, &m_multi_in_v, &m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
             
             for( i = 0; i < m_multi_chan_size; i++ )
             {
                 ugen = m_multi_chan[i];
                 ugen->m_current = m_multi_out_v[i];
                 // multiple channels are added
-                //multi += ugen->m_current;
+                multi += ugen->m_current;
             }
         }
         else

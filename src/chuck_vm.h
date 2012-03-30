@@ -208,7 +208,7 @@ public: // machine components
 private:
     // list of object references allocated on this shred
     // references are released on shred exit
-    // SPENCERTODO: release on scope exit
+    // SPENCERTODO: release on scope exit instead of shred exit
     std::vector<t_CKUINT> m_obj_refs;
 
 public:

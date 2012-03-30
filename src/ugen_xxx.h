@@ -156,6 +156,7 @@ CK_DLL_CGET( delayp_cget_max );
 CK_DLL_CTOR( sndbuf_ctor );
 CK_DLL_DTOR( sndbuf_dtor );
 CK_DLL_TICK( sndbuf_tick );
+CK_DLL_TICKV( sndbuf_tickv );
 CK_DLL_CTRL( sndbuf_ctrl_read );
 CK_DLL_CGET( sndbuf_cget_read );
 CK_DLL_CTRL( sndbuf_ctrl_write );
