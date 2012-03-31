@@ -63,6 +63,9 @@ std::string expand_filepath( std::string & fp );
 
 std::string extract_filepath_dir(std::string &filepath);
 
+// convert \ to / (on Windows)
+std::string normalize_directory_separator(std::string &filepath);
+
 //-----------------------------------------------------------------------------
 // name: parse_path_list()
 // desc: split "x:y:z"-style path list into {"x","y","z"}
