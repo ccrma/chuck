@@ -351,11 +351,11 @@ std::string extract_filepath_dir(std::string &filepath)
 {
     char path_separator = '/';
     
-#ifdef __WINDOWS_DS__
-    path_separator = '\\';
-#else
-    path_separator = '/';
-#endif
+//#ifdef __WINDOWS_DS__
+//    path_separator = '\\';
+//#else
+//    path_separator = '/';
+//#endif
     
     // if the last character is a slash, skip it
     int i = filepath.rfind(path_separator);
@@ -390,4 +390,18 @@ void parse_path_list( std::string & str, std::list<std::string> & lst )
 
 
 
+std::string normalize_directory_separator(std::string &filepath)
+{
+#ifdef __PLATFORM_WIN32__
+    std::string new_filepath = filepath;
+    int len = new_filepath.size();
+    for(int i = 0; i < len; i++)
+    {
+        if(new_filepath[i] == '\\') new_filepath[i] = '/';
+    }
 
+    return new_filepath;
+#else
+    return filepath;
+#endif // __PLATFORM_WIN32__
+}
