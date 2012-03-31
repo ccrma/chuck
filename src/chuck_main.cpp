@@ -64,6 +64,10 @@
   #include <arpa/inet.h>
 #endif
 
+#if defined(__PLATFORM_WIN32__)
+#include <direct.h>
+#define MAXPATHLEN (255)
+#endif // defined(__PLATFORM_WIN32__
 
 // global variables
 #if defined(__MACOSX_CORE__)
@@ -749,15 +753,15 @@ static void usage()
     // figure out current working directory
     std::string cwd;
     {
-#ifndef __PLATFORM_WIN32__
+//#ifndef __PLATFORM_WIN32__
         // SPENCERTODO: Win32
         char cstr_cwd[MAXPATHLEN];
         if(getcwd(cstr_cwd, MAXPATHLEN) == NULL)
             // uh...
             EM_log( CK_LOG_SEVERE, "error: unable to determine current working directory!" );
         else
-            cwd = std::string(cstr_cwd) + "/";
-#endif // __PLATFORM_WIN32__
+            cwd = normalize_directory_separator(std::string(cstr_cwd)) + "/";
+//#endif // __PLATFORM_WIN32__
     }
 
     // whether or not chug should be enabled
