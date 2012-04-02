@@ -402,6 +402,6 @@ std::string normalize_directory_separator(std::string &filepath)
 
     return new_filepath;
 #else
-    return filepath;
+    return std::string(filepath);
 #endif // __PLATFORM_WIN32__
 }
