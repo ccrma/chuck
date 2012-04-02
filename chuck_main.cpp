@@ -758,7 +758,10 @@ static void usage()
             // uh...
             EM_log( CK_LOG_SEVERE, "error: unable to determine current working directory!" );
         else
-            cwd = normalize_directory_separator(std::string(cstr_cwd)) + "/";
+        {
+            cwd = std::string(cstr_cwd);
+            cwd = normalize_directory_separator(cwd) + "/";
+        }
     }
 
     // whether or not chug should be enabled
