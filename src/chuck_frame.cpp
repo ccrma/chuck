@@ -58,7 +58,7 @@ Chuck_Frame::Chuck_Frame()
 // desc: ...
 //-----------------------------------------------------------------------------
 Chuck_Local * Chuck_Frame::alloc_local( t_CKUINT size, const string & name,
-                                        t_CKBOOL is_ref )
+                                        t_CKBOOL is_ref, t_CKBOOL is_obj )
 {
     // alloc
     Chuck_Local * local = new Chuck_Local;
@@ -68,6 +68,8 @@ Chuck_Local * Chuck_Frame::alloc_local( t_CKUINT size, const string & name,
     local->offset = this->curr_offset;
     // ref
     local->is_ref = is_ref;
+    // is object type?  (added ge: 2012 april)
+    local->is_obj = is_obj;
     // the next offset
     this->curr_offset += local->size;
     // name
