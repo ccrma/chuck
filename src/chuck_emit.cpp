@@ -524,10 +524,17 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
     // append the op
     emit->append( op );
 
-    // emit the body
-    ret = emit_engine_emit_stmt( emit, stmt->if_body );
-    if( !ret )
-        return FALSE;
+    // ge: 2012 april: scope for if body
+    {
+        // push the stack, allowing for new local variables
+        emit->push_scope();
+        // emit the body
+        ret = emit_engine_emit_stmt( emit, stmt->if_body );
+        if( !ret )
+            return FALSE;
+        // pop stack
+        emit->pop_scope();
+    }
 
     // emit the skip to the end
     emit->append( op2 = new Chuck_Instr_Goto(0) );
@@ -535,17 +542,24 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
     // set the op's target
     op->set( emit->next_index() );
 
-    // emit the body
-    ret = emit_engine_emit_stmt( emit, stmt->else_body );
-    if( !ret )
-        return FALSE;
-
-    // pop stack
-    emit->pop_scope();
+    // ge: 2012 april: scope for else body
+    {
+        // push the stack, allowing for new local variables
+        emit->push_scope();
+        // emit the body
+        ret = emit_engine_emit_stmt( emit, stmt->else_body );
+        if( !ret )
+            return FALSE;
+        // pop stack
+        emit->pop_scope();
+    }
 
     // set the op2's target
     op2->set( emit->next_index() );
 
+    // pop stack
+    emit->pop_scope();
+    
     return ret;
 }
 
@@ -3617,7 +3631,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             if( !emit->env->class_def || !decl->is_static )
             {
                 // allocate a place on the local stack
-                local = emit->alloc_local( type->size, value->name, is_ref );
+                local = emit->alloc_local( type->size, value->name, is_ref, is_obj );
                 if( !local )
                 {
                     EM_error2( decl->linepos,
@@ -3786,7 +3800,8 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     if( !emit->env->class_def )
     {
         // put function on stack
-        local = emit->alloc_local( value->type->size, value->name, TRUE );
+        // ge: added FALSE to the 'is_obj' argument, 2012 april
+        local = emit->alloc_local( value->type->size, value->name, TRUE, FALSE );
         // remember the offset
         value->offset = local->offset;
         // write to mem stack
@@ -3808,6 +3823,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
 
     // go through the args
     a_Arg_List a = func_def->arg_list;
+    t_CKBOOL is_obj = FALSE;
     t_CKBOOL is_ref = FALSE;
 
     // if member (non-static) function
@@ -3816,7 +3832,8 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         // get the size
         emit->code->stack_depth += sizeof(t_CKUINT);
         // add this
-        if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE ) )
+        // ge: added FALSE to the 'is_obj' argument, 2012 april
+        if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, FALSE ) )
         {
             EM_error2( a->linepos,
                 "(emit): internal error: cannot allocate local 'this'..." );
@@ -3830,12 +3847,15 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         value = a->var_decl->value;
         // get the type
         type = value->type;
+        // is object? (added ge: 2012 april)
+        is_obj = isobj( type );
         // get ref
         is_ref = a->type_decl->ref;
         // get the size
         emit->code->stack_depth += type->size;
         // allocate a place on the local stack
-        local = emit->alloc_local( type->size, value->name, is_ref );
+        // ge: added 'is_obj' 2012 april
+        local = emit->alloc_local( type->size, value->name, is_ref, is_obj );
         if( !local )
         {
             EM_error2( a->linepos,
@@ -3856,6 +3876,10 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // emit the code
     if( !emit_engine_emit_stmt( emit, func_def->code, FALSE ) )
         return FALSE;
+    
+    // ge: pop scope (2012 april)
+    // TODO: ge 2012 april: pop scope? clean up function arguments? are argument properly ref counted?    
+    // emit->pop_scope();
 
     // set the index for next instruction for return statements
     for( t_CKUINT i = 0; i < emit->code->stack_return.size(); i++ )
@@ -3933,7 +3957,9 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     // get the size
     emit->code->stack_depth += sizeof(t_CKUINT);
     // add this
-    if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE ) )
+    // ge: added TRUE to the 'is_obj' argument, 2012 april
+    // TODO: verify this is right, and not over-ref counted / cleaned up?
+    if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, TRUE ) )
     {
         EM_error2( class_def->linepos,
             "(emit): internal error: cannot allocate local 'this'..." );
@@ -4239,7 +4265,7 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
 
 
 
-
+#include <iostream>
 //-----------------------------------------------------------------------------
 // name: pop_scope()
 // desc: ...
@@ -4254,6 +4280,19 @@ void Chuck_Emitter::pop_scope( )
     code->frame->pop_scope( locals );
 
     // TODO: free locals
+    // ge (2012 april): attempt to free locals
+    for( int i = 0; i < locals.size(); i++ )
+    {
+        // get local
+        Chuck_Local * local = locals[i];
+        // std::cerr << "local: " << local->offset << " " << local->is_obj << std::endl;
+        // check to see if it's an object
+        if( local->is_obj )
+        {
+            // emit instruction to release the object
+            this->append( new Chuck_Instr_Chuck_Release_Object2( local->offset ) );
+        }
+    }
 }
 
 

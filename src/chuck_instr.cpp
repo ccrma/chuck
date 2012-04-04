@@ -3126,8 +3126,34 @@ void Chuck_Instr_Chuck_Release_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * 
     pop_( reg_sp, 1 );
     // copy popped value into mem stack
     obj = *( (Chuck_VM_Object **)(mem_sp + *(reg_sp)) );
-    // release
-    obj->release();
+    // ge (2012 april): check for NULL
+    if( obj != NULL )
+    {
+        // release
+        obj->release();
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: release one reference on object (added ge 2012 april)
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Chuck_Release_Object2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
+    Chuck_VM_Object * obj = NULL;
+    
+    // copy popped value into mem stack
+    obj = *( (Chuck_VM_Object **)(mem_sp + m_val) );
+    // check for NULL
+    if( obj != NULL )
+    {
+        // release
+        obj->release();
+    }
 }
 
 
