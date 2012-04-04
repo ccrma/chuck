@@ -2519,8 +2519,6 @@ void Chuck_Instr_Alloc_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
     // zero out the memory stack
     *( (t_CKUINT *)(mem_sp + m_val) ) = 0;
-    // if object, record presence with shred
-    if(m_is_object) shred->register_reference((t_CKUINT)(mem_sp + m_val));
     // push addr onto operand stack
     push_( reg_sp, (t_CKUINT)(mem_sp + m_val) );
 }

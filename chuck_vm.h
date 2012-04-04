@@ -173,8 +173,6 @@ public:
     t_CKBOOL add( Chuck_UGen * ugen );
     t_CKBOOL remove( Chuck_UGen * ugen );
     
-    t_CKBOOL register_reference(t_CKUINT ref_location);
-
 //-----------------------------------------------------------------------------
 // data
 //-----------------------------------------------------------------------------
@@ -205,11 +203,6 @@ public: // machine components
     // t_CKUINT * obj_array;
     // t_CKUINT obj_array_size;
     
-private:
-    // list of object references allocated on this shred
-    // references are released on shred exit
-    // SPENCERTODO: release on scope exit instead of shred exit
-    std::vector<t_CKUINT> m_obj_refs;
 
 public:
     t_CKTIME wake_time;
