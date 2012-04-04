@@ -1542,6 +1542,7 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::shutdown()
 {
+    // spencer - March 2012:
     // can't dealloc ugens while they are still keys to a map; 
     // add reference, store them in a vector, and release them after
     // SPENCERTODO: is there a better way to do this????
@@ -1569,21 +1570,6 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     {
         (*rvi)->release();
     }
-    
-//    // release object refs from assignment instructions
-//    for(vector<t_CKUINT>::iterator ori = m_obj_refs.begin(); ori != m_obj_refs.end(); ori++)
-//    {
-//        t_CKUINT mem = *ori;
-//        
-//        // retrieve 
-//        // ISSUE: 64-bit
-//        Chuck_VM_Object * obj = (Chuck_VM_Object *) *((t_CKUINT *)mem);
-//        // release
-//        if(obj != NULL)
-//            obj->release();
-//        // zero
-//        *( (t_CKUINT *)mem ) = 0;
-//    }
     
     SAFE_DELETE( mem );
     SAFE_DELETE( reg );
