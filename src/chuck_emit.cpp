@@ -3840,6 +3840,10 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
             return FALSE;
         }
     }
+    
+    // ge: 2012 april: added push scope
+    emit->push_scope();
+
     // loop through args
     while( a )
     {
@@ -3879,7 +3883,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     
     // ge: pop scope (2012 april)
     // TODO: ge 2012 april: pop scope? clean up function arguments? are argument properly ref counted?    
-    // emit->pop_scope();
+    emit->pop_scope();
 
     // set the index for next instruction for return statements
     for( t_CKUINT i = 0; i < emit->code->stack_return.size(); i++ )
