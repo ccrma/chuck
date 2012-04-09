@@ -22,9 +22,14 @@
 
 #include "chuck_dl.h"
 #include "chuck_def.h"
+#include "chuck_oo.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <limits.h>
+
+#include <string>
+#include <map>
 
 //-------------------------------------------------------------------
 // Generic min and max using C++ inline
@@ -172,6 +177,102 @@ dsp::~dsp() { }
 <<includeclass>>
 
 
+
+/******************************************************************************
+ *******************************************************************************
+ 
+ ChucK UI
+ 
+ *******************************************************************************
+ *******************************************************************************/
+
+class Fauck_UI_Instance;
+
+class Fauck
+{
+public:
+    Fauck(int samplingRate);
+    
+    mydsp m_dsp;
+    
+    struct Param
+    {
+        float *zone;
+        float init;
+        float min;
+        float max;
+        float step;
+    };
+    
+    std::map<std::string, Param> m_params;
+};
+
+
+class Fauck_UI_Instance : public UI
+{
+public:
+    Fauck_UI_Instance(Fauck &f) : m_fauck(f) { }
+    
+    virtual ~Fauck_UI_Instance() { }
+    
+    // active widgets
+    virtual void addButton(const char* label, float* zone)
+    {
+        
+    }
+    
+    virtual void addToggleButton(const char* label, float* zone) { }
+    virtual void addCheckButton(const char* label, float* zone) { }
+    
+    virtual void addVerticalSlider(const char* label, float* zone, float init, float min, float max, float step)
+    {
+        std::string key = label;
+        
+        Fauck::Param p;
+        p.zone = zone;
+        p.init = init;
+        p.min = min;
+        p.max = max;
+        p.step = step;
+        
+        m_fauck.m_params[key] = p;
+    }
+    
+    virtual void addHorizontalSlider(const char* label, float* zone, float init, float min, float max, float step)
+    {
+        addVerticalSlider(label, zone, init, min, max, step);
+    }
+    
+    virtual void addNumEntry(const char* label, float* zone, float init, float min, float max, float step) { }
+    
+    // passive widgets
+    virtual void addNumDisplay(const char* label, float* zone, int precision) { }
+    virtual void addTextDisplay(const char* label, float* zone, char* names[], float min, float max) { }
+    virtual void addHorizontalBargraph(const char* label, float* zone, float min, float max) { }
+    virtual void addVerticalBargraph(const char* label, float* zone, float min, float max) { }
+    
+    // layout widgets
+    virtual void openFrameBox(const char* label) { }
+    virtual void openTabBox(const char* label) { }
+    virtual void openHorizontalBox(const char* label) { }
+    virtual void openVerticalBox(const char* label) { }
+    virtual void closeBox() { }
+    
+    virtual void declare(float* zone, const char* key, const char* value) {}
+    
+private:
+    Fauck &m_fauck;
+};
+
+
+Fauck::Fauck(int samplingRate)
+{
+    m_dsp.init(samplingRate);
+    Fauck_UI_Instance f_ui = Fauck_UI_Instance(*this);
+    m_dsp.buildUserInterface(&f_ui);
+}
+
+                      
 /******************************************************************************
  *******************************************************************************
  
@@ -187,26 +288,15 @@ dsp::~dsp() { }
 CK_DLL_CTOR(fauck_ctor);
 CK_DLL_DTOR(fauck_dtor);
 
-//CK_DLL_MFUN(bitcrusher_setBits);
-//CK_DLL_MFUN(bitcrusher_getBits);
+CK_DLL_MFUN(fauck_set);
+CK_DLL_MFUN(fauck_get);
+CK_DLL_MFUN(fauck_printParams);
 //CK_DLL_MFUN(bitcrusher_setDownsampleFactor);
 //CK_DLL_MFUN(bitcrusher_getDownsampleFactor);
 
 CK_DLL_TICK(fauck_tick);
 
 t_CKINT fauck_data_offset = 0;
-
-
-class Fauck
-{
-public:
-    Fauck(int samplingRate)
-    {
-        dsp.init(samplingRate);
-    }
-    
-    mydsp dsp;
-};
 
 
 CK_DLL_QUERY(__CHUGIN_NAME__)
@@ -222,17 +312,21 @@ CK_DLL_QUERY(__CHUGIN_NAME__)
     
     QUERY->add_ugen_func(QUERY, fauck_tick, NULL, temp.getNumInputs(), temp.getNumOutputs());
     
-//    QUERY->add_mfun(QUERY, bitcrusher_setBits, "int", "bits");
-//    QUERY->add_arg(QUERY, "int", "arg");
-//    
-//    QUERY->add_mfun(QUERY, bitcrusher_getBits, "int", "bits");
-//    
+    QUERY->add_mfun(QUERY, fauck_set, "float", "set");
+    QUERY->add_arg(QUERY, "string", "name");
+    QUERY->add_arg(QUERY, "float", "value");
+    
+    QUERY->add_mfun(QUERY, fauck_get, "float", "get");
+    QUERY->add_arg(QUERY, "string", "name");
+    
+    QUERY->add_mfun(QUERY, fauck_printParams, "void", "printParams");
+    
 //    QUERY->add_mfun(QUERY, bitcrusher_setDownsampleFactor, "int", "downsampleFactor");
 //    QUERY->add_arg(QUERY, "int", "arg");
 //    
 //    QUERY->add_mfun(QUERY, bitcrusher_getDownsampleFactor, "int", "downsampleFactor");
     
-    fauck_data_offset = QUERY->add_mvar(QUERY, "int", "@data", false);
+    fauck_data_offset = QUERY->add_mvar(QUERY, "int", "@fauck_data", false);
     
     QUERY->end_class(QUERY);
 
@@ -262,19 +356,71 @@ CK_DLL_DTOR(fauck_dtor)
 
 CK_DLL_TICK(fauck_tick)
 {
-    Fauck * fckdata = (Fauck *) OBJ_MEMBER_INT(SELF, fauck_data_offset);
+    Fauck * fck = (Fauck *) OBJ_MEMBER_INT(SELF, fauck_data_offset);
     
     FAUSTFLOAT fin = in;
     FAUSTFLOAT *finv = &fin;
     FAUSTFLOAT fout = 0;
     FAUSTFLOAT *foutv = &fout;
     
-    fckdata->dsp.compute(1, &finv, &foutv);
+    fck->m_dsp.compute(1, &finv, &foutv);
     
     *out = fout;
 
     return TRUE;
 }
+
+
+CK_DLL_MFUN(fauck_set)
+{
+    Fauck * fck = (Fauck *) OBJ_MEMBER_INT(SELF, fauck_data_offset);
+
+    Chuck_String * str = GET_NEXT_STRING(ARGS);
+    t_CKFLOAT v = GET_NEXT_FLOAT(ARGS);
+    
+    if(fck->m_params.count(str->str))
+    {
+        *(fck->m_params[str->str].zone) = v;
+        RETURN->v_float = v;
+    }
+    else
+    {
+        RETURN->v_float = 0;
+    }
+}
+
+
+CK_DLL_MFUN(fauck_get)
+{
+    Fauck * fck = (Fauck *) OBJ_MEMBER_INT(SELF, fauck_data_offset);
+    
+    Chuck_String * str = GET_NEXT_STRING(ARGS);
+    
+    if(fck->m_params.count(str->str))
+    {
+        RETURN->v_float = *(fck->m_params[str->str].zone);
+    }
+    else
+    {
+        RETURN->v_float = 0;
+    }
+}
+
+
+CK_DLL_MFUN(fauck_printParams)
+{
+    Fauck * fck = (Fauck *) OBJ_MEMBER_INT(SELF, fauck_data_offset);
+    
+    fprintf(stderr, "%s params:\n", MACRO_STR(__CHUGIN_NAME__));
+    
+    std::map<std::string, Fauck::Param>::iterator i;
+    for(i = fck->m_params.begin(); i != fck->m_params.end(); i++)
+    {
+        fprintf(stderr, "--- \"%s\"\t: %f\t(min: %f,\tmax: %f)\n", 
+                i->first.c_str(), *(i->second.zone), i->second.min, i->second.max);
+    }
+}
+
 
 //CK_DLL_MFUN(bitcrusher_setBits)
 //{
