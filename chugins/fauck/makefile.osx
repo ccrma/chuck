@@ -1,6 +1,6 @@
 
 # faust file
-FAUST_DSP?=Sawtooth.dsp
+FAUST_DSP?=fmv.dsp
 FAUST_CPP=$(addsuffix .cpp,$(basename $(FAUST_DSP)))
 
 # chugin name
@@ -19,7 +19,7 @@ CK_CHUGIN_STATIC?=0
 
 CHUGIN_PATH=/usr/lib/chuck
 
-FLAGS=-m32 -D__MACOSX_CORE__ -I$(CK_SRC_PATH) -D__CHUGIN_NAME__=$(CHUGIN_NAME)
+FLAGS=-m32 -D__MACOSX_CORE__ -I$(CK_SRC_PATH) -I. -D__CHUGIN_NAME__=$(CHUGIN_NAME)
 LDFLAGS=-m32 -bundle -lstdc++
 
 ifeq ($(CK_CHUGIN_STATIC),0)
@@ -51,7 +51,7 @@ endif
 $(OBJECTS): %.o: %.cpp $(CK_SRC_PATH)/chuck_dl.h
 	gcc $(FLAGS) -c -o $@ $< 
 
-$(FAUST_CPP): %.cpp: %.dsp
+$(FAUST_CPP): %.cpp: %.dsp fauck.cpp
 	faust -a fauck.cpp -o $(FAUST_CPP) $(FAUST_DSP)
 
 install: $(CHUG)
