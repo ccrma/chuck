@@ -352,7 +352,6 @@
 		09A40BD50A9A57C6007604EA /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = /System/Library/Frameworks/CoreAudio.framework; sourceTree = "<absolute>"; };
 		09A40BD60A9A57C6007604EA /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = /System/Library/Frameworks/CoreMIDI.framework; sourceTree = "<absolute>"; };
 		09A40BD70A9A57C6007604EA /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
-		09A40DC60A9AC659007604EA /* makefile.osx-ub */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = "makefile.osx-ub"; sourceTree = SOURCE_ROOT; };
 		09A40DC80A9AC677007604EA /* makefile.osx */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.osx; sourceTree = SOURCE_ROOT; };
 		09A40DD20A9AC6D3007604EA /* makefile */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.make; path = makefile; sourceTree = SOURCE_ROOT; };
 		09A40F290A9AE5FE007604EA /* COPYING */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = COPYING; path = ../notes/COPYING; sourceTree = SOURCE_ROOT; };
@@ -849,7 +848,6 @@
 				09A1E6170CBA1AEC001FAD6F /* makefile.win32 */,
 				09A40DD20A9AC6D3007604EA /* makefile */,
 				09A40DC80A9AC677007604EA /* makefile.osx */,
-				09A40DC60A9AC659007604EA /* makefile.osx-ub */,
 			);
 			name = Makefiles;
 			sourceTree = "<group>";
