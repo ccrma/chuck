@@ -47,6 +47,13 @@
 #ifndef __RTAUDIO_H
 #define __RTAUDIO_H
 
+#ifdef min
+#undef min
+#endif // min
+#ifdef max
+#undef max
+#endif // max
+
 #include <string>
 #include <vector>
 #include "RtError.h"
