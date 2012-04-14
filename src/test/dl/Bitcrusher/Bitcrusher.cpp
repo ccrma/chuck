@@ -51,7 +51,7 @@ CK_DLL_QUERY(Bitcrusher)
     
     QUERY->add_mfun(QUERY, bitcrusher_getDownsampleFactor, "int", "downsampleFactor");
     
-    bitcrusher_data_offset = QUERY->add_mvar(QUERY, "int", "@data", false);
+    bitcrusher_data_offset = QUERY->add_mvar(QUERY, "int", "@bc_data", false);
     
     QUERY->end_class(QUERY);
 
