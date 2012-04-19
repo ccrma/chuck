@@ -4816,7 +4816,7 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
     info->num_ins = type->parent->ugen_info->num_ins;
     info->num_outs = type->parent->ugen_info->num_outs;
     if( tick ) info->tick = tick;
-    if( tickv ) info->tickv = tickv;
+    if( tickv ) { info->tickv = tickv; info->tick = NULL; }
     if( pmsg ) info->pmsg = pmsg;
     if( num_ins != 0xffffffff ) info->num_ins = num_ins;
     if( num_outs != 0xffffffff ) info->num_outs = num_outs;
