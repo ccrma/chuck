@@ -590,7 +590,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     if( !type_engine_import_ugen_begin( env, "SndBuf", "UGen", env->global(), 
                                         sndbuf_ctor, sndbuf_dtor,
-                                        NULL, sndbuf_tickv, NULL, 2, 2 ) )
+                                        sndbuf_tick, NULL, 1, 1 ) )
         return FALSE;
 
     // add member variable
@@ -710,6 +710,19 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int", "pos" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // end import
+    if( !type_engine_import_class_end( env ) )
+        return FALSE;
+    
+    
+    //---------------------------------------------------------------------
+    // init as base class: SndBuf2
+    //---------------------------------------------------------------------
+    if( !type_engine_import_ugen_begin( env, "SndBuf2", "SndBuf", env->global(), 
+                                        NULL, NULL,
+                                        NULL, sndbuf_tickv, NULL, 2, 2 ) )
+        return FALSE;
+    
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
@@ -2747,11 +2760,11 @@ CK_DLL_TICKV( sndbuf_tickv )
     // normalize amplitude across channels
     // TODO: normalize power?
     SAMPLE amp_factor = 1;
-    if(ugen->m_num_outs == 2 && d->num_channels == 1)
+    if(d->num_channels == 1)
     {
         amp_factor = 0.5;
     }
-    else if(ugen->m_num_outs == 2 && d->num_channels == 2)
+    else if(d->num_channels == 2)
     {
         amp_factor = 1;
     }
@@ -2779,7 +2792,8 @@ CK_DLL_TICKV( sndbuf_tickv )
                 out[frame_idx][chan_idx] += (float)alpha * ( sndbuf_sampleAt(d, (long)d->curf+1, chan_idx % d->num_channels ) - current_sample );
                 out[frame_idx][chan_idx] *= amp_factor;
             }
-            else if( d->interp == SNDBUF_SINC ) {
+            else if( d->interp == SNDBUF_SINC )
+            {
                 // SPENCERTODO
                 // do that fancy sinc function!
                 //sndbuf_sinc_interpolate(d, out);
@@ -2787,8 +2801,7 @@ CK_DLL_TICKV( sndbuf_tickv )
         }
         
         // advance
-        d->curf += d->rate;
-        sndbuf_setpos(d, d->curf);
+        sndbuf_setpos(d, d->curf + d->rate);
     }
     
     return TRUE;    
