@@ -432,19 +432,26 @@ CK_DLL_CGET( WvIn_cget_path );
 CK_DLL_CTOR( WvOut_ctor );
 CK_DLL_DTOR( WvOut_dtor );
 CK_DLL_TICK( WvOut_tick );
+CK_DLL_TICKV( WvOut2_tickv );
 CK_DLL_PMSG( WvOut_pmsg );
 CK_DLL_CTRL( WvOut_ctrl_filename );
 CK_DLL_CTRL( WvOut_ctrl_matFilename );
+CK_DLL_CTRL( WvOut2_ctrl_matFilename );
 CK_DLL_CTRL( WvOut_ctrl_sndFilename );
+CK_DLL_CTRL( WvOut2_ctrl_sndFilename );
 CK_DLL_CTRL( WvOut_ctrl_wavFilename );
+CK_DLL_CTRL( WvOut2_ctrl_wavFilename );
 CK_DLL_CTRL( WvOut_ctrl_rawFilename );
+CK_DLL_CTRL( WvOut2_ctrl_rawFilename );
 CK_DLL_CTRL( WvOut_ctrl_aifFilename );
+CK_DLL_CTRL( WvOut2_ctrl_aifFilename );
 CK_DLL_CTRL( WvOut_ctrl_closeFile );
 CK_DLL_CTRL( WvOut_ctrl_record );
 CK_DLL_CTRL( WvOut_ctrl_autoPrefix );
 CK_DLL_CGET( WvOut_cget_filename );
 CK_DLL_CGET( WvOut_cget_record );
 CK_DLL_CGET( WvOut_cget_autoPrefix );
+
 
 // FM
 CK_DLL_CTOR( FM_ctor );
@@ -3371,6 +3378,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     //member variable
     WvOut_offset_data = type_engine_import_mvar ( env, "int", "@WvOut_data", FALSE );
     if( WvOut_offset_data == CK_INVALID_OFFSET ) goto error;
+    
     func = make_new_mfun( "string", "matFilename", WvOut_ctrl_matFilename ); //!open matlab file for writing
     func->add_arg( "string", "value" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -3415,6 +3423,34 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "string", "autoPrefix", WvOut_cget_autoPrefix ); //! set/get auto prefix string
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // end the class import
+    type_engine_import_class_end( env );
+    
+    
+    if( !type_engine_import_ugen_begin( env, "WvOut2", "WvOut", env->global(), 
+                                       WvOut_ctor, WvOut_dtor,
+                                       NULL, WvOut2_tickv, WvOut_pmsg, 2, 2 ) ) return FALSE; 
+
+    func = make_new_mfun( "string", "matFilename", WvOut2_ctrl_matFilename ); //!open matlab file for writing
+    func->add_arg( "string", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    func = make_new_mfun( "string", "sndFilename", WvOut2_ctrl_sndFilename ); //!open snd file for writing
+    func->add_arg( "string", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    func = make_new_mfun( "string", "wavFilename", WvOut2_ctrl_wavFilename ); //!open WAVE file for writing
+    func->add_arg( "string", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    func = make_new_mfun( "string", "rawFilename", WvOut2_ctrl_rawFilename ); //!open raw file for writing
+    func->add_arg( "string", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    func = make_new_mfun( "string", "aifFilename", WvOut2_ctrl_aifFilename ); //!open AIFF file for writing
+    func->add_arg( "string", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
     // end the class import
     type_engine_import_class_end( env );
     
@@ -24547,6 +24583,30 @@ CK_DLL_TICK( WvOut_tick )
 }
 
 
+
+//-----------------------------------------------------------------------------
+// name: WvOut_tick()
+// desc: TICK function ...
+//-----------------------------------------------------------------------------
+CK_DLL_TICKV( WvOut2_tickv )
+{
+    // assumption: stereo (2-channel) operation
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    MY_FLOAT frame[2];
+    for(int i = 0; i < nframes; i++)
+    {
+        frame[0] = in[i][0];
+        frame[1] = in[i][1];
+        
+        if( w->start ) w->tickFrame( frame, 1 );
+        
+        out[i][0] = in[i][0]; // pass samples downstream
+        out[i][1] = in[i][1]; // pass samples downstream
+    }
+    return TRUE;
+}
+
+
 //-----------------------------------------------------------------------------
 // name: WvOut_pmsg()
 // desc: PMSG function ...
@@ -24590,6 +24650,37 @@ done:
 
 
 //-----------------------------------------------------------------------------
+// name: WvOut2_ctrl_matFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut2_ctrl_matFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    char buffer[1024];
+    
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        strcat( buffer, ").mat" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 2, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
+    catch( StkError & e ) { goto done; }
+    g_wv[w] = w;
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+//-----------------------------------------------------------------------------
 // name: WvOut_ctrl_sndFilename()
 // desc: CTRL function ...
 //-----------------------------------------------------------------------------
@@ -24598,7 +24689,7 @@ CK_DLL_CTRL( WvOut_ctrl_sndFilename )
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     const char * filename = GET_CK_STRING(ARGS)->str.c_str();
     char buffer[1024];
-
+    
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -24614,7 +24705,38 @@ CK_DLL_CTRL( WvOut_ctrl_sndFilename )
     try { w->openFile( filename, 1, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
     catch( StkError & e ) { goto done; }
     g_wv[w] = w;
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
 
+
+//-----------------------------------------------------------------------------
+// name: WvOut2_ctrl_sndFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut2_ctrl_sndFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    char buffer[1024];
+    
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        strcat( buffer, ").snd" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 2, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
+    catch( StkError & e ) { goto done; }
+    g_wv[w] = w;
+    
 done:
     RETURN->v_string = &(w->str_filename);
 }
@@ -24629,7 +24751,7 @@ CK_DLL_CTRL( WvOut_ctrl_wavFilename )
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     const char * filename = GET_CK_STRING(ARGS)->str.c_str();
     char buffer[1024];
-
+    
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -24656,6 +24778,41 @@ done:
 
 
 //-----------------------------------------------------------------------------
+// name: WvOut2_ctrl_wavFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut2_ctrl_wavFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    char buffer[1024];
+    
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        strcat( buffer, ").wav" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 2, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
+    catch( StkError & e )
+    {
+        // fprintf( stderr, "%s\n", e.getMessage() );
+        goto done;
+    }
+    g_wv[w] = w;
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+//-----------------------------------------------------------------------------
 // name: WvOut_ctrl_rawFilename()
 // desc: CTRL function ...
 //-----------------------------------------------------------------------------
@@ -24664,7 +24821,7 @@ CK_DLL_CTRL( WvOut_ctrl_rawFilename )
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     const char * filename = GET_CK_STRING(ARGS)->str.c_str();
     char buffer[1024];
-
+    
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -24687,6 +24844,37 @@ done:
 
 
 //-----------------------------------------------------------------------------
+// name: WvOut2_ctrl_rawFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut2_ctrl_rawFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    char buffer[1024];
+    
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        strcat( buffer, ").raw" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 2, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
+    catch( StkError & e ) { goto done; }
+    g_wv[w] = w;
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+//-----------------------------------------------------------------------------
 // name: WvOut_ctrl_aifFilename()
 // desc: CTRL function ...
 //-----------------------------------------------------------------------------
@@ -24695,7 +24883,7 @@ CK_DLL_CTRL( WvOut_ctrl_aifFilename )
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     const char * filename = GET_CK_STRING(ARGS)->str.c_str();
     char buffer[1024];
-
+    
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -24709,6 +24897,37 @@ CK_DLL_CTRL( WvOut_ctrl_aifFilename )
         filename = buffer;
     }
     try { w->openFile( filename, 1, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
+    catch( StkError & e ) { goto done; }
+    g_wv[w] = w;
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut2_ctrl_aifFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut2_ctrl_aifFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    char buffer[1024];
+    
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        strcat( buffer, ").aiff" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 2, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
     catch( StkError & e ) { goto done; }
     g_wv[w] = w;
     
