@@ -34,6 +34,7 @@
 #define __DIGITAL_IO_H__
 
 #include "chuck_def.h"
+#include <string>
 #ifndef __CHIP_MODE__
 #include "RtAudio/RtAudio.h"
 #else

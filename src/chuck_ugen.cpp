@@ -353,6 +353,7 @@ t_CKUINT Chuck_UGen::get_num_src()
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::add( Chuck_UGen * src, t_CKBOOL isUpChuck )
 {
+    // spencer 2012: chubgraph handling
     if(m_is_subgraph)
     {
         if(inlet() == NULL) return FALSE;
@@ -438,6 +439,7 @@ t_CKBOOL Chuck_UGen::add( Chuck_UGen * src, t_CKBOOL isUpChuck )
 //-----------------------------------------------------------------------------
 void Chuck_UGen::add_by( Chuck_UGen * dest, t_CKBOOL isUpChuck )
 {
+    // spencer 2012: chubgraph handling
     if(m_is_subgraph)
     {
         outlet()->add_by(dest, isUpChuck);
@@ -473,6 +475,7 @@ void Chuck_UGen::add_by( Chuck_UGen * dest, t_CKBOOL isUpChuck )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::remove( Chuck_UGen * src )
 {
+    // spencer 2012: chubgraph handling
     if(m_is_subgraph)
     {
         return inlet()->remove(src);
@@ -563,6 +566,7 @@ t_CKBOOL Chuck_UGen::remove( Chuck_UGen * src )
 //-----------------------------------------------------------------------------
 void Chuck_UGen::remove_by( Chuck_UGen * dest )
 {
+    // spencer 2012: chubgraph handling
     if(m_is_subgraph)
     {
         outlet()->remove_by(dest);
@@ -612,6 +616,7 @@ void Chuck_UGen::remove_by( Chuck_UGen * dest )
 //-----------------------------------------------------------------------------
 void Chuck_UGen::remove_all( )
 {
+    // spencer 2012: chubgraph handling
     if(m_is_subgraph)
     {
         inlet()->remove_all();
@@ -647,6 +652,7 @@ void Chuck_UGen::remove_all( )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::disconnect( t_CKBOOL recursive )
 {
+    // spencer 2012: chubgraph handling
     if(m_is_subgraph)
     {
         return inlet()->disconnect(recursive);
@@ -701,6 +707,7 @@ t_CKBOOL Chuck_UGen::is_connected_from( Chuck_UGen * src )
         }
     }
     
+    // spencer 2012: chubgraph handling
     if( m_is_subgraph )
     {
         if( inlet() ) return inlet()->is_connected_from( src );
@@ -767,7 +774,8 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     multi = 0.0f;
     if( m_multi_chan_size )
     {
-        if(tickv) // multichannel tick function available
+        // spencer 2012 - use multichannel tick function
+        if(tickv)
         {
             for( i = 0; i < m_multi_chan_size; i++ )
             {
@@ -817,7 +825,8 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     if( m_op > 0 )  // UGEN_OP_TICK
     {
         // tick the ugen
-        if( tick ) m_valid = tick( this, m_sum, &m_current, NULL, Chuck_DL_Api::Api::instance() );
+        // spencer 2012 - only do mono tick if theres no multi/vector tickfv
+        if( tick && !tickv ) m_valid = tick( this, m_sum, &m_current, NULL, Chuck_DL_Api::Api::instance() );
         if( !m_valid ) m_current = 0.0f;
 		// apply gain and pan
         m_current *= m_gain * m_pan;
