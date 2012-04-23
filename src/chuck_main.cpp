@@ -30,9 +30,10 @@
 //         Perry R. Cook (prc@cs.princeton.edu)
 // additional contributors:
 //         Ananya Misra (amisra@cs.princeton.edu)
-//         Spencer Salazar (salazar@cs.princeton.edu)
+//         Spencer Salazar (spencer@ccrma.stanford.edu)
 // date: version 1.1.x.x - Autumn 2002
 //       version 1.2.x.x - Autumn 2004
+//       version 1.3.x.x - Spring 2012
 //-----------------------------------------------------------------------------
 #include <stdio.h>
 #include <string.h>
