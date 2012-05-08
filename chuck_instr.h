@@ -2314,6 +2314,23 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Chuck_Release_Object2
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Chuck_Release_Object2 : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Chuck_Release_Object2( t_CKUINT offset )
+    { this->set( offset ); }
+
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Func_To_Code
 // desc: Chuck_Func * to Chuck_VM_Code *
 //-----------------------------------------------------------------------------

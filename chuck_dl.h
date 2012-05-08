@@ -44,6 +44,15 @@
 #include <map>
 
 
+#define CK_DLL_VERSION_MAJOR (0x0003)
+#define CK_DLL_VERSION_MINOR (0x0000)
+#define CK_DLL_VERSION_MAKE(maj,min) ((t_CKUINT)(((maj) << 16) | (min)))
+#define CK_DLL_VERSION_GETMAJOR(v) (((v) >> 16) & 0xFFFF)
+#define CK_DLL_VERSION_GETMINOR(v) ((v) & 0xFFFF)
+#define CK_DLL_VERSION (CK_DLL_VERSION_MAKE(CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR))
+
+
+
 
 extern char g_default_chugin_path[];
 extern char g_chugin_path_envvar[];
@@ -137,14 +146,6 @@ namespace Chuck_DL_Api { struct Api; }
   #define CK_DLL_CALL
 #endif
 
-#define CK_DLL_VERSION_MAJOR (0x0002)
-#define CK_DLL_VERSION_MINOR (0x0000)
-#define CK_DLL_VERSION_MAKE(maj,min) ((t_CKUINT)(((maj) << 16) | (min)))
-#define CK_DLL_VERSION_GETMAJOR(v) (((v) >> 16) & 0xFFFF)
-#define CK_DLL_VERSION_GETMINOR(v) ((v) & 0xFFFF)
-#define CK_DLL_VERSION (CK_DLL_VERSION_MAKE(CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR))
-
-
 typedef const Chuck_DL_Api::Api *CK_DL_API;
 
 // macro for defining ChucK DLL export functions
@@ -176,7 +177,7 @@ typedef const Chuck_DL_Api::Api *CK_DL_API;
 // example: CK_DLL_TICK(foo)
 #define CK_DLL_TICK(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, SAMPLE in, SAMPLE * out, Chuck_VM_Shred * SHRED, CK_DL_API API )
 // example: CK_DLL_TICK(foo)
-#define CK_DLL_TICKV(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, SAMPLE * in, SAMPLE * out, t_CKUINT nframes, Chuck_VM_Shred * SHRED, CK_DL_API API )
+#define CK_DLL_TICKV(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, SAMPLE ** in, SAMPLE ** out, t_CKUINT nframes, Chuck_VM_Shred * SHRED, CK_DL_API API )
 // macro for defining ChucK DLL export ugen ctrl functions
 // example: CK_DLL_CTRL(foo)
 #define CK_DLL_CTRL(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, CK_DL_API API )
@@ -220,7 +221,7 @@ typedef t_CKVOID (CK_DLL_CALL * f_mfun)( Chuck_Object * SELF, void * ARGS, Chuck
 typedef t_CKVOID (CK_DLL_CALL * f_sfun)( void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, CK_DL_API API );
 // ugen specific
 typedef t_CKBOOL (CK_DLL_CALL * f_tick)( Chuck_Object * SELF, SAMPLE in, SAMPLE * out, Chuck_VM_Shred * SHRED, CK_DL_API API );
-typedef t_CKBOOL (CK_DLL_CALL * f_tickv)( Chuck_Object * SELF, SAMPLE * in, SAMPLE * out, t_CKUINT nframes, Chuck_VM_Shred * SHRED, CK_DL_API API );
+typedef t_CKBOOL (CK_DLL_CALL * f_tickv)( Chuck_Object * SELF, SAMPLE ** in, SAMPLE ** out, t_CKUINT nframes, Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKVOID (CK_DLL_CALL * f_ctrl)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKVOID (CK_DLL_CALL * f_cget)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKBOOL (CK_DLL_CALL * f_pmsg)( Chuck_Object * SELF, const char * MSG, void * ARGS, Chuck_VM_Shred * SHRED, CK_DL_API API );

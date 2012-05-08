@@ -30,9 +30,10 @@
 //         Perry R. Cook (prc@cs.princeton.edu)
 // additional contributors:
 //         Ananya Misra (amisra@cs.princeton.edu)
-//         Spencer Salazar (salazar@cs.princeton.edu)
+//         Spencer Salazar (spencer@ccrma.stanford.edu)
 // date: version 1.1.x.x - Autumn 2002
 //       version 1.2.x.x - Autumn 2004
+//       version 1.3.x.x - Spring 2012
 //-----------------------------------------------------------------------------
 #include <stdio.h>
 #include <string.h>
@@ -67,6 +68,10 @@
   #include <arpa/inet.h>
 #endif
 
+#if defined(__PLATFORM_WIN32__)
+#include <direct.h>
+#define MAXPATHLEN (255)
+#endif // defined(__PLATFORM_WIN32__
 
 // global variables
 #if defined(__MACOSX_CORE__)
@@ -824,15 +829,15 @@ void * vm_cb(void * _arg)
     // figure out current working directory
     std::string cwd;
     {
-#ifndef __PLATFORM_WIN32__
-        // TODO: Win32
         char cstr_cwd[MAXPATHLEN];
         if(getcwd(cstr_cwd, MAXPATHLEN) == NULL)
             // uh...
             EM_log( CK_LOG_SEVERE, "error: unable to determine current working directory!" );
         else
-            cwd = std::string(cstr_cwd) + "/";
-#endif // __PLATFORM_WIN32__
+        {
+            cwd = std::string(cstr_cwd);
+            cwd = normalize_directory_separator(cwd) + "/";
+        }
     }
 
     // whether or not chug should be enabled

@@ -591,7 +591,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     if( !type_engine_import_ugen_begin( env, "SndBuf", "UGen", env->global(), 
                                         sndbuf_ctor, sndbuf_dtor,
-                                        sndbuf_tick, NULL ) )
+                                        sndbuf_tick, NULL, 1, 1 ) )
         return FALSE;
 
     // add member variable
@@ -711,6 +711,19 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int", "pos" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // end import
+    if( !type_engine_import_class_end( env ) )
+        return FALSE;
+    
+    
+    //---------------------------------------------------------------------
+    // init as base class: SndBuf2
+    //---------------------------------------------------------------------
+    if( !type_engine_import_ugen_begin( env, "SndBuf2", "SndBuf", env->global(), 
+                                        NULL, NULL,
+                                        NULL, sndbuf_tickv, NULL, 2, 2 ) )
+        return FALSE;
+    
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
@@ -2508,8 +2521,8 @@ inline void sndbuf_setpos( sndbuf_data *d, double pos )
     d->curr = d->buffer + d->chan + i * d->num_channels;
 }
 
-inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT pos )
-{ 
+inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT pos, t_CKINT arg_chan = -1 )
+{
     // boundary cases
     t_CKINT nf = d->num_frames;
     if( d->loop ) { 
@@ -2520,8 +2533,16 @@ inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT pos )
         if( pos > nf ) pos = nf;
         if( pos < 0   ) pos = 0;
     }
-
-    t_CKUINT index = d->chan + pos * d->num_channels;
+    
+    // if specific channel was requested, use that one
+    t_CKUINT chan = 0;
+    // I love sentinal values
+    if(arg_chan < 0)
+        chan = d->chan;
+    else if(arg_chan < d->num_channels)
+        chan = arg_chan;
+    
+    t_CKUINT index = chan + pos * d->num_channels;
     // ensure load
     if( d->fd != NULL ) sndbuf_load( d, pos );
     // return sample
@@ -2693,7 +2714,7 @@ CK_DLL_TICK( sndbuf_tick )
     }
 #endif /* CK_SNDBUF_MEMORY_BUFFER */
     if( !d->buffer ) return FALSE;
-
+    
     // we're ticking once per sample ( system )
     // curf in samples;
     
@@ -2719,7 +2740,71 @@ CK_DLL_TICK( sndbuf_tick )
     // advance
     d->curf += d->rate;
     sndbuf_setpos(d, d->curf);
+    
+    return TRUE;    
+}
 
+/* multi-chan tick */
+CK_DLL_TICKV( sndbuf_tickv )
+{
+    Chuck_UGen * ugen = (Chuck_UGen *) SELF;
+    
+    sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
+    
+    if( !d->buffer ) return FALSE;
+    
+    // we're ticking once per sample ( system )
+    // curf in samples;
+    
+    if( !d->loop && d->curr >= d->eob + d->num_channels ) return FALSE;
+    
+    // normalize amplitude across channels
+    // TODO: normalize power?
+    SAMPLE amp_factor = 1;
+    if(d->num_channels == 1)
+    {
+        amp_factor = 0.5;
+    }
+    else if(d->num_channels == 2)
+    {
+        amp_factor = 1;
+    }
+    else
+    {
+        // ruh roh
+    }
+    
+    for(unsigned int frame_idx = 0; frame_idx < nframes; frame_idx++)
+    {
+        for(unsigned int chan_idx = 0; chan_idx < ugen->m_num_outs; chan_idx++)
+        {
+            // calculate frame
+            if( d->interp == SNDBUF_DROP )
+            {
+                out[frame_idx][chan_idx] = (SAMPLE)(d->curr[chan_idx % d->num_channels] * amp_factor);
+            }
+            else if( d->interp == SNDBUF_INTERP )
+            {
+                // SPENCERTODO
+                // samplewise linear interp
+                double alpha = d->curf - floor(d->curf);
+                SAMPLE current_sample = d->curr[chan_idx % d->num_channels];
+                out[frame_idx][chan_idx] = current_sample;
+                out[frame_idx][chan_idx] += (float)alpha * ( sndbuf_sampleAt(d, (long)d->curf+1, chan_idx % d->num_channels ) - current_sample );
+                out[frame_idx][chan_idx] *= amp_factor;
+            }
+            else if( d->interp == SNDBUF_SINC )
+            {
+                // SPENCERTODO
+                // do that fancy sinc function!
+                //sndbuf_sinc_interpolate(d, out);
+            }
+        }
+        
+        // advance
+        sndbuf_setpos(d, d->curf + d->rate);
+    }
+    
     return TRUE;    
 }
 
