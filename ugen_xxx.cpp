@@ -1204,8 +1204,16 @@ CK_DLL_CTOR( foogen_ctor )
     
     for(int i = 0; i < ugen->vtable->funcs.size(); i++)
     {
-        std::string &name = ugen->vtable->funcs[i]->name;
-        if(name.find("tick") == 0)
+        Chuck_Func * func = ugen->vtable->funcs[i];
+        if(func->name.find("tick") == 0 && 
+           // ensure has one argument
+           func->def->arg_list != NULL &&
+           // ensure first argument is float
+           func->def->arg_list->type == &t_float &&
+           // ensure has only one argument
+           func->def->arg_list->next == NULL &&
+           // ensure returns float
+           func->def->ret_type == &t_float)
         {
             tick_fun_index = i;
             break;
@@ -1248,6 +1256,12 @@ CK_DLL_CTOR( foogen_ctor )
         
         data->shred = new Chuck_VM_Shred;
         data->shred->initialize(code);
+    }
+    else
+    {
+        // SPENCERTODO: warn on Chugen definition instead of instantiation?
+        EM_log(CK_LOG_WARNING, "ChuGen '%s' does not define a suitable tick function",
+               ugen->type_ref->name.c_str());
     }
 }
 
