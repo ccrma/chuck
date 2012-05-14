@@ -46,7 +46,6 @@
 #define NET_ERROR       0xffffffff
 // forward
 struct Chuck_VM;
-struct Chuck_Msg;
 struct Chuck_Compiler;
 
 
@@ -77,8 +76,7 @@ void otf_ntoh( Net_Msg * msg );
 
 // process incoming message
 t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler, 
-                          Net_Msg * msg, Chuck_Msg * reply, t_CKBOOL immediate, 
-                          void * data );
+                          Net_Msg * msg, t_CKBOOL immediate, void * data );
 
 // send command
 int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, int port, int * is_otf = NULL );
