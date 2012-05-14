@@ -57,6 +57,12 @@ using namespace std;
 t_CKUINT g_otf_log = CK_LOG_INFO;
 
 
+enum t_CKOTFERR
+{
+    CKOTFERR_NOERR = 0,
+    CKOTFERR_LOCAL,
+    CKOTFERR_REMOTE,
+};
 
 
 //-----------------------------------------------------------------------------
@@ -442,16 +448,20 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
             EM_log( CK_LOG_INFO, "sending file:args '%s' for add...", mini(argv[i]) );
             msg.type = MSG_ADD;
             msg.param = 1;
-            tasks_done += otf_send_file( argv[i], msg, "add", dest );
+            int result = otf_send_file( argv[i], msg, "add", dest );
+            tasks_done += result;
             tasks_total++;
             
-            Net_Msg reply;
-            ck_recv( dest, (char*) &reply, sizeof(reply) );
-            otf_ntoh( &reply );
-            
-            if( reply.type != MSG_ERROR )
+            if(result)
             {
-                EM_log( CK_LOG_SYSTEM, "added '%s' (%i)", mini(argv[i]), reply.param );
+                Net_Msg reply;
+                ck_recv( dest, (char*) &reply, sizeof(reply) );
+                otf_ntoh( &reply );
+                
+                if( reply.type != MSG_ERROR )
+                {
+                    EM_log( CK_LOG_SYSTEM, "added '%s' (%i)", mini(argv[i]), reply.param );
+                }
             }
         } while( ++i < argc );
         // log
@@ -758,6 +768,15 @@ void * otf_cb( void * p )
                 {
                     ret.param = FALSE;
                     strcpy( (char *)ret.buffer, EM_lasterror() );
+                    
+                    // send reply back
+                    Net_Msg net_reply;
+                    net_reply.type = MSG_ERROR;
+                    strncpy( (char *)net_reply.buffer, EM_lasterror(), NET_BUFFER_SIZE );
+
+                    otf_hton( &net_reply );
+                    ck_send( client, (char *) &net_reply, sizeof(net_reply) );
+                    
                     while( msg.type != MSG_DONE && n )
                     {
                         n = ck_recv( client, (char *)&msg, sizeof(msg) );
