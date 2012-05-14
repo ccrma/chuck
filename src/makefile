@@ -10,6 +10,13 @@ install:
 	cp $(wildcard chuck chuck.exe) $(DESTDIR)/
 	chmod 755 $(DESTDIR)/$(wildcard chuck chuck.exe)
 
+ifneq ($(CK_TARGET),)
+.DEFAULT_GOAL:=$(CK_TARGET)
+ifeq ($(MAKECMDGOALS),)
+MAKECMDGOALS:=$(.DEFAULT_GOAL)
+endif
+endif
+
 .PHONY: osx linux-oss linux-jack linux-alsa win32 osx-rl
 osx linux-oss linux-jack linux-alsa win32 osx-rl: chuck
 
