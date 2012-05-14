@@ -38,14 +38,13 @@
 
 // forward reference
 struct Chuck_VM;
-struct Chuck_Msg;
 struct Chuck_Compiler;
 
 
 // query
 DLL_QUERY machine_query( Chuck_DL_Query * QUERY );
 typedef t_CKUINT (* proc_msg_func)( Chuck_VM *, Chuck_Compiler *, 
-                                    Net_Msg *, Chuck_Msg *, t_CKBOOL, void * );
+                                    Net_Msg *, t_CKBOOL, void * );
 t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func func );
 
 
