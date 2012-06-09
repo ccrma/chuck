@@ -1465,7 +1465,7 @@ Chuck_VM_Shred::Chuck_VM_Shred()
 {
     mem = new Chuck_VM_Stack;
     reg = new Chuck_VM_Stack;
-    code = NULL;
+    code = code_orig = NULL;
     next = prev = NULL;
     instr = NULL;
     parent = NULL;
@@ -1580,7 +1580,8 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     // obj_array_size = 0;
 
     // TODO: is this right?
-    code_orig->release();
+    if(code_orig)
+        code_orig->release();
     code_orig = code = NULL;
     // what to do with next and prev?
     
