@@ -145,13 +145,13 @@ bin-dist-osx: osx
 
 .PHONY: bin-dist-win32
 bin-dist-win32:
-	make win32
+#	make win32
 # clean out old dists
 	-rm -rf $(DIST_DIR_EXE){,.tgz,.zip}
 # create directories
 	mkdir $(DIST_DIR_EXE) $(DIST_DIR_EXE)/bin $(DIST_DIR_EXE)/doc
 # copy binary + notes
-	cp chuck $(addprefix ../notes/bin/,$(BIN_NOTES)) $(DIST_DIR_EXE)/bin
+	cp Release/chuck.exe $(addprefix ../notes/bin/,$(BIN_NOTES)) $(DIST_DIR_EXE)/bin
 # copy manual + notes
 	cp ../doc/manual/ChucK_manual.pdf $(addprefix ../notes/doc/,$(DOC_NOTES)) $(DIST_DIR_EXE)/doc
 # copy examples
@@ -162,7 +162,7 @@ bin-dist-win32:
 # copy notes
 	cp $(addprefix ../notes/,$(NOTES)) $(DIST_DIR_EXE)
 # tar/gzip
-	tar czf $(DIST_DIR_EXE).tgz $(DIST_DIR_EXE)
+	zip -q -9 -r -m $(DIST_DIR_EXE).zip $(DIST_DIR_EXE)
 
 .PHONY: src-dist
 src-dist:
