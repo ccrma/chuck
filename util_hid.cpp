@@ -3258,6 +3258,86 @@ const char * MultiTouchDevice_name( int ts )
 }
 
 
+class TabletManager
+{
+public:
+    
+    
+    
+    CGEventRef TapCallBack(CGEventTapProxy proxy, CGEventType type,
+                           CGEventRef event)
+    {
+        HidMsg msg;
+        
+        //    msg.device_type = CK_HID_DEV_MULTITOUCH;
+        //    msg.device_num = device_num;
+        //    msg.type = CK_HID_MULTITOUCH_TOUCH;
+        //    msg.eid = f->identifier;
+        //    msg.fdata[0] = f->normalized.pos.x;
+        //    msg.fdata[1] = f->normalized.pos.y;
+        //    msg.fdata[2] = f->size;
+        
+        HidInManager::push_message( msg );
+        
+        return event;
+    }
+    
+private:
+    
+};
+
+static TabletManager * g_tabletManager = NULL;
+
+
+
+CGEventRef Tablet_TapCallBack(CGEventTapProxy proxy, CGEventType type,
+                              CGEventRef event, void *refcon)
+{
+    TabletManager * mgr = (TabletManager *) refcon;
+    
+    return mgr->TapCallBack(proxy, type, event);
+}
+
+
+
+void Tablet_init()
+{
+    g_tabletManager = new TabletManager;
+}
+
+void Tablet_quit()
+{
+    delete g_tabletManager;
+    g_tabletManager = NULL;
+}
+
+void Tablet_probe()
+{
+    
+}
+
+int Tablet_count()
+{
+    return 0;
+}
+
+int Tablet_open( int ts )
+{
+    return HID_NOERROR;
+}
+
+int Tablet_close( int ts )
+{
+    return HID_NOERROR;
+}
+
+const char * Tablet_name( int ts )
+{
+    return NULL;
+}
+
+
+
 
 
 
@@ -7631,6 +7711,14 @@ int MultiTouchDevice_count() { return 0; }
 int MultiTouchDevice_open( int ts ) { return -1; }
 int MultiTouchDevice_close( int ts ) { return -1; }
 const char * MultiTouchDevice_name( int ts ) { return NULL; }
+
+extern void Tablet_init() { }
+extern void Tablet_quit() { }
+extern void Tablet_probe() { }
+extern int Tablet_count() { return 0; }
+extern int Tablet_open( int ts ) { return -1; }
+extern int Tablet_close( int ts ) { return -1; }
+extern const char * Tablet_name( int ts ) { return NULL }
 
 #endif
 
