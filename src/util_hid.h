@@ -91,6 +91,13 @@ extern const t_CKUINT CK_HID_MSG_COUNT;
 /* keys */
 
 /* extension API */
+
+enum HidResult
+{
+    HID_GENERALERROR = -1,
+    HID_NOERROR = 0,
+};
+
 struct _Chuck_Hid_Driver
 {
     void ( *init )();
@@ -189,6 +196,15 @@ extern int MultiTouchDevice_count();
 extern int MultiTouchDevice_open( int ts );
 extern int MultiTouchDevice_close( int ts );
 extern const char * MultiTouchDevice_name( int ts );
+
+
+extern void Tablet_init();
+extern void Tablet_quit();
+extern void Tablet_probe();
+extern int Tablet_count();
+extern int Tablet_open( int ts );
+extern int Tablet_close( int ts );
+extern const char * Tablet_name( int ts );
 
 
 
