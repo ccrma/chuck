@@ -1,10 +1,46 @@
 ---
-1.2.1.4
+1.3.0.0
+  - (added) Chugins: dynamically loaded compiled classes/ugens
+            see http://chuck.stanford.edu/extend/ for examples. 
+  - (added) new command line options
+            --chugin-load:{auto|off}     disable/enable chugin loading
+            -gFILE/--chugin:FILE         load chugin at FILE
+            -GPATH/--chugin-path:PATH    load all chugins in directory PATH
+            --dac:NAME                   use dac with name matching NAME
+            --adc:NAME                   use adc with name matching NAME
+  - (added) Chubgraphs: create ugens by compositing existing UGens
+            see examples/extend/chubgraph.ck
+  - (added) ChuGens: create ugen by implementing audio-rate processing in ChucK
+            see examples/extend/chugen.ck
+  - (added) new ugens:
+              WvOut2: stereo uncompressed audio file output
+              SndBuf2: stereo uncompressed audio file input
+  - (added) new functions:
+            - me.sourcePath()
+                returns file path of source file corresponding to this shred
+            - me.sourceDir()
+                returns directory of source file corresponding to this shred
+            - MidiIn.open(string name)
+                open MIDI input matching name
+            - MidiOut.open(string name)
+                open MIDI output matching name
+            - Hid.open(string name)
+                open HID matching name
+  - (added) experimental OS X multitouch HID
+  - (fixed) real-time audio on Mac OS X 10.7 (Lion)
   - (fixed) IO.newline() now flushes "chout"
   - (fixed) "chout" and "cherr" now invokes member functions correctly
   - (fixed) no for statement conditional handled correctly
-  - (fixed) STK WvOut corrects handle case when file open fails
+  - (fixed) STK WvOut correctly handles case when file open fails
   - (fixed) << operator for arrays now correctly references counts
+  - (fixed) variables correctly reference counted when exiting scope
+  - (fixed) crashing bug when receiving external events at a high-rate
+            ("the OSC bug")
+  - (fixed) scope closing correctly dereferences local objects
+  - (fixed) crash when exiting shreds that connected ugens
+  - (fixed) deallocation of "empty" Shred object no longer crashes
+  - (fixed) crash when HID events are sent to an exited shred
+  - (fixed) destructors for built-in objects are executed
 
 ---
 1.2.1.3
