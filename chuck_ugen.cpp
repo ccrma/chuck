@@ -177,7 +177,7 @@ Chuck_UGen::~Chuck_UGen()
 void Chuck_UGen::init()
 {
     tick = NULL;
-    tickv = NULL;
+    tickf = NULL;
     pmsg = NULL;
     m_multi_chan = NULL;
     m_multi_chan_size = 0;
@@ -308,7 +308,7 @@ void Chuck_UGen::alloc_multi_chan( t_CKUINT num_ins, t_CKUINT num_outs )
         m_multi_chan[0] = this;
     }
     
-    if(tickv)
+    if(tickf)
     {
         m_multi_in_v = new SAMPLE[m_multi_chan_size];
         m_multi_out_v = new SAMPLE[m_multi_chan_size];
@@ -775,7 +775,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     if( m_multi_chan_size )
     {
         // spencer 2012 - use multichannel tick function
-        if(tickv)
+        if(tickf)
         {
             for( i = 0; i < m_multi_chan_size; i++ )
             {
@@ -784,7 +784,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
                 m_multi_in_v[i] = ugen->m_sum;
             }
             
-            m_valid = tickv( this, &m_multi_in_v, &m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
+            m_valid = tickf( this, &m_multi_in_v, &m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
             
             for( i = 0; i < m_multi_chan_size; i++ )
             {
@@ -815,7 +815,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     {
         owner->system_tick( now );
         
-        if(owner->tickv)
+        if(owner->tickf)
         {
             m_last = m_current;
             return TRUE;
@@ -826,7 +826,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     {
         // tick the ugen
         // spencer 2012 - only do mono tick if theres no multi/vector tickfv
-        if( tick && !tickv ) m_valid = tick( this, m_sum, &m_current, NULL, Chuck_DL_Api::Api::instance() );
+        if( tick && !tickf ) m_valid = tick( this, m_sum, &m_current, NULL, Chuck_DL_Api::Api::instance() );
         if( !m_valid ) m_current = 0.0f;
 		// apply gain and pan
         m_current *= m_gain * m_pan;

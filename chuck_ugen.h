@@ -83,7 +83,7 @@ public:
     // tick function
     f_tick tick;
     // multichannel/vectorized tick function
-    f_tickv tickv;
+    f_tickf tickf;
     // msg function
     f_pmsg pmsg;
     // channels (if more than one is required)

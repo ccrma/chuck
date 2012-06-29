@@ -176,8 +176,9 @@ typedef const Chuck_DL_Api::Api *CK_DL_API;
 // macro for defining ChucK DLL export ugen tick functions
 // example: CK_DLL_TICK(foo)
 #define CK_DLL_TICK(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, SAMPLE in, SAMPLE * out, Chuck_VM_Shred * SHRED, CK_DL_API API )
-// example: CK_DLL_TICK(foo)
-#define CK_DLL_TICKV(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, SAMPLE ** in, SAMPLE ** out, t_CKUINT nframes, Chuck_VM_Shred * SHRED, CK_DL_API API )
+// macro for defining ChucK DLL export ugen multi-channel tick functions
+// example: CK_DLL_TICKF(foo)
+#define CK_DLL_TICKF(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, SAMPLE ** in, SAMPLE ** out, t_CKUINT nframes, Chuck_VM_Shred * SHRED, CK_DL_API API )
 // macro for defining ChucK DLL export ugen ctrl functions
 // example: CK_DLL_CTRL(foo)
 #define CK_DLL_CTRL(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, CK_DL_API API )
@@ -221,7 +222,7 @@ typedef t_CKVOID (CK_DLL_CALL * f_mfun)( Chuck_Object * SELF, void * ARGS, Chuck
 typedef t_CKVOID (CK_DLL_CALL * f_sfun)( void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, CK_DL_API API );
 // ugen specific
 typedef t_CKBOOL (CK_DLL_CALL * f_tick)( Chuck_Object * SELF, SAMPLE in, SAMPLE * out, Chuck_VM_Shred * SHRED, CK_DL_API API );
-typedef t_CKBOOL (CK_DLL_CALL * f_tickv)( Chuck_Object * SELF, SAMPLE ** in, SAMPLE ** out, t_CKUINT nframes, Chuck_VM_Shred * SHRED, CK_DL_API API );
+typedef t_CKBOOL (CK_DLL_CALL * f_tickf)( Chuck_Object * SELF, SAMPLE ** in, SAMPLE ** out, t_CKUINT nframes, Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKVOID (CK_DLL_CALL * f_ctrl)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKVOID (CK_DLL_CALL * f_cget)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKBOOL (CK_DLL_CALL * f_pmsg)( Chuck_Object * SELF, const char * MSG, void * ARGS, Chuck_VM_Shred * SHRED, CK_DL_API API );
@@ -266,7 +267,7 @@ typedef void (CK_DLL_CALL * f_add_svar)( Chuck_DL_Query * query,
 typedef void (CK_DLL_CALL * f_add_arg)( Chuck_DL_Query * query, const char * type, const char * name );
 // ** functions for adding unit generators, must extend ugen
 typedef void (CK_DLL_CALL * f_add_ugen_func)( Chuck_DL_Query * query, f_tick tick, f_pmsg pmsg, t_CKUINT num_in, t_CKUINT num_out );
-typedef void (CK_DLL_CALL * f_add_ugen_funcv)( Chuck_DL_Query * query, f_tickv tickv, f_pmsg pmsg, t_CKUINT num_in, t_CKUINT num_out );
+typedef void (CK_DLL_CALL * f_add_ugen_funcf)( Chuck_DL_Query * query, f_tickf tickf, f_pmsg pmsg, t_CKUINT num_in, t_CKUINT num_out );
 // ** add a ugen control
 typedef void (CK_DLL_CALL * f_add_ugen_ctrl)( Chuck_DL_Query * query, f_ctrl ctrl, f_cget cget, 
                                               const char * type, const char * name );
@@ -305,7 +306,7 @@ struct Chuck_DL_Query
     // (ugen only) add tick and pmsg functions
     f_add_ugen_func add_ugen_func;
     // (ugen only) add tick and pmsg functions
-    f_add_ugen_funcv add_ugen_funcv;
+    f_add_ugen_funcf add_ugen_funcf;
     // (ugen only) add ctrl parameters
     f_add_ugen_ctrl add_ugen_ctrl;
     // end class/namespace, compile it
@@ -368,8 +369,8 @@ struct Chuck_DL_Class
     std::vector<Chuck_DL_Value *> svars;
     // ugen_tick
     f_tick ugen_tick;
-    // ugen_tickv
-    f_tickv ugen_tickv;
+    // ugen_tickf
+    f_tickf ugen_tickf;
     // ugen_pmsg
     f_pmsg ugen_pmsg;
     // ugen_ctrl/cget
@@ -384,7 +385,7 @@ struct Chuck_DL_Class
     t_CKUINT ugen_num_in, ugen_num_out;
     
     // constructor
-    Chuck_DL_Class() { dtor = NULL; ugen_tick = NULL; ugen_tickv = NULL; ugen_pmsg = NULL; uana_tock = NULL; ugen_pmsg = NULL; current_mvar_offset = 0; ugen_num_in = ugen_num_out = 0; }
+    Chuck_DL_Class() { dtor = NULL; ugen_tick = NULL; ugen_tickf = NULL; ugen_pmsg = NULL; uana_tock = NULL; ugen_pmsg = NULL; current_mvar_offset = 0; ugen_num_in = ugen_num_out = 0; }
     // destructor
     ~Chuck_DL_Class();
 };
