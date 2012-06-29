@@ -432,7 +432,7 @@ CK_DLL_CGET( WvIn_cget_path );
 CK_DLL_CTOR( WvOut_ctor );
 CK_DLL_DTOR( WvOut_dtor );
 CK_DLL_TICK( WvOut_tick );
-CK_DLL_TICKV( WvOut2_tickv );
+CK_DLL_TICKF( WvOut2_tickf );
 CK_DLL_PMSG( WvOut_pmsg );
 CK_DLL_CTRL( WvOut_ctrl_filename );
 CK_DLL_CTRL( WvOut_ctrl_matFilename );
@@ -3429,7 +3429,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     
     if( !type_engine_import_ugen_begin( env, "WvOut2", "WvOut", env->global(), 
                                        WvOut_ctor, WvOut_dtor,
-                                       NULL, WvOut2_tickv, WvOut_pmsg, 2, 2 ) ) return FALSE; 
+                                       NULL, WvOut2_tickf, WvOut_pmsg, 2, 2 ) ) return FALSE; 
 
     func = make_new_mfun( "string", "matFilename", WvOut2_ctrl_matFilename ); //!open matlab file for writing
     func->add_arg( "string", "value" );
@@ -24588,7 +24588,7 @@ CK_DLL_TICK( WvOut_tick )
 // name: WvOut_tick()
 // desc: TICK function ...
 //-----------------------------------------------------------------------------
-CK_DLL_TICKV( WvOut2_tickv )
+CK_DLL_TICKF( WvOut2_tickf )
 {
     // assumption: stereo (2-channel) operation
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);

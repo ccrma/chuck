@@ -720,7 +720,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     if( !type_engine_import_ugen_begin( env, "SndBuf2", "SndBuf", env->global(), 
                                         NULL, NULL,
-                                        NULL, sndbuf_tickv, NULL, 2, 2 ) )
+                                        NULL, sndbuf_tickf, NULL, 2, 2 ) )
         return FALSE;
     
     // end import
@@ -2758,7 +2758,7 @@ CK_DLL_TICK( sndbuf_tick )
 }
 
 /* multi-chan tick */
-CK_DLL_TICKV( sndbuf_tickv )
+CK_DLL_TICKF( sndbuf_tickf )
 {
     Chuck_UGen * ugen = (Chuck_UGen *) SELF;
     
