@@ -201,7 +201,7 @@ void Chuck_Compiler::set_auto_depend( t_CKBOOL v )
 // name: go()
 // desc: parse, type-check, and emit a program
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * str_src, const string full_path )
+t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * str_src, const string & full_path )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Context * context = NULL;
@@ -209,7 +209,7 @@ t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * st
     // check to see if resolve dependencies automatically
     if( !m_auto_depend )
     {
-        // normal
+        // normal (note: full_path added 1.3.0.0)
         ret = this->do_normal( filename, fd, str_src, full_path );
         return ret;
     }
@@ -392,7 +392,7 @@ t_CKBOOL Chuck_Compiler::do_all_except_classes( Chuck_Context * context )
 // name: do_normal()
 // desc: compile normally without auto-depend
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::do_normal( const string & filename, FILE * fd, const char * str_src, const string full_path )
+t_CKBOOL Chuck_Compiler::do_normal( const string & filename, FILE * fd, const char * str_src, const string & full_path )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Context * context = NULL;
@@ -405,6 +405,7 @@ t_CKBOOL Chuck_Compiler::do_normal( const string & filename, FILE * fd, const ch
     context = type_engine_make_context( g_program, filename );
     if( !context ) return FALSE;
     
+    // remember full path (added 1.3.0.0)
     context->full_path = full_path;
 
     // reset the env
@@ -515,6 +516,7 @@ t_CKBOOL load_module( Chuck_Env * env, f_ck_query query,
     
     // load osc
     dll = new Chuck_DLL( name );
+    // (fixed: 1.3.0.0) query_failed now catches either failure of load or query
     if( (query_failed = !(dll->load( query ) && dll->query())) ||
         !type_engine_add_dll( env, dll, nspc ) )
     {
@@ -646,7 +648,12 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
 
 
 
-static t_CKBOOL extension_matches(const char *filename, const char *extension)
+
+//-----------------------------------------------------------------------------
+// name: extension_matches()
+// desc: ...
+//-----------------------------------------------------------------------------
+static t_CKBOOL extension_matches(const char * filename, const char * extension)
 {
     t_CKUINT extension_length = strlen(extension);
     t_CKUINT filename_length = strlen(filename);
@@ -749,6 +756,7 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
 
 
 
+
 //-----------------------------------------------------------------------------
 // name: load_external_modules()
 // desc: ...
@@ -818,5 +826,4 @@ error:
     return FALSE;
 	*/
 }
-
 
