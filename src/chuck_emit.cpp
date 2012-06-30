@@ -90,10 +90,11 @@ t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type );
 t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type,
                                          a_Array_Sub array, t_CKBOOL is_ref );
 t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp );
-t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt );
 t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit, Chuck_Type * to, Chuck_Type * from );
 t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol, 
                                   Chuck_Value * v, t_CKBOOL emit_var, int linepos );
+// disabled until further notice (added 1.3.0.0)
+// t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt );
 
 
 
@@ -182,6 +183,7 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
     // emit->code->name = "(main)";
     // whether code need this
     emit->code->need_this = TRUE;
+    // keep track of full path (added 1.3.0.0)
     emit->code->filename = emit->context->full_path;
 
     // loop over the program sections
@@ -272,7 +274,7 @@ Chuck_VM_Code * emit_to_code( Chuck_Code * in,
     code->need_this = in->need_this;
     // set name
     code->name = in->name;
-    // set filename
+    // set filename for me.sourceDir() (added 1.3.0.0)
     code->filename = in->filename;
 
     // copy
@@ -524,7 +526,7 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
     // append the op
     emit->append( op );
 
-    // ge: 2012 april: scope for if body
+    // ge: 2012 april: scope for if body (added 1.3.0.0)
     {
         // push the stack, allowing for new local variables
         emit->push_scope();
@@ -542,7 +544,7 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
     // set the op's target
     op->set( emit->next_index() );
 
-    // ge: 2012 april: scope for else body
+    // ge: 2012 april: scope for else body (added 1.3.0.0)
     {
         // push the stack, allowing for new local variables
         emit->push_scope();
@@ -2543,11 +2545,11 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
                 return FALSE;
         }
         // spork ~ { ... }
-        else if( unary->code )
-        {
-            if( !emit_engine_emit_spork( emit, unary->code ) )
-                return FALSE;
-        }
+        // else if( unary->code )
+        // {
+        //     if( !emit_engine_emit_spork( emit, unary->code ) )
+        //         return FALSE;
+        // }
         else
         {
             EM_error2( unary->linepos,
@@ -2731,7 +2733,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
             break;
         }
         
-    // ge (april 2012): nil is void, so nothing to emit; TODO: check it
+    // ge (april 2012): nil is void, so nothing to emit; TODO: check it (added 1.3.0.0)
     case ae_primary_nil:
         break;
     }
@@ -3632,6 +3634,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             if( !emit->env->class_def || !decl->is_static )
             {
                 // allocate a place on the local stack
+                // (added 1.3.0.0 -- is_obj for tracking objects ref count on stack)
                 local = emit->alloc_local( type->size, value->name, is_ref, is_obj );
                 if( !local )
                 {
@@ -3648,7 +3651,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 // TODO: this is wrong for static
                 // BAD:
                 // FIX:
-                if( type->size == 4 ) // ISSUE: 64-bit
+                if( type->size == 4 ) // ISSUE: 64-bit (added 1.3.0.0 -- is_obj)
                     emit->append( new Chuck_Instr_Alloc_Word( local->offset, is_obj ) );
                 else if( type->size == 8 ) // ISSUE: 64-bit
                     emit->append( new Chuck_Instr_Alloc_Word2( local->offset ) );
@@ -3801,7 +3804,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     if( !emit->env->class_def )
     {
         // put function on stack
-        // ge: added FALSE to the 'is_obj' argument, 2012 april
+        // ge: added FALSE to the 'is_obj' argument, 2012 april (added 1.3.0.0)
         local = emit->alloc_local( value->type->size, value->name, TRUE, FALSE );
         // remember the offset
         value->offset = local->offset;
@@ -3820,11 +3823,12 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     emit->code->name += func->name + "( ... )";
     // set whether need this
     emit->code->need_this = func->is_member;
+    // keep track of full path (added 1.3.0.0)
     emit->code->filename = emit->context->full_path;
 
     // go through the args
     a_Arg_List a = func_def->arg_list;
-    t_CKBOOL is_obj = FALSE;
+    t_CKBOOL is_obj = FALSE; // (added 1.3.0.0)
     t_CKBOOL is_ref = FALSE;
 
     // if member (non-static) function
@@ -3833,7 +3837,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         // get the size
         emit->code->stack_depth += sizeof(t_CKUINT);
         // add this
-        // ge: added FALSE to the 'is_obj' argument, 2012 april
+        // ge: added FALSE to the 'is_obj' argument, 2012 april (added 1.3.0.0)
         if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, FALSE ) )
         {
             EM_error2( a->linepos,
@@ -3842,7 +3846,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         }
     }
     
-    // ge: 2012 april: added push scope
+    // ge: 2012 april: added push scope (added 1.3.0.0)
     emit->push_scope();
 
     // loop through args
@@ -3852,7 +3856,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         value = a->var_decl->value;
         // get the type
         type = value->type;
-        // is object? (added ge: 2012 april)
+        // is object? (added ge: 2012 april | added 1.3.0.0)
         is_obj = isobj( type );
         // get ref
         is_ref = a->type_decl->ref;
@@ -3882,7 +3886,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     if( !emit_engine_emit_stmt( emit, func_def->code, FALSE ) )
         return FALSE;
     
-    // ge: pop scope (2012 april)
+    // ge: pop scope (2012 april | added 1.3.0.0)
     // TODO: ge 2012 april: pop scope? clean up function arguments? are argument properly ref counted?    
     emit->pop_scope();
 
@@ -3957,12 +3961,13 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     emit->code->need_this = TRUE;
     // if has constructor
     // if( type->has_constructor ) type->info->pre_ctor = new Chuck_VM_Code;
+    // keep track of full path (added 1.3.0.0)
     emit->code->filename = emit->context->full_path;
  
     // get the size
     emit->code->stack_depth += sizeof(t_CKUINT);
     // add this
-    // ge: added TRUE to the 'is_obj' argument, 2012 april
+    // ge: added TRUE to the 'is_obj' argument, 2012 april (added 1.3.0.0)
     // TODO: verify this is right, and not over-ref counted / cleaned up?
     if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, TRUE ) )
     {
@@ -4081,6 +4086,7 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     emit->code->need_this = exp->ck_func->is_member;
     // name it
     emit->code->name = "spork~exp";
+    // keep track of full path (added 1.3.0.0)
     emit->code->filename = emit->context->full_path;
     // push op
     op = new Chuck_Instr_Mem_Push_Imm( 0 );
@@ -4143,46 +4149,47 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
 // name: emit_engine_emit_spork()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
-{
-    // push the current code
-    emit->stack.push_back( emit->code );
-    // make a new one (spork~exp shred)
-    emit->code = new Chuck_Code;
-    // handle need this
-    emit->code->need_this = emit->env->class_def ? TRUE : FALSE;
-    // name it
-    emit->code->name = "spork~exp";
-    emit->code->filename = emit->context->full_path;
-    
-    // call the code on sporkee shred
-    if( !emit_engine_emit_stmt( emit, stmt, TRUE ) )
-        return FALSE;
-    
-    // done
-    emit->append( new Chuck_Instr_EOC );
-    
-    // emit it
-    Chuck_VM_Code * code = emit_to_code( emit->code, NULL, emit->dump );
-    
-    // restore the code to sporker shred
-    assert( emit->stack.size() > 0 );
-    emit->code = emit->stack.back();
-    // pop
-    emit->stack.pop_back();
-    
-    if( code->need_this )
-    {
-        // push this if needed
-        emit->append( new Chuck_Instr_Reg_Push_This );
-    }
-    // emit instruction that will put the code on the stack
-    emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)code ) );
-    // emit spork instruction - this will copy, func, args, this
-    emit->append( new Chuck_Instr_Spork_Stmt( 0 ) );
-    
-    return TRUE;
-}
+//t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
+//{
+//    // push the current code
+//    emit->stack.push_back( emit->code );
+//    // make a new one (spork~exp shred)
+//    emit->code = new Chuck_Code;
+//    // handle need this
+//    emit->code->need_this = emit->env->class_def ? TRUE : FALSE;
+//    // name it
+//    emit->code->name = "spork~exp";
+//    // keep track of full path (added 1.3.0.0)
+//    emit->code->filename = emit->context->full_path;
+//    
+//    // call the code on sporkee shred
+//    if( !emit_engine_emit_stmt( emit, stmt, TRUE ) )
+//        return FALSE;
+//    
+//    // done
+//    emit->append( new Chuck_Instr_EOC );
+//    
+//    // emit it
+//    Chuck_VM_Code * code = emit_to_code( emit->code, NULL, emit->dump );
+//    
+//    // restore the code to sporker shred
+//    assert( emit->stack.size() > 0 );
+//    emit->code = emit->stack.back();
+//    // pop
+//    emit->stack.pop_back();
+//    
+//    if( code->need_this )
+//    {
+//        // push this if needed
+//        emit->append( new Chuck_Instr_Reg_Push_This );
+//    }
+//    // emit instruction that will put the code on the stack
+//    emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)code ) );
+//    // emit spork instruction - this will copy, func, args, this
+//    emit->append( new Chuck_Instr_Spork_Stmt( 0 ) );
+//    
+//    return TRUE;
+//}
 
 
 
@@ -4270,7 +4277,7 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
 
 
 
-#include <iostream>
+
 //-----------------------------------------------------------------------------
 // name: pop_scope()
 // desc: ...
@@ -4284,8 +4291,8 @@ void Chuck_Emitter::pop_scope( )
     // get locals
     code->frame->pop_scope( locals );
 
-    // TODO: free locals
-    // ge (2012 april): attempt to free locals
+    // ge (2012 april): attempt to free locals (added 1.3.0.0)
+    // was -- TODO: free locals -- chievo!
     for( int i = 0; i < locals.size(); i++ )
     {
         // get local
