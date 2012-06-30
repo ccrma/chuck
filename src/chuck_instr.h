@@ -2012,9 +2012,11 @@ public:
 struct Chuck_Instr_Alloc_Word : public Chuck_Instr_Unary_Op
 {
 public:
+    // (added 1.3.0.0 -- is_object)
     Chuck_Instr_Alloc_Word( t_CKUINT offset, t_CKBOOL is_object )
     { this->set( offset ); m_is_object = is_object; }
     
+    // was this object reference? (added 1.3.0.0)
     t_CKBOOL m_is_object;
     
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -2315,7 +2317,8 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Chuck_Release_Object2
-// desc: ...
+// desc: added 1.3.0.0 -- instead of getting offset from reg stack,
+//       this variant is given an offset, e.g., from emitter
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Chuck_Release_Object2 : public Chuck_Instr_Unary_Op
 {
@@ -2420,15 +2423,15 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Spork_Stmt
-// desc: ...
+// desc: added 1.3.0.0 -- disable until further notice
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Spork_Stmt : public Chuck_Instr_Unary_Op
-{
-public:
-    Chuck_Instr_Spork_Stmt( t_CKUINT v = 0 ) { this->set( v ); }
-public:
-    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
-};
+//struct Chuck_Instr_Spork_Stmt : public Chuck_Instr_Unary_Op
+//{
+//public:
+//    Chuck_Instr_Spork_Stmt( t_CKUINT v = 0 ) { this->set( v ); }
+//public:
+//    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+//};
 
 
 
