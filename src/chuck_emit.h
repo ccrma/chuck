@@ -73,7 +73,7 @@ public:
     // return stack
     std::vector<Chuck_Instr_Goto *> stack_return;
     
-    // filename this code came from
+    // filename this code came from (added 1.3.0.0)
     std::string filename;
     
     // constructor
@@ -138,7 +138,7 @@ struct Chuck_Emitter : public Chuck_VM_Object
     // push scope
     void push_scope( )
     { assert( code != NULL ); code->frame->push_scope(); }
-    // alloc local (ge: added is_obj 2012 april)
+    // alloc local (ge: added is_obj 2012 april | added 1.3.0.0)
     Chuck_Local * alloc_local( t_CKUINT size, const std::string & name, t_CKBOOL is_ref, t_CKBOOL is_obj )
     { assert( code != NULL ); return code->frame->alloc_local( size, name, is_ref, is_obj ); }
     // pop scope
