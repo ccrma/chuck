@@ -2084,8 +2084,9 @@ void Chuck_Instr_Branch_Neq_int_IO_good::execute( Chuck_VM * vm, Chuck_VM_Shred 
 
     if( (*ppIO) != NULL )
     {
-        // TODO: verify this logic
-        //t_CKINT result = (*ppIO)->good() && !(*ppIO)->eof();
+        // fixed 1.3.0.0 -- removed the t_CKINT
+        // TODO: verify this logic?
+        result = (*ppIO)->good() && !(*ppIO)->eof();
     }
 
     if( result != val_(sp+1) || !(ppIO) )
@@ -2705,6 +2706,7 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
         // ugen
         Chuck_UGen * ugen = (Chuck_UGen *)object;
         if( type->ugen_info->tick ) ugen->tick = type->ugen_info->tick;
+        // added 1.3.0.0 -- tickf for multi-channel tick
         if( type->ugen_info->tickf ) ugen->tickf = type->ugen_info->tickf;
         if( type->ugen_info->pmsg ) ugen->pmsg = type->ugen_info->pmsg;
         // TODO: another hack!
@@ -3126,7 +3128,7 @@ void Chuck_Instr_Chuck_Release_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * 
     pop_( reg_sp, 1 );
     // copy popped value into mem stack
     obj = *( (Chuck_VM_Object **)(mem_sp + *(reg_sp)) );
-    // ge (2012 april): check for NULL
+    // ge (2012 april): check for NULL (added 1.3.0.0)
     if( obj != NULL )
     {
         // release
@@ -3139,7 +3141,7 @@ void Chuck_Instr_Chuck_Release_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * 
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: release one reference on object (added ge 2012 april)
+// desc: release one reference on object (added ge 2012 april | added 1.3.0.0)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Chuck_Release_Object2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -3314,14 +3316,14 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     {
         // cast to right type
         f_ctor f = (f_ctor)func->native_func;
-        // call
+        // call (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
         f( (Chuck_Object *)(*mem_sp), mem_sp + 1, shred, Chuck_DL_Api::Api::instance() );
     }
     else
     {
         // cast to right type
         f_mfun f = (f_mfun)func->native_func;
-        // call the function
+        // call the function (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
         f( (Chuck_Object *)(*mem_sp), mem_sp + 1, &retval, shred, Chuck_DL_Api::Api::instance() );
     }
     // pop (TODO: check if this is right)
@@ -3416,7 +3418,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     // detect overflow/underflow
     if( overflow_( shred->mem ) ) goto error_overflow;
 
-    // call the function
+    // call the function (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
     f( mem_sp, &retval, shred, Chuck_DL_Api::Api::instance() );
     mem_sp -= push;
 
@@ -3532,28 +3534,28 @@ void Chuck_Instr_Spork::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 // name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Spork_Stmt::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
-{
-    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-    
-    // pop the stack
-    pop_( reg_sp, 1 );
-    // get the code
-    Chuck_VM_Code * code = *(Chuck_VM_Code **)reg_sp;
-    // spork it
-    Chuck_VM_Shred * sh = vm->spork( code, shred );
-    
-    if( code->need_this )
-    {
-        // pop the stack
-        pop_( reg_sp, 1 );
-        // copy this from local stack to top of new shred mem
-        *( ( t_CKUINT * ) sh->mem->sp ) = *reg_sp;
-    }
-        
-    // push the stack
-    push_( reg_sp, (t_CKUINT)sh );
-}
+//void Chuck_Instr_Spork_Stmt::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+//{
+//    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+//    
+//    // pop the stack
+//    pop_( reg_sp, 1 );
+//    // get the code
+//    Chuck_VM_Code * code = *(Chuck_VM_Code **)reg_sp;
+//    // spork it
+//    Chuck_VM_Shred * sh = vm->spork( code, shred );
+//    
+//    if( code->need_this )
+//    {
+//        // pop the stack
+//        pop_( reg_sp, 1 );
+//        // copy this from local stack to top of new shred mem
+//        *( ( t_CKUINT * ) sh->mem->sp ) = *reg_sp;
+//    }
+//        
+//    // push the stack
+//    push_( reg_sp, (t_CKUINT)sh );
+//}
 
 
 
@@ -4919,7 +4921,7 @@ void Chuck_Instr_Cast_object2string::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     Chuck_Object * obj = (Chuck_Object *)(*sp);
     // return
     Chuck_DL_Return RETURN;
-    // get toString from it
+    // get toString from it (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
     object_toString( obj, NULL, &RETURN, NULL, Chuck_DL_Api::Api::instance() );
     Chuck_String * str = RETURN.v_string;
     // set it
@@ -5310,7 +5312,7 @@ void Chuck_Instr_IO_in_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
     
     // issue: 64-bit
-    // pop the value
+    // pop the value (fixed 1.3.0.0 -- changed from 3 to 2, note it's a float POINTER)
     pop_( sp, 2 );
     
     // the IO
