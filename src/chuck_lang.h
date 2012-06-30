@@ -56,8 +56,8 @@ t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type );
-t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type );
-t_CKBOOL init_class_cherr( Chuck_Env * env, Chuck_Type * type );
+t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type ); // added 1.3.0.0 -- moved to be full-fledged class
+t_CKBOOL init_class_cherr( Chuck_Env * env, Chuck_Type * type ); // added 1.3.0.0 -- moved to be full-fledged class
 t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_Midi( Chuck_Env * env );
@@ -162,8 +162,8 @@ CK_DLL_MFUN( shred_running );
 CK_DLL_MFUN( shred_done );
 CK_DLL_MFUN( shred_numArgs );
 CK_DLL_MFUN( shred_getArg );
-CK_DLL_MFUN( shred_sourcePath );
-CK_DLL_MFUN( shred_sourceDir );
+CK_DLL_MFUN( shred_sourcePath ); // added 1.3.0.0
+CK_DLL_MFUN( shred_sourceDir ); // added 1.3.0.0
 
 
 //-----------------------------------------------------------------------------
@@ -235,7 +235,7 @@ CK_DLL_MFUN( fileio_writefloat );
 
 
 //-----------------------------------------------------------------------------
-// chout API
+// chout API -- added 1.3.0.0 as full class
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( chout_good );
 CK_DLL_MFUN( chout_close );
@@ -255,7 +255,7 @@ CK_DLL_MFUN( chout_writefloat );
 
 
 //-----------------------------------------------------------------------------
-// cherr API
+// cherr API -- added 1.3.0.0 as full class
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( cherr_good );
 CK_DLL_MFUN( cherr_close );
@@ -350,8 +350,8 @@ CK_DLL_MFUN( MidiMsgIn_read );
 CK_DLL_CTOR( MidiIn_ctor );
 CK_DLL_DTOR( MidiIn_dtor );
 CK_DLL_MFUN( MidiIn_open );
-CK_DLL_MFUN( MidiIn_open_named );
-CK_DLL_MFUN( MidiIn_open_named_i );
+CK_DLL_MFUN( MidiIn_open_named ); // added 1.3.0.0
+CK_DLL_MFUN( MidiIn_open_named_i ); // added 1.3.0.0
 CK_DLL_MFUN( MidiIn_good );
 CK_DLL_MFUN( MidiIn_num );
 CK_DLL_MFUN( MidiIn_name );
@@ -366,8 +366,8 @@ CK_DLL_MFUN( MidiIn_can_wait );
 CK_DLL_CTOR( MidiOut_ctor );
 CK_DLL_DTOR( MidiOut_dtor );
 CK_DLL_MFUN( MidiOut_open );
-CK_DLL_MFUN( MidiOut_open_named );
-CK_DLL_MFUN( MidiOut_open_named_i);
+CK_DLL_MFUN( MidiOut_open_named ); // added 1.3.0.0
+CK_DLL_MFUN( MidiOut_open_named_i); // added 1.3.0.0
 CK_DLL_MFUN( MidiOut_good );
 CK_DLL_MFUN( MidiOut_num );
 CK_DLL_MFUN( MidiOut_name );
@@ -392,7 +392,7 @@ CK_DLL_CTOR( HidIn_ctor );
 CK_DLL_DTOR( HidIn_dtor );
 CK_DLL_MFUN( HidIn_open );
 CK_DLL_MFUN( HidIn_open_named );
-CK_DLL_MFUN( HidIn_open_named_i );
+CK_DLL_MFUN( HidIn_open_named_i ); // added 1.3.0.0
 CK_DLL_MFUN( HidIn_open_joystick );
 CK_DLL_MFUN( HidIn_open_mouse );
 CK_DLL_MFUN( HidIn_open_keyboard );
