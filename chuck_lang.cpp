@@ -271,7 +271,7 @@ static t_CKINT uanablob_offset_cvals = 0;
 t_CKBOOL init_class_blob( Chuck_Env * env, Chuck_Type * type )
 {
     Chuck_DL_Func * func = NULL;
-    //Chuck_Value * value = NULL;
+    // Chuck_Value * value = NULL;
     
     // log
     EM_log( CK_LOG_SEVERE, "class 'uanablob'" );
@@ -387,7 +387,7 @@ error:
 
 
 
-//static t_CKUINT shred_offset_args = 0;
+// static t_CKUINT shred_offset_args = 0;
 //-----------------------------------------------------------------------------
 // name: init_class_shred()
 // desc: ...
@@ -450,11 +450,11 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "int", "index" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
-    // add sourcePath()
+    // add sourcePath() (added 1.3.0.0)
     func = make_new_mfun( "string", "sourcePath", shred_sourcePath );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
-    // add sourceDir()
+    // add sourceDir() (added 1.3.0.0)
     func = make_new_mfun( "string", "sourceDir", shred_sourceDir );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
@@ -759,7 +759,7 @@ error:
 
 //-----------------------------------------------------------------------------
 // name: init_class_chout()
-// desc: ...
+// desc: added 1.3.0.0 as full class
 //-----------------------------------------------------------------------------
 t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type )
 {
@@ -852,7 +852,7 @@ error:
 
 //-----------------------------------------------------------------------------
 // name: init_class_cherr()
-// desc: ...
+// desc: added 1.3.0.0 -- as full class
 //-----------------------------------------------------------------------------
 t_CKBOOL init_class_cherr( Chuck_Env * env, Chuck_Type * type )
 {
@@ -1139,7 +1139,7 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     func->add_arg( "int", "port" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
-    // add open()
+    // add open() (added 1.3.0.0)
     func = make_new_mfun( "int", "open", MidiIn_open_named );
     func->add_arg( "string", "name" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -1187,7 +1187,7 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     func->add_arg( "int", "port" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
-    // add open()
+    // add open() (added 1.3.0.0)
     func = make_new_mfun( "int", "open", MidiOut_open_named );
     func->add_arg( "string", "name" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -1259,9 +1259,9 @@ static t_CKUINT HidMsg_offset_scaledcursory = 0;
 static t_CKUINT HidMsg_offset_x = 0;
 static t_CKUINT HidMsg_offset_y = 0;
 static t_CKUINT HidMsg_offset_z = 0;
-static t_CKUINT HidMsg_offset_touchx = 0;
-static t_CKUINT HidMsg_offset_touchy = 0;
-static t_CKUINT HidMsg_offset_touchsize = 0;
+static t_CKUINT HidMsg_offset_touchx = 0; // added 1.3.0.0
+static t_CKUINT HidMsg_offset_touchy = 0; // added 1.3.0.0
+static t_CKUINT HidMsg_offset_touchsize = 0; // added 1.3.0.0
 static t_CKUINT HidMsg_offset_ascii = 0;
 static t_CKUINT HidMsg_offset_key = 0;
 
@@ -1344,15 +1344,15 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
     HidMsg_offset_z = type_engine_import_mvar( env, "int", "z", FALSE );
     if( HidMsg_offset_z == CK_INVALID_OFFSET ) goto error;
     
-    // add member variable
+    // add member variable (added 1.3.0.0)
     HidMsg_offset_touchx = type_engine_import_mvar( env, "float", "touchX", FALSE );
     if( HidMsg_offset_touchx == CK_INVALID_OFFSET ) goto error;
     
-    // add member variable
+    // add member variable (added 1.3.0.0)
     HidMsg_offset_touchy = type_engine_import_mvar( env, "float", "touchY", FALSE );
     if( HidMsg_offset_touchy == CK_INVALID_OFFSET ) goto error;
     
-    // add member variable
+    // add member variable (added 1.3.0.0)
     HidMsg_offset_touchsize = type_engine_import_mvar( env, "float", "touchSize", FALSE );
     if( HidMsg_offset_touchsize == CK_INVALID_OFFSET ) goto error;
     
@@ -1880,6 +1880,7 @@ CK_DLL_MFUN( ugen_op )
 
     // for multiple channels
     Chuck_DL_Return ret;
+    // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_op( ugen->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
 }
@@ -1914,6 +1915,7 @@ CK_DLL_MFUN( ugen_next )
 
     // for multiple channels
     Chuck_DL_Return ret;
+    // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_next( ugen->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
 }
@@ -1939,6 +1941,7 @@ CK_DLL_MFUN( ugen_gain )
 
     // for multiple channels
     Chuck_DL_Return ret;
+    // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_gain( ugen->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
 }
@@ -2013,7 +2016,7 @@ CK_DLL_CTOR( uana_ctor )
     Chuck_UAnaBlobProxy * proxy = new Chuck_UAnaBlobProxy( blob );
     // remember it
     OBJ_MEMBER_INT(SELF, uana_offset_blob) = (t_CKINT)proxy;
-    // HACK: DANGER: manually call blob's ctor
+    // HACK: DANGER: manually call blob's ctor (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
     uanablob_ctor( blob, NULL, NULL, Chuck_DL_Api::Api::instance() );
 }
 
@@ -2049,6 +2052,7 @@ CK_DLL_MFUN( uana_upchuck )
     {
         // for multiple channels
         Chuck_DL_Return ret;
+        // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
         for( t_CKUINT i = 0; i < uana->m_multi_chan_size; i++ )
             uana_upchuck( uana->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
 
@@ -2912,7 +2916,7 @@ CK_DLL_MFUN( shred_getArg )
     RETURN->v_string = str; 
 }
 
-CK_DLL_MFUN( shred_sourcePath )
+CK_DLL_MFUN( shred_sourcePath ) // added 1.3.0.0
 {
     Chuck_VM_Shred * derhs = (Chuck_VM_Shred *)SELF;
     
@@ -2921,8 +2925,7 @@ CK_DLL_MFUN( shred_sourcePath )
     RETURN->v_string = str; 
 }
 
-
-CK_DLL_MFUN( shred_sourceDir )
+CK_DLL_MFUN( shred_sourceDir ) // added 1.3.0.0
 {
     Chuck_VM_Shred * derhs = (Chuck_VM_Shred *)SELF;
     
@@ -3148,7 +3151,7 @@ CK_DLL_MFUN( MidiIn_open )
     RETURN->v_int = min->open( port );
 }
 
-CK_DLL_MFUN( MidiIn_open_named )
+CK_DLL_MFUN( MidiIn_open_named ) // added 1.3.0.0
 {
     MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
     Chuck_String * name = GET_CK_STRING(ARGS);
@@ -3228,7 +3231,7 @@ CK_DLL_MFUN( MidiOut_open )
     RETURN->v_int = mout->open( port );
 }
 
-CK_DLL_MFUN( MidiOut_open_named )
+CK_DLL_MFUN( MidiOut_open_named ) // added 1.3.0.0
 {
     MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
     Chuck_String * name = GET_CK_STRING(ARGS);
@@ -3339,7 +3342,7 @@ CK_DLL_MFUN( HidIn_open )
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     t_CKINT type = GET_NEXT_INT(ARGS);
     t_CKINT num = GET_NEXT_INT(ARGS);
-    fprintf(stderr, "HidIn_open %li %li\n", type, num);
+    // fprintf(stderr, "HidIn_open %li %li\n", type, num);
     RETURN->v_int = min->open( type, num );
 }
 
@@ -3449,6 +3452,7 @@ CK_DLL_MFUN( HidIn_recv )
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_y) = the_msg.idata[1];
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_z) = the_msg.idata[2];
         
+        // multitouch stuff - added 1.3.0.0
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchx) = the_msg.fdata[0];
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchy) = the_msg.fdata[1];
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchsize) = the_msg.fdata[2];
@@ -3648,7 +3652,7 @@ CK_DLL_MFUN( HidOut_num )
 
 CK_DLL_MFUN( HidOut_name )
 {
-    //HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
+    // HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
     // TODO: memory leak, please fix, Thanks.
     Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
     // only if valid
@@ -3667,12 +3671,12 @@ CK_DLL_MFUN( HidOut_printerr )
 CK_DLL_MFUN( HidOut_send )
 {
     HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
-    //Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
+    // Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
     HidMsg the_msg;
-/*    the_msg.data[0] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data1);
-    the_msg.data[1] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data2);
-    the_msg.data[2] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data3);
-*/    RETURN->v_int = mout->send( &the_msg );
+    // the_msg.data[0] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data1);
+    // the_msg.data[1] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data2);
+    // the_msg.data[2] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data3);
+    RETURN->v_int = mout->send( &the_msg );
 }
 
 
