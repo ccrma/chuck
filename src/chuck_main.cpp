@@ -38,9 +38,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#if !defined(__PLATFORM_WIN32__)
-#include <sys/param.h>
-#endif // !defined(__PLATFORM_WIN32__)
 
 #include "chuck_compile.h"
 #include "chuck_vm.h"
@@ -63,12 +60,11 @@
   #include <unistd.h>
   #include <netinet/in.h>
   #include <arpa/inet.h>
-#endif
-
-#if defined(__PLATFORM_WIN32__)
-#include <direct.h>
-#define MAXPATHLEN (255)
-#endif // defined(__PLATFORM_WIN32__
+  #include <sys/param.h>   // added 1.3.0.0
+#else
+  #include <direct.h>      // added 1.3.0.0
+  #define MAXPATHLEN (255) // addec 1.3.0.0
+#endif // #ifndef __PLATFORM_WIN32__
 
 // global variables
 #if defined(__MACOSX_CORE__)
@@ -253,6 +249,7 @@ static void version()
 //-----------------------------------------------------------------------------
 static void usage()
 {
+    // (note: optional colon added 1.3.0.0)
     fprintf( stderr, "usage: chuck --[options|commands] [+-=^] file1 file2 file3 ...\n" );
     fprintf( stderr, "   [options] = halt|loop|audio|silent|dump|nodump|server|about|probe|\n" );
     fprintf( stderr, "               channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|\n" );
@@ -289,9 +286,9 @@ static void usage()
     t_CKUINT buffer_size = BUFFER_SIZE_DEFAULT;
     t_CKUINT num_buffers = NUM_BUFFERS_DEFAULT;
     t_CKUINT dac = 0;
-    std::string dac_name = "";
     t_CKUINT adc = 0;
-    std::string adc_name = "";
+    std::string dac_name = ""; // added 1.3.0.0
+    std::string adc_name = ""; // added 1.3.0.0
     t_CKUINT dac_chans = 2;
     t_CKUINT adc_chans = 2;
     t_CKBOOL dump = FALSE;
@@ -306,20 +303,30 @@ static void usage()
     t_CKBOOL do_watchdog = TRUE;
     t_CKINT  adaptive_size = 0;
     t_CKINT  log_level = CK_LOG_CORE;
-    t_CKINT  deprecate_level = 1; // warn
-    t_CKINT  chugin_load = 1; // auto
-    
-    std::list<std::string> dl_search_path;
-    std::string initial_chugin_path;
-    if( getenv( g_chugin_path_envvar ) )
-        initial_chugin_path = getenv( g_chugin_path_envvar );
-    else
-        initial_chugin_path = g_default_chugin_path;
-    parse_path_list( initial_chugin_path, dl_search_path );
-    std::list<std::string> named_dls;
-    
+    t_CKINT  deprecate_level = 1; // 1 == warn
+    t_CKINT  chugin_load = 1; // 1 == auto (variable added 1.3.0.0)
     string   filename = "";
     vector<string> args;
+
+    // list of search pathes (added 1.3.0.0)
+    std::list<std::string> dl_search_path;
+    // initial chug-in path (added 1.3.0.0)
+    std::string initial_chugin_path;
+    // if set as environment variable (added 1.3.0.0)
+    if( getenv( g_chugin_path_envvar ) )
+    {
+        // get it from the env var
+        initial_chugin_path = getenv( g_chugin_path_envvar );
+    }
+    else
+    {
+        // default it
+        initial_chugin_path = g_default_chugin_path;
+    }
+    // parse the colon list into STL list (added 1.3.0.0)
+    parse_path_list( initial_chugin_path, dl_search_path );
+    // list of individually named chug-ins (added 1.3.0.0)
+    std::list<std::string> named_dls;
 
 #if defined(__DISABLE_WATCHDOG__)
     do_watchdog = FALSE;
@@ -371,37 +378,40 @@ static void usage()
             {   enable_shell = TRUE; vm_halt = FALSE; }
             else if( !strcmp(argv[i], "--empty") )
                 no_vm = TRUE;
-            else if( !strncmp(argv[i], "--srate:", 8) )
+            else if( !strncmp(argv[i], "--srate:", 8) ) // (added 1.3.0.0)
                 srate = atoi( argv[i]+8 ) > 0 ? atoi( argv[i]+8 ) : srate;
             else if( !strncmp(argv[i], "--srate", 7) )
                 srate = atoi( argv[i]+7 ) > 0 ? atoi( argv[i]+7 ) : srate;
             else if( !strncmp(argv[i], "-r", 2) )
                 srate = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : srate;
-            else if( !strncmp(argv[i], "--bufsize:", 10) )
+            else if( !strncmp(argv[i], "--bufsize:", 10) ) // (added 1.3.0.0)
                 buffer_size = atoi( argv[i]+10 ) > 0 ? atoi( argv[i]+10 ) : buffer_size;
             else if( !strncmp(argv[i], "--bufsize", 9) )
                 buffer_size = atoi( argv[i]+9 ) > 0 ? atoi( argv[i]+9 ) : buffer_size;
             else if( !strncmp(argv[i], "-b", 2) )
                 buffer_size = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : buffer_size;
-            else if( !strncmp(argv[i], "--bufnum:", 9) )
+            else if( !strncmp(argv[i], "--bufnum:", 9) ) // (added 1.3.0.0)
                 num_buffers = atoi( argv[i]+9 ) > 0 ? atoi( argv[i]+9 ) : num_buffers;
             else if( !strncmp(argv[i], "--bufnum", 8) )
                 num_buffers = atoi( argv[i]+8 ) > 0 ? atoi( argv[i]+8 ) : num_buffers;
             else if( !strncmp(argv[i], "-n", 2) )
                 num_buffers = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : num_buffers;
-            else if( !strncmp(argv[i], "--dac:", 6) )
+            else if( !strncmp(argv[i], "--dac:", 6) ) // (added 1.3.0.0)
             {
-                const char *str = argv[i]+6;
-                char *endptr = NULL;
+                // advance pointer to beginning of argument
+                const char * str = argv[i]+6;
+                char * endptr = NULL;
                 long dev = strtol(str, &endptr, 10);
                 
-                if(endptr != NULL && *endptr == '\0')
+                // check if arg was a number (added 1.3.0.0)
+                if( endptr != NULL && *endptr == '\0' )
                 {
                     // successful conversion to # -- clear adc_name
                     dac = dev;
                     dac_name = "";
                 }
-                else if(*str != '\0')
+                // check if arg was not a number and not empty (added 1.3.0.0)
+                else if( *str != '\0' )
                 {
                     // incomplete conversion to #; see if its a possible device name
                     dac_name = std::string(str);
@@ -416,19 +426,22 @@ static void usage()
             }
             else if( !strncmp(argv[i], "--dac", 5) )
                 dac = atoi( argv[i]+6 ) > 0 ? atoi( argv[i]+6 ) : 0;
-            else if( !strncmp(argv[i], "--adc:", 6) )
+            else if( !strncmp(argv[i], "--adc:", 6) ) // (added 1.3.0.0)
             {
-                const char *str = argv[i]+6;
-                char *endptr = NULL;
+                // advance pointer to beginning of argument
+                const char * str = argv[i]+6;
+                char * endptr = NULL;
                 long dev = strtol(str, &endptr, 10);
                 
-                if(endptr != NULL && *endptr != '\0')
+                // check if arg was a number (added 1.3.0.0)
+                if( endptr != NULL && *endptr != '\0' )
                 {
                     // successful conversion to # -- clear adc_name
                     adc = dev;
                     adc_name = "";
                 }
-                else if(*str != '\0')
+                // check if arg was number a number and not empty (added 1.3.0.0)
+                else if( *str != '\0' )
                 {
                     // incomplete conversion to #; see if its a possible device name
                     adc_name = std::string(str);
@@ -443,25 +456,25 @@ static void usage()
             }
             else if( !strncmp(argv[i], "--adc", 5) )
                 adc = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 0;
-            else if( !strncmp(argv[i], "--channels:", 11) )
+            else if( !strncmp(argv[i], "--channels:", 11) ) // (added 1.3.0.0)
                 dac_chans = adc_chans = atoi( argv[i]+11 ) > 0 ? atoi( argv[i]+11 ) : 2;
             else if( !strncmp(argv[i], "--channels", 10) )
                 dac_chans = adc_chans = atoi( argv[i]+10 ) > 0 ? atoi( argv[i]+10 ) : 2;
             else if( !strncmp(argv[i], "-c", 2) )
                 dac_chans = adc_chans = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : 2;
-            else if( !strncmp(argv[i], "--out:", 6) )
+            else if( !strncmp(argv[i], "--out:", 6) ) // (added 1.3.0.0)
                 dac_chans = atoi( argv[i]+6 ) > 0 ? atoi( argv[i]+6 ) : 2;
             else if( !strncmp(argv[i], "--out", 5) )
                 dac_chans = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 2;
             else if( !strncmp(argv[i], "-o", 2) )
                 dac_chans = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : 2;
-            else if( !strncmp(argv[i], "--in:", 5) )
+            else if( !strncmp(argv[i], "--in:", 5) ) // (added 1.3.0.0)
                 adc_chans = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 2;
             else if( !strncmp(argv[i], "--in", 4) )
                 adc_chans = atoi( argv[i]+4 ) > 0 ? atoi( argv[i]+4 ) : 2;
             else if( !strncmp(argv[i], "-i", 2) )
                 adc_chans = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : 2;
-            else if( !strncmp(argv[i], "--level:", 8) )
+            else if( !strncmp(argv[i], "--level:", 8) ) // (added 1.3.0.0)
             {   g_priority = atoi( argv[i]+8 ); set_priority = TRUE; }
             else if( !strncmp(argv[i], "--level", 7) )
             {   g_priority = atoi( argv[i]+7 ); set_priority = TRUE; }
@@ -471,13 +484,13 @@ static void usage()
                 do_watchdog = TRUE; }
             else if( !strncmp(argv[i], "--nowatchdog", 12) )
                 do_watchdog = FALSE;
-            else if( !strncmp(argv[i], "--remote:", 9) )
+            else if( !strncmp(argv[i], "--remote:", 9) ) // (added 1.3.0.0)
                 strcpy( g_host, argv[i]+9 );
             else if( !strncmp(argv[i], "--remote", 8) )
                 strcpy( g_host, argv[i]+8 );
             else if( !strncmp(argv[i], "@", 1) )
                 strcpy( g_host, argv[i]+1 );
-            else if( !strncmp(argv[i], "--port:", 7) )
+            else if( !strncmp(argv[i], "--port:", 7) ) // (added 1.3.0.0)
                 g_port = atoi( argv[i]+7 );
             else if( !strncmp(argv[i], "--port", 6) )
                 g_port = atoi( argv[i]+6 );
@@ -487,17 +500,17 @@ static void usage()
                 auto_depend = TRUE;
             else if( !strncmp(argv[i], "-u", 2) )
                 auto_depend = TRUE;
-            else if( !strncmp(argv[i], "--log:", 6) )
+            else if( !strncmp(argv[i], "--log:", 6) ) // (added 1.3.0.0)
                 log_level = argv[i][6] ? atoi( argv[i]+6 ) : CK_LOG_INFO;
             else if( !strncmp(argv[i], "--log", 5) )
                 log_level = argv[i][5] ? atoi( argv[i]+5 ) : CK_LOG_INFO;
-            else if( !strncmp(argv[i], "--verbose:", 10) )
+            else if( !strncmp(argv[i], "--verbose:", 10) ) // (added 1.3.0.0)
                 log_level = argv[i][10] ? atoi( argv[i]+10 ) : CK_LOG_INFO;
             else if( !strncmp(argv[i], "--verbose", 9) )
                 log_level = argv[i][9] ? atoi( argv[i]+9 ) : CK_LOG_INFO;
             else if( !strncmp(argv[i], "-v", 2) )
                 log_level = argv[i][2] ? atoi( argv[i]+2 ) : CK_LOG_INFO;
-            else if( !strncmp(argv[i], "--adaptive:", 11) )
+            else if( !strncmp(argv[i], "--adaptive:", 11) ) // (added 1.3.0.0)
                 adaptive_size = argv[i][11] ? atoi( argv[i]+11 ) : -1;
             else if( !strncmp(argv[i], "--adaptive", 10) )
                 adaptive_size = argv[i][10] ? atoi( argv[i]+10 ) : -1;
@@ -516,6 +529,7 @@ static void usage()
                     exit( 1 );
                 }
             }
+            // (added 1.3.0.0)
             else if( !strncmp(argv[i], "--chugin-load:", sizeof("--chugin-load:")-1) )
             {
                 // get the rest
@@ -530,20 +544,24 @@ static void usage()
                     exit( 1 );
                 }
             }
+            // (added 1.3.0.0)
             else if( !strncmp(argv[i], "--chugin-path:", sizeof("--chugin-path:")-1) )
             {
                 // get the rest
                 dl_search_path.push_back( argv[i]+sizeof("--chugin-path:")-1 );
             }
+            // (added 1.3.0.0)
             else if( !strncmp(argv[i], "-G", sizeof("-G")-1) )
             {
                 // get the rest
                 dl_search_path.push_back( argv[i]+sizeof("-G")-1 );
             }
+            // (added 1.3.0.0)
             else if( !strncmp(argv[i], "--chugin:", sizeof("--chugin:")-1) )
             {
                 named_dls.push_back(argv[i]+sizeof("--chugin:")-1);
             }
+            // (added 1.3.0.0)
             else if( !strncmp(argv[i], "-g", sizeof("-g")-1) )
             {
                 named_dls.push_back(argv[i]+sizeof("-g")-1);
@@ -586,8 +604,11 @@ static void usage()
                 exit( 1 );
             }
         }
-        else
+        else // doesn't look like an argument
+        {
+            // increase number of files
             files++;
+        }
     }
 
     // log level
@@ -655,10 +676,11 @@ static void usage()
         exit( 1 );
     }
     
-    // find dac_name if appropriate
+    // find dac_name if appropriate (added 1.3.0.0)
     if( dac_name.size() > 0 )
     {
-        int dev = Digitalio::device_named(dac_name, TRUE, FALSE);
+        // check with RtAudio
+        int dev = Digitalio::device_named( dac_name, TRUE, FALSE );
         if( dev >= 0 )
         {
             dac = dev;
@@ -670,10 +692,11 @@ static void usage()
         }
     }
     
-    // find adc_name if appropriate
+    // find adc_name if appropriate (added 1.3.0.0)
     if( adc_name.size() > 0 )
     {
-        int dev = Digitalio::device_named(adc_name, FALSE, TRUE);
+        // check with RtAudio
+        int dev = Digitalio::device_named( adc_name, FALSE, TRUE );
         if( dev >= 0 )
         {
             adc = dev;
@@ -695,7 +718,7 @@ static void usage()
         exit( 1 );
     }
     
-    
+    // if chugin load is off, then clear the lists (added 1.3.0.0 -- TODO: refactor)
     if( chugin_load == 0 )
     {
         // turn off chugin load
@@ -705,7 +728,7 @@ static void usage()
     
     // allocate the compiler
     compiler = g_compiler = new Chuck_Compiler;
-    // initialize the compiler
+    // initialize the compiler (search_apth and named_dls added 1.3.0.0 -- TODO: refactor)
     if( !compiler->initialize( vm, dl_search_path, named_dls ) )
     {
         fprintf( stderr, "[chuck]: error initializing compiler...\n" );
@@ -751,13 +774,15 @@ static void usage()
     // reset count
     count = 1;
     
-    // figure out current working directory
+    // figure out current working directory (added 1.3.0.0)
     std::string cwd;
     {
         char cstr_cwd[MAXPATHLEN];
-        if(getcwd(cstr_cwd, MAXPATHLEN) == NULL)
+        if( getcwd(cstr_cwd, MAXPATHLEN) == NULL )
+        {
             // uh...
             EM_log( CK_LOG_SEVERE, "error: unable to determine current working directory!" );
+        }
         else
         {
             cwd = std::string(cstr_cwd);
@@ -765,16 +790,18 @@ static void usage()
         }
     }
 
-    // whether or not chug should be enabled
+    // whether or not chug should be enabled (added 1.3.0.0)
     if( chugin_load )
     {
         // log
         EM_log( CK_LOG_SEVERE, "pre-loading ChucK libs..." );
         EM_pushlog();
         
+        // iterate over list of ck files that the compiler found
         for( std::list<std::string>::iterator j = compiler->m_cklibs_to_preload.begin();
-            j != compiler->m_cklibs_to_preload.end(); j++)
+             j != compiler->m_cklibs_to_preload.end(); j++)
         {
+            // the filename
             std::string filename = *j;
             
             // log
@@ -790,12 +817,12 @@ static void usage()
             {
                 // TODO: how to compilation handle?
                 //return 1;
-                
+
                 // get the code
                 code = compiler->output();
                 // name it - TODO?
                 // code->name += string(argv[i]);
-                
+
                 // spork it
                 shred = vm->spork( code, NULL );
             }
@@ -804,8 +831,10 @@ static void usage()
             EM_poplog();
         }
         
+        // clear the list of chuck files to preload
         compiler->m_cklibs_to_preload.clear();
         
+        // pop log
         EM_poplog();
     }
     
@@ -844,9 +873,11 @@ static void usage()
         // push indent
         EM_pushlog();
 
+        // construct full path to be associated with the file so me.sourceDir() works
+        // (added 1.3.0.0)
         std::string full_path = cwd + filename;
         
-        // parse, type-check, and emit
+        // parse, type-check, and emit (full_path added 1.3.0.0)
         if( !compiler->go( filename, NULL, NULL, full_path ) )
             return 1;
 
