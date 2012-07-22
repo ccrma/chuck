@@ -33,13 +33,13 @@
 #ifndef __CHUCK_OO_H__
 #define __CHUCK_OO_H__
 
-#include "chuck_def.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <queue>
 #include <fstream>
-#include "util_thread.h"
+#include "chuck_def.h"
+#include "util_thread.h" // added 1.3.0.0
 
 #ifndef __PLATFORM_WIN32__
   #include <dirent.h>
@@ -58,6 +58,7 @@ struct Chuck_VM_Code;
 struct Chuck_VM_Shred;
 struct Chuck_VM;
 struct Chuck_IO_File;
+class  CBufferSimple; // added 1.3.0.0
 
 
 
@@ -276,6 +277,7 @@ public:
 
 
 
+
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Array16
 // desc: native ChucK arrays (for 16-byte)
@@ -317,10 +319,6 @@ public:
 
 
 
-#include "util_thread.h"
-
-class CBufferSimple;
-
 //-----------------------------------------------------------------------------
 // name: Chuck_Event
 // desc: base Chuck Event class
@@ -334,9 +332,13 @@ public:
     t_CKBOOL remove( Chuck_VM_Shred * shred );
 
 public: // internal
+    // added 1.3.0.0: queue_broadcast now takes event_buffer
     void queue_broadcast( CBufferSimple * event_buffer = NULL );
+
+public:
     static t_CKUINT our_can_wait;
 
+protected:
     std::queue<Chuck_VM_Shred *> m_queue;
     XMutex m_queue_lock;
 };
@@ -400,10 +402,11 @@ public:
     // asynchronous I/O members
     static const t_CKINT MODE_SYNC;
     static const t_CKINT MODE_ASYNC;
-    Chuck_Event *m_asyncEvent;
-    XThread *m_thread;
-    struct async_args {
-        Chuck_IO_File *fileio_obj;
+    Chuck_Event * m_asyncEvent;
+    XThread * m_thread;
+    struct async_args
+    {
+        Chuck_IO_File * fileio_obj;
         void *RETURN; // actually a Chuck_DL_Return
         t_CKINT intArg;
         t_CKFLOAT floatArg;

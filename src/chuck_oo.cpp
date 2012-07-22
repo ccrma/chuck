@@ -106,7 +106,8 @@ void Chuck_VM_Object::add_ref()
         Chuck_VM_Alloc::instance()->add_object( this );
     }
     
-    //CK_GC_LOG("Chuck_VM_Object::add_ref() : 0x%08x, %s, %i", this, typeid(*this).name(), m_ref_count);
+    // added 1.3.0.0
+    // CK_GC_LOG("Chuck_VM_Object::add_ref() : 0x%08x, %s, %i", this, typeid(*this).name(), m_ref_count);
 }
 
 
@@ -123,7 +124,8 @@ void Chuck_VM_Object::release()
     // decrement
     m_ref_count--;
     
-    //CK_GC_LOG("Chuck_VM_Object::release() : 0x%08x, %s, %i", this, typeid(*this).name(), m_ref_count);
+    // added 1.3.0.0
+    // CK_GC_LOG("Chuck_VM_Object::release() : 0x%08x, %s, %i", this, typeid(*this).name(), m_ref_count);
 
     // if no more references
     if( m_ref_count == 0 )
@@ -304,17 +306,20 @@ Chuck_Object::Chuck_Object()
 //-----------------------------------------------------------------------------
 Chuck_Object::~Chuck_Object()
 {
+    // added 1.3.0.0: 
     // call destructors, from latest descended child to oldest parent
     Chuck_Type * type = this->type_ref;
-    while(type != NULL)
+    while( type != NULL )
     {
         // SPENCERTODO: HACK! is there a better way to call the dtor?
-        if(type->has_destructor)
+        if( type->has_destructor )
         {
-            assert(type->info->dtor && type->info->dtor->native_func);
-            ((f_dtor)(type->info->dtor->native_func))(this, NULL, Chuck_DL_Api::Api::instance());
+            // sanity check
+            assert( type->info->dtor && type->info->dtor->native_func );
+            ((f_dtor)(type->info->dtor->native_func))( this, NULL, Chuck_DL_Api::Api::instance() );
         }
-        
+
+        // go up the inheritance
         type = type->parent;
     }
     
@@ -524,7 +529,8 @@ t_CKINT Chuck_Array4::erase( const string & key )
 t_CKINT Chuck_Array4::push_back( t_CKUINT val )
 {
     // TODO: is this right?
-    // if obj
+
+    // if obj, reference count it (added 1.3.0.0)
     if( m_is_obj && val ) ((Chuck_Object *)val)->add_ref();
     
     // add to vector
@@ -549,7 +555,9 @@ t_CKINT Chuck_Array4::pop_back( )
     // if obj
     if( m_is_obj )
     {
+        // get pointer
         Chuck_Object * v = (Chuck_Object *)m_vector[m_vector.size()-1];
+        // if not null, release
         if( v ) v->release();
     }
     
@@ -1371,6 +1379,7 @@ t_CKBOOL Chuck_Event::remove( Chuck_VM_Shred * shred )
 // name: queue_broadcast()
 // desc: queue the event to broadcast a event/condition variable, by the owner
 //       of the queue
+//       added 1.3.0.0: event_buffer to fix big-ass bug
 //-----------------------------------------------------------------------------
 void Chuck_Event::queue_broadcast( CBufferSimple * event_buffer )
 {
@@ -1380,11 +1389,13 @@ void Chuck_Event::queue_broadcast( CBufferSimple * event_buffer )
     {
         Chuck_VM_Shred * shred = m_queue.front();
         m_queue_lock.release();
+        // queue the event on the vm (added 1.3.0.0: event_buffer)
         shred->vm_ref->queue_event( this, 1, event_buffer );
     }
     else
+    {
         m_queue_lock.release();
-
+    }
 }
 
 
@@ -1421,8 +1432,11 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
     assert( shred->vm_ref == vm );
     
     Chuck_DL_Return RETURN;
+    // get the member function
     f_mfun canwaitplease = (f_mfun)this->vtable->funcs[our_can_wait]->code->native_func;
-    canwaitplease( this, NULL, &RETURN, shred, Chuck_DL_Api::Api::instance() ); // TODO: check this is right shred
+    // TODO: check this is right shred
+    // added 1.3.0.0: the DL API instance
+    canwaitplease( this, NULL, &RETURN, shred, Chuck_DL_Api::Api::instance() );
     // RETURN.v_int = 1;
 
     // see if we can wait
@@ -1539,37 +1553,43 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
     
     // check flags for errors
     if ((flags & TYPE_ASCII) &&
-        (flags & TYPE_BINARY)) {
+        (flags & TYPE_BINARY))
+    {
         EM_error3( "[chuck](via FileIO): cannot open file in both ASCII and binary mode" );
         goto error;
     }
     
     if ((flags & FLAG_READ_WRITE) &&
-        (flags & FLAG_READONLY)) {
+        (flags & FLAG_READONLY))
+    {
         EM_error3( "[chuck](via FileIO): conflicting flags: READ_WRITE and READ" );
         goto error;
     }
     
     if ((flags & FLAG_READ_WRITE) &&
-        (flags & FLAG_WRITEONLY)) {
+        (flags & FLAG_WRITEONLY))
+    {
         EM_error3( "[chuck](via FileIO): conflicting flags: READ_WRITE and WRITE" );
         goto error;
     }
     
     if ((flags & FLAG_READ_WRITE) &&
-        (flags & FLAG_APPEND)) {
+        (flags & FLAG_APPEND))
+    {
         EM_error3( "[chuck](via FileIO): conflicting flags: READ_WRITE and APPEND" );
         goto error;
     }
     
     if ((flags & FLAG_WRITEONLY) &&
-        (flags & FLAG_READONLY)) {
+        (flags & FLAG_READONLY))
+    {
         EM_error3( "[chuck](via FileIO): conflicting flags: WRITE and READ" );
         goto error;
     }
     
     if ((flags & FLAG_APPEND) &&
-        (flags & FLAG_READONLY)) {
+        (flags & FLAG_READONLY))
+    {
         EM_error3( "[chuck](via FileIO): conflicting flags: APPEND and FLAG_READ" );
         goto error;
     }
@@ -1593,8 +1613,9 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
     if (m_io.is_open())
         this->close();
     
-    // try to open as a dir first
-    if ((m_dir = opendir( path.c_str() ))) {
+    // try to open as a dir first (fixed 1.3.0.0 removed warning)
+    if( (m_dir = opendir( path.c_str() )) )
+    {
         EM_poplog();
         return TRUE;
     }
@@ -1869,7 +1890,7 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     rewinddir( m_dir );
     std::vector<Chuck_String *> entrylist;
     struct dirent *ent;
-    while ( (ent = readdir( m_dir )) )
+    while( (ent = readdir( m_dir )) ) // fixed 1.3.0.0: removed warning
     {
         Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
         s->str = std::string( ent->d_name );
@@ -2352,20 +2373,21 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
     return (THREAD_RETURN)0;
 }
 
-
-
-
 Chuck_IO_Chout::Chuck_IO_Chout() { }
 Chuck_IO_Chout::~Chuck_IO_Chout() { }
 Chuck_IO_Chout * Chuck_IO_Chout::getInstance()
 {
+    // check
     if( !our_chout )
     {
+        // allocate
         our_chout = new Chuck_IO_Chout;
+        // ref count
         our_chout->add_ref();
+        // initialize object (added 1.3.0.0)
         initialize_object( our_chout, &t_chout );
+        // lock so it can't be deleted
         our_chout->lock();
-        // TODO: reference count
     }
 
     return our_chout;
@@ -2405,6 +2427,7 @@ t_CKBOOL Chuck_IO_Chout::eof()
 { return TRUE; }
 
 void Chuck_IO_Chout::write( const std::string & val )
+// added 1.3.0.0: the flush
 { cout << val; if( val == "\n" ) cout.flush(); }
 
 void Chuck_IO_Chout::write( t_CKINT val )
@@ -2418,14 +2441,19 @@ Chuck_IO_Cherr::Chuck_IO_Cherr() { }
 Chuck_IO_Cherr::~Chuck_IO_Cherr() { }
 Chuck_IO_Cherr * Chuck_IO_Cherr::getInstance()
 {
+    // check pointe
     if( !our_cherr )
     {
+        // allocate
         our_cherr = new Chuck_IO_Cherr;
+        // add rev
         our_cherr->add_ref();
+        // initialize (added 1.3.0.0)
         initialize_object( our_cherr, &t_cherr );
+        // lock so can't be deleted conventionally
         our_cherr->lock();
-        // TODO: reference count
     }
+
     return our_cherr;
 }
 
