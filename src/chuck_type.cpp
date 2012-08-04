@@ -5759,6 +5759,7 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
         
         if((c->ugen_tick || c->ugen_tickf) && c->ugen_num_out)
         {
+            // begin import as ugen
             if(!type_engine_import_ugen_begin(env, c->name.c_str(), 
                                               c->parent.c_str(), env->global(), 
                                               ctor ? (f_ctor) ctor->addr : NULL, 
@@ -5769,6 +5770,7 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
         }
         else
         {
+            // begin import as normal class (non-ugen)
             if(!type_engine_import_class_begin(env, c->name.c_str(), 
                                                c->parent.c_str(), env->global(), 
                                                ctor ? (f_ctor) ctor->addr : NULL, 
@@ -5777,7 +5779,8 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
         }
         
         int j;
-
+        
+        // import member variables
         for(j = 0; j < c->mvars.size(); j++)
         {
             Chuck_DL_Value * mvar = c->mvars[j];
@@ -5787,6 +5790,7 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
                 goto error;
         }
         
+        // import static variables
         for(j = 0; j < c->svars.size(); j++)
         {
             Chuck_DL_Value * svar = c->svars[j];
@@ -5797,18 +5801,21 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
                 goto error;
         }
         
+        // import member functions
         for(j = 0; j < c->mfuns.size(); j++)
         {
             Chuck_DL_Func * func = c->mfuns[j];
             if(!type_engine_import_mfun(env, func)) goto error;
         }
         
+        // import static functions
         for(j = 0; j < c->sfuns.size(); j++)
         {
             Chuck_DL_Func * func = c->sfuns[j];
             if(!type_engine_import_sfun(env, func)) goto error;
         }
         
+        // end class import
         type_engine_import_class_end(env);
         
         continue;
