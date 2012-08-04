@@ -142,7 +142,7 @@ public:
     // is ctor?
     t_CKUINT native_func_type;
     
-    // filename this code came from
+    // filename this code came from (added 1.3.0.0)
     std::string filename;
 
     // native func types
@@ -407,10 +407,12 @@ public: // garbage collection
 
 public: // msg
     t_CKBOOL queue_msg( Chuck_Msg * msg, int num_msg );
+    // CBufferSimple added 1.3.0.0 to fix uber-crash
     t_CKBOOL queue_event( Chuck_Event * event, int num_msg, CBufferSimple * buffer = NULL );
     t_CKUINT process_msg( Chuck_Msg * msg );
     Chuck_Msg * get_reply( );
-    
+
+    // added 1.3.0.0 to fix uber-crash
     CBufferSimple * create_event_buffer();
     void destroy_event_buffer( CBufferSimple * buffer );
 
@@ -473,7 +475,7 @@ protected:
     CBufferSimple * m_reply_buffer;
     CBufferSimple * m_event_buffer;
     
-    // TODO: vector?
+    // TODO: vector? (added 1.3.0.0 to fix uber-crash)
     std::list<CBufferSimple *> m_event_buffers;
 
 public:
@@ -505,7 +507,7 @@ enum Chuck_Msg_Type
     MSG_RESET_ID,
     MSG_DONE,
     MSG_ABORT,
-    MSG_ERROR,
+    MSG_ERROR, // added 1.3.0.0
 };
 
 
@@ -536,6 +538,7 @@ struct Chuck_Msg
     Chuck_Msg() : args(NULL) { clear(); }
     ~Chuck_Msg() { SAFE_DELETE( args ); }
     
+    // added 1.3.0.0
     void clear() { SAFE_DELETE( args ); memset( this, 0, sizeof(*this) ); }
     
     void set( const std::vector<std::string> & vargs )

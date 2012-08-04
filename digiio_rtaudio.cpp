@@ -502,17 +502,21 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
             return m_init = FALSE;
         }
         
-        // convert 1-based ordinal to 0-based ordinal
+        // convert 1-based ordinal to 0-based ordinal (added 1.3.0.0)
+        // note: this is to preserve previous devices numbering after RtAudio change
         if( m_num_channels_out > 0 )
         {
+            // check output device number; 0 used to mean "default"
             if( m_dac_n == 0 )
             {
+                // get the default
                 m_dac_n = m_rtaudio->getDefaultOutputDevice();
                 
                 // ensure correct channel count if default device is requested
                 RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo(m_dac_n);
                 
-                if(device_info.outputChannels < m_num_channels_out)
+                // check
+                if( device_info.outputChannels < m_num_channels_out )
                 {
                     // find first device with at least the requested channeel count
                     m_dac_n = -1;
@@ -527,7 +531,8 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
                         }
                     }
                     
-                    if(m_dac_n == -1)
+                    // check for error
+                    if( m_dac_n == -1 )
                     {
                         EM_error2( 0, "unable to find audio output device with requested channel count (%i)", m_num_channels_out);
                         return m_init = FALSE;
