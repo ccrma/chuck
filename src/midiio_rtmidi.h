@@ -89,7 +89,7 @@ public:
 
 public:
     t_CKBOOL open( t_CKUINT device_num = 0 );
-    t_CKBOOL open( std::string &name );
+    t_CKBOOL open( const std::string & name );
     t_CKBOOL close();
     t_CKBOOL good() { return m_valid; }
     t_CKINT  num() { return m_valid ? (t_CKINT)m_device_num : -1; }
@@ -139,7 +139,7 @@ public:
 
 public:
     t_CKBOOL open( t_CKUINT device_num = 0 );
-    t_CKBOOL open( std::string &name );
+    t_CKBOOL open( const std::string & name );
     t_CKBOOL close();
     t_CKBOOL good() { return m_valid; }
     t_CKINT  num() { return m_valid ? (t_CKINT)m_device_num : -1; }
@@ -173,7 +173,7 @@ class MidiInManager
 {
 public:
     static t_CKBOOL open( MidiIn * min, t_CKINT device_num );
-    static t_CKBOOL open( MidiIn * min, std::string &name );
+    static t_CKBOOL open( MidiIn * min, const std::string & name );
     static t_CKBOOL close( MidiIn * min );
 
     static void cb_midi_input( double deltatime, std::vector<unsigned char> * msg,
@@ -193,7 +193,7 @@ class MidiOutManager
 {
 public:
     static t_CKBOOL open( MidiOut * mout, t_CKINT device_num );
-    static t_CKBOOL open( MidiOut * mout, std::string &name );
+    static t_CKBOOL open( MidiOut * mout, const std::string & name );
     static t_CKBOOL close( MidiOut * mout );
 
 protected:

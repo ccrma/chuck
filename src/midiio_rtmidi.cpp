@@ -175,7 +175,7 @@ t_CKBOOL MidiOut::open( t_CKUINT device_num )
 // name: open
 // desc: open midi output
 //-----------------------------------------------------------------------------
-t_CKBOOL MidiOut::open( std::string &name )
+t_CKBOOL MidiOut::open( const std::string & name )
 {
     // close if already opened
     if( m_valid )
@@ -348,7 +348,7 @@ t_CKBOOL MidiIn::open( t_CKUINT device_num )
 // name: open()
 // desc: open
 //-----------------------------------------------------------------------------
-t_CKBOOL MidiIn::open( std::string &name )
+t_CKBOOL MidiIn::open( const std::string & name )
 {
     // close if already opened
     if( m_valid )
@@ -443,7 +443,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, t_CKINT device_num )
 
 
 
-t_CKBOOL MidiInManager::open( MidiIn * min, std::string &name )
+t_CKBOOL MidiInManager::open( MidiIn * min, const std::string & name )
 {
     t_CKINT device_num = -1;
     
@@ -671,7 +671,7 @@ t_CKBOOL MidiOutManager::open( MidiOut * mout, t_CKINT device_num )
 }
 
 
-t_CKBOOL MidiOutManager::open( MidiOut * mout, std::string &name )
+t_CKBOOL MidiOutManager::open( MidiOut * mout, const std::string & name )
 {
     t_CKINT device_num = -1;
     
