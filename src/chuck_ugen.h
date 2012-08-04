@@ -51,6 +51,9 @@ struct Chuck_UAnaBlobProxy;
 #define UGEN_OP_STOP    0
 #define UGEN_OP_TICK    1
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: struct Chuck_UGen
 // dsec: ugen base
@@ -82,7 +85,7 @@ protected:
 public:
     // tick function
     f_tick tick;
-    // multichannel/vectorized tick function
+    // multichannel/vectorized tick function (added 1.3.0.0)
     f_tickf tickf;
     // msg function
     f_pmsg pmsg;
@@ -96,7 +99,7 @@ public:
     t_CKUINT m_num_outs;
     // alloc multi channels
     void alloc_multi_chan( t_CKUINT num_ins, t_CKUINT num_outs );
-    
+    // sets up ugen as a subgraph type ugen (added 1.3.0.0)
     void init_subgraph();
 
 public: // data
@@ -124,11 +127,11 @@ public: // data
     SAMPLE m_pan;
     t_CKINT m_op;
     
-    // SPENCERTODO: combine with block processing
+    // SPENCERTODO: combine with block processing (added 1.3.0.0)
     SAMPLE * m_multi_in_v;
     SAMPLE * m_multi_out_v;
     
-    // SPENCERTODO: better way to handle this
+    // SPENCERTODO: better way to handle this (added 1.3.0.0)
     t_CKBOOL m_is_subgraph;
     Chuck_UGen * m_inlet, * m_outlet;
     Chuck_UGen * inlet();
@@ -178,6 +181,8 @@ public: // data
     t_CKTIME m_uana_time;
     // Chuck_UAnaBlobProxy * m_blob_proxy;
 };
+
+
 
 
 #endif
