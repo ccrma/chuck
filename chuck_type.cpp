@@ -254,8 +254,8 @@ Chuck_Env * type_engine_init( Chuck_VM * vm )
     init_class_event( env, &t_event );
     init_class_io( env, &t_io );
     init_class_fileio( env, &t_fileio );
-    init_class_chout( env, &t_chout );
-    init_class_cherr( env, &t_cherr );
+    init_class_chout( env, &t_chout ); // (added 1.3.0.0)
+    init_class_cherr( env, &t_cherr ); // (added 1.3.0.0)
 
     EM_log( CK_LOG_SEVERE, "class 'class'" );
     t_class.info = new Chuck_Namespace;
@@ -407,8 +407,8 @@ void type_engine_shutdown( Chuck_Env * env )
     SAFE_RELEASE( t_thread.info );
     SAFE_RELEASE( t_io.info );
     SAFE_RELEASE( t_fileio.info );
-    SAFE_RELEASE( t_chout.info );
-    SAFE_RELEASE( t_cherr.info );
+    SAFE_RELEASE( t_chout.info );  // added 1.3.0.0
+    SAFE_RELEASE( t_cherr.info );  // added 1.3.0.0
 }
 
 
@@ -869,6 +869,7 @@ t_CKBOOL type_engine_check_for( Chuck_Env * env, a_Stmt_For stmt )
     if( !type_engine_check_stmt( env, stmt->c2 ) )
         return FALSE;
 
+    // check for empty for loop conditional (added 1.3.0.0)
     if( stmt->c2 == NULL )
     {
         // error
@@ -2007,12 +2008,13 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
         t = type_engine_check_exp( env, unary->exp );
         if( !t ) return NULL;
     }
-    
-    // check code stmt
-    if( unary->code )
-    {
-        if( !type_engine_check_stmt( env, unary->code ) ) return NULL;
-    }
+
+    // check code stmt; this is to eventually support sporking of code (added 1.3.0.0)
+    //if( unary->code )
+    //{
+    //    // check it!
+    //    if( !type_engine_check_stmt( env, unary->code ) ) return NULL;
+    //}
 
     // check the op
     switch( unary->op )
@@ -2051,7 +2053,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             // spork shred (by function call)
             if( unary->exp && unary->exp->s_type == ae_exp_func_call ) return &t_shred;
             // spork shred (by code segment)
-            else if( unary->code ) return &t_shred;
+            // else if( unary->code ) return &t_shred;
             // got a problem
             else
             {
@@ -2891,14 +2893,14 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         {
             // offset
             value->offset = env->curr->offset;
+
+            /*******************************************************************************
+             * spencer: added this into function to provide the same logic path
+             * for type_engine_check_exp_decl() and ck_add_mvar() when they determine
+             * offsets for mvars 
+             ******************************************************************************/
             // move the offset (TODO: check the size)
-/*******************************************************************************
- * spencer: added this into function to provide the same logic path
- * for type_engine_check_exp_decl() and ck_add_mvar() when they determine
- * offsets for mvars 
- ******************************************************************************/
-            env->curr->offset = type_engine_next_offset( env->curr->offset, 
-                                                         type );
+            env->curr->offset = type_engine_next_offset( env->curr->offset, type );
             // env->curr->offset += type->size;
         }
         else if( decl->is_static ) // static
@@ -4342,8 +4344,8 @@ t_CKBOOL type_engine_get_deprecate( Chuck_Env * env,
 //-----------------------------------------------------------------------------
 Chuck_Type * type_engine_find_deprecated_type( Chuck_Env * env, a_Id_List path )
 {
-//    S_Symbol xid = NULL;
-//    Chuck_Type * t = NULL;
+    // S_Symbol xid = NULL;
+    // Chuck_Type * t = NULL;
     std::string actual;
 
     // find mapping
@@ -4545,14 +4547,16 @@ Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List path )
 
 
 
+
 //-----------------------------------------------------------------------------
-// name: type_engine_compat_func()
-// desc: see if two function signatures are compatible
+// name: type_engine_next_offset()
+// desc: compute next offset based on current offset and type
 //-----------------------------------------------------------------------------
 t_CKUINT type_engine_next_offset( t_CKUINT current_offset, Chuck_Type * type )
 {
     return current_offset + type->size;
 }
+
 
 
 
@@ -4782,6 +4786,7 @@ cleanup:
 //-----------------------------------------------------------------------------
 // name: type_engine_import_ugen_begin()
 // desc: ...
+// note: tickf added 1.3.0.0
 //-----------------------------------------------------------------------------
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, 
                                             const char * parent, Chuck_Namespace * where,
@@ -4811,12 +4816,12 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
     info = new Chuck_UGen_Info;
     info->add_ref();
     info->tick = type->parent->ugen_info->tick;
-    info->tickf = type->parent->ugen_info->tickf;
+    info->tickf = type->parent->ugen_info->tickf; // added 1.3.0.0
     info->pmsg = type->parent->ugen_info->pmsg;
     info->num_ins = type->parent->ugen_info->num_ins;
     info->num_outs = type->parent->ugen_info->num_outs;
     if( tick ) info->tick = tick;
-    if( tickf ) { info->tickf = tickf; info->tick = NULL; }
+    if( tickf ) { info->tickf = tickf; info->tick = NULL; } // added 1.3.0.0
     if( pmsg ) info->pmsg = pmsg;
     if( num_ins != 0xffffffff ) info->num_ins = num_ins;
     if( num_outs != 0xffffffff ) info->num_outs = num_outs;
@@ -4827,9 +4832,11 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: type_engine_import_ugen_begin()
-// desc: old version
+// desc: old version (added 1.3.0.0)
 //-----------------------------------------------------------------------------
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, 
                                            const char * parent, Chuck_Namespace * where,
@@ -4841,6 +4848,7 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
                                          pre_ctor, dtor, tick, NULL, pmsg, 
                                          num_ins, num_outs );
 }
+
 
 
 
@@ -5716,7 +5724,7 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
 error:
     // error
     EM_error2( 0, "...(in object import '%s' in DLL '%s')", 
-        query ? ( strlen(query->dll_name.c_str()) == 0  ? query->dll_name.c_str() : "[empty]" ) : "[null]", dll->name() );
+        query ? ( query->dll_name == "" ? query->dll_name.c_str() : "[empty]" ) : "[null]", dll->name() );
 
     // free the path
     delete_id_list( path );
@@ -5727,9 +5735,11 @@ error:
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: type_engine_add_dll2()
-// desc: add the DLL using type_engine functions
+// desc: add the DLL using type_engine functions (added 1.3.0.0)
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll, 
                                const string & dest )
