@@ -361,6 +361,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     g_t_dac->ugen_info->num_outs = 
         g_t_dac->ugen_info->num_ins = m_num_dac_channels;
     m_dac = (Chuck_UGen *)instantiate_and_initialize_object( g_t_dac, NULL );
+    // Chuck_DL_Api::Api::instance() added 1.3.0.0
     object_ctor( m_dac, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: this can't be the place to do this
     stereo_ctor( m_dac, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: is the NULL shred a problem?
     multi_ctor( m_dac, NULL, NULL, Chuck_DL_Api::Api::instance() );  // TODO: remove and let type system do this
@@ -373,6 +374,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     g_t_adc->ugen_info->num_ins = 
         g_t_adc->ugen_info->num_outs = m_num_adc_channels;
     m_adc = (Chuck_UGen *)instantiate_and_initialize_object( g_t_adc, NULL );
+    // Chuck_DL_Api::Api::instance() added 1.3.0.0
     object_ctor( m_adc, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: this can't be the place to do this
     stereo_ctor( m_adc, NULL, NULL, Chuck_DL_Api::Api::instance() );
     multi_ctor( m_adc, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: remove and let type system do this
@@ -674,7 +676,7 @@ t_CKBOOL Chuck_VM::compute()
         while( m_event_buffer->get( &event, 1 ) )
         { event->broadcast(); iterate = TRUE; }
         
-        // loop over thread-specific queued event buffers
+        // loop over thread-specific queued event buffers (added 1.3.0.0)
         for( list<CBufferSimple *>::const_iterator i = m_event_buffers.begin();
              i != m_event_buffers.end(); i++ )
         {
@@ -806,15 +808,23 @@ t_CKBOOL Chuck_VM::queue_msg( Chuck_Msg * msg, int count )
 
 //-----------------------------------------------------------------------------
 // name: queue_event()
-// desc: ...
+// desc: since 1.3.0.0 a buffer is passed in associated with each thread
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::queue_event( Chuck_Event * event, int count, 
                                 CBufferSimple * buffer )
 {
+    // sanity
     assert( count == 1 );
+    // if null
     if( buffer == NULL )
+    {
+        // use non thread-safe buffer
         buffer = m_event_buffer;
+    }
+    // put into the buffer
     buffer->put( &event, count );
+
+    // done
     return TRUE;
 }
 
@@ -823,7 +833,7 @@ t_CKBOOL Chuck_VM::queue_event( Chuck_Event * event, int count,
 
 //-----------------------------------------------------------------------------
 // name: create_event_buffer()
-// desc: ...
+// desc: added 1.3.0.0 to fix uber-crash
 //-----------------------------------------------------------------------------
 CBufferSimple * Chuck_VM::create_event_buffer()
 {
@@ -839,7 +849,7 @@ CBufferSimple * Chuck_VM::create_event_buffer()
 
 //-----------------------------------------------------------------------------
 // name: destroy_event_buffer()
-// desc: ...
+// desc: added 1.3.0.0 to fix uber-crash
 //-----------------------------------------------------------------------------
 void Chuck_VM::destroy_event_buffer( CBufferSimple * buffer )
 {
@@ -849,12 +859,13 @@ void Chuck_VM::destroy_event_buffer( CBufferSimple * buffer )
 
 
 
+
 //-----------------------------------------------------------------------------
 // name: get_reply()
 // desc: ...
 // TODO: make thread safe for multiple consumers
 //-----------------------------------------------------------------------------
-Chuck_Msg * Chuck_VM::get_reply( )
+Chuck_Msg * Chuck_VM::get_reply()
 {
     Chuck_Msg * msg = NULL;
     m_reply_buffer->get( &msg, 1 );
@@ -1542,7 +1553,7 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::shutdown()
 {
-    // spencer - March 2012:
+    // spencer - March 2012 (added 1.3.0.0)
     // can't dealloc ugens while they are still keys to a map; 
     // add reference, store them in a vector, and release them after
     // SPENCERTODO: is there a better way to do this????
@@ -1553,24 +1564,33 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
     while( iter != m_ugen_map.end() )
     {
+        // get the ugen
         Chuck_UGen * ugen = iter->first;
-        //CK_GC_LOG("Chuck_VM_Shred::shutdown() disconnect: 0x%08x", ugen);
+        // CK_GC_LOG("Chuck_VM_Shred::shutdown() disconnect: 0x%08x", ugen);
         
+        // store ref in array for now (added 1.3.0.0)
         ugen->add_ref();
         release_v.push_back(ugen);
         
+        // disconnect
         ugen->disconnect( TRUE );
-        
+
+        // advance the iterator
         iter++;
     }
+
+    // clear map
     m_ugen_map.clear();
 
-    for(vector<Chuck_UGen *>::iterator rvi = release_v.begin(); 
-        rvi != release_v.end(); rvi++)
+    // loop over vector
+    for( vector<Chuck_UGen *>::iterator rvi = release_v.begin(); 
+         rvi != release_v.end(); rvi++ )
     {
+        // release it
         (*rvi)->release();
     }
-    
+
+    // reclaim the stacks
     SAFE_DELETE( mem );
     SAFE_DELETE( reg );
     base_ref = NULL;
@@ -1580,10 +1600,12 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     // obj_array_size = 0;
 
     // TODO: is this right?
-    if(code_orig)
+    if( code_orig )
         code_orig->release();
+    // clear it
     code_orig = code = NULL;
-    // what to do with next and prev?
+
+    // TODO: what to do with next and prev?
     
     return TRUE;
 }
