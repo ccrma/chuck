@@ -58,6 +58,7 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type ); // added 1.3.0.0 -- moved to be full-fledged class
 t_CKBOOL init_class_cherr( Chuck_Env * env, Chuck_Type * type ); // added 1.3.0.0 -- moved to be full-fledged class
+t_CKBOOL init_class_serialio( Chuck_Env * env ); // added 1.3.1
 t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_Midi( Chuck_Env * env );
@@ -272,6 +273,12 @@ CK_DLL_MFUN( cherr_more );
 CK_DLL_MFUN( cherr_writestring );
 CK_DLL_MFUN( cherr_writeint );
 CK_DLL_MFUN( cherr_writefloat );
+
+
+//-----------------------------------------------------------------------------
+// serialio API
+//-----------------------------------------------------------------------------
+CK_DLL_SFUN( serialio_list );
 
 
 //-----------------------------------------------------------------------------

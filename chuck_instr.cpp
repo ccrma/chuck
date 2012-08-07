@@ -5640,7 +5640,10 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
                     fprintf( stderr, "%ld ", *(sp) );
             }
             else
-                fprintf( stderr, "%s ", ((Chuck_String *)*(sp))->str.c_str() );
+            {
+                Chuck_String * str = ((Chuck_String *)*(sp));
+                fprintf( stderr, "%s ", str->str.c_str() );
+            }
 
             the_sp += 4;
         }
