@@ -761,6 +761,9 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
 
     t_CKUINT i; Chuck_UGen * ugen; SAMPLE multi;
 
+    
+    /*** Part 1: Tick upstream ugens ***/
+    
     // inc time
     m_time = now;
     // initial sum
@@ -808,18 +811,6 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
                 if( ugen->m_time < now ) ugen->system_tick( now );
                 m_multi_in_v[i] = ugen->m_sum;
             }
-
-            // evaluate multichannel tick (added 1.3.0.0)
-            m_valid = tickf( this, &m_multi_in_v, &m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
-
-            // supply multichannel tick output to output channels (added 1.3.0.0)
-            for( i = 0; i < m_multi_chan_size; i++ )
-            {
-                ugen = m_multi_chan[i];
-                ugen->m_current = m_multi_out_v[i];
-                // multiple channels are added
-                multi += ugen->m_current;
-            }
         }
         else
         {
@@ -830,11 +821,11 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
                 // multiple channels are added
                 multi += ugen->m_current;
             }
+            
+            // scale multi
+            multi /= m_multi_chan_size;
+            m_sum += multi;
         }
-    
-        // scale multi
-        multi /= m_multi_chan_size;
-        m_sum += multi;
     }
 
     // if owner (i.e., this ugen is one of the channels in a multi-channel ugen)
@@ -848,41 +839,98 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
         {
             // set the latest to the current
             m_last = m_current;
-            // done, don't want to the mutli-channel channels to self profess
+            // done, don't want multi-channel subchannels to synthesize
             // it should be taken care of in the owner (added 1.3.0.0)
             return TRUE;
         }
     }
     
-    if( m_op > 0 ) // UGEN_OP_TICK
+    
+    
+    /*** Part Two: Synthesize with tick function ***/
+    
+    // evaluate multi-channel tick (added 1.3.0.0)
+    if(m_multi_chan_size && tickf)
     {
-        // spencer 2012 - only do mono tick if theres no multi/vector tickfv (added 1.3.0.0)
-        // there can be only one (added 1.3.0.0)
-        // assert( !(tick != NULL && tickf != NULL) );
+        multi = 0;
 
-        // tick the ugen (Chuck_DL_Api::Api::instance() added 1.3.0.0)
-        if( tick ) m_valid = tick( this, m_sum, &m_current, NULL, Chuck_DL_Api::Api::instance() );
-        if( !m_valid ) m_current = 0.0f;
-		// apply gain and pan
-        m_current *= m_gain * m_pan;
-		// dedenormal
-		CK_DDN( m_current );
-		// save as last
+        if( m_op > 0 ) // UGEN_OP_TICK
+        {
+            m_valid = tickf( this, &m_multi_in_v, &m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
+                
+            if(!m_valid) memset(m_multi_out_v, 0, sizeof(float)*m_multi_chan_size);
+            
+            // supply multichannel tick output to output channels (added 1.3.0.0)
+            for( i = 0; i < m_multi_chan_size; i++ )
+            {
+                ugen = m_multi_chan[i];
+                m_multi_out_v[i] *= ugen->m_gain * ugen->m_pan;
+                CK_DDN( m_multi_out_v[i] );
+                ugen->m_last = ugen->m_current = m_multi_out_v[i];
+                multi += ugen->m_current;
+            }
+        }
+        else
+        {
+            if( m_op < 0 ) // UGEN_OP_PASS
+            {
+                // pass through
+                memcpy(m_multi_out_v, m_multi_in_v, sizeof(float) * m_multi_chan_size);
+                m_valid = TRUE;
+            }
+            else // UGEN_OP_STOP
+            {
+                // zero out
+                memset(m_multi_out_v, 0, sizeof(float)*m_multi_chan_size);            
+                m_valid = TRUE;
+            }
+            
+            // supply multichannel tick output to output channels (added 1.3.0.0)
+            for( i = 0; i < m_multi_chan_size; i++ )
+            {
+                ugen = m_multi_chan[i];
+                ugen->m_last = ugen->m_current = m_multi_out_v[i];
+                multi += ugen->m_current;
+            }
+        }
+                
+        // scale multi
+        multi /= m_multi_chan_size;
+        m_current = multi;
         m_last = m_current;
+        
         return m_valid;
     }
-    else if( m_op < 0 ) // UGEN_OP_PASS
+    // evaluate single-channel tick
+    else
     {
-        // pass through
-        m_current = m_sum;
-        m_last = m_current;
-        return TRUE;
+        if( m_op > 0 ) // UGEN_OP_TICK
+        {
+            // tick the ugen (Chuck_DL_Api::Api::instance() added 1.3.0.0)
+            if( tick ) m_valid = tick( this, m_sum, &m_current, NULL, Chuck_DL_Api::Api::instance() );
+            if( !m_valid ) m_current = 0.0f;
+            // apply gain and pan
+            m_current *= m_gain * m_pan;
+            // dedenormal
+            CK_DDN( m_current );
+            // save as last
+            m_last = m_current;
+            return m_valid;
+        }
+        else if( m_op < 0 ) // UGEN_OP_PASS
+        {
+            // pass through
+            m_current = m_sum;
+            m_last = m_current;
+            return TRUE;
+        }
+        else // UGEN_OP_STOP
+        {
+            m_current = 0.0f;
+            m_last = m_current;
+            return TRUE;
+        }
     }
-    else // UGEN_OP_STOP
-        m_current = 0.0f;
-    
-    m_last = m_current;
-    return TRUE;
 }
 
 
