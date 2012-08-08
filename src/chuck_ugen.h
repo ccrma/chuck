@@ -126,6 +126,7 @@ public: // data
     SAMPLE m_gain;
     SAMPLE m_pan;
     t_CKINT m_op;
+    t_CKINT m_max_block_size;
     
     // SPENCERTODO: combine with block processing (added 1.3.0.0)
     SAMPLE * m_multi_in_v;

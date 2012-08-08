@@ -2787,14 +2787,16 @@ CK_DLL_TICKF( sndbuf_tickf )
         // ruh roh
     }
     
-    for(unsigned int frame_idx = 0; frame_idx < nframes; frame_idx++)
+    unsigned int frame_idx;
+    unsigned int nchans = ugen->m_num_outs;
+    for(frame_idx = 0; frame_idx < nframes && (d->loop || d->curr < d->eob+d->num_channels); frame_idx++)
     {
-        for(unsigned int chan_idx = 0; chan_idx < ugen->m_num_outs; chan_idx++)
+        for(unsigned int chan_idx = 0; chan_idx < nchans; chan_idx++)
         {
             // calculate frame
             if( d->interp == SNDBUF_DROP )
             {
-                out[frame_idx][chan_idx] = (SAMPLE)(d->curr[chan_idx % d->num_channels] * amp_factor);
+                out[frame_idx*nchans+chan_idx] = (SAMPLE)(d->curr[chan_idx % d->num_channels] * amp_factor);
             }
             else if( d->interp == SNDBUF_INTERP )
             {
@@ -2802,9 +2804,9 @@ CK_DLL_TICKF( sndbuf_tickf )
                 // samplewise linear interp
                 double alpha = d->curf - floor(d->curf);
                 SAMPLE current_sample = d->curr[chan_idx % d->num_channels];
-                out[frame_idx][chan_idx] = current_sample;
-                out[frame_idx][chan_idx] += (float)alpha * ( sndbuf_sampleAt(d, (long)d->curf+1, chan_idx % d->num_channels ) - current_sample );
-                out[frame_idx][chan_idx] *= amp_factor;
+                out[frame_idx*nchans+chan_idx] = current_sample;
+                out[frame_idx*nchans+chan_idx] += (float)alpha * ( sndbuf_sampleAt(d, (long)d->curf+1, chan_idx % d->num_channels ) - current_sample );
+                out[frame_idx*nchans+chan_idx] *= amp_factor;
             }
             else if( d->interp == SNDBUF_SINC )
             {
@@ -2817,6 +2819,15 @@ CK_DLL_TICKF( sndbuf_tickf )
         // advance
         sndbuf_setpos(d, d->curf + d->rate);
     }
+    
+    for(; frame_idx < nframes; frame_idx++)
+    {
+        for(unsigned int chan_idx = 0; chan_idx < nchans; chan_idx++)
+        {
+            out[frame_idx*nchans+chan_idx] = 0;
+        }
+    }
+                
     
     return TRUE;    
 }

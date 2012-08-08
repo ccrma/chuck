@@ -24595,13 +24595,13 @@ CK_DLL_TICKF( WvOut2_tickf )
     MY_FLOAT frame[2];
     for(int i = 0; i < nframes; i++)
     {
-        frame[0] = in[i][0];
-        frame[1] = in[i][1];
+        frame[0] = in[i*2];
+        frame[1] = in[i*2+1];
         
         if( w->start ) w->tickFrame( frame, 1 );
         
-        out[i][0] = in[i][0]; // pass samples downstream
-        out[i][1] = in[i][1]; // pass samples downstream
+        out[i*2] = in[i*2]; // pass samples downstream
+        out[i*2+1] = in[i*2+1]; // pass samples downstream
     }
     return TRUE;
 }
