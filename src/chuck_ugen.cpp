@@ -818,7 +818,9 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
             for( i = 0; i < m_multi_chan_size; i++ )
             {
                 ugen = m_multi_chan[i];
+                // tick sub-ugens for individual channels
                 if( ugen->m_time < now ) ugen->system_tick( now );
+                // set to tickf input
                 m_multi_in_v[i] = ugen->m_sum;
             }
         }
@@ -859,7 +861,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     
     /*** Part Two: Synthesize with tick function ***/
     
-    if(m_multi_chan_size && tickf)
+    if( m_multi_chan_size && tickf )
     {
         /* evaluate multi-channel tickf (added 1.3.0.0) */
         
@@ -869,15 +871,19 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
         {
             m_valid = tickf( this, m_multi_in_v, m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
                 
-            if(!m_valid) memset(m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size);
+            if( !m_valid ) memset( m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size );
             
             // supply multichannel tick output to output channels (added 1.3.0.0)
             for( i = 0; i < m_multi_chan_size; i++ )
             {
                 ugen = m_multi_chan[i];
+                // apply gain/pan
                 m_multi_out_v[i] *= ugen->m_gain * ugen->m_pan;
+                // dedenormal
                 CK_DDN( m_multi_out_v[i] );
+                // copy gained/panned/dedenormaled output to ugen current sample
                 ugen->m_last = ugen->m_current = m_multi_out_v[i];
+                // add to mono mixdown
                 multi += ugen->m_current;
             }
         }
@@ -886,13 +892,13 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
             if( m_op < 0 ) // UGEN_OP_PASS
             {
                 // pass through
-                memcpy(m_multi_out_v, m_multi_in_v, sizeof(SAMPLE) * m_multi_chan_size);
+                memcpy( m_multi_out_v, m_multi_in_v, sizeof(SAMPLE) * m_multi_chan_size );
                 m_valid = TRUE;
             }
             else // UGEN_OP_STOP
             {
                 // zero out
-                memset(m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size);            
+                memset( m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size );
                 m_valid = TRUE;
             }
             
@@ -900,14 +906,18 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
             for( i = 0; i < m_multi_chan_size; i++ )
             {
                 ugen = m_multi_chan[i];
+                // copy tickf output to ugen current sample
                 ugen->m_last = ugen->m_current = m_multi_out_v[i];
+                // add to mono mixdown
                 multi += ugen->m_current;
             }
         }
                 
-        // scale multi
+        // compute mono mixdown for owner-ugen
         multi /= m_multi_chan_size;
+        // set current to mono mixdown
         m_current = multi;
+        // set last to current
         m_last = m_current;
     }
     else
@@ -1009,12 +1019,14 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
         if(tickf)
         {
             // system tick each input channel (added 1.3.0.0)
-            for( i = 0; i < m_multi_chan_size; i++ )
+            for( int c = 0; c < m_multi_chan_size; c++ )
             {
-                ugen = m_multi_chan[i];
+                ugen = m_multi_chan[c];
+                // tick sub-ugens for individual channels
                 if( ugen->m_time < now ) ugen->system_tick_v( now, numFrames );
-                for( j = 0; j < numFrames; j++ )
-                    m_multi_in_v[j*m_multi_chan_size+i] = ugen->m_sum_v[j];
+                // set to tickf input
+                for( int f = 0; f < numFrames; f++ )
+                    m_multi_in_v[f*m_multi_chan_size+c] = ugen->m_sum_v[f];
             }
         }
         else
@@ -1051,16 +1063,19 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
     
     /*** Part Two: Synthesize with tick function ***/
     
-    if(m_multi_chan_size && tickf)
+    if( m_multi_chan_size && tickf )
     {
         /* evaluate multi-channel tick (added added 1.3.0.0) */
 
         if( m_op > 0) // UGEN_OP_TICK
         {
+            // compute samples with tickf
             m_valid = tickf( this, m_multi_in_v, m_multi_out_v, numFrames, NULL, Chuck_DL_Api::Api::instance() );
             
-            if(!m_valid) memset( m_multi_out_v, 0, sizeof(SAMPLE) * m_multi_chan_size * numFrames );
+            // zero samples if not valid
+            if( !m_valid ) memset( m_multi_out_v, 0, sizeof(SAMPLE) * m_multi_chan_size * numFrames );
             
+            // precompute to save division
             factor = 1.0f / m_multi_chan_size;
             
             // supply multichannel tick output to output channels (added 1.3.0.0)
@@ -1070,17 +1085,21 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
                 
                 for( int c = 0; c < m_multi_chan_size; c++ )
                 {
-                    ugen = m_multi_chan[c];
+                    // apply gain/pan
                     m_multi_out_v[f*m_multi_chan_size+c] *= ugen->m_gain * ugen->m_pan;
+                    // dedenormal
                     CK_DDN( m_multi_out_v[f*m_multi_chan_size+c] );
-                    ugen->m_current_v[f] = m_multi_out_v[f*m_multi_chan_size+c];
-                    
-                    multi += ugen->m_current_v[f];
+                    // copy from tickf output to channel's current sample
+                    m_multi_chan[c]->m_current_v[f] = m_multi_out_v[f*m_multi_chan_size+c];
+                    // add to mono mixdown
+                    multi += m_multi_chan[c]->m_current_v[f];
                 }
                 
-                m_current_v[i] = multi/m_multi_chan_size;
+                // compute mono-mixdown for the owner-ugen
+                m_current_v[i] = multi*factor;
             }
             
+            // save as last
             m_last = m_current_v[numFrames-1];
             for( int c = 0; c < m_multi_chan_size; c++ )
                 m_multi_chan[c]->m_last = m_multi_chan[c]->m_current_v[numFrames-1];
@@ -1090,38 +1109,37 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
             if( m_op < 0 ) // UGEN_OP_PASS
             {
                 // pass through
-                memcpy(m_multi_out_v, m_multi_in_v, sizeof(SAMPLE) * m_multi_chan_size * numFrames);
+                memcpy( m_multi_out_v, m_multi_in_v, sizeof(SAMPLE) * m_multi_chan_size * numFrames );
                 m_valid = TRUE;
             }
             else // UGEN_OP_STOP
             {
                 // zero out
-                memset(m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size);            
+                memset( m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size );
                 m_valid = TRUE;
             }
             
-            // supply multichannel tick output to output channels (added 1.3.0.0)
+            // supply multichannel pass/stop output to output channels (added 1.3.0.0)
             for( int f = 0; f < numFrames; f++ )
             {
                 multi = 0;
                 
                 for( int c = 0; c < m_multi_chan_size; c++ )
                 {
-                    ugen = m_multi_chan[c];
-                    ugen->m_current_v[f] = m_multi_out_v[f*m_multi_chan_size+c];
-                    
-                    multi += ugen->m_current_v[f];
+                    m_multi_chan[c]->m_current_v[f] = m_multi_out_v[f*m_multi_chan_size+c];
+                    multi += m_multi_chan[c]->m_current_v[f];
                 }
                 
+                // mono mixdown
                 m_current_v[i] = multi/m_multi_chan_size;
             }
             
+            // save as last
             m_last = m_current_v[numFrames-1];
+            // save as last for subchannels
             for( int c = 0; c < m_multi_chan_size; c++ )
                 m_multi_chan[c]->m_last = m_multi_chan[c]->m_current_v[numFrames-1];
         }
-        
-        return m_valid;
     }
     else
     {
@@ -1144,9 +1162,6 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
                     // dedenormal
                     CK_DDN( m_current_v[j] );
                 }
-            // save as last
-            m_last = m_current_v[numFrames-1];
-            return m_valid;
         }
         else if( m_op < 0 ) // UGEN_OP_PASS
         {
@@ -1155,18 +1170,20 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
                 // pass through
                 m_current_v[j] = m_sum_v[j];
             }
-            m_last = m_current_v[numFrames-1];
-            return TRUE;
+            m_valid = TRUE;
         }
         else // UGEN_OP_STOP
         {
             memset( m_current_v, 0, numFrames * sizeof(SAMPLE) );
             // m_current = 0.0f;
+            m_valid = TRUE;
         }
         
+        // save as last
         m_last = m_current_v[numFrames-1];
-        return TRUE;
     }
+    
+    return m_valid;
 }
 
 
