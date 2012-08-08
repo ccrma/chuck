@@ -203,6 +203,7 @@ void Chuck_UGen::init()
     m_pan = 1.0f;
     m_next = 0.0f;
     m_use_next = FALSE;
+    m_max_block_size = -1;
     
     m_sum_v = NULL;
     m_current_v = NULL;
@@ -271,6 +272,9 @@ t_CKBOOL Chuck_UGen::alloc_v( t_CKUINT size )
     // reclaim
     SAFE_DELETE_ARRAY( m_sum_v );
     SAFE_DELETE_ARRAY( m_current_v );
+    
+    // save block size as max block size (added 1.3.0.0)
+    m_max_block_size = size;
 
     // go
     if( size > 0 )
@@ -279,7 +283,7 @@ t_CKBOOL Chuck_UGen::alloc_v( t_CKUINT size )
         m_current_v = new SAMPLE[size];
 
         return ( m_sum_v != NULL && m_current_v != NULL );
-    }
+    }    
     
     return TRUE;
 }
@@ -311,11 +315,17 @@ void Chuck_UGen::alloc_multi_chan( t_CKUINT num_ins, t_CKUINT num_outs )
     }
     
     // if there tick-frame (i.e., has multi-channel tick function; added 1.3.0.0)
-    if( tickf )
+    if( m_multi_chan_size && tickf )
     {
+        // m_max_block_size needs to be set via alloc_v() first (added 1.3.0.0)
+        assert(m_max_block_size >= 0);
+        int block_size = m_max_block_size == 0 ? 1 : m_max_block_size;
+        
+        SAFE_DELETE_ARRAY(m_multi_in_v);
+        SAFE_DELETE_ARRAY(m_multi_out_v);
         // allocate a frame for input and output from the tick function (add 1.3.0.0)
-        m_multi_in_v = new SAMPLE[m_multi_chan_size];
-        m_multi_out_v = new SAMPLE[m_multi_chan_size];
+        m_multi_in_v = new SAMPLE[m_multi_chan_size*block_size];
+        m_multi_out_v = new SAMPLE[m_multi_chan_size*block_size];
     }
                               
     // remember
@@ -849,16 +859,17 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     
     /*** Part Two: Synthesize with tick function ***/
     
-    // evaluate multi-channel tick (added 1.3.0.0)
     if(m_multi_chan_size && tickf)
     {
+        /* evaluate multi-channel tickf (added 1.3.0.0) */
+        
         multi = 0;
 
         if( m_op > 0 ) // UGEN_OP_TICK
         {
-            m_valid = tickf( this, &m_multi_in_v, &m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
+            m_valid = tickf( this, m_multi_in_v, m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
                 
-            if(!m_valid) memset(m_multi_out_v, 0, sizeof(float)*m_multi_chan_size);
+            if(!m_valid) memset(m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size);
             
             // supply multichannel tick output to output channels (added 1.3.0.0)
             for( i = 0; i < m_multi_chan_size; i++ )
@@ -875,13 +886,13 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
             if( m_op < 0 ) // UGEN_OP_PASS
             {
                 // pass through
-                memcpy(m_multi_out_v, m_multi_in_v, sizeof(float) * m_multi_chan_size);
+                memcpy(m_multi_out_v, m_multi_in_v, sizeof(SAMPLE) * m_multi_chan_size);
                 m_valid = TRUE;
             }
             else // UGEN_OP_STOP
             {
                 // zero out
-                memset(m_multi_out_v, 0, sizeof(float)*m_multi_chan_size);            
+                memset(m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size);            
                 m_valid = TRUE;
             }
             
@@ -898,12 +909,11 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
         multi /= m_multi_chan_size;
         m_current = multi;
         m_last = m_current;
-        
-        return m_valid;
     }
-    // evaluate single-channel tick
     else
     {
+        /* evaluate single-channel tick */
+        
         if( m_op > 0 ) // UGEN_OP_TICK
         {
             // tick the ugen (Chuck_DL_Api::Api::instance() added 1.3.0.0)
@@ -915,22 +925,23 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
             CK_DDN( m_current );
             // save as last
             m_last = m_current;
-            return m_valid;
         }
         else if( m_op < 0 ) // UGEN_OP_PASS
         {
             // pass through
             m_current = m_sum;
             m_last = m_current;
-            return TRUE;
+            m_valid = TRUE;
         }
         else // UGEN_OP_STOP
         {
             m_current = 0.0f;
             m_last = m_current;
-            return TRUE;
+            m_valid = TRUE;
         }
     }
+    
+    return m_valid;
 }
 
 
@@ -946,10 +957,14 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
         return m_valid;
     
     t_CKUINT i, j; Chuck_UGen * ugen; SAMPLE factor;
+    SAMPLE multi;
     
     // inc time
     m_time = now;
-
+    
+    
+    /*** Part 1: Tick upstream ugens ***/
+    
     if( m_num_src )
     {
         ugen = m_src_list[0];
@@ -991,61 +1006,167 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
     // tick multiple channels
     if( m_multi_chan_size )
     {
-        // initialize
-        factor = 1.0f / m_multi_chan_size;
-        // iterate
-        for( i = 0; i < m_multi_chan_size; i++ )
+        if(tickf)
         {
-            ugen = m_multi_chan[i];
-            if( ugen->m_time < now ) ugen->system_tick_v( now, numFrames );
-            for( j = 0; j < numFrames; j++ )
-                m_sum_v[j] += ugen->m_current_v[j] * factor;
+            // system tick each input channel (added 1.3.0.0)
+            for( i = 0; i < m_multi_chan_size; i++ )
+            {
+                ugen = m_multi_chan[i];
+                if( ugen->m_time < now ) ugen->system_tick_v( now, numFrames );
+                for( j = 0; j < numFrames; j++ )
+                    m_multi_in_v[j*m_multi_chan_size+i] = ugen->m_sum_v[j];
+            }
+        }
+        else
+        {
+            // initialize
+            factor = 1.0f / m_multi_chan_size;
+            // iterate
+            for( i = 0; i < m_multi_chan_size; i++ )
+            {
+                ugen = m_multi_chan[i];
+                if( ugen->m_time < now ) ugen->system_tick_v( now, numFrames );
+                for( j = 0; j < numFrames; j++ )
+                    m_sum_v[j] += ugen->m_current_v[j] * factor;
+            }
         }
     }
     
     // if owner
     if( owner != NULL && owner->m_time < now )
-        owner->system_tick_v( now, numFrames );
-    
-    if( m_op > 0 )  // UGEN_OP_TICK
     {
-        // tick the ugen (Chuck_DL_Api::Api::instance() added 1.3.0.0)
-        if( tick )
-            for( j = 0; j < numFrames; j++ )
-                m_valid = tick( this, m_sum_v[j], &(m_current_v[j]), NULL, Chuck_DL_Api::Api::instance() );
-        if( !m_valid )
-            for( j = 0; j < numFrames; j++ )
-                m_current_v[j] = 0.0f;
-        else
-            for( j = 0; j < numFrames; j++ )
+        owner->system_tick_v( now, numFrames );
+        
+        // if the owner has a multichannel tick function (added 1.3.0.0)
+        if( owner->tickf )
+        {
+            // set the latest to the current
+            m_last = m_current_v[numFrames - 1];
+            // done, don't want multi-channel subchannels to synthesize
+            // it should be taken care of in the owner (added 1.3.0.0)
+            return TRUE;
+        }
+    }
+    
+    
+    /*** Part Two: Synthesize with tick function ***/
+    
+    if(m_multi_chan_size && tickf)
+    {
+        /* evaluate multi-channel tick (added added 1.3.0.0) */
+
+        if( m_op > 0) // UGEN_OP_TICK
+        {
+            m_valid = tickf( this, m_multi_in_v, m_multi_out_v, numFrames, NULL, Chuck_DL_Api::Api::instance() );
+            
+            if(!m_valid) memset( m_multi_out_v, 0, sizeof(SAMPLE) * m_multi_chan_size * numFrames );
+            
+            factor = 1.0f / m_multi_chan_size;
+            
+            // supply multichannel tick output to output channels (added 1.3.0.0)
+            for( int f = 0; f < numFrames; f++ )
             {
-                // apply gain and pan
-                m_current_v[j] *= m_gain * m_pan;
-                // dedenormal
-                CK_DDN( m_current_v[j] );
+                multi = 0;
+                
+                for( int c = 0; c < m_multi_chan_size; c++ )
+                {
+                    ugen = m_multi_chan[c];
+                    m_multi_out_v[f*m_multi_chan_size+c] *= ugen->m_gain * ugen->m_pan;
+                    CK_DDN( m_multi_out_v[f*m_multi_chan_size+c] );
+                    ugen->m_current_v[f] = m_multi_out_v[f*m_multi_chan_size+c];
+                    
+                    multi += ugen->m_current_v[f];
+                }
+                
+                m_current_v[i] = multi/m_multi_chan_size;
             }
-        // save as last
-        m_last = m_current_v[numFrames-1];
+            
+            m_last = m_current_v[numFrames-1];
+            for( int c = 0; c < m_multi_chan_size; c++ )
+                m_multi_chan[c]->m_last = m_multi_chan[c]->m_current_v[numFrames-1];
+        }
+        else
+        {
+            if( m_op < 0 ) // UGEN_OP_PASS
+            {
+                // pass through
+                memcpy(m_multi_out_v, m_multi_in_v, sizeof(SAMPLE) * m_multi_chan_size * numFrames);
+                m_valid = TRUE;
+            }
+            else // UGEN_OP_STOP
+            {
+                // zero out
+                memset(m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size);            
+                m_valid = TRUE;
+            }
+            
+            // supply multichannel tick output to output channels (added 1.3.0.0)
+            for( int f = 0; f < numFrames; f++ )
+            {
+                multi = 0;
+                
+                for( int c = 0; c < m_multi_chan_size; c++ )
+                {
+                    ugen = m_multi_chan[c];
+                    ugen->m_current_v[f] = m_multi_out_v[f*m_multi_chan_size+c];
+                    
+                    multi += ugen->m_current_v[f];
+                }
+                
+                m_current_v[i] = multi/m_multi_chan_size;
+            }
+            
+            m_last = m_current_v[numFrames-1];
+            for( int c = 0; c < m_multi_chan_size; c++ )
+                m_multi_chan[c]->m_last = m_multi_chan[c]->m_current_v[numFrames-1];
+        }
+        
         return m_valid;
     }
-    else if( m_op < 0 ) // UGEN_OP_PASS
+    else
     {
-        for( j = 0; j < numFrames; j++ )
+        /* evaluate single-channel tick */
+
+        if( m_op > 0 )  // UGEN_OP_TICK
         {
-            // pass through
-            m_current_v[j] = m_sum_v[j];
+            // tick the ugen (Chuck_DL_Api::Api::instance() added 1.3.0.0)
+            if( tick )
+                for( j = 0; j < numFrames; j++ )
+                    m_valid = tick( this, m_sum_v[j], &(m_current_v[j]), NULL, Chuck_DL_Api::Api::instance() );
+            if( !m_valid )
+                for( j = 0; j < numFrames; j++ )
+                    m_current_v[j] = 0.0f;
+            else
+                for( j = 0; j < numFrames; j++ )
+                {
+                    // apply gain and pan
+                    m_current_v[j] *= m_gain * m_pan;
+                    // dedenormal
+                    CK_DDN( m_current_v[j] );
+                }
+            // save as last
+            m_last = m_current_v[numFrames-1];
+            return m_valid;
         }
+        else if( m_op < 0 ) // UGEN_OP_PASS
+        {
+            for( j = 0; j < numFrames; j++ )
+            {
+                // pass through
+                m_current_v[j] = m_sum_v[j];
+            }
+            m_last = m_current_v[numFrames-1];
+            return TRUE;
+        }
+        else // UGEN_OP_STOP
+        {
+            memset( m_current_v, 0, numFrames * sizeof(SAMPLE) );
+            // m_current = 0.0f;
+        }
+        
         m_last = m_current_v[numFrames-1];
         return TRUE;
     }
-    else // UGEN_OP_STOP
-    {
-        memset( m_current_v, 0, numFrames * sizeof(SAMPLE) );
-        // m_current = 0.0f;
-    }
-    
-    m_last = m_current_v[numFrames-1];
-    return TRUE;
 }
 
 
