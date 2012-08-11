@@ -58,7 +58,7 @@ t_CKBOOL emit_engine_emit_break( Chuck_Emitter * emit, a_Stmt_Break br );
 t_CKBOOL emit_engine_emit_continue( Chuck_Emitter * emit, a_Stmt_Continue cont );
 t_CKBOOL emit_engine_emit_return( Chuck_Emitter * emit, a_Stmt_Return stmt );
 t_CKBOOL emit_engine_emit_switch( Chuck_Emitter * emit, a_Stmt_Switch stmt );
-t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp );
+t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRef = FALSE );
 t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary );
 t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
 t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
@@ -185,6 +185,8 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
     emit->code->need_this = TRUE;
     // keep track of full path (added 1.3.0.0)
     emit->code->filename = emit->context->full_path;
+    // push global scope (added 1.3.0.0)
+    emit->push_scope();
 
     // loop over the program sections
     while( prog && ret )
@@ -225,6 +227,8 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
 
     if( ret )
     {
+        // pop global scope (added 1.3.0.0)
+        emit->pop_scope();
         // append end of code
         emit->append( new Chuck_Instr_EOC );
         // make sure
@@ -1248,9 +1252,12 @@ t_CKBOOL emit_engine_emit_switch( Chuck_Emitter * emit, a_Stmt_Switch stmt );
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_exp()
-// desc: ...
+// desc: (doAddRef added 1.3.0.0 -- typically this is set to TRUE for function
+//        calls so that pointers on the reg is accounted for;  this is important
+//        in case the object is released/reclaimed before the value is used;
+//        on particular case is when sporking with a local object as argument)
 //-----------------------------------------------------------------------------
-t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp )
+t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRef )
 {
     // for now...
     // assert( exp->next == NULL );
@@ -1331,6 +1338,14 @@ t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp )
         if( exp->cast_to != NULL )
             if( !emit_engine_emit_cast( emit, exp->cast_to, exp->type ) )
                 return FALSE;
+        
+        // check if we need to handle ref (added 1.3.0.0)
+        // (NOTE: cast shouldn't matter since pointer width should remain constant)
+        if( doAddRef && isobj( exp->type ) )
+        {
+            // add ref in place on the stack
+            emit->append( new Chuck_Instr_Reg_AddRef_Object3() );
+        }
 
         exp = exp->next;
     }
@@ -3108,8 +3123,8 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
 t_CKBOOL emit_engine_emit_func_args( Chuck_Emitter * emit,
                                      a_Exp_Func_Call func_call )
 {
-    // emit the args
-    if( !emit_engine_emit_exp( emit, func_call->args ) )
+    // emit the args (TRUE for doAddRef added 1.3.0.0)
+    if( !emit_engine_emit_exp( emit, func_call->args, TRUE ) )
     {
         EM_error2( func_call->linepos,
                    "(emit): internal error in emitting function call arguments..." );
@@ -3881,6 +3896,12 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
 
     // TODO: make sure the calculated stack depth is the same as func_def->stack depth
     // taking into account member function
+    
+    // add references for objects in the arguments (added 1.3.0.0)
+    // NOTE: this isn't in use since currently the caller is reference counting
+    // the arguments -- this is to better support sporking, which is more
+    // asynchronous.  the code below is left in as reference for callee ref counting
+    // emit->addref_on_scope();
 
     // emit the code
     if( !emit_engine_emit_stmt( emit, func_def->code, FALSE ) )
@@ -4279,6 +4300,36 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
 
 
 //-----------------------------------------------------------------------------
+// name: addref_on_scope()
+// desc: add references to locals on current scope (added 1.3.0.0)
+//-----------------------------------------------------------------------------
+void Chuck_Emitter::addref_on_scope()
+{
+    // sanity
+    assert( code != NULL );
+    // clear locals
+    locals.clear();
+    // get the current scope
+    code->frame->get_scope( locals );
+    
+    // iterate over locals
+    for( int i = 0; i < locals.size(); i++ )
+    {
+        // get it
+        Chuck_Local * local = locals[i];
+        // check to see if it's an object
+        if( local->is_obj )
+        {
+            // emit instruction to add reference
+            this->append( new Chuck_Instr_AddRef_Object2( local->offset ) );
+        }
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: pop_scope()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -4302,9 +4353,15 @@ void Chuck_Emitter::pop_scope( )
         if( local->is_obj )
         {
             // emit instruction to release the object
-            this->append( new Chuck_Instr_Chuck_Release_Object2( local->offset ) );
+            this->append( new Chuck_Instr_Release_Object2( local->offset ) );
         }
+        
+        // reclaim local; null out to be safe
+        SAFE_DELETE( local ); locals[i] = NULL;
     }
+    
+    // clear it
+    locals.clear();
 }
 
 

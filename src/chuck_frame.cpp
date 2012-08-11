@@ -96,6 +96,39 @@ void Chuck_Frame::push_scope( )
 
 
 //-----------------------------------------------------------------------------
+// name: get_scope()
+// desc: get current scope (added 1.3.0.0)
+//-----------------------------------------------------------------------------
+void Chuck_Frame::get_scope( vector<Chuck_Local *> & out ) const
+{
+    // sanity
+    assert( this->stack.size() > 0 );
+
+    // the local
+    Chuck_Local * local = NULL;
+    // the index
+    long index = this->stack.size() - 1;
+
+    // loop
+    while( index >= 0 && this->stack[index] != NULL )
+    {
+        // last thing
+        local = stack[index];
+        // move
+        index--;
+        // check if not null
+        if( local )
+        {
+            // copy out
+            out.push_back( local );
+        }
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: pop_scope()
 // desc: ....
 //-----------------------------------------------------------------------------
@@ -104,21 +137,28 @@ void Chuck_Frame::pop_scope( vector<Chuck_Local *> & out )
     // sanity
     assert( this->stack.size() > 0 );
 
+    // the local
     Chuck_Local * local = NULL;
-
+    
     // loop
     while( this->stack.size() && this->stack.back() )
     {
         // last thing
         local = stack.back();
-        // free
+        // pop
         stack.pop_back();
+        // check if not null
         if( local )
         {
             // offset
             curr_offset -= local->size;
-            // copy out
+            // copy out (NOTE: these locals should be memory managed outside)
             out.push_back( local );
         }
     }
+    
+    // sanity (should be at least one left)
+    assert( this->stack.size() > 0 );
+    // get ride of null boundary character (added 1.3.0.0)
+    this->stack.pop_back();
 }
