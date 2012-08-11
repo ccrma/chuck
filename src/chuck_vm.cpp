@@ -1569,8 +1569,9 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
         // CK_GC_LOG("Chuck_VM_Shred::shutdown() disconnect: 0x%08x", ugen);
         
         // store ref in array for now (added 1.3.0.0)
-        ugen->add_ref();
         release_v.push_back(ugen);
+        // no need to bump reference since now ugen_map ref counts
+        // ugen->add_ref();
         
         // disconnect
         ugen->disconnect( TRUE );
@@ -1619,8 +1620,14 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::add( Chuck_UGen * ugen )
 {
-    if( m_ugen_map[ugen] )
+    if( !ugen || m_ugen_map[ugen] )
         return FALSE;
+
+    // increment reference count (added 1.3.0.0)
+    ugen->add_ref();
+    
+    // RUBBISH
+    // cerr << "vm add ugen: 0x" << hex << (int)ugen << endl;
 
     m_ugen_map[ugen] = ugen;
     return TRUE;
@@ -1635,9 +1642,15 @@ t_CKBOOL Chuck_VM_Shred::add( Chuck_UGen * ugen )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::remove( Chuck_UGen * ugen )
 {
-    if( !m_ugen_map[ugen] )
+    if( !ugen || !m_ugen_map[ugen] )
         return FALSE;
+
+    // decrement reference count (added 1.3.0.0)
+    ugen->release();
     
+    // RUBBISH
+    // cerr << "vm remove ugen: 0x" << hex << (int)ugen << endl;
+
     // remove it
     m_ugen_map.erase( ugen );
     return TRUE;

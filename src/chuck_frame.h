@@ -91,6 +91,8 @@ public:
     // add local (added 1.3.0.0 -- is_obj)
     Chuck_Local * alloc_local( t_CKUINT size, const std::string & name,
                                t_CKBOOL is_ref, t_CKBOOL is_obj );
+    // get the current scope (added 1.3.0.0)
+    void get_scope( std::vector<Chuck_Local *> & out ) const;
     // pop scope
     void pop_scope( std::vector<Chuck_Local *> & out );
 };
