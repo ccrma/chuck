@@ -2303,10 +2303,10 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Chuck_Release_Object
-// desc: ...
+// name: struct Chuck_Instr_AddRef_Object
+// desc: added 1.3.0.0
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Chuck_Release_Object : public Chuck_Instr
+struct Chuck_Instr_AddRef_Object : public Chuck_Instr
 {
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -2316,14 +2316,58 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Chuck_Release_Object2
+// name: struct Chuck_Instr_AddRef_Object2
 // desc: added 1.3.0.0 -- instead of getting offset from reg stack,
 //       this variant is given an offset, e.g., from emitter
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Chuck_Release_Object2 : public Chuck_Instr_Unary_Op
+struct Chuck_Instr_AddRef_Object2 : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Chuck_Release_Object2( t_CKUINT offset )
+    Chuck_Instr_AddRef_Object2( t_CKUINT offset )
+    { this->set( offset ); }
+    
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_AddRef_Object3
+// desc: added 1.3.0.0 -- does the ref add in-place
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_AddRef_Object3 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Release_Object
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Release_Object : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Release_Object2
+// desc: added 1.3.0.0 -- instead of getting offset from reg stack,
+//       this variant is given an offset, e.g., from emitter
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Release_Object2 : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Release_Object2( t_CKUINT offset )
     { this->set( offset ); }
 
 public:
