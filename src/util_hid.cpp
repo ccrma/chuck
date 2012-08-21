@@ -7718,7 +7718,7 @@ extern void Tablet_probe() { }
 extern int Tablet_count() { return 0; }
 extern int Tablet_open( int ts ) { return -1; }
 extern int Tablet_close( int ts ) { return -1; }
-extern const char * Tablet_name( int ts ) { return NULL }
+extern const char * Tablet_name( int ts ) { return NULL; }
 
 #endif
 
