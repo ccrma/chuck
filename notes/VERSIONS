@@ -13,8 +13,8 @@
   - (added) ChuGens: create ugen by implementing audio-rate processing in ChucK
             see examples/extend/chugen.ck
   - (added) new ugens:
-              WvOut2: stereo uncompressed audio file output
-              SndBuf2: stereo uncompressed audio file input
+            - WvOut2: stereo uncompressed audio file output
+            - SndBuf2: stereo uncompressed audio file input
   - (added) new functions:
             - me.sourcePath()
                 returns file path of source file corresponding to this shred
@@ -27,17 +27,16 @@
             - Hid.open(string name)
                 open HID matching name
   - (added) experimental OS X multitouch HID
-  - (fixed) real-time audio on Mac OS X 10.7 (Lion)
+  - (fixed) real-time audio on Mac OS X 10.7 (Lion), 10.8 (Mountain Lion)
   - (fixed) IO.newline() now flushes "chout"
-  - (fixed) "chout" and "cherr" now invokes member functions correctly
+  - (fixed) "chout" and "cherr" now invoke member functions correctly
   - (fixed) no for statement conditional handled correctly
   - (fixed) STK WvOut correctly handles case when file open fails
   - (fixed) << operator for arrays now correctly references counts
-  - (fixed) variables correctly reference counted when exiting scope
   - (fixed) crashing bug when receiving external events at a high-rate
             ("the OSC bug")
   - (fixed) scope closing correctly dereferences local objects
-  - (fixed) crash when exiting shreds that connected ugens
+  - (fixed) crash when exiting shreds with connected ugens
   - (fixed) deallocation of "empty" Shred object no longer crashes
   - (fixed) crash when HID events are sent to an exited shred
   - (fixed) destructors for built-in objects are executed
