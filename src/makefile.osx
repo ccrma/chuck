@@ -1,9 +1,5 @@
 
-ifneq ($(shell sw_vers -productVersion | egrep '10\.6(\.[0-9]+)?'),)
-ISYSROOT=-isysroot /Developer/SDKs/MacOSX10.6.sdk
-LINK_EXTRAS=-F/System/Library/PrivateFrameworks \
-    -weak_framework MultitouchSupport
-else ifneq ($(shell sw_vers -productVersion | egrep '10\.7(\.[0-9]+)?'),)
+ifneq ($(shell sw_vers -productVersion | egrep '10\.[678](\.[0-9]+)?'),)
 SDK=$(shell xcodebuild -sdk macosx -version | grep '^Path:' | sed 's/Path: \(.*\)/\1/')
 ISYSROOT=-isysroot $(SDK)
 LINK_EXTRAS=-F/System/Library/PrivateFrameworks \
