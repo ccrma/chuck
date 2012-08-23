@@ -451,6 +451,8 @@ CK_DLL_CTRL( WvOut_ctrl_autoPrefix );
 CK_DLL_CGET( WvOut_cget_filename );
 CK_DLL_CGET( WvOut_cget_record );
 CK_DLL_CGET( WvOut_cget_autoPrefix );
+CK_DLL_CTRL( WvOut_ctrl_fileGain );
+CK_DLL_CGET( WvOut_cget_fileGain );
 
 
 // FM
@@ -3422,7 +3424,14 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
 
     func = make_new_mfun( "string", "autoPrefix", WvOut_cget_autoPrefix ); //! set/get auto prefix string
     if( !type_engine_import_mfun( env, func ) ) goto error;
-
+    
+    func = make_new_mfun( "float", "fileGain", WvOut_ctrl_fileGain ); //! set/get auto prefix string
+    func->add_arg( "float", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    func = make_new_mfun( "float", "fileGain", WvOut_cget_fileGain ); //! set/get auto prefix string
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
     // end the class import
     type_engine_import_class_end( env );
     
@@ -16802,6 +16811,7 @@ void WvOut :: init()
   //m_filename[0] = '\0';
   start = TRUE;
   flush = 0;
+  fileGain = 0;
 }
 
 void WvOut :: closeFile( void )
@@ -24577,7 +24587,8 @@ CK_DLL_DTOR( WvOut_dtor )
 CK_DLL_TICK( WvOut_tick )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    if( w->start ) w->tick( in );
+    // added 1.3.0.0: apply fileGain
+    if( w->start ) w->tick( w->fileGain * in );
     *out = in; // pass samples downstream
     return TRUE;
 }
@@ -24595,8 +24606,8 @@ CK_DLL_TICKF( WvOut2_tickf )
     MY_FLOAT frame[2];
     for(int i = 0; i < nframes; i++)
     {
-        frame[0] = in[i*2];
-        frame[1] = in[i*2+1];
+        frame[0] = in[i*2] * w->fileGain;
+        frame[1] = in[i*2+1] * w->fileGain;
         
         if( w->start ) w->tickFrame( frame, 1 );
         
@@ -25006,6 +25017,29 @@ CK_DLL_CGET( WvOut_cget_autoPrefix )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     RETURN->v_string = &w->autoPrefix;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_fileGain()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_fileGain )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    w->fileGain = GET_NEXT_FLOAT(ARGS);
+    RETURN->v_float = w->fileGain;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_cget_fileGain()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( WvOut_cget_fileGain )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    RETURN->v_float = w->fileGain;
 }
 
 
