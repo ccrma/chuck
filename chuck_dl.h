@@ -44,7 +44,7 @@
 #include <map>
 
 
-#define CK_DLL_VERSION_MAJOR (0x0003)
+#define CK_DLL_VERSION_MAJOR (0x0004)
 #define CK_DLL_VERSION_MINOR (0x0000)
 #define CK_DLL_VERSION_MAKE(maj,min) ((t_CKUINT)(((maj) << 16) | (min)))
 #define CK_DLL_VERSION_GETMAJOR(v) (((v) >> 16) & 0xFFFF)
