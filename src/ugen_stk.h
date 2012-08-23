@@ -5501,6 +5501,7 @@ class WvOut : public Stk
   // char autoPrefix[1024];
   Chuck_String autoPrefix;
   t_CKUINT flush;
+  t_CKFLOAT fileGain;
 };
 
 #endif // defined(__WVOUT_H)
