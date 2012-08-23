@@ -33,13 +33,14 @@
 #ifndef __CHUCK_OO_H__
 #define __CHUCK_OO_H__
 
+#include "chuck_def.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <queue>
 #include <fstream>
-#include "chuck_def.h"
 #include "util_thread.h" // added 1.3.0.0
+
 
 #ifndef __PLATFORM_WIN32__
   #include <dirent.h>
