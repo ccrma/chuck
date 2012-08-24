@@ -3116,10 +3116,85 @@ void Chuck_Instr_Assign_String::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
+// desc: add one reference on object (added 1.3.0.0)
+//-----------------------------------------------------------------------------
+void Chuck_Instr_AddRef_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // ISSUE: 64-bit?
+    t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+    Chuck_VM_Object * obj = NULL;
+    
+    // pop word from reg stack
+    pop_( reg_sp, 1 );
+    // copy popped value into mem stack
+    obj = *( (Chuck_VM_Object **)(mem_sp + *(reg_sp)) );
+    // ge (2012 april): check for NULL (added 1.3.0.0)
+    if( obj != NULL )
+    {
+        // release
+        obj->add_ref();
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: add one reference on object (ge 2012 april | added 1.3.0.0)
+//-----------------------------------------------------------------------------
+void Chuck_Instr_AddRef_Object2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
+    Chuck_VM_Object * obj = NULL;
+    
+    // copy popped value into mem stack
+    obj = *( (Chuck_VM_Object **)(mem_sp + m_val) );
+    // check for NULL
+    if( obj != NULL )
+    {
+        // add reference
+        obj->add_ref();
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: add one reference on object (added 1.3.0.0)
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_AddRef_Object3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // ISSUE: 64-bit?
+    // NOTE: this pointer is NOT a reference pointer
+    t_CKUINT * reg_sp = (t_CKUINT *&)shred->reg->sp;
+    Chuck_VM_Object * obj = NULL;
+    
+    // move word without popping
+    reg_sp--;
+    // copy popped value into mem stack
+    obj = *( (Chuck_VM_Object **)(reg_sp) );
+    // ge (2012 april): check for NULL (added 1.3.0.0)
+    if( obj != NULL )
+    {
+        // release
+        obj->add_ref();
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
 // desc: release one reference on object
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Chuck_Release_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+void Chuck_Instr_Release_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
+    // ISSUE: 64-bit?
     t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
     Chuck_VM_Object * obj = NULL;
@@ -3143,7 +3218,7 @@ void Chuck_Instr_Chuck_Release_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * 
 // name: execute()
 // desc: release one reference on object (added ge 2012 april | added 1.3.0.0)
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Chuck_Release_Object2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+void Chuck_Instr_Release_Object2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
     Chuck_VM_Object * obj = NULL;
@@ -3167,6 +3242,7 @@ void Chuck_Instr_Chuck_Release_Object2::execute( Chuck_VM * vm, Chuck_VM_Shred *
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Func_To_Code::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
+    // ISSUE: 64-bit?
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
     // get func
@@ -3512,6 +3588,7 @@ void Chuck_Instr_Spork::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // copy args
     if( m_val )
     {
+        // ISSUE: 64-bit?
         pop_( shred->reg->sp, m_val );
         memcpy( sh->reg->sp, shred->reg->sp, m_val );
         sh->reg->sp += m_val;

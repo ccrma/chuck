@@ -177,7 +177,7 @@ Chuck_UGen::~Chuck_UGen()
 void Chuck_UGen::init()
 {
     tick = NULL;
-    tickf = NULL;
+    tickf = NULL; // added 1.3.0.0
     pmsg = NULL;
     m_multi_chan = NULL;
     m_multi_chan_size = 0;
@@ -203,6 +203,7 @@ void Chuck_UGen::init()
     m_pan = 1.0f;
     m_next = 0.0f;
     m_use_next = FALSE;
+    m_max_block_size = -1;
     
     m_sum_v = NULL;
     m_current_v = NULL;
@@ -212,7 +213,8 @@ void Chuck_UGen::init()
     
     // what a hack
     m_is_uana = FALSE;
-    // what another hack
+
+    // what another hack (added 1.3.0.0)
     m_is_subgraph = FALSE;
     m_inlet = m_outlet = NULL;
     m_multi_in_v = m_multi_out_v = NULL;
@@ -244,17 +246,18 @@ void Chuck_UGen::done()
     // reclaim
     SAFE_DELETE_ARRAY( m_sum_v );
     SAFE_DELETE_ARRAY( m_current_v );
-    
-    SAFE_DELETE_ARRAY(m_multi_chan);
 
+    // more reclaim (added 1.3.0.0)
+    SAFE_DELETE_ARRAY( m_multi_chan );
     // TODO: m_multi_chan, break ref count loop
     
-    // SPENCERTODO: is this okay???
-    SAFE_DELETE(m_inlet);
-    SAFE_DELETE(m_outlet);
-    
-    SAFE_DELETE_ARRAY(m_multi_in_v);
-    SAFE_DELETE_ARRAY(m_multi_out_v);
+    // SPENCERTODO: is this okay??? (added 1.3.0.0)
+    SAFE_DELETE( m_inlet );
+    SAFE_DELETE( m_outlet );
+
+    // clean up array (added 1.3.0.0)
+    SAFE_DELETE_ARRAY( m_multi_in_v );
+    SAFE_DELETE_ARRAY( m_multi_out_v );
 }
 
 
@@ -269,6 +272,9 @@ t_CKBOOL Chuck_UGen::alloc_v( t_CKUINT size )
     // reclaim
     SAFE_DELETE_ARRAY( m_sum_v );
     SAFE_DELETE_ARRAY( m_current_v );
+    
+    // save block size as max block size (added 1.3.0.0)
+    m_max_block_size = size;
 
     // go
     if( size > 0 )
@@ -277,7 +283,7 @@ t_CKBOOL Chuck_UGen::alloc_v( t_CKUINT size )
         m_current_v = new SAMPLE[size];
 
         return ( m_sum_v != NULL && m_current_v != NULL );
-    }
+    }    
     
     return TRUE;
 }
@@ -308,10 +314,18 @@ void Chuck_UGen::alloc_multi_chan( t_CKUINT num_ins, t_CKUINT num_outs )
         m_multi_chan[0] = this;
     }
     
-    if(tickf)
+    // if there tick-frame (i.e., has multi-channel tick function; added 1.3.0.0)
+    if( m_multi_chan_size && tickf )
     {
-        m_multi_in_v = new SAMPLE[m_multi_chan_size];
-        m_multi_out_v = new SAMPLE[m_multi_chan_size];
+        // m_max_block_size needs to be set via alloc_v() first (added 1.3.0.0)
+        assert(m_max_block_size >= 0);
+        int block_size = m_max_block_size == 0 ? 1 : m_max_block_size;
+        
+        SAFE_DELETE_ARRAY(m_multi_in_v);
+        SAFE_DELETE_ARRAY(m_multi_out_v);
+        // allocate a frame for input and output from the tick function (add 1.3.0.0)
+        m_multi_in_v = new SAMPLE[m_multi_chan_size*block_size];
+        m_multi_out_v = new SAMPLE[m_multi_chan_size*block_size];
     }
                               
     // remember
@@ -353,16 +367,20 @@ t_CKUINT Chuck_UGen::get_num_src()
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::add( Chuck_UGen * src, t_CKBOOL isUpChuck )
 {
-    // spencer 2012: chubgraph handling
-    if(m_is_subgraph)
+    // spencer 2012: chubgraph handling (added 1.3.0.0)
+    if( m_is_subgraph )
     {
-        if(inlet() == NULL) return FALSE;
-        return inlet()->add(src, isUpChuck);
+        // sanity check
+        assert( inlet() != NULL );
+        // add src to this inlet
+        return inlet()->add( src, isUpChuck );
     }
-    else if(src->m_is_subgraph)
+    else if( src->m_is_subgraph ) // (added 1.3.0.0)
     {
-        if(src->outlet() == NULL) return FALSE;
-        return add(src->outlet(), isUpChuck);
+        // sanity check
+        assert( src->outlet() != NULL );
+        // call add on the src's outlet instead
+        return add( src->outlet(), isUpChuck );
     }
     
     // examine ins and outs
@@ -439,14 +457,17 @@ t_CKBOOL Chuck_UGen::add( Chuck_UGen * src, t_CKBOOL isUpChuck )
 //-----------------------------------------------------------------------------
 void Chuck_UGen::add_by( Chuck_UGen * dest, t_CKBOOL isUpChuck )
 {
-    // spencer 2012: chubgraph handling
-    if(m_is_subgraph)
+    // spencer 2012: chubgraph handling (added 1.3.0.0)
+    if( m_is_subgraph )
     {
-        outlet()->add_by(dest, isUpChuck);
+        // do it with the outlet
+        outlet()->add_by( dest, isUpChuck );
         return;
     }
-    if(dest->m_is_subgraph)
+    // check dest ugen (added 1.3.0.0)
+    if( dest->m_is_subgraph )
     {
+        // use the dest's inlet
         add_by(dest->inlet(), isUpChuck);
         return;
     }
@@ -475,13 +496,15 @@ void Chuck_UGen::add_by( Chuck_UGen * dest, t_CKBOOL isUpChuck )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::remove( Chuck_UGen * src )
 {
-    // spencer 2012: chubgraph handling
-    if(m_is_subgraph)
+    // spencer 2012: chubgraph handling (added 1.3.0.0)
+    if( m_is_subgraph )
     {
         return inlet()->remove(src);
     }
-    if(src->m_is_subgraph)
+    // check if src is subgraph (added 1.3.0.0)
+    if( src->m_is_subgraph )
     {
+        // use the src's outlet
         return remove(src->outlet());
     }
     
@@ -566,14 +589,17 @@ t_CKBOOL Chuck_UGen::remove( Chuck_UGen * src )
 //-----------------------------------------------------------------------------
 void Chuck_UGen::remove_by( Chuck_UGen * dest )
 {
-    // spencer 2012: chubgraph handling
-    if(m_is_subgraph)
+    // spencer 2012: chubgraph handling (added 1.3.0.0)
+    if( m_is_subgraph )
     {
-        outlet()->remove_by(dest);
+        // use the outlet
+        outlet()->remove_by( dest );
         return;
     }
-    if(dest->m_is_subgraph)
+    // check if dest is subgraph
+    if( dest->m_is_subgraph )
     {
+        // use the dest's outlet
         remove_by(dest->outlet());
         return;
     }
@@ -616,13 +642,16 @@ void Chuck_UGen::remove_by( Chuck_UGen * dest )
 //-----------------------------------------------------------------------------
 void Chuck_UGen::remove_all( )
 {
-    // spencer 2012: chubgraph handling
-    if(m_is_subgraph)
+    // spencer 2012: chubgraph handling (added 1.3.0.0)
+    if( m_is_subgraph )
     {
+        // use the inlet
         inlet()->remove_all();
+        // done
         return;
     }
 
+    // sanity check
     assert( this->m_num_dest == 0 );
     
     // remove
@@ -652,10 +681,11 @@ void Chuck_UGen::remove_all( )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::disconnect( t_CKBOOL recursive )
 {
-    // spencer 2012: chubgraph handling
-    if(m_is_subgraph)
+    // spencer 2012: chubgraph handling (added 1.3.0.0)
+    if( m_is_subgraph )
     {
-        return inlet()->disconnect(recursive);
+        // use the inlet
+        return inlet()->disconnect( recursive );
     }
     
     // remove
@@ -707,17 +737,21 @@ t_CKBOOL Chuck_UGen::is_connected_from( Chuck_UGen * src )
         }
     }
     
-    // spencer 2012: chubgraph handling
+    // spencer 2012: chubgraph handling (added 1.3.0.0)
     if( m_is_subgraph )
     {
-        if( inlet() ) return inlet()->is_connected_from( src );
-        else return FALSE;
+        // sanity check
+        assert( inlet() != NULL );
+        // use 
+        return inlet()->is_connected_from( src );
     }
-    
+    // check if source is subgraph
     if( src->m_is_subgraph )
     {
-        if( src->outlet() ) return is_connected_from( src->outlet() );
-        else return FALSE;
+        // sanity check
+        assert( src->outlet() != NULL );
+        // do it
+        return is_connected_from( src->outlet() );
     }
 
     return FALSE;
@@ -737,6 +771,9 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
 
     t_CKUINT i; Chuck_UGen * ugen; SAMPLE multi;
 
+    
+    /*** Part 1: Tick upstream ugens ***/
+    
     // inc time
     m_time = now;
     // initial sum
@@ -774,24 +811,17 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     multi = 0.0f;
     if( m_multi_chan_size )
     {
-        // spencer 2012 - use multichannel tick function
-        if(tickf)
+        // spencer 2012 - use multichannel tick function (added 1.3.0.0)
+        if( tickf )
         {
+            // system tick each input channel (added 1.3.0.0)
             for( i = 0; i < m_multi_chan_size; i++ )
             {
                 ugen = m_multi_chan[i];
+                // tick sub-ugens for individual channels
                 if( ugen->m_time < now ) ugen->system_tick( now );
+                // set to tickf input
                 m_multi_in_v[i] = ugen->m_sum;
-            }
-            
-            m_valid = tickf( this, &m_multi_in_v, &m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
-            
-            for( i = 0; i < m_multi_chan_size; i++ )
-            {
-                ugen = m_multi_chan[i];
-                ugen->m_current = m_multi_out_v[i];
-                // multiple channels are added
-                multi += ugen->m_current;
             }
         }
         else
@@ -803,51 +833,125 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
                 // multiple channels are added
                 multi += ugen->m_current;
             }
+            
+            // scale multi
+            multi /= m_multi_chan_size;
+            m_sum += multi;
         }
-    
-        // scale multi
-        multi /= m_multi_chan_size;
-        m_sum += multi;
     }
 
-    // if owner
+    // if owner (i.e., this ugen is one of the channels in a multi-channel ugen)
     if( owner != NULL && owner->m_time < now )
     {
+        // tick the owner
         owner->system_tick( now );
-        
-        if(owner->tickf)
+
+        // if the owner has a multichannel tick function (added 1.3.0.0)
+        if( owner->tickf )
         {
+            // set the latest to the current
             m_last = m_current;
+            // done, don't want multi-channel subchannels to synthesize
+            // it should be taken care of in the owner (added 1.3.0.0)
             return TRUE;
         }
     }
     
-    if( m_op > 0 )  // UGEN_OP_TICK
-    {
-        // tick the ugen
-        // spencer 2012 - only do mono tick if theres no multi/vector tickfv
-        if( tick && !tickf ) m_valid = tick( this, m_sum, &m_current, NULL, Chuck_DL_Api::Api::instance() );
-        if( !m_valid ) m_current = 0.0f;
-		// apply gain and pan
-        m_current *= m_gain * m_pan;
-		// dedenormal
-		CK_DDN( m_current );
-		// save as last
-        m_last = m_current;
-        return m_valid;
-    }
-    else if( m_op < 0 ) // UGEN_OP_PASS
-    {
-        // pass through
-        m_current = m_sum;
-        m_last = m_current;
-        return TRUE;
-    }
-    else // UGEN_OP_STOP
-        m_current = 0.0f;
     
-    m_last = m_current;
-    return TRUE;
+    
+    /*** Part Two: Synthesize with tick function ***/
+    
+    if( m_multi_chan_size && tickf )
+    {
+        /* evaluate multi-channel tickf (added 1.3.0.0) */
+        
+        multi = 0;
+
+        if( m_op > 0 ) // UGEN_OP_TICK
+        {
+            m_valid = tickf( this, m_multi_in_v, m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
+                
+            if( !m_valid ) memset( m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size );
+            
+            // supply multichannel tick output to output channels (added 1.3.0.0)
+            for( i = 0; i < m_multi_chan_size; i++ )
+            {
+                ugen = m_multi_chan[i];
+                // apply gain/pan
+                m_multi_out_v[i] *= ugen->m_gain * ugen->m_pan;
+                // dedenormal
+                CK_DDN( m_multi_out_v[i] );
+                // copy gained/panned/dedenormaled output to ugen current sample
+                ugen->m_last = ugen->m_current = m_multi_out_v[i];
+                // add to mono mixdown
+                multi += ugen->m_current;
+            }
+        }
+        else
+        {
+            if( m_op < 0 ) // UGEN_OP_PASS
+            {
+                // pass through
+                memcpy( m_multi_out_v, m_multi_in_v, sizeof(SAMPLE) * m_multi_chan_size );
+                m_valid = TRUE;
+            }
+            else // UGEN_OP_STOP
+            {
+                // zero out
+                memset( m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size );
+                m_valid = TRUE;
+            }
+            
+            // supply multichannel tick output to output channels (added 1.3.0.0)
+            for( i = 0; i < m_multi_chan_size; i++ )
+            {
+                ugen = m_multi_chan[i];
+                // copy tickf output to ugen current sample
+                ugen->m_last = ugen->m_current = m_multi_out_v[i];
+                // add to mono mixdown
+                multi += ugen->m_current;
+            }
+        }
+                
+        // compute mono mixdown for owner-ugen
+        multi /= m_multi_chan_size;
+        // set current to mono mixdown
+        m_current = multi;
+        // set last to current
+        m_last = m_current;
+    }
+    else
+    {
+        /* evaluate single-channel tick */
+        
+        if( m_op > 0 ) // UGEN_OP_TICK
+        {
+            // tick the ugen (Chuck_DL_Api::Api::instance() added 1.3.0.0)
+            if( tick ) m_valid = tick( this, m_sum, &m_current, NULL, Chuck_DL_Api::Api::instance() );
+            if( !m_valid ) m_current = 0.0f;
+            // apply gain and pan
+            m_current *= m_gain * m_pan;
+            // dedenormal
+            CK_DDN( m_current );
+            // save as last
+            m_last = m_current;
+        }
+        else if( m_op < 0 ) // UGEN_OP_PASS
+        {
+            // pass through
+            m_current = m_sum;
+            m_last = m_current;
+            m_valid = TRUE;
+        }
+        else // UGEN_OP_STOP
+        {
+            m_current = 0.0f;
+            m_last = m_current;
+            m_valid = TRUE;
+        }
+    }
+    
+    return m_valid;
 }
 
 
@@ -863,10 +967,14 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
         return m_valid;
     
     t_CKUINT i, j; Chuck_UGen * ugen; SAMPLE factor;
+    SAMPLE multi;
     
     // inc time
     m_time = now;
-
+    
+    
+    /*** Part 1: Tick upstream ugens ***/
+    
     if( m_num_src )
     {
         ugen = m_src_list[0];
@@ -908,71 +1016,193 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
     // tick multiple channels
     if( m_multi_chan_size )
     {
-        // initialize
-        factor = 1.0f / m_multi_chan_size;
-        // iterate
-        for( i = 0; i < m_multi_chan_size; i++ )
+        if(tickf)
         {
-            ugen = m_multi_chan[i];
-            if( ugen->m_time < now ) ugen->system_tick_v( now, numFrames );
-            for( j = 0; j < numFrames; j++ )
-                m_sum_v[j] += ugen->m_current_v[j] * factor;
+            // system tick each input channel (added 1.3.0.0)
+            for( int c = 0; c < m_multi_chan_size; c++ )
+            {
+                ugen = m_multi_chan[c];
+                // tick sub-ugens for individual channels
+                if( ugen->m_time < now ) ugen->system_tick_v( now, numFrames );
+                // set to tickf input
+                for( int f = 0; f < numFrames; f++ )
+                    m_multi_in_v[f*m_multi_chan_size+c] = ugen->m_sum_v[f];
+            }
+        }
+        else
+        {
+            // initialize
+            factor = 1.0f / m_multi_chan_size;
+            // iterate
+            for( i = 0; i < m_multi_chan_size; i++ )
+            {
+                ugen = m_multi_chan[i];
+                if( ugen->m_time < now ) ugen->system_tick_v( now, numFrames );
+                for( j = 0; j < numFrames; j++ )
+                    m_sum_v[j] += ugen->m_current_v[j] * factor;
+            }
         }
     }
     
     // if owner
     if( owner != NULL && owner->m_time < now )
-        owner->system_tick_v( now, numFrames );
-    
-    if( m_op > 0 )  // UGEN_OP_TICK
     {
-        // tick the ugen
-        if( tick ) 
-            for( j = 0; j < numFrames; j++ )
-                m_valid = tick( this, m_sum_v[j], &(m_current_v[j]), NULL, Chuck_DL_Api::Api::instance() );
-        if( !m_valid )
-            for( j = 0; j < numFrames; j++ )
-                m_current_v[j] = 0.0f;
+        owner->system_tick_v( now, numFrames );
+        
+        // if the owner has a multichannel tick function (added 1.3.0.0)
+        if( owner->tickf )
+        {
+            // set the latest to the current
+            m_last = m_current_v[numFrames - 1];
+            // done, don't want multi-channel subchannels to synthesize
+            // it should be taken care of in the owner (added 1.3.0.0)
+            return TRUE;
+        }
+    }
+    
+    
+    /*** Part Two: Synthesize with tick function ***/
+    
+    if( m_multi_chan_size && tickf )
+    {
+        /* evaluate multi-channel tick (added added 1.3.0.0) */
+
+        if( m_op > 0) // UGEN_OP_TICK
+        {
+            // compute samples with tickf
+            m_valid = tickf( this, m_multi_in_v, m_multi_out_v, numFrames, NULL, Chuck_DL_Api::Api::instance() );
+            
+            // zero samples if not valid
+            if( !m_valid ) memset( m_multi_out_v, 0, sizeof(SAMPLE) * m_multi_chan_size * numFrames );
+            
+            // precompute to save division
+            factor = 1.0f / m_multi_chan_size;
+            
+            // supply multichannel tick output to output channels (added 1.3.0.0)
+            for( int f = 0; f < numFrames; f++ )
+            {
+                multi = 0;
+                
+                for( int c = 0; c < m_multi_chan_size; c++ )
+                {
+                    // apply gain/pan
+                    m_multi_out_v[f*m_multi_chan_size+c] *= ugen->m_gain * ugen->m_pan;
+                    // dedenormal
+                    CK_DDN( m_multi_out_v[f*m_multi_chan_size+c] );
+                    // copy from tickf output to channel's current sample
+                    m_multi_chan[c]->m_current_v[f] = m_multi_out_v[f*m_multi_chan_size+c];
+                    // add to mono mixdown
+                    multi += m_multi_chan[c]->m_current_v[f];
+                }
+                
+                // compute mono-mixdown for the owner-ugen
+                m_current_v[i] = multi*factor;
+            }
+            
+            // save as last
+            m_last = m_current_v[numFrames-1];
+            for( int c = 0; c < m_multi_chan_size; c++ )
+                m_multi_chan[c]->m_last = m_multi_chan[c]->m_current_v[numFrames-1];
+        }
         else
+        {
+            if( m_op < 0 ) // UGEN_OP_PASS
+            {
+                // pass through
+                memcpy( m_multi_out_v, m_multi_in_v, sizeof(SAMPLE) * m_multi_chan_size * numFrames );
+                m_valid = TRUE;
+            }
+            else // UGEN_OP_STOP
+            {
+                // zero out
+                memset( m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size );
+                m_valid = TRUE;
+            }
+            
+            // supply multichannel pass/stop output to output channels (added 1.3.0.0)
+            for( int f = 0; f < numFrames; f++ )
+            {
+                multi = 0;
+                
+                for( int c = 0; c < m_multi_chan_size; c++ )
+                {
+                    m_multi_chan[c]->m_current_v[f] = m_multi_out_v[f*m_multi_chan_size+c];
+                    multi += m_multi_chan[c]->m_current_v[f];
+                }
+                
+                // mono mixdown
+                m_current_v[i] = multi/m_multi_chan_size;
+            }
+            
+            // save as last
+            m_last = m_current_v[numFrames-1];
+            // save as last for subchannels
+            for( int c = 0; c < m_multi_chan_size; c++ )
+                m_multi_chan[c]->m_last = m_multi_chan[c]->m_current_v[numFrames-1];
+        }
+    }
+    else
+    {
+        /* evaluate single-channel tick */
+
+        if( m_op > 0 )  // UGEN_OP_TICK
+        {
+            // tick the ugen (Chuck_DL_Api::Api::instance() added 1.3.0.0)
+            if( tick )
+                for( j = 0; j < numFrames; j++ )
+                    m_valid = tick( this, m_sum_v[j], &(m_current_v[j]), NULL, Chuck_DL_Api::Api::instance() );
+            if( !m_valid )
+                for( j = 0; j < numFrames; j++ )
+                    m_current_v[j] = 0.0f;
+            else
+                for( j = 0; j < numFrames; j++ )
+                {
+                    // apply gain and pan
+                    m_current_v[j] *= m_gain * m_pan;
+                    // dedenormal
+                    CK_DDN( m_current_v[j] );
+                }
+        }
+        else if( m_op < 0 ) // UGEN_OP_PASS
+        {
             for( j = 0; j < numFrames; j++ )
             {
-                // apply gain and pan
-                m_current_v[j] *= m_gain * m_pan;
-                // dedenormal
-                CK_DDN( m_current_v[j] );
+                // pass through
+                m_current_v[j] = m_sum_v[j];
             }
+            m_valid = TRUE;
+        }
+        else // UGEN_OP_STOP
+        {
+            memset( m_current_v, 0, numFrames * sizeof(SAMPLE) );
+            // m_current = 0.0f;
+            m_valid = TRUE;
+        }
+        
         // save as last
         m_last = m_current_v[numFrames-1];
-        return m_valid;
-    }
-    else if( m_op < 0 ) // UGEN_OP_PASS
-    {
-        for( j = 0; j < numFrames; j++ )
-        {
-            // pass through
-            m_current_v[j] = m_sum_v[j];
-        }
-        m_last = m_current_v[numFrames-1];
-        return TRUE;
-    }
-    else // UGEN_OP_STOP
-    {
-        memset( m_current_v, 0, numFrames * sizeof(SAMPLE) );
-        // m_current = 0.0f;
     }
     
-    m_last = m_current_v[numFrames-1];
-    return TRUE;
+    return m_valid;
 }
 
 
+
+
+//-----------------------------------------------------------------------------
+// name: init_subgraph()
+// desc: init subgraph, added 1.3.0.0
+//-----------------------------------------------------------------------------
 void Chuck_UGen::init_subgraph()
 {
+    // set flag
     m_is_subgraph = TRUE;
+    // pointer
+    Chuck_Object * obj = NULL;
     
-    Chuck_Object * obj;
-    
+    // instantiate object for inlet
     obj = instantiate_and_initialize_object( &t_ugen, this->shred );
+    // set as inlet
     m_inlet = (Chuck_UGen *)obj;
     // additional reference count
     m_inlet->add_ref();
@@ -981,7 +1211,9 @@ void Chuck_UGen::init_subgraph()
     // ref count
     this->add_ref();
     
+    // instantiate object for outlet
     obj = instantiate_and_initialize_object( &t_ugen, this->shred );
+    // set as outlet
     m_outlet = (Chuck_UGen *)obj;
     // additional reference count
     m_outlet->add_ref();
@@ -992,16 +1224,29 @@ void Chuck_UGen::init_subgraph()
 }
 
 
+
+
+//-----------------------------------------------------------------------------
+// name: inlet()
+// desc: get inlet (added 1.3.0.0)
+//-----------------------------------------------------------------------------
 Chuck_UGen * Chuck_UGen::inlet()
 {
     return m_inlet;
 }
 
 
+
+
+//-----------------------------------------------------------------------------
+// name: outlet()
+// desc: get outlet (added 1.3.0.0)
+//-----------------------------------------------------------------------------
 Chuck_UGen * Chuck_UGen::outlet()
 {
     return m_outlet;
 }
+
 
 
 
@@ -1179,7 +1424,7 @@ t_CKBOOL Chuck_UAna::system_tock( t_CKTIME now )
 
     if( m_op > 0 )  // UGEN_OP_TOCK
     {
-        // tock the uana
+        // tock the uana (Chuck_DL_Api::Api::instance() added 1.3.0.0)
         if( tock ) m_valid = tock( this, this, blobProxy(), NULL, Chuck_DL_Api::Api::instance() );
         if( !m_valid ) { /* clear out blob? */ }
 		// timestamp the blob

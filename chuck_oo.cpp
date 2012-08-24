@@ -105,9 +105,11 @@ void Chuck_VM_Object::add_ref()
         // add to vm allocator
         Chuck_VM_Alloc::instance()->add_object( this );
     }
-    
+
     // added 1.3.0.0
-    // CK_GC_LOG("Chuck_VM_Object::add_ref() : 0x%08x, %s, %i", this, typeid(*this).name(), m_ref_count);
+    CK_MEMMGMT_TRACK(fprintf(stderr, "Chuck_VM_Object::add_ref() : 0x%08x, %s, %lu\n", this, typeid(*this).name(), m_ref_count));
+    // string n = typeid(*this).name();
+    // cerr << "ADDREF: " << dec << n << " " << m_ref_count << " 0x" << hex << (int)this << endl;
 }
 
 
@@ -125,7 +127,9 @@ void Chuck_VM_Object::release()
     m_ref_count--;
     
     // added 1.3.0.0
-    // CK_GC_LOG("Chuck_VM_Object::release() : 0x%08x, %s, %i", this, typeid(*this).name(), m_ref_count);
+    CK_MEMMGMT_TRACK(fprintf(stderr, "Chuck_VM_Object::release() : 0x%08x, %s, %ulu\n", this, typeid(*this).name(), m_ref_count));
+    // string n = typeid(*this).name();
+    // cerr << "RELEASE: " << dec << n << " " << m_ref_count << " 0x" << hex << (int)this << endl;
 
     // if no more references
     if( m_ref_count == 0 )
