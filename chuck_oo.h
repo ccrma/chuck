@@ -568,36 +568,4 @@ public:
 };
 
 
-struct Chuck_IO_Serial : Chuck_IO
-{
-public:
-    Chuck_IO_Serial();
-    virtual ~Chuck_IO_Serial();
-    
-public:
-    // meta
-    virtual t_CKBOOL good();
-    virtual void close();
-    virtual void flush();
-    virtual t_CKINT mode();
-    virtual void mode( t_CKINT flag );
-    
-    virtual void ready();
-    
-    // reading
-    virtual Chuck_String * readLine();
-    virtual t_CKINT readInt( t_CKINT flags );
-    virtual t_CKFLOAT readFloat();
-    virtual t_CKBOOL readString( std::string & str );
-    virtual t_CKBOOL eof();
-    
-    // writing
-    virtual void write( const std::string & val );
-    virtual void write( t_CKINT val );
-    virtual void write( t_CKFLOAT val );
-    
-};
-
-
-
 #endif

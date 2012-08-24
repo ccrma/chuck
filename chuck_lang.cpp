@@ -943,43 +943,6 @@ error:
 
 
 //-----------------------------------------------------------------------------
-// name: init_class_serialio()
-// desc: ...
-//-----------------------------------------------------------------------------
-t_CKBOOL init_class_serialio( Chuck_Env * env )
-{
-    // init as base class
-    Chuck_DL_Func * func = NULL;
-    
-    // log
-    EM_log( CK_LOG_SEVERE, "class 'SerialIO'" );
-    
-    // TODO: ctor/dtor?
-    if( !type_engine_import_class_begin( env, "SerialIO", "IO", 
-                                         env->global(), NULL, NULL ) )
-        return FALSE;
-    
-    // add list()
-    func = make_new_sfun( "string[]", "list", serialio_list );
-    if( !type_engine_import_sfun( env, func ) ) goto error;
-    
-    // end the class import
-    type_engine_import_class_end( env );
-    
-    return TRUE;
-
-error:
-    
-    // end the class import
-    type_engine_import_class_end( env );
-    
-    return FALSE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: init_class_string()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -2639,26 +2602,6 @@ CK_DLL_MFUN( fileio_writefloat )
         f->write(val);
     }
 }
-
-
-CK_DLL_SFUN( serialio_list )
-{
-    list<string> devices = SerialIOManager::availableSerialDevices();
-    
-    // ISSUE: 64-bit
-    Chuck_Array4 * array = new Chuck_Array4(TRUE, 0);
-    initialize_object( array, &t_array );
-
-    for(list<string>::iterator i = devices.begin(); i != devices.end(); i++)
-    {
-        Chuck_String * name = new Chuck_String(*i);
-        initialize_object(name, &t_string);
-        array->push_back((t_CKUINT) name);
-    }
-    
-    RETURN->v_object = array;
-}
-
 
 
 //-----------------------------------------------------------------------------

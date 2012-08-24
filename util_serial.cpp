@@ -41,9 +41,9 @@
 #include <IOKit/serial/IOSerialKeys.h>
 #include <IOKit/IOBSD.h>
 
-list<string> SerialIOManager::availableSerialDevices()
+vector<string> SerialIOManager::availableSerialDevices()
 {
-    list<string> devices;
+    vector<string> devices;
     
     io_iterator_t serialIterator = NULL;
     kern_return_t kernResult;

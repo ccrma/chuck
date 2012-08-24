@@ -23,30 +23,43 @@
  -----------------------------------------------------------------------------*/
 
 //-----------------------------------------------------------------------------
-// file: util_serial.h
-// desc: ...
+// name: chuck_io.h
+// desc: chuck i/o
 //
-// author: Spencer Salazar (spencer@ccrma.stanford.edu)
-// date: Summer 2012
+// authors: Spencer Salazar (spencer@ccrma.stanford.edu)
+//    date: Summer 2012
 //-----------------------------------------------------------------------------
 
-#ifndef __UTIL_SERIAL_H__
-#define __UTIL_SERIAL_H__
+#ifndef __CHUCK_IO_H__
+#define __CHUCK_IO_H__
 
+#include "chuck_oo.h"
 
-#include <vector>
-#include <string>
-
-using namespace std;
-
-class SerialIOManager
+struct Chuck_IO_Serial : public Chuck_IO_File
 {
 public:
-    static vector<string> availableSerialDevices();
+    Chuck_IO_Serial();
+    virtual ~Chuck_IO_Serial();
     
-private:
-    static vector<string> s_availableSerialDevices;
+public:
+    virtual t_CKBOOL open( const t_CKUINT i, t_CKINT flags );
+    virtual t_CKBOOL open( const std::string & path, t_CKINT flags );
+
+    virtual Chuck_String * readLine();
+
+    virtual t_CKBOOL ready();
+    
+protected:
+    
+    int m_fd;
+    FILE * m_cfd;
+    
+    char * m_buf;
+    t_CKUINT m_buf_size;
+    t_CKUINT m_buf_begin, m_buf_end;
 };
 
+t_CKBOOL init_class_serialio( Chuck_Env * env ); // added 1.3.1
 
-#endif /* __UTIL_SERIAL_H__ */
+#endif // __CHUCK_IO_H__
+

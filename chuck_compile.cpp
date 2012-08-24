@@ -45,6 +45,7 @@
 #include "ulib_math.h"
 #include "ulib_std.h"
 #include "ulib_opsc.h"
+#include "chuck_io.h"
 
 #if defined(__PLATFORM_WIN32__)
 #include "dirent_win32.h"
