@@ -1,6 +1,6 @@
 ChucK : install instructions
 
-version: 1.3.x.x (dracula) 
+version: 1.3.x.x (chimera) 
 
 ---
 ChucK home:
