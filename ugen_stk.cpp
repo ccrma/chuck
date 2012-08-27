@@ -16811,7 +16811,7 @@ void WvOut :: init()
   //m_filename[0] = '\0';
   start = TRUE;
   flush = 0;
-  fileGain = 0;
+  fileGain = 1;
 }
 
 void WvOut :: closeFile( void )
