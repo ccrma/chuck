@@ -1,4 +1,9 @@
 ---
+1.3.0.1
+  - (fixed) WvOut no longer only record silence
+  - (fixed) WvOut.closeFile() does not cause the VM to hang
+
+---
 1.3.0.0
   - (added) Chugins: dynamically loaded compiled classes/ugens
             see http://chuck.stanford.edu/extend/ for examples. 
