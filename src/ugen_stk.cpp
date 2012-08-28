@@ -24574,7 +24574,8 @@ CK_DLL_DTOR( WvOut_dtor )
     w->closeFile();
     std::map<WvOut *, WvOut *>::iterator iter;
     iter = g_wv.find( w );
-    g_wv.erase( iter );
+    if(iter != g_wv.end())
+        g_wv.erase( iter );
     delete (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     OBJ_MEMBER_UINT(SELF, WvOut_offset_data) = 0;
 }
@@ -24969,7 +24970,8 @@ CK_DLL_CTRL( WvOut_ctrl_closeFile )
     
     std::map<WvOut *, WvOut *>::iterator iter;
     iter = g_wv.find( w );
-    g_wv.erase( iter );
+    if(iter != g_wv.end())
+        g_wv.erase( iter );
 }
 
 
