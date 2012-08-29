@@ -1431,9 +1431,18 @@ t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary 
         
         return TRUE;
     }
-    
-    // emit
-    left = emit_engine_emit_exp( emit, binary->lhs );
+
+    // whether to track object references on stack (added 1.3.0.2)
+    t_CKBOOL doRef = FALSE;
+    // check to see if this is a function call (added 1.3.0.2)
+    if( isa( binary->rhs->type, &t_function ) )
+    {
+        // take care of objects in terms of reference counting
+        doRef = TRUE;
+    }
+
+    // emit (doRef added 1.3.0.2)
+    left = emit_engine_emit_exp( emit, binary->lhs, doRef );
     right = emit_engine_emit_exp( emit, binary->rhs );
 
     // check
@@ -2280,7 +2289,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
         }
     }
 
-// func call
+    // func call
     if( isa( right, &t_function ) )
     {
         assert( binary->ck_func != NULL );
@@ -2696,7 +2705,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         str = new Chuck_String();
         if( !str || !initialize_object( str, &t_string ) )
         {
-            // error
+            // error (TODO: why is this a SAFE_RELEASE and not SAFE_DELETE?)
             SAFE_RELEASE( str );
             // error out
             fprintf( stderr, 
@@ -2706,6 +2715,8 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         str->str = exp->str;
         temp = (t_CKUINT)str;
         emit->append( new Chuck_Instr_Reg_Push_Imm( temp ) );
+        // add reference for string literal (added 1.3.0.2)
+        str->add_ref();
         break;
 
     case ae_primary_array:
