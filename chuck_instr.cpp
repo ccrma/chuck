@@ -2770,12 +2770,14 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
     if( !type->ugen_info )
     {
         // check type TODO: make this faster
-        if( isa( type, &t_event ) ) object = new Chuck_Event;
+        if( type->allocator )
+            object = type->allocator( shred, Chuck_DL_Api::Api::instance() );
+        else if( isa( type, &t_fileio ) ) object = new Chuck_IO_File;
+        else if( isa( type, &t_event ) ) object = new Chuck_Event;
         else if( isa( type, &t_string ) ) object = new Chuck_String;
         // TODO: is this ok?
         else if( isa( type, &t_shred ) ) object = new Chuck_VM_Shred;
         // TODO: is this ok?
-        else if( isa( type, &t_fileio ) ) object = new Chuck_IO_File;
         else object = new Chuck_Object;
     }
     else
