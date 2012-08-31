@@ -36,6 +36,8 @@
 #include "util_serial.h"
 #include "chuck_instr.h"
 #include "chuck_type.h"
+#include "chuck_globals.h"
+#include "chuck_vm.h"
 
 #include <poll.h>
 #include <fcntl.h>
@@ -47,20 +49,67 @@
 
 using namespace std;
 
+// available baud rates
+const t_CKUINT Chuck_IO_Serial::BAUD_2400   = 2400;
+const t_CKUINT Chuck_IO_Serial::BAUD_4800   = 4800;
+const t_CKUINT Chuck_IO_Serial::BAUD_9600   = 9600;
+const t_CKUINT Chuck_IO_Serial::BAUD_19200  = 19200;
+const t_CKUINT Chuck_IO_Serial::BAUD_38400  = 38400;
+const t_CKUINT Chuck_IO_Serial::BAUD_7200   = 7200;
+const t_CKUINT Chuck_IO_Serial::BAUD_14400  = 14400;
+const t_CKUINT Chuck_IO_Serial::BAUD_28800  = 28800;
+const t_CKUINT Chuck_IO_Serial::BAUD_57600  = 57600;
+const t_CKUINT Chuck_IO_Serial::BAUD_76800  = 76800;
+const t_CKUINT Chuck_IO_Serial::BAUD_115200 = 115200;
+const t_CKUINT Chuck_IO_Serial::BAUD_230400 = 230400;
 
-Chuck_IO_Serial::Chuck_IO_Serial()
+const t_CKUINT Chuck_IO_Serial::TYPE_BYTE;
+const t_CKUINT Chuck_IO_Serial::TYPE_WORD;
+const t_CKUINT Chuck_IO_Serial::TYPE_INT;
+const t_CKUINT Chuck_IO_Serial::TYPE_FLOAT;
+const t_CKUINT Chuck_IO_Serial::TYPE_STRING;
+const t_CKUINT Chuck_IO_Serial::TYPE_LINE;
+
+
+
+void *Chuck_IO_Serial::shell_read_cb(void *_this)
 {
-    m_fd = 0;
+    Chuck_IO_Serial *cereal = (Chuck_IO_Serial *) _this;
+    
+    cereal->read_cb();
+    
+    return NULL;
+}
+
+
+Chuck_IO_Serial::Chuck_IO_Serial() :
+m_asyncReadRequests(CircularBuffer<Read>(32)),
+m_asyncReadResponses(CircularBuffer<Read>(32)),
+m_asyncReadData(CircularBuffer<char>(1024)),
+m_asyncReadPtr(CircularBuffer<void *>(32))
+{
+    m_fd = -1;
     m_cfd = NULL;
     
-    m_buf_size = 256;
+    m_buf_size = 1024;
     m_buf = new char[m_buf_size];
     m_buf_end = m_buf_begin = 0;
+    
+    m_read_thread = NULL;
+    m_event_buffer = NULL;
 }
 
 Chuck_IO_Serial::~Chuck_IO_Serial()
 {
-    fclose(m_cfd);
+    m_do_read_thread = false;
+    SAFE_DELETE(m_read_thread);
+    if( m_event_buffer )
+        g_vm->destroy_event_buffer( m_event_buffer );
+    
+    close();
+    
+    delete[] m_buf;
+    m_buf = NULL;
 }
 
 t_CKBOOL Chuck_IO_Serial::ready()
@@ -80,18 +129,27 @@ t_CKBOOL Chuck_IO_Serial::open( const t_CKUINT i, t_CKINT flags )
 {
     vector<string> ports = SerialIOManager::availableSerialDevices();
     
+    if( flags & Chuck_IO_File::TYPE_BINARY )
+    {
+        m_flags = Chuck_IO_File::TYPE_BINARY;
+    }
+    else if( flags & Chuck_IO_File::TYPE_ASCII )
+    {
+        m_flags = Chuck_IO_File::TYPE_ASCII;
+    }
+    
     if( i < ports.size() )
     {
         const string &path = ports[i];
-        int fd = ::open( path.c_str(), O_NONBLOCK | O_RDWR );
+//        int fd = ::open( path.c_str(), O_NONBLOCK | O_RDWR );
+        int fd = ::open( path.c_str(), O_RDWR );
         if( fd >= 0 ) m_fd = fd;
         
-        // set serial IO baud rate
-        struct termios tios;
-        tcgetattr(m_fd, &tios);
-        cfsetispeed(&tios, B9600);
-        cfsetospeed(&tios, B9600);
-        tcsetattr(m_fd, TCSAFLUSH, &tios);
+        // set default baud rate
+        setBaudRate(Chuck_IO_Serial::BAUD_9600);
+        
+        if(m_flags & Chuck_IO_File::TYPE_ASCII)
+            m_cfd = fdopen(fd, "r+");
     }
     
     return TRUE;
@@ -100,96 +158,234 @@ t_CKBOOL Chuck_IO_Serial::open( const t_CKUINT i, t_CKINT flags )
 
 t_CKBOOL Chuck_IO_Serial::open( const std::string & path, t_CKINT flags )
 {
-    return TRUE;
+    return FALSE;
 }
 
 
 Chuck_String * Chuck_IO_Serial::readLine()
 {
-    Chuck_String * ckstr = new Chuck_String;
-    initialize_object(ckstr, &t_string);
-    
-    // found newline?
-    bool found_it = false;
+}
 
-    while(!found_it)
+
+t_CKBOOL Chuck_IO_Serial::good()
+{
+    return m_fd >= 0;
+}
+
+void Chuck_IO_Serial::close()
+{
+    if(good())
     {
-        // consume existing data in buffer, up to newline
-        if(m_buf_end != m_buf_begin)
+        if(m_flags & Chuck_IO_File::TYPE_ASCII)
+            fclose(m_cfd);
+        else
+            ::close(m_fd);
+        m_fd = -1;
+        m_cfd = NULL;
+    }
+}
+
+void Chuck_IO_Serial::flush()
+{
+    
+}
+
+t_CKINT Chuck_IO_Serial::mode()
+{
+    return MODE_ASYNC;
+}
+
+void Chuck_IO_Serial::mode( t_CKINT flag )
+{
+    // ...
+}
+
+// reading
+t_CKINT Chuck_IO_Serial::readInt( t_CKINT flags )
+{
+    t_CKINT i = 0;
+    
+    if( flags ==  READ_INT8 )
+    {
+        
+    }
+}
+
+t_CKFLOAT Chuck_IO_Serial::readFloat()
+{
+    
+}
+
+t_CKBOOL Chuck_IO_Serial::readString( std::string & str )
+{
+    
+}
+
+t_CKBOOL Chuck_IO_Serial::eof()
+{
+    
+}
+
+
+// writing
+void Chuck_IO_Serial::write( const std::string & val )
+{
+    
+}
+
+void Chuck_IO_Serial::write( t_CKINT val )
+{
+    
+}
+
+void Chuck_IO_Serial::write( t_CKFLOAT val )
+{
+    
+}
+
+
+void Chuck_IO_Serial::readAsync( t_CKUINT type, t_CKUINT num )
+{
+    if(m_read_thread == NULL)
+    {
+        m_read_thread = new XThread();
+        m_read_thread->start(shell_read_cb, this);
+        
+        assert(m_event_buffer == NULL);
+        m_event_buffer = g_vm->create_event_buffer();
+    }
+    
+    Read read;
+    read.m_type = type;
+    read.m_num = num;
+    read.m_mode = m_flags;
+    
+    if(!m_asyncReadRequests.atMaximum() )
+    {
+        m_asyncReadRequests.put(read);
+    }
+    else
+    {
+        EM_log(CK_LOG_SEVERE, "Chuck_IO_Serial::readAsync: error: read buffer overflow, ignoring read");
+    }
+}
+
+Chuck_String * Chuck_IO_Serial::getLine()
+{
+    Read r;
+    
+    Chuck_String * str = NULL;
+
+    m_asyncReadResponses.peek(r, 1);
+    if( r.m_type == TYPE_LINE )
+    {
+        void *ptr;
+        
+        if( m_asyncReadPtr.get(ptr) )
         {
-            // scan for newline
-            int i;
-            for(i = m_buf_begin; i < m_buf_end; i++)
+            str = (Chuck_String *) ptr;
+            initialize_object(str, &t_string);
+        }
+        
+        m_asyncReadResponses.get(r);
+    }
+    
+    return str;
+}
+
+
+void Chuck_IO_Serial::read_cb()
+{
+    m_do_read_thread = true;
+    
+    const int BUF_SIZE = 256;
+    char buf[BUF_SIZE];
+    
+    while(m_do_read_thread)
+    {
+        Read r;
+        int num_responses = 0;
+        
+        while(m_asyncReadRequests.get(r))
+        {
+            if(m_flags & Chuck_IO_File::TYPE_ASCII)
             {
-                // found it
-                if(m_buf[i] == '\n')
+                switch(r.m_type)
                 {
-                    found_it = true;
-                    break;
-                }
-            }
-            
-            // append characters to string
-            if(found_it)
-            {
-                // dont append newline
-                ckstr->str.append(m_buf + m_buf_begin, i - m_buf_begin);
-                // advance buffer start index
-                m_buf_begin = i+1;
-                
-                // restart buffer at zero if all data has been consumed
-                if(m_buf_begin == m_buf_end)
-                {
-                    m_buf_begin = m_buf_end = 0;
-                    // debug: clear buffer
-                    memset(m_buf, 0, m_buf_size*sizeof(char));
+                    case TYPE_LINE:
+                        if(fgets(buf, BUF_SIZE, m_cfd))
+                        {
+                            Chuck_String * str = new Chuck_String;
+                            str->str = std::string(buf);
+                            
+                            // SPENCERTODO: check if buffer is maxed
+                            m_asyncReadPtr.put(str);
+                            m_asyncReadResponses.put(r);
+                            
+                            num_responses++;
+                        }
+                        break;
                 }
             }
             else
             {
-                // append existing data to string; need more read(s) to find newline
-                ckstr->str.append(m_buf + m_buf_begin, m_buf_end - m_buf_begin);
-                // all data in buffer has been consumed
-                m_buf_begin = m_buf_end = 0;
-                // debug: clear buffer
-                memset(m_buf, 0, m_buf_size*sizeof(char));
+                // binary
+                int numBytes = 0;
+                switch(r.m_type)
+                {
+                    case TYPE_BYTE:
+                        numBytes = 1 * r.m_num;
+                        break;
+                }
             }
-            
         }
         
-        if(!found_it)
-        {
-            // dont read into a buffer that still has data
-            assert(m_buf_begin == m_buf_end && m_buf_begin == 0);
-            // read data in
-            int result = ::read(m_fd, m_buf, m_buf_size);
-            // no data or error
-            // TODO: save string for next readLine call in case of 0-length read
-            if(result <= 0) goto error;
-            // advance buffer, if possible
-            m_buf_end = result;
-        }
+        if(num_responses)
+            queue_broadcast(m_event_buffer);
+        
+        usleep(100);
     }
-    
-    return ckstr;
-    
-error:
-    ckstr->str = "";
-    return ckstr;
 }
 
+
+t_CKBOOL Chuck_IO_Serial::setBaudRate( t_CKUINT rate )
+{
+    // set serial IO baud rate
+    struct termios tios;
+    tcgetattr(m_fd, &tios);
+    cfsetispeed(&tios, rate);
+    cfsetospeed(&tios, rate);
+    tcsetattr(m_fd, TCSAFLUSH, &tios);
+    
+    return TRUE;
+}
+
+
+t_CKUINT Chuck_IO_Serial::getBaudRate()
+{
+    // set serial IO baud rate
+    struct termios tios;
+    tcgetattr(m_fd, &tios);
+    speed_t rate = cfgetispeed(&tios);
+    
+    return rate;
+}
 
 
 //-----------------------------------------------------------------------------
 // serialio API
 //-----------------------------------------------------------------------------
 CK_DLL_SFUN( serialio_list );
+CK_DLL_ALLOC( serialio_alloc );
 CK_DLL_CTOR( serialio_ctor );
 CK_DLL_DTOR( serialio_dtor );
 CK_DLL_MFUN( serialio_open );
 CK_DLL_MFUN( serialio_ready );
 CK_DLL_MFUN( serialio_readLine );
-static t_CKUINT serialio_data_offset = CK_INVALID_OFFSET;
+CK_DLL_MFUN( serialio_onLine );
+CK_DLL_MFUN( serialio_getLine );
+CK_DLL_MFUN( serialio_setBaudRate );
+CK_DLL_MFUN( serialio_getBaudRate );
 
 
 //-----------------------------------------------------------------------------
@@ -204,27 +400,61 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     // log
     EM_log( CK_LOG_SEVERE, "class 'SerialIO'" );
     
+    Chuck_Type * t = type_engine_import_class_begin( env, "SerialIO", "IO",
+                                                     env->global(), serialio_ctor, serialio_dtor );
     // TODO: ctor/dtor?
-    if( !type_engine_import_class_begin( env, "SerialIO", "IO",
-                                        env->global(), serialio_ctor, NULL ) )
+    if( !t )
         return FALSE;
+    
+    // HACK; SPENCERTODO: better way to set this
+    t->allocator = serialio_alloc;
     
     // add list()
     func = make_new_sfun( "string[]", "list", serialio_list );
     if( !type_engine_import_sfun( env, func ) ) goto error;
     
-    serialio_data_offset = type_engine_import_mvar( env, "int", "@SerialIO_data", false );
-    if( serialio_data_offset == CK_INVALID_OFFSET ) goto error;
-    
     func = make_new_mfun("int", "open", serialio_open);
     func->add_arg("int", "i");
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
-    func = make_new_mfun("int", "ready", serialio_ready);
+    // add ready (data available)
+    func = make_new_mfun("int", "dataAvailable", serialio_ready);
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
+    // add readLine
     func = make_new_mfun("string", "readLine", serialio_readLine);
     if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add onLine
+    func = make_new_mfun("Event", "onLine", serialio_onLine);
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add getLine
+    func = make_new_mfun("string", "getLine", serialio_getLine);
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add setBaudRate
+    func = make_new_mfun("int", "baudRate", serialio_setBaudRate);
+    func->add_arg("int", "r");
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add getBaudRate
+    func = make_new_mfun("int", "baudRate", serialio_getBaudRate);
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add baud rate constants
+    type_engine_import_svar(env, "int", "B2400",   TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_2400);
+    type_engine_import_svar(env, "int", "B4800",   TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_4800);
+    type_engine_import_svar(env, "int", "B9600",   TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_9600);
+    type_engine_import_svar(env, "int", "B19200",  TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_19200);
+    type_engine_import_svar(env, "int", "B38400",  TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_38400);
+    type_engine_import_svar(env, "int", "B7200",   TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_7200);
+    type_engine_import_svar(env, "int", "B14400",  TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_14400);
+    type_engine_import_svar(env, "int", "B28800",  TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_28800);
+    type_engine_import_svar(env, "int", "B57600",  TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_57600);
+    type_engine_import_svar(env, "int", "B76800",  TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_76800);
+    type_engine_import_svar(env, "int", "B115200", TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_115200);
+    type_engine_import_svar(env, "int", "B230400", TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_230400);
     
     // end the class import
     type_engine_import_class_end( env );
@@ -260,32 +490,79 @@ CK_DLL_SFUN( serialio_list )
 }
 
 
+CK_DLL_ALLOC( serialio_alloc )
+{
+    return new Chuck_IO_Serial;
+}
+
+
 CK_DLL_CTOR( serialio_ctor )
 {
-    Chuck_IO_Serial * cereal = new Chuck_IO_Serial;
-    OBJ_MEMBER_INT(SELF, serialio_data_offset) = (t_CKINT) cereal;
+//    Chuck_IO_Serial * cereal = new Chuck_IO_Serial;
+//    initialize_object(cereal, &t_event);
+//    OBJ_MEMBER_INT(SELF, serialio_data_offset) = (t_CKINT) cereal;
+}
+
+CK_DLL_DTOR( serialio_dtor )
+{
+//    Chuck_IO_Serial * cereal = new Chuck_IO_Serial;
+//    delete cereal;
+//    OBJ_MEMBER_INT(SELF, serialio_data_offset) = (t_CKINT) NULL;
 }
 
 CK_DLL_MFUN( serialio_open )
 {
-    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) OBJ_MEMBER_INT(SELF, serialio_data_offset);
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
     t_CKINT num = GET_NEXT_INT(ARGS);
     
-    RETURN->v_int = cereal->open(num, 0);
+    RETURN->v_int = cereal->open(num, Chuck_IO_File::TYPE_ASCII);
 }
 
 CK_DLL_MFUN( serialio_ready )
 {
-    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) OBJ_MEMBER_INT(SELF, serialio_data_offset);
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
     
     RETURN->v_int = cereal->ready();
 }
 
 CK_DLL_MFUN( serialio_readLine )
 {
-    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) OBJ_MEMBER_INT(SELF, serialio_data_offset);
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
     
     RETURN->v_string = cereal->readLine();
+}
+
+
+CK_DLL_MFUN( serialio_onLine )
+{
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
+    
+    cereal->readAsync(Chuck_IO_Serial::TYPE_LINE, 1);
+    
+    RETURN->v_object = cereal;
+}
+
+
+CK_DLL_MFUN( serialio_getLine )
+{
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
+    
+    RETURN->v_string = cereal->getLine();
+}
+
+
+CK_DLL_MFUN( serialio_setBaudRate )
+{
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
+    cereal->setBaudRate(GET_NEXT_INT(ARGS));
+    RETURN->v_int = cereal->getBaudRate();
+}
+
+
+CK_DLL_MFUN( serialio_getBaudRate )
+{
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
+    RETURN->v_int = cereal->getBaudRate();
 }
 
 
