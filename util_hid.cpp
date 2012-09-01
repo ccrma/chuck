@@ -1990,10 +1990,14 @@ void Hid_callback( void * target, IOReturn result,
                 
 #ifndef __CK_HID_CURSOR_TRACK__
                 Point p;
-                GetGlobalMouse( &p );
-                
-                msg.idata[2] = p.h;
-                msg.idata[3] = p.v;
+                p.h = 0;
+                p.v = 0;
+//                GetGlobalMouse( &p );
+//                
+//                msg.idata[2] = p.h;
+//                msg.idata[3] = p.v;
+                msg.idata[2] = 0;
+                msg.idata[3] = 0;
                 
                 CGDirectDisplayID display;
                 CGDisplayCount displayCount;
@@ -2807,7 +2811,7 @@ static int TiltSensor_test( int kernFunc, const char * servMatch, int dataType )
     io_connect_t dataPort;
 
     IOItemCount structureInputSize;
-    IOByteCount structureOutputSize;
+    size_t structureOutputSize;
     
     // log
     EM_log( CK_LOG_FINE, "testing for SMS sensor..." );
@@ -2851,12 +2855,18 @@ static int TiltSensor_test( int kernFunc, const char * servMatch, int dataType )
     memset( &TiltSensor_data.data, 0, sizeof( TiltSensor_data.data ) );
     memset( &TiltSensor_data.data, 0, sizeof( TiltSensor_data.data ) );
     
-    result = IOConnectMethodStructureIStructureO( dataPort, 
-                                                  kernFunc, 
-                                                  structureInputSize,
-                                                  &structureOutputSize, 
-                                                  &TiltSensor_data.data, 
-                                                  &TiltSensor_data.data );
+//    result = IOConnectMethodStructureIStructureO( dataPort,
+//                                                 kernFunc,
+//                                                 structureInputSize,
+//                                                 &structureOutputSize,
+//                                                 &TiltSensor_data.data,
+//                                                 &TiltSensor_data.data );
+    result = IOConnectCallStructMethod( dataPort,
+                                        kernFunc,
+                                        &TiltSensor_data.data,
+                                        structureInputSize,
+                                        &TiltSensor_data.data,
+                                        &structureOutputSize );
     
     if ( result != KERN_SUCCESS )
     {
@@ -2874,7 +2884,7 @@ static int TiltSensor_do_read()
 {
     kern_return_t result;
     IOItemCount structureInputSize;
-    IOByteCount structureOutputSize;
+    size_t structureOutputSize;
 
     // log
     EM_log( CK_LOG_FINE, "reading SMS sensor..." );
@@ -2898,13 +2908,19 @@ static int TiltSensor_do_read()
     memset( &TiltSensor_data.data, 0, sizeof( TiltSensor_data.data ) );
     memset( &TiltSensor_data.data, 0, sizeof( TiltSensor_data.data ) );
     
-    result = IOConnectMethodStructureIStructureO( TiltSensor_data.dataPort, 
-                                                  TiltSensor_data.kernFunc, 
-                                                  structureInputSize,
-                                                  &structureOutputSize, 
-                                                  &TiltSensor_data.data, 
-                                                  &TiltSensor_data.data );
-    
+//    result = IOConnectMethodStructureIStructureO( TiltSensor_data.dataPort, 
+//                                                  TiltSensor_data.kernFunc, 
+//                                                  structureInputSize,
+//                                                  &structureOutputSize, 
+//                                                  &TiltSensor_data.data, 
+//                                                  &TiltSensor_data.data );
+    result = IOConnectCallStructMethod( TiltSensor_data.dataPort,
+                                        TiltSensor_data.kernFunc,
+                                        &TiltSensor_data.data,
+                                        structureInputSize,
+                                        &TiltSensor_data.data,
+                                        &structureOutputSize );
+
     return 1;
 }
 
