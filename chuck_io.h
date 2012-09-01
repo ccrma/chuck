@@ -48,7 +48,7 @@ public:
     
 public:
     // meta
-    virtual t_CKBOOL open( const t_CKUINT i, t_CKINT flags );
+    virtual t_CKBOOL open( const t_CKUINT i, t_CKINT flags, t_CKUINT baud = BAUD_9600 );
     virtual t_CKBOOL open( const std::string & path, t_CKINT flags );
     
     virtual t_CKBOOL good();
@@ -76,6 +76,8 @@ public:
     // async reading
     virtual void readAsync( t_CKUINT type, t_CKUINT num );
     virtual Chuck_String * getLine();
+    virtual t_CKINT getByte();
+    virtual Chuck_Array * getBytes();
     
     static const t_CKUINT TYPE_BYTE = 0;
     static const t_CKUINT TYPE_WORD = 1;
@@ -117,7 +119,7 @@ protected:
     CircularBuffer<Read> m_asyncReadRequests;
     CircularBuffer<Read> m_asyncReadResponses;
     CircularBuffer<char> m_asyncReadData;
-    CircularBuffer<void *> m_asyncReadPtr;
+    CircularBuffer<t_CKUINT> m_asyncReadPtr;
     
     CBufferSimple * m_event_buffer;
     
