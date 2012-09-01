@@ -72,6 +72,12 @@ typedef struct { t_CKFLOAT modulus ; t_CKFLOAT phase ; } t_CKPOLAR;
 #define sz_VOID                     0
 #define sz_WORD                     4
 
+// kinds (added 1.3.1.0 to faciliate 64-bit support)
+// to differentiate in case int and float have same size
+#define kindof_INT                 1
+#define kindof_FLOAT               2
+#define kindof_COMPLEX             3
+
 typedef char *                      c_str;
 typedef const char *                c_constr;
 

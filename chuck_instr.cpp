@@ -3431,7 +3431,7 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     mem_sp -= push;
     
     // push the return
-    // TODO: 1.3.1.0 -- sz_INT could be the same as sz_FLOAT
+    // TODO: 1.3.1.0 -- check type
     if( m_val == sz_INT ) // ISSUE: 64-bit (fixed: 1.3.1.0)
     {
         // push the return args
@@ -3525,7 +3525,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     mem_sp -= push;
 
     // push the return
-    // TODO: should look at type since sz_INT could == sz_FLOAT
+    // TODO: 1.3.1.0 -- check type?
     if( m_val == sz_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // push the return args
@@ -3615,7 +3615,7 @@ void Chuck_Instr_Spork::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // copy args
     if( m_val )
     {
-        // ISSUE: 64-bit? (verified 1.3.1.0: this should be OK as long as shred->reg->sp is t_CKBYTE *)
+        // ISSUE: 64-bit? (1.3.1.0: this should be OK as long as shred->reg->sp is t_CKBYTE *)
         pop_( shred->reg->sp, m_val );
         memcpy( sh->reg->sp, shred->reg->sp, m_val );
         sh->reg->sp += m_val;
@@ -3952,7 +3952,7 @@ Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
     if( capacity >= top )
     {
         // check size
-        // TODO: 1.3.1.0 -- should look at type?
+        // TODO: 1.3.1.0 -- look at type?
         if( size == sz_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
             Chuck_Array4 * base = new Chuck_Array4( is_obj, *capacity );
@@ -5385,7 +5385,7 @@ void Chuck_Instr_IO_in_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // pop the value
     pop_( sp, 2 );
     
-    // issue: 64-bit
+    // ISSUE: 64-bit?
     // the IO
     Chuck_IO **& ppIO = (Chuck_IO **&)sp;
 
@@ -5553,9 +5553,9 @@ void Chuck_Instr_IO_out_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
     
     // pop the value
-    pop_( sp, 3 );
+    pop_( sp, 1 + (sz_FLOAT / sz_INT) ); // ISSUE: 64-bit (fixed 1.3.1.0)
     
-    // issue: 64-bit
+    // ISSUE: 64-bit
     // the IO
     Chuck_IO **& ppIO = (Chuck_IO **&)sp;
     
@@ -5597,7 +5597,7 @@ void Chuck_Instr_IO_out_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // pop the value
     pop_( sp, 2 );
     
-    // issue: 64-bit
+    // ISSUE: 64-bit
     // the IO
     Chuck_IO ** ppIO = (Chuck_IO **)sp;
     // the string
