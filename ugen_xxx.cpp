@@ -1224,7 +1224,7 @@ CK_DLL_CTOR( foogen_ctor )
     {
         vector<Chuck_Instr *> instrs;
         // push arg (float input)
-        instrs.push_back(new Chuck_Instr_Reg_Push_Deref((t_CKUINT) &data->input, 8));
+        instrs.push_back(new Chuck_Instr_Reg_Push_Deref( (t_CKUINT)&data->input, 8) );
         // push this (as func arg)
         instrs.push_back(new Chuck_Instr_Reg_Push_Imm((unsigned int) SELF));
         // reg dup last (push this again) (for member func resolution)

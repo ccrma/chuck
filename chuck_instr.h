@@ -1539,12 +1539,25 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Reg_Pop_Word3
-// desc: pop arbitrary num of word from reg stack
+// desc: pop a complex value from reg stack (change 1.3.1.0)
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Reg_Pop_Word3 : public Chuck_Instr_Unary_Op
+struct Chuck_Instr_Reg_Pop_Word3 : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Reg_Pop_Word3( t_CKUINT num ) { this->set( num ); }
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Pop_Word4
+// desc: pop arbitrary num of word from reg stack (added 1.3.1.0)
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Pop_Word4 : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Reg_Pop_Word4( t_CKUINT num ) { this->set( num ); }
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };
 
@@ -1825,16 +1838,16 @@ protected:
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Reg_Push_Deref
 // desc: push value from pointer
+//       changed 1.3.1.0 to not use a separate size param; now int-only
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Reg_Push_Deref : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Reg_Push_Deref( t_CKUINT src, t_CKUINT size )
-    { this->set( src ); m_size = size; }
+    Chuck_Instr_Reg_Push_Deref( t_CKUINT src )
+    { this->set( src ); }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
-    t_CKUINT m_size;
 };
 
 
@@ -1966,7 +1979,7 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Mem_Pop_Word2
+// name: struct Chuck_Instr_Mem_Pop_Word3
 // desc: pop a value from mem stack
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Mem_Pop_Word3 : public Chuck_Instr_Unary_Op

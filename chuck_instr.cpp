@@ -1581,16 +1581,12 @@ void Chuck_Instr_Reg_Push_Maybe::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Reg_Push_Deref::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
-    if( m_size == 4 ) // ISSUE: 64-bit
-    {
-        t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-        push_( reg_sp, *((t_CKUINT *)m_val) );
-    }
-    else
-    {
-        t_CKFLOAT *& reg_sp = (t_CKFLOAT *&)shred->reg->sp;
-        push_( reg_sp, *((t_CKFLOAT *)m_val) );
-    }
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+
+    // (added 1.3.1.0: made this integer only)
+    // ISSUE: 64-bit (fixed 1.3.1.0)
+    push_( reg_sp, *((t_CKUINT *)m_val) );
+
 }
 
 
@@ -1714,10 +1710,25 @@ void Chuck_Instr_Reg_Pop_Word2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Reg_Pop_Word3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
-    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-
+    t_CKCOMPLEX *& reg_sp = (t_CKCOMPLEX *&)shred->reg->sp;
+    
     // pop word from reg stack 
-    pop_( reg_sp, m_val );
+    pop_( reg_sp, 1 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_Pop_Word4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKBYTE *& reg_sp = (t_CKBYTE *&)shred->reg->sp;
+
+    // pop word from reg stack (changed 1.3.1.0 to use sz_WORD)
+    pop_( reg_sp, m_val * sz_WORD );
 }
 
 
@@ -3588,7 +3599,7 @@ void Chuck_Instr_Spork::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // copy args
     if( m_val )
     {
-        // ISSUE: 64-bit?
+        // ISSUE: 64-bit? (verified 1.3.1.0: this should be OK as long as shred->reg->sp is t_CKBYTE *)
         pop_( shred->reg->sp, m_val );
         memcpy( sh->reg->sp, shred->reg->sp, m_val );
         sh->reg->sp += m_val;

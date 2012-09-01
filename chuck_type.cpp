@@ -4242,6 +4242,8 @@ t_CKBOOL isobj( Chuck_Type * type )
 {   return !type_engine_check_primitive( type ); }
 t_CKBOOL isfunc( Chuck_Type * type )
 {   return isa( type, &t_function ); }
+t_CKBOOL iskindofint( Chuck_Type * type ) // added 1.3.1.0
+{   return isa( type, &t_int ) || isobj( type ); }
 
 
 
