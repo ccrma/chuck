@@ -1854,13 +1854,13 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Reg_Push_Deref
-// desc: push a t_CKFLOAT variable from main memory to reg stack
+// name: struct Chuck_Instr_Reg_Push_Deref2
+// desc: push a t_CKFLOAT value from pointer
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Reg_Push_Deref2 : public Chuck_Instr_Unary_Op2
+struct Chuck_Instr_Reg_Push_Deref2 : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Reg_Push_Deref2( t_CKFLOAT src )
+    Chuck_Instr_Reg_Push_Deref2( t_CKUINT src )
     { this->set( src ); }
 
 public:

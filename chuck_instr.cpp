@@ -1586,7 +1586,21 @@ void Chuck_Instr_Reg_Push_Deref::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
     // (added 1.3.1.0: made this integer only)
     // ISSUE: 64-bit (fixed 1.3.1.0)
     push_( reg_sp, *((t_CKUINT *)m_val) );
+}
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: push the value pointed to by m_val onto register stack
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_Push_Deref2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKFLOAT *& reg_sp = (t_CKFLOAT *&)shred->reg->sp;
+    
+    // (added 1.3.1.0)
+    push_( reg_sp, *((t_CKFLOAT *)m_val) );
 }
 
 
