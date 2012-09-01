@@ -5644,9 +5644,8 @@ Chuck_Instr_Hack::~Chuck_Instr_Hack()
 
 void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
-    // look at the type
-    // TODO: 1.3.1.0 -- check type?
-    if( m_type_ref->size == sz_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    // look at the type (1.3.1.0: added iskindofint)
+    if( m_type_ref->size == sz_INT && iskindofint(m_type_ref) ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         t_CKINT * sp = (t_CKINT *)shred->reg->sp;
         if( !isa( m_type_ref, &t_string ) )
@@ -5740,9 +5739,8 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     {
         Chuck_Type * type = m_type_refs[i];
 
-        // look at the type
-        // TODO: 1.3.1.0 -- check type?
-        if( type->size == sz_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+        // look at the type (1.3.1.0: added is kindofint)
+        if( type->size == sz_INT && iskindofint(type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
             t_CKINT * sp = (t_CKINT *)the_sp;
             if( !isa( type, &t_string ) )
