@@ -1811,8 +1811,8 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         case te_array:
-            // check size
-            emit->append( instr = new Chuck_Instr_Array_Append( t_left->array_type->size ) );
+            // check size (1.3.1.0: changed to getkindof)
+            emit->append( instr = new Chuck_Instr_Array_Append( getkindof( t_left->array_type ) ) );
             break;
 
         default: break;
@@ -3054,16 +3054,16 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
     // check the depth
     if( depth == 1 )
     {
-        // emit the array access
+        // emit the array access (1.3.1.0: use getkindof instead of type->size)
         if( is_str )
-            emit->append( new Chuck_Instr_Array_Map_Access( type->size, is_var ) );
+            emit->append( new Chuck_Instr_Array_Map_Access( getkindof(type), is_var ) );
         else
-            emit->append( new Chuck_Instr_Array_Access( type->size, is_var ) );
+            emit->append( new Chuck_Instr_Array_Access( getkindof(type), is_var ) );
     }
     else
     {
-        // emit the multi array access
-        emit->append( new Chuck_Instr_Array_Access_Multi( depth, type->size, is_var ) );
+        // emit the multi array access (1.3.1.0: use getkindof instead of type->size)
+        emit->append( new Chuck_Instr_Array_Access_Multi( depth, getkindof(type), is_var ) );
     }
 
     // TODO: variable?
@@ -3103,16 +3103,17 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     // TODO: member functions and static functions
     // call the function
     t_CKUINT size = type->size;
+    t_CKUINT kind = getkindof( type ); // added 1.3.1.0
     if( func->def->s_type == ae_func_builtin )
     {
         // ISSUE: 64-bit (fixed 1.3.1.0)
         if( size == 0 || size == sz_INT || size == sz_FLOAT || size == sz_COMPLEX )
         {
-            // is member
+            // is member (1.3.1.0: changed to use kind instead of size)
             if( is_member )
-                emit->append( new Chuck_Instr_Func_Call_Member( size ) );
+                emit->append( new Chuck_Instr_Func_Call_Member( kind ) );
             else
-                emit->append( new Chuck_Instr_Func_Call_Static( size ) );
+                emit->append( new Chuck_Instr_Func_Call_Static( kind ) );
         }
         else
         {
@@ -3321,26 +3322,26 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
             {
                 // emit the base (TODO: return on error?)
                 emit_engine_emit_exp( emit, member->base );
-                // lookup the member
+                // lookup the member (1.3.1.0: changed to use getkindof instead of type size)
                 emit->append( new Chuck_Instr_Dot_Member_Data( 
-                    offset, member->self->type->size, emit_addr ) );
+                    offset, getkindof(member->self->type), emit_addr ) );
             }
             else
             {
                 // if builtin or not
                 if( value->addr )
                 {
-                    // emit builtin
+                    // emit builtin (1.3.1.0: changed to use getkindof instead of type size)
                     emit->append( new Chuck_Instr_Dot_Static_Import_Data(
-                        value->addr, member->self->type->size, emit_addr ) );
+                        value->addr, getkindof(member->self->type), emit_addr ) );
                 }
                 else
                 {
                     // emit the type
                     emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)t_base ) );
-                    // emit the static value
+                    // emit the static value (1.3.1.0: changed to use getkindof in addition to size)
                     emit->append( new Chuck_Instr_Dot_Static_Data(
-                        offset, member->self->type->size, emit_addr ) );
+                        offset, member->self->type->size, getkindof(member->self->type), emit_addr ) );
                 }
             }
         }
@@ -3374,9 +3375,9 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
             // if builtin
             if( value->addr )
             {
-                // emit
+                // emit (1.3.1.0: changed to use getkindof instead of type size)
                 emit->append( new Chuck_Instr_Dot_Static_Import_Data(
-                    value->addr, member->self->type->size, emit_addr ) );
+                    value->addr, getkindof(member->self->type), emit_addr ) );
             }
             else
             {
@@ -3384,9 +3385,9 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
                 emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)t_base ) );
                 // find the offset for data
                 offset = value->offset;
-                // emit the member
+                // emit the member (1.3.1.0: changed to use getkindof in addition to size)
                 emit->append( new Chuck_Instr_Dot_Static_Data(
-                    offset, member->self->type->size, emit_addr ) );
+                    offset, member->self->type->size, getkindof(member->self->type), emit_addr ) );
             }
         }
     }
@@ -3710,9 +3711,9 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             {
                 // emit the type
                 emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)emit->env->class_def ) );
-                // emit the static value
+                // emit the static value (1.3.1.0: changed to use getkindof in addition to size)
                 emit->append( new Chuck_Instr_Dot_Static_Data(
-                    value->offset, value->type->size, TRUE ) );
+                    value->offset, value->type->size, getkindof(value->type), TRUE ) );
             }
         }
 

@@ -2577,20 +2577,20 @@ protected:
 struct Chuck_Instr_Array_Access : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Array_Access( t_CKUINT size, t_CKUINT emit_addr, 
+    Chuck_Instr_Array_Access( t_CKUINT kind, t_CKUINT emit_addr, 
         t_CKUINT istr = FALSE )
-    { m_size = size; m_emit_addr = emit_addr; m_istr = istr; }
+    { m_kind = kind; m_emit_addr = emit_addr; m_istr = istr; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "size=%ld, emit_addr=%ld istr=%ld", 
-               m_size, m_emit_addr, m_istr );
+      sprintf( buffer, "kind=%ld, emit_addr=%ld istr=%ld", 
+               m_kind, m_emit_addr, m_istr );
       return buffer; }
 
 protected:
-    t_CKUINT m_size;
+    t_CKUINT m_kind;
     t_CKUINT m_emit_addr;
     t_CKUINT m_istr;
 };
@@ -2605,18 +2605,18 @@ protected:
 struct Chuck_Instr_Array_Map_Access : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Array_Map_Access( t_CKUINT size, t_CKUINT emit_addr )
-    { m_size = size; m_emit_addr = emit_addr; }
+    Chuck_Instr_Array_Map_Access( t_CKUINT kind, t_CKUINT emit_addr )
+    { m_kind = kind; m_emit_addr = emit_addr; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "size=%ld, emit_addr=%ld", m_size, m_emit_addr );
+      sprintf( buffer, "kind=%ld, emit_addr=%ld", m_kind, m_emit_addr );
       return buffer; }
 
 protected:
-    t_CKUINT m_size;
+    t_CKUINT m_kind;
     t_CKUINT m_emit_addr;
 };
 
@@ -2630,19 +2630,19 @@ protected:
 struct Chuck_Instr_Array_Access_Multi : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Array_Access_Multi( t_CKUINT depth, t_CKUINT size, t_CKUINT emit_addr )
-    { m_size = size; m_depth = depth; m_emit_addr = emit_addr; }
+    Chuck_Instr_Array_Access_Multi( t_CKUINT depth, t_CKUINT kind, t_CKUINT emit_addr )
+    { m_kind = kind; m_depth = depth; m_emit_addr = emit_addr; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "depth=%ld, size=%ld, emit_addr=%ld", m_depth, m_size, m_emit_addr );
+      sprintf( buffer, "depth=%ld, kind=%ld, emit_addr=%ld", m_depth, m_kind, m_emit_addr );
       return buffer; }
 
 protected:
     t_CKUINT m_depth;
-    t_CKUINT m_size;
+    t_CKUINT m_kind;
     t_CKUINT m_emit_addr;
 };
 
@@ -2656,19 +2656,19 @@ protected:
 struct Chuck_Instr_Dot_Member_Data : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Dot_Member_Data( t_CKUINT offset, t_CKUINT size, t_CKUINT emit_addr )
-    { m_offset = offset; m_size = size; m_emit_addr = emit_addr; }
+    Chuck_Instr_Dot_Member_Data( t_CKUINT offset, t_CKUINT kind, t_CKUINT emit_addr )
+    { m_offset = offset; m_kind = kind; m_emit_addr = emit_addr; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "offset=%ld, size=%ld, emit_addr=%ld", m_offset, m_size, m_emit_addr );
+      sprintf( buffer, "offset=%ld, kind=%ld, emit_addr=%ld", m_offset, m_kind, m_emit_addr );
       return buffer; }
 
 protected:
     t_CKUINT m_offset;
-    t_CKUINT m_size;
+    t_CKUINT m_kind;
     t_CKUINT m_emit_addr;
 };
 
@@ -2706,19 +2706,20 @@ protected:
 struct Chuck_Instr_Dot_Static_Data : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Dot_Static_Data( t_CKUINT offset, t_CKUINT size, t_CKUINT emit_addr )
-    { m_offset = offset; m_size = size; m_emit_addr = emit_addr; }
+    Chuck_Instr_Dot_Static_Data( t_CKUINT offset, t_CKUINT size, t_CKUINT kind, t_CKUINT emit_addr )
+    { m_offset = offset; m_size = size; m_kind = kind; m_emit_addr = emit_addr; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "offset=%ld, size=%ld, emit_addr=%ld", m_offset, m_size, m_emit_addr );
+      sprintf( buffer, "offset=%ld, size=%ld, kind=%ld, emit_addr=%ld", m_offset, m_size, m_kind, m_emit_addr );
       return buffer; }
 
 protected:
     t_CKUINT m_offset;
     t_CKUINT m_size;
+    t_CKUINT m_kind;
     t_CKUINT m_emit_addr;
 };
 
@@ -2732,19 +2733,19 @@ protected:
 struct Chuck_Instr_Dot_Static_Import_Data : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Dot_Static_Import_Data( void * addr, t_CKUINT size, t_CKUINT emit_addr )
-    { m_addr = addr; m_size = size; m_emit_addr = emit_addr; }
+    Chuck_Instr_Dot_Static_Import_Data( void * addr, t_CKUINT kind, t_CKUINT emit_addr )
+    { m_addr = addr; m_kind = kind; m_emit_addr = emit_addr; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "addr=%ld, size=%ld, emit_addr=%ld", (t_CKUINT)m_addr, m_size, m_emit_addr );
+      sprintf( buffer, "addr=%ld, kind=%ld, emit_addr=%ld", (t_CKUINT)m_addr, m_kind, m_emit_addr );
       return buffer; }
 
 protected:
     void * m_addr;
-    t_CKUINT m_size;
+    t_CKUINT m_kind;
     t_CKUINT m_emit_addr;
 };
 

@@ -74,6 +74,7 @@ typedef struct { t_CKFLOAT modulus ; t_CKFLOAT phase ; } t_CKPOLAR;
 
 // kinds (added 1.3.1.0 to faciliate 64-bit support)
 // to differentiate in case int and float have same size
+#define kindof_VOID                0
 #define kindof_INT                 1
 #define kindof_FLOAT               2
 #define kindof_COMPLEX             3

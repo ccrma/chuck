@@ -3431,26 +3431,26 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     mem_sp -= push;
     
     // push the return
-    // TODO: 1.3.1.0 -- check type
-    if( m_val == sz_INT ) // ISSUE: 64-bit (fixed: 1.3.1.0)
+    // 1.3.1.0: check type to use kind instead of size
+    if( m_val == kindof_INT ) // ISSUE: 64-bit (fixed: 1.3.1.0)
     {
         // push the return args
         push_( reg_sp, retval.v_uint );
     }
-    else if( m_val == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_val == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // push the return args
         t_CKFLOAT *& sp_double = (t_CKFLOAT *&)reg_sp;
         push_( sp_double, retval.v_float );
     }
-    else if( m_val == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_val == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // push the return args
         t_CKCOMPLEX *& sp_complex = (t_CKCOMPLEX *&)reg_sp;
         // TODO: polar same?
         push_( sp_complex, retval.v_complex );
     }
-    else if( m_val == 0 ) { }
+    else if( m_val == kindof_VOID ) { }
     else assert( FALSE );
 
     return;
@@ -3525,26 +3525,26 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     mem_sp -= push;
 
     // push the return
-    // TODO: 1.3.1.0 -- check type?
-    if( m_val == sz_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    // 1.3.1.0: check type to use kind instead of size
+    if( m_val == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // push the return args
         push_( reg_sp, retval.v_uint );
     }
-    else if( m_val == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_val == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // push the return args
         t_CKFLOAT *& sp_double = (t_CKFLOAT *&)reg_sp;
         push_( sp_double, retval.v_float );
     }
-    else if( m_val == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_val == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // push the return args
         t_CKCOMPLEX *& sp_complex = (t_CKCOMPLEX *&)reg_sp;
         // TODO: polar same?
         push_( sp_complex, retval.v_complex );
     }
-    else if( m_val == 0 ) { }
+    else if( m_val == kindof_VOID ) { }
     else assert( FALSE );
 
     return;
@@ -3934,10 +3934,10 @@ Chuck_Instr_Array_Alloc::~Chuck_Instr_Array_Alloc()
 
 //-----------------------------------------------------------------------------
 // name: do_alloc_array()
-// desc: ...
+// desc: 1.3.1.0 -- changed size to kind
 //-----------------------------------------------------------------------------
 Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
-                               t_CKUINT size, t_CKBOOL is_obj,
+                               t_CKUINT kind, t_CKBOOL is_obj,
                                t_CKUINT * objs, t_CKINT & index )
 {
     // not top level
@@ -3952,8 +3952,8 @@ Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
     if( capacity >= top )
     {
         // check size
-        // TODO: 1.3.1.0 -- look at type?
-        if( size == sz_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+        // 1.3.1.0: look at type to use kind instead of size
+        if( kind == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
             Chuck_Array4 * base = new Chuck_Array4( is_obj, *capacity );
             if( !base ) goto out_of_memory;
@@ -3973,16 +3973,16 @@ Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
             initialize_object( base, &t_array );
             return base;
         }
-        else if( size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+        else if( kind == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
             Chuck_Array8 * base = new Chuck_Array8( *capacity );
             if( !base ) goto out_of_memory;
-
+            
             // initialize object
             initialize_object( base, &t_array );
             return base;
         }
-        else if( size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+        else if( kind == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
             Chuck_Array16 * base = new Chuck_Array16( *capacity );
             if( !base ) goto out_of_memory;
@@ -4004,7 +4004,7 @@ Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
     for( i = 0; i < *capacity; i++ )
     {
         // the next
-        next = do_alloc_array( capacity+1, top, size, is_obj, objs, index );
+        next = do_alloc_array( capacity+1, top, kind, is_obj, objs, index );
         // error if NULL
         if( !next ) goto error;
         // set that, with ref count
@@ -4106,7 +4106,7 @@ void Chuck_Instr_Array_Alloc::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     ref = (t_CKUINT)do_alloc_array( 
         (t_CKINT *)(reg_sp - m_depth),
         (t_CKINT *)(reg_sp - 1),
-        m_type_ref->size,
+        getkindof(m_type_ref), // 1.3.1.0: changed; was 'm_type_ref->size'
         m_is_obj,
         obj_array, index 
     );
@@ -4159,6 +4159,8 @@ error:
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
@@ -4182,8 +4184,8 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( !(*sp) ) goto null_pointer;
 
     // 4 or 8 or 16
-    // TODO: 1.3.1.0 -- look at type?
-    if( m_size == sz_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    // 1.3.1.0: look at type to use kind instead of size
+    if( m_kind == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
         Chuck_Array4 * arr = (Chuck_Array4 *)(*sp);
@@ -4205,7 +4207,7 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             push_( sp, val );
         }
     }
-    else if( m_size == sz_FLOAT ) // ISSUE: 64-bit (1.3.1.0)
+    else if( m_kind == kindof_FLOAT ) // ISSUE: 64-bit (1.3.1.0)
     {
         // get array
         Chuck_Array8 * arr = (Chuck_Array8 *)(*sp);
@@ -4227,7 +4229,7 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             push_( ((t_CKFLOAT *&)sp), fval );
         }
     }
-    else if( m_size == sz_COMPLEX ) // ISSUE: 64-bit
+    else if( m_kind == kindof_COMPLEX ) // ISSUE: 64-bit
     {
         // get array
         Chuck_Array16 * arr = (Chuck_Array16 *)(*sp);
@@ -4300,8 +4302,8 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     if( !(*sp) ) goto null_pointer;
 
     // 4 or 8 or 16
-    // TODO: 1.3.1.0 -- look at type?
-    if( m_size == sz_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    // 1.3.1.0: look at type to use kind instead of size
+    if( m_kind == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
         Chuck_Array4 * arr = (Chuck_Array4 *)(*sp);
@@ -4323,7 +4325,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
             push_( sp, val );
         }
     }
-    else if( m_size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_kind == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
         Chuck_Array8 * arr = (Chuck_Array8 *)(*sp);
@@ -4345,7 +4347,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
             push_( ((t_CKFLOAT *&)sp), fval );
         }
     }
-    else if( m_size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_kind == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
         Chuck_Array16 * arr = (Chuck_Array16 *)(*sp);
@@ -4444,8 +4446,8 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     }
 
     // 4 or 8 or 16
-    // TODO: look at type?
-    if( m_size == sz_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    // 1.3.1.0: look at type and use kind instead of size
+    if( m_kind == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get arry
         Chuck_Array4 * arr = base;
@@ -4467,7 +4469,7 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
             push_( sp, val );
         }
     }
-    else if( m_size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_kind == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
         Chuck_Array8 * arr = (Chuck_Array8 *)(base);
@@ -4489,7 +4491,7 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
             push_( ((t_CKFLOAT *&)sp), fval );
         }
     }
-    else if( m_size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_kind == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
         Chuck_Array16 * arr = (Chuck_Array16 *)(base);
@@ -4568,15 +4570,21 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     cval.re = 0;
     cval.im = 0;
 
-    // pop
-    pop_( sp, 1+(m_val/4) );
+    // how much to pop (added 1.3.1.0)
+    t_CKUINT howmuch = 0;
+    // check kind
+    if( m_val == kindof_INT ) howmuch = 1;
+    else if( m_val == kindof_FLOAT ) howmuch = sz_FLOAT / sz_INT;
+    else if( m_val == kindof_COMPLEX) howmuch = sz_COMPLEX / sz_INT;
+    // pop (1.3.1.0: use howmuch instead of m_val/4)
+    pop_( sp, 1 + howmuch ); // ISSUE: 64-bit (fixed 1.3.1.0)
 
     // check pointer
     if( !(*sp) ) goto null_pointer;
 
     // 4 or 8 or 16
-    // TODO: 1.3.1.0 -- look at type
-    if( m_val == sz_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    // 1.3.1.0: changed to look at type (instead of size)
+    if( m_val == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
         Chuck_Array4 * arr = (Chuck_Array4 *)(*sp);
@@ -4585,7 +4593,7 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // append
         arr->push_back( val );
     }
-    else if( m_val == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_val == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
         Chuck_Array8 * arr = (Chuck_Array8 *)(*sp);
@@ -4594,7 +4602,7 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // append
         arr->push_back( fval );
     }
-    else if( m_val == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_val == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
         Chuck_Array16 * arr = (Chuck_Array16 *)(*sp);
@@ -4656,10 +4664,10 @@ void Chuck_Instr_Dot_Member_Data::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
     else
     {
         // 4 or 8 or 16
-        // TODO: 1.3.1.0 -- check type?
-        if( m_size == sz_INT ) { push_( sp, *((t_CKUINT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
-        else if( m_size == sz_FLOAT ) { push_float( sp, *((t_CKFLOAT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
-        else if( m_size == sz_COMPLEX ) { push_complex( sp, *((t_CKCOMPLEX *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0) // TODO: polar same?
+        // 1.3.1.0: check type to use kind instead of size
+        if( m_kind == kindof_INT ) { push_( sp, *((t_CKUINT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
+        else if( m_kind == kindof_FLOAT ) { push_float( sp, *((t_CKFLOAT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
+        else if( m_kind == kindof_COMPLEX ) { push_complex( sp, *((t_CKCOMPLEX *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0) // TODO: polar same?
         else assert( FALSE );
     }
 
@@ -4749,10 +4757,10 @@ void Chuck_Instr_Dot_Static_Data::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
     else
     {
         // 4 or 8 or 16
-        // TODO: 1.3.1.0 -- check type?
-        if( m_size == sz_INT ) { push_( sp, *((t_CKUINT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
-        else if( m_size == sz_FLOAT ) { push_float( sp, *((t_CKFLOAT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
-        else if( m_size == sz_COMPLEX ) { push_complex( sp, *((t_CKCOMPLEX *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0) // TODO: polar same?
+        // 1.3.1.0: check type to use kind instead of size
+        if( m_kind == kindof_INT ) { push_( sp, *((t_CKUINT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
+        else if( m_kind == kindof_FLOAT ) { push_float( sp, *((t_CKFLOAT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
+        else if( m_kind == kindof_COMPLEX ) { push_complex( sp, *((t_CKCOMPLEX *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0) // TODO: polar same?
         else assert( FALSE );
     }
 }
@@ -4778,10 +4786,10 @@ void Chuck_Instr_Dot_Static_Import_Data::execute( Chuck_VM * vm, Chuck_VM_Shred 
     else
     {
         // 4 or 8 or 16
-        // TODO: 1.3.1.0 -- check type?
-        if( m_size == sz_INT ) { push_( sp, *((t_CKUINT *)m_addr) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
-        else if( m_size == sz_FLOAT ) { push_float( sp, *((t_CKFLOAT *)m_addr) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
-        else if( m_size == sz_COMPLEX ) { push_complex( sp, *((t_CKCOMPLEX *)m_addr) ); } // ISSUE: 64-bit (fixed 1.3.1.0) // TODO: polar same?
+        // 1.3.1.0: check type to use kind instead of size
+        if( m_kind == kindof_INT ) { push_( sp, *((t_CKUINT *)m_addr) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
+        else if( m_kind == kindof_FLOAT ) { push_float( sp, *((t_CKFLOAT *)m_addr) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
+        else if( m_kind == kindof_COMPLEX ) { push_complex( sp, *((t_CKCOMPLEX *)m_addr) ); } // ISSUE: 64-bit (fixed 1.3.1.0) // TODO: polar same?
         else assert( FALSE );
     }
 }
