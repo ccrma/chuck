@@ -1989,31 +1989,29 @@ void Hid_callback( void * target, IOReturn result,
                 }
                 
 #ifndef __CK_HID_CURSOR_TRACK__
-                Point p;
-                p.h = 0;
-                p.v = 0;
-//                GetGlobalMouse( &p );
-//                
-//                msg.idata[2] = p.h;
-//                msg.idata[3] = p.v;
-                msg.idata[2] = 0;
-                msg.idata[3] = 0;
+                
+                CGEventRef event = CGEventCreate(NULL);
+                CGPoint cursor = CGEventGetLocation(event);
+                CFRelease(event);
+                
+                msg.idata[2] = cursor.x;
+                msg.idata[3] = cursor.y;
                 
                 CGDirectDisplayID display;
                 CGDisplayCount displayCount;
                 
                 CGPoint cgp;
-                cgp.x = p.h;
-                cgp.y = p.v;
+                cgp.x = cursor.x;
+                cgp.y = cursor.y;
                 
                 if( CGGetDisplaysWithPoint( cgp, 1, &display, &displayCount ) ==
                     kCGErrorSuccess )
                 {
                     CGRect bounds = CGDisplayBounds( display );
                     
-                    msg.fdata[0] = ( ( t_CKFLOAT ) ( p.h - bounds.origin.x ) ) /
+                    msg.fdata[0] = ( ( t_CKFLOAT ) ( cursor.x - bounds.origin.x ) ) /
                                    ( bounds.size.width - 1 );
-                    msg.fdata[1] = ( ( t_CKFLOAT ) ( p.v - bounds.origin.y ) ) /
+                    msg.fdata[1] = ( ( t_CKFLOAT ) ( cursor.y - bounds.origin.y ) ) /
                                    ( bounds.size.height - 1 );
                 }
 #else
