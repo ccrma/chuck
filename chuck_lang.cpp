@@ -1883,6 +1883,9 @@ CK_DLL_MFUN( ugen_op )
     // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_op( ugen->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
+    // added 1.3.0.2 -- apply op to subgraph outlet
+    if( ugen->outlet() )
+        ugen->outlet()->m_op = op;
 }
 
 CK_DLL_MFUN( ugen_cget_op )
@@ -1922,6 +1925,12 @@ CK_DLL_MFUN( ugen_next )
     // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_next( ugen->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
+    // added 1.3.0.2 -- apply op to subgraph outlet
+    if( ugen->outlet() )
+    {
+        ugen->outlet()->m_next = (SAMPLE) next;
+        ugen->outlet()->m_use_next = TRUE;
+    }
 }
 
 CK_DLL_MFUN( ugen_cget_next )
