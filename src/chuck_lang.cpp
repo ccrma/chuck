@@ -1898,7 +1898,11 @@ CK_DLL_MFUN( ugen_last )
     // get as ugen
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     // set return
-    RETURN->v_float = (t_CKFLOAT)ugen->m_last;
+    // added 1.3.0.2 -- ugen outlet() last if subgraph
+    if( ugen->outlet() )
+        RETURN->v_float = (t_CKFLOAT) ugen->outlet()->m_last;
+    else
+        RETURN->v_float = (t_CKFLOAT)ugen->m_last;
 }
 
 CK_DLL_MFUN( ugen_next )
@@ -1944,6 +1948,9 @@ CK_DLL_MFUN( ugen_gain )
     // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_gain( ugen->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
+    // added 1.3.0.2 -- apply gain to subgraph outlet
+    if( ugen->outlet() )
+        ugen->outlet()->m_gain = (SAMPLE) gain;
 }
 
 CK_DLL_MFUN( ugen_cget_gain )
