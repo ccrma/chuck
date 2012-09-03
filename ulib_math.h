@@ -81,5 +81,15 @@ CK_DLL_SFUN( phase_impl );
 CK_DLL_SFUN( rtop_impl );
 CK_DLL_SFUN( ptor_impl );
 
+CK_DLL_SFUN( random_impl );
+CK_DLL_SFUN( randomf_impl );
+CK_DLL_SFUN( random2f_impl );
+CK_DLL_SFUN( random2_impl );
+CK_DLL_SFUN( srandom_impl );
+// max for random functions
+#define CK_RANDOM_MAX 0x7fffffff
+
+
+
 
 #endif
