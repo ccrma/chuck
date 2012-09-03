@@ -183,7 +183,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         }
 
         // parse, type-check, and emit
-        if( !compiler->go( msg->buffer, fd ) )
+        if( !compiler->go( msg->buffer, fd, NULL, msg->buffer ) )
         {
             SAFE_DELETE(cmd);
             goto cleanup;
