@@ -168,9 +168,13 @@ public:
 
 
 
-#define CHUCK_ARRAY4_DATASIZE 4
-#define CHUCK_ARRAY8_DATASIZE 8
-#define CHUCK_ARRAY16_DATASIZE 16
+// ISSUE: 64-bit (fixed 1.3.1.0)
+#define CHUCK_ARRAY4_DATASIZE sz_INT
+#define CHUCK_ARRAY8_DATASIZE sz_FLOAT
+#define CHUCK_ARRAY16_DATASIZE sz_COMPLEX
+#define CHUCK_ARRAY4_DATAKIND kindof_INT
+#define CHUCK_ARRAY8_DATAKIND kindof_FLOAT
+#define CHUCK_ARRAY16_DATAKIND kindof_COMPLEX
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Array
 // desc: native ChucK arrays ( virtual base class )
@@ -187,7 +191,8 @@ public:
     virtual t_CKINT capacity( ) = 0; // const { return m_capacity; } // array capacity
     virtual t_CKINT set_size( t_CKINT size ) = 0; // array size
     virtual t_CKINT set_capacity( t_CKINT capacity ) = 0; // set
-    virtual t_CKINT data_type_size( ) = 0; // size of stored type ( from type_ref )
+    virtual t_CKINT data_type_size( ) = 0; // size of stored type (from type_ref)
+    virtual t_CKINT data_type_kind( ) = 0; // kind of stored type (from kindof)
     virtual t_CKINT find( const std::string & key ) = 0; // find
     virtual t_CKINT erase( const std::string & key ) = 0; // erase
     virtual void clear( ) = 0; // clear
@@ -226,6 +231,7 @@ public:
     virtual t_CKINT find( const std::string & key );
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY4_DATASIZE; } 
+    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY4_DATAKIND; } 
 
 public:
     std::vector<t_CKUINT> m_vector;
@@ -268,6 +274,7 @@ public:
     virtual t_CKINT find( const std::string & key );
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY8_DATASIZE; }
+    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY8_DATAKIND; } 
 
 public:
     std::vector<t_CKFLOAT> m_vector;
@@ -309,6 +316,7 @@ public:
     virtual t_CKINT find( const std::string & key );
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY16_DATASIZE; }
+    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY16_DATAKIND; } 
 
 public:
     std::vector<t_CKCOMPLEX> m_vector;

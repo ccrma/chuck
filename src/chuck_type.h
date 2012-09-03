@@ -743,6 +743,8 @@ t_CKBOOL isa( Chuck_Type * lhs, Chuck_Type * rhs );
 t_CKBOOL isprim( Chuck_Type * type );
 t_CKBOOL isobj( Chuck_Type * type );
 t_CKBOOL isfunc( Chuck_Type * type );
+t_CKBOOL iskindofint( Chuck_Type * type ); // added 1.3.1.0: this includes int + pointers
+t_CKUINT getkindof( Chuck_Type * type ); // added 1.3.1.0: to get the kindof a type
 
 // import
 Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type, 
