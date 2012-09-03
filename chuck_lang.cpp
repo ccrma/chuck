@@ -1886,6 +1886,8 @@ CK_DLL_MFUN( ugen_op )
     // added 1.3.0.2 -- apply op to subgraph outlet
     if( ugen->inlet() )
         ugen->inlet()->m_op = op;
+    if( ugen->outlet() )
+        ugen->outlet()->m_op = op;
 }
 
 CK_DLL_MFUN( ugen_cget_op )
