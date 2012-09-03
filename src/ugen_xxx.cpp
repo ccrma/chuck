@@ -1197,7 +1197,8 @@ CK_DLL_CTOR( foogen_ctor )
     data->shred = NULL;
     data->vm = SHRED->vm_ref;
     
-    OBJ_MEMBER_UINT(SELF, foogen_offset_data) = (unsigned int) data;
+    // 1.3.1.0: changed from unsigned int to t_CKUINT
+    OBJ_MEMBER_UINT(SELF, foogen_offset_data) = (t_CKUINT)data;
 
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     int tick_fun_index = -1;
@@ -1213,24 +1214,24 @@ CK_DLL_CTOR( foogen_ctor )
            // ensure has only one argument
            func->def->arg_list->next == NULL &&
            // ensure returns float
-           func->def->ret_type == &t_float)
+           func->def->ret_type == &t_float )
         {
             tick_fun_index = i;
             break;
         }
     }
     
-    if(tick_fun_index != -1)
+    if( tick_fun_index != -1 )
     {
         vector<Chuck_Instr *> instrs;
         // push arg (float input)
-        instrs.push_back(new Chuck_Instr_Reg_Push_Deref((t_CKUINT) &data->input, 8));
+        instrs.push_back(new Chuck_Instr_Reg_Push_Deref2( (t_CKUINT)&data->input ) );
         // push this (as func arg)
-        instrs.push_back(new Chuck_Instr_Reg_Push_Imm((unsigned int) SELF));
+        instrs.push_back(new Chuck_Instr_Reg_Push_Imm((t_CKUINT)SELF) ); // 1.3.1.0: changed to t_CKUINT
         // reg dup last (push this again) (for member func resolution)
         instrs.push_back(new Chuck_Instr_Reg_Dup_Last);
         // dot member func
-        instrs.push_back(new Chuck_Instr_Dot_Member_Func(tick_fun_index));
+        instrs.push_back(new Chuck_Instr_Dot_Member_Func(tick_fun_index) );
         // func to code
         instrs.push_back(new Chuck_Instr_Func_To_Code);
         // push stack depth
@@ -1238,7 +1239,7 @@ CK_DLL_CTOR( foogen_ctor )
         // func call
         instrs.push_back(new Chuck_Instr_Func_Call());
         // push immediate
-        instrs.push_back(new Chuck_Instr_Reg_Push_Imm((unsigned int) &data->output));
+        instrs.push_back(new Chuck_Instr_Reg_Push_Imm((t_CKUINT)&data->output) ); // 1.3.1.0: changed to t_CKUINT
         // assign primitive
         instrs.push_back(new Chuck_Instr_Assign_Primitive2);
         // pop

@@ -1989,27 +1989,29 @@ void Hid_callback( void * target, IOReturn result,
                 }
                 
 #ifndef __CK_HID_CURSOR_TRACK__
-                Point p;
-                GetGlobalMouse( &p );
                 
-                msg.idata[2] = p.h;
-                msg.idata[3] = p.v;
+                CGEventRef event = CGEventCreate(NULL);
+                CGPoint cursor = CGEventGetLocation(event);
+                CFRelease(event);
+                
+                msg.idata[2] = cursor.x;
+                msg.idata[3] = cursor.y;
                 
                 CGDirectDisplayID display;
                 CGDisplayCount displayCount;
                 
                 CGPoint cgp;
-                cgp.x = p.h;
-                cgp.y = p.v;
+                cgp.x = cursor.x;
+                cgp.y = cursor.y;
                 
                 if( CGGetDisplaysWithPoint( cgp, 1, &display, &displayCount ) ==
                     kCGErrorSuccess )
                 {
                     CGRect bounds = CGDisplayBounds( display );
                     
-                    msg.fdata[0] = ( ( t_CKFLOAT ) ( p.h - bounds.origin.x ) ) /
+                    msg.fdata[0] = ( ( t_CKFLOAT ) ( cursor.x - bounds.origin.x ) ) /
                                    ( bounds.size.width - 1 );
-                    msg.fdata[1] = ( ( t_CKFLOAT ) ( p.v - bounds.origin.y ) ) /
+                    msg.fdata[1] = ( ( t_CKFLOAT ) ( cursor.y - bounds.origin.y ) ) /
                                    ( bounds.size.height - 1 );
                 }
 #else
@@ -2807,7 +2809,7 @@ static int TiltSensor_test( int kernFunc, const char * servMatch, int dataType )
     io_connect_t dataPort;
 
     IOItemCount structureInputSize;
-    IOByteCount structureOutputSize;
+    size_t structureOutputSize;
     
     // log
     EM_log( CK_LOG_FINE, "testing for SMS sensor..." );
@@ -2851,12 +2853,18 @@ static int TiltSensor_test( int kernFunc, const char * servMatch, int dataType )
     memset( &TiltSensor_data.data, 0, sizeof( TiltSensor_data.data ) );
     memset( &TiltSensor_data.data, 0, sizeof( TiltSensor_data.data ) );
     
-    result = IOConnectMethodStructureIStructureO( dataPort, 
-                                                  kernFunc, 
-                                                  structureInputSize,
-                                                  &structureOutputSize, 
-                                                  &TiltSensor_data.data, 
-                                                  &TiltSensor_data.data );
+//    result = IOConnectMethodStructureIStructureO( dataPort,
+//                                                 kernFunc,
+//                                                 structureInputSize,
+//                                                 &structureOutputSize,
+//                                                 &TiltSensor_data.data,
+//                                                 &TiltSensor_data.data );
+    result = IOConnectCallStructMethod( dataPort,
+                                        kernFunc,
+                                        &TiltSensor_data.data,
+                                        structureInputSize,
+                                        &TiltSensor_data.data,
+                                        &structureOutputSize );
     
     if ( result != KERN_SUCCESS )
     {
@@ -2874,7 +2882,7 @@ static int TiltSensor_do_read()
 {
     kern_return_t result;
     IOItemCount structureInputSize;
-    IOByteCount structureOutputSize;
+    size_t structureOutputSize;
 
     // log
     EM_log( CK_LOG_FINE, "reading SMS sensor..." );
@@ -2898,13 +2906,19 @@ static int TiltSensor_do_read()
     memset( &TiltSensor_data.data, 0, sizeof( TiltSensor_data.data ) );
     memset( &TiltSensor_data.data, 0, sizeof( TiltSensor_data.data ) );
     
-    result = IOConnectMethodStructureIStructureO( TiltSensor_data.dataPort, 
-                                                  TiltSensor_data.kernFunc, 
-                                                  structureInputSize,
-                                                  &structureOutputSize, 
-                                                  &TiltSensor_data.data, 
-                                                  &TiltSensor_data.data );
-    
+//    result = IOConnectMethodStructureIStructureO( TiltSensor_data.dataPort, 
+//                                                  TiltSensor_data.kernFunc, 
+//                                                  structureInputSize,
+//                                                  &structureOutputSize, 
+//                                                  &TiltSensor_data.data, 
+//                                                  &TiltSensor_data.data );
+    result = IOConnectCallStructMethod( TiltSensor_data.dataPort,
+                                        TiltSensor_data.kernFunc,
+                                        &TiltSensor_data.data,
+                                        structureInputSize,
+                                        &TiltSensor_data.data,
+                                        &structureOutputSize );
+
     return 1;
 }
 
@@ -2928,8 +2942,9 @@ static int TiltSensor_detect()
     
     else
         powerbookKernFunc = 21;
-		
-	fprintf( stdout, "osx_version = %ld \n", osx_version );
+
+    // 1.3.1.0: added cast to t_CKINT
+	fprintf( stdout, "osx_version = %ld \n", (t_CKINT)osx_version );
     
     // ibook/powerbook (OS X 10.4.x) tilt sensor interface
     if( TiltSensor_test( powerbookKernFunc, "IOI2CMotionSensor", kSMSPowerbookDataType ) )

@@ -558,8 +558,9 @@ CK_DLL_SFUN( rand2f_impl )
 // randi
 CK_DLL_SFUN( rand2_impl ) // inclusive.
 {
-    int min = *(int *)ARGS, max = *((int *)ARGS + 1);
-    int range = max - min; 
+    // 1.3.1.0: converted int to t_CKINT for 64-bit compatibility
+    t_CKINT min = *(t_CKINT *)ARGS, max = *((t_CKINT *)ARGS + 1);
+    t_CKINT range = max - min; 
     if ( range == 0 )
     {
         RETURN->v_int = min;
@@ -571,11 +572,11 @@ CK_DLL_SFUN( rand2_impl ) // inclusive.
     {
         if( range > 0 )
         { 
-            RETURN->v_int = min + (int) ( (1.0 + range) * ( ::rand()/(RAND_MAX+1.0) ) );
+            RETURN->v_int = min + (t_CKINT)( (1.0 + range) * ( ::rand()/(RAND_MAX+1.0) ) );
         }
         else
         { 
-            RETURN->v_int = min - (int) ( (-range + 1.0) * ( ::rand()/(RAND_MAX+1.0) ) );
+            RETURN->v_int = min - (t_CKINT)( (-range + 1.0) * ( ::rand()/(RAND_MAX+1.0) ) );
         }
     }
 }

@@ -3099,12 +3099,12 @@ CK_DLL_MFUN( array_erase )
 CK_DLL_MFUN( array_push_back )
 {
     Chuck_Array * array = (Chuck_Array *)SELF;
-    // TODO: make this safe!
-    if( array->data_type_size() == CHUCK_ARRAY4_DATASIZE )
+    // ISSUE: 64-bit (fixed 1.3.1.0 using data kind)
+    if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND )
         RETURN->v_int = ((Chuck_Array4 *)array)->push_back( GET_NEXT_UINT( ARGS ) );
-    else if( array->data_type_size() == CHUCK_ARRAY8_DATASIZE )
+    else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
         RETURN->v_int = ((Chuck_Array8 *)array)->push_back( GET_NEXT_FLOAT( ARGS ) );
-    else if( array->data_type_size() == CHUCK_ARRAY16_DATASIZE )
+    else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
         RETURN->v_int = ((Chuck_Array16 *)array)->push_back( GET_NEXT_COMPLEX( ARGS ) );
     else
         assert( FALSE );
@@ -3114,12 +3114,12 @@ CK_DLL_MFUN( array_push_back )
 CK_DLL_MFUN( array_pop_back )
 {
     Chuck_Array * array = (Chuck_Array *)SELF;
-    // TODO: make this safe!
-    if( array->data_type_size() == CHUCK_ARRAY4_DATASIZE )
+    // ISSUE: 64-bit (fixed 1.3.1.0 using data kind)
+    if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND )
         RETURN->v_int = ((Chuck_Array4 *)array)->pop_back( );
-    else if( array->data_type_size() == CHUCK_ARRAY8_DATASIZE )
+    else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
         RETURN->v_int = ((Chuck_Array8 *)array)->pop_back( );
-    else if( array->data_type_size() == CHUCK_ARRAY16_DATASIZE )
+    else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
         RETURN->v_int = ((Chuck_Array16 *)array)->pop_back( );
     else
         assert( FALSE );
