@@ -1884,8 +1884,8 @@ CK_DLL_MFUN( ugen_op )
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_op( ugen->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
     // added 1.3.0.2 -- apply op to subgraph outlet
-    if( ugen->outlet() )
-        ugen->outlet()->m_op = op;
+    if( ugen->inlet() )
+        ugen->inlet()->m_op = op;
 }
 
 CK_DLL_MFUN( ugen_cget_op )
