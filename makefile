@@ -20,7 +20,7 @@ endif
 .PHONY: osx linux-oss linux-jack linux-alsa win32 osx-rl
 osx linux-oss linux-jack linux-alsa win32 osx-rl: chuck
 
-CK_VERSION=1.3.0.2
+CK_VERSION=1.3.1.0
 
 LEX=flex
 YACC=bison
@@ -115,7 +115,7 @@ $(CXXOBJS): %.o: %.cpp
 	@$(CXX) -MM $(CFLAGSDEPEND) $< > $*.d
 
 clean: 
-	@rm -f $(wildcard chuck chuck.exe) $(OBJS) $(patsubst %.o,%.d,$(OBJS)) \
+	@rm -f $(wildcard chuck chuck.exe) *.o *.d $(OBJS) $(patsubst %.o,%.d,$(OBJS)) \
 	*~ chuck.output chuck.tab.h chuck.tab.c chuck.yy.c $(DIST_DIR){,.tgz,.zip}
 	
 

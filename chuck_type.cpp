@@ -4242,6 +4242,24 @@ t_CKBOOL isobj( Chuck_Type * type )
 {   return !type_engine_check_primitive( type ); }
 t_CKBOOL isfunc( Chuck_Type * type )
 {   return isa( type, &t_function ); }
+t_CKBOOL iskindofint( Chuck_Type * type ) // added 1.3.1.0
+{   return isa( type, &t_int ) || isobj( type ); }
+t_CKUINT getkindof( Chuck_Type * type ) // added 1.3.1.0
+{
+    // the kind (1.3.1.0)
+    t_CKUINT kind = kindof_VOID;
+
+    // check size
+    if( type->size == sz_INT && iskindofint(type) )
+        kind = kindof_INT;
+    else if( type->size == sz_FLOAT )
+        kind = kindof_FLOAT;
+    else if( type->size == sz_COMPLEX )
+        kind = kindof_COMPLEX;
+    
+    // done
+    return kind;
+}
 
 
 

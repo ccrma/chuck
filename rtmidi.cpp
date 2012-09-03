@@ -285,7 +285,7 @@ static void readable_name(MIDIEndpointRef end, char *buffer, int bufsize)
 static int get_device_name(SInt32 uniqueid, char *buffer, int bufsize)
 {
     int ret;
-    void *object;
+    MIDIObjectRef object = NULL; // 1.3.1.0
     MIDIObjectType type;
 
     MIDIDeviceRef dev = NULL;
@@ -320,7 +320,7 @@ static int get_device_name(SInt32 uniqueid, char *buffer, int bufsize)
     } else {
         // unknown type
         printf("Unknown type %d returned from findobject\n", (int) type);
-        CFRelease(object);
+        CFRelease( &object ); // 1.3.1.0
         return -1;
     }
 
@@ -519,7 +519,7 @@ void RtMidiIn :: openPort( unsigned int portNumber )
 
   // Get the desired input source identifier.
   MIDIEndpointRef endpoint = MIDIGetSource( portNumber );
-  if ( endpoint == NULL ) {
+  if ( endpoint == 0 ) { // 1.3.1.0: changed from NULL to 0
     MIDIPortDispose( port );
     MIDIClientDispose( data->client );
     errorString_ = "RtMidiIn::openPort: error getting MIDI input source reference.";
@@ -690,7 +690,7 @@ void RtMidiOut :: openPort( unsigned int portNumber )
 
   // Get the desired output port identifier.
   MIDIEndpointRef destination = MIDIGetDestination( portNumber );
-  if ( destination == NULL ) {
+  if ( destination == 0 ) { // 1.3.1.0: changed from NULL to 0
     MIDIPortDispose( port );
     MIDIClientDispose( data->client );
     errorString_ = "RtMidiOut::openPort: error getting MIDI output destination reference.";
