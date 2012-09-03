@@ -288,8 +288,8 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "int", "min" ); 
     QUERY->add_arg( QUERY, "int", "max" ); 
     
-    // add randomf (1.3.1.0)
-    QUERY->add_sfun( QUERY, randomf_impl, "float", "randomf" ); //! random between -1.0,1.0
+    // add randomf (1.3.1.0) -- NOTE different in return semantics
+    QUERY->add_sfun( QUERY, randomf_impl, "float", "randomf" ); //! random between 0 and 1.0
     
     // add random2f (1.3.1.0)
     QUERY->add_sfun( QUERY, random2f_impl, "float", "random2f" ); //! random between min and max
@@ -698,7 +698,7 @@ CK_DLL_SFUN( random_impl )
 // randomf (added 1.3.1.0)
 CK_DLL_SFUN( randomf_impl )
 {
-    RETURN->v_float = ( 2.0 * ::random() / (t_CKFLOAT)CK_RANDOM_MAX - 1.0 );
+    RETURN->v_float = ( ::random() / (t_CKFLOAT)CK_RANDOM_MAX );
 }
 
 

@@ -5,11 +5,14 @@
             Robin Haberkorn, Michael Wilson, Kassen, and 
             Fernando Lopez-Lezcano, and chuck-users!
   - (added) Math.random(), random2(), randomf(), random2f(), srandom(),
-            and Math.RANDOM_MAX.
+            and Math.RANDOM_MAX;  NOTE: randomf() returns range 0.0 to 1.0
             these use the much better random() stdlib functions
             the existing Std.rand*() and Std.srand() is still
             be available for compatibility (these may be deprecated
             in the future; please start using Math.random())
+  - (added) chuck --version | chuck --about now print architecture
+            (32-bit or 64-bit)
+  - (added) Machine.intsize() will return int width in bits (e.g., 32 or 64)
   - (fixed) error message printing system for variable arguments
 
 ---
