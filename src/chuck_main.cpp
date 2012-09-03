@@ -53,6 +53,7 @@
 #include "util_string.h"
 #include "util_thread.h"
 #include "util_network.h"
+#include "ulib_machine.h"
 #include "hidio_sdl.h"
 
 #include <signal.h>
@@ -218,25 +219,31 @@ static void version()
 {
     fprintf( stderr, "\n" );
     fprintf( stderr, "chuck version: %s\n", CK_VERSION );
+
+    // platform string
+    string platform = "";
+
 #if defined(__PLATFORM_WIN32__)
-    fprintf( stderr, "   exe target: microsoft win32\n" );
+    platform = "microsoft win32";
 #elif defined(__WINDOWS_DS__)
-    fprintf( stderr, "   exe target: microsoft win32 + cygwin\n" );
+    platform = "microsoft win32 + cygwin";
 #elif defined(__LINUX_ALSA__)
-    fprintf( stderr, "   exe target: linux (alsa)\n" );
+    platform = "linux (alsa)";
 #elif defined(__LINUX_OSS__)
-    fprintf( stderr, "   exe target: linux (oss)\n" );
+    platform = "linux (oss)";
 #elif defined(__LINUX_JACK__)
-    fprintf( stderr, "   exe target: linux (jack)\n" );
+    platform = "linux (jack)";
 #elif defined(__MACOSX_UB__)
-    fprintf( stderr, "   exe target: mac os x : universal binary\n" );
+    platform = "mac os x : universal binary";
 #elif defined(__MACOSX_CORE__) && defined(__LITTLE_ENDIAN__)
-    fprintf( stderr, "   exe target: mac os x : intel\n" );
+    platform = "mac os x : intel";
 #elif defined(__MACOSX_CORE__)
-    fprintf( stderr, "   exe target: mac os x : powerpc\n" );
+    platform = "mac os x : powerpc";
 #else
-    fprintf( stderr, "   exe target: uh... unknown\n" );
+    platform = "uh... unknown";
 #endif
+    
+    fprintf( stderr, "   %s : %ld-bit\n", platform.c_str(), machine_intsize() );
     fprintf( stderr, "   http://chuck.cs.princeton.edu/\n\n" );
 }
 
