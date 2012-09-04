@@ -2297,6 +2297,17 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                         S_name(exp->var) );
                     return NULL;
                 }
+                
+                // 1.3.1.0: hack catch "pi"
+                // if( v->name == "pi" )
+                // {
+                //    // check level
+                //    if( env->deprecate_level < 2 )
+                //    {
+                //        EM_error2( exp->linepos, "deprecated: '%s' --> use: '%s'...",
+                //                   "pi", "Math.PI" );
+                //    }
+                // }
 
                 // the type
                 t = v->type;

@@ -307,12 +307,12 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     //! see \example math.ck
     QUERY->add_svar( QUERY, "float", "PI", TRUE, &g_pi );
     //! see \example math.ck
-    QUERY->add_svar( QUERY, "float", "pi", TRUE, &g_pi );
+    // QUERY->add_svar( QUERY, "float", "pi", TRUE, &g_pi );
 
     // twopi
     QUERY->add_svar( QUERY, "float", "TWO_PI", TRUE, &g_twopi );
     // twopi
-    QUERY->add_svar( QUERY, "float", "two_pi", TRUE, &g_twopi );
+    // QUERY->add_svar( QUERY, "float", "two_pi", TRUE, &g_twopi );
 
     // e
     QUERY->add_svar( QUERY, "float", "E", TRUE, &g_e );
