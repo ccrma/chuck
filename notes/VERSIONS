@@ -8,12 +8,22 @@
             and Math.RANDOM_MAX;  NOTE: randomf() returns range 0.0 to 1.0
             these use the much better random() stdlib functions
             the existing Std.rand*() and Std.srand() is still
-            be available for compatibility (these may be deprecated
-            in the future; please start using Math.random())
+            be available for compatibility (these to be deprecated
+            in the future; please start using Math.random*())
   - (added) chuck --version | chuck --about now print architecture
             (32-bit or 64-bit)
   - (added) Machine.intsize() will return int width in bits (e.g., 32 or 64)
   - (fixed) error message printing system for variable arguments
+  - (fixed) constants in Math library now cleaner, they include:
+            * Math.pi or Math.PI
+            * Math.e or Math.E
+            * Math.j or Math.J or Math.i or Math.I // as 'complex' type
+            * Math.two_pi or Math.TWO_PI
+            * Math.INFINITY
+            * Math.RANDOM_MAX
+            * Math.INT_MAX // currently, differs on 32-bit and 64-bit systems
+            * Math.FLOAT_MAX
+            * Math.FLOAT_MIN_MAG // minimum positive float value
 
 ---
 1.3.0.2
