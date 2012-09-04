@@ -199,12 +199,6 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, isnan_impl, "int", "isnan" );
     QUERY->add_arg( QUERY, "float", "x" );
 
-    // floatMax
-    // QUERY->add_sfun( QUERY, floatMax_impl, "float", "floatMax" );
-
-    // intMax
-    // QUERY->add_sfun( QUERY, intMax_impl, "int", "intMax" );
-
     // nextpow2
     QUERY->add_sfun( QUERY, nextpow2_impl, "int", "nextpow2" );
     QUERY->add_arg( QUERY, "int", "n" );
@@ -213,21 +207,27 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, ensurepow2_impl, "int", "ensurePow2" );
     QUERY->add_arg( QUERY, "int", "n" );
 
+    // floatMax
+    // QUERY->add_sfun( QUERY, floatMax_impl, "float", "floatMax" );
+    
+    // intMax
+    // QUERY->add_sfun( QUERY, intMax_impl, "int", "intMax" );
+    
     // rand
-    QUERY->add_sfun( QUERY, rand_impl, "int", "rand" ); //! return int between 0 and RAND_MAX
+    // QUERY->add_sfun( QUERY, rand_impl, "int", "rand" ); //! return int between 0 and RAND_MAX
     
     // rand2
-    QUERY->add_sfun( QUERY, rand2_impl, "int", "rand2" ); //! integer between [min,max]
-    QUERY->add_arg( QUERY, "int", "min" ); 
-    QUERY->add_arg( QUERY, "int", "max" ); 
+    // QUERY->add_sfun( QUERY, rand2_impl, "int", "rand2" ); //! integer between [min,max]
+    // QUERY->add_arg( QUERY, "int", "min" ); 
+    // QUERY->add_arg( QUERY, "int", "max" ); 
     
     // randf
-    QUERY->add_sfun( QUERY, randf_impl, "float", "randf" ); //! rand between -1.0,1.0
+    // QUERY->add_sfun( QUERY, randf_impl, "float", "randf" ); //! rand between -1.0,1.0
 
     // rand2f
-    QUERY->add_sfun( QUERY, rand2f_impl, "float", "rand2f" ); //! rand between min and max
-    QUERY->add_arg( QUERY, "float", "min" );
-    QUERY->add_arg( QUERY, "float", "max" );
+    // QUERY->add_sfun( QUERY, rand2f_impl, "float", "rand2f" ); //! rand between min and max
+    // QUERY->add_arg( QUERY, "float", "min" );
+    // QUERY->add_arg( QUERY, "float", "max" );
 
     // add mtof
     //! see \example mand-o-matic.ck
@@ -306,9 +306,13 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     // pi
     //! see \example math.ck
     QUERY->add_svar( QUERY, "float", "PI", TRUE, &g_pi );
+    //! see \example math.ck
+    QUERY->add_svar( QUERY, "float", "pi", TRUE, &g_pi );
 
     // twopi
     QUERY->add_svar( QUERY, "float", "TWO_PI", TRUE, &g_twopi );
+    // twopi
+    QUERY->add_svar( QUERY, "float", "two_pi", TRUE, &g_twopi );
 
     // e
     QUERY->add_svar( QUERY, "float", "E", TRUE, &g_e );
