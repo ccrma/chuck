@@ -24,6 +24,7 @@
             * Math.INT_MAX // currently, differs on 32-bit and 64-bit systems
             * Math.FLOAT_MAX
             * Math.FLOAT_MIN_MAG // minimum positive float value
+  - (fixed) Chubgraph.gain(), .last(), and .op()
 
 ---
 1.3.0.2
