@@ -2124,7 +2124,19 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   // Get the latency of the JACK port.
   ports = jack_get_ports( client, deviceName.c_str(), NULL, flag );
   if ( ports[ firstChannel ] )
-    stream_.latency[mode] = jack_port_get_latency( jack_port_by_name( client, ports[ firstChannel ] ) );
+  {
+    // added chuck 1.3.1.0: (ge) using new jack latency range function
+    jack_latency_callback_mode_t cbmode = (mode == INPUT ? JackCaptureLatency : JackPlaybackLatency);
+    // the range (usually the min and max are equal)
+    jack_latency_range_t latrange; latrange.min = latrange.max = 0;
+    // get the latency range
+    jack_port_get_latency_range( jack_port_by_name( client, ports[firstChannel] ), cbmode, &latrange );
+    // be optimistic, use the min!
+    stream_.latency[mode] = latrange.min;
+    
+    // previous:
+    // stream_.latency[mode] = jack_port_get_latency( jack_port_by_name( client, ports[ firstChannel ] ) );
+  }
   free( ports );
 
   // The jack server always uses 32-bit floating-point data.
