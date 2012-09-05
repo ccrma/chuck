@@ -23,7 +23,7 @@ while( true )
 
     // a message is kicked as soon as it is complete 
     // - type string is satisfied and bundles are closed
-    Std.rand2f( .5, 2.0 ) => float temp => xmit.addFloat;
+    Math.random2f( .5, 2.0 ) => float temp => xmit.addFloat;
     <<< "sent (via OSC):", temp >>>;
 
     // advance time

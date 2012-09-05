@@ -55,8 +55,8 @@ lisa.maxVoices(30);
 while( true )
 {
     // random
-    Std.rand2f( 1.5, 2.0 ) => float newrate;
-    Std.rand2f( 250, 750 ) * 1::ms => dur newdur;
+    Math.random2f( 1.5, 2.0 ) => float newrate;
+    Math.random2f( 250, 750 ) * 1::ms => dur newdur;
 
     // spork it
     spork ~ getgrain( newdur, 20::ms, 20::ms, newrate );
@@ -74,7 +74,7 @@ fun void getgrain( dur grainlen, dur rampup, dur rampdown, float rate )
     if( newvoice > -1 )
     {
         lisa.rate(newvoice, rate);
-        // lisa.playpos(newvoice, Std.rand2f(0., 1000.) * 1::ms);
+        // lisa.playpos(newvoice, Math.random2f(0., 1000.) * 1::ms);
         lisa.playPos(newvoice, 20::ms);
         // <<< lisa.playpos(newvoice) >>>;
         lisa.rampUp( newvoice, rampup );

@@ -9,12 +9,12 @@ ISYSROOT=-isysroot /Developer/SDKs/MacOSX10.4u.sdk
 LINK_EXTRAS=
 endif
 
-ifneq ($(shell gcc --version | head -1 | awk -F" " '{ printf $3 }' | grep '4\.[1-9]'),)
+#ifneq ($(shell gcc --version | head -1 | awk -F" " '{ printf $3 }' | grep '4\.[1-9]'),)
 # force clang if gcc 4.2 is present (for OS X 10.4 compatibility)
-CC=clang
-CXX=clang++
-LD=clang++
-endif
+#CC=clang
+#CXX=clang++
+#LD=clang++
+#endif
 
 CFLAGS+= -D__MACOSX_CORE__ $(ISYSROOT)
 CFLAGSDEPEND+= -D__MACOSX_CORE__ $(ISYSROOT)

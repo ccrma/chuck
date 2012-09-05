@@ -91,17 +91,17 @@ fun void newsequence()
     for ( 0 => int i; i < seqn ; i++ )
     {
         i => order[i];		
-        55 + scale[Std.rand2(0, nscale - 1)] => int note;
-        times[Std.rand2(0, ntimes - 1)] => dur mydur;
-        Std.rand2f( 0.75, 0.9 ) => float vel; 
+        55 + scale[Math.random2(0, nscale - 1)] => int note;
+        times[Math.random2(0, ntimes - 1)] => dur mydur;
+        Math.random2f( 0.75, 0.9 ) => float vel; 
         sequence[i].set( note, vel, mydur );
     }
 }
 
 fun void swap( )
 { 
-    Std.rand2(0,seqn-1) => int a;
-    ( a + Std.rand2(1,seqn-1) ) % seqn => int b;
+    Math.random2(0,seqn-1) => int a;
+    ( a + Math.random2(1,seqn-1) ) % seqn => int b;
     order[a] => int tmp;
     order[b] => order[a];
     tmp => order[a];
@@ -111,7 +111,7 @@ MandPlayer mand;
 ClarPlayer clar;
 Gain g => JCRev j => Echo e => dac;
 0.95 => j.gain;
-0.2 => j.mix;
+0.1 => j.mix;
 
 1.15::second => e.max;
 1.0::second => e.delay;
@@ -136,10 +136,10 @@ while ( true )
         cur.length => now;
     }
 
-    for ( Std.rand2(0,2) => int j ; j > 0 ; j-- )
+    for ( Math.random2(0,2) => int j ; j > 0 ; j-- )
         swap();
 
-    if ( Std.rand2(0, 10) > 8 )
+    if ( Math.random2(0, 10) > 8 )
         newsequence();
 }
 

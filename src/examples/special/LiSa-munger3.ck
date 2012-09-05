@@ -64,9 +64,9 @@ while(true)
     // toss some grains
     while( now < later )
     {
-        Std.rand2f(0, 6) $ int => int newpitch; // choose a transposition from the table
+        Math.random2f(0, 6) $ int => int newpitch; // choose a transposition from the table
         Std.mtof(pitchtable[newpitch] + 60)/Std.mtof(60) => float newrate;
-        Std.rand2f(50, 100) * 1::ms => dur newdur; // create a random duration for the grain
+        Math.random2f(50, 100) * 1::ms => dur newdur; // create a random duration for the grain
 
         // spork off the grain!
         spork ~ getgrain( playbuf, newdur, 20::ms, 20::ms, newrate );
@@ -93,7 +93,7 @@ fun void getgrain(int which, dur grainlen, dur rampup, dur rampdown, float rate)
     if( newvoice > -1 )
     {
         lisa[which].rate(newvoice, rate);
-        lisa[which].playPos(newvoice, Std.rand2f(0., 1.) * reclooplen);
+        lisa[which].playPos(newvoice, Math.random2f(0,1) * reclooplen);
         lisa[which].rampUp(newvoice, rampup);
         (grainlen - (rampup + rampdown)) => now;
         lisa[which].rampDown(newvoice, rampdown);

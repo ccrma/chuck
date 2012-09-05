@@ -21,14 +21,14 @@ chirp( 20, 120, 1::second, 100::ms );
 1::second => now;
 
 // randomize pan
-Std.rand2f( -1, 1 ) => p.pan;
+Math.random2f( -1, 1 ) => p.pan;
 // call chirp
 chirp( 30, 110, .5::second );
 
 // wait for envelope to go down
 10::ms => now;
 // pan
-Std.rand2f( -1, 1 ) => p.pan;
+Math.random2f( -1, 1 ) => p.pan;
 // call chirp
 chirp( 110, 30, 1::second, 100::ms );
 
