@@ -2632,6 +2632,8 @@ struct Chuck_Instr_Array_Access_Multi : public Chuck_Instr
 public:
     Chuck_Instr_Array_Access_Multi( t_CKUINT depth, t_CKUINT kind, t_CKUINT emit_addr )
     { m_kind = kind; m_depth = depth; m_emit_addr = emit_addr; }
+    // get the indice is associative map
+    std::vector<t_CKBOOL> & indexIsAssociative() { return m_indexIsAssociative; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -2644,6 +2646,9 @@ protected:
     t_CKUINT m_depth;
     t_CKUINT m_kind;
     t_CKUINT m_emit_addr;
+    
+    // 1.3.1.0 list of types of indices
+    std::vector<t_CKBOOL> m_indexIsAssociative;
 };
 
 
