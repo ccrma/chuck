@@ -41,7 +41,7 @@ fun void hanoi( int num, int src, int dest, int other )
     // sonify
     0 => pegs[dest].pos;
     // gain
-    Math.rand2f( .2, .9 ) => pegs[dest].gain;
+    Math.random2f( .2, .9 ) => pegs[dest].gain;
     // pan
     .8 * (dest - 2) => pan.pan;
     // advance time

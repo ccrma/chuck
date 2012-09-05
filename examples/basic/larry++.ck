@@ -36,5 +36,5 @@ while( true )
     // gain
     0.2 + Math.sin(v)*.1 => g.gain;
     // advance time
-    (1000.0 + Std.rand2f(-100.0, 100.0))::ms => now;
+    (1000.0 + Math.random2f(-100.0, 100.0))::ms => now;
 }

@@ -34,7 +34,7 @@ d.compress();
 while(true)
 {
 	// play a random note
-	Std.mtof(Std.rand2(60, 90)) => m.freq;
+	Std.mtof( Math.random2(60, 90) ) => m.freq;
 
     // twice
     repeat( 2 )
