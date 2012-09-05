@@ -15,6 +15,7 @@
             (32-bit or 64-bit)
   - (added) Machine.intsize() will return int width in bits (e.g., 32 or 64)
   - (fixed) error message printing system for variable arguments
+  - (fixed) StifKarp.sustain now works properly
   - (fixed) constants in Math library now cleaner, they include:
             * Math.PI
             * Math.TWO_PI
@@ -26,6 +27,7 @@
             * Math.FLOAT_MAX
             * Math.FLOAT_MIN_MAG // minimum positive float value
   - (fixed) Chubgraph.gain(), .last(), and .op()
+  - (fixed) all examples now use Math.random*() instead of Std.rand*()
   - (removed) Math.rand*() removed --> please use Math.random*();
             (see 'added' above; Std.rand*() still there, but to be 
             deprecated; please use Math.random*() moving forward)
