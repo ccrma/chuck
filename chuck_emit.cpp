@@ -3062,8 +3062,19 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
     }
     else
     {
+        // the pointer
+        Chuck_Instr_Array_Access_Multi * aam = NULL;
         // emit the multi array access (1.3.1.0: use getkindof instead of type->size)
-        emit->append( new Chuck_Instr_Array_Access_Multi( depth, getkindof(type), is_var ) );
+        emit->append( aam = new Chuck_Instr_Array_Access_Multi( depth, getkindof(type), is_var ) );
+        // add type info (1.3.1.0) -- to support mixed string & int indexing (thanks Robin Haberkorn)
+        a_Exp e = exp;
+        while( e )
+        {
+            // check if string
+            aam->indexIsAssociative().push_back( isa( exp->type, &t_string ) );
+            // next
+            e = e->next;
+        }
     }
 
     // TODO: variable?
