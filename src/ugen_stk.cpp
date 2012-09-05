@@ -20618,8 +20618,8 @@ CK_DLL_CTRL( StifKarp_ctrl_sustain )
 {
     StifKarp * b = (StifKarp *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
-    b->setStretch( f );
-    RETURN->v_float = (t_CKFLOAT)b->stretching;
+    b->controlChange( __SK_StringDamping_, f * 128 );
+    RETURN->v_float = (t_CKFLOAT)b->m_sustain;
 }
 
 
@@ -20630,7 +20630,7 @@ CK_DLL_CTRL( StifKarp_ctrl_sustain )
 CK_DLL_CGET( StifKarp_cget_sustain )
 {
     StifKarp * b = (StifKarp *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    RETURN->v_float = (t_CKFLOAT)b->stretching;
+    RETURN->v_float = (t_CKFLOAT)b->m_sustain;
 }
 
 

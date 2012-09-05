@@ -20,6 +20,8 @@ ModalBar modey => JCRev r => Echo a => Echo b => Echo c => dac;
 // set the initial effect mix
 0.0 => a.mix => b.mix => c.mix;
 
+<<< "preset:", modey.preset() >>>;
+
 // shred to modulate the mix
 fun void echo_Shred( )
 { 
@@ -28,7 +30,7 @@ fun void echo_Shred( )
     // time loop
     while( true )
     {
-        Std.rand2f(0.0,1.0) => decider;
+        Math.random2f( 0, 1 ) => decider;
         if( decider < .35 ) 0.0 => mix;
         else if( decider < .55 ) .08 => mix;
         else if( decider < .8 ) .5 => mix;
@@ -46,7 +48,7 @@ fun void echo_Shred( )
         // remember the old
         mix => old;
         // let time pass until the next iteration
-        Std.rand2(2,6)::second => now;
+        Math.random2(2,6)::second => now;
     }
 }
 
@@ -59,37 +61,42 @@ spork ~ echo_Shred();
 // our main loop
 while( true )
 {
-    //presets 
-    if ( Std.randf() > 0.9 )
-        Std.rand2 (0,8) => modey.preset;
+    // presets
+    // note: Math.randomf() returns value between 0 and 1
+    if( Math.randomf() > 0.9 )
+    {
+        Math.random2( 0, 8 ) => modey.preset;
+        <<< "preset:", modey.preset() >>>;
+    }
 
     // position
-    Std.rand2f( 0.2, 0.8 ) => modey.strikePosition;
+    Math.random2f( 0.2, 0.8 ) => modey.strikePosition;
     // frequency...
-    scale[Std.rand2(0,scale.cap()-1)] => int freq;
-    Std.mtof( 45 + Std.rand2(0,4)*12 + freq ) => modey.freq;
+    scale[Math.random2(0,scale.cap()-1)] => int freq;
+    Std.mtof( 45 + Math.random2(0,4)*12 + freq ) => modey.freq;
 
     // pluck it!
-    Std.rand2f( 0.2, 0.6 ) => modey.strike;
+    Math.random2f( 0.2, 0.6 ) => modey.strike;
 
-    if( Std.randf() > 0.8 )
+    // note: Math.randomf() returns value between 0 and 1
+    if( Math.randomf() > 0.8 )
     { 500::ms => now; }
-    else if( Std.randf() > .85 )
+    else if( Math.randomf() > .925 )
     { 250::ms => now; }
-    else if( Std.randf() > -0.9 )
+    else if( Math.randomf() > .05 )
     { .125::second => now; }
     else
     {
         1 => int i => int pick_dir;
         // how many times
-        4 * Std.rand2( 1, 5 ) => int pick;
+        4 * Math.random2( 1, 5 ) => int pick;
         0.0 => float pluck;
         0.65 / pick => float inc;
         // time loop
         for( ; i < pick; i++ )
         {
             75::ms => now;
-            Std.rand2f(.2,.3) + i*inc => pluck;
+            Math.random2f(.2,.3) + i*inc => pluck;
             pluck => modey.stickHardness;
             pluck + -.2 * pick_dir => modey.strike;
             // simulate pluck direction

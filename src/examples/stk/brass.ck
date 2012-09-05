@@ -1,7 +1,7 @@
 // patch
 Brass brass => JCRev r => dac;
 .75 => r.gain;
-.1 => r.mix;
+.05 => r.mix;
 
 // our notes
 [ 61, 63, 65, 66, 68 ] @=> int notes[];
@@ -10,11 +10,11 @@ Brass brass => JCRev r => dac;
 while( true )
 {
     // set
-    Std.rand2f( 0, 1 ) => brass.lip;
-    Std.rand2f( 0, 1 ) => brass.slide;
-    Std.rand2f( 0, 12 ) => brass.vibratoFreq;
-    Std.rand2f( 0, 1 ) => brass.vibratoGain;
-    Std.rand2f( 0, 1 ) => brass.volume;
+    Math.random2f( 0, 1 ) => brass.lip;
+    Math.random2f( 0, 1 ) => brass.slide;
+    Math.random2f( 0, 12 ) => brass.vibratoFreq;
+    Math.random2f( 0, 1 ) => brass.vibratoGain;
+    Math.random2f( 0, 1 ) => brass.volume;
 
     // print
     <<< "---", "" >>>;
@@ -26,7 +26,7 @@ while( true )
 
     for( int i; i < notes.cap(); i++ )
     {
-        play( 12 + notes[i], Std.rand2f( .6, .9 ) );
+        play( 12 + notes[i], Math.random2f( .6, .9 ) );
         300::ms => now;
     }
 }

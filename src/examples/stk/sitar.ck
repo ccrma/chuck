@@ -6,14 +6,15 @@ Sitar sit => PRCRev r => dac;
 while( true )
 {
     // freq
-    Std.rand2( 0, 11 ) => float winner;
-    Std.mtof( 57 + Std.rand2(0,3) * 12 + winner ) => sit.freq;
+    Math.random2( 0, 11 ) => float winner;
+    Std.mtof( 57 + Math.random2(0,3) * 12 + winner ) => sit.freq;
 
     // pluck!
-    Std.rand2f( 0.4, 0.9 ) => sit.noteOn;
+    Math.random2f( 0.4, 0.9 ) => sit.noteOn;
 
     // advance time
-    if ( Std.randf() > 0.0 ) {
+    // note: Math.randomf() returns value between 0 and 1
+    if( Math.randomf() > .5 ) {
         .5::second => now;
     } else { 
         0.25::second => now;

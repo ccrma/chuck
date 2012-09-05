@@ -8,11 +8,11 @@ Bowed bow => dac;
 while( true )
 {
     // set
-    Std.rand2f( 0, 1 ) => bow.bowPressure;
-    Std.rand2f( 0, 1 ) => bow.bowPosition;
-    Std.rand2f( 0, 12 ) => bow.vibratoFreq;
-    Std.rand2f( 0, 1 ) => bow.vibratoGain;
-    Std.rand2f( 0, 1 ) => bow.volume;
+    Math.random2f( 0, 1 ) => bow.bowPressure;
+    Math.random2f( 0, 1 ) => bow.bowPosition;
+    Math.random2f( 0, 12 ) => bow.vibratoFreq;
+    Math.random2f( 0, 1 ) => bow.vibratoGain;
+    Math.random2f( 0, 1 ) => bow.volume;
 
     // print
     <<< "---", "" >>>;
@@ -23,10 +23,10 @@ while( true )
     <<< "volume:", bow.volume() >>>;
 
     // set freq
-    scale[Std.rand2(0,scale.cap()-1)] + 57 => Std.mtof => bow.freq;
+    scale[Math.random2(0,scale.cap()-1)] + 57 => Std.mtof => bow.freq;
     // go
     .8 => bow.noteOn;
 
     // advance time
-    Std.rand2f(.8, 2)::second => now;
+    Math.random2f(.8, 2)::second => now;
 }

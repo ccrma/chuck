@@ -10,14 +10,14 @@ BandedWG bwg => dac;
 while( true )
 {
     // ding!
-    Std.rand2f( 0, 1 ) => bwg.bowRate;
-    Std.rand2f( 0, 1 ) => bwg.bowPressure;
-    Std.rand2f( 0, 1 ) => bwg.strikePosition;
-    Std.rand2(0, 3) => bwg.preset;
+    Math.random2f( 0, 1 ) => bwg.bowRate;
+    Math.random2f( 0, 1 ) => bwg.bowPressure;
+    Math.random2f( 0, 1 ) => bwg.strikePosition;
+    Math.random2( 0, 3 ) => bwg.preset;
 
     // set freq
-    scale[Std.rand2(0,scale.cap()-1)] => int winner;
-    57 + Std.rand2(0,2)*12 + winner => Std.mtof => bwg.freq;
+    scale[Math.random2(0,scale.cap()-1)] => int winner;
+    57 + Math.random2(0,2)*12 + winner => Std.mtof => bwg.freq;
 
     // print some parameters
     <<< "---", "" >>>;
@@ -29,13 +29,13 @@ while( true )
     <<< "---", "" >>>;
 
     <<< "bow -> pluck", "" >>>;
-    Std.rand2f( .5, 1 ) => bwg.pluck;
+    Math.random2f( .5, 1 ) => bwg.pluck;
     // advance time
     2::second => now;
 
     <<< "pluck -> bow", "" >>>;
     .8 => bwg.startBowing;
-    Std.rand2f(2,4)::second => now;
+    Math.random2f(2,4)::second => now;
     1.0 => bwg.stopBowing;
     1::second => now;
 }
