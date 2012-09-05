@@ -78,6 +78,9 @@ public:
     virtual Chuck_String * getLine();
     virtual t_CKINT getByte();
     virtual Chuck_Array * getBytes();
+    virtual Chuck_Array * getInts();
+    virtual Chuck_Array * getFloats();
+    virtual Chuck_String * getString();
     
     static const t_CKUINT TYPE_BYTE = 0;
     static const t_CKUINT TYPE_WORD = 1;
@@ -90,7 +93,16 @@ public:
     {
         t_CKUINT m_type; // type
         t_CKUINT m_num; // how many
-        t_CKUINT m_mode; // binary/ascii
+        t_CKUINT m_status;
+        t_CKUINT m_val; // ISSUE: 64-bit
+        
+        enum Status
+        {
+            STATUS_PENDING,
+            STATUS_SUCCESS,
+            STATUS_FAILURE,
+            STATUS_EOF,
+        };
     };
     
     virtual t_CKBOOL ready();
@@ -118,8 +130,6 @@ protected:
     
     CircularBuffer<Read> m_asyncReadRequests;
     CircularBuffer<Read> m_asyncReadResponses;
-    CircularBuffer<char> m_asyncReadData;
-    CircularBuffer<t_CKUINT> m_asyncReadPtr;
     
     CBufferSimple * m_event_buffer;
     
