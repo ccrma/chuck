@@ -15,7 +15,7 @@ class MyString extends Chubgraph
     220 => freq;
     0 => imp.gain;
     
-    fun float freq(float f)
+    fun float freq( float f )
     {
         1/f => L;
         L::second => delay.delay;
@@ -35,11 +35,11 @@ class MyString extends Chubgraph
 MyString s[3];
 for(int i; i < s.cap(); i++) s[i] => dac;
 
-while(true)
+while( true )
 {
-    for(int i; i < s.cap(); i++)
+    for( int i; i < s.cap(); i++ )
     {
-        Std.rand2(60,72) => Std.mtof => s[i].freq;
+        Math.random2( 60,72 ) => Std.mtof => s[i].freq;
         spork ~ s[i].pluck();
         0.25::second => now;
     }

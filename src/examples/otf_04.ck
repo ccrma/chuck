@@ -24,26 +24,33 @@ T => now;
 
 // construct the patch
 SndBuf buf => Gain g => dac;
+// read in from file
 me.sourceDir() + "/data/snare-hop.wav" => buf.read;
+// set the gain
 .6 => g.gain;
 
-// where we actually want to start
+// where we actually want to start (in # of sample frames)
 100 => int where;
 
 // time loop
 while( true )
 {
-    Std.rand2f(.8,.9) => buf.gain;
+    // randomize the gain a bit
+    Math.random2f(.8,.9) => buf.gain;
 
-    if( Std.randf() > -.5 )
+    // note: Math.randomf() returns value between 0 and 1
+    if( Math.randomf() > .25 )
     {
+        // set play position to 'where'
         where => buf.pos;
+        // advance time
         2::T => now;
     }
     else
     {
         where => buf.pos;
         .75::T => now;
+
         .8 => buf.gain;
         where => buf.pos;
         1.25::T => now;

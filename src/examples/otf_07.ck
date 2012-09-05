@@ -25,22 +25,29 @@ me.sourceDir() + "/data/snare.wav" => buf.read;
 .5 => g.gain;
 .05 => r.mix;
 
-// where we actually want to start
+// where we actually want to start (in # of sample frames)
 25 => int where;
 
 // time loop
 while( true )
 {
-    Std.rand2f(.8,.9) => buf.gain;
+    // randomize the gain a bit
+    Math.random2f(.8,.9) => buf.gain;
 
-    if( Std.randf() > .5 )
+    // note: Math.randomf() returns value between 0 and 1
+    if( Math.randomf() > .75 )
     {
         0 => int i;
         while( i < 8 )
         {
+            // gradually increase gain
             i / 8.0 => buf.gain;
+            // set play position
             where => buf.pos;
+
+            // advance time
             (1.0/8.0)::T => now;
+            // increment loop counter
             i++;
         }
 

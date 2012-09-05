@@ -21,5 +21,5 @@ while (true)
     500::ms => now;
     // nothing needed to do, so lets look
     // up some random parts of the table!
-    <<< g10.lookup(Std.rand2f(0,1)) >>>;
+    <<< g10.lookup( Math.random2f(0,1) ) >>>;
 }

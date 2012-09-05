@@ -34,7 +34,7 @@ while( true )
     1::second => now;
 
     // set data
-    Std.rand2( 0, 5 ) => e.value;
+    Math.random2( 0, 5 ) => e.value;
 
     // signal one waiting shred
     e.signal();

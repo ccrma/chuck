@@ -11,7 +11,7 @@ SinOsc s => JCRev r => dac;
 
 while( true )
 {
-    Std.mtof( 45 + Std.rand2(0,3) * 12 +
-        hi[Std.rand2(0,hi.cap()-1)] ) => s.freq;
+    Std.mtof( 45 + Math.random2(0,3) * 12 +
+        hi[Math.random2(0,hi.cap()-1)] ) => s.freq;
     100::ms => now;
 }

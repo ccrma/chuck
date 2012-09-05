@@ -21,13 +21,19 @@ T - (now % T) => now;
 
 // construct the patch
 SndBuf buf => Gain g => dac;
+// read in the file
 me.sourceDir() + "/data/kick.wav" => buf.read;
+// set the gain
 .5 => g.gain;
 
 // time loop
 while( true )
 {
+    // set the play position to beginning
     0 => buf.pos;
-    Std.rand2f(.8,.9) => buf.gain;
+    // randomize gain a bit
+    Math.random2f(.8,.9) => buf.gain;
+
+    // advance time
     1::T => now;
 }

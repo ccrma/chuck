@@ -35,13 +35,13 @@ JCRev rr => dac.right;
 for( 0 => i; i < 30; i++ )
 {
     // random freqs
-    Std.rand2f( 200.0, 800.0 ) => initials[i] => s[i].freq;
+    Math.random2f( 200.0, 800.0 ) => initials[i] => s[i].freq;
     // 10 sample updates
     ( targets[i] - initials[i] ) / sweep_steps => deltas[i];
     // initial gain
     0.1 => s[i].gain;
     // random
-    Std.rand2f( 0.0, 1.0 ) => gl[i].gain;
+    Math.random2f( 0.0, 1.0 ) => gl[i].gain;
     // panning
     1.0 - gl[i].gain() => gr[i].gain;
     // hook up

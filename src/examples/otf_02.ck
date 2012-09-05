@@ -21,16 +21,23 @@ T - (now % T) => now;
 
 // construct the patch
 SndBuf buf => Gain g => dac;
+// read in the file
 me.sourceDir() + "/data/hihat.wav" => buf.read;
+// set the gain
 .25 => g.gain;
 
 // time loop
 while( true )
 {
-    Std.rand2f(.4,.9) => buf.gain;
-    if( Std.randf() > 0.75 )
+    // randomize the gain a bit
+    Math.random2f(.4,.9) => buf.gain;
+
+    // note: Math.randomf() returns value between 0 and 1
+    if( Math.randomf() > 0.875 )
     {
+        // set play position to beginning
         0 => buf.pos;
+        // advance time
         .5::T => now;
     }
     else
