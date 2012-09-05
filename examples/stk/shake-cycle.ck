@@ -2,8 +2,8 @@
 // author: Adam Tindale
 
 // the patch
-//Shakers s => Chorus c1 => JCRev rev => Chorus c2 => Chorus c3 =>dac;
-Shakers s  =>dac;
+// Shakers s => Chorus c1 => JCRev rev => Chorus c2 => Chorus c3 =>dac;
+Shakers s => dac;
 
 0 => s.which;
 1 => s.gain;
@@ -18,5 +18,5 @@ while( true )
     theTime::ms => now;   
 
     ( s.which() + 1 ) % 20 => s.which;
-    Std.rand2f(20,140) => theTime;
+    Math.random2f( 20, 140 ) => theTime;
 }

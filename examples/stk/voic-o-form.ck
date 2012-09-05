@@ -24,7 +24,7 @@ fun void vecho_Shred( )
     // time loop
     while( true )
     {
-        Std.rand2f(0.0,1.0) => decider;
+        Math.random2f(0.0,1.0) => decider;
         if( decider < .3 ) 0.0 => mix;
         else if( decider < .6 ) .08 => mix;
         else if( decider < .8 ) .5 => mix;
@@ -40,7 +40,7 @@ fun void vecho_Shred( )
             1::ms => now;
         }
         mix => old;
-        Std.rand2(2,6)::second => now;
+        Math.random2(2,6)::second => now;
     }
 }
 
@@ -55,27 +55,28 @@ spork ~ vecho_Shred();
 // our main time loop
 while( true )
 {
-    2 * Std.rand2( 0,2 ) => int bphon;
+    2 * Math.random2( 0,2 ) => int bphon;
     bphon => voc.phonemeNum;
-    Std.rand2f( 0.6, 0.8 ) => voc.noteOn;
+    Math.random2f( 0.6, 0.8 ) => voc.noteOn;
 
-    if( Std.randf() > 0.7 )
+    // note: Math.randomf() returns value between 0 and 1
+    if( Math.randomf() > 0.85 )
     { 1000::ms => now; }
-    else if( Std.randf() > .7 )
+    else if( Math.randomf() > .85 )
     { 500::ms => now; }
-    else if( Std.randf() > -0.8 )
+    else if( Math.randomf() > .1 )
     { .250::second => now; }
     else
     {
         0 => int i;
-        4 * Std.rand2( 1, 4 ) => int pick;
+        4 * Math.random2( 1, 4 ) => int pick;
         0 => int pick_dir;
         0.0 => float pluck;
 
 	for( ; i < pick; i++ )
         {
 	    bphon + 1 * pick_dir => voc.phonemeNum;
-            Std.rand2f(.4,.6) + i*.035 => pluck;
+            Math.random2f(.4,.6) + i*.035 => pluck;
             pluck + 0.0 * pick_dir => voc.noteOn;
             !pick_dir => pick_dir;
             250::ms => now;
@@ -83,6 +84,6 @@ while( true )
     }
 
     // pentatonic
-    scale[Std.rand2(0,scale.cap()-1)] => int freq;
-    Std.mtof( ( 45 + Std.rand2(0,2) * 12 + freq ) ) => voc.freq;
+    scale[Math.random2(0,scale.cap()-1)] => int freq;
+    Std.mtof( ( 45 + Math.random2(0,2) * 12 + freq ) ) => voc.freq;
 }
