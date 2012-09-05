@@ -10,17 +10,17 @@ BandedWG bwg => dac;
 while( true )
 {
     // ding!
-    Std.rand2f( 0, 1 ) => bwg.pluck;
-    Std.rand2f( 0, 128 ) => float bowPressure;
-    Std.rand2f( 0, 128 ) => float bowMotion;
-    Std.rand2f( 0, 128 ) => float strikePosition;
-    Std.rand2f( 0, 128 ) => float vibratoFreq;
-    Std.rand2f( 0, 128 ) => float gain;
-    Std.rand2f( 0, 128 ) => float bowVelocity;
-    Std.rand2f( 0, 128 ) => float setStriking;
-    Std.rand2f( 0, 3 ) => float preset;
+    Math.random2f( 0, 1 ) => bwg.pluck;
+    Math.random2f( 0, 128 ) => float bowPressure;
+    Math.random2f( 0, 128 ) => float bowMotion;
+    Math.random2f( 0, 128 ) => float strikePosition;
+    Math.random2f( 0, 128 ) => float vibratoFreq;
+    Math.random2f( 0, 128 ) => float gain;
+    Math.random2f( 0, 128 ) => float bowVelocity;
+    Math.random2f( 0, 128 ) => float setStriking;
+    Math.random2f( 0, 3 ) => float preset;
 
-    Std.rand2f( 0, 1) => bwg.bowRate;
+    Math.random2f( 0, 1) => bwg.bowRate;
 
     bwg.controlChange( 2, bowPressure);
     bwg.controlChange( 4, bowMotion);
@@ -36,8 +36,8 @@ while( true )
     <<< "bow Pressure:", bwg.bowPressure() >>>;
 
     // set freq
-    scale[Std.rand2(0,scale.cap()-1)] => int winner;
-    57 + Std.rand2(0,2)*12 + winner => Std.mtof => bwg.freq;
+    scale[Math.random2(0,scale.cap()-1)] => int winner;
+    57 + Math.random2(0,2)*12 + winner => Std.mtof => bwg.freq;
     // go
     .8 => bwg.noteOn;
 
@@ -53,7 +53,7 @@ while( true )
     1.0 => bwg.stopBowing;
 
     <<< "--", "" >>>;
-    bwg.controlChange(16, Std.rand2(0, 3));
+    bwg.controlChange(16, Math.random2(0, 3));
 
     <<< "preset:", bwg.preset() >>>;    
     <<< "strike position:", bwg.strikePosition() >>>;
@@ -61,7 +61,7 @@ while( true )
     <<< "bow Pressure:", bwg.bowPressure() >>>;
 
     // set freq
-    57 + Std.rand2(0,2)*12 + winner => Std.mtof => bwg.freq;
+    57 + Math.random2(0,2)*12 + winner => Std.mtof => bwg.freq;
     // go
     .8 => bwg.noteOn;
 

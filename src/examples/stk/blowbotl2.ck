@@ -10,10 +10,10 @@ BlowBotl bottle => dac;
 // infinite time loop
 while( true )
 {
-    Std.rand2f( 0, 128 ) => float noisegain;
-    Std.rand2f( 0, 128 ) => float vibratofreq;
-    Std.rand2f( 0, 128 ) => float vibratogain;
-    Std.rand2f( 0, 128 ) => float volume;
+    Math.random2f( 0, 128 ) => float noisegain;
+    Math.random2f( 0, 128 ) => float vibratofreq;
+    Math.random2f( 0, 128 ) => float vibratogain;
+    Math.random2f( 0, 128 ) => float volume;
 
     <<< "---", "" >>>;
     <<< "noise gain:", noisegain, "/ 128.0" >>>;
@@ -31,7 +31,7 @@ while( true )
     bottle.controlChange( 128, volume );
 
     // set freq
-    scale[Std.rand2(0,scale.cap()-1)] + 57 => Std.mtof => bottle.freq;
+    scale[Math.random2(0,scale.cap()-1)] + 57 => Std.mtof => bottle.freq;
     // go
     .8 => bottle.noteOn;
 

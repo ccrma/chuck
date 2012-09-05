@@ -12,11 +12,11 @@ Clarinet clair => JCRev r => dac;
 // infinite time-loop
 while( true )
 {
-    Std.rand2f( 64, 128 ) => float stiffness;
-    Std.rand2f( 0, 128 ) => float noisegain;
-    Std.rand2f( 0, 128 ) => float vibratofreq;
-    Std.rand2f( 0, 128 ) => float vibratogain;
-    Std.rand2f( 64, 128 ) => float pressure;
+    Math.random2f( 64, 128 ) => float stiffness;
+    Math.random2f( 0, 128 ) => float noisegain;
+    Math.random2f( 0, 128 ) => float vibratofreq;
+    Math.random2f( 0, 128 ) => float vibratogain;
+    Math.random2f( 64, 128 ) => float pressure;
 
     <<< "---", "" >>>;
     <<< "reed stiffness:", stiffness >>>;
@@ -41,7 +41,7 @@ while( true )
 
     for( int i; i < notes.cap(); i++ )
     {
-        play( 12 + notes[i], Std.rand2f( .6, .9 ) );
+        play( 12 + notes[i], Math.random2f( .6, .9 ) );
         300::ms => now;
     }
 }

@@ -22,7 +22,7 @@ while( true )
 {
     for( int i; i < notes.cap(); i++ )
     {
-        play( notes[i], Std.rand2f( .3, .9 ) );
+        play( notes[i], Math.random2f( .3, .9 ) );
         300::ms => now;
     }
 }

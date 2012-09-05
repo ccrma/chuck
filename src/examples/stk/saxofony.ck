@@ -12,13 +12,13 @@ Saxofony sax => JCRev r => dac;
 while( true )
 {
     // set
-    Std.rand2f( 0, 1 ) => sax.stiffness;
-    Std.rand2f( 0, 1 ) => sax.aperture;
-    Std.rand2f( 0, 1 ) => sax.noiseGain;
-    Std.rand2f( 0, 1 ) => sax.blowPosition;
-    Std.rand2f( 0, 12 ) => sax.vibratoFreq;
-    Std.rand2f( 0, 1 ) => sax.vibratoGain;
-    Std.rand2f( 0, 1 ) => sax.pressure;
+    Math.random2f( 0, 1 ) => sax.stiffness;
+    Math.random2f( 0, 1 ) => sax.aperture;
+    Math.random2f( 0, 1 ) => sax.noiseGain;
+    Math.random2f( 0, 1 ) => sax.blowPosition;
+    Math.random2f( 0, 12 ) => sax.vibratoFreq;
+    Math.random2f( 0, 1 ) => sax.vibratoGain;
+    Math.random2f( 0, 1 ) => sax.pressure;
 
     // print
     <<< "---", "" >>>;
@@ -31,11 +31,11 @@ while( true )
     <<< "pressure:", sax.pressure() >>>;
 
     // factor
-    Std.rand2f( .75, 2 ) => float factor;
+    Math.random2f( .75, 2 ) => float factor;
 
     for( int i; i < notes.cap(); i++ )
     {
-        play( 12 + notes[i], Std.rand2f( .6, .9 ) );
+        play( 12 + notes[i], Math.random2f( .6, .9 ) );
         300::ms * factor => now;
     }
 }

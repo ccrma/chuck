@@ -1,9 +1,9 @@
 // STK StifKarp
 
 // patch
-StifKarp m => JCRev r => dac;
+StifKarp m => NRev r => dac;
 .75 => r.gain;
-.05 => r.mix;
+.02 => r.mix;
 
 // our notes
 [ 61, 63, 65, 66, 68, 66, 65, 63 ] @=> int notes[];
@@ -11,9 +11,9 @@ StifKarp m => JCRev r => dac;
 // infinite time-loop
 while( true )
 {
-    Std.rand2f( 0, 1 ) => m.pickupPosition;
-    Std.rand2f( 0, 1 ) => m.sustain;
-    Std.rand2f( 0, 1 ) => m.stretch;
+    Math.random2f( 0, 1 ) => m.pickupPosition;
+    Math.random2f( 0, 1 ) => m.sustain;
+    Math.random2f( 0, 1 ) => m.stretch;
 
     <<< "---", "" >>>;
     <<< "pickup:", m.pickupPosition() >>>;
@@ -21,11 +21,11 @@ while( true )
     <<< "stretch:", m.stretch() >>>;
 
     // factor
-    Std.rand2f( 1, 4 ) => float factor;
+    Math.random2f( 1, 4 ) => float factor;
 
     for( int i; i < notes.cap(); i++ )
     {
-        play( Std.rand2(0,2)*12 + notes[i], Std.rand2f( .6, .9 ) );
+        play( Math.random2(0,2)*12 + notes[i], Math.random2f( .6, .9 ) );
         100::ms * factor => now;
     }
 }
