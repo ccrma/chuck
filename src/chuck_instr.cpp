@@ -4431,9 +4431,22 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     {
         // get index
         i = *ptr++;
-        // get the array
-        if( !base->get( i, &val ) )
-            goto array_out_of_bound;
+        // check if index is string (added 1.3.1.0 -- thanks Robin Haberkorn!)
+        if( j < m_indexIsAssociative.size() && m_indexIsAssociative[j] )
+        {
+            // get index
+            Chuck_String * key = (Chuck_String *)(i);
+            // get the array
+            if( !base->get( key->str, &val ) )
+                goto array_out_of_bound;
+        }
+        else
+        {
+            // get the array
+            if( !base->get( i, &val ) )
+                goto array_out_of_bound;            
+        }
+
         // set the array
         base = (Chuck_Array4 *)val;
         // check for null
