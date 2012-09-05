@@ -737,7 +737,7 @@ CK_DLL_SFUN( random2_impl ) // inclusive.
     {
         if( range > 0 )
         { 
-            RETURN->v_int = min + (t_CKINT)( (1.0 + range) * ( ::random()/(t_CKFLOAT)(CK_RANDOM_MAX+1.0) ) );
+            RETURN->v_int = min + (t_CKINT)( (1.0 + range) * ( ::random()/(CK_RANDOM_MAX+1.0) ) );
         }
         else
         { 
