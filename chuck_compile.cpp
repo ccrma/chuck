@@ -653,13 +653,13 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
 // name: extension_matches()
 // desc: ...
 //-----------------------------------------------------------------------------
-static t_CKBOOL extension_matches(const char * filename, const char * extension)
+static t_CKBOOL extension_matches( const char * filename, const char * extension )
 {
     t_CKUINT extension_length = strlen(extension);
     t_CKUINT filename_length = strlen(filename);
     
-    return strncmp(extension, filename+(filename_length-extension_length), 
-                   extension_length) == 0;
+    return strncmp( extension, filename+(filename_length-extension_length), 
+                    extension_length) == 0;
 }
 
 
@@ -669,24 +669,25 @@ static t_CKBOOL extension_matches(const char * filename, const char * extension)
 // name: load_external_modules_in_directory()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
-                                            const char * directory,
-                                            const char * extension)
+t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
+                                             const char * directory,
+                                             const char * extension )
 {
-    static const bool RECURSIVE_SEARCH = false;
+    static const t_CKBOOL RECURSIVE_SEARCH = false;
     
     DIR * dir = opendir(directory);
     
-    if(dir)
+    if( dir )
     {
-        EM_log(CK_LOG_INFO, "examining directory '%s' for chugins", directory);
+        // log
+        EM_log( CK_LOG_INFO, "examining directory '%s' for chugins", directory );
         
         struct dirent *de = NULL;
         
-        while((de = readdir(dir)))
+        while( (de = readdir(dir)) )
         {
-            bool is_regular = false;
-            bool is_directory = false;
+            t_CKBOOL is_regular = false;
+            t_CKBOOL is_directory = false;
             
 #if defined(__PLATFORM_WIN32__)
             is_directory = de->data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
@@ -696,7 +697,7 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
 #elif defined(__WINDOWS_PTHREAD__) // Cygwin -- doesn't have dirent d_type
             std::string absolute_path = std::string(directory) + "/" + de->d_name;
             struct stat st;
-            if(stat(absolute_path.c_str(), &st) == 0)
+            if( stat(absolute_path.c_str(), &st) == 0 )
             {
                 is_directory = st.st_mode & S_IFDIR;
                 is_regular = st.st_mode & S_IFREG;
@@ -704,9 +705,9 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
             else
             {
                 // uhh ... 
-                EM_log(CK_LOG_INFO, 
-                       "unable to stat file '%s', ignoring for chugins", 
-                       absolute_path.c_str());
+                EM_log( CK_LOG_INFO, 
+                        "unable to stat file '%s', ignoring for chugins", 
+                        absolute_path.c_str() );
                 continue;
             }
 #else
@@ -714,27 +715,27 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
             is_regular = de->d_type == DT_REG;
 #endif
             
-            if(is_regular) // TODO: follow links?
+            if( is_regular ) // TODO: follow links?
             {
-                if(extension_matches(de->d_name, extension))
+                if( extension_matches(de->d_name, extension) )
                 {
                     std::string absolute_path = std::string(directory) + "/" + de->d_name;
                     
                     load_external_module_at_path(compiler, de->d_name, 
                                                  absolute_path.c_str());
                 }
-                else if(extension_matches(de->d_name, ".ck"))
+                else if( extension_matches(de->d_name, ".ck") )
                 {
                     std::string absolute_path = std::string(directory) + "/" + de->d_name;
                     compiler->m_cklibs_to_preload.push_back(absolute_path);
                 }
             }
-            else if(RECURSIVE_SEARCH && is_directory)
+            else if( RECURSIVE_SEARCH && is_directory )
             {
                 // recurse
                 // TODO: max depth?
-                if(strncmp(de->d_name, ".", sizeof(".") != 0) &&
-                   strncmp(de->d_name, "..", sizeof("..")) != 0)
+                if( strncmp(de->d_name, ".", sizeof(".") != 0) &&
+                    strncmp(de->d_name, "..", sizeof("..")) != 0 )
                 {
                     std::string absolute_path = std::string(directory) + "/" + de->d_name;
                     load_external_modules_in_directory(compiler, 
@@ -744,10 +745,12 @@ t_CKBOOL load_external_modules_in_directory(Chuck_Compiler * compiler,
             }
         }
         
-        closedir(dir);
+        // close
+        closedir( dir );
     }
     else
     {
+        // log
         EM_log(CK_LOG_INFO, "unable to open directory '%s', ignoring for chugins", directory);
     }
     
