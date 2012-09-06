@@ -244,7 +244,8 @@ static void version()
 #endif
     
     fprintf( stderr, "   %s : %ld-bit\n", platform.c_str(), machine_intsize() );
-    fprintf( stderr, "   http://chuck.cs.princeton.edu/\n\n" );
+    fprintf( stderr, "   http://chuck.cs.princeton.edu/\n" );
+    fprintf( stderr, "   http://chuck.stanford.edu/\n\n" );
 }
 
 
