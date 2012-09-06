@@ -41,12 +41,6 @@
 #include <time.h>
 
 
-#ifdef __WINDOWS_DS__
-long random() { return rand(); }
-void srandom(unsigned s) { srand(s); }
-#endif // __WINDOWS_DS__
-
-
 static double g_pi = ONE_PI;
 static double g_twopi = TWO_PI;
 static double g_e = ::exp( 1.0 );
@@ -57,6 +51,12 @@ static t_CKINT g_intMax = LONG_MAX;
 static t_CKINT g_randomMax = CK_RANDOM_MAX;
 static t_CKCOMPLEX g_i = { 0.0, 1.0 };
 static t_CKFLOAT fzero() { return 0.0; }
+
+
+#ifdef __WINDOWS_DS__
+static long random() { return rand(); }
+static void srandom( unsigned s ) { srand( s ); }
+#endif // __WINDOWS_DS__
 
 
 // query
