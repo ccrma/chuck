@@ -10,7 +10,10 @@
             the existing Std.rand*() and Std.srand() is still
             be available for compatibility (these to be deprecated
             in the future; please start using Math.random*())
-            (NOTE: also see removed below)
+            * (NOTE: on windows, Math.random() still uses the same
+              generator as Std.rand() -- we hope to improve this in
+              a future version!)
+            * (NOTE: also see removed below)
   - (added) chuck --version | chuck --about now print architecture
             (32-bit or 64-bit)
   - (added) Machine.intsize() will return int width in bits (e.g., 32 or 64)
