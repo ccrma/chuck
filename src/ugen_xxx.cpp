@@ -2469,7 +2469,7 @@ inline t_CKUINT sndbuf_read( sndbuf_data * d, t_CKUINT offset, t_CKUINT howmuch 
     t_CKUINT n;
     // seek
     sf_seek( d->fd, offset, SEEK_SET );
-#if defined(CK_S_DOUBLE)
+#if defined(__CHUCK_USE_64_BIT_SAMPLE__)
     n = sf_readf_double( d->fd, d->buffer+offset*d->num_channels, howmuch );
 #else
     n = sf_readf_float( d->fd, d->buffer+offset*d->num_channels, howmuch );

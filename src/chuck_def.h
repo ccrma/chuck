@@ -83,10 +83,10 @@ typedef char *                      c_str;
 typedef const char *                c_constr;
 
 // double
-// #define CK_S_DOUBLE
+// #define __CHUCK_USE_64_BIT_SAMPLE__
 
 // sample
-#ifdef CK_S_DOUBLE
+#ifdef __CHUCK_USE_64_BIT_SAMPLE__
 #define SAMPLE                      double
 #define SILENCE                     0.0
 #define CK_DDN                      CK_DDN_DOUBLE
