@@ -82,7 +82,7 @@ DWORD__ Digitalio::m_xrun = 0;
 
 
 // sample
-#if defined(CK_S_DOUBLE)
+#if defined(__CHUCK_USE_64_BIT_SAMPLE__)
 #define CK_RTAUDIO_FORMAT RTAUDIO_FLOAT64
 #else
 #define CK_RTAUDIO_FORMAT RTAUDIO_FLOAT32
