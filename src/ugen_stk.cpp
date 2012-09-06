@@ -17398,8 +17398,8 @@ void WvOut :: writeData( unsigned long frames )
   else if ( dataType == STK_SINT32 ) {
     for ( unsigned long k=0; k<frames*channels; k++ ) {
       float float_sample = data[k] * 32767.0;
-      if(float_sample < -2147483647) float_sample = -2147483647;
-      if(float_sample > 2147483647) float_sample = 2147483647;
+      if(float_sample < -2147483647) float_sample = (float)-2147483647;
+      if(float_sample > 2147483647) float_sample = (float)2147483647;
       SINT32 sample = (SINT32) float_sample;
       
       if ( byteswap ) swap32( (unsigned char *)&sample );
