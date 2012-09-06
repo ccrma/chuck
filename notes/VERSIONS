@@ -1,7 +1,7 @@
 ---
 1.3.1.0
   - (added) 64-bit support for all platforms (OS X, Linux, Windows)
-            many thanks to Paul Brossier, Steven Sinclair, 
+            many thanks to Paul Brossier, Stephen Sinclair, 
             Robin Haberkorn, Michael Wilson, Kassen, and 
             Fernando Lopez-Lezcano, and chuck-users!
   - (added) Math.random(), random2(), randomf(), random2f(), srandom(),
