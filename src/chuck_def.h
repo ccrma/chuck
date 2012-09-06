@@ -82,7 +82,7 @@ typedef struct { t_CKFLOAT modulus ; t_CKFLOAT phase ; } t_CKPOLAR;
 typedef char *                      c_str;
 typedef const char *                c_constr;
 
-// double
+// use 64-bit sample in the audio engine
 // #define __CHUCK_USE_64_BIT_SAMPLE__
 
 // sample
