@@ -88,7 +88,14 @@ COBJS=$(CSRCS:.c=.o)
 CXXOBJS=$(CXXSRCS:.cpp=.o)
 OBJS=$(COBJS) $(CXXOBJS)
 
+# remove -arch options
 CFLAGSDEPEND?=$(CFLAGS)
+
+ifneq (,$(ARCHS))
+ARCHOPTS=$(addprefix -arch ,$(ARCHS))
+else
+ARCHOPTS=
+endif
 
 NOTES=AUTHORS DEVELOPER PROGRAMMER README TODO COPYING INSTALL QUICKSTART \
  THANKS VERSIONS
@@ -102,7 +109,7 @@ CK_SVN=https://chuck-dev.stanford.edu/svn/chuck/
 -include $(OBJS:.o=.d)
 
 chuck: $(OBJS)
-	$(LD) -o chuck $(OBJS) $(LDFLAGS)
+	$(LD) -o chuck $(OBJS) $(LDFLAGS) $(ARCHOPTS)
 
 chuck.tab.c chuck.tab.h: chuck.y
 	$(YACC) -dv -b chuck chuck.y
@@ -111,11 +118,11 @@ chuck.yy.c: chuck.lex
 	$(LEX) -ochuck.yy.c chuck.lex
 
 $(COBJS): %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CC) -MM $(CFLAGSDEPEND) $< > $*.d
 
 $(CXXOBJS): %.o: %.cpp
-	$(CXX) $(CFLAGS) -c $< -o $@
+	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM $(CFLAGSDEPEND) $< > $*.d
 
 clean: 
