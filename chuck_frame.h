@@ -52,13 +52,14 @@ struct Chuck_Local
     t_CKUINT size;
     // is ref
     t_CKBOOL is_ref;
-    // is an object type (added ge: 2012 april)
+    // is an object type (added ge: 2012 april | added 1.3.0.0)
     t_CKBOOL is_obj;
     // the offset
     t_CKUINT offset;
 
     // constructor
     Chuck_Local()
+    // (added 1.3.0.0 -- is_obj)
     { size = 0; is_ref = FALSE; is_obj = FALSE; offset = 0; }
 };
 
@@ -87,9 +88,11 @@ public:
 public:
     // push scope
     void push_scope();
-    // add local
+    // add local (added 1.3.0.0 -- is_obj)
     Chuck_Local * alloc_local( t_CKUINT size, const std::string & name,
                                t_CKBOOL is_ref, t_CKBOOL is_obj );
+    // get the current scope (added 1.3.0.0)
+    void get_scope( std::vector<Chuck_Local *> & out ) const;
     // pop scope
     void pop_scope( std::vector<Chuck_Local *> & out );
 };

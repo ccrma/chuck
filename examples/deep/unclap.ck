@@ -28,7 +28,7 @@ fun void clap( SndBuf buffy, int max, float factor )
     1 => int shifts;
 
     // infinite time loop
-    for( ; ; shifts++ )
+    for( ; true; shifts++ )
     {
         // one measure
         for( 0 => int count; count < seq.cap(); count++ )

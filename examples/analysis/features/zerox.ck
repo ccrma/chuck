@@ -10,9 +10,9 @@ fun void ctrl()
     // go
     while( true )
     {
-        Std.rand2f( 100, 2000 ) => foo.freq;
+        Math.random2f( 100, 2000 ) => foo.freq;
         <<< "setting new freq:", foo.freq() >>>;
-        Std.rand2f( 1, 2 )::second => now;
+        Math.random2f( 1, 2 )::second => now;
     }
 }
 

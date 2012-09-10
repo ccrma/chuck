@@ -13,11 +13,11 @@ e.set( 5::ms, 3::ms, .5, 5::ms );
 while( true )
 {
     // frequency
-    Std.mtof( 33 + Std.rand2(0,3) * 12 +
-        hi[Std.rand2(0,hi.cap()-1)] ) => s.freq;
+    Std.mtof( 33 + Math.random2(0,3) * 12 +
+        hi[Math.random2(0,hi.cap()-1)] ) => s.freq;
 
     // harmonics
-    Std.rand2( 1, 5 ) => s.harmonics;
+    Math.random2( 1, 5 ) => s.harmonics;
 
     // key on
     e.keyOn();

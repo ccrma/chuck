@@ -100,6 +100,10 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     //! (see example/status.ck)
     QUERY->add_sfun( QUERY, machine_status_impl, "int", "status" );
 
+    // add get intsize (width)
+    //! get the intsize in bits (e.g., 32 or 64)
+    QUERY->add_sfun( QUERY, machine_intsize_impl, "int", "intsize" );
+
     // end class
     QUERY->end_class( QUERY );
 
@@ -126,13 +130,26 @@ t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func proc_msg )
 }
 
 
+
+
+//-----------------------------------------------------------------------------
+// name: machine_intsize()
+// desc: integer size in bits
+//-----------------------------------------------------------------------------
+t_CKUINT machine_intsize()
+{
+    return sizeof(t_CKINT) * 8;
+}
+
+
+
+
 // add
 CK_DLL_SFUN( machine_crash_impl )
 {
     fprintf( stderr, "[chuck]: crashing...\n" );
     *(volatile int *)0 = 0;
 }
-
 
 // add
 CK_DLL_SFUN( machine_add_impl )
@@ -144,7 +161,7 @@ CK_DLL_SFUN( machine_add_impl )
 
     msg.type = MSG_ADD;
     strcpy( msg.buffer, v );
-    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, NULL, TRUE, NULL );
+    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, TRUE, NULL );
 }
 
 // remove
@@ -155,7 +172,7 @@ CK_DLL_SFUN( machine_remove_impl )
     
     msg.type = MSG_REMOVE;
     msg.param = v;
-    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, NULL, TRUE, NULL );
+    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, TRUE, NULL );
 }
 
 // replace
@@ -169,7 +186,7 @@ CK_DLL_SFUN( machine_replace_impl )
     msg.type = MSG_REPLACE;
     msg.param = v;
     strcpy( msg.buffer, v2 );
-    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, NULL, TRUE, NULL );
+    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, TRUE, NULL );
 }
 
 // status
@@ -178,5 +195,11 @@ CK_DLL_SFUN( machine_status_impl )
     Net_Msg msg;
     
     msg.type = MSG_STATUS;
-    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, NULL, TRUE, NULL );
+    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, TRUE, NULL );
+}
+
+// intsize
+CK_DLL_SFUN( machine_intsize_impl )
+{
+    RETURN->v_int = machine_intsize();
 }

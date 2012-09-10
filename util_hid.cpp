@@ -1989,27 +1989,29 @@ void Hid_callback( void * target, IOReturn result,
                 }
                 
 #ifndef __CK_HID_CURSOR_TRACK__
-                Point p;
-                GetGlobalMouse( &p );
                 
-                msg.idata[2] = p.h;
-                msg.idata[3] = p.v;
+                CGEventRef event = CGEventCreate(NULL);
+                CGPoint cursor = CGEventGetLocation(event);
+                CFRelease(event);
+                
+                msg.idata[2] = cursor.x;
+                msg.idata[3] = cursor.y;
                 
                 CGDirectDisplayID display;
                 CGDisplayCount displayCount;
                 
                 CGPoint cgp;
-                cgp.x = p.h;
-                cgp.y = p.v;
+                cgp.x = cursor.x;
+                cgp.y = cursor.y;
                 
                 if( CGGetDisplaysWithPoint( cgp, 1, &display, &displayCount ) ==
                     kCGErrorSuccess )
                 {
                     CGRect bounds = CGDisplayBounds( display );
                     
-                    msg.fdata[0] = ( ( t_CKFLOAT ) ( p.h - bounds.origin.x ) ) /
+                    msg.fdata[0] = ( ( t_CKFLOAT ) ( cursor.x - bounds.origin.x ) ) /
                                    ( bounds.size.width - 1 );
-                    msg.fdata[1] = ( ( t_CKFLOAT ) ( p.v - bounds.origin.y ) ) /
+                    msg.fdata[1] = ( ( t_CKFLOAT ) ( cursor.y - bounds.origin.y ) ) /
                                    ( bounds.size.height - 1 );
                 }
 #else
@@ -2807,7 +2809,7 @@ static int TiltSensor_test( int kernFunc, const char * servMatch, int dataType )
     io_connect_t dataPort;
 
     IOItemCount structureInputSize;
-    IOByteCount structureOutputSize;
+    size_t structureOutputSize;
     
     // log
     EM_log( CK_LOG_FINE, "testing for SMS sensor..." );
@@ -2851,12 +2853,18 @@ static int TiltSensor_test( int kernFunc, const char * servMatch, int dataType )
     memset( &TiltSensor_data.data, 0, sizeof( TiltSensor_data.data ) );
     memset( &TiltSensor_data.data, 0, sizeof( TiltSensor_data.data ) );
     
-    result = IOConnectMethodStructureIStructureO( dataPort, 
-                                                  kernFunc, 
-                                                  structureInputSize,
-                                                  &structureOutputSize, 
-                                                  &TiltSensor_data.data, 
-                                                  &TiltSensor_data.data );
+//    result = IOConnectMethodStructureIStructureO( dataPort,
+//                                                 kernFunc,
+//                                                 structureInputSize,
+//                                                 &structureOutputSize,
+//                                                 &TiltSensor_data.data,
+//                                                 &TiltSensor_data.data );
+    result = IOConnectCallStructMethod( dataPort,
+                                        kernFunc,
+                                        &TiltSensor_data.data,
+                                        structureInputSize,
+                                        &TiltSensor_data.data,
+                                        &structureOutputSize );
     
     if ( result != KERN_SUCCESS )
     {
@@ -2874,7 +2882,7 @@ static int TiltSensor_do_read()
 {
     kern_return_t result;
     IOItemCount structureInputSize;
-    IOByteCount structureOutputSize;
+    size_t structureOutputSize;
 
     // log
     EM_log( CK_LOG_FINE, "reading SMS sensor..." );
@@ -2898,13 +2906,19 @@ static int TiltSensor_do_read()
     memset( &TiltSensor_data.data, 0, sizeof( TiltSensor_data.data ) );
     memset( &TiltSensor_data.data, 0, sizeof( TiltSensor_data.data ) );
     
-    result = IOConnectMethodStructureIStructureO( TiltSensor_data.dataPort, 
-                                                  TiltSensor_data.kernFunc, 
-                                                  structureInputSize,
-                                                  &structureOutputSize, 
-                                                  &TiltSensor_data.data, 
-                                                  &TiltSensor_data.data );
-    
+//    result = IOConnectMethodStructureIStructureO( TiltSensor_data.dataPort, 
+//                                                  TiltSensor_data.kernFunc, 
+//                                                  structureInputSize,
+//                                                  &structureOutputSize, 
+//                                                  &TiltSensor_data.data, 
+//                                                  &TiltSensor_data.data );
+    result = IOConnectCallStructMethod( TiltSensor_data.dataPort,
+                                        TiltSensor_data.kernFunc,
+                                        &TiltSensor_data.data,
+                                        structureInputSize,
+                                        &TiltSensor_data.data,
+                                        &structureOutputSize );
+
     return 1;
 }
 
@@ -2928,8 +2942,9 @@ static int TiltSensor_detect()
     
     else
         powerbookKernFunc = 21;
-		
-	fprintf( stdout, "osx_version = %ld \n", osx_version );
+
+    // 1.3.1.0: added cast to t_CKINT
+	fprintf( stdout, "osx_version = %ld \n", (t_CKINT)osx_version );
     
     // ibook/powerbook (OS X 10.4.x) tilt sensor interface
     if( TiltSensor_test( powerbookKernFunc, "IOI2CMotionSensor", kSMSPowerbookDataType ) )
@@ -3256,6 +3271,86 @@ const char * MultiTouchDevice_name( int ts )
 
     return "MultiTouch Device";
 }
+
+
+class TabletManager
+{
+public:
+    
+    
+    
+    CGEventRef TapCallBack(CGEventTapProxy proxy, CGEventType type,
+                           CGEventRef event)
+    {
+        HidMsg msg;
+        
+        //    msg.device_type = CK_HID_DEV_MULTITOUCH;
+        //    msg.device_num = device_num;
+        //    msg.type = CK_HID_MULTITOUCH_TOUCH;
+        //    msg.eid = f->identifier;
+        //    msg.fdata[0] = f->normalized.pos.x;
+        //    msg.fdata[1] = f->normalized.pos.y;
+        //    msg.fdata[2] = f->size;
+        
+        HidInManager::push_message( msg );
+        
+        return event;
+    }
+    
+private:
+    
+};
+
+static TabletManager * g_tabletManager = NULL;
+
+
+
+CGEventRef Tablet_TapCallBack(CGEventTapProxy proxy, CGEventType type,
+                              CGEventRef event, void *refcon)
+{
+    TabletManager * mgr = (TabletManager *) refcon;
+    
+    return mgr->TapCallBack(proxy, type, event);
+}
+
+
+
+void Tablet_init()
+{
+    g_tabletManager = new TabletManager;
+}
+
+void Tablet_quit()
+{
+    delete g_tabletManager;
+    g_tabletManager = NULL;
+}
+
+void Tablet_probe()
+{
+    
+}
+
+int Tablet_count()
+{
+    return 0;
+}
+
+int Tablet_open( int ts )
+{
+    return HID_NOERROR;
+}
+
+int Tablet_close( int ts )
+{
+    return HID_NOERROR;
+}
+
+const char * Tablet_name( int ts )
+{
+    return NULL;
+}
+
 
 
 
@@ -7631,6 +7726,14 @@ int MultiTouchDevice_count() { return 0; }
 int MultiTouchDevice_open( int ts ) { return -1; }
 int MultiTouchDevice_close( int ts ) { return -1; }
 const char * MultiTouchDevice_name( int ts ) { return NULL; }
+
+extern void Tablet_init() { }
+extern void Tablet_quit() { }
+extern void Tablet_probe() { }
+extern int Tablet_count() { return 0; }
+extern int Tablet_open( int ts ) { return -1; }
+extern int Tablet_close( int ts ) { return -1; }
+extern const char * Tablet_name( int ts ) { return NULL; }
 
 #endif
 

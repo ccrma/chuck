@@ -40,7 +40,8 @@
 #include <stdio.h>
 
 
-const char CK_VERSION[] = "1.3.0.0-prc-1 (dracula)";
+// current version
+const char CK_VERSION[] = "1.3.1.1-prc-1 (chimera)";
 
 // global virtual machine
 Chuck_VM * g_vm = NULL;

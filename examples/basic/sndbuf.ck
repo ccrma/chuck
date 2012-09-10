@@ -11,7 +11,7 @@ filename => buf.read;
 while( true )
 {
     0 => buf.pos;
-    Std.rand2f(.2,.9) => buf.gain;
-    Std.rand2f(.5,1.5) => buf.rate;
+    Math.random2f(.2,.5) => buf.gain;
+    Math.random2f(.5,1.5) => buf.rate;
     100::ms => now;
 }

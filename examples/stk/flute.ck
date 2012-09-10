@@ -16,13 +16,13 @@ while( true )
     flute.clear( 1.0 );
 
     // set
-    Std.rand2f( 0, 1 ) => flute.jetDelay;
-    Std.rand2f( 0, 1 ) => flute.jetReflection;
-    Std.rand2f( 0, 1 ) => flute.endReflection;
-    Std.rand2f( 0, 1 ) => flute.noiseGain;
-    Std.rand2f( 0, 12 ) => flute.vibratoFreq;
-    Std.rand2f( 0, 1 ) => flute.vibratoGain;
-    Std.rand2f( 0, 1 ) => flute.pressure;
+    Math.random2f( 0, 1 ) => flute.jetDelay;
+    Math.random2f( 0, 1 ) => flute.jetReflection;
+    Math.random2f( 0, 1 ) => flute.endReflection;
+    Math.random2f( 0, 1 ) => flute.noiseGain;
+    Math.random2f( 0, 12 ) => flute.vibratoFreq;
+    Math.random2f( 0, 1 ) => flute.vibratoGain;
+    Math.random2f( 0, 1 ) => flute.pressure;
 
     // print
     <<< "---", "" >>>;
@@ -35,11 +35,11 @@ while( true )
     <<< "breath pressure:", flute.pressure() >>>;
 
     // factor
-    Std.rand2f( .75, 2 ) => float factor;
+    Math.random2f( .75, 2 ) => float factor;
 
     for( int i; i < notes.cap(); i++ )
     {
-        play( 12 + notes[i], Std.rand2f( .6, .9 ) );
+        play( 12 + notes[i], Math.random2f( .6, .9 ) );
         300::ms * factor => now;
     }
 }

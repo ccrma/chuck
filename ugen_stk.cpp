@@ -432,7 +432,7 @@ CK_DLL_CGET( WvIn_cget_path );
 CK_DLL_CTOR( WvOut_ctor );
 CK_DLL_DTOR( WvOut_dtor );
 CK_DLL_TICK( WvOut_tick );
-CK_DLL_TICKV( WvOut2_tickv );
+CK_DLL_TICKF( WvOut2_tickf );
 CK_DLL_PMSG( WvOut_pmsg );
 CK_DLL_CTRL( WvOut_ctrl_filename );
 CK_DLL_CTRL( WvOut_ctrl_matFilename );
@@ -451,6 +451,8 @@ CK_DLL_CTRL( WvOut_ctrl_autoPrefix );
 CK_DLL_CGET( WvOut_cget_filename );
 CK_DLL_CGET( WvOut_cget_record );
 CK_DLL_CGET( WvOut_cget_autoPrefix );
+CK_DLL_CTRL( WvOut_ctrl_fileGain );
+CK_DLL_CGET( WvOut_cget_fileGain );
 
 
 // FM
@@ -3422,14 +3424,21 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
 
     func = make_new_mfun( "string", "autoPrefix", WvOut_cget_autoPrefix ); //! set/get auto prefix string
     if( !type_engine_import_mfun( env, func ) ) goto error;
-
+    
+    func = make_new_mfun( "float", "fileGain", WvOut_ctrl_fileGain ); //! set/get auto prefix string
+    func->add_arg( "float", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    func = make_new_mfun( "float", "fileGain", WvOut_cget_fileGain ); //! set/get auto prefix string
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
     // end the class import
     type_engine_import_class_end( env );
     
     
     if( !type_engine_import_ugen_begin( env, "WvOut2", "WvOut", env->global(), 
                                        WvOut_ctor, WvOut_dtor,
-                                       NULL, WvOut2_tickv, WvOut_pmsg, 2, 2 ) ) return FALSE; 
+                                       NULL, WvOut2_tickf, WvOut_pmsg, 2, 2 ) ) return FALSE; 
 
     func = make_new_mfun( "string", "matFilename", WvOut2_ctrl_matFilename ); //!open matlab file for writing
     func->add_arg( "string", "value" );
@@ -15498,7 +15507,7 @@ void Whistle :: controlChange(int number, MY_FLOAT value)
   else if (number == __SK_Breath_) // 2
     blowFreqMod = norm * 0.5;
   else if (number == __SK_Sustain_)  // 64
-      if (value < 1.0) subSample = 1;
+  { if (value < 1.0) subSample = 1; }
   else
     std::cerr << "[chuck](via STK): Whistle: Undefined Control Number (" << number << ")!!" << std::endl;
 
@@ -16802,6 +16811,7 @@ void WvOut :: init()
   //m_filename[0] = '\0';
   start = TRUE;
   flush = 0;
+  fileGain = 1;
 }
 
 void WvOut :: closeFile( void )
@@ -17388,8 +17398,8 @@ void WvOut :: writeData( unsigned long frames )
   else if ( dataType == STK_SINT32 ) {
     for ( unsigned long k=0; k<frames*channels; k++ ) {
       float float_sample = data[k] * 32767.0;
-      if(float_sample < -2147483647) float_sample = -2147483647;
-      if(float_sample > 2147483647) float_sample = 2147483647;
+      if(float_sample < -2147483647) float_sample = (float)-2147483647;
+      if(float_sample > 2147483647) float_sample = (float)2147483647;
       SINT32 sample = (SINT32) float_sample;
       
       if ( byteswap ) swap32( (unsigned char *)&sample );
@@ -20608,8 +20618,8 @@ CK_DLL_CTRL( StifKarp_ctrl_sustain )
 {
     StifKarp * b = (StifKarp *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
-    b->setStretch( f );
-    RETURN->v_float = (t_CKFLOAT)b->stretching;
+    b->controlChange( __SK_StringDamping_, f * 128 );
+    RETURN->v_float = (t_CKFLOAT)b->m_sustain;
 }
 
 
@@ -20620,7 +20630,7 @@ CK_DLL_CTRL( StifKarp_ctrl_sustain )
 CK_DLL_CGET( StifKarp_cget_sustain )
 {
     StifKarp * b = (StifKarp *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    RETURN->v_float = (t_CKFLOAT)b->stretching;
+    RETURN->v_float = (t_CKFLOAT)b->m_sustain;
 }
 
 
@@ -24564,7 +24574,8 @@ CK_DLL_DTOR( WvOut_dtor )
     w->closeFile();
     std::map<WvOut *, WvOut *>::iterator iter;
     iter = g_wv.find( w );
-    g_wv.erase( iter );
+    if(iter != g_wv.end())
+        g_wv.erase( iter );
     delete (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     OBJ_MEMBER_UINT(SELF, WvOut_offset_data) = 0;
 }
@@ -24577,7 +24588,8 @@ CK_DLL_DTOR( WvOut_dtor )
 CK_DLL_TICK( WvOut_tick )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    if( w->start ) w->tick( in );
+    // added 1.3.0.0: apply fileGain
+    if( w->start ) w->tick( w->fileGain * in );
     *out = in; // pass samples downstream
     return TRUE;
 }
@@ -24588,20 +24600,20 @@ CK_DLL_TICK( WvOut_tick )
 // name: WvOut_tick()
 // desc: TICK function ...
 //-----------------------------------------------------------------------------
-CK_DLL_TICKV( WvOut2_tickv )
+CK_DLL_TICKF( WvOut2_tickf )
 {
     // assumption: stereo (2-channel) operation
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     MY_FLOAT frame[2];
     for(int i = 0; i < nframes; i++)
     {
-        frame[0] = in[i][0];
-        frame[1] = in[i][1];
+        frame[0] = in[i*2] * w->fileGain;
+        frame[1] = in[i*2+1] * w->fileGain;
         
         if( w->start ) w->tickFrame( frame, 1 );
         
-        out[i][0] = in[i][0]; // pass samples downstream
-        out[i][1] = in[i][1]; // pass samples downstream
+        out[i*2] = in[i*2]; // pass samples downstream
+        out[i*2+1] = in[i*2+1]; // pass samples downstream
     }
     return TRUE;
 }
@@ -24958,7 +24970,8 @@ CK_DLL_CTRL( WvOut_ctrl_closeFile )
     
     std::map<WvOut *, WvOut *>::iterator iter;
     iter = g_wv.find( w );
-    g_wv.erase( iter );
+    if(iter != g_wv.end())
+        g_wv.erase( iter );
 }
 
 
@@ -25006,6 +25019,29 @@ CK_DLL_CGET( WvOut_cget_autoPrefix )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     RETURN->v_string = &w->autoPrefix;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_fileGain()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_fileGain )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    w->fileGain = GET_NEXT_FLOAT(ARGS);
+    RETURN->v_float = w->fileGain;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_cget_fileGain()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( WvOut_cget_fileGain )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    RETURN->v_float = w->fileGain;
 }
 
 

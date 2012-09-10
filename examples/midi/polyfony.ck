@@ -53,7 +53,7 @@ fun void handler()
         // dynamically repatch
         m => g;
         Std.mtof( note ) => m.freq;
-        Std.rand2f( .6, .8 ) => m.pluckPos;
+        Math.random2f( .6, .8 ) => m.pluckPos;
         on.velocity / 128.0 => m.pluck;
         off @=> us[note];
 

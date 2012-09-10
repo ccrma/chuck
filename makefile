@@ -10,10 +10,17 @@ install:
 	cp $(wildcard chuck chuck.exe) $(DESTDIR)/
 	chmod 755 $(DESTDIR)/$(wildcard chuck chuck.exe)
 
+ifneq ($(CK_TARGET),)
+.DEFAULT_GOAL:=$(CK_TARGET)
+ifeq ($(MAKECMDGOALS),)
+MAKECMDGOALS:=$(.DEFAULT_GOAL)
+endif
+endif
+
 .PHONY: osx linux-oss linux-jack linux-alsa win32 osx-rl
 osx linux-oss linux-jack linux-alsa win32 osx-rl: chuck
 
-CK_VERSION=1.3.0
+CK_VERSION=1.3.1.0
 
 LEX=flex
 YACC=bison
@@ -29,6 +36,10 @@ ifneq ($(CHUCK_DEBUG),)
 CFLAGS+= -g
 else
 CFLAGS+= -O3
+endif
+
+ifneq ($(USE_64_BIT_SAMPLE),)
+CFLAGS+= -D__CHUCK_USE_64_BIT_SAMPLE__
 endif
 
 ifneq ($(CHUCK_STRICT),)
@@ -79,7 +90,14 @@ CXXOBJS=$(CXXSRCS:.cpp=.o)
 OBJCXXOBJS=$(OBJCXXSRCS:.mm=.o)
 OBJS=$(COBJS) $(CXXOBJS) $(OBJCXXOBJS)
 
+# remove -arch options
 CFLAGSDEPEND?=$(CFLAGS)
+
+ifneq (,$(ARCHS))
+ARCHOPTS=$(addprefix -arch ,$(ARCHS))
+else
+ARCHOPTS=
+endif
 
 NOTES=AUTHORS DEVELOPER PROGRAMMER README TODO COPYING INSTALL QUICKSTART \
  THANKS VERSIONS
@@ -93,7 +111,7 @@ CK_SVN=https://chuck-dev.stanford.edu/svn/chuck/
 -include $(OBJS:.o=.d)
 
 chuck: $(OBJS)
-	$(LD) -o chuck $(OBJS) $(LDFLAGS)
+	$(LD) -o chuck $(OBJS) $(LDFLAGS) $(ARCHOPTS)
 
 chuck.tab.c chuck.tab.h: chuck.y
 	$(YACC) -dv -b chuck chuck.y
@@ -102,11 +120,11 @@ chuck.yy.c: chuck.lex
 	$(LEX) -ochuck.yy.c chuck.lex
 
 $(COBJS): %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CC) -MM $(CFLAGSDEPEND) $< > $*.d
 
 $(CXXOBJS): %.o: %.cpp
-	$(CXX) $(CFLAGS) -c $< -o $@
+	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM $(CFLAGSDEPEND) $< > $*.d
 
 $(OBJCXXOBJS): %.o: %.mm
@@ -114,7 +132,7 @@ $(OBJCXXOBJS): %.o: %.mm
 	@$(CXX) -MM $(CFLAGSDEPEND) $< > $*.d
 
 clean: 
-	@rm -f $(wildcard chuck chuck.exe) $(OBJS) $(patsubst %.o,%.d,$(OBJS)) \
+	@rm -f $(wildcard chuck chuck.exe) *.o *.d $(OBJS) $(patsubst %.o,%.d,$(OBJS)) \
     *~ chuck.output chuck.tab.h chuck.tab.c chuck.yy.c $(DIST_DIR){,.tgz,.zip}
 	
 
@@ -144,13 +162,13 @@ bin-dist-osx: osx
 
 .PHONY: bin-dist-win32
 bin-dist-win32:
-	make win32
+#	make win32
 # clean out old dists
 	-rm -rf $(DIST_DIR_EXE){,.tgz,.zip}
 # create directories
 	mkdir $(DIST_DIR_EXE) $(DIST_DIR_EXE)/bin $(DIST_DIR_EXE)/doc
 # copy binary + notes
-	cp chuck $(addprefix ../notes/bin/,$(BIN_NOTES)) $(DIST_DIR_EXE)/bin
+	cp Release/chuck.exe $(addprefix ../notes/bin/,$(BIN_NOTES)) $(DIST_DIR_EXE)/bin
 # copy manual + notes
 	cp ../doc/manual/ChucK_manual.pdf $(addprefix ../notes/doc/,$(DOC_NOTES)) $(DIST_DIR_EXE)/doc
 # copy examples
@@ -161,7 +179,7 @@ bin-dist-win32:
 # copy notes
 	cp $(addprefix ../notes/,$(NOTES)) $(DIST_DIR_EXE)
 # tar/gzip
-	tar czf $(DIST_DIR_EXE).tgz $(DIST_DIR_EXE)
+	zip -q -9 -r -m $(DIST_DIR_EXE).zip $(DIST_DIR_EXE)
 
 .PHONY: src-dist
 src-dist:

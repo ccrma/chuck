@@ -721,7 +721,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     if( !type_engine_import_ugen_begin( env, "SndBuf2", "SndBuf", env->global(), 
                                         NULL, NULL,
-                                        NULL, sndbuf_tickv, NULL, 2, 2 ) )
+                                        NULL, sndbuf_tickf, NULL, 2, 2 ) )
         return FALSE;
     
     // end import
@@ -1198,32 +1198,41 @@ CK_DLL_CTOR( foogen_ctor )
     data->shred = NULL;
     data->vm = SHRED->vm_ref;
     
-    OBJ_MEMBER_UINT(SELF, foogen_offset_data) = (unsigned int) data;
+    // 1.3.1.0: changed from unsigned int to t_CKUINT
+    OBJ_MEMBER_UINT(SELF, foogen_offset_data) = (t_CKUINT)data;
 
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     int tick_fun_index = -1;
     
     for(int i = 0; i < ugen->vtable->funcs.size(); i++)
     {
-        std::string &name = ugen->vtable->funcs[i]->name;
-        if(name.find("tick") == 0)
+        Chuck_Func * func = ugen->vtable->funcs[i];
+        if(func->name.find("tick") == 0 && 
+           // ensure has one argument
+           func->def->arg_list != NULL &&
+           // ensure first argument is float
+           func->def->arg_list->type == &t_float &&
+           // ensure has only one argument
+           func->def->arg_list->next == NULL &&
+           // ensure returns float
+           func->def->ret_type == &t_float )
         {
             tick_fun_index = i;
             break;
         }
     }
     
-    if(tick_fun_index != -1)
+    if( tick_fun_index != -1 )
     {
         vector<Chuck_Instr *> instrs;
         // push arg (float input)
-        instrs.push_back(new Chuck_Instr_Reg_Push_Deref((t_CKUINT) &data->input, 8));
+        instrs.push_back(new Chuck_Instr_Reg_Push_Deref2( (t_CKUINT)&data->input ) );
         // push this (as func arg)
-        instrs.push_back(new Chuck_Instr_Reg_Push_Imm((unsigned int) SELF));
+        instrs.push_back(new Chuck_Instr_Reg_Push_Imm((t_CKUINT)SELF) ); // 1.3.1.0: changed to t_CKUINT
         // reg dup last (push this again) (for member func resolution)
         instrs.push_back(new Chuck_Instr_Reg_Dup_Last);
         // dot member func
-        instrs.push_back(new Chuck_Instr_Dot_Member_Func(tick_fun_index));
+        instrs.push_back(new Chuck_Instr_Dot_Member_Func(tick_fun_index) );
         // func to code
         instrs.push_back(new Chuck_Instr_Func_To_Code);
         // push stack depth
@@ -1231,7 +1240,7 @@ CK_DLL_CTOR( foogen_ctor )
         // func call
         instrs.push_back(new Chuck_Instr_Func_Call());
         // push immediate
-        instrs.push_back(new Chuck_Instr_Reg_Push_Imm((unsigned int) &data->output));
+        instrs.push_back(new Chuck_Instr_Reg_Push_Imm((t_CKUINT)&data->output) ); // 1.3.1.0: changed to t_CKUINT
         // assign primitive
         instrs.push_back(new Chuck_Instr_Assign_Primitive2);
         // pop
@@ -1249,6 +1258,12 @@ CK_DLL_CTOR( foogen_ctor )
         
         data->shred = new Chuck_VM_Shred;
         data->shred->initialize(code);
+    }
+    else
+    {
+        // SPENCERTODO: warn on Chugen definition instead of instantiation?
+        EM_log(CK_LOG_WARNING, "ChuGen '%s' does not define a suitable tick function",
+               ugen->type_ref->name.c_str());
     }
 }
 
@@ -2455,7 +2470,7 @@ inline t_CKUINT sndbuf_read( sndbuf_data * d, t_CKUINT offset, t_CKUINT howmuch 
     t_CKUINT n;
     // seek
     sf_seek( d->fd, offset, SEEK_SET );
-#if defined(CK_S_DOUBLE)
+#if defined(__CHUCK_USE_64_BIT_SAMPLE__)
     n = sf_readf_double( d->fd, d->buffer+offset*d->num_channels, howmuch );
 #else
     n = sf_readf_float( d->fd, d->buffer+offset*d->num_channels, howmuch );
@@ -2745,7 +2760,7 @@ CK_DLL_TICK( sndbuf_tick )
 }
 
 /* multi-chan tick */
-CK_DLL_TICKV( sndbuf_tickv )
+CK_DLL_TICKF( sndbuf_tickf )
 {
     Chuck_UGen * ugen = (Chuck_UGen *) SELF;
     
@@ -2774,14 +2789,16 @@ CK_DLL_TICKV( sndbuf_tickv )
         // ruh roh
     }
     
-    for(unsigned int frame_idx = 0; frame_idx < nframes; frame_idx++)
+    unsigned int frame_idx;
+    unsigned int nchans = ugen->m_num_outs;
+    for(frame_idx = 0; frame_idx < nframes && (d->loop || d->curr < d->eob+d->num_channels); frame_idx++)
     {
-        for(unsigned int chan_idx = 0; chan_idx < ugen->m_num_outs; chan_idx++)
+        for(unsigned int chan_idx = 0; chan_idx < nchans; chan_idx++)
         {
             // calculate frame
             if( d->interp == SNDBUF_DROP )
             {
-                out[frame_idx][chan_idx] = (SAMPLE)(d->curr[chan_idx % d->num_channels] * amp_factor);
+                out[frame_idx*nchans+chan_idx] = (SAMPLE)(d->curr[chan_idx % d->num_channels] * amp_factor);
             }
             else if( d->interp == SNDBUF_INTERP )
             {
@@ -2789,9 +2806,9 @@ CK_DLL_TICKV( sndbuf_tickv )
                 // samplewise linear interp
                 double alpha = d->curf - floor(d->curf);
                 SAMPLE current_sample = d->curr[chan_idx % d->num_channels];
-                out[frame_idx][chan_idx] = current_sample;
-                out[frame_idx][chan_idx] += (float)alpha * ( sndbuf_sampleAt(d, (long)d->curf+1, chan_idx % d->num_channels ) - current_sample );
-                out[frame_idx][chan_idx] *= amp_factor;
+                out[frame_idx*nchans+chan_idx] = current_sample;
+                out[frame_idx*nchans+chan_idx] += (float)alpha * ( sndbuf_sampleAt(d, (long)d->curf+1, chan_idx % d->num_channels ) - current_sample );
+                out[frame_idx*nchans+chan_idx] *= amp_factor;
             }
             else if( d->interp == SNDBUF_SINC )
             {
@@ -2804,6 +2821,15 @@ CK_DLL_TICKV( sndbuf_tickv )
         // advance
         sndbuf_setpos(d, d->curf + d->rate);
     }
+    
+    for(; frame_idx < nframes; frame_idx++)
+    {
+        for(unsigned int chan_idx = 0; chan_idx < nchans; chan_idx++)
+        {
+            out[frame_idx*nchans+chan_idx] = 0;
+        }
+    }
+                
     
     return TRUE;    
 }

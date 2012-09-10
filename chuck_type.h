@@ -300,7 +300,7 @@ struct Chuck_Context : public Chuck_VM_Object
 {
     // src_name
     std::string filename;
-    // full filepath (if available)
+    // full filepath (if available) -- added 1.3.0.0
     std::string full_path;
     // parse tree
     a_Program parse_tree;
@@ -457,8 +457,8 @@ struct Chuck_UGen_Info : public Chuck_VM_Object
 {
     // tick function pointer
     f_tick tick;
-    // multichannel/vector tick function pointer
-    f_tickv tickv;
+    // multichannel/vector tick function pointer (added 1.3.0.0)
+    f_tickf tickf;
     // pmsg function pointer
     f_pmsg pmsg;
     // number of incoming channels
@@ -475,7 +475,7 @@ struct Chuck_UGen_Info : public Chuck_VM_Object
 
     // constructor
     Chuck_UGen_Info()
-    { tick = NULL; tickv = NULL; pmsg = NULL; num_ins = num_outs = 1; 
+    { tick = NULL; tickf = NULL; pmsg = NULL; num_ins = num_outs = 1; 
       tock = NULL; num_ins_ana = num_outs_ana = 1; }
 };
 
@@ -732,7 +732,7 @@ t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt );
 t_CKTYPE type_engine_check_exp( Chuck_Env * env, a_Exp exp );
 // add an chuck dll into the env
 t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const std::string & nspc );
-// second version: use type_engine functions instead of constructing AST
+// second version: use type_engine functions instead of constructing AST (added 1.3.0.0)
 t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll, const std::string & dest );
 // type equality
 t_CKBOOL operator ==( const Chuck_Type & lhs, const Chuck_Type & rhs );
@@ -743,6 +743,8 @@ t_CKBOOL isa( Chuck_Type * lhs, Chuck_Type * rhs );
 t_CKBOOL isprim( Chuck_Type * type );
 t_CKBOOL isobj( Chuck_Type * type );
 t_CKBOOL isfunc( Chuck_Type * type );
+t_CKBOOL iskindofint( Chuck_Type * type ); // added 1.3.1.0: this includes int + pointers
+t_CKUINT getkindof( Chuck_Type * type ); // added 1.3.1.0: to get the kindof a type
 
 // import
 Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type, 
@@ -751,7 +753,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, const char * name,
                                              Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor = NULL );
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
-                                            f_tick tick, f_tickv tickv, f_pmsg pmsg,
+                                            f_tick tick, f_tickf tickf, f_pmsg pmsg,  // (tickf added 1.3.0.0)
                                             t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff );
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
@@ -790,7 +792,7 @@ Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List path );
 /*******************************************************************************
  * spencer: added this into function to provide the same logic path
  * for type_engine_check_exp_decl() and ck_add_mvar() when they determine
- * offsets for mvars 
+ * offsets for mvars -- added 1.3.0.0
  ******************************************************************************/
 t_CKUINT type_engine_next_offset( t_CKUINT current_offset, Chuck_Type * type );
 // array verify

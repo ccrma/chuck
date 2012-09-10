@@ -380,6 +380,15 @@
 		09F05F580B74558400023899 /* tilt.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = tilt.ck; path = examples/hid/tilt.ck; sourceTree = SOURCE_ROOT; };
 		09F9E0D1144FD3F900389ED1 /* util_icon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = util_icon.cpp; sourceTree = "<group>"; };
 		09F9E0D3144FD40B00389ED1 /* util_icon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util_icon.h; sourceTree = "<group>"; };
+		09F5E1E3158C401E0038B393 /* AUTHORS */ = {isa = PBXFileReference; lastKnownFileType = text; name = AUTHORS; path = ../notes/AUTHORS; sourceTree = "<group>"; };
+		09F5E1E4158C401E0038B393 /* README.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = README.txt; path = ../notes/bin/README.txt; sourceTree = "<group>"; };
+		09F5E1E5158C401E0038B393 /* DEVELOPER */ = {isa = PBXFileReference; lastKnownFileType = text; name = DEVELOPER; path = ../notes/DEVELOPER; sourceTree = "<group>"; };
+		09F5E1E6158C401E0038B393 /* GOTO */ = {isa = PBXFileReference; lastKnownFileType = text; name = GOTO; path = ../notes/doc/GOTO; sourceTree = "<group>"; };
+		09F5E1E7158C401E0038B393 /* PROGRAMMER */ = {isa = PBXFileReference; lastKnownFileType = text; name = PROGRAMMER; path = ../notes/PROGRAMMER; sourceTree = "<group>"; };
+		09F5E1E8158C401E0038B393 /* QUICKSTART */ = {isa = PBXFileReference; lastKnownFileType = text; name = QUICKSTART; path = ../notes/QUICKSTART; sourceTree = "<group>"; };
+		09F5E1E9158C401E0038B393 /* README */ = {isa = PBXFileReference; lastKnownFileType = text; name = README; path = ../notes/README; sourceTree = "<group>"; };
+		09F5E1EA158C401E0038B393 /* THANKS */ = {isa = PBXFileReference; lastKnownFileType = text; name = THANKS; path = ../notes/THANKS; sourceTree = "<group>"; };
+		09F5E1EB158C401E0038B393 /* TODO */ = {isa = PBXFileReference; lastKnownFileType = text; name = TODO; path = ../notes/TODO; sourceTree = "<group>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -854,9 +863,18 @@
 		09A40D840A9AC51D007604EA /* Notes */ = {
 			isa = PBXGroup;
 			children = (
+				09A40F2C0A9AE5FE007604EA /* VERSIONS */,
+				09F5E1E3158C401E0038B393 /* AUTHORS */,
+				09F5E1E4158C401E0038B393 /* README.txt */,
+				09F5E1E5158C401E0038B393 /* DEVELOPER */,
+				09F5E1E6158C401E0038B393 /* GOTO */,
+				09F5E1E7158C401E0038B393 /* PROGRAMMER */,
+				09F5E1E8158C401E0038B393 /* QUICKSTART */,
+				09F5E1E9158C401E0038B393 /* README */,
+				09F5E1EA158C401E0038B393 /* THANKS */,
+				09F5E1EB158C401E0038B393 /* TODO */,
 				09A40F290A9AE5FE007604EA /* COPYING */,
 				09A40F2A0A9AE5FE007604EA /* INSTALL */,
-				09A40F2C0A9AE5FE007604EA /* VERSIONS */,
 			);
 			name = Notes;
 			sourceTree = "<group>";

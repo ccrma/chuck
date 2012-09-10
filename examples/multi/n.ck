@@ -11,7 +11,7 @@ SinOsc s[N];
 for( int i; i < N; i++ )
 {
     s[i] => dac.chan(i);
-    Std.rand2f( 400, 440 ) => s[i].freq;
+    Math.random2f( 400, 440 ) => s[i].freq;
     .2 => s[i].gain;
 }
 

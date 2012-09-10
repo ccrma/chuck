@@ -45,7 +45,7 @@ for ( 0 => int i; i < buf.samples(); i++ ) {
 
 //look at some of the data
 //returns value at given time, with linear interpolation
-<<< Std.rand2f( 0., lisa.duration() / 1::samp ) :: samp  => lisa.valueAt >>>;
+<<< Math.random2f( 0., lisa.duration() / 1::samp ) :: samp  => lisa.valueAt >>>;
 
 //hang on until it's done...
 lisa.duration() * 0.5 => now;
