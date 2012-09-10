@@ -15507,7 +15507,7 @@ void Whistle :: controlChange(int number, MY_FLOAT value)
   else if (number == __SK_Breath_) // 2
     blowFreqMod = norm * 0.5;
   else if (number == __SK_Sustain_)  // 64
-      if (value < 1.0) subSample = 1;
+  { if (value < 1.0) subSample = 1; }
   else
     std::cerr << "[chuck](via STK): Whistle: Undefined Control Number (" << number << ")!!" << std::endl;
 
