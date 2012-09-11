@@ -40,6 +40,7 @@
 #include "chuck_type.h"
 #include "chuck_instr.h"
 #include "chuck_globals.h"
+#include "chuck_compile.h"
 #include "chuck_vm.h"
 #include <sstream>
 using namespace std;
@@ -125,9 +126,10 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
     if( query->curr_class )
         // recursive
         query->curr_class->classes.push_back( c );
-    else
-        // first level
-        query->classes.push_back( c );
+    // 1.3.2.0: do not save class for later import (will import it on class close)
+//    else
+//        // first level
+//        query->classes.push_back( c );
 
     // remember info
     c->name = name;
@@ -511,6 +513,12 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
     }
     
     // type check the class?
+    // 1.3.2.0: import class into type engine if at top level
+    if( query->stack.size() == 1 ) // top level class
+    {
+        if( !type_engine_add_class_from_dl(g_compiler->env, query->curr_class) )
+            return TRUE; // SPENCERTODO: report error
+    }
     
     // pop
     assert( query->stack.size() );
@@ -520,6 +528,21 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
     return TRUE;
 }
 
+
+
+//-----------------------------------------------------------------------------
+// name: ck_end_class()
+// desc: end class/namespace, compile it
+//-----------------------------------------------------------------------------
+t_CKBOOL CK_DLL_CALL ck_set_main_thread_hook( Chuck_DL_Query * query,
+                                              f_mainthreadhook hook,
+                                              f_mainthreadquit quit,
+                                              void * bindle )
+{
+    assert(g_vm);
+    
+    return g_vm->set_main_thread_hook( hook, quit, bindle );
+}
 
 
 
@@ -634,7 +657,17 @@ const Chuck_DL_Query * Chuck_DLL::query( )
     
     // check version
     t_CKUINT dll_version = m_version_func();
-    if(CK_DLL_VERSION_GETMAJOR(dll_version) != CK_DLL_VERSION_MAJOR)
+    t_CKBOOL version_ok = FALSE;
+    // explicit check: version 4 is OK
+    if(CK_DLL_VERSION_GETMAJOR(dll_version) == 4)
+        version_ok = TRUE;
+    // major version must be same
+    // minor version must less than or equal
+    if(CK_DLL_VERSION_GETMAJOR(dll_version) == CK_DLL_VERSION_MAJOR &&
+       CK_DLL_VERSION_GETMINOR(dll_version) <= CK_DLL_VERSION_MINOR)
+        version_ok = TRUE;
+    
+    if(!version_ok)
         // SPENCERTODO: do they need to be equal, or can dll_version be < ?
     {
         ostringstream oss;
@@ -807,7 +840,7 @@ const char * Chuck_DLL::name() const
 }
 
 
-
+//const t_CKUINT Chuck_DL_Query::RESERVED_SIZE;
 
 //-----------------------------------------------------------------------------
 // name: Chuck_DL_Query
@@ -829,6 +862,10 @@ Chuck_DL_Query::Chuck_DL_Query( )
     add_ugen_funcf = ck_add_ugen_funcf;
     add_ugen_ctrl = ck_add_ugen_ctrl;
     end_class = ck_end_class;
+    set_main_thread_hook = ck_set_main_thread_hook;
+    
+//    memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
+    
     dll_name = "[noname]";
     reserved = NULL;
     curr_class = NULL;
