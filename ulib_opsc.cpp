@@ -397,6 +397,7 @@ CK_DLL_MFUN( osc_address_next_string  ) {
     RETURN->v_string = ckstr;
 }
 
+
 // OscRecv functions 
 
 
@@ -404,7 +405,8 @@ CK_DLL_MFUN( osc_address_next_string  ) {
 // name : osc_recv_ctor  
 // desc : CTOR function 
 //-----------------------------------------------
-CK_DLL_CTOR( osc_recv_ctor ) { 
+CK_DLL_CTOR( osc_recv_ctor )
+{
     OSC_Receiver * recv = new OSC_Receiver();
     OBJ_MEMBER_INT( SELF, osc_send_offset_data ) = (t_CKINT)recv;
 }
@@ -413,7 +415,8 @@ CK_DLL_CTOR( osc_recv_ctor ) {
 // name : osc_recv_dtor  
 // desc : DTOR function 
 //-----------------------------------------------
-CK_DLL_DTOR( osc_recv_dtor ) { 
+CK_DLL_DTOR( osc_recv_dtor )
+{
     OSC_Receiver * recv = (OSC_Receiver *)OBJ_MEMBER_INT(SELF, osc_recv_offset_data);
     SAFE_DELETE(recv);
     OBJ_MEMBER_INT(SELF, osc_recv_offset_data) = 0;
@@ -423,8 +426,8 @@ CK_DLL_DTOR( osc_recv_dtor ) {
 // name : osc_recv_port  
 // desc : specify port to listen on
 //-----------------------------------------------
-CK_DLL_MFUN( osc_recv_port ) { 
-
+CK_DLL_MFUN( osc_recv_port )
+{
     OSC_Receiver * recv = (OSC_Receiver *)OBJ_MEMBER_INT(SELF, osc_recv_offset_data);
     recv->bind_to_port( (int)GET_NEXT_INT(ARGS) );
 }
@@ -436,7 +439,8 @@ CK_DLL_MFUN( osc_recv_port ) {
 // name : osc_recv_listen  
 // desc : start listening
 //-----------------------------------------------
-CK_DLL_MFUN( osc_recv_listen ) { 
+CK_DLL_MFUN( osc_recv_listen )
+{
     OSC_Receiver * recv = (OSC_Receiver *)OBJ_MEMBER_INT(SELF, osc_recv_offset_data);
     recv->listen();
 }
@@ -445,7 +449,8 @@ CK_DLL_MFUN( osc_recv_listen ) {
 // name : osc_recv_listen_port  
 // desc : listen to a given port ( disconnects from current )
 //-----------------------------------------------
-CK_DLL_MFUN( osc_recv_listen_port ) { 
+CK_DLL_MFUN( osc_recv_listen_port )
+{
     OSC_Receiver * recv = (OSC_Receiver *)OBJ_MEMBER_INT(SELF, osc_recv_offset_data);
     recv->listen((int)GET_NEXT_INT(ARGS));
 }
@@ -454,7 +459,8 @@ CK_DLL_MFUN( osc_recv_listen_port ) {
 // name : osc_recv_listen_port  
 // desc : listen to a given port ( disconnects from current )
 //-----------------------------------------------
-CK_DLL_MFUN( osc_recv_listen_stop ) { 
+CK_DLL_MFUN( osc_recv_listen_stop )
+{
     OSC_Receiver * recv = (OSC_Receiver *)OBJ_MEMBER_INT(SELF, osc_recv_offset_data);
 	recv->stopListening();
 }
@@ -463,7 +469,8 @@ CK_DLL_MFUN( osc_recv_listen_stop ) {
 // name : osc_recv_add_listener  
 // desc : MFUN function 
 //-----------------------------------------------
-CK_DLL_MFUN( osc_recv_add_address ) { 
+CK_DLL_MFUN( osc_recv_add_address )
+{
     OSC_Receiver * recv = (OSC_Receiver *)OBJ_MEMBER_INT(SELF, osc_recv_offset_data);
     Chuck_Object* addr_obj = GET_NEXT_OBJECT(ARGS); //address object class...
     OSC_Address_Space * addr = (OSC_Address_Space *)OBJ_MEMBER_INT( addr_obj, osc_address_offset_data ); 
@@ -474,7 +481,8 @@ CK_DLL_MFUN( osc_recv_add_address ) {
 // name : osc_recv_remove_listener  
 // desc : MFUN function 
 //-----------------------------------------------
-CK_DLL_MFUN( osc_recv_remove_address ) { 
+CK_DLL_MFUN( osc_recv_remove_address )
+{
     OSC_Receiver * recv = (OSC_Receiver *)OBJ_MEMBER_INT(SELF, osc_recv_offset_data);
     Chuck_Object* addr_obj = GET_NEXT_OBJECT(ARGS); //listener object class...
     OSC_Address_Space * addr = (OSC_Address_Space *)OBJ_MEMBER_INT( addr_obj, osc_address_offset_data ); 
@@ -485,11 +493,11 @@ CK_DLL_MFUN( osc_recv_remove_address ) {
 // name : osc_recv_new_address  
 // desc : MFUN function 
 //-----------------------------------------------
-CK_DLL_MFUN( osc_recv_new_address ) { 
+CK_DLL_MFUN( osc_recv_new_address )
+{
     OSC_Receiver * recv = (OSC_Receiver *)OBJ_MEMBER_INT(SELF, osc_recv_offset_data);
-    Chuck_String* spec_obj = (Chuck_String*) GET_NEXT_STRING(ARGS); //listener object class...
-
-    OSC_Address_Space* new_addr_obj = recv->new_event ( (char*)spec_obj->str.c_str() );
+    Chuck_String * spec_obj = (Chuck_String*)GET_NEXT_STRING(ARGS); // listener object class...
+    OSC_Address_Space * new_addr_obj = recv->new_event( (char*)spec_obj->str.c_str() );
 
     /* wolf in sheep's clothing
     initialize_object( new_addr_obj , osc_addr_type_ptr ); //initialize in vm
@@ -512,12 +520,12 @@ CK_DLL_MFUN( osc_recv_new_address ) {
 // name : osc_recv_new_address  
 // desc : MFUN function 
 //-----------------------------------------------
-CK_DLL_MFUN( osc_recv_new_address_type ) { 
+CK_DLL_MFUN( osc_recv_new_address_type )
+{
     OSC_Receiver * recv = (OSC_Receiver *)OBJ_MEMBER_INT(SELF, osc_recv_offset_data);
-    Chuck_String* addr_obj = (Chuck_String*) GET_NEXT_STRING(ARGS); //listener object class...
-    Chuck_String* type_obj = (Chuck_String*) GET_NEXT_STRING(ARGS); //listener object class...
-
-    OSC_Address_Space* new_addr_obj = recv->new_event ( (char*)addr_obj->str.c_str(), (char*)type_obj->str.c_str() );
+    Chuck_String * addr_obj = (Chuck_String*)GET_NEXT_STRING(ARGS); //listener object class...
+    Chuck_String * type_obj = (Chuck_String*)GET_NEXT_STRING(ARGS); //listener object class...
+    OSC_Address_Space * new_addr_obj = recv->new_event( (char*)addr_obj->str.c_str(), (char*)type_obj->str.c_str() );
 
     /* wolf in sheep's clothing
     initialize_object( new_addr_obj , osc_addr_type_ptr ); //initialize in vm
