@@ -1697,7 +1697,7 @@ OSC_Receiver::~OSC_Receiver()
 
 THREAD_RETURN (THREAD_TYPE osc_recv_thread)( void * data )
 {
-    OSC_Receiver * oscar = (OSC_Receiver * ) data;
+    OSC_Receiver * oscar = (OSC_Receiver * )data;
 
     // priority boost
     if( Chuck_VM::our_priority != 0x7fffffff )
@@ -2011,24 +2011,24 @@ void OSC_Receiver::handle_bundle( char * b, int len )
    }
 }
 
-OSC_Address_Space * 
-OSC_Receiver::new_event ( char * spec) { 
-    OSC_Address_Space * event = new OSC_Address_Space ( spec );
-    add_address ( event );
+OSC_Address_Space * OSC_Receiver::new_event( char * spec)
+{
+    OSC_Address_Space * event = new OSC_Address_Space( spec );
+    add_address( event );
     return event;
 }
 
-OSC_Address_Space * 
-OSC_Receiver::new_event ( char * addr, char * type) { 
-    OSC_Address_Space * event = new OSC_Address_Space ( addr, type );
-    add_address ( event );
+OSC_Address_Space * OSC_Receiver::new_event( char * addr, char * type)
+{
+    OSC_Address_Space * event = new OSC_Address_Space( addr, type );
+    add_address( event );
     return event;
 }
 
 
 void OSC_Receiver::add_address( OSC_Address_Space * src )
 {
-    // lock
+    // lock (added 1.3.1.1)
     _address_mutex->acquire();
 
     // grow array, in place if possible
@@ -2040,16 +2040,16 @@ void OSC_Receiver::add_address( OSC_Address_Space * src )
     // add the source
     _address_space[_address_num++] = src;
 
-    // release
-    _address_mutex->release();
-    
     // set the receiver
     src->setReceiver( this );
+
+    // release (added 1.3.1.1)
+    _address_mutex->release();
 }
 
 void OSC_Receiver::remove_address( OSC_Address_Space *odd )
 {
-    // lock
+    // lock (added 1.3.1.1)
     _address_mutex->acquire();
 
     for( int i = 0 ; i < _address_num ; i++ )
@@ -2060,7 +2060,7 @@ void OSC_Receiver::remove_address( OSC_Address_Space *odd )
         }
     }
     
-    // release
+    // release (added 1.3.1.1)
     _address_mutex->release();
 }
 
@@ -2071,7 +2071,7 @@ void OSC_Receiver::remove_address( OSC_Address_Space *odd )
 */
 void OSC_Receiver::distribute_message( OSCMesg * msg )
 {
-    // lock
+    // lock (added 1.3.1.1)
     _address_mutex->acquire();
 
     // iterate
@@ -2085,7 +2085,7 @@ void OSC_Receiver::distribute_message( OSCMesg * msg )
         }
     }
     
-    // release
+    // release (added 1.3.1.1)
     _address_mutex->release();
 }
 
@@ -2143,8 +2143,12 @@ OSC_Address_Space::init() {
     _buffer_mutex = new XMutex();
 }
 
-OSC_Address_Space::~OSC_Address_Space() { 
-    if( _queue ) free ( _queue ); 
+OSC_Address_Space::~OSC_Address_Space()
+{
+    // clean up
+    if( _queue ) free( _queue );
+    // added 1.3.1.1
+    SAFE_DELETE( _buffer_mutex );
 }
 
 void
@@ -2335,7 +2339,6 @@ bool OSC_Address_Space::try_queue_mesg( OSCMesg * m )
 }
 
 
-
 bool OSC_Address_Space::has_mesg()
 {
     // EM_log( CK_LOG_FINER, "OSC has mesg" );
@@ -2345,25 +2348,50 @@ bool OSC_Address_Space::has_mesg()
 
 bool OSC_Address_Space::next_mesg()
 {
-    if( has_mesg() )
-    { 
-        _buffer_mutex->acquire();
+    // 1.3.1.1 update
+    if( !has_mesg() )
+        return false;
 
-        // TODO: ge uhhhh should release mutex?
-        if( !has_mesg() ) return false;
-        
+    // lock
+    _buffer_mutex->acquire();
+
+    // TODO: ge uhhhh should release mutex?
+    if( has_mesg() )
+    {
         // move qread forward
         _qread = ( _qread + 1 ) % _queueSize;
         memcpy( _current_data, _queue + _qread * _dataSize, _dataSize * sizeof( opsc_data ) );
         _cur_mesg = _current_data;
         _cur_value = 0;
 
+        // release
         _buffer_mutex->release();
-
         return true;
     }
 
+    // release
+    _buffer_mutex->release();
     return false;
+
+//    if( has_mesg() )
+//    {
+//        _buffer_mutex->acquire();
+//        
+//        // TODO: ge uhhhh should release mutex?
+//        if( !has_mesg() ) return false;
+//        
+//        // move qread forward
+//        _qread = ( _qread + 1 ) % _queueSize;
+//        memcpy( _current_data, _queue + _qread * _dataSize, _dataSize * sizeof( opsc_data ) );
+//        _cur_mesg = _current_data;
+//        _cur_value = 0;
+//        
+//        _buffer_mutex->release();
+//        
+//        return true;
+//    }
+//    
+//    return false;
 }
 
 bool OSC_Address_Space::vcheck( osc_datatype tt )
