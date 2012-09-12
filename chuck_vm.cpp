@@ -618,10 +618,10 @@ t_CKBOOL Chuck_VM::run( )
             // wait
             while( m_running )
             {
-                if( m_main_thread_hook )
+                if( m_main_thread_hook && m_main_thread_quit )
                     m_main_thread_hook( m_main_thread_bindle );
                 else
-                    usleep( 50000 );
+                    usleep( 1000 );
             }
         }
     }
@@ -1354,9 +1354,9 @@ t_CKBOOL Chuck_VM::set_main_thread_hook( f_mainthreadhook hook,
 {
     if( m_main_thread_hook == NULL && m_main_thread_quit == NULL )
     {
+        m_main_thread_bindle = bindle;
         m_main_thread_hook = hook;
         m_main_thread_quit = quit;
-        m_main_thread_bindle = bindle;
         
         return TRUE;
     }
