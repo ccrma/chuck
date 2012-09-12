@@ -639,10 +639,16 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
         emit->append( op );
     }
 
+    // added 1.3.1.1: new scope just for loop body
+    emit->push_scope();
+
     // emit the body
     ret = emit_engine_emit_stmt( emit, stmt->body );
     if( !ret )
         return FALSE;
+    
+    // added 1.3.1.1: pop scope for loop body
+    emit->pop_scope();
         
     // continue here
     cont_index = emit->next_index();
@@ -776,10 +782,16 @@ t_CKBOOL emit_engine_emit_while( Chuck_Emitter * emit, a_Stmt_While stmt )
     // append the op
     emit->append( op );
 
+    // added 1.3.1.1: new scope just for loop body
+    emit->push_scope();
+    
     // emit the body
     ret = emit_engine_emit_stmt( emit, stmt->body );
     if( !ret )
         return FALSE;
+    
+    // added 1.3.1.1: pop scope for loop body
+    emit->pop_scope();
     
     // go back to do check the condition
     emit->append( new Chuck_Instr_Goto( start_index ) );
@@ -832,11 +844,17 @@ t_CKBOOL emit_engine_emit_do_while( Chuck_Emitter * emit, a_Stmt_While stmt )
     // mark the stack of break
     emit->code->stack_break.push_back( NULL );
 
+    // added 1.3.1.1: new scope just for loop body
+    emit->push_scope();
+
     // emit the body
     ret = emit_engine_emit_stmt( emit, stmt->body );
     if( !ret )
         return FALSE;
     
+    // added 1.3.1.1: pop scope for loop body
+    emit->pop_scope();
+
     // emit the cond
     ret = emit_engine_emit_exp( emit, stmt->cond );
     if( !ret )
@@ -966,9 +984,15 @@ t_CKBOOL emit_engine_emit_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
     // append the op
     emit->append( op );
 
+    // added 1.3.1.1: new scope just for loop body
+    emit->push_scope();
+
     // emit the body
     emit_engine_emit_stmt( emit, stmt->body );
     
+    // added 1.3.1.1: pop scope for loop body
+    emit->pop_scope();
+
     // go back to do check the condition
     emit->append( new Chuck_Instr_Goto( start_index ) );
     
@@ -1021,10 +1045,16 @@ t_CKBOOL emit_engine_emit_do_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
     // mark the stack of break
     emit->code->stack_break.push_back( NULL );
 
+    // added 1.3.1.1: new scope just for loop body
+    emit->push_scope();
+
     // emit the body
     ret = emit_engine_emit_stmt( emit, stmt->body );
     if( !ret )
         return FALSE;
+    
+    // added 1.3.1.1: pop scope for loop body
+    emit->pop_scope();
 
     // emit the cond
     ret = emit_engine_emit_exp( emit, stmt->cond );
@@ -1147,10 +1177,16 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
     // decrement the counter
     emit->append( new Chuck_Instr_Dec_int_Addr( (t_CKUINT)counter ) );
 
+    // added 1.3.1.1: new scope just for loop body
+    emit->push_scope();
+
     // emit the body
     ret = emit_engine_emit_stmt( emit, stmt->body );
     if( !ret )
         return FALSE;
+    
+    // added 1.3.1.1: pop scope for loop body
+    emit->pop_scope();
     
     // go back to do check the condition
     emit->append( new Chuck_Instr_Goto( start_index ) );
