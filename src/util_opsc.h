@@ -48,7 +48,7 @@
 // OSC-pattern-match.h
 
 /*
-Copyright © 1998. The Regents of the University of California (Regents). 
+Copyright ï¿½ 1998. The Regents of the University of California (Regents). 
 All Rights Reserved.
 
 Written by Matt Wright, The Center for New Music and Audio Technologies,
@@ -468,35 +468,38 @@ class OSC_Receiver : private UDP_Subscriber
 {
 protected:
     // UDP_Receiver*  _in;
-
     // bool           _listening;
     // char           _inbuf[OSCINBUFSIZE];
     // int            _inbufsize;
     // int            _mesglen;
+
+protected:
+	void onReceive( char * mesg, int mesgLen);
+	int & port();
+
+protected:
 	int			   _port;
 	int			   _tmp_port;
-	void		   onReceive( char * mesg, int mesgLen);
-	int &		   port();
-
-    XMutex*        _io_mutex;
-    // XThread*       _io_thread;
-    OSCMesg        _meep;
-    OSCMesg        *_inbox;
+    XMutex *        _io_mutex;
+    XMutex *        _address_mutex;
+    // XThread *       _io_thread;
+    OSCMesg         _meep;
+    OSCMesg *       _inbox;
     int             _inbox_size;
-    bool           _started;
-    int            _in_read;   //space that is being read
-    int            _in_write;  //space that is being written
+    bool            _started;
+    int             _in_read;   // space that is being read
+    int             _in_write;  // space that is being written
 
     OSC_Address_Space **      _address_space;
-    int            _address_size;
-    int            _address_num;
+    int             _address_size;
+    int             _address_num;
     
     CBufferSimple * m_event_buffer;
     
 public:
     
     OSC_Receiver();
-    OSC_Receiver(UDP_Receiver* in);
+    OSC_Receiver( UDP_Receiver * in );
     virtual ~OSC_Receiver();
     
     //setup //takedown
