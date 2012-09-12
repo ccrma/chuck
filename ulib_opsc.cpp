@@ -498,6 +498,7 @@ CK_DLL_MFUN( osc_recv_new_address )
     OSC_Receiver * recv = (OSC_Receiver *)OBJ_MEMBER_INT(SELF, osc_recv_offset_data);
     Chuck_String * spec_obj = (Chuck_String*)GET_NEXT_STRING(ARGS); // listener object class...
     
+    // added 1.3.1.1: fix potential race condition
     //OSC_Address_Space * new_addr_obj = recv->new_event( (char*)spec_obj->str.c_str() );
     OSC_Address_Space * new_addr_obj = new OSC_Address_Space( (char*)spec_obj->str.c_str() );
 
