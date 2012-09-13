@@ -137,6 +137,10 @@ Chuck_VM::Chuck_VM()
     m_num_dac_channels = 0;
     m_num_adc_channels = 0;
     m_init = FALSE;
+    
+    m_main_thread_hook = NULL;
+    m_main_thread_quit = NULL;
+    m_main_thread_bindle = NULL;
 }
 
 
@@ -613,7 +617,12 @@ t_CKBOOL Chuck_VM::run( )
 
             // wait
             while( m_running )
-            { usleep( 50000 ); }
+            {
+                if( m_main_thread_hook && m_main_thread_quit )
+                    m_main_thread_hook( m_main_thread_bindle );
+                else
+                    usleep( 1000 );
+            }
         }
     }
 
@@ -763,6 +772,9 @@ t_CKBOOL Chuck_VM::stop( )
 
     m_running = FALSE;
     Digitalio::m_end = TRUE;
+    
+    if( m_main_thread_quit )
+        m_main_thread_quit( m_main_thread_bindle );
 
     return TRUE;
 }
@@ -1331,6 +1343,29 @@ void Chuck_VM::release_dump( )
     m_num_dumped_shreds = 0;
 }
 
+
+//-----------------------------------------------------------------------------
+// name: set_main_thread_hook()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_main_thread_hook( f_mainthreadhook hook,
+                                         f_mainthreadquit quit,
+                                         void * bindle )
+{
+    if( m_main_thread_hook == NULL && m_main_thread_quit == NULL )
+    {
+        m_main_thread_bindle = bindle;
+        m_main_thread_hook = hook;
+        m_main_thread_quit = quit;
+        
+        return TRUE;
+    }
+    else
+    {
+        EM_log(CK_LOG_SEVERE, "[chuck](VM): attempt to register more than one main_thread_hook");
+        return FALSE;
+    }
+}
 
 
 

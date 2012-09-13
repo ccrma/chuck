@@ -5771,7 +5771,7 @@ error:
 // desc: add the DLL using type_engine functions (added 1.3.0.0)
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll, 
-                               const string & dest )
+                               const string &  )
 {
     const Chuck_DL_Query * query = NULL;
     
@@ -5780,88 +5780,98 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
     
     for( int i = 0; i < query->classes.size(); i++ )
     {
-        Chuck_DL_Class * c = query->classes[i];
-        
-        Chuck_DL_Func * ctor = NULL, * dtor = c->dtor;
-        if(c->ctors.size() > 0)
-            ctor = c->ctors[0]; // TODO: uh, is more than one possible?
-        
-        if((c->ugen_tick || c->ugen_tickf) && c->ugen_num_out)
+        if( !type_engine_add_class_from_dl(env, query->classes[i]) )
         {
-            // begin import as ugen
-            if(!type_engine_import_ugen_begin(env, c->name.c_str(), 
-                                              c->parent.c_str(), env->global(), 
-                                              ctor ? (f_ctor) ctor->addr : NULL, 
-                                              dtor ? (f_dtor) dtor->addr : NULL,
-                                              c->ugen_tick, c->ugen_tickf, c->ugen_pmsg,
-                                              c->ugen_num_in, c->ugen_num_out))
-                goto error;
+            EM_log(CK_LOG_SEVERE,
+                   "error importing class '%s' from dynamic library (%s)",
+                   query->classes[i]->name.c_str(), dll->name());
+            
+            return FALSE;
         }
-        else
-        {
-            // begin import as normal class (non-ugen)
-            if(!type_engine_import_class_begin(env, c->name.c_str(), 
-                                               c->parent.c_str(), env->global(), 
-                                               ctor ? (f_ctor) ctor->addr : NULL, 
-                                               dtor ? (f_dtor) dtor->addr : NULL))
-                goto error;
-        }
-        
-        int j;
-        
-        // import member variables
-        for(j = 0; j < c->mvars.size(); j++)
-        {
-            Chuck_DL_Value * mvar = c->mvars[j];
-            if(type_engine_import_mvar(env, mvar->type.c_str(), 
-                                       mvar->name.c_str(), 
-                                       mvar->is_const) == CK_INVALID_OFFSET)
-                goto error;
-        }
-        
-        // import static variables
-        for(j = 0; j < c->svars.size(); j++)
-        {
-            Chuck_DL_Value * svar = c->svars[j];
-            if(!type_engine_import_svar(env, svar->type.c_str(), 
-                                        svar->name.c_str(), 
-                                        svar->is_const, 
-                                        (t_CKUINT) svar->static_addr))
-                goto error;
-        }
-        
-        // import member functions
-        for(j = 0; j < c->mfuns.size(); j++)
-        {
-            Chuck_DL_Func * func = c->mfuns[j];
-            if(!type_engine_import_mfun(env, func)) goto error;
-        }
-        
-        // import static functions
-        for(j = 0; j < c->sfuns.size(); j++)
-        {
-            Chuck_DL_Func * func = c->sfuns[j];
-            if(!type_engine_import_sfun(env, func)) goto error;
-        }
-        
-        // end class import
-        type_engine_import_class_end(env);
-        
-        continue;
-        
-    error:
-        
-        EM_log(CK_LOG_SEVERE, 
-               "error importing class '%s' from dynamic library (%s)",
-               c->name.c_str(), dll->name());
-        
-        type_engine_import_class_end(env);
-        
-        return FALSE;
     }
     
     return TRUE;
 }
+
+//-----------------------------------------------------------------------------
+// name: type_engine_add_class_from_dl()
+// desc: add the DLL using type_engine functions (added 1.3.0.0)
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
+{    
+    Chuck_DL_Func * ctor = NULL, * dtor = c->dtor;
+    if(c->ctors.size() > 0)
+        ctor = c->ctors[0]; // TODO: uh, is more than one possible?
+    
+    if((c->ugen_tick || c->ugen_tickf) && c->ugen_num_out)
+    {
+        // begin import as ugen
+        if(!type_engine_import_ugen_begin(env, c->name.c_str(),
+                                          c->parent.c_str(), env->global(),
+                                          ctor ? (f_ctor) ctor->addr : NULL,
+                                          dtor ? (f_dtor) dtor->addr : NULL,
+                                          c->ugen_tick, c->ugen_tickf, c->ugen_pmsg,
+                                          c->ugen_num_in, c->ugen_num_out))
+            goto error;
+    }
+    else
+    {
+        // begin import as normal class (non-ugen)
+        if(!type_engine_import_class_begin(env, c->name.c_str(),
+                                           c->parent.c_str(), env->global(),
+                                           ctor ? (f_ctor) ctor->addr : NULL,
+                                           dtor ? (f_dtor) dtor->addr : NULL))
+            goto error;
+    }
+    
+    int j;
+    
+    // import member variables
+    for(j = 0; j < c->mvars.size(); j++)
+    {
+        Chuck_DL_Value * mvar = c->mvars[j];
+        if(type_engine_import_mvar(env, mvar->type.c_str(),
+                                   mvar->name.c_str(),
+                                   mvar->is_const) == CK_INVALID_OFFSET)
+            goto error;
+    }
+    
+    // import static variables
+    for(j = 0; j < c->svars.size(); j++)
+    {
+        Chuck_DL_Value * svar = c->svars[j];
+        if(!type_engine_import_svar(env, svar->type.c_str(),
+                                    svar->name.c_str(),
+                                    svar->is_const,
+                                    (t_CKUINT) svar->static_addr))
+            goto error;
+    }
+    
+    // import member functions
+    for(j = 0; j < c->mfuns.size(); j++)
+    {
+        Chuck_DL_Func * func = c->mfuns[j];
+        if(!type_engine_import_mfun(env, func)) goto error;
+    }
+    
+    // import static functions
+    for(j = 0; j < c->sfuns.size(); j++)
+    {
+        Chuck_DL_Func * func = c->sfuns[j];
+        if(!type_engine_import_sfun(env, func)) goto error;
+    }
+    
+    // end class import
+    type_engine_import_class_end(env);
+    
+    return TRUE;
+    
+error:
+    type_engine_import_class_end(env);
+    
+    return FALSE;
+}
+
 
 
 
