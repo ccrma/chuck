@@ -248,6 +248,7 @@ t_CKBOOL extract_args( const string & token,
             if( s[i] == ':' && (i+1) < s.length() && ( s[i+1] == '\\' || s[i+1] == '/' ) )
             {
                 mask[i] = 1;
+                break; // added 1.3.1.1
             }
         }
     }
