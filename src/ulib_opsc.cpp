@@ -392,7 +392,7 @@ CK_DLL_MFUN( osc_address_next_float  ) {
 CK_DLL_MFUN( osc_address_next_string  ) { 
     OSC_Address_Space * addr = (OSC_Address_Space *)OBJ_MEMBER_INT( SELF, osc_address_offset_data );
     char * cs = addr->next_string();
-    Chuck_String * ckstr = ( cs ) ? new Chuck_String ( cs ) : new Chuck_String("");
+    Chuck_String * ckstr = ( cs ) ? new Chuck_String( cs ) : new Chuck_String("");
     initialize_object( ckstr, &t_string );
     RETURN->v_string = ckstr;
 }
