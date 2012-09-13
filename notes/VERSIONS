@@ -1,3 +1,13 @@
+1.3.1.1
+---
+  - (fixed) critical bug since 1.3 where member function calls in
+            loop conditionals caused crashes when the loop body
+            contained local Object's to be released;  this directly
+            affects much OSC code since most OSC employs code like:
+            'while( e.nextMesg() ) { ... }';  this is most likely
+            the cause of the OSC-related issues we've been seeing
+  - (fixed) memory bug in OscRecv deallocation
+
 ---
 1.3.1.0
   - (added) 64-bit support for all platforms (OS X, Linux, Windows)
