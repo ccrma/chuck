@@ -173,6 +173,9 @@ public:
     t_CKBOOL add( Chuck_UGen * ugen );
     t_CKBOOL remove( Chuck_UGen * ugen );
     
+    // add parent object reference (added 1.3.1.2)
+    t_CKVOID add_parent_ref( Chuck_Object * obj );
+    
 //-----------------------------------------------------------------------------
 // data
 //-----------------------------------------------------------------------------
@@ -202,7 +205,6 @@ public: // machine components
     // state (no longer needed, see array_alloc)
     // t_CKUINT * obj_array;
     // t_CKUINT obj_array_size;
-    
 
 public:
     t_CKTIME wake_time;
@@ -213,6 +215,9 @@ public:
     t_CKBOOL is_dumped;
     Chuck_Event * event;  // event shred is waiting on
     std::map<Chuck_UGen *, Chuck_UGen *> m_ugen_map;
+    // references kept by the shred itself (e.g., when sporking member functions)
+    // to be released when shred is done -- added 1.3.1.2
+    std::vector<Chuck_Object *> m_parent_objects;
 
 public: // id
     t_CKUINT xid;

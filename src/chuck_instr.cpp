@@ -3611,6 +3611,8 @@ void Chuck_Instr_Spork::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         pop_( reg_sp, 1 );
         // get this
         this_ptr = *reg_sp;
+        // add to shred so it's ref counted, and released when shred done (1.3.1.2)
+        sh->add_parent_ref( (Chuck_Object *)this_ptr );
     }
     // copy args
     if( m_val )
