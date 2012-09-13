@@ -1590,6 +1590,18 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
         // release it
         (*rvi)->release();
     }
+    
+    // loop over parent object references (added 1.3.1.2)
+    for( vector<Chuck_Object *>::iterator it = m_parent_objects.begin();
+         it != m_parent_objects.end(); it++ )
+    {
+        // release it
+        (*it)->release();
+    }
+    
+    // clear the vectors (added 1.3.1.2)
+    release_v.clear();
+    m_parent_objects.clear();
 
     // reclaim the stacks
     SAFE_DELETE( mem );
@@ -1654,6 +1666,26 @@ t_CKBOOL Chuck_VM_Shred::remove( Chuck_UGen * ugen )
     // remove it
     m_ugen_map.erase( ugen );
     return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: add_parent_ref()
+// desc: add parent object reference (added 1.3.1.2)
+//-----------------------------------------------------------------------------
+t_CKVOID Chuck_VM_Shred::add_parent_ref( Chuck_Object * obj )
+{
+    // sanity check
+    if( !obj )
+        return;
+    
+    // reference count
+    obj->add_ref();
+    
+    // add it to vector
+    m_parent_objects.push_back( obj );
 }
 
 
