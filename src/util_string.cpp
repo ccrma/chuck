@@ -226,7 +226,7 @@ t_CKBOOL extract_args( const string & token,
     t_CKBOOL ret = TRUE;
     char * mask = NULL;
     for( i = 0; i < s.length(); i++ )
-        if( s[i] == '\\' )
+        if( s[i] == '\\' || s[i] == '/' )
         {
             scan = TRUE;
             break;
@@ -244,7 +244,8 @@ t_CKBOOL extract_args( const string & token,
             mask[i] = 0;
             
             // escape (tom and ge fixed this, which used to look for \\ then : and randomly incremented i)
-            if( s[i] == ':' && (i+1) < s.length() && s[i+1] == '\\' )
+            // added '/' 1.3.1.1
+            if( s[i] == ':' && (i+1) < s.length() && ( s[i+1] == '\\' || s[i+1] == '/' ) )
             {
                 mask[i] = 1;
             }
