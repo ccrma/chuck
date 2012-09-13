@@ -544,14 +544,14 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
 // name: ck_create_main_thread_hook()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_DL_MTHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query * query,
+Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query * query,
                                                           f_mainthreadhook hook,
                                                           f_mainthreadquit quit,
                                                           void * bindle )
 {
     assert(g_vm);
     
-    return new Chuck_DL_MTHook( hook, quit, bindle, g_vm );
+    return new Chuck_DL_MainThreadHook( hook, quit, bindle, g_vm );
 }
 
 
@@ -947,16 +947,16 @@ Chuck_DL_Func::~Chuck_DL_Func()
 
 
 
-t_CKBOOL ck_mthook_activate(Chuck_DL_MTHook *hook)
+t_CKBOOL ck_mthook_activate(Chuck_DL_MainThreadHook *hook)
 {
     return hook->m_vm->set_main_thread_hook(hook->m_hook, hook->m_quit, hook->m_bindle);
 }
 
 //-----------------------------------------------------------------------------
-// name: Chuck_DL_MTHook()
+// name: Chuck_DL_MainThreadHook()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_DL_MTHook::Chuck_DL_MTHook(f_mainthreadhook hook, f_mainthreadquit quit,
+Chuck_DL_MainThreadHook::Chuck_DL_MainThreadHook(f_mainthreadhook hook, f_mainthreadquit quit,
                                  void * bindle, Chuck_VM * vm) :
 m_hook(hook),
 m_quit(quit),

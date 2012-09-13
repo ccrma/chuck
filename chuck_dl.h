@@ -70,7 +70,7 @@ struct Chuck_DLL;
 struct Chuck_UGen;
 struct Chuck_UAna;
 struct Chuck_UAnaBlobProxy;
-struct Chuck_DL_MTHook;
+struct Chuck_DL_MainThreadHook;
 namespace Chuck_DL_Api { struct Api; }
 
 
@@ -279,7 +279,7 @@ typedef void (CK_DLL_CALL * f_add_ugen_ctrl)( Chuck_DL_Query * query, f_ctrl ctr
 // end class/namespace - must correspondent with begin_class.  returns false on error
 typedef t_CKBOOL (CK_DLL_CALL * f_end_class)( Chuck_DL_Query * query );
 // register 
-typedef Chuck_DL_MTHook * (CK_DLL_CALL * f_create_main_thread_hook)( Chuck_DL_Query * query, f_mainthreadhook hook, f_mainthreadquit quit, void * bindle );
+typedef Chuck_DL_MainThreadHook * (CK_DLL_CALL * f_create_main_thread_hook)( Chuck_DL_Query * query, f_mainthreadhook hook, f_mainthreadquit quit, void * bindle );
 }
 
 
@@ -547,12 +547,12 @@ protected:
     Chuck_DL_Query m_query;
 };
 
-struct Chuck_DL_MTHook
+struct Chuck_DL_MainThreadHook
 {
 public:
-    Chuck_DL_MTHook(f_mainthreadhook hook, f_mainthreadquit quit,
+    Chuck_DL_MainThreadHook(f_mainthreadhook hook, f_mainthreadquit quit,
                     void * bindle, Chuck_VM * vm);
-    t_CKBOOL (* const activate)(Chuck_DL_MTHook *);
+    t_CKBOOL (* const activate)(Chuck_DL_MainThreadHook *);
     
     Chuck_VM * const m_vm;
     f_mainthreadhook const m_hook;
