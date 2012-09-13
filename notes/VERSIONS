@@ -6,6 +6,8 @@
             affects much OSC code since most OSC employs code like:
             'while( e.nextMesg() ) { ... }';  this is most likely
             the cause of the OSC-related issues we've been seeing
+            (thanks to Graham Coleman for tracking down and narrowing
+             the issue!)
   - (fixed) strengthened synchronization in OSC between internal
             listener thread and chuck VM code
   - (fixed) memory bug in OscRecv deallocation
