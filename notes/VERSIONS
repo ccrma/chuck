@@ -3,11 +3,11 @@
   - (fixed) critical bug since 1.3 where member function calls in
             loop conditionals caused crashes when the loop body
             contained local Object's to be released;  this directly
-            affects much OSC code since most OSC employs code like:
-            'while( e.nextMesg() ) { ... }';  this is most likely
-            the cause of the OSC-related issues we've been seeing
-            (thanks to Graham Coleman for tracking down and narrowing
-             the issue!)
+            affects using OSC, MIDI, HID, which commonly employ 
+            syntax like: 'while( e.nextMesg() ) { ... }';
+            -- this is most likely the cause of the OSC-related issues
+            we've been seeing (thanks to Graham Coleman for tracking 
+            down and narrowingthe issue!)
   - (fixed) strengthened synchronization in OSC between internal
             listener thread and chuck VM code
   - (fixed) memory bug in OscRecv deallocation
