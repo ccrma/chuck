@@ -82,12 +82,13 @@ public:
     virtual Chuck_Array * getFloats();
     virtual Chuck_String * getString();
     
-    static const t_CKUINT TYPE_BYTE = 0;
-    static const t_CKUINT TYPE_WORD = 1;
-    static const t_CKUINT TYPE_INT = 2;
-    static const t_CKUINT TYPE_FLOAT = 3;
-    static const t_CKUINT TYPE_STRING = 4;
-    static const t_CKUINT TYPE_LINE = 5;
+    static const t_CKUINT TYPE_NONE = 0;
+    static const t_CKUINT TYPE_BYTE = 1;
+    static const t_CKUINT TYPE_WORD = 2;
+    static const t_CKUINT TYPE_INT = 3;
+    static const t_CKUINT TYPE_FLOAT = 4;
+    static const t_CKUINT TYPE_STRING = 5;
+    static const t_CKUINT TYPE_LINE = 6;
     
     struct Read
     {
@@ -101,6 +102,7 @@ public:
             STATUS_PENDING,
             STATUS_SUCCESS,
             STATUS_FAILURE,
+            STATUS_INVALID,
             STATUS_EOF,
         };
     };
@@ -126,6 +128,15 @@ protected:
     XThread * m_read_thread;
     static void *shell_read_cb(void *);
     void read_cb();
+    
+    t_CKBOOL handle_line(Read &);
+    t_CKBOOL handle_string(Read &);
+    t_CKBOOL handle_float_ascii(Read &);
+    t_CKBOOL handle_int_ascii(Read &);
+    t_CKBOOL handle_byte(Read &);
+    t_CKBOOL handle_float_binary(Read &);
+    t_CKBOOL handle_int_binary(Read &);
+    
     bool m_do_read_thread;
     
     CircularBuffer<Read> m_asyncReadRequests;
@@ -138,7 +149,7 @@ protected:
     
     char * m_buf;
     t_CKUINT m_buf_size;
-    t_CKUINT m_buf_begin, m_buf_end;
+    
     t_CKINT m_flags;
 };
 

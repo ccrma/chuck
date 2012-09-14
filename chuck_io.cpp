@@ -92,7 +92,6 @@ m_asyncReadResponses(CircularBuffer<Read>(32))
     
     m_buf_size = 1024;
     m_buf = new char[m_buf_size];
-    m_buf_end = m_buf_begin = 0;
     
     m_read_thread = NULL;
     m_event_buffer = NULL;
@@ -109,6 +108,7 @@ Chuck_IO_Serial::~Chuck_IO_Serial()
     
     delete[] m_buf;
     m_buf = NULL;
+    m_buf_size = 0;
 }
 
 t_CKBOOL Chuck_IO_Serial::ready()
@@ -339,7 +339,19 @@ Chuck_Array * Chuck_IO_Serial::getInts()
 
 Chuck_Array * Chuck_IO_Serial::getFloats()
 {
+    Read r;
     
+    Chuck_Array * arr = NULL;
+    
+    m_asyncReadResponses.peek(r, 1);
+    if( r.m_type == TYPE_FLOAT && r.m_status == Read::STATUS_SUCCESS)
+    {
+        arr = (Chuck_Array *) r.m_val;
+        initialize_object(arr, &t_array);
+        m_asyncReadResponses.get(r);
+    }
+    
+    return arr;
 }
 
 Chuck_String * Chuck_IO_Serial::getString()
@@ -348,12 +360,202 @@ Chuck_String * Chuck_IO_Serial::getString()
 }
 
 
+t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Read &r)
+{
+    if(fgets(m_buf, m_buf_size, m_cfd))
+    {
+        int len = strlen(m_buf);
+        // truncate end-of-line \n or \r's
+        for(int i = len - 1; i > 0; i--)
+        {
+            if(m_buf[i] == '\n' || m_buf[i] == '\r')
+                m_buf[i] = '\0';
+            else
+                break;
+        }
+        
+        Chuck_String * str = new Chuck_String;
+        str->str = std::string(m_buf);
+        
+        r.m_val = (t_CKUINT) str;
+        r.m_status = Chuck_IO_Serial::Read::STATUS_SUCCESS;
+    }
+    else
+    {
+        r.m_val = 0;
+        r.m_status = Chuck_IO_Serial::Read::STATUS_FAILURE;
+    }
+    
+    return TRUE;
+}
+
+t_CKBOOL Chuck_IO_Serial::handle_string(Chuck_IO_Serial::Read & r)
+{
+}
+
+t_CKBOOL Chuck_IO_Serial::handle_float_ascii(Chuck_IO_Serial::Read & r)
+{
+    t_CKFLOAT val = 0;
+    int numRead = 0;
+    Chuck_Array8 * array = new Chuck_Array8(0);
+    for(int i = 0; i < r.m_num; i++)
+    {
+        if(fscanf(m_cfd, "%lf", &val))
+        {
+            numRead++;
+            array->push_back(val);
+        }
+        else
+        {
+            // SPENCERTODO: error?
+            break;
+        }
+    }
+    
+    r.m_num = numRead;
+    r.m_val = (t_CKUINT) array;
+    r.m_status = Read::STATUS_SUCCESS;
+    
+    return TRUE;
+}
+
+t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Read & r)
+{
+    t_CKINT val = 0;
+    int numRead = 0;
+    Chuck_Array4 * array = new Chuck_Array4(FALSE, 0);
+    for(int i = 0; i < r.m_num; i++)
+    {
+        if(fscanf(m_cfd, "%li", &val))
+        {
+            numRead++;
+            array->push_back(val);
+        }
+        else
+        {
+            // SPENCERTODO: error
+            break;
+        }
+    }
+    
+    r.m_num = numRead;
+    r.m_val = (t_CKUINT) array;
+    r.m_status = Read::STATUS_SUCCESS;
+    
+    return TRUE;
+}
+
+t_CKBOOL Chuck_IO_Serial::handle_byte(Chuck_IO_Serial::Read & r)
+{
+    // binary
+    int size = 1;
+    
+    int num = r.m_num;
+    
+    if(size*num > m_buf_size)
+    {
+        int new_num = (int) floorf(((float)m_buf_size)/size);
+        EM_log(CK_LOG_WARNING, "SerialIO.read_cb: error: request size %i too large (%i bytes), truncating to %i",
+               num, size*num, new_num);
+        num = new_num;
+    }
+    
+    r.m_num = fread(m_buf, size, num, m_cfd);
+    
+    t_CKUINT val = 0;
+    
+    if(r.m_num == 1)
+        val = m_buf[0];
+    else
+    {
+        Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
+        for(int i = 0; i < r.m_num; i++)
+        {
+            array->set(i, m_buf[i]);
+        }
+        
+        val = (t_CKUINT) array;
+    }
+    
+    r.m_val = val;
+    r.m_status = Read::STATUS_SUCCESS;
+    
+    return TRUE;
+}
+
+t_CKBOOL Chuck_IO_Serial::handle_float_binary(Chuck_IO_Serial::Read & r)
+{
+    // binary
+    int size = 4; // SPENCERTODO: should these be based on arch (64 bit)?
+    assert(sizeof(t_CKSINGLE) == 4);
+    
+    int num = r.m_num;
+    
+    if(size*num > m_buf_size)
+    {
+        int new_num = (int) floorf(((float)m_buf_size)/size);
+        EM_log(CK_LOG_WARNING, "SerialIO.read_cb: error: request size %i too large (%i bytes), truncating to %i",
+               num, size*num, new_num);
+        num = new_num;
+    }
+    
+    r.m_num = fread(m_buf, size, num, m_cfd);
+    
+    t_CKUINT val = 0;
+    t_CKSINGLE * m_floats = (t_CKSINGLE *) m_buf;
+    
+    Chuck_Array8 * array = new Chuck_Array8(r.m_num);
+    for(int i = 0; i < r.m_num; i++)
+    {
+        array->set(i, m_floats[i]);
+    }
+        
+    val = (t_CKUINT) array;
+    
+    r.m_val = val;
+    r.m_status = Read::STATUS_SUCCESS;
+    
+    return TRUE;
+}
+
+t_CKBOOL Chuck_IO_Serial::handle_int_binary(Chuck_IO_Serial::Read & r)
+{
+    // binary
+    int size = 4; // SPENCERTODO: should these be based on arch (64 bit)?
+    
+    int num = r.m_num;
+    
+    if(size*num > m_buf_size)
+    {
+        int new_num = (int) floorf(((float)m_buf_size)/size);
+        EM_log(CK_LOG_WARNING, "SerialIO.read_cb: error: request size %i too large (%i bytes), truncating to %i",
+               num, size*num, new_num);
+        num = new_num;
+    }
+    
+    r.m_num = fread(m_buf, size, num, m_cfd);
+    
+    t_CKUINT val = 0;
+    uint32_t * m_ints = (uint32_t *) m_buf;
+    
+    Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
+    for(int i = 0; i < r.m_num; i++)
+    {
+        array->set(i, m_ints[i]);
+    }
+    
+    val = (t_CKUINT) array;
+    
+    r.m_val = val;
+    r.m_status = Read::STATUS_SUCCESS;
+    
+    return TRUE;
+}
+
+
 void Chuck_IO_Serial::read_cb()
 {
     m_do_read_thread = true;
-    
-    const int BUF_SIZE = 256;
-    char buf[BUF_SIZE];
     
     while(m_do_read_thread)
     {
@@ -373,178 +575,57 @@ void Chuck_IO_Serial::read_cb()
                 switch(r.m_type)
                 {
                     case TYPE_LINE:
-                    {
-                        if(fgets(buf, BUF_SIZE, m_cfd))
-                        {
-                            int len = strlen(buf);
-                            // truncate end-of-line \n or \r's
-                            for(int i = len - 1; i > 0; i--)
-                            {
-                                if(buf[i] == '\n' || buf[i] == '\r')
-                                    buf[i] = '\0';
-                                else
-                                    break;
-                            }
-                                   
-                            Chuck_String * str = new Chuck_String;
-                            str->str = std::string(buf);
-                            
-                            r.m_val = (t_CKUINT) str;
-                            r.m_status = Read::STATUS_SUCCESS;
-                            m_asyncReadResponses.put(r);
-                            
-                            num_responses++;
-                        }
-                        else
-                        {
-                            // SPENCERTODO
-                        }
-                    }
+                        handle_line(r);
+                        break;
+                        
+                    case TYPE_STRING:
+                        handle_string(r);
                         break;
                         
                     case TYPE_INT:
-                    {
-                        int val = 0;
-                        int numRead = 0;
-                        Chuck_Array4 * array = new Chuck_Array4(FALSE, 0);
-                        for(int i = 0; i < r.m_num; i++)
-                        {
-                            if(fscanf(m_cfd, "%i", &val))
-                            {
-                                numRead++;
-                                array->push_back(val);
-                            }
-                            else
-                            {
-                                // SPENCERTODO: error
-                                break;
-                            }
-                        }
+                        handle_int_ascii(r);
+                        break;
                         
-                        r.m_num = numRead;
-                        r.m_val = (t_CKUINT) array;
-                        r.m_status = Read::STATUS_SUCCESS;
-                        m_asyncReadResponses.put(r);
-                        num_responses++;
-                    }
+                    case TYPE_FLOAT:
+                        handle_float_ascii(r);
                         break;
                         
                     default:
                         // this shouldnt happen
+                        r.m_type = TYPE_NONE;
+                        r.m_num = 0;
+                        r.m_status = Read::STATUS_INVALID;
+                        r.m_val = 0;
                         EM_log(CK_LOG_WARNING, "SerialIO.read_cb: error: invalid request");
-                        continue;
                 }
             }
             else
             {
                 // binary
-                int size = 0;
                 switch(r.m_type)
                 {
                     case TYPE_BYTE:
-                        size = 1;
+                        handle_byte(r);
                         break;
                     case TYPE_INT:
-                        size = 4; // SPENCERTODO: should these be based on arch (64 bit)?
+                        handle_int_binary(r);
                         break;
                     case TYPE_FLOAT:
-                        size = 4; // SPENCERTODO: should these be based on arch (64 bit)?
+                        handle_float_binary(r);
                         break;
                         
                     default:
                         // this shouldnt happen
+                        r.m_type = TYPE_NONE;
+                        r.m_num = 0;
+                        r.m_status = Read::STATUS_INVALID;
+                        r.m_val = 0;
                         EM_log(CK_LOG_WARNING, "SerialIO.read_cb: error: invalid request");
-                        continue;
-                }
-                
-                int num = r.m_num;
-                
-                if(size*num > BUF_SIZE)
-                {
-                    int new_num = (int) floorf(((float)BUF_SIZE)/size);
-                    EM_log(CK_LOG_WARNING, "SerialIO.read_cb: error: request size %i too large (%i bytes), truncating to %i",
-                           num, size*num, new_num);
-                    num = new_num;
-                }
-                
-                r.m_num = fread(buf, size, num, m_cfd);
-                
-                bool val_good = false;
-                t_CKUINT val = 0;
-                
-                switch(r.m_type)
-                {
-                    case TYPE_BYTE:
-                    {
-                        if(r.m_num == 1)
-                            val = buf[0];
-                        else
-                        {
-                            Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
-                            for(int i = 0; i < r.m_num; i++)
-                            {
-                                array->set(i, buf[i]);
-                            }
-                            
-                            val = (t_CKUINT) array;
-                        }
-                        
-                        val_good = true;
-                    }
-                        break;
-                        
-                    case TYPE_INT:
-                    {
-                        if(r.m_num == 1)
-                            val = buf[0];
-                        else
-                        {
-                            Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
-                            for(int i = 0; i < r.m_num; i++)
-                            {
-                                array->set(i, buf[i]);
-                            }
-                            
-                            val = (t_CKUINT) array;
-                        }
-                        
-                        val_good = true;
-                    }
-                        break;
-                        
-                    case TYPE_FLOAT:
-                    {
-                        if(r.m_num == 1)
-                            val = buf[0];
-                        else
-                        {
-                            Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
-                            for(int i = 0; i < r.m_num; i++)
-                            {
-                                array->set(i, buf[i]);
-                            }
-                            
-                            val = (t_CKUINT) array;
-                        }
-                        
-                        val_good = true;
-                    }
-                        break;
-                        
-                    default:
-                        // this shouldnt happen
-                        EM_log(CK_LOG_WARNING, "SerialIO.read_cb: error: invalid request");
-                        continue;
-                }
-                
-                if(val_good)
-                {
-                    r.m_val = val;
-                    r.m_status = Read::STATUS_SUCCESS;
-                    m_asyncReadResponses.put(r);
-                    num_responses++;
                 }
             }
+            
+            m_asyncReadResponses.put(r);
+            num_responses++;
         }
         
         if(num_responses)
@@ -593,6 +674,7 @@ CK_DLL_MFUN( serialio_onLine );
 CK_DLL_MFUN( serialio_onByte );
 CK_DLL_MFUN( serialio_onBytes );
 CK_DLL_MFUN( serialio_onInts );
+CK_DLL_MFUN( serialio_onFloats );
 CK_DLL_MFUN( serialio_getLine );
 CK_DLL_MFUN( serialio_getByte );
 CK_DLL_MFUN( serialio_getBytes );
@@ -655,6 +737,11 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     
     // add onInts
     func = make_new_mfun("SerialIO", "onInts", serialio_onInts);
+    func->add_arg("int", "num");
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add onInts
+    func = make_new_mfun("SerialIO", "onFloats", serialio_onFloats);
     func->add_arg("int", "num");
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
@@ -809,6 +896,18 @@ CK_DLL_MFUN( serialio_onInts )
     t_CKINT num = GET_NEXT_INT(ARGS);
     
     cereal->readAsync(Chuck_IO_Serial::TYPE_INT, num);
+    
+    RETURN->v_object = cereal;
+}
+
+
+CK_DLL_MFUN( serialio_onFloats )
+{
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
+    
+    t_CKINT num = GET_NEXT_INT(ARGS);
+    
+    cereal->readAsync(Chuck_IO_Serial::TYPE_FLOAT, num);
     
     RETURN->v_object = cereal;
 }
