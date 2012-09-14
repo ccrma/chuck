@@ -4,6 +4,11 @@
             new shred when sporking member functions
             (thanks to Michael Heuer for reporting and 
              narrowing this down)
+  - (fixed) popping local variables from the operand stack in cases
+            where the datatype size is larger than int-size; this
+            is a bug introduced with 64-bit in 1.3.1.0, and exhibited
+            on 32-bit systems only.  (thanks to Simon Steptoe 
+            reporting and narrowing this down)
 
 1.3.1.1
 ---
