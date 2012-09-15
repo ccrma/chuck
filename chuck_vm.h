@@ -379,7 +379,9 @@ public: // init
                          t_CKUINT buffer_size = 512, t_CKUINT num_buffers = 4,
                          t_CKUINT dac = 0, t_CKUINT adc = 0,
                          t_CKUINT dac_chan = 2, t_CKUINT adc_chan = 2,
-                         t_CKBOOL block = TRUE, t_CKUINT adaptive = 0 );
+                         t_CKBOOL block = TRUE, t_CKUINT adaptive = 0,
+                         // force_srate added 1.3.1.2
+                         t_CKBOOL force_srate = FALSE );
     t_CKBOOL initialize_synthesis( );
     t_CKBOOL shutdown();
 

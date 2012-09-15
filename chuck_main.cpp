@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------------
+    /*----------------------------------------------------------------------------
     ChucK Concurrent, On-the-fly Audio Programming Language
       Compiler and Virtual Machine
 
@@ -291,6 +291,7 @@ static void usage()
     t_CKBOOL enable_audio = TRUE;
     t_CKBOOL vm_halt = TRUE;
     t_CKUINT srate = SAMPLING_RATE_DEFAULT;
+    t_CKBOOL force_srate = FALSE; // added 1.3.1.2
     t_CKUINT buffer_size = BUFFER_SIZE_DEFAULT;
     t_CKUINT num_buffers = NUM_BUFFERS_DEFAULT;
     t_CKUINT dac = 0;
@@ -387,11 +388,11 @@ static void usage()
             else if( !strcmp(argv[i], "--empty") )
                 no_vm = TRUE;
             else if( !strncmp(argv[i], "--srate:", 8) ) // (added 1.3.0.0)
-                srate = atoi( argv[i]+8 ) > 0 ? atoi( argv[i]+8 ) : srate;
+            {   srate = atoi( argv[i]+8 ) > 0 ? atoi( argv[i]+8 ) : srate; force_srate = TRUE; }
             else if( !strncmp(argv[i], "--srate", 7) )
-                srate = atoi( argv[i]+7 ) > 0 ? atoi( argv[i]+7 ) : srate;
+            {   srate = atoi( argv[i]+7 ) > 0 ? atoi( argv[i]+7 ) : srate; force_srate = TRUE; }
             else if( !strncmp(argv[i], "-r", 2) )
-                srate = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : srate;
+            {   srate = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : srate; force_srate = TRUE; }
             else if( !strncmp(argv[i], "--bufsize:", 10) ) // (added 1.3.0.0)
                 buffer_size = atoi( argv[i]+10 ) > 0 ? atoi( argv[i]+10 ) : buffer_size;
             else if( !strncmp(argv[i], "--bufsize", 9) )
@@ -695,7 +696,8 @@ static void usage()
         }
         else
         {
-            fprintf( stderr, "[chuck]: unable to find dac '%s'\n", dac_name.c_str() );
+            fprintf( stderr, "[chuck]: unable to find dac '%s'...\n", dac_name.c_str() );
+            fprintf( stderr, "[chuck]: | (try --probe to enumerate audio device info)\n" );
             exit( 1 );
         }
     }
@@ -711,7 +713,8 @@ static void usage()
         }
         else
         {
-            fprintf( stderr, "[chuck]: unable to find adc '%s'\n", adc_name.c_str() );
+            fprintf( stderr, "[chuck]: unable to find adc '%s'...\n", adc_name.c_str() );
+            fprintf( stderr, "[chuck]: | (try --probe to enumerate audio device info)\n" );
             exit( 1 );
         }
     }
@@ -720,7 +723,7 @@ static void usage()
     vm = g_vm = new Chuck_VM;
     if( !vm->initialize( enable_audio, vm_halt, srate, buffer_size,
                          num_buffers, dac, adc, dac_chans, adc_chans,
-                         block, adaptive_size ) )
+                         block, adaptive_size, force_srate ) )
     {
         fprintf( stderr, "[chuck]: %s\n", vm->last_error() );
         exit( 1 );
