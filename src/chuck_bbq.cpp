@@ -87,7 +87,7 @@ BOOL__ BBQ::initialize( DWORD__ num_dac_channels, DWORD__ num_adc_channels,
                         DWORD__ sampling_rate, DWORD__ bps, DWORD__ buffer_size,
                         DWORD__ num_buffers, DWORD__ dac, DWORD__ adc, 
                         DWORD__ block, Chuck_VM * vm_ref, BOOL__ rt_audio,
-                        void * callback, void * data )
+                        void * callback, void * data, t_CKBOOL force_srate )
 {
     set_inouts( adc, dac );
     set_chans( num_adc_channels, num_dac_channels );
@@ -95,7 +95,8 @@ BOOL__ BBQ::initialize( DWORD__ num_dac_channels, DWORD__ num_adc_channels,
     return Digitalio::initialize( 
         num_dac_channels, num_adc_channels,
         sampling_rate, bps, buffer_size, num_buffers, 
-        block, vm_ref, rt_audio, callback, data
+        block, vm_ref, rt_audio, callback, data,
+        force_srate
     );
 }
 

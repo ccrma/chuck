@@ -216,27 +216,32 @@ void RtApi :: openStream( RtAudio::StreamParameters *oParams,
                           RtAudio::StreamOptions *options )
 {
   if ( stream_.state != STREAM_CLOSED ) {
-    errorText_ = "RtApi::openStream: a stream is already open!";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(audio I/O): a stream is already open!";
     error( RtError::INVALID_USE );
   }
 
   if ( oParams && oParams->nChannels < 1 ) {
-    errorText_ = "RtApi::openStream: a non-NULL output StreamParameters structure cannot have an nChannels value less than one.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(audio I/O): a non-NULL output StreamParameters structure cannot have an nChannels value less than one.";
     error( RtError::INVALID_USE );
   }
 
   if ( iParams && iParams->nChannels < 1 ) {
-    errorText_ = "RtApi::openStream: a non-NULL input StreamParameters structure cannot have an nChannels value less than one.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(audio I/O): a non-NULL input StreamParameters structure cannot have an nChannels value less than one.";
     error( RtError::INVALID_USE );
   }
 
   if ( oParams == NULL && iParams == NULL ) {
-    errorText_ = "RtApi::openStream: input and output StreamParameters structures are both NULL!";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(audio I/O): input and output StreamParameters structures are both NULL!";
     error( RtError::INVALID_USE );
   }
 
   if ( formatBytes(format) == 0 ) {
-    errorText_ = "RtApi::openStream: 'format' parameter value is undefined.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(audio I/O): 'format' parameter value is undefined.";
     error( RtError::INVALID_USE );
   }
 
@@ -245,7 +250,8 @@ void RtApi :: openStream( RtAudio::StreamParameters *oParams,
   if ( oParams ) {
     oChannels = oParams->nChannels;
     if ( oParams->deviceId >= nDevices ) {
-      errorText_ = "RtApi::openStream: output device parameter value is invalid.";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorText_ = "(audio I/O): output device parameter value is invalid.";
       error( RtError::INVALID_USE );
     }
   }
@@ -254,7 +260,8 @@ void RtApi :: openStream( RtAudio::StreamParameters *oParams,
   if ( iParams ) {
     iChannels = iParams->nChannels;
     if ( iParams->deviceId >= nDevices ) {
-      errorText_ = "RtApi::openStream: input device parameter value is invalid.";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorText_ = "(audio I/O): input device parameter value is invalid.";
       error( RtError::INVALID_USE );
     }
   }
@@ -565,12 +572,12 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   // Get device ID
   unsigned int nDevices = getDeviceCount();
   if ( nDevices == 0 ) {
-    errorText_ = "RtApiCore::getDeviceInfo: no devices found!";
+    errorText_ = "(CoreAudio) no devices found!";
     error( RtError::INVALID_USE );
   }
 
   if ( device >= nDevices ) {
-    errorText_ = "RtApiCore::getDeviceInfo: device ID is invalid!";
+    errorText_ = "(CoreAudio) device ID is invalid!";
     error( RtError::INVALID_USE );
   }
 
@@ -582,7 +589,7 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   OSStatus result = AudioObjectGetPropertyData( kAudioObjectSystemObject, &property,
                                                 0, NULL, &dataSize, (void *) &deviceList );
   if ( result != noErr ) {
-    errorText_ = "RtApiCore::getDeviceInfo: OS-X system error getting device IDs.";
+    errorText_ = "(CoreAudio) OS-X system error getting device IDs...";
     error( RtError::WARNING );
     return info;
   }
@@ -596,7 +603,8 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   property.mSelector = kAudioObjectPropertyManufacturer;
   result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, &cfname );
   if ( result != noErr ) {
-    errorStream_ << "RtApiCore::probeDeviceInfo: system error (" << getErrorCode( result ) << ") getting device manufacturer.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting device manufacturer...";
     errorText_ = errorStream_.str();
     error( RtError::WARNING );
     return info;
@@ -614,7 +622,8 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   property.mSelector = kAudioObjectPropertyName;
   result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, &cfname );
   if ( result != noErr ) {
-    errorStream_ << "RtApiCore::probeDeviceInfo: system error (" << getErrorCode( result ) << ") getting device name.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting device name...";
     errorText_ = errorStream_.str();
     error( RtError::WARNING );
     return info;
@@ -636,7 +645,8 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   dataSize = 0;
   result = AudioObjectGetPropertyDataSize( id, &property, 0, NULL, &dataSize );
   if ( result != noErr || dataSize == 0 ) {
-    errorStream_ << "RtApiCore::getDeviceInfo: system error (" << getErrorCode( result ) << ") getting output stream configuration info for device (" << device << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting output stream configuration info for device (" << device << ")...";
     errorText_ = errorStream_.str();
     error( RtError::WARNING );
     return info;
@@ -645,7 +655,8 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   // Allocate the AudioBufferList.
   bufferList = (AudioBufferList *) malloc( dataSize );
   if ( bufferList == NULL ) {
-    errorText_ = "RtApiCore::getDeviceInfo: memory error allocating output AudioBufferList.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(CoreAudio) memory error allocating output AudioBufferList...";
     error( RtError::WARNING );
     return info;
   }
@@ -653,7 +664,8 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, bufferList );
   if ( result != noErr || dataSize == 0 ) {
     free( bufferList );
-    errorStream_ << "RtApiCore::getDeviceInfo: system error (" << getErrorCode( result ) << ") getting output stream configuration for device (" << device << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting output stream configuration for device (" << device << ")...";
     errorText_ = errorStream_.str();
     error( RtError::WARNING );
     return info;
@@ -669,7 +681,8 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   property.mScope = kAudioDevicePropertyScopeInput;
   result = AudioObjectGetPropertyDataSize( id, &property, 0, NULL, &dataSize );
   if ( result != noErr || dataSize == 0 ) {
-    errorStream_ << "RtApiCore::getDeviceInfo: system error (" << getErrorCode( result ) << ") getting input stream configuration info for device (" << device << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting input stream configuration info for device (" << device << ")...";
     errorText_ = errorStream_.str();
     error( RtError::WARNING );
     return info;
@@ -678,7 +691,8 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   // Allocate the AudioBufferList.
   bufferList = (AudioBufferList *) malloc( dataSize );
   if ( bufferList == NULL ) {
-    errorText_ = "RtApiCore::getDeviceInfo: memory error allocating input AudioBufferList.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(CoreAudio) memory error allocating input AudioBufferList...";
     error( RtError::WARNING );
     return info;
   }
@@ -686,7 +700,8 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, bufferList );
   if (result != noErr || dataSize == 0) {
     free( bufferList );
-    errorStream_ << "RtApiCore::getDeviceInfo: system error (" << getErrorCode( result ) << ") getting input stream configuration for device (" << device << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting input stream configuration for device (" << device << ")...";
     errorText_ = errorStream_.str();
     error( RtError::WARNING );
     return info;
@@ -711,7 +726,8 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   if ( isInput == false ) property.mScope = kAudioDevicePropertyScopeOutput;
   result = AudioObjectGetPropertyDataSize( id, &property, 0, NULL, &dataSize );
   if ( result != kAudioHardwareNoError || dataSize == 0 ) {
-    errorStream_ << "RtApiCore::getDeviceInfo: system error (" << getErrorCode( result ) << ") getting sample rate info.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting sample rate info...";
     errorText_ = errorStream_.str();
     error( RtError::WARNING );
     return info;
@@ -721,7 +737,8 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   AudioValueRange rangeList[ nRanges ];
   result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, &rangeList );
   if ( result != kAudioHardwareNoError ) {
-    errorStream_ << "RtApiCore::getDeviceInfo: system error (" << getErrorCode( result ) << ") getting sample rates.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting sample rates...";
     errorText_ = errorStream_.str();
     error( RtError::WARNING );
     return info;
@@ -740,7 +757,8 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   }
 
   if ( info.sampleRates.size() == 0 ) {
-    errorStream_ << "RtApiCore::probeDeviceInfo: No supported sample rates found for device (" << device << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "(CoreAudio) no supported sample rates found for device (" << device << ")...";
     errorText_ = errorStream_.str();
     error( RtError::WARNING );
     return info;
@@ -862,7 +880,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   result = AudioObjectGetPropertyDataSize( id, &property, 0, NULL, &dataSize );
   if ( result != noErr || dataSize == 0 ) {
     // changed chuck 1.3.1.2 (ge): reformatted output
-    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting stream configuration info for device (" << device << ")...";
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting stream configuration info for device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -878,7 +896,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, bufferList );
   if (result != noErr || dataSize == 0) {
     // changed chuck 1.3.1.2 (ge): reformatted output
-    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting stream configuration for device (" << device << ")...";
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting stream configuration for device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -958,7 +976,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
 
   if ( result != noErr ) {
     // changed chuck 1.3.1.2 (ge): reformatted output
-    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting buffer size range for device (" << device << ")...";
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting buffer size range for device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -976,7 +994,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
 
   if ( result != noErr ) {
     // changed chuck 1.3.1.2 (ge): reformatted output
-    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") setting the buffer size for device (" << device << ")...";
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") setting the buffer size for device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -986,7 +1004,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   *bufferSize = theSize;
   if ( stream_.mode == OUTPUT && mode == INPUT && *bufferSize != stream_.bufferSize ) {
     // changed chuck 1.3.1.2 (ge): reformatted output
-    errorStream_ << "(CoreAudio) system error setting buffer size for duplex stream on device (" << device << ")...";
+    errorStream_ << "system error: setting buffer size for duplex stream on device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -1002,7 +1020,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, &hog_pid );
     if ( result != noErr ) {
       // changed chuck 1.3.1.2 (ge): reformatted output
-      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting 'hog' state!";
+      errorStream_ << "system error: (" << getErrorCode( result ) << ") getting 'hog' state!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -1012,7 +1030,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
       result = AudioObjectSetPropertyData( id, &property, 0, NULL, dataSize, &hog_pid );
       if ( result != noErr ) {
         // changed chuck 1.3.1.2 (ge): reformatted output
-        errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") setting 'hog' state!";
+        errorStream_ << "system error: (" << getErrorCode( result ) << ") setting 'hog' state!";
         errorText_ = errorStream_.str();
         return FAILURE;
       }
@@ -1027,7 +1045,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
 
   if ( result != noErr ) {
     // changed chuck 1.3.1.2 (ge): reformatted output
-    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting current sample rate...";
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting current sample rate...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -1041,7 +1059,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     result = AudioObjectAddPropertyListener( id, &tmp, rateListener, (void *) &reportedRate );
     if ( result != noErr ) {
       // changed chuck 1.3.1.2 (ge): reformatted output
-      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") setting sample rate property listener for device (" << device << ")...";
+      errorStream_ << "system error: (" << getErrorCode( result ) << ") setting sample rate property listener for device (" << device << ")...";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -1051,7 +1069,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
 
     if ( result != noErr ) {
       // changed chuck 1.3.1.2 (ge): reformatted output
-      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") setting sample rate for device (" << device << ")...";
+      errorStream_ << "system error: (" << getErrorCode( result ) << ") setting sample rate for device (" << device << ")...";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -1083,7 +1101,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, &description );
   if ( result != noErr ) {
     // changed chuck 1.3.1.2 (ge): reformatted output
-    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting stream format for device (" << device << ")...";
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting stream format for device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -1106,7 +1124,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     result = AudioObjectSetPropertyData( id, &property, 0, NULL, dataSize, &description );
     if ( result != noErr ) {
       // changed chuck 1.3.1.2 (ge): reformatted output
-      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") setting sample rate or data format for device (" << device << ")...";
+      errorStream_ << "system error: (" << getErrorCode( result ) << ") setting sample rate or data format for device (" << device << ")...";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -1117,7 +1135,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   result = AudioObjectGetPropertyData( id, &property, 0, NULL,  &dataSize, &description );
   if ( result != noErr ) {
     // changed chuck 1.3.1.2 (ge): reformatted output
-    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting stream physical format for device (" << device << ")...";
+    errorStream_ << "system error: (" << getErrorCode( result ) << ") getting stream physical format for device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -1173,7 +1191,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
 
     if ( !setPhysicalFormat ) {
       // changed chuck 1.3.1.2 (ge): reformatted output
-      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") setting physical data format for device (" << device << ")...";
+      errorStream_ << "system error: (" << getErrorCode( result ) << ") setting physical data format for device (" << device << ")...";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -1188,7 +1206,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     if ( result == kAudioHardwareNoError ) stream_.latency[ mode ] = latency;
     else {
       // changed chuck 1.3.1.2 (ge): reformatted output
-      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting device latency for device (" << device << ")...";
+      errorStream_ << "system error: (" << getErrorCode( result ) << ") getting device latency for device (" << device << ")...";
       errorText_ = errorStream_.str();
       error( RtError::WARNING );
     }
@@ -1315,7 +1333,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
 #endif
     if ( result != noErr ) {
       // changed chuck 1.3.1.2 (ge): reformatted output
-      errorStream_ << "(CoreAudio) system error setting callback for device (" << device << ")...";
+      errorStream_ << "system error: setting callback for device (" << device << ")...";
       errorText_ = errorStream_.str();
       goto error;
     }
@@ -1425,7 +1443,7 @@ void RtApiCore :: startStream( void )
     result = AudioDeviceStart( handle->id[0], callbackHandler );
     if ( result != noErr ) {
       // changed chuck 1.3.1.2 (ge): reformatted output
-      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") starting callback procedure on device (" << stream_.device[0] << ")...";
+      errorStream_ << "system error: (" << getErrorCode( result ) << ") starting callback procedure on device (" << stream_.device[0] << ")...";
       errorText_ = errorStream_.str();
       goto unlock;
     }
@@ -1437,7 +1455,7 @@ void RtApiCore :: startStream( void )
     result = AudioDeviceStart( handle->id[1], callbackHandler );
     if ( result != noErr ) {
       // changed chuck 1.3.1.2 (ge): reformatted output
-      errorStream_ << "(CoreAudio) system error starting input callback procedure on device (" << stream_.device[1] << ")...";
+      errorStream_ << "system error: starting input callback procedure on device (" << stream_.device[1] << ")...";
       errorText_ = errorStream_.str();
       goto unlock;
     }
@@ -1485,7 +1503,7 @@ void RtApiCore :: stopStream( void )
     MUTEX_LOCK( &stream_.mutex );
     if ( result != noErr ) {
       // changed chuck 1.3.1.2 (ge): reformatted output
-      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") stopping callback procedure on device (" << stream_.device[0] << ")...";
+      errorStream_ << "system error: (" << getErrorCode( result ) << ") stopping callback procedure on device (" << stream_.device[0] << ")...";
       errorText_ = errorStream_.str();
       goto unlock;
     }
@@ -1498,7 +1516,7 @@ void RtApiCore :: stopStream( void )
     MUTEX_LOCK( &stream_.mutex );
     if ( result != noErr ) {
       // changed chuck 1.3.1.2 (ge): reformatted output
-      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") stopping input callback procedure on device (" << stream_.device[1] << ")...";
+      errorStream_ << "system error: (" << getErrorCode( result ) << ") stopping input callback procedure on device (" << stream_.device[1] << ")...";
       errorText_ = errorStream_.str();
       goto unlock;
     }
@@ -4209,7 +4227,8 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
 
     // Check channel information.
     if ( inCaps.dwChannels < channels + firstChannel ) {
-      errorText_ = "RtApiDs::getDeviceInfo: the input device does not support requested input channels.";
+      // changed chuck 1.3.1.2 (ge): format of the error string
+      errorText_ = "(DirectSound) the input device does not support requested input channels...";
       return FAILURE;
     }
 

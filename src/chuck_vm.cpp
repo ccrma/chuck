@@ -245,7 +245,8 @@ t_CKBOOL Chuck_VM::set_priority( t_CKINT priority, Chuck_VM * vm )
 t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT srate,
                                t_CKUINT buffer_size, t_CKUINT num_buffers,
                                t_CKUINT dac, t_CKUINT adc, t_CKUINT dac_chan,
-                               t_CKUINT adc_chan, t_CKBOOL block, t_CKUINT adaptive )
+                               t_CKUINT adc_chan, t_CKBOOL block, t_CKUINT adaptive,
+                               t_CKBOOL force_srate )
 {
     if( m_init )
     {
@@ -278,14 +279,15 @@ t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT sr
 
     // log
     EM_log( CK_LOG_SYSTEM, "probing '%s' audio subsystem...", m_audio ? "real-time" : "fake-time" );
-    // probe / init (this shouldn't start audio yet)
+
+    // probe / init (this shouldn't start audio yet - moved here 1.3.1.2)
     if( !m_bbq->initialize( m_num_dac_channels, m_num_adc_channels,
         Digitalio::m_sampling_rate, 16, 
         Digitalio::m_buffer_size, Digitalio::m_num_buffers,
         Digitalio::m_dac_n, Digitalio::m_adc_n,
-        m_block, this, m_audio ) )
+        m_block, this, m_audio, NULL, NULL, force_srate ) )
     {
-        m_last_error = "cannot initialize audio device (try using --silent/-s)";
+        m_last_error = "cannot initialize audio device (use --silent/-s for non-realtime)";
         // pop indent
         EM_poplog();
         // clean up
@@ -296,6 +298,8 @@ t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT sr
     // update parameters that could have been changed during probe (1.3.1.2)
     srate = Digitalio::sampling_rate();
     buffer_size = Digitalio::buffer_size();
+    dac = Digitalio::dac_num();
+    adc = Digitalio::adc_num();
 
     // lockdown
     Chuck_VM_Object::lock_all();
@@ -330,7 +334,7 @@ t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT sr
     if( enable_audio )
     {
         EM_log( CK_LOG_SYSTEM, "num buffers: %ld", num_buffers );
-        EM_log( CK_LOG_SYSTEM, "devices adc: %ld dac: %d (default 0)", adc, dac );
+        EM_log( CK_LOG_SYSTEM, "adc: %ld dac: %d", adc, dac );
         EM_log( CK_LOG_SYSTEM, "adaptive block processing: %ld", adaptive > 1 ? adaptive : 0 ); 
     }
     EM_log( CK_LOG_SYSTEM, "channels in: %ld out: %ld", adc_chan, dac_chan );
