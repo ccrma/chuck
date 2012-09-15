@@ -121,18 +121,22 @@ public:
                               Chuck_VM * vm_ref,
                               BOOL__ rt_audio,
                               void * callback,
-                              void * data );
+                              void * data,
+                              // force_srate added 1.3.1.2
+                              BOOL__ force_srate );
     static BOOL__ watchdog_start();
     static BOOL__ watchdog_stop();
     static void shutdown();
     static void probe();
     
-    static DWORD__ device_named(std::string &name, t_CKBOOL needs_dac = FALSE, t_CKBOOL needs_adc = FALSE);
+    static DWORD__ device_named( const std::string & name, t_CKBOOL needs_dac = FALSE, t_CKBOOL needs_adc = FALSE );
 
 public:
     static DWORD__ sampling_rate( ) { return m_sampling_rate; }
     static DWORD__ num_channels_out( ) { return m_num_channels_out; }
     static DWORD__ num_channels_in( ) { return m_num_channels_in; }
+    static DWORD__ dac_num( ) { return m_dac_n; }
+    static DWORD__ adc_num( ) { return m_adc_n; }
     static DWORD__ bps( ) { return m_bps; }
     static DWORD__ buffer_size( ) { return m_buffer_size; }
     static DWORD__ num_buffers( ) { return m_num_buffers; }

@@ -172,7 +172,7 @@ void Digitalio::probe()
         }
         
         // print
-        EM_error2b( 0, "------( chuck -- dac%d )---------------", i+1 );
+        EM_error2b( 0, "------( audio device: %d )---------------", i+1 );
         print( info );
         // skip
         if( i < devices ) EM_error2( 0, "" );
@@ -185,7 +185,13 @@ void Digitalio::probe()
 }
 
 
-DWORD__ Digitalio::device_named(std::string &name, t_CKBOOL needs_dac, t_CKBOOL needs_adc)
+
+
+//-----------------------------------------------------------------------------
+// name: device_named()
+// desc: ...
+//-----------------------------------------------------------------------------
+DWORD__ Digitalio::device_named( const std::string & name, t_CKBOOL needs_dac, t_CKBOOL needs_adc )
 {
 #ifndef __DISABLE_RTAUDIO__
     RtAudio * rta = NULL;
@@ -202,7 +208,6 @@ DWORD__ Digitalio::device_named(std::string &name, t_CKBOOL needs_dac, t_CKBOOL 
     
     // get count    
     int devices = rta->getDeviceCount();
-    
     int device_no = -1;
     
     // loop
@@ -215,14 +220,14 @@ DWORD__ Digitalio::device_named(std::string &name, t_CKBOOL needs_dac, t_CKBOOL 
             break;
         }
         
-        if(info.name.compare(name) == 0)
+        if( info.name.compare(name) == 0 )
         {
             device_no = i+1;
             break;
         }
     }
     
-    if(device_no == -1)
+    if( device_no == -1 )
     {
         // no exact match found; try partial match
         for( int i = 0; i < devices; i++ )
@@ -234,19 +239,21 @@ DWORD__ Digitalio::device_named(std::string &name, t_CKBOOL needs_dac, t_CKBOOL 
                 break;
             }
             
-            if(info.name.find(name) != std::string::npos)
+            if( info.name.find(name) != std::string::npos )
             {
-                if((needs_dac && info.outputChannels == 0) ||
-                   (needs_adc && info.inputChannels == 0))
+                if( (needs_dac && info.outputChannels == 0) ||
+                    (needs_adc && info.inputChannels == 0) )
                     continue;
                 device_no = i+1;
                 break;
             }
         }
     }
+
+    // clean up
+    SAFE_DELETE( rta );
     
-    delete rta;
-    
+    // done
     return device_no;
     
 #endif // __DISABLE_RTAUDIO__
@@ -467,7 +474,8 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
                               DWORD__ bps, DWORD__ buffer_size, 
                               DWORD__ num_buffers, DWORD__ block,
                               Chuck_VM * vm_ref, BOOL__ rt_audio,
-                              void * callback, void * data )
+                              void * callback, void * data,
+                              BOOL__ force_srate )
 {
     if( m_init )
         return FALSE;
@@ -539,8 +547,6 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
                         device_info = m_rtaudio->getDeviceInfo(i);
                         if(device_info.outputChannels >= m_num_channels_out)
                         {
-                            // log
-                            EM_log( CK_LOG_SEVERE, "new output device: %d -> %d", m_dac_n, i );
                             m_dac_n = i;
                             break;
                         }
@@ -591,9 +597,18 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
                 }
             }
             
-            // see if we found exact match
+            // see if we found exact match (added 1.3.1.2)
             if( closestDiff != 0 )
             {
+                // check
+                if( force_srate )
+                {
+                    // request sample rate not found, error out
+                    EM_error2( 0, "unsupported sample rate (%d) requested...", sampling_rate );
+                    EM_error2( 0, "| (try --probe to enumerate available sample rates)" );
+                    return m_init = FALSE;
+                }
+
                 // use next highest if available
                 if( nextHighest >= 0 )
                 {
@@ -639,8 +654,6 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
                         device_info = m_rtaudio->getDeviceInfo(i);
                         if(device_info.inputChannels >= m_num_channels_in)
                         {
-                            // log
-                            EM_log( CK_LOG_SEVERE, "new input device: %d -> %d", m_adc_n, i );
                             m_adc_n = i;
                             break;
                         }
