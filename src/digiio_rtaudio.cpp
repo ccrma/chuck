@@ -647,12 +647,14 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
                     }
 
                     // changed 1.3.1.2 (ge): for input, if nothing found, we just gonna try to open half-duplex
-                    // if(m_adc_n == -1)
-                    // {
-                    //     // problem finding audio devices, most likely
-                    //     EM_error2( 0, "unable to find audio input device with requested channel count (%i)...", m_num_channels_in);
-                    //     return m_init = FALSE;
-                    // }
+                    if( m_adc_n == -1 )
+                    {
+                        // set to 0
+                        m_num_channels_in = 0;
+                        // problem finding audio devices, most likely
+                        // EM_error2( 0, "unable to find audio input device with requested channel count (%i)...", m_num_channels_in);
+                        // return m_init = FALSE;
+                    }
                 }
             }
             else
