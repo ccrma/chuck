@@ -819,13 +819,15 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   unsigned int nDevices = getDeviceCount();
   if ( nDevices == 0 ) {
     // This should not happen because a check is made before this function is called.
-    errorText_ = "RtApiCore::probeDeviceOpen: no devices found!";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(CoreAudio) no devices found!";
     return FAILURE;
   }
 
   if ( device >= nDevices ) {
     // This should not happen because a check is made before this function is called.
-    errorText_ = "RtApiCore::probeDeviceOpen: device ID is invalid!";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(CoreAudio) device ID is invalid!";
     return FAILURE;
   }
 
@@ -837,7 +839,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   OSStatus result = AudioObjectGetPropertyData( kAudioObjectSystemObject, &property,
                                                 0, NULL, &dataSize, (void *) &deviceList );
   if ( result != noErr ) {
-    errorText_ = "RtApiCore::probeDeviceOpen: OS-X system error getting device IDs.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(CoreAudio) OS-X system error getting device IDs...";
     return FAILURE;
   }
 
@@ -858,7 +861,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   property.mSelector = kAudioDevicePropertyStreamConfiguration;
   result = AudioObjectGetPropertyDataSize( id, &property, 0, NULL, &dataSize );
   if ( result != noErr || dataSize == 0 ) {
-    errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") getting stream configuration info for device (" << device << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting stream configuration info for device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -866,13 +870,15 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   // Allocate the AudioBufferList.
   bufferList = (AudioBufferList *) malloc( dataSize );
   if ( bufferList == NULL ) {
-    errorText_ = "RtApiCore::probeDeviceOpen: memory error allocating AudioBufferList.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(CoreAudio) memory error allocating AudioBufferList...";
     return FAILURE;
   }
 
   result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, bufferList );
   if (result != noErr || dataSize == 0) {
-    errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") getting stream configuration for device (" << device << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting stream configuration for device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -898,7 +904,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
 
   if ( deviceChannels < ( channels + firstChannel ) ) {
     free( bufferList );
-    errorStream_ << "RtApiCore::probeDeviceOpen: the device (" << device << ") does not support the requested channel count.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "(CoreAudio) device (" << device << ") does not support requested channel count...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -950,7 +957,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, &bufferRange );
 
   if ( result != noErr ) {
-    errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") getting buffer size range for device (" << device << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting buffer size range for device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -967,7 +975,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   result = AudioObjectSetPropertyData( id, &property, 0, NULL, dataSize, &theSize );
 
   if ( result != noErr ) {
-    errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") setting the buffer size for device (" << device << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") setting the buffer size for device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -976,7 +985,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   // MUST be the same in both directions!
   *bufferSize = theSize;
   if ( stream_.mode == OUTPUT && mode == INPUT && *bufferSize != stream_.bufferSize ) {
-    errorStream_ << "RtApiCore::probeDeviceOpen: system error setting buffer size for duplex stream on device (" << device << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "(CoreAudio) system error setting buffer size for duplex stream on device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -991,7 +1001,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     property.mSelector = kAudioDevicePropertyHogMode;
     result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, &hog_pid );
     if ( result != noErr ) {
-      errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") getting 'hog' state!";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting 'hog' state!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -1000,7 +1011,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
       hog_pid = getpid();
       result = AudioObjectSetPropertyData( id, &property, 0, NULL, dataSize, &hog_pid );
       if ( result != noErr ) {
-        errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") setting 'hog' state!";
+        // changed chuck 1.3.1.2 (ge): reformatted output
+        errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") setting 'hog' state!";
         errorText_ = errorStream_.str();
         return FAILURE;
       }
@@ -1014,7 +1026,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, &nominalRate );
 
   if ( result != noErr ) {
-    errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") getting current sample rate.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting current sample rate...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -1027,7 +1040,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     AudioObjectPropertyAddress tmp = { kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
     result = AudioObjectAddPropertyListener( id, &tmp, rateListener, (void *) &reportedRate );
     if ( result != noErr ) {
-      errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") setting sample rate property listener for device (" << device << ").";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") setting sample rate property listener for device (" << device << ")...";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -1036,7 +1050,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     result = AudioObjectSetPropertyData( id, &property, 0, NULL, dataSize, &nominalRate );
 
     if ( result != noErr ) {
-      errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") setting sample rate for device (" << device << ").";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") setting sample rate for device (" << device << ")...";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -1053,7 +1068,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     AudioObjectRemovePropertyListener( id, &tmp, rateListener, (void *) &reportedRate );
 
     if ( microCounter > 5000000 ) {
-      errorStream_ << "RtApiCore::probeDeviceOpen: timeout waiting for sample rate update for device (" << device << ").";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorStream_ << "(CoreAudio) timeout waiting for sample rate update for device (" << device << ")...";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -1066,7 +1082,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   property.mSelector = kAudioStreamPropertyVirtualFormat;
   result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, &description );
   if ( result != noErr ) {
-    errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") getting stream format for device (" << device << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting stream format for device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -1088,7 +1105,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   if ( updateFormat ) {
     result = AudioObjectSetPropertyData( id, &property, 0, NULL, dataSize, &description );
     if ( result != noErr ) {
-      errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") setting sample rate or data format for device (" << device << ").";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") setting sample rate or data format for device (" << device << ")...";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -1098,7 +1116,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   property.mSelector = kAudioStreamPropertyPhysicalFormat;
   result = AudioObjectGetPropertyData( id, &property, 0, NULL,  &dataSize, &description );
   if ( result != noErr ) {
-    errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") getting stream physical format for device (" << device << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting stream physical format for device (" << device << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -1153,7 +1172,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     }
 
     if ( !setPhysicalFormat ) {
-      errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") setting physical data format for device (" << device << ").";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") setting physical data format for device (" << device << ")...";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -1167,7 +1187,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     result = AudioObjectGetPropertyData( id, &property, 0, NULL, &dataSize, &latency );
     if ( result == kAudioHardwareNoError ) stream_.latency[ mode ] = latency;
     else {
-      errorStream_ << "RtApiCore::probeDeviceOpen: system error (" << getErrorCode( result ) << ") getting device latency for device (" << device << ").";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") getting device latency for device (" << device << ")...";
       errorText_ = errorStream_.str();
       error( RtError::WARNING );
     }
@@ -1215,12 +1236,14 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
       handle = new CoreHandle;
     }
     catch ( std::bad_alloc& ) {
-      errorText_ = "RtApiCore::probeDeviceOpen: error allocating CoreHandle memory.";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorText_ = "(CoreAudio) error allocating CoreHandle memory...";
       goto error;
     }
 
     if ( pthread_cond_init( &handle->condition, NULL ) ) {
-      errorText_ = "RtApiCore::probeDeviceOpen: error initializing pthread condition variable.";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorText_ = "(CoreAudio) error initializing pthread condition variable...";
       goto error;
     }
     stream_.apiHandle = (void *) handle;
@@ -1238,7 +1261,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   stream_.userBuffer[mode] = (char *) malloc( bufferBytes * sizeof(char) );
   memset( stream_.userBuffer[mode], 0, bufferBytes * sizeof(char) );
   if ( stream_.userBuffer[mode] == NULL ) {
-    errorText_ = "RtApiCore::probeDeviceOpen: error allocating user buffer memory.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(CoreAudio) error allocating user buffer memory...";
     goto error;
   }
 
@@ -1261,7 +1285,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
       if ( stream_.deviceBuffer ) free( stream_.deviceBuffer );
       stream_.deviceBuffer = (char *) calloc( bufferBytes, 1 );
       if ( stream_.deviceBuffer == NULL ) {
-        errorText_ = "RtApiCore::probeDeviceOpen: error allocating device buffer memory.";
+        // changed chuck 1.3.1.2 (ge): reformatted output
+        errorText_ = "(CoreAudio) error allocating device buffer memory...";
         goto error;
       }
     }
@@ -1289,7 +1314,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     result = AudioDeviceAddIOProc( id, callbackHandler, (void *) &stream_.callbackInfo );
 #endif
     if ( result != noErr ) {
-      errorStream_ << "RtApiCore::probeDeviceOpen: system error setting callback for device (" << device << ").";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorStream_ << "(CoreAudio) system error setting callback for device (" << device << ")...";
       errorText_ = errorStream_.str();
       goto error;
     }
@@ -1330,7 +1356,8 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
 void RtApiCore :: closeStream( void )
 {
   if ( stream_.state == STREAM_CLOSED ) {
-    errorText_ = "RtApiCore::closeStream(): no open stream to close!";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(CoreAudio) no open stream to close!";
     error( RtError::WARNING );
     return;
   }
@@ -1383,7 +1410,8 @@ void RtApiCore :: startStream( void )
 {
   verifyStream();
   if ( stream_.state == STREAM_RUNNING ) {
-    errorText_ = "RtApiCore::startStream(): the stream is already running!";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(CoreAudio) the audio stream is already running!";
     error( RtError::WARNING );
     return;
   }
@@ -1396,7 +1424,8 @@ void RtApiCore :: startStream( void )
 
     result = AudioDeviceStart( handle->id[0], callbackHandler );
     if ( result != noErr ) {
-      errorStream_ << "RtApiCore::startStream: system error (" << getErrorCode( result ) << ") starting callback procedure on device (" << stream_.device[0] << ").";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") starting callback procedure on device (" << stream_.device[0] << ")...";
       errorText_ = errorStream_.str();
       goto unlock;
     }
@@ -1407,7 +1436,8 @@ void RtApiCore :: startStream( void )
 
     result = AudioDeviceStart( handle->id[1], callbackHandler );
     if ( result != noErr ) {
-      errorStream_ << "RtApiCore::startStream: system error starting input callback procedure on device (" << stream_.device[1] << ").";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorStream_ << "(CoreAudio) system error starting input callback procedure on device (" << stream_.device[1] << ")...";
       errorText_ = errorStream_.str();
       goto unlock;
     }
@@ -1428,7 +1458,8 @@ void RtApiCore :: stopStream( void )
 {
   verifyStream();
   if ( stream_.state == STREAM_STOPPED ) {
-    errorText_ = "RtApiCore::stopStream(): the stream is already stopped!";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(CoreAudio) the stream is already stopped!";
     error( RtError::WARNING );
     return;
   }
@@ -1453,7 +1484,8 @@ void RtApiCore :: stopStream( void )
     result = AudioDeviceStop( handle->id[0], callbackHandler );
     MUTEX_LOCK( &stream_.mutex );
     if ( result != noErr ) {
-      errorStream_ << "RtApiCore::stopStream: system error (" << getErrorCode( result ) << ") stopping callback procedure on device (" << stream_.device[0] << ").";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") stopping callback procedure on device (" << stream_.device[0] << ")...";
       errorText_ = errorStream_.str();
       goto unlock;
     }
@@ -1465,7 +1497,8 @@ void RtApiCore :: stopStream( void )
     result = AudioDeviceStop( handle->id[1], callbackHandler );
     MUTEX_LOCK( &stream_.mutex );
     if ( result != noErr ) {
-      errorStream_ << "RtApiCore::stopStream: system error (" << getErrorCode( result ) << ") stopping input callback procedure on device (" << stream_.device[1] << ").";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorStream_ << "(CoreAudio) system error (" << getErrorCode( result ) << ") stopping input callback procedure on device (" << stream_.device[1] << ")...";
       errorText_ = errorStream_.str();
       goto unlock;
     }
@@ -1484,7 +1517,8 @@ void RtApiCore :: abortStream( void )
 {
   verifyStream();
   if ( stream_.state == STREAM_STOPPED ) {
-    errorText_ = "RtApiCore::abortStream(): the stream is already stopped!";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(CoreAudio) aborting... the stream is already stopped!";
     error( RtError::WARNING );
     return;
   }
@@ -1501,7 +1535,7 @@ bool RtApiCore :: callbackEvent( AudioDeviceID deviceId,
 {
   if ( stream_.state == STREAM_STOPPED ) return SUCCESS;
   if ( stream_.state == STREAM_CLOSED ) {
-    errorText_ = "RtApiCore::callbackEvent(): the stream is closed ... this shouldn't happen!";
+    errorText_ = "(RtAudio callback) the stream is closed... (this shouldn't happen!)";
     error( RtError::WARNING );
     return FAILURE;
   }
@@ -1910,7 +1944,8 @@ RtAudio::DeviceInfo RtApiJack :: getDeviceInfo( unsigned int device )
   jack_status_t *status = NULL;
   jack_client_t *client = jack_client_open( "RtApiJackInfo", options, status );
   if ( client == 0 ) {
-    errorText_ = "RtApiJack::getDeviceInfo: Jack server not found or connection error!";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "no active JACK server detected (or connection error)...";
     error( RtError::WARNING );
     return info;
   }
@@ -1938,7 +1973,8 @@ RtAudio::DeviceInfo RtApiJack :: getDeviceInfo( unsigned int device )
   }
 
   if ( device >= nDevices ) {
-    errorText_ = "RtApiJack::getDeviceInfo: device ID is invalid!";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(JACK) probing... device ID is invalid!";
     error( RtError::INVALID_USE );
   }
 
@@ -1967,7 +2003,8 @@ RtAudio::DeviceInfo RtApiJack :: getDeviceInfo( unsigned int device )
 
   if ( info.outputChannels == 0 && info.inputChannels == 0 ) {
     jack_client_close(client);
-    errorText_ = "RtApiJack::getDeviceInfo: error determining Jack input/output channels!";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(JACK) probing... error determining Jack input/output channels!";
     error( RtError::WARNING );
     return info;
   }
@@ -2026,7 +2063,9 @@ void jackShutdown( void *infoPointer )
   if ( object->isStreamRunning() == false ) return;
 
   pthread_create( &threadId, NULL, jackCloseStream, info );
-  std::cerr << "\nRtApiJack: the Jack server is shutting down this client ... stream stopped and closed!!\n" << std::endl;
+  // changed chuck 1.3.1.2 (ge): reformatted output
+  std::cerr << "(JACK) the JACK server is shutting down this client..." << std::endl;
+  std::cerr << "... stream stopped and closed!" << std::endl;
 }
 
 int jackXrun( void *infoPointer )
@@ -2056,7 +2095,8 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     else
       client = jack_client_open( "RtApiJack", jackoptions, status );
     if ( client == 0 ) {
-      errorText_ = "RtApiJack::probeDeviceOpen: Jack server not found or connection error!";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorText_ = "(JACK) server not found or connection error!";
       error( RtError::WARNING );
       return FAILURE;
     }
@@ -2089,7 +2129,8 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   }
 
   if ( device >= nDevices ) {
-    errorText_ = "RtApiJack::probeDeviceOpen: device ID is invalid!";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(JACK) audio device ID is invalid!";
     return FAILURE;
   }
 
@@ -2106,7 +2147,8 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
 
   // Compare the jack ports for specified client to the requested number of channels.
   if ( nChannels < (channels + firstChannel) ) {
-    errorStream_ << "RtApiJack::probeDeviceOpen: requested number of channels (" << channels << ") + offset (" << firstChannel << ") not found for specified device (" << device << ":" << deviceName << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "(JACK) requested number of channels (" << channels << ") + offset (" << firstChannel << ") not found for specified device (" << device << ":" << deviceName << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -2114,8 +2156,12 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   // Check the jack server sample rate.
   unsigned int jackRate = jack_get_sample_rate( client );
   if ( sampleRate != jackRate ) {
+    // changed chuck 1.3.1.2 (ge): go ahead and use the jack sample rate!
+    // sampleRate = jackRate;
+    
     jack_client_close( client );
-    errorStream_ << "RtApiJack::probeDeviceOpen: the requested sample rate (" << sampleRate << ") is different than the JACK server rate (" << jackRate << ").";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorStream_ << "requested sample rate (" << sampleRate << ") != JACK server rate (" << jackRate << ")...";
     errorText_ = errorStream_.str();
     return FAILURE;
   }
@@ -2174,12 +2220,14 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
       handle = new JackHandle;
     }
     catch ( std::bad_alloc& ) {
-      errorText_ = "RtApiJack::probeDeviceOpen: error allocating JackHandle memory.";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorText_ = "(JACK) error allocating JackHandle memory...";
       goto error;
     }
 
     if ( pthread_cond_init(&handle->condition, NULL) ) {
-      errorText_ = "RtApiJack::probeDeviceOpen: error initializing pthread condition variable.";
+      // changed chuck 1.3.1.2 (ge): reformatted output
+      errorText_ = "(JACK) error initializing pthread condition variable...";
       goto error;
     }
     stream_.apiHandle = (void *) handle;
@@ -2192,7 +2240,8 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   bufferBytes = stream_.nUserChannels[mode] * *bufferSize * formatBytes( stream_.userFormat );
   stream_.userBuffer[mode] = (char *) calloc( bufferBytes, 1 );
   if ( stream_.userBuffer[mode] == NULL ) {
-    errorText_ = "RtApiJack::probeDeviceOpen: error allocating user buffer memory.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(JACK) error allocating user buffer memory...";
     goto error;
   }
 
@@ -2214,7 +2263,8 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
       if ( stream_.deviceBuffer ) free( stream_.deviceBuffer );
       stream_.deviceBuffer = (char *) calloc( bufferBytes, 1 );
       if ( stream_.deviceBuffer == NULL ) {
-        errorText_ = "RtApiJack::probeDeviceOpen: error allocating device buffer memory.";
+        // changed chuck 1.3.1.2 (ge): reformatted output
+        errorText_ = "(JACK) error allocating device buffer memory...";
         goto error;
       }
     }
@@ -2223,7 +2273,8 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   // Allocate memory for the Jack ports (channels) identifiers.
   handle->ports[mode] = (jack_port_t **) malloc ( sizeof (jack_port_t *) * channels );
   if ( handle->ports[mode] == NULL )  {
-    errorText_ = "RtApiJack::probeDeviceOpen: error allocating port memory.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "(JACK) error allocating port memory...";
     goto error;
   }
 
@@ -3907,33 +3958,34 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
                                  RtAudio::StreamOptions *options )
 {
   if ( channels + firstChannel > 2 ) {
-    errorText_ = "RtApiDs::probeDeviceOpen: DirectSound does not support more than 2 channels per device.";
+    // changed chuck 1.3.1.2 (ge): reformatted output
+    errorText_ = "DirectSound does not support more than 2 channels per device...";
     return FAILURE;
   }
 
   unsigned int nDevices = dsDevices.size();
   if ( nDevices == 0 ) {
     // This should not happen because a check is made before this function is called.
-    errorText_ = "RtApiDs::probeDeviceOpen: no devices found!";
+    errorText_ = "(DirectSound) no devices found!";
     return FAILURE;
   }
 
   if ( device >= nDevices ) {
     // This should not happen because a check is made before this function is called.
-    errorText_ = "RtApiDs::probeDeviceOpen: device ID is invalid!";
+    errorText_ = "(DirectSound) device ID is invalid!";
     return FAILURE;
   }
 
   if ( mode == OUTPUT ) {
     if ( dsDevices[ device ].validId[0] == false ) {
-      errorStream_ << "RtApiDs::probeDeviceOpen: device (" << device << ") does not support output!";
+      errorStream_ << "(DirectSound) device (" << device << ") does not support output!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
   }
   else { // mode == INPUT
     if ( dsDevices[ device ].validId[1] == false ) {
-      errorStream_ << "RtApiDs::probeDeviceOpen: device (" << device << ") does not support input!";
+      errorStream_ << "(DirectSound) device (" << device << ") does not support input!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -3982,7 +4034,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     LPDIRECTSOUND output;
     result = DirectSoundCreate( dsDevices[ device ].id[0], &output, NULL );
     if ( FAILED( result ) ) {
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") opening output device (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") opening output device (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -3992,7 +4044,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     result = output->GetCaps( &outCaps );
     if ( FAILED( result ) ) {
       output->Release();
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") getting capabilities (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") getting capabilities (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -4032,7 +4084,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     result = output->SetCooperativeLevel( hWnd, DSSCL_PRIORITY );
     if ( FAILED( result ) ) {
       output->Release();
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") setting cooperative level (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") setting cooperative level (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -4051,7 +4103,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     result = output->CreateSoundBuffer( &bufferDescription, &buffer, NULL );
     if ( FAILED( result ) ) {
       output->Release();
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") accessing primary buffer (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") accessing primary buffer (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -4060,7 +4112,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     result = buffer->SetFormat( &waveFormat );
     if ( FAILED( result ) ) {
       output->Release();
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") setting primary buffer format (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") setting primary buffer format (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -4086,7 +4138,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
       result = output->CreateSoundBuffer( &bufferDescription, &buffer, NULL );
       if ( FAILED( result ) ) {
         output->Release();
-        errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") creating secondary buffer (" << dsDevices[ device ].name << ")!";
+        errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") creating secondary buffer (" << dsDevices[ device ].name << ")!";
         errorText_ = errorStream_.str();
         return FAILURE;
       }
@@ -4099,7 +4151,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     if ( FAILED( result ) ) {
       output->Release();
       buffer->Release();
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") getting buffer settings (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") getting buffer settings (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -4113,7 +4165,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     if ( FAILED( result ) ) {
       output->Release();
       buffer->Release();
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") locking buffer (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") locking buffer (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -4126,7 +4178,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     if ( FAILED( result ) ) {
       output->Release();
       buffer->Release();
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") unlocking buffer (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") unlocking buffer (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -4140,7 +4192,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     LPDIRECTSOUNDCAPTURE input;
     result = DirectSoundCaptureCreate( dsDevices[ device ].id[1], &input, NULL );
     if ( FAILED( result ) ) {
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") opening input device (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") opening input device (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -4150,7 +4202,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     result = input->GetCaps( &inCaps );
     if ( FAILED( result ) ) {
       input->Release();
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") getting input capabilities (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") getting input capabilities (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -4211,7 +4263,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     result = input->CreateCaptureBuffer( &bufferDescription, &buffer, NULL );
     if ( FAILED( result ) ) {
       input->Release();
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") creating input buffer (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") creating input buffer (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -4223,7 +4275,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     if ( FAILED( result ) ) {
       input->Release();
       buffer->Release();
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") getting buffer settings (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") getting buffer settings (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -4242,7 +4294,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     if ( FAILED( result ) ) {
       input->Release();
       buffer->Release();
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") locking input buffer (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") locking input buffer (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -4255,7 +4307,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     if ( FAILED( result ) ) {
       input->Release();
       buffer->Release();
-      errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") unlocking input buffer (" << dsDevices[ device ].name << ")!";
+      errorStream_ << "(DirectSound) error (" << getErrorString( result ) << ") unlocking input buffer (" << dsDevices[ device ].name << ")!";
       errorText_ = errorStream_.str();
       return FAILURE;
     }
@@ -4288,7 +4340,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
   long bufferBytes = stream_.nUserChannels[mode] * *bufferSize * formatBytes( stream_.userFormat );
   stream_.userBuffer[mode] = (char *) calloc( bufferBytes, 1 );
   if ( stream_.userBuffer[mode] == NULL ) {
-    errorText_ = "RtApiDs::probeDeviceOpen: error allocating user buffer memory.";
+    errorText_ = "(DirectSound) error allocating user buffer memory.";
     goto error;
   }
 
@@ -4308,7 +4360,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
       if ( stream_.deviceBuffer ) free( stream_.deviceBuffer );
       stream_.deviceBuffer = (char *) calloc( bufferBytes, 1 );
       if ( stream_.deviceBuffer == NULL ) {
-        errorText_ = "RtApiDs::probeDeviceOpen: error allocating device buffer memory.";
+        errorText_ = "(DirectSound) error allocating device buffer memory.";
         goto error;
       }
     }
@@ -4320,7 +4372,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
       handle = new DsHandle;
     }
     catch ( std::bad_alloc& ) {
-      errorText_ = "RtApiDs::probeDeviceOpen: error allocating AsioHandle memory.";
+      errorText_ = "(DirectSound) error allocating AsioHandle memory.";
       goto error;
     }
 
@@ -4364,7 +4416,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
                                                   &stream_.callbackInfo, 0, &threadId );
 #endif
     if ( stream_.callbackInfo.thread == 0 ) {
-      errorText_ = "RtApiDs::probeDeviceOpen: error creating callback thread!";
+      errorText_ = "(DirectSound) error creating callback thread!";
       goto error;
     }
 
@@ -7392,8 +7444,9 @@ extern "C" void *ossCallbackHandler( void *ptr )
 void RtApi :: error( RtError::Type type )
 {
   errorStream_.str(""); // clear the ostringstream
-  if ( type == RtError::WARNING && showWarnings_ == true )
-    std::cerr << '\n' << errorText_ << "\n\n";
+  // changed chuck 1.3.1.2 (ge): format of the error string
+  if( type == RtError::WARNING && showWarnings_ == true )
+    std::cerr << "[chuck]: " << errorText_ << "" << std::endl;
   else if ( type != RtError::WARNING )
     throw( RtError( errorText_, type ) );
 }

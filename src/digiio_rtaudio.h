@@ -111,16 +111,17 @@ struct Chuck_VM;
 class Digitalio
 {
 public:
-    static BOOL__ initialize( DWORD__ num_dac_channels = NUM_CHANNELS_DEFAULT,
-                              DWORD__ num_adc_channels = NUM_CHANNELS_DEFAULT,
-                              DWORD__ sampling_rate = SAMPLING_RATE_DEFAULT,
-                              DWORD__ bps = BITS_PER_SAMPLE_DEFAULT,
-                              DWORD__ buffer_size = BUFFER_SIZE_DEFAULT,
-                              DWORD__ num_buffers = NUM_BUFFERS_DEFAULT,
-                              DWORD__ block = TRUE,
-                              Chuck_VM * vm_ref = NULL,
-                              BOOL__  rt_audio = TRUE,
-                              void * callback = NULL, void * data = NULL );
+    static BOOL__ initialize( DWORD__ num_dac_channels,
+                              DWORD__ num_adc_channels,
+                              DWORD__ sampling_rate,
+                              DWORD__ bps,
+                              DWORD__ buffer_size,
+                              DWORD__ num_buffers,
+                              DWORD__ block,
+                              Chuck_VM * vm_ref,
+                              BOOL__ rt_audio,
+                              void * callback,
+                              void * data );
     static BOOL__ watchdog_start();
     static BOOL__ watchdog_stop();
     static void shutdown();

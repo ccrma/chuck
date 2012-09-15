@@ -260,17 +260,46 @@ t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT sr
     // log
     EM_log( CK_LOG_SYSTEM, "initializing virtual machine..." );
     EM_pushlog(); // push stack
-    EM_log( CK_LOG_SYSTEM, "behavior: %s", halt ? "HALT" : "LOOP" );
-
-    // lockdown
-    Chuck_VM_Object::lock_all();
 
     // allocate bbq
     m_bbq = new BBQ;
     m_halt = halt;
     m_audio = enable_audio;
     m_block = block;
+    m_num_adc_channels = adc_chan;
+    m_num_dac_channels = dac_chan;
+
+    // set some parameters
+    m_bbq->set_srate( srate );
+    m_bbq->set_bufsize( buffer_size );
+    m_bbq->set_numbufs( num_buffers );
+    m_bbq->set_inouts( adc, dac );
+    m_bbq->set_chans( adc_chan, dac_chan );
+
+    // log
+    EM_log( CK_LOG_SYSTEM, "probing '%s' audio subsystem", m_audio ? "real-time" : "fake-time" );
+    // probe / init (this shouldn't start audio yet)
+    if( !m_bbq->initialize( m_num_dac_channels, m_num_adc_channels,
+        Digitalio::m_sampling_rate, 16, 
+        Digitalio::m_buffer_size, Digitalio::m_num_buffers,
+        Digitalio::m_dac_n, Digitalio::m_adc_n,
+        m_block, this, m_audio ) )
+    {
+        m_last_error = "cannot initialize audio device (try using --silent/-s)";
+        // pop indent
+        EM_poplog();
+        // clean up
+        SAFE_DELETE( m_bbq );
+        return FALSE;
+    }
     
+    // update parameters that could have been changed during probe (1.3.1.2)
+    srate = Digitalio::sampling_rate();
+    buffer_size = Digitalio::buffer_size();
+
+    // lockdown
+    Chuck_VM_Object::lock_all();
+
     // log
     EM_log( CK_LOG_SYSTEM, "allocating shreduler..." );
     // allocate shreduler
@@ -291,8 +320,9 @@ t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT sr
     m_event_buffer = new CBufferSimple;
     m_event_buffer->initialize( 1024, sizeof(Chuck_Event *) );
     //m_event_buffer->join(); // this should also return 0
-
+    
     // log
+    EM_log( CK_LOG_SYSTEM, "behavior: %s", halt ? "HALT" : "LOOP" );
     EM_log( CK_LOG_SYSTEM, "real-time audio: %s", enable_audio ? "YES" : "NO" );
     EM_log( CK_LOG_SYSTEM, "mode: %s", block ? "BLOCKING" : "CALLBACK" );
     EM_log( CK_LOG_SYSTEM, "sample rate: %ld", srate );
@@ -304,15 +334,6 @@ t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT sr
         EM_log( CK_LOG_SYSTEM, "adaptive block processing: %ld", adaptive > 1 ? adaptive : 0 ); 
     }
     EM_log( CK_LOG_SYSTEM, "channels in: %ld out: %ld", adc_chan, dac_chan );
-    m_num_adc_channels = adc_chan;
-    m_num_dac_channels = dac_chan;
-
-    // at least set the sample rate and buffer size
-    m_bbq->set_srate( srate );
-    m_bbq->set_bufsize( buffer_size );
-    m_bbq->set_numbufs( num_buffers );
-    m_bbq->set_inouts( adc, dac );
-    m_bbq->set_chans( adc_chan, dac_chan );
 
     // pop log
     EM_poplog();
@@ -395,21 +416,6 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     m_shreduler->m_bunghole = m_bunghole;
     m_shreduler->m_num_dac_channels = m_num_dac_channels;
     m_shreduler->m_num_adc_channels = m_num_adc_channels;
-
-    // log
-    EM_log( CK_LOG_SYSTEM, "initializing '%s' audio...", m_audio ? "real-time" : "fake-time" );
-    // init bbq
-    if( !m_bbq->initialize( m_num_dac_channels, m_num_adc_channels,
-        Digitalio::m_sampling_rate, 16, 
-        Digitalio::m_buffer_size, Digitalio::m_num_buffers,
-        Digitalio::m_dac_n, Digitalio::m_adc_n,
-        m_block, this, m_audio ) )
-    {
-        m_last_error = "cannot initialize audio device (try using --silent/-s)";
-        // pop indent
-        EM_poplog();
-        return FALSE;
-    }
 
     // pop indent
     EM_poplog();
