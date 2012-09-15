@@ -750,8 +750,9 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
     }
     else
     {
-        // log
-        EM_log(CK_LOG_INFO, "unable to open directory '%s', ignoring for chugins", directory);
+        // log (1.3.1.2: changed to 2 lines to stay within 80 chars)
+        EM_log( CK_LOG_INFO, "unable to open directory '%s'...", directory );
+        EM_log( CK_LOG_INFO, "(ignoring for chugins...)" );
     }
     
     return TRUE;
