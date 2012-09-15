@@ -277,7 +277,7 @@ t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT sr
     m_bbq->set_chans( adc_chan, dac_chan );
 
     // log
-    EM_log( CK_LOG_SYSTEM, "probing '%s' audio subsystem", m_audio ? "real-time" : "fake-time" );
+    EM_log( CK_LOG_SYSTEM, "probing '%s' audio subsystem...", m_audio ? "real-time" : "fake-time" );
     // probe / init (this shouldn't start audio yet)
     if( !m_bbq->initialize( m_num_dac_channels, m_num_adc_channels,
         Digitalio::m_sampling_rate, 16, 
