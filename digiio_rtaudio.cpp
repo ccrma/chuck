@@ -539,10 +539,10 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
                 // check
                 if( device_info.outputChannels < m_num_channels_out )
                 {
-                    // find first device with at least the requested channeel count
+                    // find first device with at least the requested channel count
                     m_dac_n = -1;
                     int num_devices = m_rtaudio->getDeviceCount();
-                    for(int i = 0; i < num_devices; i++)
+                    for( int i = 0; i < num_devices; i++ )
                     {
                         device_info = m_rtaudio->getDeviceInfo(i);
                         if(device_info.outputChannels >= m_num_channels_out)
@@ -646,7 +646,7 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
                 // check if input channels > 0
                 if( device_info.inputChannels < m_num_channels_in )
                 {
-                    // find first device with at least the requested channeel count
+                    // find first device with at least the requested channel count
                     m_adc_n = -1;
                     int num_devices = m_rtaudio->getDeviceCount();
                     for(int i = 0; i < num_devices; i++)
