@@ -1,9 +1,10 @@
 1.3.1.2
 ---
   - (added) chuck now automatically detects and uses next highest
-            or closest (in that order) system sample rate -- in 
-            the case where the default or requested (--srate:)
-            sample rate is not available.
+            or closest (in that order) system sample rate in   
+            the case where the default is not available; if a sample
+            rate requested via --srate: is not available, an error
+            will be encountered with a message.
   - (fixed) base parent object is correctly accounted for by 
             new shred when sporking member functions
             (thanks to Michael Heuer for reporting and 
