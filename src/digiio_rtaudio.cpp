@@ -529,6 +529,10 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
                 // get the default
                 m_dac_n = m_rtaudio->getDefaultOutputDevice();
             }
+            else
+            {
+                m_dac_n -= 1;
+            }
 
             // get device info
             RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo(m_dac_n);
@@ -559,10 +563,6 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
                         return m_init = FALSE;
                     }
                 }
-            }
-            else
-            {
-                m_dac_n -= 1;
             }
 
             // index of closest sample rate
