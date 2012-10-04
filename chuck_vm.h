@@ -433,6 +433,9 @@ public: // get error
     const char * last_error() const
     { return m_last_error.c_str(); }
 
+    t_CKBOOL set_main_thread_hook( f_mainthreadhook hook, f_mainthreadquit quit,
+                                   void * bindle );
+    
 //-----------------------------------------------------------------------------
 // data
 //-----------------------------------------------------------------------------
@@ -484,6 +487,11 @@ protected:
     
     // TODO: vector? (added 1.3.0.0 to fix uber-crash)
     std::list<CBufferSimple *> m_event_buffers;
+    
+    // added 1.3.2.0
+    f_mainthreadhook m_main_thread_hook;
+    f_mainthreadquit m_main_thread_quit;
+    void *m_main_thread_bindle;
 
 public:
     // running
