@@ -20,7 +20,7 @@ endif
 .PHONY: osx linux-oss linux-jack linux-alsa win32 osx-rl
 osx linux-oss linux-jack linux-alsa win32 osx-rl: chuck
 
-CK_VERSION=1.3.1.3
+CK_VERSION=1.3.2.0-beta-1
 
 LEX=flex
 YACC=bison
