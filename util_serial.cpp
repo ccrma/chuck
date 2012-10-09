@@ -34,7 +34,7 @@
 #include "chuck_errmsg.h"
 
 
-#ifdef __MACOSX_CORE__
+#if defined(__MACOSX_CORE__)
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
@@ -112,6 +112,69 @@ cleanup:
     
     return devices;
 }
+
+#elif defined(__LINUX_ALSA__) || defined(__LINUX_JACK__) || defined(__LINUX_OSS__)
+
+
+#include <sys/types.h>
+#include <dirent.h>
+
+
+vector<string> SerialIOManager::availableSerialDevices()
+{
+    vector<string> devices;
+    const int buf_size = PATH_MAX;
+    const char * serial_dir = "/dev/serial/by-id";
+    char link_buf[buf_size];
+    char path_buf[buf_size];
+
+    DIR * dir = opendir(serial_dir);
+
+    if(dir == NULL)
+    {
+        // either we cannot open the directory, or there were no devices
+        EM_log(CK_LOG_INFO, "(SerialIOManager): unable to enumerate available devices");
+        goto error;
+    }
+
+    dirent * dir_info;
+    while((dir_info = readdir(dir)))
+    {
+        if(strcmp(dir_info->d_name, ".") == 0 ||
+           strcmp(dir_info->d_name, "..") == 0)
+            continue;
+        snprintf(link_buf, buf_size, "%s/%s", serial_dir, dir_info->d_name);
+        int link_size = readlink(link_buf, path_buf, buf_size-1);
+        if(link_size <= 0)
+        {
+            EM_log(CK_LOG_INFO, "(SerialIOManager): readlink failed on '%s'", link_buf);
+            goto error;
+        }
+
+        // readlink does not NULL-terminate (...)
+        path_buf[link_size] = '\0';
+
+        if(path_buf[0] != '/')
+        {
+            // normalize path
+            snprintf(link_buf, buf_size, "%s/%s", serial_dir, path_buf);
+
+            if(!realpath(link_buf, path_buf))
+                goto error;
+        }
+
+        devices.push_back(string(path_buf));
+    }
+
+    goto cleanup;
+    
+error:
+    devices.clear();
+    
+cleanup:
+    return devices;
+}
+
 
 #endif /* __MACOSX_CORE__ */
 
