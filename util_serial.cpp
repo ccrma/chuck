@@ -108,6 +108,7 @@ error:
 cleanup:
     if(classesToMatch) { CFRelease(classesToMatch); classesToMatch = NULL; }
     if(calloutCFKeyName) { CFRelease(calloutCFKeyName); calloutCFKeyName = NULL; }
+    if(dialinCFKeyName) { CFRelease(dialinCFKeyName); dialinCFKeyName = NULL; }
     
     return devices;
 }

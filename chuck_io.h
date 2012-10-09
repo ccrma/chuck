@@ -67,6 +67,8 @@ public:
     // writing
     virtual void write( const std::string & val );
     virtual void write( t_CKINT val );
+    virtual void write( t_CKINT val, t_CKINT size );
+    virtual void writeBytes( Chuck_Array4 * arr );
     virtual void write( t_CKFLOAT val );
 
     // serial stuff
@@ -74,7 +76,7 @@ public:
     virtual t_CKUINT getBaudRate();
     
     // async reading
-    virtual void readAsync( t_CKUINT type, t_CKUINT num );
+    virtual t_CKBOOL readAsync( t_CKUINT type, t_CKUINT num );
     virtual Chuck_String * getLine();
     virtual t_CKINT getByte();
     virtual Chuck_Array * getBytes();
@@ -89,8 +91,9 @@ public:
     static const t_CKUINT TYPE_FLOAT = 4;
     static const t_CKUINT TYPE_STRING = 5;
     static const t_CKUINT TYPE_LINE = 6;
+    static const t_CKUINT TYPE_WRITE = 100;
     
-    struct Read
+    struct Request
     {
         t_CKUINT m_type; // type
         t_CKUINT m_num; // how many
@@ -125,23 +128,24 @@ public:
 
 protected:
     
+    void start_read_thread();
     XThread * m_read_thread;
     static void *shell_read_cb(void *);
     void read_cb();
     
-    t_CKBOOL handle_line(Read &);
-    t_CKBOOL handle_string(Read &);
-    t_CKBOOL handle_float_ascii(Read &);
-    t_CKBOOL handle_int_ascii(Read &);
-    t_CKBOOL handle_byte(Read &);
-    t_CKBOOL handle_float_binary(Read &);
-    t_CKBOOL handle_int_binary(Read &);
+    t_CKBOOL handle_line(Request &);
+    t_CKBOOL handle_string(Request &);
+    t_CKBOOL handle_float_ascii(Request &);
+    t_CKBOOL handle_int_ascii(Request &);
+    t_CKBOOL handle_byte(Request &);
+    t_CKBOOL handle_float_binary(Request &);
+    t_CKBOOL handle_int_binary(Request &);
     
     bool m_do_read_thread;
     
-    CircularBuffer<Read> m_asyncReadRequests;
-    CircularBuffer<Read> m_asyncReadResponses;
-    
+    CircularBuffer<Request> m_asyncRequests;
+    CircularBuffer<Request> m_asyncResponses;
+    CircularBuffer<char> m_writeBuffer;
     CBufferSimple * m_event_buffer;
     
     int m_fd;
@@ -151,6 +155,8 @@ protected:
     t_CKUINT m_buf_size;
     
     t_CKINT m_flags;
+    t_CKINT m_iomode; // SYNC or ASYNC
+    t_CKBOOL m_eof;
 };
 
 t_CKBOOL init_class_serialio( Chuck_Env * env ); // added 1.3.1
