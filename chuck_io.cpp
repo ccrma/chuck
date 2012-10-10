@@ -406,6 +406,12 @@ Chuck_String * Chuck_IO_Serial::readLine()
 
 t_CKBOOL Chuck_IO_Serial::eof()
 {
+    if( !good() )
+    {
+        EM_log(CK_LOG_WARNING, "(Serial.eof): warning: file not open");
+        return FALSE;
+    }
+    
     if( MODE_SYNC )
         return (m_eof = feof( m_cfd ));
     else
@@ -416,6 +422,12 @@ t_CKBOOL Chuck_IO_Serial::eof()
 // writing
 void Chuck_IO_Serial::write( const std::string & val )
 {
+    if( !good() )
+    {
+        EM_log(CK_LOG_WARNING, "(Serial.write): warning: file not open");
+        return;
+    }
+    
     if( m_iomode == MODE_ASYNC )
     {
         start_read_thread();
@@ -448,6 +460,12 @@ void Chuck_IO_Serial::write( t_CKINT val )
 
 void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
 {
+    if( !good() )
+    {
+        EM_log(CK_LOG_WARNING, "(Serial.write): warning: file not open");
+        return;
+    }
+    
     if(!(size == 1 || size == 2 || size == 4 || size == 8))
     {
         EM_log(CK_LOG_WARNING, "(Serial.write): warning: invalid int size %li, ignoring write request", size);
@@ -509,6 +527,12 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
 
 void Chuck_IO_Serial::write( t_CKFLOAT val )
 {
+    if( !good() )
+    {
+        EM_log(CK_LOG_WARNING, "(Serial.write): warning: file not open");
+        return;
+    }
+    
     if( m_iomode == MODE_ASYNC )
     {
         start_read_thread();
@@ -565,6 +589,12 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
 
 void Chuck_IO_Serial::writeBytes( Chuck_Array4 * arr )
 {
+    if( !good() )
+    {
+        EM_log(CK_LOG_WARNING, "(Serial.writeBytes): warning: file not open");
+        return;
+    }
+    
     if( m_iomode == MODE_ASYNC )
     {
         start_read_thread();
@@ -614,6 +644,12 @@ void Chuck_IO_Serial::start_read_thread()
 
 t_CKBOOL Chuck_IO_Serial::readAsync( t_CKUINT type, t_CKUINT num )
 {
+    if( !good() )
+    {
+        EM_log(CK_LOG_WARNING, "(Serial.readAsync): warning: file not open");
+        return FALSE;
+    }
+    
     start_read_thread();
     
     Request read;
@@ -637,6 +673,12 @@ t_CKBOOL Chuck_IO_Serial::readAsync( t_CKUINT type, t_CKUINT num )
 
 Chuck_String * Chuck_IO_Serial::getLine()
 {
+    if( !good() )
+    {
+        EM_log(CK_LOG_WARNING, "(Serial.getLine): warning: file not open");
+        return NULL;
+    }
+    
     Request r;
     
     Chuck_String * str = NULL;
@@ -654,6 +696,12 @@ Chuck_String * Chuck_IO_Serial::getLine()
 
 t_CKINT Chuck_IO_Serial::getByte()
 {
+    if( !good() )
+    {
+        EM_log(CK_LOG_WARNING, "(Serial.getByte): warning: file not open");
+        return 0;
+    }
+    
     Request r;
     
     t_CKINT i = 0;
@@ -671,6 +719,12 @@ t_CKINT Chuck_IO_Serial::getByte()
 
 Chuck_Array * Chuck_IO_Serial::getBytes()
 {
+    if( !good() )
+    {
+        EM_log(CK_LOG_WARNING, "(Serial.getBytes): warning: file not open");
+        return NULL;
+    }
+    
     Request r;
     
     Chuck_Array * arr = NULL;
@@ -689,6 +743,12 @@ Chuck_Array * Chuck_IO_Serial::getBytes()
 
 Chuck_Array * Chuck_IO_Serial::getInts()
 {
+    if( !good() )
+    {
+        EM_log(CK_LOG_WARNING, "(Serial.getInts): warning: file not open");
+        return NULL;
+    }
+
     Request r;
     
     Chuck_Array * arr = NULL;
@@ -706,6 +766,12 @@ Chuck_Array * Chuck_IO_Serial::getInts()
 
 Chuck_Array * Chuck_IO_Serial::getFloats()
 {
+    if( !good() )
+    {
+        EM_log(CK_LOG_WARNING, "(Serial.getFloats): warning: file not open");
+        return NULL;
+    }
+
     Request r;
     
     Chuck_Array * arr = NULL;
@@ -723,7 +789,24 @@ Chuck_Array * Chuck_IO_Serial::getFloats()
 
 Chuck_String * Chuck_IO_Serial::getString()
 {
-    return NULL;
+    if( !good() )
+    {
+        EM_log(CK_LOG_WARNING, "(Serial.getString): warning: file not open");
+        return NULL;
+    }
+    
+    Request r;
+    
+    Chuck_String * str = NULL;
+    
+    m_asyncResponses.peek(r, 1);
+    if(r.m_type == TYPE_STRING && r.m_status == Request::STATUS_SUCCESS)
+    {
+        str = (Chuck_String *) r.m_val;
+        m_asyncResponses.get(r);
+    }
+    
+    return str;
 }
 
 
