@@ -25,7 +25,7 @@ CK_VERSION=1.3.0.0
 LEX=flex
 YACC=bison
 CC=gcc
-CXX=gcc
+CXX=g++
 LD=g++
 
 ifneq ($(CHUCK_STAT),)
