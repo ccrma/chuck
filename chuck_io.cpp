@@ -981,7 +981,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_binary(Chuck_IO_Serial::Request & r)
     if(size*num > m_buf_size)
     {
         int new_num = (int) floorf(((float)m_buf_size)/size);
-        EM_log(CK_LOG_WARNING, "SerialIO.read_cb: error: request size %i too large (%i bytes), truncating to %i",
+        EM_log(CK_LOG_WARNING, "(SerialIO.read_cb): error: request size %i too large (%i bytes), truncating to %i",
                num, size*num, new_num);
         num = new_num;
     }

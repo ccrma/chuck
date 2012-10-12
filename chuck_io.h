@@ -48,7 +48,7 @@ public:
     
 public:
     // meta
-    virtual t_CKBOOL open( const t_CKUINT i, t_CKINT flags, t_CKUINT baud = BAUD_9600 );
+    virtual t_CKBOOL open( const t_CKUINT i, t_CKINT flags, t_CKUINT baud = CK_BAUD_9600 );
     virtual t_CKBOOL open( const std::string & path, t_CKINT flags );
     
     virtual t_CKBOOL good();
