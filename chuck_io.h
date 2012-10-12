@@ -84,14 +84,14 @@ public:
     virtual Chuck_Array * getFloats();
     virtual Chuck_String * getString();
     
-    static const t_CKUINT TYPE_NONE = 0;
-    static const t_CKUINT TYPE_BYTE = 1;
-    static const t_CKUINT TYPE_WORD = 2;
-    static const t_CKUINT TYPE_INT = 3;
-    static const t_CKUINT TYPE_FLOAT = 4;
-    static const t_CKUINT TYPE_STRING = 5;
-    static const t_CKUINT TYPE_LINE = 6;
-    static const t_CKUINT TYPE_WRITE = 100;
+    static const t_CKUINT TYPE_NONE; 
+    static const t_CKUINT TYPE_BYTE;
+    static const t_CKUINT TYPE_WORD;
+    static const t_CKUINT TYPE_INT;
+    static const t_CKUINT TYPE_FLOAT;
+    static const t_CKUINT TYPE_STRING;
+    static const t_CKUINT TYPE_LINE;
+    static const t_CKUINT TYPE_WRITE;
     
     struct Request
     {
@@ -102,29 +102,29 @@ public:
         
         enum Status
         {
-            STATUS_PENDING,
-            STATUS_SUCCESS,
-            STATUS_FAILURE,
-            STATUS_INVALID,
-            STATUS_EOF,
+            RQ_STATUS_PENDING,
+            RQ_STATUS_SUCCESS,
+            RQ_STATUS_FAILURE,
+            RQ_STATUS_INVALID,
+            RQ_STATUS_EOF,
         };
     };
     
     virtual t_CKBOOL ready();
     
     // available baud rates
-    const static t_CKUINT BAUD_2400;
-    const static t_CKUINT BAUD_4800;
-    const static t_CKUINT BAUD_9600;
-    const static t_CKUINT BAUD_19200;
-    const static t_CKUINT BAUD_38400;
-    const static t_CKUINT BAUD_7200;
-    const static t_CKUINT BAUD_14400;
-    const static t_CKUINT BAUD_28800;
-    const static t_CKUINT BAUD_57600;
-    const static t_CKUINT BAUD_76800;
-    const static t_CKUINT BAUD_115200;
-    const static t_CKUINT BAUD_230400;
+    static const t_CKUINT CK_BAUD_2400;
+    static const t_CKUINT CK_BAUD_4800;
+    static const t_CKUINT CK_BAUD_9600;
+    static const t_CKUINT CK_BAUD_19200;
+    static const t_CKUINT CK_BAUD_38400;
+    static const t_CKUINT CK_BAUD_7200;
+    static const t_CKUINT CK_BAUD_14400;
+    static const t_CKUINT CK_BAUD_28800;
+    static const t_CKUINT CK_BAUD_57600;
+    static const t_CKUINT CK_BAUD_76800;
+    static const t_CKUINT CK_BAUD_115200;
+    static const t_CKUINT CK_BAUD_230400;
 
 protected:
     

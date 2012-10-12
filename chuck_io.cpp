@@ -39,42 +39,62 @@
 #include "chuck_globals.h"
 #include "chuck_vm.h"
 
+#ifndef __WINDOWS_DS__
 #include <poll.h>
-#include <fcntl.h>
 #include <termios.h>
+#else
+#include <io.h>
+#endif // __WINDOWS_DS__
+#include <fcntl.h>
 #include <math.h>
 
-#include <ext/stdio_filebuf.h>
 #include <iostream>
 #include <fstream>
 
 using namespace std;
 
+
+#ifdef __WINDOWS_DS__
+typedef BYTE uint8_t;
+typedef WORD uint16_t;
+typedef DWORD uint32_t;
+#endif 
+
+
 // available baud rates
-const t_CKUINT Chuck_IO_Serial::BAUD_2400   = 2400;
-const t_CKUINT Chuck_IO_Serial::BAUD_4800   = 4800;
-const t_CKUINT Chuck_IO_Serial::BAUD_9600   = 9600;
-const t_CKUINT Chuck_IO_Serial::BAUD_19200  = 19200;
-const t_CKUINT Chuck_IO_Serial::BAUD_38400  = 38400;
-const t_CKUINT Chuck_IO_Serial::BAUD_7200   = 7200;
-const t_CKUINT Chuck_IO_Serial::BAUD_14400  = 14400;
-const t_CKUINT Chuck_IO_Serial::BAUD_28800  = 28800;
-const t_CKUINT Chuck_IO_Serial::BAUD_57600  = 57600;
-const t_CKUINT Chuck_IO_Serial::BAUD_76800  = 76800;
-const t_CKUINT Chuck_IO_Serial::BAUD_115200 = 115200;
-const t_CKUINT Chuck_IO_Serial::BAUD_230400 = 230400;
+const t_CKUINT Chuck_IO_Serial::CK_BAUD_2400   = 2400;
+const t_CKUINT Chuck_IO_Serial::CK_BAUD_4800   = 4800;
+const t_CKUINT Chuck_IO_Serial::CK_BAUD_9600   = 9600;
+const t_CKUINT Chuck_IO_Serial::CK_BAUD_19200  = 19200;
+const t_CKUINT Chuck_IO_Serial::CK_BAUD_38400  = 38400;
+const t_CKUINT Chuck_IO_Serial::CK_BAUD_7200   = 7200;
+const t_CKUINT Chuck_IO_Serial::CK_BAUD_14400  = 14400;
+const t_CKUINT Chuck_IO_Serial::CK_BAUD_28800  = 28800;
+const t_CKUINT Chuck_IO_Serial::CK_BAUD_57600  = 57600;
+const t_CKUINT Chuck_IO_Serial::CK_BAUD_76800  = 76800;
+const t_CKUINT Chuck_IO_Serial::CK_BAUD_115200 = 115200;
+const t_CKUINT Chuck_IO_Serial::CK_BAUD_230400 = 230400;
 
-const t_CKUINT Chuck_IO_Serial::TYPE_BYTE;
-const t_CKUINT Chuck_IO_Serial::TYPE_WORD;
-const t_CKUINT Chuck_IO_Serial::TYPE_INT;
-const t_CKUINT Chuck_IO_Serial::TYPE_FLOAT;
-const t_CKUINT Chuck_IO_Serial::TYPE_STRING;
-const t_CKUINT Chuck_IO_Serial::TYPE_LINE;
+const t_CKUINT Chuck_IO_Serial::TYPE_NONE = 0;
+const t_CKUINT Chuck_IO_Serial::TYPE_BYTE = 1;
+const t_CKUINT Chuck_IO_Serial::TYPE_WORD = 2;
+const t_CKUINT Chuck_IO_Serial::TYPE_INT = 3;
+const t_CKUINT Chuck_IO_Serial::TYPE_FLOAT = 4;
+const t_CKUINT Chuck_IO_Serial::TYPE_STRING = 5;
+const t_CKUINT Chuck_IO_Serial::TYPE_LINE = 6;
+const t_CKUINT Chuck_IO_Serial::TYPE_WRITE = 100;
 
+//    static const t_CKUINT TYPE_NONE = 0;
+//    static const t_CKUINT TYPE_BYTE = 1;
+//    static const t_CKUINT TYPE_WORD = 2;
+//    static const t_CKUINT TYPE_INT = 3;
+//    static const t_CKUINT TYPE_FLOAT = 4;
+//    static const t_CKUINT TYPE_STRING = 5;
+//    static const t_CKUINT TYPE_LINE = 6;
+//    static const t_CKUINT TYPE_WRITE = 100;
 
 const t_CKUINT CHUCK_IO_DEFAULT_BUFSIZE = 1024;
 const char * CHUCK_IO_SCANF_STRING = "%1024s";
-
 
 void *Chuck_IO_Serial::shell_read_cb(void *_this)
 {
@@ -117,6 +137,7 @@ Chuck_IO_Serial::~Chuck_IO_Serial()
 
 t_CKBOOL Chuck_IO_Serial::ready()
 {
+#ifndef __WINDOWS_DS__
     struct pollfd pollfds;
     pollfds.fd = m_fd;
     pollfds.events = POLLIN;
@@ -126,6 +147,9 @@ t_CKBOOL Chuck_IO_Serial::ready()
     
     if( result > 0 && (pollfds.revents & POLLIN) ) return TRUE;
     else return FALSE; // TODO: error handling
+#else
+    return FALSE;
+#endif
 }
 
 t_CKBOOL Chuck_IO_Serial::open( const t_CKUINT i, t_CKINT flags, t_CKUINT baud )
@@ -201,7 +225,7 @@ t_CKBOOL Chuck_IO_Serial::open( const std::string & path, t_CKINT flags )
     m_fd = fd;
     
     // set default baud rate
-    setBaudRate(BAUD_9600);
+    setBaudRate(CK_BAUD_9600);
     
     m_cfd = fdopen(fd, "a+");
     m_iomode = MODE_ASYNC;
@@ -441,7 +465,7 @@ void Chuck_IO_Serial::write( const std::string & val )
         r.m_type = TYPE_WRITE;
         r.m_val = 0;
         r.m_num = 0;
-        r.m_status = Request::STATUS_PENDING;
+        r.m_status = Request::RQ_STATUS_PENDING;
         
         m_asyncRequests.put(r);
     }
@@ -478,8 +502,12 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
         
         if( m_flags & Chuck_IO_File::TYPE_ASCII )
         {
+#ifdef WIN32
+            _snprintf(m_buf, m_buf_size, "%li", val);
+            m_buf[m_buf_size - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
+#else
             snprintf(m_buf, m_buf_size, "%li", val);
-            
+#endif       
             int len = strlen(m_buf);
             for(int i = 0; i < len; i++)
                 // TODO: efficiency
@@ -489,7 +517,7 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
             r.m_type = TYPE_WRITE;
             r.m_val = 0;
             r.m_num = 0;
-            r.m_status = Request::STATUS_PENDING;
+            r.m_status = Request::RQ_STATUS_PENDING;
             
             m_asyncRequests.put(r);
         }
@@ -505,7 +533,7 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
             r.m_type = TYPE_WRITE;
             r.m_val = 0;
             r.m_num = 0;
-            r.m_status = Request::STATUS_PENDING;
+            r.m_status = Request::RQ_STATUS_PENDING;
             
             m_asyncRequests.put(r);
         }
@@ -539,7 +567,12 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
         
         if( m_flags & Chuck_IO_File::TYPE_ASCII )
         {
+#ifdef WIN32
+            _snprintf(m_buf, m_buf_size, "%f", val);
+            m_buf[m_buf_size - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
+#else
             snprintf(m_buf, m_buf_size, "%f", val);
+#endif       
             
             int len = strlen(m_buf);
             for(int i = 0; i < len; i++)
@@ -550,7 +583,7 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
             r.m_type = TYPE_WRITE;
             r.m_val = 0;
             r.m_num = 0;
-            r.m_status = Request::STATUS_PENDING;
+            r.m_status = Request::RQ_STATUS_PENDING;
             
             m_asyncRequests.put(r);
         }
@@ -566,7 +599,7 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
             r.m_type = TYPE_WRITE;
             r.m_val = 0;
             r.m_num = 0;
-            r.m_status = Request::STATUS_PENDING;
+            r.m_status = Request::RQ_STATUS_PENDING;
             
             m_asyncRequests.put(r);
         }
@@ -612,7 +645,7 @@ void Chuck_IO_Serial::writeBytes( Chuck_Array4 * arr )
         r.m_type = TYPE_WRITE;
         r.m_val = 0;
         r.m_num = 0;
-        r.m_status = Request::STATUS_PENDING;
+        r.m_status = Request::RQ_STATUS_PENDING;
         
         m_asyncRequests.put(r);
     }
@@ -634,8 +667,11 @@ void Chuck_IO_Serial::start_read_thread()
     if(m_read_thread == NULL)
     {
         m_read_thread = new XThread();
+#ifdef WIN32
+        m_read_thread->start((unsigned int (__stdcall *)(void*))shell_read_cb, this);
+#else
         m_read_thread->start(shell_read_cb, this);
-        
+#endif         
         assert(m_event_buffer == NULL);
         m_event_buffer = g_vm->create_event_buffer();
     }
@@ -656,7 +692,7 @@ t_CKBOOL Chuck_IO_Serial::readAsync( t_CKUINT type, t_CKUINT num )
     read.m_type = type;
     read.m_num = num;
     read.m_val = 0;
-    read.m_status = Request::STATUS_PENDING;
+    read.m_status = Request::RQ_STATUS_PENDING;
     
     if(!m_asyncRequests.atMaximum() )
     {
@@ -684,7 +720,7 @@ Chuck_String * Chuck_IO_Serial::getLine()
     Chuck_String * str = NULL;
 
     m_asyncResponses.peek(r, 1);
-    if(r.m_type == TYPE_LINE && r.m_status == Request::STATUS_SUCCESS)
+    if(r.m_type == TYPE_LINE && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         str = (Chuck_String *) r.m_val;
         m_asyncResponses.get(r);
@@ -708,7 +744,7 @@ t_CKINT Chuck_IO_Serial::getByte()
     
     m_asyncResponses.peek(r, 1);
     if(r.m_type == TYPE_BYTE && r.m_num == 1 &&
-       r.m_status == Request::STATUS_SUCCESS)
+       r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         i = (t_CKINT) r.m_val;
         m_asyncResponses.get(r);
@@ -731,7 +767,7 @@ Chuck_Array * Chuck_IO_Serial::getBytes()
     
     m_asyncResponses.peek(r, 1);
     if(r.m_type == TYPE_BYTE && r.m_num > 1 &&
-       r.m_status == Request::STATUS_SUCCESS)
+       r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
         initialize_object(arr, &t_array);
@@ -754,7 +790,7 @@ Chuck_Array * Chuck_IO_Serial::getInts()
     Chuck_Array * arr = NULL;
     
     m_asyncResponses.peek(r, 1);
-    if( r.m_type == TYPE_INT && r.m_status == Request::STATUS_SUCCESS)
+    if( r.m_type == TYPE_INT && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
         initialize_object(arr, &t_array);
@@ -777,7 +813,7 @@ Chuck_Array * Chuck_IO_Serial::getFloats()
     Chuck_Array * arr = NULL;
     
     m_asyncResponses.peek(r, 1);
-    if( r.m_type == TYPE_FLOAT && r.m_status == Request::STATUS_SUCCESS)
+    if( r.m_type == TYPE_FLOAT && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
         initialize_object(arr, &t_array);
@@ -800,7 +836,7 @@ Chuck_String * Chuck_IO_Serial::getString()
     Chuck_String * str = NULL;
     
     m_asyncResponses.peek(r, 1);
-    if(r.m_type == TYPE_STRING && r.m_status == Request::STATUS_SUCCESS)
+    if(r.m_type == TYPE_STRING && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         str = (Chuck_String *) r.m_val;
         m_asyncResponses.get(r);
@@ -828,12 +864,12 @@ t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
         str->str = std::string(m_buf);
         
         r.m_val = (t_CKUINT) str;
-        r.m_status = Chuck_IO_Serial::Request::STATUS_SUCCESS;
+        r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_SUCCESS;
     }
     else
     {
         r.m_val = 0;
-        r.m_status = Chuck_IO_Serial::Request::STATUS_FAILURE;
+        r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
     }
     
     return TRUE;
@@ -865,7 +901,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_ascii(Chuck_IO_Serial::Request & r)
     
     r.m_num = numRead;
     r.m_val = (t_CKUINT) array;
-    r.m_status = Request::STATUS_SUCCESS;
+    r.m_status = Request::RQ_STATUS_SUCCESS;
     
     return TRUE;
 }
@@ -891,7 +927,7 @@ t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Request & r)
     
     r.m_num = numRead;
     r.m_val = (t_CKUINT) array;
-    r.m_status = Request::STATUS_SUCCESS;
+    r.m_status = Request::RQ_STATUS_SUCCESS;
     
     return TRUE;
 }
@@ -929,7 +965,7 @@ t_CKBOOL Chuck_IO_Serial::handle_byte(Chuck_IO_Serial::Request & r)
     }
     
     r.m_val = val;
-    r.m_status = Request::STATUS_SUCCESS;
+    r.m_status = Request::RQ_STATUS_SUCCESS;
     
     return TRUE;
 }
@@ -964,7 +1000,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_binary(Chuck_IO_Serial::Request & r)
     val = (t_CKUINT) array;
     
     r.m_val = val;
-    r.m_status = Request::STATUS_SUCCESS;
+    r.m_status = Request::RQ_STATUS_SUCCESS;
     
     return TRUE;
 }
@@ -998,7 +1034,7 @@ t_CKBOOL Chuck_IO_Serial::handle_int_binary(Chuck_IO_Serial::Request & r)
     val = (t_CKUINT) array;
     
     r.m_val = val;
-    r.m_status = Request::STATUS_SUCCESS;
+    r.m_status = Request::RQ_STATUS_SUCCESS;
     
     return TRUE;
 }
@@ -1065,7 +1101,7 @@ void Chuck_IO_Serial::read_cb()
                             // this shouldnt happen
                             r.m_type = TYPE_NONE;
                             r.m_num = 0;
-                            r.m_status = Request::STATUS_INVALID;
+                            r.m_status = Request::RQ_STATUS_INVALID;
                             r.m_val = 0;
                             EM_log(CK_LOG_WARNING, "SerialIO.read_cb: error: invalid request");
                     }
@@ -1089,7 +1125,7 @@ void Chuck_IO_Serial::read_cb()
                             // this shouldnt happen
                             r.m_type = TYPE_NONE;
                             r.m_num = 0;
-                            r.m_status = Request::STATUS_INVALID;
+                            r.m_status = Request::RQ_STATUS_INVALID;
                             r.m_val = 0;
                             EM_log(CK_LOG_WARNING, "SerialIO.read_cb: error: invalid request");
                     }
@@ -1110,12 +1146,14 @@ void Chuck_IO_Serial::read_cb()
 
 t_CKBOOL Chuck_IO_Serial::setBaudRate( t_CKUINT rate )
 {
+#ifndef WIN32
     // set serial IO baud rate
     struct termios tios;
     tcgetattr(m_fd, &tios);
     cfsetispeed(&tios, rate);
     cfsetospeed(&tios, rate);
     tcsetattr(m_fd, TCSAFLUSH, &tios);
+#endif
     
     return TRUE;
 }
@@ -1123,12 +1161,15 @@ t_CKBOOL Chuck_IO_Serial::setBaudRate( t_CKUINT rate )
 
 t_CKUINT Chuck_IO_Serial::getBaudRate()
 {
+#ifndef WIN32
     // set serial IO baud rate
     struct termios tios;
     tcgetattr(m_fd, &tios);
     speed_t rate = cfgetispeed(&tios);
-    
     return rate;
+#else
+    return 0;
+#endif
 }
 
 
@@ -1243,18 +1284,18 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add baud rate constants
-    type_engine_import_svar(env, "int", "B2400",   TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_2400);
-    type_engine_import_svar(env, "int", "B4800",   TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_4800);
-    type_engine_import_svar(env, "int", "B9600",   TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_9600);
-    type_engine_import_svar(env, "int", "B19200",  TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_19200);
-    type_engine_import_svar(env, "int", "B38400",  TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_38400);
-    type_engine_import_svar(env, "int", "B7200",   TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_7200);
-    type_engine_import_svar(env, "int", "B14400",  TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_14400);
-    type_engine_import_svar(env, "int", "B28800",  TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_28800);
-    type_engine_import_svar(env, "int", "B57600",  TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_57600);
-    type_engine_import_svar(env, "int", "B76800",  TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_76800);
-    type_engine_import_svar(env, "int", "B115200", TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_115200);
-    type_engine_import_svar(env, "int", "B230400", TRUE, (t_CKUINT) &Chuck_IO_Serial::BAUD_230400);
+    type_engine_import_svar(env, "int", "B2400",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_2400);
+    type_engine_import_svar(env, "int", "B4800",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_4800);
+    type_engine_import_svar(env, "int", "B9600",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_9600);
+    type_engine_import_svar(env, "int", "B19200",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_19200);
+    type_engine_import_svar(env, "int", "B38400",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_38400);
+    type_engine_import_svar(env, "int", "B7200",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_7200);
+    type_engine_import_svar(env, "int", "B14400",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_14400);
+    type_engine_import_svar(env, "int", "B28800",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_28800);
+    type_engine_import_svar(env, "int", "B57600",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_57600);
+    type_engine_import_svar(env, "int", "B76800",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_76800);
+    type_engine_import_svar(env, "int", "B115200", TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_115200);
+    type_engine_import_svar(env, "int", "B230400", TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_230400);
 
     type_engine_import_svar(env, "int", "BINARY", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_BINARY);
     type_engine_import_svar(env, "int", "ASCII", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_ASCII);

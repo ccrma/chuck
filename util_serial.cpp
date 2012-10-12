@@ -30,6 +30,7 @@
 // date: Summer 2012
 //-----------------------------------------------------------------------------
 
+#include "chuck_def.h"
 #include "util_serial.h"
 #include "chuck_errmsg.h"
 
@@ -172,6 +173,15 @@ error:
     devices.clear();
     
 cleanup:
+    return devices;
+}
+
+#elif defined(__WINDOWS_DS__)
+
+vector<string> SerialIOManager::availableSerialDevices()
+{
+    vector<string> devices;
+
     return devices;
 }
 
