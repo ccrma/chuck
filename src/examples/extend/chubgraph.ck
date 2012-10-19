@@ -6,7 +6,7 @@ class MyString extends Chubgraph
     // karplus + strong plucked string filter
     // Ge Wang (gewang@cs.princeton.edu)
     
-    Noise imp => OneZero lowpass => dac;
+    Noise imp => OneZero lowpass => outlet;
     lowpass => DelayA delay => lowpass;
     
     .99999 => float R;
