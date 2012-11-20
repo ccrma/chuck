@@ -79,6 +79,7 @@ static void handle_overflow( Chuck_VM_Shred * shred, Chuck_VM * vm )
 }
 
 
+#pragma mark === Integer Arithmetic ===
 
 
 //-----------------------------------------------------------------------------
@@ -308,6 +309,8 @@ void Chuck_Instr_Divide_int_Reverse::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 
 
 
+#pragma mark === Float Arithmetic ===
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -420,6 +423,8 @@ void Chuck_Instr_Mod_double_Reverse::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 }
 
 
+
+#pragma mark === Complex Arithmetic ===
 
 
 //-----------------------------------------------------------------------------
@@ -674,6 +679,7 @@ void Chuck_Instr_Divide_polar_Reverse::execute( Chuck_VM * vm, Chuck_VM_Shred * 
 }
 
 
+#pragma mark === Arithmetic Assignment ===
 
 
 //-----------------------------------------------------------------------------
@@ -1049,6 +1055,8 @@ void Chuck_Instr_Divide_polar_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * s
 
 
 
+#pragma mark === String Arithmetic ===
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1421,6 +1429,8 @@ done:
 
 
 
+#pragma mark === Stack Operations ===
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1747,6 +1757,9 @@ void Chuck_Instr_Reg_Pop_Word4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 
 
+#pragma mark === Memory Operations ===
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1851,6 +1864,8 @@ void Chuck_Instr_Mem_Pop_Word3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 }
 
 
+
+#pragma mark === Branching ===
 
 
 //-----------------------------------------------------------------------------
@@ -2120,6 +2135,8 @@ void Chuck_Instr_Branch_Neq_int_IO_good::execute( Chuck_VM * vm, Chuck_VM_Shred 
 
 
 
+#pragma mark === Bitwise Arithmetic ===
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -2292,6 +2309,8 @@ void Chuck_Instr_Binary_Shift_Left_Assign::execute( Chuck_VM * vm, Chuck_VM_Shre
 }
 
 
+
+#pragma mark === Comparison ===
 
 
 //-----------------------------------------------------------------------------
@@ -2467,6 +2486,8 @@ void Chuck_Instr_Neq_double::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 
 
+#pragma mark === Boolean Arithmetic ===
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -2494,6 +2515,8 @@ void Chuck_Instr_Or::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 }
 
 
+
+#pragma mark === Miscellany ===
 
 
 //-----------------------------------------------------------------------------
@@ -2532,6 +2555,8 @@ void Chuck_Instr_EOC::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 }
 
 
+
+#pragma mark === Allocation ===
 
 
 //-----------------------------------------------------------------------------
@@ -2648,6 +2673,8 @@ void Chuck_Instr_Alloc_Member_Word4::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 }
 
 
+
+#pragma mark === Object Initialization/Construction ===
 
 
 static Chuck_Instr_Func_Call g_func_call;
@@ -2996,6 +3023,8 @@ void Chuck_Instr_Pre_Ctor_Array_Post::execute( Chuck_VM * vm, Chuck_VM_Shred * s
 
 
 
+#pragma mark === Assignment ===
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -3078,6 +3107,8 @@ void Chuck_Instr_Assign_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // release
     if( done ) done->release();
 
+//    fprintf(stderr, "obj: 0x%08x\n", *obj);
+
     // copy
     // memcpy( (void *)*(reg_sp+1), *obj, sizeof(t_CKUINT) );
     // push the reference value to reg stack
@@ -3136,6 +3167,8 @@ void Chuck_Instr_Assign_String::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     push_( reg_sp, (t_CKUINT)*rhs_ptr );
 }
 
+
+#pragma mark === Reference Counting ===
 
 
 
@@ -3258,6 +3291,9 @@ void Chuck_Instr_Release_Object2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
     }
 }
 
+
+
+#pragma mark === Function Calls ===
 
 
 
@@ -3665,6 +3701,7 @@ void Chuck_Instr_Spork::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 
 
+#pragma mark === Time Advance ===
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -3739,6 +3776,8 @@ done:
 }
 
 
+
+#pragma mark === Arrays ===
 
 
 //-----------------------------------------------------------------------------
@@ -4649,6 +4688,7 @@ done:
 
 
 
+#pragma mark === Dot Access ===
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -4907,6 +4947,8 @@ void Chuck_Instr_Dot_Cmp_Second::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
 
 
+#pragma mark === Casting ===
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -5141,6 +5183,8 @@ done:
 
 
 
+#pragma mark === Builtins ===
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -5205,7 +5249,7 @@ void Chuck_Instr_Cherr::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 }
 
 
-
+#pragma mark === UGens ===
 
 //-----------------------------------------------------------------------------
 // name: Chuck_Instr_UGen_Link()
@@ -5395,6 +5439,7 @@ void Chuck_Instr_Init_Loop_Counter::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 }
 
 
+#pragma mark === IO ===
 
 
 //-----------------------------------------------------------------------------
@@ -5497,6 +5542,10 @@ void Chuck_Instr_IO_in_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     Chuck_IO ** ppIO = (Chuck_IO **)sp;
     // the string
     Chuck_String *** ppStr = (Chuck_String ***)(sp+1);
+    
+//    fprintf(stderr, "ppIO: 0x%08x\n", ppIO);
+//    fprintf(stderr, "ppStr: 0x%08x\n", ppStr);
+//    fprintf(stderr, "*ppStr: 0x%08x\n", *ppStr);
     
     // check it
     if( *(ppIO) == NULL || **(ppStr) == NULL ) goto null_pointer;
