@@ -7,10 +7,11 @@ import subprocess
 failures = 0
 
 def handle_directory(dir, exe):
-    for dirname, dirnames, filenames in os.walk(dir):
-        for filename in filenames:
+    print ">>> Performing tests in %s <<<" % dir
+    for filename in os.listdir(dir):
+        path = os.path.join(dir, filename)
+        if os.path.isfile(path):
             if os.path.splitext(filename)[1] == ".ck":
-                path = os.path.join(dir, filename)
                 print "> %s %s" % (exe, path)
                 try:
                     result = subprocess.check_output([exe, "%s" % path], stderr=subprocess.STDOUT)
@@ -18,9 +19,8 @@ def handle_directory(dir, exe):
                         fail(filename, result)
                 except subprocess.CalledProcessError as e:
                     fail(filename, e.output)
-            
-        for subdirname in dirnames:
-            handle_directory(os.path.join(dirname, subdirname), exe)
+        elif os.path.isdir(path) and filename[0] != '.':
+            handle_directory(path, exe)
 
 def fail(testname, output):
     global failures
