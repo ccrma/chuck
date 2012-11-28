@@ -5541,17 +5541,17 @@ void Chuck_Instr_IO_in_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // the IO
     Chuck_IO ** ppIO = (Chuck_IO **)sp;
     // the string
-    Chuck_String *** ppStr = (Chuck_String ***)(sp+1);
+    Chuck_String ** ppStr = (Chuck_String **)(sp+1);
     
 //    fprintf(stderr, "ppIO: 0x%08x\n", ppIO);
 //    fprintf(stderr, "ppStr: 0x%08x\n", ppStr);
 //    fprintf(stderr, "*ppStr: 0x%08x\n", *ppStr);
     
     // check it
-    if( *(ppIO) == NULL || **(ppStr) == NULL ) goto null_pointer;
+    if( *(ppIO) == NULL || *(ppStr) == NULL ) goto null_pointer;
     
     // read into the variable
-    (*ppIO)->readString( (**ppStr)->str );
+    (*ppIO)->readString( (*ppStr)->str );
     
     // push the IO
     push_( sp, (t_CKINT)(*(ppIO)) );

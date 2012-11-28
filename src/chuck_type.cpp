@@ -1806,11 +1806,15 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
         }
 
         // check right
-        if( isa( right, &t_int ) || isa( right, &t_float ) ||
-            isa( right, &t_string ) )
+        if( isa( right, &t_int ) || isa( right, &t_float ) )
         {
             // emit ref
             rhs->emit_var = TRUE;
+            return left;
+        }
+        
+        if( isa( right, &t_string ) )
+        {
             return left;
         }
     }
