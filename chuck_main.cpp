@@ -443,7 +443,7 @@ static void usage()
                 long dev = strtol(str, &endptr, 10);
                 
                 // check if arg was a number (added 1.3.0.0)
-                if( endptr != NULL && *endptr != '\0' )
+                if( endptr != NULL && *endptr == '\0' )
                 {
                     // successful conversion to # -- clear adc_name
                     adc = dev;
