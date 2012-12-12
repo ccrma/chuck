@@ -1,6 +1,7 @@
 1.3.1.4
 ---
   - (fixed) --adc:<N> now works as expected
+  - (fixed) FileIO => string bug
 
 1.3.1.3
 ---
