@@ -10,11 +10,11 @@ Moog moog => dac;
 while( true )
 {
     // ding!
-    Std.rand2f( 0, 128 ) => float filterQ;
-    Std.rand2f( 0, 128 ) => float filterSweep;
-    Std.rand2f( 0, 128 ) => float vol;
-    Std.rand2f( 0, 128 ) => float vibratoFreq;
-    Std.rand2f( 0, 128 ) => float vibratoGain;
+    Math.random2f( 0, 128 ) => float filterQ;
+    Math.random2f( 0, 128 ) => float filterSweep;
+    Math.random2f( 0, 128 ) => float vol;
+    Math.random2f( 0, 128 ) => float vibratoFreq;
+    Math.random2f( 0, 128 ) => float vibratoGain;
 
     moog.controlChange( 2, filterQ);
     moog.controlChange( 4, filterSweep);
@@ -32,8 +32,8 @@ while( true )
     <<< "vibrato gain:", moog.vibratoGain() >>>;
 
     // set freq
-    scale[Std.rand2(0,scale.cap()-1)] => int winner;
-    57 + Std.rand2(0,2)*12 + winner => Std.mtof => moog.freq;
+    scale[Math.random2(0,scale.cap()-1)] => int winner;
+    57 + Math.random2(0,2)*12 + winner => Std.mtof => moog.freq;
     // go
     .8 => moog.noteOn;
 

@@ -20,7 +20,7 @@ endif
 .PHONY: osx linux-oss linux-jack linux-alsa win32 osx-rl
 osx linux-oss linux-jack linux-alsa win32 osx-rl: chuck
 
-CK_VERSION=1.3.0.0
+CK_VERSION=1.3.2.0-beta-1
 
 LEX=flex
 YACC=bison
@@ -36,6 +36,10 @@ ifneq ($(CHUCK_DEBUG),)
 CFLAGS+= -g
 else
 CFLAGS+= -O3
+endif
+
+ifneq ($(USE_64_BIT_SAMPLE),)
+CFLAGS+= -D__CHUCK_USE_64_BIT_SAMPLE__
 endif
 
 ifneq ($(CHUCK_STRICT),)
@@ -85,7 +89,14 @@ COBJS=$(CSRCS:.c=.o)
 CXXOBJS=$(CXXSRCS:.cpp=.o)
 OBJS=$(COBJS) $(CXXOBJS)
 
+# remove -arch options
 CFLAGSDEPEND?=$(CFLAGS)
+
+ifneq (,$(ARCHS))
+ARCHOPTS=$(addprefix -arch ,$(ARCHS))
+else
+ARCHOPTS=
+endif
 
 NOTES=AUTHORS DEVELOPER PROGRAMMER README TODO COPYING INSTALL QUICKSTART \
  THANKS VERSIONS
@@ -99,7 +110,7 @@ CK_SVN=https://chuck-dev.stanford.edu/svn/chuck/
 -include $(OBJS:.o=.d)
 
 chuck: $(OBJS)
-	$(LD) -o chuck $(OBJS) $(LDFLAGS)
+	$(LD) -o chuck $(OBJS) $(LDFLAGS) $(ARCHOPTS)
 
 chuck.tab.c chuck.tab.h: chuck.y
 	$(YACC) -dv -b chuck chuck.y
@@ -108,15 +119,15 @@ chuck.yy.c: chuck.lex
 	$(LEX) -ochuck.yy.c chuck.lex
 
 $(COBJS): %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CC) -MM $(CFLAGSDEPEND) $< > $*.d
 
 $(CXXOBJS): %.o: %.cpp
-	$(CXX) $(CFLAGS) -c $< -o $@
+	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM $(CFLAGSDEPEND) $< > $*.d
 
 clean: 
-	@rm -f $(wildcard chuck chuck.exe) $(OBJS) $(patsubst %.o,%.d,$(OBJS)) \
+	@rm -f $(wildcard chuck chuck.exe) *.o *.d $(OBJS) $(patsubst %.o,%.d,$(OBJS)) \
 	*~ chuck.output chuck.tab.h chuck.tab.c chuck.yy.c $(DIST_DIR){,.tgz,.zip}
 	
 

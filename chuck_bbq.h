@@ -89,15 +89,17 @@ public:
                        DWORD__ num_adc_channels,
                        DWORD__ sampling_rate,
                        DWORD__ bps,
-                       DWORD__ buffer_size = BUFFER_SIZE_DEFAULT,
-                       DWORD__ num_buffers = NUM_BUFFERS_DEFAULT,
-                       DWORD__ dac = 0,
-                       DWORD__ adc = 0,
-                       DWORD__ block = TRUE,
-                       Chuck_VM * vm_ref = NULL,
-                       BOOL__  rt_audio = TRUE,
+                       DWORD__ buffer_size,
+                       DWORD__ num_buffers,
+                       DWORD__ dac,
+                       DWORD__ adc,
+                       DWORD__ block,
+                       Chuck_VM * vm_ref,
+                       BOOL__ rt_audio,
                        void * callback = NULL,
-                       void * data = NULL );
+                       void * data = NULL,
+                       // force_srate added 1.3.1.2
+                       BOOL__ force_srate = FALSE );
     void set_srate( DWORD__ srate );
     void set_bufsize( DWORD__ bufsize );
     void set_numbufs( DWORD__ numbufs );

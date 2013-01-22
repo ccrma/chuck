@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------------
+    /*----------------------------------------------------------------------------
     ChucK Concurrent, On-the-fly Audio Programming Language
       Compiler and Virtual Machine
 
@@ -53,6 +53,7 @@
 #include "util_string.h"
 #include "util_thread.h"
 #include "util_network.h"
+#include "ulib_machine.h"
 #include "hidio_sdl.h"
 
 #include <signal.h>
@@ -218,26 +219,33 @@ static void version()
 {
     fprintf( stderr, "\n" );
     fprintf( stderr, "chuck version: %s\n", CK_VERSION );
+
+    // platform string
+    string platform = "";
+
 #if defined(__PLATFORM_WIN32__)
-    fprintf( stderr, "   exe target: microsoft win32\n" );
+    platform = "microsoft win32";
 #elif defined(__WINDOWS_DS__)
-    fprintf( stderr, "   exe target: microsoft win32 + cygwin\n" );
+    platform = "microsoft win32 + cygwin";
 #elif defined(__LINUX_ALSA__)
-    fprintf( stderr, "   exe target: linux (alsa)\n" );
+    platform = "linux (alsa)";
 #elif defined(__LINUX_OSS__)
-    fprintf( stderr, "   exe target: linux (oss)\n" );
+    platform = "linux (oss)";
 #elif defined(__LINUX_JACK__)
-    fprintf( stderr, "   exe target: linux (jack)\n" );
+    platform = "linux (jack)";
 #elif defined(__MACOSX_UB__)
-    fprintf( stderr, "   exe target: mac os x : universal binary\n" );
+    platform = "mac os x : universal binary";
 #elif defined(__MACOSX_CORE__) && defined(__LITTLE_ENDIAN__)
-    fprintf( stderr, "   exe target: mac os x : intel\n" );
+    platform = "mac os x : intel";
 #elif defined(__MACOSX_CORE__)
-    fprintf( stderr, "   exe target: mac os x : powerpc\n" );
+    platform = "mac os x : powerpc";
 #else
-    fprintf( stderr, "   exe target: uh... unknown\n" );
+    platform = "uh... unknown";
 #endif
-    fprintf( stderr, "   http://chuck.cs.princeton.edu/\n\n" );
+    
+    fprintf( stderr, "   %s : %ld-bit\n", platform.c_str(), machine_intsize() );
+    fprintf( stderr, "   http://chuck.cs.princeton.edu/\n" );
+    fprintf( stderr, "   http://chuck.stanford.edu/\n\n" );
 }
 
 
@@ -283,6 +291,7 @@ static void usage()
     t_CKBOOL enable_audio = TRUE;
     t_CKBOOL vm_halt = TRUE;
     t_CKUINT srate = SAMPLING_RATE_DEFAULT;
+    t_CKBOOL force_srate = FALSE; // added 1.3.1.2
     t_CKUINT buffer_size = BUFFER_SIZE_DEFAULT;
     t_CKUINT num_buffers = NUM_BUFFERS_DEFAULT;
     t_CKUINT dac = 0;
@@ -379,11 +388,11 @@ static void usage()
             else if( !strcmp(argv[i], "--empty") )
                 no_vm = TRUE;
             else if( !strncmp(argv[i], "--srate:", 8) ) // (added 1.3.0.0)
-                srate = atoi( argv[i]+8 ) > 0 ? atoi( argv[i]+8 ) : srate;
+            {   srate = atoi( argv[i]+8 ) > 0 ? atoi( argv[i]+8 ) : srate; force_srate = TRUE; }
             else if( !strncmp(argv[i], "--srate", 7) )
-                srate = atoi( argv[i]+7 ) > 0 ? atoi( argv[i]+7 ) : srate;
+            {   srate = atoi( argv[i]+7 ) > 0 ? atoi( argv[i]+7 ) : srate; force_srate = TRUE; }
             else if( !strncmp(argv[i], "-r", 2) )
-                srate = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : srate;
+            {   srate = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : srate; force_srate = TRUE; }
             else if( !strncmp(argv[i], "--bufsize:", 10) ) // (added 1.3.0.0)
                 buffer_size = atoi( argv[i]+10 ) > 0 ? atoi( argv[i]+10 ) : buffer_size;
             else if( !strncmp(argv[i], "--bufsize", 9) )
@@ -434,7 +443,7 @@ static void usage()
                 long dev = strtol(str, &endptr, 10);
                 
                 // check if arg was a number (added 1.3.0.0)
-                if( endptr != NULL && *endptr != '\0' )
+                if( endptr != NULL && *endptr == '\0' )
                 {
                     // successful conversion to # -- clear adc_name
                     adc = dev;
@@ -687,7 +696,8 @@ static void usage()
         }
         else
         {
-            fprintf( stderr, "[chuck]: unable to find dac '%s'\n", dac_name.c_str() );
+            fprintf( stderr, "[chuck]: unable to find dac '%s'...\n", dac_name.c_str() );
+            fprintf( stderr, "[chuck]: | (try --probe to enumerate audio device info)\n" );
             exit( 1 );
         }
     }
@@ -703,7 +713,8 @@ static void usage()
         }
         else
         {
-            fprintf( stderr, "[chuck]: unable to find adc '%s'\n", adc_name.c_str() );
+            fprintf( stderr, "[chuck]: unable to find adc '%s'...\n", adc_name.c_str() );
+            fprintf( stderr, "[chuck]: | (try --probe to enumerate audio device info)\n" );
             exit( 1 );
         }
     }
@@ -712,7 +723,7 @@ static void usage()
     vm = g_vm = new Chuck_VM;
     if( !vm->initialize( enable_audio, vm_halt, srate, buffer_size,
                          num_buffers, dac, adc, dac_chans, adc_chans,
-                         block, adaptive_size ) )
+                         block, adaptive_size, force_srate ) )
     {
         fprintf( stderr, "[chuck]: %s\n", vm->last_error() );
         exit( 1 );

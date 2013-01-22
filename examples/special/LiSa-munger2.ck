@@ -56,8 +56,8 @@ while(true)
     // toss some grains
     while( now < later )
     {
-        Std.rand2f(0.5, 2.5) => float newrate;
-        Std.rand2f(250, 600) * 1::ms => dur newdur;
+        Math.random2f(0.5, 2.5) => float newrate;
+        Math.random2f(250, 600) * 1::ms => dur newdur;
 
         // grain
         spork ~ getgrain(playbuf, newdur, 20::ms, 20::ms, newrate);
@@ -85,7 +85,7 @@ fun void getgrain( int which, dur grainlen, dur rampup, dur rampdown, float rate
     if(newvoice > -1)
     {
         lisa[which].rate(newvoice, rate);
-        lisa[which].playPos(newvoice, Std.rand2f(0., 1.) * bufferlen);
+        lisa[which].playPos(newvoice, Math.random2f(0,1) * bufferlen);
         lisa[which].rampUp(newvoice, rampup);
         (grainlen - (rampup + rampdown)) => now;
         lisa[which].rampDown(newvoice, rampdown);

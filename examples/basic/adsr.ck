@@ -11,7 +11,7 @@ e.set( 10::ms, 8::ms, .5, 500::ms );
 while( true )
 {
     // choose freq
-    Std.rand2( 20, 120 ) => Std.mtof => s.freq;
+    Math.random2( 20, 120 ) => Std.mtof => s.freq;
 
     // key on - start attack
     e.keyOn();

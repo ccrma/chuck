@@ -47,7 +47,7 @@ fun void play_with_dither( UGen src, dur T, int qbits, int do_dither )
         src.last() => sample;
         // quantize it
         if( do_dither ) // dither
-            ((sample + Std.rand2f(0,Math.pow(2,-qbits))) * max) $ int => quantized;
+            ((sample + Math.random2f(0,Math.pow(2,-qbits))) * max) $ int => quantized;
         else // no dither
             (sample * max) $ int => quantized;
         

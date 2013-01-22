@@ -1882,6 +1882,11 @@ CK_DLL_MFUN( ugen_op )
     // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_op( ugen->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
+    // added 1.3.0.2 -- apply op to subgraph outlet
+    if( ugen->inlet() )
+        ugen->inlet()->m_op = op;
+    if( ugen->outlet() )
+        ugen->outlet()->m_op = op;
 }
 
 CK_DLL_MFUN( ugen_cget_op )
@@ -1897,7 +1902,11 @@ CK_DLL_MFUN( ugen_last )
     // get as ugen
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     // set return
-    RETURN->v_float = (t_CKFLOAT)ugen->m_last;
+    // added 1.3.0.2 -- ugen outlet() last if subgraph
+    if( ugen->outlet() )
+        RETURN->v_float = (t_CKFLOAT) ugen->outlet()->m_last;
+    else
+        RETURN->v_float = (t_CKFLOAT)ugen->m_last;
 }
 
 CK_DLL_MFUN( ugen_next )
@@ -1917,6 +1926,12 @@ CK_DLL_MFUN( ugen_next )
     // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_next( ugen->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
+    // added 1.3.0.2 -- apply op to subgraph outlet
+    if( ugen->outlet() )
+    {
+        ugen->outlet()->m_next = (SAMPLE) next;
+        ugen->outlet()->m_use_next = TRUE;
+    }
 }
 
 CK_DLL_MFUN( ugen_cget_next )
@@ -1943,6 +1958,9 @@ CK_DLL_MFUN( ugen_gain )
     // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_gain( ugen->m_multi_chan[i], ARGS, &ret, SHRED, Chuck_DL_Api::Api::instance() );
+    // added 1.3.0.2 -- apply gain to subgraph outlet
+    if( ugen->outlet() )
+        ugen->outlet()->m_gain = (SAMPLE) gain;
 }
 
 CK_DLL_MFUN( ugen_cget_gain )
@@ -3096,12 +3114,12 @@ CK_DLL_MFUN( array_erase )
 CK_DLL_MFUN( array_push_back )
 {
     Chuck_Array * array = (Chuck_Array *)SELF;
-    // TODO: make this safe!
-    if( array->data_type_size() == CHUCK_ARRAY4_DATASIZE )
+    // ISSUE: 64-bit (fixed 1.3.1.0 using data kind)
+    if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND )
         RETURN->v_int = ((Chuck_Array4 *)array)->push_back( GET_NEXT_UINT( ARGS ) );
-    else if( array->data_type_size() == CHUCK_ARRAY8_DATASIZE )
+    else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
         RETURN->v_int = ((Chuck_Array8 *)array)->push_back( GET_NEXT_FLOAT( ARGS ) );
-    else if( array->data_type_size() == CHUCK_ARRAY16_DATASIZE )
+    else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
         RETURN->v_int = ((Chuck_Array16 *)array)->push_back( GET_NEXT_COMPLEX( ARGS ) );
     else
         assert( FALSE );
@@ -3111,12 +3129,12 @@ CK_DLL_MFUN( array_push_back )
 CK_DLL_MFUN( array_pop_back )
 {
     Chuck_Array * array = (Chuck_Array *)SELF;
-    // TODO: make this safe!
-    if( array->data_type_size() == CHUCK_ARRAY4_DATASIZE )
+    // ISSUE: 64-bit (fixed 1.3.1.0 using data kind)
+    if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND )
         RETURN->v_int = ((Chuck_Array4 *)array)->pop_back( );
-    else if( array->data_type_size() == CHUCK_ARRAY8_DATASIZE )
+    else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
         RETURN->v_int = ((Chuck_Array8 *)array)->pop_back( );
-    else if( array->data_type_size() == CHUCK_ARRAY16_DATASIZE )
+    else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
         RETURN->v_int = ((Chuck_Array16 *)array)->pop_back( );
     else
         assert( FALSE );

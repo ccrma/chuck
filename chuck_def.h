@@ -45,9 +45,8 @@
 #define t_CKDOUBLE                  double
 #define t_CKSINGLE                  float
 #define t_CKINT                     long
-#define t_CKDWORD                   unsigned long
-#define t_CKUINT                    t_CKDWORD
-#define t_CKBOOL                    t_CKDWORD
+#define t_CKUINT                    unsigned t_CKINT
+#define t_CKBOOL                    unsigned t_CKINT
 #define t_CKBYTE                    unsigned char
 #define t_CKVOID                    void
 #define t_CKVOIDPTR                 void *
@@ -58,29 +57,36 @@ typedef struct { t_CKFLOAT re ; t_CKFLOAT im ; } t_CKCOMPLEX;
 typedef struct { t_CKFLOAT modulus ; t_CKFLOAT phase ; } t_CKPOLAR;
 
 // size
-#define sz_TIME                     sizeof(double)
-#define sz_DUR                      sizeof(double)
-#define sz_FLOAT                    sizeof(double)
-#define sz_DOUBLE                   sizeof(double)
-#define sz_SINGLE                   sizeof(float)
-#define sz_INT                      sizeof(long)
-#define sz_DWORD                    sizeof(unsigned long)
-#define sz_UINT                     sizeof(t_CKDWORD)
-#define sz_BOOL                     sizeof(t_CKDWORD)
-#define sz_BYTE                     sizeof(unsigned char)
-#define sz_VOID                     0
-#define sz_VOIDPTR                  sizeof(void *)
+#define sz_TIME                     sizeof(t_CKTIME)
+#define sz_DUR                      sizeof(t_CKDUR)
+#define sz_FLOAT                    sizeof(t_CKFLOAT)
+#define sz_DOUBLE                   sizeof(t_CKDOUBLE)
+#define sz_SINGLE                   sizeof(t_CKSINGLE)
+#define sz_INT                      sizeof(t_CKINT)
+#define sz_UINT                     sizeof(t_CKUINT)
+#define sz_BOOL                     sizeof(t_CKBOOL)
+#define sz_BYTE                     sizeof(t_CKBYTE)
+#define sz_VOIDPTR                  sizeof(t_CKVOIDPTR)
 #define sz_COMPLEX                  sizeof(t_CKCOMPLEX)
 #define sz_POLAR                    sizeof(t_CKPOLAR)
+#define sz_VOID                     0
+#define sz_WORD                     4
+
+// kinds (added 1.3.1.0 to faciliate 64-bit support)
+// to differentiate in case int and float have same size
+#define kindof_VOID                0
+#define kindof_INT                 1
+#define kindof_FLOAT               2
+#define kindof_COMPLEX             3
 
 typedef char *                      c_str;
 typedef const char *                c_constr;
 
-// double
-// #define CK_S_DOUBLE
+// use 64-bit samples in the audio engine
+// #define __CHUCK_USE_64_BIT_SAMPLE__
 
 // sample
-#ifdef CK_S_DOUBLE
+#ifdef __CHUCK_USE_64_BIT_SAMPLE__
 #define SAMPLE                      double
 #define SILENCE                     0.0
 #define CK_DDN                      CK_DDN_DOUBLE

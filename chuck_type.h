@@ -737,6 +737,8 @@ t_CKTYPE type_engine_check_exp( Chuck_Env * env, a_Exp exp );
 t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const std::string & nspc );
 // second version: use type_engine functions instead of constructing AST (added 1.3.0.0)
 t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll, const std::string & dest );
+// import class based on Chuck_DL_Class (added 1.3.2.0)
+t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c );
 // type equality
 t_CKBOOL operator ==( const Chuck_Type & lhs, const Chuck_Type & rhs );
 t_CKBOOL operator !=( const Chuck_Type & lhs, const Chuck_Type & rhs );
@@ -746,6 +748,8 @@ t_CKBOOL isa( Chuck_Type * lhs, Chuck_Type * rhs );
 t_CKBOOL isprim( Chuck_Type * type );
 t_CKBOOL isobj( Chuck_Type * type );
 t_CKBOOL isfunc( Chuck_Type * type );
+t_CKBOOL iskindofint( Chuck_Type * type ); // added 1.3.1.0: this includes int + pointers
+t_CKUINT getkindof( Chuck_Type * type ); // added 1.3.1.0: to get the kindof a type
 
 // import
 Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type, 

@@ -24,8 +24,8 @@ new Event @=> Smacking.the_event;
 // recover time (after smack detection)
 .10::second => dur recover_time;
 
-// instantiate a HidIn object
-HidIn hi;
+// instantiate a Hid object
+Hid hi;
 HidMsg msg;
 
 // open tilt sensor

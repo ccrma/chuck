@@ -140,10 +140,15 @@ void EM_error( int pos, const char * message, ... )
     }
     fprintf(stderr, " " );
     strcat( g_lasterror, " " );
+    
     va_start(ap, message);
     vfprintf(stderr, message, ap);
+    va_end(ap);
+
+    va_start(ap, message);
     vsprintf( g_buffer, message, ap );
     va_end(ap);
+    
     fprintf(stderr, "\n");
     fflush( stderr );
     strcat( g_lasterror, g_buffer );
@@ -170,6 +175,9 @@ void EM_error2( int line, const char * message, ... )
 
     va_start( ap, message );
     vfprintf( stderr, message, ap );
+    va_end( ap );
+
+    va_start( ap, message );
     vsprintf( g_buffer, message, ap );
     va_end( ap );
 
@@ -199,6 +207,9 @@ void EM_error2b( int line, const char * message, ... )
 
     va_start( ap, message );
     vfprintf( stderr, message, ap );
+    va_end( ap );
+
+    va_start( ap, message );
     vsprintf( g_buffer, message, ap );
     va_end( ap );
 
@@ -218,6 +229,9 @@ void EM_error3( const char * message, ... )
 
     va_start( ap, message );
     vfprintf( stderr, message, ap );
+    va_end( ap );
+
+    va_start( ap, message );
     vsprintf( g_buffer, message, ap );
     va_end( ap );
 

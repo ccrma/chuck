@@ -832,7 +832,8 @@ t_CKINT Chuck_Array8::set( t_CKINT i, t_CKFLOAT val )
 //-----------------------------------------------------------------------------
 t_CKINT Chuck_Array8::set( const string & key, t_CKFLOAT val )
 {
-    map<string, t_CKFLOAT>::iterator iter = m_map.find( key );
+    // 1.3.1.1: removed this
+    // map<string, t_CKFLOAT>::iterator iter = m_map.find( key );
 
     if( !val ) m_map.erase( key );
     else m_map[key] = val;
@@ -1141,7 +1142,8 @@ t_CKINT Chuck_Array16::set( t_CKINT i, t_CKCOMPLEX val )
 //-----------------------------------------------------------------------------
 t_CKINT Chuck_Array16::set( const string & key, t_CKCOMPLEX val )
 {
-    map<string, t_CKCOMPLEX>::iterator iter = m_map.find( key );
+    // 1.3.1.1: removed this
+    // map<string, t_CKCOMPLEX>::iterator iter = m_map.find( key );
 
     if( val.re == 0 && val.im == 0 ) m_map.erase( key );
     else m_map[key] = val;

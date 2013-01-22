@@ -10,14 +10,14 @@ ModalBar bar => dac;
 while( true )
 {
     // ding!
-    Std.rand2( 0, 8 ) => bar.preset;
-    Std.rand2f( 0, 1 ) => bar.stickHardness;
-    Std.rand2f( 0, 1 ) => bar.strikePosition;
-    Std.rand2f( 0, 1 ) => bar.vibratoGain;
-    Std.rand2f( 0, 60 ) => bar.vibratoFreq;
-    Std.rand2f( 0, 1 ) => bar.volume;
-    Std.rand2f( .5, 1 ) => bar.directGain;
-    Std.rand2f( .5, 1 ) => bar.masterGain;
+    Math.random2( 0, 8 ) => bar.preset;
+    Math.random2f( 0, 1 ) => bar.stickHardness;
+    Math.random2f( 0, 1 ) => bar.strikePosition;
+    Math.random2f( 0, 1 ) => bar.vibratoGain;
+    Math.random2f( 0, 60 ) => bar.vibratoFreq;
+    Math.random2f( 0, 1 ) => bar.volume;
+    Math.random2f( .5, 1 ) => bar.directGain;
+    Math.random2f( .5, 1 ) => bar.masterGain;
 
     // print
     <<< "---", "" >>>;
@@ -31,8 +31,8 @@ while( true )
     <<< "master gain:", bar.masterGain() >>>;
 
     // set freq
-	scale[Std.rand2(0,scale.cap()-1)] => int winner;
-    57 + Std.rand2(0,2)*12 + winner => Std.mtof => bar.freq;
+	scale[Math.random2(0,scale.cap()-1)] => int winner;
+    57 + Math.random2(0,2)*12 + winner => Std.mtof => bar.freq;
     // go
     .8 => bar.noteOn;
 

@@ -37,6 +37,8 @@
 
 #include <limits.h>
 #include <float.h>
+#include <stdlib.h>
+#include <time.h>
 
 
 static double g_pi = ONE_PI;
@@ -46,8 +48,15 @@ static t_CKFLOAT g_floatMax = DBL_MAX;
 static t_CKFLOAT g_floatMin = DBL_MIN;
 static t_CKFLOAT g_inf = 0.0;
 static t_CKINT g_intMax = LONG_MAX;
+static t_CKINT g_randomMax = CK_RANDOM_MAX;
 static t_CKCOMPLEX g_i = { 0.0, 1.0 };
 static t_CKFLOAT fzero() { return 0.0; }
+
+
+#ifdef __WINDOWS_DS__
+static long random() { return rand(); }
+static void srandom( unsigned s ) { srand( s ); }
+#endif // __WINDOWS_DS__
 
 
 // query
@@ -196,12 +205,6 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, isnan_impl, "int", "isnan" );
     QUERY->add_arg( QUERY, "float", "x" );
 
-    // floatMax
-    // QUERY->add_sfun( QUERY, floatMax_impl, "float", "floatMax" );
-
-    // intMax
-    // QUERY->add_sfun( QUERY, intMax_impl, "int", "intMax" );
-
     // nextpow2
     QUERY->add_sfun( QUERY, nextpow2_impl, "int", "nextpow2" );
     QUERY->add_arg( QUERY, "int", "n" );
@@ -210,21 +213,27 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, ensurepow2_impl, "int", "ensurePow2" );
     QUERY->add_arg( QUERY, "int", "n" );
 
+    // floatMax
+    // QUERY->add_sfun( QUERY, floatMax_impl, "float", "floatMax" );
+    
+    // intMax
+    // QUERY->add_sfun( QUERY, intMax_impl, "int", "intMax" );
+    
     // rand
-    QUERY->add_sfun( QUERY, rand_impl, "int", "rand" ); //! return int between 0 and RAND_MAX
+    // QUERY->add_sfun( QUERY, rand_impl, "int", "rand" ); //! return int between 0 and RAND_MAX
     
     // rand2
-    QUERY->add_sfun( QUERY, rand2_impl, "int", "rand2" ); //! integer between [min,max]
-    QUERY->add_arg( QUERY, "int", "min" ); 
-    QUERY->add_arg( QUERY, "int", "max" ); 
+    // QUERY->add_sfun( QUERY, rand2_impl, "int", "rand2" ); //! integer between [min,max]
+    // QUERY->add_arg( QUERY, "int", "min" ); 
+    // QUERY->add_arg( QUERY, "int", "max" ); 
     
     // randf
-    QUERY->add_sfun( QUERY, randf_impl, "float", "randf" ); //! rand between -1.0,1.0
+    // QUERY->add_sfun( QUERY, randf_impl, "float", "randf" ); //! rand between -1.0,1.0
 
     // rand2f
-    QUERY->add_sfun( QUERY, rand2f_impl, "float", "rand2f" ); //! rand between min and max
-    QUERY->add_arg( QUERY, "float", "min" );
-    QUERY->add_arg( QUERY, "float", "max" );
+    // QUERY->add_sfun( QUERY, rand2f_impl, "float", "rand2f" ); //! rand between min and max
+    // QUERY->add_arg( QUERY, "float", "min" );
+    // QUERY->add_arg( QUERY, "float", "max" );
 
     // add mtof
     //! see \example mand-o-matic.ck
@@ -276,13 +285,40 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, ptor_impl, "int", "ptor" ); // polar to rect
     QUERY->add_arg( QUERY, "polar[]", "from" );
     QUERY->add_arg( QUERY, "complex[]", "to" );
+
+    // add random (1.3.1.0)
+    QUERY->add_sfun( QUERY, random_impl, "int", "random"); //! return int between 0 and CK_RANDOM_MAX
+    
+    // add random2 (1.3.1.0)
+    QUERY->add_sfun( QUERY, random2_impl, "int", "random2" ); //! integer between [min,max]
+    QUERY->add_arg( QUERY, "int", "min" ); 
+    QUERY->add_arg( QUERY, "int", "max" ); 
+    
+    // add randomf (1.3.1.0) -- NOTE different in return semantics
+    QUERY->add_sfun( QUERY, randomf_impl, "float", "randomf" ); //! random between 0 and 1.0
+    
+    // add random2f (1.3.1.0)
+    QUERY->add_sfun( QUERY, random2f_impl, "float", "random2f" ); //! random between min and max
+    QUERY->add_arg( QUERY, "float", "min" );
+    QUERY->add_arg( QUERY, "float", "max" );
+    
+    // add srandom (1.3.1.0)
+    QUERY->add_sfun( QUERY, srandom_impl, "void", "srandom" );
+    QUERY->add_arg( QUERY, "int", "seed" );
+    
+    // go ahead and seed (the code can seed again for repeatability; 1.3.1.0)
+    srandom( time( NULL ) );
     
     // pi
     //! see \example math.ck
     QUERY->add_svar( QUERY, "float", "PI", TRUE, &g_pi );
+    //! see \example math.ck
+    // QUERY->add_svar( QUERY, "float", "pi", TRUE, &g_pi );
 
     // twopi
     QUERY->add_svar( QUERY, "float", "TWO_PI", TRUE, &g_twopi );
+    // twopi
+    // QUERY->add_svar( QUERY, "float", "two_pi", TRUE, &g_twopi );
 
     // e
     QUERY->add_svar( QUERY, "float", "E", TRUE, &g_e );
@@ -303,6 +339,9 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     // infinity, using function to avoid potential "smart" compiler warning
     g_inf = 1.0 / fzero();
     QUERY->add_svar( QUERY, "float", "INFINITY", TRUE, &g_inf );
+
+    // random max
+    QUERY->add_svar( QUERY, "int", "RANDOM_MAX", TRUE, &g_randomMax );
 
     // i
     QUERY->add_svar( QUERY, "complex", "I", TRUE, &g_i );
@@ -656,4 +695,61 @@ CK_DLL_SFUN( ptor_impl )
     
     // return number of elements done
     RETURN->v_int = count;
+}
+
+
+// random (added 1.3.1.0)
+CK_DLL_SFUN( random_impl )
+{
+    RETURN->v_int = ::random();
+}
+
+
+// randomf (added 1.3.1.0)
+CK_DLL_SFUN( randomf_impl )
+{
+    RETURN->v_float = ( ::random() / (t_CKFLOAT)CK_RANDOM_MAX );
+}
+
+
+// randomf (added 1.3.1.0)
+CK_DLL_SFUN( random2f_impl )
+{
+    t_CKFLOAT min = GET_CK_FLOAT(ARGS), max = *((t_CKFLOAT *)ARGS + 1);
+    RETURN->v_float = min + (max-min)*(::random()/(t_CKFLOAT)CK_RANDOM_MAX);
+}
+
+
+// random2 (added 1.3.1.0)
+CK_DLL_SFUN( random2_impl ) // inclusive.
+{
+    // 1.3.1.0: converted int to t_CKINT for 64-bit compatibility
+    t_CKINT min = *(t_CKINT *)ARGS, max = *((t_CKINT *)ARGS + 1);
+    t_CKINT range = max - min; 
+    if( range == 0 )
+    {
+        RETURN->v_int = min;
+    }
+    //else if( range < RAND_MAX / 2 ) { 
+    //  RETURN->v_int = ( range > 0 ) ? min + irandom_exclusive(1 + range) : max + irandom_exclusive ( -range + 1 ) ;
+    //}
+    else
+    {
+        if( range > 0 )
+        { 
+            RETURN->v_int = min + (t_CKINT)( (1.0 + range) * ( ::random()/(CK_RANDOM_MAX+1.0) ) );
+        }
+        else
+        { 
+            RETURN->v_int = min - (t_CKINT)( (-range + 1.0) * ( ::random()/(CK_RANDOM_MAX+1.0) ) );
+        }
+    }
+}
+
+
+// srandom (added 1.3.1.0)
+CK_DLL_SFUN( srandom_impl )
+{
+    t_CKINT seed = GET_CK_INT(ARGS);
+    ::srandom( seed );
 }

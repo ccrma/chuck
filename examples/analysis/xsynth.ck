@@ -36,8 +36,8 @@ while( true )
     
     // multiply
     for( int i; i < X.size()/2; i++ )
-        // Math.sqrt((Y.cval(i)$polar).mag) * X.cval(i) => Z[i];
-        2 * Y.cval(i) * X.cval(i) => Z[i];
+        Math.sqrt((Y.cval(i)$polar).mag) * X.cval(i) => Z[i];
+        //2 * Y.cval(i) * X.cval(i) => Z[i];
     
     // take ifft
     ifft.transform( Z );
