@@ -2313,8 +2313,8 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     //------------------------------------------------------------------------
 
     if( !type_engine_import_ugen_begin( env, "FM", "StkInstrument", env->global(), 
-                        FM_ctor, FM_dtor,
-                        FM_tick, FM_pmsg ) ) return FALSE;
+                                        FM_ctor, FM_dtor,
+                                        FM_tick, FM_pmsg ) ) return FALSE;
 
     // member variable
     // all subclasses of FM must use this offset, as this is where the inherited 
@@ -22337,7 +22337,7 @@ CK_DLL_CGET( PoleZero_cget_blockZero )
 
 
 
-//FM functions
+// FM functions
 
 //-----------------------------------------------------------------------------
 // name: FM_ctor()
@@ -22346,7 +22346,7 @@ CK_DLL_CGET( PoleZero_cget_blockZero )
 CK_DLL_CTOR( FM_ctor  )
 {
     OBJ_MEMBER_UINT(SELF, FM_offset_data) = 0;
-    // fprintf(stderr,"[chuck](via STK): error : FM is virtual!\n");
+    // fprintf( stderr, "[chuck](via STK): error -- FM is virtual!\n" );
 }
 
 
@@ -22357,7 +22357,7 @@ CK_DLL_CTOR( FM_ctor  )
 CK_DLL_DTOR( FM_dtor  )
 { 
     // delete (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
-    // fprintf(stderr,"error : FM is virtual!\n");
+    // fprintf( stderr, "error -- FM is virtual!\n" );
 }
 
 
@@ -22368,7 +22368,7 @@ CK_DLL_DTOR( FM_dtor  )
 CK_DLL_TICK( FM_tick )
 {
     FM * m = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
-    fprintf(stderr,"[chuck](via STK): error : FM tick is virtual!\n");
+    fprintf(stderr,"[chuck](via STK): error -- FM tick is virtual!\n");
     *out = m->tick();
     return TRUE;
 }
@@ -22390,7 +22390,7 @@ CK_DLL_PMSG( FM_pmsg )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( FM_ctrl_modDepth )
 {
-    FM * fm= (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS); 
     fm->setModulationDepth( f );
     RETURN->v_float = f;
@@ -22403,7 +22403,7 @@ CK_DLL_CTRL( FM_ctrl_modDepth )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( FM_cget_modDepth )
 {
-    FM * fm= (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
     RETURN->v_float = fm->modDepth;
 }
 
@@ -22414,7 +22414,7 @@ CK_DLL_CTRL( FM_cget_modDepth )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( FM_ctrl_modSpeed )
 {
-    FM * fm= (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS); 
     fm->setModulationSpeed( f );
     RETURN->v_float = fm->vibrato->m_freq;
@@ -22427,7 +22427,7 @@ CK_DLL_CTRL( FM_ctrl_modSpeed )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( FM_cget_modSpeed )
 {
-    FM * fm= (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
     RETURN->v_float = fm->vibrato->m_freq;
 }
 
@@ -22438,7 +22438,7 @@ CK_DLL_CTRL( FM_cget_modSpeed )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( FM_ctrl_control1 )
 {
-    FM * fm= (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS); 
     fm->setControl1( f );
     RETURN->v_float = fm->control1 / 2.0;
@@ -22451,7 +22451,7 @@ CK_DLL_CTRL( FM_ctrl_control1 )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( FM_cget_control1 )
 {
-    FM * fm= (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
     RETURN->v_float = fm->control1 / 2.0;
 }
 
@@ -22462,7 +22462,7 @@ CK_DLL_CTRL( FM_cget_control1 )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( FM_ctrl_control2 )
 {
-    FM * fm= (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS); 
     fm->setControl2( f );
     RETURN->v_float = fm->control2 / 2.0;
@@ -22475,7 +22475,7 @@ CK_DLL_CTRL( FM_ctrl_control2 )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( FM_cget_control2 )
 {
-    FM * fm= (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
     RETURN->v_float = fm->control2 / 2.0;
 }
 
@@ -22486,7 +22486,7 @@ CK_DLL_CTRL( FM_cget_control2 )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( FM_ctrl_afterTouch )
 {
-    FM * fm= (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS); 
     fm->controlChange( __SK_AfterTouch_Cont_, f * 128.0 );
     RETURN->v_float = fm->adsr[1]->target;
@@ -22499,7 +22499,7 @@ CK_DLL_CTRL( FM_ctrl_afterTouch )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( FM_cget_afterTouch )
 {
-    FM * fm= (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
     RETURN->v_float = fm->adsr[1]->target;
 }
 

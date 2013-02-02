@@ -173,6 +173,9 @@ public:
     t_CKBOOL add( Chuck_UGen * ugen );
     t_CKBOOL remove( Chuck_UGen * ugen );
     
+    // add parent object reference (added 1.3.1.2)
+    t_CKVOID add_parent_ref( Chuck_Object * obj );
+    
 //-----------------------------------------------------------------------------
 // data
 //-----------------------------------------------------------------------------
@@ -202,7 +205,6 @@ public: // machine components
     // state (no longer needed, see array_alloc)
     // t_CKUINT * obj_array;
     // t_CKUINT obj_array_size;
-    
 
 public:
     t_CKTIME wake_time;
@@ -213,6 +215,9 @@ public:
     t_CKBOOL is_dumped;
     Chuck_Event * event;  // event shred is waiting on
     std::map<Chuck_UGen *, Chuck_UGen *> m_ugen_map;
+    // references kept by the shred itself (e.g., when sporking member functions)
+    // to be released when shred is done -- added 1.3.1.2
+    std::vector<Chuck_Object *> m_parent_objects;
 
 public: // id
     t_CKUINT xid;
@@ -374,7 +379,9 @@ public: // init
                          t_CKUINT buffer_size = 512, t_CKUINT num_buffers = 4,
                          t_CKUINT dac = 0, t_CKUINT adc = 0,
                          t_CKUINT dac_chan = 2, t_CKUINT adc_chan = 2,
-                         t_CKBOOL block = TRUE, t_CKUINT adaptive = 0 );
+                         t_CKBOOL block = TRUE, t_CKUINT adaptive = 0,
+                         // force_srate added 1.3.1.2
+                         t_CKBOOL force_srate = FALSE );
     t_CKBOOL initialize_synthesis( );
     t_CKBOOL shutdown();
 
@@ -426,10 +433,16 @@ public: // get error
     const char * last_error() const
     { return m_last_error.c_str(); }
 
+<<<<<<< .working
     t_CKBOOL set_main_thread_hook( f_mainthreadhook hook, f_mainthreadquit quit,
                                    void * bindle );
     t_CKBOOL clear_main_thread_hook();
     
+=======
+    t_CKBOOL set_main_thread_hook( f_mainthreadhook hook, f_mainthreadquit quit,
+                                   void * bindle );
+    
+>>>>>>> .merge-right.r320
 //-----------------------------------------------------------------------------
 // data
 //-----------------------------------------------------------------------------

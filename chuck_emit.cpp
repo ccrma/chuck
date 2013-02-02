@@ -385,7 +385,8 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                     // added 1.3.1.0: iskindofint -- since on some 64-bit systems sz_INT == sz_FLOAT
                     if( exp->s_type == ae_exp_decl )
                         // (added 1.3.1.0 -- multiply by type size; #64-bit)
-                        emit->append( new Chuck_Instr_Reg_Pop_Word4( exp->decl.num_var_decls * exp->type->size / sz_WORD ) );
+                        // (fixed 1.3.1.2 -- uh... decl should also be int-sized, so changed to INT/WORD)
+                        emit->append( new Chuck_Instr_Reg_Pop_Word4( exp->decl.num_var_decls * sz_INT / sz_WORD ) );
                     else if( exp->type->size == sz_INT && iskindofint(exp->type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
                         emit->append( new Chuck_Instr_Reg_Pop_Word );
                     else if( exp->type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
