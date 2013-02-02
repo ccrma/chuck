@@ -1380,6 +1380,21 @@ t_CKBOOL Chuck_VM::set_main_thread_hook( f_mainthreadhook hook,
 
 
 //-----------------------------------------------------------------------------
+// name: set_main_thread_hook()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::clear_main_thread_hook()
+{
+    m_main_thread_bindle = NULL;
+    m_main_thread_hook = NULL;
+    m_main_thread_quit = NULL;
+    
+    return TRUE;
+}
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_VM_Stack()
 // desc: ...
 //-----------------------------------------------------------------------------
