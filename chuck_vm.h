@@ -433,16 +433,10 @@ public: // get error
     const char * last_error() const
     { return m_last_error.c_str(); }
 
-<<<<<<< .working
     t_CKBOOL set_main_thread_hook( f_mainthreadhook hook, f_mainthreadquit quit,
                                    void * bindle );
     t_CKBOOL clear_main_thread_hook();
     
-=======
-    t_CKBOOL set_main_thread_hook( f_mainthreadhook hook, f_mainthreadquit quit,
-                                   void * bindle );
-    
->>>>>>> .merge-right.r320
 //-----------------------------------------------------------------------------
 // data
 //-----------------------------------------------------------------------------
