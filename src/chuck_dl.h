@@ -551,13 +551,15 @@ struct Chuck_DL_MainThreadHook
 {
 public:
     Chuck_DL_MainThreadHook(f_mainthreadhook hook, f_mainthreadquit quit,
-                    void * bindle, Chuck_VM * vm);
+                            void * bindle, Chuck_VM * vm);
     t_CKBOOL (* const activate)(Chuck_DL_MainThreadHook *);
+    t_CKBOOL (* const deactivate)(Chuck_DL_MainThreadHook *);
     
     Chuck_VM * const m_vm;
     f_mainthreadhook const m_hook;
     f_mainthreadquit const m_quit;
     void * const m_bindle;
+    t_CKBOOL m_active;
 };
 
 

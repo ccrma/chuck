@@ -435,6 +435,7 @@ public: // get error
 
     t_CKBOOL set_main_thread_hook( f_mainthreadhook hook, f_mainthreadquit quit,
                                    void * bindle );
+    t_CKBOOL clear_main_thread_hook();
     
 //-----------------------------------------------------------------------------
 // data
