@@ -949,7 +949,18 @@ Chuck_DL_Func::~Chuck_DL_Func()
 
 t_CKBOOL ck_mthook_activate(Chuck_DL_MainThreadHook *hook)
 {
-    return hook->m_vm->set_main_thread_hook(hook->m_hook, hook->m_quit, hook->m_bindle);
+    hook->m_active = hook->m_vm->set_main_thread_hook(hook->m_hook,
+                                                      hook->m_quit,
+                                                      hook->m_bindle);
+    return hook->m_active;
+}
+
+t_CKBOOL ck_mthook_deactivate(Chuck_DL_MainThreadHook *hook)
+{
+    if(hook->m_active)
+        return hook->m_vm->clear_main_thread_hook();
+    else
+        return FALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -957,12 +968,14 @@ t_CKBOOL ck_mthook_activate(Chuck_DL_MainThreadHook *hook)
 // desc: ...
 //-----------------------------------------------------------------------------
 Chuck_DL_MainThreadHook::Chuck_DL_MainThreadHook(f_mainthreadhook hook, f_mainthreadquit quit,
-                                 void * bindle, Chuck_VM * vm) :
+                                                 void * bindle, Chuck_VM * vm) :
 m_hook(hook),
 m_quit(quit),
 m_vm(vm),
 m_bindle(bindle),
-activate(ck_mthook_activate)
+activate(ck_mthook_activate),
+deactivate(ck_mthook_deactivate),
+m_active(FALSE)
 { }
 
 

@@ -527,7 +527,11 @@ t_CKBOOL Chuck_VM::shutdown()
     SAFE_RELEASE( m_dac );
     SAFE_RELEASE( m_adc );
     SAFE_RELEASE( m_bunghole );
-
+    
+    if( m_main_thread_quit )
+        m_main_thread_quit( m_main_thread_bindle );
+    clear_main_thread_hook();
+    
     m_init = FALSE;
 
     // pop indent
@@ -747,6 +751,10 @@ t_CKBOOL Chuck_VM::run( t_CKINT num_samps )
 // vm stop here
 vm_stop:
     m_running = FALSE;
+    
+    if( m_main_thread_quit )
+        m_main_thread_quit( m_main_thread_bindle );
+    clear_main_thread_hook();
 
     // log
     EM_log( CK_LOG_SYSTEM, "virtual machine stopped..." );
@@ -783,9 +791,6 @@ t_CKBOOL Chuck_VM::stop( )
     m_running = FALSE;
     Digitalio::m_end = TRUE;
     
-    if( m_main_thread_quit )
-        m_main_thread_quit( m_main_thread_bindle );
-
     return TRUE;
 }
 
@@ -1375,6 +1380,21 @@ t_CKBOOL Chuck_VM::set_main_thread_hook( f_mainthreadhook hook,
         EM_log(CK_LOG_SEVERE, "[chuck](VM): attempt to register more than one main_thread_hook");
         return FALSE;
     }
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_main_thread_hook()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::clear_main_thread_hook()
+{
+    m_main_thread_bindle = NULL;
+    m_main_thread_hook = NULL;
+    m_main_thread_quit = NULL;
+    
+    return TRUE;
 }
 
 
