@@ -520,6 +520,8 @@ struct Chuck_Type : public Chuck_VM_Object
     t_CKBOOL has_constructor;
     // has destructor
     t_CKBOOL has_destructor;
+    // custom allocator
+    f_alloc allocator;
 
 public:
     // constructor
@@ -531,6 +533,7 @@ public:
         info = NULL; func = NULL; def = NULL; is_copy = FALSE; 
         ugen_info = NULL; is_complete = TRUE; has_constructor = FALSE;
         has_destructor = FALSE;
+        allocator = NULL;
     }
 
     // destructor

@@ -45,6 +45,7 @@
 #include "ulib_math.h"
 #include "ulib_std.h"
 #include "ulib_opsc.h"
+#include "chuck_io.h"
 
 #if defined(__PLATFORM_WIN32__)
 #include "dirent_win32.h"
@@ -586,6 +587,7 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     if( !init_class_MidiRW( env ) ) goto error;
 #endif // __DISABLE_MIDI__
     if( !init_class_HID( env ) ) goto error;
+    if( !init_class_serialio( env ) ) goto error;
         
     // clear context
     type_engine_unload_context( env );
