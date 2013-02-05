@@ -41,6 +41,7 @@
 #include "chuck_globals.h"
 #include "hidio_sdl.h"
 #include "util_string.h"
+#include "util_serial.h"
 
 #ifndef __DISABLE_MIDI__
 #include "midiio_rtmidi.h"
@@ -939,8 +940,6 @@ error:
     
     return FALSE;
 }
-
-
 
 
 //-----------------------------------------------------------------------------
@@ -2621,8 +2620,6 @@ CK_DLL_MFUN( fileio_writefloat )
         f->write(val);
     }
 }
-
-
 
 
 //-----------------------------------------------------------------------------

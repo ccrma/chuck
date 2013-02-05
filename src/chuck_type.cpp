@@ -65,7 +65,7 @@ Chuck_Type t_ugen( te_ugen, "UGen", &t_object, sizeof(void *) );
 Chuck_Type t_uana( te_uana, "UAna", &t_ugen, sizeof(void *) );
 Chuck_Type t_uanablob( te_uanablob, "UAnaBlob", &t_object, sizeof(void *) );
 Chuck_Type t_shred( te_shred, "Shred", &t_object, sizeof(void *) );
-Chuck_Type t_io( te_io, "IO", &t_object, sizeof(void *) );
+Chuck_Type t_io( te_io, "IO", &t_event, sizeof(void *) );
 Chuck_Type t_fileio( te_fileio, "FileIO", &t_io, sizeof(void *) );
 Chuck_Type t_chout( te_chout, "StdOut", &t_io, sizeof(void *) );
 Chuck_Type t_cherr( te_cherr, "StdErr", &t_io, sizeof(void *) );

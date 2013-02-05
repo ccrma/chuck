@@ -162,6 +162,9 @@ typedef const Chuck_DL_Api::Api *CK_DL_API;
 #else 
 #define CK_DLL_QUERY(name) CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKBOOL) ck_##name_query( Chuck_DL_Query * QUERY )
 #endif // __CK_DLL_STATIC__
+// macro for defining ChucK DLL export allocator
+// example: CK_DLL_ALLOC(foo)
+#define CK_DLL_ALLOC(name) CK_DLL_EXPORT(Chuck_Object *) name( Chuck_VM_Shred * SHRED, CK_DL_API API )
 // macro for defining ChucK DLL export constructors
 // example: CK_DLL_CTOR(foo)
 #define CK_DLL_CTOR(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_VM_Shred * SHRED, CK_DL_API API )
@@ -217,6 +220,7 @@ extern "C" {
 typedef t_CKUINT (CK_DLL_CALL * f_ck_declversion)();
 typedef t_CKBOOL (CK_DLL_CALL * f_ck_query)( Chuck_DL_Query * QUERY );
 // object
+typedef Chuck_Object * (CK_DLL_CALL * f_alloc)( Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKVOID (CK_DLL_CALL * f_ctor)( Chuck_Object * SELF, void * ARGS, Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKVOID (CK_DLL_CALL * f_dtor)( Chuck_Object * SELF, Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKVOID (CK_DLL_CALL * f_mfun)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM_Shred * SHRED, CK_DL_API API );

@@ -376,7 +376,7 @@ public:
 // name: Chuck_IO
 // desc: base Chuck IO class
 //-----------------------------------------------------------------------------
-struct Chuck_IO : Chuck_Object
+struct Chuck_IO : Chuck_Event
 {
 public:
     Chuck_IO();
@@ -575,7 +575,6 @@ public:
     virtual void write( t_CKINT val );
     virtual void write( t_CKFLOAT val );
 };
-
 
 
 #endif

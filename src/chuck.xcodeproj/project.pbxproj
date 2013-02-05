@@ -10,6 +10,8 @@
 		090A5BE80AA75AEA005DC04D /* util_hid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090A5BE70AA75AEA005DC04D /* util_hid.cpp */; };
 		090B4B1E0C4F038E00DF5577 /* uana_xform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */; };
 		095D14591341476200BBD9EB /* MultitouchSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 095D14581341476200BBD9EB /* MultitouchSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		0962DA2915D3A626002DEFF3 /* chuck_io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0962DA2715D3A626002DEFF3 /* chuck_io.cpp */; };
+		0966E6C915CFBB0F0099CBD8 /* util_serial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0966E6C815CFBB0F0099CBD8 /* util_serial.cpp */; };
 		09805FFA0AA10D3800915136 /* chuck.lex in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B350A9A54DA007604EA /* chuck.lex */; };
 		09805FFB0AA10D3900915136 /* chuck.y in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B360A9A54DA007604EA /* chuck.y */; };
 		09805FFC0AA10D3900915136 /* chuck_absyn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B060A9A54DA007604EA /* chuck_absyn.cpp */; };
@@ -84,6 +86,10 @@
 		090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = uana_xform.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1B0C4F038E00DF5577 /* uana_xform.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = uana_xform.h; sourceTree = SOURCE_ROOT; };
 		095D14581341476200BBD9EB /* MultitouchSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultitouchSupport.framework; path = System/Library/PrivateFrameworks/MultitouchSupport.framework; sourceTree = SDKROOT; };
+		0962DA2715D3A626002DEFF3 /* chuck_io.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = chuck_io.cpp; sourceTree = "<group>"; };
+		0962DA2815D3A626002DEFF3 /* chuck_io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chuck_io.h; sourceTree = "<group>"; };
+		0966E6C815CFBB0F0099CBD8 /* util_serial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = util_serial.cpp; sourceTree = "<group>"; };
+		0966E6CB15CFBB240099CBD8 /* util_serial.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_serial.h; sourceTree = "<group>"; };
 		09805FE70AA10D0C00915136 /* chuck */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = chuck; sourceTree = BUILT_PRODUCTS_DIR; };
 		0980604F0AA159A100915136 /* array_argument.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = array_argument.ck; path = examples/array/array_argument.ck; sourceTree = SOURCE_ROOT; };
 		098060500AA159A100915136 /* array_assign.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = array_assign.ck; path = examples/array/array_assign.ck; sourceTree = SOURCE_ROOT; };
@@ -760,6 +766,8 @@
 				09A40B180A9A54DA007604EA /* chuck_globals.h */,
 				09A40B190A9A54DA007604EA /* chuck_instr.cpp */,
 				09A40B1A0A9A54DA007604EA /* chuck_instr.h */,
+				0962DA2715D3A626002DEFF3 /* chuck_io.cpp */,
+				0962DA2815D3A626002DEFF3 /* chuck_io.h */,
 				09A40B1B0A9A54DA007604EA /* chuck_lang.cpp */,
 				09A40B1C0A9A54DA007604EA /* chuck_lang.h */,
 				09A40B1D0A9A54DA007604EA /* chuck_oo.cpp */,
@@ -834,6 +842,8 @@
 				09A40B650A9A54DA007604EA /* util_thread.h */,
 				09A40B660A9A54DA007604EA /* util_xforms.c */,
 				09A40B670A9A54DA007604EA /* util_xforms.h */,
+				0966E6C815CFBB0F0099CBD8 /* util_serial.cpp */,
+				0966E6CB15CFBB240099CBD8 /* util_serial.h */,
 			);
 			name = ChucK;
 			sourceTree = "<group>";
@@ -1035,6 +1045,8 @@
 				090B4B1E0C4F038E00DF5577 /* uana_xform.cpp in Sources */,
 				09812B9C0C6E394A00D1D68C /* uana_extract.cpp in Sources */,
 				09A5C88D13DDFB350082DF50 /* RtAudio.cpp in Sources */,
+				0966E6C915CFBB0F0099CBD8 /* util_serial.cpp in Sources */,
+				0962DA2915D3A626002DEFF3 /* chuck_io.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
