@@ -25,7 +25,7 @@ CK_VERSION=1.3.2.0-beta-1
 LEX=flex
 YACC=bison
 CC=gcc
-CXX=gcc
+CXX=g++
 LD=g++
 
 ifneq ($(CHUCK_STAT),)
@@ -77,11 +77,12 @@ CXXSRCS+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	chuck_vm.cpp chuck_instr.cpp chuck_scan.cpp chuck_type.cpp chuck_emit.cpp \
 	chuck_compile.cpp chuck_dl.cpp chuck_oo.cpp chuck_lang.cpp chuck_ugen.cpp \
 	chuck_main.cpp chuck_otf.cpp chuck_stats.cpp chuck_bbq.cpp chuck_shell.cpp \
-	chuck_console.cpp chuck_globals.cpp digiio_rtaudio.cpp hidio_sdl.cpp \
+	chuck_console.cpp chuck_globals.cpp chuck_io.cpp \
+    digiio_rtaudio.cpp hidio_sdl.cpp \
 	midiio_rtmidi.cpp RtAudio/RtAudio.cpp rtmidi.cpp ugen_osc.cpp ugen_filter.cpp \
 	ugen_stk.cpp ugen_xxx.cpp ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
 	ulib_opsc.cpp util_buffers.cpp util_console.cpp \
-	util_string.cpp util_thread.cpp util_opsc.cpp \
+	util_string.cpp util_thread.cpp util_opsc.cpp util_serial.cpp \
 	util_hid.cpp uana_xform.cpp uana_extract.cpp
 
 COBJS=$(CSRCS:.c=.o)
