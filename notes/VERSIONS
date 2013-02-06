@@ -1,5 +1,45 @@
-1.3.1.4
+1.3.2.0
 ---
+  - (added) SerialIO class for communicating with serial devices, e.g Arduino
+  			- SerialIO.list()
+				  return array of strings corresponding to available serial IO
+				  devices
+			- .open(int i, int baud, int mode)
+				  open device with index i. baud can be a constant specifying 
+				  which standard serial baud rate is used (e.g. 
+				  SerialIO.B9600). mode can be SerialIO.ASCII or 
+				  SerialIO.BINARY to specify ASCII or binary interpretation of 
+				  serial data. 
+			- .onLine()
+			- .onByte()
+			- .onBytes(int num)
+			- .onInts(int num)
+			- .onFloats(int num)
+			      chuck to now to wait for that type of data to arrive (in the 
+			      specified quantity). E.g. serial.onLine() => now; will wait 
+				  for 1 newline-terminated string to arrive from the serial
+				  device. 
+			- .getLine()
+			  .getByte()
+			  .getBytes()
+			  .getInts()
+			  .getFloats()
+				  retrieve data requested using the onLine()/etc. above. 
+			- .baudRate()
+			  .baudRate(int baud)
+				  get/set baud rate
+			- SerialIO.B2400
+			  SerialIO.B4800
+			  SerialIO.B9600
+			  SerialIO.B19200
+			  SerialIO.B38400
+			  SerialIO.B7200
+			  SerialIO.B14400
+			  SerialIO.B28800
+			  SerialIO.B57600
+			  SerialIO.B115200
+			  SerialIO.B230400
+			      available baud rates
   - (fixed) --adc:<N> now works as expected
   - (fixed) FileIO => string bug
 
