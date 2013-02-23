@@ -42,6 +42,7 @@
 #ifndef __WINDOWS_DS__
 #include <poll.h>
 #include <termios.h>
+#include <unistd.h>
 #else
 #include <io.h>
 #endif // __WINDOWS_DS__
