@@ -18,6 +18,13 @@ CXX=clang++
 LD=clang++
 endif
 
+# compiled-in clang+llvm
+CLANG_DIR=clang+llvm
+CFLAGS_CLANG=-D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS -I$(CLANG_DIR)/include
+LDFLAGS_CLANG=-L$(CLANG_DIR)/lib \
+-lclangAnalysis -lclangAST -lclangBasic -lclangCodeGen -lclangDriver -lclangEdit -lclangFrontend -lclangLex -lclangParse -lclangRewriteCore -lclangRewriteFrontend -lclangSema -lclangSerialization -lclangTooling \
+-lLLVMAnalysis -lLLVMArchive -lLLVMAsmParser -lLLVMAsmPrinter -lLLVMBitReader -lLLVMBitWriter -lLLVMCodeGen -lLLVMCore -lLLVMExecutionEngine -lLLVMInstCombine -lLLVMInstrumentation -lLLVMInterpreter -lLLVMJIT -lLLVMLinker -lLLVMMC -lLLVMMCParser -lLLVMScalarOpts -lLLVMSelectionDAG -lLLVMSupport -lLLVMTarget -lLLVMTransformUtils -lLLVMVectorize -lLLVMX86AsmParser -lLLVMX86AsmPrinter -lLLVMX86CodeGen -lLLVMX86Desc -lLLVMX86Info -lLLVMX86Utils -lLLVMipa -lLLVMipo -lLLVMRuntimeDyld -lLLVMObject 
+
 CFLAGS+= -D__MACOSX_CORE__ $(FORCE_M32) $(ISYSROOT)
 CFLAGSDEPEND+= -D__MACOSX_CORE__ $(FORCE_M32) $(ISYSROOT)
 

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		090A5BE80AA75AEA005DC04D /* util_hid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090A5BE70AA75AEA005DC04D /* util_hid.cpp */; };
 		090B4B1E0C4F038E00DF5577 /* uana_xform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */; };
+		094A8EC516E1CCCD00C74304 /* chuck_cogen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 094A8EC316E1CCCD00C74304 /* chuck_cogen.cpp */; };
 		095D14591341476200BBD9EB /* MultitouchSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 095D14581341476200BBD9EB /* MultitouchSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		0962DA2915D3A626002DEFF3 /* chuck_io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0962DA2715D3A626002DEFF3 /* chuck_io.cpp */; };
 		0966E6C915CFBB0F0099CBD8 /* util_serial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0966E6C815CFBB0F0099CBD8 /* util_serial.cpp */; };
@@ -85,6 +86,8 @@
 		090A5BE70AA75AEA005DC04D /* util_hid.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = util_hid.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = uana_xform.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1B0C4F038E00DF5577 /* uana_xform.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = uana_xform.h; sourceTree = SOURCE_ROOT; };
+		094A8EC316E1CCCD00C74304 /* chuck_cogen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = chuck_cogen.cpp; sourceTree = "<group>"; };
+		094A8EC416E1CCCD00C74304 /* chuck_cogen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chuck_cogen.h; sourceTree = "<group>"; };
 		095D14581341476200BBD9EB /* MultitouchSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultitouchSupport.framework; path = System/Library/PrivateFrameworks/MultitouchSupport.framework; sourceTree = SDKROOT; };
 		0962DA2715D3A626002DEFF3 /* chuck_io.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = chuck_io.cpp; sourceTree = "<group>"; };
 		0962DA2815D3A626002DEFF3 /* chuck_io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chuck_io.h; sourceTree = "<group>"; };
@@ -844,6 +847,8 @@
 				09A40B670A9A54DA007604EA /* util_xforms.h */,
 				0966E6C815CFBB0F0099CBD8 /* util_serial.cpp */,
 				0966E6CB15CFBB240099CBD8 /* util_serial.h */,
+				094A8EC316E1CCCD00C74304 /* chuck_cogen.cpp */,
+				094A8EC416E1CCCD00C74304 /* chuck_cogen.h */,
 			);
 			name = ChucK;
 			sourceTree = "<group>";
@@ -1047,6 +1052,7 @@
 				09A5C88D13DDFB350082DF50 /* RtAudio.cpp in Sources */,
 				0966E6C915CFBB0F0099CBD8 /* util_serial.cpp in Sources */,
 				0962DA2915D3A626002DEFF3 /* chuck_io.cpp in Sources */,
+				094A8EC516E1CCCD00C74304 /* chuck_cogen.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1056,24 +1062,31 @@
 		098060190AA10D6C00915136 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CFLAGS_CLANG = "-D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS -I$(CLANG_DIR)/include";
+				CLANG_DIR = "$(PROJECT_DIR)/clang+llvm";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
 					"\"$(SDKROOT)$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"",
 				);
-				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SYSTEM_LIBRARY_DIR)/Frameworks/ApplicationServices.framework/Versions/A/Frameworks\"";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = __MACOSX_CORE__;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				INSTALL_PATH = "$(HOME)/bin";
+				LDFLAGS_CLANG = "-L$(CLANG_DIR)/lib -lclangAnalysis -lclangAST -lclangBasic -lclangCodeGen -lclangDriver -lclangEdit -lclangFrontend -lclangLex -lclangParse -lclangRewriteCore -lclangRewriteFrontend -lclangSema -lclangSerialization -lclangTooling -lLLVMAnalysis -lLLVMArchive -lLLVMAsmParser -lLLVMAsmPrinter -lLLVMBitReader -lLLVMBitWriter -lLLVMCodeGen -lLLVMCore -lLLVMExecutionEngine -lLLVMInstCombine -lLLVMInstrumentation -lLLVMInterpreter -lLLVMJIT -lLLVMLinker -lLLVMMC -lLLVMMCParser -lLLVMScalarOpts -lLLVMSelectionDAG -lLLVMSupport -lLLVMTarget -lLLVMTransformUtils -lLLVMVectorize -lLLVMX86AsmParser -lLLVMX86AsmPrinter -lLLVMX86CodeGen -lLLVMX86Desc -lLLVMX86Info -lLLVMX86Utils -lLLVMipa -lLLVMipo -lLLVMRuntimeDyld -lLLVMObject";
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"$(CFLAGS_CLANG)",
+				);
 				OTHER_LDFLAGS = (
 					"-lm",
 					"-lstdc++",
+					"$(LDFLAGS_CLANG)",
 				);
 				PRODUCT_NAME = chuck;
 			};
@@ -1082,24 +1095,31 @@
 		0980601A0AA10D6C00915136 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CFLAGS_CLANG = "-D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS -I$(CLANG_DIR)/include";
+				CLANG_DIR = "$(PROJECT_DIR)/clang+llvm";
 				COPY_PHASE_STRIP = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
 					"\"$(SDKROOT)$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"",
 				);
-				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SYSTEM_LIBRARY_DIR)/Frameworks/ApplicationServices.framework/Versions/A/Frameworks\"";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_MODEL_TUNING = G4;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = __MACOSX_CORE__;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				INSTALL_PATH = "$(HOME)/bin";
+				LDFLAGS_CLANG = "-L$(CLANG_DIR)/lib -lclangAnalysis -lclangAST -lclangBasic -lclangCodeGen -lclangDriver -lclangEdit -lclangFrontend -lclangLex -lclangParse -lclangRewriteCore -lclangRewriteFrontend -lclangSema -lclangSerialization -lclangTooling -lLLVMAnalysis -lLLVMArchive -lLLVMAsmParser -lLLVMAsmPrinter -lLLVMBitReader -lLLVMBitWriter -lLLVMCodeGen -lLLVMCore -lLLVMExecutionEngine -lLLVMInstCombine -lLLVMInstrumentation -lLLVMInterpreter -lLLVMJIT -lLLVMLinker -lLLVMMC -lLLVMMCParser -lLLVMScalarOpts -lLLVMSelectionDAG -lLLVMSupport -lLLVMTarget -lLLVMTransformUtils -lLLVMVectorize -lLLVMX86AsmParser -lLLVMX86AsmPrinter -lLLVMX86CodeGen -lLLVMX86Desc -lLLVMX86Info -lLLVMX86Utils -lLLVMipa -lLLVMipo -lLLVMRuntimeDyld -lLLVMObject";
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"$(CFLAGS_CLANG)",
+				);
 				OTHER_LDFLAGS = (
 					"-lm",
 					"-lstdc++",
+					"$(LDFLAGS_CLANG)",
 				);
 				PRODUCT_NAME = chuck;
 			};
@@ -1109,12 +1129,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_ENABLE_PASCAL_STRINGS = NO;
-				GCC_MODEL_TUNING = "";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.3;
 				SDKROOT = macosx;
+				VALID_ARCHS = x86_64;
 				YACC_GENERATED_FILE_STEM = InputFileStem;
 			};
 			name = Debug;
@@ -1122,13 +1142,13 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_ENABLE_PASCAL_STRINGS = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				SDKROOT = macosx;
+				VALID_ARCHS = x86_64;
 				YACC_GENERATED_FILE_STEM = InputFileStem;
 			};
 			name = Release;

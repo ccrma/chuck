@@ -39,6 +39,7 @@
 #include "chuck_globals.h"
 #include "chuck_lang.h"
 #include "ugen_xxx.h"
+#include "chuck_cogen.h"
 
 #include <algorithm>
 using namespace std;
@@ -572,6 +573,13 @@ t_CKBOOL Chuck_VM::start_audio( )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::run( )
 {
+    Chuck_Cogen * cogen = Chuck_Cogen::defaultCogenerator();
+    
+    Chuck_CogenGraph * cograph = cogen->cogenerate(m_dac);
+    float out;
+    cograph->tick(0, out);
+    
+
     // check if init
     if( m_dac == NULL )
     {
