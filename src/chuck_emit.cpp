@@ -2759,6 +2759,10 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         // add reference for string literal (added 1.3.0.2)
         str->add_ref();
         break;
+            
+    case ae_primary_char:
+        emit->append( new Chuck_Instr_Reg_Push_Imm( str2char(exp->chr, exp->linepos ) ) );
+        break;
 
     case ae_primary_array:
         if( !emit_engine_emit_array_lit( emit, exp->array ) )

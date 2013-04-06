@@ -143,6 +143,8 @@ long htol( c_str str )
     return n;
 }
 
+
+    
 // block comment hack (thanks to unput/yytext_ptr inconsistency)
 #define block_comment_hack loop: \
     while ((c = input()) != '*' && c != 0 && c != EOF ) \
@@ -274,6 +276,7 @@ typeof                  { adjust(); return TYPEOF; }
 ([0-9]+"."[0-9]*)|([0-9]*"."[0-9]+)   { adjust(); yylval.fval=atof(yytext); return FLOAT; }
 [A-Za-z_][A-Za-z0-9_]*  { adjust(); yylval.sval=alloc_str(yytext); return ID; }
 \"(\\.|[^\\"])*\"       { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return STRING_LIT; }
+'(\\.|[^\\'])'          { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return CHAR_LIT; }
 
 .                       { adjust(); EM_error( EM_tokPos, "illegal token" ); }
 

@@ -81,10 +81,11 @@ a_Program g_program = NULL;
     a_Polar polar_exp;
 };
 
-// expect 37 shift/reduce conflicts
-%expect 37
+// expect 38 shift/reduce conflicts
+// 1.3.3.0: changed to 38 for char literal - spencer
+%expect 38
 
-%token <sval> ID STRING_LIT
+%token <sval> ID STRING_LIT CHAR_LIT
 %token <ival> NUM
 %token <fval> FLOAT
 
@@ -574,11 +575,13 @@ postfix_expression
             { $$ = new_exp_from_postfix( $1, ae_op_minusminus, EM_lineNum ); }
         ;
 
+// 1.3.3.0: added CHAR_LIT - spencer
 primary_expression
         : ID                                { $$ = new_exp_from_id( $1, EM_lineNum ); }
         | NUM                               { $$ = new_exp_from_int( $1, EM_lineNum ); }
         | FLOAT                             { $$ = new_exp_from_float( $1, EM_lineNum ); }
         | STRING_LIT                        { $$ = new_exp_from_str( $1, EM_lineNum ); }
+        | CHAR_LIT                          { $$ = new_exp_from_char( $1, EM_lineNum ); }
         | array_exp                         { $$ = new_exp_from_array_lit( $1, EM_lineNum ); }
         | complex_exp                       { $$ = new_exp_from_complex( $1, EM_lineNum ); }
         | polar_exp                         { $$ = new_exp_from_polar( $1, EM_lineNum ); }
