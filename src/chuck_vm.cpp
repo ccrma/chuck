@@ -51,6 +51,15 @@ using namespace std;
 #endif
 
 
+#define CK_VM_DEBUG_ENABLE (0)
+
+#if CK_VM_DEBUG_ENABLE
+#define CK_VM_DEBUG(x) x
+#include <typeinfo>
+#else
+#define CK_VM_DEBUG(x)
+#endif // CK_VM_DEBUG_ENABLE
+
 
 
 //-----------------------------------------------------------------------------
@@ -1770,9 +1779,20 @@ t_CKBOOL Chuck_VM_Shred::run( Chuck_VM * vm )
     // go!
     while( is_running && *vm_running && !is_abort )
     {
+        CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG =--------------------------------=\n"));
+        CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG shred %04lu code %s pc %04lu %s( %s )\n",
+                            this->xid, this->code->name.c_str(), this->pc, instr[pc]->name(), instr[pc]->params()));
+        CK_VM_DEBUG(t_CKBYTE * t_mem_sp = this->mem->sp);
+        CK_VM_DEBUG(t_CKBYTE * t_reg_sp = this->mem->sp);
+        
         // execute the instruction
         instr[pc]->execute( vm, this );
-
+        
+        CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08lx\n",
+                            (unsigned long) t_mem_sp, (unsigned long) this->mem->sp));
+        CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
+                            (unsigned long) t_reg_sp, (unsigned long) this->reg->sp));
+        
         // set to next_pc;
         pc = next_pc;
         next_pc++;
