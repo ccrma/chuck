@@ -2340,6 +2340,16 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
             t = &t_string;
         break;
 
+        // char
+        case ae_primary_char:
+            // check escape sequences
+            if( str2char( exp->chr, exp->linepos ) == -1 )
+                return NULL;
+            
+            // a string
+            t = &t_int;
+            break;
+
         // array literal
         case ae_primary_array:
             t = type_engine_check_exp_array_lit( env, exp );
@@ -5929,12 +5939,12 @@ t_CKBOOL escape_str( char * str_lit, int linepos )
     // create if not yet
     if( !g_escape_ready )
         escape_table( );
-
+    
     // write pointer
     char * str = str_lit;
     // unsigned because we index array of 256
     unsigned char c, c2, c3;
-
+    
     // iterate
     while( *str_lit )
     {
@@ -5943,18 +5953,18 @@ t_CKBOOL escape_str( char * str_lit, int linepos )
         {
             // advance pointer
             str_lit++;
-
+            
             // make sure next char
             if( *str_lit == '\0' )
             {
                 EM_error2( linepos, "invalid: string ends with escape charactor '\\'" );
                 return FALSE;
             }
-
+            
             // next characters
             c = *(str_lit);
             c2 = *(str_lit+1);
-
+            
             // is octal?
             if( c >= '0' && c <= '7' )
             {
@@ -5965,7 +5975,7 @@ t_CKBOOL escape_str( char * str_lit, int linepos )
                 {
                     // get next
                     c3 = *(str_lit+2);
-
+                    
                     // all three should be within range
                     if( c2 >= '0' && c2 <= '7' && c3 >= '0' && c3 <= '7' )
                     {
@@ -6003,16 +6013,44 @@ t_CKBOOL escape_str( char * str_lit, int linepos )
             // char
             *str++ = *str_lit;
         }
-
+        
         // advance pointer
         str_lit++;
     }
-
+    
     // make sure
     assert( str <= str_lit );
-
+    
     // terminate
     *str = '\0';
-
+    
     return TRUE;
+}
+
+t_CKINT str2char( char * c, int linepos )
+{
+    if(c[0] == '\\')
+    {
+        switch(c[1])
+        {
+            case '0': return '\0';
+            case '\'': return '\'';
+            case '\\': return '\\';
+            case 'a': return '\a';
+            case 'b': return '\b';
+            case 'f': return '\f';
+            case 'n': return '\n';
+            case 'r': return '\r';
+            case 't': return '\t';
+            case 'v': return 'v';
+                
+            default:
+                EM_error2( linepos, "unrecognized escape sequence '\\%c'", c[1] );
+                return -1;
+        }
+    }
+    else
+    {
+        return c[0];
+    }
 }

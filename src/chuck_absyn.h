@@ -168,6 +168,7 @@ a_Exp new_exp_from_int( long num, int pos );
 a_Exp new_exp_from_uint( unsigned long num, int pos );
 a_Exp new_exp_from_float( double num, int pos );
 a_Exp new_exp_from_str( c_str str, int pos );
+a_Exp new_exp_from_char( c_str chr, int pos );
 a_Exp new_exp_from_if( a_Exp cond, a_Exp lhs, a_Exp rhs, int pos );
 a_Exp new_exp_from_complex( a_Complex, int pos );
 a_Exp new_exp_from_polar( a_Polar, int pos );
@@ -233,7 +234,8 @@ struct a_Polar_ { a_Exp mod; a_Exp phase; int linepos; a_Exp self; };
 // enum primary exp type
 typedef enum { ae_primary_var, ae_primary_num, ae_primary_float, 
                ae_primary_str, ae_primary_array, ae_primary_exp,
-               ae_primary_hack, ae_primary_complex, ae_primary_polar, ae_primary_nil
+               ae_primary_hack, ae_primary_complex, ae_primary_polar,
+               ae_primary_char, ae_primary_nil
              } ae_Exp_Primary_Type;
 
 struct a_Exp_Primary_
@@ -247,6 +249,7 @@ struct a_Exp_Primary_
         t_CKINT num;
         t_CKFLOAT fnum;
         c_str str;
+        c_str chr;
         a_Array_Sub array;
         a_Exp exp;
         a_Complex complex;
