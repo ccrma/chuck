@@ -5874,3 +5874,53 @@ const char * Chuck_Instr_Gack::params() const
     sprintf( buffer, "( many types )" );
     return buffer;
 }
+
+
+void throw_exception(Chuck_VM_Shred * shred, const char * name)
+{
+    // we have a problem
+    fprintf( stderr,
+            "[chuck](VM): %s: shred[id=%lu:%s], PC=[%lu]\n",
+            name, shred->xid, shred->name.c_str(), shred->pc );
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
+
+void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKINT desc)
+{
+    // we have a problem
+    fprintf( stderr,
+            "[chuck](VM): %s: '%li' in shred[id=%lu:%s], PC=[%lu]\n",
+            name, desc, shred->xid, shred->name.c_str(), shred->pc );
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
+
+void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKFLOAT desc)
+{
+    // we have a problem
+    fprintf( stderr,
+            "[chuck](VM): %s: '%f' in shred[id=%lu:%s], PC=[%lu]\n",
+            name, desc, shred->xid, shred->name.c_str(), shred->pc );
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
+
+void throw_exception(Chuck_VM_Shred * shred, const char * name, const char * desc)
+{
+    // we have a problem
+    fprintf( stderr,
+            "[chuck](VM): %s: %s in shred[id=%lu:%s], PC=[%lu]\n",
+            name, desc, shred->xid, shred->name.c_str(), shred->pc );
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
+

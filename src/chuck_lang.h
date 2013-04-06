@@ -288,6 +288,24 @@ CK_DLL_MFUN( string_trim );
 CK_DLL_MFUN( string_toString );
 CK_DLL_MFUN( string_set_at );
 CK_DLL_MFUN( string_get_at );
+CK_DLL_MFUN(string_charAt);
+CK_DLL_MFUN(string_setCharAt);
+CK_DLL_MFUN(string_substring);
+CK_DLL_MFUN(string_substringN);
+CK_DLL_MFUN(string_insert);
+CK_DLL_MFUN(string_replace);
+CK_DLL_MFUN(string_replaceN);
+CK_DLL_MFUN(string_find);
+CK_DLL_MFUN(string_findStart);
+CK_DLL_MFUN(string_findStr);
+CK_DLL_MFUN(string_findStrStart);
+CK_DLL_MFUN(string_rfind);
+CK_DLL_MFUN(string_rfindStart);
+CK_DLL_MFUN(string_rfindStr);
+CK_DLL_MFUN(string_rfindStrStart);
+CK_DLL_MFUN(string_erase);
+
+
 
 
 //-----------------------------------------------------------------------------
