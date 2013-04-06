@@ -63,6 +63,9 @@ static Chuck_String * g_newline = new Chuck_String();
 
 
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: init_class_object()
 // desc: ...
@@ -982,11 +985,102 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     // add trim()
     func = make_new_mfun( "string", "trim", string_trim );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-
+    
     // add toString()
     func = make_new_mfun( "string", "toString", string_toString );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-
+    
+    // add charAt()
+    func = make_new_mfun( "int", "charAt", string_charAt );
+    func->add_arg("int", "index");
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add setCharAt()
+    func = make_new_mfun( "int", "setCharAt", string_setCharAt );
+    func->add_arg("int", "index");
+    func->add_arg("int", "theChar");
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add substring()
+    func = make_new_mfun( "string", "substring", string_substring );
+    func->add_arg("int", "start");
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add substring()
+    func = make_new_mfun( "string", "substring", string_substringN );
+    func->add_arg("int", "start");
+    func->add_arg("int", "length");
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add insert()
+    func = make_new_mfun( "void", "insert", string_insert );
+    func->add_arg("int", "position");
+    func->add_arg("string", "str");
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add replace()
+    func = make_new_mfun( "void", "replace", string_replace );
+    func->add_arg( "int", "position" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add replace()
+    func = make_new_mfun( "void", "replace", string_replaceN );
+    func->add_arg( "int", "position" );
+    func->add_arg( "int", "length" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add find()
+    func = make_new_mfun( "int", "find", string_find );
+    func->add_arg( "int", "theChar" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add find()
+    func = make_new_mfun( "int", "find", string_findStart );
+    func->add_arg( "int", "theChar" );
+    func->add_arg( "int", "start" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add find()
+    func = make_new_mfun( "int", "find", string_findStr );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add find()
+    func = make_new_mfun( "int", "find", string_findStrStart );
+    func->add_arg( "string", "str" );
+    func->add_arg( "int", "start" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add rfind()
+    func = make_new_mfun( "int", "rfind", string_rfind );
+    func->add_arg( "int", "theChar" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add rfind()
+    func = make_new_mfun( "int", "rfind", string_rfindStart );
+    func->add_arg( "int", "theChar" );
+    func->add_arg( "int", "start" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add rfind()
+    func = make_new_mfun( "int", "rfind", string_rfindStr );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add rfind()
+    func = make_new_mfun( "int", "rfind", string_rfindStrStart );
+    func->add_arg( "string", "str" );
+    func->add_arg( "int", "start" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add erase()
+    func = make_new_mfun( "int", "erase", string_erase );
+    func->add_arg( "int", "start" );
+    func->add_arg( "int", "length" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
 /*    // add at()
     func = make_new_mfun( "int", "ch", string_set_at );
     func->add_arg( "int", "index" );
@@ -3003,6 +3097,315 @@ CK_DLL_MFUN( string_toString )
     Chuck_String * s = (Chuck_String *)SELF;
     RETURN->v_string = s;
 }
+
+CK_DLL_MFUN(string_charAt)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT index = GET_NEXT_INT(ARGS);
+    
+    if(index < 0 || index >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", index);
+        RETURN->v_int = -1;
+        return;
+    }
+    
+    RETURN->v_int = str->str.at(index);
+}
+
+CK_DLL_MFUN(string_setCharAt)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT index = GET_NEXT_INT(ARGS);
+    t_CKINT the_char = GET_NEXT_INT(ARGS);
+    
+    if(index < 0 || index >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", index);
+        RETURN->v_int = -1;
+        return;
+    }
+
+    str->str.at(index) = the_char;
+    RETURN->v_int = str->str.at(index);
+}
+
+CK_DLL_MFUN(string_substring)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT start = GET_NEXT_INT(ARGS);
+    
+    if(start < 0 || start >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        RETURN->v_string = NULL;
+        return;
+    }
+
+    Chuck_String * ss = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    ss->str = str->str.substr(start);
+    
+    RETURN->v_string = ss;
+}
+
+CK_DLL_MFUN(string_substringN)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT start = GET_NEXT_INT(ARGS);
+    t_CKINT length = GET_NEXT_INT(ARGS);
+    
+    if(start < 0 || start >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        RETURN->v_string = NULL;
+        return;
+    }
+
+    if(length < 0 || start+length >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", length);
+        RETURN->v_string = NULL;
+        return;
+    }
+    
+    Chuck_String * ss = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    ss->str = str->str.substr(start, length);
+    
+    RETURN->v_string = ss;
+}
+
+CK_DLL_MFUN(string_insert)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT position = GET_NEXT_INT(ARGS);
+    Chuck_String * str2 = GET_NEXT_STRING(ARGS);
+    
+    if(position < 0 || position >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", position);
+        return;
+    }
+    if(str2 == NULL)
+    {
+        throw_exception(SHRED, "NullPointerException");
+        return;
+    }
+
+
+    str->str.insert(position, str2->str);
+}
+
+CK_DLL_MFUN(string_replace)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT position = GET_NEXT_INT(ARGS);
+    Chuck_String * str2 = GET_NEXT_STRING(ARGS);
+    
+    if(position < 0 || position >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", position);
+        return;
+    }
+    if(str2 == NULL)
+    {
+        throw_exception(SHRED, "NullPointerException");
+        return;
+    }
+
+    string::size_type length;
+    if(position + str2->str.length() > str->str.length())
+        length = str->str.length() - position;
+    else
+        length = str2->str.length();
+    
+    str->str.replace(position, length, str2->str);
+}
+
+CK_DLL_MFUN(string_replaceN)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT position = GET_NEXT_INT(ARGS);
+    t_CKINT length = GET_NEXT_INT(ARGS);
+    Chuck_String * str2 = GET_NEXT_STRING(ARGS);
+
+    if(position < 0 || position >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", position);
+        return;
+    }
+
+    if(length < 0 || position+length >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", length);
+        return;
+    }
+
+    if(str2 == NULL)
+    {
+        throw_exception(SHRED, "NullPointerException");
+        return;
+    }
+
+    str->str.replace(position, length, str2->str);
+}
+
+CK_DLL_MFUN(string_find)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT the_char = GET_NEXT_INT(ARGS);
+    
+    string::size_type index = str->str.find(the_char);
+    
+    if(index == string::npos)
+        RETURN->v_int = -1;
+    else
+        RETURN->v_int = index;
+}
+
+CK_DLL_MFUN(string_findStart)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT the_char = GET_NEXT_INT(ARGS);
+    t_CKINT start = GET_NEXT_INT(ARGS);
+    
+    if(start < 0 || start >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        RETURN->v_int = -1;
+        return;
+    }
+
+    string::size_type index = str->str.find(the_char, start);
+    
+    if(index == string::npos)
+        RETURN->v_int = -1;
+    else
+        RETURN->v_int = index;
+}
+
+CK_DLL_MFUN(string_findStr)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    Chuck_String * the_str = GET_NEXT_STRING(ARGS);
+    
+    string::size_type index = str->str.find(the_str->str);
+    
+    if(index == string::npos)
+        RETURN->v_int = -1;
+    else
+        RETURN->v_int = index;
+}
+
+CK_DLL_MFUN(string_findStrStart)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    Chuck_String * the_str = GET_NEXT_STRING(ARGS);
+    t_CKINT start = GET_NEXT_INT(ARGS);
+    
+    if(start < 0 || start >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        RETURN->v_int = -1;
+        return;
+    }
+    
+    string::size_type index = str->str.find(the_str->str, start);
+    
+    if(index == string::npos)
+        RETURN->v_int = -1;
+    else
+        RETURN->v_int = index;
+}
+
+CK_DLL_MFUN(string_rfind)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT the_char = GET_NEXT_INT(ARGS);
+    
+    string::size_type index = str->str.rfind(the_char);
+    
+    if(index == string::npos)
+        RETURN->v_int = -1;
+    else
+        RETURN->v_int = index;
+}
+
+CK_DLL_MFUN(string_rfindStart)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT the_char = GET_NEXT_INT(ARGS);
+    t_CKINT start = GET_NEXT_INT(ARGS);
+    
+    if(start < 0 || start >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        RETURN->v_int = -1;
+        return;
+    }
+    
+    string::size_type index = str->str.rfind(the_char, start);
+    
+    if(index == string::npos)
+        RETURN->v_int = -1;
+    else
+        RETURN->v_int = index;
+}
+
+CK_DLL_MFUN(string_rfindStr)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    Chuck_String * the_str = GET_NEXT_STRING(ARGS);
+    
+    string::size_type index = str->str.find(the_str->str);
+    
+    if(index == string::npos)
+        RETURN->v_int = -1;
+    else
+        RETURN->v_int = index;
+}
+
+CK_DLL_MFUN(string_rfindStrStart)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    Chuck_String * the_str = GET_NEXT_STRING(ARGS);
+    t_CKINT start = GET_NEXT_INT(ARGS);
+    
+    if(start < 0 || start >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        RETURN->v_int = -1;
+        return;
+    }
+    
+    string::size_type index = str->str.find(the_str->str, start);
+    
+    if(index == string::npos)
+        RETURN->v_int = -1;
+    else
+        RETURN->v_int = index;
+}
+
+CK_DLL_MFUN(string_erase)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT start = GET_NEXT_INT(ARGS);
+    t_CKINT length = GET_NEXT_INT(ARGS);
+    
+    if(start < 0 || start >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        return;
+    }
+    
+    if(length < 0 || start+length >= str->str.length())
+    {
+        throw_exception(SHRED, "IndexOutOfBoundsException", length);
+        return;
+    }
+    
+    str->str.erase(start, length);
+}
+
 
 /*
 CK_DLL_MFUN( string_set_at )
