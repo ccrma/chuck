@@ -6027,7 +6027,7 @@ t_CKBOOL escape_str( char * str_lit, int linepos )
     return TRUE;
 }
 
-t_CKINT str2char( char * c, int linepos )
+t_CKINT str2char( const char * c, int linepos )
 {
     if(c[0] == '\\')
     {
