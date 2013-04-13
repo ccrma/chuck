@@ -3778,7 +3778,7 @@ ADSR :: ADSR() : Envelope()
   releaseRate = (MY_FLOAT) 0.01;
   m_decayTime = (MY_FLOAT) -1.0; // not used
   m_releaseTime = (MY_FLOAT) -1.0; // not used
-  state = ATTACK;
+  state = DONE;
 }
 
 ADSR :: ~ADSR()
