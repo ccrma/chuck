@@ -8520,8 +8520,13 @@ bool Mandolin :: setBodyIR( const char * path, bool isRaw )
 
 Mandolin :: ~Mandolin()
 {
-    for( int i=0; i<12; i++ )
-        SAFE_DELETE( soundfile[i] );
+//    for( int i=0; i<12; i++ )
+//        SAFE_DELETE( soundfile[i] );
+    
+    // chuck: all the soundfiles are the same object, only delete one of them 
+    SAFE_DELETE(soundfile[0]);
+    for( int i=1; i<12; i++ )
+        soundfile[i] = NULL;
 }
 
 void Mandolin :: pluck(MY_FLOAT amplitude)
