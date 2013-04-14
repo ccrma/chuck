@@ -304,6 +304,8 @@ CK_DLL_MFUN(string_rfindStart);
 CK_DLL_MFUN(string_rfindStr);
 CK_DLL_MFUN(string_rfindStrStart);
 CK_DLL_MFUN(string_erase);
+CK_DLL_MFUN(string_toInt);
+CK_DLL_MFUN(string_toFloat);
 
 
 
