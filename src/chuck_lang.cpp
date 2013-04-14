@@ -1080,6 +1080,22 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "int", "start" );
     func->add_arg( "int", "length" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add toInt()
+    func = make_new_mfun( "int", "toInt", string_toInt );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add toFloat()
+    func = make_new_mfun( "float", "toFloat", string_toFloat );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+//    // add toTime()
+//    func = make_new_mfun( "float", "toTime", string_toFloat );
+//    if( !type_engine_import_mfun( env, func ) ) goto error;
+//
+//    // add toDur()
+//    func = make_new_mfun( "float", "toDur", string_toFloat );
+//    if( !type_engine_import_mfun( env, func ) ) goto error;
     
 /*    // add at()
     func = make_new_mfun( "int", "ch", string_set_at );
@@ -3406,6 +3422,21 @@ CK_DLL_MFUN(string_erase)
     str->str.erase(start, length);
 }
 
+CK_DLL_MFUN( string_toInt )
+{
+    // get pointer to self
+    Chuck_String * str = (Chuck_String *)SELF;
+    // convert to int
+    RETURN->v_int = ::atoi( str->str.c_str() );
+}
+
+CK_DLL_MFUN( string_toFloat )
+{
+    // get pointer to self
+    Chuck_String * str = (Chuck_String *)SELF;
+    // convert to int
+    RETURN->v_float = (t_CKFLOAT)::atof( str->str.c_str() );
+}
 
 /*
 CK_DLL_MFUN( string_set_at )
