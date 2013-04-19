@@ -16785,6 +16785,46 @@ struct mathdr {
   // There's more, but it's of variable length
 };
 
+
+XWriteThread *WvOut::s_writeThread = NULL;
+
+
+size_t WvOut::fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream)
+{
+    return s_writeThread->fwrite(ptr, size, nitems, stream);
+}
+
+int WvOut::fseek(FILE *stream, long offset, int whence)
+{
+    return s_writeThread->fseek(stream, offset, whence);
+}
+
+int WvOut::fflush(FILE *stream)
+{
+    return s_writeThread->fflush(stream);
+}
+
+int WvOut::fclose(FILE *stream)
+{
+    return s_writeThread->fclose(stream);
+}
+
+size_t WvOut::fread(void *ptr, size_t size, size_t nitems, FILE *stream)
+{
+    // can't read asynchronously (yet)
+    assert(0);
+    return 0;
+}
+
+void WvOut::shutdown()
+{
+    if(s_writeThread)
+    {
+        s_writeThread->shutdown(); // deletes itself
+        s_writeThread = NULL;
+    }
+}
+
 WvOut :: WvOut()
 {
   init();
@@ -16817,6 +16857,9 @@ void WvOut :: init()
   start = TRUE;
   flush = 0;
   fileGain = 1;
+    
+    if(s_writeThread == NULL)
+        s_writeThread = new XWriteThread(2<<20, 32);
 }
 
 void WvOut :: closeFile( void )
@@ -25348,6 +25391,8 @@ t_CKBOOL stk_detach( t_CKUINT type, void * data )
     
     // TODO: release the WvOut
     g_wv.clear();
+    
+    WvOut::shutdown();
     
     return TRUE;
 }

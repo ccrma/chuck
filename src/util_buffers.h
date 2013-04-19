@@ -291,6 +291,34 @@ private:
 };
 
 
+//-----------------------------------------------------------------------------
+// name: class FastCircularBuffer
+// desc: uses memcpy instead of assignment
+//       useful for streaming large blocks of data
+//-----------------------------------------------------------------------------
+class FastCircularBuffer
+{
+public:
+    FastCircularBuffer();
+    ~FastCircularBuffer();
+    
+public:
+    t_CKUINT initialize( t_CKUINT num_elem, t_CKUINT width );
+    void cleanup();
+    
+public:
+    t_CKUINT get( void * data, t_CKUINT num_elem );
+    t_CKUINT put( void * data, t_CKUINT num_elem );
+    inline bool hasMore() { return (m_read_offset != m_write_offset); }
+    inline void clear() { m_read_offset = m_write_offset = 0; }
+    
+protected:
+    t_CKBYTE * m_data;
+    t_CKUINT   m_data_width;
+    t_CKUINT   m_read_offset;
+    t_CKUINT   m_write_offset;
+    t_CKUINT   m_max_elem;
+};
 
 
 #endif
