@@ -36,6 +36,7 @@
 #include "util_buffers.h"
 #include "chuck_errmsg.h"
 
+
 #ifndef CALLBACK
 #define CALLBACK
 #endif
@@ -860,3 +861,166 @@ void DeccumBuffer::put( SAMPLE * buffer, t_CKINT num_elem )
         }
     }
 }
+
+
+//-----------------------------------------------------------------------------
+// name: SMCircularBuffer()
+// desc: constructor
+//-----------------------------------------------------------------------------
+FastCircularBuffer::FastCircularBuffer()
+{
+    m_data = NULL;
+    m_data_width = m_read_offset = m_write_offset = m_max_elem = 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~SMCircularBuffer()
+// desc: destructor
+//-----------------------------------------------------------------------------
+FastCircularBuffer::~FastCircularBuffer()
+{
+    this->cleanup();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: initialize()
+// desc: initialize
+//-----------------------------------------------------------------------------
+t_CKUINT FastCircularBuffer::initialize( t_CKUINT num_elem, t_CKUINT width )
+{
+    // cleanup
+    cleanup();
+    
+    // allocate
+    m_data = (t_CKBYTE *)malloc( num_elem * width );
+    if( !m_data )
+        return false;
+    
+    m_data_width = width;
+    m_read_offset = 0;
+    m_write_offset = 0;
+    m_max_elem = num_elem;
+    
+    return true;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: cleanup()
+// desc: cleanup
+//-----------------------------------------------------------------------------
+void FastCircularBuffer::cleanup()
+{
+    if( !m_data )
+        return;
+    
+    free( m_data );
+    
+    m_data = NULL;
+    m_data_width = m_read_offset = m_write_offset = m_max_elem = 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: put()
+// desc: put
+//-----------------------------------------------------------------------------
+t_CKUINT FastCircularBuffer::put( void * _data, t_CKUINT num_elem )
+{
+    t_CKBYTE * data = (t_CKBYTE *)_data;
+    
+    // TODO: overflow checking
+    if(!(num_elem < ((m_read_offset > m_write_offset) ?
+                     (m_read_offset - m_write_offset) :
+                     (m_max_elem - m_write_offset + m_read_offset))))
+    {
+        return 0;
+    }
+    
+    t_CKUINT elems_before_end = ck_min(num_elem, m_max_elem - m_write_offset);
+    t_CKUINT elems_after_end = num_elem - elems_before_end;
+    
+    if(elems_before_end)
+        memcpy(m_data + m_write_offset * m_data_width,
+               data,
+               elems_before_end * m_data_width);
+    
+    if(elems_after_end)
+        memcpy(m_data,
+               data + elems_before_end * m_data_width,
+               elems_after_end * m_data_width);
+    
+    if(elems_after_end)
+        m_write_offset = elems_after_end;
+    else
+        m_write_offset += elems_before_end;
+    
+    return elems_before_end + elems_after_end;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get()
+// desc: get
+//-----------------------------------------------------------------------------
+t_CKUINT FastCircularBuffer::get( void * _data, t_CKUINT num_elem )
+{
+    t_CKBYTE * data = (t_CKBYTE *)_data;
+    
+    t_CKUINT elems_before_end;
+    t_CKUINT elems_after_end;
+    if(m_write_offset < m_read_offset)
+    {
+        elems_before_end = m_max_elem - m_read_offset;
+        elems_after_end = m_write_offset;
+    }
+    else
+    {
+        elems_before_end = m_write_offset - m_read_offset;
+        elems_after_end = 0;
+    }
+    
+    if(elems_before_end > num_elem)
+    {
+        elems_before_end = num_elem;
+        elems_after_end = 0;
+    }
+    else if(elems_before_end + elems_after_end > num_elem)
+    {
+        elems_after_end = num_elem - elems_before_end;
+    }
+    
+    //    UInt32 elems_before_end = min(m_write_offset - m_read_offset, m_max_elem - m_read_offset);
+    //    UInt32 elems_after_end = num_elem - elems_before_end;
+    
+    if(elems_before_end)
+        memcpy(data,
+               m_data + m_read_offset * m_data_width,
+               elems_before_end * m_data_width);
+    
+    if(elems_after_end)
+        memcpy(data + elems_before_end * m_data_width,
+               m_data,
+               elems_after_end * m_data_width);
+    
+    if(elems_after_end)
+        m_read_offset = elems_after_end;
+    else
+        m_read_offset += elems_before_end;
+    
+    return elems_before_end + elems_after_end;
+}
+
+

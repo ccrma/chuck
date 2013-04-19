@@ -37,7 +37,10 @@
 
 
 #include "chuck_def.h"
-
+#include <stdio.h>
+// forward declaration to break circular dependencies
+class FastCircularBuffer;
+template<typename T> class CircularBuffer;
 
 #if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
   #include <pthread.h>
@@ -77,7 +80,7 @@ public:
     bool start( THREAD_FUNCTION routine, void * ptr = NULL );
 
     // wait the specified number of milliseconds for the thread to terminate
-    bool wait( long milliseconds = -1 );
+    bool wait( long milliseconds = -1, bool cancel = true );
 
 public:
     // test for a thread cancellation request.
@@ -111,6 +114,81 @@ protected:
     MUTEX mutex;
 };
 
+
+//-----------------------------------------------------------------------------
+// name: XWriteThread()
+// desc: utility class for scheduling writes to be executed on a separate
+//       thread. 
+//-----------------------------------------------------------------------------
+class XWriteThread
+{
+public:
+    static XWriteThread * shared();
+    
+    XWriteThread(size_t data_buffer_size = 4096, size_t msg_buffer_size = 32);
+    
+    size_t fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream);
+    int fseek(FILE *stream, long offset, int whence);
+    int fflush(FILE *stream);
+    int fclose(FILE *stream);
+    
+    // DO NOT DELETE INSTANCES OF XWriteThread
+    // instead call shutdown and they will be cleaned up in the background
+    void shutdown();
+    
+private:
+    
+    const static size_t PRODUCER_BUFFER_SIZE = 1024;
+    
+    // DO NOT DELETE INSTANCES OF XWriteThread
+    // instead call shutdown and they will be cleaned up in the background
+    ~XWriteThread();
+
+    void flush_data_buffer();
+    
+#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+    static void * write_cb(void * _thiss);
+#elif defined(__PLATFORM_WIN32__)
+    static unsigned write_cb(void * _thiss);
+#endif
+
+    t_CKBOOL m_thread_exit;
+    
+    XThread m_thread;
+    FastCircularBuffer * m_data_buffer;
+    size_t m_bytes_in_buffer;
+    t_CKBYTE * m_thread_buffer;
+    FILE * m_stream;
+    
+    struct Message
+    {
+        enum
+        {
+            WRITE,
+            SEEK,
+            FLUSH,
+            CLOSE,
+            SHUTDOWN
+        } operation;
+        
+        FILE * file;
+        
+        union
+        {
+            struct
+            {
+                size_t data_size;
+            } write;
+            
+            struct
+            {
+                long offset;
+                int whence;
+            } seek;
+        };
+    };
+    CircularBuffer<Message> * m_msg_buffer;
+};
 
 
 

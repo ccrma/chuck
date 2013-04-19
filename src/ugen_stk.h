@@ -5391,6 +5391,7 @@ public: // SWAP formerly protected
 #define __WVOUT_H
 
 #include <stdio.h>
+#include "util_thread.h"
 
 #define BUFFER_SIZE 1024  // sample frames
 
@@ -5406,6 +5407,18 @@ class WvOut : public Stk
   static const FILE_TYPE WVOUT_AIF; /*!< AIFF file type. */
   static const FILE_TYPE WVOUT_MAT; /*!< Matlab MAT-file type. */
 
+    // chuck: asynchronous data writer thread
+    static XWriteThread * s_writeThread;
+    
+    // chuck: override stdio fwrite/etc. functions
+    static size_t fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream);
+    static int fseek(FILE *stream, long offset, int whence);
+    static int fflush(FILE *stream);
+    static int fclose(FILE *stream);
+    static size_t fread(void *ptr, size_t size, size_t nitems, FILE *stream);
+    
+    static void shutdown();
+    
   //! Default constructor.
   WvOut();
 
