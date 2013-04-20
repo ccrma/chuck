@@ -75,12 +75,15 @@ public:
     virtual ~Chuck_VM_Object() { }
 
 public:
-    // add reference
-    void add_ref();
+    // add reference (ge: april 2013: made these virtual)
+    virtual void add_ref();
     // release reference
-    void release();
+    virtual void release();
     // lock
-    void lock();
+    virtual void lock();
+    
+    // NOTE: be careful when overriding these, should always
+    // explicitly call up to ChucK_VM_Object (ge: 2013)
 
 public:
     // unlock_all: dis/allow deletion of locked objects
