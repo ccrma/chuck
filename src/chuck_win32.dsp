@@ -127,6 +127,10 @@ SOURCE=.\chuck_instr.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\chuck_io.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\chuck_lang.cpp
 # End Source File
 # Begin Source File
@@ -284,6 +288,10 @@ SOURCE=.\util_raw.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\util_serial.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\util_sndfile.c
 # End Source File
 # Begin Source File
@@ -345,6 +353,10 @@ SOURCE=.\chuck_globals.h
 # Begin Source File
 
 SOURCE=.\chuck_instr.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\chuck_io.h
 # End Source File
 # Begin Source File
 
@@ -497,6 +509,10 @@ SOURCE=.\util_opsc.h
 # Begin Source File
 
 SOURCE=.\util_raw.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\util_serial.h
 # End Source File
 # Begin Source File
 
