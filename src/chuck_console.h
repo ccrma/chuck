@@ -2,7 +2,7 @@
   ChucK Concurrent, On-the-fly Audio Programming Language
     Compiler and Virtual Machine
 
-  Copyright (c) 2003 Ge Wang and Perry R. Cook.  All rights reserved.
+  Copyright (c) 2004 Ge Wang and Perry R. Cook.  All rights reserved.
     http://chuck.stanford.edu/
     http://chuck.cs.princeton.edu/
 
@@ -26,7 +26,7 @@
 // file: chuck_console.h
 // desc: chuck command line console
 //
-// author: Spencer Salazar (spencer@ccrma.stanford.edu | ssalazar@princeton.edu)
+// author: Spencer Salazar (spencer@ccrma.stanford.edu)
 // date: Autumn 2005
 //-----------------------------------------------------------------------------
 #ifndef __CHUCK_CONSOLE_H__

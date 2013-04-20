@@ -1,33 +1,32 @@
 /*----------------------------------------------------------------------------
-    ChucK Concurrent, On-the-fly Audio Programming Language
-      Compiler and Virtual Machine
+  ChucK Concurrent, On-the-fly Audio Programming Language
+    Compiler and Virtual Machine
 
-    Copyright (c) 2004 Ge Wang and Perry R. Cook.  All rights reserved.
-      http://chuck.cs.princeton.edu/
-      http://soundlab.cs.princeton.edu/
+  Copyright (c) 2004 Ge Wang and Perry R. Cook.  All rights reserved.
+    http://chuck.stanford.edu/
+    http://chuck.cs.princeton.edu/
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-    U.S.A.
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+  U.S.A.
 -----------------------------------------------------------------------------*/
 
 //-----------------------------------------------------------------------------
 // name: util_thread.h
-// desc: ...
+// desc: thread utilities
 //
-// authors: Ge Wang (gewang@cs.princeton.edu)
-//          Perry R. Cook (prc@cs.princeton.edu)
+// authors: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
 // based on STK's Thread
 //          Perry R. Cook + Gary Scavone
 // date: autumn 2004
@@ -35,12 +34,14 @@
 #ifndef __UTIL_THREAD_H__
 #define __UTIL_THREAD_H__
 
-
 #include "chuck_def.h"
 #include <stdio.h>
+
+
 // forward declaration to break circular dependencies
 class FastCircularBuffer;
 template<typename T> class CircularBuffer;
+
 
 #if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
   #include <pthread.h>
@@ -134,10 +135,11 @@ public:
 	// constructor
     XWriteThread( size_t data_buffer_size = 4096, size_t msg_buffer_size = 32 );
     
+public:
     size_t fwrite( const void * ptr, size_t size, size_t nitems, FILE * stream );
-    int fseek( FILE *stream, long offset, int whence );
-    int fflush( FILE *stream );
-    int fclose( FILE *stream );
+    int fseek( FILE * stream, long offset, int whence );
+    int fflush( FILE * stream );
+    int fclose( FILE * stream );
     
     // DO NOT DELETE INSTANCES OF XWriteThread
     // instead call shutdown and they will be cleaned up in the background

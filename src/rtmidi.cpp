@@ -205,8 +205,8 @@ struct CoreMidiData {
 */
 static void readable_name(MIDIEndpointRef end, char *buffer, int bufsize)
 {  
-    MIDIEntityRef ent = NULL;
-    MIDIDeviceRef dev = NULL;
+    MIDIEntityRef ent = 0; // NULL;
+    MIDIDeviceRef dev = 0; //NULL;
     int ii, count, length;//, ret;
     SInt32 *idarray;
     CFDataRef data = NULL;
@@ -285,12 +285,12 @@ static void readable_name(MIDIEndpointRef end, char *buffer, int bufsize)
 static int get_device_name(SInt32 uniqueid, char *buffer, int bufsize)
 {
     int ret;
-    MIDIObjectRef object = NULL; // 1.3.1.0
+    MIDIObjectRef object = 0; // NULL; // 1.3.1.0
     MIDIObjectType type;
 
-    MIDIDeviceRef dev = NULL;
-    MIDIEntityRef ent = NULL;
-    MIDIEndpointRef end = NULL;
+    MIDIDeviceRef dev = 0; // NULL;
+    MIDIEntityRef ent = 0; // NULL;
+    MIDIEndpointRef end = 0; // NULL;
     CFStringRef name = NULL;
 
     ret = MIDIObjectFindByUniqueID(uniqueid, &object, &type);

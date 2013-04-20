@@ -2,7 +2,7 @@
   ChucK Concurrent, On-the-fly Audio Programming Language
     Compiler and Virtual Machine
 
-  Copyright (c) 2003 Ge Wang and Perry R. Cook.  All rights reserved.
+  Copyright (c) 2004 Ge Wang and Perry R. Cook.  All rights reserved.
     http://chuck.stanford.edu/
     http://chuck.cs.princeton.edu/
 
@@ -23,7 +23,7 @@
 -----------------------------------------------------------------------------*/
 
 //-----------------------------------------------------------------------------
-// file: chuck_compile.h
+// file: chuck_compile.cpp
 // desc: chuck compile system unifying parser, type checker, and emitter
 //
 // author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
