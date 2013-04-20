@@ -41,7 +41,7 @@
 
 // static instantiation
 const size_t XWriteThread::PRODUCER_BUFFER_SIZE = 1024;
-const XWriteThread * o_defaultWriteThread = NULL;
+XWriteThread * XWriteThread::o_defaultWriteThread = NULL;
 
 
 
