@@ -2,7 +2,7 @@
   ChucK Concurrent, On-the-fly Audio Programming Language
     Compiler and Virtual Machine
 
-  Copyright (c) 2003 Ge Wang and Perry R. Cook.  All rights reserved.
+  Copyright (c) 2004 Ge Wang and Perry R. Cook.  All rights reserved.
     http://chuck.stanford.edu/
     http://chuck.cs.princeton.edu/
 
@@ -26,10 +26,10 @@
 // name: chuck_lang.cpp
 // desc: chuck class library base
 //
-// author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
-//         Spencer Salazar (spencer@ccrma.stanford.edu)
-//         Ananya Misra (amisra@cs.princeton.edu)
-//         Andrew Schran (aschran@princeton.edu)
+// authors: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
+//          Spencer Salazar (spencer@ccrma.stanford.edu)
+//          Ananya Misra (amisra@cs.princeton.edu)
+//          Andrew Schran (aschran@princeton.edu)
 //    date: spring 2005
 //-----------------------------------------------------------------------------
 #include "chuck_lang.h"
