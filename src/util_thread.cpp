@@ -38,6 +38,15 @@
 
 
 
+
+// static instantiation
+const size_t XWriteThread::PRODUCER_BUFFER_SIZE = 1024;
+const XWriteThread * o_defaultWriteThread = NULL;
+
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: XThread()
 // desc: ...
@@ -197,32 +206,44 @@ void XMutex::release( )
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: shared()
 // desc: get XWriteThread shared instance
 //-----------------------------------------------------------------------------
 XWriteThread * XWriteThread::shared()
 {
-    static XWriteThread s_defaultWriteThread;
-    return &s_defaultWriteThread;
+    // static XWriteThread s_defaultWriteThread;
+
+	// check
+	if( o_defaultWriteThread == NULL )
+		o_defaultWriteThread = new XWriteThread();
+    
+	return o_defaultWriteThread;
 }
+
+
 
 
 //-----------------------------------------------------------------------------
 // name: XWriteThread()
 // desc: constructor
 //-----------------------------------------------------------------------------
-XWriteThread::XWriteThread(size_t data_buffer_size, size_t msg_buffer_size) :
-m_msg_buffer(new CircularBuffer<Message>(msg_buffer_size)),
-m_data_buffer(new FastCircularBuffer),
-m_thread_buffer(new t_CKBYTE[data_buffer_size])
+XWriteThread::XWriteThread(size_t data_buffer_size, size_t msg_buffer_size)
+    :
+    m_msg_buffer(new CircularBuffer<Message>(msg_buffer_size)),
+    m_data_buffer(new FastCircularBuffer),
+    m_thread_buffer(new t_CKBYTE[data_buffer_size])
 {
-    m_data_buffer->initialize(data_buffer_size, sizeof(char));
+    m_data_buffer->initialize( data_buffer_size, sizeof(char) );
     m_thread_exit = FALSE;
-    m_thread.start(write_cb, this);
+    m_thread.start( write_cb, this );
     m_stream = NULL;
     m_bytes_in_buffer = 0;
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -231,10 +252,12 @@ m_thread_buffer(new t_CKBYTE[data_buffer_size])
 //-----------------------------------------------------------------------------
 XWriteThread::~XWriteThread()
 {
-    SAFE_DELETE(m_msg_buffer);
-    SAFE_DELETE(m_data_buffer);
-    SAFE_DELETE_ARRAY(m_thread_buffer);
+    SAFE_DELETE( m_msg_buffer );
+    SAFE_DELETE( m_data_buffer );
+    SAFE_DELETE_ARRAY( m_thread_buffer );
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -245,10 +268,12 @@ void XWriteThread::shutdown()
 {
     Message msg;
     msg.operation = Message::SHUTDOWN;
-    m_msg_buffer->put(msg);
+    m_msg_buffer->put( msg );
     
-    m_thread.wait(-1, false);
+    m_thread.wait( -1, false );
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -276,6 +301,8 @@ size_t XWriteThread::fwrite(const void * ptr, size_t size, size_t nitems, FILE *
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: fseek()
 // desc: ...
@@ -295,6 +322,8 @@ int XWriteThread::fseek(FILE *stream, long offset, int whence)
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: fflush()
 // desc: ...
@@ -310,6 +339,8 @@ int XWriteThread::fflush(FILE *stream)
     
     return 0;
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -329,6 +360,8 @@ int XWriteThread::fclose(FILE *stream)
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: flush_data_buffer()
 // desc: ...
@@ -346,6 +379,8 @@ void XWriteThread::flush_data_buffer()
         m_bytes_in_buffer = 0;
     }
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -404,10 +439,3 @@ unsigned XWriteThread::write_cb(void * _thiss)
     
     return 0;
 }
-
-
-
-
-
-
-
