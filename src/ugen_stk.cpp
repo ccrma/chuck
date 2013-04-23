@@ -5946,6 +5946,7 @@ Chorus :: Chorus(MY_FLOAT baseDelay)
 {
   delayLine[0] = delayLine[1] = NULL;
   mods[0] = new WaveLoop( "special:sinewave", TRUE );
+  mods[1] = NULL;
   set(baseDelay, 4);
   setDelay( baseDelay );
   setModDepth( .5 );
