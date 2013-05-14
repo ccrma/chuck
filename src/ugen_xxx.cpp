@@ -3823,10 +3823,22 @@ struct LiSaMulti_data
             if(in<0.) in = -in; 
 			for (t_CKINT i=0; i<maxvoices; i++) {
 				if(play[i]) tempsample += getSamp((t_CKDOUBLE)in * (loop_end[i] - loop_start[i]) + loop_start[i], i);
+                
+                // spencer 2013/5/13: fix LiSa track-mode multichannel
+                for(t_CKINT j=0;j<num_chans;j++) {
+                    //outsamples[j] += tempsample; //mono for now, testing...
+                    outsamples[j] += tempsample * channelGain[i][j]; //channelGain should return gain for voice i in channel j
+                }
 			}
         } else if(track==2 && play[0]) {
             if(in<0.) in = -in; //only use voice 0 when tracking with durs.
             tempsample = getSamp( (t_CKDOUBLE)in, 0 );
+            
+            // spencer 2013/5/13: fix LiSa track-mode multichannel
+            for(t_CKINT j=0;j<num_chans;j++) {
+                //outsamples[j] += tempsample; //mono for now, testing...
+                outsamples[j] += tempsample * channelGain[0][j]; //channelGain should return gain for voice i in channel j
+            }
         }
 
         return outsamples;
