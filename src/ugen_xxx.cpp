@@ -3826,7 +3826,7 @@ struct LiSaMulti_data
             if(in<0.) in = -in; 
 			for (t_CKINT i=0; i<maxvoices; i++) {
 				if(play[i]) {
-                    t_CKINT location = loop_start[i] + (t_CKDOUBLE)in * (loop_end[i] - loop_start[i]);
+                    t_CKDOUBLE location = loop_start[i] + (t_CKDOUBLE)in * (loop_end[i] - loop_start[i]);
                     tempsample = getSamp(location, i);
                     
                     // spencer 2013/5/13: fix LiSa track-mode multichannel
