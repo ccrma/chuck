@@ -3621,7 +3621,8 @@ struct LiSaMulti_data
 			for(t_CKINT j=2; j<num_chans; j++) {
 				channelGain[i][j] = 1.;
 			}
-			channelGain[i][0] = 0.707;
+			channelGain[i][0] = 1.0;
+//			channelGain[i][0] = 0.707;
 //			channelGain[i][1] = 0.707;
         }
         
