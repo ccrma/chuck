@@ -23,7 +23,7 @@ SinOsc s => LiSa loopme => dac;
 1000::ms => loopme.loopEnd;
 
 // set recording ramp time
-loopme.recRamp(250::ms);
+loopme.recRamp(25::ms);
 
 // start recording input
 loopme.record(1);
