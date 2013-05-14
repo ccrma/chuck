@@ -3,7 +3,7 @@ SndBuf buf;
 LiSa loopme => dac;
 
 //change this path to your own sample
-"/Users/dan/Files/Chuck/LiSa_examples/TomVega.wav" => buf.read;
+me.sourceDir() + "/geetar.wav" => buf.read;
 
 //set lisa buffer size to sample size
 buf.samples()::samp => loopme.duration;

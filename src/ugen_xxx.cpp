@@ -869,7 +869,7 @@ static t_CKUINT LiSaMulti_offset_data = 0;
 // name: lisa_query()
 // desc: ...
 //-----------------------------------------------------------------------------
-#define LiSa_channels 8 //max channels for multichannel LiSa
+#define LiSa_channels 1 //max channels for multichannel LiSa
 DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
 {
     Chuck_Env * env = Chuck_Env::instance();
@@ -882,7 +882,7 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
 	
 	
-    if( !type_engine_import_ugen_begin( env, "LiSa", "UGen_Stereo", env->global(),
+    if( !type_engine_import_ugen_begin( env, "LiSa", "UGen", env->global(),
                                         LiSaMulti_ctor, LiSaMulti_dtor,
                                         LiSaMulti_tick, LiSaMulti_pmsg, 1, LiSa_channels ))
         return FALSE;
@@ -3588,6 +3588,8 @@ struct LiSaMulti_data
             fprintf(stderr, "LiSaBasic: unable to allocate memory!\n");
             return false;
         }
+        
+        memset(mdata, 0, (length + 1) * sizeof(SAMPLE));
             
         mdata_len = length;
         maxvoices = 10; // default; user can set
@@ -3620,7 +3622,7 @@ struct LiSaMulti_data
 				channelGain[i][j] = 1.;
 			}
 			channelGain[i][0] = 0.707;
-			channelGain[i][1] = 0.707;
+//			channelGain[i][1] = 0.707;
         }
         
         return true;
@@ -3822,12 +3824,14 @@ struct LiSaMulti_data
         } else if(track==1) {
             if(in<0.) in = -in; 
 			for (t_CKINT i=0; i<maxvoices; i++) {
-				if(play[i]) tempsample += getSamp((t_CKDOUBLE)in * (loop_end[i] - loop_start[i]) + loop_start[i], i);
-                
-                // spencer 2013/5/13: fix LiSa track-mode multichannel
-                for(t_CKINT j=0;j<num_chans;j++) {
-                    //outsamples[j] += tempsample; //mono for now, testing...
-                    outsamples[j] += tempsample * channelGain[i][j]; //channelGain should return gain for voice i in channel j
+				if(play[i]) {
+                    t_CKINT location = loop_start[i] + (t_CKDOUBLE)in * (loop_end[i] - loop_start[i]);
+                    tempsample = getSamp(location, i);
+                    
+                    // spencer 2013/5/13: fix LiSa track-mode multichannel
+                    for(t_CKINT j=0;j<num_chans;j++) {
+                        outsamples[j] += tempsample * channelGain[i][j]; //channelGain should return gain for voice i in channel j
+                    }
                 }
 			}
         } else if(track==2 && play[0]) {
@@ -3923,7 +3927,8 @@ CK_DLL_CTOR( LiSaMulti_ctor )
 			
 	Chuck_UGen * ugen = (Chuck_UGen *)SELF;
 	f->num_chans = ugen->m_multi_chan_size;
-    //fprintf(stderr, "LiSa: number of channels = %d\n", f->num_chans);	
+	f->num_chans = 1;
+    //fprintf(stderr, "LiSa: number of channels = %d\n", f->num_chans);
 	f->outsamples = new SAMPLE[f->num_chans];
 	memset( f->outsamples, 0, (f->num_chans)*sizeof(SAMPLE) );
 	
@@ -3960,9 +3965,9 @@ CK_DLL_TICK( LiSaMulti_tick )
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
 	SAMPLE * temp_out_samples = d->tick_multi( in );
 	
-	for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
-		ugen->m_multi_chan[i]->m_sum = ugen->m_multi_chan[i]->m_current = temp_out_samples[i]; //yay this works!
-		//out[i] = temp_out_samples[i];
+//	for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
+//		ugen->m_multi_chan[i]->m_sum = ugen->m_multi_chan[i]->m_current = temp_out_samples[i]; //yay this works!
+    *out = temp_out_samples[0];
 	
     return TRUE;
 }
