@@ -3438,8 +3438,8 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     
     
     if( !type_engine_import_ugen_begin( env, "WvOut2", "WvOut", env->global(), 
-                                       WvOut_ctor, WvOut_dtor,
-                                       NULL, WvOut2_tickf, WvOut_pmsg, 2, 2 ) ) return FALSE; 
+                                        NULL, NULL,
+                                        NULL, WvOut2_tickf, WvOut_pmsg, 2, 2 ) ) return FALSE;
 
     func = make_new_mfun( "string", "matFilename", WvOut2_ctrl_matFilename ); //!open matlab file for writing
     func->add_arg( "string", "value" );

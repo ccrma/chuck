@@ -3,7 +3,7 @@
 
 // pull samples from the dac
 // WvOut2 -> stereo operation
-dac => Gain g => WvOut2 w => blackhole;
+dac => WvOut2 w => blackhole;
 
 // set the prefix, which will prepended to the filename
 // do this if you want the file to appear automatically
@@ -19,7 +19,7 @@ dac => Gain g => WvOut2 w => blackhole;
 <<<"writing to file: ", w.filename()>>>;
 
 // any gain you want for the output
-.5 => g.gain;
+.5 => w.fileGain;
 
 // temporary workaround to automatically close file on remove-shred
 null @=> w;
