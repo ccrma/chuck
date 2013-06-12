@@ -35,7 +35,7 @@
 #include "chuck_errmsg.h"
 
 
-#if defined(__MACOSX_CORE__)
+#if defined(__MACOSX_CORE__) && !defined(__CHIP_MODE__)
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
@@ -183,7 +183,17 @@ cleanup:
 vector<string> SerialIOManager::availableSerialDevices()
 {
     vector<string> devices;
+    
+    return devices;
+}
 
+
+#else // ? e.g. iPhone
+
+vector<string> SerialIOManager::availableSerialDevices()
+{
+    vector<string> devices;
+    
     return devices;
 }
 
