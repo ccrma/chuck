@@ -412,6 +412,11 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     // add dtor
     // not
 
+    // add fromId()
+    func = make_new_sfun( "Shred", "fromId", shred_fromId );
+    func->add_arg( "int", "id" );
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+    
     // add clone()
     func = make_new_mfun( "void", "clone", shred_clone );
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -3058,7 +3063,17 @@ CK_DLL_MFUN( shred_sourceDir ) // added 1.3.0.0
     
     str->str = extract_filepath_dir(derhs->code->filename);
     
-    RETURN->v_string = str; 
+    RETURN->v_string = str;
+}
+
+
+CK_DLL_SFUN( shred_fromId ) // added 1.3.2.0
+{
+    t_CKINT shred_id = GET_NEXT_INT(ARGS);
+    
+    Chuck_VM_Shred * derhs = SHRED->vm_ref->shreduler()->lookup(shred_id);
+    
+    RETURN->v_object = derhs;
 }
 
 
