@@ -1,5 +1,5 @@
 // sound file
-me.sourceDir() + "/../data/snare.wav" => string filename;
+me.dir() + "/../data/snare.wav" => string filename;
 if( me.args() ) me.arg(0) => filename;
 
 // the patch 

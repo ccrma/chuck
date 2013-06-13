@@ -22,7 +22,7 @@ T - (now % T) => now;
 // construct the patch
 SndBuf buf => Gain g => dac;
 // read in the file
-me.sourceDir() + "/data/hihat.wav" => buf.read;
+me.dir() + "/data/hihat.wav" => buf.read;
 // set the gain
 .25 => g.gain;
 
