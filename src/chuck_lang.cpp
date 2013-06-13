@@ -463,8 +463,16 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     func = make_new_mfun( "string", "sourcePath", shred_sourcePath );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
+    // add path() (added 1.3.2.0)
+    func = make_new_mfun( "string", "path", shred_sourcePath );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
     // add sourceDir() (added 1.3.0.0)
     func = make_new_mfun( "string", "sourceDir", shred_sourceDir );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add dir() (added 1.3.2.0)
+    func = make_new_mfun( "string", "dir", shred_sourceDir );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // end the class import
