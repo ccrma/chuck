@@ -1101,7 +1101,11 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     // add toFloat()
     func = make_new_mfun( "float", "toFloat", string_toFloat );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-
+    
+    // add parent()
+    func = make_new_mfun( "string", "parent", string_parent );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
 //    // add toTime()
 //    func = make_new_mfun( "float", "toTime", string_toFloat );
 //    if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -3459,6 +3463,30 @@ CK_DLL_MFUN( string_toFloat )
     Chuck_String * str = (Chuck_String *)SELF;
     // convert to int
     RETURN->v_float = (t_CKFLOAT)::atof( str->str.c_str() );
+}
+
+CK_DLL_MFUN( string_parent )
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    
+    string::size_type i = str->str.rfind('/', str->str.length()-2);
+#ifdef WIN32
+    // SPENCERTODO: make this legit on windows
+    if(i == string::npos)
+        i = str->str.rfind('\\', str->str.length()-2);
+#endif // WIN32
+    
+    Chuck_String * parent = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    
+    if(i != string::npos)
+    {
+        if(i == 0)
+            parent->str = "/";
+        else
+            parent->str = str->str.substr(0, i);
+    }
+    
+    RETURN->v_string = parent;
 }
 
 /*
