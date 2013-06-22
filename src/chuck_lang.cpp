@@ -1108,8 +1108,9 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add parent()
-    func = make_new_mfun( "string", "parent", string_parent );
-    if( !type_engine_import_mfun( env, func ) ) goto error;
+    // disable for now
+//    func = make_new_mfun( "string", "parent", string_parent );
+//    if( !type_engine_import_mfun( env, func ) ) goto error;
     
 //    // add toTime()
 //    func = make_new_mfun( "float", "toTime", string_toFloat );
