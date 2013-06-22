@@ -56,7 +56,11 @@ std::string rtrim( const std::string & val );
 
 // argument extraction
 t_CKBOOL extract_args( const std::string & token, 
-                       std::string & filename, std::vector<std::string> & args );
+                       std::string & filename,
+                       std::vector<std::string> & args );
+
+// take existing path, and attempt to dir up
+std::string dir_go_up( const std::string & dir, t_CKINT numUp );
 
 // currently just expands ~ to HOME and ~user to user's home directory
 std::string expand_filepath( std::string & fp );
