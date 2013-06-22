@@ -368,6 +368,46 @@ std::string extract_filepath_dir(std::string &filepath)
     return std::string(filepath, 0, i);
 }
 
+// added: ge 1.3.2.0
+string dir_go_up( const string & dir, t_CKINT numUp )
+{
+    // separator
+    char path_separator = '/';
+
+    // sanity check
+    if( numUp < 0 ) numUp = -numUp;
+
+    // if there is already a trailing slash, add extra up
+    if( dir.length() > 0 && dir[dir.length()-1] == path_separator )
+        numUp++;
+    
+    // pos
+    size_t pos = dir.length();
+
+    // loop
+    while( numUp > 0 )
+    {
+        // find the last slash
+        pos = dir.rfind( path_separator, pos-1 );
+        
+        // not there
+        if( pos == string::npos )
+            return "";
+        else if( pos == 0 )
+            return "/";
+
+        // TODO: what about windows?
+        // TODO: what about windows network: with two backslashes? "\\\\"
+
+        // decrement
+        numUp--;
+    }
+    
+    
+    // otherwise
+    return string( dir, 0, pos );
+}
+
 //-----------------------------------------------------------------------------
 // name: parse_path_list()
 // desc: split "x:y:z"-style path list into {"x","y","z"}

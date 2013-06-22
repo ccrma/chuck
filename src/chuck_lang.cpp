@@ -474,6 +474,11 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     // add dir() (added 1.3.2.0)
     func = make_new_mfun( "string", "dir", shred_sourceDir );
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add dir() (added 1.3.2.0, ge)
+    func = make_new_mfun( "string", "dir", shred_sourceDir2 );
+    func->add_arg( "int", "levelsUp" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // end the class import
     type_engine_import_class_end( env );
@@ -3074,6 +3079,24 @@ CK_DLL_MFUN( shred_sourceDir ) // added 1.3.0.0
     Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
     
     str->str = extract_filepath_dir(derhs->code->filename);
+    
+    RETURN->v_string = str;
+}
+
+CK_DLL_MFUN( shred_sourceDir2 ) // added 1.3.2.0
+{
+    Chuck_VM_Shred * derhs = (Chuck_VM_Shred *)SELF;
+    // get num up
+    t_CKINT i = GET_NEXT_INT(ARGS);
+    // abs
+    if( i < 0 ) i = -i;
+
+    // new chuck string
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    // set the content
+    str->str = extract_filepath_dir(derhs->code->filename);
+    // up
+    str->str = dir_go_up( str->str, i );
     
     RETURN->v_string = str;
 }
