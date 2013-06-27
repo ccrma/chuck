@@ -3423,7 +3423,7 @@ CK_DLL_MFUN(string_rfindStr)
     Chuck_String * str = (Chuck_String *) SELF;
     Chuck_String * the_str = GET_NEXT_STRING(ARGS);
     
-    string::size_type index = str->str.find(the_str->str);
+    string::size_type index = str->str.rfind(the_str->str);
     
     if(index == string::npos)
         RETURN->v_int = -1;
@@ -3444,7 +3444,7 @@ CK_DLL_MFUN(string_rfindStrStart)
         return;
     }
     
-    string::size_type index = str->str.find(the_str->str, start);
+    string::size_type index = str->str.rfind(the_str->str, start);
     
     if(index == string::npos)
         RETURN->v_int = -1;
