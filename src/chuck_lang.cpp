@@ -3301,7 +3301,7 @@ CK_DLL_MFUN(string_replaceN)
         return;
     }
 
-    if(length < 0 || position+length >= str->str.length())
+    if(length < 0 || position+length > str->str.length())
     {
         throw_exception(SHRED, "IndexOutOfBoundsException", length);
         return;
@@ -3464,7 +3464,7 @@ CK_DLL_MFUN(string_erase)
         return;
     }
     
-    if(length < 0 || start+length >= str->str.length())
+    if(length < 0 || start+length > str->str.length())
     {
         throw_exception(SHRED, "IndexOutOfBoundsException", length);
         return;
