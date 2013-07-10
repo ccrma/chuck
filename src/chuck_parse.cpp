@@ -65,6 +65,34 @@ FILE * open_cat_ck( c_str fname )
 
 
 
+//-----------------------------------------------------------------------------
+// name: win32_tmpfile()
+// desc: replacement for broken tmpfile() on Windows Vista + 7
+//-----------------------------------------------------------------------------
+#ifdef __PLATFORM_WIN32__
+
+#include <windows.h>
+
+FILE *win32_tmpfile()
+{
+    char tmp_path[MAX_PATH];
+    char file_path[MAX_PATH];
+    FILE * file = NULL;
+    
+    if(GetTempPath(256, tmp_path) == 0)
+        return NULL;
+    
+    if(GetTempFileName(tmp_path, "mA", 0, file_path) == 0)
+        return NULL;
+    
+    file = fopen(file_path, "wb+D");
+    
+    return file;
+}
+
+#endif
+
+
 
 //-----------------------------------------------------------------------------
 // name: chuck_parse()
@@ -88,7 +116,11 @@ t_CKBOOL chuck_parse( c_constr fname, FILE * fd, c_constr code )
         // !
         assert( fd == NULL );
         // generate temp file
+#ifdef __PLATFORM_WIN32__
+        fd = win32_tmpfile();
+#else
         fd = tmpfile();
+#endif
         // flag it to close
         clo = TRUE;
         // write
