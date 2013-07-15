@@ -260,6 +260,8 @@ t_CKBOOL extract_args( const string & token,
                 {
                     // add
                     mask[i] = 1;
+                    // skip next character
+                    i++;
                 }
                 else
                 {
