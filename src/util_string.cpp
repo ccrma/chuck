@@ -218,6 +218,8 @@ t_CKBOOL extract_args( const string & token,
     // curr : pos
     t_CKINT i = 0;
     
+    string tmp;
+    
     // copy and trim
     string s = trim( token );
     
@@ -227,7 +229,7 @@ t_CKBOOL extract_args( const string & token,
     t_CKBOOL ignoreNext = FALSE;
     char * mask = NULL;
     for( i = 0; i < s.length(); i++ )
-        if( s[i] == '\\' || s[i] == '/' )
+        if( s[i] == '\\' )
         {
             scan = TRUE;
             break;
@@ -253,7 +255,7 @@ t_CKBOOL extract_args( const string & token,
             // }
             
             // 1.3.2.0: spencer and ge fixed this, requiring \ to escape :
-            if( s[i] == '\\'&& (i+1) < s.length() )
+            if( s[i] == '\\' && (i+1) < s.length() )
             {
                 // check next char
                 if( s[i+1] == ':' || s[i+1] == '\\' )
@@ -300,12 +302,18 @@ t_CKBOOL extract_args( const string & token,
             
             // copy
             if( filename == "" )
-                filename = s.substr( prev_pos, i - prev_pos );
+                filename = tmp;
             else
-                args.push_back( s.substr( prev_pos, i - prev_pos ) );
+                args.push_back( tmp );
+            
+            tmp.clear();
             
             // update
             prev_pos = i + 1;
+        }
+        else
+        {
+            tmp.push_back(s[i]);
         }
         
         // reset
@@ -321,6 +329,11 @@ t_CKBOOL extract_args( const string & token,
         else
             args.push_back( s.substr( prev_pos, s.length() - prev_pos ) );
     }
+    
+    // testing code - spencer 1.3.2.0
+//    fprintf(stderr, "FILENAME: %s\n", filename.c_str());
+//    for(i = 0; i < args.size(); i++)
+//        fprintf(stderr, "ARG: %s\n", args[i].c_str());
 
 done:
     // reclaim
