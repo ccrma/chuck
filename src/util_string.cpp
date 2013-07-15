@@ -224,6 +224,7 @@ t_CKBOOL extract_args( const string & token,
     // detect
     t_CKBOOL scan = FALSE;
     t_CKBOOL ret = TRUE;
+    t_CKBOOL ignoreNext = FALSE;
     char * mask = NULL;
     for( i = 0; i < s.length(); i++ )
         if( s[i] == '\\' || s[i] == '/' )
@@ -245,19 +246,51 @@ t_CKBOOL extract_args( const string & token,
             
             // escape (tom and ge fixed this, which used to look for \\ then : and randomly incremented i)
             // added '/' 1.3.1.1
-            if( s[i] == ':' && (i+1) < s.length() && ( s[i+1] == '\\' || s[i+1] == '/' ) )
+            // if( s[i] == ':' && (i+1) < s.length() && ( s[i+1] == '\\' || s[i+1] == '/' ) )
+            // {
+            //     mask[i] = 1;
+            //     break; // added 1.3.1.1
+            // }
+            
+            // 1.3.2.0: spencer and ge fixed this, requiring \ to escape :
+            if( s[i] == '\\'&& (i+1) < s.length() )
             {
-                mask[i] = 1;
-                break; // added 1.3.1.1
+                // check next char
+                if( s[i+1] == ':' || s[i+1] == '\\' )
+                {
+                    // add
+                    mask[i] = 1;
+                }
+                else
+                {
+                    // error: recognized escape target
+                    fprintf( stderr, "[chuck]: unrecognized escape sequence: \\%c", s[i+1] );
+                    // return false
+                    ret = FALSE;
+                    // go clean
+                    goto done;
+                }
             }
         }
     }
-    
+
     // loop through
     for( i = 0; i < s.length(); i++ )
     {
+        // reset
+        ignoreNext = FALSE;
+
+        // check mask
+        if( mask && mask[i] )
+        {
+            // mark the next as false
+            ignoreNext = TRUE;
+            // skip this one
+            continue;
+        }
+
         // look for :
-        if( s[i] == ':' && ( !mask || !mask[i] ) )
+        if( !ignoreNext && s[i] == ':' )
         {
             // sanity
             if( i == 0 )
