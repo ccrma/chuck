@@ -279,9 +279,6 @@ t_CKBOOL extract_args( const string & token,
     // loop through
     for( i = 0; i < s.length(); i++ )
     {
-        // reset
-        ignoreNext = FALSE;
-
         // check mask
         if( mask && mask[i] )
         {
@@ -310,6 +307,9 @@ t_CKBOOL extract_args( const string & token,
             // update
             prev_pos = i + 1;
         }
+        
+        // reset
+        ignoreNext = FALSE;
     }
     
     // get the remainder, if any
