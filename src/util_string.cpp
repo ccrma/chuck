@@ -306,14 +306,14 @@ t_CKBOOL extract_args( const string & token,
             else
                 args.push_back( tmp );
             
-            tmp.clear();
+            tmp = "";
             
             // update
             prev_pos = i + 1;
         }
         else
         {
-            tmp.push_back(s[i]);
+            tmp.append(1, s[i]);
         }
         
         // reset
@@ -331,9 +331,9 @@ t_CKBOOL extract_args( const string & token,
     }
     
     // testing code - spencer 1.3.2.0
-//    fprintf(stderr, "FILENAME: %s\n", filename.c_str());
-//    for(i = 0; i < args.size(); i++)
-//        fprintf(stderr, "ARG: %s\n", args[i].c_str());
+    fprintf(stderr, "FILENAME: %s\n", filename.c_str());
+    for(i = 0; i < args.size(); i++)
+        fprintf(stderr, "ARG: %s\n", args[i].c_str());
 
 done:
     // reclaim
