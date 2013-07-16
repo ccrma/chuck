@@ -118,6 +118,13 @@ chuck.tab.c chuck.tab.h: chuck.y
 chuck.yy.c: chuck.lex
 	$(LEX) -ochuck.yy.c chuck.lex
 
+chuck_win32.c: chuck.yy.c
+	$(LEX) --nounistd -ochuck.yy.c chuck.lex
+	cat chuck.tab.c chuck.yy.c > $@
+
+chuck_win32.h: chuck.tab.h
+	cat chuck.tab.h > $@
+
 $(COBJS): %.o: %.c
 	$(CC) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CC) -MM $(CFLAGSDEPEND) $< > $*.d
