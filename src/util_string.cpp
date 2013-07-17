@@ -239,13 +239,12 @@ t_CKBOOL extract_args( const string & token,
     if( scan )
     {
         mask = new char[s.length()];
+        // zero
+        memset(mask, 0, s.length()*sizeof(char));
         
         // loop through
         for( i = 0; i < s.length(); i++ )
         {
-            // zero
-            mask[i] = 0;
-            
             // escape (tom and ge fixed this, which used to look for \\ then : and randomly incremented i)
             // added '/' 1.3.1.1
             // if( s[i] == ':' && (i+1) < s.length() && ( s[i+1] == '\\' || s[i+1] == '/' ) )
@@ -284,6 +283,7 @@ t_CKBOOL extract_args( const string & token,
         // check mask
         if( mask && mask[i] )
         {
+            //fprintf(stderr, "skipping %c\n", s[i]);
             // mark the next as false
             ignoreNext = TRUE;
             // skip this one
@@ -321,16 +321,17 @@ t_CKBOOL extract_args( const string & token,
     }
     
     // get the remainder, if any
-    if( prev_pos < s.length() )
+    if( tmp.length() )
     {
         // copy
         if( filename == "" )
-            filename = s.substr( prev_pos, s.length() - prev_pos );
+            filename = tmp;
         else
-            args.push_back( s.substr( prev_pos, s.length() - prev_pos ) );
+            args.push_back( tmp );
     }
     
-//    // testing code - spencer 1.3.2.0
+    // testing code - spencer 1.3.2.0
+//    fprintf(stderr, "INPUT: %s\n", token.c_str());
 //    fprintf(stderr, "FILENAME: %s\n", filename.c_str());
 //    for(i = 0; i < args.size(); i++)
 //        fprintf(stderr, "ARG: %s\n", args[i].c_str());

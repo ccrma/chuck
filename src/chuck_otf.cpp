@@ -160,10 +160,11 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
             goto cleanup;
         }
 
-        // copy stuff
+        // copy de-escaped filename
+        strcpy( msg->buffer, filename.c_str() );
+        // copy args if needed
         if( args.size() > 0 )
         {
-            strcpy( msg->buffer, filename.c_str() );
             cmd->args = new vector<string>;
             *(cmd->args) = args;
         }
