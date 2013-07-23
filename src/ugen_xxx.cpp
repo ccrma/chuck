@@ -2842,7 +2842,11 @@ CK_DLL_TICKF( sndbuf_tickf )
 CK_DLL_CTRL( sndbuf_ctrl_read )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    Chuck_String * ckfilename = GET_CK_STRING(ARGS);
+    const char * filename = ckfilename->str.c_str();
+    
+    // return filename
+    RETURN->v_string = ckfilename;
     
     if( d->buffer )
     {
