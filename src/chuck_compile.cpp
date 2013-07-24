@@ -44,6 +44,7 @@
 #include "ulib_math.h"
 #include "ulib_std.h"
 #include "ulib_opsc.h"
+#include "ulib_regex.h"
 #include "chuck_io.h"
 
 #if defined(__PLATFORM_WIN32__)
@@ -579,6 +580,8 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     if( !load_module( env, libmath_query, "Math", "global" ) ) goto error;
     EM_log( CK_LOG_SEVERE, "class 'opsc'..." );
     if( !load_module( env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
+    EM_log( CK_LOG_SEVERE, "class 'RegEx'..." );
+    if( !load_module( env, regex_query, "RegEx", "global" ) ) goto error;
     // if( !load_module( env, net_query, "net", "global" ) ) goto error;
     
 #ifndef __DISABLE_MIDI__

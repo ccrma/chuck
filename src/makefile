@@ -71,7 +71,7 @@ include makefile.rl
 endif
 
 CSRCS+= chuck.tab.c chuck.yy.c util_math.c util_network.c util_raw.c \
-	util_xforms.c
+	util_xforms.c regex/regex.c
 CXXSRCS+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	chuck_frame.cpp chuck_symbol.cpp chuck_table.cpp chuck_utils.cpp \
 	chuck_vm.cpp chuck_instr.cpp chuck_scan.cpp chuck_type.cpp chuck_emit.cpp \
@@ -81,7 +81,7 @@ CXXSRCS+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
     digiio_rtaudio.cpp hidio_sdl.cpp \
 	midiio_rtmidi.cpp RtAudio/RtAudio.cpp rtmidi.cpp ugen_osc.cpp ugen_filter.cpp \
 	ugen_stk.cpp ugen_xxx.cpp ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
-	ulib_opsc.cpp util_buffers.cpp util_console.cpp \
+	ulib_opsc.cpp ulib_regex.cpp util_buffers.cpp util_console.cpp \
 	util_string.cpp util_thread.cpp util_opsc.cpp util_serial.cpp \
 	util_hid.cpp uana_xform.cpp uana_extract.cpp
 
@@ -127,11 +127,11 @@ chuck_win32.h: chuck.tab.h
 
 $(COBJS): %.o: %.c
 	$(CC) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
-	@$(CC) -MM $(CFLAGSDEPEND) $< > $*.d
+	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
 $(CXXOBJS): %.o: %.cpp
 	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
-	@$(CXX) -MM $(CFLAGSDEPEND) $< > $*.d
+	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
 clean: 
 	@rm -f $(wildcard chuck chuck.exe) *.o *.d $(OBJS) $(patsubst %.o,%.d,$(OBJS)) \

@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		090A5BE80AA75AEA005DC04D /* util_hid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090A5BE70AA75AEA005DC04D /* util_hid.cpp */; };
 		090B4B1E0C4F038E00DF5577 /* uana_xform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */; };
+		091F327F17A03A4D00686C8D /* regex.c in Sources */ = {isa = PBXBuildFile; fileRef = 091F327517A03A4D00686C8D /* regex.c */; };
+		091F328417A03A4D00686C8D /* ulib_regex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 091F327C17A03A4D00686C8D /* ulib_regex.cpp */; };
 		095D14591341476200BBD9EB /* MultitouchSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 095D14581341476200BBD9EB /* MultitouchSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		0962DA2915D3A626002DEFF3 /* chuck_io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0962DA2715D3A626002DEFF3 /* chuck_io.cpp */; };
 		0966E6C915CFBB0F0099CBD8 /* util_serial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0966E6C815CFBB0F0099CBD8 /* util_serial.cpp */; };
@@ -85,6 +87,14 @@
 		090A5BE70AA75AEA005DC04D /* util_hid.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = util_hid.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = uana_xform.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1B0C4F038E00DF5577 /* uana_xform.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = uana_xform.h; sourceTree = SOURCE_ROOT; };
+		091F327417A03A4D00686C8D /* regcomp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = regcomp.c; sourceTree = "<group>"; };
+		091F327517A03A4D00686C8D /* regex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = regex.c; sourceTree = "<group>"; };
+		091F327717A03A4D00686C8D /* regex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = regex.h; sourceTree = "<group>"; };
+		091F327917A03A4D00686C8D /* regex_internal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = regex_internal.c; sourceTree = "<group>"; };
+		091F327A17A03A4D00686C8D /* regex_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = regex_internal.h; sourceTree = "<group>"; };
+		091F327B17A03A4D00686C8D /* regexec.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = regexec.c; sourceTree = "<group>"; };
+		091F327C17A03A4D00686C8D /* ulib_regex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ulib_regex.cpp; sourceTree = "<group>"; };
+		091F327D17A03A4D00686C8D /* ulib_regex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ulib_regex.h; sourceTree = "<group>"; };
 		095D14581341476200BBD9EB /* MultitouchSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultitouchSupport.framework; path = System/Library/PrivateFrameworks/MultitouchSupport.framework; sourceTree = SDKROOT; };
 		0962DA2715D3A626002DEFF3 /* chuck_io.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = chuck_io.cpp; sourceTree = "<group>"; };
 		0962DA2815D3A626002DEFF3 /* chuck_io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chuck_io.h; sourceTree = "<group>"; };
@@ -396,6 +406,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		091F327317A03A4D00686C8D /* regex */ = {
+			isa = PBXGroup;
+			children = (
+				091F327417A03A4D00686C8D /* regcomp.c */,
+				091F327517A03A4D00686C8D /* regex.c */,
+				091F327717A03A4D00686C8D /* regex.h */,
+				091F327917A03A4D00686C8D /* regex_internal.c */,
+				091F327A17A03A4D00686C8D /* regex_internal.h */,
+				091F327B17A03A4D00686C8D /* regexec.c */,
+			);
+			path = regex;
+			sourceTree = "<group>";
+		};
 		0980603D0AA158F600915136 /* Examples */ = {
 			isa = PBXGroup;
 			children = (
@@ -740,6 +763,8 @@
 		09A40B000A9A52FC007604EA /* ChucK */ = {
 			isa = PBXGroup;
 			children = (
+				091F327C17A03A4D00686C8D /* ulib_regex.cpp */,
+				091F327D17A03A4D00686C8D /* ulib_regex.h */,
 				09812B980C6E394A00D1D68C /* uana_extract.cpp */,
 				09812B990C6E394A00D1D68C /* uana_extract.h */,
 				090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */,
@@ -883,6 +908,7 @@
 		09A40E130A9AC96C007604EA /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				091F327317A03A4D00686C8D /* regex */,
 				09A5C88413DDFB350082DF50 /* RtAudio */,
 				09A40B000A9A52FC007604EA /* ChucK */,
 			);
@@ -1047,6 +1073,8 @@
 				09A5C88D13DDFB350082DF50 /* RtAudio.cpp in Sources */,
 				0966E6C915CFBB0F0099CBD8 /* util_serial.cpp in Sources */,
 				0962DA2915D3A626002DEFF3 /* chuck_io.cpp in Sources */,
+				091F327F17A03A4D00686C8D /* regex.c in Sources */,
+				091F328417A03A4D00686C8D /* ulib_regex.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
