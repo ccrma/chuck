@@ -82,6 +82,8 @@ const t_CKUINT Chuck_IO_Serial::TYPE_STRING = 5;
 const t_CKUINT Chuck_IO_Serial::TYPE_LINE = 6;
 const t_CKUINT Chuck_IO_Serial::TYPE_WRITE = 100;
 
+std::list<Chuck_IO_Serial *> Chuck_IO_Serial::s_serials;
+
 //    static const t_CKUINT TYPE_NONE = 0;
 //    static const t_CKUINT TYPE_BYTE = 1;
 //    static const t_CKUINT TYPE_WORD = 2;
@@ -103,6 +105,16 @@ void * Chuck_IO_Serial::shell_read_cb( void *_this )
     return NULL;
 }
 
+void Chuck_IO_Serial::shutdown()
+{
+    EM_log(CK_LOG_INFO, "shutting down serial devices");
+
+    for(std::list<Chuck_IO_Serial *>::iterator i = s_serials.begin(); i != s_serials.end(); i++)
+    {
+        (*i)->close();
+    }
+}
+
 
 Chuck_IO_Serial::Chuck_IO_Serial() :
 m_asyncRequests(CircularBuffer<Request>(32)),
@@ -117,6 +129,8 @@ m_writeBuffer(1024)
     
     m_read_thread = NULL;
     m_event_buffer = NULL;
+    
+    s_serials.push_back(this);
 }
 
 Chuck_IO_Serial::~Chuck_IO_Serial()
@@ -131,6 +145,8 @@ Chuck_IO_Serial::~Chuck_IO_Serial()
     delete[] m_buf;
     m_buf = NULL;
     m_buf_size = 0;
+    
+    s_serials.remove(this);
 }
 
 t_CKBOOL Chuck_IO_Serial::ready()
@@ -186,6 +202,7 @@ t_CKBOOL Chuck_IO_Serial::open( const t_CKUINT i, t_CKINT flags, t_CKUINT baud )
         m_cfd = fdopen(fd, "a+");
         m_iomode = MODE_ASYNC;
         m_eof = FALSE;
+        m_path = path;
     }
     else
     {
@@ -221,6 +238,7 @@ t_CKBOOL Chuck_IO_Serial::open( const std::string & path, t_CKINT flags )
     }
     
     m_fd = fd;
+    m_path = path;
     
     // set default baud rate
     setBaudRate(CK_BAUD_9600);
@@ -240,6 +258,8 @@ t_CKBOOL Chuck_IO_Serial::good()
 
 void Chuck_IO_Serial::close()
 {
+    EM_log(CK_LOG_INFO, "(Serial.close): closing serial device '%s'", m_path.c_str());
+    
     if(good())
     {
         if(m_cfd)
@@ -1179,6 +1199,7 @@ CK_DLL_ALLOC( serialio_alloc );
 CK_DLL_CTOR( serialio_ctor );
 CK_DLL_DTOR( serialio_dtor );
 CK_DLL_MFUN( serialio_open );
+CK_DLL_MFUN( serialio_close );
 CK_DLL_MFUN( serialio_ready );
 CK_DLL_MFUN( serialio_readLine );
 CK_DLL_MFUN( serialio_onLine );
@@ -1223,6 +1244,9 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     func->add_arg("int", "i");
     func->add_arg("int", "baud");
     func->add_arg("int", "mode");
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    func = make_new_mfun("void", "close", serialio_close);
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add ready (data available)
@@ -1341,7 +1365,11 @@ CK_DLL_CTOR( serialio_ctor )
 { }
 
 CK_DLL_DTOR( serialio_dtor )
-{ }
+{
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
+    if(cereal)
+        cereal->close();
+}
 
 CK_DLL_MFUN( serialio_open )
 {
@@ -1351,6 +1379,13 @@ CK_DLL_MFUN( serialio_open )
     t_CKINT mode = GET_NEXT_INT(ARGS);
     
     RETURN->v_int = cereal->open(num, mode, baud);
+}
+
+CK_DLL_MFUN( serialio_close )
+{
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
+    
+    cereal->close();
 }
 
 CK_DLL_MFUN( serialio_ready )
