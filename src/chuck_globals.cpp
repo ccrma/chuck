@@ -35,6 +35,7 @@
 #include "ugen_stk.h"
 #include "ulib_std.h"
 #include "hidio_sdl.h"
+#include "chuck_io.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -98,6 +99,8 @@ extern "C" void all_detach()
     // shutdown HID
     HidInManager::cleanup();
 #endif // __ALTER_HID__
+    
+    Chuck_IO_Serial::shutdown();
     // pop
     EM_poplog();
 }

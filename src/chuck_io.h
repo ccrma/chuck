@@ -49,6 +49,8 @@ struct Chuck_IO_Serial : public Chuck_IO
 public:
     Chuck_IO_Serial();
     virtual ~Chuck_IO_Serial();
+    
+    static void shutdown();
 
 public:
     // meta
@@ -155,12 +157,16 @@ protected:
     int m_fd;
     FILE * m_cfd;
     
+    std::string m_path;
+    
     char * m_buf;
     t_CKUINT m_buf_size;
     
     t_CKINT m_flags;
     t_CKINT m_iomode; // SYNC or ASYNC
     t_CKBOOL m_eof;
+    
+    static std::list<Chuck_IO_Serial *> s_serials;
 };
 
 
