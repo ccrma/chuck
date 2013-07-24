@@ -5470,6 +5470,11 @@ a_Arg_List make_dll_arg_list( Chuck_DL_Func * dl_fun )
     // loop backwards
     for( i = dl_fun->args.size() - 1; i >= 0; i-- )
     {
+        // clear array
+        // added 1.3.2.0 - spencer
+        array_depth = array_depth2 = 0;
+        array_sub = NULL;
+        
         // copy into variable
         arg = dl_fun->args[i];
 
