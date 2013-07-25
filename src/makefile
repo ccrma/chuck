@@ -71,7 +71,7 @@ include makefile.rl
 endif
 
 CSRCS+= chuck.tab.c chuck.yy.c util_math.c util_network.c util_raw.c \
-	util_xforms.c regex/regex.c
+	util_xforms.c
 CXXSRCS+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	chuck_frame.cpp chuck_symbol.cpp chuck_table.cpp chuck_utils.cpp \
 	chuck_vm.cpp chuck_instr.cpp chuck_scan.cpp chuck_type.cpp chuck_emit.cpp \
