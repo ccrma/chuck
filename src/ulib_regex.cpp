@@ -35,7 +35,11 @@
 #include "chuck_instr.h"
 #include "chuck_type.h"
 
+#ifdef WIN32
 #include "regex/regex.h"
+#else
+#include <regex.h>
+#endif
 
 #define CK_REGEX_MAX_MATCHES (10)
 
