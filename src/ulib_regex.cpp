@@ -46,6 +46,7 @@
 CK_DLL_SFUN( regex_match );
 CK_DLL_SFUN( regex_match2 );
 CK_DLL_SFUN( regex_replace );
+CK_DLL_SFUN( regex_replaceAll );
 
 DLL_QUERY regex_query( Chuck_DL_Query * QUERY )
 {
@@ -68,6 +69,12 @@ DLL_QUERY regex_query( Chuck_DL_Query * QUERY )
     
     // add replace
     QUERY->add_sfun( QUERY, regex_replace, "string", "replace" );
+    QUERY->add_arg( QUERY, "string", "pattern");
+    QUERY->add_arg( QUERY, "string", "replacement");
+    QUERY->add_arg( QUERY, "string", "str");
+    
+    // add replaceAll
+    QUERY->add_sfun( QUERY, regex_replaceAll, "string", "replaceAll" );
     QUERY->add_arg( QUERY, "string", "pattern");
     QUERY->add_arg( QUERY, "string", "replacement");
     QUERY->add_arg( QUERY, "string", "str");
@@ -275,6 +282,95 @@ CK_DLL_SFUN( regex_replace )
     }
     
     SAFE_DELETE(matcharray);
+    
+    RETURN->v_string = ret;
+    
+    return;
+    
+error:
+    if(result != 0)
+    {
+        char errbuf[256];
+        
+        regerror(result, &regex, errbuf, 256);
+        EM_error2( 0, "(RegEx.match): regex reported error: %s", errbuf);
+    }
+    
+    if(r_free)
+    {
+        regfree(&regex);
+        r_free = FALSE;
+    }
+    
+    RETURN->v_int = NULL;
+}
+
+
+CK_DLL_SFUN( regex_replaceAll )
+{
+    Chuck_String * pattern = GET_NEXT_STRING(ARGS);
+    Chuck_String * replace = GET_NEXT_STRING(ARGS);
+    Chuck_String * str = GET_NEXT_STRING(ARGS);
+    
+    Chuck_String * ret = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    ret->str = str->str;
+    
+    regex_t regex;
+    t_CKBOOL r_free = FALSE;
+    regmatch_t *matcharray = NULL;
+    int result = 0;
+    size_t pos = 0;
+    
+    if(pattern == NULL)
+    {
+        throw_exception(SHRED, "NullPointerException",
+                        "RegEx.match: argument 'pattern' is null");
+        goto error;
+    }
+    if(str == NULL)
+    {
+        throw_exception(SHRED, "NullPointerException",
+                        "RegEx.match: argument 'str' is null");
+        goto error;
+    }
+    if(replace == NULL)
+    {
+        throw_exception(SHRED, "NullPointerException",
+                        "RegEx.match: argument 'replace' is null");
+        goto error;
+    }
+    
+    // compile regex
+    result = regcomp(&regex, pattern->str.c_str(), REG_EXTENDED);
+    if(result != 0)
+        goto error;
+    
+    r_free = TRUE;
+    
+    // perform match
+    matcharray = new regmatch_t[regex.re_nsub+1];
+    
+    while(pos < str->str.size())
+    {
+        result = regexec(&regex, ret->str.c_str()+pos, regex.re_nsub+1, matcharray, 0);
+        
+        // perform substitution
+        if(result != 0)
+            break;
+        else if(matcharray[0].rm_so >= 0 && matcharray[0].rm_eo >= 0)
+        {
+            ret->str.replace(pos+matcharray[0].rm_so,
+                             matcharray[0].rm_eo-matcharray[0].rm_so,
+                             replace->str);
+            
+            pos = pos + matcharray[0].rm_so + replace->str.size();
+        }
+    }
+    
+    SAFE_DELETE(matcharray);
+    
+    regfree(&regex);
+    r_free = FALSE;
     
     RETURN->v_string = ret;
     
