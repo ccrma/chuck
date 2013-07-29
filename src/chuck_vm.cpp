@@ -38,6 +38,7 @@
 #include "chuck_globals.h"
 #include "chuck_lang.h"
 #include "ugen_xxx.h"
+#include "chuck_io.h"
 
 #include <algorithm>
 using namespace std;
@@ -1559,6 +1560,7 @@ Chuck_VM_Shred::Chuck_VM_Shred()
     vm_ref = NULL;
     event = NULL;
     xid = 0;
+    m_serials = NULL;
 
     // set
     CK_TRACK( stat = NULL );
@@ -1691,6 +1693,19 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     // clear it
     code_orig = code = NULL;
 
+    // HACK (added 1.3.2.0): close serial devices
+    if(m_serials != NULL)
+    {
+        for(list<Chuck_IO_Serial *>::iterator i = m_serials->begin(); i != m_serials->end(); i++)
+        {
+            (*i)->release();
+            (*i)->close();
+        }
+        
+        m_serials->clear();
+        SAFE_DELETE(m_serials);
+    }
+    
     // TODO: what to do with next and prev?
     
     return TRUE;
@@ -1811,6 +1826,34 @@ t_CKBOOL Chuck_VM_Shred::run( Chuck_VM * vm )
 
     // is the shred finished
     return !is_done;
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: add_serialio()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKVOID Chuck_VM_Shred::add_serialio( Chuck_IO_Serial * serial )
+{
+    if(m_serials == NULL)
+        m_serials = new list<Chuck_IO_Serial *>;
+    serial->add_ref();
+    m_serials->push_back( serial );
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: add_serialio()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKVOID Chuck_VM_Shred::remove_serialio( Chuck_IO_Serial * serial )
+{
+    if(m_serials == NULL)
+        return;
+    m_serials->remove( serial );
+    serial->release();
 }
 
 
