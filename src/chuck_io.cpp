@@ -1362,13 +1362,19 @@ CK_DLL_ALLOC( serialio_alloc )
 }
 
 CK_DLL_CTOR( serialio_ctor )
-{ }
+{
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
+    SHRED->add_serialio(cereal);
+}
 
 CK_DLL_DTOR( serialio_dtor )
 {
     Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
     if(cereal)
+    {
+        SHRED->remove_serialio(cereal);
         cereal->close();
+    }
 }
 
 CK_DLL_MFUN( serialio_open )

@@ -149,6 +149,7 @@ public:
 };
 
 
+class Chuck_IO_Serial;
 
 
 //-----------------------------------------------------------------------------
@@ -174,6 +175,11 @@ public:
     
     // add parent object reference (added 1.3.1.2)
     t_CKVOID add_parent_ref( Chuck_Object * obj );
+    
+    // HACK - spencer (added 1.3.2.0)
+    // add/remove SerialIO devices to close on shred exit
+    t_CKVOID add_serialio( Chuck_IO_Serial * serial );
+    t_CKVOID remove_serialio( Chuck_IO_Serial * serial );
     
 //-----------------------------------------------------------------------------
 // data
@@ -229,6 +235,9 @@ public:
 
     // tracking
     CK_TRACK( Shred_Stat * stat );
+    
+private:
+    std::list<Chuck_IO_Serial *> * m_serials;
 };
 
 
