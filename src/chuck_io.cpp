@@ -1171,9 +1171,37 @@ t_CKBOOL Chuck_IO_Serial::setBaudRate( t_CKUINT rate )
     cfsetispeed(&tios, rate);
     cfsetospeed(&tios, rate);
     tcsetattr(m_fd, TCSAFLUSH, &tios);
-#endif
     
     return TRUE;
+#else
+    DCB dcb;
+    HANDLE hFile = (HANDLE) _get_osfhandle(m_fd);
+
+    if(!hFile)
+    {
+        goto error;
+    }
+
+    if(!GetCommState(hFile, &dcb))
+    {
+        goto error;
+    }
+
+    dcb.BaudRate = rate;
+    dcb.ByteSize = 8;
+    
+    if(!SetCommState(hFile, &dcb))
+    {
+        goto error;
+    }
+
+    return TRUE;
+
+error:
+
+    return FALSE;
+
+#endif
 }
 
 
@@ -1186,7 +1214,25 @@ t_CKUINT Chuck_IO_Serial::getBaudRate()
     speed_t rate = cfgetispeed(&tios);
     return rate;
 #else
+
+    DCB dcb;
+    HANDLE hFile = (HANDLE) _get_osfhandle(m_fd);
+
+    if(!hFile)
+    {
+        goto error;
+    }
+
+    if(!GetCommState(hFile, &dcb))
+    {
+        goto error;
+    }
+
+    return dcb.BaudRate;
+
+error:
     return 0;
+
 #endif
 }
 
