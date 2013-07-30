@@ -247,6 +247,10 @@ SOURCE=.\ulib_opsc.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ulib_regex.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ulib_std.cpp
 # End Source File
 # Begin Source File
@@ -480,6 +484,10 @@ SOURCE=.\ulib_opsc.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\ulib_regex.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\ulib_std.h
 # End Source File
 # Begin Source File
@@ -534,6 +542,239 @@ SOURCE=.\util_xforms.h
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+# End Group
+# Begin Group "regex"
+
+# PROP Default_Filter ""
+# Begin Group "Source"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\regex\regcomp.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "regex" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\regex\regerror.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "regex" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\regex\regexec.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "regex" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-ast.c"
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "regex" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-compile.c"
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "regex" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-filter.c"
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "regex" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-match-approx.c"
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "regex" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-match-backtrack.c"
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "regex" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-match-parallel.c"
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "regex" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-mem.c"
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "regex" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-parse.c"
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "regex" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-stack.c"
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "regex" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\regex\xmalloc.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "regex" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# End Group
+# Begin Group "Include"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\regex\config.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\regex\regex.h
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-ast.h"
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-compile.h"
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-config.h"
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-filter.h"
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-internal.h"
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-match-utils.h"
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-mem.h"
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-parse.h"
+# End Source File
+# Begin Source File
+
+SOURCE=".\regex\tre-stack.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\regex\tre.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\regex\xmalloc.h
+# End Source File
+# End Group
 # End Group
 # End Target
 # End Project

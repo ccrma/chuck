@@ -180,10 +180,56 @@ cleanup:
 
 #elif defined(__WINDOWS_DS__)
 
+#include <windows.h>
+
 vector<string> SerialIOManager::availableSerialDevices()
 {
     vector<string> devices;
+
+    HKEY hSERIALCOMM;
+    DWORD dwMaxValueNameLen, dwMaxValueLen;
+    char *name, *value;
     
+    DWORD dwIndex = 0;
+    DWORD dwType;
+    DWORD dwValueNameSize;
+    DWORD dwDataSize;
+
+    if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM", 0, KEY_QUERY_VALUE, &hSERIALCOMM) != ERROR_SUCCESS)
+    {
+        EM_error3("SerialIOManager: unable to open registry key");
+        goto error;
+    }
+
+    //Get the max value name and max value lengths
+    if(RegQueryInfoKey(hSERIALCOMM, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &dwMaxValueNameLen, &dwMaxValueLen, NULL, NULL) != ERROR_SUCCESS)
+    {
+        EM_error3("SerialIOManager: unable to query registry key info");
+        goto error;
+    }
+    
+    name = new char[dwMaxValueNameLen+1];
+    value = new char[dwMaxValueLen+1];
+
+    dwIndex = 0;
+    dwValueNameSize = dwMaxValueNameLen+1;
+    dwDataSize = dwMaxValueLen+1;
+    while(RegEnumValue(hSERIALCOMM, dwIndex, name, &dwValueNameSize, NULL, &dwType, (unsigned char *) value, &dwDataSize) == ERROR_SUCCESS)
+    {
+        if(dwType == REG_SZ)
+        {
+            devices.push_back(std::string(value));
+        }
+
+        dwIndex++;
+        dwValueNameSize = dwMaxValueNameLen+1;
+        dwDataSize = dwMaxValueLen+1;
+    }
+    
+    return devices;
+
+error:
+
     return devices;
 }
 
