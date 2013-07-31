@@ -26,5 +26,7 @@ if(!cereal.open(device, SerialIO.B9600, SerialIO.ASCII))
 while(true)
 {
     cereal.onLine() => now;
-    chout <= "line: " <= cereal.getLine() <= IO.newline();
+    cereal.getLine() => string line;
+    if(line$Object != null)
+        chout <= "line: " <= line <= IO.newline();
 }

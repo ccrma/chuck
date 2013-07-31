@@ -888,6 +888,14 @@ t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
     {
         r.m_val = 0;
         r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
+
+#ifdef WIN32
+        HANDLE hFile = (HANDLE) _get_osfhandle(m_fd);
+        DWORD error;
+        ClearCommError(hFile, &error, NULL);
+
+        PurgeComm(hFile, PURGE_RXCLEAR);
+#endif
     }
     
     return TRUE;
@@ -1175,9 +1183,26 @@ t_CKBOOL Chuck_IO_Serial::setBaudRate( t_CKUINT rate )
     return TRUE;
 #else
     DCB dcb;
+    COMMTIMEOUTS timeouts;
     HANDLE hFile = (HANDLE) _get_osfhandle(m_fd);
 
+    bool was_error = false;
+    DWORD error_flag = 0;
+
     if(!hFile)
+    {
+        goto error;
+    }
+
+    if(!GetCommTimeouts(hFile, &timeouts))
+    {
+        goto error;
+    }
+
+    timeouts.ReadIntervalTimeout = 10;
+    timeouts.WriteTotalTimeoutConstant = 5000;
+
+    if(!SetCommTimeouts(hFile, &timeouts))
     {
         goto error;
     }
@@ -1187,17 +1212,54 @@ t_CKBOOL Chuck_IO_Serial::setBaudRate( t_CKUINT rate )
         goto error;
     }
 
+    // set baud rate
     dcb.BaudRate = rate;
+
+    // set important stuff
     dcb.ByteSize = 8;
-    
+    dcb.StopBits = ONESTOPBIT;
+
     if(!SetCommState(hFile, &dcb))
+    {
+        //goto error;
+        was_error = true;
+        ClearCommError(hFile, &error_flag, NULL);
+    }
+
+    // set everything else
+    if(!GetCommState(hFile, &dcb))
     {
         goto error;
     }
 
-    return TRUE;
+    dcb.fBinary = TRUE;
+    dcb.fParity = FALSE;
+    dcb.fOutxCtsFlow = FALSE;
+    dcb.fOutxDsrFlow = FALSE;
+    dcb.fDtrControl = DTR_CONTROL_ENABLE;
+    dcb.fDsrSensitivity = FALSE;
+    dcb.fTXContinueOnXoff = TRUE;
+    dcb.fOutX = FALSE;
+    dcb.fInX = FALSE;
+    dcb.fErrorChar = FALSE;
+    dcb.fNull = FALSE;
+    dcb.fRtsControl = RTS_CONTROL_ENABLE;
+    dcb.fAbortOnError = TRUE;
+    dcb.Parity = NOPARITY;
+    
+    if(!SetCommState(hFile, &dcb))
+    {
+        //goto error;
+        was_error = true;
+        ClearCommError(hFile, &error_flag, NULL);
+    }
+
+    if(!was_error)
+        return TRUE;
 
 error:
+
+    DWORD error = GetLastError();
 
     return FALSE;
 
