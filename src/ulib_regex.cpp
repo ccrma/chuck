@@ -171,7 +171,10 @@ CK_DLL_SFUN( regex_match2 )
         goto error;
     }
     
-    matches->clear();
+    
+    //matches->clear();
+    // bugfix: array.clear() doesnt seem to work? 
+    matches->set_size(0);
     
     result = regcomp(&regex, pattern->str.c_str(), REG_EXTENDED);
     if(result != 0)
