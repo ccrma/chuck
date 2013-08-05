@@ -124,8 +124,12 @@ m_writeBuffer(1024)
     m_fd = -1;
     m_cfd = NULL;
     
-    m_buf_size = 1024;
-    m_buf = new char[CHUCK_IO_DEFAULT_BUFSIZE];
+    m_io_buf_max = CHUCK_IO_DEFAULT_BUFSIZE;
+    m_io_buf = new char[m_io_buf_max];
+    m_io_buf_pos = m_io_buf_available = 0;
+    
+    m_tmp_buf_max = CHUCK_IO_DEFAULT_BUFSIZE;
+    m_tmp_buf = new char[m_tmp_buf_max];
     
     m_read_thread = NULL;
     m_event_buffer = NULL;
@@ -142,9 +146,12 @@ Chuck_IO_Serial::~Chuck_IO_Serial()
     
     close();
     
-    delete[] m_buf;
-    m_buf = NULL;
-    m_buf_size = 0;
+    SAFE_DELETE(m_io_buf);
+    m_io_buf_max = 0;
+    m_io_buf_pos = m_io_buf_available = 0;
+    
+    SAFE_DELETE(m_tmp_buf);
+    m_tmp_buf_max = 0;
     
     s_serials.remove(this);
 }
@@ -170,39 +177,11 @@ t_CKBOOL Chuck_IO_Serial::open( const t_CKUINT i, t_CKINT flags, t_CKUINT baud )
 {
     vector<string> ports = SerialIOManager::availableSerialDevices();
     
-    if( flags & Chuck_IO_File::TYPE_BINARY )
-    {
-        m_flags = Chuck_IO_File::TYPE_BINARY;
-    }
-    else if( flags & Chuck_IO_File::TYPE_ASCII )
-    {
-        m_flags = Chuck_IO_File::TYPE_ASCII;
-    }
-    else
-    {
-        EM_log(CK_LOG_WARNING, "(Serial.open): warning: invalid binary/ASCII flag requested, defaulting to ASCII");
-        m_flags = Chuck_IO_File::TYPE_ASCII;
-    }
-    
     if( i < ports.size() )
     {
         const string &path = ports[i];
-        int fd = ::open( path.c_str(), O_RDWR );
-        if( fd < 0 )
-        {
-            EM_log(CK_LOG_WARNING, "(Serial.open): error: unable to open serial port at '%s'", path.c_str());
-            return FALSE;
-        }
         
-        m_fd = fd;
-        
-        // set default baud rate
-        setBaudRate(baud);
-        
-        m_cfd = fdopen(fd, "a+");
-        m_iomode = MODE_ASYNC;
-        m_eof = FALSE;
-        m_path = path;
+        open(path, flags, baud);
     }
     else
     {
@@ -214,7 +193,7 @@ t_CKBOOL Chuck_IO_Serial::open( const t_CKUINT i, t_CKINT flags, t_CKUINT baud )
 }
 
 
-t_CKBOOL Chuck_IO_Serial::open( const std::string & path, t_CKINT flags )
+t_CKBOOL Chuck_IO_Serial::open( const std::string & path, t_CKINT flags, t_CKUINT baud )
 {
     if( flags & Chuck_IO_File::TYPE_BINARY )
     {
@@ -241,10 +220,13 @@ t_CKBOOL Chuck_IO_Serial::open( const std::string & path, t_CKINT flags )
     m_path = path;
     
     // set default baud rate
-    setBaudRate(CK_BAUD_9600);
+    setBaudRate(baud);
     
     m_cfd = fdopen(fd, "a+");
     m_iomode = MODE_ASYNC;
+#ifndef WIN32
+    fcntl(m_fd, F_SETFL, O_NONBLOCK);
+#endif
     m_eof = FALSE;
     
     return TRUE;
@@ -257,6 +239,19 @@ t_CKBOOL Chuck_IO_Serial::good()
 }
 
 void Chuck_IO_Serial::close()
+{
+    if(m_iomode == MODE_SYNC)
+    {
+        close_int();
+    }
+    else
+    {
+        m_do_exit = TRUE;
+        m_read_thread->wait(-1, FALSE);
+    }
+}
+
+void Chuck_IO_Serial::close_int()
 {
     EM_log(CK_LOG_INFO, "(Serial.close): closing serial device '%s'", m_path.c_str());
     
@@ -398,13 +393,13 @@ t_CKBOOL Chuck_IO_Serial::readString( std::string & str )
         return FALSE;
     }
     
-    if(!fscanf(m_cfd, CHUCK_IO_SCANF_STRING, &m_buf))
+    if(!fscanf(m_cfd, CHUCK_IO_SCANF_STRING, &m_tmp_buf))
     {
         EM_log(CK_LOG_WARNING, "(Serial.readFloat): error: read failed");
         return FALSE;
     }
     
-    str = m_buf;
+    str = m_tmp_buf;
     
     return TRUE;
 }
@@ -431,7 +426,7 @@ Chuck_String * Chuck_IO_Serial::readLine()
     }
     
     
-    if(!fgets(m_buf, m_buf_size, m_cfd))
+    if(!fgets(m_tmp_buf, m_tmp_buf_max, m_cfd))
     {
         EM_log(CK_LOG_WARNING, "(Serial.readLine): error: from fgets");
         return NULL;
@@ -440,7 +435,7 @@ Chuck_String * Chuck_IO_Serial::readLine()
     Chuck_String * str = new Chuck_String;
     initialize_object(str, &t_string);
     
-    str->str = string(m_buf);
+    str->str = string(m_tmp_buf);
     
     return str;
 }
@@ -521,15 +516,15 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
         if( m_flags & Chuck_IO_File::TYPE_ASCII )
         {
 #ifdef WIN32
-            _snprintf(m_buf, m_buf_size, "%li", val);
-            m_buf[m_buf_size - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
+            _snprintf(m_tmp_buf, m_tmp_buf_max, "%li", val);
+            m_tmp_buf[m_tmp_buf_max - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
 #else
-            snprintf(m_buf, m_buf_size, "%li", val);
+            snprintf(m_tmp_buf, m_tmp_buf_max, "%li", val);
 #endif       
-            int len = strlen(m_buf);
+            int len = strlen(m_tmp_buf);
             for(int i = 0; i < len; i++)
                 // TODO: efficiency
-                m_writeBuffer.put(m_buf[i]);
+                m_writeBuffer.put(m_tmp_buf[i]);
             
             Request r;
             r.m_type = TYPE_WRITE;
@@ -586,16 +581,16 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
         if( m_flags & Chuck_IO_File::TYPE_ASCII )
         {
 #ifdef WIN32
-            _snprintf(m_buf, m_buf_size, "%f", val);
-            m_buf[m_buf_size - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
+            _snprintf(m_tmp_buf, m_tmp_buf_max, "%f", val);
+            m_tmp_buf[m_tmp_buf_max - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
 #else
-            snprintf(m_buf, m_buf_size, "%f", val);
+            snprintf(m_tmp_buf, m_tmp_buf_max, "%f", val);
 #endif       
             
-            int len = strlen(m_buf);
+            int len = strlen(m_tmp_buf);
             for(int i = 0; i < len; i++)
                 // TODO: efficiency
-                m_writeBuffer.put(m_buf[i]);
+                m_writeBuffer.put(m_tmp_buf[i]);
             
             Request r;
             r.m_type = TYPE_WRITE;
@@ -864,9 +859,104 @@ Chuck_String * Chuck_IO_Serial::getString()
 }
 
 
+t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
+{
+#ifndef WIN32
+    struct pollfd pollfds;
+    pollfds.fd = m_fd;
+    pollfds.events = POLLIN;
+    pollfds.revents = 0;
+    
+    int result = poll(&pollfds, 1, timeout_ms);
+    
+    if(result > 0 && (pollfds.revents & POLLIN))
+    {
+        result = ::read(m_fd, m_io_buf, m_io_buf_max);
+        if(result > 0)
+        {
+            m_io_buf_available = result;
+            m_io_buf_pos = 0;
+            
+            return TRUE;
+        }
+        else if(result == 0)
+        {
+            m_eof = TRUE;
+        }
+    }
+    
+    return FALSE;
+    
+#else
+    return FALSE;
+#endif
+}
+
+
 t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
 {
-    if(fgets(m_buf, m_buf_size, m_cfd))
+    t_CKUINT len = 0;
+    Chuck_String * str;
+    
+    while(!m_do_exit)
+    {
+        if(m_io_buf_pos >= m_io_buf_available)
+        {
+            // refresh data
+            while(!m_do_exit && !m_eof && !get_buffer())
+                ;
+            
+            if(m_do_exit)
+                break;
+        }
+        
+        // TODO: '\r'?
+        if(m_io_buf[m_io_buf_pos] == '\n')
+        {
+            // consume newline character
+            m_io_buf_pos++;
+            break;
+        }
+        
+        m_tmp_buf[len] = m_io_buf[m_io_buf_pos];
+        len++;
+        m_io_buf_pos++;
+        
+        if(len >= m_tmp_buf_max)
+        {
+            EM_log(CK_LOG_WARNING, "(Serial.handle_line): warning: line exceeds buffer length, truncating to %i characters", m_tmp_buf_max);
+            break;
+        }
+    }
+    
+    if(m_do_exit)
+        goto error;
+    // TODO: eof
+    
+    str = new Chuck_String;
+    str->str = std::string(m_tmp_buf, len);
+    
+    r.m_val = (t_CKUINT) str;
+    r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_SUCCESS;
+
+    return TRUE;
+    
+error:
+    r.m_val = 0;
+    r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
+    
+#ifdef WIN32
+    HANDLE hFile = (HANDLE) _get_osfhandle(m_fd);
+    DWORD error;
+    ClearCommError(hFile, &error, NULL);
+    
+    PurgeComm(hFile, PURGE_RXCLEAR);
+#endif
+    
+    return TRUE;
+
+    /*
+    if(fgets(m_buf, m_buf_max, m_cfd))
     {
         int len = strlen(m_buf);
         // truncate end-of-line \n or \r's
@@ -899,6 +989,7 @@ t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
     }
     
     return TRUE;
+     */
 }
 
 t_CKBOOL Chuck_IO_Serial::handle_string(Chuck_IO_Serial::Request & r)
@@ -965,26 +1056,26 @@ t_CKBOOL Chuck_IO_Serial::handle_byte(Chuck_IO_Serial::Request & r)
     
     int num = r.m_num;
     
-    if(size*num > m_buf_size)
+    if(size*num > m_tmp_buf_max)
     {
-        int new_num = (int) floorf(((float)m_buf_size)/size);
+        int new_num = (int) floorf(((float)m_tmp_buf_max)/size);
         EM_log(CK_LOG_WARNING, "SerialIO.read_cb: error: request size %i too large (%i bytes), truncating to %i",
                num, size*num, new_num);
         num = new_num;
     }
     
-    r.m_num = fread(m_buf, size, num, m_cfd);
+    r.m_num = fread(m_tmp_buf, size, num, m_cfd);
     
     t_CKUINT val = 0;
     
     if(r.m_num == 1)
-        val = m_buf[0];
+        val = m_tmp_buf[0];
     else
     {
         Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
         for(int i = 0; i < r.m_num; i++)
         {
-            array->set(i, m_buf[i]);
+            array->set(i, m_tmp_buf[i]);
         }
         
         val = (t_CKUINT) array;
@@ -1004,18 +1095,18 @@ t_CKBOOL Chuck_IO_Serial::handle_float_binary(Chuck_IO_Serial::Request & r)
     
     int num = r.m_num;
     
-    if(size*num > m_buf_size)
+    if(size*num > m_tmp_buf_max)
     {
-        int new_num = (int) floorf(((float)m_buf_size)/size);
+        int new_num = (int) floorf(((float)m_tmp_buf_max)/size);
         EM_log(CK_LOG_WARNING, "(SerialIO.read_cb): error: request size %i too large (%i bytes), truncating to %i",
                num, size*num, new_num);
         num = new_num;
     }
     
-    r.m_num = fread(m_buf, size, num, m_cfd);
+    r.m_num = fread(m_tmp_buf, size, num, m_cfd);
     
     t_CKUINT val = 0;
-    t_CKSINGLE * m_floats = (t_CKSINGLE *) m_buf;
+    t_CKSINGLE * m_floats = (t_CKSINGLE *) m_tmp_buf;
     
     Chuck_Array8 * array = new Chuck_Array8(r.m_num);
     for(int i = 0; i < r.m_num; i++)
@@ -1038,18 +1129,18 @@ t_CKBOOL Chuck_IO_Serial::handle_int_binary(Chuck_IO_Serial::Request & r)
     
     int num = r.m_num;
     
-    if(size*num > m_buf_size)
+    if(size*num > m_tmp_buf_max)
     {
-        int new_num = (int) floorf(((float)m_buf_size)/size);
+        int new_num = (int) floorf(((float)m_tmp_buf_max)/size);
         EM_log(CK_LOG_WARNING, "SerialIO.read_cb: error: request size %i too large (%i bytes), truncating to %i",
                num, size*num, new_num);
         num = new_num;
     }
     
-    r.m_num = fread(m_buf, size, num, m_cfd);
+    r.m_num = fread(m_tmp_buf, size, num, m_cfd);
     
     t_CKUINT val = 0;
-    uint32_t * m_ints = (uint32_t *) m_buf;
+    uint32_t * m_ints = (uint32_t *) m_tmp_buf;
     
     Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
     for(int i = 0; i < r.m_num; i++)
@@ -1070,12 +1161,12 @@ void Chuck_IO_Serial::read_cb()
 {
     m_do_read_thread = true;
     
-    while(m_do_read_thread)
+    while(m_do_read_thread && !m_do_exit)
     {
         Request r;
         int num_responses = 0;
         
-        while(m_asyncRequests.get(r))
+        while(m_asyncRequests.get(r) && m_do_read_thread && !m_do_exit)
         {
             if(r.m_type == TYPE_WRITE)
             {
@@ -1083,15 +1174,15 @@ void Chuck_IO_Serial::read_cb()
                 char c;
                 while(m_writeBuffer.get(c))
                 {
-                    m_buf[numBytes] = c;
+                    m_tmp_buf[numBytes] = c;
                     numBytes++;
                 }
                 
-                assert(numBytes < m_buf_size);
+                assert(numBytes < m_tmp_buf_max);
                 
                 if(numBytes)
                 {
-                    fwrite(m_buf, 1, numBytes, m_cfd);
+                    fwrite(m_tmp_buf, 1, numBytes, m_cfd);
                     fflush(m_cfd);
                 }
             }
@@ -1167,6 +1258,8 @@ void Chuck_IO_Serial::read_cb()
         
         usleep(100);
     }
+    
+    close_int();
 }
 
 
