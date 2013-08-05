@@ -12,7 +12,7 @@ if(me.args()) me.arg(0) => Std.atoi => device;
 
 if(device >= list.cap())
 {
-    cherr <= "serial device #" <= device <= "not available\n";
+    cherr <= "serial device #" <= device <= " not available\n";
     me.exit(); 
 }
 

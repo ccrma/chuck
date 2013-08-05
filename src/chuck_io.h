@@ -55,7 +55,7 @@ public:
 public:
     // meta
     virtual t_CKBOOL open( const t_CKUINT i, t_CKINT flags, t_CKUINT baud = CK_BAUD_9600 );
-    virtual t_CKBOOL open( const std::string & path, t_CKINT flags );
+    virtual t_CKBOOL open( const std::string & path, t_CKINT flags, t_CKUINT baud = CK_BAUD_9600 );
     
     virtual t_CKBOOL good();
     virtual void close();
@@ -139,6 +139,9 @@ protected:
     static void *shell_read_cb(void *);
     void read_cb();
     
+    t_CKBOOL get_buffer(t_CKINT timeout_ms = 1);
+    void close_int();
+    
     t_CKBOOL handle_line(Request &);
     t_CKBOOL handle_string(Request &);
     t_CKBOOL handle_float_ascii(Request &);
@@ -159,12 +162,19 @@ protected:
     
     std::string m_path;
     
-    char * m_buf;
-    t_CKUINT m_buf_size;
+    char * m_io_buf;
+    t_CKUINT m_io_buf_max;
+    t_CKUINT m_io_buf_available;
+    t_CKUINT m_io_buf_pos;
+    
+    char * m_tmp_buf;
+    t_CKUINT m_tmp_buf_max;
     
     t_CKINT m_flags;
     t_CKINT m_iomode; // SYNC or ASYNC
     t_CKBOOL m_eof;
+    
+    t_CKBOOL m_do_exit;
     
     static std::list<Chuck_IO_Serial *> s_serials;
 };
