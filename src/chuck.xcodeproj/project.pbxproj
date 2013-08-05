@@ -743,8 +743,6 @@
 		09A40B000A9A52FC007604EA /* ChucK */ = {
 			isa = PBXGroup;
 			children = (
-				091F327C17A03A4D00686C8D /* ulib_regex.cpp */,
-				091F327D17A03A4D00686C8D /* ulib_regex.h */,
 				09812B980C6E394A00D1D68C /* uana_extract.cpp */,
 				09812B990C6E394A00D1D68C /* uana_extract.h */,
 				090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */,
@@ -825,6 +823,8 @@
 				09A40B4F0A9A54DA007604EA /* ulib_opsc.h */,
 				09A40B500A9A54DA007604EA /* ulib_std.cpp */,
 				09A40B510A9A54DA007604EA /* ulib_std.h */,
+				091F327C17A03A4D00686C8D /* ulib_regex.cpp */,
+				091F327D17A03A4D00686C8D /* ulib_regex.h */,
 				09A40B520A9A54DA007604EA /* util_buffers.cpp */,
 				09A40B530A9A54DA007604EA /* util_buffers.h */,
 				09A40B540A9A54DA007604EA /* util_console.cpp */,
