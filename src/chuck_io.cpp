@@ -133,6 +133,8 @@ m_writeBuffer(1024)
     
     m_read_thread = NULL;
     m_event_buffer = NULL;
+
+    m_do_exit = FALSE;
     
     s_serials.push_back(this);
 }
@@ -247,7 +249,12 @@ void Chuck_IO_Serial::close()
     else
     {
         m_do_exit = TRUE;
+#ifdef WIN32
+        m_read_thread->wait(-1, TRUE);
+        close_int();
+#else
         m_read_thread->wait(-1, FALSE);
+#endif
     }
 }
 
@@ -879,16 +886,25 @@ t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
             
             return TRUE;
         }
-        else if(result == 0)
-        {
-            m_eof = TRUE;
-        }
     }
     
     return FALSE;
     
 #else
+
+    int result = ::read(m_fd, m_io_buf, m_io_buf_max);
+    if(result > 0)
+    {
+        m_io_buf_available = result;
+        m_io_buf_pos = 0;
+        
+        return TRUE;
+    }
+
+    Sleep(timeout_ms);
+
     return FALSE;
+
 #endif
 }
 
@@ -954,42 +970,6 @@ error:
 #endif
     
     return TRUE;
-
-    /*
-    if(fgets(m_buf, m_buf_max, m_cfd))
-    {
-        int len = strlen(m_buf);
-        // truncate end-of-line \n or \r's
-        for(int i = len - 1; i > 0; i--)
-        {
-            if(m_buf[i] == '\n' || m_buf[i] == '\r')
-                m_buf[i] = '\0';
-            else
-                break;
-        }
-        
-        Chuck_String * str = new Chuck_String;
-        str->str = std::string(m_buf);
-        
-        r.m_val = (t_CKUINT) str;
-        r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_SUCCESS;
-    }
-    else
-    {
-        r.m_val = 0;
-        r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
-
-#ifdef WIN32
-        HANDLE hFile = (HANDLE) _get_osfhandle(m_fd);
-        DWORD error;
-        ClearCommError(hFile, &error, NULL);
-
-        PurgeComm(hFile, PURGE_RXCLEAR);
-#endif
-    }
-    
-    return TRUE;
-     */
 }
 
 t_CKBOOL Chuck_IO_Serial::handle_string(Chuck_IO_Serial::Request & r)
