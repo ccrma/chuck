@@ -38,6 +38,7 @@
 #include "ugen_stk.h"
 #include "chuck_type.h"
 #include "util_math.h"
+#include "chuck_vm.h"
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -16793,22 +16794,34 @@ XWriteThread *WvOut::s_writeThread = NULL;
 
 size_t WvOut::fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream)
 {
-    return s_writeThread->fwrite(ptr, size, nitems, stream);
+    if(asyncIO)
+        return s_writeThread->fwrite(ptr, size, nitems, stream);
+    else
+        return ::fwrite(ptr, size, nitems, stream);
 }
 
 int WvOut::fseek(FILE *stream, long offset, int whence)
 {
-    return s_writeThread->fseek(stream, offset, whence);
+    if(asyncIO)
+        return s_writeThread->fseek(stream, offset, whence);
+    else
+        return ::fseek(stream, offset, whence);
 }
 
 int WvOut::fflush(FILE *stream)
 {
-    return s_writeThread->fflush(stream);
+    if(asyncIO)
+        return s_writeThread->fflush(stream);
+    else
+        return ::fflush(stream);
 }
 
 int WvOut::fclose(FILE *stream)
 {
-    return s_writeThread->fclose(stream);
+    if(asyncIO)
+        return s_writeThread->fclose(stream);
+    else
+        return ::fclose(stream);
 }
 
 size_t WvOut::fread(void *ptr, size_t size, size_t nitems, FILE *stream)
@@ -16829,7 +16842,7 @@ void WvOut::shutdown()
 
 WvOut :: WvOut()
 {
-  init();
+  init();    
 }
 
 WvOut::WvOut( const char *fileName, unsigned int nChannels, FILE_TYPE type, Stk::STK_FORMAT format )
@@ -16862,6 +16875,7 @@ void WvOut :: init()
     
     if(s_writeThread == NULL)
         s_writeThread = new XWriteThread(2<<20, 32);
+    asyncIO = TRUE;
 }
 
 void WvOut :: closeFile( void )
@@ -24610,6 +24624,7 @@ CK_DLL_CTOR( WvOut_ctor )
 {
     WvOut * yo = new WvOut;
     yo->autoPrefix.str = "chuck-session";
+    yo->asyncIO = SHRED->vm_ref->m_audio;
     OBJ_MEMBER_UINT(SELF, WvOut_offset_data) = (t_CKUINT)yo;
 }
 
