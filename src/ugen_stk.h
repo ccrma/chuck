@@ -5413,11 +5413,11 @@ class WvOut : public Stk
     static XWriteThread * s_writeThread;
     
     // chuck: override stdio fwrite/etc. functions
-    static size_t fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream);
-    static int fseek(FILE *stream, long offset, int whence);
-    static int fflush(FILE *stream);
-    static int fclose(FILE *stream);
-    static size_t fread(void *ptr, size_t size, size_t nitems, FILE *stream);
+    size_t fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream);
+    int fseek(FILE *stream, long offset, int whence);
+    int fflush(FILE *stream);
+    int fclose(FILE *stream);
+    size_t fread(void *ptr, size_t size, size_t nitems, FILE *stream);
     
     static void shutdown();
     
@@ -5517,6 +5517,8 @@ class WvOut : public Stk
   Chuck_String autoPrefix;
   t_CKUINT flush;
   t_CKFLOAT fileGain;
+    
+    t_CKBOOL asyncIO;
 };
 
 #endif // defined(__WVOUT_H)
