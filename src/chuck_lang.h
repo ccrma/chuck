@@ -335,6 +335,10 @@ public:
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( MidiMsg_ctor );
 
+extern t_CKUINT MidiMsg_offset_data1;
+extern t_CKUINT MidiMsg_offset_data2;
+extern t_CKUINT MidiMsg_offset_data3;
+extern t_CKUINT MidiMsg_offset_when;
 
 //-----------------------------------------------------------------------------
 // MidiRW API

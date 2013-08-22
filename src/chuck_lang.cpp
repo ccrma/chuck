@@ -1221,10 +1221,10 @@ error:
 
 // static
 static t_CKUINT MidiIn_offset_data = 0;
-static t_CKUINT MidiMsg_offset_data1 = 0;
-static t_CKUINT MidiMsg_offset_data2 = 0;
-static t_CKUINT MidiMsg_offset_data3 = 0;
-static t_CKUINT MidiMsg_offset_when = 0;
+t_CKUINT MidiMsg_offset_data1 = 0;
+t_CKUINT MidiMsg_offset_data2 = 0;
+t_CKUINT MidiMsg_offset_data3 = 0;
+t_CKUINT MidiMsg_offset_when = 0;
 static t_CKUINT MidiOut_offset_data = 0;
 
 //-----------------------------------------------------------------------------
@@ -1254,7 +1254,7 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     if( MidiMsg_offset_data3 == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
-    MidiMsg_offset_when = type_engine_import_mvar( env, "time", "when", FALSE );
+    MidiMsg_offset_when = type_engine_import_mvar( env, "dur", "when", FALSE );
     if( MidiMsg_offset_when == CK_INVALID_OFFSET ) goto error;
 
     // end the class import
