@@ -556,6 +556,11 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     // load it
     type_engine_load_context( env, context );
     
+#ifndef __DISABLE_MIDI__
+    if( !init_class_Midi( env ) ) goto error;
+    if( !init_class_MidiRW( env ) ) goto error;
+#endif // __DISABLE_MIDI__
+
     // load
     EM_log( CK_LOG_SEVERE, "module osc..." );
     load_module( env, osc_query, "osc", "global" );
@@ -584,10 +589,6 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     if( !load_module( env, regex_query, "RegEx", "global" ) ) goto error;
     // if( !load_module( env, net_query, "net", "global" ) ) goto error;
     
-#ifndef __DISABLE_MIDI__
-    if( !init_class_Midi( env ) ) goto error;
-    if( !init_class_MidiRW( env ) ) goto error;
-#endif // __DISABLE_MIDI__
     if( !init_class_HID( env ) ) goto error;
     if( !init_class_serialio( env ) ) goto error;
         
