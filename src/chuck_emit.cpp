@@ -2064,7 +2064,9 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         break;
     
     case ae_op_neq:
-        if( isa( t_left, &t_string ) && isa( t_right, &t_string ) )
+        if( isa( t_left, &t_string ) && isa( t_right, &t_string )
+            && !isa( t_left, &t_null ) && !isa( t_right, &t_null ) ) // !null
+            // added 1.3.2.0 (spencer)
             emit->append( instr = new Chuck_Instr_Op_string( op ) );
         else if( isa( t_left, &t_object ) && isa( t_right, &t_object ) )
             emit->append( instr = new Chuck_Instr_Neq_int );
