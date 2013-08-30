@@ -34,6 +34,9 @@
 #include "util_thread.h"
 #include "util_buffers.h"
 #include "chuck_errmsg.h"
+#ifndef __PLATFORM_WIN32__
+#include <unistd.h> // usleep
+#endif
 
 
 
