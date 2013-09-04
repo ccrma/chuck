@@ -604,7 +604,7 @@ void Chuck_Array4::clear( )
     zero( 0, m_vector.size() );
 
     // clear vector
-    // m_vector.clear();
+    m_vector.clear();
 }
 
 
@@ -932,7 +932,7 @@ void Chuck_Array8::clear( )
     zero( 0, m_vector.size() );
 
     // clear vector
-    // m_vector.clear();
+    m_vector.clear();
 }
 
 
@@ -1243,7 +1243,7 @@ void Chuck_Array16::clear( )
     zero( 0, m_vector.size() );
 
     // clear vector
-    // m_vector.clear();
+    m_vector.clear();
 }
 
 
