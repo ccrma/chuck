@@ -213,7 +213,11 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, ftoa_impl, "string", "ftoa" ); //! float to string
     QUERY->add_arg( QUERY, "float", "f" );
     QUERY->add_arg( QUERY, "int", "precision" );
-
+    
+    // add ftoi
+    QUERY->add_sfun( QUERY, ftoi_impl, "int", "ftoi" ); //! float to int
+    QUERY->add_arg( QUERY, "float", "f" );
+    
     // add getenv
     QUERY->add_sfun( QUERY, getenv_impl, "string", "getenv" ); //! fetch environment variable
     QUERY->add_arg( QUERY, "string", "value" );
@@ -666,6 +670,13 @@ CK_DLL_SFUN( ftoa_impl )
     Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
     a->str = ftoa( f, (t_CKUINT)p );
     RETURN->v_string = a;
+}
+
+// ftoi
+CK_DLL_SFUN( ftoi_impl )
+{
+    t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
+    RETURN->v_int = (t_CKINT) f;
 }
 
 // getenv

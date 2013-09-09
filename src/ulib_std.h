@@ -51,6 +51,7 @@ CK_DLL_SFUN( atoi_impl );
 CK_DLL_SFUN( atof_impl );
 CK_DLL_SFUN( itoa_impl );
 CK_DLL_SFUN( ftoa_impl );
+CK_DLL_SFUN( ftoi_impl );
 CK_DLL_SFUN( getenv_impl );
 CK_DLL_SFUN( setenv_impl );
 
