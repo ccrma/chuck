@@ -38,6 +38,7 @@
 #include "chuck_vm.h"
 
 #ifndef __WINDOWS_DS__
+#include <sys/select.h>
 #include <poll.h>
 #include <termios.h>
 #include <unistd.h>
@@ -911,6 +912,54 @@ t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
 #endif
 }
 
+// peek next byte
+t_CKINT Chuck_IO_Serial::peek_buffer()
+{
+    if(m_io_buf_pos >= m_io_buf_available)
+    {
+        // refresh data
+        while(!m_do_exit && !m_eof && !get_buffer())
+            ;
+        
+        if(m_do_exit || m_eof)
+            return -1;
+    }
+    
+    return m_io_buf[m_io_buf_pos];
+}
+
+// consume next byte
+// return -1 on error/exit condition
+t_CKINT Chuck_IO_Serial::pull_buffer()
+{
+    if(m_io_buf_pos >= m_io_buf_available)
+    {
+        // refresh data
+        while(!m_do_exit && !m_eof && !get_buffer())
+            ;
+        
+        if(m_do_exit || m_eof)
+            return -1;
+    }
+    
+    return m_io_buf[m_io_buf_pos++];
+}
+
+
+t_CKINT Chuck_IO_Serial::buffer_bytes_to_tmp(t_CKINT num_bytes)
+{
+    t_CKUINT len = 0;
+    while(len < num_bytes && !m_do_exit)
+    {
+        if(peek_buffer() == -1)
+            break;
+        
+        m_tmp_buf[len++] = pull_buffer();
+    }
+    
+    return len;
+}
+
 
 t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
 {
@@ -919,27 +968,18 @@ t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
     
     while(!m_do_exit)
     {
-        if(m_io_buf_pos >= m_io_buf_available)
-        {
-            // refresh data
-            while(!m_do_exit && !m_eof && !get_buffer())
-                ;
+        if(peek_buffer() == -1)
+            break;
             
-            if(m_do_exit)
-                break;
-        }
-        
         // TODO: '\r'?
-        if(m_io_buf[m_io_buf_pos] == '\n')
+        if(peek_buffer() == '\n')
         {
             // consume newline character
-            m_io_buf_pos++;
+            pull_buffer();
             break;
         }
-        
-        m_tmp_buf[len] = m_io_buf[m_io_buf_pos];
-        len++;
-        m_io_buf_pos++;
+                
+        m_tmp_buf[len++] = pull_buffer();
         
         if(len >= m_tmp_buf_max)
         {
@@ -985,23 +1025,49 @@ t_CKBOOL Chuck_IO_Serial::handle_float_ascii(Chuck_IO_Serial::Request & r)
     t_CKFLOAT val = 0;
     int numRead = 0;
     Chuck_Array8 * array = new Chuck_Array8(0);
-    for(int i = 0; i < r.m_num; i++)
+    
+    for(int i = 0; i < r.m_num && !m_do_exit; i++)
     {
-        if(fscanf(m_cfd, "%lf", &val))
+        t_CKUINT len = 0;
+        
+        while(!m_do_exit)
         {
-            numRead++;
-            array->push_back(val);
-        }
-        else
-        {
-            // SPENCERTODO: error?
-            break;
+            if(peek_buffer() == -1)
+                break;
+            
+            // TODO: '\r'?
+            int c = peek_buffer();
+            
+            if(isnumber(c) || c=='.' || (len==0 && (c=='-' || c=='+')))
+            {
+                m_tmp_buf[len++] = pull_buffer();
+            }
+            else if(len > 0)
+            {
+                m_tmp_buf[len++] = '\0';
+                val = strtod(m_tmp_buf, NULL);
+                
+                numRead++;
+                array->push_back(val);
+                
+                break;
+            }
         }
     }
     
+    if(m_do_exit || m_eof)
+        goto error;
+
     r.m_num = numRead;
     r.m_val = (t_CKUINT) array;
     r.m_status = Request::RQ_STATUS_SUCCESS;
+    
+    return TRUE;
+    
+error:
+    SAFE_DELETE(array);
+    r.m_val = 0;
+    r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
     
     return TRUE;
 }
@@ -1013,21 +1079,45 @@ t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Request & r)
     Chuck_Array4 * array = new Chuck_Array4(FALSE, 0);
     for(int i = 0; i < r.m_num; i++)
     {
-        if(fscanf(m_cfd, "%li", &val))
+        t_CKUINT len = 0;
+        
+        while(!m_do_exit)
         {
-            numRead++;
-            array->push_back(val);
-        }
-        else
-        {
-            // SPENCERTODO: error
-            break;
+            if(peek_buffer() == -1)
+                break;
+            
+            int c = pull_buffer();
+            
+            if(isnumber(c) || (len==0 && (c=='-' || c=='+')))
+            {
+                m_tmp_buf[len++] = c;
+            }
+            else if(len > 0)
+            {
+                m_tmp_buf[len++] = '\0';
+                val = strtol(m_tmp_buf, NULL, 10);
+                
+                numRead++;
+                array->push_back(val);
+                
+                break;
+            }
         }
     }
+    
+    if(m_do_exit || m_eof)
+        goto error;
     
     r.m_num = numRead;
     r.m_val = (t_CKUINT) array;
     r.m_status = Request::RQ_STATUS_SUCCESS;
+    
+    return TRUE;
+    
+error:
+    SAFE_DELETE(array);
+    r.m_val = 0;
+    r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
     
     return TRUE;
 }
@@ -1035,9 +1125,9 @@ t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Request & r)
 t_CKBOOL Chuck_IO_Serial::handle_byte(Chuck_IO_Serial::Request & r)
 {
     // binary
-    int size = 1;
-    
+    int size = 1;    
     int num = r.m_num;
+    t_CKUINT val = 0;
     
     if(size*num > m_tmp_buf_max)
     {
@@ -1047,9 +1137,12 @@ t_CKBOOL Chuck_IO_Serial::handle_byte(Chuck_IO_Serial::Request & r)
         num = new_num;
     }
     
-    r.m_num = fread(m_tmp_buf, size, num, m_cfd);
+    t_CKINT len = buffer_bytes_to_tmp(num);
     
-    t_CKUINT val = 0;
+    if(m_do_exit || m_eof)
+        goto error;
+
+    r.m_num = len;
     
     if(r.m_num == 1)
         val = m_tmp_buf[0];
@@ -1066,6 +1159,12 @@ t_CKBOOL Chuck_IO_Serial::handle_byte(Chuck_IO_Serial::Request & r)
     
     r.m_val = val;
     r.m_status = Request::RQ_STATUS_SUCCESS;
+    
+    return TRUE;
+    
+error:
+    r.m_val = 0;
+    r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
     
     return TRUE;
 }
@@ -1086,7 +1185,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_binary(Chuck_IO_Serial::Request & r)
         num = new_num;
     }
     
-    r.m_num = fread(m_tmp_buf, size, num, m_cfd);
+    r.m_num = buffer_bytes_to_tmp(size*num)/size;
     
     t_CKUINT val = 0;
     t_CKSINGLE * m_floats = (t_CKSINGLE *) m_tmp_buf;
@@ -1120,7 +1219,7 @@ t_CKBOOL Chuck_IO_Serial::handle_int_binary(Chuck_IO_Serial::Request & r)
         num = new_num;
     }
     
-    r.m_num = fread(m_tmp_buf, size, num, m_cfd);
+    r.m_num = buffer_bytes_to_tmp(size*num)/size;
     
     t_CKUINT val = 0;
     uint32_t * m_ints = (uint32_t *) m_tmp_buf;
