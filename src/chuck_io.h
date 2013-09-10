@@ -138,9 +138,14 @@ protected:
     XThread * m_read_thread;
     static void *shell_read_cb(void *);
     void read_cb();
+
     
-    t_CKBOOL get_buffer(t_CKINT timeout_ms = 1);
     void close_int();
+
+    t_CKBOOL get_buffer(t_CKINT timeout_ms = 1);
+    t_CKINT peek_buffer();
+    t_CKINT pull_buffer();
+    t_CKINT buffer_bytes_to_tmp(t_CKINT num_bytes);
     
     t_CKBOOL handle_line(Request &);
     t_CKBOOL handle_string(Request &);

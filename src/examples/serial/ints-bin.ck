@@ -14,7 +14,8 @@ cereal.open(device, SerialIO.B9600, SerialIO.BINARY);
 
 while(true)
 {
-    cereal.onByte() => now;
-    cereal.getByte() => int byte;
-    chout <= "byte: " <= byte <= IO.newline();
+    cereal.onInts(1) => now;
+    cereal.getInts() @=> int i[];
+    if(i.size() > 0)
+        chout <= "int: " <= i[0] <= "\n";
 }
