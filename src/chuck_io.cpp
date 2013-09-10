@@ -868,15 +868,18 @@ Chuck_String * Chuck_IO_Serial::getString()
 
 t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
 {
-#ifndef WIN32
-    struct pollfd pollfds;
-    pollfds.fd = m_fd;
-    pollfds.events = POLLIN;
-    pollfds.revents = 0;
+#ifndef WIN32    
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(m_fd, &fds);
     
-    int result = poll(&pollfds, 1, timeout_ms);
+    timeval tv;
+    tv.tv_sec = timeout_ms/1000;
+    tv.tv_usec = 1000 * (timeout_ms%1000);
     
-    if(result > 0 && (pollfds.revents & POLLIN))
+    int result = select(m_fd+1, &fds, NULL, NULL, &tv);
+    
+    if(result > 0 && FD_ISSET(m_fd, &fds))
     {
         result = ::read(m_fd, m_io_buf, m_io_buf_max);
         if(result > 0)
