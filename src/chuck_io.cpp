@@ -1038,7 +1038,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_ascii(Chuck_IO_Serial::Request & r)
             // TODO: '\r'?
             int c = peek_buffer();
             
-            if(isnumber(c) || c=='.' || (len==0 && (c=='-' || c=='+')))
+            if(isdigit(c) || c=='.' || (len==0 && (c=='-' || c=='+')))
             {
                 m_tmp_buf[len++] = pull_buffer();
             }
@@ -1088,7 +1088,7 @@ t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Request & r)
             
             int c = pull_buffer();
             
-            if(isnumber(c) || (len==0 && (c=='-' || c=='+')))
+            if(isdigit(c) || (len==0 && (c=='-' || c=='+')))
             {
                 m_tmp_buf[len++] = c;
             }
