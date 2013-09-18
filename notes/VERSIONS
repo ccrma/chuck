@@ -1,8 +1,68 @@
+
 1.3.2.0
 ---
-  - (added) SerialIO class:
-            class for communicating with serial devices, e.g Arduino
-            - .list()
+  - (added) Std.ftoi(float f)
+            Function for converting float to int
+  - (added) ASCII char literals - 'c' converted to int with ASCII value
+  - (added) new functions
+            - me.path()
+              equivalent to me.sourcePath()
+            - me.dir()
+              equivalent to me.sourceDir()
+            - me.dir(int N)
+              return Nth-level parent of source directory
+            - Shred.fromId(int id)
+              return Shred object corresponding to specified id
+  - (added) new functions for string objects
+            - .charAt(int index)
+              return character of string at index
+            - .setCharAt(int index, int ch)
+              set character of string at index to ch
+            - .substring(int pos)
+              return new string with characters from pos to end of string
+            - .substring(int pos, int len)
+              return new string with characters from pos of length len
+            - .insert(int pos, string str)
+              insert str at pos
+            - .erase(int pos, int len)
+              remove len characters from string, beginning at pos
+            - .replace(int pos, string str)
+              replace characters of string at pos with str
+            - .replace(int pos, int len, string str)
+              replace len characters of string with str, starting at pos
+            - .find(int ch)
+              search for character ch in string, return index of first instance
+            - .find(int ch, int pos)
+              search for character ch in string, return index of first instance
+              at or after index pos
+            - .find(string str)
+              search for string str in string, return index of first instance
+            - .find(string str, int pos)
+              search for string str in string, return index of first instance at
+              or after index pos
+            - .rfind(int ch)
+              search for character ch in string, return index of last instance
+            - .rfind(int ch, int pos)
+              search for character ch in string, return index of last instance
+              at or before index pos
+            - .rfind(string str)
+              search for string str in string, return index of last instance
+            - .rfind(string str, int pos)
+              search for string str in string, return index of last instance at
+              or before index pos
+  - (added) MidiFileIn class
+            Class for parsing + handling MIDI input from a file.
+            See examples/midi/playmidi.ck for example usage. 
+            - .open(string filename)
+              Open file at specified path
+            - .read(MidiMsg inMsg)
+              Get next message in first track
+            - .read(MidiMsg inMsg, int trackNo)
+              Get next message in trackNo
+  - (added) SerialIO class (extends IO)
+            Class for communicating with serial devices, e.g Arduino.
+            See examples/serial/ for example usage. 
+            - .list() (static)
               return array of strings corresponding
               to available serial IO devices
             - .open(int i, int baud, int mode)
@@ -22,10 +82,12 @@
               device. 
             - .getLine()
               .getByte()
-              .getBytes()
+              retrieve data requested as above as string/byte
+            - .getBytes()
               .getInts()
               .getFloats()
-              retrieve data requested using the onLine()/etc. above.
+              retrieve data requested using the onLine()/etc. above. as array
+              of data type
             - .baudRate()
               .baudRate(int baud)
               get/set baud rate
@@ -41,12 +103,36 @@
               SerialIO.B115200
               SerialIO.B230400
               available baud rates
+  - (added) Regex class
+            Class for regular expression matching and replacing in strings. 
+            Regex style is POSIX-extended. 
+            - RegEx.match(string pattern, string str)
+              Return true if match for pattern is found in str, false otherwise
+            - RegEx.match(string pattern, string str, string matches[])
+              Same as above, but return the match and sub-patterns in matches
+              matches[0] is the entire matched pattern, matches[1] is the first 
+              sub-pattern (if any), and so on. 
+            - RegEx.replace(string pat, string repl, string str)
+              Replace the first instance of pat in str with repl, returning the
+              result. 
+            - RegEx.replaceAll(string pat, string repl, string str)
+              Replace all instances of pat in str with repl, returning the
+              result. 
   - (fixed) --adc:<N> now works as expected
   - (fixed) FileIO => string bug
   - (fixed) LiSa.sync/LiSa.track now works when set to 
             1 (playhead follows input, normalized/rectified to [0,1])
             2 (playhead follows input, non-normalized/rectified)
             affects examples/special/LiSa-track*.ck
+  - (fixed) LiSa interpolation bug
+  - (fixed) .clear() function of arrays properly removes all items of the array
+  - (fixed) != properly handles comparison between a string and literal null
+  - (fixed) multichannel refcounting bug
+  - (fixed) WvOut performs IO writes on separate thread, significantly 
+            minimizing audio underruns
+  - (fixed) crash in Chorus destructor
+  - (fixed) crash in Mandolin destructor
+  - (fixed) ADSR correctly initialized in "DONE" state
 
 1.3.1.3
 ---
