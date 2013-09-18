@@ -173,7 +173,7 @@ t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
                 }
 
                 // make global
-                prog->section->class_def->home = env->global();
+                prog->section->class_def->home = env->user();
                 // remember
                 env->context->public_class_def = prog->section->class_def;
             }

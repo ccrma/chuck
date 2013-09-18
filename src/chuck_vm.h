@@ -532,6 +532,7 @@ enum Chuck_Msg_Type
     MSG_DONE,
     MSG_ABORT,
     MSG_ERROR, // added 1.3.0.0
+    MSG_CLEARVM,
 };
 
 

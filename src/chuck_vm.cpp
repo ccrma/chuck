@@ -1033,13 +1033,33 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         t_CKUINT xid = m_shred_id;
         EM_error3( "[chuck](VM): removing all (%i) shreds...", m_num_shreds );
         Chuck_VM_Shred * shred = NULL;
-
+        
         while( m_num_shreds && xid > 0 )
         {
             if( m_shreduler->remove( shred = m_shreduler->lookup( xid ) ) )
                 this->free( shred, TRUE );
             xid--;
         }
+        
+        m_shred_id = 0;
+        m_num_shreds = 0;
+    }
+    else if( msg->type == MSG_CLEARVM ) // added 1.3.2.0
+    {
+        // first removeall
+        t_CKUINT xid = m_shred_id;
+        EM_error3( "[chuck](VM): removing all shreds and resetting type system" );
+        Chuck_VM_Shred * shred = NULL;
+        
+        while( m_num_shreds && xid > 0 )
+        {
+            if( m_shreduler->remove( shred = m_shreduler->lookup( xid ) ) )
+                this->free( shred, TRUE );
+            xid--;
+        }
+        
+        // clear user type system
+        Chuck_Env::instance()->clear_user_namespace();
         
         m_shred_id = 0;
         m_num_shreds = 0;

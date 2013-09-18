@@ -375,6 +375,7 @@ private:
         global_nspc = global_context.nspc; SAFE_ADD_REF(global_nspc);
         // deprecated stuff
         deprecated.clear(); deprecate_level = 1;
+        user_nspc = NULL;
         // clear
         this->reset();
     }
@@ -384,10 +385,21 @@ protected:
     Chuck_Namespace * global_nspc;
     // global context
     Chuck_Context global_context;
+    // user-global namespace
+    Chuck_Namespace * user_nspc;
 
 public:
     // global namespace
     Chuck_Namespace * global() { return global_nspc; }
+    // global namespace
+    Chuck_Namespace * user()
+    {
+        if(user_nspc == NULL)
+            return global_nspc;
+        else
+            return user_nspc;
+    }
+    
     // namespace stack
     std::vector<Chuck_Namespace *> nspc_stack;
     // expression namespace
@@ -426,16 +438,41 @@ public:
     void reset( )
     {
         // TODO: release stack items?
-        nspc_stack.clear(); nspc_stack.push_back( this->global() );
+        nspc_stack.clear();
+        nspc_stack.push_back( this->global() );
+        if(user_nspc != NULL)
+            nspc_stack.push_back( this->user_nspc );
         // TODO: release stack items?
         class_stack.clear(); class_stack.push_back( NULL );
         // should be at top level
         assert( context == &global_context );
         // assign : TODO: release curr? class_def? func?
         // TODO: need another function, since this is called from constructor
-        curr = this->global(); class_def = NULL; func = NULL;
+        if(user_nspc != NULL)
+            curr = this->user();
+        else
+            curr = this->global();
+        class_def = NULL; func = NULL;
         // make sure this is 0
         class_scope = 0;
+    }
+    
+    void load_user_namespace()
+    {
+        // user namespace
+        user_nspc = new Chuck_Namespace;
+        user_nspc->name = "[user]";
+        user_nspc->parent = global_nspc;
+        SAFE_ADD_REF(global_nspc);
+        SAFE_ADD_REF(user_nspc);
+    }
+    
+    void clear_user_namespace()
+    {
+        SAFE_RELEASE(user_nspc->parent);
+        SAFE_RELEASE(user_nspc);
+        load_user_namespace();
+        this->reset();
     }
 
     // top

@@ -201,7 +201,8 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
             cmd->param = msg->param;
     }
     else if( msg->type == MSG_STATUS || msg->type == MSG_REMOVE || msg->type == MSG_REMOVEALL
-             || msg->type == MSG_KILL || msg->type == MSG_TIME || msg->type == MSG_RESET_ID )
+             || msg->type == MSG_KILL || msg->type == MSG_TIME || msg->type == MSG_RESET_ID
+             || msg->type == MSG_CLEARVM )
     {
         cmd->type = msg->type;
         cmd->param = msg->param;
@@ -488,6 +489,17 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
         EM_pushlog();
         EM_log( CK_LOG_INFO, "requesting removeall..." );
         msg.type = MSG_REMOVEALL;
+        msg.param = 0;
+        otf_hton( &msg );
+        ck_send( dest, (char *)&msg, sizeof(msg) );
+        EM_poplog();
+    }
+    else if( !strcmp( argv[i], "--clear.vm" ) )
+    {
+        if( !(dest = otf_send_connect( host, port )) ) return 0;
+        EM_pushlog();
+        EM_log( CK_LOG_INFO, "requesting clearvm..." );
+        msg.type = MSG_CLEARVM;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );

@@ -849,6 +849,8 @@ static void usage()
         EM_poplog();
     }
     
+    compiler->env->load_user_namespace();
+    
     // log
     EM_log( CK_LOG_SEVERE, "starting compilation..." );
     // push indent
