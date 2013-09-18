@@ -469,7 +469,7 @@ public:
     
     void clear_user_namespace()
     {
-        SAFE_RELEASE(user_nspc->parent);
+        if(user_nspc) SAFE_RELEASE(user_nspc->parent);
         SAFE_RELEASE(user_nspc);
         load_user_namespace();
         this->reset();
