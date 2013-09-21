@@ -1,6 +1,8 @@
 
 1.3.2.0
 ---
+  - (added) --clear.vm flag
+            instructs remote VM to remove all shreds and clear public user types
   - (added) Std.ftoi(float f)
             Function for converting float to int
   - (added) ASCII char literals - 'c' converted to int with ASCII value
