@@ -6,6 +6,11 @@
   - (added) Std.ftoi(float f)
             Function for converting float to int
   - (added) ASCII char literals - 'c' converted to int with ASCII value
+  - (added) book/digital-artists example programs for forthcoming book:
+            "Programming for Musicians and Digital Artists" (Manning 
+            Publications)
+            (very special thanks to Mark Morris and Bruce Lott for sample
+            production)
   - (added) new functions
             - me.path()
               equivalent to me.sourcePath()
