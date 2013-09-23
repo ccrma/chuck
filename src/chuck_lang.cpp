@@ -3228,7 +3228,7 @@ CK_DLL_MFUN(string_substringN)
         return;
     }
 
-    if(length < 0 || start+length >= str->str.length())
+    if(length < 0 || start+length > str->str.length())
     {
         throw_exception(SHRED, "IndexOutOfBoundsException", length);
         RETURN->v_string = NULL;
