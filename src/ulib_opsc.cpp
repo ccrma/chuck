@@ -39,9 +39,9 @@
 #include "chuck_instr.h"
 #include "util_thread.h"
 #include "util_buffers.h"
+#include "util_string.h"
 
 extern "C" {
-#include <lo/lo_lowlevel.h>
 #include <lo/lo.h>
 }
 
@@ -52,9 +52,9 @@ struct OscMsg
     
     struct OscArg
     {
-        OscArg() : i(0), f(0), s(0) { }
-        OscArg(int _i) : i(_i), f(0), s(0) { }
-        OscArg(float _f) : i(0), f(_f), s(0) { }
+        OscArg() : i(0), f(0), s() { }
+        OscArg(int _i) : i(_i), f(0), s() { }
+        OscArg(float _f) : i(0), f(_f), s() { }
         OscArg(const std::string &_s) : i(0), f(0), s(_s) { }
         
         int i;
@@ -63,6 +63,17 @@ struct OscMsg
     };
     
     std::vector<OscArg> args;
+};
+
+
+// TODO: use this to cache ck objects to not leak memory so rampantly
+struct CkOscMsg
+{
+    OscMsg msg;
+    
+    Chuck_String *path;
+    Chuck_String *type;
+    std::vector<Chuck_Object> args;
 };
 
 
@@ -96,19 +107,21 @@ public:
         
         if(comma_pos != method.npos)
         {
-            msg.path = method.substr(0, comma_pos-1);
+            msg.path = ltrim(rtrim(method.substr(0, comma_pos)));
             msg.nopath = FALSE;
-            msg.type = method.substr(comma_pos+1);
+            msg.type = ltrim(rtrim(method.substr(comma_pos+1)));
             msg.notype = FALSE;
         }
         else
         {
-            msg.path = method;
-            msg.nopath = (msg.path.size() > 0);
+            msg.path = ltrim(rtrim(method));
+            msg.nopath = (msg.path.size() == 0);
             msg.notype = TRUE;
         }
         
         msg.obj = obj;
+        
+        m_inMsgBuffer.put(msg);
     }
     
     void removeMethod(const std::string &method, OscIn * obj)
@@ -198,6 +211,11 @@ public:
     void removeMethod(const std::string &method) { OscInServer::forPort(m_port)->removeMethod(method, this); }
     void removeAllMethods() { OscInServer::forPort(m_port)->removeAllMethods(this); }
     
+    t_CKBOOL get(OscMsg &msg)
+    {
+        return m_oscMsgBuffer.get(msg);
+    }
+    
     static int s_handler(const char *path, const char *types,
                          lo_arg **argv, int argc,
                          lo_message msg, void *user_data)
@@ -248,7 +266,7 @@ private:
 
 void *OscInServer::server_cb()
 {
-    lo_server m_server;
+    lo_server m_server = NULL;
     
     if(m_port > 0)
     {
@@ -260,7 +278,13 @@ void *OscInServer::server_cb()
     {
         m_server = lo_server_new(NULL, NULL);
     }
-
+    
+    if(m_server == NULL)
+    {
+        // TODO: error
+        return NULL;
+    }
+    
     m_assignedPort = lo_server_get_port(m_server);
     
     while(!m_quit)
@@ -271,10 +295,12 @@ void *OscInServer::server_cb()
             switch(msg.msg_type)
             {
                 case OscInMsg::ADD_METHOD:
+                {
                     lo_server_add_method(m_server,
                                          msg.nopath ? NULL : msg.path.c_str(),
                                          msg.notype ? NULL : msg.type.c_str(),
                                          OscIn::s_handler, msg.obj);
+                }
                     break;
                     
                 case OscInMsg::REMOVE_METHOD:
@@ -289,7 +315,7 @@ void *OscInServer::server_cb()
             }
         }
         
-        lo_server_recv_noblock(m_server, 1);
+        lo_server_recv_noblock(m_server, 2);
     }
     
     lo_server_free(m_server);
@@ -346,7 +372,7 @@ public:
     {
         std::string path;
         int comma_pos = method.find(',');
-        if(comma_pos != method.npos) m_path = method.substr(0, comma_pos-1);
+        if(comma_pos != method.npos) m_path = method.substr(0, comma_pos);
         else m_path = method;
         
         m_message = lo_message_new();
@@ -402,20 +428,23 @@ private:
 
 
 static t_CKUINT oscin_offset_data = 0;
+
 static t_CKUINT oscout_offset_data = 0;
+
 static t_CKUINT oscmsg_offset_data = 0;
+static t_CKUINT oscmsg_offset_address = 0;
+static t_CKUINT oscmsg_offset_typetag = 0;
+
 static t_CKUINT oscarg_offset_data = 0;
 
-CK_DLL_CTOR(oscin_ctor)
-{
-    
-}
+Chuck_Type * g_OscMsgType = NULL;
+Chuck_Type * g_OscArgType = NULL;
 
-CK_DLL_DTOR(oscin_dtor);
-CK_DLL_MFUN(oscin_port);
-CK_DLL_MFUN(oscin_address);
-CK_DLL_MFUN(oscin_msg);
-CK_DLL_MFUN(oscin_recv);
+//-----------------------------------------------------------------------------
+// name: OscOut
+// desc:
+//-----------------------------------------------------------------------------
+#pragma mark - OscOut
 
 CK_DLL_CTOR(oscout_ctor)
 {
@@ -425,7 +454,7 @@ CK_DLL_CTOR(oscout_ctor)
 CK_DLL_DTOR(oscout_dtor)
 {
     OscOut * out = (OscOut *) OBJ_MEMBER_INT(SELF, oscout_offset_data);
-    delete out;
+    SAFE_DELETE(out);
     OBJ_MEMBER_INT(SELF, oscout_offset_data) = 0;
 }
 
@@ -438,7 +467,7 @@ CK_DLL_MFUN(oscout_dest)
     
     if(host == NULL)
     {
-        throw_exception(SHRED, "NullPtrException", "parameter 'host'");
+        throw_exception(SHRED, "NullPtrException", "OscOut.start: argument 'host' is null");
         goto error;
     }
     
@@ -461,7 +490,7 @@ CK_DLL_MFUN(oscout_start)
     
     if(method == NULL)
     {
-        throw_exception(SHRED, "NullPtrException", "parameter 'method'");
+        throw_exception(SHRED, "NullPtrException", "OscOut.start: argument 'method' is null");
         goto error;
     }
     
@@ -486,13 +515,13 @@ CK_DLL_MFUN(oscout_startDest)
     
     if(method == NULL)
     {
-        throw_exception(SHRED, "NullPtrException", "parameter 'method'");
+        throw_exception(SHRED, "NullPtrException", "OscOut.start: argument 'method' is null");
         goto error;
     }
     
     if(host == NULL)
     {
-        throw_exception(SHRED, "NullPtrException", "parameter 'host'");
+        throw_exception(SHRED, "NullPtrException", "OscOut.start: argument 'host' is null");
         goto error;
     }
     
@@ -576,12 +605,128 @@ error:
     RETURN->v_object = NULL;
 }
 
+//-----------------------------------------------------------------------------
+// name: OscIn
+// desc:
+//-----------------------------------------------------------------------------
+#pragma mark - OscIn
 
-CK_DLL_CTOR(oscmsg_ctor);
-CK_DLL_DTOR(oscmsg_dtor);
-CK_DLL_MFUN(oscmsg_address);
-CK_DLL_MFUN(oscmsg_timetag);
-CK_DLL_MFUN(oscmsg_arg);
+CK_DLL_CTOR(oscin_ctor)
+{
+    OBJ_MEMBER_INT(SELF, oscin_offset_data) = (t_CKINT) new OscIn((Chuck_Event *) SELF, SHRED->vm_ref);
+}
+
+CK_DLL_DTOR(oscin_dtor)
+{
+    OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
+    SAFE_DELETE(in);
+    OBJ_MEMBER_INT(SELF, oscin_offset_data) = 0;
+}
+
+CK_DLL_MFUN(oscin_setport)
+{
+    OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
+    
+    t_CKINT port = GET_NEXT_INT(ARGS);
+    
+    RETURN->v_int = in->port(port);
+}
+
+CK_DLL_MFUN(oscin_getport)
+{
+    OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
+    
+    RETURN->v_int = in->port();
+}
+
+CK_DLL_MFUN(oscin_address)
+{
+    OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
+    
+    Chuck_String *address = GET_NEXT_STRING(ARGS);
+    
+    if(address == NULL)
+    {
+        throw_exception(SHRED, "NullPtrException", "OscIn.address: argument 'address' is null");
+        goto error;
+    }
+
+    in->addMethod(address->str);
+    
+error:
+    return;
+}
+
+CK_DLL_MFUN(oscin_addAddress)
+{
+    OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
+}
+
+CK_DLL_MFUN(oscin_removeAddress)
+{
+    OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
+}
+
+CK_DLL_MFUN(oscin_msg)
+{
+    OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
+}
+
+CK_DLL_MFUN(oscin_recv)
+{
+    OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
+    
+    Chuck_Object * msg_obj = GET_NEXT_OBJECT(ARGS);
+    OscMsg * msg;
+    
+    if(msg_obj == NULL)
+    {
+        throw_exception(SHRED, "NullPtrException", "OscIn.recv: argument 'msg' is null");
+        goto error;
+    }
+    
+    msg = (OscMsg *) OBJ_MEMBER_INT(msg_obj, oscmsg_offset_data);
+    
+    RETURN->v_int = in->get(*msg);
+    
+    OBJ_MEMBER_STRING(msg_obj, oscmsg_offset_address)->str = msg->path;
+    OBJ_MEMBER_STRING(msg_obj, oscmsg_offset_typetag)->str = msg->type;
+    
+    return;
+    
+error:
+    RETURN->v_int = 0;
+}
+
+
+CK_DLL_CTOR(oscmsg_ctor)
+{
+    OBJ_MEMBER_INT(SELF, oscmsg_offset_data) = (t_CKINT) new OscMsg;
+    
+    Chuck_String *address = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    OBJ_MEMBER_STRING(SELF, oscmsg_offset_address) = address;
+    
+    Chuck_String *typetag = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    OBJ_MEMBER_STRING(SELF, oscmsg_offset_typetag) = typetag;
+}
+
+CK_DLL_DTOR(oscmsg_dtor)
+{
+    OscMsg * msg = (OscMsg *) OBJ_MEMBER_INT(SELF, oscmsg_offset_data);
+    SAFE_DELETE(msg);
+    OBJ_MEMBER_INT(SELF, oscmsg_offset_data) = NULL;
+    
+    SAFE_DELETE(OBJ_MEMBER_STRING(SELF, oscmsg_offset_address));
+    OBJ_MEMBER_STRING(SELF, oscmsg_offset_address) = NULL;
+    
+    SAFE_DELETE(OBJ_MEMBER_STRING(SELF, oscmsg_offset_typetag));
+    OBJ_MEMBER_STRING(SELF, oscmsg_offset_typetag) = NULL;
+}
+
+CK_DLL_MFUN(oscmsg_arg)
+{
+    
+}
 
 CK_DLL_CTOR(oscarg_ctor);
 CK_DLL_DTOR(oscarg_dtor);
@@ -599,7 +744,11 @@ static Chuck_Type * osc_addr_type_ptr = 0;
 
 DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) { 
 
+    /*** OscOut ***/
+    
     query->begin_class(query, "OscOut", "Object");
+    
+    oscout_offset_data = query->add_mvar(query, "int", "@OscOut_data", FALSE);
     
     query->add_ctor(query, oscout_ctor);
     query->add_dtor(query, oscout_dtor);
@@ -628,6 +777,47 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     query->add_mfun(query, oscout_send, "OscOut", "send");
     
     query->end_class(query);
+    
+    
+    /*** OscMsg ***/
+    
+    query->begin_class(query, "OscMsg", "Object");
+    
+    oscmsg_offset_data = query->add_mvar(query, "int", "@OscMsg_data", FALSE);
+    oscmsg_offset_address = query->add_mvar(query, "string", "address", FALSE);
+    oscmsg_offset_typetag = query->add_mvar(query, "string", "typetag", FALSE);
+    
+    query->add_ctor(query, oscmsg_ctor);
+    query->add_dtor(query, oscmsg_dtor);
+    
+    query->end_class(query);
+    
+    
+    /*** OscIn ***/
+    
+    query->begin_class(query, "OscIn", "Event");
+    
+    oscin_offset_data = query->add_mvar(query, "int", "@OscOut_data", FALSE);
+
+    query->add_ctor(query, oscin_ctor);
+    query->add_dtor(query, oscin_dtor);
+    
+    query->add_mfun(query, oscin_getport, "int", "port");
+    
+    query->add_mfun(query, oscin_setport, "int", "port");
+    query->add_arg(query, "int", "p");
+    
+    query->add_mfun(query, oscin_address, "void", "address");
+    query->add_arg(query, "string", "address");
+    
+    query->add_mfun(query, oscin_recv, "int", "recv");
+    query->add_arg(query, "OscMsg", "msg");
+
+    query->end_class(query);
+    
+    
+//    g_OscMsgType = type_engine_find_type(Chuck_Env::instance(), str2list("OscMsg"));
+//    g_OscArgType = type_engine_find_type(Chuck_Env::instance(), str2list("OscArg"));
     
     
     // get the env

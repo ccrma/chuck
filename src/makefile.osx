@@ -29,7 +29,7 @@ CSRCS+= util_sndfile.c
 
 
 # this is to link properly on leopard...
-MACOSX_DEPLOYMENT_TARGET=10.4
+MACOSX_DEPLOYMENT_TARGET=10.5
 export MACOSX_DEPLOYMENT_TARGET
 # option 2, add this to the gcc flags: -mmacosx-version-min=10.4
 
