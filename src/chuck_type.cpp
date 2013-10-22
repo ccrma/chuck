@@ -5079,6 +5079,18 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
     }
     // make var decl
     a_Var_Decl var_decl = new_var_decl( (char *)name, NULL, 0 );
+    
+    // added 2013-10-22 - spencer
+    // allow array-type mvars
+    // check for array
+    if( array_depth )
+    {
+        // add the array
+        var_decl->array = new_array_sub( NULL, 0 );
+        // set the depth
+        var_decl->array->depth = array_depth;
+    }
+
     // make var decl list
     a_Var_Decl_List var_decl_list = new_var_decl_list( var_decl, 0 );
     // make exp decl
