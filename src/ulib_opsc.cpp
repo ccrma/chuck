@@ -41,9 +41,7 @@
 #include "util_buffers.h"
 #include "util_string.h"
 
-extern "C" {
-#include <lo/lo.h>
-}
+#include "lo/lo.h"
 
 struct OscMsg
 {

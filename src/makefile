@@ -28,6 +28,8 @@ CC=gcc
 CXX=g++
 LD=g++
 
+CFLAGS+= -Ilo
+
 ifneq ($(CHUCK_STAT),)
 CFLAGS+= -D__CHUCK_STAT_TRACK__
 endif
@@ -84,10 +86,15 @@ CXXSRCS+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	ulib_opsc.cpp ulib_regex.cpp util_buffers.cpp util_console.cpp \
 	util_string.cpp util_thread.cpp util_opsc.cpp util_serial.cpp \
 	util_hid.cpp uana_xform.cpp uana_extract.cpp
+LO_CSRCS+= lo/address.c lo/blob.c lo/bundle.c lo/message.c lo/method.c \
+    lo/pattern_match.c lo/send.c lo/server.c lo/server_thread.c lo/timetag.c
 
 COBJS=$(CSRCS:.c=.o)
 CXXOBJS=$(CXXSRCS:.cpp=.o)
-OBJS=$(COBJS) $(CXXOBJS)
+LO_COBJS=$(LO_CSRCS:.c=.o)
+OBJS=$(COBJS) $(CXXOBJS) $(LO_COBJS)
+
+LO_CFLAGS=-DHAVE_CONFIG_H -I.
 
 # remove -arch options
 CFLAGSDEPEND?=$(CFLAGS)
@@ -128,6 +135,10 @@ chuck_win32.h: chuck.tab.h
 $(COBJS): %.o: %.c
 	$(CC) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
+
+$(LO_COBJS): %.o: %.c
+	$(CC) $(CFLAGS) $(LO_CFLAGS) $(ARCHOPTS) -c $< -o $@
+	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $(LO_CFLAGS) $< > $*.d
 
 $(CXXOBJS): %.o: %.cpp
 	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
