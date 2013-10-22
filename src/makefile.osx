@@ -18,12 +18,12 @@ CXX=clang++
 LD=clang++
 endif
 
-CFLAGS+= -D__MACOSX_CORE__ $(FORCE_M32) -I/usr/local/include $(ISYSROOT)
-CFLAGSDEPEND+= -D__MACOSX_CORE__ $(FORCE_M32) -I/usr/local/include $(ISYSROOT)
+CFLAGS+= -D__MACOSX_CORE__ $(FORCE_M32) $(ISYSROOT)
+CFLAGSDEPEND+= -D__MACOSX_CORE__ $(FORCE_M32) $(ISYSROOT)
 
 FRAMEWORKS+= CoreAudio CoreMIDI CoreFoundation IOKit Carbon AppKit Foundation
 LDFLAGS+= $(FORCE_M32) $(ISYSROOT) $(addprefix -framework ,$(FRAMEWORKS)) \
-    $(LINK_EXTRAS) -lstdc++ -lm -L/usr/local/lib -llo
+    $(LINK_EXTRAS) -lstdc++ -lm
 
 CSRCS+= util_sndfile.c
 

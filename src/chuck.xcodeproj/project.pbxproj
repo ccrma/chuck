@@ -67,6 +67,16 @@
 		098060360AA14E8900915136 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09A40BD70A9A57C6007604EA /* IOKit.framework */; };
 		098061AE0AA15BDB00915136 /* chuck_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 098061AD0AA15BDB00915136 /* chuck_main.cpp */; };
 		09812B9C0C6E394A00D1D68C /* uana_extract.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09812B980C6E394A00D1D68C /* uana_extract.cpp */; };
+		09922D5F181601F700806471 /* address.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D49181601F700806471 /* address.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H"; }; };
+		09922D60181601F700806471 /* blob.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D4A181601F700806471 /* blob.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H"; }; };
+		09922D61181601F700806471 /* bundle.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D4B181601F700806471 /* bundle.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H"; }; };
+		09922D62181601F700806471 /* message.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D57181601F700806471 /* message.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H"; }; };
+		09922D63181601F700806471 /* method.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D58181601F700806471 /* method.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H"; }; };
+		09922D64181601F700806471 /* pattern_match.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D59181601F700806471 /* pattern_match.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H"; }; };
+		09922D65181601F700806471 /* send.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D5A181601F700806471 /* send.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H"; }; };
+		09922D66181601F700806471 /* server.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D5B181601F700806471 /* server.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H"; }; };
+		09922D67181601F700806471 /* server_thread.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D5C181601F700806471 /* server_thread.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H"; }; };
+		09922D69181601F700806471 /* timetag.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D5E181601F700806471 /* timetag.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H"; }; };
 		09A5C88D13DDFB350082DF50 /* RtAudio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A5C88913DDFB350082DF50 /* RtAudio.cpp */; };
 /* End PBXBuildFile section */
 
@@ -259,6 +269,27 @@
 		09812B980C6E394A00D1D68C /* uana_extract.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = uana_extract.cpp; sourceTree = SOURCE_ROOT; };
 		09812B990C6E394A00D1D68C /* uana_extract.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = uana_extract.h; sourceTree = SOURCE_ROOT; };
 		098C58470B2A1E9A00931934 /* mouse.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = mouse.ck; path = examples/hid/mouse.ck; sourceTree = SOURCE_ROOT; };
+		09922D49181601F700806471 /* address.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = address.c; sourceTree = "<group>"; };
+		09922D4A181601F700806471 /* blob.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = blob.c; sourceTree = "<group>"; };
+		09922D4B181601F700806471 /* bundle.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bundle.c; sourceTree = "<group>"; };
+		09922D4C181601F700806471 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		09922D4D181601F700806471 /* lo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lo.h; sourceTree = "<group>"; };
+		09922D4E181601F700806471 /* lo_endian.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lo_endian.h; sourceTree = "<group>"; };
+		09922D4F181601F700806471 /* lo_errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lo_errors.h; sourceTree = "<group>"; };
+		09922D50181601F700806471 /* lo_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lo_internal.h; sourceTree = "<group>"; };
+		09922D51181601F700806471 /* lo_lowlevel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lo_lowlevel.h; sourceTree = "<group>"; };
+		09922D52181601F700806471 /* lo_macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lo_macros.h; sourceTree = "<group>"; };
+		09922D53181601F700806471 /* lo_osc_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lo_osc_types.h; sourceTree = "<group>"; };
+		09922D54181601F700806471 /* lo_throw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lo_throw.h; sourceTree = "<group>"; };
+		09922D55181601F700806471 /* lo_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lo_types.h; sourceTree = "<group>"; };
+		09922D56181601F700806471 /* lo_types_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lo_types_internal.h; sourceTree = "<group>"; };
+		09922D57181601F700806471 /* message.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = message.c; sourceTree = "<group>"; };
+		09922D58181601F700806471 /* method.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = method.c; sourceTree = "<group>"; };
+		09922D59181601F700806471 /* pattern_match.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pattern_match.c; sourceTree = "<group>"; };
+		09922D5A181601F700806471 /* send.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = send.c; sourceTree = "<group>"; };
+		09922D5B181601F700806471 /* server.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = server.c; sourceTree = "<group>"; };
+		09922D5C181601F700806471 /* server_thread.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = server_thread.c; sourceTree = "<group>"; };
+		09922D5E181601F700806471 /* timetag.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = timetag.c; sourceTree = "<group>"; };
 		09A1E6120CBA1AEC001FAD6F /* makefile.alsa */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.alsa; sourceTree = SOURCE_ROOT; };
 		09A1E6130CBA1AEC001FAD6F /* makefile.jack */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.jack; sourceTree = SOURCE_ROOT; };
 		09A1E6140CBA1AEC001FAD6F /* makefile.oss */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.oss; sourceTree = SOURCE_ROOT; };
@@ -362,7 +393,7 @@
 		09A40BD60A9A57C6007604EA /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = /System/Library/Frameworks/CoreMIDI.framework; sourceTree = "<absolute>"; };
 		09A40BD70A9A57C6007604EA /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
 		09A40DC80A9AC677007604EA /* makefile.osx */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.osx; sourceTree = SOURCE_ROOT; };
-		09A40DD20A9AC6D3007604EA /* makefile */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.make; path = makefile; sourceTree = SOURCE_ROOT; usesTabs = 1; };
+		09A40DD20A9AC6D3007604EA /* makefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile; sourceTree = SOURCE_ROOT; usesTabs = 1; };
 		09A40F290A9AE5FE007604EA /* COPYING */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = COPYING; path = ../notes/COPYING; sourceTree = SOURCE_ROOT; };
 		09A40F2A0A9AE5FE007604EA /* INSTALL */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = INSTALL; path = ../notes/INSTALL; sourceTree = SOURCE_ROOT; };
 		09A40F2C0A9AE5FE007604EA /* VERSIONS */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = VERSIONS; path = ../notes/VERSIONS; sourceTree = SOURCE_ROOT; };
@@ -740,6 +771,34 @@
 			path = examples/type;
 			sourceTree = SOURCE_ROOT;
 		};
+		09922D48181601F700806471 /* lo */ = {
+			isa = PBXGroup;
+			children = (
+				09922D49181601F700806471 /* address.c */,
+				09922D4A181601F700806471 /* blob.c */,
+				09922D4B181601F700806471 /* bundle.c */,
+				09922D4C181601F700806471 /* config.h */,
+				09922D4D181601F700806471 /* lo.h */,
+				09922D4E181601F700806471 /* lo_endian.h */,
+				09922D4F181601F700806471 /* lo_errors.h */,
+				09922D50181601F700806471 /* lo_internal.h */,
+				09922D51181601F700806471 /* lo_lowlevel.h */,
+				09922D52181601F700806471 /* lo_macros.h */,
+				09922D53181601F700806471 /* lo_osc_types.h */,
+				09922D54181601F700806471 /* lo_throw.h */,
+				09922D55181601F700806471 /* lo_types.h */,
+				09922D56181601F700806471 /* lo_types_internal.h */,
+				09922D57181601F700806471 /* message.c */,
+				09922D58181601F700806471 /* method.c */,
+				09922D59181601F700806471 /* pattern_match.c */,
+				09922D5A181601F700806471 /* send.c */,
+				09922D5B181601F700806471 /* server.c */,
+				09922D5C181601F700806471 /* server_thread.c */,
+				09922D5E181601F700806471 /* timetag.c */,
+			);
+			path = lo;
+			sourceTree = "<group>";
+		};
 		09A40B000A9A52FC007604EA /* ChucK */ = {
 			isa = PBXGroup;
 			children = (
@@ -888,6 +947,7 @@
 		09A40E130A9AC96C007604EA /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				09922D48181601F700806471 /* lo */,
 				09A5C88413DDFB350082DF50 /* RtAudio */,
 				09A40B000A9A52FC007604EA /* ChucK */,
 			);
@@ -1002,6 +1062,7 @@
 				09805FFB0AA10D3900915136 /* chuck.y in Sources */,
 				09805FFC0AA10D3900915136 /* chuck_absyn.cpp in Sources */,
 				09805FFD0AA10D3A00915136 /* chuck_bbq.cpp in Sources */,
+				09922D62181601F700806471 /* message.c in Sources */,
 				09805FFE0AA10D3B00915136 /* chuck_compile.cpp in Sources */,
 				09805FFF0AA10D3C00915136 /* chuck_console.cpp in Sources */,
 				098060000AA10D3D00915136 /* chuck_dl.cpp in Sources */,
@@ -1011,16 +1072,21 @@
 				098060040AA10D4000915136 /* chuck_globals.cpp in Sources */,
 				098060050AA10D4000915136 /* chuck_instr.cpp in Sources */,
 				098060060AA10D4100915136 /* chuck_lang.cpp in Sources */,
+				09922D67181601F700806471 /* server_thread.c in Sources */,
 				098060070AA10D4200915136 /* chuck_oo.cpp in Sources */,
 				098060080AA10D4300915136 /* chuck_otf.cpp in Sources */,
 				098060090AA10D4400915136 /* chuck_parse.cpp in Sources */,
+				09922D5F181601F700806471 /* address.c in Sources */,
 				0980600A0AA10D4500915136 /* chuck_scan.cpp in Sources */,
 				0980600B0AA10D4500915136 /* chuck_shell.cpp in Sources */,
 				0980600C0AA10D4600915136 /* chuck_stats.cpp in Sources */,
 				0980600D0AA10D4800915136 /* chuck_symbol.cpp in Sources */,
+				09922D66181601F700806471 /* server.c in Sources */,
 				0980600E0AA10D4800915136 /* chuck_table.cpp in Sources */,
+				09922D60181601F700806471 /* blob.c in Sources */,
 				0980600F0AA10D4900915136 /* chuck_type.cpp in Sources */,
 				098060100AA10D4A00915136 /* chuck_ugen.cpp in Sources */,
+				09922D69181601F700806471 /* timetag.c in Sources */,
 				098060110AA10D4C00915136 /* chuck_utils.cpp in Sources */,
 				098060120AA10D4D00915136 /* chuck_vm.cpp in Sources */,
 				098060130AA10D4D00915136 /* digiio_rtaudio.cpp in Sources */,
@@ -1028,11 +1094,13 @@
 				098060150AA10D4E00915136 /* midiio_rtmidi.cpp in Sources */,
 				0980601C0AA14E4100915136 /* rtmidi.cpp in Sources */,
 				0980601D0AA14E4100915136 /* ugen_filter.cpp in Sources */,
+				09922D65181601F700806471 /* send.c in Sources */,
 				0980601E0AA14E4200915136 /* ugen_osc.cpp in Sources */,
 				0980601F0AA14E4500915136 /* ugen_stk.cpp in Sources */,
 				098060200AA14E4600915136 /* ugen_xxx.cpp in Sources */,
 				098060210AA14E4600915136 /* ulib_machine.cpp in Sources */,
 				098060220AA14E4700915136 /* ulib_math.cpp in Sources */,
+				09922D61181601F700806471 /* bundle.c in Sources */,
 				098060230AA14E4800915136 /* ulib_opsc.cpp in Sources */,
 				098060240AA14E4B00915136 /* ulib_std.cpp in Sources */,
 				098060250AA14E4C00915136 /* util_buffers.cpp in Sources */,
@@ -1040,9 +1108,11 @@
 				098060280AA14E4F00915136 /* util_math.c in Sources */,
 				098060290AA14E5100915136 /* util_network.c in Sources */,
 				0980602A0AA14E5200915136 /* util_opsc.cpp in Sources */,
+				09922D63181601F700806471 /* method.c in Sources */,
 				0980602B0AA14E5300915136 /* util_raw.c in Sources */,
 				0980602C0AA14E5400915136 /* util_sndfile.c in Sources */,
 				0980602D0AA14E5500915136 /* util_string.cpp in Sources */,
+				09922D64181601F700806471 /* pattern_match.c in Sources */,
 				0980602E0AA14E5700915136 /* util_xforms.c in Sources */,
 				0980602F0AA14E5800915136 /* util_thread.cpp in Sources */,
 				098061AE0AA15BDB00915136 /* chuck_main.cpp in Sources */,
@@ -1075,13 +1145,11 @@
 				GCC_PREPROCESSOR_DEFINITIONS = __MACOSX_CORE__;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				INSTALL_PATH = "$(HOME)/bin";
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-lm",
 					"-lstdc++",
-					"-llo",
 				);
 				PRODUCT_NAME = chuck;
 			};
@@ -1103,13 +1171,11 @@
 				GCC_PREPROCESSOR_DEFINITIONS = __MACOSX_CORE__;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				INSTALL_PATH = "$(HOME)/bin";
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-lm",
 					"-lstdc++",
-					"-llo",
 				);
 				PRODUCT_NAME = chuck;
 			};
