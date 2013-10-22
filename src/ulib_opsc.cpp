@@ -249,6 +249,8 @@ private:
                 case 'i': arg.i = argv[i]->i; break;
                 case 'f': arg.f = argv[i]->f; break;
                 case 's': arg.s = argv[i]->s; break;
+                default:
+                    EM_log(CK_LOG_WARNING, "OscIn: unhandled OSC type '%c'", types[i]);
             }
             
             msg.args.push_back(arg);
@@ -429,11 +431,14 @@ static t_CKUINT oscin_offset_data = 0;
 
 static t_CKUINT oscout_offset_data = 0;
 
-static t_CKUINT oscmsg_offset_data = 0;
 static t_CKUINT oscmsg_offset_address = 0;
 static t_CKUINT oscmsg_offset_typetag = 0;
+static t_CKUINT oscmsg_offset_args = 0;
 
-static t_CKUINT oscarg_offset_data = 0;
+static t_CKUINT oscarg_offset_type = 0;
+static t_CKUINT oscarg_offset_i = 0;
+static t_CKUINT oscarg_offset_f = 0;
+static t_CKUINT oscarg_offset_s = 0;
 
 Chuck_Type * g_OscMsgType = NULL;
 Chuck_Type * g_OscArgType = NULL;
@@ -603,6 +608,39 @@ error:
     RETURN->v_object = NULL;
 }
 
+
+//-----------------------------------------------------------------------------
+// name: OscArg
+// desc:
+//-----------------------------------------------------------------------------
+#pragma mark - OscArg
+
+CK_DLL_CTOR(oscarg_ctor)
+{
+    Chuck_String *type = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    SAFE_ADD_REF(type);
+    OBJ_MEMBER_STRING(SELF, oscarg_offset_type) = type;
+    
+    OBJ_MEMBER_INT(SELF, oscarg_offset_i) = 0;
+    
+    OBJ_MEMBER_FLOAT(SELF, oscarg_offset_f) = 0.0;
+    
+    Chuck_String *s = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    SAFE_ADD_REF(s);
+    OBJ_MEMBER_STRING(SELF, oscarg_offset_s) = s;
+}
+
+CK_DLL_DTOR(oscarg_dtor)
+{
+    SAFE_RELEASE(OBJ_MEMBER_STRING(SELF, oscarg_offset_type));
+    OBJ_MEMBER_STRING(SELF, oscarg_offset_type) = NULL;
+    
+    SAFE_RELEASE(OBJ_MEMBER_STRING(SELF, oscarg_offset_s));
+    OBJ_MEMBER_STRING(SELF, oscarg_offset_s) = NULL;
+}
+
+
+
 //-----------------------------------------------------------------------------
 // name: OscIn
 // desc:
@@ -675,7 +713,10 @@ CK_DLL_MFUN(oscin_recv)
     OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
     
     Chuck_Object * msg_obj = GET_NEXT_OBJECT(ARGS);
-    OscMsg * msg;
+    OscMsg msg;
+    
+    Chuck_Array4 *args_obj = NULL;
+    Chuck_Type * oscarg_type = NULL;
     
     if(msg_obj == NULL)
     {
@@ -683,12 +724,40 @@ CK_DLL_MFUN(oscin_recv)
         goto error;
     }
     
-    msg = (OscMsg *) OBJ_MEMBER_INT(msg_obj, oscmsg_offset_data);
+    RETURN->v_int = in->get(msg);
     
-    RETURN->v_int = in->get(*msg);
+    OBJ_MEMBER_STRING(msg_obj, oscmsg_offset_address)->str = msg.path;
+    OBJ_MEMBER_STRING(msg_obj, oscmsg_offset_typetag)->str = msg.type;
     
-    OBJ_MEMBER_STRING(msg_obj, oscmsg_offset_address)->str = msg->path;
-    OBJ_MEMBER_STRING(msg_obj, oscmsg_offset_typetag)->str = msg->type;
+    args_obj = (Chuck_Array4 *) OBJ_MEMBER_OBJECT(msg_obj, oscmsg_offset_args);
+    args_obj->clear();
+    
+    oscarg_type = type_engine_find_type(Chuck_Env::instance(), str2list("OscArg"));
+    
+    for(int i = 0; i < msg.args.size(); i++)
+    {
+        Chuck_Object * arg_obj = instantiate_and_initialize_object(oscarg_type, SHRED);
+        // HACK: manually call osc_arg ctor
+        oscarg_ctor(arg_obj, NULL, SHRED, API);
+        
+        switch(msg.type[i])
+        {
+            case 'i':
+                OBJ_MEMBER_STRING(arg_obj, oscarg_offset_type)->str = "i";
+                OBJ_MEMBER_INT(arg_obj, oscarg_offset_i) = msg.args[i].i;
+                break;
+            case 'f':
+                OBJ_MEMBER_STRING(arg_obj, oscarg_offset_type)->str = "f";
+                OBJ_MEMBER_FLOAT(arg_obj, oscarg_offset_f) = msg.args[i].f;
+                break;
+            case 's':
+                OBJ_MEMBER_STRING(arg_obj, oscarg_offset_type)->str = "s";
+                OBJ_MEMBER_STRING(arg_obj, oscarg_offset_s)->str = msg.args[i].s;
+                break;
+        }
+        
+        args_obj->push_back((t_CKINT) arg_obj);
+    }
     
     return;
     
@@ -697,42 +766,39 @@ error:
 }
 
 
+//-----------------------------------------------------------------------------
+// name: OscMsg
+// desc:
+//-----------------------------------------------------------------------------
+#pragma mark - OscMsg
+
 CK_DLL_CTOR(oscmsg_ctor)
 {
-    OBJ_MEMBER_INT(SELF, oscmsg_offset_data) = (t_CKINT) new OscMsg;
-    
     Chuck_String *address = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    SAFE_ADD_REF(address);
     OBJ_MEMBER_STRING(SELF, oscmsg_offset_address) = address;
     
     Chuck_String *typetag = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    SAFE_ADD_REF(typetag);
     OBJ_MEMBER_STRING(SELF, oscmsg_offset_typetag) = typetag;
+    
+    Chuck_Array4 *args = new Chuck_Array4(TRUE);
+    initialize_object(args, &t_array);
+    SAFE_ADD_REF(args);
+    OBJ_MEMBER_OBJECT(SELF, oscmsg_offset_args) = args;
 }
 
 CK_DLL_DTOR(oscmsg_dtor)
 {
-    OscMsg * msg = (OscMsg *) OBJ_MEMBER_INT(SELF, oscmsg_offset_data);
-    SAFE_DELETE(msg);
-    OBJ_MEMBER_INT(SELF, oscmsg_offset_data) = NULL;
-    
-    SAFE_DELETE(OBJ_MEMBER_STRING(SELF, oscmsg_offset_address));
+    SAFE_RELEASE(OBJ_MEMBER_STRING(SELF, oscmsg_offset_address));
     OBJ_MEMBER_STRING(SELF, oscmsg_offset_address) = NULL;
     
-    SAFE_DELETE(OBJ_MEMBER_STRING(SELF, oscmsg_offset_typetag));
+    SAFE_RELEASE(OBJ_MEMBER_STRING(SELF, oscmsg_offset_typetag));
     OBJ_MEMBER_STRING(SELF, oscmsg_offset_typetag) = NULL;
-}
-
-CK_DLL_MFUN(oscmsg_arg)
-{
     
+    SAFE_RELEASE(OBJ_MEMBER_OBJECT(SELF, oscmsg_offset_args));
+    OBJ_MEMBER_OBJECT(SELF, oscmsg_offset_args) = NULL;
 }
-
-CK_DLL_CTOR(oscarg_ctor);
-CK_DLL_DTOR(oscarg_dtor);
-CK_DLL_MFUN(oscarg_type);
-CK_DLL_MFUN(oscarg_toInt);
-CK_DLL_MFUN(oscarg_toFloat);
-CK_DLL_MFUN(oscarg_toString);
-
 
 static t_CKUINT osc_send_offset_data = 0;
 static t_CKUINT osc_recv_offset_data = 0;
@@ -777,13 +843,28 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     query->end_class(query);
     
     
+    /*** OscArg ***/
+    
+    query->begin_class(query, "OscArg", "Object");
+    
+    oscarg_offset_type = query->add_mvar(query, "string", "type", FALSE);
+    oscarg_offset_i = query->add_mvar(query, "int", "i", FALSE);
+    oscarg_offset_f = query->add_mvar(query, "float", "f", FALSE);
+    oscarg_offset_s = query->add_mvar(query, "string", "s", FALSE);
+    
+    query->add_ctor(query, oscarg_ctor);
+    query->add_dtor(query, oscarg_dtor);
+    
+    query->end_class(query);
+    
+    
     /*** OscMsg ***/
     
     query->begin_class(query, "OscMsg", "Object");
     
-    oscmsg_offset_data = query->add_mvar(query, "int", "@OscMsg_data", FALSE);
     oscmsg_offset_address = query->add_mvar(query, "string", "address", FALSE);
     oscmsg_offset_typetag = query->add_mvar(query, "string", "typetag", FALSE);
+    oscmsg_offset_args = query->add_mvar(query, "OscArg[]", "args", FALSE);
     
     query->add_ctor(query, oscmsg_ctor);
     query->add_dtor(query, oscmsg_dtor);
