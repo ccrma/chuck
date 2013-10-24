@@ -28,7 +28,7 @@ CC=gcc
 CXX=g++
 LD=g++
 
-CFLAGS+= -Ilo
+CFLAGS+=-I. -Ilo
 
 ifneq ($(CHUCK_STAT),)
 CFLAGS+= -D__CHUCK_STAT_TRACK__
@@ -97,7 +97,7 @@ OBJS=$(COBJS) $(CXXOBJS) $(LO_COBJS)
 LO_CFLAGS=-DHAVE_CONFIG_H -I.
 
 # remove -arch options
-CFLAGSDEPEND?=$(CFLAGS)
+CFLAGSDEPEND=$(CFLAGS)
 
 ifneq (,$(ARCHS))
 ARCHOPTS=$(addprefix -arch ,$(ARCHS))

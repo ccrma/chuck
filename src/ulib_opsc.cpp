@@ -99,24 +99,9 @@ public:
     void addMethod(const std::string &method, OscIn * obj)
     {
         OscInMsg msg;
+        
         msg.msg_type = OscInMsg::ADD_METHOD;
-        
-        int comma_pos = method.find(',');
-        
-        if(comma_pos != method.npos)
-        {
-            msg.path = ltrim(rtrim(method.substr(0, comma_pos)));
-            msg.nopath = FALSE;
-            msg.type = ltrim(rtrim(method.substr(comma_pos+1)));
-            msg.notype = FALSE;
-        }
-        else
-        {
-            msg.path = ltrim(rtrim(method));
-            msg.nopath = (msg.path.size() == 0);
-            msg.notype = TRUE;
-        }
-        
+        methodToPathAndType(method, msg.path, msg.nopath, msg.type, msg.notype);
         msg.obj = obj;
         
         m_inMsgBuffer.put(msg);
@@ -124,12 +109,23 @@ public:
     
     void removeMethod(const std::string &method, OscIn * obj)
     {
+        OscInMsg msg;
         
+        msg.msg_type = OscInMsg::REMOVE_METHOD;
+        methodToPathAndType(method, msg.path, msg.nopath, msg.type, msg.notype);
+        msg.obj = obj;
+        
+        m_inMsgBuffer.put(msg);
     }
     
     void removeAllMethods(OscIn * obj)
     {
+        OscInMsg msg;
         
+        msg.msg_type = OscInMsg::REMOVEALL_METHODS;
+        msg.obj = obj;
+        
+        m_inMsgBuffer.put(msg);
     }
     
     int port()
@@ -145,6 +141,27 @@ private:
     {
         OscInServer * _this = (OscInServer *) data;
         return _this->server_cb();
+    }
+    
+    static void methodToPathAndType(const std::string &method,
+                                    std::string &path, t_CKBOOL &nopath,
+                                    std::string &type, t_CKBOOL &notype)
+    {
+        int comma_pos = method.find(',');
+        
+        if(comma_pos != method.npos)
+        {
+            path = ltrim(rtrim(method.substr(0, comma_pos)));
+            nopath = FALSE;
+            type = ltrim(rtrim(method.substr(comma_pos+1)));
+            notype = FALSE;
+        }
+        else
+        {
+            path = ltrim(rtrim(method));
+            nopath = (path.size() == 0);
+            notype = TRUE;
+        }
     }
     
     struct OscInMsg
@@ -181,6 +198,21 @@ private:
     const int m_port;
     int m_assignedPort;
     CircularBuffer<OscInMsg> m_inMsgBuffer;
+    
+    struct Method
+    {
+        std::string path;
+        t_CKBOOL nopath;
+        std::string type;
+        t_CKBOOL notype;
+        
+        bool operator==(const Method &m) const
+        {
+            return path == m.path && nopath == m.nopath && type == m.type && notype == m.notype;
+        }
+    };
+    
+    std::map<OscIn *, std::list<Method> > m_methods;
 };
 
 std::map<int, OscInServer *> OscInServer::s_oscIn;
@@ -296,21 +328,58 @@ void *OscInServer::server_cb()
             {
                 case OscInMsg::ADD_METHOD:
                 {
-                    lo_server_add_method(m_server,
-                                         msg.nopath ? NULL : msg.path.c_str(),
-                                         msg.notype ? NULL : msg.type.c_str(),
-                                         OscIn::s_handler, msg.obj);
+                    if(lo_server_add_method(m_server,
+                                            msg.nopath ? NULL : msg.path.c_str(),
+                                            msg.notype ? NULL : msg.type.c_str(),
+                                            OscIn::s_handler, msg.obj))
+                    {
+                        if(!m_methods.count(msg.obj))
+                            m_methods[msg.obj] = std::list<Method>();
+                        
+                        Method m;
+                        m.path = msg.path;
+                        m.nopath = msg.nopath;
+                        m.type = msg.type;
+                        m.notype = msg.notype;
+                        m_methods[msg.obj].push_back(m);
+                    }
+                    else
+                    {
+                        EM_log(CK_LOG_SYSTEM, "OscIn: add_method failed for %s, %s", msg.path.c_str(), msg.type.c_str());
+                    }
                 }
                     break;
                     
                 case OscInMsg::REMOVE_METHOD:
+                {
                     lo_server_del_method(m_server,
                                          msg.nopath ? NULL : msg.path.c_str(),
                                          msg.notype ? NULL : msg.type.c_str());
+                    if(m_methods.count(msg.obj))
+                    {
+                        Method m;
+                        m.path = msg.path;
+                        m.nopath = msg.nopath;
+                        m.type = msg.type;
+                        m.notype = msg.notype;
+                        m_methods[msg.obj].remove(m);
+                    }
+                }
                     break;
                     
                 case OscInMsg::REMOVEALL_METHODS:
-                    // TODO
+                    if(m_methods.count(msg.obj))
+                    {
+                        for(std::list<Method>::iterator i = m_methods[msg.obj].begin();
+                            i != m_methods[msg.obj].end(); i++)
+                        {
+                            lo_server_del_method(m_server,
+                                                 i->nopath ? NULL : i->path.c_str(),
+                                                 i->notype ? NULL : i->type.c_str());
+                        }
+                        
+                        m_methods[msg.obj].clear();
+                    }
                     break;
             }
         }
@@ -675,7 +744,7 @@ CK_DLL_MFUN(oscin_getport)
     RETURN->v_int = in->port();
 }
 
-CK_DLL_MFUN(oscin_address)
+CK_DLL_MFUN(oscin_addAddress)
 {
     OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
     
@@ -693,19 +762,42 @@ error:
     return;
 }
 
-CK_DLL_MFUN(oscin_addAddress)
-{
-    OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
-}
-
 CK_DLL_MFUN(oscin_removeAddress)
 {
     OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
+    
+    Chuck_String *address = GET_NEXT_STRING(ARGS);
+    
+    if(address == NULL)
+    {
+        throw_exception(SHRED, "NullPtrException", "OscIn.address: argument 'address' is null");
+        goto error;
+    }
+    
+    in->removeMethod(address->str);
+    
+error:
+    return;
+}
+
+CK_DLL_MFUN(oscin_removeAllAddresses)
+{
+    OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
+    
+    in->removeAllMethods();
+    
+error:
+    return;
 }
 
 CK_DLL_MFUN(oscin_msg)
 {
     OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
+    
+    in->removeAllMethods();
+    
+error:
+    return;
 }
 
 CK_DLL_MFUN(oscin_recv)
@@ -886,8 +978,13 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     query->add_mfun(query, oscin_setport, "int", "port");
     query->add_arg(query, "int", "p");
     
-    query->add_mfun(query, oscin_address, "void", "address");
+    query->add_mfun(query, oscin_addAddress, "void", "addAddress");
     query->add_arg(query, "string", "address");
+    
+    query->add_mfun(query, oscin_removeAddress, "void", "removeAddress");
+    query->add_arg(query, "string", "address");
+    
+    query->add_mfun(query, oscin_removeAllAddresses, "void", "removeAllAddresses");
     
     query->add_mfun(query, oscin_recv, "int", "recv");
     query->add_arg(query, "OscMsg", "msg");
