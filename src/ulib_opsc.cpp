@@ -234,6 +234,11 @@ public:
     ~OscIn()
     {
         m_vm->destroy_event_buffer(m_eventBuffer);
+        removeAllMethods();
+        
+        m_vm = NULL;
+        m_event = NULL;
+        m_eventBuffer = NULL;
     }
     
     
@@ -259,8 +264,8 @@ public:
     
 private:
     
-    Chuck_VM * const m_vm;
-    Chuck_Event * const m_event;
+    Chuck_VM * m_vm;
+    Chuck_Event * m_event;
     int m_port;
     CBufferSimple * m_eventBuffer;
     CircularBuffer<OscMsg> m_oscMsgBuffer;
@@ -379,6 +384,7 @@ void *OscInServer::server_cb()
                         }
                         
                         m_methods[msg.obj].clear();
+                        m_methods.erase(msg.obj);
                     }
                     break;
             }
