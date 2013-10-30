@@ -17,8 +17,8 @@ MAKECMDGOALS:=$(.DEFAULT_GOAL)
 endif
 endif
 
-.PHONY: osx linux-oss linux-jack linux-alsa win32 osx-rl
-osx linux-oss linux-jack linux-alsa win32 osx-rl: chuck
+.PHONY: osx linux-pulse linux-jack linux-alsa win32 osx-rl
+osx linux-pulse linux-jack linux-alsa win32 osx-rl: chuck
 
 CK_VERSION=1.3.2.0
 
@@ -52,8 +52,8 @@ ifneq (,$(strip $(filter osx bin-dist-osx,$(MAKECMDGOALS))))
 include makefile.osx
 endif
 
-ifneq (,$(strip $(filter linux-oss,$(MAKECMDGOALS))))
-include makefile.oss
+ifneq (,$(strip $(filter linux-pulse,$(MAKECMDGOALS))))
+include makefile.pulse
 endif
 
 ifneq (,$(strip $(filter linux-jack,$(MAKECMDGOALS))))
