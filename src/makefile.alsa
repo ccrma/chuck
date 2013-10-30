@@ -1,4 +1,4 @@
 
-CFLAGS+= -D__LINUX_ALSA__ -O3 -fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
+CFLAGS+= -D__LINUX_ALSA__ -D__PLATFORM_LINUX__ -O3 -fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
 LDFLAGS+= -lasound -lstdc++ -ldl -lm -lsndfile -lpthread
 

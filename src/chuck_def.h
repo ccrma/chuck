@@ -142,7 +142,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #define __PLATFORM_MACOSX__
 #endif
 
-#if defined(__LINUX_ALSA__) || defined(__LINUX_JACK__) || defined(__LINUX_OSS__) 
+#if defined(__LINUX_ALSA__) || defined(__LINUX_JACK__) || defined(__LINUX_OSS__) || defined(__LINUX_PULSE__) || defined(__UNIX_JACK__)
 #define __PLATFORM_LINUX__
 #endif
 

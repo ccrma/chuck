@@ -400,6 +400,7 @@
 		09A5C88913DDFB350082DF50 /* RtAudio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RtAudio.cpp; sourceTree = "<group>"; };
 		09A5C88A13DDFB350082DF50 /* RtAudio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RtAudio.h; sourceTree = "<group>"; };
 		09A5C88B13DDFB350082DF50 /* RtError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RtError.h; sourceTree = "<group>"; };
+		09AAE1A618211D8F002C9B92 /* makefile.pulse */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = makefile.pulse; sourceTree = "<group>"; };
 		09F05F580B74558400023899 /* tilt.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = tilt.ck; path = examples/hid/tilt.ck; sourceTree = SOURCE_ROOT; };
 		09F5E1E3158C401E0038B393 /* AUTHORS */ = {isa = PBXFileReference; lastKnownFileType = text; name = AUTHORS; path = ../notes/AUTHORS; sourceTree = "<group>"; };
 		09F5E1E4158C401E0038B393 /* README.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = README.txt; path = ../notes/bin/README.txt; sourceTree = "<group>"; };
@@ -934,6 +935,7 @@
 		09A40DE10A9AC76F007604EA /* Makefiles */ = {
 			isa = PBXGroup;
 			children = (
+				09AAE1A618211D8F002C9B92 /* makefile.pulse */,
 				09A1E6120CBA1AEC001FAD6F /* makefile.alsa */,
 				09A1E6130CBA1AEC001FAD6F /* makefile.jack */,
 				09A1E6140CBA1AEC001FAD6F /* makefile.oss */,

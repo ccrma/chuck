@@ -246,7 +246,7 @@ typedef double FLOAT64;
 #elif defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__)
   #define __OS_WINDOWS__
   #define __STK_REALTIME__
-#elif defined(__LINUX_OSS__) || defined(__LINUX_ALSA__) || defined(__LINUX_JACK__)
+#elif defined(__PLATFORM_LINUX__)
   #define __OS_LINUX__
   #define __STK_REALTIME__
 #elif defined(__IRIX_AL__)

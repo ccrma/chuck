@@ -582,7 +582,7 @@ void Chuck_Shell::continue_code( string & in )
 void Chuck_Shell::do_code( string & code, string & out, string command )
 {
     // open a temporary file
-#if defined(__LINUX_ALSA__) || defined(__LINUX_OSS__) || defined(__LINUX_JACK__)
+#if defined(__PLATFORM_LINUX__)
     char tmp_dir[] = "/tmp";
     char * tmp_filepath = new char [32];
     strncpy( tmp_filepath, "/tmp/chuck_file.XXXXXX", 32 );
@@ -638,7 +638,7 @@ void Chuck_Shell::do_code( string & code, string & out, string command )
     DeleteFile( tmp_filepath );
 #endif // __PLATFORM_WIN32__
 
-#if defined(__LINUX_ALSA__) || defined(__LINUX_OSS__) || defined(__LINUX_JACK__)
+#if defined(__PLATFORM_LINUX__)
     delete[] tmp_filepath;
 #endif
 
