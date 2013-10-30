@@ -34,40 +34,18 @@
 #define __CHUCK_BBQ_H__
 
 // currently ChucK uses RtAudio | __CHUCK_NATIVE_AUDIO__ not in use
-#if defined(__CHUCK_NATIVE_AUDIO__)
-  #if defined(__LINUX_ALSA__)
-    #include "digiio_alsa.h"
-    #include "midiio_alsa.h"
-  #elif defined(__LINUX_JACK__)
-    #include "digiio_jack.h"
-    #include "midiio_alsa.h"
-  #elif defined(__LINUX_OSS__)
-    #include "digiio_oss.h"
-    #include "midiio_oss.h"
-  #elif defined(__MACOSX_CORE__)
-    #include "digiio_osx.h"
-    #include "midiio_osx.h"
-  #elif defined(__WINDOWS_DS__)
-    #include "digiio_win32.h"
-    #include "midiio_win32.h"
-  #else
-    #error "must define one:\
-    __LINUX_ALSA__ __LINUX_JACK__ __LINUX_OSS__ __MACOSX_CORE__ __WINDOWS_DS__"
-  #endif
-#else
-  #include "digiio_rtaudio.h"
-  #include "midiio_rtmidi.h"
+#include "digiio_rtaudio.h"
+#include "midiio_rtmidi.h"
 
-  #if defined(__LINUX_ALSA__)
-  #elif defined(__LINUX_JACK__)
-  #elif defined(__LINUX_OSS__)
-  #elif defined(__MACOSX_CORE__)
-  #elif defined(__WINDOWS_DS__)
-  #elif defined(__WINDOWS_ASIO__)
-  #else
-    #error "must define one:\
-    __LINUX_ALSA__ __LINUX_JACK__ __LINUX_OSS__ __MACOSX_CORE__ __WINDOWS_DS__"
-  #endif
+#if defined(__LINUX_ALSA__)
+#elif defined(__LINUX_JACK__)
+#elif defined(__LINUX_OSS__)
+#elif defined(__MACOSX_CORE__)
+#elif defined(__WINDOWS_DS__)
+#elif defined(__WINDOWS_ASIO__)
+#else
+#error "must define one:\
+__LINUX_ALSA__ __LINUX_JACK__ __LINUX_OSS__ __MACOSX_CORE__ __WINDOWS_DS__"
 #endif
 
 struct Chuck_VM;

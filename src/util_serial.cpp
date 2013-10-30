@@ -115,7 +115,7 @@ cleanup:
     return devices;
 }
 
-#elif defined(__LINUX_ALSA__) || defined(__LINUX_JACK__) || defined(__LINUX_OSS__)
+#elif defined(__PLATFORM_LINUX__)
 
 
 #include <sys/types.h>

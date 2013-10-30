@@ -6272,7 +6272,7 @@ int Keyboard_close( int js )
 
 
 
-#elif defined( __LINUX_ALSA__ ) || defined( __LINUX_OSS__ ) || defined( __LINUX_JACK__ )
+#elif defined(__PLATFORM_LINUX__)
 /*****************************************************************************
 Linux general HID support
 *****************************************************************************/

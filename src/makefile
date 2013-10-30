@@ -3,7 +3,7 @@ DESTDIR=/usr/bin
 # default target: print usage message and quit
 current: 
 	@echo "[chuck build]: please use one of the following configurations:"
-	@echo "   make linux-alsa, make linux-jack, make linux-oss,"
+	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
 	@echo "   make osx, make osx-ub, or make win32"
 
 install:

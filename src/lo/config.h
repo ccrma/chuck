@@ -1,6 +1,6 @@
 
 
-#if defined(__MACOSX_CORE__) || defined(__LINUX_ALSA__) || defined(__LINUX_JACK__)
+#if defined(__MACOSX_CORE__) || defined(__PLATFORM_LINUX__)
 
 /* config.h.  Generated from config.h.in by configure.  */
 /* config.h.in.  Generated from configure.ac by autoheader.  */
@@ -102,4 +102,4 @@
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
 
-#endif // defined(__MACOSX_CORE__) || defined(__LINUX_ALSA__) || defined(__LINUX_JACK__)
+#endif // defined(__MACOSX_CORE__) || defined(__PLATFORM_LINUX__)

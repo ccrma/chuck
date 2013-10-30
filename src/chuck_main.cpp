@@ -231,8 +231,10 @@ static void version()
     platform = "linux (alsa)";
 #elif defined(__LINUX_OSS__)
     platform = "linux (oss)";
-#elif defined(__LINUX_JACK__)
+#elif defined(__LINUX_JACK__) || defined(__UNIX_JACK__)
     platform = "linux (jack)";
+#elif defined(__LINUX_PULSE__)
+    platform = "linux (pulse)";
 #elif defined(__MACOSX_UB__)
     platform = "mac os x : universal binary";
 #elif defined(__MACOSX_CORE__) && defined(__LITTLE_ENDIAN__)
