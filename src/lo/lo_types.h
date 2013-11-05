@@ -32,7 +32,9 @@ extern "C" {
 #include <netdb.h>
 #endif
 
+#ifndef WIN32
 #include <pthread.h>
+#endif // WIN32
 
 #include "lo/lo_osc_types.h"
 

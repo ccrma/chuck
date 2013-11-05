@@ -28,7 +28,11 @@ typedef __int64 int64_t;
 typedef __int32 int32_t;
 #endif
 
+#ifndef WIN32
 #include <pthread.h>
+#else
+typedef void *pthread_t;
+#endif // WIN32
 
 #include "lo/lo_osc_types.h"
 

@@ -31,6 +31,8 @@
 //         Perry R. Cook (prc@cs.princeton.edu)
 // date: Spring 2005
 //-----------------------------------------------------------------------------
+#include "lo/lo.h"
+
 #include "ulib_opsc.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
@@ -41,7 +43,11 @@
 #include "util_buffers.h"
 #include "util_string.h"
 
-#include "lo/lo.h"
+
+#if _MSC_VER
+#define snprintf _snprintf
+#endif
+
 
 struct OscMsg
 {
@@ -137,10 +143,19 @@ private:
     
     static std::map<int, OscInServer *> s_oscIn;
     
+#ifdef WIN32
+    static unsigned int __stdcall s_server_cb(void *data)
+#else
     static void *s_server_cb(void *data)
+#endif // WIN32
     {
         OscInServer * _this = (OscInServer *) data;
+
+#ifdef WIN32
+        return (int) _this->server_cb();
+#else
         return _this->server_cb();
+#endif
     }
     
     static void methodToPathAndType(const std::string &method,
@@ -815,6 +830,8 @@ CK_DLL_MFUN(oscin_recv)
     
     Chuck_Array4 *args_obj = NULL;
     Chuck_Type * oscarg_type = NULL;
+
+    int i;
     
     if(msg_obj == NULL)
     {
@@ -832,7 +849,7 @@ CK_DLL_MFUN(oscin_recv)
     
     oscarg_type = type_engine_find_type(Chuck_Env::instance(), str2list("OscArg"));
     
-    for(int i = 0; i < msg.args.size(); i++)
+    for(i = 0; i < msg.args.size(); i++)
     {
         Chuck_Object * arg_obj = instantiate_and_initialize_object(oscarg_type, SHRED);
         // HACK: manually call osc_arg ctor
