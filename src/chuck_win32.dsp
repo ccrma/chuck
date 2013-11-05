@@ -88,184 +88,582 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=.\chuck_absyn.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_bbq.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_compile.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_console.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_dl.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_emit.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_errmsg.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_frame.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_globals.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_instr.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_io.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_lang.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_main.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_oo.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_otf.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_parse.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_scan.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_shell.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_stats.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_symbol.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_table.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_type.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_ugen.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_utils.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_vm.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chuck_win32.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\digiio_rtaudio.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\hidio_sdl.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\midiio_rtmidi.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\RtAudio\RtAudio.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\rtmidi.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\uana_extract.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\uana_xform.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\ugen_filter.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\ugen_osc.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\ugen_stk.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\ugen_xxx.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\ulib_machine.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\ulib_math.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\ulib_opsc.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\ulib_regex.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\ulib_std.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\util_buffers.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\util_console.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\util_hid.cpp
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
 
 !ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
 
@@ -277,38 +675,119 @@ SOURCE=.\util_hid.cpp
 # Begin Source File
 
 SOURCE=.\util_math.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\util_network.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\util_opsc.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\util_raw.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\util_serial.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\util_sndfile.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\util_string.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\util_thread.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\util_xforms.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -546,7 +1025,7 @@ SOURCE=.\util_xforms.h
 # Begin Group "regex"
 
 # PROP Default_Filter ""
-# Begin Group "Source"
+# Begin Group "regex source"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -719,7 +1198,7 @@ SOURCE=.\regex\xmalloc.c
 
 # End Source File
 # End Group
-# Begin Group "Include"
+# Begin Group "regex include"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -773,6 +1252,183 @@ SOURCE=.\regex\tre.h
 # Begin Source File
 
 SOURCE=.\regex\xmalloc.h
+# End Source File
+# End Group
+# End Group
+# Begin Group "lo"
+
+# PROP Default_Filter ""
+# Begin Group "lo source"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\lo\address.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "./" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\blob.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "./" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\bundle.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "./" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\message.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "./" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\method.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "./" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\pattern_match.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "./" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\send.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "./" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\server.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "./" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\timetag.c
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /I "./" /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# End Group
+# Begin Group "lo include"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\lo\config.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\lo.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\lo_endian.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\lo_errors.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\lo_internal.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\lo_lowlevel.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\lo_macros.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\lo_osc_types.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\lo_throw.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\lo_types.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\lo_types_internal.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\lo\stdint.h
 # End Source File
 # End Group
 # End Group
