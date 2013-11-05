@@ -277,6 +277,11 @@ t_CKBOOL extract_args( const string & token,
         }
     }
 
+	t_CKBOOL ignoreSecond = FALSE;
+#ifdef __PLATFORM_WIN32__
+	ignoreSecond = TRUE;
+#endif // __PLATFORM_WIN32__
+
     // loop through
     for( i = 0; i < s.length(); i++ )
     {
@@ -291,7 +296,7 @@ t_CKBOOL extract_args( const string & token,
         }
 
         // look for :
-        if( !ignoreNext && s[i] == ':' )
+        if( !ignoreNext && s[i] == ':' && !(ignoreSecond && i == 1))
         {
             // sanity
             if( i == 0 )
