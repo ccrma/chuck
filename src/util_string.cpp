@@ -223,6 +223,12 @@ t_CKBOOL extract_args( const string & token,
     // copy and trim
     string s = trim( token );
     
+    // ignore second character as arg separator if its : on Windows
+    t_CKBOOL ignoreSecond = FALSE;
+#ifdef __PLATFORM_WIN32__
+	ignoreSecond = TRUE;
+#endif // __PLATFORM_WIN32__
+    
     // detect
     t_CKBOOL scan = FALSE;
     t_CKBOOL ret = TRUE;
@@ -276,11 +282,6 @@ t_CKBOOL extract_args( const string & token,
             }
         }
     }
-
-	t_CKBOOL ignoreSecond = FALSE;
-#ifdef __PLATFORM_WIN32__
-	ignoreSecond = TRUE;
-#endif // __PLATFORM_WIN32__
 
     // loop through
     for( i = 0; i < s.length(); i++ )
