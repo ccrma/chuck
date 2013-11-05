@@ -1,4 +1,0 @@
-
-CFLAGS+= -D__LINUX_OSS__ -O3 -fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
-LDFLAGS+= -lpthread -lstdc++ -ldl -lm -lsndfile
-
