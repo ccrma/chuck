@@ -292,7 +292,6 @@
 		09922D5E181601F700806471 /* timetag.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = timetag.c; sourceTree = "<group>"; };
 		09A1E6120CBA1AEC001FAD6F /* makefile.alsa */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.alsa; sourceTree = SOURCE_ROOT; };
 		09A1E6130CBA1AEC001FAD6F /* makefile.jack */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.jack; sourceTree = SOURCE_ROOT; };
-		09A1E6140CBA1AEC001FAD6F /* makefile.oss */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.oss; sourceTree = SOURCE_ROOT; };
 		09A1E6170CBA1AEC001FAD6F /* makefile.win32 */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.win32; sourceTree = SOURCE_ROOT; };
 		09A40B060A9A54DA007604EA /* chuck_absyn.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = chuck_absyn.cpp; sourceTree = SOURCE_ROOT; };
 		09A40B070A9A54DA007604EA /* chuck_absyn.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = chuck_absyn.h; sourceTree = SOURCE_ROOT; };
@@ -938,7 +937,6 @@
 				09AAE1A618211D8F002C9B92 /* makefile.pulse */,
 				09A1E6120CBA1AEC001FAD6F /* makefile.alsa */,
 				09A1E6130CBA1AEC001FAD6F /* makefile.jack */,
-				09A1E6140CBA1AEC001FAD6F /* makefile.oss */,
 				09A1E6170CBA1AEC001FAD6F /* makefile.win32 */,
 				09A40DD20A9AC6D3007604EA /* makefile */,
 				09A40DC80A9AC677007604EA /* makefile.osx */,
