@@ -157,6 +157,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #pragma warning (disable : 4311)  // type casts to void*
 #pragma warning (disable : 4244)  // truncation
 #pragma warning (disable : 4068)  // unknown pragma
+#pragma warning (disable : 4018)  // signed/unsigned mismatch
 #endif
 
 #ifdef __CHIP_MODE__
