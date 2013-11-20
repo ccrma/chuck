@@ -17614,6 +17614,10 @@ void WvOut :: tickFrame(const MY_FLOAT *frameVector, unsigned int frames)
 #include <cstring>
 #include <iostream>
 
+#if !defined(__BIG_ENDIAN__) && !defined(__LITTLE_ENDIAN__)
+#define __LITTLE_ENDIAN__
+#endif // !defined(__BIG_ENDIAN__) && !defined(__LITTLE_ENDIAN__)
+
 namespace stk {
     
 MidiFileIn :: MidiFileIn( std::string fileName )
@@ -20964,8 +20968,8 @@ CK_DLL_CTOR( StifKarp_ctor )
     // initialize member object
     StifKarp * karp = new StifKarp( 20.0 );
     OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data) = (t_CKUINT)karp;
-	// default
-	karp->setFrequency( 220.0 );
+    // default
+    karp->setFrequency( 220.0 );
 }
 
 
