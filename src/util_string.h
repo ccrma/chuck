@@ -71,7 +71,7 @@ std::string expand_filepath( std::string & fp );
 std::string extract_filepath_dir(std::string &filepath);
 
 // convert \ to / (on Windows)
-std::string normalize_directory_separator(std::string &filepath);
+std::string normalize_directory_separator(const std::string &filepath);
 
 //-----------------------------------------------------------------------------
 // name: parse_path_list()

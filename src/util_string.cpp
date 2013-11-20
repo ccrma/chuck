@@ -31,6 +31,9 @@
 // date: Summer 2005
 //-----------------------------------------------------------------------------
 #include "util_string.h"
+#ifdef __PLATFORM_WIN32__
+#include <Windows.h>
+#endif // __PLATFORM_WIN32__
 #include <stdio.h>
 using namespace std;
 
@@ -398,6 +401,15 @@ std::string get_full_path( const std::string & fp )
     
 #else //
     
+	char buf[MAX_PATH];
+
+	DWORD result = GetFullPathName(fp.c_str(), MAX_PATH, buf, NULL);
+
+	if(result == 0)
+		return fp;
+	else
+		return normalize_directory_separator(buf);
+
 #endif // __PLATFORM_WIN32__
 }
 
@@ -507,7 +519,7 @@ void parse_path_list( std::string & str, std::list<std::string> & lst )
 
 
 
-std::string normalize_directory_separator(std::string &filepath)
+std::string normalize_directory_separator(const std::string &filepath)
 {
 #ifdef __PLATFORM_WIN32__
     std::string new_filepath = filepath;
