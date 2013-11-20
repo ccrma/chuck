@@ -382,6 +382,26 @@ char* CreatePathByExpandingTildePath(const char* path)
 #endif // __PLATFORM_WIN32__
 
 
+// get full path to file
+std::string get_full_path( const std::string & fp )
+{
+#ifndef __PLATFORM_WIN32__
+    
+    char buf[PATH_MAX];
+    
+    char * result = realpath(fp.c_str(), buf);
+    
+    if(result == NULL)
+        return fp;
+    else
+        return buf;
+    
+#else //
+    
+#endif // __PLATFORM_WIN32__
+}
+
+
 std::string expand_filepath( std::string & fp )
 {
 #if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__)

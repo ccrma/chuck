@@ -62,6 +62,9 @@ t_CKBOOL extract_args( const std::string & token,
 // take existing path, and attempt to dir up
 std::string dir_go_up( const std::string & dir, t_CKINT numUp );
 
+// get full path to file
+std::string get_full_path( const std::string & fp );
+
 // currently just expands ~ to HOME and ~user to user's home directory
 std::string expand_filepath( std::string & fp );
 

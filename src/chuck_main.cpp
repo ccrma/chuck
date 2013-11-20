@@ -890,7 +890,7 @@ static void usage()
 
         // construct full path to be associated with the file so me.sourceDir() works
         // (added 1.3.0.0)
-        std::string full_path = cwd + filename;
+        std::string full_path = get_full_path(filename);
         
         // parse, type-check, and emit (full_path added 1.3.0.0)
         if( !compiler->go( filename, NULL, NULL, full_path ) )
