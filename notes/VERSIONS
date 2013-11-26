@@ -1,4 +1,11 @@
 
+1.3.3.0
+---
+  - (added) PulseAudio support (via RtAudio)  
+  - (fixed) relative path resolution for me.path() and me.dir()
+  - (fixed) C:/ style pathnames do not trigger spurious argument processing
+  - (fixed) MidiFileIn on Windows/Linux
+
 1.3.2.0
 ---
   - (added) --clear.vm flag
