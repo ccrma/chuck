@@ -31,12 +31,17 @@
 // date: Summer 2005
 //-----------------------------------------------------------------------------
 #include "util_string.h"
+
 #ifdef __PLATFORM_WIN32__
 #include <Windows.h>
 #endif // __PLATFORM_WIN32__
+
+#ifdef __PLATFORM_LINUX__
+#include <linux/limits.h>
+#endif // __PLATFORM_LINUX__
+
 #include <stdio.h>
 using namespace std;
-
 
 
 
