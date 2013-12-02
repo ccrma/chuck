@@ -1496,6 +1496,8 @@ CK_DLL_MFUN( serialio_getBytes );
 CK_DLL_MFUN( serialio_getInts );
 CK_DLL_MFUN( serialio_setBaudRate );
 CK_DLL_MFUN( serialio_getBaudRate );
+CK_DLL_MFUN( serialio_writeByte );
+CK_DLL_MFUN( serialio_writeBytes );
 
 
 //-----------------------------------------------------------------------------
@@ -1577,6 +1579,16 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     
     // add getInts
     func = make_new_mfun("int[]", "getInts", serialio_getInts);
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add writeByte
+    func = make_new_mfun("void", "writeByte", serialio_writeByte);
+    func->add_arg("int", "b");
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add writeBytes
+    func = make_new_mfun("void", "writeBytes", serialio_writeBytes);
+    func->add_arg("int[]", "b");
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add setBaudRate
@@ -1788,6 +1800,22 @@ CK_DLL_MFUN( serialio_getBaudRate )
 {
     Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
     RETURN->v_int = cereal->getBaudRate();
+}
+
+
+CK_DLL_MFUN( serialio_writeByte )
+{
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
+    t_CKINT byte = GET_NEXT_INT(ARGS);
+    cereal->write(byte, 1);
+}
+
+
+CK_DLL_MFUN( serialio_writeBytes )
+{
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
+    Chuck_Array4 * arr = (Chuck_Array4 *) GET_NEXT_OBJECT(ARGS);
+    cereal->writeBytes(arr);
 }
 
 
