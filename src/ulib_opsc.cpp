@@ -248,12 +248,14 @@ public:
     
     ~OscIn()
     {
-        m_vm->destroy_event_buffer(m_eventBuffer);
         removeAllMethods();
+        
+        CBufferSimple * t_eventBuffer = m_eventBuffer;
+        m_eventBuffer = NULL;
+        m_vm->destroy_event_buffer(t_eventBuffer);
         
         m_vm = NULL;
         m_event = NULL;
-        m_eventBuffer = NULL;
     }
     
     
@@ -311,7 +313,7 @@ private:
         m_oscMsgBuffer.put(msg);
         m_vm->queue_event(m_event, 1, m_eventBuffer);
         
-        return 0;
+        return -1;
     }
 };
 
