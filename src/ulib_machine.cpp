@@ -34,6 +34,7 @@
 #include "chuck_vm.h"
 #include "chuck_errmsg.h"
 #include "chuck_globals.h"
+#include "chuck_instr.h"
 
 
 
@@ -97,10 +98,14 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     //! display current status of VM
     //! (see example/status.ck)
     QUERY->add_sfun( QUERY, machine_status_impl, "int", "status" );
-
+    
     // add get intsize (width)
     //! get the intsize in bits (e.g., 32 or 64)
     QUERY->add_sfun( QUERY, machine_intsize_impl, "int", "intsize" );
+    
+    // add shreds
+    //! get list of active shreds by id
+    QUERY->add_sfun( QUERY, machine_shreds_impl, "int[]", "shreds" );
 
     // end class
     QUERY->end_class( QUERY );
@@ -197,4 +202,21 @@ CK_DLL_SFUN( machine_status_impl )
 CK_DLL_SFUN( machine_intsize_impl )
 {
     RETURN->v_int = machine_intsize();
+}
+
+CK_DLL_SFUN( machine_shreds_impl )
+{
+    Chuck_Array4 *array = new Chuck_Array4(FALSE);
+    initialize_object(array, &t_array);
+    array->clear();
+    
+    Chuck_VM_Status status;
+    SHRED->vm_ref->shreduler()->status(&status);
+    
+    for(int i = 0; i < status.list.size(); i++)
+        array->push_back(status.list[i]->xid);
+    
+    status.clear();
+    
+    RETURN->v_object = array;
 }
