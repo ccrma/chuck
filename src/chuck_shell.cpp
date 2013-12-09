@@ -32,6 +32,7 @@
 #include "chuck_shell.h"
 #include "chuck_otf.h"
 #include "util_network.h"
+#include "util_string.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -604,7 +605,7 @@ void Chuck_Shell::do_code( string & code, string & out, string command )
         return;
     }
 #else
-    char * tmp_filepath = tmpnam( NULL );
+    const char * tmp_filepath = tmpnam( NULL );
     if( tmp_filepath == NULL )
     {
         out += string( "shell: error: unable to generate tmpfile name\n" );
@@ -612,6 +613,8 @@ void Chuck_Shell::do_code( string & code, string & out, string command )
         return;
     }
     
+    string tmp_filepath_stl = normalize_directory_separator(string(tmp_filepath));
+    tmp_filepath = tmp_filepath_stl.c_str();
     FILE * tmp_file = fopen( tmp_filepath, "w" );
     if( tmp_file == NULL )
     {
