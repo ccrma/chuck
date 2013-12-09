@@ -56,6 +56,7 @@ CK_DLL_SFUN( machine_remove_impl );
 CK_DLL_SFUN( machine_replace_impl );
 CK_DLL_SFUN( machine_status_impl );
 CK_DLL_SFUN( machine_intsize_impl );
+CK_DLL_SFUN( machine_shreds_impl );
 
 
 #endif
