@@ -163,6 +163,31 @@ void tokenize_string( string str, vector< string > & tokens)
 }
 
 //-----------------------------------------------------------------------------
+// name: win32_tmpnam()
+// desc: replacement for broken tmpnam() on Windows Vista + 7
+// file_path should be at least MAX_PATH characters. 
+//-----------------------------------------------------------------------------
+#ifdef __PLATFORM_WIN32__
+
+#include <windows.h>
+
+int win32_tmpnam(char *file_path)
+{
+    char tmp_path[MAX_PATH];
+    
+    if(GetTempPath(256, tmp_path) == 0)
+        return 0;
+    
+    if(GetTempFileName(tmp_path, "cksh", 0, file_path) == 0)
+        return 0;
+
+    return 1;
+}
+
+#endif
+
+
+//-----------------------------------------------------------------------------
 // name: shell_cb
 // desc: thread routine
 //-----------------------------------------------------------------------------
@@ -605,16 +630,18 @@ void Chuck_Shell::do_code( string & code, string & out, string command )
         return;
     }
 #else
-    const char * tmp_filepath = tmpnam( NULL );
-    if( tmp_filepath == NULL )
+    char tmp_filepath1[MAX_PATH];
+    win32_tmpnam(tmp_filepath1);
+
+    if( tmp_filepath1 == NULL )
     {
         out += string( "shell: error: unable to generate tmpfile name\n" );
         prompt = variables["COMMAND_PROMPT"];
         return;
     }
     
-    string tmp_filepath_stl = normalize_directory_separator(string(tmp_filepath));
-    tmp_filepath = tmp_filepath_stl.c_str();
+    string tmp_filepath_stl = normalize_directory_separator(string(tmp_filepath1));
+    const char *tmp_filepath = tmp_filepath_stl.c_str();
     FILE * tmp_file = fopen( tmp_filepath, "w" );
     if( tmp_file == NULL )
     {
