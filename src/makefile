@@ -145,8 +145,9 @@ $(CXXOBJS): %.o: %.cpp
 	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
 clean: 
-	@rm -f $(wildcard chuck chuck.exe) *.o *.d $(OBJS) $(patsubst %.o,%.d,$(OBJS)) \
-	*~ chuck.output chuck.tab.h chuck.tab.c chuck.yy.c $(DIST_DIR){,.tgz,.zip}
+	@rm -rf $(wildcard chuck chuck.exe) *.o *.d $(OBJS) \
+         $(patsubst %.o,%.d,$(OBJS)) *~ chuck.output chuck.tab.h chuck.tab.c \
+         chuck.yy.c $(DIST_DIR){,.tgz,.zip}
 	
 
 # ------------------------------------------------------------------------------
