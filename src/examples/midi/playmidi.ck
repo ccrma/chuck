@@ -42,7 +42,7 @@ fun void track(int t)
         if(msg.when > 0::second)
             msg.when => now;
         
-        if((msg.data1 & 0x90) == 0x90 && msg.data2 > 0 && msg.data3 > 0)
+        if((msg.data1 & 0xF0) == 0x90 && msg.data2 > 0 && msg.data3 > 0)
         {
             msg.data2 => Std.mtof => s[v].freq;
             msg.data3/127.0 => s[v].noteOn;
