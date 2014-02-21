@@ -41,7 +41,7 @@
 
 
 // current version
-const char CK_VERSION[] = "1.3.3.0 (chimera)";
+const char CK_VERSION[] = "1.3.3.1-beta-3 (chimera)";
 
 // global virtual machine
 Chuck_VM * g_vm = NULL;
