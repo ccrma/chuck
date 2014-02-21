@@ -1093,10 +1093,6 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     query->end_class(query);
     
     
-//    g_OscMsgType = type_engine_find_type(Chuck_Env::instance(), str2list("OscMsg"));
-//    g_OscArgType = type_engine_find_type(Chuck_Env::instance(), str2list("OscArg"));
-    
-    
     // get the env
     Chuck_Env * env = Chuck_Env::instance();
     Chuck_DL_Func * func = NULL;
