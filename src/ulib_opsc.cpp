@@ -813,6 +813,16 @@ error:
     return;
 }
 
+CK_DLL_MFUN(oscin_listenAll)
+{
+    OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
+    
+    in->addMethod("");
+    
+error:
+    return;
+}
+
 CK_DLL_MFUN(oscin_msg)
 {
     OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
@@ -915,6 +925,12 @@ CK_DLL_DTOR(oscmsg_dtor)
     
     SAFE_RELEASE(OBJ_MEMBER_OBJECT(SELF, oscmsg_offset_args));
     OBJ_MEMBER_OBJECT(SELF, oscmsg_offset_args) = NULL;
+}
+
+CK_DLL_MFUN(oscmsg_numArgs)
+{
+    Chuck_Array4 *args_obj = (Chuck_Array4 *) OBJ_MEMBER_OBJECT(SELF, oscmsg_offset_args);
+    RETURN->v_int = args_obj->size();
 }
 
 CK_DLL_MFUN(oscmsg_getInt)
@@ -1030,6 +1046,8 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     oscmsg_offset_typetag = query->add_mvar(query, "string", "typetag", FALSE);
     oscmsg_offset_args = query->add_mvar(query, "OscArg[]", "args", FALSE);
     
+    query->add_mfun(query, oscmsg_numArgs, "int", "numArgs");
+    
     query->add_mfun(query, oscmsg_getInt, "int", "getInt");
     query->add_arg(query, "int", "i");
 
@@ -1067,6 +1085,8 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     
     query->add_mfun(query, oscin_removeAllAddresses, "void", "removeAllAddresses");
     
+    query->add_mfun(query, oscin_listenAll, "void", "listenAll");
+
     query->add_mfun(query, oscin_recv, "int", "recv");
     query->add_arg(query, "OscMsg", "msg");
 
