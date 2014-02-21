@@ -917,6 +917,53 @@ CK_DLL_DTOR(oscmsg_dtor)
     OBJ_MEMBER_OBJECT(SELF, oscmsg_offset_args) = NULL;
 }
 
+CK_DLL_MFUN(oscmsg_getInt)
+{
+    int i = GET_NEXT_INT(ARGS);
+    Chuck_Array4 *args_obj = (Chuck_Array4 *) OBJ_MEMBER_OBJECT(SELF, oscmsg_offset_args);
+    Chuck_Object *arg_obj;
+    
+    // check bounds
+    if(i >= 0 && i < args_obj->size())
+    {
+        args_obj->get(i, (t_CKUINT *) &arg_obj);
+        RETURN->v_int = OBJ_MEMBER_INT(arg_obj, oscarg_offset_i);
+    }
+    else
+    {
+        RETURN->v_int = 0;
+    }
+}
+
+CK_DLL_MFUN(oscmsg_getFloat)
+{
+    int i = GET_NEXT_INT(ARGS);
+    Chuck_Array4 *args_obj = (Chuck_Array4 *) OBJ_MEMBER_OBJECT(SELF, oscmsg_offset_args);
+    Chuck_Object *arg_obj;
+    if(i >= 0 && i < args_obj->size())
+    {
+        args_obj->get(i, (t_CKUINT *) &arg_obj);
+        RETURN->v_float = OBJ_MEMBER_FLOAT(arg_obj, oscarg_offset_f);
+    }
+    else
+        RETURN->v_float = 0;
+}
+
+CK_DLL_MFUN(oscmsg_getString)
+{
+    int i = GET_NEXT_INT(ARGS);
+    Chuck_Array4 *args_obj = (Chuck_Array4 *) OBJ_MEMBER_OBJECT(SELF, oscmsg_offset_args);
+    Chuck_Object *arg_obj;
+    
+    if(i >= 0 && i < args_obj->size())
+    {
+        args_obj->get(i, (t_CKUINT *) &arg_obj);
+        RETURN->v_string = OBJ_MEMBER_STRING(arg_obj, oscarg_offset_s);
+    }
+    else
+        RETURN->v_string = NULL;
+}
+
 static t_CKUINT osc_send_offset_data = 0;
 static t_CKUINT osc_recv_offset_data = 0;
 static t_CKUINT osc_address_offset_data = 0;
@@ -982,6 +1029,15 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     oscmsg_offset_address = query->add_mvar(query, "string", "address", FALSE);
     oscmsg_offset_typetag = query->add_mvar(query, "string", "typetag", FALSE);
     oscmsg_offset_args = query->add_mvar(query, "OscArg[]", "args", FALSE);
+    
+    query->add_mfun(query, oscmsg_getInt, "int", "getInt");
+    query->add_arg(query, "int", "i");
+
+    query->add_mfun(query, oscmsg_getFloat, "float", "getFloat");
+    query->add_arg(query, "int", "i");
+    
+    query->add_mfun(query, oscmsg_getString, "string", "getString");
+    query->add_arg(query, "int", "i");
     
     query->add_ctor(query, oscmsg_ctor);
     query->add_dtor(query, oscmsg_dtor);
