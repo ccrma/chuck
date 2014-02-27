@@ -556,10 +556,10 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     // load it
     type_engine_load_context( env, context );
     
-#ifndef __DISABLE_MIDI__
+//#ifndef __DISABLE_MIDI__
     if( !init_class_Midi( env ) ) goto error;
     if( !init_class_MidiRW( env ) ) goto error;
-#endif // __DISABLE_MIDI__
+//#endif // __DISABLE_MIDI__
 
     // load
     EM_log( CK_LOG_SEVERE, "module osc..." );
