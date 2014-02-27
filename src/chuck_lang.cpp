@@ -1217,8 +1217,6 @@ error:
 
 
 
-#ifndef __DISABLE_MIDI__
-
 // static
 static t_CKUINT MidiIn_offset_data = 0;
 t_CKUINT MidiMsg_offset_data1 = 0;
@@ -1260,7 +1258,7 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     // end the class import
     type_engine_import_class_end( env );
 
-
+#ifndef __DISABLE_MIDI__
     // init base class
     if( !type_engine_import_class_begin( env, "MidiIn", "Event",
                                          env->global(), MidiIn_ctor, MidiIn_dtor ) )
@@ -1353,6 +1351,8 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     // end the class import
     type_engine_import_class_end( env );
     
+#endif // __DISABLE_MIDI__
+    
     return TRUE;
 
 error:
@@ -1362,8 +1362,6 @@ error:
     
     return FALSE;
 }
-
-#endif // __DISABLE_MIDI__
 
 
 
@@ -1807,7 +1805,6 @@ error:
 
 
 
-#ifndef __DISABLE_MIDI__
 
 // static
 static t_CKUINT MidiRW_offset_data = 0;
@@ -1820,6 +1817,8 @@ static t_CKUINT MidiMsgIn_offset_data = 0;
 t_CKBOOL init_class_MidiRW( Chuck_Env * env )
 {
     Chuck_DL_Func * func = NULL;
+
+#ifndef __DISABLE_MIDI__
 
     // init base class
     if( !type_engine_import_class_begin( env, "MidiRW", "Object",
@@ -1908,6 +1907,8 @@ t_CKBOOL init_class_MidiRW( Chuck_Env * env )
     // end the class import
     type_engine_import_class_end( env );
 
+#endif // __DISABLE_MIDI__
+    
     // initialize
     // HidInManager::init();
 
@@ -1922,8 +1923,6 @@ error:
 }
 
 
-
-#endif // __DISABLE_MIDI__
 
 
 
@@ -4204,37 +4203,44 @@ CK_DLL_MFUN( HidOut_send )
 }
 
 
-#ifndef __DISABLE_MIDI__
-
 //-----------------------------------------------------------------------------
 // MidiRW API
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( MidiRW_ctor )
 {
+#ifndef __DISABLE_MIDI__
     OBJ_MEMBER_INT(SELF, MidiRW_offset_data) = (t_CKUINT)new MidiRW;
+#endif // __DISABLE_MIDI__
 }
 
 CK_DLL_DTOR( MidiRW_dtor )
 {
+#ifndef __DISABLE_MIDI__
     delete (MidiRW *)OBJ_MEMBER_INT(SELF, MidiRW_offset_data);
     OBJ_MEMBER_INT(SELF, MidiRW_offset_data) = 0;
+#endif // __DISABLE_MIDI__
 }
 
 CK_DLL_MFUN( MidiRW_open )
 {
+#ifndef __DISABLE_MIDI__
     MidiRW * mrw = (MidiRW *)OBJ_MEMBER_INT(SELF, MidiRW_offset_data);
     const char * filename = GET_CK_STRING(ARGS)->str.c_str();
     RETURN->v_int = mrw->open( filename );
+#endif // __DISABLE_MIDI__
 }
 
 CK_DLL_MFUN( MidiRW_close )
 {
+#ifndef __DISABLE_MIDI__
     MidiRW * mrw = (MidiRW *)OBJ_MEMBER_INT(SELF, MidiRW_offset_data);
     RETURN->v_int = mrw->close();
+#endif // __DISABLE_MIDI__
 }
 
 CK_DLL_MFUN( MidiRW_read )
 {
+#ifndef __DISABLE_MIDI__
     MidiRW * mrw = (MidiRW *)OBJ_MEMBER_INT(SELF, MidiRW_offset_data);
     Chuck_Object * fake_msg = GET_NEXT_OBJECT(ARGS);
     MidiMsg the_msg;
@@ -4244,10 +4250,12 @@ CK_DLL_MFUN( MidiRW_read )
     OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = the_msg.data[1];
     OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = the_msg.data[2];
     OBJ_MEMBER_TIME(fake_msg, MidiMsg_offset_when) = time;
+#endif // __DISABLE_MIDI__
 }
 
 CK_DLL_MFUN( MidiRW_write )
 {
+#ifndef __DISABLE_MIDI__
     MidiRW * mrw = (MidiRW *)OBJ_MEMBER_INT(SELF, MidiRW_offset_data);
     Chuck_Object * fake_msg = GET_NEXT_OBJECT(ARGS);
     t_CKTIME time = GET_NEXT_TIME(ARGS);
@@ -4256,6 +4264,7 @@ CK_DLL_MFUN( MidiRW_write )
     the_msg.data[1] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2);
     the_msg.data[2] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3);
     RETURN->v_int = mrw->write( &the_msg, &time );
+#endif // __DISABLE_MIDI__
 }
 
 
@@ -4264,30 +4273,39 @@ CK_DLL_MFUN( MidiRW_write )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( MidiMsgOut_ctor )
 {
+#ifndef __DISABLE_MIDI__
     OBJ_MEMBER_INT(SELF, MidiMsgOut_offset_data) = (t_CKUINT)new MidiMsgOut;
+#endif // __DISABLE_MIDI__
 }
 
 CK_DLL_DTOR( MidiMsgOut_dtor )
 {
+#ifndef __DISABLE_MIDI__
     delete (MidiMsgOut *)OBJ_MEMBER_INT(SELF, MidiMsgOut_offset_data);
     OBJ_MEMBER_INT(SELF, MidiMsgOut_offset_data) = 0;
+#endif // __DISABLE_MIDI__
 }
 
 CK_DLL_MFUN( MidiMsgOut_open )
 {
+#ifndef __DISABLE_MIDI__
     MidiMsgOut * mrw = (MidiMsgOut *)OBJ_MEMBER_INT(SELF, MidiMsgOut_offset_data);
     const char * filename = GET_CK_STRING(ARGS)->str.c_str();
     RETURN->v_int = mrw->open( filename );
+#endif // __DISABLE_MIDI__
 }
 
 CK_DLL_MFUN( MidiMsgOut_close )
 {
+#ifndef __DISABLE_MIDI__
     MidiMsgOut * mrw = (MidiMsgOut *)OBJ_MEMBER_INT(SELF, MidiMsgOut_offset_data);
     RETURN->v_int = mrw->close();
+#endif // __DISABLE_MIDI__
 }
 
 CK_DLL_MFUN( MidiMsgOut_write )
 {
+#ifndef __DISABLE_MIDI__
     MidiMsgOut * mrw = (MidiMsgOut *)OBJ_MEMBER_INT(SELF, MidiMsgOut_offset_data);
     Chuck_Object * fake_msg = GET_NEXT_OBJECT(ARGS);
     t_CKTIME time = GET_NEXT_TIME(ARGS);
@@ -4296,6 +4314,7 @@ CK_DLL_MFUN( MidiMsgOut_write )
     the_msg.data[1] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2);
     the_msg.data[2] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3);
     RETURN->v_int = mrw->write( &the_msg, &time );
+#endif // __DISABLE_MIDI__
 }
 
 
@@ -4304,30 +4323,39 @@ CK_DLL_MFUN( MidiMsgOut_write )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( MidiMsgIn_ctor )
 {
+#ifndef __DISABLE_MIDI__
     OBJ_MEMBER_INT(SELF, MidiMsgIn_offset_data) = (t_CKUINT)new MidiMsgIn;
+#endif // __DISABLE_MIDI__
 }
 
 CK_DLL_DTOR( MidiMsgIn_dtor )
 {
+#ifndef __DISABLE_MIDI__
     delete (MidiMsgIn *)OBJ_MEMBER_INT(SELF, MidiMsgIn_offset_data);
     OBJ_MEMBER_INT(SELF, MidiMsgIn_offset_data) = 0;
+#endif // __DISABLE_MIDI__
 }
 
 CK_DLL_MFUN( MidiMsgIn_open )
 {
+#ifndef __DISABLE_MIDI__
     MidiMsgIn * mrw = (MidiMsgIn *)OBJ_MEMBER_INT(SELF, MidiMsgIn_offset_data);
     const char * filename = GET_CK_STRING(ARGS)->str.c_str();
     RETURN->v_int = mrw->open( filename );
+#endif // __DISABLE_MIDI__
 }
 
 CK_DLL_MFUN( MidiMsgIn_close )
 {
+#ifndef __DISABLE_MIDI__
     MidiMsgIn * mrw = (MidiMsgIn *)OBJ_MEMBER_INT(SELF, MidiMsgIn_offset_data);
     RETURN->v_int = mrw->close();
+#endif // __DISABLE_MIDI__
 }
 
 CK_DLL_MFUN( MidiMsgIn_read )
 {
+#ifndef __DISABLE_MIDI__
     MidiMsgIn * mrw = (MidiMsgIn *)OBJ_MEMBER_INT(SELF, MidiMsgIn_offset_data);
     Chuck_Object * fake_msg = GET_NEXT_OBJECT(ARGS);
     MidiMsg the_msg;
@@ -4337,6 +4365,5 @@ CK_DLL_MFUN( MidiMsgIn_read )
     OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = the_msg.data[1];
     OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = the_msg.data[2];
     OBJ_MEMBER_TIME(fake_msg, MidiMsg_offset_when) = time;
-}
-
 #endif // __DISABLE_MIDI__
+}
