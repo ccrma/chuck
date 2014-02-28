@@ -88,7 +88,7 @@ struct PhyHidDevOut
 // global variables
 //-----------------------------------------------------------------------------
 // per-physical device buffer size
-#define BUFFER_SIZE 8192
+#define BUFFER_SIZE 1024
 
 std::vector< std::vector<PhyHidDevIn *> > HidInManager::the_matrix;
 XThread * HidInManager::the_thread = NULL;
@@ -501,8 +501,6 @@ void HidInManager::init()
         }
 #endif
         
-        m_event_buffer = g_vm->create_event_buffer();
-        
         has_init = TRUE;
         
         EM_poplog();
@@ -611,6 +609,12 @@ void HidInManager::cleanup()
             SAFE_DELETE( msg_buffer );
         }
         
+        if(m_event_buffer)
+        {
+            if(g_vm) g_vm->destroy_event_buffer(m_event_buffer);
+            m_event_buffer = NULL;
+        }
+        
         // init
         has_init = FALSE;
         //*/
@@ -624,6 +628,11 @@ t_CKBOOL HidInManager::open( HidIn * hin, t_CKINT device_type, t_CKINT device_nu
     if( has_init == FALSE )
     {
         init();
+    }
+    
+    if(m_event_buffer == NULL)
+    {
+        m_event_buffer = g_vm->create_event_buffer();
     }
 
     // check type
@@ -698,6 +707,11 @@ t_CKBOOL HidInManager::open( HidIn * hin, t_CKINT device_type, std::string & dev
     if( has_init == FALSE )
     {
         init();
+    }
+    
+    if(m_event_buffer == NULL)
+    {
+        m_event_buffer = g_vm->create_event_buffer();
     }
     
     t_CKINT device_type_start = 1;
