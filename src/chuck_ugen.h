@@ -77,6 +77,9 @@ public: // src
     t_CKUINT system_tick( t_CKTIME now );
     t_CKUINT system_tick_v( t_CKTIME now, t_CKUINT numFrames );
     t_CKBOOL alloc_v( t_CKUINT size );
+    
+    Chuck_UGen *src_chan( t_CKUINT chan );
+    Chuck_UGen *dst_for_src_chan( t_CKUINT chan );
 
 protected:
     t_CKVOID add_by( Chuck_UGen * dest, t_CKBOOL isUpChuck );
@@ -183,6 +186,11 @@ public: // data
     // Chuck_UAnaBlobProxy * m_blob_proxy;
 };
 
+
+
+t_CKINT ugen_generic_num_in( Chuck_Object * obj, t_CKBOOL isArray );
+Chuck_UGen *ugen_generic_get_src( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray );
+Chuck_UGen *ugen_generic_get_dst( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray );
 
 
 

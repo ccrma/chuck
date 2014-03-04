@@ -5272,7 +5272,7 @@ Chuck_Instr_UGen_Link::Chuck_Instr_UGen_Link( t_CKBOOL isUpChuck )
 void Chuck_Instr_UGen_Link::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     Chuck_UGen **& sp = (Chuck_UGen **&)shred->reg->sp;
-
+    
     // pop
     pop_( sp, 2 );
     // check for null
@@ -5281,19 +5281,61 @@ void Chuck_Instr_UGen_Link::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     (*(sp + 1))->add( *sp, m_isUpChuck );
     // push the second
     push_( sp, *(sp + 1) );
-
+    
     return;
-
+    
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
-        "[chuck](VM): NullPointerException: (UGen link) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
-
+    fprintf( stderr,
+            "[chuck](VM): NullPointerException: (UGen link) in shred[id=%lu:%s], PC=[%lu]\n",
+            shred->xid, shred->name.c_str(), shred->pc );
+    
     // do something!
     shred->is_running = FALSE;
     shred->is_done = TRUE;
 }
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_UGen_Array_Link::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    Chuck_Object **& sp = (Chuck_Object **&)shred->reg->sp;
+    Chuck_Object *src, *dst;
+    t_CKINT num_in;
+    
+    // pop
+    pop_( sp, 2 );
+    // check for null
+    if( !*(sp+1) || !(*sp) ) goto null_pointer;
+    
+    src = *sp;
+    dst = (*(sp + 1));
+    
+    // go for it
+    num_in = ugen_generic_num_in(dst, m_dstIsArray);
+    for( int i = 0; i < num_in; i++ )
+        ugen_generic_get_dst( dst, i, m_dstIsArray )->add( ugen_generic_get_src( src, i, m_srcIsArray ), FALSE);
+    
+    // push the second
+    push_( sp, *(sp + 1) );
+    
+    return;
+    
+null_pointer:
+    // we have a problem
+    fprintf( stderr,
+            "[chuck](VM): NullPointerException: (UGen link) in shred[id=%lu:%s], PC=[%lu]\n",
+            shred->xid, shred->name.c_str(), shred->pc );
+    
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
 
 
 

@@ -2903,12 +2903,32 @@ struct Chuck_Instr_UGen_Link : public Chuck_Instr
 {
 public:
     Chuck_Instr_UGen_Link( t_CKBOOL isUpChuck = FALSE );
-
+    
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
-
+    
 protected:
     t_CKBOOL m_isUpChuck;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_UGen_Array_Link
+// desc: link ugens where one or both operands are a ugen array
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_UGen_Array_Link : public Chuck_Instr
+{
+public:
+    Chuck_Instr_UGen_Array_Link( t_CKBOOL srcIsArray, t_CKBOOL dstIsArray ) :
+    m_srcIsArray(srcIsArray), m_dstIsArray(dstIsArray)
+    { }
+
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    
+protected:
+    t_CKBOOL m_srcIsArray, m_dstIsArray;
 };
 
 
