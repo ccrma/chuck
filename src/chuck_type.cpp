@@ -1755,28 +1755,84 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
     }
 
     // ugen => ugen
-    if( isa( left, &t_ugen ) && isa( right, &t_ugen ) )
+    // ugen[] => ugen[]
+    if( ( isa( left, &t_ugen ) || ( isa( left, &t_array ) && isa( left->array_type, &t_ugen ) ) ) &&
+        ( isa( right, &t_ugen ) || ( isa( right, &t_array ) && isa( right->array_type, &t_ugen ) ) ) )
     {
+        t_CKTYPE left_ugen_type = NULL;
+        t_CKTYPE right_ugen_type = NULL;
+        
+        if( isa( left, &t_array ) )
+        {
+            left_ugen_type = left->array_type;
+            
+            if( left->array_depth > 1 )
+            {
+                EM_error2( lhs->linepos, "array ugen type has more than one dimension - can only => one-dimensional array of mono ugens" );
+                return NULL;
+            }
+            
+            if( left_ugen_type->ugen_info->num_outs > 1 )
+            {
+                // error
+                EM_error2( lhs->linepos,
+                           "array ugen type '%s' has more than one output channel - can only => one-dimensional array of mono ugens",
+                           left_ugen_type->c_name() );
+                return NULL;
+            }
+        }
+        else
+        {
+            left_ugen_type = left;
+        }
+        
+        if( isa( right, &t_array ) )
+        {
+            right_ugen_type = right->array_type;
+            
+            if( right->array_depth > 1 )
+            {
+                EM_error2( rhs->linepos,
+                           "array ugen type has more than one dimension - can only => one-dimensional array of mono ugens" );
+                return NULL;
+            }
+            
+            if( right_ugen_type->ugen_info->num_ins > 1 )
+            {
+                // error
+                EM_error2( rhs->linepos,
+                           "array ugen type '%s' has more than one input channel - can only => array of mono ugens",
+                           right_ugen_type->c_name() );
+                return NULL;
+            }
+        }
+        else
+        {
+            right_ugen_type = right;
+        }
+        
         // make sure non-zero
-        if( left->ugen_info->num_outs == 0 )
+        if( left_ugen_type->ugen_info->num_outs == 0 )
         {
             // error
             EM_error2( lhs->linepos,
                 "ugen's of type '%s' have no output - cannot => to another ugen...",
-                left->c_name() );
+                left_ugen_type->c_name() );
             return NULL;
         }
-        else if( right->ugen_info->num_ins == 0 )
+        else if( right_ugen_type->ugen_info->num_ins == 0 )
         {
             // error
             EM_error2( rhs->linepos,
                 "ugen's of type '%s' have no input - cannot => from another ugen...",
-                right->c_name() );
+                right_ugen_type->c_name() );
             return NULL;
         }
 
         return right;
     }
+    
+    
 
     // time advance ( dur => now )
     if( isa( left, &t_dur ) && isa( right, &t_time ) && rhs->s_meta == ae_meta_var
