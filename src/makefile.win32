@@ -1,29 +1,17 @@
 
-CC=gcc
-CXX=gcc
-LEX=flex
-YACC=bison
-INCLUDES=-I/usr/include/directx/
-CFLAGS=-D__WINDOWS_DS__ -D__WINDOWS_PTHREAD__ $(INCLUDES) -c
-LDFLAGS=-ldsound -ldinput -ldxguid -lwinmm -lstdc++ -lm -lole32 
+MSBUILD=msbuild.exe
 
-CSRCS+= util_sndfile.c
-
-ifneq ($(CHUCK_DEBUG),)
-CFLAGS+= -g
+ifneq (,$(CHUCK_DEBUG))
+CONFIG=Debug
+CHUCK_BIN=Debug/chuck.exe
 else
-CFLAGS+= -O3
+CONFIG=Release
+CHUCK_BIN=Release/chuck.exe
 endif
 
-ifneq ($(CHUCK_STRICT),)
-CFLAGS+= -Wall
-endif
+$(CHUCK_BIN): 
+	$(MSBUILD) /p:Configuration=$(CONFIG) 
 
-#-----------------------------------------------------------------------------
-# by default, ChucK uses a pre-configured libsndfile...
-# uncomment the next 3 lines to use libsndfile on your system
-#-----------------------------------------------------------------------------
-#FLAGS+= -D__CK_SNDFILE_NATIVE__
-#LIBS+= -lsndfile
-#SF_OBJ=
+clean:
+	$(MSBUILD) /p:Configuration=$(CONFIG) /t:Clean
 
