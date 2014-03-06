@@ -4,7 +4,7 @@ DESTDIR=/usr/bin
 current: 
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
-	@echo "   make osx, make osx-ub, or make win32"
+	@echo "   make osx, make osx-ub, make cygwin, or make win32"
 
 install:
 	cp $(wildcard chuck chuck.exe) $(DESTDIR)/
@@ -17,8 +17,11 @@ MAKECMDGOALS:=$(.DEFAULT_GOAL)
 endif
 endif
 
-.PHONY: osx linux-pulse linux-jack linux-alsa win32 osx-rl
-osx linux-pulse linux-jack linux-alsa win32 osx-rl: chuck
+.PHONY: osx linux-pulse linux-jack linux-alsa cygwin osx-rl
+osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
+
+win32:
+	make -f makefile.win32
 
 CK_VERSION=1.3.3.1-beta-3
 
@@ -64,8 +67,8 @@ ifneq (,$(strip $(filter linux-alsa,$(MAKECMDGOALS))))
 include makefile.alsa
 endif
 
-ifneq (,$(strip $(filter win32,$(MAKECMDGOALS))))
-include makefile.win32
+ifneq (,$(strip $(filter cygwin,$(MAKECMDGOALS))))
+include makefile.cygwin
 endif
 
 ifneq (,$(strip $(filter osx-rl,$(MAKECMDGOALS))))
@@ -147,7 +150,7 @@ $(CXXOBJS): %.o: %.cpp
 clean: 
 	@rm -rf $(wildcard chuck chuck.exe) *.o *.d $(OBJS) \
          $(patsubst %.o,%.d,$(OBJS)) *~ chuck.output chuck.tab.h chuck.tab.c \
-         chuck.yy.c $(DIST_DIR){,.tgz,.zip}
+         chuck.yy.c $(DIST_DIR){,.tgz,.zip} Release Debug
 	
 
 # ------------------------------------------------------------------------------
