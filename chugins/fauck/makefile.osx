@@ -1,3 +1,0 @@
-
-CFLAGS+= -D__MACOSX_CORE__
-LDFLAGS+= -bundle

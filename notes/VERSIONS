@@ -1,4 +1,58 @@
 
+1.3.4.0
+---
+  - (added) chuck operator connects between arrays of ugens, multi-channel 
+            ugens, and mono unit ugens
+            ex. 
+                SinOsc s => Pan2 pan => Gain master[2] => dac;
+            persists stereo signal through master to dac. 
+            See examples/stereo/array.ck for example usage. 
+  - (added) new OSC support classes
+            - OscOut
+              Sends OSC messages
+                - .dest(string host, int port)
+                  set destination hostname or IP address and port
+                - .start(string addr)
+                  set target OSC address to addr
+                - .add(int i)
+                - .add(float f)
+                - .add(string s)
+                  add argument to the message
+                - .send()
+                  send message
+            - OscIn extends Event
+              Receives OSC messages
+                - int .port
+                  port number to listen to
+                - .addAddress(string addr)
+                  listen for OSC addresses matching addr
+                - .removeAddress(string addr)
+                  stop listening for OSC addresses matching addr
+                - .listenAll()
+                  listen for all incoming OSC messages on port
+                - int .recv(OscMsg msg)
+                  retrieve pending OSC messages into msg. Returns 1 if a 
+                  message was available, 0 otherwise
+            - OscMsg
+              Encapsulates a received OSC message
+                - string .address
+                  the OSC address this message was sent to
+                - string .typetag
+                  the OSC typetag of this message
+                - int .getInt(int i)
+                - float .getFloat(int i)
+                - string .getString(int i)
+                  retrieve the argument at position i of the given type
+            See examples/osc/ for examples on usage. 
+            OscRecv and OscSend are still supported for backwards compatibility,
+            but new code should use OscIn and OscOut. 
+  - (added) new SerialIO functions
+            - .writeByte(int b)
+              write byte b to the serial stream
+            - .writeBytes(int b[])
+              write array of bytes b to the serial stream
+  - (fixed) ChucK Shell fixes
+
 1.3.3.0
 ---
   - (added) PulseAudio support (via RtAudio)  
