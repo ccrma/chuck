@@ -162,7 +162,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 
 #ifdef __CHIP_MODE__
 #define __DISABLE_MIDI__
-#define __DISABLE_SNDBUF__
+//#define __DISABLE_SNDBUF__
 #define __DISABLE_WATCHDOG__
 #define __DISABLE_RAW__
 #define __DISABLE_KBHIT__
