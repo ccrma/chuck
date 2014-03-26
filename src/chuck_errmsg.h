@@ -84,6 +84,7 @@ void EM_impossible( c_constr, ... );
 t_CKBOOL EM_reset( c_constr filename, FILE * fd );
 void EM_change_file( c_constr filename );
 const char * EM_lasterror();
+void EM_reset_msg();
 
 const char * mini( const char * str );
 const char * mini_type( const char * str );

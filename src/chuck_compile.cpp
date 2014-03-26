@@ -207,6 +207,8 @@ t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * st
     t_CKBOOL ret = TRUE;
     Chuck_Context * context = NULL;
 
+    EM_reset_msg();
+    
     // check to see if resolve dependencies automatically
     if( !m_auto_depend )
     {
