@@ -114,6 +114,10 @@ const char * mini_type( const char * str )
     return p;
 }
 
+void EM_reset_msg()
+{
+    g_lasterror[0] = '\0';
+}
 
 // [%s]:line(%d).char(%d): 
 void EM_error( int pos, const char * message, ... )
@@ -128,9 +132,13 @@ void EM_error( int pos, const char * message, ... )
         lines = lines->rest;
         num--;
     }
-
+    
+    // separate errmsgs with newlines
+    if( g_lasterror[0] != '\0' ) strcat( g_lasterror, "\n" );
+    
     fprintf( stderr, "[%s]:", *fileName ? mini(fileName) : "chuck" );
-    sprintf( g_lasterror, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    sprintf( g_buffer, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    strcat( g_lasterror, g_buffer );
     if(lines)
     {
         fprintf(stderr, "line(%d).char(%d):", num, pos-lines->i );
@@ -154,15 +162,19 @@ void EM_error( int pos, const char * message, ... )
 }
 
 
-// [%s]:line(%d): 
+// [%s]:line(%d):
 void EM_error2( int line, const char * message, ... )
 {
     va_list ap;
 
     EM_extLineNum = line;
 
+    // separate errmsgs with newlines
+    if( g_lasterror[0] != '\0' ) strcat( g_lasterror, "\n" );
+    
     fprintf( stderr, "[%s]:", *fileName ? mini(fileName) : "chuck" );
-    sprintf( g_lasterror, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    sprintf( g_buffer, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    strcat( g_lasterror, g_buffer );
     if(line)
     {
         fprintf( stderr, "line(%d):", line );
@@ -193,8 +205,12 @@ void EM_error2b( int line, const char * message, ... )
     
     EM_extLineNum = line;
 
+    // separate errmsgs with newlines
+    if( g_lasterror[0] != '\0' ) strcat( g_lasterror, "\n" );
+    
     fprintf( stderr, "[%s]:", *fileName ? mini(fileName) : "chuck" );
-    sprintf( g_lasterror, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    sprintf( g_buffer, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    strcat( g_lasterror, g_buffer );
     if(line)
     {
         fprintf( stderr, "line(%d):", line );
@@ -223,7 +239,10 @@ void EM_error3( const char * message, ... )
 {
     va_list ap;
     
-    g_lasterror[0] = '\0';
+    // separate errmsgs with newlines
+    if( g_lasterror[0] != '\0' ) strcat( g_lasterror, "\n" );
+    
+//    g_lasterror[0] = '\0';
     g_buffer[0] = '\0';
 
     va_start( ap, message );
