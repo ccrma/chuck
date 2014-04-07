@@ -51,6 +51,21 @@
               write byte b to the serial stream
             - .writeBytes(int b[])
               write array of bytes b to the serial stream
+  - (added) new chugins (from Joel Matthys)
+            - PitchTrack
+              Monophonic autocorrelation pitch tracker, based on [helmholtz~] by
+              Katja, http://www.katjaas.nl/helmholtz/helmholtz.html
+            - GVerb
+              Good quality stereo reverb with adjustable parameters
+            - Mesh2D
+              STK instrument that simulates a rectilinear, 2-dimensional digital
+              waveguide mesh structure. Basically sounds like striking a metal 
+              plate.
+            - Spectacle
+              FFT-based spectral delay and EQ
+            - Elliptic
+              Elliptic filter, capable of very steep slopes or interesting 
+              harmonic ripples
   - (fixed) ChucK Shell fixes
 
 1.3.3.0
