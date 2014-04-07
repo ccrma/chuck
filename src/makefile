@@ -23,7 +23,7 @@ osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
 win32:
 	make -f makefile.win32
 
-CK_VERSION=1.3.3.1-beta-3
+CK_VERSION=1.3.4.0
 
 LEX=flex
 YACC=bison
