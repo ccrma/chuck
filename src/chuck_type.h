@@ -558,6 +558,9 @@ struct Chuck_Type : public Chuck_VM_Object
     t_CKBOOL has_destructor;
     // custom allocator
     f_alloc allocator;
+    
+    // documentation
+    std::string doc;
 
 public:
     // constructor
@@ -677,6 +680,9 @@ struct Chuck_Value : public Chuck_VM_Object
     Chuck_Func * func_ref;
     // overloads
     t_CKINT func_num_overloads;
+	
+    // documentation
+    std::string doc;
 
     // constructor
     Chuck_Value( Chuck_Type * t, const std::string & n, void * a = NULL,
@@ -730,6 +736,9 @@ struct Chuck_Func : public Chuck_VM_Object
     Chuck_Func * next;
     // for overriding
     Chuck_Value * up;
+	
+    // documentation
+    std::string doc;
 
     // constructor
     Chuck_Func() { def = NULL; code = NULL; is_member = FALSE; vt_index = 0xffffffff; 
@@ -808,10 +817,11 @@ Chuck_Type * type_engine_import_uana_begin( Chuck_Env * env, const char * name, 
 t_CKBOOL type_engine_import_mfun( Chuck_Env * env, Chuck_DL_Func * mfun );
 t_CKBOOL type_engine_import_sfun( Chuck_Env * env, Chuck_DL_Func * sfun );
 t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type, 
-                                  const char * name, t_CKUINT is_const );
+                                  const char * name, t_CKUINT is_const,
+                                  const char * doc = NULL );
 t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
                                   const char * name, t_CKUINT is_const,
-                                  t_CKUINT addr );
+                                  t_CKUINT addr, const char * doc = NULL );
 t_CKBOOL type_engine_import_ugen_ctrl( Chuck_Env * env, const char * type, const char * name,
                                        f_ctrl ctrl, t_CKBOOL write, t_CKBOOL read );
 t_CKBOOL type_engine_import_class_end( Chuck_Env * env );

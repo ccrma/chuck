@@ -284,6 +284,14 @@ typedef void (CK_DLL_CALL * f_add_ugen_ctrl)( Chuck_DL_Query * query, f_ctrl ctr
 typedef t_CKBOOL (CK_DLL_CALL * f_end_class)( Chuck_DL_Query * query );
 // register 
 typedef Chuck_DL_MainThreadHook * (CK_DLL_CALL * f_create_main_thread_hook)( Chuck_DL_Query * query, f_mainthreadhook hook, f_mainthreadquit quit, void * bindle );
+    
+// documentation
+// set current class documentation
+typedef t_CKBOOL (CK_DLL_CALL * f_doc_class)( Chuck_DL_Query * query, const char * doc );
+// set current function documentation
+typedef t_CKBOOL (CK_DLL_CALL * f_doc_func)( Chuck_DL_Query * query, const char * doc );
+// set last mvar documentation
+typedef t_CKBOOL (CK_DLL_CALL * f_doc_var)( Chuck_DL_Query * query, const char * doc );
 }
 
 
@@ -350,6 +358,12 @@ struct Chuck_DL_Query
     // added 1.3.2.0
     f_create_main_thread_hook create_main_thread_hook;
     
+    // added 1.3.5
+    Chuck_DL_Value * last_var;
+    f_doc_class doc_class;
+    f_doc_func doc_func;
+    f_doc_var doc_var;
+    
     // constructor
     Chuck_DL_Query();
     // desctructor
@@ -398,6 +412,8 @@ struct Chuck_DL_Class
     
     t_CKUINT ugen_num_in, ugen_num_out;
     
+    std::string doc;
+    
     // constructor
     Chuck_DL_Class() { dtor = NULL; ugen_tick = NULL; ugen_tickf = NULL; ugen_pmsg = NULL; uana_tock = NULL; ugen_pmsg = NULL; current_mvar_offset = 0; ugen_num_in = ugen_num_out = 0; }
     // destructor
@@ -419,6 +435,8 @@ struct Chuck_DL_Value
     t_CKBOOL is_const;
     // addr static
     void * static_addr;
+    
+    std::string doc;
 
     // constructor
     Chuck_DL_Value() { is_const = FALSE; static_addr = NULL; }
@@ -441,6 +459,8 @@ struct Chuck_DL_Func
     union { f_ctor ctor; f_dtor dtor; f_mfun mfun; f_sfun sfun; t_CKUINT addr; };
     // arguments
     std::vector<Chuck_DL_Value *> args;
+    
+    std::string doc;
     
     // constructor
     Chuck_DL_Func() { ctor = NULL; }
