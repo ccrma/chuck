@@ -982,26 +982,32 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
 
     // add length()
     func = make_new_mfun( "int", "length", string_length );
+    func->doc = "Return the number of characters of the string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add upper()
     func = make_new_mfun( "string", "upper", string_upper );
+    func->doc = "Return a new string in which the lowercase characters of the original string have been converted to uppercase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add lower()
     func = make_new_mfun( "string", "lower", string_lower );
+    func->doc = "Return a new string in which the uppercase characters of the original string have been converted to lowercase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ltrim()
     func = make_new_mfun( "string", "ltrim", string_ltrim );
+    func->doc = "Return a new string in which leading whitespace has been removed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add rtrim()
     func = make_new_mfun( "string", "rtrim", string_rtrim );
+    func->doc = "Return a new string in which trailing whitespace has been removed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add trim()
     func = make_new_mfun( "string", "trim", string_trim );
+    func->doc = "Return a new string in which leading and trailing whitespace has been removed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add toString()
@@ -1011,35 +1017,41 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     // add charAt()
     func = make_new_mfun( "int", "charAt", string_charAt );
     func->add_arg("int", "index");
+    func->doc = "Return a character at the specified index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add setCharAt()
     func = make_new_mfun( "int", "setCharAt", string_setCharAt );
     func->add_arg("int", "index");
     func->add_arg("int", "theChar");
+    func->doc = "Set the character at the specified index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add substring()
     func = make_new_mfun( "string", "substring", string_substring );
     func->add_arg("int", "start");
+    func->doc = "Return a new string containing the substring from the start index to the end of the string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add substring()
     func = make_new_mfun( "string", "substring", string_substringN );
     func->add_arg("int", "start");
     func->add_arg("int", "length");
+    func->doc = "Return a new string containing the substring from the start index of the specified length.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add insert()
     func = make_new_mfun( "void", "insert", string_insert );
     func->add_arg("int", "position");
     func->add_arg("string", "str");
+    func->doc = "Insert str at the specified position.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add replace()
     func = make_new_mfun( "void", "replace", string_replace );
     func->add_arg( "int", "position" );
     func->add_arg( "string", "str" );
+    func->doc = "Replace characters from the start position to the end of the string with str.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add replace()
@@ -1047,64 +1059,76 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "int", "position" );
     func->add_arg( "int", "length" );
     func->add_arg( "string", "str" );
+    func->doc = "Replace length characters from the start position with str.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add find()
     func = make_new_mfun( "int", "find", string_find );
     func->add_arg( "int", "theChar" );
+    func->doc = "Return the index of the first occurence of theChar, or -1 if theChar is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add find()
     func = make_new_mfun( "int", "find", string_findStart );
     func->add_arg( "int", "theChar" );
     func->add_arg( "int", "start" );
+    func->doc = "Return the index of the first occurence of theChar at or after the start position, or -1 if theChar is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add find()
     func = make_new_mfun( "int", "find", string_findStr );
     func->add_arg( "string", "str" );
+    func->doc = "Return the index of the first occurence of str, or -1 if str is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add find()
     func = make_new_mfun( "int", "find", string_findStrStart );
     func->add_arg( "string", "str" );
     func->add_arg( "int", "start" );
+    func->doc = "Return the index of the first occurence of str at or after the start position, or -1 if str is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add rfind()
     func = make_new_mfun( "int", "rfind", string_rfind );
     func->add_arg( "int", "theChar" );
+    func->doc = "Return the index of the last occurence of theChar, or -1 if theChar is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add rfind()
     func = make_new_mfun( "int", "rfind", string_rfindStart );
     func->add_arg( "int", "theChar" );
     func->add_arg( "int", "start" );
+    func->doc = "Return the index of the last occurence of theChar at or before the start position, or -1 if theChar is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add rfind()
     func = make_new_mfun( "int", "rfind", string_rfindStr );
     func->add_arg( "string", "str" );
+    func->doc = "Return the index of the last occurence of str, or -1 if str is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add rfind()
     func = make_new_mfun( "int", "rfind", string_rfindStrStart );
     func->add_arg( "string", "str" );
     func->add_arg( "int", "start" );
+    func->doc = "Return the index of the last occurence of str at or before the start position, or -1 if str is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add erase()
-    func = make_new_mfun( "int", "erase", string_erase );
+    func = make_new_mfun( "void", "erase", string_erase );
     func->add_arg( "int", "start" );
     func->add_arg( "int", "length" );
+    func->doc = "Erase length characters of the string from start position.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add toInt()
     func = make_new_mfun( "int", "toInt", string_toInt );
+    func->doc = "Attempt to convert the contents of the string to an integer and return the result, or 0 if conversion failed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add toFloat()
     func = make_new_mfun( "float", "toFloat", string_toFloat );
+    func->doc = "Attempt to convert the contents of the string to an float and return the result, or 0 if conversion failed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add parent()

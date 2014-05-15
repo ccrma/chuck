@@ -5055,6 +5055,9 @@ t_CKBOOL type_engine_import_mfun( Chuck_Env * env, Chuck_DL_Func * mfun )
     if( !type_engine_check_func_def( env, func_def ) )
         return FALSE;
 
+    if( mfun->doc.size() > 0 )
+        func_def->ck_func->doc = mfun->doc;
+    
     return TRUE;
 }
 
@@ -5090,6 +5093,9 @@ t_CKBOOL type_engine_import_sfun( Chuck_Env * env, Chuck_DL_Func * sfun )
     if( !type_engine_check_func_def( env, func_def ) )
         return FALSE;
 
+    if( sfun->doc.size() > 0 )
+        func_def->ck_func->doc = sfun->doc;
+    
     return TRUE;
 }
 
@@ -5101,7 +5107,8 @@ t_CKBOOL type_engine_import_sfun( Chuck_Env * env, Chuck_DL_Func * sfun )
 // desc: import member variable (must be between class_begin/end)
 //-----------------------------------------------------------------------------
 t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type, 
-                                  const char * name, t_CKUINT is_const )
+                                  const char * name, t_CKUINT is_const,
+                                  const char * doc )
 {
     // make sure we are in class
     if( !env->class_def )
@@ -5159,7 +5166,10 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
         delete_id_list( path );
         return CK_INVALID_OFFSET;
     }
-
+    
+    if( doc != NULL )
+        var_decl->value->doc = doc;
+    
     // cleanup
     delete_id_list( path );
 
@@ -5176,7 +5186,7 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
                                   const char * name, t_CKUINT is_const,
-                                  t_CKUINT addr )
+                                  t_CKUINT addr, const char * doc )
 {
     // make sure we are in class
     if( !env->class_def )
@@ -5216,7 +5226,10 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
         delete_id_list( path );
         return FALSE;
     }
-
+    
+    if( doc != NULL )
+        var_decl->value->doc = doc;
+    
     // cleanup
     delete_id_list( path );
 
@@ -5920,8 +5933,9 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
     {
         Chuck_DL_Value * mvar = c->mvars[j];
         if(type_engine_import_mvar(env, mvar->type.c_str(),
-                                   mvar->name.c_str(),
-                                   mvar->is_const) == CK_INVALID_OFFSET)
+                                   mvar->name.c_str(), mvar->is_const,
+                                   mvar->doc.size() ? mvar->doc.c_str() : NULL)
+           == CK_INVALID_OFFSET)
             goto error;
     }
     
@@ -5929,10 +5943,9 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
     for(j = 0; j < c->svars.size(); j++)
     {
         Chuck_DL_Value * svar = c->svars[j];
-        if(!type_engine_import_svar(env, svar->type.c_str(),
-                                    svar->name.c_str(),
-                                    svar->is_const,
-                                    (t_CKUINT) svar->static_addr))
+        if(!type_engine_import_svar(env, svar->type.c_str(), svar->name.c_str(),
+                                    svar->is_const, (t_CKUINT) svar->static_addr,
+                                    svar->doc.size() ? svar->doc.c_str() : NULL))
             goto error;
     }
     

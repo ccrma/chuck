@@ -312,6 +312,7 @@ t_CKUINT CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query,
     // add
     query->curr_class->mvars.push_back( v );
     query->curr_func = NULL;
+    query->last_var = v;
     
     t_CKUINT offset = query->curr_class->current_mvar_offset;
     query->curr_class->current_mvar_offset = type_engine_next_offset( query->curr_class->current_mvar_offset,
@@ -348,6 +349,8 @@ void CK_DLL_CALL ck_add_svar( Chuck_DL_Query * query, const char * type, const c
     // add
     query->curr_class->svars.push_back( v );
     query->curr_func = NULL;
+    
+    query->last_var = v;
 }
 
 
@@ -552,6 +555,48 @@ Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query
     assert(g_vm);
     
     return new Chuck_DL_MainThreadHook( hook, quit, bindle, g_vm );
+}
+
+//-----------------------------------------------------------------------------
+// name: ck_doc_var()
+// desc: set current class documentation
+//-----------------------------------------------------------------------------
+t_CKBOOL CK_DLL_CALL ck_doc_class( Chuck_DL_Query * query, const char * doc )
+{
+#ifdef CK_DOC // disable unless CK_DOC
+    if(query->curr_class)
+        query->curr_class->doc = doc;
+    else
+        return FALSE;
+#endif // CK_DOC
+    
+    return TRUE;
+}
+
+// set current function documentation
+t_CKBOOL CK_DLL_CALL ck_doc_func( Chuck_DL_Query * query, const char * doc )
+{
+#ifdef CK_DOC // disable unless CK_DOC
+    if(query->curr_func)
+        query->curr_func->doc = doc;
+    else
+        return FALSE;
+#endif // CK_DOC
+    
+    return TRUE;
+}
+
+// set last mvar documentation
+t_CKBOOL CK_DLL_CALL ck_doc_var( Chuck_DL_Query * query, const char * doc )
+{
+#ifdef CK_DOC // disable unless CK_DOC
+    if(query->last_var)
+        query->last_var->doc = doc;
+    else
+        return FALSE;
+#endif // CK_DOC
+    
+    return TRUE;
 }
 
 
@@ -873,6 +918,9 @@ Chuck_DL_Query::Chuck_DL_Query( )
     add_ugen_ctrl = ck_add_ugen_ctrl;
     end_class = ck_end_class;
     create_main_thread_hook = ck_create_main_thread_hook;
+    doc_class = ck_doc_class;
+    doc_func = ck_doc_func;
+    doc_var = ck_doc_var;
     
 //    memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
     
