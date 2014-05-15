@@ -4063,7 +4063,7 @@ void Chuck_Namespace::get_values( vector<Chuck_Value *> & out )
     // temporary vector
     vector<Chuck_VM_Object *> list;
     // get it from the scope
-    this->value.get_toplevel( list );
+    this->value.get_level( 0, list );
     // clear
     out.clear();
     
@@ -4084,7 +4084,7 @@ void Chuck_Namespace::get_funcs( vector<Chuck_Func *> & out )
     // temporary vector
     vector<Chuck_VM_Object *> list;
     // get it from the scope
-    this->type.get_toplevel( list );
+    this->func.get_level( 0, list );
     // clear
     out.clear();
     

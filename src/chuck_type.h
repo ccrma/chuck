@@ -201,6 +201,26 @@ public:
             out.push_back( (*iter).second );
         }
     }
+    
+    // get list of top level
+    void get_level( int level, std::vector<Chuck_VM_Object *> & out )
+    {
+        assert( scope.size() >= level );
+        std::map<S_Symbol, Chuck_VM_Object *>::iterator iter;
+        
+        // clear the out
+        out.clear();
+        // get the front of the array
+        std::map<S_Symbol, Chuck_VM_Object *> * m = &commit_map;
+        
+        // go through map
+        for( iter = m->begin(); iter != m->end(); iter++ )
+        {
+            // add
+            out.push_back( (*iter).second );
+        }
+    }
+    
 
 protected:
     std::vector<std::map<S_Symbol, Chuck_VM_Object *> *> scope;
