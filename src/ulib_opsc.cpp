@@ -302,7 +302,7 @@ private:
             {
                 case 'i': arg.i = argv[i]->i; break;
                 case 'f': arg.f = argv[i]->f; break;
-                case 's': arg.s = argv[i]->s; break;
+                case 's': arg.s = &(argv[i]->s); break;
                 default:
                     EM_log(CK_LOG_WARNING, "OscIn: unhandled OSC type '%c'", types[i]);
             }
@@ -911,6 +911,7 @@ CK_DLL_CTOR(oscmsg_ctor)
     
     Chuck_Array4 *args = new Chuck_Array4(TRUE);
     initialize_object(args, &t_array);
+    args->clear();
     SAFE_ADD_REF(args);
     OBJ_MEMBER_OBJECT(SELF, oscmsg_offset_args) = args;
 }
