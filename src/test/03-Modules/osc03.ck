@@ -3,7 +3,7 @@ OscIn oin;
 OscMsg msg;
 
 6449 => oin.port;
-oin.addAddress( "/test" );
+oin.addAddress( "/test, ifs" );
 
 spork ~ send();
 
@@ -11,7 +11,7 @@ oin => now;
 
 oin.recv(msg);
 
-if(msg.getString(0) == "hello!")
+if(msg.getInt(0) == 42 && Math.fabs(msg.getFloat(1) - 3.141) < 0.001 && msg.getString(2) == "hello!")
     <<< "success" >>>;
 else
     <<< "failure" >>>;
@@ -22,7 +22,11 @@ fun void send()
     
     OscOut xmit;
     xmit.dest( "localhost", 6449 );   
-    xmit.start( "/test" ).add("hello!").send();
+    xmit.start( "/test" );
+    xmit.add(42);
+    xmit.add(3.141);
+    xmit.add("hello!");
+    xmit.send();
 }
 
 
