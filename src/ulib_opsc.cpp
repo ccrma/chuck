@@ -49,6 +49,8 @@
 #endif
 
 
+const std::string CK_OSC_TYPETAG_CHARS = "ifs";
+
 struct OscMsg
 {
     std::string path;
@@ -168,7 +170,12 @@ private:
         {
             path = ltrim(rtrim(method.substr(0, comma_pos)));
             nopath = FALSE;
-            type = ltrim(rtrim(method.substr(comma_pos+1)));
+            
+            std::string dirty_type = method.substr(comma_pos+1);
+            type.clear();
+            for(int i = 0; i < dirty_type.size(); i++)
+                if(CK_OSC_TYPETAG_CHARS.find(dirty_type[i]) != std::string::npos)
+                    type.push_back(dirty_type[i]);
             notype = FALSE;
         }
         else
