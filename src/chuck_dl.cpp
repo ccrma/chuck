@@ -713,9 +713,6 @@ const Chuck_DL_Query * Chuck_DLL::query( )
     // check version
     t_CKUINT dll_version = m_version_func();
     t_CKBOOL version_ok = FALSE;
-    // explicit check: version 4 is OK
-    if(CK_DLL_VERSION_GETMAJOR(dll_version) == 4)
-        version_ok = TRUE;
     // major version must be same
     // minor version must less than or equal
     if(CK_DLL_VERSION_GETMAJOR(dll_version) == CK_DLL_VERSION_MAJOR &&
