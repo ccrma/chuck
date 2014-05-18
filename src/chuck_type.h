@@ -818,22 +818,27 @@ t_CKUINT getkindof( Chuck_Type * type ); // added 1.3.1.0: to get the kindof a t
 
 // import
 Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type, 
-                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor = NULL );
+                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor = NULL,
+                                             const char * doc = NULL );
 Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, const char * name, const char * parent,
-                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor = NULL );
+                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor = NULL,
+                                             const char * doc = NULL );
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
                                             f_tick tick, f_tickf tickf, f_pmsg pmsg,  // (tickf added 1.3.0.0)
-                                            t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff );
+                                            t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff,
+                                            const char * doc = NULL );
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
                                             f_tick tick, f_pmsg pmsg,
-                                            t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff );
+                                            t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff,
+                                            const char * doc = NULL );
 Chuck_Type * type_engine_import_uana_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
                                             f_tick tick, f_tock tock, f_pmsg pmsg,
                                             t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff,
-                                            t_CKUINT num_ins_ana = 0xffffffff, t_CKUINT num_outs_ana = 0xffffffff );
+                                            t_CKUINT num_ins_ana = 0xffffffff, t_CKUINT num_outs_ana = 0xffffffff,
+                                            const char * doc = NULL );
 t_CKBOOL type_engine_import_mfun( Chuck_Env * env, Chuck_DL_Func * mfun );
 t_CKBOOL type_engine_import_sfun( Chuck_Env * env, Chuck_DL_Func * sfun );
 t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type, 
