@@ -76,9 +76,11 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
 
     // log
     EM_log( CK_LOG_SEVERE, "class 'object'" );
-
+    
+    const char * doc = "Base class for all class types in ChucK.";
+    
     // init as base class
-    if( !type_engine_import_class_begin( env, type, env->global(), object_ctor, object_dtor ) )
+    if( !type_engine_import_class_begin( env, type, env->global(), object_ctor, object_dtor, doc ) )
         return FALSE;
 
     // add member to hold string
@@ -87,6 +89,7 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
 
     // add toString()
     func = make_new_mfun( "string", "toString", object_toString );
+    func->doc = "Return a textual description of this object.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -122,9 +125,11 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
     type->ugen_info->num_ins = 1;
     type->ugen_info->num_outs = 1;
 
+    const char * doc = "Base class for all UGen types in ChucK.";
+
     // init as base class
     // TODO: ctor/dtor, ugen's sometimes created internally?
-    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL ) )
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc ) )
         return FALSE;
 
     // gain
@@ -975,9 +980,11 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     // log
     EM_log( CK_LOG_SEVERE, "class 'string'" );
 
+    const char * doc = "The string class holds textual data as a sequence of characters, and provides a number of functions for manipulating text.";
+
     // init as base class
     // TODO: ctor/dtor
-    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL ) )
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc ) )
         return FALSE;
 
     // add length()
