@@ -4718,7 +4718,8 @@ t_CKBOOL type_engine_compat_func( a_Func_Def lhs, a_Func_Def rhs, int pos, strin
 //-----------------------------------------------------------------------------
 Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type, 
                                              Chuck_Namespace * where,
-                                             f_ctor pre_ctor, f_dtor dtor )
+                                             f_ctor pre_ctor, f_dtor dtor,
+                                             const char * doc )
 {
     Chuck_Value * value = NULL;
     Chuck_Type * type_type = NULL;
@@ -4817,7 +4818,9 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     // push the class def
     env->class_stack.push_back( env->class_def );
     env->class_def = type;
-
+    
+    if( doc != NULL) type->doc = doc;
+    
     // ref count
     type->add_ref();
 
@@ -4834,7 +4837,8 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
 Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, const char * name, 
                                              const char * parent_str,
                                              Chuck_Namespace * where, 
-                                             f_ctor pre_ctor, f_dtor dtor )
+                                             f_ctor pre_ctor, f_dtor dtor,
+                                             const char * doc )
 {
     // which namespace
     Chuck_Type * parent = NULL;
@@ -4861,7 +4865,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, const char * name,
     where->type.add( name, type );
 
     // do the rest
-    if( !type_engine_import_class_begin( env, type, where, pre_ctor, dtor ) )
+    if( !type_engine_import_class_begin( env, type, where, pre_ctor, dtor, doc ) )
         goto error;
 
     // done
@@ -4890,13 +4894,14 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
                                             const char * parent, Chuck_Namespace * where,
                                             f_ctor pre_ctor, f_dtor dtor,
                                             f_tick tick, f_tickf tickf, f_pmsg pmsg,
-                                            t_CKUINT num_ins, t_CKUINT num_outs )
+                                            t_CKUINT num_ins, t_CKUINT num_outs,
+                                            const char * doc )
 {
     Chuck_Type * type = NULL;
     Chuck_UGen_Info * info = NULL;
 
     // construct class
-    if( !(type = type_engine_import_class_begin( env, name, parent, where, pre_ctor, dtor ) ) )
+    if( !(type = type_engine_import_class_begin( env, name, parent, where, pre_ctor, dtor, doc ) ) )
         return NULL;
 
     // make sure parent is ugen
@@ -4940,11 +4945,12 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
                                            const char * parent, Chuck_Namespace * where,
                                            f_ctor pre_ctor, f_dtor dtor,
                                            f_tick tick, f_pmsg pmsg,
-                                           t_CKUINT num_ins, t_CKUINT num_outs )
+                                           t_CKUINT num_ins, t_CKUINT num_outs,
+                                           const char * doc )
 {
     return type_engine_import_ugen_begin( env, name, parent, where,
                                          pre_ctor, dtor, tick, NULL, pmsg, 
-                                         num_ins, num_outs );
+                                         num_ins, num_outs, doc );
 }
 
 
@@ -4959,14 +4965,15 @@ Chuck_Type * type_engine_import_uana_begin( Chuck_Env * env, const char * name,
                                             f_ctor pre_ctor, f_dtor dtor,
                                             f_tick tick, f_tock tock, f_pmsg pmsg,
                                             t_CKUINT num_ins, t_CKUINT num_outs,
-                                            t_CKUINT num_ins_ana, t_CKUINT num_outs_ana )
+                                            t_CKUINT num_ins_ana, t_CKUINT num_outs_ana,
+                                            const char * doc )
 {
     Chuck_Type * type = NULL;
     Chuck_UGen_Info * info = NULL;
 
     // construct class
     if( !(type = type_engine_import_ugen_begin( env, name, parent, where, pre_ctor, dtor,
-                                                tick, pmsg, num_ins, num_outs ) ) )
+                                                tick, pmsg, num_ins, num_outs, doc ) ) )
         return NULL;
 
     // make sure parent is ugen
@@ -5913,7 +5920,8 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
                                           ctor ? (f_ctor) ctor->addr : NULL,
                                           dtor ? (f_dtor) dtor->addr : NULL,
                                           c->ugen_tick, c->ugen_tickf, c->ugen_pmsg,
-                                          c->ugen_num_in, c->ugen_num_out))
+                                          c->ugen_num_in, c->ugen_num_out,
+                                          c->doc.length() > 0 ? c->doc.c_str() : NULL ))
             goto error;
     }
     else
@@ -5922,7 +5930,8 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
         if(!type_engine_import_class_begin(env, c->name.c_str(),
                                            c->parent.c_str(), env->global(),
                                            ctor ? (f_ctor) ctor->addr : NULL,
-                                           dtor ? (f_dtor) dtor->addr : NULL))
+                                           dtor ? (f_dtor) dtor->addr : NULL,
+                                           c->doc.length() > 0 ? c->doc.c_str() : NULL))
             goto error;
     }
     
