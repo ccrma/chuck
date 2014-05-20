@@ -2366,9 +2366,13 @@ struct sndbuf_data
     t_CKUINT chunks_total;
     t_CKUINT chunks_size;
     bool * chunk_table;
+    
+    t_CKUINT chunk_num;
+    SAMPLE ** chunk_map;
 
     SAMPLE * eob;
-    SAMPLE * curr;
+    //SAMPLE * curr;
+    SAMPLE current_val;
     t_CKFLOAT sampleratio;
     t_CKFLOAT curf;
     t_CKFLOAT rate_factor;
@@ -2400,7 +2404,7 @@ struct sndbuf_data
         num_channels = 0;
         num_frames = 0;
         num_samples = 0;
-        chunks = 0;
+        chunks = 4096;
         chunks_read = 0;
         chunks_total = 0;
         chunks_size = 0;
@@ -2412,7 +2416,9 @@ struct sndbuf_data
         rate_factor = 1.0;
         rate = 1.0;
         eob = NULL;
-        curr = NULL;
+        //curr = NULL;
+        current_val = 0.0;
+        chunk_map = NULL;
         
         sinc_table_built = false;
         sinc_use_table = USE_TABLE;
@@ -2433,6 +2439,13 @@ struct sndbuf_data
     {
         SAFE_DELETE_ARRAY( buffer );
         SAFE_DELETE_ARRAY( chunk_table );
+        
+        if( chunk_map )
+        {
+            for(int i = 0; i < chunk_num; i++)
+                SAFE_DELETE_ARRAY(chunk_map[i]);
+            SAFE_DELETE_ARRAY(chunk_map);
+        }
     }
 };
 
@@ -2474,7 +2487,10 @@ inline t_CKUINT sndbuf_read( sndbuf_data * d, t_CKUINT offset, t_CKUINT howmuch 
 #if defined(__CHUCK_USE_64_BIT_SAMPLE__)
     n = sf_readf_double( d->fd, d->buffer+offset*d->num_channels, howmuch );
 #else
-    n = sf_readf_float( d->fd, d->buffer+offset*d->num_channels, howmuch );
+    if(d->buffer)
+        n = sf_readf_float( d->fd, d->buffer+offset*d->num_channels, howmuch );
+    else
+        n = sf_readf_float( d->fd, d->chunk_map[offset/d->chunks], howmuch );
 #endif
 
     d->chunks_read += n;
@@ -2494,27 +2510,28 @@ inline t_CKUINT sndbuf_read( sndbuf_data * d, t_CKUINT offset, t_CKUINT howmuch 
 inline t_CKINT sndbuf_load( sndbuf_data * d, t_CKUINT where )
 {
     // map to bin
-    t_CKUINT bin = (t_CKUINT)(where / (t_CKFLOAT)d->chunks_size);
-    if( bin >= d->chunks_total ) return 0;
+    t_CKUINT bin = where/d->chunks;
+//    if( bin >= d->chunks_total ) return 0;
 
     // already loaded
-    if( d->chunk_table[bin] ) return 0;
+    if( d->chunk_map[bin] ) return 0;
+    
+    // allocate
+    d->chunk_map[bin] = new SAMPLE[d->chunks];
 
     // read it
-    t_CKINT ret = sndbuf_read( d, bin*d->chunks_size, d->chunks_size );
-
-    // flag it
-    d->chunk_table[bin] = true;
-
+    t_CKINT ret = sndbuf_read( d, bin*d->chunks, d->chunks );
+    
     // log
     // EM_log( CK_LOG_FINER, "chunk test: pos: %d bin: %d read:%d/%d", where, bin, d->chunks_read, d->num_frames );
+//    fprintf(stderr, "chunks: loaded bin %lu\n", bin);
 
     return ret;
 }
 
 inline void sndbuf_setpos( sndbuf_data *d, double pos )
 {
-    if( !d->buffer ) return;
+    if( !d->buffer && !d->chunk_map ) return;
 
     d->curf = pos;
 
@@ -2533,8 +2550,13 @@ inline void sndbuf_setpos( sndbuf_data *d, double pos )
     t_CKINT i = (t_CKINT)d->curf;
     // ensure load
     if( d->fd != NULL ) sndbuf_load( d, i );
-    // sets curr to correct position ( account for channels ) 
-    d->curr = d->buffer + d->chan + i * d->num_channels;
+    
+    // sets curr to correct position ( account for channels )
+    t_CKUINT index = d->chan + i * d->num_channels;
+    if(d->buffer)
+        d->current_val = d->buffer[index];
+    else
+        d->current_val = d->chunk_map[index/d->chunks][index%d->chunks];
 }
 
 inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT pos, t_CKINT arg_chan = -1 )
@@ -2561,13 +2583,17 @@ inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT pos, t_CKINT arg_chan = 
     t_CKUINT index = chan + pos * d->num_channels;
     // ensure load
     if( d->fd != NULL ) sndbuf_load( d, pos );
+    
     // return sample
-    return d->buffer[index];
+    if(d->buffer != NULL)
+        return d->buffer[index];
+    else
+        return d->chunk_map[index/d->chunks][index%d->chunks];
 }
 
 inline double sndbuf_getpos( sndbuf_data * d )
 {
-    if( !d->buffer ) return 0;
+    if( !d->buffer && !d->chunk_map ) return 0;
     return floor(d->curf);
 }
 
@@ -2729,23 +2755,24 @@ CK_DLL_TICK( sndbuf_tick )
         return TRUE;
     }
 #endif /* CK_SNDBUF_MEMORY_BUFFER */
-    if( !d->buffer ) return FALSE;
+    
+    if( !d->buffer && !d->chunk_map ) return FALSE;
     
     // we're ticking once per sample ( system )
     // curf in samples;
     
-    if( !d->loop && d->curr >= d->eob + d->num_channels ) return FALSE;
+    if( !d->loop && d->curf >= d->num_frames ) return FALSE;
     
     // calculate frame
     if( d->interp == SNDBUF_DROP )
     { 
-        *out = (SAMPLE)( (*(d->curr)) ) ;
+        *out = d->current_val;
     }
     else if( d->interp == SNDBUF_INTERP )
     {
         // samplewise linear interp
         double alpha = d->curf - floor(d->curf);
-        *out = (SAMPLE)( (*(d->curr)) ) ;
+        *out = d->current_val;
         *out += (float)alpha * ( sndbuf_sampleAt(d, (long)d->curf+1 ) - *out );
     }
     else if( d->interp == SNDBUF_SINC ) {
@@ -2772,7 +2799,7 @@ CK_DLL_TICKF( sndbuf_tickf )
     // we're ticking once per sample ( system )
     // curf in samples;
     
-    if( !d->loop && d->curr >= d->eob + d->num_channels ) return FALSE;
+    if( !d->loop && d->curf >= d->num_frames ) return FALSE;
     
     // normalize amplitude across channels
     // TODO: normalize power?
@@ -2792,21 +2819,21 @@ CK_DLL_TICKF( sndbuf_tickf )
     
     unsigned int frame_idx;
     unsigned int nchans = ugen->m_num_outs;
-    for(frame_idx = 0; frame_idx < nframes && (d->loop || d->curr < d->eob+d->num_channels); frame_idx++)
+    for(frame_idx = 0; frame_idx < nframes && (d->loop || d->curf >= d->num_frames); frame_idx++)
     {
         for(unsigned int chan_idx = 0; chan_idx < nchans; chan_idx++)
         {
             // calculate frame
             if( d->interp == SNDBUF_DROP )
             {
-                out[frame_idx*nchans+chan_idx] = (SAMPLE)(d->curr[chan_idx % d->num_channels] * amp_factor);
+                out[frame_idx*nchans+chan_idx] = sndbuf_sampleAt(d, d->curf, chan_idx % d->num_channels) * amp_factor;
             }
             else if( d->interp == SNDBUF_INTERP )
             {
                 // SPENCERTODO
                 // samplewise linear interp
                 double alpha = d->curf - floor(d->curf);
-                SAMPLE current_sample = d->curr[chan_idx % d->num_channels];
+                SAMPLE current_sample = sndbuf_sampleAt(d, d->curf, chan_idx % d->num_channels) * amp_factor;
                 out[frame_idx*nchans+chan_idx] = current_sample;
                 out[frame_idx*nchans+chan_idx] += (float)alpha * ( sndbuf_sampleAt(d, (long)d->curf+1, chan_idx % d->num_channels ) - current_sample );
                 out[frame_idx*nchans+chan_idx] *= amp_factor;
@@ -2859,7 +2886,15 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         delete [] d->chunk_table;
         d->chunk_table = NULL;
     }
-
+    
+    if( d->chunk_map )
+    {
+        for(int i = 0; i < d->chunk_num; i++)
+            SAFE_DELETE_ARRAY(d->chunk_map[i]);
+        SAFE_DELETE_ARRAY(d->chunk_map);
+        d->chunk_table = NULL;
+    }
+    
     if( d->fd )
     {
         sf_close( d->fd );
@@ -3016,8 +3051,22 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
 
         // allocate
         t_CKINT size = info.channels * info.frames;
-        d->buffer = new SAMPLE[size+info.channels];
-        memset( d->buffer, 0, (size+info.channels)*sizeof(SAMPLE) );
+        if(d->chunks)
+        {
+            // split into small allocations
+            d->chunk_num = ceilf(size / d->chunks);
+            d->buffer = NULL;
+            d->chunk_map = new SAMPLE*[d->chunk_num];
+            memset(d->chunk_map, 0, d->chunk_num * sizeof(SAMPLE *));
+        }
+        else
+        {
+            // all in one go
+            d->buffer = new SAMPLE[size+info.channels];
+            memset( d->buffer, 0, (size+info.channels)*sizeof(SAMPLE) );
+            d->chunk_map = NULL;
+        }
+        
         d->chan = 0;
         d->num_frames = info.frames;
         d->num_channels = info.channels;
@@ -3034,7 +3083,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
 
         // read
         sf_seek( d->fd, 0, SEEK_SET );
-        d->chunks_read = 0;
+//        d->chunks_read = 0;
 
         // no chunk
         if( !d->chunks )
@@ -3055,12 +3104,12 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         else
         {
             // reset
-            d->chunks_size = d->chunks;
-            d->chunks_total = d->num_frames / d->chunks;
-            d->chunks_total += d->num_frames % d->chunks ? 1 : 0;
+//            d->chunks_size = d->chunks;
+//            d->chunks_total = d->num_frames / d->chunks;
+//            d->chunks_total += d->num_frames % d->chunks ? 1 : 0;
             d->chunks_read = 0;
-            d->chunk_table = new bool[d->chunks_total];
-            memset( d->chunk_table, 0, d->chunks_total * sizeof(bool) );
+//            d->chunk_table = new bool[d->chunks_total];
+//            memset( d->chunk_table, 0, d->chunks_total * sizeof(bool) );
 
             // read chunk
             // sndbuf_load( d, 0 );
@@ -3071,7 +3120,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
     d->sampleratio = (double)d->samplerate / (double)g_srate;
     // set the rate
     d->rate = d->sampleratio * d->rate_factor;
-    d->curr = d->buffer;
+//    d->curr = d->buffer;
     d->curf = 0;
     d->eob = d->buffer + d->num_samples;
 }
