@@ -2507,7 +2507,7 @@ inline t_CKUINT sndbuf_read( sndbuf_data * d, t_CKUINT offset, t_CKUINT howmuch 
 inline t_CKINT sndbuf_load( sndbuf_data * d, t_CKUINT where )
 {
     // map to bin
-    t_CKUINT bin = where/d->chunks;
+    t_CKUINT bin = floorf(((t_CKFLOAT) where) / ((t_CKFLOAT) d->chunks));
 
     assert(bin < d->chunk_num);
     
@@ -3046,7 +3046,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         if(d->chunks)
         {
             // split into small allocations
-            d->chunk_num = ceilf(size / d->chunks);
+            d->chunk_num = ceilf(((t_CKFLOAT) size) / ((t_CKFLOAT) d->chunks));
             d->buffer = NULL;
             d->chunk_map = new SAMPLE*[d->chunk_num];
             memset(d->chunk_map, 0, d->chunk_num * sizeof(SAMPLE *));
