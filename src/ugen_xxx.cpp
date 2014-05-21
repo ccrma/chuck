@@ -2158,6 +2158,9 @@ which are used to interpolate the new samples.  The
 processing time is linearly related to this width */
 #define DELAY_SIZE 140
 
+// default chunk size
+#define CK_SNDBUF_DEFAULT_CHUNK_SIZE (32768) // a little less than 1s of 44.1kHz
+
 #define USE_TABLE TRUE          /* this controls whether a linearly interpolated lookup
 table is used for sinc function calculation, or the
 sinc is calculated by floating point trig function calls.  */
@@ -2401,7 +2404,7 @@ struct sndbuf_data
         num_channels = 0;
         num_frames = 0;
         num_samples = 0;
-        chunks = 4096;
+        chunks = CK_SNDBUF_DEFAULT_CHUNK_SIZE;
         chunks_read = 0;
         samplerate = 0;
         sampleratio = 1.0;
