@@ -2539,7 +2539,7 @@ inline t_CKINT sndbuf_load( sndbuf_data * d, t_CKUINT where )
 
 inline void sndbuf_setpos( sndbuf_data *d, double pos )
 {
-    if( !d->buffer && !d->chunk_map ) return;
+    if( !(d->buffer || d->chunk_map) ) return;
 
     d->curf = pos;
 
@@ -2601,7 +2601,7 @@ inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT pos, t_CKINT arg_chan = 
 
 inline double sndbuf_getpos( sndbuf_data * d )
 {
-    if( !d->buffer && !d->chunk_map ) return 0;
+    if( !(d->buffer || d->chunk_map) ) return 0;
     return floor(d->curf);
 }
 
@@ -2883,12 +2883,8 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
     // return filename
     RETURN->v_string = ckfilename;
     
-    if( d->buffer )
-    {
-        delete [] d->buffer;
-        d->buffer = NULL;
-    }
-
+    SAFE_DELETE_ARRAY(d->buffer);
+    
     if( d->chunk_map )
     {
         for(int i = 0; i < d->chunk_num; i++)
@@ -3282,7 +3278,7 @@ CK_DLL_CGET( sndbuf_cget_valueAt )
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     t_CKINT i = GET_CK_INT(ARGS);
     if( d->fd ) sndbuf_load( d, i );
-    RETURN->v_float = ( i > d->num_frames * d->num_channels || i < 0 ) ? 0 : d->buffer[i];
+    RETURN->v_float = ( i > d->num_frames * d->num_channels || i < 0 ) ? 0 : sndbuf_sampleAt(d, i);
 }
 
 #endif // __DISABLE_SNDBUF__
@@ -3969,7 +3965,7 @@ CK_DLL_CTOR( LiSaMulti_ctor )
     memset( f, 0, sizeof(LiSaMulti_data) );
 			
 	Chuck_UGen * ugen = (Chuck_UGen *)SELF;
-	f->num_chans = ugen->m_multi_chan_size;
+	f->num_chans = ugen->m_multi_chan_size > 0 ? ugen->m_multi_chan_size : 1;
     //fprintf(stderr, "LiSa: number of channels = %d\n", f->num_chans);
 	f->outsamples = new SAMPLE[f->num_chans];
 	memset( f->outsamples, 0, (f->num_chans)*sizeof(SAMPLE) );
