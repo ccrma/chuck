@@ -192,6 +192,7 @@ CK_DLL_CGET( sndbuf_cget_valueAt );
 CK_DLL_CTOR( LiSaMulti_ctor );
 CK_DLL_DTOR( LiSaMulti_dtor );
 CK_DLL_TICK( LiSaMulti_tick );
+CK_DLL_TICKF( LiSaMulti_tickf );
 CK_DLL_PMSG( LiSaMulti_pmsg );
 CK_DLL_CTRL( LiSaMulti_size );
 CK_DLL_CTRL( LiSaMulti_cget_size );
