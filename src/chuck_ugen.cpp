@@ -855,7 +855,8 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
                 // tick sub-ugens for individual channels
                 if( ugen->m_time < now ) ugen->system_tick( now );
                 // set to tickf input
-                m_multi_in_v[i] = ugen->m_sum;
+                // TODO: if op is not 1? 
+                m_multi_in_v[i] = m_sum + ugen->m_sum;
             }
         }
         else
