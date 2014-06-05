@@ -3997,6 +3997,17 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     if( !emit_engine_emit_stmt( emit, func_def->code, FALSE ) )
         return FALSE;
     
+    // added by spencer June 2014
+    // ensure return
+    if( func_def->ret_type && func_def->ret_type != &t_void )
+    {
+        emit->append( new Chuck_Instr_Reg_Push_Imm(0) );
+        
+        Chuck_Instr_Goto * instr = new Chuck_Instr_Goto( 0 );
+        emit->append( instr );
+        emit->code->stack_return.push_back( instr );
+    }
+    
     // ge: pop scope (2012 april | added 1.3.0.0)
     // TODO: ge 2012 april: pop scope? clean up function arguments? are argument properly ref counted?    
     emit->pop_scope();
