@@ -3997,7 +3997,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     if( !emit_engine_emit_stmt( emit, func_def->code, FALSE ) )
         return FALSE;
     
-    // added by spencer June 2014
+    // added by spencer June 2014 (1.3.5.0) 
     // ensure return
     if( func_def->ret_type && func_def->ret_type != &t_void )
     {
