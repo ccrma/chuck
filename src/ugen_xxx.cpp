@@ -2474,36 +2474,37 @@ CK_DLL_DTOR( sndbuf_dtor )
     OBJ_MEMBER_UINT(SELF, sndbuf_offset_data) = 0;
 }
 
-inline t_CKUINT sndbuf_read( sndbuf_data * d, t_CKUINT offset, t_CKUINT howmuch )
+inline t_CKUINT sndbuf_read( sndbuf_data * d, t_CKUINT frame, t_CKUINT num_frames )
 {
     // check
     if( d->fd == NULL ) return 0;
-    if( offset >= d->num_frames ) return 0;
+    if( frame >= d->num_frames ) return 0;
     
     // log
     // EM_log( CK_LOG_FINE, "(sndbuf): reading %d:%d frames...", offset, howmuch );
 
     // prevent overflow
-    if( howmuch > d->num_frames - offset )
-        howmuch = d->num_frames - offset;
+    if( num_frames > d->num_frames - frame )
+        num_frames = d->num_frames - frame;
 
     t_CKUINT n;
     // seek
-    sf_seek( d->fd, offset, SEEK_SET );
+    sf_seek( d->fd, frame, SEEK_SET );
+    t_CKUINT index = frame*d->num_channels;
 #if defined(__CHUCK_USE_64_BIT_SAMPLE__)
     assert(0); // SPENCERTODO
-    n = sf_readf_double( d->fd, d->buffer+offset*d->num_channels, howmuch );
+    n = sf_readf_double( d->fd, d->buffer+frame*d->num_channels, num_frames );
 #else
     if(d->buffer)
-        n = sf_read_float( d->fd, d->buffer+offset*d->num_channels, howmuch );
+        n = sf_readf_float( d->fd, d->buffer+frame*d->num_channels, num_frames );
     else
-        n = sf_read_float( d->fd, d->chunk_map[offset/d->chunks], howmuch );
+        n = sf_readf_float( d->fd, d->chunk_map[index/d->chunks], num_frames );
 #endif
 
-    d->chunks_read += n;
+    d->chunks_read += n*d->num_channels;
 
     // close
-    if( d->chunks_read >= d->num_frames )
+    if( d->chunks_read >= d->num_frames*d->num_channels )
     {
         // log
         EM_log( CK_LOG_INFO, "(sndbuf): all frames read, closing file..." );
@@ -2514,10 +2515,10 @@ inline t_CKUINT sndbuf_read( sndbuf_data * d, t_CKUINT offset, t_CKUINT howmuch 
     return n;
 }
 
-inline t_CKINT sndbuf_load( sndbuf_data * d, t_CKUINT where )
+inline t_CKINT sndbuf_load( sndbuf_data * d, t_CKUINT sample )
 {
     // map to bin
-    t_CKUINT bin = floorf(((t_CKFLOAT) where) / ((t_CKFLOAT) d->chunks));
+    t_CKUINT bin = floorf(((t_CKFLOAT) sample) / ((t_CKFLOAT) d->chunks));
 
     assert(bin < d->chunk_num);
     
@@ -2528,7 +2529,7 @@ inline t_CKINT sndbuf_load( sndbuf_data * d, t_CKUINT where )
     d->chunk_map[bin] = new SAMPLE[d->chunks];
 
     // read it
-    t_CKINT ret = sndbuf_read( d, bin*d->chunks, d->chunks );
+    t_CKINT ret = sndbuf_read( d, bin*d->chunks/d->num_channels, d->chunks/d->num_channels );
     
     // log
     // EM_log( CK_LOG_FINER, "chunk test: pos: %d bin: %d read:%d/%d", where, bin, d->chunks_read, d->num_frames );
@@ -2537,11 +2538,11 @@ inline t_CKINT sndbuf_load( sndbuf_data * d, t_CKUINT where )
     return ret;
 }
 
-inline void sndbuf_setpos( sndbuf_data *d, double pos )
+inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
 {
     if( !(d->buffer || d->chunk_map) ) return;
 
-    d->curf = pos;
+    d->curf = frame_pos;
 
     // set curf within bounds
     if( d->loop )
@@ -2567,17 +2568,17 @@ inline void sndbuf_setpos( sndbuf_data *d, double pos )
         d->current_val = d->chunk_map[index/d->chunks][index%d->chunks];
 }
 
-inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT pos, t_CKINT arg_chan = -1 )
+inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT frame_pos, t_CKINT arg_chan = -1 )
 {
     // boundary cases
     t_CKINT nf = d->num_frames;
     if( d->loop ) { 
-        while( pos > nf ) pos -= nf;
-        while( pos <  0  ) pos += nf;
+        while( frame_pos > nf ) frame_pos -= nf;
+        while( frame_pos <  0  ) frame_pos += nf;
     }
     else { 
-        if( pos > nf ) pos = nf;
-        if( pos < 0   ) pos = 0;
+        if( frame_pos > nf ) frame_pos = nf;
+        if( frame_pos < 0   ) frame_pos = 0;
     }
     
     // if specific channel was requested, use that one
@@ -2588,7 +2589,7 @@ inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT pos, t_CKINT arg_chan = 
     else if(arg_chan < d->num_channels)
         chan = arg_chan;
     
-    t_CKUINT index = chan + pos * d->num_channels;
+    t_CKUINT index = chan + frame_pos * d->num_channels;
     // ensure load
     if( d->fd != NULL ) sndbuf_load( d, index );
     
@@ -2764,12 +2765,20 @@ CK_DLL_TICK( sndbuf_tick )
     }
 #endif /* CK_SNDBUF_MEMORY_BUFFER */
     
-    if( !( d->buffer || d->chunk_map ) ) return FALSE;
+    if( !( d->buffer || d->chunk_map ) )
+    {
+        *out = 0;
+        return TRUE;
+    }
     
     // we're ticking once per sample ( system )
     // curf in samples;
     
-    if( !d->loop && d->curf >= d->num_frames ) return FALSE;
+    if( !d->loop && d->curf >= d->num_frames )
+    {
+        *out = 0;
+        return TRUE;
+    }
     
     // calculate frame
     if( d->interp == SNDBUF_DROP )
