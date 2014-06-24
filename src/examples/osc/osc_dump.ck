@@ -14,16 +14,18 @@ while(true)
     
     while(oin.recv(msg))
     {
-        <<< msg.address, ",", msg.typetag >>>;
+        chout <= msg.address <= " ";
         for(int n; n < msg.numArgs(); n++)
         {
             if(msg.typetag.charAt(n) == 'i')
-                <<< "arg", n, ":", msg.getInt(n) >>>;
+                chout <= msg.getInt(n) <= " ";
             else if(msg.typetag.charAt(n) == 'f')
-                <<< "arg", n, ":", msg.getFloat(n) >>>;
+                chout <= msg.getFloat(n) <= " ";
             else if(msg.typetag.charAt(n) == 's')
-                <<< "arg", n, ":", msg.getString(n) >>>;
+                chout <= msg.getString(n) <= " ";
         }
+        
+        chout <= IO.nl();
     }
 }
 
