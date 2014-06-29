@@ -163,6 +163,8 @@ void Digitalio::probe()
     EM_error2b( 0, "found %d device(s) ...", devices );
     // EM_error2( 0, "--------------------------" );
     
+    EM_reset_msg();
+    
     // loop
     for( int i = 0; i < devices; i++ )
     {
@@ -178,6 +180,8 @@ void Digitalio::probe()
         print( info );
         // skip
         if( i < devices ) EM_error2( 0, "" );
+        
+        EM_reset_msg();
     }
 
     delete rta;
