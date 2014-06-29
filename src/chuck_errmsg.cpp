@@ -49,7 +49,9 @@ t_CKBOOL anyErrors= FALSE;
 static const char * fileName = "";
 static int lineNum = 1;
 static char g_buffer[1024] = "";
-static char g_lasterror[1024] = "[chuck]: (no error)";
+static const size_t LASTERROR_SIZE = 1024;
+static char g_lasterror[LASTERROR_SIZE] = "[chuck]: (no error)";
+static size_t g_lasterrorIndex = strlen(g_lasterror);
 // log globals
 int g_loglevel = CK_LOG_CORE;
 int g_logstack = 0;
@@ -74,6 +76,21 @@ static const char * g_str[] = {
 // intList
 typedef struct intList {int i; struct intList *rest;} *IntList;
 static IntList linePos=NULL;
+
+
+static int lastErrorCat(const char * str)
+{
+    assert(g_lasterrorIndex <= LASTERROR_SIZE);
+    
+    size_t len = strlen(str);
+    
+    strncat(g_lasterror, str, LASTERROR_SIZE - g_lasterrorIndex);
+    
+    size_t appendCount = ck_min(LASTERROR_SIZE - g_lasterrorIndex, len);
+    g_lasterrorIndex += appendCount;
+    
+    return appendCount > 0;
+}
 
 
 // constructor
@@ -117,6 +134,7 @@ const char * mini_type( const char * str )
 void EM_reset_msg()
 {
     g_lasterror[0] = '\0';
+    g_lasterrorIndex = 0;
 }
 
 // [%s]:line(%d).char(%d): 
@@ -134,19 +152,19 @@ void EM_error( int pos, const char * message, ... )
     }
     
     // separate errmsgs with newlines
-    if( g_lasterror[0] != '\0' ) strcat( g_lasterror, "\n" );
+    if( g_lasterror[0] != '\0' ) lastErrorCat( "\n" );
     
     fprintf( stderr, "[%s]:", *fileName ? mini(fileName) : "chuck" );
     sprintf( g_buffer, "[%s]:", *fileName ? mini(fileName) : "chuck" );
-    strcat( g_lasterror, g_buffer );
+    lastErrorCat( g_buffer );
     if(lines)
     {
         fprintf(stderr, "line(%d).char(%d):", num, pos-lines->i );
         sprintf( g_buffer, "line(%d).char(%d):", num, pos-lines->i );
-        strcat( g_lasterror, g_buffer );
+        lastErrorCat( g_buffer );
     }
     fprintf(stderr, " " );
-    strcat( g_lasterror, " " );
+    lastErrorCat( " " );
     
     va_start(ap, message);
     vfprintf(stderr, message, ap);
@@ -158,7 +176,7 @@ void EM_error( int pos, const char * message, ... )
     
     fprintf(stderr, "\n");
     fflush( stderr );
-    strcat( g_lasterror, g_buffer );
+    lastErrorCat( g_buffer );
 }
 
 
@@ -170,19 +188,19 @@ void EM_error2( int line, const char * message, ... )
     EM_extLineNum = line;
 
     // separate errmsgs with newlines
-    if( g_lasterror[0] != '\0' ) strcat( g_lasterror, "\n" );
+    if( g_lasterror[0] != '\0' ) lastErrorCat( "\n" );
     
     fprintf( stderr, "[%s]:", *fileName ? mini(fileName) : "chuck" );
     sprintf( g_buffer, "[%s]:", *fileName ? mini(fileName) : "chuck" );
-    strcat( g_lasterror, g_buffer );
+    lastErrorCat( g_buffer );
     if(line)
     {
         fprintf( stderr, "line(%d):", line );
         sprintf( g_buffer, "line(%d):", line );
-        strcat( g_lasterror, g_buffer );
+        lastErrorCat( g_buffer );
     }
     fprintf( stderr, " " );
-    strcat( g_lasterror, " " );
+    lastErrorCat( " " );
 
     va_start( ap, message );
     vfprintf( stderr, message, ap );
@@ -192,7 +210,7 @@ void EM_error2( int line, const char * message, ... )
     vsprintf( g_buffer, message, ap );
     va_end( ap );
 
-    strcat( g_lasterror, g_buffer );
+    lastErrorCat( g_buffer );
     fprintf( stderr, "\n" );
     fflush( stderr );
 }
@@ -206,19 +224,19 @@ void EM_error2b( int line, const char * message, ... )
     EM_extLineNum = line;
 
     // separate errmsgs with newlines
-    if( g_lasterror[0] != '\0' ) strcat( g_lasterror, "\n" );
+    if( g_lasterror[0] != '\0' ) lastErrorCat( "\n" );
     
     fprintf( stderr, "[%s]:", *fileName ? mini(fileName) : "chuck" );
     sprintf( g_buffer, "[%s]:", *fileName ? mini(fileName) : "chuck" );
-    strcat( g_lasterror, g_buffer );
+    lastErrorCat( g_buffer );
     if(line)
     {
         fprintf( stderr, "line(%d):", line );
         sprintf( g_buffer, "line(%d):", line );
-        strcat( g_lasterror, g_buffer );
+        lastErrorCat( g_buffer );
     }
     fprintf( stderr, " " );
-    strcat( g_lasterror, " " );
+    lastErrorCat( " " );
 
     va_start( ap, message );
     vfprintf( stderr, message, ap );
@@ -228,7 +246,7 @@ void EM_error2b( int line, const char * message, ... )
     vsprintf( g_buffer, message, ap );
     va_end( ap );
 
-    strcat( g_lasterror, g_buffer );
+    lastErrorCat( g_buffer );
     fprintf( stdout, "\n" );
     fflush( stdout );
 }
@@ -240,7 +258,7 @@ void EM_error3( const char * message, ... )
     va_list ap;
     
     // separate errmsgs with newlines
-    if( g_lasterror[0] != '\0' ) strcat( g_lasterror, "\n" );
+    if( g_lasterror[0] != '\0' ) lastErrorCat( "\n" );
     
 //    g_lasterror[0] = '\0';
     g_buffer[0] = '\0';
@@ -253,7 +271,7 @@ void EM_error3( const char * message, ... )
     vsprintf( g_buffer, message, ap );
     va_end( ap );
 
-    strcat( g_lasterror, g_buffer );
+    lastErrorCat( g_buffer );
     fprintf( stderr, "\n" );
     fflush( stderr );
 }
