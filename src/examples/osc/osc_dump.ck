@@ -3,7 +3,7 @@
 
 OscIn oin;
 if(me.args()) me.arg(0) => Std.atoi => oin.port;
-else 6449 => oin.port;
+else 9999 => oin.port;
 oin.listenAll();
 
 OscMsg msg;
