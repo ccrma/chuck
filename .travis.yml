@@ -1,1 +1,7 @@
+os:
+    - osx
+
+language: cpp
+compiler: clang
+
 install: cd src/ && make osx
