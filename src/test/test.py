@@ -14,7 +14,7 @@ def handle_directory(dir, exe):
             if os.path.splitext(filename)[1] == ".ck":
                 print "> %s %s" % (exe, path)
                 try:
-                    result = subprocess.check_output([exe, "%s" % path], stderr=subprocess.STDOUT)
+                    result = subprocess.check_output([exe, "--silent", "%s" % path], stderr=subprocess.STDOUT)
                     if result != "\"success\" : (string)\n":
                         fail(filename, result)
                 except subprocess.CalledProcessError as e:
@@ -43,4 +43,7 @@ handle_directory(test_dir, exe)
 
 if failures == 0:
     print "all success!"
-sys.exit(failures)
+    sys.exit(0)
+else:
+    print str(failures) + " test(s) failed"
+    sys.exit(-1)
