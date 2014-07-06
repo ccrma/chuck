@@ -1,0 +1,22 @@
+os:
+    - linux
+
+language: 
+    - cpp
+
+before_install:
+    - sudo apt-get install -y libsndfile1-dev
+    - sudo apt-get install -y libpulse-dev
+    - sudo apt-get install -y libasound2-dev
+
+script: 
+    - cd src/ && make linux-pulse
+    - sudo mv ./chuck /usr/local/bin/
+    - cd test/
+    - python test.py
+    
+after_success:
+    - echo "Success!"
+
+after_failure:
+    - echo "Something went wrong..."
