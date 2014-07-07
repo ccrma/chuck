@@ -5,12 +5,17 @@ language:
     - cpp
 
 before_install:
-    - sudo apt-get install -y libsndfile1-dev
-    - sudo apt-get install -y libpulse-dev
-    - sudo apt-get install -y libasound2-dev
-
+    if[ "$TRAVIS_OS_NAME" == "linux" ]; then
+        - sudo apt-get install -y libsndfile1-dev
+        - sudo apt-get install -y libpulse-dev    
+        - sudo apt-get install -y libasound2-dev
+    fi
+    
 script: 
-    - cd src/ && make linux-pulse
+    if[ "$TRAVIS_OS_NAME" == "linux" ]; then
+        - cd src/ && make linux-pulse
+    fi
+    
     - sudo mv ./chuck /usr/local/bin/
     - cd test/
     - python test.py
