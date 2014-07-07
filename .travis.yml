@@ -1,14 +1,16 @@
 os:
-    - linux
+    - osx
 
 language: 
     - cpp
 
 before_install:
     - '[ "${TRAVIS_OS_NAME}" = "linux" ] && sudo apt-get install -y libsndfile1-dev && sudo apt-get install -y libpulse-dev && sudo apt-get install -y libasound2-dev'
+    - '[ "${TRAVIS_OS_NAME}" = "osx" ] && echo "before_install - osx"'
     
 script: 
     - '[ "${TRAVIS_OS_NAME}" = "linux" ] && cd src/ && make linux-pulse'
+    - '[ "${TRAVIS_OS_NAME}" = "osx" ] && cd src/ && make osx'
     
     - sudo mv ./chuck /usr/local/bin/
     - cd test/
