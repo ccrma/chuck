@@ -80,13 +80,13 @@ static IntList linePos=NULL;
 
 static int lastErrorCat(const char * str)
 {
-    assert(g_lasterrorIndex <= LASTERROR_SIZE);
+    assert(g_lasterrorIndex <= LASTERROR_SIZE-1);
     
-    size_t len = strlen(str);
+    size_t len = strnlen(str, LASTERROR_SIZE);
     
-    strncat(g_lasterror, str, LASTERROR_SIZE - g_lasterrorIndex);
+    strncat(g_lasterror, str, LASTERROR_SIZE-g_lasterrorIndex-1);
     
-    size_t appendCount = ck_min(LASTERROR_SIZE - g_lasterrorIndex, len);
+    size_t appendCount = ck_min(LASTERROR_SIZE-g_lasterrorIndex-1, len);
     g_lasterrorIndex += appendCount;
     
     return appendCount > 0;
