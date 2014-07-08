@@ -460,6 +460,20 @@ t_CKBOOL MidiInManager::open( MidiIn * min, const std::string & name )
                 break;
             }
         }
+        
+        if( device_num == -1 )
+        {
+            // search by substring
+            for(t_CKINT i = 0; i < count; i++)
+            {
+                std::string port_name = rtmin->getPortName( i );
+                if( port_name.find( name ) != std::string::npos )
+                {
+                    device_num = i;
+                    break;
+                }
+            }
+        }
     }
     catch( RtError & err )
     {
@@ -686,10 +700,24 @@ t_CKBOOL MidiOutManager::open( MidiOut * mout, const std::string & name )
         for(t_CKINT i = 0; i < count; i++)
         {
             std::string port_name = rtmout->getPortName( i );
-            if( port_name == name)
+            if( port_name == name )
             {
                 device_num = i;
                 break;
+            }
+        }
+        
+        if( device_num == -1 )
+        {
+            // search by substring
+            for(t_CKINT i = 0; i < count; i++)
+            {
+                std::string port_name = rtmout->getPortName( i );
+                if( port_name.find( name ) != std::string::npos )
+                {
+                    device_num = i;
+                    break;
+                }
             }
         }
     }
