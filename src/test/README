@@ -1,0 +1,10 @@
+Tests can take two forms.
+
+1. Simple. A simple test just prints "success" (<<< "success" >>>;) if it succeeds. Anything else or nothing printed at all means the test fails. Most
+tests in the 01-Basics folder are simple tests.
+
+2. Not simple. If your test prints out more than just "success" (e.g. a test that removes shreds will print messages from the ChucK VM), then pipe
+the output of running that test to a text file with the name base name as the test, but with the .txt extension (e.g. 147_shred.ck -> 147_shred.txt).
+The output of running the ChucK file will be compared to the text file. If they match, the test passes.
+
+The simplest way to capture an answer is:  chuck 9001_sporks.ck 2> 9001_sporks.txt

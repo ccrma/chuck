@@ -1,10 +1,9 @@
-// 147_spork.ck
+// 9001_sporks.ck
 // thanks to Michael Heuer <heuermh@gmail.com> for providing this example code
-// desc: Exercises the segmentation fault caused by sporking 147 shreds. 
 
 fun void blink() {
     while (true) {
-        1::ms => now;
+        1::samp => now;
     }
 }
 
@@ -13,8 +12,8 @@ spork ~ blink() @=> shred;
 
 0 => int count;
 
-while (count <= 147) {
-    1::ms => now;
+while (count <= 9001) {
+    1::samp => now;
     shred.id() => Machine.remove;
     spork ~ blink() @=> shred;
     
