@@ -465,7 +465,8 @@ std::string extract_filepath_dir(std::string &filepath)
     if(i == std::string::npos)
         return std::string();
     
-    return std::string(filepath, 0, i);
+    // change spencer 2014-7-17: include trailing slash
+    return std::string(filepath, 0, i+1);
 }
 
 // added: ge 1.3.2.0
@@ -505,7 +506,10 @@ string dir_go_up( const string & dir, t_CKINT numUp )
     
     
     // otherwise
-    return string( dir, 0, pos );
+    // change spencer 2014-7-17: include trailing slash
+    string str = string( dir, 0, pos );
+    if(!str_endsin(str.c_str(), "/")) str = str + "/";
+    return str;
 }
 
 //-----------------------------------------------------------------------------
