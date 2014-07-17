@@ -160,6 +160,14 @@ private:
 #endif
     }
     
+    static void s_err_handler(int num, const char *msg, const char *where)
+    {
+        if(msg)
+            EM_error3("OscIn: error: %s", msg);
+        else
+            EM_error3("OscIn: unknown error");
+    }
+    
     static void methodToPathAndType(const std::string &method,
                                     std::string &path, t_CKBOOL &nopath,
                                     std::string &type, t_CKBOOL &notype)
@@ -333,11 +341,11 @@ void *OscInServer::server_cb()
     {
         char portStr[32];
         snprintf(portStr, 32, "%d", m_port);
-        m_server = lo_server_new(portStr, NULL);
+        m_server = lo_server_new(portStr, s_err_handler);
     }
     else
     {
-        m_server = lo_server_new(NULL, NULL);
+        m_server = lo_server_new(NULL, s_err_handler);
     }
     
     if(m_server == NULL)
@@ -465,7 +473,9 @@ public:
         
         if(m_address == NULL)
         {
-            EM_error3("OscOut: error: failed to set destination address '%s:%d'", host.c_str(), port);
+            const char *msg = lo_address_errstr(NULL);
+            EM_error3("OscOut: error: failed to set destination address '%s:%d'%s%s",
+                      host.c_str(), port, msg?": ":"", msg?msg:"");
             return FALSE;
         }
         
@@ -543,7 +553,9 @@ public:
         
         if(result == -1)
         {
-            EM_error3("OscOut: error: sending OSC message");
+            const char *msg = lo_address_errstr(m_address);
+            EM_error3("OscOut: error: sending OSC message%s%s",
+                      msg?": ":"", msg?msg:"");
             return FALSE;
         }
         
