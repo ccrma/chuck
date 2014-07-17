@@ -73,6 +73,10 @@ std::string extract_filepath_dir(std::string &filepath);
 // convert \ to / (on Windows)
 std::string normalize_directory_separator(const std::string &filepath);
 
+// determine if the last characters of str match end exactly
+// e.g. to test file extension
+int str_endsin(const char *str, const char *end);
+
 //-----------------------------------------------------------------------------
 // name: parse_path_list()
 // desc: split "x:y:z"-style path list into {"x","y","z"}

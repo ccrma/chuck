@@ -399,6 +399,10 @@ std::string get_full_path( const std::string & fp )
     
     char * result = realpath(fp.c_str(), buf);
     
+    // try with .ck extension
+    if(result == NULL && !str_endsin(fp.c_str(), ".ck"))
+        result = realpath((fp + ".ck").c_str(), buf);
+    
     if(result == NULL)
         return fp;
     else
@@ -409,6 +413,10 @@ std::string get_full_path( const std::string & fp )
 	char buf[MAX_PATH];
 
 	DWORD result = GetFullPathName(fp.c_str(), MAX_PATH, buf, NULL);
+
+    // try with .ck extension
+    if(result == 0 && !str_endsin(fp.c_str(), ".ck"))
+        result = GetFullPathName((fp + ".ck").c_str(), MAX_PATH, buf, NULL);
 
 	if(result == 0)
 		return fp;
@@ -538,4 +546,12 @@ std::string normalize_directory_separator(const std::string &filepath)
 #else
     return std::string(filepath);
 #endif // __PLATFORM_WIN32__
+}
+
+int str_endsin(const char *str, const char *end)
+{
+    size_t len = strlen(str);
+    size_t endlen = strlen(end);
+    
+    return strncmp(str+(len-endlen), end, endlen) == 0;
 }
