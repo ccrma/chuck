@@ -284,7 +284,7 @@ static void usage()
 #else
   extern "C" int chuck_main( int argc, const char ** argv )
 #endif
-{
+{    
     Chuck_Compiler * compiler = NULL;
     Chuck_VM * vm = NULL;
     Chuck_VM_Code * code = NULL;
