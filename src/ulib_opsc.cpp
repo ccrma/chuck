@@ -311,7 +311,7 @@ private:
                 case 'f': arg.f = argv[i]->f; break;
                 case 's': arg.s = &(argv[i]->s); break;
                 default:
-                    EM_log(CK_LOG_WARNING, "OscIn: unhandled OSC type '%c'", types[i]);
+                    EM_error3("OscIn: error: unhandled OSC type '%c'", types[i]);
             }
             
             msg.args.push_back(arg);
@@ -342,11 +342,13 @@ void *OscInServer::server_cb()
     
     if(m_server == NULL)
     {
-        // TODO: error
+        EM_error3("OscIn: error: unable to create server instance");
         return NULL;
     }
     
     m_assignedPort = lo_server_get_port(m_server);
+    
+    EM_log(CK_LOG_INFO, "OscIn: starting OSC server at port '%d'", m_port);
     
     while(!m_quit)
     {
@@ -374,7 +376,7 @@ void *OscInServer::server_cb()
                     }
                     else
                     {
-                        EM_log(CK_LOG_SYSTEM, "OscIn: add_method failed for %s, %s", msg.path.c_str(), msg.type.c_str());
+                        EM_error3("OscIn: error: add_method failed for %s, %s", msg.path.c_str(), msg.type.c_str());
                     }
                 }
                     break;
@@ -419,6 +421,8 @@ void *OscInServer::server_cb()
     
     lo_server_free(m_server);
     
+    EM_log(CK_LOG_INFO, "OscIn: shutting down OSC server", m_port);
+    
     return NULL;
 }
 
@@ -459,7 +463,13 @@ public:
         
         m_address = lo_address_new(host.c_str(), portStr);
         
-        return m_address != NULL;
+        if(m_address == NULL)
+        {
+            EM_error3("OscOut: error: failed to set destination address '%s:%d'", host.c_str(), port);
+            return FALSE;
+        }
+        
+        return TRUE;
     }
     
     t_CKBOOL start(const std::string &path, const std::string &arg)
@@ -481,7 +491,11 @@ public:
     
     t_CKBOOL add(int i)
     {
-        if(m_message == NULL) return FALSE;
+        if(m_message == NULL)
+        {
+            EM_error3("OscOut: error: attempt to add argument to message with no OSC address");
+            return FALSE;
+        }
         
         lo_message_add_int32(m_message, i);
         
@@ -490,7 +504,11 @@ public:
     
     t_CKBOOL add(float f)
     {
-        if(m_message == NULL) return FALSE;
+        if(m_message == NULL)
+        {
+            EM_error3("OscOut: error: attempt to add argument to message with no OSC address");
+            return FALSE;
+        }
         
         lo_message_add_float(m_message, f);
         
@@ -499,7 +517,11 @@ public:
     
     t_CKBOOL add(const std::string &s)
     {
-        if(m_message == NULL) return FALSE;
+        if(m_message == NULL)
+        {
+            EM_error3("OscOut: error: attempt to add argument to message with no OSC address");
+            return FALSE;
+        }
         
         lo_message_add_string(m_message, s.c_str());
         
@@ -508,14 +530,23 @@ public:
     
     t_CKBOOL send()
     {
-        if(m_message == NULL || m_address == NULL || m_path.size() == 0) return FALSE;
+        if(m_message == NULL || m_address == NULL || m_path.size() == 0)
+        {
+            EM_error3("OscOut: error: attempt to send message with no destination or OSC address");
+            return FALSE;
+        }
         
         int result = lo_send_message(m_address, m_path.c_str(), m_message);
         
         lo_message_free(m_message);
         m_message = NULL;
         
-        if(result == -1) return FALSE;
+        if(result == -1)
+        {
+            EM_error3("OscOut: error: sending OSC message");
+            return FALSE;
+        }
+        
         return TRUE;
     }
     
