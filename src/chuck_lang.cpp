@@ -1273,6 +1273,16 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "Erase all elements with the specified key. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "array/array_argument.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "array/array_assign.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "array/array_dynamic.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "array/array_mdim.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "array/array_mmixed.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "array/array_resize.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "array/array_storage.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "array/array_sub_assign.ck" ) ) goto error;
+    
     type_engine_import_class_end( env );
 
     return TRUE;
