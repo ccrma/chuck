@@ -881,9 +881,9 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     // author: Dan Trueman (dan /at/ music.princeton.edu)
     //---------------------------------------------------------------------
 	
-    int nLisas = 4;
-	int lisa_channels[] = { 1, 2, 6, 10 };
-	const char *lisa_names[] = { "LiSa", "LiSa2", "LiSa6", "LiSa10" };
+    int nLisas = 2;
+	int lisa_channels[] = { 1, 10 };
+	const char *lisa_names[] = { "LiSa", "LiSa10" };
     
     for(int i = 0; i < nLisas; i++)
     {
@@ -4007,7 +4007,7 @@ CK_DLL_DTOR( LiSaMulti_dtor )
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( LiSaMulti_tick )
 {
-	Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+//	Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
 	SAMPLE * temp_out_samples = d->tick_multi( in );
@@ -4038,7 +4038,7 @@ CK_DLL_TICKF( LiSaMulti_tickf )
         
         for(unsigned int chan_idx = 0; chan_idx < nchans; chan_idx++)
         {
-            out[frame_idx*nchans+chan_idx] = temp_out_samples[frame_idx*nchans+chan_idx];
+            out[frame_idx*nchans+chan_idx] = temp_out_samples[chan_idx];
         }
     }
 	
