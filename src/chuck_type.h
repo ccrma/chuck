@@ -581,6 +581,8 @@ struct Chuck_Type : public Chuck_VM_Object
     
     // documentation
     std::string doc;
+    // example files
+    std::vector<std::string> examples;
 
 public:
     // constructor
@@ -849,6 +851,7 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
                                   t_CKUINT addr, const char * doc = NULL );
 t_CKBOOL type_engine_import_ugen_ctrl( Chuck_Env * env, const char * type, const char * name,
                                        f_ctrl ctrl, t_CKBOOL write, t_CKBOOL read );
+t_CKBOOL type_engine_import_add_ex( Chuck_Env * env, const char * ex );
 t_CKBOOL type_engine_import_class_end( Chuck_Env * env );
 t_CKBOOL type_engine_register_deprecate( Chuck_Env * env, 
                                          const std::string & former, const std::string & latter );

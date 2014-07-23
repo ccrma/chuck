@@ -5245,6 +5245,28 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
 
 
 
+//-----------------------------------------------------------------------------
+// name: type_engine_import_add_ex()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_import_add_ex( Chuck_Env * env, const char * ex )
+{
+    // make sure we are in class
+    if( !env->class_def )
+    {
+        // error
+        EM_error2( 0,
+                   "import error: import_add_ex '%s' invoked between begin/end",
+                   ex );
+        return FALSE;
+    }
+    
+    env->class_def->examples.push_back( ex );
+    
+    return TRUE;
+}
+
+
 
 //-----------------------------------------------------------------------------
 // name: type_engine_register_deprecate()
@@ -5970,6 +5992,12 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
     {
         Chuck_DL_Func * func = c->sfuns[j];
         if(!type_engine_import_sfun(env, func)) goto error;
+    }
+    
+    // import examples (if any)
+    for(j = 0; j < c->examples.size(); j++)
+    {
+        if(!type_engine_import_add_ex(env, c->examples[j].c_str())) goto error;
     }
     
     // end class import

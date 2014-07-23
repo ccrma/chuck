@@ -558,7 +558,7 @@ Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query
 }
 
 //-----------------------------------------------------------------------------
-// name: ck_doc_var()
+// name: ck_doc_class()
 // desc: set current class documentation
 //-----------------------------------------------------------------------------
 t_CKBOOL CK_DLL_CALL ck_doc_class( Chuck_DL_Query * query, const char * doc )
@@ -566,6 +566,22 @@ t_CKBOOL CK_DLL_CALL ck_doc_class( Chuck_DL_Query * query, const char * doc )
 #ifdef CK_DOC // disable unless CK_DOC
     if(query->curr_class)
         query->curr_class->doc = doc;
+    else
+        return FALSE;
+#endif // CK_DOC
+    
+    return TRUE;
+}
+
+//-----------------------------------------------------------------------------
+// name: ck_add_example()
+// desc: set current class documentation
+//-----------------------------------------------------------------------------
+t_CKBOOL CK_DLL_CALL ck_add_example( Chuck_DL_Query * query, const char * ex )
+{
+#ifdef CK_DOC // disable unless CK_DOC
+    if(query->curr_class)
+        query->curr_class->examples.push_back(ex);
     else
         return FALSE;
 #endif // CK_DOC
