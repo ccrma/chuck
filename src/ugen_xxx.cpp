@@ -881,28 +881,12 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     // author: Dan Trueman (dan /at/ music.princeton.edu)
     //---------------------------------------------------------------------
 	
-    int nLisas = 2;
-	int lisa_channels[] = { 1, 10 };
-	const char *lisa_names[] = { "LiSa", "LiSa10" };
     
-    for(int i = 0; i < nLisas; i++)
-    {
-        int nChans = lisa_channels[i];
-        
-    if( !type_engine_import_ugen_begin( env, lisa_names[i], "UGen", env->global(),
+    if( !type_engine_import_ugen_begin( env, "LiSa", "UGen", env->global(),
                                         LiSaMulti_ctor, LiSaMulti_dtor,
-                                        nChans == 1 ? LiSaMulti_tick : NULL,
-                                        nChans > 1 ? LiSaMulti_tickf : NULL,
-                                        LiSaMulti_pmsg, 1, nChans ))
+                                        LiSaMulti_tick, NULL,
+                                        LiSaMulti_pmsg, 1, 1 ))
         return FALSE;
-	
-									
-	/*
-	if( !type_engine_import_ugen_begin( env, "LiSa", "UGen", env->global(),
-                                        LiSaMulti_ctor, LiSaMulti_dtor,
-                                        LiSaMulti_tick, LiSaMulti_pmsg))
-        return FALSE;
-	*/
 	
     // set/get buffer size
     func = make_new_mfun( "dur", "duration", LiSaMulti_size );
@@ -1148,7 +1132,15 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     
     // end the class import
     type_engine_import_class_end( env );
-    }
+    
+    // multichannel
+    if( !type_engine_import_ugen_begin( env, "LiSa10", "LiSa", env->global(),
+                                       LiSaMulti_ctor, LiSaMulti_dtor,
+                                       NULL, LiSaMulti_tickf,
+                                       LiSaMulti_pmsg, 1, 10 ))
+        return FALSE;
+	
+    type_engine_import_class_end( env );
     
     return TRUE;
 
