@@ -835,6 +835,9 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, 
                                             f_tick tick, f_pmsg pmsg,
                                             t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff,
                                             const char * doc = NULL );
+Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, const char * parent,
+                                            Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
+                                            f_tick tick, f_pmsg pmsg,  const char * doc );
 Chuck_Type * type_engine_import_uana_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
                                             f_tick tick, f_tock tock, f_pmsg pmsg,
