@@ -103,6 +103,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     Chuck_Env * env = Chuck_Env::instance();
 
     Chuck_DL_Func * func = NULL;
+    std::string doc;
 
     // deprecate
     type_engine_register_deprecate( env, "dac", "DAC" );
@@ -282,9 +283,13 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: gain
     //---------------------------------------------------------------------
+    doc = "Gain control. (Note: all unit generators can themselves change their gain. This is a way to add multiple outputs together and scale them.)";
     if( !type_engine_import_ugen_begin( env, "Gain", "UGen", env->global(), 
-                                        NULL, NULL, NULL, NULL ) )
+                                        NULL, NULL, NULL, NULL, doc.c_str() ) )
         return FALSE;
+    
+    if( !type_engine_import_add_ex( env, "basic/i-robot.ck" ) ) goto error;
+    
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
@@ -303,9 +308,13 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: noise
     //---------------------------------------------------------------------
+    doc = "White noise generator.";
     if( !type_engine_import_ugen_begin( env, "Noise", "UGen", env->global(), 
-                                        NULL, NULL, noise_tick, NULL ) )
+                                        NULL, NULL, noise_tick, NULL, doc.c_str() ) )
         return FALSE;
+
+    if( !type_engine_import_add_ex( env, "basic/wind.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "shred/powerup.ck" ) ) goto error;
 
     // end import
     if( !type_engine_import_class_end( env ) )
@@ -370,8 +379,9 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: impulse
     //---------------------------------------------------------------------
+    doc = "Pulse generator - can set the value of the current sample. Default for each sample is 0 if not set.";
     if( !type_engine_import_ugen_begin( env, "Impulse", "UGen", env->global(), 
-                                        impulse_ctor, impulse_dtor, impulse_tick, NULL ) )
+                                        impulse_ctor, impulse_dtor, impulse_tick, NULL, doc.c_str() ) )
         return FALSE;
 
     // add ctrl: value
@@ -389,9 +399,11 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add ctrl: next
     func = make_new_mfun( "float", "next", impulse_ctrl_next );
     func->add_arg( "float", "next" );
+    func->doc = "Value of next sample to be generated. (Note: if you are using the UGen.last method to read the output of the impulse, the value set by Impulse.next does not appear as the output until after the next sample boundary. In this case, there is a consistent 1::samp offset between setting .next and reading that value using .last.)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: next
     func = make_new_mfun( "float", "next", impulse_cget_next );
+    func->doc = "Value of next sample to be generated.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
@@ -421,10 +433,13 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: step
     //---------------------------------------------------------------------
+    doc = "Step generator - like Impulse, but once a value is set, it is held for all following samples, until value is set again.";
     if( !type_engine_import_ugen_begin( env, "Step", "UGen", env->global(), 
-                                        step_ctor, step_dtor, step_tick, NULL ) )
+                                        step_ctor, step_dtor, step_tick, NULL, doc.c_str() ) )
         return FALSE;
 
+    if( !type_engine_import_add_ex( env, "basic/step.ck" ) ) goto error;
+    
     // add ctrl: value
     //func = make_new_mfun( "float", "value", step_ctrl_value );
     //func->add_arg( "float", "value" );
@@ -440,9 +455,11 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add ctrl: next
     func = make_new_mfun( "float", "next", step_ctrl_next );
     func->add_arg( "float", "next" );
+    func->doc = "The step value.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: next
     func = make_new_mfun( "float", "next", step_cget_next );
+    func->doc = "The step value.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
@@ -458,8 +475,9 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: halfrect
     //---------------------------------------------------------------------
+    doc = "Half wave rectifier.";
     if( !type_engine_import_ugen_begin( env, "HalfRect", "UGen", env->global(), 
-                                        NULL, NULL, halfrect_tick, NULL ) )
+                                        NULL, NULL, halfrect_tick, NULL, doc.c_str() ) )
         return FALSE;
 
     // end import
@@ -475,8 +493,9 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: fullrect
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "FullRect", "UGen", env->global(), 
-                                        NULL, NULL, fullrect_tick, NULL ) )
+    doc = "Full wave rectifier.";
+    if( !type_engine_import_ugen_begin( env, "FullRect", "UGen", env->global(),
+                                        NULL, NULL, fullrect_tick, NULL, doc.c_str() ) )
         return FALSE;
 
     // end import
@@ -1137,7 +1156,7 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "LiSa10", "LiSa", env->global(),
                                        LiSaMulti_ctor, LiSaMulti_dtor,
                                        NULL, LiSaMulti_tickf,
-                                       LiSaMulti_pmsg, 1, 10 ))
+                                       LiSaMulti_pmsg, 1, LiSa_channels ))
         return FALSE;
 	
     type_engine_import_class_end( env );

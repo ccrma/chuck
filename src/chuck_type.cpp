@@ -4941,7 +4941,7 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
 // name: type_engine_import_ugen_begin()
 // desc: old version (added 1.3.0.0)
 //-----------------------------------------------------------------------------
-Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, 
+Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
                                            const char * parent, Chuck_Namespace * where,
                                            f_ctor pre_ctor, f_dtor dtor,
                                            f_tick tick, f_pmsg pmsg,
@@ -4949,8 +4949,26 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
                                            const char * doc )
 {
     return type_engine_import_ugen_begin( env, name, parent, where,
-                                         pre_ctor, dtor, tick, NULL, pmsg, 
+                                         pre_ctor, dtor, tick, NULL, pmsg,
                                          num_ins, num_outs, doc );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_import_ugen_begin()
+// desc: doc version (added 1.3.5.0)
+//-----------------------------------------------------------------------------
+Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
+                                            const char * parent, Chuck_Namespace * where,
+                                            f_ctor pre_ctor, f_dtor dtor,
+                                            f_tick tick, f_pmsg pmsg,
+                                            const char * doc )
+{
+    return type_engine_import_ugen_begin( env, name, parent, where,
+                                          pre_ctor, dtor, tick, NULL, pmsg,
+                                          0xffffffff, 0xffffffff, doc );
 }
 
 
