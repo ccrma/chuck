@@ -126,14 +126,19 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //-------------------------------------------------------------------------
     // init as base class: Subgraph
     //-------------------------------------------------------------------------
+    doc = "Base class for chubgraph-based user unit generators. ";
     if( !type_engine_import_ugen_begin( env, "Chubgraph", "UGen", env->global(),
-                                        subgraph_ctor, NULL, NULL, NULL, 1, 1 ) )
+                                        subgraph_ctor, NULL, NULL, NULL, 1, 1, doc.c_str() ) )
         return FALSE;
     
-    subgraph_offset_inlet = type_engine_import_mvar( env, "UGen", "inlet", TRUE );
+    if( !type_engine_import_add_ex( env, "extend/chubgraph.ck" ) ) goto error;
+    
+    doc = "Terminal for sources chucked into this ugen. ";
+    subgraph_offset_inlet = type_engine_import_mvar( env, "UGen", "inlet", TRUE, doc.c_str() );
     if( subgraph_offset_inlet == CK_INVALID_OFFSET ) goto error;
     
-    subgraph_offset_outlet = type_engine_import_mvar( env, "UGen", "outlet", TRUE );
+    doc = "Terminal for the output of this ugen. ";
+    subgraph_offset_outlet = type_engine_import_mvar( env, "UGen", "outlet", TRUE, doc.c_str() );
     if( subgraph_offset_outlet == CK_INVALID_OFFSET ) goto error;
     
     // end import
@@ -144,10 +149,13 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //-------------------------------------------------------------------------
     // init as base class: FooGen
     //-------------------------------------------------------------------------
+    doc = "Base class for chugen-based user unit generators.";
     if( !type_engine_import_ugen_begin( env, "Chugen", "UGen", env->global(),
-                                        foogen_ctor, foogen_dtor, foogen_tick, NULL, 1, 1 ) )
+                                        foogen_ctor, foogen_dtor, foogen_tick, NULL, 1, 1, doc.c_str() ) )
         return FALSE;
     
+    if( !type_engine_import_add_ex( env, "extend/chugen.ck" ) ) goto error;
+
     foogen_offset_data = type_engine_import_mvar( env, "int", "@foogen_data", FALSE );
     if( foogen_offset_data == CK_INVALID_OFFSET ) goto error;
     
@@ -159,13 +167,15 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //-------------------------------------------------------------------------
     // init as base class: UGen_Multi
     //-------------------------------------------------------------------------
+    doc = "Base class for multi-channel unit generators.";
     if( !type_engine_import_ugen_begin( env, "UGen_Multi", "UGen", env->global(),
-                                        multi_ctor, (f_dtor)NULL, (f_tick)NULL, (f_pmsg)NULL, 0, 0 ) )
+                                        multi_ctor, (f_dtor)NULL, (f_tick)NULL, (f_pmsg)NULL, 0, 0, doc.c_str() ) )
         return FALSE;
     
     // add chan
     func = make_new_mfun( "UGen", "chan", multi_cget_chan );
     func->add_arg( "int", "which" );
+    func->doc = "Returns the ugen representing a specific channel of this ugen, or null if no such channel is available.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add pan
@@ -183,16 +193,19 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: UGen_Stereo
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "UGen_Stereo", "UGen_Multi", env->global(), 
-                                        stereo_ctor, NULL, NULL, NULL, 2, 2 ) )
+    doc = "Base class for stereo unit generators.";
+    if( !type_engine_import_ugen_begin( env, "UGen_Stereo", "UGen_Multi", env->global(),
+                                        stereo_ctor, NULL, NULL, NULL, 2, 2, doc.c_str() ) )
         return FALSE;
 
     // add left
-    stereo_offset_left = type_engine_import_mvar( env, "UGen", "left", FALSE );
+    doc = "Left channel (same as .chan(0)).";
+    stereo_offset_left = type_engine_import_mvar( env, "UGen", "left", FALSE, doc.c_str() );
     if( stereo_offset_left == CK_INVALID_OFFSET ) goto error;
     
     // add right
-    stereo_offset_right = type_engine_import_mvar( env, "UGen", "right", FALSE );
+    doc = "Right channel (same as .chan(1)).";
+    stereo_offset_right = type_engine_import_mvar( env, "UGen", "right", FALSE, doc.c_str() );
     if( stereo_offset_right == CK_INVALID_OFFSET ) goto error;
 
     // add pan
@@ -202,8 +215,10 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add pan
     func = make_new_mfun( "float", "pan", stereo_ctrl_pan );
     func->add_arg( "float", "val" );
+    func->doc = "Panning between left and right channels, in range [-1,1], with -1 being far-left, 1 far-right, and 0 centered.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "pan", stereo_cget_pan );
+    func->doc = "Panning between left and right channels, in range [-1,1], with -1 being far-left, 1 far-right, and 0 centered.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
@@ -241,9 +256,12 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: pan2
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "Pan2", "UGen_Stereo", env->global(), 
-                                        NULL, NULL, NULL, NULL, 2, 2 ) )
+    doc = "Spread mono signal to stereo.";
+    if( !type_engine_import_ugen_begin( env, "Pan2", "UGen_Stereo", env->global(),
+                                        NULL, NULL, NULL, NULL, 2, 2, doc.c_str() ) )
         return FALSE;
+    
+    if( !type_engine_import_add_ex( env, "stereo/moe2.ck" ) ) goto error;
     
     // end import
     if( !type_engine_import_class_end( env ) )
@@ -252,8 +270,9 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: mix2
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "Mix2", "UGen_Stereo", env->global(), 
-                                        NULL, NULL, NULL, NULL, 2, 2 ) )
+    doc = "Unit generator for mixing stereo signal source to mono.";
+    if( !type_engine_import_ugen_begin( env, "Mix2", "UGen_Stereo", env->global(),
+                                        NULL, NULL, NULL, NULL, 2, 2, doc.c_str() ) )
         return FALSE;
     
     // end import
@@ -609,11 +628,14 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: sndbuf
     //---------------------------------------------------------------------
+    doc = "Interpolating sound buffer with single-channel output. Reads from a variety of uncompressed formats.";
     if( !type_engine_import_ugen_begin( env, "SndBuf", "UGen", env->global(), 
                                         sndbuf_ctor, sndbuf_dtor,
-                                        sndbuf_tick, NULL, 1, 1 ) )
+                                        sndbuf_tick, NULL, 1, 1, doc.c_str() ) )
         return FALSE;
 
+    if( !type_engine_import_add_ex( env, "basic/sndbuf.ck" ) ) goto error;
+    
     // add member variable
     sndbuf_offset_data = type_engine_import_mvar( env, "int", "@sndbuf_data", FALSE );
     if( sndbuf_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -621,6 +643,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add ctrl: read
     func = make_new_mfun( "string", "read", sndbuf_ctrl_read );
     func->add_arg( "string", "read" );
+    func->doc = "Load file for reading.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: read // area
     //func = make_new_mfun( "string", "read", sndbuf_cget_read );
@@ -629,6 +652,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add ctrl: write
     func = make_new_mfun( "string", "write", sndbuf_ctrl_write );
     func->add_arg( "string", "read" );
+    func->doc = "Set file for writing (currently unsupported).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: write
     //func = make_new_mfun( "string", "write", sndbuf_cget_write );
@@ -637,70 +661,87 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add ctrl: pos
     func = make_new_mfun( "int", "pos", sndbuf_ctrl_pos );
     func->add_arg( "int", "pos" );
+    func->doc = "Set position (between 0 and number of samples).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: pos
     func = make_new_mfun( "int", "pos", sndbuf_cget_pos );
+    func->doc = "Current position (between 0 and number of samples).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: loop
     func = make_new_mfun( "int", "loop", sndbuf_ctrl_loop );
     func->add_arg( "int", "loop" );
+    func->doc = "Toggle for looping file playback.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: loop
     func = make_new_mfun( "int", "loop", sndbuf_cget_loop );
+    func->doc = "Toggle for looping file playback.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: interp
     func = make_new_mfun( "int", "interp", sndbuf_ctrl_interp );
     func->add_arg( "int", "interp" );
+    func->doc = "Interpolation mode. 0: drop sample, 1: linear interpolation, 2: sinc interpolation";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: interp
     func = make_new_mfun( "int", "interp", sndbuf_cget_interp );
+    func->doc = "Interpolation mode. 0: drop sample, 1: linear interpolation, 2: sinc interpolation";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: rate
     func = make_new_mfun( "float", "rate", sndbuf_ctrl_rate );
     func->add_arg( "float", "rate" );
+    func->doc = "Playback rate (relative to file's natural speed). For example, 0.5 is half speed and 2 is twice as fast.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: rate
     func = make_new_mfun( "float", "rate", sndbuf_cget_rate );
+    func->doc = "Playback rate (relative to file's natural speed). For example, 0.5 is half speed and 2 is twice as fast.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: play
     func = make_new_mfun( "float", "play", sndbuf_ctrl_rate );
     func->add_arg( "float", "play" );
+    func->doc = "Same as .rate. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: play // good
     func = make_new_mfun( "float", "play", sndbuf_cget_rate );
+    func->doc = "Same as .rate. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: freq
     func = make_new_mfun( "float", "freq", sndbuf_ctrl_freq );
     func->add_arg( "float", "freq" );
+    func->doc = "Loop rate (in file loops per second).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: freq
     func = make_new_mfun( "float", "freq", sndbuf_cget_freq );
+    func->doc = "Loop rate (in file loops per second).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: phase
     func = make_new_mfun( "float", "phase", sndbuf_ctrl_phase );
     func->add_arg( "float", "phase" );
+    func->doc = "Phase position, normalized to [0,1).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: phase
     func = make_new_mfun( "float", "phase", sndbuf_cget_phase );
+    func->doc = "Phase position, normalized to [0,1).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: channel
     func = make_new_mfun( "int", "channel", sndbuf_ctrl_channel );
     func->add_arg( "int", "channel" );
+    func->doc = "If the sound file contains more than one channel of audio, select which channel to play.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: channel
     func = make_new_mfun( "int", "channel", sndbuf_cget_channel );
+    func->doc = "If the sound file contains more than one channel of audio, the selected channel to play.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: phase_offset
     func = make_new_mfun( "float", "phaseOffset", sndbuf_ctrl_phase_offset );
     func->add_arg( "float", "value" );
+    func->doc = "Advance the playhead by the specified phase offset in [0,1), where 0 is no advance and 1 advance the entire length of the file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: phase_offset
     // func = make_new_mfun( "float", "phaseOffset", sndbuf_cget_phase_offset );
@@ -709,26 +750,32 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add ctrl: chunks
     func = make_new_mfun( "int", "chunks", sndbuf_ctrl_chunks );
     func->add_arg( "int", "frames" );
+    func->doc = "Chunk size, in frames, for loading the file from disk. Set to 0 to disable chunking.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: chunks
     func = make_new_mfun( "int", "chunks", sndbuf_cget_chunks );
+    func->doc = "Chunk size, in frames, for loading the file from disk. 0 indicates that chunking is disabled.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add cget: samples
     func = make_new_mfun( "int", "samples", sndbuf_cget_samples );
+    func->doc = "Total number of sample frames in the file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add cget: length
     func = make_new_mfun( "dur", "length", sndbuf_cget_length );
+    func->doc = "Total length of the file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add cget: channels
     func = make_new_mfun( "int", "channels", sndbuf_cget_channels );
+    func->doc = "Number of channels available in the sound file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add cget: valueAt
     func = make_new_mfun( "float", "valueAt", sndbuf_cget_valueAt );
     func->add_arg( "int", "pos" );
+    func->doc = "Sample value at given position (in samples). ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
@@ -739,9 +786,10 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: SndBuf2
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "SndBuf2", "SndBuf", env->global(), 
+    doc = "Interpolating sound buffer with two-channel output. Reads from a variety of uncompressed formats.";
+    if( !type_engine_import_ugen_begin( env, "SndBuf2", "SndBuf", env->global(),
                                         NULL, NULL,
-                                        NULL, sndbuf_tickf, NULL, 2, 2 ) )
+                                        NULL, sndbuf_tickf, NULL, 2, 2, doc.c_str() ) )
         return FALSE;
     
     // end import
@@ -754,10 +802,15 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: Dyno
     //---------------------------------------------------------------------
+    doc = "Dynamics processor. Includes limiter, compressor, expander, noise gate, and ducker presets. ";
     if( !type_engine_import_ugen_begin( env, "Dyno", "UGen", env->global(), 
-                                        dyno_ctor, dyno_dtor, dyno_tick, NULL ) )
+                                        dyno_ctor, dyno_dtor, dyno_tick, NULL, doc.c_str() ) )
         return FALSE;
 
+    if( !type_engine_import_add_ex( env, "Dyno-compress.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "Dyno-duck.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "Dyno-limit.ck" ) ) goto error;
+    
     // add member variable
     dyno_offset_data = type_engine_import_mvar( env, "int", "@dyno_data", FALSE );
     if( dyno_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -765,98 +818,119 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add ctrl: limit
     func = make_new_mfun( "void", "limit", dyno_ctrl_limit );
     //func->add_arg( "string", "mode" );
+    func->doc = "Set parameters to default limiter values. slopeAbove = 0.1, slopeBelow = 1.0, thresh = 0.5, attackTime = 5 ms, releaseTime = 300 ms, externalSideInput = 0 (false)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: compress
     func = make_new_mfun( "void", "compress", dyno_ctrl_compress );
     //func->add_arg( "string", "mode" );
+    func->doc = "Set parameters to default compressor values.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: gate
     func = make_new_mfun( "void", "gate", dyno_ctrl_gate );
     //func->add_arg( "string", "mode" );
+    func->doc = "Set parameters to default noise gate values.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: expand
     func = make_new_mfun( "void", "expand", dyno_ctrl_expand );
     //func->add_arg( "string", "mode" );
+    func->doc = "Set parameters to default expander values.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: duck
     func = make_new_mfun( "void", "duck", dyno_ctrl_duck );
     //func->add_arg( "string", "mode" );
+    func->doc = "Set parameters ot default ducker values. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     //add ctrl: thresh
     func = make_new_mfun( "float", "thresh", dyno_ctrl_thresh );
     func->add_arg( "float", "thresh" );
+    func->doc = "Threshold above which to stop using slopeBelow and start using slopeAbove to determine output gain vs input gain. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add cget: thresh
     func = make_new_mfun( "float", "thresh", dyno_cget_thresh );
+    func->doc = "Threshold above which to stop using slopeBelow and start using slopeAbove to determine output gain vs input gain. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     //add ctrl: attackTime
     func = make_new_mfun( "dur", "attackTime", dyno_ctrl_attackTime );
     func->add_arg( "dur", "aTime" );
+    func->doc = "Duration for the envelope to move linearly from current value to the absolute value of the signal's amplitude.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     //add cget: attackTime
     func = make_new_mfun( "dur", "attackTime", dyno_ctrl_attackTime );
+    func->doc = "Duration for the envelope to move linearly from current value to the absolute value of the signal's amplitude.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     //add ctrl: releaseTime
     func = make_new_mfun( "dur", "releaseTime", dyno_ctrl_releaseTime );
     func->add_arg( "dur", "rTime" );
+    func->doc = "Duration for the envelope to decay down to around 1/10 of its current amplitude, if not brought back up by the signal.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     //add ctrl: releaseTime
     func = make_new_mfun( "dur", "releaseTime", dyno_ctrl_releaseTime );
+    func->doc = "Duration for the envelope to decay down to around 1/10 of its current amplitude, if not brought back up by the signal.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     //add ctrl: ratio
     func = make_new_mfun( "float", "ratio", dyno_ctrl_ratio );
     func->add_arg( "float", "ratio" );
+    func->doc = "Alternate way of setting slopeAbove and slopeBelow; sets slopeBelow to 1.0 and slopeAbove to 1.0 / ratio.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     //add cget: ratio
     func = make_new_mfun( "float", "ratio", dyno_cget_ratio );
+    func->doc = "Alternate way of setting slopeAbove and slopeBelow; sets slopeBelow to 1.0 and slopeAbove to 1.0 / ratio.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     //add ctrl: slopeBelow
     func = make_new_mfun( "float", "slopeBelow", dyno_ctrl_slopeBelow );
     func->add_arg( "float", "slopeBelow" );
+    func->doc = "Determines the slope of the output gain vs the input envelope's level when the envelope is below thresh. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     //add cget: slopeBelow
     func = make_new_mfun( "float", "slopeBelow", dyno_cget_slopeBelow );
+    func->doc = "Determines the slope of the output gain vs the input envelope's level when the envelope is below thresh. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     //add ctrl: slopeAbove
     func = make_new_mfun( "float", "slopeAbove", dyno_ctrl_slopeAbove );
     func->add_arg( "float", "slopeAbove" );
+    func->doc = "Determines the slope of the output gain vs the input envelope's level when the envelope is above thresh. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     //add cget: slopeAbove
     func = make_new_mfun( "float", "slopeAbove", dyno_cget_slopeAbove );
+    func->doc = "Determines the slope of the output gain vs the input envelope's level when the envelope is above thresh. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     //add ctrl: sideInput
     func = make_new_mfun( "float", "sideInput", dyno_ctrl_sideInput );
     func->add_arg( "float", "sideInput" );
+    func->doc = "If externalSideInput is set to true, replaces the signal being processed as the input to the amplitude envelope.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     //add cget: sideInput
     func = make_new_mfun( "float", "sideInput", dyno_cget_sideInput );
+    func->doc = "If externalSideInput is set to true, replaces the signal being processed as the input to the amplitude envelope.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     //add ctrl: externalSideInput
     func = make_new_mfun( "int", "externalSideInput", dyno_ctrl_externalSideInput );
     func->add_arg( "int", "externalSideInput" );
+    func->doc = "Set to true to cue the amplitude envelope off of sideInput instead of the input signal. Note that this means you will need to manually set sideInput every so often. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     //add cget: externalSideInput
     func = make_new_mfun( "int", "externalSideInput", dyno_cget_externalSideInput );
+    func->doc = "Set to true to cue the amplitude envelope off of sideInput instead of the input signal. Note that this means you will need to manually set sideInput every so often. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
