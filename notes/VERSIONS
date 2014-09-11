@@ -1,4 +1,35 @@
 
+1.3.5.0
+---
+  - (added) new functions in Std
+            - int Std.clamp(int v, int min, int max)
+              Return v constrained to [min, max]
+            - float Std.clampf(float v, float min, float max)
+              Return v constrained to [min, max]
+            - float Std.scalef(float v, float srcmin, float srcmax, 
+                               float dstmin, float dstmax)
+              Scale v to range [dstmin, dstmax]. v is assumed to have the range
+              [srcmin, srcmax]. 
+            - float Std.dbtolin(float x)
+              Convert x dB to linear value
+            - float Std.lintodb(float x)
+              Convert linear value x to dB
+  - (added) MidiIn.open(string)/MidiOut.open(string) will open devices matched 
+            by partial match if no full device-name match is found. 
+  - (added) examples/osc/osc_dump.ck example 
+  - (fixed) real-time audio hiccuping/underrun when loading files in SndBuf
+            - SndBuf .chunks now uses .chunks as buffer size for dynamic loading
+            - files are loaded .chunks samples at a time
+            - memory for the file is divided into buffers of .chunks samples
+            - chunk size defaults to 32768 samples
+  - (fixed) DLL issue on Win32 command line build
+  - (fixed) non-void functions implicitly return 0/null if no return statement
+  - (fixed) --probe crashes and other crashes related to error logging
+  - (fixed) include trailing slash in me.dir() and friends
+  - (fixed) fix me.path()/me.dir() for input paths with implicit .ck extension
+  - (fixed) better error messages for OscIn/OscOut
+  - (fixed) rare threading bug for OTF commands
+
 1.3.4.0
 ---
   - (added) chuck operator connects between arrays of ugens, multi-channel 
