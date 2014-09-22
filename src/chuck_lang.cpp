@@ -624,15 +624,27 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
     
     // add READ_INT32
     if( !type_engine_import_svar( env, "int", "READ_INT32",
-                                 TRUE, (t_CKUINT)&Chuck_IO::READ_INT32 ) ) goto error;
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT32 ) ) goto error;
     
     // add READ_INT16
     if( !type_engine_import_svar( env, "int", "READ_INT16",
-                                 TRUE, (t_CKUINT)&Chuck_IO::READ_INT16 ) ) goto error;
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT16 ) ) goto error;
     
     // add READ_INT8
     if( !type_engine_import_svar( env, "int", "READ_INT8",
-                                 TRUE, (t_CKUINT)&Chuck_IO::READ_INT8 ) ) goto error;
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT8 ) ) goto error;
+    
+    // add INT32
+    if( !type_engine_import_svar( env, "int", "INT32",
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT32 ) ) goto error;
+    
+    // add INT16
+    if( !type_engine_import_svar( env, "int", "INT16",
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT16 ) ) goto error;
+    
+    // add INT8
+    if( !type_engine_import_svar( env, "int", "INT8",
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT8 ) ) goto error;
     
     // add MODE_SYNC
     if( !type_engine_import_svar( env, "int", "MODE_SYNC",
@@ -767,6 +779,12 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
     // add write(int)
     func = make_new_mfun( "void", "write", fileio_writeint );
     func->add_arg( "int", "val" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add write(int,flags)
+    func = make_new_mfun( "void", "write", fileio_writeintflags );
+    func->add_arg( "int", "val" );
+    func->add_arg( "int", "flags" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add write(float)
@@ -2674,7 +2692,7 @@ CK_DLL_MFUN( fileio_readline )
 CK_DLL_MFUN( fileio_readint )
 {
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-    t_CKINT defaultflags = Chuck_IO::READ_INT32;
+    t_CKINT defaultflags = Chuck_IO::INT32;
     
     /* (ATODO: doesn't look like asynchronous reading will work)
      if (f->mode() == Chuck_IO::MODE_ASYNC)
@@ -2801,6 +2819,40 @@ CK_DLL_MFUN( fileio_writeint )
     }
 }
 
+CK_DLL_MFUN( fileio_writeintflags )
+{
+    t_CKINT val = GET_NEXT_INT(ARGS);
+    t_CKINT flags = GET_NEXT_INT(ARGS);
+    
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    if (f->mode() == Chuck_IO::MODE_ASYNC)
+    {
+        // TODO: pass flags in args
+        // set up arguments
+        Chuck_IO::async_args *args = new Chuck_IO::async_args;
+        args->RETURN = (void *)RETURN;
+        args->fileio_obj = f;
+        args->intArg = val;
+        // set shred to wait for I/O completion
+        // TODO: make sure using g_vm is OK
+        f->m_asyncEvent->wait( SHRED, g_vm );
+        // start thread
+        bool ret = f->m_thread->start( f->writeInt_thread, (void *)args );
+        if (!ret) {
+            // for some reason, the XThread object needs to be
+            // deleted and reconstructed every time after call #375
+            delete f->m_thread;
+            f->m_thread = new XThread;
+            ret = f->m_thread->start( f->writeInt_thread, (void *)args );
+            if (!ret) {
+                EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
+            }
+        }
+    } else {
+        f->write(val, flags);
+    }
+}
+
 CK_DLL_MFUN( fileio_writefloat )
 {
     t_CKFLOAT val = GET_NEXT_FLOAT(ARGS);
@@ -2892,7 +2944,7 @@ CK_DLL_MFUN( chout_readline )
 CK_DLL_MFUN( chout_readint )
 {
     Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
-    RETURN->v_int = c->readInt( Chuck_IO::READ_INT32 );
+    RETURN->v_int = c->readInt( Chuck_IO::INT32 );
 }
 
 CK_DLL_MFUN( chout_readintflags )
@@ -3011,7 +3063,7 @@ CK_DLL_MFUN( cherr_readline )
 CK_DLL_MFUN( cherr_readint )
 {
     Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
-    RETURN->v_int = c->readInt( Chuck_IO::READ_INT32 );
+    RETURN->v_int = c->readInt( Chuck_IO::INT32 );
 }
 
 CK_DLL_MFUN( cherr_readintflags )
