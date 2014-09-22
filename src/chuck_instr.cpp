@@ -5505,7 +5505,7 @@ void Chuck_Instr_IO_in_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( *(ppIO) == NULL ) goto null_pointer;
     
     // read into the variable
-    **(t_CKINT **)(sp+1) = (*ppIO)->readInt( Chuck_IO::READ_INT32 );
+    **(t_CKINT **)(sp+1) = (*ppIO)->readInt( Chuck_IO::INT32 );
     
     // push the IO
     push_( sp, (t_CKINT)(*(ppIO)) );
