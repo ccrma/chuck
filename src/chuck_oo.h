@@ -200,6 +200,8 @@ public:
     virtual t_CKINT find( const std::string & key ) = 0; // find
     virtual t_CKINT erase( const std::string & key ) = 0; // erase
     virtual void clear( ) = 0; // clear
+    
+    Chuck_Type *m_array_type;
 };
 
 
