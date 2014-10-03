@@ -2859,7 +2859,7 @@ CK_DLL_TICK( sndbuf_tick )
     // we're ticking once per sample ( system )
     // curf in samples;
     
-    if( !d->loop && d->curf >= d->num_frames )
+    if( !d->loop && d->curf > d->num_frames )
     {
         *out = 0;
         return TRUE;
