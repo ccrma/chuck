@@ -741,7 +741,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
             {
                 // recurse
                 // TODO: max depth?
-                if( strncmp(de->d_name, ".", sizeof(".") != 0) &&
+                if( strncmp(de->d_name, ".", sizeof(".")) != 0 &&
                     strncmp(de->d_name, "..", sizeof("..")) != 0 )
                 {
                     std::string absolute_path = std::string(directory) + "/" + de->d_name;
