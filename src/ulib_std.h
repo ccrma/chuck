@@ -61,6 +61,11 @@ CK_DLL_SFUN( powtodb_impl );
 CK_DLL_SFUN( rmstodb_impl );
 CK_DLL_SFUN( dbtopow_impl );
 CK_DLL_SFUN( dbtorms_impl );
+CK_DLL_SFUN( dbtolin_impl );
+CK_DLL_SFUN( lintodb_impl );
+CK_DLL_SFUN( clamp_impl );
+CK_DLL_SFUN( clampf_impl );
+CK_DLL_SFUN( scalef_impl );
 
 
 

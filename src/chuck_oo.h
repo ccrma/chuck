@@ -200,6 +200,8 @@ public:
     virtual t_CKINT find( const std::string & key ) = 0; // find
     virtual t_CKINT erase( const std::string & key ) = 0; // erase
     virtual void clear( ) = 0; // clear
+    
+    Chuck_Type *m_array_type;
 };
 
 
@@ -404,13 +406,14 @@ public:
     // writing
     virtual void write( const std::string & val ) = 0;
     virtual void write( t_CKINT val ) = 0;
+    virtual void write( t_CKINT val, t_CKINT flags ) = 0;
     virtual void write( t_CKFLOAT val ) = 0;
     
     // constants
 public:
-    static const t_CKINT READ_INT32;
-    static const t_CKINT READ_INT16;
-    static const t_CKINT READ_INT8;
+    static const t_CKINT INT32;
+    static const t_CKINT INT16;
+    static const t_CKINT INT8;
     
     // asynchronous I/O members
     static const t_CKINT MODE_SYNC;
@@ -475,6 +478,7 @@ public:
     // writing
     virtual void write( const std::string & val );
     virtual void write( t_CKINT val );
+    virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
     
     // writing -- async
@@ -540,6 +544,7 @@ public:
     // writing
     virtual void write( const std::string & val );
     virtual void write( t_CKINT val );
+    virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
 };
 
@@ -577,6 +582,7 @@ public:
     // writing
     virtual void write( const std::string & val );
     virtual void write( t_CKINT val );
+    virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
 };
 

@@ -317,7 +317,7 @@ t_CKINT Chuck_IO_Serial::readInt( t_CKINT flags )
     
     if( m_flags & Chuck_IO_File::TYPE_BINARY )
     {
-        if( flags & READ_INT8 )
+        if( flags & INT8 )
         {
             uint8_t byte = 0;
             if(!fread(&byte, 1, 1, m_cfd))
@@ -325,7 +325,7 @@ t_CKINT Chuck_IO_Serial::readInt( t_CKINT flags )
             
             i = byte;
         }
-        else if( flags & READ_INT16 )
+        else if( flags & INT16 )
         {
             uint16_t word = 0;
             if(!fread(&word, 2, 1, m_cfd))
@@ -333,7 +333,7 @@ t_CKINT Chuck_IO_Serial::readInt( t_CKINT flags )
             
             i = word;
         }
-        else if( flags & READ_INT32 )
+        else if( flags & INT32 )
         {
             uint32_t dword = 0;
             if(!fread(&dword, 4, 1, m_cfd))
@@ -1512,8 +1512,10 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     // log
     EM_log( CK_LOG_SEVERE, "class 'SerialIO'" );
     
+    std::string doc = "Handles reading and writing for serial input/output devices, such as Arduino.";
+    
     Chuck_Type * type = type_engine_import_class_begin( env, "SerialIO", "IO",
-                                                     env->global(), serialio_ctor, serialio_dtor );
+                                                        env->global(), serialio_ctor, serialio_dtor, doc.c_str() );
     // TODO: ctor/dtor?
     if( !type )
         return FALSE;
@@ -1523,12 +1525,14 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     
     // add list()
     func = make_new_sfun( "string[]", "list", serialio_list );
+    func->doc = "Return list of available serial devices.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
     
     func = make_new_mfun("int", "open", serialio_open);
     func->add_arg("int", "i");
     func->add_arg("int", "baud");
     func->add_arg("int", "mode");
+    func->doc = "Open serial device i with specified baud rate and mode (binary or ASCII).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     func = make_new_mfun("void", "close", serialio_close);
@@ -1544,79 +1548,102 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     
     // add onLine
     func = make_new_mfun("SerialIO", "onLine", serialio_onLine);
+    func->doc = "Wait for one line (ASCII mode only).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add onByte
     func = make_new_mfun("SerialIO", "onByte", serialio_onByte);
+    func->doc = "Wait for one byte (binary mode only).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add onBytes
     func = make_new_mfun("SerialIO", "onBytes", serialio_onBytes);
     func->add_arg("int", "num");
+    func->doc = "Wait for requested number of bytes (binary mode only).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add onInts
     func = make_new_mfun("SerialIO", "onInts", serialio_onInts);
     func->add_arg("int", "num");
+    func->doc = "Wait for requested number of ints (ASCII or binary mode).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add onInts
     func = make_new_mfun("SerialIO", "onFloats", serialio_onFloats);
     func->add_arg("int", "num");
+    func->doc = "Wait for requested number of floats (ASCII or binary mode).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add getLine
     func = make_new_mfun("string", "getLine", serialio_getLine);
+    func->doc = "Get next requested line.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add getByte
     func = make_new_mfun("int", "getByte", serialio_getByte);
+    func->doc = "Get next requested byte. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add getBytes
     func = make_new_mfun("int[]", "getBytes", serialio_getBytes);
+    func->doc = "Get next requested number of bytes. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add getInts
     func = make_new_mfun("int[]", "getInts", serialio_getInts);
+    func->doc = "Get next requested number of integers. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add writeByte
     func = make_new_mfun("void", "writeByte", serialio_writeByte);
     func->add_arg("int", "b");
+    func->doc = "Write a single byte.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add writeBytes
     func = make_new_mfun("void", "writeBytes", serialio_writeBytes);
     func->add_arg("int[]", "b");
+    func->doc = "Write array of bytes.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add setBaudRate
     func = make_new_mfun("int", "baudRate", serialio_setBaudRate);
     func->add_arg("int", "r");
+    func->doc = "Set baud rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add getBaudRate
     func = make_new_mfun("int", "baudRate", serialio_getBaudRate);
+    func->doc = "Get current baud rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add baud rate constants
-    type_engine_import_svar(env, "int", "B2400",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_2400);
-    type_engine_import_svar(env, "int", "B4800",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_4800);
-    type_engine_import_svar(env, "int", "B9600",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_9600);
-    type_engine_import_svar(env, "int", "B19200",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_19200);
-    type_engine_import_svar(env, "int", "B38400",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_38400);
-    type_engine_import_svar(env, "int", "B7200",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_7200);
-    type_engine_import_svar(env, "int", "B14400",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_14400);
-    type_engine_import_svar(env, "int", "B28800",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_28800);
-    type_engine_import_svar(env, "int", "B57600",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_57600);
-    type_engine_import_svar(env, "int", "B76800",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_76800);
-    type_engine_import_svar(env, "int", "B115200", TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_115200);
-    type_engine_import_svar(env, "int", "B230400", TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_230400);
+    type_engine_import_svar(env, "int", "B2400",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_2400, "2400 baud");
+    type_engine_import_svar(env, "int", "B4800",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_4800, "4800 baud");
+    type_engine_import_svar(env, "int", "B9600",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_9600, "9600 baud");
+    type_engine_import_svar(env, "int", "B19200",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_19200, "19200 baud");
+    type_engine_import_svar(env, "int", "B38400",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_38400, "38400 baud");
+    type_engine_import_svar(env, "int", "B7200",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_7200, "7200 baud");
+    type_engine_import_svar(env, "int", "B14400",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_14400, "14400 baud");
+    type_engine_import_svar(env, "int", "B28800",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_28800, "28800 baud");
+    type_engine_import_svar(env, "int", "B57600",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_57600, "57600 baud");
+    type_engine_import_svar(env, "int", "B76800",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_76800, "76800 baud");
+    type_engine_import_svar(env, "int", "B115200", TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_115200, "115200 baud");
+    type_engine_import_svar(env, "int", "B230400", TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_230400, "230400 baud");
 
-    type_engine_import_svar(env, "int", "BINARY", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_BINARY);
-    type_engine_import_svar(env, "int", "ASCII", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_ASCII);
+    type_engine_import_svar(env, "int", "BINARY", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_BINARY, "Binary mode");
+    type_engine_import_svar(env, "int", "ASCII", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_ASCII, "ASCII mode");
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "serial/byte.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "serial/bytes.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "serial/ints-bin.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "serial/ints.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "serial/lines.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "serial/list.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "serial/write-bytes.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "serial/write.ck" ) ) goto error;
+    
     // end the class import
     type_engine_import_class_end( env );
     

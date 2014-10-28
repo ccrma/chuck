@@ -247,10 +247,38 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // add dbtopow
     QUERY->add_sfun( QUERY, dbtopow_impl, "float", "dbtopow" ); //! decibel to linear
     QUERY->add_arg( QUERY, "float", "value" );
-
+    
     // add dbtorms
     QUERY->add_sfun( QUERY, dbtorms_impl, "float", "dbtorms" ); //! decibel to rms
     QUERY->add_arg( QUERY, "float", "value" );
+    
+    // add dbtolin
+    QUERY->add_sfun( QUERY, dbtolin_impl, "float", "dbtolin" ); //! decibel to linear
+    QUERY->add_arg( QUERY, "float", "value" );
+    
+    // add lintodb
+    QUERY->add_sfun( QUERY, lintodb_impl, "float", "lintodb" ); //! linear to decibel
+    QUERY->add_arg( QUERY, "float", "value" );
+    
+    // add clamp
+    QUERY->add_sfun( QUERY, clamp_impl, "int", "clamp" ); //! clamp to range (int)
+    QUERY->add_arg( QUERY, "int", "value" );
+    QUERY->add_arg( QUERY, "int", "min" );
+    QUERY->add_arg( QUERY, "int", "max" );
+    
+    // add clampf
+    QUERY->add_sfun( QUERY, clampf_impl, "float", "clampf" ); //! clamp to range (float)
+    QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->add_arg( QUERY, "float", "min" );
+    QUERY->add_arg( QUERY, "float", "max" );
+    
+    // add scalef
+    QUERY->add_sfun( QUERY, scalef_impl, "float", "scalef" ); //! scale from source range to dest range (float)
+    QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->add_arg( QUERY, "float", "srcmin" );
+    QUERY->add_arg( QUERY, "float", "srcmax" );
+    QUERY->add_arg( QUERY, "float", "dstmin" );
+    QUERY->add_arg( QUERY, "float", "dstmax" );
 
     // finish class
     QUERY->end_class( QUERY );
@@ -739,6 +767,51 @@ CK_DLL_SFUN( dbtorms_impl )
 {
     t_CKFLOAT v = GET_CK_FLOAT(ARGS);
     RETURN->v_float = dbtorms(v);
+}
+
+CK_DLL_SFUN( dbtolin_impl )
+{
+    t_CKFLOAT v = GET_CK_FLOAT(ARGS);
+    RETURN->v_float = pow(10.0, v/20.0);
+}
+
+CK_DLL_SFUN( lintodb_impl )
+{
+    t_CKFLOAT v = GET_CK_FLOAT(ARGS);
+    RETURN->v_float = 20.0*log10(v);
+}
+
+CK_DLL_SFUN( clamp_impl )
+{
+    t_CKINT v = GET_NEXT_INT(ARGS);
+    t_CKINT min = GET_NEXT_INT(ARGS);
+    t_CKINT max = GET_NEXT_INT(ARGS);
+    
+    if(v < min) RETURN->v_int = min;
+    else if( v > max) RETURN->v_int = max;
+    else RETURN->v_int = v;
+}
+
+CK_DLL_SFUN( clampf_impl )
+{
+    t_CKFLOAT v = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT min = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT max = GET_NEXT_FLOAT(ARGS);
+    
+    if(v < min) RETURN->v_float = min;
+    else if( v > max) RETURN->v_float = max;
+    else RETURN->v_float = v;
+}
+
+CK_DLL_SFUN( scalef_impl )
+{
+    t_CKFLOAT v = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT srcmin = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT srcmax = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT dstmin = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT dstmax = GET_NEXT_FLOAT(ARGS);
+    
+    RETURN->v_float = dstmin + (dstmax-dstmin) * ((v-srcmin)/(srcmax-srcmin));
 }
 
 

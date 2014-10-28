@@ -51,9 +51,9 @@ using namespace std;
 
 // initialize
 t_CKBOOL Chuck_VM_Object::our_locks_in_effect = TRUE;
-const t_CKINT Chuck_IO::READ_INT32 = 0x1;
-const t_CKINT Chuck_IO::READ_INT16 = 0x2;
-const t_CKINT Chuck_IO::READ_INT8 = 0x4;
+const t_CKINT Chuck_IO::INT32 = 0x1;
+const t_CKINT Chuck_IO::INT16 = 0x2;
+const t_CKINT Chuck_IO::INT8 = 0x4;
 const t_CKINT Chuck_IO::MODE_SYNC = 0;
 const t_CKINT Chuck_IO::MODE_ASYNC = 1;
 const t_CKINT Chuck_IO_File::FLAG_READ_WRITE = 0x8;
@@ -2017,7 +2017,7 @@ t_CKINT Chuck_IO_File::readInt( t_CKINT flags )
         
     } else if (m_flags & TYPE_BINARY) {
         // binary
-        if (flags & Chuck_IO::READ_INT32) {
+        if (flags & Chuck_IO::INT32) {
             // 32-bit
             t_CKINT i;
             m_io.read( (char *)&i, 4 );
@@ -2026,7 +2026,7 @@ t_CKINT Chuck_IO_File::readInt( t_CKINT flags )
             else if (m_io.fail())
                 EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
             return i;
-        } else if (flags & Chuck_IO::READ_INT16) {
+        } else if (flags & Chuck_IO::INT16) {
             // 16-bit
             // int16_t i;
             // issue: 64-bit
@@ -2037,7 +2037,7 @@ t_CKINT Chuck_IO_File::readInt( t_CKINT flags )
             else if (m_io.fail())
                 EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
             return (t_CKINT) i;
-        } else if (flags & Chuck_IO::READ_INT8) {
+        } else if (flags & Chuck_IO::INT8) {
             // 8-bit
             // int8_t i;
             // issue: 64-bit
@@ -2308,6 +2308,49 @@ void Chuck_IO_File::write( t_CKINT val )
 
 
 //-----------------------------------------------------------------------------
+// name: write( t_CKINT val )
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_IO_File::write( t_CKINT val, t_CKINT flags )
+{
+    // sanity
+    if (!(m_io.is_open())) {
+        EM_error3( "[chuck](via FileIO): cannot write: no file open" );
+        return;
+    }
+    
+    if (m_io.fail()) {
+        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+        return;
+    }
+    
+    if ( m_dir )
+    {
+        EM_error3( "[chuck](via FileIO): cannot write on directory" );
+        return;
+    }
+    
+    if (m_flags & TYPE_ASCII) {
+        m_io << val;
+    } else if (m_flags & TYPE_BINARY) {
+        int nBytes = 4;
+        if(flags & INT8) nBytes = 1;
+        else if(flags & INT16) nBytes = 2;
+        else if(flags & INT32) nBytes = 4;
+        m_io.write( (char *)&val, nBytes );
+    } else {
+        EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
+    }
+    
+    if (m_io.fail()) { // check both before and after write if stream is ok
+        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: write( t_CKFLOAT val )
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -2438,6 +2481,9 @@ void Chuck_IO_Chout::write( const std::string & val )
 void Chuck_IO_Chout::write( t_CKINT val )
 { cout << val; }
 
+void Chuck_IO_Chout::write( t_CKINT val, t_CKINT flags )
+{ cout << val; }
+
 void Chuck_IO_Chout::write( t_CKFLOAT val )
 { cout << val; }
 
@@ -2500,6 +2546,9 @@ void Chuck_IO_Cherr::write( const std::string & val )
 
 void Chuck_IO_Cherr::write( t_CKINT val )
 { cerr << val; }
+
+void Chuck_IO_Cherr::write( t_CKINT val, t_CKINT flags )
+{ cout << val; }
 
 void Chuck_IO_Cherr::write( t_CKFLOAT val )
 { cerr << val; }

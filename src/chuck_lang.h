@@ -233,6 +233,7 @@ CK_DLL_MFUN( fileio_eof );
 CK_DLL_MFUN( fileio_more );
 CK_DLL_MFUN( fileio_writestring );
 CK_DLL_MFUN( fileio_writeint );
+CK_DLL_MFUN( fileio_writeintflags );
 CK_DLL_MFUN( fileio_writefloat );
 
 

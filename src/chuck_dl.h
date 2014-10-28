@@ -290,6 +290,8 @@ typedef Chuck_DL_MainThreadHook * (CK_DLL_CALL * f_create_main_thread_hook)( Chu
 // documentation
 // set current class documentation
 typedef t_CKBOOL (CK_DLL_CALL * f_doc_class)( Chuck_DL_Query * query, const char * doc );
+// add example of current class
+typedef t_CKBOOL (CK_DLL_CALL * f_add_example)( Chuck_DL_Query * query, const char * ex );
 // set current function documentation
 typedef t_CKBOOL (CK_DLL_CALL * f_doc_func)( Chuck_DL_Query * query, const char * doc );
 // set last mvar documentation
@@ -365,6 +367,7 @@ struct Chuck_DL_Query
     f_doc_class doc_class;
     f_doc_func doc_func;
     f_doc_var doc_var;
+    f_add_example add_ex;
     
     // constructor
     Chuck_DL_Query();
@@ -415,6 +418,7 @@ struct Chuck_DL_Class
     t_CKUINT ugen_num_in, ugen_num_out;
     
     std::string doc;
+    std::vector<std::string> examples;
     
     // constructor
     Chuck_DL_Class() { dtor = NULL; ugen_tick = NULL; ugen_tickf = NULL; ugen_pmsg = NULL; uana_tock = NULL; ugen_pmsg = NULL; current_mvar_offset = 0; ugen_num_in = ugen_num_out = 0; }
