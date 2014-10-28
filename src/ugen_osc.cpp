@@ -65,11 +65,15 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     type_engine_register_deprecate( env, "pulseosc", "PulseOsc" );
     type_engine_register_deprecate( env, "sqrosc", "SqrOsc" );
 
+    std::string doc;
+    
     //---------------------------------------------------------------------
     // init as base class: osc
     //---------------------------------------------------------------------
+    doc = "Base class for simple oscillator unit generators.";
     if( !type_engine_import_ugen_begin( env, "Osc", "UGen", env->global(), 
-                                        osc_ctor, osc_dtor, osc_tick, osc_pmsg ) )
+                                        osc_ctor, osc_dtor, osc_tick, osc_pmsg,
+                                        doc.c_str() ) )
         return FALSE;
 
     // add member variable
@@ -79,17 +83,21 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     // add ctrl: freq
     func = make_new_mfun( "float", "freq", osc_ctrl_freq );
     func->add_arg( "float", "hz" );
+    func->doc = "Frequency of oscillator in Hertz (cycles per second).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "freq", osc_cget_freq );
+    func->doc = "Frequency of oscillator in Hertz (cycles per second).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: period
     func = make_new_mfun( "dur", "period", osc_ctrl_period );
     func->add_arg( "dur", "value" );
+    func->doc = "Period of oscillator (inverse of frequency).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "period", osc_cget_period );
+    func->doc = "Period of oscillator (inverse of frequency).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-
+    
     // add ctrl: sfreq ( == freq ) 
     func = make_new_mfun( "float", "sfreq", osc_ctrl_freq );
     func->add_arg( "float", "hz" );
@@ -98,15 +106,19 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     // add ctrl: phase
     func = make_new_mfun( "float", "phase", osc_ctrl_phase );
     func->add_arg( "float", "phase" );
+    func->doc = "Oscillator phase, in range [0,1). ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "phase", osc_cget_phase );
+    func->doc = "Oscillator phase, in range [0,1). ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: sync
     func = make_new_mfun( "int", "sync", osc_ctrl_sync );
     func->add_arg( "int", "type" );
+    func->doc = "Mode for input (if any). 0: sync frequency to input, 1: sync phase to input, 2: frequency modulation (add input to set frequency)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "sync", osc_cget_sync );
+    func->doc = "Mode for input (if any). 0: sync frequency to input, 1: sync phase to input, 2: frequency modulation (add input to set frequency)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -116,8 +128,10 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // phasor
     //---------------------------------------------------------------------
+    doc = "Phasor oscillator. Linearly rises from 0 to 1. Can be used as a phase control.";
     if( !type_engine_import_ugen_begin( env, "Phasor", "Osc", env->global(), 
-                                        NULL, NULL, osc_tick, NULL ) )
+                                        NULL, NULL, osc_tick, NULL,
+                                        doc.c_str() ) )
         return FALSE;
 
     // end the class import
@@ -126,9 +140,13 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // sinosc
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "SinOsc", "Osc", env->global(), 
-                                        NULL, NULL, sinosc_tick, NULL ) )
+    doc = "Sine wave oscillator.";
+    if( !type_engine_import_ugen_begin( env, "SinOsc", "Osc", env->global(),
+                                        NULL, NULL, sinosc_tick, NULL,
+                                        doc.c_str() ) )
         return FALSE;
+    
+    type_engine_import_add_ex( env, "basic/whirl.ck" );
 
     // end the class import
     type_engine_import_class_end( env );
@@ -137,16 +155,20 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // triosc - triangle oscillator
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "TriOsc", "Osc", env->global(), 
-                                        NULL, NULL, triosc_tick, NULL ) )
+    doc = "Triangle wave oscillator.";
+    if( !type_engine_import_ugen_begin( env, "TriOsc", "Osc", env->global(),
+                                        NULL, NULL, triosc_tick, NULL,
+                                        doc.c_str() ) )
         return FALSE;
-
+    
     func = make_new_mfun( "float", "width", osc_ctrl_width );
     func->add_arg( "float", "width" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    func->doc = "Width of triangle wave (ratio of rise time to fall time).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "width", osc_cget_width );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    func->doc = "Width of triangle wave (ratio of rise time to fall time).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -155,16 +177,20 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // sawosc - sawtooth oscillator  (  0 | 1  triangle wave  )
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "SawOsc", "TriOsc", env->global(), 
-                                        sawosc_ctor, NULL, NULL, NULL ) )
+    doc = "Sawtooth wave oscillator.";
+    if( !type_engine_import_ugen_begin( env, "SawOsc", "TriOsc", env->global(),
+                                        sawosc_ctor, NULL, NULL, NULL,
+                                        doc.c_str() ) )
         return FALSE;
 
     func = make_new_mfun( "float", "width", sawosc_ctrl_width );
     func->add_arg( "float", "width" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    func->doc = "Whether falling sawtooth wave (0) or rising sawtooth wave (1).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "width", osc_cget_width );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    func->doc = "Whether falling sawtooth wave (0) or rising sawtooth wave (1).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -173,16 +199,20 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // pulseosc - pulse-width oscillator
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "PulseOsc", "Osc", env->global(), 
-                                        NULL, NULL, pulseosc_tick, NULL ) )
+    doc = "Pulse width oscillator.";
+    if( !type_engine_import_ugen_begin( env, "PulseOsc", "Osc", env->global(),
+                                        NULL, NULL, pulseosc_tick, NULL,
+                                        doc.c_str() ) )
         return FALSE;
 
     func = make_new_mfun( "float", "width", osc_ctrl_width );
     func->add_arg( "float", "width" );
+    func->doc = "Length of duty cycle [0,1).";
     if( !type_engine_import_mfun( env, func ) ) goto error;    
 
     func = make_new_mfun( "float", "width", osc_cget_width );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    func->doc = "Length of duty cycle [0,1).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -191,11 +221,14 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // sqrosc - square_wave oscillator ( 0.5 pulse ) 
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "SqrOsc", "PulseOsc", env->global(), 
-                                        sqrosc_ctor, NULL, NULL, NULL ) )
+    doc = "Square wave oscillator (pulse with 0.5 duty cycle).";
+    if( !type_engine_import_ugen_begin( env, "SqrOsc", "PulseOsc", env->global(),
+                                        sqrosc_ctor, NULL, NULL, NULL,
+                                        doc.c_str() ) )
         return FALSE;
-
+    
     func = make_new_mfun( "float", "width", sqrosc_ctrl_width );
+    func->doc = "Length of duty cycle (always 0.5)";
     if( !type_engine_import_mfun( env, func ) ) goto error;    
 
     // end the class import

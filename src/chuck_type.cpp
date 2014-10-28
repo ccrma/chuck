@@ -4941,7 +4941,7 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
 // name: type_engine_import_ugen_begin()
 // desc: old version (added 1.3.0.0)
 //-----------------------------------------------------------------------------
-Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, 
+Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
                                            const char * parent, Chuck_Namespace * where,
                                            f_ctor pre_ctor, f_dtor dtor,
                                            f_tick tick, f_pmsg pmsg,
@@ -4949,8 +4949,26 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
                                            const char * doc )
 {
     return type_engine_import_ugen_begin( env, name, parent, where,
-                                         pre_ctor, dtor, tick, NULL, pmsg, 
+                                         pre_ctor, dtor, tick, NULL, pmsg,
                                          num_ins, num_outs, doc );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_import_ugen_begin()
+// desc: doc version (added 1.3.5.0)
+//-----------------------------------------------------------------------------
+Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
+                                            const char * parent, Chuck_Namespace * where,
+                                            f_ctor pre_ctor, f_dtor dtor,
+                                            f_tick tick, f_pmsg pmsg,
+                                            const char * doc )
+{
+    return type_engine_import_ugen_begin( env, name, parent, where,
+                                          pre_ctor, dtor, tick, NULL, pmsg,
+                                          0xffffffff, 0xffffffff, doc );
 }
 
 
@@ -5243,6 +5261,28 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
     return TRUE;
 }
 
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_import_add_ex()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_import_add_ex( Chuck_Env * env, const char * ex )
+{
+    // make sure we are in class
+    if( !env->class_def )
+    {
+        // error
+        EM_error2( 0,
+                   "import error: import_add_ex '%s' invoked between begin/end",
+                   ex );
+        return FALSE;
+    }
+    
+    env->class_def->examples.push_back( ex );
+    
+    return TRUE;
+}
 
 
 
@@ -5970,6 +6010,12 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
     {
         Chuck_DL_Func * func = c->sfuns[j];
         if(!type_engine_import_sfun(env, func)) goto error;
+    }
+    
+    // import examples (if any)
+    for(j = 0; j < c->examples.size(); j++)
+    {
+        if(!type_engine_import_add_ex(env, c->examples[j].c_str())) goto error;
     }
     
     // end class import

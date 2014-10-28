@@ -3856,6 +3856,9 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         if( !array ) goto out_of_memory;
         // initialize object
         initialize_object( array, &t_array );
+        // set array type
+        array->m_array_type = m_type_ref;
+        m_type_ref->add_ref();
         // set size
         array->set_size( m_length );
         // fill array
@@ -3876,6 +3879,9 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         t_CKFLOAT * sp = (t_CKFLOAT *)reg_sp;
         // intialize object
         initialize_object( array, &t_array );
+        // set array type
+        array->m_array_type = m_type_ref;
+        m_type_ref->add_ref();
         // set size
         array->set_size( m_length );
         // fill array
@@ -3896,6 +3902,9 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         t_CKCOMPLEX * sp = (t_CKCOMPLEX *)reg_sp;
         // intialize object
         initialize_object( array, &t_array );
+        // set array type
+        array->m_array_type = m_type_ref;
+        m_type_ref->add_ref();
         // set size
         array->set_size( m_length );
         // fill array
@@ -5505,7 +5514,7 @@ void Chuck_Instr_IO_in_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( *(ppIO) == NULL ) goto null_pointer;
     
     // read into the variable
-    **(t_CKINT **)(sp+1) = (*ppIO)->readInt( Chuck_IO::READ_INT32 );
+    **(t_CKINT **)(sp+1) = (*ppIO)->readInt( Chuck_IO::INT32 );
     
     // push the IO
     push_( sp, (t_CKINT)(*(ppIO)) );

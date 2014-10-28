@@ -1,15 +1,16 @@
-// actual FM using sinosc (sync is 0)
-// (note: this is not quite the classic "FM synthesis"; also see fm2.ck)
+// FM synthesis (using Step instead of .sync == 2; see fm2.ck)
 
 // modulator to carrier
 SinOsc m => SinOsc c => dac;
+// step function, add to modulator output
+Step step => c;
 
 // carrier frequency
-220 => c.freq;
+440 => step.next;
 // modulator frequency
-20 => m.freq;
+110 => m.freq;
 // index of modulation
-200 => m.gain;
+300 => m.gain;
 
 // time-loop
 while( true ) 1::second => now;

@@ -452,11 +452,9 @@ void CBufferSimple::put( void * data, UINT__ num_elem )
         }
 
         // move the write
-        m_write_offset++;
-
-        // wrap
-        if( m_write_offset >= m_max_elem )
-            m_write_offset = 0;
+        // Aug 2014 - spencer
+        // change to fully "atomic" increment+wrap
+        m_write_offset = (m_write_offset + 1) % m_max_elem;
     }
 }
 
@@ -485,7 +483,9 @@ UINT__ CBufferSimple::get( void * data, UINT__ num_elem )
         }
 
         // move read
-        m_read_offset++;
+        // Aug 2014 - spencer
+        // change to fully "atomic" increment+wrap
+        m_read_offset = (m_read_offset + 1) % m_max_elem;
         
         // catch up
         if( m_read_offset == m_write_offset )
@@ -493,10 +493,6 @@ UINT__ CBufferSimple::get( void * data, UINT__ num_elem )
             i++;
             break;
         }
-
-        // wrap
-        if( m_read_offset >= m_max_elem )
-            m_read_offset = 0;
     }
 
     // return number of elems
