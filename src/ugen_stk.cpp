@@ -114,6 +114,11 @@ static t_CKUINT Mesh2D_offset_data = 0;
 
 static t_CKUINT MidiFileIn_offset_data = 0;
 
+static t_CKINT ADSR_state_ATTACK = ADSR::ATTACK;
+static t_CKINT ADSR_state_DECAY = ADSR::DECAY;
+static t_CKINT ADSR_state_SUSTAIN = ADSR::SUSTAIN;
+static t_CKINT ADSR_state_RELEASE = ADSR::RELEASE;
+static t_CKINT ADSR_state_DONE = ADSR::DONE;
 
 // SKINI
 /*
@@ -2760,6 +2765,12 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "int", "state", ADSR_cget_state ); //! attack=0, decay=1 , sustain=2, release=3, done=4
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    if( !type_engine_import_svar( env, "int", "ATTACK", TRUE, (t_CKUINT) &ADSR_state_ATTACK) ) goto error;
+    if( !type_engine_import_svar( env, "int", "DECAY", TRUE, (t_CKUINT) &ADSR_state_DECAY) ) goto error;
+    if( !type_engine_import_svar( env, "int", "SUSTAIN", TRUE, (t_CKUINT) &ADSR_state_SUSTAIN) ) goto error;
+    if( !type_engine_import_svar( env, "int", "RELEASE", TRUE, (t_CKUINT) &ADSR_state_RELEASE) ) goto error;
+    if( !type_engine_import_svar( env, "int", "DONE", TRUE, (t_CKUINT) &ADSR_state_DONE) ) goto error;
+    
     // end the class import
     type_engine_import_class_end( env );
 
