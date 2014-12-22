@@ -17,6 +17,10 @@
   - (added) MidiIn.open(string)/MidiOut.open(string) will open devices matched 
             by partial match if no full device-name match is found. 
   - (added) examples/osc/osc_dump.ck example 
+  - (added) new static variables in ADSR
+            - .ATTACK, .DECAY, .SUSTAIN, .RELEASE, .DONE
+              values corresponding to current state, returned by ADSR.state()
+  - (added) full book/digital-artists examples
   - (fixed) real-time audio hiccuping/underrun when loading files in SndBuf
             - SndBuf .chunks now uses .chunks as buffer size for dynamic loading
             - files are loaded .chunks samples at a time
