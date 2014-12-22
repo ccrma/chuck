@@ -6,5 +6,7 @@ src/chuck.output
 src/chuck.tab.c
 src/chuck.tab.h
 src/chuck.yy.c
+src/Release
+src/Debug
 
 .DS_Store
