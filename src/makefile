@@ -1,4 +1,4 @@
-DESTDIR=/usr/bin
+DESTDIR?=/usr/bin
 
 # default target: print usage message and quit
 current: 
@@ -7,6 +7,7 @@ current:
 	@echo "   make osx, make osx-ub, make cygwin, or make win32"
 
 install:
+	mkdir -p $(DESTDIR)
 	cp $(wildcard chuck chuck.exe) $(DESTDIR)/
 	chmod 755 $(DESTDIR)/$(wildcard chuck chuck.exe)
 
