@@ -82,7 +82,7 @@ static int lastErrorCat(const char * str)
 {
     assert(g_lasterrorIndex <= LASTERROR_SIZE-1);
     
-    size_t len = strnlen(str, LASTERROR_SIZE);
+    size_t len = strlen(str);
     
     strncat(g_lasterror, str, LASTERROR_SIZE-g_lasterrorIndex-1);
     
