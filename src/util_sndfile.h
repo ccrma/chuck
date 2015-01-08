@@ -1149,6 +1149,13 @@ int psf_ferror (SF_PRIVATE *psf) ;
 */
 
 int     aiff_open   (SF_PRIVATE *psf) ;
+#if defined(TARGET_OS_IPHONE) || defined(TARGET_IPHONE_SIMULATOR)
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+// fix for au_open/au_close namespace conflict on iOS
+#define au_open sf_au_open
+#define au_close sf_au_close
+#endif // TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+#endif // defined(TARGET_OS_IPHONE) || defined(TARGET_IPHONE_SIMULATOR)
 int     au_open     (SF_PRIVATE *psf) ;
 int     au_nh_open  (SF_PRIVATE *psf) ; /* Headerless version of AU. */
 int     avr_open    (SF_PRIVATE *psf) ;
