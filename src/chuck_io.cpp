@@ -97,6 +97,8 @@ std::list<Chuck_IO_Serial *> Chuck_IO_Serial::s_serials;
 const t_CKUINT CHUCK_IO_DEFAULT_BUFSIZE = 1024;
 const char * CHUCK_IO_SCANF_STRING = "%1024s";
 
+CK_DLL_MFUN(serialio_canWait);
+
 void * Chuck_IO_Serial::shell_read_cb( void *_this )
 {
     Chuck_IO_Serial *cereal = (Chuck_IO_Serial *) _this;
@@ -283,6 +285,11 @@ void Chuck_IO_Serial::flush()
         else
             ; // TODO
     }
+}
+
+t_CKBOOL Chuck_IO_Serial::can_wait()
+{
+    return m_asyncResponses.numElements() == 0;
 }
 
 t_CKINT Chuck_IO_Serial::mode()
@@ -888,8 +895,18 @@ t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
             m_io_buf_available = result;
             m_io_buf_pos = 0;
             
+            EM_log(CK_LOG_FINE, "(SerialIO::get_buffer): read() returned %i bytes", result);
+            
             return TRUE;
         }
+        else
+        {
+            EM_log(CK_LOG_SEVERE, "(SerialIO::get_buffer): read() returned 0 bytes");
+        }
+    }
+    else
+    {
+        EM_log(CK_LOG_FINE, "(SerialIO::get_buffer): select() timeout");
     }
     
     return FALSE;
@@ -915,6 +932,8 @@ t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
 // peek next byte
 t_CKINT Chuck_IO_Serial::peek_buffer()
 {
+    // fprintf(stderr, "Chuck_IO_Serial::peek_buffer %i/%i\n", m_io_buf_pos, m_io_buf_available);
+    
     if(m_io_buf_pos >= m_io_buf_available)
     {
         // refresh data
@@ -932,6 +951,8 @@ t_CKINT Chuck_IO_Serial::peek_buffer()
 // return -1 on error/exit condition
 t_CKINT Chuck_IO_Serial::pull_buffer()
 {
+    // fprintf(stderr, "Chuck_IO_Serial::pull_buffer %i/%i\n", m_io_buf_pos, m_io_buf_available);
+    
     if(m_io_buf_pos >= m_io_buf_available)
     {
         // refresh data
@@ -1335,7 +1356,7 @@ void Chuck_IO_Serial::read_cb()
             }
         }
         
-        if(num_responses)
+        if(m_asyncResponses.numElements() > 0)
             queue_broadcast(m_event_buffer);
         
         usleep(100);
@@ -1617,6 +1638,11 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     func->doc = "Get current baud rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
+    // add can_wait
+    func = make_new_mfun("int", "can_wait", serialio_canWait);
+    func->doc = "";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
     // add baud rate constants
     type_engine_import_svar(env, "int", "B2400",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_2400, "2400 baud");
     type_engine_import_svar(env, "int", "B4800",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_4800, "4800 baud");
@@ -1844,5 +1870,12 @@ CK_DLL_MFUN( serialio_writeBytes )
     Chuck_Array4 * arr = (Chuck_Array4 *) GET_NEXT_OBJECT(ARGS);
     cereal->writeBytes(arr);
 }
+
+CK_DLL_MFUN(serialio_canWait)
+{
+    Chuck_IO_Serial *cereal = (Chuck_IO_Serial *) SELF;
+    RETURN->v_int = cereal->can_wait();
+}
+
 
 
