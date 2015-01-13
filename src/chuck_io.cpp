@@ -937,7 +937,7 @@ t_CKINT Chuck_IO_Serial::peek_buffer()
     if(m_io_buf_pos >= m_io_buf_available)
     {
         // refresh data
-        while(!m_do_exit && !m_eof && !get_buffer())
+        while(!m_do_exit && !m_eof && !get_buffer(5))
             ;
         
         if(m_do_exit || m_eof)
@@ -956,7 +956,7 @@ t_CKINT Chuck_IO_Serial::pull_buffer()
     if(m_io_buf_pos >= m_io_buf_available)
     {
         // refresh data
-        while(!m_do_exit && !m_eof && !get_buffer())
+        while(!m_do_exit && !m_eof && !get_buffer(5))
             ;
         
         if(m_do_exit || m_eof)
@@ -1639,9 +1639,9 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add can_wait
-    func = make_new_mfun("int", "can_wait", serialio_canWait);
-    func->doc = "";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
+    // func = make_new_mfun("int", "can_wait", serialio_canWait);
+    // func->doc = "";
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add baud rate constants
     type_engine_import_svar(env, "int", "B2400",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_2400, "2400 baud");
