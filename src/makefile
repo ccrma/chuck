@@ -41,7 +41,7 @@ endif
 ifneq ($(CHUCK_DEBUG),)
 CFLAGS+= -g
 else
-CFLAGS+= -O3
+CFLAGS+= -O3 -ffast-math
 endif
 
 ifneq ($(USE_64_BIT_SAMPLE),)
