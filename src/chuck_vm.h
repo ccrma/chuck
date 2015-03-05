@@ -340,6 +340,7 @@ public:
     // time and audio
     t_CKTIME now_system;
     t_CKBOOL rt_audio;
+    t_CKBOOL m_slave;
     BBQ * bbq;
 
     // shreds to be shreduled
@@ -389,7 +390,10 @@ public: // init
                          t_CKUINT dac_chan = 2, t_CKUINT adc_chan = 2,
                          t_CKBOOL block = TRUE, t_CKUINT adaptive = 0,
                          // force_srate added 1.3.1.2
-                         t_CKBOOL force_srate = FALSE );
+                         t_CKBOOL force_srate = FALSE,
+                         // slave added for libchuck branch
+                         t_CKBOOL slave = FALSE
+                         );
     t_CKBOOL initialize_synthesis( );
     t_CKBOOL shutdown();
 
@@ -459,6 +463,7 @@ public:
     t_CKBOOL m_halt;
     t_CKBOOL m_audio;
     t_CKBOOL m_block;
+    t_CKBOOL m_slave;
 
 protected:
     Chuck_VM_Shred * spork( Chuck_VM_Shred * shred );

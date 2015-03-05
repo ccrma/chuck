@@ -732,10 +732,13 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
 #endif // __DISABLE_RTAUDIO__
 
 #if defined(__CHIP_MODE__)
-    if( !MoAudio::init( sampling_rate, buffer_size, 2 ) )
+    if( rt_audio )
     {
-        EM_error2( 0, "%s", "(chuck)error: unable to initialize MoAudio..." );
-        return m_init = FALSE;
+        if( !MoAudio::init( sampling_rate, buffer_size, 2 ) )
+        {
+            EM_error2( 0, "%s", "(chuck)error: unable to initialize MoAudio..." );
+            return m_init = FALSE;
+        }
     }
 #endif // __CHIP_MODE__
 

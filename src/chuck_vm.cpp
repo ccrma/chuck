@@ -259,7 +259,7 @@ t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT sr
                                t_CKUINT buffer_size, t_CKUINT num_buffers,
                                t_CKUINT dac, t_CKUINT adc, t_CKUINT dac_chan,
                                t_CKUINT adc_chan, t_CKBOOL block, t_CKUINT adaptive,
-                               t_CKBOOL force_srate )
+                               t_CKBOOL force_srate, t_CKBOOL slave )
 {
     if( m_init )
     {
@@ -280,6 +280,7 @@ t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT sr
     m_halt = halt;
     m_audio = enable_audio;
     m_block = block;
+    m_slave = slave;
     m_num_adc_channels = adc_chan;
     m_num_dac_channels = dac_chan;
 
@@ -324,6 +325,7 @@ t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT sr
     m_shreduler->bbq = m_bbq;
     m_shreduler->rt_audio = enable_audio;
     m_shreduler->set_adaptive( adaptive > 0 ? adaptive : 0 );
+    m_shreduler->m_slave = m_slave;
 
     // log
     EM_log( CK_LOG_SYSTEM, "allocating messaging buffers..." );
@@ -2098,7 +2100,7 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft )
     this->now_system += numFrames;
 
     // tick in
-    if( rt_audio )
+    if( rt_audio || m_slave )
     {
         for( j = 0; j < m_num_adc_channels; j++ )
         {
@@ -2169,7 +2171,7 @@ void Chuck_VM_Shreduler::advance2( )
     BBQ * audio = this->bbq;
 
     // tick in
-    if( rt_audio )
+    if( rt_audio || m_slave )
     {
         audio->digi_in()->tick_in( &l, &r );
         m_adc->m_multi_chan[0]->m_current = l * m_adc->m_multi_chan[0]->m_gain;
@@ -2214,7 +2216,7 @@ void Chuck_VM_Shreduler::advance( )
     t_CKUINT i;
 
     // tick in
-    if( rt_audio )
+    if( rt_audio || m_slave )
     {
         audio->digi_in()->tick_in( frame, m_num_adc_channels );
         
