@@ -35,6 +35,7 @@
 #include "chuck_vm.h"
 #include "chuck_errmsg.h"
 #include "chuck_globals.h"
+#include "chuck_bbq.h"
 #include <limits.h>
 #ifndef __DISABLE_RTAUDIO__
 #include "RtAudio/RtAudio.h"
@@ -907,6 +908,8 @@ int Digitalio::cb2( void *output_buffer, void *input_buffer,
     // check xrun
     if( m_xrun < 6 )
     {
+        // reset output buffer
+        vm_ref->shreduler()->bbq->digi_out()->render();
         // timestamp
         if( g_do_watchdog ) g_watchdog_time = get_current_time( TRUE );
         // get samples from output
