@@ -581,7 +581,7 @@ t_CKBOOL Chuck_VM::start_audio( )
 // name: run()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::run( )
+t_CKBOOL Chuck_VM::run( t_CKBOOL sleep_wait )
 {
     // check if init
     if( m_dac == NULL )
@@ -624,7 +624,7 @@ t_CKBOOL Chuck_VM::run( )
     EM_poplog();
 
     // run
-    if( m_block ) this->run( -1 );
+    if( m_block ) this->run( (t_CKINT) -1 );
     else
     {
         // compute shreds before first sample
@@ -641,7 +641,7 @@ t_CKBOOL Chuck_VM::run( )
             if( !m_audio_started ) start_audio();
 
             // wait
-            while( m_running )
+            while( sleep_wait && m_running )
             {
                 if( m_main_thread_hook && m_main_thread_quit )
                     m_main_thread_hook( m_main_thread_bindle );
@@ -2100,7 +2100,7 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft )
     this->now_system += numFrames;
 
     // tick in
-    if( rt_audio || m_slave )
+    if( rt_audio )
     {
         for( j = 0; j < m_num_adc_channels; j++ )
         {
@@ -2171,7 +2171,7 @@ void Chuck_VM_Shreduler::advance2( )
     BBQ * audio = this->bbq;
 
     // tick in
-    if( rt_audio || m_slave )
+    if( rt_audio )
     {
         audio->digi_in()->tick_in( &l, &r );
         m_adc->m_multi_chan[0]->m_current = l * m_adc->m_multi_chan[0]->m_gain;
@@ -2216,7 +2216,7 @@ void Chuck_VM_Shreduler::advance( )
     t_CKUINT i;
 
     // tick in
-    if( rt_audio || m_slave )
+    if( rt_audio )
     {
         audio->digi_in()->tick_in( frame, m_num_adc_channels );
         

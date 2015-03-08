@@ -409,7 +409,7 @@ public: // audio
     void compensate_bbq();
 
 public: // running the machine
-    t_CKBOOL run( );
+    t_CKBOOL run( t_CKBOOL sleep_wait = TRUE );
     t_CKBOOL run( t_CKINT num_samps );
     t_CKBOOL compute( );
     t_CKBOOL pause( );
