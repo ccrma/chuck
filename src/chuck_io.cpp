@@ -991,12 +991,20 @@ t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
     {
         if(peek_buffer() == -1)
             break;
-            
-        // TODO: '\r'?
+        
+        if(peek_buffer() == '\r')
+        {
+            // consume newline character
+            pull_buffer();
+            if(peek_buffer() == '\n') pull_buffer(); // handle \r\n
+            break;
+        }
+        
         if(peek_buffer() == '\n')
         {
             // consume newline character
             pull_buffer();
+            if(peek_buffer() == '\r') pull_buffer(); // handle \n\r (unlikely)
             break;
         }
                 
