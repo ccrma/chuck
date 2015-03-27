@@ -1520,6 +1520,13 @@ CK_DLL_MFUN( serialio_getBaudRate );
 CK_DLL_MFUN( serialio_writeByte );
 CK_DLL_MFUN( serialio_writeBytes );
 
+CK_DLL_MFUN( serialio_flush )
+{
+    Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
+    
+    cereal->flush();
+}
+
 
 //-----------------------------------------------------------------------------
 // name: init_class_serialio()
@@ -1636,6 +1643,11 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     // add getBaudRate
     func = make_new_mfun("int", "baudRate", serialio_getBaudRate);
     func->doc = "Get current baud rate.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add getBaudRate
+    func = make_new_mfun("void", "flush", serialio_flush);
+    func->doc = "Flush the IO buffer.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add can_wait
