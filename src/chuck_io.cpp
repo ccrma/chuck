@@ -128,11 +128,11 @@ m_writeBuffer(1024)
     m_cfd = NULL;
     
     m_io_buf_max = CHUCK_IO_DEFAULT_BUFSIZE;
-    m_io_buf = new char[m_io_buf_max];
+    m_io_buf = new unsigned char[m_io_buf_max];
     m_io_buf_pos = m_io_buf_available = 0;
     
     m_tmp_buf_max = CHUCK_IO_DEFAULT_BUFSIZE;
-    m_tmp_buf = new char[m_tmp_buf_max];
+    m_tmp_buf = new unsigned char[m_tmp_buf_max];
     
     m_read_thread = NULL;
     m_event_buffer = NULL;
@@ -414,7 +414,7 @@ t_CKBOOL Chuck_IO_Serial::readString( std::string & str )
         return FALSE;
     }
     
-    str = m_tmp_buf;
+    str = (char *) m_tmp_buf;
     
     return TRUE;
 }
@@ -441,7 +441,7 @@ Chuck_String * Chuck_IO_Serial::readLine()
     }
     
     
-    if(!fgets(m_tmp_buf, m_tmp_buf_max, m_cfd))
+    if(!fgets((char *)m_tmp_buf, m_tmp_buf_max, m_cfd))
     {
         EM_log(CK_LOG_WARNING, "(Serial.readLine): error: from fgets");
         return NULL;
@@ -450,7 +450,7 @@ Chuck_String * Chuck_IO_Serial::readLine()
     Chuck_String * str = new Chuck_String;
     initialize_object(str, &t_string);
     
-    str->str = string(m_tmp_buf);
+    str->str = string((char *)m_tmp_buf);
     
     return str;
 }
@@ -534,9 +534,9 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
             _snprintf(m_tmp_buf, m_tmp_buf_max, "%li", val);
             m_tmp_buf[m_tmp_buf_max - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
 #else
-            snprintf(m_tmp_buf, m_tmp_buf_max, "%li", val);
+            snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%li", val);
 #endif       
-            int len = strlen(m_tmp_buf);
+            int len = strlen((char *)m_tmp_buf);
             for(int i = 0; i < len; i++)
                 // TODO: efficiency
                 m_writeBuffer.put(m_tmp_buf[i]);
@@ -599,10 +599,10 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
             _snprintf(m_tmp_buf, m_tmp_buf_max, "%f", val);
             m_tmp_buf[m_tmp_buf_max - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
 #else
-            snprintf(m_tmp_buf, m_tmp_buf_max, "%f", val);
+            snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%f", val);
 #endif       
             
-            int len = strlen(m_tmp_buf);
+            int len = strlen((char *)m_tmp_buf);
             for(int i = 0; i < len; i++)
                 // TODO: efficiency
                 m_writeBuffer.put(m_tmp_buf[i]);
@@ -1014,7 +1014,7 @@ t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
     // TODO: eof
     
     str = new Chuck_String;
-    str->str = std::string(m_tmp_buf, len);
+    str->str = std::string((char *)m_tmp_buf, len);
     
     r.m_val = (t_CKUINT) str;
     r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_SUCCESS;
@@ -1066,7 +1066,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_ascii(Chuck_IO_Serial::Request & r)
             else if(len > 0)
             {
                 m_tmp_buf[len++] = '\0';
-                val = strtod(m_tmp_buf, NULL);
+                val = strtod((char *)m_tmp_buf, NULL);
                 
                 numRead++;
                 array->push_back(val);
@@ -1116,7 +1116,7 @@ t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Request & r)
             else if(len > 0)
             {
                 m_tmp_buf[len++] = '\0';
-                val = strtol(m_tmp_buf, NULL, 10);
+                val = strtol((char *)m_tmp_buf, NULL, 10);
                 
                 numRead++;
                 array->push_back(val);

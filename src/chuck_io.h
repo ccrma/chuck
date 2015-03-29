@@ -169,12 +169,12 @@ protected:
     
     std::string m_path;
     
-    char * m_io_buf;
+    unsigned char * m_io_buf;
     t_CKUINT m_io_buf_max;
     t_CKUINT m_io_buf_available;
     t_CKUINT m_io_buf_pos;
     
-    char * m_tmp_buf;
+    unsigned char * m_tmp_buf;
     t_CKUINT m_tmp_buf_max;
     
     t_CKINT m_flags;
