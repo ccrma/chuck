@@ -141,6 +141,9 @@ protected:
     static void *shell_read_cb(void *);
     void read_cb();
 
+    XThread * m_write_thread;
+    static void *shell_write_cb(void *);
+    void write_cb();
     
     void close_int();
 
@@ -158,12 +161,12 @@ protected:
     t_CKBOOL handle_int_binary(Request &);
     
     bool m_do_read_thread;
+    bool m_do_write_thread;
     
     CircularBuffer<Request> m_asyncRequests;
     CircularBuffer<Request> m_asyncResponses;
-    CircularBuffer<char> m_writeBuffer;
     CBufferSimple * m_event_buffer;
-    
+
     int m_fd;
     FILE * m_cfd;
     
@@ -176,6 +179,9 @@ protected:
     
     unsigned char * m_tmp_buf;
     t_CKUINT m_tmp_buf_max;
+    
+    CircularBuffer<Request> m_asyncWriteRequests;
+    CircularBuffer<char> m_writeBuffer;
     
     t_CKINT m_flags;
     t_CKINT m_iomode; // SYNC or ASYNC
