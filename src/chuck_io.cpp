@@ -761,9 +761,9 @@ Chuck_String * Chuck_IO_Serial::getLine()
     Request r;
     
     Chuck_String * str = NULL;
-
-    m_asyncResponses.peek(r, 1);
-    if(r.m_type == TYPE_LINE && r.m_status == Request::RQ_STATUS_SUCCESS)
+    
+    if(m_asyncResponses.peek(r, 1) &&
+       r.m_type == TYPE_LINE && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         str = (Chuck_String *) r.m_val;
         m_asyncResponses.get(r);
@@ -785,8 +785,8 @@ t_CKINT Chuck_IO_Serial::getByte()
     
     t_CKINT i = 0;
     
-    m_asyncResponses.peek(r, 1);
-    if(r.m_type == TYPE_BYTE && r.m_num == 1 &&
+    if(m_asyncResponses.peek(r, 1) &&
+       r.m_type == TYPE_BYTE && r.m_num == 1 &&
        r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         i = (t_CKINT) r.m_val;
@@ -808,8 +808,8 @@ Chuck_Array * Chuck_IO_Serial::getBytes()
     
     Chuck_Array * arr = NULL;
     
-    m_asyncResponses.peek(r, 1);
-    if(r.m_type == TYPE_BYTE && r.m_num > 1 &&
+    if(m_asyncResponses.peek(r, 1) &&
+       r.m_type == TYPE_BYTE && r.m_num > 1 &&
        r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
@@ -832,8 +832,8 @@ Chuck_Array * Chuck_IO_Serial::getInts()
     
     Chuck_Array * arr = NULL;
     
-    m_asyncResponses.peek(r, 1);
-    if( r.m_type == TYPE_INT && r.m_status == Request::RQ_STATUS_SUCCESS)
+    if(m_asyncResponses.peek(r, 1) &&
+       r.m_type == TYPE_INT && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
         initialize_object(arr, &t_array);
@@ -855,8 +855,8 @@ Chuck_Array * Chuck_IO_Serial::getFloats()
     
     Chuck_Array * arr = NULL;
     
-    m_asyncResponses.peek(r, 1);
-    if( r.m_type == TYPE_FLOAT && r.m_status == Request::RQ_STATUS_SUCCESS)
+    if(m_asyncResponses.peek(r, 1) &&
+       r.m_type == TYPE_FLOAT && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
         initialize_object(arr, &t_array);
@@ -878,8 +878,8 @@ Chuck_String * Chuck_IO_Serial::getString()
     
     Chuck_String * str = NULL;
     
-    m_asyncResponses.peek(r, 1);
-    if(r.m_type == TYPE_STRING && r.m_status == Request::RQ_STATUS_SUCCESS)
+    if(m_asyncResponses.peek(r, 1) &&
+       r.m_type == TYPE_STRING && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         str = (Chuck_String *) r.m_val;
         m_asyncResponses.get(r);
