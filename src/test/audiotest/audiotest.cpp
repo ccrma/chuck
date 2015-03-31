@@ -92,6 +92,11 @@ int main(int argc, char *argv[])
             file1 = argv[++i];
             file2 = argv[++i];
         }
+        else
+        {
+            usage();
+            exit(1);
+        }
     }
     
     if(!file1 || !file2)
@@ -100,10 +105,10 @@ int main(int argc, char *argv[])
         exit(1);
     }
     
-    FileWvIn wvfile1, wvfile2;
+    FileWvIn wvfile1(INT_MAX, 2048), wvfile2(INT_MAX, 2048);
     
     try {
-        wvfile1 = FileWvIn(file1, false, false);
+        wvfile1 = FileWvIn(file1, false, false, INT_MAX);
     }
     catch(StkError e)
     {
@@ -112,7 +117,7 @@ int main(int argc, char *argv[])
     }
     
     try {
-        wvfile2 = FileWvIn(file2, false, false);
+        wvfile2 = FileWvIn(file2, false, false, INT_MAX);
     }
     catch(StkError e)
     {
@@ -141,17 +146,26 @@ int compsample(FileWvIn &file1, FileWvIn &file2)
     if(file1.channelsOut() != file2.channelsOut())
         return 1;
     
-    StkFrames frame1(256, file1.channelsOut()), frame2(256, file2.channelsOut());
+    StkFrames frame1, frame2;
     
-    int i=0;
+    int i = 0;
     while(!file1.isFinished() && !file2.isFinished())
     {
-        file1.tick(frame1);
-        file2.tick(frame2);
+        try {
+            file1.tick();
+            file2.tick();
+        } catch(StkError e) {
+            fprintf(stderr, CMD_NAME ": error: ticking files: '%s' (frame == %i)\n", e.getMessageCString(), i);
+            exit(1);
+        }
+        
+        frame1 = file1.lastFrame();
+        frame2 = file2.lastFrame();
         
         if(notequal(frame1,frame2, SAMPLE_THRESHOLD)) {
             return 1;
         }
+        
         i++;
     }
     

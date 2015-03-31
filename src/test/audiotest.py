@@ -36,7 +36,7 @@ def handle_directory(dir, exe, recck, audiotest):
                         print "> %s" % ' '.join(invocation)
                         result = subprocess.call(invocation)
                         if result == 0:
-                            success += 1
+                            successes += 1
                         else:
                             fail(filename, 'audiotest returned error code %i' % result)
                         invocation = ['rm', recpath]

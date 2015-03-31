@@ -2,7 +2,8 @@
 CPP=g++
 LD=g++
 
-CPPFLAGS+=-Istk
+CFLAGS+=
+CPPFLAGS+=$(CFLAGS) -Istk
 LDFLAGS+=
 
 CPPMODULES=audiotest

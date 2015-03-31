@@ -2,6 +2,7 @@
 #define STK_STK_H
 
 #include <string>
+#include <cstring>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -11,7 +12,7 @@
     \brief The STK namespace.
 
     Most Stk classes are defined within the STK namespace.  Exceptions
-    to this include the classes RtAudio, RtMidi, and RtError.
+    to this include the classes RtAudio and RtMidi.
 */
 namespace stk {
 
@@ -39,7 +40,7 @@ namespace stk {
     STK WWW site: http://ccrma.stanford.edu/software/stk/
 
     The Synthesis ToolKit in C++ (STK)
-    Copyright (c) 1995-2012 Perry R. Cook and Gary P. Scavone
+    Copyright (c) 1995--2014 Perry R. Cook and Gary P. Scavone
 
     Permission is hereby granted, free of charge, to any person
     obtaining a copy of this software and associated documentation files
@@ -236,7 +237,7 @@ protected:
   void removeSampleRateAlert( Stk *ptr );
 
   //! Internal function for error reporting that assumes message in \c oStream_ variable.
-  void handleError( StkError::Type type );
+  void handleError( StkError::Type type ) const;
 };
 
 
@@ -264,7 +265,7 @@ protected:
     Possible future improvements in this class could include functions
     to convert to and return other data types.
 
-    by Perry R. Cook and Gary P. Scavone, 1995-2012.
+    by Perry R. Cook and Gary P. Scavone, 1995--2014.
 */
 /***************************************************/
 
@@ -376,7 +377,7 @@ public:
   unsigned int channels( void ) const { return nChannels_; };
 
   //! Return the number of sample frames represented by the data.
-  unsigned int frames( void ) const { return nFrames_; };
+  unsigned int frames( void ) const { return (unsigned int)nFrames_; };
 
   //! Set the sample rate associated with the StkFrames data.
   /*!

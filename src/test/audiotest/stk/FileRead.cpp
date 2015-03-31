@@ -141,6 +141,10 @@ bool FileRead :: getRawInfo( const char *fileName, unsigned int nChannels, StkFo
     oStream_ << "FileRead: Could not stat RAW file (" << fileName << ").";
     return false;
   }
+  if ( nChannels == 0 ) {
+    oStream_ << "FileRead: number of channels can't be 0 (" << fileName << ").";
+    return false;
+  }
 
   // Rawwave files have no header and by default, are assumed to
   // contain a monophonic stream of 16-bit signed integers in
@@ -155,6 +159,10 @@ bool FileRead :: getRawInfo( const char *fileName, unsigned int nChannels, StkFo
   else if ( format == STK_SINT16 ) sampleBytes = 2;
   else if ( format == STK_SINT32 || format == STK_FLOAT32 ) sampleBytes = 4;
   else if ( format == STK_FLOAT64 ) sampleBytes = 8;
+  else {
+    oStream_ << "FileRead: StkFormat " << format << " is invalid (" << fileName << ").";
+    return false;
+  }
 
   fileSize_ = (long) filestat.st_size / sampleBytes / channels_;  // length in frames
 
@@ -434,6 +442,11 @@ bool FileRead :: getAifInfo( const char *fileName )
   if (last & 0x00000001) mantissa++;
   fileRate_ = (StkFloat) mantissa;
 
+  byteswap_ = false;
+#ifdef __LITTLE_ENDIAN__
+  byteswap_ = true;
+#endif
+
   // Determine the data format.
   dataType_ = 0;
   if ( aifc == false ) {
@@ -444,7 +457,11 @@ bool FileRead :: getAifInfo( const char *fileName )
   }
   else {
     if ( fread(&id, 4, 1, fd_) != 1 ) goto error;
-    if ( !strncmp(id, "NONE", 4) ) {
+    if ( !strncmp(id, "sowt", 4) ) { // uncompressed little-endian
+      if ( byteswap_ == false ) byteswap_ = true;
+      else byteswap_ = false;
+    }
+    if ( !strncmp(id, "NONE", 4) || !strncmp(id, "sowt", 4) ) {
       if ( temp <= 8 ) dataType_ = STK_SINT8;
       else if ( temp <= 16 ) dataType_ = STK_SINT16;
       else if ( temp <= 24 ) dataType_ = STK_SINT24;
@@ -477,11 +494,6 @@ bool FileRead :: getAifInfo( const char *fileName )
   if ( fseek(fd_, 12, SEEK_CUR) == -1 ) goto error;
 
   dataOffset_ = ftell(fd_);
-  byteswap_ = false;
-#ifdef __LITTLE_ENDIAN__
-  byteswap_ = true;
-#endif
-
   return true;
 
  error:
@@ -563,7 +575,7 @@ bool FileRead :: getMatInfo( const char *fileName )
 
   bool doneParsing, haveData, haveSampleRate;
   SINT32 chunkSize, rows, columns, nametype;
-  int dataoffset;
+  long dataoffset;
   doneParsing = false;
   haveData = false;
   haveSampleRate = false;
@@ -590,7 +602,7 @@ bool FileRead :: getMatInfo( const char *fileName )
       SINT32 namesize = 4;
       if ( nametype == 1 ) { // array name > 4 characters
         if ( fread(&namesize, 4, 1, fd_) != 1 ) goto error;
-        if ( byteswap_ ) swap32((unsigned char *)namesize);
+        if ( byteswap_ ) swap32((unsigned char *)&namesize);
         if ( namesize != 2 ) goto tryagain; // expecting name = "fs"
         namesize = 8; // field must be padded to multiple of 8 bytes
       }
@@ -614,7 +626,7 @@ bool FileRead :: getMatInfo( const char *fileName )
         if ( fread(&rate, 1, 1, fd_) != 1 ) goto error;
         srate = (StkFloat) rate;
       }
-      if ( type == 2 ) { // UINT8
+      else if ( type == 2 ) { // UINT8
         unsigned char rate;
         if ( fread(&rate, 1, 1, fd_) != 1 ) goto error;
         srate = (StkFloat) rate;
@@ -676,7 +688,7 @@ bool FileRead :: getMatInfo( const char *fileName )
       SINT32 namesize = 4;
       if ( nametype == 1 ) { // array name > 4 characters
         if ( fread(&namesize, 4, 1, fd_) != 1 ) goto error;
-        if ( byteswap_ ) swap32((unsigned char *)namesize);
+        if ( byteswap_ ) swap32((unsigned char *)&namesize);
         namesize = (SINT32) ceil((float)namesize / 8);
         if ( fseek( fd_, namesize*8, SEEK_CUR) == -1 ) goto error;  // jump over array name
       }
@@ -726,7 +738,7 @@ void FileRead :: read( StkFrames& buffer, unsigned long startFrame, bool doNorma
   }
 
   // Check the buffer size.
-  unsigned int nFrames = buffer.frames();
+  unsigned long nFrames = buffer.frames();
   if ( nFrames == 0 ) {
     oStream_ << "FileRead::read: StkFrames buffer size is zero ... no data read!";
     Stk::handleError( StkError::WARNING ); return;
@@ -737,8 +749,13 @@ void FileRead :: read( StkFrames& buffer, unsigned long startFrame, bool doNorma
     Stk::handleError( StkError::FUNCTION_ARGUMENT );
   }
 
+  if ( startFrame >= fileSize_ ) {
+    oStream_ << "FileRead::read: startFrame argument is greater than or equal to the file size!";
+    Stk::handleError( StkError::FUNCTION_ARGUMENT );
+  }
+
   // Check for file end.
-  if ( startFrame + nFrames >= fileSize_ )
+  if ( startFrame + nFrames > fileSize_ )
     nFrames = fileSize_ - startFrame;
 
   long i, nSamples = (long) ( nFrames * channels_ );

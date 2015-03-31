@@ -22,7 +22,7 @@
     STK WWW site: http://ccrma.stanford.edu/software/stk/
 
     The Synthesis ToolKit in C++ (STK)
-    Copyright (c) 1995-2012 Perry R. Cook and Gary P. Scavone
+    Copyright (c) 1995--2014 Perry R. Cook and Gary P. Scavone
 
     Permission is hereby granted, free of charge, to any person
     obtaining a copy of this software and associated documentation files
@@ -88,7 +88,7 @@ void Stk :: setSampleRate( StkFloat rate )
   }
 }
 
-void Stk :: sampleRateChanged( StkFloat newRate, StkFloat oldRate )
+void Stk :: sampleRateChanged( StkFloat /*newRate*/, StkFloat /*oldRate*/ )
 {
   // This function should be reimplemented in classes that need to
   // make internal variable adjustments in response to a global sample
@@ -125,7 +125,7 @@ void Stk :: setRawwavePath( std::string path )
 
 void Stk :: swap16(unsigned char *ptr)
 {
-  register unsigned char val;
+  unsigned char val;
 
   // Swap 1st and 2nd bytes
   val = *(ptr);
@@ -135,7 +135,7 @@ void Stk :: swap16(unsigned char *ptr)
 
 void Stk :: swap32(unsigned char *ptr)
 {
-  register unsigned char val;
+  unsigned char val;
 
   // Swap 1st and 4th bytes
   val = *(ptr);
@@ -151,7 +151,7 @@ void Stk :: swap32(unsigned char *ptr)
 
 void Stk :: swap64(unsigned char *ptr)
 {
-  register unsigned char val;
+  unsigned char val;
 
   // Swap 1st and 8th bytes
   val = *(ptr);
@@ -192,7 +192,7 @@ void Stk :: sleep(unsigned long milliseconds)
 #endif
 }
 
-void Stk :: handleError( StkError::Type type )
+void Stk :: handleError( StkError::Type type ) const
 {
   handleError( oStream_.str(), type );
   oStream_.str( std::string() ); // reset the ostringstream buffer
