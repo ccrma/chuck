@@ -31,7 +31,7 @@
 using namespace stk;
 
 
-#define CMD_NAME "audiotest"
+#define CMD_NAME "audiocmp"
 
 /*** Parameters ***/
 

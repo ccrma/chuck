@@ -6,15 +6,15 @@ CFLAGS+=
 CPPFLAGS+=$(CFLAGS) -Istk
 LDFLAGS+=
 
-CPPMODULES=audiotest
+CPPMODULES=audiocmp
 CPPOBJECTS=$(addsuffix .o,$(CPPMODULES))
 
 STK_CPPMODULES=FileRead FileWvIn OnePole Stk
 STK_CPPOBJECTS=$(addprefix stk/,$(addsuffix .o,$(STK_CPPMODULES)))
 
-default: audiotest
+default: audiocmp
 
-audiotest: $(CPPOBJECTS) $(STK_CPPOBJECTS)
+audiocmp: $(CPPOBJECTS) $(STK_CPPOBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 $(CPPOBJECTS): %.o: %.cpp

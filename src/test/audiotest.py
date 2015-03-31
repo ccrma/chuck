@@ -60,7 +60,8 @@ def fail(testName, output):
 ###
 
 exe = 'chuck'
-audiotest = 'audiotest/audiotest'
+audiotest = 'audiocmp/audiocmp'
+make = ['make', '-C', 'audiocmp']
 recck = 'rec.ck:%s:%f'
 test_dir = '.'
 
@@ -68,6 +69,9 @@ if len(sys.argv) >= 2:
     exe = sys.argv[1]
 if len(sys.argv) >= 3:
     test_dir = sys.argv[2]
+
+print "> %s" % ' '.join(make)
+result = subprocess.call(make, stderr=subprocess.STDOUT)
 
 handle_directory(test_dir, exe, recck, audiotest)
 
