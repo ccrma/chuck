@@ -908,6 +908,8 @@ int Digitalio::cb2( void *output_buffer, void *input_buffer,
     // check xrun
     if( m_xrun < 6 )
     {
+        // reset input buffer
+        vm_ref->shreduler()->bbq->digi_in()->capture();
         // reset output buffer
         vm_ref->shreduler()->bbq->digi_out()->render();
         // timestamp

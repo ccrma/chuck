@@ -2100,7 +2100,7 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft )
     this->now_system += numFrames;
 
     // tick in
-    if( rt_audio )
+    if( rt_audio || m_slave )
     {
         for( j = 0; j < m_num_adc_channels; j++ )
         {
@@ -2171,7 +2171,7 @@ void Chuck_VM_Shreduler::advance2( )
     BBQ * audio = this->bbq;
 
     // tick in
-    if( rt_audio )
+    if( rt_audio || m_slave )
     {
         audio->digi_in()->tick_in( &l, &r );
         m_adc->m_multi_chan[0]->m_current = l * m_adc->m_multi_chan[0]->m_gain;
@@ -2216,7 +2216,7 @@ void Chuck_VM_Shreduler::advance( )
     t_CKUINT i;
 
     // tick in
-    if( rt_audio )
+    if( rt_audio || m_slave )
     {
         audio->digi_in()->tick_in( frame, m_num_adc_channels );
         
