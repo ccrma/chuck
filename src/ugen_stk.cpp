@@ -1234,6 +1234,8 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     Chuck_Env * env = Chuck_Env::instance();
     Chuck_DL_Func * func = NULL;
 
+    std::string doc;
+    
     // set srate
     Stk::setSampleRate( QUERY->srate );
     // test for endian
@@ -2895,15 +2897,20 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin OnePole ugen
     //------------------------------------------------------------------------
 
+    doc = "This protected Filter subclass implements a one-pole digital filter.  A method is provided for setting the pole position along the real axis of the z-plane while maintaining a constant peak filter gain.";
     if( !type_engine_import_ugen_begin( env, "OnePole", "UGen", env->global(), 
                         OnePole_ctor, OnePole_dtor,
-                        OnePole_tick, OnePole_pmsg ) ) return FALSE; 
+                        OnePole_tick, OnePole_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "filter/onepole.ck");
+    
     // member variable
     OnePole_offset_data = type_engine_import_mvar ( env, "int", "@OnePole_data", FALSE );
     if( OnePole_offset_data == CK_INVALID_OFFSET ) goto error;
     
     func = make_new_mfun( "float", "a1", OnePole_ctrl_a1 ); //! filter coefficient
     func->add_arg( "float", "value" );
+    func->doc = "filter coefficient";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "a1", OnePole_cget_a1 ); //! filter coefficient
