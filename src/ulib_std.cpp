@@ -159,119 +159,147 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 
     // begin class
     QUERY->begin_class( QUERY, "Std", "Object" );
+    QUERY->doc_class( QUERY, "Std is a standard library in ChucK, which includes utility functions for random number generation, unit conversions, and absolute value." );
 
     // add abs
     QUERY->add_sfun( QUERY, abs_impl, "int", "abs" );
     QUERY->add_arg( QUERY, "int", "value" );
+    QUERY->doc_func( QUERY, "Return absolute value of integer. " );
     
     // add fabs
     QUERY->add_sfun( QUERY, fabs_impl, "float", "fabs" );
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Return absolute value of float. " );
 
     // add rand
     QUERY->add_sfun( QUERY, rand_impl, "int", "rand"); //! return int between 0 and RAND_MAX
-    
+    QUERY->doc_func( QUERY, "Generates random integer between 0 and Std.RAND_MAX. (NOTE: soon-to-be-deprecated; use Math.random2())." );
+
     // add rand2
     QUERY->add_sfun( QUERY, rand2_impl, "int", "rand2" ); //! integer between [min,max]
     QUERY->add_arg( QUERY, "int", "min" ); 
-    QUERY->add_arg( QUERY, "int", "max" ); 
-    
+    QUERY->add_arg( QUERY, "int", "max" );
+    QUERY->doc_func( QUERY, "Generates random integer in range [min, max]. (NOTE: soon-to-be-deprecated; use Math.random2())." );
+
     // add rand
     QUERY->add_sfun( QUERY, randf_impl, "float", "randf" ); //! rand between -1.0,1.0
+    QUERY->doc_func( QUERY, "Generates random floating point number in the range [-1, 1]. (Note: soon-to-be-deprecated; use Math.randomf())" );
 
     // add rand2
     QUERY->add_sfun( QUERY, rand2f_impl, "float", "rand2f" ); //! rand between min and max
     QUERY->add_arg( QUERY, "float", "min" );
     QUERY->add_arg( QUERY, "float", "max" );
-    
+    QUERY->doc_func( QUERY, "Generates random floating point number in the range [min, max]. (NOTE: soon-to-be-deprecated; use Math.random2f())" );
+
     // add srand
     QUERY->add_sfun( QUERY, srand_impl, "void", "srand" );
     QUERY->add_arg( QUERY, "int", "seed" );
+    QUERY->doc_func( QUERY, "Provide a seed to the random function. Different seeds will generate very different sequences of random numbers even if the seeds are close together. "
+                     "Alternatively, a sequence of random numbers can be repeated by setting the same seed. " );
 
     // add sgn
     QUERY->add_sfun( QUERY, sgn_impl, "float", "sgn" ); //! return sign of value (-1, 0, 1)
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Computes the sign of the input as -1.0 (negative), 0 (zero), or 1.0 (positive)." );
 
     // add system
     //! see \example std.ck
     QUERY->add_sfun( QUERY, system_impl, "int", "system" ); //! issue system command
     QUERY->add_arg( QUERY, "string", "cmd" );
+    QUERY->doc_func( QUERY, "Pass a command to be executed in the shell (requires --caution-to-the-wind command-line flag)." );
 
     // add atoi
     QUERY->add_sfun( QUERY, atoi_impl, "int", "atoi" ); //! string to integer
     QUERY->add_arg( QUERY, "string", "value" );
+    QUERY->doc_func( QUERY, "Converts ascii (string) to integer (int)." );
 
     // add atof
     QUERY->add_sfun( QUERY, atof_impl, "float", "atof" ); //! string to float
     QUERY->add_arg( QUERY, "string", "value" );
+    QUERY->doc_func( QUERY, "Converts ascii (string) to floating point value (float)." );
 
     // add itoa
     QUERY->add_sfun( QUERY, itoa_impl, "string", "itoa" ); //! int to string
     QUERY->add_arg( QUERY, "int", "i" );
+    QUERY->doc_func( QUERY, "Converts integer (int) to ascii (string)." );
 
     // add ftoa
     QUERY->add_sfun( QUERY, ftoa_impl, "string", "ftoa" ); //! float to string
     QUERY->add_arg( QUERY, "float", "f" );
     QUERY->add_arg( QUERY, "int", "precision" );
-    
+    QUERY->doc_func( QUERY, "Converts floating point value (float) to ascii (string) with specified precision (number of decimal digits)." );
+
     // add ftoi
     QUERY->add_sfun( QUERY, ftoi_impl, "int", "ftoi" ); //! float to int
     QUERY->add_arg( QUERY, "float", "f" );
-    
+    QUERY->doc_func( QUERY, "Convert float to int. " );
+
     // add getenv
     QUERY->add_sfun( QUERY, getenv_impl, "string", "getenv" ); //! fetch environment variable
     QUERY->add_arg( QUERY, "string", "value" );
+    QUERY->doc_func( QUERY, "Returns the value of an environment variable, such as of PATH." );
 
     // add setenv
     QUERY->add_sfun( QUERY, setenv_impl, "int", "setenv" ); //! set environment variable
     QUERY->add_arg( QUERY, "string", "key" );
     QUERY->add_arg( QUERY, "string", "value" );
+    QUERY->doc_func( QUERY, "Set value of environment variable named key to value." );
 
     // add mtof
     //! see \example mand-o-matic.ck
     QUERY->add_sfun( QUERY, mtof_impl, "float", "mtof" ); //! midi note to frequency
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Converts a MIDI note number to frequency (Hz). Note the input value is of type float (supports fractional note number)." );
 
     // add ftom
     QUERY->add_sfun( QUERY, ftom_impl, "float", "ftom" ); //! frequency to midi note
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Converts frequency (Hz) to MIDI note number space." );
 
     // add powtodb
     QUERY->add_sfun( QUERY, powtodb_impl, "float", "powtodb" ); //! linear power to decibel 
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Converts signal power ratio to decibels (dB)." );
 
     // add rmstodb
     QUERY->add_sfun( QUERY, rmstodb_impl, "float", "rmstodb" ); //! rms to decibel
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Converts rms to decibels (dB)." );
 
     // add dbtopow
     QUERY->add_sfun( QUERY, dbtopow_impl, "float", "dbtopow" ); //! decibel to linear
     QUERY->add_arg( QUERY, "float", "value" );
-    
+    QUERY->doc_func( QUERY, "Converts decibels (dB) to signal power ratio." );
+
     // add dbtorms
     QUERY->add_sfun( QUERY, dbtorms_impl, "float", "dbtorms" ); //! decibel to rms
     QUERY->add_arg( QUERY, "float", "value" );
-    
+    QUERY->doc_func( QUERY, "Convert " );
+
     // add dbtolin
     QUERY->add_sfun( QUERY, dbtolin_impl, "float", "dbtolin" ); //! decibel to linear
     QUERY->add_arg( QUERY, "float", "value" );
-    
+    QUERY->doc_func( QUERY, "" );
+
     // add lintodb
     QUERY->add_sfun( QUERY, lintodb_impl, "float", "lintodb" ); //! linear to decibel
     QUERY->add_arg( QUERY, "float", "value" );
-    
+    QUERY->doc_func( QUERY, "" );
+
     // add clamp
     QUERY->add_sfun( QUERY, clamp_impl, "int", "clamp" ); //! clamp to range (int)
     QUERY->add_arg( QUERY, "int", "value" );
     QUERY->add_arg( QUERY, "int", "min" );
     QUERY->add_arg( QUERY, "int", "max" );
-    
+    QUERY->doc_func( QUERY, "" );
+
     // add clampf
     QUERY->add_sfun( QUERY, clampf_impl, "float", "clampf" ); //! clamp to range (float)
     QUERY->add_arg( QUERY, "float", "value" );
     QUERY->add_arg( QUERY, "float", "min" );
     QUERY->add_arg( QUERY, "float", "max" );
-    
+    QUERY->doc_func( QUERY, "" );
+
     // add scalef
     QUERY->add_sfun( QUERY, scalef_impl, "float", "scalef" ); //! scale from source range to dest range (float)
     QUERY->add_arg( QUERY, "float", "value" );
@@ -279,6 +307,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "srcmax" );
     QUERY->add_arg( QUERY, "float", "dstmin" );
     QUERY->add_arg( QUERY, "float", "dstmax" );
+    QUERY->doc_func( QUERY, "" );
 
     // finish class
     QUERY->end_class( QUERY );
