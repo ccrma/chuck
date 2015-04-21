@@ -251,18 +251,20 @@ public:
     
     // peek at element i without removing it
     // i = 1 would correspond to the least recently put element;
-    // i = -1 would correspond to the most recent
-    // WARNING: doesn't sanity check that i is a valid index
-    // returns number of elements successfully peeked
+    // i = -1 would correspond to the most recent (not implemented)
+    // returns 1 if elements successfully peeked
     size_t peek(T &element, size_t i)
     {
         if(i == 0)
             return 0;
         
-        if(i > 0)
+        if(i > 0 && i <= numElements())
+        {
             element = m_elements[(m_read+(i-1))%m_numElements];
+            return 1;
+        }
         
-        return 1;
+        return 0;
     }
     
     void clear() { m_write = m_read; }
