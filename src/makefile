@@ -41,7 +41,7 @@ endif
 ifneq ($(CHUCK_DEBUG),)
 CFLAGS+= -g
 else
-CFLAGS+= -O3 -ffast-math
+CFLAGS+= -O3
 endif
 
 ifneq ($(USE_64_BIT_SAMPLE),)
@@ -50,6 +50,11 @@ endif
 
 ifneq ($(CHUCK_STRICT),)
 CFLAGS+= -Wall
+endif
+
+ifneq ($(findstring arm,$(shell uname -p)),)
+# some sort of arm platform- enable aggressive optimizations
+CFLAGS+= -ffast-math
 endif
 
 ifneq (,$(strip $(filter osx bin-dist-osx,$(MAKECMDGOALS))))
