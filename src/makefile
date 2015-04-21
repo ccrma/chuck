@@ -52,6 +52,11 @@ ifneq ($(CHUCK_STRICT),)
 CFLAGS+= -Wall
 endif
 
+ifneq ($(findstring arm,$(shell uname -p)),)
+# some sort of arm platform- enable aggressive optimizations
+CFLAGS+= -ffast-math
+endif
+
 ifneq (,$(strip $(filter osx bin-dist-osx,$(MAKECMDGOALS))))
 include makefile.osx
 endif
