@@ -546,7 +546,7 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
         {
             // TODO: don't use m_tmp_buf (thread safety?)
 #ifdef WIN32
-            _snprintf(m_tmp_buf, m_tmp_buf_max, "%li", val);
+            _snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%li", val);
             m_tmp_buf[m_tmp_buf_max - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
 #else
             snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%li", val);
@@ -611,7 +611,7 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
         if( m_flags & Chuck_IO_File::TYPE_ASCII )
         {
 #ifdef WIN32
-            _snprintf(m_tmp_buf, m_tmp_buf_max, "%f", val);
+            _snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%f", val);
             m_tmp_buf[m_tmp_buf_max - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
 #else
             snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%f", val);
@@ -1288,7 +1288,11 @@ void Chuck_IO_Serial::read_cb()
     m_do_read_thread = TRUE;
     
     m_write_thread = new XThread;
-    m_write_thread->start(shell_write_cb, this);
+#ifdef WIN32
+        m_read_thread->start((unsigned int (__stdcall *)(void*))shell_write_cb, this);
+#else
+	m_write_thread->start(shell_write_cb, this);
+#endif
     
     while(m_do_read_thread && !m_do_exit)
     {
