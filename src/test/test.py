@@ -21,8 +21,8 @@ def handle_directory(dir, exe):
                 print "> %s %s" % (exe, path)
                 try:
                     result = subprocess.check_output([exe, "--silent", "%s" % path], stderr=subprocess.STDOUT)
-
-                    if result.endswith(("\"success\" : (string)\n", "\"success\" : (string)\n\r")):
+                    
+                    if not result.strip().endswith(("\"success\" : (string)",)):
                         if os.path.isfile(path.replace(".ck", ".txt")):
                             # print "\tChecking result with answer file: " + path.replace(".ck", ".txt")
 
