@@ -52,7 +52,7 @@ ifneq ($(CHUCK_STRICT),)
 CFLAGS+= -Wall
 endif
 
-ifneq ($(findstring arm,$(shell uname -p)),)
+ifneq ($(findstring arm,$(shell uname -m)),)
 # some sort of arm platform- enable aggressive optimizations
 CFLAGS+= -ffast-math
 endif
