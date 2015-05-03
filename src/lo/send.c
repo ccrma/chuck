@@ -395,8 +395,8 @@ static int send_data(lo_address a, lo_server from, char *data, const size_t data
     // Re-use existing socket?
     if (from) {
 	sock = from->sockets[0].fd;
-    } else if (a->protocol == LO_UDP && lo_client_sockets.udp!=-1) {
-	sock = lo_client_sockets.udp;
+    //     } else if (a->protocol == LO_UDP && lo_client_sockets.udp!=-1) {
+    // sock = lo_client_sockets.udp;
     } else {
 	if (a->socket==-1) {
 	    ret = create_socket( a );
