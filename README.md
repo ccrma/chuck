@@ -7,3 +7,5 @@ what is it? : ChucK is a programming language for real-time sound synthesis and 
 
 For more information, including documentation, research publications, and community resources, please check out the ChucK website:
 http://chuck.stanford.edu/
+
+
