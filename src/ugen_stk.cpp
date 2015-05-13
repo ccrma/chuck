@@ -2629,62 +2629,76 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     //------------------------------------------------------------------------
     // begin Envelope ugen
     //------------------------------------------------------------------------
-
+    doc = "This class implements a simple envelope generator which is capable of ramping to a target value by a specified rate. It also responds to simple keyOn and keyOff messages, ramping to 1.0 on keyOn and to 0.0 on keyOff.";
     //! see \example sixty.ck
     if( !type_engine_import_ugen_begin( env, "Envelope", "UGen", env->global(), 
                         Envelope_ctor, Envelope_dtor,
-                        Envelope_tick, Envelope_pmsg ) ) return FALSE;
+                        Envelope_tick, Envelope_pmsg, doc.c_str() ) ) return FALSE;
     //member variable
     Envelope_offset_data = type_engine_import_mvar ( env, "int", "@Envelope_data", FALSE );
     if( Envelope_offset_data == CK_INVALID_OFFSET ) goto error;
 
     func = make_new_mfun( "int", "keyOn", Envelope_ctrl_keyOn0 ); //! ramp to 1.0
+    func->doc = "Get keyOn state.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "keyOn", Envelope_ctrl_keyOn ); //! ramp to 1.0
     func->add_arg( "int", "value" );
+    func->doc = "Start attack phase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "keyOff", Envelope_ctrl_keyOff0 ); //! ramp to 0.0
+    func->doc = "Get keyOff state.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "keyOff", Envelope_ctrl_keyOff ); //! ramp to 0.0
     func->add_arg( "int", "value" );
+    func->doc = "Start release phase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "target", Envelope_ctrl_target ); //! ramp to arbitrary value.
     func->add_arg( "float", "value" );
+    func->doc = "Set value to ramp to.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "target", Envelope_cget_target ); //! ramp to arbitrary value.
+    func->doc = "Get value to ramp to.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "time", Envelope_ctrl_time ); //! time to reach target
     func->add_arg( "float", "value" );
+    func->doc = "Set time to reach target (in seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "time", Envelope_cget_time ); //! time to reach target
+    func->doc = "Get time to reach target (in seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "duration", Envelope_ctrl_duration ); //! time to reach target
     func->add_arg( "dur", "value" );
+    func->doc = "Set duration to reach target.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "duration", Envelope_cget_duration ); //! time to reach target
+    func->doc = "Get duration to reach target.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", Envelope_ctrl_rate ); //! attack rate 
     func->add_arg( "float", "value" );
+    func->doc = "Set rate of change.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "float", "rate", Envelope_cget_rate ); //! attack rate 
+    func = make_new_mfun( "float", "rate", Envelope_cget_rate ); //! attack rate
+    func->doc = "Get rate of change.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "value", Envelope_ctrl_value ); //! set immediate value
     func->add_arg( "float", "value" );
+    func->doc = "Set immediate value.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "value", Envelope_cget_value ); //! set immediate value
+    func->doc = "Get immediate value.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -2695,59 +2709,73 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     //------------------------------------------------------------------------
     // begin ADSR ugen
     //------------------------------------------------------------------------
-
+    doc = "This Envelope subclass implements a traditional ADSR (Attack, Decay, Sustain, Release) envelope.  It responds to simple keyOn and keyOff messages, keeping track of its state.";
     //! see \example adsr.ck
     if( !type_engine_import_ugen_begin( env, "ADSR", "Envelope", env->global(), 
                                         ADSR_ctor, ADSR_dtor,
-                                        ADSR_tick, ADSR_pmsg ) ) return FALSE;
+                                        ADSR_tick, ADSR_pmsg, doc.c_str() ) ) return FALSE;
 
     func = make_new_mfun( "dur", "attackTime", ADSR_ctrl_attackTime ); //! attack time
     func->add_arg( "dur", "value" );
+    func->doc = "Set attack time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "attackTime", ADSR_cget_attackTime ); //! attack time
+    func->doc = "Get attack time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "attackRate", ADSR_ctrl_attackRate ); //! attack rate
     func->add_arg( "float", "value" );
+    func->doc = "Set attack rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "attackRate", ADSR_cget_attackRate ); //! attack rate
+    func->doc = "Get attack rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "decayTime", ADSR_ctrl_decayTime ); //! decay time 
     func->add_arg( "dur", "value" );
+    func->doc = "Set decay time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "dur", "decayTime", ADSR_cget_decayTime ); //! decay time 
+    func = make_new_mfun( "dur", "decayTime", ADSR_cget_decayTime ); //! decay time
+    func->doc = "Get decay time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "decayRate", ADSR_ctrl_decayRate ); //! decay rate
     func->add_arg( "float", "value" );
+    func->doc = "Set decay rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "decayRate", ADSR_cget_decayRate ); //! decay rate
+    func->doc = "Get decay rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "sustainLevel", ADSR_ctrl_sustainLevel ); //! sustain level
     func->add_arg( "float", "value" );
+    func->doc = "Set sustain level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "sustainLevel", ADSR_cget_sustainLevel ); //! sustain level
+    func->doc = "Get sustain level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "releaseTime", ADSR_ctrl_releaseTime ); //! release time 
     func->add_arg( "dur", "value" );
+    func->doc = "Set release time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "dur", "releaseTime", ADSR_cget_releaseTime ); //! release time 
+    func = make_new_mfun( "dur", "releaseTime", ADSR_cget_releaseTime ); //! release time
+    func->doc = "Get release time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "releaseRate", ADSR_ctrl_releaseRate ); //! release rate
     func->add_arg( "float", "value" );
+    func->doc = "Set release rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "releaseRate", ADSR_cget_releaseRate ); //! release rate
+    func->doc = "Get release rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "set", ADSR_ctrl_set ); //! set
@@ -2755,6 +2783,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float", "decayTime" );
     func->add_arg( "float", "sustainLevel" );
     func->add_arg( "float", "releaseTime" );
+    func->doc = "Set attack, decay, sustain, and release all at once (in seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "set", ADSR_ctrl_set2 ); //! set
@@ -2762,9 +2791,11 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     func->add_arg( "dur", "decayDuration" );
     func->add_arg( "float", "sustainLevel" );
     func->add_arg( "dur", "releaseDuration" );
+    func->doc = "Set attack, decay, sustain, and release all at once.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "state", ADSR_cget_state ); //! attack=0, decay=1 , sustain=2, release=3, done=4
+    func->doc = "Get state; attack=0, decay=1, sustain=2, release=3, done=4";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     if( !type_engine_import_svar( env, "int", "ATTACK", TRUE, (t_CKUINT) &ADSR_state_ATTACK) ) goto error;
