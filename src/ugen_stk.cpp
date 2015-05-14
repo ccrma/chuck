@@ -3314,38 +3314,48 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin Chorus ugen
     //------------------------------------------------------------------------
 
+    doc = "Implements a chorus effect.";
+    
     if( !type_engine_import_ugen_begin( env, "Chorus", "UGen", env->global(), 
                         Chorus_ctor, Chorus_dtor,
-                        Chorus_tick, Chorus_pmsg ) ) return FALSE;
+                        Chorus_tick, Chorus_pmsg, doc.c_str() ) ) return FALSE;
     //member variable
     Chorus_offset_data = type_engine_import_mvar ( env, "int", "@Chorus_data", FALSE );
     if( Chorus_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "modFreq", Chorus_ctrl_modFreq ); //! modulation frequency
     func->add_arg( "float", "value" );
+    func->doc = "Set modulation frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modFreq", Chorus_cget_modFreq ); //! modulation frequency
+    func->doc = "Get modulation frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modDepth", Chorus_ctrl_modDepth ); //! modulation depth
     func->add_arg( "float", "value" );
+    func->doc = "Set modulation depth.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modDepth", Chorus_cget_modDepth ); //! modulation depth
+    func->doc = "Get modulation depth.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "baseDelay", Chorus_ctrl_baseDelay ); //! base delay
     func->add_arg( "dur", "value" );
+    func->doc = "Set base delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "baseDelay", Chorus_cget_baseDelay ); //! base delay
+    func->doc = "Get base delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", Chorus_ctrl_mix ); //! effect mix
     func->add_arg( "float", "value" );
+    func->doc = "Set effect mix.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", Chorus_cget_mix ); //! effect mix
+    func->doc = "Get effect mix.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "max", Chorus_ctrl_set );
