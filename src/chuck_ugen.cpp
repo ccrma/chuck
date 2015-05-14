@@ -1507,16 +1507,10 @@ Chuck_UGen *ugen_generic_get_src( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isA
 {
     if( isArray )
     {
-        if( chan < ( (Chuck_Array4 *) obj )->size() && chan >= 0 )
-        {
-            Chuck_UGen *src = NULL;
-            ((Chuck_Array4 *) obj)->get( chan, (t_CKUINT *) &src );
-            return src;
-        }
-        else
-        {
-            return NULL;
-        }
+        Chuck_Array4 *arr = (Chuck_Array4 *) obj;
+        Chuck_UGen *src = NULL;
+        arr->get( chan%arr->size(), (t_CKUINT *) &src );
+        return src;
     }
     else
     {
@@ -1534,16 +1528,10 @@ Chuck_UGen *ugen_generic_get_dst( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isA
 {
     if( isArray )
     {
-        if( chan < ((Chuck_Array4 *) obj)->size() && chan >= 0 )
-        {
-            Chuck_UGen *dst = NULL;
-            ( (Chuck_Array4 *) obj )->get( chan, (t_CKUINT *) &dst );
-            return dst;
-        }
-        else
-        {
-            return NULL;
-        }
+        Chuck_Array4 *arr = (Chuck_Array4 *) obj;
+        Chuck_UGen *dst = NULL;
+        ( (Chuck_Array4 *) obj )->get( chan%arr->size(), (t_CKUINT *) &dst );
+        return dst;
     }
     else
     {
