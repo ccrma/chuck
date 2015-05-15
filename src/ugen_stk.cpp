@@ -3372,31 +3372,39 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin Modulate ugen
     //------------------------------------------------------------------------
 
+    doc = "This class combines random and periodic modulations to give a nice, natural human modulation function.";
+    
     if( !type_engine_import_ugen_begin( env, "Modulate", "UGen", env->global(), 
                         Modulate_ctor, Modulate_dtor,
-                        Modulate_tick, Modulate_pmsg ) ) return FALSE;
+                        Modulate_tick, Modulate_pmsg, doc.c_str() ) ) return FALSE;
     //member variable
     Modulate_offset_data = type_engine_import_mvar ( env, "int", "@Modulate_data", FALSE );
     if( Modulate_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "vibratoRate", Modulate_ctrl_vibratoRate );  //! set rate of vibrato
     func->add_arg( "float", "value" );
+    func->doc = "Set rate for vibrato.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoRate", Modulate_cget_vibratoRate );  //! set rate of vibrato
+    func->doc = "Get rate for vibrato.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Modulate_ctrl_vibratoGain ); //! gain for vibrato
     func->add_arg( "float", "value" );
+    func->doc = "Set gain for vibrato.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Modulate_cget_vibratoGain ); //! gain for vibrato
+    func->doc = "Get gain for vibrato.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "randomGain", Modulate_ctrl_randomGain ); //!  gain for random contribution
     func->add_arg( "float", "value" );
+    func->doc = "Set gain for random contribution";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "randomGain", Modulate_cget_randomGain ); //!  gain for random contribution
+    func->doc = "Get gain for random contribution";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -3410,29 +3418,39 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
 
     if( !type_engine_import_ugen_begin( env, "PitShift", "UGen", env->global(), 
                         PitShift_ctor, PitShift_dtor,
-                        PitShift_tick, PitShift_pmsg ) ) return FALSE;
+                        PitShift_tick, PitShift_pmsg, doc.c_str() ) ) return FALSE;
+    
+    doc = " This class implements a simple pitch shifter using delay lines.";
+    
     //member variable
     PitShift_offset_data = type_engine_import_mvar ( env, "int", "@PitShift_data", FALSE );
     if( PitShift_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "shift", PitShift_ctrl_shift ); //! degree of pitch shifting
     func->add_arg( "float", "value" );
+    func->doc = "Set degree of pitch shifting";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "shift", PitShift_cget_shift ); //! degree of pitch shifting
+    func->doc = "Get degree of pitch shifting";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", PitShift_ctrl_effectMix ); //! mix level
     func->add_arg( "float", "value" );
+    func->doc = "Set mix level";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", PitShift_cget_effectMix ); //! mix level
+    func->doc = "Get mix level";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "effectMix", PitShift_ctrl_effectMix ); //! mix level
+    func->doc = "Set effect mix level";
     func->add_arg( "float", "value" );
+    
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "effectMix", PitShift_cget_effectMix ); //! mix level
+    func->doc = "Get effect mix level";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -3444,17 +3462,21 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin SubNoise ugen
     //------------------------------------------------------------------------
 
+    doc = "Generates a new random number every 'rate' ticks using the C rand() function. The quality of the rand() function varies from one OS to another.";
+    
     if( !type_engine_import_ugen_begin( env, "SubNoise", "UGen", env->global(), 
                         SubNoise_ctor, SubNoise_dtor,
-                        SubNoise_tick, SubNoise_pmsg ) ) return FALSE;
+                        SubNoise_tick, SubNoise_pmsg, doc.c_str() ) ) return FALSE;
     //member variable
     SubNoise_offset_data = type_engine_import_mvar ( env, "int", "@SubNoise_data", FALSE );
     if( SubNoise_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "int", "rate", SubNoise_ctrl_rate ); //! subsampling rate
     func->add_arg( "int", "value" );
+    func->doc = "Set subsampling rate";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "rate", SubNoise_cget_rate ); //! subsampling rate
+    func->doc = "Get subsampling rate";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
