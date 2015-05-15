@@ -2169,19 +2169,23 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin Sitar ugen
     //------------------------------------------------------------------------
 
+    doc = "This class implements a sitar plucked string physical model based on the Karplus-Strong algorithm. This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others. There exist at least two patents, assigned to Stanford, bearing the names of Karplus and/or Strong.";
+    
     if( !type_engine_import_ugen_begin( env, "Sitar", "StkInstrument", env->global(), 
                         Sitar_ctor, Sitar_dtor,
-                        Sitar_tick, Sitar_pmsg ) ) return FALSE;
+                        Sitar_tick, Sitar_pmsg, doc.c_str() ) ) return FALSE;
     // member variable
     // Sitar_offset_data = type_engine_import_mvar ( env, "int", "@Sitar_data", FALSE );
     // if( Sitar_offset_data == CK_INVALID_OFFSET ) goto error;
 
     func = make_new_mfun( "float", "pluck", Sitar_ctrl_pluck ); //! pluck
     func->add_arg( "float", "value" );
+    func->doc = "Pluck string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "clear", Sitar_ctrl_clear ); 
     func->add_arg( "float", "value" );
+    func->doc = "Reset.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
