@@ -1042,6 +1042,7 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     /*** OscOut ***/
     
     query->begin_class(query, "OscOut", "Object");
+    query->doc_class(query, "Class for sending OSC messages. ");
     
     oscout_offset_data = query->add_mvar(query, "int", "@OscOut_data", FALSE);
     
