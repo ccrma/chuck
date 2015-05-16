@@ -1234,6 +1234,8 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     Chuck_Env * env = Chuck_Env::instance();
     Chuck_DL_Func * func = NULL;
 
+    std::string doc;
+    
     // set srate
     Stk::setSampleRate( QUERY->srate );
     // test for endian
@@ -2167,19 +2169,23 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin Sitar ugen
     //------------------------------------------------------------------------
 
+    doc = "This class implements a sitar plucked string physical model based on the Karplus-Strong algorithm. This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others. There exist at least two patents, assigned to Stanford, bearing the names of Karplus and/or Strong.";
+    
     if( !type_engine_import_ugen_begin( env, "Sitar", "StkInstrument", env->global(), 
                         Sitar_ctor, Sitar_dtor,
-                        Sitar_tick, Sitar_pmsg ) ) return FALSE;
+                        Sitar_tick, Sitar_pmsg, doc.c_str() ) ) return FALSE;
     // member variable
     // Sitar_offset_data = type_engine_import_mvar ( env, "int", "@Sitar_data", FALSE );
     // if( Sitar_offset_data == CK_INVALID_OFFSET ) goto error;
 
     func = make_new_mfun( "float", "pluck", Sitar_ctrl_pluck ); //! pluck
     func->add_arg( "float", "value" );
+    func->doc = "Pluck string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "clear", Sitar_ctrl_clear ); 
     func->add_arg( "float", "value" );
+    func->doc = "Reset.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -2627,62 +2633,76 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     //------------------------------------------------------------------------
     // begin Envelope ugen
     //------------------------------------------------------------------------
-
+    doc = "This class implements a simple envelope generator which is capable of ramping to a target value by a specified rate. It also responds to simple keyOn and keyOff messages, ramping to 1.0 on keyOn and to 0.0 on keyOff.";
     //! see \example sixty.ck
     if( !type_engine_import_ugen_begin( env, "Envelope", "UGen", env->global(), 
                         Envelope_ctor, Envelope_dtor,
-                        Envelope_tick, Envelope_pmsg ) ) return FALSE;
+                        Envelope_tick, Envelope_pmsg, doc.c_str() ) ) return FALSE;
     //member variable
     Envelope_offset_data = type_engine_import_mvar ( env, "int", "@Envelope_data", FALSE );
     if( Envelope_offset_data == CK_INVALID_OFFSET ) goto error;
 
     func = make_new_mfun( "int", "keyOn", Envelope_ctrl_keyOn0 ); //! ramp to 1.0
+    func->doc = "Get keyOn state.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "keyOn", Envelope_ctrl_keyOn ); //! ramp to 1.0
     func->add_arg( "int", "value" );
+    func->doc = "Start attack phase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "keyOff", Envelope_ctrl_keyOff0 ); //! ramp to 0.0
+    func->doc = "Get keyOff state.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "keyOff", Envelope_ctrl_keyOff ); //! ramp to 0.0
     func->add_arg( "int", "value" );
+    func->doc = "Start release phase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "target", Envelope_ctrl_target ); //! ramp to arbitrary value.
     func->add_arg( "float", "value" );
+    func->doc = "Set value to ramp to.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "target", Envelope_cget_target ); //! ramp to arbitrary value.
+    func->doc = "Get value to ramp to.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "time", Envelope_ctrl_time ); //! time to reach target
     func->add_arg( "float", "value" );
+    func->doc = "Set time to reach target (in seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "time", Envelope_cget_time ); //! time to reach target
+    func->doc = "Get time to reach target (in seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "duration", Envelope_ctrl_duration ); //! time to reach target
     func->add_arg( "dur", "value" );
+    func->doc = "Set duration to reach target.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "duration", Envelope_cget_duration ); //! time to reach target
+    func->doc = "Get duration to reach target.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", Envelope_ctrl_rate ); //! attack rate 
     func->add_arg( "float", "value" );
+    func->doc = "Set rate of change.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "float", "rate", Envelope_cget_rate ); //! attack rate 
+    func = make_new_mfun( "float", "rate", Envelope_cget_rate ); //! attack rate
+    func->doc = "Get rate of change.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "value", Envelope_ctrl_value ); //! set immediate value
     func->add_arg( "float", "value" );
+    func->doc = "Set immediate value.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "value", Envelope_cget_value ); //! set immediate value
+    func->doc = "Get immediate value.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -2693,59 +2713,73 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     //------------------------------------------------------------------------
     // begin ADSR ugen
     //------------------------------------------------------------------------
-
+    doc = "This Envelope subclass implements a traditional ADSR (Attack, Decay, Sustain, Release) envelope.  It responds to simple keyOn and keyOff messages, keeping track of its state.";
     //! see \example adsr.ck
     if( !type_engine_import_ugen_begin( env, "ADSR", "Envelope", env->global(), 
                                         ADSR_ctor, ADSR_dtor,
-                                        ADSR_tick, ADSR_pmsg ) ) return FALSE;
+                                        ADSR_tick, ADSR_pmsg, doc.c_str() ) ) return FALSE;
 
     func = make_new_mfun( "dur", "attackTime", ADSR_ctrl_attackTime ); //! attack time
     func->add_arg( "dur", "value" );
+    func->doc = "Set attack time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "attackTime", ADSR_cget_attackTime ); //! attack time
+    func->doc = "Get attack time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "attackRate", ADSR_ctrl_attackRate ); //! attack rate
     func->add_arg( "float", "value" );
+    func->doc = "Set attack rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "attackRate", ADSR_cget_attackRate ); //! attack rate
+    func->doc = "Get attack rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "decayTime", ADSR_ctrl_decayTime ); //! decay time 
     func->add_arg( "dur", "value" );
+    func->doc = "Set decay time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "dur", "decayTime", ADSR_cget_decayTime ); //! decay time 
+    func = make_new_mfun( "dur", "decayTime", ADSR_cget_decayTime ); //! decay time
+    func->doc = "Get decay time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "decayRate", ADSR_ctrl_decayRate ); //! decay rate
     func->add_arg( "float", "value" );
+    func->doc = "Set decay rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "decayRate", ADSR_cget_decayRate ); //! decay rate
+    func->doc = "Get decay rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "sustainLevel", ADSR_ctrl_sustainLevel ); //! sustain level
     func->add_arg( "float", "value" );
+    func->doc = "Set sustain level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "sustainLevel", ADSR_cget_sustainLevel ); //! sustain level
+    func->doc = "Get sustain level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "releaseTime", ADSR_ctrl_releaseTime ); //! release time 
     func->add_arg( "dur", "value" );
+    func->doc = "Set release time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "dur", "releaseTime", ADSR_cget_releaseTime ); //! release time 
+    func = make_new_mfun( "dur", "releaseTime", ADSR_cget_releaseTime ); //! release time
+    func->doc = "Get release time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "releaseRate", ADSR_ctrl_releaseRate ); //! release rate
     func->add_arg( "float", "value" );
+    func->doc = "Set release rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "releaseRate", ADSR_cget_releaseRate ); //! release rate
+    func->doc = "Get release rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "set", ADSR_ctrl_set ); //! set
@@ -2753,6 +2787,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float", "decayTime" );
     func->add_arg( "float", "sustainLevel" );
     func->add_arg( "float", "releaseTime" );
+    func->doc = "Set attack, decay, sustain, and release all at once (in seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "set", ADSR_ctrl_set2 ); //! set
@@ -2760,9 +2795,11 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     func->add_arg( "dur", "decayDuration" );
     func->add_arg( "float", "sustainLevel" );
     func->add_arg( "dur", "releaseDuration" );
+    func->doc = "Set attack, decay, sustain, and release all at once.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "state", ADSR_cget_state ); //! attack=0, decay=1 , sustain=2, release=3, done=4
+    func->doc = "Get state; attack=0, decay=1, sustain=2, release=3, done=4";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     if( !type_engine_import_svar( env, "int", "ATTACK", TRUE, (t_CKUINT) &ADSR_state_ATTACK) ) goto error;
@@ -2895,32 +2932,42 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin OnePole ugen
     //------------------------------------------------------------------------
 
+    doc = "This protected Filter subclass implements a one-pole digital filter.  A method is provided for setting the pole position along the real axis of the z-plane while maintaining a constant peak filter gain.";
     if( !type_engine_import_ugen_begin( env, "OnePole", "UGen", env->global(), 
                         OnePole_ctor, OnePole_dtor,
-                        OnePole_tick, OnePole_pmsg ) ) return FALSE; 
+                        OnePole_tick, OnePole_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "filter/onepole.ck");
+    
     // member variable
     OnePole_offset_data = type_engine_import_mvar ( env, "int", "@OnePole_data", FALSE );
     if( OnePole_offset_data == CK_INVALID_OFFSET ) goto error;
     
     func = make_new_mfun( "float", "a1", OnePole_ctrl_a1 ); //! filter coefficient
     func->add_arg( "float", "value" );
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "a1", OnePole_cget_a1 ); //! filter coefficient
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", OnePole_ctrl_b0 ); //! filter coefficient 
     func->add_arg( "float", "value" );
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "float", "b0", OnePole_cget_b0 ); //! filter coefficient 
+    func = make_new_mfun( "float", "b0", OnePole_cget_b0 ); //! filter coefficient
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pole", OnePole_ctrl_pole ); //! set pole position along real axis of z-plane
     func->add_arg( "float", "value" );
+    func->doc = "Set pole position along real axis of z-plane.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pole", OnePole_cget_pole ); //! set pole position along real axis of z-plane
+    func->doc = "Get pole position along real axis of z-plane.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -2931,54 +2978,71 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     //------------------------------------------------------------------------
     // begin TwoPole ugen
     //------------------------------------------------------------------------
-
+    doc = "This protected Filter subclass implements a two-pole digital filter.  A method is provided for creating a resonance in the frequency response while maintaining a nearly constant filter gain.";
+    
     //! see \example powerup.ck
+    
     if( !type_engine_import_ugen_begin( env, "TwoPole", "UGen", env->global(), 
                         TwoPole_ctor, TwoPole_dtor,
-                        TwoPole_tick, TwoPole_pmsg ) ) return FALSE;
+                        TwoPole_tick, TwoPole_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "filter/twopole.ck");
+    
     //member variable
     TwoPole_offset_data = type_engine_import_mvar ( env, "int", "@TwoPole_data", FALSE );
     if( TwoPole_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "a1", TwoPole_ctrl_a1 ); //! filter coefficient
     func->add_arg( "float", "value" );
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "a1", TwoPole_cget_a1 ); //! filter coefficient
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "a2", TwoPole_ctrl_a2 ); //! filter coefficient
     func->add_arg( "float", "value" );
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "a2", TwoPole_cget_a2 ); //! filter coefficient
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", TwoPole_ctrl_b0 ); //! filter coefficient
     func->add_arg( "float", "value" );
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", TwoPole_cget_b0 ); //! filter coefficient
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", TwoPole_ctrl_freq ); //! filter resonance frequency
     func->add_arg( "float", "value" );
+    func->doc = "Set filter resonance frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", TwoPole_cget_freq ); //! filter resonance frequency
+    func->doc = "Get filter resonance frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "radius", TwoPole_ctrl_radius ); //! filter resonance radius
     func->add_arg( "float", "value" );
+    func->doc = "Set filter radius resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "radius", TwoPole_cget_radius ); //! filter resonance radius
+    func->doc = "Get filter radius resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "norm", TwoPole_ctrl_norm ); //! toggle filter normalization 
     func->add_arg( "int", "value" );
+    func->doc = "Set filter normalization";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "int", "norm", TwoPole_cget_norm ); //! toggle filter normalization 
+    func = make_new_mfun( "int", "norm", TwoPole_cget_norm ); //! toggle filter normalization
+    func->doc = "Get filter normalization";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -2989,32 +3053,42 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     //------------------------------------------------------------------------
     // begin OneZero ugen
     //------------------------------------------------------------------------
-
+    doc = " This protected Filter subclass implements a one-zero digital filter.  A method is provided for setting the zero position along the real axis of the z-plane while maintaining a constant filter gain.";
+    
     if( !type_engine_import_ugen_begin( env, "OneZero", "UGen", env->global(), 
                         OneZero_ctor, OneZero_dtor,
-                        OneZero_tick, OneZero_pmsg ) ) return FALSE;
+                        OneZero_tick, OneZero_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "filter/onezero.ck");
+
     //member variable
     OneZero_offset_data = type_engine_import_mvar ( env, "int", "@OneZero_data", FALSE );
     if( OneZero_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "zero", OneZero_ctrl_zero ); //! set zero position
     func->add_arg( "float", "value" );
+    func->doc = "Set zero position";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "zero", OneZero_cget_zero ); //! set zero position
+    func->doc = "Get zero position";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", OneZero_ctrl_b0 ); //! filter coefficient
     func->add_arg( "float", "value" );
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", OneZero_cget_b0 ); //! filter coefficient
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b1", OneZero_ctrl_b1 ); //! filter coefficient 
     func->add_arg( "float", "value" );
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "float", "b1", OneZero_cget_b1 ); //! filter coefficient 
+    func = make_new_mfun( "float", "b1", OneZero_cget_b1 ); //! filter coefficient
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -3026,45 +3100,60 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin TwoZero ugen
     //------------------------------------------------------------------------
 
+    doc =  "This protected Filter subclass implements a two-zero digital filter.  A method is provided for creating a 'notch' in the frequency response while maintaining a constant filter gain.";
+    
     if( !type_engine_import_ugen_begin( env, "TwoZero", "UGen", env->global(), 
                         TwoZero_ctor, TwoZero_dtor,
-                        TwoZero_tick, TwoZero_pmsg ) ) return FALSE;
+                        TwoZero_tick, TwoZero_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "filter/twozero.ck");
+    
     //member variable
     TwoZero_offset_data = type_engine_import_mvar ( env, "int", "@TwoZero_data", FALSE );
     if( TwoZero_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "b0", TwoZero_ctrl_b0 ); //! filter coefficient 
     func->add_arg( "float", "value" );
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "float", "b0", TwoZero_cget_b0 ); //! filter coefficient 
+    func = make_new_mfun( "float", "b0", TwoZero_cget_b0 ); //! filter coefficient
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b1", TwoZero_ctrl_b1 ); //! filter coefficient 
     func->add_arg( "float", "value" );
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "float", "b1", TwoZero_cget_b1 ); //! filter coefficient 
+    func = make_new_mfun( "float", "b1", TwoZero_cget_b1 ); //! filter coefficient
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b2", TwoZero_ctrl_b2 ); //! filter coefficient 
     func->add_arg( "float", "value" );
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "float", "b2", TwoZero_cget_b2 ); //! filter coefficient 
+    func = make_new_mfun( "float", "b2", TwoZero_cget_b2 ); //! filter coefficient
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", TwoZero_ctrl_freq ); //! filter notch frequency
     func->add_arg( "float", "value" );
+    func->doc = "Set filter notch frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", TwoZero_cget_freq ); //! filter notch frequency
+    func->doc = "Get filter notch frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "radius", TwoZero_ctrl_radius ); //! filter notch radius
     func->add_arg( "float", "value" );
+    func->doc = "Set filter notch radius.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "radius", TwoZero_cget_radius ); //! filter notch radius
+    func->doc = "Get filter notch radius.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -3078,43 +3167,56 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
 
     if( !type_engine_import_ugen_begin( env, "PoleZero", "UGen", env->global(), 
                         PoleZero_ctor, PoleZero_dtor,
-                        PoleZero_tick, PoleZero_pmsg ) ) return FALSE;
+                        PoleZero_tick, PoleZero_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "filter/twozero.ck");
+    
     //member variable
     PoleZero_offset_data = type_engine_import_mvar ( env, "int", "@PoleZero_data", FALSE );
     if( PoleZero_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "a1", PoleZero_ctrl_a1 ); //! filter coefficient 
     func->add_arg( "float", "value" );
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "float", "a1", PoleZero_cget_a1 ); //! filter coefficient 
+    func = make_new_mfun( "float", "a1", PoleZero_cget_a1 ); //! filter coefficient
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "float", "b0", PoleZero_ctrl_b0 ); //! filter coefficient 
+    func = make_new_mfun( "float", "b0", PoleZero_ctrl_b0 ); //! filter coefficient
     func->add_arg( "float", "value" );
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "float", "b0", PoleZero_cget_b0 ); //! filter coefficient 
+    func = make_new_mfun( "float", "b0", PoleZero_cget_b0 ); //! filter coefficient
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b1", PoleZero_ctrl_b1 ); //! filter coefficient 
     func->add_arg( "float", "value" );
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "float", "b1", PoleZero_cget_b1 ); //! filter coefficient 
+    func = make_new_mfun( "float", "b1", PoleZero_cget_b1 ); //! filter coefficient
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "blockZero", PoleZero_ctrl_blockZero ); //! DC blocking filter with given pole position
     func->add_arg( "float", "value" );
+    func->doc = "Set DC blocking filter with given pole position.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "blockZero", PoleZero_cget_blockZero ); //! DC blocking filter with given pole position
+    func->doc = "Get DC blocking filter with given pole position.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "allpass", PoleZero_ctrl_allpass ); //!allpass filter with given coefficient
     func->add_arg( "float", "value" );
+    func->doc = "Set allpass filter with given coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "allpass", PoleZero_cget_allpass ); //!allpass filter with given coefficient
+    func->doc = "Get allpass filter with given coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -3130,17 +3232,24 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin JCRev ugen
     //------------------------------------------------------------------------
 
+    doc = "John Chowning's reverberator class. This class is derived from the CLM NRev function, which is based on the use of networks of simple allpass and comb delay filters.  This particular arrangement consists of 6 comb filters in parallel, followed by 3 allpass filters, a lowpass filter, and another allpass in series, followed by two allpass filters in parallel with corresponding right and left outputs.";
+    
     if( !type_engine_import_ugen_begin( env, "JCRev", "UGen", env->global(), 
                         JCRev_ctor, JCRev_dtor,
-                        JCRev_tick, JCRev_pmsg ) ) return FALSE;
+                        JCRev_tick, JCRev_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "reverb/jcrev.ck");
+    
     //member variable
     JCRev_offset_data = type_engine_import_mvar ( env, "int", "@JCRev_data", FALSE );
     if( JCRev_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "mix", JCRev_ctrl_mix ); //! mix level
     func->add_arg( "float", "value" );
+    func->doc = "Set mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", JCRev_cget_mix ); //! mix level
+    func->doc = "Get mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -3152,17 +3261,24 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin NRev ugen
     //------------------------------------------------------------------------
 
+    doc =  "CCRMA's NRev reverberator class. This class is derived from the CLM NRev function, which is based on the use of networks of simple allpass and comb delay filters.  This particular arrangement consists of 6 comb filters in parallel, followed by 3 allpass filters, a lowpass filter, and another allpass in series, followed by two allpass filters in parallel with corresponding rightand left outputs.";
+    
     if( !type_engine_import_ugen_begin( env, "NRev", "UGen", env->global(), 
                         NRev_ctor, NRev_dtor,
-                        NRev_tick, NRev_pmsg ) ) return FALSE;
+                        NRev_tick, NRev_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "reverb/nrev.ck");
+    
     //member variable
     NRev_offset_data = type_engine_import_mvar ( env, "int", "@NRev_data", FALSE );
     if( NRev_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "mix", NRev_ctrl_mix ); // set effect mix
     func->add_arg( "float", "value" );
+    func->doc = "Set mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", NRev_cget_mix ); // set effect mix
+    func->doc = "Get mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -3173,17 +3289,24 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin PRCRev ugen
     //------------------------------------------------------------------------
 
+    doc =  "Perry's simple reverberator class. This class is based on some of the famous Stanford/CCRMA reverbs (NRev, KipRev), which were based on the Chowning/Moorer/Schroeder reverberators using networks of simple allpass and comb delay filters.  This class implements two series allpass units and two parallel comb filters.";
+    
     if( !type_engine_import_ugen_begin( env, "PRCRev", "UGen", env->global(), 
                         PRCRev_ctor, PRCRev_dtor,
-                        PRCRev_tick, PRCRev_pmsg ) ) return FALSE;
+                        PRCRev_tick, PRCRev_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "reverb/prcrev.ck");
+    
     //member variable
     PRCRev_offset_data = type_engine_import_mvar ( env, "int", "@PRCRev_data", FALSE );
     if( PRCRev_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "mix", PRCRev_ctrl_mix ); //! mix level
     func->add_arg( "float", "value" );
+    func->doc = "Set mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", PRCRev_cget_mix ); //! mix level
+    func->doc = "Get mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -3195,38 +3318,48 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin Chorus ugen
     //------------------------------------------------------------------------
 
+    doc = "Implements a chorus effect.";
+    
     if( !type_engine_import_ugen_begin( env, "Chorus", "UGen", env->global(), 
                         Chorus_ctor, Chorus_dtor,
-                        Chorus_tick, Chorus_pmsg ) ) return FALSE;
+                        Chorus_tick, Chorus_pmsg, doc.c_str() ) ) return FALSE;
     //member variable
     Chorus_offset_data = type_engine_import_mvar ( env, "int", "@Chorus_data", FALSE );
     if( Chorus_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "modFreq", Chorus_ctrl_modFreq ); //! modulation frequency
     func->add_arg( "float", "value" );
+    func->doc = "Set modulation frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modFreq", Chorus_cget_modFreq ); //! modulation frequency
+    func->doc = "Get modulation frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modDepth", Chorus_ctrl_modDepth ); //! modulation depth
     func->add_arg( "float", "value" );
+    func->doc = "Set modulation depth.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modDepth", Chorus_cget_modDepth ); //! modulation depth
+    func->doc = "Get modulation depth.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "baseDelay", Chorus_ctrl_baseDelay ); //! base delay
     func->add_arg( "dur", "value" );
+    func->doc = "Set base delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "baseDelay", Chorus_cget_baseDelay ); //! base delay
+    func->doc = "Get base delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", Chorus_ctrl_mix ); //! effect mix
     func->add_arg( "float", "value" );
+    func->doc = "Set effect mix.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", Chorus_cget_mix ); //! effect mix
+    func->doc = "Get effect mix.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "max", Chorus_ctrl_set );
@@ -3243,31 +3376,39 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin Modulate ugen
     //------------------------------------------------------------------------
 
+    doc = "This class combines random and periodic modulations to give a nice, natural human modulation function.";
+    
     if( !type_engine_import_ugen_begin( env, "Modulate", "UGen", env->global(), 
                         Modulate_ctor, Modulate_dtor,
-                        Modulate_tick, Modulate_pmsg ) ) return FALSE;
+                        Modulate_tick, Modulate_pmsg, doc.c_str() ) ) return FALSE;
     //member variable
     Modulate_offset_data = type_engine_import_mvar ( env, "int", "@Modulate_data", FALSE );
     if( Modulate_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "vibratoRate", Modulate_ctrl_vibratoRate );  //! set rate of vibrato
     func->add_arg( "float", "value" );
+    func->doc = "Set rate for vibrato.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoRate", Modulate_cget_vibratoRate );  //! set rate of vibrato
+    func->doc = "Get rate for vibrato.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Modulate_ctrl_vibratoGain ); //! gain for vibrato
     func->add_arg( "float", "value" );
+    func->doc = "Set gain for vibrato.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Modulate_cget_vibratoGain ); //! gain for vibrato
+    func->doc = "Get gain for vibrato.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "randomGain", Modulate_ctrl_randomGain ); //!  gain for random contribution
     func->add_arg( "float", "value" );
+    func->doc = "Set gain for random contribution";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "randomGain", Modulate_cget_randomGain ); //!  gain for random contribution
+    func->doc = "Get gain for random contribution";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -3281,29 +3422,39 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
 
     if( !type_engine_import_ugen_begin( env, "PitShift", "UGen", env->global(), 
                         PitShift_ctor, PitShift_dtor,
-                        PitShift_tick, PitShift_pmsg ) ) return FALSE;
+                        PitShift_tick, PitShift_pmsg, doc.c_str() ) ) return FALSE;
+    
+    doc = " This class implements a simple pitch shifter using delay lines.";
+    
     //member variable
     PitShift_offset_data = type_engine_import_mvar ( env, "int", "@PitShift_data", FALSE );
     if( PitShift_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "shift", PitShift_ctrl_shift ); //! degree of pitch shifting
     func->add_arg( "float", "value" );
+    func->doc = "Set degree of pitch shifting";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "shift", PitShift_cget_shift ); //! degree of pitch shifting
+    func->doc = "Get degree of pitch shifting";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", PitShift_ctrl_effectMix ); //! mix level
     func->add_arg( "float", "value" );
+    func->doc = "Set mix level";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", PitShift_cget_effectMix ); //! mix level
+    func->doc = "Get mix level";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "effectMix", PitShift_ctrl_effectMix ); //! mix level
+    func->doc = "Set effect mix level";
     func->add_arg( "float", "value" );
+    
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "effectMix", PitShift_cget_effectMix ); //! mix level
+    func->doc = "Get effect mix level";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -3315,17 +3466,21 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin SubNoise ugen
     //------------------------------------------------------------------------
 
+    doc = "Generates a new random number every 'rate' ticks using the C rand() function. The quality of the rand() function varies from one OS to another.";
+    
     if( !type_engine_import_ugen_begin( env, "SubNoise", "UGen", env->global(), 
                         SubNoise_ctor, SubNoise_dtor,
-                        SubNoise_tick, SubNoise_pmsg ) ) return FALSE;
+                        SubNoise_tick, SubNoise_pmsg, doc.c_str() ) ) return FALSE;
     //member variable
     SubNoise_offset_data = type_engine_import_mvar ( env, "int", "@SubNoise_data", FALSE );
     if( SubNoise_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "int", "rate", SubNoise_ctrl_rate ); //! subsampling rate
     func->add_arg( "int", "value" );
+    func->doc = "Set subsampling rate";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "rate", SubNoise_cget_rate ); //! subsampling rate
+    func->doc = "Get subsampling rate";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
