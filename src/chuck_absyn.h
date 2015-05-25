@@ -135,6 +135,7 @@ a_Section new_section_func_def( a_Func_Def func_def, int pos );
 a_Section new_section_class_def( a_Class_Def class_def, int pos );
 a_Stmt_List new_stmt_list( a_Stmt stmt, int pos );
 a_Stmt_List prepend_stmt_list( a_Stmt stmt, a_Stmt_List stmt_list, int pos );
+a_Stmt_List append_stmt_list( a_Stmt_List stmt_list, a_Stmt stmt, int pos );
 a_Stmt new_stmt_from_expression( a_Exp exp, int pos );
 a_Stmt new_stmt_from_code( a_Stmt_List code, int pos );
 a_Stmt new_stmt_from_while( a_Exp cond, a_Stmt body, int pos );

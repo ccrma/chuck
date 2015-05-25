@@ -102,6 +102,15 @@ a_Stmt_List prepend_stmt_list( a_Stmt stmt, a_Stmt_List stmt_list, int pos )
     return a;
 }
 
+a_Stmt_List append_stmt_list( a_Stmt_List stmt_list, a_Stmt stmt, int pos )
+{
+    a_Stmt_List a = new_stmt_list( stmt, pos );
+    a->next = stmt_list;
+    a->linepos = pos;
+    return a;
+}
+
+
 a_Stmt new_stmt_from_expression( a_Exp exp, int pos )
 {
     a_Stmt a = (a_Stmt)checked_malloc( sizeof( struct a_Stmt_ ) );

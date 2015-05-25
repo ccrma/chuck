@@ -43,6 +43,7 @@
 #include "chuck_absyn.h"
 
 // function
+int yydebug = 1;
 int yylex( void );
 
 void yyerror( char *s )
@@ -297,7 +298,8 @@ arg_list
 
 statement_list
         : statement                         { $$ = new_stmt_list( $1, EM_lineNum ); }
-        | statement statement_list          { $$ = prepend_stmt_list( $1, $2, EM_lineNum ); }
+        | statement_list statement          { $$ = append_stmt_list( $1, $2, EM_lineNum ); }
+        // | statement statement_list          { $$ = prepend_stmt_list( $1, $2, EM_lineNum ); }
         ;
         
 statement
