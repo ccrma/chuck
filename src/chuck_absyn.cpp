@@ -49,7 +49,15 @@ a_Program prepend_program( a_Section section, a_Program program, int pos )
     a_Program a = new_program( section, pos );
     a->next = program;
     a->linepos = pos;
-    
+
+    return a;
+}
+a_Program append_program( a_Program program, a_Section section, int pos )
+{
+    a_Program a = new_program( section, pos );
+    a->next = program;
+    a->linepos = pos;
+
     return a;
 }
 
@@ -101,6 +109,25 @@ a_Stmt_List prepend_stmt_list( a_Stmt stmt, a_Stmt_List stmt_list, int pos )
 
     return a;
 }
+
+a_Stmt_List append_stmt_list( a_Stmt_List stmt_list, a_Stmt stmt, int pos )
+{
+  a_Stmt_List a = new_stmt_list( stmt, pos );
+  a_Stmt_List current;
+  while (1)
+    {
+      current = stmt_list->next;
+      if (current == NULL) {
+        current->next = a;
+        current->linepos = pos;
+        break;
+      } else {
+        current = current->next;
+      }
+    }
+  return stmt_list;
+}
+
 
 a_Stmt new_stmt_from_expression( a_Exp exp, int pos )
 {
@@ -295,6 +322,21 @@ a_Stmt new_stmt_from_case( a_Exp exp, int pos )
 a_Exp prepend_expression( a_Exp exp, a_Exp list, int pos )
 {
     exp->next = list;
+    return exp;
+}
+a_Exp append_expression( a_Exp list, a_Exp exp, int pos )
+{
+  a_Exp current;
+  while (1)
+    {
+      current = exp->next;
+      if (current == NULL) {
+        current->next = exp;
+        break;
+      } else {
+        current = current->next;
+      }
+    }
     return exp;
 }
 
@@ -637,8 +679,24 @@ a_Var_Decl_List prepend_var_decl_list( a_Var_Decl var_decl, a_Var_Decl_List list
 {
     a_Var_Decl_List a = new_var_decl_list( var_decl, pos );
     a->next = list;
-    
+
     return a;
+}
+a_Var_Decl_List append_var_decl_list( a_Var_Decl_List list, a_Var_Decl var_decl, int pos )
+{
+  a_Var_Decl_List a = new_var_decl_list( var_decl, pos );
+  a_Var_Decl_List current;
+  while (1)
+    {
+      current = list->next;
+      if (current == NULL) {
+        current->next = a;
+        break;
+      } else {
+        current = current->next;
+      }
+    }
+    return list;
 }
 
 a_Type_Decl new_type_decl( a_Id_List type, int ref, int pos )
@@ -681,6 +739,24 @@ a_Arg_List prepend_arg_list( a_Type_Decl type_decl, a_Var_Decl var_decl,
 
     return a;
 }
+a_Arg_List append_arg_list(a_Type_Decl type_decl, a_Var_Decl var_decl, a_Arg_List arg_list, int pos)
+{
+  a_Arg_List a = new_arg_list( type_decl, var_decl, pos );
+  a_Arg_List current;
+
+  while (1)
+    {
+      current = arg_list->next;
+      if (current == NULL) {
+        current->next = a;
+        break;
+      } else {
+        current = current->next;
+      }
+    }
+    return arg_list;
+}
+
 
 a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
                          a_Type_Decl type_decl, c_str name,
@@ -739,6 +815,23 @@ a_Class_Body prepend_class_body( a_Section section, a_Class_Body body, int pos )
 
     return a;
 }
+// a_Class_Body append_class_body( a_Class_Body body, a_Section section, int pos )
+// {
+//   a_Class_Body a = new_class_body( section, pos );
+//   a_Section current;
+//   while (1)
+//     {
+//       current = &(body->next;
+//       if (current == NULL) {
+//         current->next = &a;
+//         current->linepos = pos;
+//         break;
+//       } else {
+//         current = &(current->next);
+//       }
+//     }
+//     return body;
+// }
 
 a_Class_Ext new_class_ext( a_Id_List extend_id, a_Id_List impl_list, int pos )
 {
@@ -820,7 +913,44 @@ a_Array_Sub prepend_array_sub( a_Array_Sub a, a_Exp exp, int pos )
         a->err_pos = exp->linepos; // set error for type-checker
         goto error;
     }
-    
+
+    // empty or not
+    if( (exp && !a->exp_list) || (!exp && a->exp_list) )
+    {
+        a->err_num = 2;   // partial
+        a->err_pos = pos; // set error for type-checker
+        goto error;
+    }
+
+    // prepend
+    if( exp )
+    {
+        exp->next = a->exp_list;
+        a->exp_list = exp;
+    }
+
+    // count
+    a->depth++;
+    return a;
+
+error:
+    clean_exp( exp );
+    return a;
+}
+
+a_Array_Sub append_array_sub( a_Exp exp, a_Array_Sub a, int pos )
+{
+    // if already error
+    if( a->err_num ) goto error;
+
+    // make sure no multi
+    if( exp && exp->next )
+    {
+        a->err_num = 1;            // multi
+        a->err_pos = exp->linepos; // set error for type-checker
+        goto error;
+    }
+
     // empty or not
     if( (exp && !a->exp_list) || (!exp && a->exp_list) )
     {

@@ -130,6 +130,8 @@ chuck: $(OBJS)
 
 chuck.tab.c chuck.tab.h: chuck.y
 	$(YACC) -dv -b chuck chuck.y
+# $(YACC) --debug --verbose -dv -b chuck chuck.y
+
 
 chuck.yy.c: chuck.lex
 	$(LEX) -ochuck.yy.c chuck.lex
