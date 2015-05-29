@@ -5710,8 +5710,8 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static )
         a_Array_Sub array_sub = new_array_sub( NULL, 0 );
 
         for( int i = 1; i < array_depth; i++ )
-	  array_sub = prepend_array_sub( array_sub, NULL, 0 );
-	
+	array_sub = prepend_array_sub( array_sub, NULL, 0 );
+
         type_decl = add_type_decl_array( type_decl, array_sub, 0 );
     }
 
