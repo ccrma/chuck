@@ -5708,10 +5708,10 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static )
     if( array_depth )
     {
         a_Array_Sub array_sub = new_array_sub( NULL, 0 );
-        
+
         for( int i = 1; i < array_depth; i++ )
-            array_sub = prepend_array_sub( array_sub, NULL, 0 );
-        
+	  array_sub = prepend_array_sub( array_sub, NULL, 0 );
+	
         type_decl = add_type_decl_array( type_decl, array_sub, 0 );
     }
 
@@ -5861,8 +5861,8 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
             a_Exp exp_decl = new_exp_decl( type_decl, var_decl_list, TRUE, 0 );
             // add addr
             var_decl->addr = (void *)cl->svars[j]->static_addr;
-            // prepend exp stmt to stmt list
-            svar_decls = prepend_stmt_list( new_stmt_from_expression( exp_decl, 0 ), svar_decls, 0 );
+            // append exp stmt to stmt list
+	    svar_decls = append_stmt_list( svar_decls, new_stmt_from_expression( exp_decl, 0 ), 0 );
         }
 
         // if there are any declarations, prepend them to body
