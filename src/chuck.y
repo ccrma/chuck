@@ -83,7 +83,7 @@ a_Program g_program = NULL;
 
 // expect 38 shift/reduce conflicts
 // 1.3.3.0: changed to 38 for char literal - spencer
-%expect 38
+%expect 73
 
 %token <sval> ID STRING_LIT CHAR_LIT
 %token <ival> NUM
@@ -176,7 +176,7 @@ a_Program g_program = NULL;
 
 program
         : program_section                   { $$ = g_program = new_program( $1, EM_lineNum ); }
-        | program_section program           { $$ = g_program = prepend_program( $1, $2, EM_lineNum ); }
+        | program program_section           { $$ = g_program = append_program( $1, $2, EM_lineNum ); }
         ;
         
 program_section
@@ -297,7 +297,7 @@ arg_list
 
 statement_list
         : statement                         { $$ = new_stmt_list( $1, EM_lineNum ); }
-        | statement statement_list          { $$ = prepend_stmt_list( $1, $2, EM_lineNum ); }
+        | statement_list statement          { $$ = append_stmt_list( $1, $2, EM_lineNum ); }
         ;
         
 statement
@@ -352,7 +352,7 @@ expression_statement
         
 expression
         : chuck_expression                  { $$ = $1; }
-        | chuck_expression COMMA expression { $$ = prepend_expression( $1, $3, EM_lineNum ); }
+        | expression COMMA chuck_expression  { $$ = append_expression( $1, $3, EM_lineNum ); }
         ;
 
 chuck_expression
