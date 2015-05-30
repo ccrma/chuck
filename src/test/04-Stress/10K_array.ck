@@ -6,7 +6,7 @@ SinOsc c => dac;
 .5 => c.gain;
 0 => c.freq;
 
-60.0 / 400.0 => float beat;
+60.0 / 1000.0 => float beat;
 beat::second => dur T;
 T - (now % T) => now;
 
@@ -14,5 +14,6 @@ T - (now % T) => now;
 
 for( 0 => int i; i < foo.cap(); i++ ) {
  foo[i] => c.freq;
- .1::T => now;
+ .01::T => now;
 }
+<<<"success">>>;
