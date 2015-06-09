@@ -63,7 +63,9 @@ const t_CKINT Chuck_IO_File::FLAG_APPEND = 0x40;
 const t_CKINT Chuck_IO_File::TYPE_ASCII = 0x80;
 const t_CKINT Chuck_IO_File::TYPE_BINARY = 0x100;
 Chuck_IO_Chout * Chuck_IO_Chout::our_chout = NULL;
+std::ostream *Chuck_IO_Chout::s_stream = &std::cout;
 Chuck_IO_Cherr * Chuck_IO_Cherr::our_cherr = NULL;
+std::ostream *Chuck_IO_Cherr::s_stream = &std::cerr;
 
 
 
@@ -2441,14 +2443,19 @@ Chuck_IO_Chout * Chuck_IO_Chout::getInstance()
     return our_chout;
 }
 
+void Chuck_IO_Chout::set_stream( std::ostream *stream )
+{
+    s_stream = stream;
+}
+
 t_CKBOOL Chuck_IO_Chout::good()
-{ return cout.good(); }
+{ return s_stream->good(); }
 
 void Chuck_IO_Chout::close()
 { /* uh can't do it */ }
 
 void Chuck_IO_Chout::flush()
-{ cout.flush(); }
+{ s_stream->flush(); }
 
 t_CKINT Chuck_IO_Chout::mode()
 { return 0; }
@@ -2476,16 +2483,16 @@ t_CKBOOL Chuck_IO_Chout::eof()
 
 void Chuck_IO_Chout::write( const std::string & val )
 // added 1.3.0.0: the flush
-{ cout << val; if( val == "\n" ) cout.flush(); }
+{ (*s_stream) << val; if( val == "\n" ) s_stream->flush(); }
 
 void Chuck_IO_Chout::write( t_CKINT val )
-{ cout << val; }
+{ (*s_stream) << val; }
 
 void Chuck_IO_Chout::write( t_CKINT val, t_CKINT flags )
-{ cout << val; }
+{ (*s_stream) << val; }
 
 void Chuck_IO_Chout::write( t_CKFLOAT val )
-{ cout << val; }
+{ (*s_stream) << val; }
 
 
 Chuck_IO_Cherr::Chuck_IO_Cherr() { }
@@ -2508,14 +2515,19 @@ Chuck_IO_Cherr * Chuck_IO_Cherr::getInstance()
     return our_cherr;
 }
 
+void Chuck_IO_Cherr::set_stream( std::ostream *stream )
+{
+    s_stream = stream;
+}
+
 t_CKBOOL Chuck_IO_Cherr::good()
-{ return cerr.good(); }
+{ return s_stream->good(); }
 
 void Chuck_IO_Cherr::close()
 { /* uh can't do it */ }
 
 void Chuck_IO_Cherr::flush()
-{ cerr.flush(); }
+{ s_stream->flush(); }
 
 t_CKINT Chuck_IO_Cherr::mode()
 { return 0; }
@@ -2542,14 +2554,14 @@ t_CKBOOL Chuck_IO_Cherr::eof()
 { return TRUE; }
 
 void Chuck_IO_Cherr::write( const std::string & val )
-{ cerr << val; }
+{ (*s_stream) << val; }
 
 void Chuck_IO_Cherr::write( t_CKINT val )
-{ cerr << val; }
+{ (*s_stream) << val; }
 
 void Chuck_IO_Cherr::write( t_CKINT val, t_CKINT flags )
-{ cout << val; }
+{ (*s_stream) << val; }
 
 void Chuck_IO_Cherr::write( t_CKFLOAT val )
-{ cerr << val; }
+{ (*s_stream) << val; }
 

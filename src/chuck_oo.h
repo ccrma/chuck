@@ -526,6 +526,8 @@ public:
     static Chuck_IO_Chout * our_chout;
     static Chuck_IO_Chout * getInstance();
     
+    static void set_stream( std::ostream *stream );
+    
 public:
     // meta
     virtual t_CKBOOL good();
@@ -546,6 +548,9 @@ public:
     virtual void write( t_CKINT val );
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
+    
+private:
+    static std::ostream *s_stream;
 };
 
 
@@ -564,6 +569,8 @@ public:
     static Chuck_IO_Cherr * our_cherr;
     static Chuck_IO_Cherr * getInstance();
     
+    static void set_stream( std::ostream *stream );
+    
 public:
     // meta
     virtual t_CKBOOL good();
@@ -584,6 +591,9 @@ public:
     virtual void write( t_CKINT val );
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
+
+private:
+    static std::ostream *s_stream;
 };
 
 
