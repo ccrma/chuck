@@ -76,6 +76,7 @@ extern int g_loglevel;
 // macro to compare
 #define DO_LOG(x) ( x <= g_loglevel )
 
+void EM_setfd( FILE * fd );
 void EM_error( int, c_constr, ... );
 void EM_error2( int, c_constr, ... );
 void EM_error2b( int, c_constr, ... );
