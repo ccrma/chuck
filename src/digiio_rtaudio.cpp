@@ -43,7 +43,7 @@
 #include "momu/mo_audio.h"
 #endif // __CHIP_MODE__
 #ifndef __DISABLE_MIDI__
-#include "rtmidi.h"
+#include "RtMidi/RtMidi.h"
 #endif // __DISABLE_MIDI__
 // #include <signal.h>
 #if (defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__)) && !defined(__WINDOWS_PTHREAD__)

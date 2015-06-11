@@ -399,7 +399,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, t_CKINT device_num )
         try {
             rtmin->openPort( device_num );
             rtmin->setCallback( cb_midi_input, cbuf );
-        } catch( RtError & err ) {
+        } catch( RtMidiError & err ) {
             if( !min->m_suppress_output )
             {
                 // print it
@@ -475,7 +475,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, const std::string & name )
             }
         }
     }
-    catch( RtError & err )
+    catch( RtMidiError & err )
     {
         if( !min->m_suppress_output )
         {
@@ -580,7 +580,7 @@ void probeMidiIn()
 
     try {
         min = new RtMidiIn;;
-    } catch( RtError & err ) {
+    } catch( RtMidiError & err ) {
         EM_error2b( 0, "%s", err.getMessage().c_str() );
         return;
     }
@@ -594,7 +594,7 @@ void probeMidiIn()
     for( t_CKUINT i = 0; i < num; i++ )
     {
         try { s = min->getPortName( i ); }
-        catch( RtError & err )
+        catch( RtMidiError & err )
         { err.printMessage(); return; }
         EM_error2b( 0, "    [%i] : \"%s\"", i, s.c_str() );
         
@@ -615,7 +615,7 @@ void probeMidiOut()
 
     try {
         mout = new RtMidiOut;
-    } catch( RtError & err ) {
+    } catch( RtMidiError & err ) {
         EM_error2b( 0, "%s", err.getMessage().c_str() );
         return;
     }
@@ -627,7 +627,7 @@ void probeMidiOut()
     for( t_CKUINT i = 0; i < num; i++ )
     {
         try { s = mout->getPortName( i ); }
-        catch( RtError & err )
+        catch( RtMidiError & err )
         { err.printMessage(); return; }
         EM_error2b( 0, "    [%i] : \"%s\"", i, s.c_str() );
     }
@@ -655,7 +655,7 @@ t_CKBOOL MidiOutManager::open( MidiOut * mout, t_CKINT device_num )
         RtMidiOut * rtmout = new RtMidiOut;
         try {
             rtmout->openPort( device_num );
-        } catch( RtError & err ) {
+        } catch( RtMidiError & err ) {
             if( !mout->m_suppress_output )
             {
                 // print it
@@ -721,7 +721,7 @@ t_CKBOOL MidiOutManager::open( MidiOut * mout, const std::string & name )
             }
         }
     }
-    catch( RtError & err )
+    catch( RtMidiError & err )
     {
         if( !mout->m_suppress_output )
         {
