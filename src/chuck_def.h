@@ -122,6 +122,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #define ck_max(x,y)                 ( (x) >= (y) ? (x) : (y) )
 #define ck_min(x,y)                 ( (x) <= (y) ? (x) : (y) )
 
+#ifndef __arm__
 // dedenormal
 #define CK_DDN_SINGLE(f)            f = ( f >= 0 ? \
         ( ( f > (t_CKSINGLE)1e-15 && f < (t_CKSINGLE)1e15 ) ? f : (t_CKSINGLE)0.0 ) : \
@@ -129,7 +130,10 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #define CK_DDN_DOUBLE(f)            f = ( f >= 0 ? \
         ( ( f > (t_CKDOUBLE)1e-15 && f < (t_CKDOUBLE)1e15 ) ? f : 0.0 ) : \
         ( ( f < (t_CKDOUBLE)-1e-15 && f > (t_CKDOUBLE)-1e15 ) ? f : 0.0 ) )
-
+#else
+#define CK_DDN_SINGLE(f) (f)
+#define CK_DDN_DOUBLE(f) (f)
+#endif // __arm__
 
 // tracking
 #if defined(__CHUCK_STAT_TRACK__)
@@ -161,7 +165,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #endif
 
 #ifdef __CHIP_MODE__
-#define __DISABLE_MIDI__
+//#define __DISABLE_MIDI__
 //#define __DISABLE_SNDBUF__
 #define __DISABLE_WATCHDOG__
 #define __DISABLE_RAW__
@@ -173,6 +177,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #define __ALTER_ENTRY_POINT__
 #define __STK_USE_SINGLE_PRECISION__
 #endif
+
 
 #ifdef __LIBCHUCK__
 #define __DISABLE_MIDI__
@@ -189,6 +194,10 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #endif
 
 
+#ifdef __arm__
+// enable additional optimization
+#define __STK_USE_SINGLE_PRECISION__
+#endif // __arm__
 
 
 #endif

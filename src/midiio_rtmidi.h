@@ -35,7 +35,7 @@
 
 #include "chuck_def.h"
 #ifndef __DISABLE_MIDI__
-#include "rtmidi.h"
+#include "RtMidi/RtMidi.h"
 #endif
 #include "util_buffers.h"
 

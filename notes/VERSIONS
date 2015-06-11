@@ -1,3 +1,18 @@
+1.3.5.1
+---
+  - (added) new ChuGins
+            - PowerADSR
+              by Eric Heep
+              Power function ADSR envelope.
+            - WinFuncEnv
+              by Eric Heep
+              Envelope built on window functions.
+  - (added) more aggressive optimizations for ARM platforms
+  - (fixed) SndBuf fixes
+  - (fixed) SerialIO fixes:
+            - newline handling
+            - full-duplex IO
+            - general lag issues
 
 1.3.5.0
 ---

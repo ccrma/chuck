@@ -2644,7 +2644,7 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
     else
     {
         if( d->curf < 0 ) d->curf = 0;
-        else if( d->curf >= d->num_frames ) d->curf = d->num_frames;
+        else if( d->curf >= d->num_frames ) d->curf = d->num_frames-1;
     }
 
     t_CKUINT index = d->chan + ((t_CKINT)d->curf) * d->num_channels;
@@ -2664,12 +2664,12 @@ inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT frame_pos, t_CKINT arg_c
     // boundary cases
     t_CKINT nf = d->num_frames;
     if( d->loop ) { 
-        while( frame_pos > nf ) frame_pos -= nf;
-        while( frame_pos <  0  ) frame_pos += nf;
+        while( frame_pos >= nf ) frame_pos -= nf;
+        while( frame_pos <  0 ) frame_pos += nf;
     }
     else { 
-        if( frame_pos > nf ) frame_pos = nf;
-        if( frame_pos < 0   ) frame_pos = 0;
+        if( frame_pos >= nf ) frame_pos = nf-1;
+        if( frame_pos < 0 ) frame_pos = 0;
     }
     
     // if specific channel was requested, use that one

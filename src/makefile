@@ -24,7 +24,7 @@ osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
 win32:
 	make -f makefile.win32
 
-CK_VERSION=1.3.5.1-beta-1
+CK_VERSION=1.3.5.1
 
 LEX=flex
 YACC=bison
@@ -50,6 +50,11 @@ endif
 
 ifneq ($(CHUCK_STRICT),)
 CFLAGS+= -Wall
+endif
+
+ifneq ($(findstring arm,$(shell uname -m)),)
+# some sort of arm platform- enable aggressive optimizations
+CFLAGS+= -ffast-math
 endif
 
 ifneq (,$(strip $(filter osx bin-dist-osx,$(MAKECMDGOALS))))
@@ -85,8 +90,9 @@ CXXSRCS+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	chuck_main.cpp chuck_otf.cpp chuck_stats.cpp chuck_bbq.cpp chuck_shell.cpp \
 	chuck_console.cpp chuck_globals.cpp chuck_io.cpp \
     digiio_rtaudio.cpp hidio_sdl.cpp \
-	midiio_rtmidi.cpp RtAudio/RtAudio.cpp rtmidi.cpp ugen_osc.cpp ugen_filter.cpp \
-	ugen_stk.cpp ugen_xxx.cpp ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
+	midiio_rtmidi.cpp RtAudio/RtAudio.cpp RtMidi/RtMidi.cpp \
+    ugen_osc.cpp ugen_filter.cpp ugen_stk.cpp ugen_xxx.cpp \
+    ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
 	ulib_opsc.cpp ulib_regex.cpp util_buffers.cpp util_console.cpp \
 	util_string.cpp util_thread.cpp util_opsc.cpp util_serial.cpp \
 	util_hid.cpp uana_xform.cpp uana_extract.cpp
