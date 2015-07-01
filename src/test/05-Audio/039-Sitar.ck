@@ -1,0 +1,15 @@
+Sitar ug => dac;
+30::second => dur duration;
+100 => int steps;
+
+1000 => ug.freq;
+Std.srand(0);
+
+for (int i; i < steps; i++)
+{
+    ug.noteOn(1.0);
+    ug.pluck(1.0);
+    duration/steps => now;
+    ug.noteOff(1.0);
+}
+
