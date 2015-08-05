@@ -10,3 +10,6 @@ src/Release
 src/Debug
 
 .DS_Store
+
+src/chuck.xcodeproj/project.xcworkspace/
+src/chuck.xcodeproj/xcuserdata/
