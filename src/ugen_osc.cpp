@@ -938,10 +938,12 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
         
     func = make_new_mfun( "float", "lookup", genX_lookup ); //lookup table value
     func->add_arg( "float", "which" );
+    func->doc = "Returns lookup table value at index i [ -1, 1 ]. Absolute value is used in the range [ -1, 0 ).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float[]", "coefs", genX_coeffs ); //load table
     func->add_arg( "float", "v[]" );
+    func->doc = "Set lookup table coefficients. Meaning is dependent on subclass.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
