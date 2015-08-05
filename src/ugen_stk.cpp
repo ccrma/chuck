@@ -2177,7 +2177,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // member variable
     // Sitar_offset_data = type_engine_import_mvar ( env, "int", "@Sitar_data", FALSE );
     // if( Sitar_offset_data == CK_INVALID_OFFSET ) goto error;
-
+    
     func = make_new_mfun( "float", "pluck", Sitar_ctrl_pluck ); //! pluck
     func->add_arg( "float", "value" );
     func->doc = "Pluck string.";
@@ -2196,10 +2196,12 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin StifKarp ugen
     //------------------------------------------------------------------------
 
+    doc = "This class implements a simple plucked string algorithm (Karplus Strong) with enhancements (Jaffe-Smith, Smith, and others), including string stiffness and pluck position controls. The stiffness is modeled with allpass filters. This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.";
+    
     //! see \example stifkarp.ck
     if( !type_engine_import_ugen_begin( env, "StifKarp", "StkInstrument", env->global(), 
                         StifKarp_ctor, StifKarp_dtor,
-                        StifKarp_tick, StifKarp_pmsg ) ) return FALSE;
+                        StifKarp_tick, StifKarp_pmsg, doc.c_str() ) ) return FALSE;
     // member variable
     // StifKarp_offset_data = type_engine_import_mvar ( env, "int", "@StifKarp_data", FALSE );
     // if( StifKarp_offset_data == CK_INVALID_OFFSET ) goto error;
