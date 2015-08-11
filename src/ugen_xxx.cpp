@@ -2552,10 +2552,14 @@ double sndbuf_t_sinc( sndbuf_data * d, double x );
 void   sndbuf_make_sinc( sndbuf_data * d );
 void   sndbuf_sinc_interpolate( sndbuf_data * d, SAMPLE * out );
 
+static int g_nsndbuf = 0;
+
 CK_DLL_CTOR( sndbuf_ctor )
 {
     OBJ_MEMBER_UINT(SELF, sndbuf_offset_data) = (t_CKUINT)new sndbuf_data;
 
+    g_nsndbuf++;
+    fprintf(stderr, "--- nsndbuf: %i ---\n", g_nsndbuf);
 }
 
 CK_DLL_DTOR( sndbuf_dtor )
@@ -2563,6 +2567,9 @@ CK_DLL_DTOR( sndbuf_dtor )
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     SAFE_DELETE(d);
     OBJ_MEMBER_UINT(SELF, sndbuf_offset_data) = 0;
+    
+    g_nsndbuf--;
+    fprintf(stderr, "--- nsndbuf: %i ---\n", g_nsndbuf);
 }
 
 inline t_CKUINT sndbuf_read( sndbuf_data * d, t_CKUINT frame, t_CKUINT num_frames )
@@ -3689,7 +3696,7 @@ LiSa updates/fixes:
 4. corrected loopEnd so it is the same as duration, not 1 less than duration, when set...
 */
 
-#define LiSa_MAXVOICES 200
+#define LiSa_MAXVOICES 30
 #define LiSa_MAXBUFSIZE 44100000
 //-----------------------------------------------------------------------------
 // name: LiSaMulti_data
@@ -4062,7 +4069,11 @@ struct LiSaMulti_data
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( LiSaMulti_ctor )
 {
-
+    static int n_lisa = 0;
+    
+    n_lisa++;
+    fprintf(stderr, "--- n_lisa: %i ---\n", n_lisa);
+    
     LiSaMulti_data * f =  new LiSaMulti_data;
     memset( f, 0, sizeof(LiSaMulti_data) );
 			
