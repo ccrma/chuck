@@ -4207,7 +4207,7 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     // handle need this
     emit->code->need_this = exp->ck_func->is_member;
     // name it
-    emit->code->name = "spork~exp";
+    emit->code->name = string("~") + exp->ck_func->name;
     // keep track of full path (added 1.3.0.0)
     emit->code->filename = emit->context->full_path;
     // push op
