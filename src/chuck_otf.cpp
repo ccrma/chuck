@@ -182,8 +182,11 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
             }
         }
 
+        // construct full path to be associated with the file so me.sourceDir() works
+        // (added 1.3.5.2)
+        std::string full_path = get_full_path( msg->buffer );
         // parse, type-check, and emit
-        if( !compiler->go( msg->buffer, fd, NULL, msg->buffer ) )
+        if( !compiler->go( msg->buffer, fd, NULL, full_path.c_str() ) )
         {
             SAFE_DELETE(cmd);
             goto cleanup;
