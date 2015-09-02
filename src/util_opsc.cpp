@@ -986,7 +986,7 @@ public:
 class UDP_Port_Listener { 
 private:
     UDP_Receiver*  m_in;
-    bool           m_port;
+    int            m_port;
         
     XThread*       m_thread;
     XMutex*        m_mutex;
@@ -1007,7 +1007,8 @@ public:
     int recv_mesg();
     bool add ( UDP_Subscriber * );
     bool drop ( UDP_Subscriber * );
-    int  nsubs(); 
+    int  nsubs();
+    THREAD_RETURN thread_cb();
 
     bool           listening;    
 };
@@ -1140,7 +1141,7 @@ UDP_Port_Listener::UDP_Port_Listener( int port )
     : m_inbufsize( OSCINBUFSIZE ), listening( false )
 {
     init();
-    m_in->bind_to_port( port );
+    bind_to_port( port );
     listen();
 }
 
@@ -1214,7 +1215,11 @@ bool UDP_Port_Listener::drop( UDP_Subscriber * sub )
 THREAD_RETURN (THREAD_TYPE udp_port_listener_thread)( void * data )
 {
     UDP_Port_Listener * upl = (UDP_Port_Listener *) data;
+    return upl->thread_cb();
+}
 
+THREAD_RETURN UDP_Port_Listener::thread_cb()
+{
     // priority boost
     if( Chuck_VM::our_priority != 0x7fffffff )
         Chuck_VM::set_priority( Chuck_VM::our_priority, NULL );
@@ -1222,7 +1227,7 @@ THREAD_RETURN (THREAD_TYPE udp_port_listener_thread)( void * data )
     EM_log( CK_LOG_INFO, "UDP_Port_Listener:: starting receive loop...\n" );
     int mLen;
     do {
-        mLen = upl->recv_mesg();
+        mLen = recv_mesg();
         usleep( 10 );
     } while( mLen != 0 );
 
@@ -1248,6 +1253,7 @@ bool UDP_Port_Listener::listen()
 
 bool UDP_Port_Listener::bind_to_port( int port )
 {
+    this->m_port = port;
     return m_in->bind_to_port( port );
 }
 

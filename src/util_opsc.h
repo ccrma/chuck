@@ -450,7 +450,7 @@ struct XThread;
 class UDP_Subscriber
 {
 public:
-    virtual ~UDP_Subscriber() {}
+    virtual ~UDP_Subscriber() { unsubscribe(); }
 
 public:
     virtual int& port() = 0; // get/set the value of the subscriber's current port. 
