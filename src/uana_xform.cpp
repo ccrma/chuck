@@ -192,7 +192,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // window
     func = make_new_mfun( "float[]", "window", FFT_ctrl_window );
     func->add_arg( "float[]", "win" );
-    func->doc = "Set/get the transform window/size (also see AAA Windowing)";
+    func->doc = "Set/get the transform window/size";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // windowSize
@@ -245,7 +245,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // window
     func = make_new_mfun( "float[]", "window", IFFT_ctrl_window );
     func->add_arg( "float[]", "win" );
-    func->doc = "Set/get the transform window/size (also see AAA Windowing)";
+    func->doc = "Set/get the transform window/size";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // windowSize
@@ -336,7 +336,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // window
     func = make_new_mfun( "float[]", "window", Flip_ctrl_window );
     func->add_arg( "float[]", "win" );
-    func->doc = "Set/get the transform window/size (also see AAA Windowing).";
+    func->doc = "Set/get the transform window/size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // windowSize
@@ -388,7 +388,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // window
     func = make_new_mfun( "float[]", "window", UnFlip_ctrl_window );
     func->add_arg( "float[]", "win" );
-    func->doc = "Set/get the transform window/size (also see AAA Windowing).";
+    func->doc = "Set/get the transform window/size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // windowSize
@@ -441,7 +441,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // window
     func = make_new_mfun( "float[]", "window", DCT_ctrl_window );
     func->add_arg( "float[]", "win" );
-    func->doc = "Set/get the transform window/size (also see AAA Windowing).";
+    func->doc = "Set/get the transform window/size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // windowSize
@@ -494,7 +494,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // window
     func = make_new_mfun( "float[]", "window", IDCT_ctrl_window );
     func->add_arg( "float[]", "win" );
-    func->doc = "Set/get the transform window/size (also see AAA Windowing).";
+    func->doc = "Set/get the transform window/size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // windowSize
