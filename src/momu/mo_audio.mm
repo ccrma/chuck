@@ -276,7 +276,8 @@ static void propListener( void * inClientData, AudioSessionPropertyID inID,
         }
         
         // check input
-        MoAudio::checkInput();
+        if(MoAudio::m_handleInput)
+            MoAudio::checkInput();
         
         // start audio unit
         err = AudioOutputUnitStart( MoAudio::m_au );

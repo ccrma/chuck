@@ -735,14 +735,14 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
 #if defined(__CHIP_MODE__)
     if( rt_audio )
     {
+        if(m_num_channels_in == 0)
+            MoAudio::m_handleInput = false;
+        
         if( !MoAudio::init( sampling_rate, buffer_size, 2 ) )
         {
             EM_error2( 0, "%s", "(chuck)error: unable to initialize MoAudio..." );
             return m_init = FALSE;
         }
-        
-        if(m_num_channels_in == 0)
-            MoAudio::m_handleInput = false;
     }
 #endif // __CHIP_MODE__
 
