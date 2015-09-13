@@ -173,6 +173,9 @@ static OSStatus SMALLRenderProc(
 {
     OSStatus err = noErr;
 
+    // actual frames
+    UInt32 actualFrames = 0;
+
     // render if full-duplex available and enabled
     if( MoAudio::m_handleInput )
     {
@@ -183,13 +186,16 @@ static OSStatus SMALLRenderProc(
             printf( "MoAudio: render procedure encountered error %d\n", (int)err );
             return err;
         }
+        
+        // convert
+        convertToUser( ioData, MoAudio::m_info->m_ioBuffer, MoAudio::m_info->m_bufferSize, actualFrames );
     }
-
-    // actual frames
-    UInt32 actualFrames = 0;
-    
-    // convert
-    convertToUser( ioData, MoAudio::m_info->m_ioBuffer, MoAudio::m_info->m_bufferSize, actualFrames );
+    else
+    {
+        actualFrames = inNumberFrames;
+        // clear (assume stereo)
+        memset( MoAudio::m_info->m_ioBuffer, 0, 2*inNumberFrames);
+    }
     
     // callback
     MoAudio::m_callback( MoAudio::m_info->m_ioBuffer, actualFrames, MoAudio::m_bindle );
@@ -339,10 +345,11 @@ bool setupRemoteIO( AudioUnit & inRemoteIOUnit, AURenderCallbackStruct inRenderP
         return false;
     }
 
-    UInt32 one = 1;
+    
+    UInt32 enable = MoAudio::m_handleInput ? 1 : 0;
     // enable input
     err = AudioUnitSetProperty( inRemoteIOUnit, kAudioOutputUnitProperty_EnableIO, 
-                                kAudioUnitScope_Input, 1, &one, sizeof(one) );
+                                kAudioUnitScope_Input, 1, &enable, sizeof(enable) );
     if( err )
     {
         // TODO: "couldn't enable input on the remote I/O unit"
@@ -600,7 +607,8 @@ bool MoAudio::init( Float64 srate, UInt32 frameSize, UInt32 numChannels )
     }
     
     // check audio input
-    checkInput();
+    if(m_handleInput)
+        checkInput();
 
     // done with initialization
     m_hasInit = true;
