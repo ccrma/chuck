@@ -4072,7 +4072,7 @@ CK_DLL_CTOR( LiSaMulti_ctor )
     static int n_lisa = 0;
     
     n_lisa++;
-    fprintf(stderr, "--- n_lisa: %i ---\n", n_lisa);
+//    fprintf(stderr, "--- n_lisa: %i ---\n", n_lisa);
     
     LiSaMulti_data * f =  new LiSaMulti_data;
     memset( f, 0, sizeof(LiSaMulti_data) );
