@@ -1314,6 +1314,11 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "BandedWG", "StkInstrument", env->global(),
                         BandedWG_ctor, BandedWG_dtor,
                         BandedWG_tick, BandedWG_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/band-o-matic.ck");
+    type_engine_import_add_ex(env, "stk/bandedwg.ck");
+    type_engine_import_add_ex(env, "stk/bandedwg2.ck");
+
     // member variable
     // BandedWG_offset_data = type_engine_import_mvar ( env, "int", "@BandedWG_data", FALSE );
     // if( BandedWG_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -1417,6 +1422,10 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "BlowBotl", "StkInstrument", env->global(), 
                         BlowBotl_ctor, BlowBotl_dtor,
                         BlowBotl_tick, BlowBotl_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/blowbotl.ck");
+    type_engine_import_add_ex(env, "stk/blowbotl2.ck");
+
     // member variable
     // BlowBotl_offset_data = type_engine_import_mvar ( env, "int", "@BlowBotl_data", FALSE );
     // if( BlowBotl_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -1500,7 +1509,11 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     
     if( !type_engine_import_ugen_begin( env, "BlowHole", "StkInstrument", env->global(), 
                         BlowHole_ctor, BlowHole_dtor,
-                        BlowHole_tick, BlowHole_pmsg ) ) return FALSE;
+                        BlowHole_tick, BlowHole_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/blowhole.ck");
+    type_engine_import_add_ex(env, "stk/blowhole2.ck");
+
     // member variable
     // BlowHole_offset_data = type_engine_import_mvar ( env, "int", "@BlowHole_data", FALSE );
     // if( BlowHole_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -1593,6 +1606,10 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Bowed", "StkInstrument", env->global(), 
                         Bowed_ctor, Bowed_dtor,
                         Bowed_tick, Bowed_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/bowed.ck");
+    type_engine_import_add_ex(env, "stk/bowed2.ck");
+
     // member variable
     // Bowed_offset_data = type_engine_import_mvar ( env, "int", "@Bowed_data", FALSE );
     // if( Bowed_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -1675,7 +1692,11 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     
     if( !type_engine_import_ugen_begin( env, "Brass", "StkInstrument", env->global(), 
                         Brass_ctor, Brass_dtor,
-                        Brass_tick, Brass_pmsg ) ) return FALSE;
+                        Brass_tick, Brass_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/brass.ck");
+    type_engine_import_add_ex(env, "stk/brass2.ck");
+
     // member variable
     // Brass_offset_data = type_engine_import_mvar ( env, "int", "@Brass_data", FALSE );
     // if( Brass_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -1773,6 +1794,10 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Clarinet", "StkInstrument", env->global(), 
                         Clarinet_ctor, Clarinet_dtor,
                         Clarinet_tick, Clarinet_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/clarinet.ck");
+    type_engine_import_add_ex(env, "stk/clarinet2.ck");
+
     // member variable
     // Clarinet_offset_data = type_engine_import_mvar ( env, "int", "@Clarinet_data", FALSE );
     // if( Clarinet_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -1870,6 +1895,9 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Flute", "StkInstrument", env->global(), 
                         Flute_ctor, Flute_dtor,
                         Flute_tick, Flute_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/flute.ck");
+
     // member variable
     // Flute_offset_data = type_engine_import_mvar ( env, "int", "@Flute_data", FALSE );
     // if( Flute_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -1986,6 +2014,10 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Mandolin", "StkInstrument", env->global(), 
                         Mandolin_ctor, Mandolin_dtor,
                         Mandolin_tick, Mandolin_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/mandolin.ck");
+    type_engine_import_add_ex(env, "stk/mand-o-matic.ck");
+    type_engine_import_add_ex(env, "stk/mand-o-matic-simple.ck");
 
     // member variable
     // Mandolin_offset_data = type_engine_import_mvar ( env, "int", "@Mandolin_data", FALSE );
@@ -2079,7 +2111,10 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     //! see \example modalbot.ck
     if( !type_engine_import_ugen_begin( env, "ModalBar", "StkInstrument", env->global(),
                         ModalBar_ctor, ModalBar_dtor,
-                        ModalBar_tick, ModalBar_pmsg ) ) return FALSE;
+                        ModalBar_tick, ModalBar_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/modalbar.ck");
+    type_engine_import_add_ex(env, "stk/modalbar2.ck");
     
     // member variable
     // ModalBar_offset_data = type_engine_import_mvar ( env, "int", "@ModalBar_data", FALSE );
@@ -2231,6 +2266,11 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Moog", "StkInstrument", env->global(), 
                         Moog_ctor, Moog_dtor,
                         Moog_tick, Moog_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/moog.ck");
+    type_engine_import_add_ex(env, "stk/moog2.ck");
+    type_engine_import_add_ex(env, "stk/moogie.ck");
+
     // member variable
     // Moog_offset_data = type_engine_import_mvar ( env, "int", "@Moog_data", FALSE );
     // if( Moog_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -2347,6 +2387,9 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Saxofony", "StkInstrument", env->global(), 
                         Saxofony_ctor, Saxofony_dtor,
                         Saxofony_tick, Saxofony_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/saxofony.ck");
+
     // member variable
     // Saxofony_offset_data = type_engine_import_mvar ( env, "int", "@Saxofony_data", FALSE );
     // if( Saxofony_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -2487,6 +2530,10 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Shakers", "StkInstrument", env->global(), 
                         Shakers_ctor, Shakers_dtor,
                         Shakers_tick, Shakers_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/shake-cycle.ck");
+    type_engine_import_add_ex(env, "stk/shake-o-matic.ck");
+    
     // member variable
     // Shakers_offset_data = type_engine_import_mvar ( env, "int", "@Shakers_data", FALSE );
     // if( Shakers_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -2572,6 +2619,9 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Sitar", "StkInstrument", env->global(), 
                         Sitar_ctor, Sitar_dtor,
                         Sitar_tick, Sitar_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/sitar.ck");
+
     // member variable
     // Sitar_offset_data = type_engine_import_mvar ( env, "int", "@Sitar_data", FALSE );
     // if( Sitar_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -2609,6 +2659,10 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "StifKarp", "StkInstrument", env->global(), 
                         StifKarp_ctor, StifKarp_dtor,
                         StifKarp_tick, StifKarp_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/stifkarp.ck");
+    type_engine_import_add_ex(env, "stk/stif-o-karp.ck");
+    
     // member variable
     // StifKarp_offset_data = type_engine_import_mvar ( env, "int", "@StifKarp_data", FALSE );
     // if( StifKarp_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -2695,6 +2749,9 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "VoicForm", "StkInstrument", env->global(), 
                         VoicForm_ctor, VoicForm_dtor,
                         VoicForm_tick, VoicForm_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/voic-o-form.ck");
+
     // member variable
     // VoicForm_offset_data = type_engine_import_mvar ( env, "int", "@VoicForm_data", FALSE );
     // if( VoicForm_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -2932,7 +2989,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     
     if( !type_engine_import_ugen_begin( env, "FMVoices", "FM", env->global(), 
                         FMVoices_ctor, FMVoices_dtor,
-                        FMVoices_tick, FMVoices_pmsg ) ) return FALSE;
+                        FMVoices_tick, FMVoices_pmsg, doc.c_str() ) ) return FALSE;
 
     func = make_new_mfun( "float", "vowel", FMVoices_ctrl_vowel ); //!select vowel
     func->add_arg( "float", "value" );
@@ -3049,6 +3106,8 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Rhodey", "FM", env->global(), 
                         Rhodey_ctor, Rhodey_dtor,
                         Rhodey_tick, Rhodey_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "stk/rhodey.ck");
 
     // end the class import
     type_engine_import_class_end( env );
@@ -3111,6 +3170,10 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
                         Wurley_ctor, Wurley_dtor,
                         Wurley_tick, Wurley_pmsg, doc.c_str() ) ) return FALSE;
 
+    type_engine_import_add_ex(env, "stk/wurley.ck");
+    type_engine_import_add_ex(env, "stk/wurley2.ck");
+    type_engine_import_add_ex(env, "stk/wurley3.ck");
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -3132,6 +3195,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Delay", "UGen", env->global(), 
                         Delay_ctor, Delay_dtor,
                         Delay_tick, Delay_pmsg, doc.c_str() ) ) return FALSE;
+    
     //member variable
     Delay_offset_data = type_engine_import_mvar ( env, "int", "@Delay_data", FALSE );
     if( Delay_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -3172,7 +3236,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     
     if( !type_engine_import_ugen_begin( env, "DelayA", "UGen", env->global(), 
                         DelayA_ctor, DelayA_dtor,
-                        DelayA_tick, DelayA_pmsg ) ) return FALSE;
+                        DelayA_tick, DelayA_pmsg, doc.c_str() ) ) return FALSE;
     //member variable
     DelayA_offset_data = type_engine_import_mvar ( env, "int", "@DelayA_data", FALSE );
     if( DelayA_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -3213,6 +3277,10 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "DelayL", "UGen", env->global(), 
                         DelayL_ctor, DelayL_dtor,
                         DelayL_tick, DelayL_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "basic/delay.ck");
+    type_engine_import_add_ex(env, "basic/i-robot.ck");
+    
     //member variable
     DelayL_offset_data = type_engine_import_mvar ( env, "int", "@DelayL_data", FALSE );
     if( DelayL_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -3250,6 +3318,9 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Echo", "UGen", env->global(), 
                         Echo_ctor, Echo_dtor,
                         Echo_tick, Echo_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "basic/echo.ck");
+
     //member variable
     Echo_offset_data = type_engine_import_mvar ( env, "int", "@Echo_data", FALSE );
     if( Echo_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -3293,10 +3364,14 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     doc = "This class implements a simple envelope generator which is capable of ramping to a target value by a specified rate. It also responds to simple keyOn and keyOff messages, ramping to 1.0 on keyOn and to 0.0 on keyOff.\
     \
     by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    
     //! see \example sixty.ck
     if( !type_engine_import_ugen_begin( env, "Envelope", "UGen", env->global(), 
                         Envelope_ctor, Envelope_dtor,
                         Envelope_tick, Envelope_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "basic/envelope.ck");
+    
     //member variable
     Envelope_offset_data = type_engine_import_mvar ( env, "int", "@Envelope_data", FALSE );
     if( Envelope_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -3381,6 +3456,8 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "ADSR", "Envelope", env->global(), 
                                         ADSR_ctor, ADSR_dtor,
                                         ADSR_tick, ADSR_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "basic/adsr.ck");
 
     func = make_new_mfun( "dur", "attackTime", ADSR_ctrl_attackTime ); //! attack time
     func->add_arg( "dur", "value" );
@@ -3645,12 +3722,12 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     doc = "This protected Filter subclass implements a two-pole digital filter.  A method is provided for creating a resonance in the frequency response while maintaining a nearly constant filter gain.\
     \
     by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-
-    type_engine_import_add_ex(env, "shred/powerup.ck");
     
     if( !type_engine_import_ugen_begin( env, "TwoPole", "UGen", env->global(), 
                         TwoPole_ctor, TwoPole_dtor,
                         TwoPole_tick, TwoPole_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "shred/powerup.ck");
     
     //member variable
     TwoPole_offset_data = type_engine_import_mvar ( env, "int", "@TwoPole_data", FALSE );
@@ -3991,6 +4068,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Chorus", "UGen", env->global(), 
                         Chorus_ctor, Chorus_dtor,
                         Chorus_tick, Chorus_pmsg, doc.c_str() ) ) return FALSE;
+    
     //member variable
     Chorus_offset_data = type_engine_import_mvar ( env, "int", "@Chorus_data", FALSE );
     if( Chorus_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -4051,6 +4129,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Modulate", "UGen", env->global(), 
                         Modulate_ctor, Modulate_dtor,
                         Modulate_tick, Modulate_pmsg, doc.c_str() ) ) return FALSE;
+    
     //member variable
     Modulate_offset_data = type_engine_import_mvar ( env, "int", "@Modulate_data", FALSE );
     if( Modulate_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -4145,6 +4224,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "SubNoise", "UGen", env->global(),
                         SubNoise_ctor, SubNoise_dtor,
                         SubNoise_tick, SubNoise_pmsg, doc.c_str() ) ) return FALSE;
+    
     //member variable
     SubNoise_offset_data = type_engine_import_mvar ( env, "int", "@SubNoise_data", FALSE );
     if( SubNoise_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -4167,24 +4247,39 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin WvIn ugen
     //------------------------------------------------------------------------
 
+    doc = "This class provides input support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\
+    \
+    WvIn loads the contents of an audio file for subsequent output. Linear interpolation is used for fractional 'read rates'.\
+    \
+    WvIn supports multi-channel data in interleaved format. It is important to distinguish the `tick()` methods, which return samples produced by averaging across sample frames, from the `tickFrame()` methods, which return pointers to multi-channel sample frames. For single-channel data, these methods return equivalent values. Small files are completely read into local memory during instantiation. Large files are read incrementally from disk. The file size threshold and the increment size values are defined in WvIn.h.\
+    \
+    WvIn currently supports WAV, AIFF, SND (AU), MAT-file (Matlab), and STK RAW file formats. Signed integer (8-, 16-, and 32-bit) and floating-point (32- and 64-bit) data types are supported. Uncompressed data types are not supported. If using MAT-files, data should be saved in an array with each data channel filling a matrix row.\
+    \
+    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    
     if( !type_engine_import_ugen_begin( env, "WvIn", "UGen", env->global(), 
                         WvIn_ctor, WvIn_dtor,
-                        WvIn_tick, WvIn_pmsg ) ) return FALSE;
+                        WvIn_tick, WvIn_pmsg, doc.c_str() ) ) return FALSE;
+    
     //member variable
     WvIn_offset_data = type_engine_import_mvar ( env, "int", "@WvIn_data", FALSE );
     if( WvIn_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "rate", WvIn_ctrl_rate ); //! playback rate
     func->add_arg( "float", "value" );
+    func->doc = "Set playback rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", WvIn_cget_rate ); //! playback rate
+    func->doc = "Get playback rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "path", WvIn_ctrl_path ); //! specifies file to be played
     func->add_arg( "string", "value" );
+    func->doc = "Set file to be played.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "path", WvIn_cget_path ); //! specifies file to be played
+    func->doc = "Get file to be played.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -4196,30 +4291,42 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin WaveLoop ugen
     //------------------------------------------------------------------------
 
+    doc = "This class inherits from WvIn and provides audio file looping functionality.\
+    \
+    WaveLoop supports multi-channel data in interleaved format. It is important to distinguish the `tick()` methods, which return samples produced by averaging across sample frames, from the `tickFrame()` methods, which return pointers to multi-channel sample frames. For single-channel data, these methods return equivalent values.\
+    \
+    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    
     //! see \example dope.ck
     if( !type_engine_import_ugen_begin( env, "WaveLoop", "WvIn", env->global(), 
                         WaveLoop_ctor, WaveLoop_dtor,
-                        WaveLoop_tick, WaveLoop_pmsg ) ) return FALSE;
-
+                        WaveLoop_tick, WaveLoop_pmsg, doc.c_str() ) ) return FALSE;
+    
     func = make_new_mfun( "float", "freq", WaveLoop_ctrl_freq ); //! set frequency of playback ( loops / second )
     func->add_arg( "float", "value" );
+    func->doc = "Set frequency of playback (loops/second).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", WaveLoop_cget_freq ); //! set frequency of playback ( loops / second )
+    func->doc = "Get frequency of playback (loops/second).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "addPhase", WaveLoop_ctrl_phase ); //! offset by phase
     func->add_arg( "float", "value" );
+    func->doc = "Set offset by phase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "addPhase", WaveLoop_cget_phase ); //! offset by phase
+    func->doc = "Get offset by phase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "addPhaseOffset", WaveLoop_ctrl_phaseOffset ); //! set phase offset
     func->add_arg( "float", "value" );
+    func->doc = "Set phase offset.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "addPhaseOffset", WaveLoop_cget_phaseOffset ); //! set phase offset
+    func->doc = "Get phase offset.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -4230,62 +4337,87 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin WvOut ugen
     //------------------------------------------------------------------------
  
+    doc = "This class provides output support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\
+    \
+    WvOut writes samples to an audio file. It supports multi-channel data in interleaved format.  It is important to distinguish the `tick()` methods, which output single samples to all channels in a sample frame, from the `tickFrame()` method, which takes a pointer to multi-channel sample frame data.\
+    \
+    WvOut currently supports WAV, AIFF, AIFC, SND (AU), MAT-file (Matlab), and STK RAW file formats.  Signed integer (8-, 16-, and 32-bit) and floating- point (32- and 64-bit) data types are supported.  STK RAW files use 16-bit integers by definition.  MAT-files will always be written as 64-bit floats.  If a data type specification does not match the specified file type, the data type will automatically be modified.  Uncompressed data types are not supported.\
+    \
+    Currently, WvOut is non-interpolating and the output rate is always `Stk::sampleRate()`.\
+    \
+    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    
     if( !type_engine_import_ugen_begin( env, "WvOut", "UGen", env->global(), 
                         WvOut_ctor, WvOut_dtor,
-                        WvOut_tick, WvOut_pmsg ) ) return FALSE; 
+                        WvOut_tick, WvOut_pmsg, doc.c_str() ) ) return FALSE;
+    
     //member variable
     WvOut_offset_data = type_engine_import_mvar ( env, "int", "@WvOut_data", FALSE );
     if( WvOut_offset_data == CK_INVALID_OFFSET ) goto error;
     
     func = make_new_mfun( "string", "matFilename", WvOut_ctrl_matFilename ); //!open matlab file for writing
     func->add_arg( "string", "value" );
+    func->doc = "Open MatLab file for writing.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "sndFilename", WvOut_ctrl_sndFilename ); //!open snd file for writing
     func->add_arg( "string", "value" );
+    func->doc = "Open SND file for writing.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "wavFilename", WvOut_ctrl_wavFilename ); //!open WAVE file for writing
     func->add_arg( "string", "value" );
+    func->doc = "Open WAVE file for writing.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "rawFilename", WvOut_ctrl_rawFilename ); //!open raw file for writing
     func->add_arg( "string", "value" );
+    func->doc = "Open a raw file for writing.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "aifFilename", WvOut_ctrl_aifFilename ); //!open AIFF file for writing
     func->add_arg( "string", "value" );
+    func->doc = "Open an AIFF file for writing.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "filename", WvOut_cget_filename ); //!get filename
+    func->doc = "Get filename.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "record", WvOut_ctrl_record ); // !start/stop output
     func->add_arg( "int", "value" );
+    func->doc = "Start/stop output.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "record", WvOut_cget_record ); // !start/stop output
+    func->doc = "Start/stop output.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "closeFile", WvOut_ctrl_closeFile ); //! close file properly
     func->add_arg( "string", "value" );
+    func->doc = "Close the file properly.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "closeFile", WvOut_ctrl_closeFile ); //! close file properly
+    func->doc = "Close the file properly.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "autoPrefix", WvOut_ctrl_autoPrefix ); //! set/get auto prefix string
     func->add_arg( "string", "value" );
+    func->doc = "Set auto prefix string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "autoPrefix", WvOut_cget_autoPrefix ); //! set/get auto prefix string
+    func->doc = "Get auto prefix string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     func = make_new_mfun( "float", "fileGain", WvOut_ctrl_fileGain ); //! set/get auto prefix string
     func->add_arg( "float", "value" );
+    func->doc = "Set file gain.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     func = make_new_mfun( "float", "fileGain", WvOut_cget_fileGain ); //! set/get auto prefix string
+    func->doc = "Get file gain.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // end the class import
@@ -4324,9 +4456,11 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin BLT (BandLtd)
     //------------------------------------------------------------------------
 
+    doc = "Super-class for band-limited oscillators.";
+    
     if( !type_engine_import_ugen_begin( env, "BLT", "UGen", env->global(), 
          BLT_ctor, BLT_dtor,
-         BLT_tick, BLT_pmsg ) ) return FALSE;
+         BLT_tick, BLT_pmsg, doc.c_str()) ) return FALSE;
 
     // member variable
     // all subclasses of BLT must use this offset, as this is where the 
@@ -4338,23 +4472,29 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
 
     func = make_new_mfun( "float", "phase", BLT_ctrl_phase ); //!set phase
     func->add_arg( "float", "value" );
+    func->doc = "Set phase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "float", "phase", BLT_cget_phase ); //!get phase 
+    func = make_new_mfun( "float", "phase", BLT_cget_phase ); //!get phase
+    func->doc = "Get phase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", BLT_ctrl_freq ); //!set freq
     func->add_arg( "float", "value" );
+    func->doc = "Set frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "float", "freq", BLT_cget_freq ); //!get freq 
+    func = make_new_mfun( "float", "freq", BLT_cget_freq ); //!get freq
+    func->doc = "Set frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "harmonics", BLT_ctrl_harmonics ); //!set harmonics
     func->add_arg( "int", "value" );
+    func->doc = "Set harmonics.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "int", "harmonics", BLT_cget_harmonics ); //!get harmonics 
+    func = make_new_mfun( "int", "harmonics", BLT_cget_harmonics ); //!get harmonics
+    func->doc = "Get harmonics.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -4365,8 +4505,19 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin Blit
     //------------------------------------------------------------------------
 
+    doc = "This class generates a band-limited impulse train using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the impulse train and the number of harmonics contained in the resulting signal.\
+    \
+    The signal is normalized so that the peak value is +/-1.0.\
+    \
+    If nHarmonics is 0, then the signal will contain all harmonics up to half the sample rate. Note, however, that this setting may produce aliasing in the signal when the frequency is changing (no automatic modification of the number of harmonics is performed by the `setFrequency()` function).\
+    \
+    Original code by Robin Davies, 2005.\
+    Revisions by Gary Scavone for STK, 2005.";
+    
     if( !type_engine_import_ugen_begin( env, "Blit", "BLT", env->global(), 
-         Blit_ctor, Blit_dtor, Blit_tick, Blit_pmsg ) ) return FALSE; 
+         Blit_ctor, Blit_dtor, Blit_tick, Blit_pmsg, doc.c_str() ) ) return FALSE;
+    
+    type_engine_import_add_ex(env, "basic/blit.ck");
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4376,8 +4527,15 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin BlitSaw
     //------------------------------------------------------------------------
 
+    doc = "This class generates a band-limited sawtooth waveform using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the sawtooth and the number of harmonics contained in the resulting signal.\
+    \
+    If nHarmonics is 0, then the signal will contain all harmonics up to half the sample rate. Note, however, that this setting may produce aliasing in the signal when the frequency is changing (no automatic modification of the number of harmonics is performed by the `setFrequency()` function).\
+    \
+    Based on initial code of Robin Davies, 2005.\
+    Modified algorithm code by Gary Scavone, 2005.";
+    
     if( !type_engine_import_ugen_begin( env, "BlitSaw", "BLT", env->global(), 
-         BlitSaw_ctor, BlitSaw_dtor, BlitSaw_tick, BlitSaw_pmsg ) ) return FALSE;
+         BlitSaw_ctor, BlitSaw_dtor, BlitSaw_tick, BlitSaw_pmsg, doc.c_str() ) ) return FALSE;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4387,9 +4545,18 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin BlitSquare
     //------------------------------------------------------------------------
 
+    doc = "This class generates a band-limited square wave signal. It is derived in part from the approach reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The algorithm implemented in this class uses a SincM function with an even M value to achieve a bipolar bandlimited impulse train. This signal is then integrated to achieve a square waveform. The integration process has an associated DC offset but that is subtracted off the output signal.\
+    \
+    The user can specify both the fundamental frequency of the waveform and the number of harmonics contained in the resulting signal.\
+    \
+    If nHarmonics is 0, then the signal will contain all harmonics up to half the sample rate. Note, however, that this setting may produce aliasing in the signal when the frequency is changing (no automatic modification of the number of harmonics is performed by the `setFrequency()` function).\
+    \
+    Based on initial code of Robin Davies, 2005.\
+    Modified algorithm code by Gary Scavone, 2005.";
+    
     if( !type_engine_import_ugen_begin( env, "BlitSquare", "BLT", env->global(), 
          BlitSquare_ctor, BlitSquare_dtor,
-         BlitSquare_tick, BlitSquare_pmsg ) ) return FALSE;
+         BlitSquare_tick, BlitSquare_pmsg, doc.c_str() ) ) return FALSE;
 
     // end the class import
     type_engine_import_class_end( env );
