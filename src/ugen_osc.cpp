@@ -912,14 +912,24 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     g_srate = QUERY->srate;
     // get the env
     Chuck_Env * env = Chuck_Env::instance();
-
+    std::string doc;
     Chuck_DL_Func * func = NULL;
+    
+    doc = "Ported from rtcmix. See http://www.music.columbia.edu/cmix/makegens.html\">this</a> \
+    for more information on the GenX family of UGens. Currently coefficients past \
+    the 100th are ignored.\
+    \
+    Lookup can either be done using the lookup() function, or by driving the \
+    table with an input UGen, typically a Phasor. For an input signal between \
+    [ -1, 1 ], using the absolute value for [ -1, 0 ), GenX will output the \
+    table value indexed by the current input.";
     
     //---------------------------------------------------------------------
     // init as base class: genX
     //---------------------------------------------------------------------
     if( !type_engine_import_ugen_begin( env, "GenX", "UGen", env->global(), 
-                                        genX_ctor, genX_dtor, genX_tick, genX_pmsg ) )
+                                        genX_ctor, genX_dtor, genX_tick, genX_pmsg,
+                                        doc.c_str() ) )
         return FALSE;
 
     // add member variable
@@ -928,10 +938,12 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
         
     func = make_new_mfun( "float", "lookup", genX_lookup ); //lookup table value
     func->add_arg( "float", "which" );
+    func->doc = "Returns lookup table value at index i [ -1, 1 ]. Absolute value is used in the range [ -1, 0 ).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float[]", "coefs", genX_coeffs ); //load table
     func->add_arg( "float", "v[]" );
+    func->doc = "Set lookup table coefficients. Meaning is dependent on subclass.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
