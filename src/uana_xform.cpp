@@ -162,15 +162,21 @@ static t_CKINT float_array_size = 0;
 DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
 {
     Chuck_Env * env = Chuck_Env::instance();
-
     Chuck_DL_Func * func = NULL;
+    
+    std::string doc;
 
     //---------------------------------------------------------------------
     // init as base class: FFT
     //---------------------------------------------------------------------
-    if( !type_engine_import_uana_begin( env, "FFT", "UAna", env->global(), 
+
+    doc = "This UAna computes the Fast Fourier Transform on incoming audio samples, and outputs the result via its UAnaBlob as both the complex spectrum and the magnitude spectrum. A buffering mechanism maintains the previous FFTsize # of samples, allowing FFT's to be taken at any point in time, on demand (via .upchuck() or by upchucking a downstream UAna. The window size (along with an arbitry window shape) is controlled via the .window method. The hop size is complete dynamic, and is throttled by how time is advanced. ";
+    
+    if( !type_engine_import_uana_begin( env, "FFT", "UAna", env->global(),
                                         FFT_ctor, FFT_dtor,
-                                        FFT_tick, FFT_tock, FFT_pmsg ) )
+                                        FFT_tick, FFT_tock, FFT_pmsg,
+                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        doc.c_str()) )
         return FALSE;
 
     // member variable
@@ -180,27 +186,33 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // transform
     func = make_new_mfun( "void", "transform", FFT_transform );
     func->add_arg( "float[]", "from" );
+    func->doc = "Manually take FFT (as opposed to using .upchuck() / upchuck operator)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // window
     func = make_new_mfun( "float[]", "window", FFT_ctrl_window );
     func->add_arg( "float[]", "win" );
+    func->doc = "Set/get the transform window/size";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // windowSize
     func = make_new_mfun( "int", "windowSize", FFT_cget_windowSize );
+    func->doc = "Get the current window size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // size
     func = make_new_mfun( "int", "size", FFT_ctrl_size );
     func->add_arg( "int", "size" );
+    func->doc = "Set the FFT-size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "size", FFT_cget_size );
+    func->doc = "Get the FFT-size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // spectrum
     func = make_new_mfun( "void", "spectrum", FFT_spectrum );
     func->add_arg( "complex[]", "buffer" );
+    func->doc = "Manually retrieve the results of a transform.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -210,9 +222,14 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: IFFT
     //---------------------------------------------------------------------
+    
+    doc = "This UAna computes the inverse Fast Fourier Transform on incoming spectral frames (on demand), and overlap-adds the results into its internal buffer, ready to be sent to other UGen's connected via =>.  The window size (along with an arbitry window shape) is controlled via the .window method.";
+    
     if( !type_engine_import_uana_begin( env, "IFFT", "UAna", env->global(), 
                                         IFFT_ctor, IFFT_dtor,
-                                        IFFT_tick, IFFT_tock, IFFT_pmsg ) )
+                                        IFFT_tick, IFFT_tock, IFFT_pmsg,
+                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        doc.c_str()) )
         return FALSE;
 
     // member variable
@@ -222,27 +239,33 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // transform
     func = make_new_mfun( "void", "transform", IFFT_transform );
     func->add_arg( "complex[]", "from" );
+    func->doc = "Manually take IFFT (as opposed to using .upchuck() / upchuck operator)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // window
     func = make_new_mfun( "float[]", "window", IFFT_ctrl_window );
     func->add_arg( "float[]", "win" );
+    func->doc = "Set/get the transform window/size";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // windowSize
     func = make_new_mfun( "int", "windowSize", IFFT_cget_windowSize );
+    func->doc = "Get the current window size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // size
     func = make_new_mfun( "int", "size", IFFT_ctrl_size );
     func->add_arg( "int", "size" );
+    func->doc = "Set the IFFT-size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "size", IFFT_cget_size );
+    func->doc = "Get the IFFT-size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // spectrum
     func = make_new_mfun( "void", "samples", IFFT_inverse );
     func->add_arg( "float[]", "buffer" );
+    func->doc = "Manually take IFFT (as opposed to using .upchuck() / upchuck operator)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -290,9 +313,14 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: Flip
     //---------------------------------------------------------------------
+    
+    doc = "Turns audio samples into frames in the UAna domain.";
+    
     if( !type_engine_import_uana_begin( env, "Flip", "UAna", env->global(), 
                                         Flip_ctor, Flip_dtor,
-                                        Flip_tick, Flip_tock, Flip_pmsg ) )
+                                        Flip_tick, Flip_tock, Flip_pmsg,
+                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        doc.c_str()) )
         return FALSE;
 
     // member variable
@@ -302,27 +330,33 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // transform
     func = make_new_mfun( "void", "transform", Flip_take );
     func->add_arg( "float[]", "from" );
+    func->doc = "Manually take Flip (as opposed to using .upchuck() / upchuck operator).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // window
     func = make_new_mfun( "float[]", "window", Flip_ctrl_window );
     func->add_arg( "float[]", "win" );
+    func->doc = "Set/get the transform window/size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // windowSize
     func = make_new_mfun( "int", "windowSize", Flip_cget_windowSize );
+    func->doc = "Get the current window size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // size
     func = make_new_mfun( "int", "size", Flip_ctrl_size );
     func->add_arg( "int", "size" );
+    func->doc = "Set the Flip size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "size", Flip_cget_size );
+    func->doc = "Get the Flip size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // output
     func = make_new_mfun( "void", "output", Flip_output );
     func->add_arg( "float[]", "buffer" );
+    func->doc = "Manually take Flip (as opposed to using .upchuck() / upchuck operator)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -332,9 +366,14 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: pilF
     //---------------------------------------------------------------------
+    
+    doc = "Turns UAna frames into audio samples, via overlap add.";
+    
     if( !type_engine_import_uana_begin( env, "pilF", "UAna", env->global(), 
                                         UnFlip_ctor, UnFlip_dtor,
-                                        UnFlip_tick, UnFlip_tock, UnFlip_pmsg ) )
+                                        UnFlip_tick, UnFlip_tock, UnFlip_pmsg,
+                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        doc.c_str()) )
         return FALSE;
 
     // member variable
@@ -343,27 +382,33 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
 
     // go
     func = make_new_mfun( "void", "transform", UnFlip_take );
+    func->doc = "Manually take pilF (as opposed to using .upchuck() / upchuck operator).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // window
     func = make_new_mfun( "float[]", "window", UnFlip_ctrl_window );
     func->add_arg( "float[]", "win" );
+    func->doc = "Set/get the transform window/size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // windowSize
     func = make_new_mfun( "int", "windowSize", UnFlip_cget_windowSize );
+    func->doc = "Get the current window size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // size
     func = make_new_mfun( "int", "size", UnFlip_ctrl_size );
     func->add_arg( "int", "size" );
+    func->doc = "Set the pilF size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "size", UnFlip_cget_size );
+    func->doc = "Get the pilF size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // output
     func = make_new_mfun( "void", "output", UnFlip_output );
     func->add_arg( "float[]", "buffer" );
+    func->doc = "Manually take pilF (as opposed to using .upchuck() / upchuck operator)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -373,9 +418,14 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: DCT
     //---------------------------------------------------------------------
+    
+    doc = "This UAna computes the Discrete Cosine Transform on incoming audio samples, and outputs the result via its UAnaBlob as real values in the D.C. spectrum. A buffering mechanism maintains the previous DCT size # of samples, allowing DCT to be taken at any point in time, on demand (via .upchuck() or by upchucking a downstream UAna; see UAna documentation). The window size (along with an arbitry window shape) is controlled via the .window method. The hop size is complete dynamic, and is throttled by how time is advanced.";
+    
     if( !type_engine_import_uana_begin( env, "DCT", "UAna", env->global(), 
                                         DCT_ctor, DCT_dtor,
-                                        DCT_tick, DCT_tock, DCT_pmsg ) )
+                                        DCT_tick, DCT_tock, DCT_pmsg,
+                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        doc.c_str()) )
         return FALSE;
 
     // member variable
@@ -385,27 +435,33 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // transform
     func = make_new_mfun( "void", "transform", DCT_transform );
     func->add_arg( "float[]", "from" );
+    func->doc = "Manually take DCT (as opposed to using .upchuck() / upchuck operator).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // window
     func = make_new_mfun( "float[]", "window", DCT_ctrl_window );
     func->add_arg( "float[]", "win" );
+    func->doc = "Set/get the transform window/size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // windowSize
     func = make_new_mfun( "int", "windowSize", DCT_cget_windowSize );
+    func->doc = "Get the current window size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // size
     func = make_new_mfun( "int", "size", DCT_ctrl_size );
     func->add_arg( "int", "size" );
+    func->doc = "Set the DCT size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "size", DCT_cget_size );
+    func->doc = "Get the DCT size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // spectrum
     func = make_new_mfun( "void", "spectrum", DCT_spectrum );
     func->add_arg( "float[]", "buffer" );
+    func->doc = "Manually retrieve the results of a transform.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -415,9 +471,14 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: IDCT
     //---------------------------------------------------------------------
+    
+    doc = " This UAna computes the inverse Discrete Cosine Transform on incoming spectral frames (on demand), and overlap-adds the results into its internal buffer, ready to be sent to other UGen's connected via =>.  The window size (along with an arbitry window shape) is controlled via the .window method.";
+    
     if( !type_engine_import_uana_begin( env, "IDCT", "UAna", env->global(), 
                                         IDCT_ctor, IDCT_dtor,
-                                        IDCT_tick, IDCT_tock, IDCT_pmsg ) )
+                                        IDCT_tick, IDCT_tock, IDCT_pmsg,
+                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        doc.c_str()) )
         return FALSE;
 
     // member variable
@@ -427,27 +488,33 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // transform
     func = make_new_mfun( "void", "transform", IDCT_transform );
     func->add_arg( "complex[]", "from" );
+    func->doc = "Manually take IDCT (as opposed to using .upchuck() / upchuck operator).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // window
     func = make_new_mfun( "float[]", "window", IDCT_ctrl_window );
     func->add_arg( "float[]", "win" );
+    func->doc = "Set/get the transform window/size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // windowSize
     func = make_new_mfun( "int", "windowSize", IDCT_cget_windowSize );
+    func->doc = "Get the current window size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // size
     func = make_new_mfun( "int", "size", IDCT_ctrl_size );
     func->add_arg( "int", "size" );
+    func->doc = "Set the IDCT size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "size", IDCT_cget_size );
+    func->doc = "Get the IDCT size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // spectrum
     func = make_new_mfun( "void", "samples", IDCT_inverse );
     func->add_arg( "float[]", "buffer" );
+    func->doc = "Manually get result of previous IDCT.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
