@@ -1293,23 +1293,24 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin BandedWG ugen
     //------------------------------------------------------------------------
 
-    doc = "This class uses banded waveguide techniques to model a variety of sounds, including bowed bars, glasses, and bowls.  For more information, see Essl, G. and Cook, P. 'Banded Waveguides: Towards Physical Modelling of Bar Percussion Instruments', Proceedings of the 1999 International Computer Music Conference.\
-    \
-    Control Change Numbers:\
-    Bow Pressure = 2\
-    Bow Motion = 4\
-    Strike Position = 8 (not implemented)\
-    Vibrato Frequency = 11\
-    Gain = 1\
-    Bow Velocity = 128\
-    Instrument Presets = 16\
-    Uniform Bar = 0\
-    Tuned Bar = 1\
-    Glass Harmonica = 2\
-    Tibetan Bowl = 3\
-    \
-    by Georg Essl, 1999 - 2002.\
-    Modified for Stk 4.0 by Gary Scavone.";
+    doc = "This class uses banded waveguide techniques to model a variety of sounds, including bowed bars, glasses, and bowls.  For more information, see Essl, G. and Cook, P. 'Banded Waveguides: Towards Physical Modelling of Bar Percussion Instruments', Proceedings of the 1999 International Computer Music Conference.\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Bow Pressure = 2\n\
+- Bow Motion = 4\n\
+- Strike Position = 8 (not implemented)\n\
+- Vibrato Frequency = 11\n\
+- Gain = 1\n\
+- Bow Velocity = 128\n\
+- Instrument Presets = 16\n\
+- Uniform Bar = 0\n\
+- Tuned Bar = 1\n\
+- Glass Harmonica = 2\n\
+- Tibetan Bowl = 3\n\
+\n\
+by Georg Essl, 1999 - 2002.\n\
+Modified for Stk 4.0 by Gary Scavone.";
     
     if( !type_engine_import_ugen_begin( env, "BandedWG", "StkInstrument", env->global(),
                         BandedWG_ctor, BandedWG_dtor,
@@ -1409,15 +1410,16 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin BlowBotl ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a helmholtz resonator (biquad filter) with a polynomial jet excitation (a la Cook).\
-    \
-    Control Change Numbers:\
-    Noise Gain = 4\
-    Vibrato Frequency = 11\
-    Vibrato Gain = 1\
-    Volume = 128\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002";
+    doc = "This class implements a helmholtz resonator (biquad filter) with a polynomial jet excitation (a la Cook).\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Noise Gain = 4\n\
+- Vibrato Frequency = 11\n\
+- Vibrato Gain = 1\n\
+- Volume = 128\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002";
 
     if( !type_engine_import_ugen_begin( env, "BlowBotl", "StkInstrument", env->global(), 
                         BlowBotl_ctor, BlowBotl_dtor,
@@ -1494,18 +1496,19 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin BlowHole ugen
     //------------------------------------------------------------------------
 
-    doc = "This class is based on the clarinet model, with the addition of a two-port register hole and a three-port dynamic tonehole implementation, as discussed by Scavone and Cook (1998).\
-    \
-    In this implementation, the distances between the reed/register hole and tonehole/bell are fixed.  As a result, both the tonehole and register hole will have variable influence on the playing frequency, which is dependent on the length of the air column.  In addition, the highest playing freqeuency is limited by these fixed lengths. This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\
-    \
-    Control Change Numbers:\
-    Reed Stiffness = 2\
-    Noise Gain = 4\
-    Tonehole State = 11\
-    Register State = 1\
-    Breath Pressure = 128\
-    \
-    Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class is based on the clarinet model, with the addition of a two-port register hole and a three-port dynamic tonehole implementation, as discussed by Scavone and Cook (1998).\n\
+\n\
+In this implementation, the distances between the reed/register hole and tonehole/bell are fixed.  As a result, both the tonehole and register hole will have variable influence on the playing frequency, which is dependent on the length of the air column.  In addition, the highest playing freqeuency is limited by these fixed lengths. This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Reed Stiffness = 2\n\
+- Noise Gain = 4\n\
+- Tonehole State = 11\n\
+- Register State = 1\n\
+- Breath Pressure = 128\n\
+\n\
+Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "BlowHole", "StkInstrument", env->global(), 
                         BlowHole_ctor, BlowHole_dtor,
@@ -1590,18 +1593,19 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin Bowed ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a bowed string model, a la Smith (1986), after McIntyre, Schumacher, Woodhouse (1983).\
-    \
-    This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\
-    \
-    Control Change Numbers:\
-    Bow Pressure = 2\
-    Bow Position = 4\
-    Vibrato Frequency = 11\
-    Vibrato Gain = 1\
-    Volume = 128\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements a bowed string model, a la Smith (1986), after McIntyre, Schumacher, Woodhouse (1983).\n\
+\n\
+This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Bow Pressure = 2\n\
+- Bow Position = 4\n\
+- Vibrato Frequency = 11\n\
+- Vibrato Gain = 1\n\
+- Volume = 128\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "Bowed", "StkInstrument", env->global(), 
                         Bowed_ctor, Bowed_dtor,
