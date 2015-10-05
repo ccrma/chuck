@@ -1,4 +1,4 @@
-DESTDIR?=/usr/bin
+DESTDIR?=/usr/local/bin
 
 # default target: print usage message and quit
 current: 
@@ -24,7 +24,7 @@ osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
 win32:
 	make -f makefile.win32
 
-CK_VERSION=1.3.5.1
+CK_VERSION=1.3.5.2-beta-2
 
 LEX=flex
 YACC=bison
