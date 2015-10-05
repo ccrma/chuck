@@ -1,4 +1,4 @@
-DESTDIR?=/usr/bin
+DESTDIR?=/usr/local/bin
 
 # default target: print usage message and quit
 current: 
