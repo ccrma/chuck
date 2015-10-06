@@ -164,6 +164,8 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
                                         BPF_ctor, NULL, BPF_tick, BPF_pmsg, doc.c_str() ) )
         return FALSE;
 
+    type_engine_import_add_ex(env, "filter/bp.ck");
+    
     // freq
     func = make_new_mfun( "float", "freq", BPF_ctrl_freq );
     func->add_arg( "float", "val" );
@@ -200,6 +202,8 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "BRF", "FilterBasic", env->global(),
                                         BRF_ctor, NULL, BRF_tick, BRF_pmsg, doc.c_str() ) )
         return FALSE;
+    
+    type_engine_import_add_ex(env, "filter/br.ck");
 
     // freq
     func = make_new_mfun( "float", "freq", BRF_ctrl_freq );
@@ -237,6 +241,8 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "LPF", "FilterBasic", env->global(),
                                         RLPF_ctor, NULL, RLPF_tick, RLPF_pmsg, doc.c_str() ) )
         return FALSE;
+    
+    type_engine_import_add_ex(env, "filter/lp.ck");
 
     // freq
     func = make_new_mfun( "float", "freq", RLPF_ctrl_freq );
@@ -274,6 +280,8 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "HPF", "FilterBasic", env->global(),
                                         RHPF_ctor, NULL, RHPF_tick, RHPF_pmsg, doc.c_str() ) )
         return FALSE;
+    
+    type_engine_import_add_ex(env, "filter/hp.ck");
 
     // freq
     func = make_new_mfun( "float", "freq", RHPF_ctrl_freq );
@@ -312,6 +320,8 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
                                         ResonZ_ctor, NULL, ResonZ_tick, ResonZ_pmsg, doc.c_str() ) )
         return FALSE;
 
+    type_engine_import_add_ex(env, "filter/resonz.ck");
+    
     // freq
     func = make_new_mfun( "float", "freq", ResonZ_ctrl_freq );
     func->add_arg( "float", "val" );

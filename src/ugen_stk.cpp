@@ -1681,18 +1681,19 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Brass ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a simple brass instrument waveguide model, a la Cook (TBone, HosePlayer).\
-    \
-    This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\
-    \
-    Control Change Numbers:\
-    Lip Tension = 2\
-    Slide Length = 4\
-    Vibrato Frequency = 11\
-    Vibrato Gain = 1\
-    Volume = 128\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements a simple brass instrument waveguide model, a la Cook (TBone, HosePlayer).\n\
+\n\
+This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Lip Tension = 2\n\
+- Slide Length = 4\n\
+- Vibrato Frequency = 11\n\
+- Vibrato Gain = 1\n\
+- Volume = 128\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "Brass", "StkInstrument", env->global(), 
                         Brass_ctor, Brass_dtor,
@@ -1782,18 +1783,19 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Clarinet ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a simple clarinet physical model, as discussed by Smith (1986), McIntyre, Schumacher, Woodhouse (1983), and others.\
-    \
-    This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\
-    \
-    Control Change Numbers:\
-    Reed Stiffness = 2\
-    Noise Gain = 4\
-    Vibrato Frequency = 11\
-    Vibrato Gain = 1\
-    Breath Pressure = 128\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements a simple clarinet physical model, as discussed by Smith (1986), McIntyre, Schumacher, Woodhouse (1983), and others.\n\
+\n\
+This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Reed Stiffness = 2\n\
+- Noise Gain = 4\n\
+- Vibrato Frequency = 11\n\
+- Vibrato Gain = 1\n\
+- Breath Pressure = 128\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "Clarinet", "StkInstrument", env->global(), 
                         Clarinet_ctor, Clarinet_dtor,
@@ -1883,18 +1885,19 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Flute ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a simple flute physical model, as discussed by Karjalainen, Smith, Waryznyk, etc. The jet model uses a polynomial, a la Cook.\
-    \
-    This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\
-    \
-    Control Change Numbers:\
-    Jet Delay = 2\
-    Noise Gain = 4\
-    Vibrato Frequency = 11\
-    Vibrato Gain = 1\
-    Breath Pressure = 128\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements a simple flute physical model, as discussed by Karjalainen, Smith, Waryznyk, etc. The jet model uses a polynomial, a la Cook.\n\
+\n\
+This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Jet Delay = 2\n\
+- Noise Gain = 4\n\
+- Vibrato Frequency = 11\n\
+- Vibrato Gain = 1\n\
+- Breath Pressure = 128\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "Flute", "StkInstrument", env->global(), 
                         Flute_ctor, Flute_dtor,
@@ -2001,18 +2004,19 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Mandolin ugen
     //------------------------------------------------------------------------
 
-    doc = "This class inherits from PluckTwo and uses 'commuted synthesis' techniques to model a mandolin instrument.\
-    \
-    This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others. Commuted Synthesis, in particular, is covered by patents, granted, pending, and/or applied-for.  All are assigned to the Board of Trustees, Stanford University.  For information, contact the Office of Technology Licensing, Stanford University.\
-    \
-    Control Change Numbers:\
-    Body Size = 2\
-    Pluck Position = 4\
-    String Sustain = 11\
-    String Detuning = 1\
-    Microphone Position = 128\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class inherits from PluckTwo and uses 'commuted synthesis' techniques to model a mandolin instrument.\n\
+\n\
+This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others. Commuted Synthesis, in particular, is covered by patents, granted, pending, and/or applied-for. All are assigned to the Board of Trustees, Stanford University.  For information, contact the Office of Technology Licensing, Stanford University.\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Body Size = 2\n\
+- Pluck Position = 4\n\
+- String Sustain = 11\n\
+- String Detuning = 1\n\
+- Microphone Position = 128\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     //! see \example mand-o-matic.ck
     if( !type_engine_import_ugen_begin( env, "Mandolin", "StkInstrument", env->global(), 
@@ -2090,27 +2094,28 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin ModalBar ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a number of different struck bar instruments.  It inherits from the Modal class.\
-    \
-    Control Change Numbers:\
-    Stick Hardness = 2\
-    Stick Position = 4\
-    Vibrato Gain = 11\
-    Vibrato Frequency = 7\
-    Direct Stick Mix = 1\
-    Volume = 128\
-    Modal Presets = 16\
-    Marimba = 0\
-    Vibraphone = 1\
-    Agogo = 2\
-    Wood1 = 3\
-    Reso = 4\
-    Wood2 = 5\
-    Beats = 6\
-    Two Fixed = 7\
-    Clump = 8\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements a number of different struck bar instruments. It inherits from the Modal class.\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Stick Hardness = 2\n\
+- Stick Position = 4\n\
+- Vibrato Gain = 11\n\
+- Vibrato Frequency = 7\n\
+- Direct Stick Mix = 1\n\
+- Volume = 128\n\
+- Modal Presets = 16\n\
+- Marimba = 0\n\
+- Vibraphone = 1\n\
+- Agogo = 2\n\
+- Wood1 = 3\n\
+- Reso = 4\n\
+- Wood2 = 5\n\
+- Beats = 6\n\
+- Two Fixed = 7\n\
+- Clump = 8\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     //! see \example modalbot.ck
     if( !type_engine_import_ugen_begin( env, "ModalBar", "StkInstrument", env->global(),
@@ -2255,16 +2260,17 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Moog ugen
     //------------------------------------------------------------------------
 
-    doc = "This instrument uses one attack wave, one looped wave, and an ADSR envelope (inherited from the Sampler class) and adds two sweepable formant (FormSwep) filters.\
-    \
-    Control Change Numbers:\
-    Filter Q = 2\
-    Filter Sweep Rate = 4\
-    Vibrato Frequency = 11\
-    Vibrato Gain = 1\
-    Gain = 128\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This instrument uses one attack wave, one looped wave, and an ADSR envelope (inherited from the Sampler class) and adds two sweepable formant (FormSwep) filters.\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Filter Q = 2\n\
+- Filter Sweep Rate = 4\n\
+- Vibrato Frequency = 11\n\
+- Vibrato Gain = 1\n\
+- Gain = 128\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     //! see \example moogie.ck
     if( !type_engine_import_ugen_begin( env, "Moog", "StkInstrument", env->global(), 
@@ -2373,20 +2379,21 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Saxofony ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a 'hybrid' digital waveguide instrument that can generate a variety of wind-like sounds.  It has also been referred to as the 'blowed string' model. The waveguide section is essentially that of a string, with one rigid and one lossy termination.  The non-linear function is a reed table.  The string can be 'blown' at any point between the terminations, though just as with strings, it is impossible to excite the system at either end.  If the excitation is placed at the string mid-point, the sound is that of a clarinet.  At points closer to the 'bridge', the sound is closer to that of a saxophone.  See Scavone (2002) for more details.\
-    \
-    This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\
-    \
-    Control Change Numbers:\
-    Reed Stiffness = 2\
-    Reed Aperture = 26\
-    Noise Gain = 4\
-    Blow Position = 11\
-    Vibrato Frequency = 29\
-    Vibrato Gain = 1\
-    Breath Pressure = 128\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements a 'hybrid' digital waveguide instrument that can generate a variety of wind-like sounds.  It has also been referred to as the 'blowed string' model. The waveguide section is essentially that of a string, with one rigid and one lossy termination.  The non-linear function is a reed table.  The string can be 'blown' at any point between the terminations, though just as with strings, it is impossible to excite the system at either end.  If the excitation is placed at the string mid-point, the sound is that of a clarinet.  At points closer to the 'bridge', the sound is closer to that of a saxophone.  See Scavone (2002) for more details.\n\
+\n\
+This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Reed Stiffness = 2\n\
+- Reed Aperture = 26\n\
+- Noise Gain = 4\n\
+- Blow Position = 11\n\
+- Vibrato Frequency = 29\n\
+- Vibrato Gain = 1\n\
+- Breath Pressure = 128\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "Saxofony", "StkInstrument", env->global(), 
                         Saxofony_ctor, Saxofony_dtor,
@@ -2493,42 +2500,43 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Shakers ugen
     //------------------------------------------------------------------------
 
-    doc = "PhISEM (Physically Informed Stochastic Event Modeling) is an algorithmic approach for simulating collisions of multiple independent sound producing objects. This class is a meta-model that can simulate a Maraca, Sekere, Cabasa, Bamboo Wind Chimes, Water Drops, Tambourine, Sleighbells, and a Guiro.\
-    \
-    PhOLIES (Physically-Oriented Library of Imitated Environmental Sounds) is a similar approach for the synthesis of environmental sounds. This class implements simulations of breaking sticks, crunchy snow (or not), a wrench, sandpaper, and more.\
-    \
-    Control Change Numbers:\
-    Shake Energy = 2\
-    System Decay = 4\
-    Number Of Objects = 11\
-    Resonance Frequency = 1\
-    Shake Energy = 128\
-    Instrument Selection = 1071\
-    Maraca = 0\
-    Cabasa = 1\
-    Sekere = 2\
-    Guiro = 3\
-    Water Drops = 4\
-    Bamboo Chimes = 5\
-    Tambourine = 6\
-    Sleigh Bells = 7\
-    Sticks = 8\
-    Crunch = 9\
-    Wrench = 10\
-    Sand Paper = 11\
-    Coke Can = 12\
-    Next Mug = 13\
-    Penny + Mug = 14\
-    Nickle + Mug = 15\
-    Dime + Mug = 16\
-    Quarter + Mug = 17\
-    Franc + Mug = 18\
-    Peso + Mug = 19\
-    Big Rocks = 20\
-    Little Rocks = 21\
-    Tuned Bamboo Chimes = 22\
-    \
-    by Perry R. Cook, 1996 - 1999.";
+    doc = "PhISEM (Physically Informed Stochastic Event Modeling) is an algorithmic approach for simulating collisions of multiple independent sound producing objects. This class is a meta-model that can simulate a Maraca, Sekere, Cabasa, Bamboo Wind Chimes, Water Drops, Tambourine, Sleighbells, and a Guiro.\n\
+\n\
+PhOLIES (Physically-Oriented Library of Imitated Environmental Sounds) is a similar approach for the synthesis of environmental sounds. This class implements simulations of breaking sticks, crunchy snow (or not), a wrench, sandpaper, and more.\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Shake Energy = 2\n\
+- System Decay = 4\n\
+- Number Of Objects = 11\n\
+- Resonance Frequency = 1\n\
+- Shake Energy = 128\n\
+- Instrument Selection = 1071\n\
+- Maraca = 0\n\
+- Cabasa = 1\n\
+- Sekere = 2\n\
+- Guiro = 3\n\
+- Water Drops = 4\n\
+- Bamboo Chimes = 5\n\
+- Tambourine = 6\n\
+- Sleigh Bells = 7\n\
+- Sticks = 8\n\
+- Crunch = 9\n\
+- Wrench = 10\n\
+- Sand Paper = 11\n\
+- Coke Can = 12\n\
+- Next Mug = 13\n\
+- Penny + Mug = 14\n\
+- Nickle + Mug = 15\n\
+- Dime + Mug = 16\n\
+- Quarter + Mug = 17\n\
+- Franc + Mug = 18\n\
+- Peso + Mug = 19\n\
+- Big Rocks = 20\n\
+- Little Rocks = 21\n\
+- Tuned Bamboo Chimes = 22\n\
+\n\
+by Perry R. Cook, 1996 - 1999.";
     
     //! see \example shake-o-matic.ck
     if( !type_engine_import_ugen_begin( env, "Shakers", "StkInstrument", env->global(), 
@@ -2614,11 +2622,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Sitar ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a sitar plucked string physical model based on the Karplus-Strong algorithm.\
-    \
-    This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others. There exist at least two patents, assigned to Stanford, bearing the names of Karplus and/or Strong.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements a sitar plucked string physical model based on the Karplus-Strong algorithm.\n\
+    \n\
+This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others. There exist at least two patents, assigned to Stanford, bearing the names of Karplus and/or Strong.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "Sitar", "StkInstrument", env->global(), 
                         Sitar_ctor, Sitar_dtor,
@@ -2648,16 +2656,17 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin StifKarp ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a simple plucked string algorithm (Karplus Strong) with enhancements (Jaffe-Smith, Smith, and others), including string stiffness and pluck position controls. The stiffness is modeled with allpass filters.\
-    \
-    This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\
-    \
-    Control Change Numbers:\
-    Pickup Position = 4\
-    String Sustain = 11\
-    String Stretch = 1\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements a simple plucked string algorithm (Karplus Strong) with enhancements (Jaffe-Smith, Smith, and others), including string stiffness and pluck position controls. The stiffness is modeled with allpass filters.\n\
+\n\
+This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Pickup Position = 4\n\
+- String Sustain = 11\n\
+- String Stretch = 1\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     //! see \example stifkarp.ck
     if( !type_engine_import_ugen_begin( env, "StifKarp", "StkInstrument", env->global(), 
@@ -2726,28 +2735,29 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin VoicForm ugen
     //------------------------------------------------------------------------
 
-    doc = "This instrument contains an excitation singing wavetable (looping wave with random and periodic vibrato, smoothing on frequency, etc.), excitation noise, and four sweepable complex resonances.\
-    \
-    Measured formant data is included, and enough data is there to support either parallel or cascade synthesis. In the floating point case cascade synthesis is the most natural so that's what you'll find here.\
-    \
-    Control Change Numbers:\
-    Voiced/Unvoiced Mix = 2\
-    Vowel/Phoneme Selection = 4\
-    Vibrato Frequency = 11\
-    Vibrato Gain = 1\
-    Loudness (Spectral Tilt) = 128\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.\
-    \
-    Phoneme Names:\
-    `'eee'  'ihh'  'ehh'  'aaa'`\
-    `'ahh'  'aww'  'ohh'  'uhh'`\
-    `'uuu'  'ooo'  'rrr'  'lll'`\
-    `'mmm'  'nnn'  'nng'  'ngg'`\
-    `'fff'  'sss'  'thh'  'shh'`\
-    `'xxx'  'hee'  'hoo'  'hah'`\
-    `'bbb'  'ddd'  'jjj'  'ggg'`\
-    `'vvv'  'zzz'  'thz'  'zhh'`";
+    doc = "This instrument contains an excitation singing wavetable (looping wave with random and periodic vibrato, smoothing on frequency, etc.), excitation noise, and four sweepable complex resonances.\n\
+\n\
+Measured formant data is included, and enough data is there to support either parallel or cascade synthesis. In the floating point case cascade synthesis is the most natural so that's what you'll find here.\n\
+\n\
+Control Change Numbers:\n\
+Voiced/Unvoiced Mix = 2\n\
+Vowel/Phoneme Selection = 4\n\
+Vibrato Frequency = 11\n\
+Vibrato Gain = 1\n\
+Loudness (Spectral Tilt) = 128\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.\n\
+\n\
+Phoneme Names:\n\
+\n\
+    'eee'  'ihh'  'ehh'  'aaa'\n\
+    'ahh'  'aww'  'ohh'  'uhh'\n\
+    'uuu'  'ooo'  'rrr'  'lll'\n\
+    'mmm'  'nnn'  'nng'  'ngg'\n\
+    'fff'  'sss'  'thh'  'shh'\n\
+    'xxx'  'hee'  'hoo'  'hah'\n\
+    'bbb'  'ddd'  'jjj'  'ggg'\n\
+    'vvv'  'zzz'  'thz'  'zhh'";
     
     //! see \example voic-o-form.ck
     if( !type_engine_import_ugen_begin( env, "VoicForm", "StkInstrument", env->global(), 
@@ -2862,18 +2872,19 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin FM ugen
     //------------------------------------------------------------------------
 
-    doc = "This class controls an arbitrary number of waves and envelopes, determined via a constructor argument.\
-    \
-    Control Change Numbers:\
-    Control One = 2\
-    Control Two = 4\
-    LFO Speed = 11\
-    LFO Depth = 1\
-    ADSR 2 & 4 Target = 128\
-    \
-    The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class controls an arbitrary number of waves and envelopes, determined via a constructor argument.\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Control One = 2\n\
+- Control Two = 4\n\
+- LFO Speed = 11\n\
+- LFO Depth = 1\n\
+- ADSR 2 & 4 Target = 128\n\
+\n\
+The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "FM", "StkInstrument", env->global(), 
                                         FM_ctor, FM_dtor,
@@ -2941,25 +2952,27 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin BeeThree ugen
     //------------------------------------------------------------------------
 
-    doc = " This class implements a simple 4 operator topology, also referred to as algorithm 8 of the TX81Z.\
-    \
-    Algorithm 8 is :\
-    `1 --.`\
-    `2 -\\|`\
-    `+-> Out`\
-    `3 -/|`\
-    `4 --.`\
-    \
-    Control Change Numbers:\
-    `Operator 4 (feedback) Gain = 2 (.controlOne)`\
-    `Operator 3 Gain = 4 (.controlTwo)`\
-    `LFO Speed = 11`\
-    `LFO Depth = 1`\
-    `ADSR 2 & 4 Target = 128`\
-    \
-    The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = " This class implements a simple 4 operator topology, also referred to as algorithm 8 of the TX81Z.\n\
+\n\
+Algorithm 8 is :\n\
+    \n\
+    1 --.\n\
+    2 -\\|\n\
+    +-> Out\n\
+    3 -/|\n\
+    4 --.\n\
+    \n\
+Control Change Numbers:\n\
+\n\
+- Operator 4 (feedback) Gain = 2 (.controlOne)\n\
+- Operator 3 Gain = 4 (.controlTwo)\n\
+- LFO Speed = 11\n\
+- LFO Depth = 1\n\
+- ADSR 2 & 4 Target = 128\n\
+\n\
+The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "BeeThree", "FM", env->global(), 
                         BeeThree_ctor, BeeThree_dtor,
@@ -2973,23 +2986,25 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin FMVoices ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements 3 carriers and a common modulator, also referred to as algorithm 6 of the TX81Z.\
-    \
-    Algorithm 6 is :\
-    `___//->1 -\\`\
-    `4-||-->2 - +-> Out`\
-    `___\\->3 -//`\
-    \
-    Control Change Numbers:\
-    `Vowel = 2 (.controlOne)`\
-    `Spectral Tilt = 4 (.controlTwo)`\
-    `LFO Speed = 11`\
-    `LFO Depth = 1`\
-    `ADSR 2 & 4 Target = 128`\
-    \
-    The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements 3 carriers and a common modulator, also referred to as algorithm 6 of the TX81Z.\n\
+\n\
+Algorithm 6 is :\n\
+    \n\
+    ___//->1 -\\\n\
+    4-||-->2 - +-> Out\n\
+    ___\\->3 -//\n\
+    \n\
+Control Change Numbers:\n\
+\n\
+- Vowel = 2 (.controlOne)\n\
+- Spectral Tilt = 4 (.controlTwo)\n\
+- LFO Speed = 11\n\
+- LFO Depth = 1\n\
+- ADSR 2 & 4 Target = 128\n\
+\n\
+The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "FMVoices", "FM", env->global(), 
                         FMVoices_ctor, FMVoices_dtor,
@@ -3030,22 +3045,24 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin HevyMetl ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements 3 cascade operators with feedback modulation, also referred to as algorithm 3 of the TX81Z.\
-    \
-    Algorithm 3 is :\
-    `____4--\\`\
-    `3-->2-- + -->1-->Out`\
-    \
-    Control Change Numbers:\
-    `Total Modulator Index = 2 (.controlOne)`\
-    `Modulator Crossfade = 4 (.controlTwo)`\
-    `LFO Speed = 11`\
-    `LFO Depth = 1`\
-    `ADSR 2 & 4 Target = 128`\
-    \
-    The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements 3 cascade operators with feedback modulation, also referred to as algorithm 3 of the TX81Z.\n\
+\n\
+Algorithm 3 is :\n\
+    \n\
+    ____4--\\\n\
+    3-->2-- + -->1-->Out\n\
+    \n\
+Control Change Numbers:\n\
+\n\
+- Total Modulator Index = 2 (.controlOne)\n\
+- Modulator Crossfade = 4 (.controlTwo)\n\
+- LFO Speed = 11\n\
+- LFO Depth = 1\n\
+- ADSR 2 & 4 Target = 128\n\
+\n\
+The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "HevyMetl", "FM", env->global(), 
                         HevyMetl_ctor, HevyMetl_dtor,
@@ -3059,22 +3076,24 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin PercFlut ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements algorithm 4 of the TX81Z.\
-    \
-    Algorithm 4 is :\
-    `4->3--\\`\
-    `___2-- + -->1-->Out`\
-    \
-    Control Change Numbers:\
-    `Total Modulator Index = 2 (.controlOne)`\
-    `Modulator Crossfade = 4 (.controlTwo)`\
-    `LFO Speed = 11`\
-    `LFO Depth = 1`\
-    `ADSR 2 & 4 Target = 128`\
-    \
-    The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements algorithm 4 of the TX81Z.\n\
+\n\
+Algorithm 4 is :\n\
+    \n\
+    4->3--\\\n\
+    ___2-- + -->1-->Out\n\
+    \n\
+Control Change Numbers:\n\
+\n\
+- Total Modulator Index = 2 (.controlOne)\n\
+- Modulator Crossfade = 4 (.controlTwo)\n\
+- LFO Speed = 11\n\
+- LFO Depth = 1\n\
+- ADSR 2 & 4 Target = 128\n\
+\n\
+The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "PercFlut", "FM", env->global(), 
                         PercFlut_ctor, PercFlut_dtor,
@@ -3088,23 +3107,25 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Rhodey ugen
     //------------------------------------------------------------------------
 
-    doc = " This class implements two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\
-    \
-    Algorithm 5 is :\
-    `4->3--`\
-    `+ --> Out`\
-    `2->1--`\
-    \
-    Control Change Numbers:\
-    `Modulator Index One = 2 (.controlOne)`\
-    `Crossfade of Outputs = 4 (.controlTwo)`\
-    `LFO Speed = 11`\
-    `LFO Depth = 1`\
-    `ADSR 2 & 4 Target = 128`\
-    \
-    The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = " This class implements two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
+\n\
+Algorithm 5 is :\n\
+    \n\
+    4->3--\n\
+    + --> Out\n\
+    2->1--\n\
+    \n\
+Control Change Numbers:\n\
+\n\
+- Modulator Index One = 2 (.controlOne)\n\
+- Crossfade of Outputs = 4 (.controlTwo)\n\
+- LFO Speed = 11\n\
+- LFO Depth = 1\n\
+- ADSR 2 & 4 Target = 128\n\
+\n\
+The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     //! see \examples rhodey.ck
     if( !type_engine_import_ugen_begin( env, "Rhodey", "FM", env->global(), 
@@ -3121,23 +3142,25 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin TubeBell ugen
     //------------------------------------------------------------------------
     
-    doc = "This class implements two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\
-    \
-    Algorithm 5 is :\
-    `4->3--`\
-    `+ --> Out`\
-    `2->1--`\
-    \
-    Control Change Numbers:\
-    `Modulator Index One = 2 (.controlOne)`\
-    `Crossfade of Outputs = 4 (.controlTwo)`\
-    `LFO Speed = 11`\
-    `LFO Depth = 1`\
-    `ADSR 2 & 4 Target = 128`\
-    \
-    The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
+\n\
+Algorithm 5 is :\n\
+    \n\
+    4->3--\n\
+    + --> Out\n\
+    2->1--\n\
+    \n\
+Control Change Numbers:\n\
+\n\
+- Modulator Index One = 2 (.controlOne)\n\
+- Crossfade of Outputs = 4 (.controlTwo)\n\
+- LFO Speed = 11\n\
+- LFO Depth = 1\n\
+- ADSR 2 & 4 Target = 128\n\
+\n\
+The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "TubeBell", "FM", env->global(), 
                         TubeBell_ctor, TubeBell_dtor,
@@ -3151,23 +3174,25 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Wurley ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\
-    \
-    Algorithm 5 is :\
-    `4->3--`\
-    `+ --> Out`\
-    `2->1--`\
-    \
-    Control Change Numbers:\
-    `Modulator Index One = 2 (.controlOne)`\
-    `Crossfade of Outputs = 4 (.controlTwo)`\
-    `LFO Speed = 11`\
-    `LFO Depth = 1`\
-    `ADSR 2 & 4 Target = 128`\
-    \
-    The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
+\n\
+Algorithm 5 is :\n\
+\n\
+4->3--\n\
++ --> Out\n\
+2->1--\n\
+\n\
+Control Change Numbers:\n\
+\n\
+- Modulator Index One = 2 (.controlOne)\n\
+- Crossfade of Outputs = 4 (.controlTwo)\n\
+- LFO Speed = 11\n\
+- LFO Depth = 1\n\
+- ADSR 2 & 4 Target = 128\n\
+\n\
+The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     //! see \examples wurley.ck
     if( !type_engine_import_ugen_begin( env, "Wurley", "FM", env->global(), 
@@ -3189,11 +3214,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Delay ugen
     //------------------------------------------------------------------------
 
-    doc = "This protected Filter subclass implements a non-interpolating digital delay-line. A fixed maximum length of 4095 and a delay of zero is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\
-    \
-    A non-interpolating delay line is typically used in fixed delay-length applications, such as for reverberation.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This protected Filter subclass implements a non-interpolating digital delay-line. A fixed maximum length of 4095 and a delay of zero is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
+\n\
+A non-interpolating delay line is typically used in fixed delay-length applications, such as for reverberation.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     //! see \example net_relay.ck
     if( !type_engine_import_ugen_begin( env, "Delay", "UGen", env->global(), 
@@ -3232,11 +3257,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin DelayA ugen
     //------------------------------------------------------------------------
 
-    doc = "This Delay subclass implements a fractional-length digital delay-line using a first-order allpass filter. A fixed maximum length of 4095 and a delay of 0.5 is set using the default constructor.  Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\
-    \
-    An allpass filter has unity magnitude gain but variable phase delay properties, making it useful in achieving fractional delays without affecting a signal's frequency magnitude response. In order to achieve a maximally flat phase delay response, the minimum delay possible in this implementation is limited to a value of 0.5.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This Delay subclass implements a fractional-length digital delay-line using a first-order allpass filter. A fixed maximum length of 4095 and a delay of 0.5 is set using the default constructor.  Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
+\n\
+An allpass filter has unity magnitude gain but variable phase delay properties, making it useful in achieving fractional delays without affecting a signal's frequency magnitude response. In order to achieve a maximally flat phase delay response, the minimum delay possible in this implementation is limited to a value of 0.5.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "DelayA", "UGen", env->global(), 
                         DelayA_ctor, DelayA_dtor,
@@ -3271,11 +3296,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin DelayL ugen
     //------------------------------------------------------------------------
 
-    doc = "This Delay subclass implements a fractional-length digital delay-line using first-order linear interpolation. A fixed maximum length of 4095 and a delay of zero is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\
-    \
-    Linear interpolation is an efficient technique for achieving fractional delay lengths, though it does introduce high-frequency signal attenuation to varying degrees depending on the fractional delay setting. The use of higher order Lagrange interpolators can typically improve (minimize) this attenuation characteristic.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This Delay subclass implements a fractional-length digital delay-line using first-order linear interpolation. A fixed maximum length of 4095 and a delay of zero is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
+\n\
+Linear interpolation is an efficient technique for achieving fractional delay lengths, though it does introduce high-frequency signal attenuation to varying degrees depending on the fractional delay setting. The use of higher order Lagrange interpolators can typically improve (minimize) this attenuation characteristic.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     //! see \example i-robot.ck
     if( !type_engine_import_ugen_begin( env, "DelayL", "UGen", env->global(), 
@@ -3315,9 +3340,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Echo ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a echo effect.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements a echo effect.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "Echo", "UGen", env->global(), 
                         Echo_ctor, Echo_dtor,
@@ -3365,9 +3390,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //------------------------------------------------------------------------
     // begin Envelope ugen
     //------------------------------------------------------------------------
-    doc = "This class implements a simple envelope generator which is capable of ramping to a target value by a specified rate. It also responds to simple keyOn and keyOff messages, ramping to 1.0 on keyOn and to 0.0 on keyOff.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements a simple envelope generator which is capable of ramping to a target value by a specified rate. It also responds to simple `keyOn` and `keyOff` messages, ramping to 1.0 on `keyOn` and to 0.0 on `keyOff`.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     //! see \example sixty.ck
     if( !type_engine_import_ugen_begin( env, "Envelope", "UGen", env->global(), 
@@ -3452,9 +3477,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin ADSR ugen
     //------------------------------------------------------------------------
    
-    doc = "This Envelope subclass implements a traditional ADSR (Attack, Decay, Sustain, Release) envelope.  It responds to simple keyOn and keyOff messages, keeping track of its state.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This Envelope subclass implements a traditional ADSR (Attack, Decay, Sustain, Release) envelope.  It responds to simple `keyOn` and `keyOff` messages, keeping track of its state.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     //! see \example adsr.ck
     if( !type_engine_import_ugen_begin( env, "ADSR", "Envelope", env->global(), 
@@ -3676,9 +3701,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin OnePole ugen
     //------------------------------------------------------------------------
 
-    doc = "This protected Filter subclass implements a one-pole digital filter.  A method is provided for setting the pole position along the real axis of the z-plane while maintaining a constant peak filter gain.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This protected Filter subclass implements a one-pole digital filter.  A method is provided for setting the pole position along the real axis of the z-plane while maintaining a constant peak filter gain.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "OnePole", "UGen", env->global(),
                         OnePole_ctor, OnePole_dtor,
@@ -3723,9 +3748,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //------------------------------------------------------------------------
     // begin TwoPole ugen
     //------------------------------------------------------------------------
-    doc = "This protected Filter subclass implements a two-pole digital filter.  A method is provided for creating a resonance in the frequency response while maintaining a nearly constant filter gain.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This protected Filter subclass implements a two-pole digital filter.  A method is provided for creating a resonance in the frequency response while maintaining a nearly constant filter gain.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "TwoPole", "UGen", env->global(), 
                         TwoPole_ctor, TwoPole_dtor,
@@ -3798,9 +3823,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //------------------------------------------------------------------------
     // begin OneZero ugen
     //------------------------------------------------------------------------
-    doc = " This protected Filter subclass implements a one-zero digital filter.  A method is provided for setting the zero position along the real axis of the z-plane while maintaining a constant filter gain.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = " This protected Filter subclass implements a one-zero digital filter.  A method is provided for setting the zero position along the real axis of the z-plane while maintaining a constant filter gain.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "OneZero", "UGen", env->global(), 
                         OneZero_ctor, OneZero_dtor,
@@ -3845,9 +3870,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin TwoZero ugen
     //------------------------------------------------------------------------
 
-    doc =  "This protected Filter subclass implements a two-zero digital filter.  A method is provided for creating a 'notch' in the frequency response while maintaining a constant filter gain.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc =  "This protected Filter subclass implements a two-zero digital filter.  A method is provided for creating a 'notch' in the frequency response while maintaining a constant filter gain.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "TwoZero", "UGen", env->global(), 
                         TwoZero_ctor, TwoZero_dtor,
@@ -3910,9 +3935,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin PoleZero ugen
     //------------------------------------------------------------------------
 
-    doc = "This protected Filter subclass implements a one-pole, one-zero digital filter. A method is provided for creating an allpass filter with a given coefficient. Another method is provided to create a DC blocking filter.\
-        \
-        by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This protected Filter subclass implements a one-pole, one-zero digital filter. A method is provided for creating an allpass filter with a given coefficient. Another method is provided to create a DC blocking filter.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "PoleZero", "UGen", env->global(), 
                         PoleZero_ctor, PoleZero_dtor,
@@ -3979,9 +4004,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin JCRev ugen
     //------------------------------------------------------------------------
 
-    doc = "John Chowning's reverberator class. This class is derived from the CLM NRev function, which is based on the use of networks of simple allpass and comb delay filters.  This particular arrangement consists of 6 comb filters in parallel, followed by 3 allpass filters, a lowpass filter, and another allpass in series, followed by two allpass filters in parallel with corresponding right and left outputs.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "John Chowning's reverberator class. This class is derived from the CLM NRev function, which is based on the use of networks of simple allpass and comb delay filters.  This particular arrangement consists of 6 comb filters in parallel, followed by 3 allpass filters, a lowpass filter, and another allpass in series, followed by two allpass filters in parallel with corresponding right and left outputs.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "JCRev", "UGen", env->global(), 
                         JCRev_ctor, JCRev_dtor,
@@ -4008,9 +4033,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin NRev ugen
     //------------------------------------------------------------------------
 
-    doc =  "CCRMA's NRev reverberator class. This class is derived from the CLM NRev function, which is based on the use of networks of simple allpass and comb delay filters.  This particular arrangement consists of 6 comb filters in parallel, followed by 3 allpass filters, a lowpass filter, and another allpass in series, followed by two allpass filters in parallel with corresponding rightand left outputs.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc =  "CCRMA's NRev reverberator class. This class is derived from the CLM NRev function, which is based on the use of networks of simple allpass and comb delay filters.  This particular arrangement consists of 6 comb filters in parallel, followed by 3 allpass filters, a lowpass filter, and another allpass in series, followed by two allpass filters in parallel with corresponding rightand left outputs.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "NRev", "UGen", env->global(), 
                         NRev_ctor, NRev_dtor,
@@ -4036,9 +4061,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin PRCRev ugen
     //------------------------------------------------------------------------
 
-    doc =  "Perry's simple reverberator class. This class is based on some of the famous Stanford/CCRMA reverbs (NRev, KipRev), which were based on the Chowning/Moorer/Schroeder reverberators using networks of simple allpass and comb delay filters.  This class implements two series allpass units and two parallel comb filters.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc =  "Perry's simple reverberator class. This class is based on some of the famous Stanford/CCRMA reverbs (NRev, KipRev), which were based on the Chowning/Moorer/Schroeder reverberators using networks of simple allpass and comb delay filters.  This class implements two series allpass units and two parallel comb filters.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "PRCRev", "UGen", env->global(), 
                         PRCRev_ctor, PRCRev_dtor,
@@ -4065,9 +4090,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Chorus ugen
     //------------------------------------------------------------------------
 
-    doc = "Implements a chorus effect.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "Implements a chorus effect.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "Chorus", "UGen", env->global(), 
                         Chorus_ctor, Chorus_dtor,
@@ -4126,9 +4151,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Modulate ugen
     //------------------------------------------------------------------------
 
-    doc = "This class combines random and periodic modulations to give a nice, natural human modulation function.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class combines random and periodic modulations to give a nice, natural human modulation function.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "Modulate", "UGen", env->global(), 
                         Modulate_ctor, Modulate_dtor,
@@ -4173,9 +4198,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin PitShift ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a simple pitch shifter using delay lines.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class implements a simple pitch shifter using delay lines.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "PitShift", "UGen", env->global(), 
                         PitShift_ctor, PitShift_dtor,
@@ -4221,9 +4246,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin SubNoise ugen
     //------------------------------------------------------------------------
 
-    doc = "Generates a new random number every 'rate' ticks using the C rand() function. The quality of the rand() function varies from one OS to another.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "Generates a new random number every 'rate' ticks using the C `rand()` function. The quality of the r`and()` function varies from one OS to another.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "SubNoise", "UGen", env->global(),
                         SubNoise_ctor, SubNoise_dtor,
@@ -4251,15 +4276,15 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin WvIn ugen
     //------------------------------------------------------------------------
 
-    doc = "This class provides input support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\
-    \
-    WvIn loads the contents of an audio file for subsequent output. Linear interpolation is used for fractional 'read rates'.\
-    \
-    WvIn supports multi-channel data in interleaved format. It is important to distinguish the `tick()` methods, which return samples produced by averaging across sample frames, from the `tickFrame()` methods, which return pointers to multi-channel sample frames. For single-channel data, these methods return equivalent values. Small files are completely read into local memory during instantiation. Large files are read incrementally from disk. The file size threshold and the increment size values are defined in WvIn.h.\
-    \
-    WvIn currently supports WAV, AIFF, SND (AU), MAT-file (Matlab), and STK RAW file formats. Signed integer (8-, 16-, and 32-bit) and floating-point (32- and 64-bit) data types are supported. Uncompressed data types are not supported. If using MAT-files, data should be saved in an array with each data channel filling a matrix row.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class provides input support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\n\
+\n\
+WvIn loads the contents of an audio file for subsequent output. Linear interpolation is used for fractional 'read rates'.\n\
+\n\
+WvIn supports multi-channel data in interleaved format. It is important to distinguish the `tick()` methods, which return samples produced by averaging across sample frames, from the `tickFrame()` methods, which return pointers to multi-channel sample frames. For single-channel data, these methods return equivalent values. Small files are completely read into local memory during instantiation. Large files are read incrementally from disk. The file size threshold and the increment size values are defined in WvIn.h.\n\
+\n\
+WvIn currently supports WAV, AIFF, SND (AU), MAT-file (Matlab), and STK RAW file formats. Signed integer (8-, 16-, and 32-bit) and floating-point (32- and 64-bit) data types are supported. Uncompressed data types are not supported. If using MAT-files, data should be saved in an array with each data channel filling a matrix row.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "WvIn", "UGen", env->global(), 
                         WvIn_ctor, WvIn_dtor,
@@ -4295,11 +4320,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin WaveLoop ugen
     //------------------------------------------------------------------------
 
-    doc = "This class inherits from WvIn and provides audio file looping functionality.\
-    \
-    WaveLoop supports multi-channel data in interleaved format. It is important to distinguish the `tick()` methods, which return samples produced by averaging across sample frames, from the `tickFrame()` methods, which return pointers to multi-channel sample frames. For single-channel data, these methods return equivalent values.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class inherits from WvIn and provides audio file looping functionality.\n\
+\n\
+WaveLoop supports multi-channel data in interleaved format. It is important to distinguish the `tick()` methods, which return samples produced by averaging across sample frames, from the `tickFrame()` methods, which return pointers to multi-channel sample frames. For single-channel data, these methods return equivalent values.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     //! see \example dope.ck
     if( !type_engine_import_ugen_begin( env, "WaveLoop", "WvIn", env->global(), 
@@ -4341,15 +4366,15 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin WvOut ugen
     //------------------------------------------------------------------------
  
-    doc = "This class provides output support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\
-    \
-    WvOut writes samples to an audio file. It supports multi-channel data in interleaved format.  It is important to distinguish the `tick()` methods, which output single samples to all channels in a sample frame, from the `tickFrame()` method, which takes a pointer to multi-channel sample frame data.\
-    \
-    WvOut currently supports WAV, AIFF, AIFC, SND (AU), MAT-file (Matlab), and STK RAW file formats.  Signed integer (8-, 16-, and 32-bit) and floating- point (32- and 64-bit) data types are supported.  STK RAW files use 16-bit integers by definition.  MAT-files will always be written as 64-bit floats.  If a data type specification does not match the specified file type, the data type will automatically be modified.  Uncompressed data types are not supported.\
-    \
-    Currently, WvOut is non-interpolating and the output rate is always `Stk::sampleRate()`.\
-    \
-    by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+    doc = "This class provides output support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\n\
+\n\
+WvOut writes samples to an audio file. It supports multi-channel data in interleaved format.  It is important to distinguish the `tick()` methods, which output single samples to all channels in a sample frame, from the `tickFrame()` method, which takes a pointer to multi-channel sample frame data.\n\
+\n\
+WvOut currently supports WAV, AIFF, AIFC, SND (AU), MAT-file (Matlab), and STK RAW file formats.  Signed integer (8-, 16-, and 32-bit) and floating- point (32- and 64-bit) data types are supported.  STK RAW files use 16-bit integers by definition.  MAT-files will always be written as 64-bit floats.  If a data type specification does not match the specified file type, the data type will automatically be modified.  Uncompressed data types are not supported.\n\
+\n\
+Currently, WvOut is non-interpolating and the output rate is always `Stk::sampleRate()`.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "WvOut", "UGen", env->global(), 
                         WvOut_ctor, WvOut_dtor,
@@ -4509,14 +4534,14 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Blit
     //------------------------------------------------------------------------
 
-    doc = "This class generates a band-limited impulse train using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the impulse train and the number of harmonics contained in the resulting signal.\
-    \
-    The signal is normalized so that the peak value is +/-1.0.\
-    \
-    If nHarmonics is 0, then the signal will contain all harmonics up to half the sample rate. Note, however, that this setting may produce aliasing in the signal when the frequency is changing (no automatic modification of the number of harmonics is performed by the `setFrequency()` function).\
-    \
-    Original code by Robin Davies, 2005.\
-    Revisions by Gary Scavone for STK, 2005.";
+    doc = "This class generates a band-limited impulse train using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the impulse train and the number of harmonics contained in the resulting signal.\n\
+\n\
+The signal is normalized so that the peak value is +/-1.0.\n\
+\n\
+If `nHarmonics` is 0, then the signal will contain all harmonics up to half the sample rate. Note, however, that this setting may produce aliasing in the signal when the frequency is changing (no automatic modification of the number of harmonics is performed by the `setFrequency()` function).\n\
+\n\
+Original code by Robin Davies, 2005.\n\
+Revisions by Gary Scavone for STK, 2005.";
     
     if( !type_engine_import_ugen_begin( env, "Blit", "BLT", env->global(), 
          Blit_ctor, Blit_dtor, Blit_tick, Blit_pmsg, doc.c_str() ) ) return FALSE;
@@ -4531,12 +4556,12 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin BlitSaw
     //------------------------------------------------------------------------
 
-    doc = "This class generates a band-limited sawtooth waveform using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the sawtooth and the number of harmonics contained in the resulting signal.\
-    \
-    If nHarmonics is 0, then the signal will contain all harmonics up to half the sample rate. Note, however, that this setting may produce aliasing in the signal when the frequency is changing (no automatic modification of the number of harmonics is performed by the `setFrequency()` function).\
-    \
-    Based on initial code of Robin Davies, 2005.\
-    Modified algorithm code by Gary Scavone, 2005.";
+    doc = "This class generates a band-limited sawtooth waveform using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the sawtooth and the number of harmonics contained in the resulting signal.\n\
+\n\
+If `nHarmonics` is 0, then the signal will contain all harmonics up to half the sample rate. Note, however, that this setting may produce aliasing in the signal when the frequency is changing (no automatic modification of the number of harmonics is performed by the `setFrequency()` function).\n\
+\n\
+Based on initial code of Robin Davies, 2005.\n\
+Modified algorithm code by Gary Scavone, 2005.";
     
     if( !type_engine_import_ugen_begin( env, "BlitSaw", "BLT", env->global(), 
          BlitSaw_ctor, BlitSaw_dtor, BlitSaw_tick, BlitSaw_pmsg, doc.c_str() ) ) return FALSE;
@@ -4549,14 +4574,14 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin BlitSquare
     //------------------------------------------------------------------------
 
-    doc = "This class generates a band-limited square wave signal. It is derived in part from the approach reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The algorithm implemented in this class uses a SincM function with an even M value to achieve a bipolar bandlimited impulse train. This signal is then integrated to achieve a square waveform. The integration process has an associated DC offset but that is subtracted off the output signal.\
-    \
-    The user can specify both the fundamental frequency of the waveform and the number of harmonics contained in the resulting signal.\
-    \
-    If nHarmonics is 0, then the signal will contain all harmonics up to half the sample rate. Note, however, that this setting may produce aliasing in the signal when the frequency is changing (no automatic modification of the number of harmonics is performed by the `setFrequency()` function).\
-    \
-    Based on initial code of Robin Davies, 2005.\
-    Modified algorithm code by Gary Scavone, 2005.";
+    doc = "This class generates a band-limited square wave signal. It is derived in part from the approach reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The algorithm implemented in this class uses a SincM function with an even M value to achieve a bipolar bandlimited impulse train. This signal is then integrated to achieve a square waveform. The integration process has an associated DC offset but that is subtracted off the output signal.\n\
+\n\
+The user can specify both the fundamental frequency of the waveform and the number of harmonics contained in the resulting signal.\n\
+\n\
+If `nHarmonics` is 0, then the signal will contain all harmonics up to half the sample rate. Note, however, that this setting may produce aliasing in the signal when the frequency is changing (no automatic modification of the number of harmonics is performed by the `setFrequency()` function).\n\
+\n\
+Based on initial code of Robin Davies, 2005.\n\
+Modified algorithm code by Gary Scavone, 2005.";
     
     if( !type_engine_import_ugen_begin( env, "BlitSquare", "BLT", env->global(), 
          BlitSquare_ctor, BlitSquare_dtor,
