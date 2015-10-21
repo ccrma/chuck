@@ -12,6 +12,7 @@
             - WPKorg35
               by Owen Vallis
               Korg 35 low-pass filter based on Will Pirkle's technical notes.
+  - (fixed)(Win) missing DLL issue
   - (fixed) me.dir() issues with Machine.add()-ed shreds
   - (fixed) crash fixes for <<< >>> with null objects
   - (fixed) stop ignoring midi clock in midi messages
