@@ -465,6 +465,10 @@ std::string extract_filepath_dir(std::string &filepath)
     if(i == std::string::npos)
         return std::string();
     
+    // skip any/all extra trailing slashes
+    while( i > 0 && filepath[i-1] == path_separator )
+        i--;
+    
     // change spencer 2014-7-17: include trailing slash
     return std::string(filepath, 0, i+1);
 }
@@ -478,19 +482,22 @@ string dir_go_up( const string & dir, t_CKINT numUp )
     // sanity check
     if( numUp < 0 ) numUp = -numUp;
 
-    // if there is already a trailing slash, add extra up
-    if( dir.length() > 0 && dir[dir.length()-1] == path_separator )
-        numUp++;
-    
     // pos
     size_t pos = dir.length();
 
+    // skip any trailing slashes
+    while( pos > 0 && dir[pos-1] == path_separator )
+        pos--;
+    
     // loop
     while( numUp > 0 )
     {
         // find the last slash
         pos = dir.rfind( path_separator, pos-1 );
-        
+        // skip any extra slashes
+        while( pos > 0 && dir[pos-1] == path_separator )
+            pos--;
+
         // not there
         if( pos == string::npos )
             return "";
@@ -508,7 +515,7 @@ string dir_go_up( const string & dir, t_CKINT numUp )
     // otherwise
     // change spencer 2014-7-17: include trailing slash
     string str = string( dir, 0, pos );
-    if(!str_endsin(str.c_str(), "/")) str = str + "/";
+    if( str[str.length()-1] != '/' ) str = str + "/";
     return str;
 }
 

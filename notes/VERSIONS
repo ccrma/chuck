@@ -1,3 +1,24 @@
+1.3.5.2
+---
+  - (added) default root path changed from /usr to /usr/local
+            (fixes issues in Mac OS X 10.11 "El Capitan")
+  - (added) new ChuGins
+            - FoldbackSaturator
+              by Ness Morris
+              Foldback Saturator for nasty distortion.
+            - WPDiodeLadder
+              by Owen Vallis
+              Diode ladder filter based on Will Pirkle's technical notes.
+            - WPKorg35
+              by Owen Vallis
+              Korg 35 low-pass filter based on Will Pirkle's technical notes.
+  - (fixed)(Win) missing DLL issue
+  - (fixed) me.dir() issues with Machine.add()-ed shreds
+  - (fixed) crash fixes for <<< >>> with null objects
+  - (fixed) stop ignoring midi clock in midi messages
+  - (fixed) crash fix for array => ugen
+  - (fixed) fix OscOut send failure for programs that also use OscIn
+
 1.3.5.1
 ---
   - (added) new ChuGins
