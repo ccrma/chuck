@@ -299,7 +299,7 @@ static int get_device_name(SInt32 uniqueid, char *buffer, int bufsize)
 
     // now clear any external flag.
     if (type > 0) 
-        type = type & (~kMIDIObjectType_ExternalMask);
+        type = (MIDIObjectType) (type & (~kMIDIObjectType_ExternalMask));
 
     if (type == kMIDIObjectType_Device) {
         dev = (MIDIDeviceRef) object;
