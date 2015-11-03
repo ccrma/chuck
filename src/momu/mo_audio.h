@@ -136,6 +136,7 @@ public: // ge: making this public was a hack
     static AudioUnit m_au;
     static bool m_isMute;
     static bool m_handleInput;
+    static bool m_overrideToSpeaker;
     static Float64 m_hwSampleRate;
     static Float64 m_srate;
     static UInt32 m_frameSize;

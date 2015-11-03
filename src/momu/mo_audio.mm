@@ -65,6 +65,7 @@ bool MoAudio::m_hasInit = false;
 bool MoAudio::m_isRunning = false;
 bool MoAudio::m_isMute = false;
 bool MoAudio::m_handleInput = false;
+bool MoAudio::m_overrideToSpeaker = false;
 Float64 MoAudio::m_srate = 44100.0;
 Float64 MoAudio::m_hwSampleRate = 44100.0;
 UInt32 MoAudio::m_frameSize = 0;
@@ -519,6 +520,7 @@ bool MoAudio::init( Float64 srate, UInt32 frameSize, UInt32 numChannels )
     }
     
     // check for >= OS 2.1?
+    if(m_overrideToSpeaker)
     {
         // check for headset
         // dont override if headset is plugged in
