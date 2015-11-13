@@ -583,14 +583,14 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
             for( long i = 0; i < device_info.sampleRates.size(); i++ )
             {
                 // difference
-                int diff = device_info.sampleRates[i] - sampling_rate;
-                // check
-                if( std::abs(diff) < closestDiff )
+                long diff = device_info.sampleRates[i] - sampling_rate;
+                // check // ge: changed from abs to labs, 2015.11
+                if( ::labs(diff) < closestDiff )
                 {
                     // remember index
                     closestIndex = i;
                     // update diff
-                    closestDiff = ::abs(diff);
+                    closestDiff = ::labs(diff);
                 }
 
                 // for next highest

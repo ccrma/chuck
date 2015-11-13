@@ -25178,7 +25178,7 @@ sf_error (SNDFILE *sndfile)
 {	SF_PRIVATE	*psf ;
 
 	if (! sndfile)
-	{	if (sf_error != 0)
+	{	if (&sf_error != 0) // ge: added &
 			return 1 ;
 		return 0 ;
 		} ;
