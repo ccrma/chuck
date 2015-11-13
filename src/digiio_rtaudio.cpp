@@ -583,9 +583,9 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
             for( long i = 0; i < device_info.sampleRates.size(); i++ )
             {
                 // difference
-                long diff = device_info.sampleRates[i] - sampling_rate;
+                int diff = device_info.sampleRates[i] - sampling_rate;
                 // check
-                if( ::abs(diff) < closestDiff )
+                if( std::abs(diff) < closestDiff )
                 {
                     // remember index
                     closestIndex = i;
