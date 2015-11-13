@@ -385,7 +385,7 @@ int lo_message_add_midi(lo_message m, uint8_t a[4])
     if (lo_message_add_typechar(m, LO_MIDI))
         return -1;
 
-    memcpy(nptr, a, sizeof(a));
+    memcpy(nptr, a, sizeof(uint8_t)*4); // ge: changed uint8_t*4 to avoid ambiguity
     return 0;
 }
 
@@ -894,8 +894,8 @@ void lo_message_pp(lo_message m)
     }
     putchar('\n');
     if (d != end) {
-	fprintf(stderr, "liblo warning: type and data do not match (off by %d) in message %p\n",
-            abs((char*)d - (char*)end), m);
+	fprintf(stderr, "liblo warning: type and data do not match (off by %ld) in message %p\n",
+            labs((char*)d - (char*)end), m); // ge: change to %ld and labs, 2015
     }
 }
 
