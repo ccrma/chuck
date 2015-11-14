@@ -108,8 +108,8 @@ extern "C" void signal_int( int sig_num )
         // if not NULL
         if( vm )
         {
-            // stop
-            vm->stop();
+            // stop (was VM::stop())
+            all_stop();
             // detach
             all_detach();
         }
@@ -265,7 +265,7 @@ static void usage()
     fprintf( stderr, "               channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|\n" );
     fprintf( stderr, "               srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
     fprintf( stderr, "               remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
-    fprintf( stderr, "               blocking|callback|deprecate:{stop|warn|ignore}|\n" );
+    fprintf( stderr, "               callback|deprecate:{stop|warn|ignore}|\n" );
     fprintf( stderr, "               chugin-load:{auto|off}|chugin-path:<path>|chugin:<name>\n" );
     fprintf( stderr, "   [commands] = add|remove|replace|remove.all|status|time|kill\n" );
     fprintf( stderr, "   [+-=^] = shortcuts for add, remove, replace, status\n" );
@@ -289,8 +289,11 @@ static void usage()
     Chuck_VM * vm = NULL;
     Chuck_VM_Code * code = NULL;
     Chuck_VM_Shred * shred = NULL;
+    // ge: refactor 2015
+    BBQ * bbq = NULL;
+    t_CKBOOL audio_started = FALSE;
     
-    t_CKBOOL enable_audio = TRUE;
+    // t_CKBOOL enable_audio = TRUE;
     t_CKBOOL vm_halt = TRUE;
     t_CKUINT srate = SAMPLING_RATE_DEFAULT;
     t_CKBOOL force_srate = FALSE; // added 1.3.1.2
@@ -356,6 +359,9 @@ static void usage()
     // set log level
     EM_setlog( log_level );
 
+
+//------------------------- COMMAND LINE ARGUMENTS -----------------------------
+
     // parse command line args
     for( i = 1; i < argc; i++ )
     {
@@ -368,9 +374,9 @@ static void usage()
             else if( get_count( argv[i], &count ) )
                 continue;
             else if( !strcmp(argv[i], "--audio") || !strcmp(argv[i], "-a") )
-                enable_audio = TRUE;
+                g_enable_realtime_audio = TRUE;
             else if( !strcmp(argv[i], "--silent") || !strcmp(argv[i], "-s") )
-                enable_audio = FALSE;
+                g_enable_realtime_audio = FALSE;
             else if( !strcmp(argv[i], "--halt") || !strcmp(argv[i], "-t") )
                 vm_halt = TRUE;
             else if( !strcmp(argv[i], "--loop") || !strcmp(argv[i], "-l") )
@@ -381,8 +387,9 @@ static void usage()
                 enable_server = FALSE;
             else if( !strcmp(argv[i], "--callback") )
                 block = FALSE;
-            else if( !strcmp(argv[i], "--blocking") )
-                block = TRUE;
+            // blocking removed, ge: 1.3.5.3
+            // else if( !strcmp(argv[i], "--blocking") )
+            //     block = TRUE;
             else if( !strcmp(argv[i], "--hid") )
                 load_hid = TRUE;
             else if( !strcmp(argv[i], "--shell") || !strcmp( argv[i], "-e" ) )
@@ -624,7 +631,7 @@ static void usage()
 
     // log level
     EM_setlog( log_level );
-
+    
     // probe
     if( probe )
     {
@@ -647,10 +654,10 @@ static void usage()
     // check buffer size
     buffer_size = ensurepow2( buffer_size );
     // check mode and blocking
-    if( !enable_audio && !block ) block = TRUE;
+    if( !g_enable_realtime_audio && !block ) block = TRUE;
     // audio, boost
     if( !set_priority && !block ) g_priority = g_priority_low;
-    if( !set_priority && !enable_audio ) g_priority = 0x7fffffff;
+    if( !set_priority && !g_enable_realtime_audio ) g_priority = 0x7fffffff;
     // set priority
     Chuck_VM::our_priority = g_priority;
     // set watchdog
@@ -720,17 +727,70 @@ static void usage()
             exit( 1 );
         }
     }
+
+    
+//------------------------- VIRTUAL MACHINE SETUP -----------------------------
     
     // allocate the vm - needs the type system
     vm = g_vm = new Chuck_VM;
-    if( !vm->initialize( enable_audio, vm_halt, srate, buffer_size,
-                         num_buffers, dac, adc, dac_chans, adc_chans,
-                         block, adaptive_size, force_srate ) )
+    // ge: refactor 2015: initialize VM
+    if( !vm->initialize( srate, dac_chans, adc_chans, adaptive_size, vm_halt ) )
     {
         fprintf( stderr, "[chuck]: %s\n", vm->last_error() );
         exit( 1 );
     }
+
     
+//--------------------------- AUDIO I/O SETUP ---------------------------------
+
+    // ge: 1.3.5.3
+    bbq = new BBQ;
+    // set some parameters
+    bbq->set_srate( srate );
+    bbq->set_bufsize( buffer_size );
+    bbq->set_numbufs( num_buffers );
+    bbq->set_inouts( adc, dac );
+    bbq->set_chans( adc_chans, dac_chans );
+    
+    // log
+    EM_log( CK_LOG_SYSTEM, "initializing audio I/O..." );
+    // push
+    EM_pushlog();
+    // log
+    EM_log( CK_LOG_SYSTEM, "probing '%s' audio subsystem...", g_enable_realtime_audio ? "real-time" : "fake-time" );
+
+    // probe / init (this shouldn't start audio yet...
+    // moved here 1.3.1.2; to main ge: 1.3.5.3)
+    if( !bbq->initialize( dac_chans, adc_chans, srate, 16, buffer_size, num_buffers,
+                          dac, adc, block, vm, g_enable_realtime_audio, NULL, NULL, force_srate ) )
+    {
+        EM_log( CK_LOG_SYSTEM,
+                "cannot initialize audio device (use --silent/-s for non-realtime)" );
+        // pop
+        EM_poplog();
+        // done
+        exit( 1 );
+    }
+    
+    // log
+    EM_log( CK_LOG_SYSTEM, "real-time audio: %s", g_enable_realtime_audio ? "YES" : "NO" );
+    EM_log( CK_LOG_SYSTEM, "mode: %s", block ? "BLOCKING" : "CALLBACK" );
+    EM_log( CK_LOG_SYSTEM, "sample rate: %ld", srate );
+    EM_log( CK_LOG_SYSTEM, "buffer size: %ld", buffer_size );
+    if( g_enable_realtime_audio )
+    {
+        EM_log( CK_LOG_SYSTEM, "num buffers: %ld", num_buffers );
+        EM_log( CK_LOG_SYSTEM, "adc: %ld dac: %d", adc, dac );
+        EM_log( CK_LOG_SYSTEM, "adaptive block processing: %ld", adaptive_size > 1 ? adaptive_size : 0 );
+    }
+    EM_log( CK_LOG_SYSTEM, "channels in: %ld out: %ld", adc_chans, dac_chans );
+
+    // pop
+    EM_poplog();
+
+    
+//------------------------- CHUCK COMPILER SETUP -----------------------------
+
     // if chugin load is off, then clear the lists (added 1.3.0.0 -- TODO: refactor)
     if( chugin_load == 0 )
     {
@@ -857,7 +917,10 @@ static void usage()
     EM_log( CK_LOG_SEVERE, "starting compilation..." );
     // push indent
     EM_pushlog();
-    
+
+
+//------------------------- SOURCE COMPILATION --------------------------------
+
     // loop through and process each file
     for( i = 1; i < argc; i++ )
     {
@@ -939,6 +1002,9 @@ static void usage()
         }
     }
 
+    
+//----------------------- ON-THE-FLY SERVER SETUP -----------------------------
+    
     // server
     if( enable_server )
     {
@@ -980,11 +1046,93 @@ static void usage()
 #endif
     }
 
-    // run the vm
-    vm->run();
+
+//-------------------------- MAIN CHUCK LOOP!!! -----------------------------
+
+    // log
+    EM_log( CK_LOG_SYSTEM, "running main loop..." );
+    // push indent
+    EM_pushlog();
+
+    // set run state
+    g_running = TRUE;
+
+    EM_log( CK_LOG_SEVERE, "initializing audio buffers..." );
+    if( !bbq->digi_out()->initialize( ) )
+    {
+        EM_log( CK_LOG_SYSTEM,
+               "cannot open audio output (use --silent/-s)" );
+        exit(1);
+    }
+    
+    // initialize input
+    bbq->digi_in()->initialize( );
+    
+    // log
+    EM_log( CK_LOG_SEVERE, "virtual machine running..." );
+    // pop indent
+    EM_poplog();
+
+    // NOTE: non-blocking callback only, ge: 1.3.5.3
+
+    // compute shreds before first sample
+    if( !vm->compute() )
+    {
+        // done
+        g_running = FALSE;
+        // log
+        EM_log( CK_LOG_SYSTEM, "virtual machine stopped..." );
+    }
+    else
+    {
+        // start audio
+        if( !audio_started )
+        {
+            // audio
+            if( !audio_started && g_enable_realtime_audio )
+            {
+                EM_log( CK_LOG_SEVERE, "starting real-time audio..." );
+                bbq->digi_out()->start();
+                bbq->digi_in()->start();
+            }
+            
+            // set the flag to true to avoid entering this function
+            audio_started = TRUE;
+
+        }
+        
+        // wait
+        while( g_running )
+        {
+            if( g_main_thread_hook && g_main_thread_quit )
+                g_main_thread_hook( g_main_thread_bindle );
+            else
+                usleep( 1000 );
+        }
+    }
 
     // detach
     all_detach();
+
+    // shutdown audio
+    if( g_enable_realtime_audio )
+    {
+        // log
+        EM_log( CK_LOG_SYSTEM, "shutting down real-time audio..." );
+        
+        bbq->digi_out()->cleanup();
+        bbq->digi_in()->cleanup();
+        bbq->shutdown();
+        // m_audio = FALSE;
+    }
+    // log
+    EM_log( CK_LOG_SYSTEM, "freeing bbq subsystem..." );
+    // clean up
+    SAFE_DELETE( bbq );
+
+    if( g_main_thread_quit )
+        g_main_thread_quit( g_main_thread_bindle );
+    clear_main_thread_hook();
 
     // free vm
     vm = NULL; SAFE_DELETE( g_vm );

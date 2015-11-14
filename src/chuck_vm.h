@@ -316,8 +316,7 @@ public: // shreduling
     t_CKBOOL shredule( Chuck_VM_Shred * shred );
     t_CKBOOL shredule( Chuck_VM_Shred * shred, t_CKTIME wake_time );
     Chuck_VM_Shred * get( );
-    void advance( );
-    void advance2( );
+    void advance( t_CKINT N );
     void advance_v( t_CKINT & num_left );
     void set_adaptive( t_CKUINT max_block_size );
 
@@ -340,7 +339,8 @@ public:
     // time and audio
     t_CKTIME now_system;
     t_CKBOOL rt_audio;
-    BBQ * bbq;
+    // added ge: 1.3.5.3
+    Chuck_VM * vm_ref;
 
     // shreds to be shreduled
     Chuck_VM_Shred * shred_list;
@@ -382,16 +382,11 @@ public:
     ~Chuck_VM();
 
 public: // init
-    t_CKBOOL initialize( t_CKBOOL enable_audio = TRUE, t_CKBOOL halt = TRUE,
-                         t_CKUINT srate = 44100,
-                         t_CKUINT buffer_size = 512, t_CKUINT num_buffers = 4,
-                         t_CKUINT dac = 0, t_CKUINT adc = 0,
-                         t_CKUINT dac_chan = 2, t_CKUINT adc_chan = 2,
-                         t_CKBOOL block = TRUE, t_CKUINT adaptive = 0,
-                         // force_srate added 1.3.1.2
-                         t_CKBOOL force_srate = FALSE );
+    t_CKBOOL initialize( t_CKUINT srate, t_CKUINT dac_chan, t_CKUINT adc_chan,
+                         t_CKUINT adaptive, t_CKBOOL halt );
     t_CKBOOL initialize_synthesis( );
     t_CKBOOL shutdown();
+    t_CKBOOL has_init() { return m_init; }
 
 public: // shreds
     Chuck_VM_Shred * spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent );
@@ -400,17 +395,14 @@ public: // shreds
     t_CKUINT next_id( );
 
 public: // audio
-    BBQ * bbq() const;
     t_CKUINT srate() const;
-    void compensate_bbq();
 
 public: // running the machine
-    t_CKBOOL run( );
-    t_CKBOOL run( t_CKINT num_samps );
+    // compute next N frames
+    t_CKBOOL run( t_CKINT numFrames, const SAMPLE * input, SAMPLE * output );
+    // compute all shreds for current time
     t_CKBOOL compute( );
-    t_CKBOOL pause( );
-    t_CKBOOL stop( );
-    t_CKBOOL start_audio( );
+    // abort current running shred
     t_CKBOOL abort_current_shred( );
 
 public: // invoke functions
@@ -430,20 +422,10 @@ public: // msg
     // added 1.3.0.0 to fix uber-crash
     CBufferSimple * create_event_buffer();
     void destroy_event_buffer( CBufferSimple * buffer );
-
-public: // static/dynamic function table
-    //void set_env( void * env ) { m_env = env; }
-    //void * get_env( ) { return m_env; }
-    t_CKBOOL has_init() { return m_init; }
-    t_CKBOOL is_running() { return m_running; }
     
 public: // get error
     const char * last_error() const
     { return m_last_error.c_str(); }
-
-    t_CKBOOL set_main_thread_hook( f_mainthreadhook hook, f_mainthreadquit quit,
-                                   void * bindle );
-    t_CKBOOL clear_main_thread_hook();
     
 //-----------------------------------------------------------------------------
 // data
@@ -455,10 +437,16 @@ public:
     Chuck_UGen * m_bunghole;
     t_CKUINT m_num_adc_channels;
     t_CKUINT m_num_dac_channels;
-    
     t_CKBOOL m_halt;
-    t_CKBOOL m_audio;
-    t_CKBOOL m_block;
+
+    // for shreduler, ge: 1.3.5.3
+    const SAMPLE * input_ref() { return m_input_ref; }
+    SAMPLE * output_ref() { return m_output_ref; }
+
+protected:
+    // for shreduler, ge: 1.3.5.3
+    const SAMPLE * m_input_ref;
+    SAMPLE * m_output_ref;
 
 protected:
     Chuck_VM_Shred * spork( Chuck_VM_Shred * shred );
@@ -469,8 +457,6 @@ protected:
 
 protected:
     t_CKBOOL m_init;
-    // t_CKBOOL m_running;  -> moved to public
-    t_CKBOOL m_audio_started;
     std::string m_last_error;
 
     // shred
@@ -482,13 +468,6 @@ protected:
     std::vector<Chuck_VM_Shred *> m_shred_dump;
     t_CKUINT m_num_dumped_shreds;
 
-    // audio
-    BBQ * m_bbq;
-
-    // function table
-    // Chuck_VM_FTable * m_func_table;
-    // t_CKUINT m_num_func;
-
     // message queue
     CBufferSimple * m_msg_buffer;
     CBufferSimple * m_reply_buffer;
@@ -496,16 +475,8 @@ protected:
     
     // TODO: vector? (added 1.3.0.0 to fix uber-crash)
     std::list<CBufferSimple *> m_event_buffers;
-    
-    // added 1.3.2.0
-    f_mainthreadhook m_main_thread_hook;
-    f_mainthreadquit m_main_thread_quit;
-    void *m_main_thread_bindle;
 
 public:
-    // running
-    t_CKBOOL m_running;
-
     // priority
     static t_CKBOOL set_priority( t_CKINT priority, Chuck_VM * vm );
     static t_CKINT our_priority;

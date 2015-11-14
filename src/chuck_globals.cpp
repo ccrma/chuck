@@ -71,6 +71,14 @@ t_CKFLOAT g_watchdog_timeout = 0.5;
 CHUCK_THREAD g_tid_whatever = 0;
 // flag for Std.system( string )
 t_CKBOOL g_enable_system_cmd = FALSE;
+// flag for audio enable, ge: 1.3.5.3
+t_CKBOOL g_enable_realtime_audio = TRUE;
+// flag for system running state, ge: 1.3.5.3
+t_CKBOOL g_running = FALSE;
+// added 1.3.2.0 // moved from VM 1.3.5.3
+f_mainthreadhook g_main_thread_hook = NULL;
+f_mainthreadquit g_main_thread_quit = NULL;
+void * g_main_thread_bindle = NULL;
 
 
 
@@ -106,6 +114,26 @@ extern "C" void all_detach()
 }
 
 
+
+
+//-----------------------------------------------------------------------------
+// name: all_stop()
+// desc: requesting system loop/audio loop stop, ge: 1.3.5.3
+//-----------------------------------------------------------------------------
+extern "C" t_CKBOOL all_stop( )
+{
+    // log
+    EM_log( CK_LOG_SEVERE, "requesting ALL STOP system loop..." );
+    
+    g_running = FALSE;
+    Digitalio::m_end = TRUE;
+    
+    return TRUE;
+}
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: signal_pipe()
 // desc: ...
@@ -117,5 +145,46 @@ extern "C" void signal_pipe( int sig_num )
     {
         all_detach();
         // exit( 2 );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_main_thread_hook()
+// desc: moved to here from VM, ge: 1.3.5.3
+//-----------------------------------------------------------------------------
+extern "C" t_CKBOOL clear_main_thread_hook()
+{
+    g_main_thread_bindle = NULL;
+    g_main_thread_hook = NULL;
+    g_main_thread_quit = NULL;
+    
+    return TRUE;
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_main_thread_hook()
+// desc: moved to here from VM, ge: 1.3.5.3
+//-----------------------------------------------------------------------------
+extern "C" t_CKBOOL set_main_thread_hook( f_mainthreadhook hook,
+                                          f_mainthreadquit quit,
+                                          void * bindle )
+{
+    if( g_main_thread_hook == NULL && g_main_thread_quit == NULL )
+    {
+        g_main_thread_bindle = bindle;
+        g_main_thread_hook = hook;
+        g_main_thread_quit = quit;
+        
+        return TRUE;
+    }
+    else
+    {
+        EM_log(CK_LOG_SEVERE, "[chuck](loop): attempt to register more than one main_thread_hook");
+        return FALSE;
     }
 }

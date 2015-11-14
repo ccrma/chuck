@@ -907,7 +907,7 @@ int Digitalio::cb2( void *output_buffer, void *input_buffer,
         // timestamp
         if( g_do_watchdog ) g_watchdog_time = get_current_time( TRUE );
         // get samples from output
-        vm_ref->run( buffer_size );
+        vm_ref->run( buffer_size, m_buffer_in, m_buffer_out );
         // ...
         if( m_xrun ) m_xrun--;
     }

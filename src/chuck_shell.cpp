@@ -31,6 +31,7 @@
 //-----------------------------------------------------------------------------
 #include "chuck_shell.h"
 #include "chuck_otf.h"
+#include "chuck_globals.h"
 #include "util_network.h"
 #include "util_string.h"
 
@@ -703,7 +704,8 @@ void Chuck_Shell::exit()
     stop = TRUE;
     
     if( process_vm != NULL )
-        process_vm->stop();
+        all_stop(); // ge: 1.3.5.3
+        // process_vm->stop();
 }
 
 //-----------------------------------------------------------------------------
