@@ -1,3 +1,8 @@
+1.3.5.3
+---
+  - (removed) --blocking functionality; callback only for real-time audio
+  - (internal) refactored VM to be more friendly for integration
+
 1.3.5.2
 ---
   - (added) default root path changed from /usr to /usr/local
