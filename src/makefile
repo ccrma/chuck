@@ -88,7 +88,7 @@ CXXSRCS+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	chuck_vm.cpp chuck_instr.cpp chuck_scan.cpp chuck_type.cpp chuck_emit.cpp \
 	chuck_compile.cpp chuck_dl.cpp chuck_oo.cpp chuck_lang.cpp chuck_ugen.cpp \
 	chuck_main.cpp chuck_otf.cpp chuck_stats.cpp chuck_bbq.cpp chuck_shell.cpp \
-	chuck_console.cpp chuck_globals.cpp chuck_io.cpp \
+	chuck_console.cpp chuck_globals.cpp chuck_io.cpp chuck_system.cpp \
 	digiio_rtaudio.cpp hidio_sdl.cpp \
 	midiio_rtmidi.cpp RtAudio/RtAudio.cpp rtmidi.cpp ugen_osc.cpp ugen_filter.cpp \
 	ugen_stk.cpp ugen_xxx.cpp ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
