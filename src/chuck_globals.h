@@ -44,6 +44,7 @@
 struct Chuck_VM;
 struct Chuck_Compiler;
 class  Chuck_Shell;
+class  BBQ;
 
 
 // exports
@@ -55,6 +56,8 @@ extern Chuck_VM * g_vm;
 extern Chuck_Compiler * g_compiler;
 // the shell
 extern Chuck_Shell * g_shell;
+// global BBQ audio layer, ge: 1.3.5.3
+extern BBQ * g_bbq;
 // global variables
 extern t_CKUINT g_sigpipe_mode;
 // global socket
@@ -71,6 +74,8 @@ extern t_CKFLOAT g_watchdog_timeout;
 extern CHUCK_THREAD g_tid_whatever;
 // flag for providing Std.system( string )
 extern t_CKBOOL g_enable_system_cmd;
+// flag for enabling shell, ge: 1.3.5.3
+extern t_CKBOOL g_enable_shell;
 // flag for audio enable, ge: 1.3.5.3
 extern t_CKBOOL g_enable_realtime_audio;
 // flag for system running state, ge: 1.3.5.3

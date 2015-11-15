@@ -49,6 +49,8 @@ Chuck_VM * g_vm = NULL;
 Chuck_Compiler * g_compiler = NULL;
 // the shell
 Chuck_Shell * g_shell = NULL;
+// global BBQ audio layer
+BBQ * g_bbq = NULL;
 // global variables
 t_CKUINT g_sigpipe_mode = 0;
 // default socket
@@ -71,6 +73,8 @@ t_CKFLOAT g_watchdog_timeout = 0.5;
 CHUCK_THREAD g_tid_whatever = 0;
 // flag for Std.system( string )
 t_CKBOOL g_enable_system_cmd = FALSE;
+// flag for enabling shell, ge: 1.3.5.3
+t_CKBOOL g_enable_shell = FALSE;
 // flag for audio enable, ge: 1.3.5.3
 t_CKBOOL g_enable_realtime_audio = TRUE;
 // flag for system running state, ge: 1.3.5.3
