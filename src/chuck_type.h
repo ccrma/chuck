@@ -52,7 +52,7 @@ typedef enum {
     te_function, te_object, te_user, te_array, te_null, te_ugen, te_uana, 
     te_event, te_void, te_stdout, te_stderr, te_adc, te_dac, te_bunghole, 
     te_uanablob, te_io, te_fileio, te_chout, te_cherr, te_multi,
-    te_vec3, te_vec4, te_vector // ge: 1.3.5.3
+    te_vec3, te_vec4, te_vector // ge: added 1.3.5.3
 } te_Type;
 
 
@@ -900,8 +900,8 @@ extern Chuck_Type t_time;
 extern Chuck_Type t_dur;
 extern Chuck_Type t_complex;
 extern Chuck_Type t_polar;
-extern Chuck_Type t_vec3; // ge: 1.3.5.3
-extern Chuck_Type t_vec4; // ge: 1.3.5.3
+extern Chuck_Type t_vec3; // ge: added 1.3.5.3
+extern Chuck_Type t_vec4; // ge: added 1.3.5.3
 extern Chuck_Type t_vector;
 extern Chuck_Type t_object;
 extern Chuck_Type t_null;

@@ -32,10 +32,11 @@
 #include "chuck_globals.h"
 #include "chuck_bbq.h"
 #include "chuck_errmsg.h"
-#include "ugen_stk.h"
-#include "ulib_std.h"
-#include "hidio_sdl.h"
 #include "chuck_io.h"
+#include "chuck_vm.h"
+#include "ulib_std.h"
+#include "ugen_stk.h"
+#include "hidio_sdl.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -77,8 +78,6 @@ t_CKBOOL g_enable_system_cmd = FALSE;
 t_CKBOOL g_enable_shell = FALSE;
 // flag for audio enable, ge: 1.3.5.3
 t_CKBOOL g_enable_realtime_audio = TRUE;
-// flag for system running state, ge: 1.3.5.3
-t_CKBOOL g_running = FALSE;
 // added 1.3.2.0 // moved from VM 1.3.5.3
 f_mainthreadhook g_main_thread_hook = NULL;
 f_mainthreadquit g_main_thread_quit = NULL;
@@ -129,7 +128,9 @@ extern "C" t_CKBOOL all_stop( )
     // log
     EM_log( CK_LOG_SEVERE, "requesting ALL STOP system loop..." );
     
-    g_running = FALSE;
+    // stop VM
+    if( g_vm ) g_vm->stop();
+    // set state
     Digitalio::m_end = TRUE;
     
     return TRUE;

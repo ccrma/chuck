@@ -532,6 +532,51 @@ error:
 
 
 //-----------------------------------------------------------------------------
+// name: init_class_vec3()
+// desc: initialize primitive type vec3
+//-----------------------------------------------------------------------------
+t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type )
+{
+    // init as base class
+    Chuck_DL_Func * func = NULL;
+    
+    // log
+    EM_log( CK_LOG_SEVERE, "class 'vec3' (primitive)" );
+
+    // document
+    const char *doc = "vec3 is a primitive type for a 3-dimensional vector; potentially useful for 3D coordinates, RGB color, or as a value/goal/slew interpolator.";
+    
+    // init as base class
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc ) )
+        return FALSE;
+    
+    // add set(float,float,float)
+    func = make_new_mfun( "void", "set", vec3_set );
+    func->add_arg( "float", "x" );
+    func->add_arg( "float", "y" );
+    func->add_arg( "float", "z" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add magnitude()
+    func = make_new_mfun( "float", "magnitude", vec3_magnitude );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // end the class import
+    type_engine_import_class_end( env );
+
+    return TRUE;
+    
+error:
+    // end the class import
+    type_engine_import_class_end( env );
+    
+    return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: init_class_io()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -2557,6 +2602,67 @@ CK_DLL_MFUN( event_wait )
 CK_DLL_MFUN( event_can_wait )
 {
     RETURN->v_int = TRUE;
+}
+
+
+//-----------------------------------------------------------------------------
+// vec3 API
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( vec3_set )
+{
+    // HACK: this is a particularly horrid cast from (Chuck_Object *)
+    // t_CKVEC3 is neither a super- or sub-class of Chuck_Object...
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get index
+    vec3->x = GET_NEXT_FLOAT(ARGS);
+    vec3->y = GET_NEXT_FLOAT(ARGS);
+    vec3->z = GET_NEXT_FLOAT(ARGS);
+}
+
+CK_DLL_MFUN( vec3_setAll )
+{
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get index
+    vec3->x = vec3->y = vec3->z = GET_NEXT_FLOAT(ARGS);
+}
+
+CK_DLL_MFUN( vec3_magnitude )
+{
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // compute magnitude
+    t_CKFLOAT mag = ::sqrt( vec3->x*vec3->x + vec3->y*vec3->y + vec3->z*vec3->z );
+    // return
+    RETURN->v_float = mag;
+}
+
+CK_DLL_MFUN( vec3_normalize )
+{
+}
+
+CK_DLL_MFUN( vec3_interp )
+{
+}
+
+CK_DLL_MFUN( vec3_interp_delta )
+{
+}
+
+CK_DLL_MFUN( vec3_update_goal )
+{
+}
+
+CK_DLL_MFUN( vec3_update_goal_slew )
+{
+}
+
+CK_DLL_MFUN( vec3_updateSet_goalAndValue )
+{
+}
+
+CK_DLL_MFUN( vec3_updateSet_goalAndValue_slew )
+{
 }
 
 

@@ -392,9 +392,9 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                         emit->append( new Chuck_Instr_Reg_Pop_Word2 );
                     else if( exp->type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
                         emit->append( new Chuck_Instr_Reg_Pop_Word3 );
-                    else if( exp->type->size == sz_VEC3 ) // 1.3.5.3
+                    else if( exp->type->size == sz_VEC3 ) // ge: added 1.3.5.3
                         emit->append( new Chuck_Instr_Reg_Pop_Word4(sz_VEC3/sz_WORD) );
-                    else if( exp->type->size == sz_VEC4 ) // 1.3.5.3
+                    else if( exp->type->size == sz_VEC4 ) // ge: added 1.3.5.3
                         emit->append( new Chuck_Instr_Reg_Pop_Word4(sz_VEC4/sz_WORD) );
                     else
                     {
@@ -2535,9 +2535,9 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
                     emit->append( new Chuck_Instr_Assign_Primitive2 );
                 else if( right->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
                     emit->append( new Chuck_Instr_Assign_Primitive4 );
-                else if( right->size == sz_VEC3 ) // 1.3.5.3
+                else if( right->size == sz_VEC3 ) // ge: added 1.3.5.3
                     emit->append( new Chuck_Instr_Assign_PrimitiveVec3 );
-                else if( right->size == sz_VEC4 ) // 1.3.5.3
+                else if( right->size == sz_VEC4 ) // ge: added 1.3.5.3
                     emit->append( new Chuck_Instr_Assign_PrimitiveVec4 );
                 else
                 {
@@ -3880,9 +3880,9 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 emit->append( new Chuck_Instr_Alloc_Member_Word2( value->offset ) );
             else if( type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 emit->append( new Chuck_Instr_Alloc_Member_Word4( value->offset ) );
-            else if( type->size == sz_VEC3 ) // 1.3.5.3
+            else if( type->size == sz_VEC3 ) // ge: added 1.3.5.3
                 emit->append( new Chuck_Instr_Alloc_Member_Vec3( value->offset ) );
-            else if( type->size == sz_VEC4 ) // 1.3.5.3
+            else if( type->size == sz_VEC4 ) // ge: added 1.3.5.3
                 emit->append( new Chuck_Instr_Alloc_Member_Vec4( value->offset) );
             else
             {
@@ -3929,11 +3929,11 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 {
                     emit->append( new Chuck_Instr_Alloc_Word4( local->offset ) );
                 }
-                else if( type->size == sz_VEC3 ) // 1.3.5.3
+                else if( type->size == sz_VEC3 ) // ge: added 1.3.5.3
                 {
                     emit->append( new Chuck_Instr_Alloc_Vec3(local->offset) );
                 }
-                else if( type->size == sz_VEC4 ) // 1.3.5.3
+                else if( type->size == sz_VEC4 ) // ge: added 1.3.5.3
                 {
                     emit->append( new Chuck_Instr_Alloc_Vec4(local->offset) );
                 }
@@ -4561,9 +4561,9 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
             emit->append( new Chuck_Instr_Reg_Push_Mem2( v->offset, v->is_context_global ) );
         else if( v->type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
             emit->append( new Chuck_Instr_Reg_Push_Mem4( v->offset, v->is_context_global ) );
-        else if( v->type->size == sz_VEC3 ) // 1.3.5.3
+        else if( v->type->size == sz_VEC3 ) // ge: added 1.3.5.3
             emit->append( new Chuck_Instr_Reg_Push_Mem_Vec3( v->offset, v->is_context_global ) );
-        else if( v->type->size == sz_VEC4 ) // 1.3.5.3
+        else if( v->type->size == sz_VEC4 ) // ge: added 1.3.5.3
             emit->append( new Chuck_Instr_Reg_Push_Mem_Vec4( v->offset, v->is_context_global ) );
         else
         {

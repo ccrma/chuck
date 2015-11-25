@@ -456,7 +456,7 @@ struct Chuck_DL_Value
     t_CKBOOL is_const;
     // addr static
     void * static_addr;
-    
+    // description
     std::string doc;
 
     // constructor
@@ -480,7 +480,7 @@ struct Chuck_DL_Func
     union { f_ctor ctor; f_dtor dtor; f_mfun mfun; f_sfun sfun; t_CKUINT addr; };
     // arguments
     std::vector<Chuck_DL_Value *> args;
-    
+    // description
     std::string doc;
     
     // constructor

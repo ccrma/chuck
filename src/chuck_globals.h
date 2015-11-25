@@ -78,8 +78,6 @@ extern t_CKBOOL g_enable_system_cmd;
 extern t_CKBOOL g_enable_shell;
 // flag for audio enable, ge: 1.3.5.3
 extern t_CKBOOL g_enable_realtime_audio;
-// flag for system running state, ge: 1.3.5.3
-extern t_CKBOOL g_running;
 // added 1.3.2.0 // moved from VM 1.3.5.3
 extern f_mainthreadhook g_main_thread_hook;
 extern f_mainthreadquit g_main_thread_quit;

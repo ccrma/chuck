@@ -1189,7 +1189,7 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
     EM_pushlog();
 
     // set run state
-    g_running = TRUE;
+    vm->start();
 
     EM_log( CK_LOG_SEVERE, "initializing audio buffers..." );
     if( !bbq->digi_out()->initialize( ) )
@@ -1212,8 +1212,8 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
     // compute shreds before first sample
     if( !vm->compute() )
     {
-        // done
-        g_running = FALSE;
+        // done, 1.3.5.3
+        vm->stop();
         // log
         EM_log( CK_LOG_SYSTEM, "virtual machine stopped..." );
     }
@@ -1241,7 +1241,7 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
     }
     
     // wait
-    while( g_running )
+    while( vm->running() )
     {
         if( g_main_thread_hook && g_main_thread_quit )
             g_main_thread_hook( g_main_thread_bindle );

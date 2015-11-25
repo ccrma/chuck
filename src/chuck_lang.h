@@ -54,15 +54,19 @@ t_CKBOOL init_class_uana( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_blob( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type );
-t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type );
-t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type );
-t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type ); // added 1.3.0.0 -- moved to be full-fledged class
-t_CKBOOL init_class_cherr( Chuck_Env * env, Chuck_Type * type ); // added 1.3.0.0 -- moved to be full-fledged class
 t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type );
+t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
+
 t_CKBOOL init_class_Midi( Chuck_Env * env );
 t_CKBOOL init_class_MidiRW( Chuck_Env * env );
 t_CKBOOL init_class_HID( Chuck_Env * env );
+t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type );
+t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type );
+// added 1.3.0.0 -- moved to be full-fledged class
+t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type );
+// added 1.3.0.0 -- moved to be full-fledged class
+t_CKBOOL init_class_cherr( Chuck_Env * env, Chuck_Type * type );
 
 
 

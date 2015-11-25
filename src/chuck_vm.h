@@ -388,6 +388,16 @@ public: // init
     t_CKBOOL shutdown();
     t_CKBOOL has_init() { return m_init; }
 
+public: // run state; 1.3.5.3
+    // run start
+    t_CKBOOL start();
+    // get run state
+    t_CKBOOL running();
+    // run stop
+    t_CKBOOL stop();
+    // backdoor to access state directly (should be called from inside VM only)
+    t_CKBOOL & runningState() { return m_is_running; }
+
 public: // shreds
     Chuck_VM_Shred * spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent );
     Chuck_VM_Shred * fork( Chuck_VM_Code * code );
@@ -404,7 +414,7 @@ public: // running the machine
     t_CKBOOL compute( );
     // abort current running shred
     t_CKBOOL abort_current_shred( );
-
+    
 public: // invoke functions
     t_CKBOOL invoke_static( Chuck_VM_Shred * shred );
 
@@ -435,9 +445,11 @@ public:
     Chuck_UGen * m_adc;
     Chuck_UGen * m_dac;
     Chuck_UGen * m_bunghole;
+    t_CKUINT m_srate;
     t_CKUINT m_num_adc_channels;
     t_CKUINT m_num_dac_channels;
     t_CKBOOL m_halt;
+    t_CKBOOL m_is_running;
 
     // for shreduler, ge: 1.3.5.3
     const SAMPLE * input_ref() { return m_input_ref; }
