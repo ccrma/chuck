@@ -291,27 +291,50 @@ CK_DLL_MFUN( string_trim );
 CK_DLL_MFUN( string_toString );
 CK_DLL_MFUN( string_set_at );
 CK_DLL_MFUN( string_get_at );
-CK_DLL_MFUN(string_charAt);
-CK_DLL_MFUN(string_setCharAt);
-CK_DLL_MFUN(string_substring);
-CK_DLL_MFUN(string_substringN);
-CK_DLL_MFUN(string_insert);
-CK_DLL_MFUN(string_replace);
-CK_DLL_MFUN(string_replaceN);
-CK_DLL_MFUN(string_find);
-CK_DLL_MFUN(string_findStart);
-CK_DLL_MFUN(string_findStr);
-CK_DLL_MFUN(string_findStrStart);
-CK_DLL_MFUN(string_rfind);
-CK_DLL_MFUN(string_rfindStart);
-CK_DLL_MFUN(string_rfindStr);
-CK_DLL_MFUN(string_rfindStrStart);
-CK_DLL_MFUN(string_erase);
-CK_DLL_MFUN(string_toInt);
-CK_DLL_MFUN(string_toFloat);
-CK_DLL_MFUN(string_parent);
+CK_DLL_MFUN( string_charAt);
+CK_DLL_MFUN( string_setCharAt);
+CK_DLL_MFUN( string_substring);
+CK_DLL_MFUN( string_substringN);
+CK_DLL_MFUN( string_insert);
+CK_DLL_MFUN( string_replace);
+CK_DLL_MFUN( string_replaceN);
+CK_DLL_MFUN( string_find);
+CK_DLL_MFUN( string_findStart);
+CK_DLL_MFUN( string_findStr);
+CK_DLL_MFUN( string_findStrStart);
+CK_DLL_MFUN( string_rfind);
+CK_DLL_MFUN( string_rfindStart);
+CK_DLL_MFUN( string_rfindStr);
+CK_DLL_MFUN( string_rfindStrStart);
+CK_DLL_MFUN( string_erase);
+CK_DLL_MFUN( string_toInt);
+CK_DLL_MFUN( string_toFloat);
+CK_DLL_MFUN( string_parent);
 
 
+//-----------------------------------------------------------------------------
+// vector API (vec3, vec4, eventually vector) ge: 1.3.5.3
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( vec3_set );
+CK_DLL_MFUN( vec3_setAll );
+CK_DLL_MFUN( vec3_magnitude );
+CK_DLL_MFUN( vec3_normalize );
+CK_DLL_MFUN( vec3_interp );
+CK_DLL_MFUN( vec3_interp_delta );
+CK_DLL_MFUN( vec3_update_goal );
+CK_DLL_MFUN( vec3_update_goal_slew );
+CK_DLL_MFUN( vec3_updateSet_goalAndValue );
+CK_DLL_MFUN( vec3_updateSet_goalAndValue_slew );
+CK_DLL_MFUN( vec4_set );
+CK_DLL_MFUN( vec4_setAll );
+CK_DLL_MFUN( vec4_magnitude );
+CK_DLL_MFUN( vec4_normalize );
+CK_DLL_MFUN( vec4_interp );
+CK_DLL_MFUN( vec4_interp_delta );
+CK_DLL_MFUN( vec4_update_goal );
+CK_DLL_MFUN( vec4_update_goal_slew );
+CK_DLL_MFUN( vec4_updateSet_goalAndValue );
+CK_DLL_MFUN( vec4_updateSet_goalAndValue_slew );
 
 
 //-----------------------------------------------------------------------------

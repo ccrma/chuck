@@ -305,7 +305,7 @@ error:
         r_free = FALSE;
     }
     
-    RETURN->v_int = NULL;
+    RETURN->v_int = 0;
 }
 
 
@@ -394,6 +394,6 @@ error:
         r_free = FALSE;
     }
     
-    RETURN->v_int = NULL;
+    RETURN->v_int = 0;
 }
 

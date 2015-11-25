@@ -183,6 +183,7 @@ long htol( c_str str )
 "--"                    { adjust(); return MINUSMINUS; }
 "#("                    { adjust(); return POUNDPAREN; }
 "%("                    { adjust(); return PERCENTPAREN; }
+"@("                    { adjust(); return ATPAREN; }
 
 ","                     { adjust(); return COMMA; }
 ":"                     { adjust(); return COLON; }
