@@ -600,6 +600,21 @@ a_Exp new_exp_from_polar( a_Polar exp, int pos )
     return a;
 }
 
+a_Exp new_exp_from_vec( a_Vec exp, int pos ) // ge: added 1.3.5.3
+{
+    a_Exp a = (a_Exp)checked_malloc( sizeof( struct a_Exp_ ) );
+    a->s_type = ae_exp_primary;
+    a->s_meta = ae_meta_value;
+    a->primary.s_type = ae_primary_vec;
+    a->primary.vec = exp;
+    a->primary.linepos = pos;
+    a->linepos = pos;
+    a->primary.vec->self = a;
+    a->primary.self = a;
+    
+    return a;
+}
+
 a_Exp new_exp_from_nil( int pos )
 {
     a_Exp a = (a_Exp)checked_malloc( sizeof( struct a_Exp_ ) );
@@ -860,6 +875,20 @@ a_Polar new_polar( a_Exp mod, int pos )
     a_Polar a = (a_Polar)checked_malloc( sizeof( struct a_Polar_ ) );
     a->mod = mod;
     if( mod ) a->phase = mod->next;
+    a->linepos = pos;
+    
+    return a;
+}
+
+a_Vec new_vec( a_Exp e, int pos ) // ge: added 1.3.5.3
+{
+    a_Vec a = (a_Vec)checked_malloc( sizeof( struct a_Vec_ ) );
+    a->args = e;
+    while( e ) // count number of dims
+    {
+        a->numdims++;
+        e = e->next;
+    }
     a->linepos = pos;
     
     return a;
