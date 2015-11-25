@@ -31,14 +31,13 @@
 //-----------------------------------------------------------------------------
 #include "chuck_vm.h"
 #include "chuck_instr.h"
-#include "chuck_bbq.h"
-#include "chuck_errmsg.h"
-#include "chuck_dl.h"
-#include "chuck_type.h"
-#include "chuck_globals.h"
 #include "chuck_lang.h"
-#include "ugen_xxx.h"
+#include "chuck_type.h"
+#include "chuck_dl.h"
 #include "chuck_io.h"
+#include "chuck_globals.h"
+#include "chuck_errmsg.h"
+#include "ugen_xxx.h"
 
 #include <algorithm>
 using namespace std;
@@ -50,7 +49,7 @@ using namespace std;
   #include <pthread.h>
 #endif
 
-
+// uncomment to compile VM debug messages
 #define CK_VM_DEBUG_ENABLE (0)
 
 #if CK_VM_DEBUG_ENABLE
@@ -59,6 +58,7 @@ using namespace std;
 #else
 #define CK_VM_DEBUG(x)
 #endif // CK_VM_DEBUG_ENABLE
+
 
 
 
@@ -139,6 +139,7 @@ Chuck_VM::Chuck_VM()
     m_dac = NULL;
     m_adc = NULL;
     m_bunghole = NULL;
+    m_srate = 0;
     m_num_dac_channels = 0;
     m_num_adc_channels = 0;
     m_init = FALSE;
@@ -265,6 +266,7 @@ t_CKBOOL Chuck_VM::initialize( t_CKUINT srate, t_CKUINT dac_chan,
     m_halt = halt;
     m_num_adc_channels = adc_chan;
     m_num_dac_channels = dac_chan;
+    m_srate = srate;
 
     // lockdown
     Chuck_VM_Object::lock_all();
@@ -451,6 +453,52 @@ t_CKBOOL Chuck_VM::shutdown()
 
 
 //-----------------------------------------------------------------------------
+// name: start()
+// desc: run start (can be called before or after init)
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::start()
+{
+    // already running?
+    if( m_is_running) return FALSE;
+    // set state
+    m_is_running = TRUE;
+    // done
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: running()
+// desc: get run state
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::running()
+{
+    return m_is_running;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: stop()
+// desc: run stop
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::stop()
+{
+    // running?
+    if( !m_is_running ) return FALSE;
+    // set state
+    m_is_running = FALSE;
+    // done
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: compute()
 // desc: compute all shreds at one instance in ChucK time
 //-----------------------------------------------------------------------------
@@ -554,8 +602,9 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 
 // vm stop here
 vm_stop:
-    // HACK: set global state
-    g_running = FALSE;
+    // stop, 1.3.5.3
+    this->stop();
+    // TODO: move this to be per VM?
     if( g_main_thread_quit )
         g_main_thread_quit( g_main_thread_bindle );
     clear_main_thread_hook();
@@ -870,7 +919,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     }
     else if( msg->type == MSG_TIME )
     {
-        float srate = (float)Digitalio::sampling_rate();
+        float srate = m_srate; // 1.3.5.3; was: (float)Digitalio::sampling_rate();
         fprintf( stderr, "[chuck](VM): the values of now:\n" );
         fprintf( stderr, "  now = %.6f (samp)\n", m_shreduler->now_system );
         fprintf( stderr, "      = %.6f (second)\n", m_shreduler->now_system / srate );
@@ -932,7 +981,7 @@ Chuck_VM_Shreduler * Chuck_VM::shreduler( ) const
 //-----------------------------------------------------------------------------
 t_CKUINT Chuck_VM::srate() const
 {
-    return (t_CKUINT)Digitalio::sampling_rate();
+    return m_srate; // 1.3.5.3; was: (t_CKUINT)Digitalio::sampling_rate();
 }
 
 
@@ -1563,26 +1612,28 @@ t_CKBOOL Chuck_VM_Shred::run( Chuck_VM * vm )
     // get the code
     instr = code->instr;
     is_running = TRUE;
-    // HACK: probably shouldn't be using global here; ge: 1.3.5.3
-    t_CKBOOL * loop_running = &g_running;
+    // pointer to running state
+    t_CKBOOL * loop_running = &(vm_ref->runningState());
 
     // go!
     while( is_running && *loop_running && !is_abort )
     {
-        CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG =--------------------------------=\n"));
-        CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG shred %04lu code %s pc %04lu %s( %s )\n",
-                            this->xid, this->code->name.c_str(), this->pc, instr[pc]->name(), instr[pc]->params()));
-        CK_VM_DEBUG(t_CKBYTE * t_mem_sp = this->mem->sp);
-        CK_VM_DEBUG(t_CKBYTE * t_reg_sp = this->mem->sp);
-        
+//-----------------------------------------------------------------------------
+CK_VM_DEBUG( fprintf(stderr, "CK_VM_DEBUG =--------------------------------=\n") );
+CK_VM_DEBUG( fprintf(stderr, "CK_VM_DEBUG shred %04lu code %s pc %04lu %s( %s )\n",
+             this->xid, this->code->name.c_str(), this->pc, instr[pc]->name(),
+             instr[pc]->params()) );
+CK_VM_DEBUG( t_CKBYTE * t_mem_sp = this->mem->sp );
+CK_VM_DEBUG( t_CKBYTE * t_reg_sp = this->mem->sp );
+//-----------------------------------------------------------------------------
         // execute the instruction
         instr[pc]->execute( vm, this );
-        
-        CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08lx\n",
-                            (unsigned long) t_mem_sp, (unsigned long) this->mem->sp));
-        CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
-                            (unsigned long) t_reg_sp, (unsigned long) this->reg->sp));
-        
+//-----------------------------------------------------------------------------
+CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08lx\n",
+                    (unsigned long) t_mem_sp, (unsigned long) this->mem->sp));
+CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
+                    (unsigned long) t_reg_sp, (unsigned long) this->reg->sp));
+//-----------------------------------------------------------------------------
         // set to next_pc;
         pc = next_pc;
         next_pc++;
@@ -2148,7 +2199,7 @@ void Chuck_VM_Shreduler::status( Chuck_VM_Status * status )
     Chuck_VM_Shred * shred = shred_list;
     Chuck_VM_Shred * temp = NULL;
 
-    t_CKUINT srate = Digitalio::sampling_rate();
+    t_CKUINT srate = vm_ref->srate(); // 1.3.5.3; was: Digitalio::sampling_rate();
     t_CKUINT s = (t_CKUINT)now_system;
     t_CKUINT h = s/(srate*3600);
     s = s - (h*(srate*3600));

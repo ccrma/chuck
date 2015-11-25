@@ -54,8 +54,8 @@ Chuck_Type t_time( te_time, "time", NULL, sizeof(t_CKTIME) );
 Chuck_Type t_dur( te_dur, "dur", NULL, sizeof(t_CKTIME) );
 Chuck_Type t_complex( te_complex, "complex", NULL, sizeof(t_CKCOMPLEX) );
 Chuck_Type t_polar( te_polar, "polar", NULL, sizeof(t_CKPOLAR) );
-Chuck_Type t_vec3( te_vec3, "vec3", NULL, sizeof(t_CKVEC3) ); // ge: 1.3.5.3
-Chuck_Type t_vec4( te_vec4, "vec4", NULL, sizeof(t_CKVEC4) ); // ge: 1.3.5.3
+Chuck_Type t_vec3( te_vec3, "vec3", NULL, sizeof(t_CKVEC3) ); // 1.3.5.3
+Chuck_Type t_vec4( te_vec4, "vec4", NULL, sizeof(t_CKVEC4) ); // 1.3.5.3
 Chuck_Type t_null( te_null, "@null", NULL, sizeof(void *) );
 Chuck_Type t_function( te_function, "@function", &t_object, sizeof(void *) );
 Chuck_Type t_object( te_object, "Object", NULL, sizeof(void *) );
@@ -138,7 +138,8 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def func_def );
 t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def );
 
 // helper
-a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static );
+a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static,
+                            t_CKBOOL is_base_primtive );
 
 // static
 Chuck_Env * Chuck_Env::our_instance = NULL;
@@ -258,8 +259,9 @@ Chuck_Env * type_engine_init( Chuck_VM * vm )
     init_class_event( env, &t_event );
     init_class_io( env, &t_io );
     init_class_fileio( env, &t_fileio );
-    init_class_chout( env, &t_chout ); // (added 1.3.0.0)
-    init_class_cherr( env, &t_cherr ); // (added 1.3.0.0)
+    init_class_chout( env, &t_chout ); // 1.3.0.0
+    init_class_cherr( env, &t_cherr ); // 1.3.0.0
+    init_class_vec3( env, &t_vec3 ); // 1.3.5.3
 
     EM_log( CK_LOG_SEVERE, "class 'class'" );
     t_class.info = new Chuck_Namespace;
@@ -1580,9 +1582,9 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         LR( te_polar, te_polar ) return &t_polar;
         // COMMUTE( te_float, te_complex ) return &t_complex;
         // COMMUTE( te_float, te_polar ) return &t_polar;
-        LR( te_vec3, te_vec3 ) return &t_vec3; // ge: 1.3.5.3
-        LR( te_vec4, te_vec4 ) return &t_vec4; // ge: 1.3.5.3
-        COMMUTE( te_vec3, te_vec4 ) return &t_vec4; // ge: 1.3.5.3
+        LR( te_vec3, te_vec3 ) return &t_vec3; // 1.3.5.3
+        LR( te_vec4, te_vec4 ) return &t_vec4; // 1.3.5.3
+        COMMUTE( te_vec3, te_vec4 ) return &t_vec4; // 1.3.5.3
         COMMUTE( te_dur, te_time ) return &t_time;
         if( isa( left, &t_string ) && isa( right, &t_string ) ) return &t_string;
         if( isa( left, &t_string ) && isa( right, &t_int ) ) return &t_string;
@@ -1601,9 +1603,9 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         LR( te_polar, te_polar ) return &t_polar;
         // COMMUTE( te_float, te_complex ) return &t_complex;
         // COMMUTE( te_float, te_polar ) return &t_polar;
-        LR( te_vec3, te_vec3 ) return &t_vec3; // ge: 1.3.5.3
-        LR( te_vec4, te_vec4 ) return &t_vec4; // ge: 1.3.5.3
-        COMMUTE( te_vec3, te_vec4 ) return &t_vec4; // ge: 1.3.5.3
+        LR( te_vec3, te_vec3 ) return &t_vec3; // 1.3.5.3
+        LR( te_vec4, te_vec4 ) return &t_vec4; // 1.3.5.3
+        COMMUTE( te_vec3, te_vec4 ) return &t_vec4; // 1.3.5.3
     break;
 
     // take care of non-commutative
@@ -1616,9 +1618,9 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         LR( te_polar, te_polar ) return &t_polar;
         // COMMUTE( te_float, te_complex ) return &t_complex;
         // COMMUTE( te_float, te_polar ) return &t_polar;
-        LR( te_vec3, te_vec3 ) return &t_vec3; // ge: 1.3.5.3
-        LR( te_vec4, te_vec4 ) return &t_vec4; // ge: 1.3.5.3
-        COMMUTE( te_vec3, te_vec4 ) return &t_vec4; // ge: 1.3.5.3
+        LR( te_vec3, te_vec3 ) return &t_vec3; // 1.3.5.3
+        LR( te_vec4, te_vec4 ) return &t_vec4; // 1.3.5.3
+        COMMUTE( te_vec3, te_vec4 ) return &t_vec4; // 1.3.5.3
     break;
 
     case ae_op_times_chuck:
@@ -1629,9 +1631,9 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         LR( te_polar, te_polar ) return &t_polar;
         // COMMUTE( te_float, te_complex ) return &t_complex;
         // COMMUTE( te_float, te_polar ) return &t_polar;
-        LR( te_vec3, te_vec3 ) return &t_vec3; // ge: 1.3.5.3
-        LR( te_vec4, te_vec4 ) return &t_vec4; // ge: 1.3.5.3
-        COMMUTE( te_vec3, te_vec4 ) return &t_vec4; // ge: 1.3.5.3
+        LR( te_vec3, te_vec3 ) return &t_vec3; // 1.3.5.3
+        LR( te_vec4, te_vec4 ) return &t_vec4; // 1.3.5.3
+        COMMUTE( te_vec3, te_vec4 ) return &t_vec4; // 1.3.5.3
         COMMUTE( te_float, te_dur ) return &t_dur;
     break;
 
@@ -1689,9 +1691,9 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         LR( te_polar, te_polar ) return &t_int;
         // COMMUTE( te_float, te_complex ) return &t_int;
         // COMMUTE( te_float, te_polar ) return &t_int;
-        LR( te_vec3, te_vec3 ) return &t_int; // ge: 1.3.5.3
-        LR( te_vec4, te_vec4 ) return &t_int; // ge: 1.3.5.3
-        COMMUTE( te_vec3, te_vec4 ) return &t_int; // ge: 1.3.5.3
+        LR( te_vec3, te_vec3 ) return &t_int; // 1.3.5.3
+        LR( te_vec4, te_vec4 ) return &t_int; // 1.3.5.3
+        COMMUTE( te_vec3, te_vec4 ) return &t_int; // 1.3.5.3
         if( isa( left, &t_object ) && isa( right, &t_object ) ) return &t_int;
     break;
 
@@ -2442,7 +2444,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
             t = type_engine_check_exp_polar_lit( env, exp );
         break;
 
-        // vector literal, ge: 1.3.5.3
+        // vector literal, ge: added 1.3.5.3
         case ae_primary_vec:
             t = type_engine_check_exp_vec_lit( env, exp );
         break;
@@ -3515,7 +3517,7 @@ t_CKTYPE type_engine_check_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
     member->t_base = type_engine_check_exp( env, member->base );
     if( !member->t_base ) return NULL;
     
-    // check base type, ge: 1.3.5.3
+    // check base type, ge: added 1.3.5.3
     t_CKUINT tbase_xid = (t_CKUINT)member->t_base->xid;
     switch( tbase_xid )
     {
@@ -4956,8 +4958,12 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     type->owner = where;
     // add reference
     SAFE_ADD_REF(type->owner);
-    // set the size, which is always the width of a pointer
-    type->size = sizeof(t_CKUINT);
+    // check if primitive
+    if( !isprim( type ) ) // 1.3.5.3 (primitives already have size!)
+    {
+        // set the size, which is always the width of a pointer
+        type->size = sizeof(t_CKUINT);
+    }
     // set the object size
     type->obj_size = 0; // TODO
 
@@ -5234,7 +5240,7 @@ t_CKBOOL type_engine_import_mfun( Chuck_Env * env, Chuck_DL_Func * mfun )
     }
 
     // make into func_def
-    func_def = make_dll_as_fun( mfun, FALSE );
+    func_def = make_dll_as_fun( mfun, FALSE, FALSE );
     if( !func_def )
         return FALSE;
     
@@ -5274,7 +5280,7 @@ t_CKBOOL type_engine_import_sfun( Chuck_Env * env, Chuck_DL_Func * sfun )
     }
 
     // make into func_def
-    func_def = make_dll_as_fun( sfun, TRUE );
+    func_def = make_dll_as_fun( sfun, TRUE, FALSE );
     
     // add the function to class
     if( !type_engine_scan1_func_def( env, func_def ) )
@@ -5827,7 +5833,8 @@ a_Arg_List make_dll_arg_list( Chuck_DL_Func * dl_fun )
 // name: make_dll_as_fun()
 // desc: make an chuck dll function into absyn function
 //-----------------------------------------------------------------------------
-a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static )
+a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun,
+                            t_CKBOOL is_static, t_CKBOOL is_primitive )
 {
     a_Func_Def func_def = NULL;
     ae_Keyword func_decl = ae_key_func;
@@ -5897,8 +5904,8 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static )
     }
 
     // make a func_def
-    func_def = new_func_def( func_decl, static_decl, type_decl, (char *)name,
-                             arg_list, NULL, 0 );
+    func_def = new_func_def( func_decl, static_decl, type_decl,
+                             (char *)name, arg_list, NULL, 0 );
     // mark the function as imported (instead of defined in ChucK)
     func_def->s_type = ae_func_builtin;
     // copy the function pointer - the type doesn't matter here
@@ -5982,7 +5989,7 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
         for( j = 0; j < cl->mfuns.size(); j++ )
         {
             // get the function from the dll
-            fun = make_dll_as_fun( cl->mfuns[j], FALSE );
+            fun = make_dll_as_fun( cl->mfuns[j], FALSE, FALSE );
             if( !fun ) goto error;
             // add to vector
             the_funs.push_back( fun );
@@ -5992,7 +5999,7 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
         for( j = 0; j < cl->sfuns.size(); j++ )
         {
             // get the function from the dll
-            fun = make_dll_as_fun( cl->sfuns[j], TRUE );
+            fun = make_dll_as_fun( cl->sfuns[j], TRUE, FALSE );
             if( !fun ) goto error;
             // add to vector
             the_funs.push_back( fun );
