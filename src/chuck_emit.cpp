@@ -1731,55 +1731,95 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         break;
 
     case ae_op_times:
-        switch( left )
+        // check
+        if( left == te_float && right == te_vec3 )
         {
-        case te_int:
-            emit->append( instr = new Chuck_Instr_Times_int );
-            break;
-        case te_float:
-        case te_dur:
-            emit->append( instr = new Chuck_Instr_Times_double );
-            break;
-        case te_complex:
-            emit->append( instr = new Chuck_Instr_Times_complex );
-            break;
-        case te_polar:
-            emit->append( instr = new Chuck_Instr_Times_polar );
-            break;
-        case te_vec3:
-            emit->append( instr = new Chuck_Instr_XProduct_vec3 );
-            break;
-        case te_vec4:
-            emit->append( instr = new Chuck_Instr_XProduct_vec4 );
-            break;
+            emit->append( instr = new Chuck_Instr_float_Times_vec3 );
+        }
+        else if( left == te_vec3 && right == te_float )
+        {
+            emit->append( instr = new Chuck_Instr_vec3_Times_float );
+        }
+        else if( left == te_float && right == te_vec4 )
+        {
+            emit->append( instr = new Chuck_Instr_float_Times_vec4 );
+        }
+        else if( left == te_vec4 && right == te_float )
+        {
+            emit->append( instr = new Chuck_Instr_vec4_Times_float );
+        }
+        else // other cases
+        {
+            switch( left )
+            {
+            case te_int:
+                emit->append( instr = new Chuck_Instr_Times_int );
+                break;
+            case te_float:
+            case te_dur:
+                emit->append( instr = new Chuck_Instr_Times_double );
+                break;
+            case te_complex:
+                emit->append( instr = new Chuck_Instr_Times_complex );
+                break;
+            case te_polar:
+                emit->append( instr = new Chuck_Instr_Times_polar );
+                break;
+            case te_vec3:
+                emit->append( instr = new Chuck_Instr_XProduct_vec3 );
+                break;
+            case te_vec4:
+                emit->append( instr = new Chuck_Instr_XProduct_vec4 );
+                break;
 
-        default: break;
+            default: break;
+            }
         }
         break;
     
     case ae_op_times_chuck:
-        switch( left )
+        // check
+        if( left == te_float && right == te_vec3 )
         {
-        case te_int:
-            emit->append( instr = new Chuck_Instr_Times_int_Assign );
-            break;
-        case te_float:
-            emit->append( instr = new Chuck_Instr_Times_double_Assign );
-            break;
-        case te_complex:
-            emit->append( instr = new Chuck_Instr_Times_complex_Assign );
-            break;
-        case te_polar:
-            emit->append( instr = new Chuck_Instr_Times_polar_Assign );
-            break;
+            emit->append( instr = new Chuck_Instr_float_Times_vec3_Assign );
+        }
+        else if( left == te_float && right == te_vec4 )
+        {
+            emit->append( instr = new Chuck_Instr_float_Times_vec4_Assign );
+        }
+        else
+        {
+            switch( left )
+            {
+            case te_int:
+                emit->append( instr = new Chuck_Instr_Times_int_Assign );
+                break;
+            case te_float:
+                emit->append( instr = new Chuck_Instr_Times_double_Assign );
+                break;
+            case te_complex:
+                emit->append( instr = new Chuck_Instr_Times_complex_Assign );
+                break;
+            case te_polar:
+                emit->append( instr = new Chuck_Instr_Times_polar_Assign );
+                break;
 
-        default: break;
+            default: break;
+            }
         }
         break;
 
     case ae_op_divide:
         if( ( left == te_time && right == te_dur ) ) // time / dur = float
             emit->append( instr = new Chuck_Instr_Divide_double );
+        else if( left == te_vec3 && right == te_float )
+        {
+            emit->append( instr = new Chuck_Instr_vec3_Divide_float );
+        }
+        else if( left == te_vec4 && right == te_float )
+        {
+            emit->append( instr = new Chuck_Instr_vec4_Divide_float );
+        }
         else // other types
         {
             switch( left )
@@ -1807,6 +1847,15 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         // reverse
         if( ( left == te_dur && right == te_time ) ) // time / dur = float
             emit->append( instr = new Chuck_Instr_Divide_double_Assign );
+        else
+        if( left == te_float && right == te_vec3 )
+        {
+            emit->append( instr = new Chuck_Instr_vec3_Divide_float_Assign );
+        }
+        else if( left == te_float && right == te_vec4 )
+        {
+            emit->append( instr = new Chuck_Instr_vec4_Divide_float_Assign );
+        }
         else // other types
         {
             switch( left )
@@ -3381,7 +3430,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
         else if( str == "im" )
             emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr ) );
         else
-            assert( FALSE );
+            goto check_func;
         
         // done
         return TRUE;
@@ -3409,7 +3458,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
         else if( str == "phase" )
             emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr ) );
         else
-            assert( FALSE );
+            goto check_func;
         
         // done
         return TRUE;
@@ -3442,8 +3491,8 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
         else if( member->t_base->xid == te_vec4 && ( str == "w" || str == "a" ) )
             emit->append( new Chuck_Instr_Dot_Cmp_Fourth( member->base->s_meta == ae_meta_var, emit_addr ) );
         else
-            assert( FALSE );
-        
+            goto check_func;
+    
         // done
         return TRUE;
     }
@@ -3453,6 +3502,68 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
               "(emit): internal error in lit_special()..." );
 
     return FALSE;
+    
+//-----------------------------------------------------------------------------
+// goto: check for special member functions, 1.3.5.3
+//-----------------------------------------------------------------------------
+check_func:
+    
+    // the type of the base
+    Chuck_Type * t_base = member->t_base;
+    // is the base a class/namespace or a variable
+    t_CKBOOL base_static = isa( member->t_base, &t_class );
+    // a function
+    Chuck_Func * func = NULL;
+    // a non-function value
+    Chuck_Value * value = NULL;
+    // the offset
+    t_CKUINT offset = 0;
+    
+    // check error
+    if( base_static )
+    {
+        // should not get here
+        EM_error2( member->base->linepos,
+                  "(emit): internal error in lit_special(): base static" );
+        // done
+        return FALSE;
+    }
+        
+    if( !isfunc( member->self->type ) )
+    {
+        // should not get here
+        EM_error2( member->base->linepos,
+                  "(emit): internal error in lit_special(): not member func" );
+        // done
+        return FALSE;
+    }
+    
+    // get the func
+    value = type_engine_find_value( t_base, member->xid );
+    func = value->func_ref;
+    // make sure it's there
+    assert( func != NULL );
+    
+    // NOTE: base already emitted earier in this function (and as var)
+
+    // check base; 1.3.5.3
+    if( member->base->s_meta == ae_meta_value ) // is literal
+    {
+        // dup the value as pointer (as faux-'this' pointer)
+        emit->append( new Chuck_Instr_Reg_Dup_Last_As_Pointer( t_base->size / sz_WORD ) );
+    }
+    else // normal object
+    {
+        // dup the base pointer (as 'this' argument -- special case primitive)
+        emit->append( new Chuck_Instr_Reg_Dup_Last );
+    }
+    
+    // find the offset for virtual table
+    offset = func->vt_index;
+    // emit the function
+    emit->append( new Chuck_Instr_Dot_Primitive_Func( (t_CKUINT)func ) );
+    
+    return TRUE;
 }
 
 
@@ -3517,7 +3628,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
             {
                 // emit the base (TODO: return on error?)
                 emit_engine_emit_exp( emit, member->base );
-                // dup the base pointer
+                // dup the base pointer (as 'this' argument)
                 emit->append( new Chuck_Instr_Reg_Dup_Last );
                 // find the offset for virtual table
                 offset = func->vt_index;

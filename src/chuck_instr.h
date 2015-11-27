@@ -587,7 +587,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Add_vec3
-// desc: add two vec3
+// desc: add two vec3, 1.3.5.3
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Add_vec3 : public Chuck_Instr_Binary_Op
 {
@@ -655,6 +655,84 @@ public:
 // desc: cross product of two vec4 (same as 3D cross product, discard w)
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_XProduct_vec4 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_float_Times_vec3
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_float_Times_vec3 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec3_Times_float
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec3_Times_float : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec3_Divide_float
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec3_Divide_float : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_float_Times_vec4
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_float_Times_vec4 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec4_Times_float
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec4_Times_float : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec4_Divide_float
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec4_Divide_float : public Chuck_Instr_Binary_Op
 {
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -971,6 +1049,59 @@ public:
 //public:
 //    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 //};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_float_Times_vec3_Assign
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_float_Times_vec3_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_float_Times_vec4_Assign
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_float_Times_vec4_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec3_Divide_float_Assign
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec3_Divide_float_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec4_Divide_float_Assign
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec4_Divide_float_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
 
 
 
@@ -1897,6 +2028,21 @@ public:
 struct Chuck_Instr_Reg_Dup_Last2 : public Chuck_Instr
 {
 public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Dup_Last_As_Pointer
+// desc: duplicate last value on stack as pointer; 1.3.5.3
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Dup_Last_As_Pointer : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Reg_Dup_Last_As_Pointer( t_CKUINT sizeInWords )
+    { this->set( sizeInWords ); }
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };
 
@@ -3072,6 +3218,30 @@ public:
 
 protected:
     t_CKUINT m_offset;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Dot_Primitive_Func
+// desc: access the member function of primitive type 1.3.5.3
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Dot_Primitive_Func : public Chuck_Instr
+{
+public:
+    Chuck_Instr_Dot_Primitive_Func( t_CKUINT native_func )
+    { m_native_func = native_func; }
+    
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    virtual const char * params() const
+    { static char buffer[256];
+        sprintf( buffer, "native_func=%ld", m_native_func );
+        return buffer; }
+    
+protected:
+    t_CKUINT m_native_func;
 };
 
 

@@ -18,7 +18,22 @@ a * b => vec3 c;
 <<< "cross product:", c >>>;
 
 // array
-[ a, b, c ] @=> vec3 group[];
-
+[ a, b, @(-1,1,0) ] @=> vec3 group[];
 // print them
 <<< group[0], group[1], group[2] >>>;
+
+// another v
+vec3 v;
+// set value
+v.set( 2,2,2 );
+// print magnitude
+<<< "magnitude:", v.magnitude() >>>;
+// normalize
+v.normalize();
+// print vector
+<<< "normalize:", v >>>;
+
+// multiply
+5 * v => vec3 v2;
+// print result
+<<< "scalar multiply:", v2 >>>;
