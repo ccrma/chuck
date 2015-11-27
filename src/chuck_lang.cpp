@@ -557,10 +557,55 @@ t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "float", "z" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add setAll(float)
+    func = make_new_mfun( "void", "setAll", vec3_setAll );
+    func->add_arg( "float", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
     // add magnitude()
     func = make_new_mfun( "float", "magnitude", vec3_magnitude );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
+    // add normalize()
+    func = make_new_mfun( "void", "normalize", vec3_normalize );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add interp()
+    func = make_new_mfun( "void", "interp", vec3_interp );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add interp( float )
+    func = make_new_mfun( "void", "interp", vec3_interp_delta_float );
+    func->add_arg( "float", "delta" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add interp( dur )
+    func = make_new_mfun( "void", "interp", vec3_interp_delta_dur );
+    func->add_arg( "dur", "delta" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add update( float )
+    func = make_new_mfun( "void", "update", vec3_update_goal );
+    func->add_arg( "float", "goal" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add update( float, float )
+    func = make_new_mfun( "void", "update", vec3_update_goal_slew );
+    func->add_arg( "float", "goal" );
+    func->add_arg( "float", "slew" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add update( float )
+    func = make_new_mfun( "void", "updateSet", vec3_updateSet_goalAndValue );
+    func->add_arg( "float", "goalAndValue" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add update( float, float )
+    func = make_new_mfun( "void", "updateSet", vec3_updateSet_goalAndValue_slew );
+    func->add_arg( "float", "goal" );
+    func->add_arg( "float", "slew" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -2639,30 +2684,95 @@ CK_DLL_MFUN( vec3_magnitude )
 
 CK_DLL_MFUN( vec3_normalize )
 {
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // compute magnitude
+    t_CKFLOAT mag = ::sqrt( vec3->x*vec3->x + vec3->y*vec3->y + vec3->z*vec3->z );
+    // check for zero
+    if( mag > 0 )
+    {
+        vec3->x /= mag;
+        vec3->y /= mag;
+        vec3->z /= mag;
+    }
 }
 
 CK_DLL_MFUN( vec3_interp )
 {
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // update value based on goal and slew
+    vec3->x = (vec3->y - vec3->x) * vec3->z + vec3->x;
 }
 
-CK_DLL_MFUN( vec3_interp_delta )
+CK_DLL_MFUN( vec3_interp_delta_float )
 {
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get index
+    t_CKFLOAT delta = GET_NEXT_FLOAT(ARGS);
+    // update value based on goal and slew
+    vec3->x = (vec3->y - vec3->x) * vec3->z * delta + vec3->x;
+}
+
+CK_DLL_MFUN( vec3_interp_delta_dur )
+{
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get index
+    t_CKDUR delta = GET_NEXT_DUR(ARGS);
+    // get srate
+    t_CKFLOAT srate = SHRED->vm_ref->srate();
+    // update value based on goal and slew
+    vec3->x = (vec3->y - vec3->x) * vec3->z * (srate / delta) + vec3->x;
 }
 
 CK_DLL_MFUN( vec3_update_goal )
 {
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get index
+    t_CKDUR goal = GET_NEXT_DUR(ARGS);
+    // set goal
+    vec3->y = goal;
 }
 
 CK_DLL_MFUN( vec3_update_goal_slew )
 {
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get goal
+    t_CKDUR goal = GET_NEXT_DUR(ARGS);
+    // get slew
+    t_CKDUR slew = GET_NEXT_DUR(ARGS);
+    // set goal
+    vec3->y = goal;
+    // set slew
+    vec3->z = slew;
 }
 
 CK_DLL_MFUN( vec3_updateSet_goalAndValue )
 {
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get goal
+    t_CKDUR goalAndValue = GET_NEXT_DUR(ARGS);
+    // set goal and value
+    vec3->y = vec3->x = goalAndValue;
 }
 
 CK_DLL_MFUN( vec3_updateSet_goalAndValue_slew )
 {
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get goal
+    t_CKDUR goalAndValue = GET_NEXT_DUR(ARGS);
+    // get slew
+    t_CKDUR slew = GET_NEXT_DUR(ARGS);
+    // set goal and value
+    vec3->y = vec3->x = goalAndValue;
+    // set slew
+    vec3->z = slew;
 }
 
 

@@ -682,7 +682,7 @@ void Chuck_Instr_Divide_polar_Reverse::execute( Chuck_VM * vm, Chuck_VM_Shred * 
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: add two vec3; ge: added 1.3.5.3 with other vec3 vec4 instructions
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Add_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -741,6 +741,90 @@ void Chuck_Instr_XProduct_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     push_( sp_float, result.x );
     push_( sp_float, result.y );
     push_( sp_float, result.z );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_float_Times_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // stack pointer
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    // pointer number of bytes
+    pop_( sp, sz_FLOAT+sz_VEC3 );
+    // the float
+    t_CKFLOAT f = *((t_CKFLOAT *)sp);
+    // the vector
+    t_CKVEC3 v = *((t_CKVEC3 *)(sp+sz_FLOAT));
+    // result
+    t_CKVEC3 r;
+    r.x = v.x * f;
+    r.y = v.y * f;
+    r.z = v.z * f;
+    // pointer as vec3
+    t_CKVEC3 *& sp_vec3 = (t_CKVEC3 *&)sp;
+    // push on reg stack
+    push_( sp_vec3, r );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_vec3_Times_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // stack pointer
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    // pointer number of bytes
+    pop_( sp, sz_FLOAT+sz_VEC3 );
+    // the vector
+    t_CKVEC3 v = *((t_CKVEC3 *)sp);
+    // the float
+    t_CKFLOAT f = *((t_CKFLOAT *)(sp+sz_VEC3));
+    // result
+    t_CKVEC3 r;
+    r.x = v.x * f;
+    r.y = v.y * f;
+    r.z = v.z * f;
+    // pointer as vec3
+    t_CKVEC3 *& sp_vec3 = (t_CKVEC3 *&)sp;
+    // push on reg stack
+    push_( sp_vec3, r );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_vec3_Divide_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // stack pointer
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    // pointer number of bytes
+    pop_( sp, sz_FLOAT+sz_VEC3 );
+    // the vector
+    t_CKVEC3 v = *((t_CKVEC3 *)sp);
+    // the float
+    t_CKFLOAT f = *((t_CKFLOAT *)(sp+sz_VEC3));
+    // result
+    t_CKVEC3 r;
+    r.x = v.x / f;
+    r.y = v.y / f;
+    r.z = v.z / f;
+    // pointer as vec3
+    t_CKVEC3 *& sp_vec3 = (t_CKVEC3 *&)sp;
+    // push on reg stack
+    push_( sp_vec3, r );
 }
 
 
@@ -813,6 +897,93 @@ void Chuck_Instr_XProduct_vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     push_( sp_float, result.y );
     push_( sp_float, result.z );
     push_( sp_float, result.w );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_float_Times_vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // stack pointer
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    // pointer number of bytes
+    pop_( sp, sz_FLOAT+sz_VEC4 );
+    // the float
+    t_CKFLOAT f = *((t_CKFLOAT *)sp);
+    // the vector
+    t_CKVEC4 v = *((t_CKVEC4 *)(sp+sz_FLOAT));
+    // result
+    t_CKVEC4 r;
+    r.x = v.x * f;
+    r.y = v.y * f;
+    r.z = v.z * f;
+    r.w = v.w * f;
+    // pointer as vec4
+    t_CKVEC4 *& sp_vec4 = (t_CKVEC4 *&)sp;
+    // push on reg stack
+    push_( sp_vec4, r );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_vec4_Times_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // stack pointer
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    // pointer number of bytes
+    pop_( sp, sz_FLOAT+sz_VEC4 );
+    // the vector
+    t_CKVEC4 v = *((t_CKVEC4 *)sp);
+    // the float
+    t_CKFLOAT f = *((t_CKFLOAT *)(sp+sz_VEC4));
+    // result
+    t_CKVEC4 r;
+    r.x = v.x * f;
+    r.y = v.y * f;
+    r.z = v.z * f;
+    r.w = v.w * f;
+    // pointer as vec4
+    t_CKVEC4 *& sp_vec4 = (t_CKVEC4 *&)sp;
+    // push on reg stack
+    push_( sp_vec4, r );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_vec4_Divide_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // stack pointer
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    // pointer number of bytes
+    pop_( sp, sz_FLOAT+sz_VEC4 );
+    // the vector
+    t_CKVEC4 v = *((t_CKVEC4 *)sp);
+    // the float
+    t_CKFLOAT f = *((t_CKFLOAT *)(sp+sz_VEC4));
+    // result
+    t_CKVEC4 r;
+    r.x = v.x / f;
+    r.y = v.y / f;
+    r.z = v.z / f;
+    r.w = v.w / f;
+    // pointer as vec4
+    t_CKVEC4 *& sp_vec4 = (t_CKVEC4 *&)sp;
+    // push on reg stack
+    push_( sp_vec4, r );
 }
 
 
@@ -1243,6 +1414,50 @@ void Chuck_Instr_Minus_vec3_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 // name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
+void Chuck_Instr_float_Times_vec3_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    t_CKVEC3 temp;
+    // pop float + pointer
+    pop_( sp, sz_FLOAT + sz_UINT );
+    
+    // assign
+    temp.x = (*(t_CKVEC3 **)(sp+sz_FLOAT))->x *= *((t_CKFLOAT *)sp);
+    temp.y = (*(t_CKVEC3 **)(sp+sz_FLOAT))->y *= *((t_CKFLOAT *)sp);
+    temp.z = (*(t_CKVEC3 **)(sp+sz_FLOAT))->z *= *((t_CKFLOAT *)sp);
+    // push result
+    push_( (t_CKVEC3 *&)sp, temp );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_vec3_Divide_float_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    t_CKVEC3 temp;
+    // pop float + pointer
+    pop_( sp, sz_FLOAT + sz_UINT );
+    
+    // assign
+    temp.x = (*(t_CKVEC3 **)(sp+sz_FLOAT))->x /= *((t_CKFLOAT *)sp);
+    temp.y = (*(t_CKVEC3 **)(sp+sz_FLOAT))->y /= *((t_CKFLOAT *)sp);
+    temp.z = (*(t_CKVEC3 **)(sp+sz_FLOAT))->z /= *((t_CKFLOAT *)sp);
+    // push result
+    push_( (t_CKVEC3 *&)sp, temp );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
 void Chuck_Instr_Add_vec4_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
@@ -1282,6 +1497,51 @@ void Chuck_Instr_Minus_vec4_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
     push_( (t_CKVEC4 *&)sp, temp );
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_float_Times_vec4_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    t_CKVEC4 temp;
+    // pop float + pointer
+    pop_( sp, sz_FLOAT + sz_UINT );
+    
+    // assign
+    temp.x = (*(t_CKVEC4 **)(sp+sz_FLOAT))->x *= *((t_CKFLOAT *)sp);
+    temp.y = (*(t_CKVEC4 **)(sp+sz_FLOAT))->y *= *((t_CKFLOAT *)sp);
+    temp.z = (*(t_CKVEC4 **)(sp+sz_FLOAT))->z *= *((t_CKFLOAT *)sp);
+    temp.w = (*(t_CKVEC4 **)(sp+sz_FLOAT))->w *= *((t_CKFLOAT *)sp);
+    // push result
+    push_( (t_CKVEC4 *&)sp, temp );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_vec4_Divide_float_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    t_CKVEC4 temp;
+    // pop float + pointer
+    pop_( sp, sz_FLOAT + sz_UINT );
+    
+    // assign
+    temp.x = (*(t_CKVEC4 **)(sp+sz_FLOAT))->x *= *((t_CKFLOAT *)sp);
+    temp.y = (*(t_CKVEC4 **)(sp+sz_FLOAT))->y *= *((t_CKFLOAT *)sp);
+    temp.z = (*(t_CKVEC4 **)(sp+sz_FLOAT))->z *= *((t_CKFLOAT *)sp);
+    temp.w = (*(t_CKVEC4 **)(sp+sz_FLOAT))->w *= *((t_CKFLOAT *)sp);
+    // push result
+    push_( (t_CKVEC4 *&)sp, temp );
+}
 
 
 
@@ -1733,6 +1993,23 @@ void Chuck_Instr_Reg_Dup_Last2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
     // dup val into reg stack
     push_( reg_sp, *(reg_sp-1) );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_Dup_Last_As_Pointer::execute(
+     Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+    t_CKBYTE * where = (t_CKBYTE *)shred->reg->sp;
+    
+    // push pointer into reg stack
+    push_( reg_sp, (t_CKUINT)(where-(m_val*sz_WORD)) );
 }
 
 
@@ -5528,6 +5805,25 @@ error:
     // do something!
     shred->is_running = FALSE;
     shred->is_done = TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: primitive func, 1.3.5.3
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Dot_Primitive_Func::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // register stack pointer
+    t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
+    
+    // pop the primitive pointer
+    pop_( sp, 1 );
+    
+    // push the function address address
+    push_( sp, m_native_func );
 }
 
 

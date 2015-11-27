@@ -745,10 +745,10 @@ struct Chuck_Func : public Chuck_VM_Object
     std::string name;
     // func def from parser
     a_Func_Def def;
-    // code
+    // code (included imported)
     Chuck_VM_Code * code;
     // imported code
-    Chuck_DL_Func * dl_code;
+    // Chuck_DL_Func * dl_code;
     // member
     t_CKBOOL is_member;
     // virtual table index
@@ -765,7 +765,7 @@ struct Chuck_Func : public Chuck_VM_Object
 
     // constructor
     Chuck_Func() { def = NULL; code = NULL; is_member = FALSE; vt_index = 0xffffffff; 
-                   value_ref = NULL; dl_code = NULL; next = NULL; up = NULL; }
+                   value_ref = NULL; /*dl_code = NULL;*/ next = NULL; up = NULL; }
 
     // destructor
     virtual ~Chuck_Func()
