@@ -622,6 +622,61 @@ error:
 
 
 //-----------------------------------------------------------------------------
+// name: init_class_vec4()
+// desc: initialize primitive type vec4
+//-----------------------------------------------------------------------------
+t_CKBOOL init_class_vec4( Chuck_Env * env, Chuck_Type * type )
+{
+    // init as base class
+    Chuck_DL_Func * func = NULL;
+    
+    // log
+    EM_log( CK_LOG_SEVERE, "class 'vec4' (primitive)" );
+    
+    // document
+    const char *doc = "vec4 is a primitive type for a 4-dimensional vector; potentially useful for 4D coordinatesm and RGBA color.";
+    
+    // init as base class
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc ) )
+        return FALSE;
+    
+    // add set(float,float,float)
+    func = make_new_mfun( "void", "set", vec4_set );
+    func->add_arg( "float", "x" );
+    func->add_arg( "float", "y" );
+    func->add_arg( "float", "z" );
+    func->add_arg( "float", "w" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add setAll(float)
+    func = make_new_mfun( "void", "setAll", vec4_setAll );
+    func->add_arg( "float", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add magnitude()
+    func = make_new_mfun( "float", "magnitude", vec4_magnitude );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add normalize()
+    func = make_new_mfun( "void", "normalize", vec4_normalize );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // end the class import
+    type_engine_import_class_end( env );
+    
+    return TRUE;
+    
+error:
+    // end the class import
+    type_engine_import_class_end( env );
+    
+    return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: init_class_io()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -2724,7 +2779,7 @@ CK_DLL_MFUN( vec3_interp_delta_dur )
     // get srate
     t_CKFLOAT srate = SHRED->vm_ref->srate();
     // update value based on goal and slew
-    vec3->x = (vec3->y - vec3->x) * vec3->z * (srate / delta) + vec3->x;
+    vec3->x = (vec3->y - vec3->x) * vec3->z * (delta / srate) + vec3->x;
 }
 
 CK_DLL_MFUN( vec3_update_goal )
@@ -2773,6 +2828,58 @@ CK_DLL_MFUN( vec3_updateSet_goalAndValue_slew )
     vec3->y = vec3->x = goalAndValue;
     // set slew
     vec3->z = slew;
+}
+
+
+//-----------------------------------------------------------------------------
+// vec4 API
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( vec4_set )
+{
+    // HACK: this is a particularly horrid cast from (Chuck_Object *)
+    // t_CKVEC3 is neither a super- or sub-class of Chuck_Object...
+    t_CKVEC4 * vec3 = (t_CKVEC4 *)SELF;
+    // get index
+    vec3->x = GET_NEXT_FLOAT(ARGS);
+    vec3->y = GET_NEXT_FLOAT(ARGS);
+    vec3->z = GET_NEXT_FLOAT(ARGS);
+    vec3->w = GET_NEXT_FLOAT(ARGS);
+}
+
+CK_DLL_MFUN( vec4_setAll )
+{
+    // get data pointer
+    t_CKVEC4 * vec4 = (t_CKVEC4 *)SELF;
+    // get index
+    vec4->x = vec4->y = vec4->z = vec4->w = GET_NEXT_FLOAT(ARGS);
+}
+
+CK_DLL_MFUN( vec4_magnitude )
+{
+    // get data pointer
+    t_CKVEC4 * vec4 = (t_CKVEC4 *)SELF;
+    // compute magnitude
+    t_CKFLOAT mag = ::sqrt( vec4->x*vec4->x + vec4->y*vec4->y
+                            + vec4->z*vec4->z + vec4->w*vec4->w );
+    // return
+    RETURN->v_float = mag;
+}
+
+CK_DLL_MFUN( vec4_normalize )
+{
+    // get data pointer
+    t_CKVEC4 * vec4 = (t_CKVEC4 *)SELF;
+    // compute magnitude
+    t_CKFLOAT mag = ::sqrt( vec4->x*vec4->x + vec4->y*vec4->y
+                            + vec4->z*vec4->z + vec4->w*vec4->w );
+    // check for zero
+    if( mag > 0 )
+    {
+        vec4->x /= mag;
+        vec4->y /= mag;
+        vec4->z /= mag;
+        vec4->w /= mag;
+    }
 }
 
 

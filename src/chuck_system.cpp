@@ -115,6 +115,8 @@ extern "C" void signal_int( int sig_num )
         // if not NULL
         if( vm )
         {
+            // stop VM
+            vm->stop();
             // stop (was VM::stop())
             all_stop();
             // detach

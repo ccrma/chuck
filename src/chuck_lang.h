@@ -57,6 +57,7 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
+t_CKBOOL init_class_vec4( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
 
 t_CKBOOL init_class_Midi( Chuck_Env * env );
 t_CKBOOL init_class_MidiRW( Chuck_Env * env );
@@ -334,13 +335,6 @@ CK_DLL_MFUN( vec4_set );
 CK_DLL_MFUN( vec4_setAll );
 CK_DLL_MFUN( vec4_magnitude );
 CK_DLL_MFUN( vec4_normalize );
-CK_DLL_MFUN( vec4_interp );
-CK_DLL_MFUN( vec4_interp_delta_float );
-CK_DLL_MFUN( vec3_interp_delta_dur );
-CK_DLL_MFUN( vec4_update_goal );
-CK_DLL_MFUN( vec4_update_goal_slew );
-CK_DLL_MFUN( vec4_updateSet_goalAndValue );
-CK_DLL_MFUN( vec4_updateSet_goalAndValue_slew );
 
 
 //-----------------------------------------------------------------------------
