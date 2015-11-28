@@ -132,6 +132,10 @@ extern "C" t_CKBOOL all_stop( )
     if( g_vm ) g_vm->stop();
     // set state
     Digitalio::m_end = TRUE;
+    // stop things
+    g_bbq->shutdown();
+    // wait a bit
+    usleep(50000);
     
     return TRUE;
 }

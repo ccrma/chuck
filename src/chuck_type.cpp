@@ -262,6 +262,7 @@ Chuck_Env * type_engine_init( Chuck_VM * vm )
     init_class_chout( env, &t_chout ); // 1.3.0.0
     init_class_cherr( env, &t_cherr ); // 1.3.0.0
     init_class_vec3( env, &t_vec3 ); // 1.3.5.3
+    init_class_vec4( env, &t_vec4 ); // 1.3.5.3
 
     EM_log( CK_LOG_SEVERE, "class 'class'" );
     t_class.info = new Chuck_Namespace;
@@ -415,6 +416,9 @@ void type_engine_shutdown( Chuck_Env * env )
     SAFE_RELEASE( t_fileio.info );
     SAFE_RELEASE( t_chout.info );  // added 1.3.0.0
     SAFE_RELEASE( t_cherr.info );  // added 1.3.0.0
+    
+    // log
+    EM_log( CK_LOG_SEVERE, "type checker shutdown complete." );
 }
 
 

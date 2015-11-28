@@ -443,6 +443,9 @@ t_CKBOOL Chuck_VM::shutdown()
     // set state
     m_init = FALSE;
 
+    // log
+    EM_log( CK_LOG_SYSTEM, "virtual machine shutdown complete." );
+
     // pop indent
     EM_poplog();
 
