@@ -571,16 +571,16 @@ t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add interp()
-    func = make_new_mfun( "void", "interp", vec3_interp );
+    func = make_new_mfun( "float", "interp", vec3_interp );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add interp( float )
-    func = make_new_mfun( "void", "interp", vec3_interp_delta_float );
+    func = make_new_mfun( "float", "interp", vec3_interp_delta_float );
     func->add_arg( "float", "delta" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add interp( dur )
-    func = make_new_mfun( "void", "interp", vec3_interp_delta_dur );
+    func = make_new_mfun( "float", "interp", vec3_interp_delta_dur );
     func->add_arg( "dur", "delta" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
@@ -2758,6 +2758,8 @@ CK_DLL_MFUN( vec3_interp )
     t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
     // update value based on goal and slew
     vec3->x = (vec3->y - vec3->x) * vec3->z + vec3->x;
+    // set return to value so it can used right after if desired
+    RETURN->v_float = vec3->x;
 }
 
 CK_DLL_MFUN( vec3_interp_delta_float )
@@ -2768,6 +2770,8 @@ CK_DLL_MFUN( vec3_interp_delta_float )
     t_CKFLOAT delta = GET_NEXT_FLOAT(ARGS);
     // update value based on goal and slew
     vec3->x = (vec3->y - vec3->x) * vec3->z * delta + vec3->x;
+    // set return to value so it can used right after if desired
+    RETURN->v_float = vec3->x;
 }
 
 CK_DLL_MFUN( vec3_interp_delta_dur )
@@ -2780,6 +2784,8 @@ CK_DLL_MFUN( vec3_interp_delta_dur )
     t_CKFLOAT srate = SHRED->vm_ref->srate();
     // update value based on goal and slew
     vec3->x = (vec3->y - vec3->x) * vec3->z * (delta / srate) + vec3->x;
+    // set return to value so it can used right after if desired
+    RETURN->v_float = vec3->x;
 }
 
 CK_DLL_MFUN( vec3_update_goal )
