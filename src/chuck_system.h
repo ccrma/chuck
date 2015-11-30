@@ -42,8 +42,9 @@
 #ifndef __CHUCK_SYSTEM_H__
 #define __CHUCK_SYSTEM_H__
 
-#include "chuck_vm.h"
 #include "chuck_compile.h"
+#include "chuck_dl.h"
+#include "chuck_vm.h"
 #include <string>
 
 
@@ -73,7 +74,11 @@ public:
                            int argc, const char ** argv );
     // shutdown in client mode
     bool clientShutdown();
-
+    
+public:
+    // additional native chuck bindings/types (use with extra caution)
+    bool bind( f_ck_query queryFunc, const std::string & name );
+    
 public:
     // compile a file
     bool compileFile( const std::string & path, const std::string & args, int count = 1 );

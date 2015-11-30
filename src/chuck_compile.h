@@ -82,6 +82,12 @@ public: // to all
     // shutdown
     void shutdown();
 
+public: // additional binding
+    // bind a new type system module, via query function
+    t_CKBOOL bind( f_ck_query query_func, const std::string & name,
+                   const std::string & nspc = "global" );
+
+public: // compile
     // set auto depend
     void set_auto_depend( t_CKBOOL v );
     // parse, type-check, and emit a program
