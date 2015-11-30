@@ -183,6 +183,61 @@ void Chuck_Compiler::shutdown()
 
 
 
+
+//-----------------------------------------------------------------------------
+// name: bind()
+// desc: bind a new type system module, via query function
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Compiler::bind( f_ck_query query_func, const std::string & name,
+                               const std::string & nspc )
+{
+    // log
+    EM_log( CK_LOG_SYSTEM, "on-demand binding compiler module '%s'...",
+            name.c_str() );
+    // push indent level
+    EM_pushlog();
+    
+    // get env
+    Chuck_Env * env = this->env;
+    // make context
+    Chuck_Context * context = type_engine_make_context(
+        NULL, string("@[bind:") + name + string("]") );
+    // reset env - not needed since we just created the env
+    env->reset();
+    // load it
+    type_engine_load_context( env, context );
+    
+    // do it
+    if( !load_module( env, query_func, name.c_str(), nspc.c_str() ) ) goto error;
+
+    // clear context
+    type_engine_unload_context( env );
+    
+    // commit what is in the type checker at this point
+    env->global()->commit();
+    
+    // pop indent level
+    EM_poplog();
+    
+    return TRUE;
+    
+error:
+    
+    // probably dangerous: rollback
+    env->global()->rollback();
+    
+    // clear context
+    type_engine_unload_context( env );
+    
+    // pop indent level
+    EM_poplog();
+    
+    return FALSE;
+}
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: set_auto_depend()
 // desc: auto dependency resolve for types

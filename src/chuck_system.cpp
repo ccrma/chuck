@@ -332,6 +332,14 @@ Chuck_System::~Chuck_System()
 //-----------------------------------------------------------------------------
 bool Chuck_System::compileFile( const string & path, const string & argsTogether, int count )
 {
+    // sanity check
+    if( !m_compilerRef )
+    {
+        // error
+        fprintf( stderr, "[chuck]: compileFile() invoked before initialization ...\n" );
+        return false;
+    }
+
     string filename;
     vector<string> args;
     Chuck_VM_Code * code = NULL;
@@ -351,7 +359,7 @@ bool Chuck_System::compileFile( const string & path, const string & argsTogether
         // error
         fprintf( stderr, "[chuck]: malformed filename with argument list...\n" );
         fprintf( stderr, "    -->  '%s'", theThing.c_str() );
-        return 1;
+        return false;
     }
     
     // construct full path to be associated with the file so me.sourceDir() works
@@ -360,7 +368,7 @@ bool Chuck_System::compileFile( const string & path, const string & argsTogether
     
     // parse, type-check, and emit (full_path added 1.3.0.0)
     if( !m_compilerRef->go( filename, NULL, NULL, full_path ) )
-        return 1;
+        return true;
 
     // get the code
     code = m_compilerRef->output();
@@ -383,7 +391,7 @@ bool Chuck_System::compileFile( const string & path, const string & argsTogether
     // pop indent
     EM_poplog();
 
-    return false;
+    return true;
 }
 
 
@@ -429,17 +437,17 @@ bool Chuck_System::clientInitialize( int srate, int bufferSize, int numChannels,
         newArgv[i] = argv[i];
     }
 
-    char one[1024]; sprintf( one, "--srate:%d", srate );
-    char two[1024]; sprintf( two, "--bufsize:%d", bufferSize );
-    char three[1024]; sprintf( three, "--channels:%d", numChannels );
+    char * one = new char[1024]; sprintf( one, "--srate:%d", srate );
+    char * two = new char[1024]; sprintf( two, "--bufsize:%d", bufferSize );
+    char * three = new char[1024]; sprintf( three, "--channels:%d", numChannels );
     
     // append
-    newArgv[newArgc-2] = (const char *)one;
-    newArgv[newArgc-1] = (const char *)two;
-    newArgv[newArgc-0] = (const char *)three;
+    newArgv[newArgc-3] = (const char *)one;
+    newArgv[newArgc-2] = (const char *)two;
+    newArgv[newArgc-1] = (const char *)three;
 
     // let it initialize
-    return go( argc, argv, TRUE );
+    return go( newArgc, newArgv, TRUE );
 }
 
 
@@ -1304,4 +1312,25 @@ bool Chuck_System::clientShutdown()
     
     // done
     return true;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: bind()
+// desc: load additional ChucK binding (e.g., a new type)
+//-----------------------------------------------------------------------------
+bool Chuck_System::bind( f_ck_query queryFunc, const string & name )
+{
+    // sanity check
+    if( !m_compilerRef )
+    {
+        // error
+        fprintf( stderr,
+            "[chuck]: ChucK_System::bind() invoked before initialization ...\n" );
+        return false;
+    }
+    
+    return m_compilerRef->bind( queryFunc, name, "global" );
 }
