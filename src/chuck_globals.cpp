@@ -39,7 +39,7 @@
 #include "hidio_sdl.h"
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <unistd.h>
 
 // current version
 const char CK_VERSION[] = "1.3.5.3-dev (chimera)";
