@@ -50,6 +50,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <cmath>
 using namespace std;
 
 // dac tick
