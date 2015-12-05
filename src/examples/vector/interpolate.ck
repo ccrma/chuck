@@ -34,6 +34,6 @@ fun void interpolate( dur delta )
         // interpolate (can also get new value via .value)
         i.interp( delta ) => foo.freq;
         // advance time by rate
-        irate => now;
+        delta => now;
     }
 }
