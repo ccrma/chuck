@@ -78,7 +78,11 @@ public:
 public:
     // additional native chuck bindings/types (use with extra caution)
     bool bind( f_ck_query queryFunc, const std::string & name );
-    
+
+public:
+    // get VM (dangerous)
+    Chuck_VM * vm() { return m_vmRef; }
+
 public:
     // compile a file
     bool compileFile( const std::string & path, const std::string & args, int count = 1 );
