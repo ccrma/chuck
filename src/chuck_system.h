@@ -82,6 +82,8 @@ public:
 public:
     // get VM (dangerous)
     Chuck_VM * vm() { return m_vmRef; }
+    // get compiler (dangerous)
+    Chuck_Compiler * compiler() { return m_compilerRef; }
 
 public:
     // compile a file
