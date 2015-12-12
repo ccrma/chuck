@@ -103,6 +103,7 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
             return;
         }
         
+        // HACK: env::instance will not work for multiple compilers
         Chuck_Type * ck_parent_type = type_engine_find_type( Chuck_Env::instance(), parent_path );
         
         delete_id_list( parent_path );
