@@ -67,6 +67,7 @@ t_CKUINT g_watchdog_countermeasure_priority = 10;
 t_CKUINT g_watchdog_countermeasure_priority = THREAD_PRIORITY_LOWEST;
 #else
 t_CKUINT g_watchdog_countermeasure_priority = 0;
+#include <unistd.h>
 #endif
 // watchdog timeout
 t_CKFLOAT g_watchdog_timeout = 0.5;
