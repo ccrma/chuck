@@ -1,20 +1,20 @@
-//----------------------------------------------------------------------
+//---------------------------------------------------------------------
 // name: thx.ck
 // desc: THX Deep Note emulator
 //       (original Deep Note by James Andy Moorer)
 //
 // authors: 
-//   Perry R. Cook (Jan 8, 2007) -- original ChucK version
-//   Ge Wang -- modified final chord: D1,D1,D2,D3,D4,A4,D5,A5,D6,A6
-//           -- added detune (original Deep Note root between D and Eb)
-//           -- time-driven loops (was counter-driven loops)
-//----------------------------------------------------------------------
+// Perry R. Cook (Jan 8, 2007) -- original ChucK version
+// Ge Wang -- modified final chord: D1,D1,D2,D3,D4,A4,D5,A5,D6,A6
+//         -- added detune (original Deep Note root between D and Eb)
+//         -- time-driven loops (was counter-driven loops)
+//---------------------------------------------------------------------
 
 // 30 target frequencies, corresponding to pitches in a big chord:
 // D1,  D1,   D2,   D3,    D4,    A4,    D5,    A5,  D6,   A6
 [ 36.7, 36.7, 73.4, 146.8, 293.7, 440.0, 587.3, 880.0, 1174.7, 1760.0,
-36.7, 36.7, 73.4, 146.8, 293.7, 440.0, 587.3, 880.0, 1174.7, 1760.15,
-36.7, 36.7, 73.4, 146.8, 293.7, 440.0, 587.3, 880.0, 1174.7, 1759.85 
+  36.7, 36.7, 73.4, 146.8, 293.7, 440.0, 587.3, 880.0, 1174.7, 1760.15,
+  36.7, 36.7, 73.4, 146.8, 293.7, 440.0, 587.3, 880.0, 1174.7, 1759.85 
 ] @=> float targets[];
 // detune mutiplier (original Deep Note between D and Eb)
 Math.mtof(26.3) / Math.mtof(26) => float detune;
