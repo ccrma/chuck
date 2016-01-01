@@ -1,13 +1,14 @@
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------
 // name: thx.ck
 // desc: THX Deep Note emulator
 //       (original Deep Note by James Andy Moorer)
 //
-// authors: Perry R. Cook (Jan 8, 2007) -- original ChucK version
-//          Ge Wang -- modified final chord: D1,D1,D2,D3,D4,A4,D5,A5,D6,A6
-//                  -- added detune (original Deep Note root between D and Eb)
-//                  -- time-driven loops (was counter-driven loops)
-//-----------------------------------------------------------------------------
+// authors: 
+//   Perry R. Cook (Jan 8, 2007) -- original ChucK version
+//   Ge Wang -- modified final chord: D1,D1,D2,D3,D4,A4,D5,A5,D6,A6
+//           -- added detune (original Deep Note root between D and Eb)
+//           -- time-driven loops (was counter-driven loops)
+//----------------------------------------------------------------------
 
 // 30 target frequencies, corresponding to pitches in a big chord:
 // D1,  D1,   D2,   D3,    D4,    A4,    D5,    A5,  D6,   A6
