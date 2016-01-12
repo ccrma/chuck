@@ -2644,7 +2644,7 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
     else
     {
         if( d->curf < 0 ) d->curf = 0;
-        else if( d->curf >= d->num_frames ) d->curf = d->num_frames-1;
+        else if( d->curf > d->num_frames ) d->curf = d->num_frames; // ge:
     }
 
     t_CKUINT index = d->chan + ((t_CKINT)d->curf) * d->num_channels;
