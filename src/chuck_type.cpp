@@ -1671,8 +1671,8 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         LR( te_float, te_dur ) return &t_dur;
         LR( te_complex, te_complex ) return &t_complex;
         LR( te_polar, te_polar ) return &t_polar;
-        LR( te_float, te_vec3 ) return &t_int; // 1.3.5.3
-        LR( te_int, te_vec4 ) return &t_int; // 1.3.5.3
+        LR( te_float, te_vec3 ) return &t_vec3; // 1.3.5.3
+        LR( te_int, te_vec4 ) return &t_vec4; // 1.3.5.3
     break;
 
     case ae_op_divide:
