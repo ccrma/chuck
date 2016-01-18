@@ -368,7 +368,7 @@ bool Chuck_System::compileFile( const string & path, const string & argsTogether
     
     // parse, type-check, and emit (full_path added 1.3.0.0)
     if( !m_compilerRef->go( filename, NULL, NULL, full_path ) )
-        return true;
+        return false;
 
     // get the code
     code = m_compilerRef->output();
@@ -424,11 +424,11 @@ void Chuck_System::run( SAMPLE * input, SAMPLE * output, int numFrames )
 // name: initialize()
 // desc: initialize chuck system
 //-----------------------------------------------------------------------------
-bool Chuck_System::clientInitialize( int srate, int bufferSize, int numChannels,
-                                     int argc, const char ** argv )
+bool Chuck_System::clientInitialize( int srate, int bufferSize, int channelsIn,
+                                     int channelsOut, int argc, const char ** argv )
 {
     // new argument array!
-    int newArgc = argc + 3;
+    int newArgc = argc + 4;
     // allocate
     const char ** newArgv = new const char *[newArgc];
     // copy
@@ -439,12 +439,14 @@ bool Chuck_System::clientInitialize( int srate, int bufferSize, int numChannels,
 
     char * one = new char[1024]; sprintf( one, "--srate:%d", srate );
     char * two = new char[1024]; sprintf( two, "--bufsize:%d", bufferSize );
-    char * three = new char[1024]; sprintf( three, "--channels:%d", numChannels );
+    char * three = new char[1024]; sprintf( three, "--in:%d", channelsIn );
+    char * four = new char[1024]; sprintf( four, "--out:%d", channelsOut );
     
     // append
-    newArgv[newArgc-3] = (const char *)one;
-    newArgv[newArgc-2] = (const char *)two;
-    newArgv[newArgc-1] = (const char *)three;
+    newArgv[newArgc-4] = (const char *)one;
+    newArgv[newArgc-3] = (const char *)two;
+    newArgv[newArgc-2] = (const char *)three;
+    newArgv[newArgc-1] = (const char *)four;
 
     // let it initialize
     return go( newArgc, newArgv, TRUE );
