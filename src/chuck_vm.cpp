@@ -1533,6 +1533,9 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
         SAFE_DELETE(m_serials);
     }
     
+    // 1.3.5.3 pop all loop counters
+    while( this->popLoopCounter() );
+    
     // TODO: what to do with next and prev?
     
     return TRUE;
@@ -1685,6 +1688,57 @@ t_CKVOID Chuck_VM_Shred::remove_serialio( Chuck_IO_Serial * serial )
     m_serials->remove( serial );
     serial->release();
 }
+
+
+
+//-----------------------------------------------------------------------------
+// name: pushLoopCounter()
+// desc: make and push new loop counter
+//-----------------------------------------------------------------------------
+t_CKUINT * Chuck_VM_Shred::pushLoopCounter()
+{
+    // new pointer
+    t_CKUINT * counter = new t_CKUINT;
+    // add to stack
+    m_loopCounters.push_back(counter);
+    // return it
+    return counter;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: currentLoopCounter()
+// desc: get top loop counter
+//-----------------------------------------------------------------------------
+t_CKUINT * Chuck_VM_Shred::currentLoopCounter()
+{
+    // check it
+    if( m_loopCounters.size() == 0 ) return NULL;
+    // return it
+    return m_loopCounters[m_loopCounters.size()-1];
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: popLoopCounter()
+// desc: pop and clean up loop counter
+//-----------------------------------------------------------------------------
+bool Chuck_VM_Shred::popLoopCounter()
+{
+    // check it
+    if( m_loopCounters.size() == 0 ) return false;
+    // delete
+    delete m_loopCounters[m_loopCounters.size()-1];
+    // return it
+    m_loopCounters.pop_back();
+    // done
+    return true;
+}
+
 
 
 

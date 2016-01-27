@@ -1129,8 +1129,6 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
-    // TODO: SAFE_DELETE( counter )
-    t_CKINT * counter = NULL;
 
     // push stack
     emit->push_scope();
@@ -1140,9 +1138,8 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
     if( !ret )
         return FALSE;
 
-    // initialize our loop counter
-    // TODO: memory-manage the counter?
-    emit->append( new Chuck_Instr_Init_Loop_Counter( (t_CKUINT)(counter = new t_CKINT) ) );
+    // initialize our loop counter (1.3.5.3)
+    emit->append( new Chuck_Instr_Init_Loop_Counter() );
 
     // get the index
     t_CKUINT start_index = emit->next_index();
@@ -1152,8 +1149,7 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
     emit->code->stack_break.push_back( NULL );
 
     // push the value of the loop counter
-    // (changed 1.3.1.0 to not pass in the size parameter, assume to be t_CKUINT *)
-    emit->append( new Chuck_Instr_Reg_Push_Deref( (t_CKUINT)counter ) ); // ISSUE: 64-bit (fixed 1.3.1.0)
+    emit->append( new Chuck_Instr_Reg_Push_Loop_Counter_Deref() );
 
     // get the type, taking cast into account
     Chuck_Type * type = stmt->cond->cast_to ? stmt->cond->cast_to : stmt->cond->type;
@@ -1179,7 +1175,7 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
     emit->append( op );
 
     // decrement the counter
-    emit->append( new Chuck_Instr_Dec_int_Addr( (t_CKUINT)counter ) );
+    emit->append( new Chuck_Instr_Dec_Loop_Counter() );
 
     // added 1.3.1.1: new scope just for loop body
     emit->push_scope();
@@ -1197,6 +1193,9 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
     
     // set the op's target
     op->set( emit->next_index() );
+    
+    // pop the loop counter
+    emit->append( new Chuck_Instr_Pop_Loop_Counter );
 
     // stack of continue
     while( emit->code->stack_cont.size() && emit->code->stack_cont.back() )

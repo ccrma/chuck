@@ -2103,6 +2103,7 @@ void Chuck_Instr_Reg_Push_Deref::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
     // (added 1.3.1.0: made this integer only)
     // ISSUE: 64-bit (fixed 1.3.1.0)
     push_( reg_sp, *((t_CKUINT *)m_val) );
+    cerr << "deref: " << *((t_CKUINT *)m_val) << " " << (t_CKUINT)m_val << endl;
 }
 
 
@@ -6632,16 +6633,106 @@ void Chuck_Instr_UGen_PMsg::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 void Chuck_Instr_Init_Loop_Counter::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
-
+    
     // pop the value
     pop_( sp, 1 );
-
+    
+    // allocate counter
+    t_CKUINT * p = shred->pushLoopCounter();
+    
     // copy it
-    (*(t_CKINT *)m_val) = *sp >= 0 ? *sp : -*sp;
+    *p = (t_CKUINT)(*sp >= 0 ? *sp : -*sp);
 }
 
 
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: decrement top loop counter for shred
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Dec_Loop_Counter::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // get topmost
+    t_CKUINT * p = shred->currentLoopCounter();
+    
+    // check
+    if( p == NULL ) goto error;
+    
+    // decrement
+    (*p)--;
+    
+    // done
+    return;
+    
+error:
+    // we have a problem
+    fprintf( stderr,
+            "[chuck](VM): loop counter error: in shred[id=%lu:%s], PC=[%lu]\n",
+            shred->xid, shred->name.c_str(), shred->pc );
+    goto done;
+    
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: get top loop counter for shred
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_Push_Loop_Counter_Deref::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+    
+    // get topmost
+    t_CKUINT * p = shred->currentLoopCounter();
+    
+    // check
+    if( p == NULL ) goto error;
+    
+    // push
+    push_( reg_sp, *p );
+    
+    // done
+    return;
+    
+error:
+    // we have a problem
+    fprintf( stderr,
+            "[chuck](VM): loop counter error: in shred[id=%lu:%s], PC=[%lu]\n",
+            shred->xid, shred->name.c_str(), shred->pc );
+    goto done;
+    
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Pop_Loop_Counter::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // pop counter
+    shred->popLoopCounter();
+}
+
+
+
+
 #pragma mark === IO ===
+
+
 
 
 //-----------------------------------------------------------------------------
