@@ -2103,7 +2103,6 @@ void Chuck_Instr_Reg_Push_Deref::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
     // (added 1.3.1.0: made this integer only)
     // ISSUE: 64-bit (fixed 1.3.1.0)
     push_( reg_sp, *((t_CKUINT *)m_val) );
-    cerr << "deref: " << *((t_CKUINT *)m_val) << " " << (t_CKUINT)m_val << endl;
 }
 
 

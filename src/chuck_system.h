@@ -70,7 +70,7 @@ public:
     
 public:
     // initialize for client mode (e.g., as plugin)
-    bool clientInitialize( int srate, int bufferSize, int channelsIn, 
+    bool clientInitialize( int srate, int bufferSize, int channelsIn,
                            int channelsOut, int argc, const char ** argv );
     // shutdown in client mode
     bool clientShutdown();
