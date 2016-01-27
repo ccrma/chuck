@@ -47,9 +47,7 @@
 #include "midiio_rtmidi.h"
 #endif
 
-// c header
 #include <math.h>
-// STL
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -62,6 +60,9 @@ static t_CKUINT Object_offset_string = 0;
 
 // global
 static Chuck_String * g_newline = new Chuck_String();
+
+
+
 
 
 
