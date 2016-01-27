@@ -520,37 +520,40 @@ bool MoAudio::init( Float64 srate, UInt32 frameSize, UInt32 numChannels )
     }
     
     // check for >= OS 2.1?
-    if(m_overrideToSpeaker)
     {
         // check for headset
         // dont override if headset is plugged in
         
-        // get route
-        CFStringRef route;
-        UInt32 size = sizeof(CFStringRef);
-        err = AudioSessionGetProperty( kAudioSessionProperty_AudioRoute, &size, &route );
-        if( err )
+        UInt32 override = kAudioSessionOverrideAudioRoute_None;
+
+        if(m_overrideToSpeaker)
         {
-            // TODO: "couldn't get new audio route\n"
-        }
-        
-        UInt32 override;
-        
-        CFRange range = CFStringFind(route, CFSTR("Headset"), 0);
-        if(range.location != kCFNotFound)
-        {
-            override = kAudioSessionOverrideAudioRoute_None;
-        }
-        else
-        {
-            range = CFStringFind(route, CFSTR("Headphone"), 0);
+            // get route
+            CFStringRef route;
+            UInt32 size = sizeof(CFStringRef);
+            err = AudioSessionGetProperty( kAudioSessionProperty_AudioRoute, &size, &route );
+            if( err )
+            {
+                // TODO: "couldn't get new audio route\n"
+            }
+            
+            
+            CFRange range = CFStringFind(route, CFSTR("Headset"), 0);
             if(range.location != kCFNotFound)
             {
                 override = kAudioSessionOverrideAudioRoute_None;
             }
             else
             {
-                override = kAudioSessionOverrideAudioRoute_Speaker;
+                range = CFStringFind(route, CFSTR("Headphone"), 0);
+                if(range.location != kCFNotFound)
+                {
+                    override = kAudioSessionOverrideAudioRoute_None;
+                }
+                else
+                {
+                    override = kAudioSessionOverrideAudioRoute_Speaker;
+                }
             }
         }
         
