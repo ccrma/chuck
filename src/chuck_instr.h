@@ -2263,7 +2263,6 @@ protected:
 
 
 
-
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Reg_Push_Deref
 // desc: push value from pointer
@@ -3769,12 +3768,47 @@ public:
 // name: struct Chuck_Instr_Init_Loop_Counter
 // desc: ...
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Init_Loop_Counter : public Chuck_Instr_Unary_Op
+struct Chuck_Instr_Init_Loop_Counter : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Init_Loop_Counter( t_CKUINT v )
-    { this->set( v ); }
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Push_Loop_Counter_Deref
+// desc: push topmost loop counter (1.3.5.3)
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Push_Loop_Counter_Deref : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Dec_Loop_Counter
+// desc: push topmost loop counter (1.3.5.3)
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Dec_Loop_Counter : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Pop_Loop_Counter
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Pop_Loop_Counter : public Chuck_Instr
+{
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };

@@ -235,6 +235,16 @@ public:
 
     // tracking
     CK_TRACK( Shred_Stat * stat );
+
+public: // ge: 1.3.5.3
+    // make and push new loop counter
+    t_CKUINT * pushLoopCounter();
+    // get top loop counter
+    t_CKUINT * currentLoopCounter();
+    // pop and clean up loop counter
+    bool popLoopCounter();
+    // loop counter pointer stack
+    std::vector<t_CKUINT *> m_loopCounters;
     
 private:
     std::list<Chuck_IO_Serial *> * m_serials;
