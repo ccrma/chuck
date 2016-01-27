@@ -127,16 +127,16 @@ extern "C" t_CKBOOL all_stop( )
 {
     // log
     EM_log( CK_LOG_SEVERE, "requesting ALL STOP system loop..." );
-    
+
     // stop VM
     if( g_vm ) g_vm->stop();
     // set state
     Digitalio::m_end = TRUE;
     // stop things
-    g_bbq->shutdown();
+    if( g_enable_realtime_audio ) g_bbq->shutdown();
     // wait a bit
     usleep(50000);
-    
+
     return TRUE;
 }
 

@@ -1252,13 +1252,30 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
         audio_started = TRUE;
     }
     
+    
+    // silent mode buffers
+    SAMPLE * input = new SAMPLE[buffer_size*adc_chans];
+    SAMPLE * output = new SAMPLE[buffer_size*dac_chans];
+    // zero out
+    memset( input, 0, sizeof(SAMPLE)*buffer_size*adc_chans );
+    memset( output, 0, sizeof(SAMPLE)*buffer_size*dac_chans );
+
     // wait
     while( vm->running() )
     {
-        if( g_main_thread_hook && g_main_thread_quit )
-            g_main_thread_hook( g_main_thread_bindle );
-        else
-            usleep( 1000 );
+        // real-time audio
+        if( g_enable_realtime_audio )
+        {
+            if( g_main_thread_hook && g_main_thread_quit )
+                g_main_thread_hook( g_main_thread_bindle );
+            else
+                usleep( 1000 );
+        }
+        else // silent mode
+        {
+            // keep running as fast as possible
+            this->run( input, output, buffer_size );
+        }
     }
     
     // shutdown
