@@ -480,6 +480,7 @@ public:
     t_CKBOOL resize( t_CKINT size );
     t_CKBOOL window( Chuck_Array8 * window, t_CKINT win_size );
     void transform( );
+    void transformFromAccum( );
     void transform( Chuck_Array8 * frame );
     void copyTo( Chuck_Array16 * cmp );
 
@@ -656,7 +657,7 @@ t_CKBOOL FFT_object::window( Chuck_Array8 * win, t_CKINT win_size )
 // name: transform()
 // desc: ...
 //-----------------------------------------------------------------------------
-void FFT_object::transform( )
+void FFT_object::transform()
 {
     // buffer could be null
     if( m_buffer == NULL && m_spectrum == NULL )
@@ -669,9 +670,7 @@ void FFT_object::transform( )
     
     // sanity
     assert( m_window_size <= m_size );
-
-    // get the last buffer of samples
-    m_accum.get( m_buffer, m_window_size );
+    
     // apply window, if there is one
     if( m_window )
         apply_window( m_buffer, m_window, m_window_size );
@@ -696,6 +695,22 @@ void FFT_object::transform( )
 // name: transform()
 // desc: ...
 //-----------------------------------------------------------------------------
+void FFT_object::transformFromAccum()
+{
+    // get the last buffer of samples
+    m_accum.get( m_buffer, m_window_size );
+
+    // um
+    transform();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: transform()
+// desc: ...
+//-----------------------------------------------------------------------------
 void FFT_object::transform( Chuck_Array8 * frame )
 {
     // convert to right type
@@ -708,6 +723,7 @@ void FFT_object::transform( Chuck_Array8 * frame )
         frame->get( i, &v );
         m_buffer[i] = v;
     }
+    
     // zero pad
     for( t_CKINT j = amount; j < m_size; j++ )
         m_buffer[j] = 0;
@@ -832,7 +848,7 @@ CK_DLL_TOCK( FFT_tock )
     // get object
     FFT_object * fft = (FFT_object *)OBJ_MEMBER_UINT(SELF, FFT_offset_data);
     // take transform
-    fft->transform();
+    fft->transformFromAccum();
     // microsoft blows
     t_CKINT i;
 
