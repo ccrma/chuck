@@ -3313,7 +3313,8 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     if( func->def->s_type == ae_func_builtin )
     {
         // ISSUE: 64-bit (fixed 1.3.1.0)
-        if( size == 0 || size == sz_INT || size == sz_FLOAT || size == sz_COMPLEX )
+        if( size == 0 || size == sz_INT || size == sz_FLOAT || size == sz_COMPLEX ||
+            size == sz_VEC3 || sz_VEC4 )
         {
             // is member (1.3.1.0: changed to use kind instead of size)
             if( is_member )
