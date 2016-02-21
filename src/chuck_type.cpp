@@ -416,6 +416,8 @@ void type_engine_shutdown( Chuck_Env * env )
     SAFE_RELEASE( t_fileio.info );
     SAFE_RELEASE( t_chout.info );  // added 1.3.0.0
     SAFE_RELEASE( t_cherr.info );  // added 1.3.0.0
+    SAFE_RELEASE( t_vec3.info );  // added 1.3.5.3
+    SAFE_RELEASE( t_vec4.info );  // added 1.3.5.3
     
     // log
     EM_log( CK_LOG_SEVERE, "type checker shutdown complete." );
