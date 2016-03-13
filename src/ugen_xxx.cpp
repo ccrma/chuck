@@ -2021,7 +2021,7 @@ struct delayp_data
         t_CKINT i;
         
         for ( i = 0 ; i < bufsize ; i++ ) buffer[i] = 0;
-        for ( i = 0 ; i < 3 ; i++ ) { acoeff[i] = 0; bcoeff[i] = 0; }
+        for ( i = 0 ; i < 2 ; i++ ) { acoeff[i] = 0; bcoeff[i] = 0; }
         
         acoeff[0] = 1.0;
         acoeff[1] = -.99;
