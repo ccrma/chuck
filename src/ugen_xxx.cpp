@@ -2609,8 +2609,8 @@ inline t_CKUINT sndbuf_read( sndbuf_data * d, t_CKUINT frame, t_CKUINT num_frame
 inline t_CKINT sndbuf_load( sndbuf_data * d, t_CKUINT sample )
 {
     // map to bin
-    t_CKUINT bin = floorf(((t_CKFLOAT) sample) / ((t_CKFLOAT) d->chunks));
-
+    t_CKUINT bin = floor(((t_CKFLOAT) sample) / ((t_CKFLOAT) d->chunks));
+    
     assert(bin < d->chunk_num);
     
     // already loaded
