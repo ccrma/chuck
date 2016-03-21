@@ -863,7 +863,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     //add cget: attackTime
-    func = make_new_mfun( "dur", "attackTime", dyno_ctrl_attackTime );
+    func = make_new_mfun( "dur", "attackTime", dyno_cget_attackTime );
     func->doc = "Duration for the envelope to move linearly from current value to the absolute value of the signal's amplitude.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
@@ -874,7 +874,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     //add ctrl: releaseTime
-    func = make_new_mfun( "dur", "releaseTime", dyno_ctrl_releaseTime );
+    func = make_new_mfun( "dur", "releaseTime", dyno_cget_releaseTime );
     func->doc = "Duration for the envelope to decay down to around 1/10 of its current amplitude, if not brought back up by the signal.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
