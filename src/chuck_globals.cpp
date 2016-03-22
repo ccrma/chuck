@@ -39,7 +39,9 @@
 #include "hidio_sdl.h"
 #include <stdlib.h>
 #include <stdio.h>
+#ifndef __PLATFORM_WIN32__
 #include <unistd.h>
+#endif // __PLATFORM_WIN32__
 
 // current version
 const char CK_VERSION[] = "1.3.5.3-dev (chimera)";
