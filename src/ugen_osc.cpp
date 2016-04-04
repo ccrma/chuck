@@ -915,7 +915,8 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     std::string doc;
     Chuck_DL_Func * func = NULL;
     
-    doc = "Ported from rtcmix. See http://www.music.columbia.edu/cmix/makegens.html\">this</a> \
+    doc = "Ported from rtcmix. See <a href=\"http://www.music.columbia.edu/cmix/makegens.html\">\
+    http://www.music.columbia.edu/cmix/makegens.html</a> \
     for more information on the GenX family of UGens. Currently coefficients past \
     the 100th are ignored.\
     \
@@ -953,12 +954,21 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // gen5
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "Gen5", "GenX", env->global(), 
-                                        NULL, NULL, genX_tick, NULL ) )
+    doc = "Constructs a lookup table composed of sequential exponential curves. "
+    "For a table with N curves, starting value of y', and value yn for lookup "
+    "index xn, set the coefficients to [ y', y0, x0, ..., yN-1, xN-1 ]. "
+    "Note that there must be an odd number of coefficients. "
+    "If an even number of coefficients is specified, behavior is undefined. "
+    "The sum of xn for 0 &le; n < N must be 1. yn = 0 is approximated as 0.000001 "
+    "to avoid strange results arising from the nature of exponential curves.";
+    
+    if( !type_engine_import_ugen_begin( env, "Gen5", "GenX", env->global(),
+                                        NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
     
     func = make_new_mfun( "float[]", "coefs", gen5_coeffs ); //load table
     func->add_arg( "float", "v[]" );
+    func->doc = "Set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -969,12 +979,20 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // gen7
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "Gen7", "GenX", env->global(), 
-                                        NULL, NULL, genX_tick, NULL ) )
+    doc = "Constructs a lookup table composed of sequential line segments. "
+    "For a table with N lines, starting value of y', and value yn for lookup"
+    "index xn, set the coefficients to [ y', y0, x0, ..., yN-1, xN-1 ]. "
+    "Note that there must be an odd number of coefficients. "
+    "If an even number of coefficients is specified, behavior is undefined. "
+    "The sum of xn for 0 &le; n < N must be 1.";
+
+    if( !type_engine_import_ugen_begin( env, "Gen7", "GenX", env->global(),
+                                        NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
 
     func = make_new_mfun( "float[]", "coefs", gen7_coeffs ); //load table
     func->add_arg( "float", "v[]" );
+    func->doc = "Set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -984,12 +1002,18 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // gen9
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "Gen9", "GenX", env->global(), 
-                                        NULL, NULL, genX_tick, NULL ) )
+    doc = "Constructs a lookup table of partials with specified amplitudes, "
+    "phases, and harmonic ratios to the fundamental. "
+    "Coefficients are specified in triplets of [ ratio, amplitude, phase ] "
+    "arranged in a single linear array.";
+    
+    if( !type_engine_import_ugen_begin( env, "Gen9", "GenX", env->global(),
+                                        NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
         
     func = make_new_mfun( "float[]", "coefs", gen9_coeffs ); //load table
     func->add_arg( "float", "v[]" );
+    func->doc = "Set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1000,12 +1024,17 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // gen10
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "Gen10", "GenX", env->global(), 
-                                        NULL, NULL, genX_tick, NULL ) )
+    doc = "Constructs a lookup table of harmonic partials with specified "
+    "amplitudes. The amplitude of partial n is specified by the nth element of "
+    "the coefficients. For example, setting coefs to [ 1 ] will produce a sine wave.";
+
+    if( !type_engine_import_ugen_begin( env, "Gen10", "GenX", env->global(),
+                                        NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
         
     func = make_new_mfun( "float[]", "coefs", gen10_coeffs ); //load table
     func->add_arg( "float", "v[]" );
+    func->doc = "Set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1015,12 +1044,22 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // gen17
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "Gen17", "GenX", env->global(), 
-                                        NULL, NULL, genX_tick, NULL ) )
+    doc = "Constructs a Chebyshev polynomial wavetable with harmonic partials "
+    "of specified weights. The weight of partial n is specified by the nth "
+    "element of the coefficients. Primarily used for waveshaping, driven by a "
+    "SinOsc instead of a Phasor. See "
+    "<a href=\"http://crca.ucsd.edu/~msp/techniques/v0.08/book-html/node74.html\">"
+    "http://crca.ucsd.edu/~msp/techniques/v0.08/book-html/node74.html</a> and "
+    "<a href=\"http://en.wikipedia.org/wiki/Distortion_synthesis\">"
+    "http://en.wikipedia.org/wiki/Distortion_synthesis</a> for more information.";
+
+    if( !type_engine_import_ugen_begin( env, "Gen17", "GenX", env->global(),
+                                        NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
         
     func = make_new_mfun( "float[]", "coefs", gen17_coeffs ); //load table
     func->add_arg( "float", "v[]" );
+    func->doc = "Set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1029,12 +1068,21 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // Curve
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "CurveTable", "GenX", env->global(), 
-                                        NULL, NULL, genX_tick, NULL ) )
+    doc = "Constructs a wavetable composed of segments of variable times, "
+    "values, and curvatures. Coefficients are specified as a single linear "
+    "array of triplets of [ time, value, curvature ] followed by a final duple "
+    "of [ time, value ] to specify the final value of the table. time values "
+    "are expressed in unitless, ascending values. For curvature equal to 0, "
+    "the segment is a line; for curvature less than 0, the segment is a convex "
+    "curve; for curvature greater than 0, the segment is a concave curve.";
+
+    if( !type_engine_import_ugen_begin( env, "CurveTable", "GenX", env->global(),
+                                        NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
         
     func = make_new_mfun( "float[]", "coefs", curve_coeffs ); //load table
     func->add_arg( "float", "v[]" );
+    func->doc = "Set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1043,12 +1091,15 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // Warp
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "WarpTable", "GenX", env->global(), 
-                                        NULL, NULL, genX_tick, NULL ) )
+    doc = "";
+
+    if( !type_engine_import_ugen_begin( env, "WarpTable", "GenX", env->global(),
+                                        NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
         
     func = make_new_mfun( "float[]", "coefs", warp_coeffs ); //load table
     func->add_arg( "float", "v[]" );
+    func->doc = "Set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     /*
