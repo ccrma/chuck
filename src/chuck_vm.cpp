@@ -31,14 +31,13 @@
 //-----------------------------------------------------------------------------
 #include "chuck_vm.h"
 #include "chuck_instr.h"
-#include "chuck_bbq.h"
-#include "chuck_errmsg.h"
-#include "chuck_dl.h"
-#include "chuck_type.h"
-#include "chuck_globals.h"
 #include "chuck_lang.h"
-#include "ugen_xxx.h"
+#include "chuck_type.h"
+#include "chuck_dl.h"
 #include "chuck_io.h"
+#include "chuck_globals.h"
+#include "chuck_errmsg.h"
+#include "ugen_xxx.h"
 
 #include <algorithm>
 using namespace std;
@@ -50,7 +49,7 @@ using namespace std;
   #include <pthread.h>
 #endif
 
-
+// uncomment to compile VM debug messages
 #define CK_VM_DEBUG_ENABLE (0)
 
 #if CK_VM_DEBUG_ENABLE
@@ -59,6 +58,7 @@ using namespace std;
 #else
 #define CK_VM_DEBUG(x)
 #endif // CK_VM_DEBUG_ENABLE
+
 
 
 
@@ -135,21 +135,16 @@ Chuck_VM::Chuck_VM()
     m_event_buffer = NULL;
     m_shred_id = 0;
     m_halt = TRUE;
-    m_audio = FALSE;
-    m_block = TRUE;
-    m_running = FALSE;
 
-    m_audio_started = FALSE;
     m_dac = NULL;
     m_adc = NULL;
     m_bunghole = NULL;
+    m_srate = 0;
     m_num_dac_channels = 0;
     m_num_adc_channels = 0;
     m_init = FALSE;
-    
-    m_main_thread_hook = NULL;
-    m_main_thread_quit = NULL;
-    m_main_thread_bindle = NULL;
+    m_input_ref = NULL;
+    m_output_ref = NULL;
 }
 
 
@@ -255,11 +250,8 @@ t_CKBOOL Chuck_VM::set_priority( t_CKINT priority, Chuck_VM * vm )
 // name: initialize()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT srate,
-                               t_CKUINT buffer_size, t_CKUINT num_buffers,
-                               t_CKUINT dac, t_CKUINT adc, t_CKUINT dac_chan,
-                               t_CKUINT adc_chan, t_CKBOOL block, t_CKUINT adaptive,
-                               t_CKBOOL force_srate )
+t_CKBOOL Chuck_VM::initialize( t_CKUINT srate, t_CKUINT dac_chan,
+                               t_CKUINT adc_chan, t_CKUINT adaptive, t_CKBOOL halt )
 {
     if( m_init )
     {
@@ -267,52 +259,14 @@ t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT sr
         return FALSE;
     }
 
-    // boost thread priority
-    // if( priority != 0x7fffffff && !set_priority( priority, this ) )
-    //    return FALSE;
-
     // log
     EM_log( CK_LOG_SYSTEM, "initializing virtual machine..." );
     EM_pushlog(); // push stack
 
-    // allocate bbq
-    m_bbq = new BBQ;
     m_halt = halt;
-    m_audio = enable_audio;
-    m_block = block;
     m_num_adc_channels = adc_chan;
     m_num_dac_channels = dac_chan;
-
-    // set some parameters
-    m_bbq->set_srate( srate );
-    m_bbq->set_bufsize( buffer_size );
-    m_bbq->set_numbufs( num_buffers );
-    m_bbq->set_inouts( adc, dac );
-    m_bbq->set_chans( adc_chan, dac_chan );
-
-    // log
-    EM_log( CK_LOG_SYSTEM, "probing '%s' audio subsystem...", m_audio ? "real-time" : "fake-time" );
-
-    // probe / init (this shouldn't start audio yet - moved here 1.3.1.2)
-    if( !m_bbq->initialize( m_num_dac_channels, m_num_adc_channels,
-        Digitalio::m_sampling_rate, 16, 
-        Digitalio::m_buffer_size, Digitalio::m_num_buffers,
-        Digitalio::m_dac_n, Digitalio::m_adc_n,
-        m_block, this, m_audio, NULL, NULL, force_srate ) )
-    {
-        m_last_error = "cannot initialize audio device (use --silent/-s for non-realtime)";
-        // pop indent
-        EM_poplog();
-        // clean up
-        SAFE_DELETE( m_bbq );
-        return FALSE;
-    }
-    
-    // update parameters that could have been changed during probe (1.3.1.2)
-    srate = Digitalio::sampling_rate();
-    buffer_size = Digitalio::buffer_size();
-    dac = Digitalio::dac_num();
-    adc = Digitalio::adc_num();
+    m_srate = srate;
 
     // lockdown
     Chuck_VM_Object::lock_all();
@@ -321,8 +275,7 @@ t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT sr
     EM_log( CK_LOG_SYSTEM, "allocating shreduler..." );
     // allocate shreduler
     m_shreduler = new Chuck_VM_Shreduler;
-    m_shreduler->bbq = m_bbq;
-    m_shreduler->rt_audio = enable_audio;
+    m_shreduler->vm_ref = this;
     m_shreduler->set_adaptive( adaptive > 0 ? adaptive : 0 );
 
     // log
@@ -337,20 +290,6 @@ t_CKBOOL Chuck_VM::initialize( t_CKBOOL enable_audio, t_CKBOOL halt, t_CKUINT sr
     m_event_buffer = new CBufferSimple;
     m_event_buffer->initialize( 1024, sizeof(Chuck_Event *) );
     //m_event_buffer->join(); // this should also return 0
-    
-    // log
-    EM_log( CK_LOG_SYSTEM, "behavior: %s", halt ? "HALT" : "LOOP" );
-    EM_log( CK_LOG_SYSTEM, "real-time audio: %s", enable_audio ? "YES" : "NO" );
-    EM_log( CK_LOG_SYSTEM, "mode: %s", block ? "BLOCKING" : "CALLBACK" );
-    EM_log( CK_LOG_SYSTEM, "sample rate: %ld", srate );
-    EM_log( CK_LOG_SYSTEM, "buffer size: %ld", buffer_size );
-    if( enable_audio )
-    {
-        EM_log( CK_LOG_SYSTEM, "num buffers: %ld", num_buffers );
-        EM_log( CK_LOG_SYSTEM, "adc: %ld dac: %d", adc, dac );
-        EM_log( CK_LOG_SYSTEM, "adaptive block processing: %ld", adaptive > 1 ? adaptive : 0 ); 
-    }
-    EM_log( CK_LOG_SYSTEM, "channels in: %ld out: %ld", adc_chan, dac_chan );
 
     // pop log
     EM_poplog();
@@ -444,19 +383,6 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
 
 
 //-----------------------------------------------------------------------------
-// name: compensate_bbq()
-// desc: ...
-//-----------------------------------------------------------------------------
-void Chuck_VM::compensate_bbq()
-{
-    // set shreduler - the audio was initialized elsewhere
-    m_shreduler->bbq = m_bbq;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: shutdown()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -471,29 +397,6 @@ t_CKBOOL Chuck_VM::shutdown()
     EM_pushlog();
     // unlockdown
     Chuck_VM_Object::unlock_all();
-
-    // stop
-    if( m_running )
-    {
-        this->stop();
-        usleep( 50000 );
-    }
-
-    // shutdown audio
-    if( m_audio )
-    {
-        // log
-        EM_log( CK_LOG_SYSTEM, "shutting down real-time audio..." );
-
-        m_bbq->digi_out()->cleanup();
-        m_bbq->digi_in()->cleanup();
-        m_bbq->shutdown();
-        m_audio = FALSE;
-    }
-    // log
-    EM_log( CK_LOG_SYSTEM, "freeing bbq subsystem..." );
-    // clean up
-    SAFE_DELETE( m_bbq );
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing shreduler..." );
@@ -537,12 +440,12 @@ t_CKBOOL Chuck_VM::shutdown()
     SAFE_RELEASE( m_adc );
     SAFE_RELEASE( m_bunghole );
     
-    if( m_main_thread_quit )
-        m_main_thread_quit( m_main_thread_bindle );
-    clear_main_thread_hook();
-    
+    // set state
     m_init = FALSE;
 
+    // log
+    EM_log( CK_LOG_SYSTEM, "virtual machine shutdown complete." );
+
     // pop indent
     EM_poplog();
 
@@ -553,22 +456,16 @@ t_CKBOOL Chuck_VM::shutdown()
 
 
 //-----------------------------------------------------------------------------
-// name: start_audio()
-// desc: ...
+// name: start()
+// desc: run start (can be called before or after init)
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::start_audio( )
+t_CKBOOL Chuck_VM::start()
 {
-    // audio
-    if( !m_audio_started && m_audio )
-    {
-        EM_log( CK_LOG_SEVERE, "starting real-time audio..." );
-        m_bbq->digi_out()->start();
-        m_bbq->digi_in()->start();
-    }
-
-    // set the flag to true to avoid entering this function
-    m_audio_started = TRUE;
-
+    // already running?
+    if( m_is_running) return FALSE;
+    // set state
+    m_is_running = TRUE;
+    // done
     return TRUE;
 }
 
@@ -576,93 +473,37 @@ t_CKBOOL Chuck_VM::start_audio( )
 
 
 //-----------------------------------------------------------------------------
-// name: run()
-// desc: ...
+// name: running()
+// desc: get run state
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::run( )
+t_CKBOOL Chuck_VM::running()
 {
-    // check if init
-    if( m_dac == NULL )
-    {
-        m_last_error = "VM and/or synthesis not initialized...";
-        return FALSE;
-    }
-
-    // check if already running
-    if( m_running )
-    {
-        m_last_error = "virtual machine already running...";
-        return FALSE;
-    }
-
-    m_running = TRUE;
-
-    // log
-    EM_log( CK_LOG_SYSTEM, "running virtual machine..." );
-    // push indent
-    EM_pushlog();
-
-    // audio
-    //if( m_audio )
-    //{
-        // log
-        EM_log( CK_LOG_SEVERE, "initializing audio buffers..." );
-        if( !m_bbq->digi_out()->initialize( ) )
-        {
-            m_last_error = "cannot open audio output (option: use --silent/-s)";
-            return FALSE;
-        }
-
-        m_bbq->digi_in()->initialize( );
-    //}
-
-    // log
-    EM_log( CK_LOG_SEVERE, "virtual machine running..." );
-    // pop indent
-    EM_poplog();
-
-    // run
-    if( m_block ) this->run( -1 );
-    else
-    {
-        // compute shreds before first sample
-        if( !compute() )
-        {
-            // done
-            m_running = FALSE;
-            // log
-            EM_log( CK_LOG_SYSTEM, "virtual machine stopped..." );
-        }
-        else
-        {
-            // start audio
-            if( !m_audio_started ) start_audio();
-
-            // wait
-            while( m_running )
-            {
-                if( m_main_thread_hook && m_main_thread_quit )
-                    m_main_thread_hook( m_main_thread_bindle );
-                else
-                    usleep( 1000 );
-            }
-        }
-    }
-
-    return TRUE;
+    return m_is_running;
 }
 
-/*should we comment out what we just did?
-i can't think of why it might be affecting this part of the vm
-you never know
-true*/
+
+
+
+//-----------------------------------------------------------------------------
+// name: stop()
+// desc: run stop
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::stop()
+{
+    // running?
+    if( !m_is_running ) return FALSE;
+    // set state
+    m_is_running = FALSE;
+    // done
+    return TRUE;
+}
 
 
 
 
 //-----------------------------------------------------------------------------
 // name: compute()
-// desc: ...
+// desc: compute all shreds at one instance in ChucK time
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::compute()
 {
@@ -735,71 +576,45 @@ t_CKBOOL Chuck_VM::compute()
 // name: run()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::run( t_CKINT num_samps )
+t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 {
+    // copy
+    m_input_ref = input; m_output_ref = output;
+    // frame count
+    t_CKINT frame = 0;
+
     // loop it
-    while( num_samps )
+    while( N )
     {
         // compute shreds
         if( !compute() ) goto vm_stop;
 
-        // start audio
-        if( !m_audio_started ) start_audio();
-
         // advance the shreduler
         if( !m_shreduler->m_adaptive )
         {
-            m_shreduler->advance();
-            if( num_samps > 0 ) num_samps--;
+            m_shreduler->advance( frame++ );
+            if( N > 0 ) N--;
         }
-        else m_shreduler->advance_v( num_samps );
+        else m_shreduler->advance_v( N );
     }
+    
+    // clear
+    m_input_ref = NULL; m_output_ref = NULL;
 
     return FALSE;
 
 // vm stop here
 vm_stop:
-    m_running = FALSE;
-    
-    if( m_main_thread_quit )
-        m_main_thread_quit( m_main_thread_bindle );
+    // stop, 1.3.5.3
+    this->stop();
+    // TODO: move this to be per VM?
+    if( g_main_thread_quit )
+        g_main_thread_quit( g_main_thread_bindle );
     clear_main_thread_hook();
 
     // log
     EM_log( CK_LOG_SYSTEM, "virtual machine stopped..." );
 
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: pause()
-// desc: ...
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::pause( )
-{
-    m_running = FALSE;
-
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: stop()
-// desc: ...
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::stop( )
-{
-    // log
-    EM_log( CK_LOG_SEVERE, "requesting STOP virtual machine..." );
-
-    m_running = FALSE;
-    Digitalio::m_end = TRUE;
-    
     return TRUE;
 }
 
@@ -1107,7 +922,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     }
     else if( msg->type == MSG_TIME )
     {
-        float srate = (float)Digitalio::sampling_rate();
+        float srate = m_srate; // 1.3.5.3; was: (float)Digitalio::sampling_rate();
         fprintf( stderr, "[chuck](VM): the values of now:\n" );
         fprintf( stderr, "  now = %.6f (samp)\n", m_shreduler->now_system );
         fprintf( stderr, "      = %.6f (second)\n", m_shreduler->now_system / srate );
@@ -1164,24 +979,12 @@ Chuck_VM_Shreduler * Chuck_VM::shreduler( ) const
 
 
 //-----------------------------------------------------------------------------
-// name: bbq()
-// desc: ...
-//-----------------------------------------------------------------------------
-BBQ * Chuck_VM::bbq( ) const
-{
-    return m_bbq;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: srate()
 // desc: ...
 //-----------------------------------------------------------------------------
 t_CKUINT Chuck_VM::srate() const
 {
-    return (t_CKUINT)Digitalio::sampling_rate();
+    return m_srate; // 1.3.5.3; was: (t_CKUINT)Digitalio::sampling_rate();
 }
 
 
@@ -1388,43 +1191,47 @@ void Chuck_VM::release_dump( )
 }
 
 
-//-----------------------------------------------------------------------------
-// name: set_main_thread_hook()
-// desc: ...
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::set_main_thread_hook( f_mainthreadhook hook,
-                                         f_mainthreadquit quit,
-                                         void * bindle )
-{
-    if( m_main_thread_hook == NULL && m_main_thread_quit == NULL )
-    {
-        m_main_thread_bindle = bindle;
-        m_main_thread_hook = hook;
-        m_main_thread_quit = quit;
-        
-        return TRUE;
-    }
-    else
-    {
-        EM_log(CK_LOG_SEVERE, "[chuck](VM): attempt to register more than one main_thread_hook");
-        return FALSE;
-    }
-}
-
 
 
 //-----------------------------------------------------------------------------
 // name: set_main_thread_hook()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::clear_main_thread_hook()
-{
-    m_main_thread_bindle = NULL;
-    m_main_thread_hook = NULL;
-    m_main_thread_quit = NULL;
-    
-    return TRUE;
-}
+//t_CKBOOL Chuck_VM::set_main_thread_hook( f_mainthreadhook hook,
+//                                         f_mainthreadquit quit,
+//                                         void * bindle )
+//{
+//    if( m_main_thread_hook == NULL && m_main_thread_quit == NULL )
+//    {
+//        m_main_thread_bindle = bindle;
+//        m_main_thread_hook = hook;
+//        m_main_thread_quit = quit;
+//        
+//        return TRUE;
+//    }
+//    else
+//    {
+//        EM_log(CK_LOG_SEVERE, "[chuck](VM): attempt to register more than one main_thread_hook");
+//        return FALSE;
+//    }
+//}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_main_thread_hook()
+// desc: ...
+//-----------------------------------------------------------------------------
+//t_CKBOOL Chuck_VM::clear_main_thread_hook()
+//{
+//    m_main_thread_bindle = NULL;
+//    m_main_thread_hook = NULL;
+//    m_main_thread_quit = NULL;
+//    
+//    return TRUE;
+//}
+
 
 
 
@@ -1726,6 +1533,9 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
         SAFE_DELETE(m_serials);
     }
     
+    // 1.3.5.3 pop all loop counters
+    while( this->popLoopCounter() );
+    
     // TODO: what to do with next and prev?
     
     return TRUE;
@@ -1808,25 +1618,28 @@ t_CKBOOL Chuck_VM_Shred::run( Chuck_VM * vm )
     // get the code
     instr = code->instr;
     is_running = TRUE;
-    t_CKBOOL * vm_running = &vm->m_running;
+    // pointer to running state
+    t_CKBOOL * loop_running = &(vm_ref->runningState());
 
     // go!
-    while( is_running && *vm_running && !is_abort )
+    while( is_running && *loop_running && !is_abort )
     {
-        CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG =--------------------------------=\n"));
-        CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG shred %04lu code %s pc %04lu %s( %s )\n",
-                            this->xid, this->code->name.c_str(), this->pc, instr[pc]->name(), instr[pc]->params()));
-        CK_VM_DEBUG(t_CKBYTE * t_mem_sp = this->mem->sp);
-        CK_VM_DEBUG(t_CKBYTE * t_reg_sp = this->mem->sp);
-        
+//-----------------------------------------------------------------------------
+CK_VM_DEBUG( fprintf(stderr, "CK_VM_DEBUG =--------------------------------=\n") );
+CK_VM_DEBUG( fprintf(stderr, "CK_VM_DEBUG shred %04lu code %s pc %04lu %s( %s )\n",
+             this->xid, this->code->name.c_str(), this->pc, instr[pc]->name(),
+             instr[pc]->params()) );
+CK_VM_DEBUG( t_CKBYTE * t_mem_sp = this->mem->sp );
+CK_VM_DEBUG( t_CKBYTE * t_reg_sp = this->mem->sp );
+//-----------------------------------------------------------------------------
         // execute the instruction
         instr[pc]->execute( vm, this );
-        
-        CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08lx\n",
-                            (unsigned long) t_mem_sp, (unsigned long) this->mem->sp));
-        CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
-                            (unsigned long) t_reg_sp, (unsigned long) this->reg->sp));
-        
+//-----------------------------------------------------------------------------
+CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08lx\n",
+                    (unsigned long) t_mem_sp, (unsigned long) this->mem->sp));
+CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
+                    (unsigned long) t_reg_sp, (unsigned long) this->reg->sp));
+//-----------------------------------------------------------------------------
         // set to next_pc;
         pc = next_pc;
         next_pc++;
@@ -1879,6 +1692,57 @@ t_CKVOID Chuck_VM_Shred::remove_serialio( Chuck_IO_Serial * serial )
 
 
 //-----------------------------------------------------------------------------
+// name: pushLoopCounter()
+// desc: make and push new loop counter
+//-----------------------------------------------------------------------------
+t_CKUINT * Chuck_VM_Shred::pushLoopCounter()
+{
+    // new pointer
+    t_CKUINT * counter = new t_CKUINT;
+    // add to stack
+    m_loopCounters.push_back(counter);
+    // return it
+    return counter;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: currentLoopCounter()
+// desc: get top loop counter
+//-----------------------------------------------------------------------------
+t_CKUINT * Chuck_VM_Shred::currentLoopCounter()
+{
+    // check it
+    if( m_loopCounters.size() == 0 ) return NULL;
+    // return it
+    return m_loopCounters[m_loopCounters.size()-1];
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: popLoopCounter()
+// desc: pop and clean up loop counter
+//-----------------------------------------------------------------------------
+bool Chuck_VM_Shred::popLoopCounter()
+{
+    // check it
+    if( m_loopCounters.size() == 0 ) return false;
+    // delete
+    delete m_loopCounters[m_loopCounters.size()-1];
+    // return it
+    m_loopCounters.pop_back();
+    // done
+    return true;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_VM_Shreduler()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -1886,7 +1750,7 @@ Chuck_VM_Shreduler::Chuck_VM_Shreduler()
 {
     now_system = 0;
     rt_audio = FALSE;
-    bbq = NULL;
+    vm_ref = NULL;
     shred_list = NULL;
     m_current_shred = NULL;
     m_dac = NULL;
@@ -2081,8 +1945,10 @@ t_CKBOOL Chuck_VM_Shreduler::shredule( Chuck_VM_Shred * shred,
 void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft )
 {
     t_CKINT i, j, numFrames;
-    SAMPLE frame[128], gain[128], sum;
-    BBQ * audio = this->bbq;
+    SAMPLE gain[256], sum;
+    // get audio data from VM
+    const SAMPLE * input = vm_ref->input_ref();
+    SAMPLE * output = vm_ref->output_ref();
     
     // compute number of frames to compute; update
     numFrames = ck_min( m_max_block_size, numLeft );
@@ -2097,102 +1963,58 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft )
     // advance system 'now'
     this->now_system += numFrames;
 
-    // tick in
-    if( rt_audio )
+    // ???
+    for( j = 0; j < m_num_adc_channels; j++ )
     {
-        for( j = 0; j < m_num_adc_channels; j++ )
-        {
-            // update channel
-            m_adc->m_multi_chan[j]->m_time = this->now_system;
-            // cache gain
-            gain[j] = m_adc->m_multi_chan[j]->m_gain;
-        }
-        
-        // adaptive block
-        for( i = 0; i < numFrames; i++ )
-        {
-            // get input
-            audio->digi_in()->tick_in( frame, m_num_adc_channels );
-            // clear
-            sum = 0.0f;
-            // loop over channels
-            for( j = 0; j < m_num_adc_channels; j++ )
-            {
-                m_adc->m_multi_chan[j]->m_current_v[i] = frame[j] * gain[j] * m_adc->m_gain;
-                sum += m_adc->m_multi_chan[j]->m_current_v[i];
-            }
-            m_adc->m_current_v[i] = sum / m_num_adc_channels;
-        }
-        
-        for( j = 0; j < m_num_adc_channels; j++ )
-        {
-            // update last
-            m_adc->m_multi_chan[j]->m_last = m_adc->m_multi_chan[j]->m_current_v[numFrames-1];
-        }
-        // update last
-        m_adc->m_last = m_adc->m_current_v[numFrames-1];
-        // update time
-        m_adc->m_time = this->now_system;
+        // update channel
+        m_adc->m_multi_chan[j]->m_time = this->now_system;
+        // cache gain
+        gain[j] = m_adc->m_multi_chan[j]->m_gain;
     }
+    
+    // INPUT: adaptive block
+    for( i = 0; i < numFrames; i++ )
+    {
+        // clear
+        sum = 0.0f;
+        // loop over channels
+        for( j = 0; j < m_num_adc_channels; j++ )
+        {
+            m_adc->m_multi_chan[j]->m_current_v[i] = input[j] * gain[j] * m_adc->m_gain;
+            sum += m_adc->m_multi_chan[j]->m_current_v[i];
+        }
+        m_adc->m_current_v[i] = sum / m_num_adc_channels;
+        
+        // advance pointer
+        input += m_num_adc_channels;
+    }
+    
+    // ???
+    for( j = 0; j < m_num_adc_channels; j++ )
+    {
+        // update last
+        m_adc->m_multi_chan[j]->m_last = m_adc->m_multi_chan[j]->m_current_v[numFrames-1];
+    }
+    // update last
+    m_adc->m_last = m_adc->m_current_v[numFrames-1];
+    // update time
+    m_adc->m_time = this->now_system;
 
-    // dac
+    // PROCESSING
     m_dac->system_tick_v( this->now_system, numFrames );
 
     // suck samples
     m_bunghole->system_tick_v( this->now_system, numFrames );
 
-    // adaptive block
+    // OUTPUT: adaptive block
     for( i = 0; i < numFrames; i++ )
     {
         for( j = 0; j < m_num_dac_channels; j++ )
-            frame[j] = m_dac->m_multi_chan[j]->m_current_v[i];
+            output[j] = m_dac->m_multi_chan[j]->m_current_v[i];
         
-        // tick
-        audio->digi_out()->tick_out( frame, m_num_dac_channels );
+        // advance pointer
+        output += m_num_dac_channels;
     }
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: advance2()
-// desc: ...
-//-----------------------------------------------------------------------------
-void Chuck_VM_Shreduler::advance2( )
-{
-    // advance system 'now'
-    this->now_system += 1;
-
-    // tick the dac
-    SAMPLE l, r;
-    BBQ * audio = this->bbq;
-
-    // tick in
-    if( rt_audio )
-    {
-        audio->digi_in()->tick_in( &l, &r );
-        m_adc->m_multi_chan[0]->m_current = l * m_adc->m_multi_chan[0]->m_gain;
-        m_adc->m_multi_chan[1]->m_current = r * m_adc->m_multi_chan[1]->m_gain;
-        m_adc->m_current = .5f * ( l + r );
-        // time it
-        m_adc->m_multi_chan[0]->m_time = this->now_system;
-        m_adc->m_multi_chan[1]->m_time = this->now_system;
-        m_adc->m_time = this->now_system;
-    }
-
-    // dac
-    m_dac->system_tick( this->now_system );
-    l = m_dac->m_multi_chan[0]->m_current;
-    r = m_dac->m_multi_chan[1]->m_current;
-    // remove: 1.2.1.2
-    // l *= .5f; r *= .5f;
-
-    // suck samples
-    m_bunghole->system_tick( this->now_system );
-
-    // tick
-    audio->digi_out()->tick_out( l, r );
 }
 
 
@@ -2202,44 +2024,38 @@ void Chuck_VM_Shreduler::advance2( )
 // name: advance()
 // desc: ...
 //-----------------------------------------------------------------------------
-void Chuck_VM_Shreduler::advance( )
+void Chuck_VM_Shreduler::advance( t_CKINT N )
 {
     // advance system 'now'
     this->now_system += 1;
 
-    // tick the dac
-    SAMPLE frame[128];
+    // tick the dac; TODO: unhardcoded frame size!
     SAMPLE sum = 0.0f;
-    BBQ * audio = this->bbq;
     t_CKUINT i;
+    // input and output
+    const SAMPLE * input = vm_ref->input_ref() + (N*m_num_adc_channels);
+    SAMPLE * output = vm_ref->output_ref() + (N*m_num_adc_channels);
 
-    // tick in
-    if( rt_audio )
+    // INPUT: loop over channels
+    for( i = 0; i < m_num_adc_channels; i++ )
     {
-        audio->digi_in()->tick_in( frame, m_num_adc_channels );
-        
-        // loop over channels
-        for( i = 0; i < m_num_adc_channels; i++ )
-        {
-            m_adc->m_multi_chan[i]->m_current = frame[i] * m_adc->m_multi_chan[i]->m_gain * m_adc->m_gain;
-            m_adc->m_multi_chan[i]->m_last = m_adc->m_multi_chan[i]->m_current;
-            m_adc->m_multi_chan[i]->m_time = this->now_system;
-            sum += m_adc->m_multi_chan[i]->m_current;
-        }
-        m_adc->m_last = m_adc->m_current = sum / m_num_adc_channels;
-        m_adc->m_time = this->now_system;
+        // ge: switched order of lines 1.3.5.3
+        m_adc->m_multi_chan[i]->m_last = m_adc->m_multi_chan[i]->m_current;
+        m_adc->m_multi_chan[i]->m_current = input[i] * m_adc->m_multi_chan[i]->m_gain * m_adc->m_gain;
+        m_adc->m_multi_chan[i]->m_time = this->now_system;
+        sum += m_adc->m_multi_chan[i]->m_current;
     }
+    m_adc->m_last = m_adc->m_current = sum / m_num_adc_channels;
+    m_adc->m_time = this->now_system;
 
-    // dac
+    // PROCESSING
     m_dac->system_tick( this->now_system );
+    // OUTPUT
     for( i = 0; i < m_num_dac_channels; i++ )
-        frame[i] = m_dac->m_multi_chan[i]->m_current; // * .5f;
+        output[i] = m_dac->m_multi_chan[i]->m_current; // * .5f;
 
     // suck samples
     m_bunghole->system_tick( this->now_system );
-
-    // tick
-    audio->digi_out()->tick_out( frame, m_num_dac_channels );
 }
 
 
@@ -2440,7 +2256,7 @@ void Chuck_VM_Shreduler::status( Chuck_VM_Status * status )
     Chuck_VM_Shred * shred = shred_list;
     Chuck_VM_Shred * temp = NULL;
 
-    t_CKUINT srate = Digitalio::sampling_rate();
+    t_CKUINT srate = vm_ref->srate(); // 1.3.5.3; was: Digitalio::sampling_rate();
     t_CKUINT s = (t_CKUINT)now_system;
     t_CKUINT h = s/(srate*3600);
     s = s - (h*(srate*3600));

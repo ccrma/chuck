@@ -54,15 +54,20 @@ t_CKBOOL init_class_uana( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_blob( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type );
-t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type );
-t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type );
-t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type ); // added 1.3.0.0 -- moved to be full-fledged class
-t_CKBOOL init_class_cherr( Chuck_Env * env, Chuck_Type * type ); // added 1.3.0.0 -- moved to be full-fledged class
 t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type );
+t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
+t_CKBOOL init_class_vec4( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
+
 t_CKBOOL init_class_Midi( Chuck_Env * env );
 t_CKBOOL init_class_MidiRW( Chuck_Env * env );
 t_CKBOOL init_class_HID( Chuck_Env * env );
+t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type );
+t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type );
+// added 1.3.0.0 -- moved to be full-fledged class
+t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type );
+// added 1.3.0.0 -- moved to be full-fledged class
+t_CKBOOL init_class_cherr( Chuck_Env * env, Chuck_Type * type );
 
 
 
@@ -291,27 +296,45 @@ CK_DLL_MFUN( string_trim );
 CK_DLL_MFUN( string_toString );
 CK_DLL_MFUN( string_set_at );
 CK_DLL_MFUN( string_get_at );
-CK_DLL_MFUN(string_charAt);
-CK_DLL_MFUN(string_setCharAt);
-CK_DLL_MFUN(string_substring);
-CK_DLL_MFUN(string_substringN);
-CK_DLL_MFUN(string_insert);
-CK_DLL_MFUN(string_replace);
-CK_DLL_MFUN(string_replaceN);
-CK_DLL_MFUN(string_find);
-CK_DLL_MFUN(string_findStart);
-CK_DLL_MFUN(string_findStr);
-CK_DLL_MFUN(string_findStrStart);
-CK_DLL_MFUN(string_rfind);
-CK_DLL_MFUN(string_rfindStart);
-CK_DLL_MFUN(string_rfindStr);
-CK_DLL_MFUN(string_rfindStrStart);
-CK_DLL_MFUN(string_erase);
-CK_DLL_MFUN(string_toInt);
-CK_DLL_MFUN(string_toFloat);
-CK_DLL_MFUN(string_parent);
+CK_DLL_MFUN( string_charAt);
+CK_DLL_MFUN( string_setCharAt);
+CK_DLL_MFUN( string_substring);
+CK_DLL_MFUN( string_substringN);
+CK_DLL_MFUN( string_insert);
+CK_DLL_MFUN( string_replace);
+CK_DLL_MFUN( string_replaceN);
+CK_DLL_MFUN( string_find);
+CK_DLL_MFUN( string_findStart);
+CK_DLL_MFUN( string_findStr);
+CK_DLL_MFUN( string_findStrStart);
+CK_DLL_MFUN( string_rfind);
+CK_DLL_MFUN( string_rfindStart);
+CK_DLL_MFUN( string_rfindStr);
+CK_DLL_MFUN( string_rfindStrStart);
+CK_DLL_MFUN( string_erase);
+CK_DLL_MFUN( string_toInt);
+CK_DLL_MFUN( string_toFloat);
+CK_DLL_MFUN( string_parent);
 
 
+//-----------------------------------------------------------------------------
+// vector API (vec3, vec4, eventually vector) ge: 1.3.5.3
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( vec3_set );
+CK_DLL_MFUN( vec3_setAll );
+CK_DLL_MFUN( vec3_magnitude );
+CK_DLL_MFUN( vec3_normalize );
+CK_DLL_MFUN( vec3_interp );
+CK_DLL_MFUN( vec3_interp_delta_float );
+CK_DLL_MFUN( vec3_interp_delta_dur );
+CK_DLL_MFUN( vec3_update_goal );
+CK_DLL_MFUN( vec3_update_goal_slew );
+CK_DLL_MFUN( vec3_updateSet_goalAndValue );
+CK_DLL_MFUN( vec3_updateSet_goalAndValue_slew );
+CK_DLL_MFUN( vec4_set );
+CK_DLL_MFUN( vec4_setAll );
+CK_DLL_MFUN( vec4_magnitude );
+CK_DLL_MFUN( vec4_normalize );
 
 
 //-----------------------------------------------------------------------------

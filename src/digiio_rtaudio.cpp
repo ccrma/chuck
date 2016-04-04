@@ -584,13 +584,13 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
             {
                 // difference
                 long diff = device_info.sampleRates[i] - sampling_rate;
-                // check
-                if( ::abs(diff) < closestDiff )
+                // check // ge: changed from abs to labs, 2015.11
+                if( ::labs(diff) < closestDiff )
                 {
                     // remember index
                     closestIndex = i;
                     // update diff
-                    closestDiff = ::abs(diff);
+                    closestDiff = ::labs(diff);
                 }
 
                 // for next highest
@@ -907,7 +907,7 @@ int Digitalio::cb2( void *output_buffer, void *input_buffer,
         // timestamp
         if( g_do_watchdog ) g_watchdog_time = get_current_time( TRUE );
         // get samples from output
-        vm_ref->run( buffer_size );
+        vm_ref->run( buffer_size, m_buffer_in, m_buffer_out );
         // ...
         if( m_xrun ) m_xrun--;
     }

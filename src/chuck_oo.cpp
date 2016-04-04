@@ -834,8 +834,11 @@ t_CKINT Chuck_Array8::set( const string & key, t_CKFLOAT val )
     // 1.3.1.1: removed this
     // map<string, t_CKFLOAT>::iterator iter = m_map.find( key );
 
-    if( !val ) m_map.erase( key );
-    else m_map[key] = val;
+    // 1.3.5.3: removed this
+    // if( !val ) m_map.erase( key ); else
+    
+    // insert
+    m_map[key] = val;
 
     // return good
     return 1;
@@ -1119,7 +1122,7 @@ t_CKINT Chuck_Array16::get( const string & key, t_CKCOMPLEX * val )
 // name: set()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::set( t_CKINT i, t_CKCOMPLEX val )
+t_CKINT Chuck_Array16::set( t_CKINT i, const t_CKCOMPLEX & val )
 {
     // bound check
     if( i < 0 || i >= m_vector.capacity() )
@@ -1139,13 +1142,14 @@ t_CKINT Chuck_Array16::set( t_CKINT i, t_CKCOMPLEX val )
 // name: set()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::set( const string & key, t_CKCOMPLEX val )
+t_CKINT Chuck_Array16::set( const string & key, const t_CKCOMPLEX & val )
 {
     // 1.3.1.1: removed this
     // map<string, t_CKCOMPLEX>::iterator iter = m_map.find( key );
 
-    if( val.re == 0 && val.im == 0 ) m_map.erase( key );
-    else m_map[key] = val;
+    // 1.3.5.3: removed this
+    // if( val.re == 0 && val.im == 0 ) m_map.erase( key ); else
+    m_map[key] = val;
 
     // return good
     return 1;
@@ -1181,7 +1185,7 @@ t_CKINT Chuck_Array16::erase( const string & key )
 // name: push_back()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::push_back( t_CKCOMPLEX val )
+t_CKINT Chuck_Array16::push_back( const t_CKCOMPLEX & val )
 {
     // add to vector
     m_vector.push_back( val );
@@ -1315,6 +1319,637 @@ void Chuck_Array16::zero( t_CKUINT start, t_CKUINT end )
         // zero
         m_vector[i].re = 0.0;
         m_vector[i].im = 0.0;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Array24()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_Array24::Chuck_Array24( t_CKINT capacity )
+{
+    // sanity check
+    assert( capacity >= 0 );
+    // set size
+    m_vector.resize( capacity );
+    // clear
+    this->zero( 0, m_vector.capacity() );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_Array24()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_Array24::~Chuck_Array24()
+{
+    // do nothing
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: addr()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKUINT Chuck_Array24::addr( t_CKINT i )
+{
+    // bound check
+    if( i < 0 || i >= m_vector.capacity() )
+        return 0;
+    
+    // get the addr
+    return (t_CKUINT)(&m_vector[i]);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: addr()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKUINT Chuck_Array24::addr( const string & key )
+{
+    // get the addr
+    return (t_CKUINT)(&m_map[key]);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array24::get( t_CKINT i, t_CKVEC3 * val )
+{
+    // bound check
+    if( i < 0 || i >= m_vector.capacity() )
+        return 0;
+    
+    // get the value
+    *val = m_vector[i];
+    
+    // return good
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array24::get( const string & key, t_CKVEC3 * val )
+{
+    // set to zero
+    val->x = val->y = val->z = 0;
+    
+    // iterator
+    map<string, t_CKVEC3>::iterator iter = m_map.find( key );
+    
+    // check
+    if( iter != m_map.end() )
+    {
+        // get the value
+        *val = (*iter).second;
+    }
+    
+    // return good
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array24::set( t_CKINT i, const t_CKVEC3 & val )
+{
+    // bound check
+    if( i < 0 || i >= m_vector.capacity() )
+        return 0;
+    
+    // set the value
+    m_vector[i] = val;
+    
+    // return good
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array24::set( const string & key, const t_CKVEC3 & val )
+{
+    // 1.3.1.1: removed this
+    // map<string, t_CKVEC3>::iterator iter = m_map.find( key );
+    
+    // insert
+    m_map[key] = val;
+    
+    // return good
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array24::find( const string & key )
+{
+    return m_map.find( key ) != m_map.end();
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: set()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array24::erase( const string & key )
+{
+    return m_map.erase( key );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: push_back()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array24::push_back( const t_CKVEC3 & val )
+{
+    // add to vector
+    m_vector.push_back( val );
+    
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: pop_back()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array24::pop_back( )
+{
+    // check
+    if( m_vector.size() == 0 )
+        return 0;
+    
+    // zero
+    m_vector[m_vector.size()-1].x = 0.0;
+    m_vector[m_vector.size()-1].y = 0.0;
+    m_vector[m_vector.size()-1].z = 0.0;
+    // add to vector
+    m_vector.pop_back();
+    
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: back()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array24::back( t_CKVEC3 * val ) const
+{
+    // check
+    if( m_vector.size() == 0 )
+        return 0;
+    
+    // get
+    *val = m_vector.back();
+    
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: clear()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Array24::clear( )
+{
+    // zero
+    zero( 0, m_vector.size() );
+    
+    // clear vector
+    m_vector.clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_capacity()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array24::set_capacity( t_CKINT capacity )
+{
+    // sanity check
+    assert( capacity >= 0 );
+    
+    // ensure size
+    set_size( capacity );
+    
+    return m_vector.capacity();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_size()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array24::set_size( t_CKINT size )
+{
+    // sanity check
+    assert( size >= 0 );
+    
+    // if clearing size
+    if( size < m_vector.size() )
+    {
+        // zero out section
+        zero( size, m_vector.size() );
+    }
+    
+    // remember
+    t_CKINT size2 = m_vector.size();
+    // resize vector
+    m_vector.resize( size );
+    
+    // if clearing size
+    if( m_vector.size() > size2 )
+    {
+        // zero out section
+        zero( size2, m_vector.size() );
+    }
+    
+    return m_vector.size();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: zero()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Array24::zero( t_CKUINT start, t_CKUINT end )
+{
+    // sanity check
+    assert( start <= m_vector.capacity() && end <= m_vector.capacity() );
+    
+    for( t_CKUINT i = start; i < end; i++ )
+    {
+        // zero
+        m_vector[i].x = 0;
+        m_vector[i].y = 0;
+        m_vector[i].z = 0;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Array32()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_Array32::Chuck_Array32( t_CKINT capacity )
+{
+    // sanity check
+    assert( capacity >= 0 );
+    // set size
+    m_vector.resize( capacity );
+    // clear
+    this->zero( 0, m_vector.capacity() );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_Array32()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_Array32::~Chuck_Array32()
+{
+    // do nothing
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: addr()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKUINT Chuck_Array32::addr( t_CKINT i )
+{
+    // bound check
+    if( i < 0 || i >= m_vector.capacity() )
+        return 0;
+    
+    // get the addr
+    return (t_CKUINT)(&m_vector[i]);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: addr()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKUINT Chuck_Array32::addr( const string & key )
+{
+    // get the addr
+    return (t_CKUINT)(&m_map[key]);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array32::get( t_CKINT i, t_CKVEC4 * val )
+{
+    // bound check
+    if( i < 0 || i >= m_vector.capacity() )
+        return 0;
+    
+    // get the value
+    *val = m_vector[i];
+    
+    // return good
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array32::get( const string & key, t_CKVEC4 * val )
+{
+    // set to zero
+    val->x = val->y = val->z = val->w;
+    
+    // iterator
+    map<string, t_CKVEC4>::iterator iter = m_map.find( key );
+    
+    // check
+    if( iter != m_map.end() )
+    {
+        // get the value
+        *val = (*iter).second;
+    }
+    
+    // return good
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array32::set( t_CKINT i, const t_CKVEC4 & val )
+{
+    // bound check
+    if( i < 0 || i >= m_vector.capacity() )
+        return 0;
+    
+    // set the value
+    m_vector[i] = val;
+    
+    // return good
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array32::set( const string & key, const t_CKVEC4 & val )
+{
+    // 1.3.1.1: removed this
+    // map<string, t_CKVEC4>::iterator iter = m_map.find( key );
+    
+    // 1.3.5.3: removed this
+    // if( val.re == 0 && val.im == 0 ) m_map.erase( key ); else
+
+    // insert
+    m_map[key] = val;
+    
+    // return good
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array32::find( const string & key )
+{
+    return m_map.find( key ) != m_map.end();
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: set()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array32::erase( const string & key )
+{
+    return m_map.erase( key );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: push_back()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array32::push_back( const t_CKVEC4 & val )
+{
+    // add to vector
+    m_vector.push_back( val );
+    
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: pop_back()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array32::pop_back( )
+{
+    // check
+    if( m_vector.size() == 0 )
+        return 0;
+    
+    // zero
+    m_vector[m_vector.size()-1].x = 0.0;
+    m_vector[m_vector.size()-1].y = 0.0;
+    m_vector[m_vector.size()-1].z = 0.0;
+    m_vector[m_vector.size()-1].w = 0.0;
+    // add to vector
+    m_vector.pop_back();
+    
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: back()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array32::back( t_CKVEC4 * val ) const
+{
+    // check
+    if( m_vector.size() == 0 )
+        return 0;
+    
+    // get
+    *val = m_vector.back();
+    
+    return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: clear()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Array32::clear( )
+{
+    // zero
+    zero( 0, m_vector.size() );
+    
+    // clear vector
+    m_vector.clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_capacity()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array32::set_capacity( t_CKINT capacity )
+{
+    // sanity check
+    assert( capacity >= 0 );
+    
+    // ensure size
+    set_size( capacity );
+    
+    return m_vector.capacity();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_size()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array32::set_size( t_CKINT size )
+{
+    // sanity check
+    assert( size >= 0 );
+    
+    // if clearing size
+    if( size < m_vector.size() )
+    {
+        // zero out section
+        zero( size, m_vector.size() );
+    }
+    
+    // remember
+    t_CKINT size2 = m_vector.size();
+    // resize vector
+    m_vector.resize( size );
+    
+    // if clearing size
+    if( m_vector.size() > size2 )
+    {
+        // zero out section
+        zero( size2, m_vector.size() );
+    }
+    
+    return m_vector.size();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: zero()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Array32::zero( t_CKUINT start, t_CKUINT end )
+{
+    // sanity check
+    assert( start <= m_vector.capacity() && end <= m_vector.capacity() );
+    
+    for( t_CKUINT i = start; i < end; i++ )
+    {
+        // zero
+        m_vector[i].x = 0;
+        m_vector[i].y = 0;
+        m_vector[i].z = 0;
+        m_vector[i].w = 0;
     }
 }
 
