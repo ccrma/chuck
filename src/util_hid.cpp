@@ -3172,11 +3172,11 @@ int MultiTouchDevice_callback(MTDeviceRef device, Finger *data, int nFingers, do
 void MultiTouchDevice_init()
 {
     if(!MTDManager::checkedAvailability)
-        MTDManager::available = (MTDeviceCreateList != NULL &&
-                                 MTRegisterContactFrameCallback != NULL &&
-                                 MTUnregisterContactFrameCallback != NULL &&
-                                 MTDeviceStart != NULL &&
-                                 MTDeviceStop != NULL);
+        MTDManager::available = (&MTDeviceCreateList != NULL &&
+                                 &MTRegisterContactFrameCallback != NULL &&
+                                 &MTUnregisterContactFrameCallback != NULL &&
+                                 &MTDeviceStart != NULL &&
+                                 &MTDeviceStop != NULL);
     
     if(!MTDManager::available)
         return;

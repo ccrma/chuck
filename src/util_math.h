@@ -43,7 +43,9 @@ extern "C" {
 
     double round( double a );
     double trunc( double a );
+#ifndef __WINDOWS_MODERN__
     double remainder( long a, long b );
+#endif
 
 #endif
 

@@ -33,6 +33,7 @@
 #define __CHUCK_GLOBALS_H__
 
 #include "chuck_def.h"
+#include "chuck_dl.h"
 #include "util_network.h"
 #include "util_thread.h"
 
@@ -43,6 +44,7 @@
 struct Chuck_VM;
 struct Chuck_Compiler;
 class  Chuck_Shell;
+class  BBQ;
 
 
 // exports
@@ -54,6 +56,8 @@ extern Chuck_VM * g_vm;
 extern Chuck_Compiler * g_compiler;
 // the shell
 extern Chuck_Shell * g_shell;
+// global BBQ audio layer, ge: 1.3.5.3
+extern BBQ * g_bbq;
 // global variables
 extern t_CKUINT g_sigpipe_mode;
 // global socket
@@ -70,13 +74,26 @@ extern t_CKFLOAT g_watchdog_timeout;
 extern CHUCK_THREAD g_tid_whatever;
 // flag for providing Std.system( string )
 extern t_CKBOOL g_enable_system_cmd;
+// flag for enabling shell, ge: 1.3.5.3
+extern t_CKBOOL g_enable_shell;
+// flag for audio enable, ge: 1.3.5.3
+extern t_CKBOOL g_enable_realtime_audio;
+// added 1.3.2.0 // moved from VM 1.3.5.3
+extern f_mainthreadhook g_main_thread_hook;
+extern f_mainthreadquit g_main_thread_quit;
+extern void * g_main_thread_bindle;
 
 
 // global detach
 extern "C" void all_detach();
+// global stop, ge: 1.3.5.3
+extern "C" t_CKBOOL all_stop();
 // sigpipe function
 extern "C" void signal_pipe( int sig_num );
-
+// main thread hook, ge: 1.3.5.3
+extern "C" t_CKBOOL clear_main_thread_hook();
+extern "C" t_CKBOOL set_main_thread_hook( f_mainthreadhook hook,
+                                          f_mainthreadquit quit, void * bindle );
 
 
 

@@ -103,6 +103,7 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
             return;
         }
         
+        // HACK: env::instance will not work for multiple compilers
         Chuck_Type * ck_parent_type = type_engine_find_type( Chuck_Env::instance(), parent_path );
         
         delete_id_list( parent_path );
@@ -1013,16 +1014,22 @@ Chuck_DL_Func::~Chuck_DL_Func()
 
 t_CKBOOL ck_mthook_activate(Chuck_DL_MainThreadHook *hook)
 {
-    hook->m_active = hook->m_vm->set_main_thread_hook(hook->m_hook,
-                                                      hook->m_quit,
-                                                      hook->m_bindle);
+    // ge: changed in 1.3.5.3
+    hook->m_active = set_main_thread_hook(hook->m_hook,
+                                          hook->m_quit,
+                                          hook->m_bindle);
+//    hook->m_active = hook->m_vm->set_main_thread_hook(hook->m_hook,
+//                                                      hook->m_quit,
+//                                                      hook->m_bindle);
     return hook->m_active;
 }
 
 t_CKBOOL ck_mthook_deactivate(Chuck_DL_MainThreadHook *hook)
 {
     if(hook->m_active)
-        return hook->m_vm->clear_main_thread_hook();
+        // ge: changed in 1.3.5.3
+        return clear_main_thread_hook();
+        // return hook->m_vm->clear_main_thread_hook();
     else
         return FALSE;
 }

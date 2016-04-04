@@ -78,6 +78,7 @@
 		09922D67181601F700806471 /* server_thread.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D5C181601F700806471 /* server_thread.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H"; }; };
 		09922D69181601F700806471 /* timetag.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D5E181601F700806471 /* timetag.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H"; }; };
 		09A5C88D13DDFB350082DF50 /* RtAudio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A5C88913DDFB350082DF50 /* RtAudio.cpp */; };
+		869DADE31BF85F7A0069A857 /* chuck_system.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 869DADE11BF85F7A0069A857 /* chuck_system.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -411,6 +412,8 @@
 		09F5E1EA158C401E0038B393 /* THANKS */ = {isa = PBXFileReference; lastKnownFileType = text; name = THANKS; path = ../notes/THANKS; sourceTree = "<group>"; };
 		09F5E1EB158C401E0038B393 /* TODO */ = {isa = PBXFileReference; lastKnownFileType = text; name = TODO; path = ../notes/TODO; sourceTree = "<group>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		869DADE11BF85F7A0069A857 /* chuck_system.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = chuck_system.cpp; sourceTree = "<group>"; };
+		869DADE21BF85F7A0069A857 /* chuck_system.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chuck_system.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -802,11 +805,9 @@
 		09A40B000A9A52FC007604EA /* ChucK */ = {
 			isa = PBXGroup;
 			children = (
-				09812B980C6E394A00D1D68C /* uana_extract.cpp */,
-				09812B990C6E394A00D1D68C /* uana_extract.h */,
-				090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */,
-				090B4B1B0C4F038E00DF5577 /* uana_xform.h */,
 				098061AD0AA15BDB00915136 /* chuck_main.cpp */,
+				869DADE11BF85F7A0069A857 /* chuck_system.cpp */,
+				869DADE21BF85F7A0069A857 /* chuck_system.h */,
 				09A40B060A9A54DA007604EA /* chuck_absyn.cpp */,
 				09A40B070A9A54DA007604EA /* chuck_absyn.h */,
 				09A40B080A9A54DA007604EA /* chuck_bbq.cpp */,
@@ -874,6 +875,10 @@
 				09A40B470A9A54DA007604EA /* ugen_stk.h */,
 				09A40B480A9A54DA007604EA /* ugen_xxx.cpp */,
 				09A40B490A9A54DA007604EA /* ugen_xxx.h */,
+				09812B980C6E394A00D1D68C /* uana_extract.cpp */,
+				09812B990C6E394A00D1D68C /* uana_extract.h */,
+				090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */,
+				090B4B1B0C4F038E00DF5577 /* uana_xform.h */,
 				09A40B4A0A9A54DA007604EA /* ulib_machine.cpp */,
 				09A40B4B0A9A54DA007604EA /* ulib_machine.h */,
 				09A40B4C0A9A54DA007604EA /* ulib_math.cpp */,
@@ -1059,6 +1064,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				09805FFA0AA10D3800915136 /* chuck.lex in Sources */,
+				869DADE31BF85F7A0069A857 /* chuck_system.cpp in Sources */,
 				09805FFB0AA10D3900915136 /* chuck.y in Sources */,
 				09805FFC0AA10D3900915136 /* chuck_absyn.cpp in Sources */,
 				09805FFD0AA10D3A00915136 /* chuck_bbq.cpp in Sources */,

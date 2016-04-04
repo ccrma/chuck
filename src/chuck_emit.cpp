@@ -80,6 +80,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl, t_CKB
 t_CKBOOL emit_engine_emit_array_lit( Chuck_Emitter * emit, a_Array_Sub array );
 t_CKBOOL emit_engine_emit_complex_lit( Chuck_Emitter * emit, a_Complex val );
 t_CKBOOL emit_engine_emit_polar_lit( Chuck_Emitter * emit, a_Polar val );
+t_CKBOOL emit_engine_emit_vec_lit( Chuck_Emitter * emit, a_Vec val );
 t_CKBOOL emit_engine_emit_code_segment( Chuck_Emitter * emit, a_Stmt_Code stmt,
                                         t_CKBOOL push = TRUE );
 t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def );
@@ -391,6 +392,10 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                         emit->append( new Chuck_Instr_Reg_Pop_Word2 );
                     else if( exp->type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
                         emit->append( new Chuck_Instr_Reg_Pop_Word3 );
+                    else if( exp->type->size == sz_VEC3 ) // ge: added 1.3.5.3
+                        emit->append( new Chuck_Instr_Reg_Pop_Word4(sz_VEC3/sz_WORD) );
+                    else if( exp->type->size == sz_VEC4 ) // ge: added 1.3.5.3
+                        emit->append( new Chuck_Instr_Reg_Pop_Word4(sz_VEC4/sz_WORD) );
                     else
                     {
                         EM_error2( exp->linepos,
@@ -1124,8 +1129,6 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
-    // TODO: SAFE_DELETE( counter )
-    t_CKINT * counter = NULL;
 
     // push stack
     emit->push_scope();
@@ -1135,9 +1138,8 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
     if( !ret )
         return FALSE;
 
-    // initialize our loop counter
-    // TODO: memory-manage the counter?
-    emit->append( new Chuck_Instr_Init_Loop_Counter( (t_CKUINT)(counter = new t_CKINT) ) );
+    // initialize our loop counter (1.3.5.3)
+    emit->append( new Chuck_Instr_Init_Loop_Counter() );
 
     // get the index
     t_CKUINT start_index = emit->next_index();
@@ -1147,8 +1149,7 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
     emit->code->stack_break.push_back( NULL );
 
     // push the value of the loop counter
-    // (changed 1.3.1.0 to not pass in the size parameter, assume to be t_CKUINT *)
-    emit->append( new Chuck_Instr_Reg_Push_Deref( (t_CKUINT)counter ) ); // ISSUE: 64-bit (fixed 1.3.1.0)
+    emit->append( new Chuck_Instr_Reg_Push_Loop_Counter_Deref() );
 
     // get the type, taking cast into account
     Chuck_Type * type = stmt->cond->cast_to ? stmt->cond->cast_to : stmt->cond->type;
@@ -1174,7 +1175,7 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
     emit->append( op );
 
     // decrement the counter
-    emit->append( new Chuck_Instr_Dec_int_Addr( (t_CKUINT)counter ) );
+    emit->append( new Chuck_Instr_Dec_Loop_Counter() );
 
     // added 1.3.1.1: new scope just for loop body
     emit->push_scope();
@@ -1192,6 +1193,9 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
     
     // set the op's target
     op->set( emit->next_index() );
+    
+    // pop the loop counter
+    emit->append( new Chuck_Instr_Pop_Loop_Counter );
 
     // stack of continue
     while( emit->code->stack_cont.size() && emit->code->stack_cont.back() )
@@ -1578,6 +1582,12 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             case te_polar:
                 emit->append( instr = new Chuck_Instr_Add_polar );
                 break;
+            case te_vec3:
+                emit->append( instr = new Chuck_Instr_Add_vec3 );
+                break;
+                case te_vec4:
+                emit->append( instr = new Chuck_Instr_Add_vec4 );
+                break;
 
             default: break;
             }
@@ -1639,6 +1649,12 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             case te_polar:
                 emit->append( instr = new Chuck_Instr_Add_polar_Assign );
                 break;
+            case te_vec3:
+                emit->append( instr = new Chuck_Instr_Add_vec3_Assign );
+                break;
+            case te_vec4:
+                emit->append( instr = new Chuck_Instr_Add_vec4_Assign );
+                break;
 
             default: break;
             }
@@ -1666,6 +1682,12 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
                 break;
             case te_polar:
                 emit->append( instr = new Chuck_Instr_Minus_polar );
+                break;
+            case te_vec3:
+                emit->append( instr = new Chuck_Instr_Minus_vec3 );
+                break;
+            case te_vec4:
+                emit->append( instr = new Chuck_Instr_Minus_vec4 );
                 break;
 
             default: break;
@@ -1695,6 +1717,12 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             case te_polar:
                 emit->append( instr = new Chuck_Instr_Minus_polar_Assign );
                 break;
+            case te_vec3:
+                emit->append( instr = new Chuck_Instr_Minus_vec3_Assign );
+                break;
+            case te_vec4:
+                emit->append( instr = new Chuck_Instr_Minus_vec4_Assign );
+                break;
 
             default: break;
             }
@@ -1702,49 +1730,95 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         break;
 
     case ae_op_times:
-        switch( left )
+        // check
+        if( left == te_float && right == te_vec3 )
         {
-        case te_int:
-            emit->append( instr = new Chuck_Instr_Times_int );
-            break;
-        case te_float:
-        case te_dur:
-            emit->append( instr = new Chuck_Instr_Times_double );
-            break;
-        case te_complex:
-            emit->append( instr = new Chuck_Instr_Times_complex );
-            break;
-        case te_polar:
-            emit->append( instr = new Chuck_Instr_Times_polar );
-            break;
+            emit->append( instr = new Chuck_Instr_float_Times_vec3 );
+        }
+        else if( left == te_vec3 && right == te_float )
+        {
+            emit->append( instr = new Chuck_Instr_vec3_Times_float );
+        }
+        else if( left == te_float && right == te_vec4 )
+        {
+            emit->append( instr = new Chuck_Instr_float_Times_vec4 );
+        }
+        else if( left == te_vec4 && right == te_float )
+        {
+            emit->append( instr = new Chuck_Instr_vec4_Times_float );
+        }
+        else // other cases
+        {
+            switch( left )
+            {
+            case te_int:
+                emit->append( instr = new Chuck_Instr_Times_int );
+                break;
+            case te_float:
+            case te_dur:
+                emit->append( instr = new Chuck_Instr_Times_double );
+                break;
+            case te_complex:
+                emit->append( instr = new Chuck_Instr_Times_complex );
+                break;
+            case te_polar:
+                emit->append( instr = new Chuck_Instr_Times_polar );
+                break;
+            case te_vec3:
+                emit->append( instr = new Chuck_Instr_XProduct_vec3 );
+                break;
+            case te_vec4:
+                emit->append( instr = new Chuck_Instr_XProduct_vec4 );
+                break;
 
-        default: break;
+            default: break;
+            }
         }
         break;
     
     case ae_op_times_chuck:
-        switch( left )
+        // check
+        if( left == te_float && right == te_vec3 )
         {
-        case te_int:
-            emit->append( instr = new Chuck_Instr_Times_int_Assign );
-            break;
-        case te_float:
-            emit->append( instr = new Chuck_Instr_Times_double_Assign );
-            break;
-        case te_complex:
-            emit->append( instr = new Chuck_Instr_Times_complex_Assign );
-            break;
-        case te_polar:
-            emit->append( instr = new Chuck_Instr_Times_polar_Assign );
-            break;
+            emit->append( instr = new Chuck_Instr_float_Times_vec3_Assign );
+        }
+        else if( left == te_float && right == te_vec4 )
+        {
+            emit->append( instr = new Chuck_Instr_float_Times_vec4_Assign );
+        }
+        else
+        {
+            switch( left )
+            {
+            case te_int:
+                emit->append( instr = new Chuck_Instr_Times_int_Assign );
+                break;
+            case te_float:
+                emit->append( instr = new Chuck_Instr_Times_double_Assign );
+                break;
+            case te_complex:
+                emit->append( instr = new Chuck_Instr_Times_complex_Assign );
+                break;
+            case te_polar:
+                emit->append( instr = new Chuck_Instr_Times_polar_Assign );
+                break;
 
-        default: break;
+            default: break;
+            }
         }
         break;
 
     case ae_op_divide:
         if( ( left == te_time && right == te_dur ) ) // time / dur = float
             emit->append( instr = new Chuck_Instr_Divide_double );
+        else if( left == te_vec3 && right == te_float )
+        {
+            emit->append( instr = new Chuck_Instr_vec3_Divide_float );
+        }
+        else if( left == te_vec4 && right == te_float )
+        {
+            emit->append( instr = new Chuck_Instr_vec4_Divide_float );
+        }
         else // other types
         {
             switch( left )
@@ -1772,6 +1846,15 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         // reverse
         if( ( left == te_dur && right == te_time ) ) // time / dur = float
             emit->append( instr = new Chuck_Instr_Divide_double_Assign );
+        else
+        if( left == te_float && right == te_vec3 )
+        {
+            emit->append( instr = new Chuck_Instr_vec3_Divide_float_Assign );
+        }
+        else if( left == te_float && right == te_vec4 )
+        {
+            emit->append( instr = new Chuck_Instr_vec4_Divide_float_Assign );
+        }
         else // other types
         {
             switch( left )
@@ -2057,6 +2140,16 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             case te_time:
                 emit->append( instr = new Chuck_Instr_Eq_double );
                 break;
+            case te_complex:
+            case te_polar:
+                emit->append( instr = new Chuck_Instr_Eq_complex );
+                break;
+            case te_vec3:
+                emit->append( instr = new Chuck_Instr_Eq_vec3 );
+                break;
+            case te_vec4:
+                emit->append( instr = new Chuck_Instr_Eq_vec4 );
+                break;
 
             default: break;
             }
@@ -2081,6 +2174,16 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             case te_dur:
             case te_time:
                 emit->append( instr = new Chuck_Instr_Neq_double );
+                break;
+            case te_complex:
+            case te_polar:
+                emit->append( instr = new Chuck_Instr_Neq_complex );
+                break;
+            case te_vec3:
+                emit->append( instr = new Chuck_Instr_Neq_vec3 );
+                break;
+            case te_vec4:
+                emit->append( instr = new Chuck_Instr_Neq_vec4 );
                 break;
 
             default: break;
@@ -2480,6 +2583,10 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
                     emit->append( new Chuck_Instr_Assign_Primitive2 );
                 else if( right->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
                     emit->append( new Chuck_Instr_Assign_Primitive4 );
+                else if( right->size == sz_VEC3 ) // ge: added 1.3.5.3
+                    emit->append( new Chuck_Instr_Assign_PrimitiveVec3 );
+                else if( right->size == sz_VEC4 ) // ge: added 1.3.5.3
+                    emit->append( new Chuck_Instr_Assign_PrimitiveVec4 );
                 else
                 {
                     EM_error2( rhs->linepos,
@@ -2788,6 +2895,11 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         if( !emit_engine_emit_polar_lit( emit, exp->polar ) )
             return FALSE;
         break;
+    
+    case ae_primary_vec:
+        if( !emit_engine_emit_vec_lit( emit, exp->vec ) )
+            return FALSE;
+        break;
         
     case ae_primary_exp:
         if( !emit_engine_emit_exp( emit, exp->exp ) )
@@ -2895,6 +3007,33 @@ t_CKBOOL emit_engine_emit_polar_lit( Chuck_Emitter * emit, a_Polar val )
 
 
 //-----------------------------------------------------------------------------
+// name: emit_engine_emit_vec_lit()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL emit_engine_emit_vec_lit( Chuck_Emitter * emit, a_Vec val )
+{
+    // go through and emit the mod and phase
+    if( !emit_engine_emit_exp( emit, val->args ) )
+        return FALSE;
+
+    // zero pad if needed
+    t_CKINT n = 3 - val->numdims;
+    // any remaining
+    while( n > 0 )
+    {
+        // emit a zero float
+        emit->append( new Chuck_Instr_Reg_Push_Imm2( 0 ) );
+        // decrement
+        n--;
+    }
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: emit_engine_emit_exp_cast()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -2943,6 +3082,10 @@ t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit,
         emit->append( new Chuck_Instr_Cast_complex2polar );
     else if( equals( to, &t_complex ) && equals( from, &t_polar ) )
         emit->append( new Chuck_Instr_Cast_polar2complex );
+    else if( equals( to, &t_vec3 ) && equals( from, &t_vec4 ) )
+        emit->append( new Chuck_Instr_Cast_vec4tovec3 );
+    else if( equals( to, &t_vec4 ) && equals( from, &t_vec3 ) )
+        emit->append( new Chuck_Instr_Cast_vec3tovec4 );
     else if( equals( to, &t_string ) && isa( from, &t_object ) && !isa( from, &t_string ) )
         emit->append( new Chuck_Instr_Cast_object2string );
     // up cast - do nothing
@@ -3095,7 +3238,8 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
 
     // make sure
     // ISSUE: 64-bit (fixed 1.3.1.0)
-    if( type->size != sz_INT && type->size != sz_FLOAT && type->size != sz_COMPLEX ) 
+    if( type->size != sz_INT && type->size != sz_FLOAT && type->size != sz_COMPLEX &&
+        type->size != sz_VEC3 && type->size != sz_VEC4 )
     {
         EM_error2( array->linepos,
             "(emit): internal error: array with datasize of %i...", type->size );
@@ -3169,7 +3313,8 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     if( func->def->s_type == ae_func_builtin )
     {
         // ISSUE: 64-bit (fixed 1.3.1.0)
-        if( size == 0 || size == sz_INT || size == sz_FLOAT || size == sz_COMPLEX )
+        if( size == 0 || size == sz_INT || size == sz_FLOAT || size == sz_COMPLEX ||
+            size == sz_VEC3 || sz_VEC4 )
         {
             // is member (1.3.1.0: changed to use kind instead of size)
             if( is_member )
@@ -3252,6 +3397,179 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
 
 
 //-----------------------------------------------------------------------------
+// name: emit_engine_emit_dot_member_special()
+// desc: emit special dot member: complex, polar, vec3, vec4
+//-----------------------------------------------------------------------------
+t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
+                                                  a_Exp_Dot_Member member )
+{
+    // whether to emit addr or value
+    t_CKBOOL emit_addr = member->self->emit_var;
+    
+    // special case: complex and polar
+    if( member->t_base->xid == te_complex )
+    {
+        // mark to emit addr
+        if( member->base->s_meta == ae_meta_var )
+            member->base->emit_var = TRUE;
+        else if( emit_addr )
+        {
+            EM_error2( member->base->linepos,
+                      "(emit): cannot assign value to literal 'complex' value..." );
+            return FALSE;
+        }
+        
+        // emit the base
+        if( !emit_engine_emit_exp( emit, member->base ) )
+            return FALSE;
+        
+        string str = S_name(member->xid);
+        // check
+        if( str == "re" )
+            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr ) );
+        else if( str == "im" )
+            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr ) );
+        else
+            goto check_func;
+        
+        // done
+        return TRUE;
+    }
+    else if( member->t_base->xid == te_polar )
+    {
+        // mark to emit addr
+        if( member->base->s_meta == ae_meta_var )
+            member->base->emit_var = TRUE;
+        else if( emit_addr )
+        {
+            EM_error2( member->base->linepos,
+                      "(emit): cannot assign value to literal 'polar' value..." );
+            return FALSE;
+        }
+        
+        // emit the base
+        if( !emit_engine_emit_exp( emit, member->base ) )
+            return FALSE;
+        
+        string str = S_name(member->xid);
+        // check
+        if( str == "mag" )
+            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr ) );
+        else if( str == "phase" )
+            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr ) );
+        else
+            goto check_func;
+        
+        // done
+        return TRUE;
+    }
+    else if( member->t_base->xid == te_vec3 || member->t_base->xid == te_vec4 )
+    {
+        // mark to emit addr
+        if( member->base->s_meta == ae_meta_var )
+            member->base->emit_var = TRUE;
+        else if( emit_addr )
+        {
+            EM_error2( member->base->linepos,
+                      "(emit): cannot assign value to literal '%s' value...",
+                      member->t_base->c_name() );
+            return FALSE;
+        }
+        
+        // emit the base
+        if( !emit_engine_emit_exp( emit, member->base ) )
+            return FALSE;
+        
+        string str = S_name(member->xid);
+        // check for .xyz[w] .rgb[a] .value/goal/slew
+        if( str == "x" || str == "r" || str == "value" )
+            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr ) );
+        else if( str == "y" || str == "g" || str == "goal" )
+            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr ) );
+        else if( str == "z" || str == "b" || str == "slew" )
+            emit->append( new Chuck_Instr_Dot_Cmp_Third( member->base->s_meta == ae_meta_var, emit_addr ) );
+        else if( member->t_base->xid == te_vec4 && ( str == "w" || str == "a" ) )
+            emit->append( new Chuck_Instr_Dot_Cmp_Fourth( member->base->s_meta == ae_meta_var, emit_addr ) );
+        else
+            goto check_func;
+    
+        // done
+        return TRUE;
+    }
+
+    // should not get here
+    EM_error2( member->base->linepos,
+              "(emit): internal error in lit_special()..." );
+
+    return FALSE;
+    
+//-----------------------------------------------------------------------------
+// goto: check for special member functions, 1.3.5.3
+//-----------------------------------------------------------------------------
+check_func:
+    
+    // the type of the base
+    Chuck_Type * t_base = member->t_base;
+    // is the base a class/namespace or a variable
+    t_CKBOOL base_static = isa( member->t_base, &t_class );
+    // a function
+    Chuck_Func * func = NULL;
+    // a non-function value
+    Chuck_Value * value = NULL;
+    // the offset
+    t_CKUINT offset = 0;
+    
+    // check error
+    if( base_static )
+    {
+        // should not get here
+        EM_error2( member->base->linepos,
+                  "(emit): internal error in lit_special(): base static" );
+        // done
+        return FALSE;
+    }
+        
+    if( !isfunc( member->self->type ) )
+    {
+        // should not get here
+        EM_error2( member->base->linepos,
+                  "(emit): internal error in lit_special(): not member func" );
+        // done
+        return FALSE;
+    }
+    
+    // get the func
+    value = type_engine_find_value( t_base, member->xid );
+    func = value->func_ref;
+    // make sure it's there
+    assert( func != NULL );
+    
+    // NOTE: base already emitted earier in this function (and as var)
+
+    // check base; 1.3.5.3
+    if( member->base->s_meta == ae_meta_value ) // is literal
+    {
+        // dup the value as pointer (as faux-'this' pointer)
+        emit->append( new Chuck_Instr_Reg_Dup_Last_As_Pointer( t_base->size / sz_WORD ) );
+    }
+    else // normal object
+    {
+        // dup the base pointer (as 'this' argument -- special case primitive)
+        emit->append( new Chuck_Instr_Reg_Dup_Last );
+    }
+    
+    // find the offset for virtual table
+    offset = func->vt_index;
+    // emit the function
+    emit->append( new Chuck_Instr_Dot_Primitive_Func( (t_CKUINT)func ) );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: emit_engine_emit_dot_member()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -3271,62 +3589,19 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
     // the offset
     t_CKUINT offset = 0;
 
-    // special case: complex and polar
-    if( member->t_base->xid == te_complex )
+    // type of the base
+    t_CKUINT tbase_xid = member->t_base->xid;
+    // switch on it
+    switch( tbase_xid )
     {
-        // mark to emit addr
-        if( member->base->s_meta == ae_meta_var )
-            member->base->emit_var = TRUE;
-        else if( emit_addr )
-        {
-            EM_error2( member->base->linepos,
-                "(emit): cannot assign value to literal 'complex' value..." );
-            return FALSE;
-        }
-
-        // emit the base
-        if( !emit_engine_emit_exp( emit, member->base ) )
-            return FALSE;
-
-        string str = S_name(member->xid);
-        // check
-        if( str == "re" )
-            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr ) );
-        else if( str == "im" )
-            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr ) );
-        else
-            assert( FALSE );
-            
-        // done
-        return TRUE;
-    }
-    else if( member->t_base->xid == te_polar )
-    {
-        // mark to emit addr
-        if( member->base->s_meta == ae_meta_var )
-            member->base->emit_var = TRUE;
-        else if( emit_addr )
-        {
-            EM_error2( member->base->linepos,
-                "(emit): cannot assign value to literal 'polar' value..." );
-            return FALSE;
-        }
-
-        // emit the base
-        if( !emit_engine_emit_exp( emit, member->base ) )
-            return FALSE;
-
-        string str = S_name(member->xid);
-        // check
-        if( str == "mag" )
-            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr ) );
-        else if( str == "phase" )
-            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr ) );
-        else
-            assert( FALSE );
-        
-        // done
-        return TRUE;
+        case te_complex:
+        case te_polar:
+        case te_vec3:
+        case te_vec4:
+            // emit special
+            return emit_engine_emit_exp_dot_member_special( emit, member );
+            // done
+            break;
     }
     
     // actual type - if base is class name its type is actually 'class'
@@ -3353,7 +3628,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
             {
                 // emit the base (TODO: return on error?)
                 emit_engine_emit_exp( emit, member->base );
-                // dup the base pointer
+                // dup the base pointer (as 'this' argument)
                 emit->append( new Chuck_Instr_Reg_Dup_Last );
                 // find the offset for virtual table
                 offset = func->vt_index;
@@ -3491,7 +3766,7 @@ t_CKBOOL emit_engine_emit_exp_if( Chuck_Emitter * emit, a_Exp_If exp_if )
         // push 0
         emit->append( new Chuck_Instr_Reg_Push_Imm2( 0.0 ) );
         op = new Chuck_Instr_Branch_Eq_double( 0 );
-        break;
+        break;            
         
     default:
         EM_error2( exp_if->cond->linepos,
@@ -3716,10 +3991,14 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 emit->append( new Chuck_Instr_Alloc_Member_Word2( value->offset ) );
             else if( type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 emit->append( new Chuck_Instr_Alloc_Member_Word4( value->offset ) );
+            else if( type->size == sz_VEC3 ) // ge: added 1.3.5.3
+                emit->append( new Chuck_Instr_Alloc_Member_Vec3( value->offset ) );
+            else if( type->size == sz_VEC4 ) // ge: added 1.3.5.3
+                emit->append( new Chuck_Instr_Alloc_Member_Vec4( value->offset) );
             else
             {
                 EM_error2( decl->linepos,
-                    "(emit): unhandle decl size of '%i'...",
+                    "(emit): internal error: unhandled decl size of '%i'...",
                     type->size );
                 return FALSE;
             }
@@ -3761,10 +4040,18 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 {
                     emit->append( new Chuck_Instr_Alloc_Word4( local->offset ) );
                 }
+                else if( type->size == sz_VEC3 ) // ge: added 1.3.5.3
+                {
+                    emit->append( new Chuck_Instr_Alloc_Vec3(local->offset) );
+                }
+                else if( type->size == sz_VEC4 ) // ge: added 1.3.5.3
+                {
+                    emit->append( new Chuck_Instr_Alloc_Vec4(local->offset) );
+                }
                 else
                 {
                     EM_error2( decl->linepos,
-                        "(emit): unhandle decl size of '%i'...",
+                        "(emit): internal error: unhandled decl size of '%i'...",
                         type->size );
                     return FALSE;
                 }
@@ -4385,6 +4672,10 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
             emit->append( new Chuck_Instr_Reg_Push_Mem2( v->offset, v->is_context_global ) );
         else if( v->type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
             emit->append( new Chuck_Instr_Reg_Push_Mem4( v->offset, v->is_context_global ) );
+        else if( v->type->size == sz_VEC3 ) // ge: added 1.3.5.3
+            emit->append( new Chuck_Instr_Reg_Push_Mem_Vec3( v->offset, v->is_context_global ) );
+        else if( v->type->size == sz_VEC4 ) // ge: added 1.3.5.3
+            emit->append( new Chuck_Instr_Reg_Push_Mem_Vec4( v->offset, v->is_context_global ) );
         else
         {
             // internal error
