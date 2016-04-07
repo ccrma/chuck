@@ -1131,7 +1131,7 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
                 }
                 
                 // compute mono-mixdown for the owner-ugen
-                m_current_v[i] = multi*factor;
+                m_current_v[f] = multi*factor;
             }
             
             // save as last
