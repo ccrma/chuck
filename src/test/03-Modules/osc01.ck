@@ -2,7 +2,7 @@
 OscIn oin;
 OscMsg msg;
 
-6449 => oin.port;
+12001 => oin.port;
 oin.addAddress( "/test" );
 
 spork ~ send();
