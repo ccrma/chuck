@@ -349,8 +349,9 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: cnoise
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "CNoise", "UGen", env->global(), 
-                                        cnoise_ctor, cnoise_dtor, cnoise_tick, NULL ) )
+    doc = "Noise generator with multiple noise synthesis modes. ";
+    if( !type_engine_import_ugen_begin( env, "CNoise", "UGen", env->global(),
+                                        cnoise_ctor, cnoise_dtor, cnoise_tick, NULL, doc.c_str() ) )
         return FALSE;
 
     // add member variable
@@ -360,6 +361,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add ctrl: mode
     func = make_new_mfun( "string", "mode", cnoise_ctrl_mode );
     func->add_arg( "string", "mode" );
+    func->doc = "Noise synthesis mode. Supported modes are &quot;white&quot;, &quot;pink&quot;, &quot;flip&quot;, and &quot;xor&quot;.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: mode
     //func = make_new_mfun( "string", "mode", cnoise_cget_mode );
@@ -367,6 +369,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 
     // add ctrl: fprob
     func = make_new_mfun( "float", "fprob", cnoise_ctrl_fprob );
+    func->doc = "Probability [0-1] used for calculating XOR noise.";
     func->add_arg( "float", "fprob" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: fprob
