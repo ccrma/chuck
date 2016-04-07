@@ -31,6 +31,7 @@
     <ClInclude Include="chuck_shell.h" />
     <ClInclude Include="chuck_stats.h" />
     <ClInclude Include="chuck_symbol.h" />
+    <ClInclude Include="chuck_system.h" />
     <ClInclude Include="chuck_table.h" />
     <ClInclude Include="chuck_type.h" />
     <ClInclude Include="chuck_ugen.h" />
@@ -98,6 +99,7 @@
     <ClCompile Include="chuck_shell.cpp" />
     <ClCompile Include="chuck_stats.cpp" />
     <ClCompile Include="chuck_symbol.cpp" />
+    <ClCompile Include="chuck_system.cpp" />
     <ClCompile Include="chuck_table.cpp" />
     <ClCompile Include="chuck_type.cpp" />
     <ClCompile Include="chuck_ugen.cpp" />

@@ -92,19 +92,19 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // freq
     func = make_new_mfun( "float", "freq", FilterBasic_ctrl_freq );
     func->add_arg( "float", "val" );
-    func->doc = "Filter cutoff/center frequency.";
+    func->doc = "Set filter cutoff/center frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "freq", FilterBasic_cget_freq );
-    func->doc = "Filter cutoff/center frequency.";
+    func->doc = "Get filter cutoff/center frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // Q
     func = make_new_mfun( "float", "Q", FilterBasic_ctrl_Q );
     func->add_arg( "float", "val" );
-    func->doc = "Filter resonance.";
+    func->doc = "Set filter resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "Q", FilterBasic_cget_Q );
-    func->doc = "Filter resonance.";
+    func->doc = "Get filter resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // set
@@ -164,22 +164,24 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
                                         BPF_ctor, NULL, BPF_tick, BPF_pmsg, doc.c_str() ) )
         return FALSE;
 
+    type_engine_import_add_ex(env, "filter/bp.ck");
+    
     // freq
     func = make_new_mfun( "float", "freq", BPF_ctrl_freq );
     func->add_arg( "float", "val" );
-    func->doc = "Filter center frequency.";
+    func->doc = "Set filter center frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "freq", BPF_cget_freq );
-    func->doc = "Filter center frequency.";
+    func->doc = "Set filter center frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // Q
     func = make_new_mfun( "float", "Q", BPF_ctrl_Q );
     func->add_arg( "float", "val" );
-    func->doc = "Filter resonance.";
+    func->doc = "Set filter resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "Q", BPF_cget_Q );
-    func->doc = "Filter resonance.";
+    func->doc = "Get filter resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // set
@@ -200,23 +202,25 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "BRF", "FilterBasic", env->global(),
                                         BRF_ctor, NULL, BRF_tick, BRF_pmsg, doc.c_str() ) )
         return FALSE;
+    
+    type_engine_import_add_ex(env, "filter/br.ck");
 
     // freq
     func = make_new_mfun( "float", "freq", BRF_ctrl_freq );
     func->add_arg( "float", "val" );
-    func->doc = "Filter center frequency.";
+    func->doc = "Set filter center frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "freq", BRF_cget_freq );
-    func->doc = "Filter center frequency.";
+    func->doc = "Get filter center frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // Q
     func = make_new_mfun( "float", "Q", BRF_ctrl_Q );
     func->add_arg( "float", "val" );
-    func->doc = "Filter resonance.";
+    func->doc = "Set filter resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "Q", BRF_cget_Q );
-    func->doc = "Filter resonance.";
+    func->doc = "Get filter resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // set
@@ -237,23 +241,25 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "LPF", "FilterBasic", env->global(),
                                         RLPF_ctor, NULL, RLPF_tick, RLPF_pmsg, doc.c_str() ) )
         return FALSE;
+    
+    type_engine_import_add_ex(env, "filter/lp.ck");
 
     // freq
     func = make_new_mfun( "float", "freq", RLPF_ctrl_freq );
     func->add_arg( "float", "val" );
-    func->doc = "Filter cutoff frequency.";
+    func->doc = "Set filter cutoff frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "freq", RLPF_cget_freq );
-    func->doc = "Filter cutoff frequency.";
+    func->doc = "Get filter cutoff frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // Q
     func = make_new_mfun( "float", "Q", RLPF_ctrl_Q );
     func->add_arg( "float", "val" );
-    func->doc = "Filter resonance.";
+    func->doc = "Set filter resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "Q", RLPF_cget_Q );
-    func->doc = "Filter resonance.";
+    func->doc = "Get filter resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // set
@@ -274,23 +280,25 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "HPF", "FilterBasic", env->global(),
                                         RHPF_ctor, NULL, RHPF_tick, RHPF_pmsg, doc.c_str() ) )
         return FALSE;
+    
+    type_engine_import_add_ex(env, "filter/hp.ck");
 
     // freq
     func = make_new_mfun( "float", "freq", RHPF_ctrl_freq );
     func->add_arg( "float", "val" );
-    func->doc = "Filter cutoff frequency.";
+    func->doc = "Set filter cutoff frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "freq", RHPF_cget_freq );
-    func->doc = "Filter cutoff frequency.";
+    func->doc = "Get filter cutoff frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // Q
     func = make_new_mfun( "float", "Q", RHPF_ctrl_Q );
     func->add_arg( "float", "val" );
-    func->doc = "Filter resonance.";
+    func->doc = "Set filter resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "Q", RHPF_cget_Q );
-    func->doc = "Filter resonance.";
+    func->doc = "Get filter resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // set
@@ -312,22 +320,24 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
                                         ResonZ_ctor, NULL, ResonZ_tick, ResonZ_pmsg, doc.c_str() ) )
         return FALSE;
 
+    type_engine_import_add_ex(env, "filter/resonz.ck");
+    
     // freq
     func = make_new_mfun( "float", "freq", ResonZ_ctrl_freq );
     func->add_arg( "float", "val" );
-    func->doc = "Filter center frequency.";
+    func->doc = "Set filter center frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "freq", ResonZ_cget_freq );
-    func->doc = "Filter center frequency.";
+    func->doc = "Get filter center frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // reson
     func = make_new_mfun( "float", "Q", ResonZ_ctrl_Q );
     func->add_arg( "float", "val" );
-    func->doc = "Filter resonance.";
+    func->doc = "Set filter resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "Q", ResonZ_cget_Q );
-    func->doc = "Filter resonance.";
+    func->doc = "Get filter resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // set
@@ -356,37 +366,37 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // pfreq
     func = make_new_mfun ( "float", "pfreq", biquad_ctrl_pfreq );
     func->add_arg ( "float", "freq" );
-    func->doc = "Resonance frequency (poles).";
+    func->doc = "Set resonance frequency (poles).";
     if( !type_engine_import_mfun( env, func ) ) goto error;    
     func = make_new_mfun ( "float", "pfreq", biquad_cget_pfreq );
-    func->doc = "Resonance frequency (poles).";
+    func->doc = "Get resonance frequency (poles).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // prad
     func = make_new_mfun ( "float", "prad", biquad_ctrl_prad );
     func->add_arg ( "float", "value" );
-    func->doc = "Pole radius (values greater than 1 will be unstable).";
+    func->doc = "Set Pole radius (values greater than 1 will be unstable).";
     if( !type_engine_import_mfun( env, func ) ) goto error;    
     func = make_new_mfun ( "float", "prad", biquad_cget_prad );
-    func->doc = "Pole radius (values greater than 1 will be unstable).";
+    func->doc = "Get pole radius.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // zfreq
     func = make_new_mfun ( "float", "zfreq", biquad_ctrl_zfreq );
     func->add_arg ( "float", "freq" );
-    func->doc = "Notch frequency.";
+    func->doc = "Set notch frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;    
     func = make_new_mfun ( "float", "zfreq", biquad_cget_zfreq );
-    func->doc = "Notch frequency.";
+    func->doc = "Get notch frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // zrad
     func = make_new_mfun ( "float", "zrad", biquad_ctrl_zrad );
     func->add_arg ( "float", "value" );
-    func->doc = "Zero radius.";
+    func->doc = "Set zero radius.";
     if( !type_engine_import_mfun( env, func ) ) goto error;    
     func = make_new_mfun ( "float", "zrad", biquad_cget_zrad );
-    func->doc = "Zero radius.";
+    func->doc = "Get zero radius.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // norm
@@ -395,15 +405,17 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     func->doc = "Toggle normalization.";
     if( !type_engine_import_mfun( env, func ) ) goto error;    
     func = make_new_mfun ( "int", "norm", biquad_cget_norm );
-    func->doc = "Toggle normalization.";
+    func->doc = "Get normalization.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // pregain
     func = make_new_mfun ( "float", "pregain", biquad_ctrl_pregain );
     func->add_arg ( "float", "level" );
+    func->doc = "Set pregain.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun ( "float", "pregain", biquad_cget_pregain );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    func->doc = "Get pregain.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // eqzs
     func = make_new_mfun ( "int", "eqzs", biquad_ctrl_eqzs );
@@ -414,55 +426,55 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // b0
     func = make_new_mfun ( "float", "b0", biquad_ctrl_b0 );
     func->add_arg ( "float", "value" );
-    func->doc = "b0 filter coefficient.";
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;    
     func = make_new_mfun ( "float", "b0", biquad_cget_b0 );
-    func->doc = "b0 filter coefficient.";
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // b1
     func = make_new_mfun ( "float", "b1", biquad_ctrl_b1 );
     func->add_arg ( "float", "value" );
-    func->doc = "b1 filter coefficient.";
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun ( "float", "b1", biquad_cget_b1 );
-    func->doc = "b1 filter coefficient.";
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // b2
     func = make_new_mfun ( "float", "b2", biquad_ctrl_b2 );
     func->add_arg ( "float", "value" );
-    func->doc = "b2 filter coefficient.";
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun ( "float", "b2", biquad_cget_b2 );
-    func->doc = "b2 filter coefficient.";
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // a0
     func = make_new_mfun ( "float", "a0", biquad_ctrl_a0 );
     func->add_arg ( "float", "value" );
-    func->doc = "a0 filter coefficient.";
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun ( "float", "a0", biquad_cget_a0 );
-    func->doc = "a0 filter coefficient.";
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // a1
     func = make_new_mfun ( "float", "a1", biquad_ctrl_a1 );
     func->add_arg ( "float", "value" );
-    func->doc = "a1 filter coefficient.";
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun ( "float", "a1", biquad_cget_a1 );
-    func->doc = "a1 filter coefficient.";
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // a2
     func = make_new_mfun ( "float", "a2", biquad_ctrl_a2 );
     func->add_arg ( "float", "value" );
-    func->doc = "a2 filter coefficient.";
+    func->doc = "Set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun ( "float", "a2", biquad_cget_a2 );
-    func->doc = "a2 filter coefficient.";
+    func->doc = "Get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import

@@ -219,9 +219,11 @@ t_CKBOOL init_class_uana( Chuck_Env * env, Chuck_Type * type )
     type->ugen_info->num_ins = 1;
     type->ugen_info->num_outs = 1;
 
+    const char * doc = "Base class from which all unit analyzers (UAnae) inherit; UAnae (note plural form) can be interconnected via => (standard chuck operator) or via =^ (upchuck operator), specify the the types of and when data is passed between UAnae and UGens.  When .upchuck() is invoked on a given UAna, the UAna-chain (UAnae connected via =^) is traversed backwards from the upchucked UAna, and analysis is performed at each UAna along the chain; the updated analysis results are stored in UAnaBlobs.";
+
     // init as base class, type should already know the parent type
     // TODO: ctor/dtor, ugen's sometimes created internally?
-    if( !type_engine_import_class_begin( env, type, env->global(), uana_ctor, uana_dtor ) )
+    if( !type_engine_import_class_begin( env, type, env->global(), uana_ctor, uana_dtor, doc ) )
         return FALSE;
 
     // add variables
@@ -230,29 +232,35 @@ t_CKBOOL init_class_uana( Chuck_Env * env, Chuck_Type * type )
 
     // add upchuck
     func = make_new_mfun( "UAnaBlob", "upchuck", uana_upchuck );
+    func->doc = "Initiate analysis at the UAna; returns result.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add fvals
     func = make_new_mfun( "float[]", "fvals", uana_fvals );
+    func->doc = "Get blob's float array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add cvals
     func = make_new_mfun( "complex[]", "cvals", uana_cvals );
+    func->doc = "Get blob's complex array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add fval
     func = make_new_mfun( "float", "fval", uana_fval );
     func->add_arg( "int", "index" );
+    func->doc = "Get blob's float value at index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add cval
     func = make_new_mfun( "complex", "cval", uana_cval );
     func->add_arg( "int", "index" );
+    func->doc = "Get blob's complex value at index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add isUpConnectedTo
     func = make_new_mfun( "int", "isUpConnectedTo", uana_connected );
     func->add_arg( "UAna", "right" );
+    func->doc = "Is connected to another uana via =^?";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // TODO: add nonchuck
@@ -295,9 +303,11 @@ t_CKBOOL init_class_blob( Chuck_Env * env, Chuck_Type * type )
     // log
     EM_log( CK_LOG_SEVERE, "class 'uanablob'" );
     
+    const char * doc = "This object contains results associated with UAna analysis. There is a UAnaBlob associated with every UAna.  As a UAna is upchucked, the result is stored in the UAnaBlob's floating point vector and/or complex vector.  The intended interpretation of the results depends on the specific UAna.";
+    
     // init class
     // TODO: ctor/dtor
-    if( !type_engine_import_class_begin( env, type, env->global(), uanablob_ctor, uanablob_dtor ) )
+    if( !type_engine_import_class_begin( env, type, env->global(), uanablob_ctor, uanablob_dtor, doc ) )
         return FALSE;
 
     // add variables
@@ -310,24 +320,29 @@ t_CKBOOL init_class_blob( Chuck_Env * env, Chuck_Type * type )
 
     // add when
     func = make_new_mfun( "time", "when", uanablob_when );
+    func->doc = "Get the time when blob was last upchucked.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add fvals
     func = make_new_mfun( "float[]", "fvals", uanablob_fvals );
+    func->doc = "Get blob's float array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add cvals
     func = make_new_mfun( "complex[]", "cvals", uanablob_cvals );
+    func->doc = "Get blob's complex array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add fval
     func = make_new_mfun( "float", "fval", uanablob_fval );
     func->add_arg( "int", "index" );
+    func->doc = "Get blob's float value at index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add cval
     func = make_new_mfun( "complex", "cval", uanablob_cval );
     func->add_arg( "int", "index" );
+    func->doc = "Get blob's complex value at index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end class import
