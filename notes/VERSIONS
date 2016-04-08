@@ -6,6 +6,8 @@
             - access .x .y .z .w OR .r .g .b .a
   - (fixed) - == and != for polar and complex types
   - (fixed) repeat statement now worked correctly for shreds
+  - (fixed) crash with --adaptive:N and ugens that used tickf e.g. WvOut2
+  - (fixed)(Win) install issue where chugins and/or example files were missing
   - (removed) --blocking functionality; callback only for real-time audio
   - (internal) refactored VM to be more friendly for integration
 
