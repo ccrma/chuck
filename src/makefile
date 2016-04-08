@@ -18,7 +18,7 @@ MAKECMDGOALS:=$(.DEFAULT_GOAL)
 endif
 endif
 
-.PHONY: osx linux-pulse linux-jack linux-alsa cygwin osx-rl
+.PHONY: osx linux-pulse linux-jack linux-alsa cygwin osx-rl test
 osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
 
 win32:
@@ -158,6 +158,9 @@ clean:
          $(patsubst %.o,%.d,$(OBJS)) *~ chuck.output chuck.tab.h chuck.tab.c \
          chuck.yy.c $(DIST_DIR){,.tgz,.zip} Release Debug
 	
+
+test:
+	test/test.py ./chuck test/
 
 # ------------------------------------------------------------------------------
 # Distribution meta-targets
