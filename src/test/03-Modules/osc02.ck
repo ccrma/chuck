@@ -22,13 +22,18 @@ fun void send()
 {
     1::samp => now;
     
-    OscOut xmit;
-    xmit.dest( "localhost", OSC_PORT );   
-    xmit.start( "/test" );
-    xmit.add(42);
-    xmit.add(3.141);
-    xmit.add("hello!");
-    xmit.send();
+    while(true)
+    {
+        OscOut xmit;
+        xmit.dest( "localhost", OSC_PORT );   
+        xmit.start( "/test" );
+        xmit.add(42);
+        xmit.add(3.141);
+        xmit.add("hello!");
+        xmit.send();
+        
+        1::second => now;
+    }
 }
 
 
