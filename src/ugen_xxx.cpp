@@ -1408,6 +1408,8 @@ CK_DLL_TICK( foogen_tick )
         data->shred->instr = data->shred->code->instr;
         // zero out the id
         data->shred->xid = 0;
+        // set vmRef
+        data->shred->vm_ref = data->vm;
         
         // set input
         data->input = in;
