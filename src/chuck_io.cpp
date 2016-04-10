@@ -56,7 +56,10 @@ using namespace std;
 #ifdef __WINDOWS_DS__
 typedef BYTE uint8_t;
 typedef WORD uint16_t;
+// ge: this needed in earlier/some versions of windows
+#ifndef __WINDOWS_MODERN__
 typedef DWORD uint32_t;
+#endif
 #endif 
 
 

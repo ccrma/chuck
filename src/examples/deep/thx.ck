@@ -1,78 +1,110 @@
-// THX emulator
-//   author: Perry R. Cook (Jan 8, 2007)
-// modified: Ge Wang (added parameters up top)
+//---------------------------------------------------------------------
+// name: thx.ck
+// desc: THX Deep Note emulator
+//       (original Deep Note by James Andy Moorer)
+//
+// authors: 
+// Perry R. Cook (Jan 8, 2007) -- original ChucK version
+// Ge Wang -- modified final chord: D1,D1,D2,D3,D4,A4,D5,A5,D6,A6
+//         -- added detune (original Deep Note root between D and Eb)
+//         -- time-driven loops (was counter-driven loops)
+//---------------------------------------------------------------------
 
-// F-1, B1b,  F1,    B2b,   F2,    B3b,   F3,    A5,    F4,   A6
-[ 29.0, 87.5, 116.0, 175.0, 233.0, 350.0, 524.0, 880.0, 1048, 1760,
-  29.0, 87.5, 116.0, 175.0, 233.0, 350.0, 524.0, 880.0, 1048, 1760,
-  29.0, 87.5, 116.0, 175.0, 233.0, 350.0, 524.0, 880.0, 1048, 1760 
+// 30 target frequencies, corresponding to pitches in a big chord:
+// D1,  D1,   D2,   D3,    D4,    A4,    D5,    A5,  D6,   A6
+[ 36.7, 36.7, 73.4, 146.8, 293.7, 440.0, 587.3, 880.0, 1174.7, 1760.0,
+  36.7, 36.7, 73.4, 146.8, 293.7, 440.0, 587.3, 880.0, 1174.7, 1760.15,
+  36.7, 36.7, 73.4, 146.8, 293.7, 440.0, 587.3, 880.0, 1174.7, 1759.85 
 ] @=> float targets[];
+// detune mutiplier (original Deep Note between D and Eb)
+Math.mtof(26.3) / Math.mtof(26) => float detune;
 
-// storage
+// initial frequencies
 float initials[30];
-float deltas[30];
 
 // parameters (play with these to control timing)
-10000 => int steady_samps;
-20000 => int sweep_steps;
-15000 => int hold_steps;
-8000 => int decay_steps;
+3.0::second => dur initialHold; // initial steady segment
+5.5::second => dur sweepTime; // duration over which to change freq
+3.5::second => dur targetHold; // duration to hold target chord
+2.0::second => dur decayTime; // duration for reverb tail to decay to 0
 
-// UGens
-SawOsc s[30];
-Gain gl[30];
-Gain gr[30];
-JCRev rl => dac.left;
-JCRev rr => dac.right;
+// sound objects
+SawOsc saw[30]; // sawtooth waveform (30 of them)
+Gain gainL[30]; // left gain (volume)
+Gain gainR[30]; // right gain (volume)
+// connect stereo reverberators to output
+NRev reverbL => dac.left;
+NRev reverbR => dac.right;
+// set the amount of reverb
+0.075 => reverbL.mix => reverbR.mix;
 
-// reverb settings
-0.025 => rl.mix => rr.mix;
-
-// variables
-0 => int i => int j;
-
-// compute stuff
-for( 0 => i; i < 30; i++ )
+// for each sawtooth: connect, compute frequency trajectory
+for( 0 => int i; i < 30; i++ )
 {
-    // random freqs
-    Math.random2f( 200.0, 800.0 ) => initials[i] => s[i].freq;
-    // 10 sample updates
-    ( targets[i] - initials[i] ) / sweep_steps => deltas[i];
-    // initial gain
-    0.1 => s[i].gain;
-    // random
-    Math.random2f( 0.0, 1.0 ) => gl[i].gain;
-    // panning
-    1.0 - gl[i].gain() => gr[i].gain;
-    // hook up
-    s[i] => gl[i] => rl;
-    // all the oscs
-    s[i] => gr[i] => rr;
+    // connect sound objects (left channel)
+    saw[i] => gainL[i] => reverbL;
+    // connect sound objects (right channel)
+    saw[i] => gainR[i] => reverbR;
+    // randomize initial frequencies
+    Math.random2f( 200.0, 400.0 ) => initials[i] => saw[i].freq;
+    // initial gain for each sawtooth generator
+    0.1 => saw[i].gain;
+    // randomize gain (volume)
+    Math.random2f( 0.0, 1.0 ) => gainL[i].gain;
+    // right.gain is 1-left.gain -- effectively panning in stereo
+    1.0 - gainL[i].gain() => gainR[i].gain;
 }
 
-steady_samps :: samp => now;                            // steady cluster
-
-while( j < sweep_steps ) {
-    for( 0 => i; i < 30; i++ ) {
-        initials[i] + (deltas[i]*j) => s[i].freq;       // sweep freqs.
+// hold steady cluster (initial chaotic random frequencies)
+now + initialHold => time end;
+// fade in from silence
+while( now < end )
+{
+    // percentage (should go from 0 to 1)
+    1 - (end-now) / initialHold => float progress;
+    // for each sawtooth
+    for( 0 => int i; i < 30; i++ ) {
+        // set gradually decaying values to volume
+        0.1 * Math.pow(progress,3) => saw[i].gain;
     }
-    j + 1 => j;
-    10 :: samp => now;
+    // advance time
+    10::ms => now;
 }
 
-0 => j;
-while( j < hold_steps ) {                               // hold chord
-    10 :: samp => now;
-    j + 1 => j;
-}
-
-0 => j;
-while( j < decay_steps ) {
-    for( 0 => i; i < 30;  i++) {
-        0.1 * (decay_steps-j) / decay_steps => s[i].gain;       // decay gains
+// when to stop
+now + sweepTime => end;
+// sweep freqs towards target freqs
+while( now < end )
+{
+    // percentage (should go from 0 to 1)
+    1 - (end-now)/sweepTime => float progress;
+    // for each sawtooth
+    for( 0 => int i; i < 30; i++ ) {
+        // update frequency by delta, towards target
+        initials[i] + (targets[i]*detune-initials[i])*progress => saw[i].freq;
     }
-    10 :: samp => now;
-    j + 1 => j;
+    // advance time
+    10::ms => now;
 }
 
-60000 :: samp => now;                                   // reverb tail
+// at this point: reached target freqs; briefly hold
+targetHold => now;
+
+// when to stop
+now + decayTime => end;
+// chord decay (fade to silence)
+while( now < end )
+{
+    // percentage (should go from 1 to 0)
+    (end-now) / decayTime => float progress;
+    // for each sawtooth
+    for( 0 => int i; i < 30; i++ ) {
+        // set gradually decaying values to volume
+        0.1 * progress => saw[i].gain;
+    }
+    // advance time
+    10::ms => now;
+}
+
+// wait for reverb tail before ending
+2::second => now;

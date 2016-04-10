@@ -32,16 +32,17 @@
 #include "chuck_globals.h"
 #include "chuck_bbq.h"
 #include "chuck_errmsg.h"
-#include "ugen_stk.h"
-#include "ulib_std.h"
-#include "hidio_sdl.h"
 #include "chuck_io.h"
+#include "chuck_vm.h"
+#include "ulib_std.h"
+#include "ugen_stk.h"
+#include "hidio_sdl.h"
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <unistd.h>
 
 // current version
-const char CK_VERSION[] = "1.3.5.2-beta-1 (chimera)";
+const char CK_VERSION[] = "1.3.5.3-dev (chimera)";
 
 // global virtual machine
 Chuck_VM * g_vm = NULL;
@@ -49,6 +50,8 @@ Chuck_VM * g_vm = NULL;
 Chuck_Compiler * g_compiler = NULL;
 // the shell
 Chuck_Shell * g_shell = NULL;
+// global BBQ audio layer
+BBQ * g_bbq = NULL;
 // global variables
 t_CKUINT g_sigpipe_mode = 0;
 // default socket
@@ -71,6 +74,14 @@ t_CKFLOAT g_watchdog_timeout = 0.5;
 CHUCK_THREAD g_tid_whatever = 0;
 // flag for Std.system( string )
 t_CKBOOL g_enable_system_cmd = FALSE;
+// flag for enabling shell, ge: 1.3.5.3
+t_CKBOOL g_enable_shell = FALSE;
+// flag for audio enable, ge: 1.3.5.3
+t_CKBOOL g_enable_realtime_audio = TRUE;
+// added 1.3.2.0 // moved from VM 1.3.5.3
+f_mainthreadhook g_main_thread_hook = NULL;
+f_mainthreadquit g_main_thread_quit = NULL;
+void * g_main_thread_bindle = NULL;
 
 
 
@@ -106,6 +117,32 @@ extern "C" void all_detach()
 }
 
 
+
+
+//-----------------------------------------------------------------------------
+// name: all_stop()
+// desc: requesting system loop/audio loop stop, ge: 1.3.5.3
+//-----------------------------------------------------------------------------
+extern "C" t_CKBOOL all_stop( )
+{
+    // log
+    EM_log( CK_LOG_SEVERE, "requesting ALL STOP system loop..." );
+
+    // stop VM
+    if( g_vm ) g_vm->stop();
+    // set state
+    Digitalio::m_end = TRUE;
+    // stop things
+    if( g_enable_realtime_audio ) g_bbq->shutdown();
+    // wait a bit
+    usleep(50000);
+
+    return TRUE;
+}
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: signal_pipe()
 // desc: ...
@@ -117,5 +154,46 @@ extern "C" void signal_pipe( int sig_num )
     {
         all_detach();
         // exit( 2 );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_main_thread_hook()
+// desc: moved to here from VM, ge: 1.3.5.3
+//-----------------------------------------------------------------------------
+extern "C" t_CKBOOL clear_main_thread_hook()
+{
+    g_main_thread_bindle = NULL;
+    g_main_thread_hook = NULL;
+    g_main_thread_quit = NULL;
+    
+    return TRUE;
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_main_thread_hook()
+// desc: moved to here from VM, ge: 1.3.5.3
+//-----------------------------------------------------------------------------
+extern "C" t_CKBOOL set_main_thread_hook( f_mainthreadhook hook,
+                                          f_mainthreadquit quit,
+                                          void * bindle )
+{
+    if( g_main_thread_hook == NULL && g_main_thread_quit == NULL )
+    {
+        g_main_thread_bindle = bindle;
+        g_main_thread_hook = hook;
+        g_main_thread_quit = quit;
+        
+        return TRUE;
+    }
+    else
+    {
+        EM_log(CK_LOG_SEVERE, "[chuck](loop): attempt to register more than one main_thread_hook");
+        return FALSE;
     }
 }

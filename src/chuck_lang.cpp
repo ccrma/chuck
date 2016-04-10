@@ -47,6 +47,7 @@
 #include "midiio_rtmidi.h"
 #endif
 
+#include <math.h>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -522,6 +523,151 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
 
 error:
 
+    // end the class import
+    type_engine_import_class_end( env );
+    
+    return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_class_vec3()
+// desc: initialize primitive type vec3
+//-----------------------------------------------------------------------------
+t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type )
+{
+    // init as base class
+    Chuck_DL_Func * func = NULL;
+    
+    // log
+    EM_log( CK_LOG_SEVERE, "class 'vec3' (primitive)" );
+
+    // document
+    const char *doc = "vec3 is a primitive type for a 3-dimensional vector; potentially useful for 3D coordinates, RGB color, or as a value/goal/slew interpolator.";
+    
+    // init as base class
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc ) )
+        return FALSE;
+    
+    // add set(float,float,float)
+    func = make_new_mfun( "void", "set", vec3_set );
+    func->add_arg( "float", "x" );
+    func->add_arg( "float", "y" );
+    func->add_arg( "float", "z" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add setAll(float)
+    func = make_new_mfun( "void", "setAll", vec3_setAll );
+    func->add_arg( "float", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add magnitude()
+    func = make_new_mfun( "float", "magnitude", vec3_magnitude );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add normalize()
+    func = make_new_mfun( "void", "normalize", vec3_normalize );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add interp()
+    func = make_new_mfun( "float", "interp", vec3_interp );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add interp( float )
+    func = make_new_mfun( "float", "interp", vec3_interp_delta_float );
+    func->add_arg( "float", "delta" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add interp( dur )
+    func = make_new_mfun( "float", "interp", vec3_interp_delta_dur );
+    func->add_arg( "dur", "delta" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add update( float )
+    func = make_new_mfun( "void", "update", vec3_update_goal );
+    func->add_arg( "float", "goal" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add update( float, float )
+    func = make_new_mfun( "void", "update", vec3_update_goal_slew );
+    func->add_arg( "float", "goal" );
+    func->add_arg( "float", "slew" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add update( float )
+    func = make_new_mfun( "void", "updateSet", vec3_updateSet_goalAndValue );
+    func->add_arg( "float", "goalAndValue" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add update( float, float )
+    func = make_new_mfun( "void", "updateSet", vec3_updateSet_goalAndValue_slew );
+    func->add_arg( "float", "goal" );
+    func->add_arg( "float", "slew" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    return TRUE;
+    
+error:
+    // end the class import
+    type_engine_import_class_end( env );
+    
+    return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_class_vec4()
+// desc: initialize primitive type vec4
+//-----------------------------------------------------------------------------
+t_CKBOOL init_class_vec4( Chuck_Env * env, Chuck_Type * type )
+{
+    // init as base class
+    Chuck_DL_Func * func = NULL;
+    
+    // log
+    EM_log( CK_LOG_SEVERE, "class 'vec4' (primitive)" );
+    
+    // document
+    const char *doc = "vec4 is a primitive type for a 4-dimensional vector; potentially useful for 4D coordinatesm and RGBA color.";
+    
+    // init as base class
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc ) )
+        return FALSE;
+    
+    // add set(float,float,float)
+    func = make_new_mfun( "void", "set", vec4_set );
+    func->add_arg( "float", "x" );
+    func->add_arg( "float", "y" );
+    func->add_arg( "float", "z" );
+    func->add_arg( "float", "w" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add setAll(float)
+    func = make_new_mfun( "void", "setAll", vec4_setAll );
+    func->add_arg( "float", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add magnitude()
+    func = make_new_mfun( "float", "magnitude", vec4_magnitude );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add normalize()
+    func = make_new_mfun( "void", "normalize", vec4_normalize );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // end the class import
+    type_engine_import_class_end( env );
+    
+    return TRUE;
+    
+error:
     // end the class import
     type_engine_import_class_end( env );
     
@@ -2557,6 +2703,190 @@ CK_DLL_MFUN( event_wait )
 CK_DLL_MFUN( event_can_wait )
 {
     RETURN->v_int = TRUE;
+}
+
+
+//-----------------------------------------------------------------------------
+// vec3 API
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( vec3_set )
+{
+    // HACK: this is a particularly horrid cast from (Chuck_Object *)
+    // t_CKVEC3 is neither a super- or sub-class of Chuck_Object...
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get index
+    vec3->x = GET_NEXT_FLOAT(ARGS);
+    vec3->y = GET_NEXT_FLOAT(ARGS);
+    vec3->z = GET_NEXT_FLOAT(ARGS);
+}
+
+CK_DLL_MFUN( vec3_setAll )
+{
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get index
+    vec3->x = vec3->y = vec3->z = GET_NEXT_FLOAT(ARGS);
+}
+
+CK_DLL_MFUN( vec3_magnitude )
+{
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // compute magnitude
+    t_CKFLOAT mag = ::sqrt( vec3->x*vec3->x + vec3->y*vec3->y + vec3->z*vec3->z );
+    // return
+    RETURN->v_float = mag;
+}
+
+CK_DLL_MFUN( vec3_normalize )
+{
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // compute magnitude
+    t_CKFLOAT mag = ::sqrt( vec3->x*vec3->x + vec3->y*vec3->y + vec3->z*vec3->z );
+    // check for zero
+    if( mag > 0 )
+    {
+        vec3->x /= mag;
+        vec3->y /= mag;
+        vec3->z /= mag;
+    }
+}
+
+CK_DLL_MFUN( vec3_interp )
+{
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // update value based on goal and slew
+    vec3->x = (vec3->y - vec3->x) * vec3->z + vec3->x;
+    // set return to value so it can used right after if desired
+    RETURN->v_float = vec3->x;
+}
+
+CK_DLL_MFUN( vec3_interp_delta_float )
+{
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get index
+    t_CKFLOAT delta = GET_NEXT_FLOAT(ARGS);
+    // update value based on goal and slew
+    vec3->x = (vec3->y - vec3->x) * vec3->z * delta + vec3->x;
+    // set return to value so it can used right after if desired
+    RETURN->v_float = vec3->x;
+}
+
+CK_DLL_MFUN( vec3_interp_delta_dur )
+{
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get index
+    t_CKDUR delta = GET_NEXT_DUR(ARGS);
+    // get srate
+    t_CKFLOAT srate = SHRED->vm_ref->srate();
+    // update value based on goal and slew
+    vec3->x = (vec3->y - vec3->x) * vec3->z * (delta / srate) + vec3->x;
+    // set return to value so it can used right after if desired
+    RETURN->v_float = vec3->x;
+}
+
+CK_DLL_MFUN( vec3_update_goal )
+{
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get index
+    t_CKDUR goal = GET_NEXT_DUR(ARGS);
+    // set goal
+    vec3->y = goal;
+}
+
+CK_DLL_MFUN( vec3_update_goal_slew )
+{
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get goal
+    t_CKDUR goal = GET_NEXT_DUR(ARGS);
+    // get slew
+    t_CKDUR slew = GET_NEXT_DUR(ARGS);
+    // set goal
+    vec3->y = goal;
+    // set slew
+    vec3->z = slew;
+}
+
+CK_DLL_MFUN( vec3_updateSet_goalAndValue )
+{
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get goal
+    t_CKDUR goalAndValue = GET_NEXT_DUR(ARGS);
+    // set goal and value
+    vec3->y = vec3->x = goalAndValue;
+}
+
+CK_DLL_MFUN( vec3_updateSet_goalAndValue_slew )
+{
+    // get data pointer
+    t_CKVEC3 * vec3 = (t_CKVEC3 *)SELF;
+    // get goal
+    t_CKDUR goalAndValue = GET_NEXT_DUR(ARGS);
+    // get slew
+    t_CKDUR slew = GET_NEXT_DUR(ARGS);
+    // set goal and value
+    vec3->y = vec3->x = goalAndValue;
+    // set slew
+    vec3->z = slew;
+}
+
+
+//-----------------------------------------------------------------------------
+// vec4 API
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( vec4_set )
+{
+    // HACK: this is a particularly horrid cast from (Chuck_Object *)
+    // t_CKVEC3 is neither a super- or sub-class of Chuck_Object...
+    t_CKVEC4 * vec3 = (t_CKVEC4 *)SELF;
+    // get index
+    vec3->x = GET_NEXT_FLOAT(ARGS);
+    vec3->y = GET_NEXT_FLOAT(ARGS);
+    vec3->z = GET_NEXT_FLOAT(ARGS);
+    vec3->w = GET_NEXT_FLOAT(ARGS);
+}
+
+CK_DLL_MFUN( vec4_setAll )
+{
+    // get data pointer
+    t_CKVEC4 * vec4 = (t_CKVEC4 *)SELF;
+    // get index
+    vec4->x = vec4->y = vec4->z = vec4->w = GET_NEXT_FLOAT(ARGS);
+}
+
+CK_DLL_MFUN( vec4_magnitude )
+{
+    // get data pointer
+    t_CKVEC4 * vec4 = (t_CKVEC4 *)SELF;
+    // compute magnitude
+    t_CKFLOAT mag = ::sqrt( vec4->x*vec4->x + vec4->y*vec4->y
+                            + vec4->z*vec4->z + vec4->w*vec4->w );
+    // return
+    RETURN->v_float = mag;
+}
+
+CK_DLL_MFUN( vec4_normalize )
+{
+    // get data pointer
+    t_CKVEC4 * vec4 = (t_CKVEC4 *)SELF;
+    // compute magnitude
+    t_CKFLOAT mag = ::sqrt( vec4->x*vec4->x + vec4->y*vec4->y
+                            + vec4->z*vec4->z + vec4->w*vec4->w );
+    // check for zero
+    if( mag > 0 )
+    {
+        vec4->x /= mag;
+        vec4->y /= mag;
+        vec4->z /= mag;
+        vec4->w /= mag;
+    }
 }
 
 

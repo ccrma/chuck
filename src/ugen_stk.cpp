@@ -40,6 +40,7 @@
 #include "util_math.h"
 #include "chuck_vm.h"
 #include "chuck_lang.h"
+#include "chuck_globals.h"
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -25038,7 +25039,9 @@ CK_DLL_CTOR( WvOut_ctor )
 {
     WvOut * yo = new WvOut;
     yo->autoPrefix.str = "chuck-session";
-    yo->asyncIO = SHRED->vm_ref->m_audio;
+    // ge: 1.3.5.3
+    yo->asyncIO = g_enable_realtime_audio;
+    // yo->asyncIO = SHRED->vm_ref->m_audio;
     OBJ_MEMBER_UINT(SELF, WvOut_offset_data) = (t_CKUINT)yo;
 }
 

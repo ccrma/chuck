@@ -79,11 +79,13 @@ a_Program g_program = NULL;
     a_Array_Sub array_sub;
     a_Complex complex_exp;
     a_Polar polar_exp;
+    a_Vec vec_exp; // ge: added 1.3.5.3
 };
 
-// expect 38 shift/reduce conflicts
+// expect shift/reduce conflicts
 // 1.3.3.0: changed to 38 for char literal - spencer
-%expect 38
+// 1.3.5.3: changed to 39 for vec literal
+%expect 39
 
 %token <sval> ID STRING_LIT CHAR_LIT
 %token <ival> NUM
@@ -97,7 +99,7 @@ a_Program g_program = NULL;
   IF THEN ELSE WHILE FOR DO LOOP
   BREAK CONTINUE NULL_TOK FUNCTION RETURN
   QUESTION EXCLAMATION S_OR S_AND S_XOR
-  PLUSPLUS MINUSMINUS DOLLAR POUNDPAREN PERCENTPAREN
+  PLUSPLUS MINUSMINUS DOLLAR POUNDPAREN PERCENTPAREN ATPAREN
   SIMULT PATTERN CODE TRANSPORT HOST
   TIME WHENEVER NEXT UNTIL EVERY BEFORE
   AFTER AT AT_SYM ATAT_SYM NEW SIZEOF TYPEOF
@@ -169,6 +171,7 @@ a_Program g_program = NULL;
 %type <array_sub> array_empty
 %type <complex_exp> complex_exp
 %type <polar_exp> polar_exp
+%type <vec_exp> vec_exp // ge: added 1.3.5.3
 
 %start program
 
@@ -407,6 +410,11 @@ polar_exp
             { $$ = new_polar( $2, EM_lineNum ); }
         ;
 
+vec_exp // ge: added 1.3.5.3
+        : ATPAREN expression RPAREN
+            { $$ = new_vec( $2, EM_lineNum ); }
+        ;
+
 chuck_operator
         : CHUCK                             { $$ = ae_op_chuck; }
         | AT_CHUCK                          { $$ = ae_op_at_chuck; }
@@ -585,6 +593,7 @@ primary_expression
         | array_exp                         { $$ = new_exp_from_array_lit( $1, EM_lineNum ); }
         | complex_exp                       { $$ = new_exp_from_complex( $1, EM_lineNum ); }
         | polar_exp                         { $$ = new_exp_from_polar( $1, EM_lineNum ); }
+        | vec_exp                           { $$ = new_exp_from_vec( $1, EM_lineNum ); }
         | L_HACK expression R_HACK          { $$ = new_exp_from_hack( $2, EM_lineNum ); }
         | LPAREN expression RPAREN          { $$ = $2; }
 		| LPAREN RPAREN                     { $$ = new_exp_from_nil( EM_lineNum ); }

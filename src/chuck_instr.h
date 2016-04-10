@@ -586,6 +586,162 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Add_vec3
+// desc: add two vec3, 1.3.5.3
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Add_vec3 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Minus_vec3
+// desc: subtract two vec3
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Minus_vec3 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_XProduct_vec3
+// desc: cross product of two vec3
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_XProduct_vec3 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Add_vec4
+// desc: add two vec4
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Add_vec4 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Minus_vec4
+// desc: subtract two vec4
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Minus_vec4 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_XProduct_vec4
+// desc: cross product of two vec4 (same as 3D cross product, discard w)
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_XProduct_vec4 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_float_Times_vec3
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_float_Times_vec3 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec3_Times_float
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec3_Times_float : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec3_Divide_float
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec3_Divide_float : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_float_Times_vec4
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_float_Times_vec4 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec4_Times_float
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec4_Times_float : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec4_Divide_float
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec4_Divide_float : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Add_int_Assign
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -815,6 +971,137 @@ struct Chuck_Instr_Divide_polar_Assign : public Chuck_Instr_Binary_Op
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Add_vec3_Assign
+// desc: add assign two vec3
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Add_vec3_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Minus_vec3_Assign
+// desc: minus assign two vec3
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Minus_vec3_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_XProduct_vec3_Assign
+// desc: cross product assign two vec3
+//-----------------------------------------------------------------------------
+//struct Chuck_Instr_XProduct_vec3_Assign : public Chuck_Instr_Binary_Op
+//{
+//public:
+//    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+//};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Add_vec4_Assign
+// desc: add assign two vec4
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Add_vec4_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Minus_vec4_Assign
+// desc: minus assign two vec4
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Minus_vec4_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_XProduct_vec4_Assign
+// desc: cross product assign two vec4
+//-----------------------------------------------------------------------------
+//struct Chuck_Instr_XProduct_vec4_Assign : public Chuck_Instr_Binary_Op
+//{
+//public:
+//    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+//};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_float_Times_vec3_Assign
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_float_Times_vec3_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_float_Times_vec4_Assign
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_float_Times_vec4_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec3_Divide_float_Assign
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec3_Divide_float_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec4_Divide_float_Assign
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec4_Divide_float_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
 
 
 
@@ -1315,6 +1602,84 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Eq_complex
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Eq_complex : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Neq_complex
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Neq_complex : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Eq_vec3
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Eq_vec3 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Neq_vec3
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Neq_vec3 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Eq_vec4
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Eq_vec4 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Neq_vec4
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Neq_vec4 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Binary_And
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -1670,6 +2035,21 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Dup_Last_As_Pointer
+// desc: duplicate last value on stack as pointer; 1.3.5.3
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Dup_Last_As_Pointer : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Reg_Dup_Last_As_Pointer( t_CKUINT sizeInWords )
+    { this->set( sizeInWords ); }
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Reg_Push_Now
 // desc: push value of now to reg stack
 //-----------------------------------------------------------------------------
@@ -1810,6 +2190,56 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Push_Mem_Vec3
+// desc: push a t_CKVEC3 variable from mem stack to reg stack
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Push_Mem_Vec3 : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Reg_Push_Mem_Vec3( t_CKUINT src, t_CKBOOL use_base = FALSE )
+    { this->set( src ); base = use_base; }
+    
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    virtual const char * params() const
+    { static char buffer[256];
+        sprintf( buffer, "src=%ld, base=%ld", m_val, base );
+        return buffer; }
+    
+protected:
+    // use global stack base
+    t_CKBOOL base;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Push_Mem_Vec4
+// desc: push a t_CKVEC4 variable from mem stack to reg stack
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Push_Mem_Vec4 : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Reg_Push_Mem_Vec4( t_CKUINT src, t_CKBOOL use_base = FALSE )
+    { this->set( src ); base = use_base; }
+    
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    virtual const char * params() const
+    { static char buffer[256];
+        sprintf( buffer, "src=%ld, base=%ld", m_val, base );
+        return buffer; }
+    
+protected:
+    // use global stack base
+    t_CKBOOL base;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Reg_Push_Mem_Addr
 // desc: push addr from mem stack to reg stack
 //-----------------------------------------------------------------------------
@@ -1830,7 +2260,6 @@ protected:
     // use global stack base
     t_CKBOOL base;
 };
-
 
 
 
@@ -2070,6 +2499,38 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Alloc_Vec3
+// desc: alloc local - leaves addr on operand stack
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Alloc_Vec3 : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Alloc_Vec3( t_CKUINT offset )
+    { this->set( offset ); }
+    
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Alloc_Vec4
+// desc: alloc local - leaves addr on operand stack
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Alloc_Vec4 : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Alloc_Vec4( t_CKUINT offset )
+    { this->set( offset ); }
+    
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Alloc_Member_Word
 // desc: alloc member - leaves addr on operand stack
 //-----------------------------------------------------------------------------
@@ -2111,6 +2572,38 @@ public:
     Chuck_Instr_Alloc_Member_Word4( t_CKUINT offset  )
     { this->set( offset ); }
 
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Alloc_Member_Vec3
+// desc: alloc member - leaves addr on operand stack
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Alloc_Member_Vec3 : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Alloc_Member_Vec3( t_CKUINT offset  )
+    { this->set( offset ); }
+    
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Alloc_Member_Vec4
+// desc: alloc member - leaves addr on operand stack
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Alloc_Member_Vec4 : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Alloc_Member_Vec4( t_CKUINT offset  )
+    { this->set( offset ); }
+    
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };
 
@@ -2276,6 +2769,32 @@ public:
 // desc: assign primitive (4 word)
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Assign_Primitive4 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Assign_PrimitiveVec3
+// desc: assign primitive (vec3)
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Assign_PrimitiveVec3 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Assign_PrimitiveVec4
+// desc: assign primitive (vec4)
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Assign_PrimitiveVec4 : public Chuck_Instr
 {
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -2704,6 +3223,30 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Dot_Primitive_Func
+// desc: access the member function of primitive type 1.3.5.3
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Dot_Primitive_Func : public Chuck_Instr
+{
+public:
+    Chuck_Instr_Dot_Primitive_Func( t_CKUINT native_func )
+    { m_native_func = native_func; }
+    
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    virtual const char * params() const
+    { static char buffer[256];
+        sprintf( buffer, "native_func=%ld", m_native_func );
+        return buffer; }
+    
+protected:
+    t_CKUINT m_native_func;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Dot_Static_Data
 // desc: access the static data of object by offset
 //-----------------------------------------------------------------------------
@@ -2822,6 +3365,56 @@ public:
       sprintf( buffer, "is_mem=%ld, emit_addr=%ld", m_is_mem, m_emit_addr );
       return buffer; }
 
+protected:
+    t_CKUINT m_is_mem;
+    t_CKUINT m_emit_addr;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Dot_Cmp_Third
+// desc: access the complex value's third component
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Dot_Cmp_Third : public Chuck_Instr
+{
+public:
+    Chuck_Instr_Dot_Cmp_Third( t_CKUINT is_mem, t_CKUINT emit_addr )
+    { m_is_mem = is_mem; m_emit_addr = emit_addr; }
+    
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    virtual const char * params() const
+    { static char buffer[256];
+        sprintf( buffer, "is_mem=%ld, emit_addr=%ld", m_is_mem, m_emit_addr );
+        return buffer; }
+    
+protected:
+    t_CKUINT m_is_mem;
+    t_CKUINT m_emit_addr;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Dot_Cmp_Fourth
+// desc: access the complex value's second component
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Dot_Cmp_Fourth : public Chuck_Instr
+{
+public:
+    Chuck_Instr_Dot_Cmp_Fourth( t_CKUINT is_mem, t_CKUINT emit_addr )
+    { m_is_mem = is_mem; m_emit_addr = emit_addr; }
+    
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    virtual const char * params() const
+    { static char buffer[256];
+        sprintf( buffer, "is_mem=%ld, emit_addr=%ld", m_is_mem, m_emit_addr );
+        return buffer; }
+    
 protected:
     t_CKUINT m_is_mem;
     t_CKUINT m_emit_addr;
@@ -3117,6 +3710,32 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Cast_vec3tovec4
+// desc: cast frmo vec3 to vec4
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Cast_vec3tovec4 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Cast_vec4tovec3
+// desc: cast frmo vec4 to vec3
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Cast_vec4tovec3 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Cast_object2string
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -3149,12 +3768,47 @@ public:
 // name: struct Chuck_Instr_Init_Loop_Counter
 // desc: ...
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Init_Loop_Counter : public Chuck_Instr_Unary_Op
+struct Chuck_Instr_Init_Loop_Counter : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Init_Loop_Counter( t_CKUINT v )
-    { this->set( v ); }
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Push_Loop_Counter_Deref
+// desc: push topmost loop counter (1.3.5.3)
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Push_Loop_Counter_Deref : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Dec_Loop_Counter
+// desc: push topmost loop counter (1.3.5.3)
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Dec_Loop_Counter : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Pop_Loop_Counter
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Pop_Loop_Counter : public Chuck_Instr
+{
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };
@@ -3292,7 +3946,9 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name, const char * des
 // define SP offset
 #define push_( sp, val )         *(sp) = (val); (sp)++
 #define push_float( sp, val )    *((t_CKFLOAT *&)sp) = (val); ((t_CKFLOAT *&)sp)++
-#define push_complex( sp, val )    *((t_CKCOMPLEX *&)sp) = (val); ((t_CKCOMPLEX *&)sp)++
+#define push_complex( sp, val )  *((t_CKCOMPLEX *&)sp) = (val); ((t_CKCOMPLEX *&)sp)++
+#define push_vec3( sp, val )     *((t_CKVEC3 *&)sp) = (val); ((t_CKVEC3 *&)sp)++
+#define push_vec4( sp, val )     *((t_CKVEC4 *&)sp) = (val); ((t_CKVEC4 *&)sp)++
 #define pop_( sp, n )            sp -= (n)
 #define val_( sp )               *(sp)
 

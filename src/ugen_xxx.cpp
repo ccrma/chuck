@@ -2644,7 +2644,7 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
     else
     {
         if( d->curf < 0 ) d->curf = 0;
-        else if( d->curf >= d->num_frames ) d->curf = d->num_frames-1;
+        else if( d->curf > d->num_frames ) d->curf = d->num_frames; // ge:
     }
 
     t_CKUINT index = d->chan + ((t_CKINT)d->curf) * d->num_channels;
@@ -3389,7 +3389,7 @@ CK_DLL_CGET( sndbuf_cget_valueAt )
 class Dyno_Data
 {
 private:
-  const static t_CKDUR ms;
+  t_CKDUR ms; // changed 1.3.5.3 ge from const static
 
 public:
   t_CKFLOAT slopeAbove;
@@ -3404,6 +3404,7 @@ public:
   int count; //diagnostic
 
   Dyno_Data() {
+    ms = g_vm->srate() / 1000.0;
     xd = 0.0;
     count = 0;
     sideInput = 0;
@@ -3437,7 +3438,8 @@ public:
   t_CKFLOAT getRatio();
 };
 
-const t_CKDUR Dyno_Data::ms = g_vm->srate() * 1.0 / 1000.0;
+// ge: commented out 1.3.5.3 -- not sure how this ever worked
+// const t_CKDUR Dyno_Data::ms = g_vm->srate() * 1.0 / 1000.0;
 
 //setters for the timing constants
 void Dyno_Data::setAttackTime(t_CKDUR t) {
@@ -3507,7 +3509,7 @@ void Dyno_Data::duck() {
 }
 
 
-//controls for the preset modes
+// controls for the preset modes
 CK_DLL_CTRL( dyno_ctrl_limit ) {
      Dyno_Data * d = ( Dyno_Data * )OBJ_MEMBER_UINT(SELF, dyno_offset_data);
      d->limit();
