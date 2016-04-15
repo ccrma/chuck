@@ -171,11 +171,21 @@ RtMidiOut :: RtMidiOut() : RtMidi()
 
 // OS-X CoreMIDI header files.
 #include <CoreMIDI/CoreMIDI.h>
+
+#if TARGET_OS_IPHONE || TARGET_OS_SIMULATOR
+#include <mach/mach_time.h>
+#else // TARGET_OS_MAC
 #include <CoreAudio/HostTime.h>
+#endif // TARGET_OS_IPHONE || TARGET_OS_SIMULATOR
 
 // CoreMIDI naming helper function prototypes
 static void readable_name(MIDIEndpointRef end, char *buffer, int bufsize);
 static int get_device_name(SInt32 uniqueid, char*buffer, int bufsize);
+
+#if TARGET_OS_IPHONE || TARGET_OS_SIMULATOR
+static mach_timebase_info_data_t gTimebaseInfo = { 0, 0 };
+#endif // TARGET_OS_IPHONE || TARGET_OS_SIMULATOR
+
 
 // A structure to hold variables related to the CoreMIDI API
 // implementation.
@@ -370,7 +380,14 @@ void midiInputCallback( const MIDIPacketList *list, void *procRef, void *srcRef 
     else {
       time = packet->timeStamp;
       time -= apiData->lastTime;
+#if TARGET_OS_IPHONE || TARGET_OS_SIMULATOR
+      // see https://developer.apple.com/library/mac/qa/qa1398/_index.html
+      if(gTimebaseInfo.denom == 0)
+          mach_timebase_info(&gTimebaseInfo);
+      time = time * gTimebaseInfo.numer / gTimebaseInfo.denom;
+#else // TARGET_OS_MAC
       time = AudioConvertHostTimeToNanos( time );
+#endif // TARGET_OS_IPHONE || TARGET_OS_SIMULATOR
       message.timeStamp = time * 0.000000001;
     }
     apiData->lastTime = packet->timeStamp;
