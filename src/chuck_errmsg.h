@@ -76,7 +76,10 @@ extern int g_loglevel;
 // macro to compare
 #define DO_LOG(x) ( x <= g_loglevel )
 
+// spencer: setter/getter for fd for errmsg printing
+// critical for embedding
 void EM_setfd( FILE * fd );
+FILE * EM_getfd();
 void EM_error( int, c_constr, ... );
 void EM_error2( int, c_constr, ... );
 void EM_error2b( int, c_constr, ... );

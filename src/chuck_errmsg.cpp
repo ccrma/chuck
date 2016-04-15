@@ -140,6 +140,11 @@ void EM_setfd( FILE * fd )
         g_errfd = fd;
 }
 
+FILE * EM_getfd()
+{
+    return g_errfd;
+}
+
 void EM_reset_msg()
 {
     g_lasterror[0] = '\0';
