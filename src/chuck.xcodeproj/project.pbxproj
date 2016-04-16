@@ -10,7 +10,6 @@
 		090A5BE80AA75AEA005DC04D /* util_hid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090A5BE70AA75AEA005DC04D /* util_hid.cpp */; };
 		090B4B1E0C4F038E00DF5577 /* uana_xform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */; };
 		091F328417A03A4D00686C8D /* ulib_regex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 091F327C17A03A4D00686C8D /* ulib_regex.cpp */; };
-		092B71131B29699C0053BF89 /* RtMidi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 092B71111B29699C0053BF89 /* RtMidi.cpp */; };
 		095D14591341476200BBD9EB /* MultitouchSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 095D14581341476200BBD9EB /* MultitouchSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		0962DA2915D3A626002DEFF3 /* chuck_io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0962DA2715D3A626002DEFF3 /* chuck_io.cpp */; };
 		0966E6C915CFBB0F0099CBD8 /* util_serial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0966E6C815CFBB0F0099CBD8 /* util_serial.cpp */; };
@@ -42,6 +41,7 @@
 		098060130AA10D4D00915136 /* digiio_rtaudio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B370A9A54DA007604EA /* digiio_rtaudio.cpp */; };
 		098060140AA10D4E00915136 /* hidio_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B390A9A54DA007604EA /* hidio_sdl.cpp */; };
 		098060150AA10D4E00915136 /* midiio_rtmidi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B3B0A9A54DA007604EA /* midiio_rtmidi.cpp */; };
+		0980601C0AA14E4100915136 /* rtmidi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B400A9A54DA007604EA /* rtmidi.cpp */; };
 		0980601D0AA14E4100915136 /* ugen_filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B420A9A54DA007604EA /* ugen_filter.cpp */; };
 		0980601E0AA14E4200915136 /* ugen_osc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B440A9A54DA007604EA /* ugen_osc.cpp */; };
 		0980601F0AA14E4500915136 /* ugen_stk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B460A9A54DA007604EA /* ugen_stk.cpp */; };
@@ -98,8 +98,6 @@
 		090B4B1B0C4F038E00DF5577 /* uana_xform.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = uana_xform.h; sourceTree = SOURCE_ROOT; };
 		091F327C17A03A4D00686C8D /* ulib_regex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ulib_regex.cpp; sourceTree = "<group>"; };
 		091F327D17A03A4D00686C8D /* ulib_regex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ulib_regex.h; sourceTree = "<group>"; };
-		092B71111B29699C0053BF89 /* RtMidi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RtMidi.cpp; sourceTree = "<group>"; };
-		092B71121B29699C0053BF89 /* RtMidi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RtMidi.h; sourceTree = "<group>"; };
 		095D14581341476200BBD9EB /* MultitouchSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultitouchSupport.framework; path = System/Library/PrivateFrameworks/MultitouchSupport.framework; sourceTree = SDKROOT; };
 		0962DA2715D3A626002DEFF3 /* chuck_io.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = chuck_io.cpp; sourceTree = "<group>"; };
 		0962DA2815D3A626002DEFF3 /* chuck_io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chuck_io.h; sourceTree = "<group>"; };
@@ -350,6 +348,8 @@
 		09A40B3A0A9A54DA007604EA /* hidio_sdl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = hidio_sdl.h; sourceTree = SOURCE_ROOT; };
 		09A40B3B0A9A54DA007604EA /* midiio_rtmidi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = midiio_rtmidi.cpp; sourceTree = SOURCE_ROOT; };
 		09A40B3C0A9A54DA007604EA /* midiio_rtmidi.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = midiio_rtmidi.h; sourceTree = SOURCE_ROOT; };
+		09A40B400A9A54DA007604EA /* rtmidi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = rtmidi.cpp; sourceTree = SOURCE_ROOT; };
+		09A40B410A9A54DA007604EA /* rtmidi.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = rtmidi.h; sourceTree = SOURCE_ROOT; };
 		09A40B420A9A54DA007604EA /* ugen_filter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ugen_filter.cpp; sourceTree = SOURCE_ROOT; };
 		09A40B430A9A54DA007604EA /* ugen_filter.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ugen_filter.h; sourceTree = SOURCE_ROOT; };
 		09A40B440A9A54DA007604EA /* ugen_osc.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ugen_osc.cpp; sourceTree = SOURCE_ROOT; };
@@ -430,15 +430,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		092B71101B29699C0053BF89 /* RtMidi */ = {
-			isa = PBXGroup;
-			children = (
-				092B71111B29699C0053BF89 /* RtMidi.cpp */,
-				092B71121B29699C0053BF89 /* RtMidi.h */,
-			);
-			path = RtMidi;
-			sourceTree = "<group>";
-		};
 		0980603D0AA158F600915136 /* Examples */ = {
 			isa = PBXGroup;
 			children = (
@@ -873,6 +864,8 @@
 				09A40B3A0A9A54DA007604EA /* hidio_sdl.h */,
 				09A40B3B0A9A54DA007604EA /* midiio_rtmidi.cpp */,
 				09A40B3C0A9A54DA007604EA /* midiio_rtmidi.h */,
+				09A40B400A9A54DA007604EA /* rtmidi.cpp */,
+				09A40B410A9A54DA007604EA /* rtmidi.h */,
 				09A40B420A9A54DA007604EA /* ugen_filter.cpp */,
 				09A40B430A9A54DA007604EA /* ugen_filter.h */,
 				09A40B440A9A54DA007604EA /* ugen_osc.cpp */,
@@ -956,7 +949,6 @@
 			children = (
 				09922D48181601F700806471 /* lo */,
 				09A5C88413DDFB350082DF50 /* RtAudio */,
-				092B71101B29699C0053BF89 /* RtMidi */,
 				09A40B000A9A52FC007604EA /* ChucK */,
 			);
 			name = Sources;
@@ -1100,6 +1092,7 @@
 				098060130AA10D4D00915136 /* digiio_rtaudio.cpp in Sources */,
 				098060140AA10D4E00915136 /* hidio_sdl.cpp in Sources */,
 				098060150AA10D4E00915136 /* midiio_rtmidi.cpp in Sources */,
+				0980601C0AA14E4100915136 /* rtmidi.cpp in Sources */,
 				0980601D0AA14E4100915136 /* ugen_filter.cpp in Sources */,
 				09922D65181601F700806471 /* send.c in Sources */,
 				0980601E0AA14E4200915136 /* ugen_osc.cpp in Sources */,
@@ -1121,7 +1114,6 @@
 				0980602D0AA14E5500915136 /* util_string.cpp in Sources */,
 				09922D64181601F700806471 /* pattern_match.c in Sources */,
 				0980602E0AA14E5700915136 /* util_xforms.c in Sources */,
-				092B71131B29699C0053BF89 /* RtMidi.cpp in Sources */,
 				0980602F0AA14E5800915136 /* util_thread.cpp in Sources */,
 				098061AE0AA15BDB00915136 /* chuck_main.cpp in Sources */,
 				090A5BE80AA75AEA005DC04D /* util_hid.cpp in Sources */,
