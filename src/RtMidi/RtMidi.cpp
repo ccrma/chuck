@@ -377,7 +377,8 @@ MidiOutApi :: ~MidiOutApi( void )
 
 // OS-X CoreMIDI header files.
 #include <CoreMIDI/CoreMIDI.h>
-#include "CAHostTimeBase.h"
+#include <CoreAudio/HostTime.h>
+#include <CoreServices/CoreServices.h>
 
 // A structure to hold variables related to the CoreMIDI API
 // implementation.
@@ -431,16 +432,16 @@ static void midiInputCallback( const MIDIPacketList *list, void *procRef, void *
     else {
       time = packet->timeStamp;
       if ( time == 0 ) { // this happens when receiving asynchronous sysex messages
-        time = CAHostTimeBase::GetTheCurrentTime();
+        time = AudioGetCurrentHostTime();
       }
       time -= apiData->lastTime;
-      time = CAHostTimeBase::ConvertToNanos( time );
+      time = AudioConvertHostTimeToNanos( time );
       if ( !continueSysex )
         message.timeStamp = time * 0.000000001;
     }
     apiData->lastTime = packet->timeStamp;
     if ( apiData->lastTime == 0 ) { // this happens when receiving asynchronous sysex messages
-      apiData->lastTime = CAHostTimeBase::GetTheCurrentTime();
+      apiData->lastTime = AudioGetCurrentHostTime();
     }
     //std::cout << "TimeStamp = " << packet->timeStamp << std::endl;
 
@@ -768,7 +769,7 @@ static CFStringRef ConnectedEndpointName( MIDIEndpointRef endpoint )
     if ( nConnected ) {
       const SInt32 *pid = (const SInt32 *)(CFDataGetBytePtr(connections));
       for ( i=0; i<nConnected; ++i, ++pid ) {
-        MIDIUniqueID id = OSSwapBigToHostInt32( *pid );
+        MIDIUniqueID id = EndianS32_BtoN( *pid );
         MIDIObjectRef connObject;
         MIDIObjectType connObjectType;
         err = MIDIObjectFindByUniqueID( id, &connObject, &connObjectType );
@@ -1001,7 +1002,7 @@ void MidiOutCore :: sendMessage( std::vector<unsigned char> *message )
 
   //  unsigned int packetBytes, bytesLeft = nBytes;
   //  unsigned int messageIndex = 0;
-  MIDITimeStamp timeStamp = CAHostTimeBase::GetTheCurrentTime();
+  MIDITimeStamp timeStamp = AudioGetCurrentHostTime();
   CoreMidiData *data = static_cast<CoreMidiData *> (apiData_);
   OSStatus result;
 
