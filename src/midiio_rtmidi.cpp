@@ -62,7 +62,7 @@ CBufferSimple * MidiInManager::m_event_buffer = NULL;
 //-----------------------------------------------------------------------------
 MidiOut::MidiOut()
 {
-    mout = new RtMidiOut;
+    mout = NULL;
     m_device_num = 0;
     m_valid = FALSE;
     m_suppress_output = FALSE;
@@ -78,7 +78,7 @@ MidiOut::MidiOut()
 MidiOut::~MidiOut()
 {
     if( mout ) this->close();
-    SAFE_DELETE( mout );
+//    SAFE_DELETE( mout );
 }
 
 
