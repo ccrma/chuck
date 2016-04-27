@@ -51,7 +51,7 @@ using namespace std;
 #if defined(__MACOSX_CORE__)
 char g_default_chugin_path[] = "/usr/local/lib/chuck:/Library/Application Support/ChucK/ChuGins:~/Library/Application Support/ChucK/ChuGins";
 #elif defined(__PLATFORM_WIN32__)
-char g_default_chugin_path[] = "C:\\WINDOWS\\system32\\ChucK;C:\\Program Files\\ChucK\\chugins";
+char g_default_chugin_path[] = "C:\\WINDOWS\\system32\\ChucK;C:\\Program Files\\ChucK\\chugins;C:\\Program Files (x86)\\ChucK\\chugins";
 #else // Linux/Cygwin
 char g_default_chugin_path[] = "/usr/local/lib/chuck";
 #endif
