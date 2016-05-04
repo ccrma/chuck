@@ -75,10 +75,10 @@ const char * Chuck_Instr::name() const
 
 
 //-----------------------------------------------------------------------------
-// name: setLinepos()
+// name: set_linepos()
 // desc: store line position for error messages
 //-----------------------------------------------------------------------------
-void Chuck_Instr::setLinepos(t_CKUINT linepos) {
+void Chuck_Instr::set_linepos(t_CKUINT linepos) {
     m_linepos = linepos;
 }
 

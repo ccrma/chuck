@@ -65,7 +65,7 @@ public:
     { return ""; }
 
 public:
-    void setLinepos( t_CKUINT linepos );
+    void set_linepos( t_CKUINT linepos );
     t_CKUINT m_linepos;
 };
 
