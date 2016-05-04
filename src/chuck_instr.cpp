@@ -51,12 +51,35 @@ using namespace std;
 
 
 //-----------------------------------------------------------------------------
+// name: Chuck_Instr()
+// desc: base class constructor
+//-----------------------------------------------------------------------------
+Chuck_Instr::Chuck_Instr() {
+    // set linepos to 0 so we can tell later whether it has been set properly
+    m_linepos = 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: name()
 // desc: ...
 //-----------------------------------------------------------------------------
 const char * Chuck_Instr::name() const
 {
      return mini_type( typeid(*this).name() );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setLinepos()
+// desc: store line position for error messages
+//-----------------------------------------------------------------------------
+void Chuck_Instr::setLinepos(t_CKUINT linepos) {
+    m_linepos = linepos;
 }
 
 
@@ -5213,15 +5236,15 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 null_pointer:
     // we have a problem
     fprintf( stderr, 
-        "[chuck](VM): NullPointerException: (array access) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+        "[chuck](VM): NullPointerException (array access): line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() ); // shred->pc removed
     goto done;
 
 array_out_of_bound:
     // we have a problem
     fprintf( stderr, 
-             "[chuck](VM): ArrayOutofBounds: in shred[id=%lu:%s], PC=[%lu], index=[%ld]\n", 
-             shred->xid, shred->name.c_str(), shred->pc, i );
+             "[chuck](VM): ArrayOutofBounds: line[%lu] in shred[id=%lu:%s], index=[%ld]\n",
+             m_linepos, shred->xid, shred->name.c_str(), i ); // shred->pc removed
     // go to done
     goto done;
 
@@ -5377,15 +5400,15 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 null_pointer:
     // we have a problem
     fprintf( stderr, 
-        "[chuck](VM): NullPointerException: (map access) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+        "[chuck](VM): NullPointerException (map access): line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() ); // shred->pc
     goto done;
 
 error:
     // we have a problem
     fprintf( stderr, 
-             "[chuck](VM): InternalArrayMap error: in shred[id=%lu:%s], PC=[%lu], index=[%s]\n", 
-             shred->xid, shred->name.c_str(), shred->pc, key->str.c_str() );
+             "[chuck](VM): InternalArrayMap error: line[%lu] in shred[id=%lu:%s], index=[%s]\n",
+             m_linepos, shred->xid, shred->name.c_str(), key->str.c_str() ); // shred->pc
     goto done;
 
 done:
@@ -5578,8 +5601,8 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 null_pointer:
     // we have a problem
     fprintf( stderr, 
-        "[chuck](VM): NullPointerException: (array access) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+        "[chuck](VM): NullPointerException (array access): line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() ); // shred->pc
     fprintf( stderr, 
         "[chuck](VM): (array dimension where exception occurred: %lu)\n", index );
     goto done;
@@ -5587,8 +5610,8 @@ null_pointer:
 array_out_of_bound:
     // we have a problem
     fprintf( stderr, 
-             "[chuck](VM): ArrayOutofBounds: in shred[id=%lu:%s], PC=[%lu], index=[%ld]\n", 
-             shred->xid, shred->name.c_str(), shred->pc, i );
+             "[chuck](VM): ArrayOutofBounds: line[%lu] in shred[id=%lu:%s], index=[%ld]\n",
+             m_linepos, shred->xid, shred->name.c_str(), i ); // shred->pc
     // go to done
     goto done;
 

@@ -3249,11 +3249,14 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
     // check the depth
     if( depth == 1 )
     {
+        // the pointer
+        Chuck_Instr * instr = NULL;
         // emit the array access (1.3.1.0: use getkindof instead of type->size)
         if( is_str )
-            emit->append( new Chuck_Instr_Array_Map_Access( getkindof(type), is_var ) );
+            emit->append( instr = new Chuck_Instr_Array_Map_Access( getkindof(type), is_var ) );
         else
-            emit->append( new Chuck_Instr_Array_Access( getkindof(type), is_var ) );
+            emit->append( instr = new Chuck_Instr_Array_Access( getkindof(type), is_var ) );
+        instr->setLinepos(array->linepos);
     }
     else
     {
@@ -3261,6 +3264,7 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
         Chuck_Instr_Array_Access_Multi * aam = NULL;
         // emit the multi array access (1.3.1.0: use getkindof instead of type->size)
         emit->append( aam = new Chuck_Instr_Array_Access_Multi( depth, getkindof(type), is_var ) );
+        aam->setLinepos(array->linepos);
         // add type info (1.3.1.0) -- to support mixed string & int indexing (thanks Robin Haberkorn)
         a_Exp e = exp;
         while( e )
