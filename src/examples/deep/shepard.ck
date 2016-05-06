@@ -10,9 +10,9 @@
 // mean for normal intensity curve
 60 => float MU;
 // standard deviation for normal intensity curve
-42 => float SD;
+42 => float SIGMA;
 // normalize to 1.0 at x==MU
-1 / gauss(MU, MU, SD) => float SCALE;
+1 / gauss(MU, MU, SIGMA) => float SCALE;
 // increment per unit time (use negative for descending)
 -.004 => float INC;
 // unit time (change interval)
@@ -37,7 +37,7 @@ while( true )
         // set frequency from pitch
         pitches[i] => Std.mtof => tones[i].freq;
         // compute loundess for each tone
-        gauss( pitches[i], MU, SD ) * SCALE => float intensity;
+        gauss( pitches[i], MU, SIGMA ) * SCALE => float intensity;
         // map intensity to amplitude
         intensity*96 => Math.dbtorms => tones[i].gain;
         // increment pitch
