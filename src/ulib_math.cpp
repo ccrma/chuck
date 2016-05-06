@@ -307,7 +307,13 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     
     // go ahead and seed (the code can seed again for repeatability; 1.3.1.0)
     srandom( time( NULL ) );
-    
+
+    // add gauss (ge: added 1.3.5.3)
+    QUERY->add_sfun( QUERY, gauss_impl, "float", "gauss" ); //! Gaussian function
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->add_arg( QUERY, "float", "mean" );
+    QUERY->add_arg( QUERY, "float", "sd" );
+
     // pi
     //! see \example math.ck
     QUERY->add_svar( QUERY, "float", "PI", TRUE, &g_pi );
@@ -751,4 +757,16 @@ CK_DLL_SFUN( srandom_impl )
 {
     t_CKINT seed = GET_CK_INT(ARGS);
     ::srandom( seed );
+}
+
+
+// gauss (ge: added 1.3.5.3)
+CK_DLL_SFUN( gauss_impl )
+{
+    t_CKFLOAT x = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT mu = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT sd = GET_NEXT_FLOAT(ARGS);
+
+    // compute gaussian
+    RETURN->v_float = (1.0 / (sd*::sqrt(2*M_PI))) * ::exp( -(x-mu)*(x-mu) / (2*sd*sd) );
 }
