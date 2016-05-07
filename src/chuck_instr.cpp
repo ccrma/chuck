@@ -5237,7 +5237,7 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 null_pointer:
     // we have a problem
     fprintf( stderr, 
-        "[chuck](VM): NullPointerException (array access): on line[%lu] in shred[id=%lu:%s]\n",
+        "[chuck](VM): NullPointerException: (array access) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() ); // shred->pc removed
     goto done;
 
