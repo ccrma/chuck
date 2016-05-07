@@ -312,7 +312,21 @@ void Chuck_Instr_Divide_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
     pop_( sp, 2 );
+    if( val_(sp+1) == 0 ) goto div_zero;
     push_( sp, val_(sp) / val_(sp+1) );
+    
+    return;
+div_zero:
+    // we have a problem
+    fprintf( stderr,
+        "[chuck](VM): DivideByZeroException: on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str());
+    goto done;
+
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
@@ -326,7 +340,21 @@ void Chuck_Instr_Divide_int_Reverse::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 {
     t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
     pop_( sp, 2 );
+    if( val_(sp) == 0 ) goto div_zero;
     push_( sp, val_(sp+1) / val_(sp) );
+    
+    return;
+div_zero:
+    // we have a problem
+    fprintf( stderr,
+        "[chuck](VM): DivideByZeroException: on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str());
+    goto done;
+
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
@@ -1083,8 +1111,22 @@ void Chuck_Instr_Divide_int_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 {
     t_CKINT temp, *& sp = (t_CKINT *&)shred->reg->sp;
     pop_( sp, 2 );
+    if( val_(sp) == 0 ) goto div_zero;
     temp = **(t_CKINT **)(sp+1) /= val_(sp);
     push_( sp, temp );
+    
+    return;
+div_zero:
+    // we have a problem
+    fprintf( stderr,
+        "[chuck](VM): DivideByZeroException: on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str());
+    goto done;
+
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
