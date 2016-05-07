@@ -1851,6 +1851,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             {
             case te_int:
                 emit->append( instr = new Chuck_Instr_Divide_int );
+                instr->set_linepos( rhs->linepos );
                 break;
             case te_float:
             case te_dur:
@@ -1887,6 +1888,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             {
             case te_int:
                 emit->append( instr = new Chuck_Instr_Divide_int_Assign );
+                instr->set_linepos( lhs->linepos );
                 break;
             case te_float:
                 emit->append( instr = new Chuck_Instr_Divide_double_Assign );

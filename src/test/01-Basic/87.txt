@@ -1,0 +1,11 @@
+inf :(float)
+inf :(float)
+nan :(float)
+nan :(float)
+@(inf,inf,inf) :(vec3)
+@(inf,nan,inf,nan) :(vec4)
+#(nan,nan) :(complex)
+#(nan,nan) :(complex)
+#(nan,nan) :(complex)
+%(nan,0.0000*pi) :(polar)
+[chuck](VM): DivideByZeroException: on line[19] in shred[id=1:./01-Basic/87.ck]
