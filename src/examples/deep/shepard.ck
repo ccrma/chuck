@@ -8,13 +8,13 @@
 //--------------------------------------------------------------------
 
 // mean for normal intensity curve
-60 => float MU;
+72 => float MU;
 // standard deviation for normal intensity curve
 42 => float SIGMA;
 // normalize to 1.0 at x==MU
 1 / gauss(MU, MU, SIGMA) => float SCALE;
 // increment per unit time (use negative for descending)
--.004 => float INC;
+-.002 => float INC;
 // unit time (change interval)
 1::ms => dur T;
 
@@ -23,7 +23,7 @@
 // number of tones
 pitches.size() => int N;
 // bank of tones
-SinOsc tones[N];
+TriOsc tones[N];
 // overall gain
 Gain gain => dac; 1.0/N => gain.gain;
 // connect to dac
