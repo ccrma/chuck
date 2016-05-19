@@ -205,6 +205,7 @@ CK_DLL_CTRL( Delay_ctrl_delay );
 CK_DLL_CTRL( Delay_ctrl_max );
 CK_DLL_CGET( Delay_cget_delay );
 CK_DLL_CGET( Delay_cget_max );
+CK_DLL_CGET( Delay_clear );
 
 // DelayA
 CK_DLL_CTOR( DelayA_ctor );
@@ -215,6 +216,7 @@ CK_DLL_CTRL( DelayA_ctrl_delay );
 CK_DLL_CTRL( DelayA_ctrl_max );
 CK_DLL_CGET( DelayA_cget_delay );
 CK_DLL_CGET( DelayA_cget_max );
+CK_DLL_CGET( DelayA_clear );
 
 // DelayL
 CK_DLL_CTOR( DelayL_ctor );
@@ -225,6 +227,7 @@ CK_DLL_CTRL( DelayL_ctrl_delay );
 CK_DLL_CTRL( DelayL_ctrl_max );
 CK_DLL_CGET( DelayL_cget_delay );
 CK_DLL_CGET( DelayL_cget_max );
+CK_DLL_CGET( DelayL_clear );
 
 // Echo
 CK_DLL_CTOR( Echo_ctor );
@@ -3247,8 +3250,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "Get max delay (buffer size).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    func = make_new_mfun( "void", "clear", Delay_clear ); //! clear delay
+    func->doc = "Clear delay line.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // delay 'subs' not actually extending . 
+    // delay 'subs' not actually extending .
     
     // end the class import
     type_engine_import_class_end( env );
@@ -3288,6 +3294,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "Get max delay (buffer size).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    func = make_new_mfun( "void", "clear", DelayA_clear ); //! clear delay
+    func->doc = "Clear delay line.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -3332,7 +3341,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "Get max delay (buffer size).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-
+    func = make_new_mfun( "void", "clear", DelayL_clear ); //! clear delay
+    func->doc = "Clear delay line.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
     // end the class import
     type_engine_import_class_end( env );
 
@@ -22251,6 +22263,17 @@ CK_DLL_CGET( Delay_cget_max )
 }
 
 
+//-----------------------------------------------------------------------------
+// name: Delay_clear()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( Delay_clear )
+{
+    Delay * delay = (Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data);
+    delay->clear();
+}
+
+
 
 
 // DelayA
@@ -22338,6 +22361,17 @@ CK_DLL_CTRL( DelayA_ctrl_max )
 CK_DLL_CGET( DelayA_cget_max )
 {
     RETURN->v_dur = (t_CKDUR)((DelayA *)OBJ_MEMBER_UINT(SELF, DelayA_offset_data))->length-1.0;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: DelayA_clear()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( DelayA_clear )
+{
+    DelayA * delay = (DelayA *)OBJ_MEMBER_UINT(SELF, DelayA_offset_data);
+    delay->clear();
 }
 
 
@@ -22429,6 +22463,19 @@ CK_DLL_CGET( DelayL_cget_max )
 {
     RETURN->v_dur = (t_CKDUR)((DelayL *)OBJ_MEMBER_UINT(SELF, DelayL_offset_data))->length-1.0;
 }
+
+
+//-----------------------------------------------------------------------------
+// name: DelayL_clear()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( DelayL_clear )
+{
+    DelayL * delay = (DelayL *)OBJ_MEMBER_UINT(SELF, DelayL_offset_data);
+    delay->clear();
+}
+
+
 
 
 // Echo
