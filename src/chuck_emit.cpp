@@ -3388,6 +3388,9 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     // call the function
     t_CKUINT size = type->size;
     t_CKUINT kind = getkindof( type ); // added 1.3.1.0
+        
+    // the pointer
+    Chuck_Instr * instr = NULL;
     if( func->def->s_type == ae_func_builtin )
     {
         // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -3396,9 +3399,9 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
         {
             // is member (1.3.1.0: changed to use kind instead of size)
             if( is_member )
-                emit->append( new Chuck_Instr_Func_Call_Member( kind ) );
+                emit->append( instr = new Chuck_Instr_Func_Call_Member( kind ) );
             else
-                emit->append( new Chuck_Instr_Func_Call_Static( kind ) );
+                emit->append( instr = new Chuck_Instr_Func_Call_Static( kind ) );
         }
         else
         {
@@ -3410,8 +3413,9 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     }
     else
     {
-        emit->append( new Chuck_Instr_Func_Call );
+        emit->append( instr = new Chuck_Instr_Func_Call );
     }
+    instr->set_linepos(linepos);
 
     return TRUE;
 }

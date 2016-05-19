@@ -6919,7 +6919,7 @@ void Chuck_Instr_IO_in_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 null_pointer:
     // we have a problem
     fprintf( stderr, 
-        "[chuck](VM): NullPointerException: (IO input string) on line[%lu] in shred[id=%lu:%s]",
+        "[chuck](VM): NullPointerException: (IO input string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
@@ -7294,8 +7294,8 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name)
 {
     // we have a problem
     fprintf( stderr,
-            "[chuck](VM): %s: shred[id=%lu:%s], PC=[%lu]\n",
-            name, shred->xid, shred->name.c_str(), shred->pc );
+            "[chuck](VM): %s: on line[%lu] in shred[id=%lu:%s]\n",
+            name, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
     shred->is_running = FALSE;
     shred->is_done = TRUE;
@@ -7306,8 +7306,8 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKINT desc)
 {
     // we have a problem
     fprintf( stderr,
-            "[chuck](VM): %s: '%li' in shred[id=%lu:%s], PC=[%lu]\n",
-            name, desc, shred->xid, shred->name.c_str(), shred->pc );
+            "[chuck](VM): %s: '%li' on line[%lu] in shred[id=%lu:%s]\n",
+            name, desc, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
     shred->is_running = FALSE;
     shred->is_done = TRUE;
@@ -7318,8 +7318,8 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKFLOAT desc)
 {
     // we have a problem
     fprintf( stderr,
-            "[chuck](VM): %s: '%f' in shred[id=%lu:%s], PC=[%lu]\n",
-            name, desc, shred->xid, shred->name.c_str(), shred->pc );
+            "[chuck](VM): %s: '%f' on line[%lu] in shred[id=%lu:%s]\n",
+            name, desc, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
     shred->is_running = FALSE;
     shred->is_done = TRUE;
@@ -7330,8 +7330,8 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name, const char * des
 {
     // we have a problem
     fprintf( stderr,
-            "[chuck](VM): %s: %s in shred[id=%lu:%s], PC=[%lu]\n",
-            name, desc, shred->xid, shred->name.c_str(), shred->pc );
+            "[chuck](VM): %s: %s on line[%lu] in shred[id=%lu:%s]\n",
+            name, desc, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
     shred->is_running = FALSE;
     shred->is_done = TRUE;
