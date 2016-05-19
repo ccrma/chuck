@@ -1,0 +1,1 @@
+[chuck](VM): NullPointerException: RegEx.match: argument 'str' is null on line[2] in shred[id=1:./03-Modules/regex06.ck]
