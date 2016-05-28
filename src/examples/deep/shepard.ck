@@ -43,9 +43,9 @@ while( true )
         // increment pitch
         INC +=> pitches[i];
         // wrap (for positive INC)
-        if( pitches[i] >= 120 ) 12 => pitches[i];
+        if( pitches[i] > 120 ) 12 => pitches[i];
         // wrap (for negative INC)
-        if( pitches[i] <= 12 ) 120 => pitches[i];
+        if( pitches[i] < 12 ) 120 => pitches[i];
     }
     
     // advance time
