@@ -2649,9 +2649,14 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
     else
     {
         if( d->curf < 0 ) d->curf = 0;
-        else if( d->curf > d->num_frames ) d->curf = d->num_frames; // ge:
+        else if( d->curf >= d->num_frames )
+        {
+            d->curf = d->num_frames; // ge:
+            d->current_val = 0;
+            return;
+        }
     }
-
+    
     t_CKUINT index = d->chan + ((t_CKINT)d->curf) * d->num_channels;
     // ensure load
     if( d->fd != NULL ) sndbuf_load( d, index );
@@ -2870,7 +2875,7 @@ CK_DLL_TICK( sndbuf_tick )
     // we're ticking once per sample ( system )
     // curf in samples;
     
-    if( !d->loop && d->curf > d->num_frames )
+    if( !d->loop && d->curf >= d->num_frames )
     {
         *out = 0;
         return TRUE;
