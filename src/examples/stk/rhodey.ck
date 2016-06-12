@@ -54,7 +54,7 @@ spork ~ vecho_Shred();
 while( true )
 { 
     // pentatonic
-    scale[Math.random2(0,scale.cap()-1)] => int freq;
+    scale[Math.random2(0,scale.size()-1)] => int freq;
 
     Std.mtof( ( 33 + Math.random2(0,1) * 12 + freq ) ) => voc.freq;
     Math.random2f( 0.6, 0.8 ) => voc.noteOn;

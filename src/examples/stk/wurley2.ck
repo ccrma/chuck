@@ -54,7 +54,7 @@ spork ~ vecho_Shred();
 while( true )
 {
     // scale
-    scale[Math.random2(0,scale.cap()-1)] => int freq;
+    scale[Math.random2(0,scale.size()-1)] => int freq;
     Std.mtof( ( 45 + Math.random2(0,1) * 12 + freq ) ) => voc.freq;
     Math.random2f( 0.6, 0.8 ) => voc.noteOn;
 

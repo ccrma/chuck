@@ -33,11 +33,11 @@ class MyString extends Chubgraph
 }
 
 MyString s[3];
-for(int i; i < s.cap(); i++) s[i] => dac;
+for(int i; i < s.size(); i++) s[i] => dac;
 
 while( true )
 {
-    for( int i; i < s.cap(); i++ )
+    for( int i; i < s.size(); i++ )
     {
         Math.random2( 60,72 ) => Std.mtof => s[i].freq;
         spork ~ s[i].pluck();

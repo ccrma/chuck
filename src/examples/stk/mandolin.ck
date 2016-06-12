@@ -27,7 +27,7 @@ while( true )
     // factor
     Math.random2f( 1, 4 ) => float factor;
 
-    for( int i; i < notes.cap(); i++ )
+    for( int i; i < notes.size(); i++ )
     {
         play( Math.random2(0,2)*12 + notes[i], Math.random2f( .6, .9 ) );
         100::ms * factor => now;
