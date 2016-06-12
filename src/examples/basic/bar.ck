@@ -10,7 +10,7 @@ while( true )
 {
     // change parameters here
     Std.mtof( 45 + Math.random2(0,0) * 12 +
-        hi[Math.random2(0,hi.cap()-1)] ) => s.freq;
+        hi[Math.random2(0,hi.size()-1)] ) => s.freq;
 
     // different rate
     200::ms => now;

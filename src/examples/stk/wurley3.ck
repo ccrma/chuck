@@ -11,7 +11,7 @@ int which;
 Gain g => dac;
 .4 => g.gain;
 // connect the wurlies
-for( int i; i < wurlies.cap(); i++ )
+for( int i; i < wurlies.size(); i++ )
     wurlies[i] => g;
 
 // our notes
@@ -20,7 +20,7 @@ for( int i; i < wurlies.cap(); i++ )
 // infinite time-loop
 while( true )
 {
-    for( int i; i < notes.cap(); i++ )
+    for( int i; i < notes.size(); i++ )
     {
         play( notes[i], Math.random2f( .3, .9 ) );
         300::ms => now;
@@ -32,7 +32,7 @@ fun void play( float note, float velocity )
 {
     // first figure which to play
     // round robin may work
-    ( which + 1 ) % wurlies.cap() => which;
+    ( which + 1 ) % wurlies.size() => which;
 
     // start the note
     Std.mtof( note ) => wurlies[which].freq;

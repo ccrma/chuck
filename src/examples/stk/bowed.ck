@@ -23,7 +23,7 @@ while( true )
     <<< "volume:", bow.volume() >>>;
 
     // set freq
-    scale[Math.random2(0,scale.cap()-1)] + 57 => Std.mtof => bow.freq;
+    scale[Math.random2(0,scale.size()-1)] + 57 => Std.mtof => bow.freq;
     // go
     .8 => bow.noteOn;
 

@@ -20,7 +20,7 @@ while( true )
     // position
     Math.random2f( 0.2, 0.8 ) => mand.pluckPos;
     // frequency...
-    scale[Math.random2(0,scale.cap()-1)] => int freq;
+    scale[Math.random2(0,scale.size()-1)] => int freq;
     45 + Math.random2(0,3)*12 + freq => Std.mtof => mand.freq;
     // pluck it!
     Math.random2f( 0.2, 0.9 ) => mand.pluck;

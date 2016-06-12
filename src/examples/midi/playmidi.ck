@@ -33,7 +33,7 @@ fun void track(int t)
 {
     // hack polyphony
     Mandolin s[4];
-    for(int i; i < s.cap(); i++) s[i] => reverb;
+    for(int i; i < s.size(); i++) s[i] => reverb;
     
     int v;
     
@@ -47,7 +47,7 @@ fun void track(int t)
             msg.data2 => Std.mtof => s[v].freq;
             msg.data3/127.0 => s[v].noteOn;
                         
-            (v+1)%s.cap() => v;
+            (v+1)%s.size() => v;
         }
     }
     
