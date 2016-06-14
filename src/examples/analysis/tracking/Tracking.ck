@@ -37,7 +37,7 @@ while( true )
     
     // find peak
     0 => float max; float where;
-    for( int i; i < blob.fvals().cap()/8; i++ )
+    for( int i; i < blob.fvals().size()/8; i++ )
     {
         // compare
         if( blob.fvals()[i] > max )

@@ -45,6 +45,14 @@ If you only want an array of object references:
     // array of null object references
     Object @ group[10];
 \end{verbatim}
+
+The size method returns the total count of elements in an array. This is sometimes called `length' in other languages.
+\begin{verbatim}
+    [ 1, 2, 8, 1 ] @=> int foo[];
+    foo.size(); // returns 4
+    foo.cap(); // also returns 4, as it is an alias of the size method.
+\end{verbatim}
+
 Check here more information on object declaration and instantation in Chuck.
 
 The above examples are 1-dimensional arrays (or vectors). Coming up next are multi-dimensional arrays!
@@ -86,7 +94,7 @@ Looping over the elements of an array:
     [ 1, 2, 3, 4, 5, 6 ] @=> float foo[];
 
     // loop over the entire array
-    for( 0 => int i; i < foo.cap(); i++ )
+    for( 0 => int i; i < foo.size(); i++ )
     {
         // do something (debug print)
         <<< foo[i] >>>;
@@ -104,7 +112,7 @@ Accessing multi-dimensional array:
 
 If the index exceeds the bounds of the array in any dimension, an exception is issued and the current shred is halted.
 \begin{verbatim}
-    // array capacity is 5
+    // array size is 5
     int foo[5];
 
     // this should cause ArrayOutOfBoundsException
@@ -149,7 +157,7 @@ a longer program: otf\_06.ck from examples:
 
 Any array can be used also as an associative array, indexed on strings. Once the regular array is instantiated, no further work has to be done to make it associative as well - just start using it as such.
 \begin{verbatim}
-    // declare regular array (capacity doesn't matter so much)
+    // declare regular array (size doesn't matter so much)
     float foo[4];
 
     // use as integer-indexed array
@@ -180,9 +188,9 @@ It is important to note (again), that the address space of the integer portion a
     <<< foo[0], foo["0"] >>>;
 \end{verbatim}
 
-The capacity of an array relates only to the integer portion of it. An array with an integer portion of capacity 0, for example, can still have any number of associative indexes.
+The size of an array relates only to the integer portion of it. An array with an integer portion of size 0, for example, can still have any number of associative indexes.
 \begin{verbatim}
-    // declare array of 0 capacity
+    // declare array of 0 size
     int foo[0];
 
     // put something in element "here"
@@ -224,7 +232,7 @@ Note: The associative capacity of an array is not defined, so objects used in th
 Arrays are objects. So when we declare an array, we are actually (1) declaring a reference to array (reference variable) and (2) instantiating a new array and reference assigned to the variable. A (null) reference is a reference variable that points to no
  object or null. A null reference to an array can be created in this fasion:
 \begin{verbatim}
-    // declare array reference (by not specifying a capacity)
+    // declare array reference (by not specifying a size)
     int foo[];
 
     // we can now assign any int[] to foo
@@ -240,7 +248,7 @@ This is also useful in declaring functions that have arrays as arguments or retu
     fun void print( int bar[] )
     {
         // print it
-        for( 0 => int i; i < bar.cap(); i++ )
+        for( 0 => int i; i < bar.size(); i++ )
             <<< bar[0] >>>;
     }
 

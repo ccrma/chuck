@@ -14,7 +14,7 @@ while( true )
 {
     // frequency
     Std.mtof( 33 + Math.random2(0,3) * 12 +
-        hi[Math.random2(0,hi.cap()-1)] ) => s.freq;
+        hi[Math.random2(0,hi.size()-1)] ) => s.freq;
 
     // harmonics
     Math.random2( 1, 5 ) => s.harmonics;

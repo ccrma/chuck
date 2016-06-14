@@ -59,7 +59,7 @@ fun void smack_handler()
         Smacking.the_event => now;
         
         // choose random interval
-        harms[Math.random2(0,harms.cap()-1)] => the_harm;
+        harms[Math.random2(0,harms.size()-1)] => the_harm;
         // set freq
         Tracking.the_freq * Math.pow(1.059, the_harm) => target_freq;
         // print

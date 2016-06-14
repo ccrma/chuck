@@ -32,7 +32,7 @@ while( true )
   }
 
   // set freq
-  scale[Math.random2(0,scale.cap()-1)] => int note;
+  scale[Math.random2(0,scale.size()-1)] => int note;
   33 + Math.random2(0,4)*12 + note => Std.mtof => hole.freq;
   <<< "note: ", Std.ftom( hole.freq() ) >>>;
 

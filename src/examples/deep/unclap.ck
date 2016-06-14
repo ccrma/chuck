@@ -31,14 +31,14 @@ fun void clap( SndBuf buffy, int max, float factor )
     for( ; true; shifts++ )
     {
         // one measure
-        for( 0 => int count; count < seq.cap(); count++ )
+        for( 0 => int count; count < seq.size(); count++ )
         {
             // set gain
             seq[count] * 2 => buffy.gain;
             // clap!
             0 => buffy.pos;
             // let time go by
-            if( !max || shifts < max || count != (seq.cap() - 1) )
+            if( !max || shifts < max || count != (seq.size() - 1) )
                 seq[count]::quarter => now;
             else
             {

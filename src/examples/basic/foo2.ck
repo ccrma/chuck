@@ -21,7 +21,7 @@ spork ~ dopan();
 while( true )
 {
     Std.mtof( 33 + Math.random2(0,3) * 12 +
-        hi[Math.random2(0,hi.cap()-1)] ) => s.freq;
+        hi[Math.random2(0,hi.size()-1)] ) => s.freq;
     120::ms => now;
 }
 

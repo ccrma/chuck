@@ -64,13 +64,13 @@
 
 // array
 complex arr[10];
-<<< arr.cap() >>>;
+<<< arr.size() >>>;
 <<< arr[0] >>>;
 #(10, 11) => arr[1];
 <<< arr[1] >>>;
 
 polar brr[10];
-<<< brr.cap() >>>;
+<<< brr.size() >>>;
 <<< brr[0] >>>;
 %(5,pi) => brr[1];
 <<< brr[1] >>>;
@@ -85,7 +85,7 @@ polar brr[10];
 
 // arrays
 [ #(1,2), #(3,4), #(5,6) ] @=> complex cs[];
-polar ps[cs.cap()];
+polar ps[cs.size()];
 // convert
 Math.rtop( cs, ps );
 <<< ps[0], ps[1], ps[2] >>>;

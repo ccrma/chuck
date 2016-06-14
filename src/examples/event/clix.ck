@@ -27,7 +27,7 @@ Impulse i => BiQuad f => Envelope e => JCRev r => dac;
   0.4, 0.1, 0.3, 0.2, 0.3, 0.1, 0.2, 0.1 ] @=> float mygains[];
 
 // capacity
-mygains.cap() => int N;
+mygains.size() => int N;
 // total period
 N * T => dur period;
 
