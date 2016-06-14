@@ -10,7 +10,7 @@ MidiIn min[16];
 int devices;
 
 // loop
-for( int i; i < min.cap(); i++ )
+for( int i; i < min.size(); i++ )
 {
     // no print err
     min[i].printerr( 0 );

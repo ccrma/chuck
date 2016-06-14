@@ -1,7 +1,7 @@
 
 SerialIO.list() @=> string list[];
 
-for(int i; i < list.cap(); i++)
+for(int i; i < list.size(); i++)
 {
     chout <= i <= ": " <= list[i] <= IO.newline();
 }
@@ -14,7 +14,7 @@ while(true)
     cereal.onBytes(4) => now;
     cereal.getBytes() @=> int bytes[];
     chout <= "bytes: ";
-    for(int i; i < bytes.cap(); i++)
+    for(int i; i < bytes.size(); i++)
     {
         chout <= bytes[i] <= " ";
     }

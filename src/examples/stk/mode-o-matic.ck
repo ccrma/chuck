@@ -72,7 +72,7 @@ while( true )
     // position
     Math.random2f( 0.2, 0.8 ) => modey.strikePosition;
     // frequency...
-    scale[Math.random2(0,scale.cap()-1)] => int freq;
+    scale[Math.random2(0,scale.size()-1)] => int freq;
     Std.mtof( 45 + Math.random2(0,4)*12 + freq ) => modey.freq;
 
     // pluck it!

@@ -23,7 +23,7 @@ while( true )
     <<< "volume:", bottle.volume() >>>;
 
     // set freq
-    scale[Math.random2(0,scale.cap()-1)] + 57 => Std.mtof => bottle.freq;
+    scale[Math.random2(0,scale.size()-1)] + 57 => Std.mtof => bottle.freq;
     // go
     .8 => bottle.noteOn;
 
