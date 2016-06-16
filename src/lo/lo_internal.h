@@ -5,7 +5,7 @@
 #include "config.h"
 #endif
 
-#include <lo/lo_osc_types.h>
+#include "lo/lo_osc_types.h"
 
 /**
  * \brief Validate raw OSC string data. Where applicable, data should be

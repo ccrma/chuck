@@ -499,7 +499,7 @@ public:
         return TRUE;
     }
     
-    t_CKBOOL add(int i)
+    t_CKBOOL add(t_CKINT i)
     {
         if(m_message == NULL)
         {
@@ -507,12 +507,12 @@ public:
             return FALSE;
         }
         
-        lo_message_add_int32(m_message, i);
+        lo_message_add_int32(m_message, (int32_t)i);
         
         return TRUE;
     }
     
-    t_CKBOOL add(float f)
+    t_CKBOOL add(t_CKFLOAT f)
     {
         if(m_message == NULL)
         {
@@ -520,7 +520,7 @@ public:
             return FALSE;
         }
         
-        lo_message_add_float(m_message, f);
+        lo_message_add_float(m_message, (float)f);
         
         return TRUE;
     }
@@ -690,7 +690,7 @@ CK_DLL_MFUN(oscout_addInt)
     
     t_CKINT i = GET_NEXT_INT(ARGS);
     
-    if(!out->add((int)i))
+    if(!out->add(i))
         goto error;
     
     RETURN->v_object = SELF;
@@ -707,7 +707,7 @@ CK_DLL_MFUN(oscout_addFloat)
     
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
     
-    if(!out->add((float)f))
+    if(!out->add(f))
         goto error;
     
     RETURN->v_object = SELF;
@@ -1042,6 +1042,7 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     /*** OscOut ***/
     
     query->begin_class(query, "OscOut", "Object");
+    query->doc_class(query, "Class for sending OSC messages. ");
     
     oscout_offset_data = query->add_mvar(query, "int", "@OscOut_data", FALSE);
     

@@ -172,12 +172,16 @@ typedef const Chuck_DL_Api::Api *CK_DL_API;
 // macro for declaring version of ChucK DL a given DLL links to
 // example: CK_DLL_DECLVERSION
 #define CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKUINT) ck_version() { return CK_DLL_VERSION; }
+// naming convention for static query functions
+#define CK_DLL_QUERY_STATIC_NAME(name) ck_##name##_query
+// macro for defining ChucK DLL export query-functions (static version)
+#define CK_DLL_QUERY_STATIC(name) CK_DLL_EXPORT(t_CKBOOL) CK_DLL_QUERY_STATIC_NAME(name)( Chuck_DL_Query * QUERY )
 // macro for defining ChucK DLL export query-functions
 // example: CK_DLL_QUERY
 #ifndef __CK_DLL_STATIC__
 #define CK_DLL_QUERY(name) CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKBOOL) ck_query( Chuck_DL_Query * QUERY )
 #else 
-#define CK_DLL_QUERY(name) CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKBOOL) ck_##name_query( Chuck_DL_Query * QUERY )
+#define CK_DLL_QUERY(name) CK_DLL_DECLVERSION CK_DLL_QUERY_STATIC(name)
 #endif // __CK_DLL_STATIC__
 // macro for defining ChucK DLL export allocator
 // example: CK_DLL_ALLOC(foo)

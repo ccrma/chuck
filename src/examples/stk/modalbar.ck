@@ -31,7 +31,7 @@ while( true )
     <<< "master gain:", bar.masterGain() >>>;
 
     // set freq
-	scale[Math.random2(0,scale.cap()-1)] => int winner;
+	scale[Math.random2(0,scale.size()-1)] => int winner;
     57 + Math.random2(0,2)*12 + winner => Std.mtof => bar.freq;
     // go
     .8 => bar.noteOn;

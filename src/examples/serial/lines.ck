@@ -1,7 +1,7 @@
 
 SerialIO.list() @=> string list[];
 
-for(int i; i < list.cap(); i++)
+for(int i; i < list.size(); i++)
 {
     chout <= i <= ": " <= list[i] <= IO.newline();
 }
@@ -10,7 +10,7 @@ for(int i; i < list.cap(); i++)
 0 => int device;
 if(me.args()) me.arg(0) => Std.atoi => device;
 
-if(device >= list.cap())
+if(device >= list.size())
 {
     cherr <= "serial device #" <= device <= " not available\n";
     me.exit(); 

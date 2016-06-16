@@ -2,7 +2,9 @@
 OscIn oin;
 OscMsg msg;
 
-6449 => oin.port;
+12003 => int OSC_PORT;
+
+OSC_PORT => oin.port;
 oin.addAddress( "/test, ifs" );
 
 spork ~ send();
@@ -20,13 +22,18 @@ fun void send()
 {
     1::samp => now;
     
-    OscOut xmit;
-    xmit.dest( "localhost", 6449 );   
-    xmit.start( "/test" );
-    xmit.add(42);
-    xmit.add(3.141);
-    xmit.add("hello!");
-    xmit.send();
+    while(true)
+    {
+        OscOut xmit;
+        xmit.dest( "localhost", OSC_PORT );
+        xmit.start( "/test" );
+        xmit.add(42);
+        xmit.add(3.141);
+        xmit.add("hello!");
+        xmit.send();
+        
+        1::second => now;
+    }
 }
 
 

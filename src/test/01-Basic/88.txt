@@ -1,0 +1,1 @@
+[chuck](VM): DivideByZeroException: on line[4] in shred[id=1:./01-Basic/88.ck]

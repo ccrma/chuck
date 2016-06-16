@@ -148,15 +148,21 @@ void xcorr_normalize( SAMPLE * buffy, t_CKINT bs, SAMPLE * f, t_CKINT fs, SAMPLE
 DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
 {
     Chuck_Env * env = Chuck_Env::instance();
-
     Chuck_DL_Func * func = NULL;
+    
+    std::string doc;
 
     //---------------------------------------------------------------------
     // init as base class: FeatureCollector
     //---------------------------------------------------------------------
+    
+    doc = "Turns UAna input into a single feature vector, upon .upchuck()";
+    
     if( !type_engine_import_uana_begin( env, "FeatureCollector", "UAna", env->global(), 
                                         NULL, NULL,
-                                        FeatureCollector_tick, FeatureCollector_tock, FeatureCollector_pmsg ) )
+                                        FeatureCollector_tick, FeatureCollector_tock, FeatureCollector_pmsg,
+                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        doc.c_str()) )
         return FALSE;
 
     // end the class import
@@ -165,14 +171,20 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: Centroid
     //---------------------------------------------------------------------
+    
+    doc = "This UAna computes the spectral centroid from a magnitude spectrum (either from incoming UAna or manually given), and outputs one value in its blob.";
+    
     if( !type_engine_import_uana_begin( env, "Centroid", "UAna", env->global(), 
                                         NULL, NULL,
-                                        Centroid_tick, Centroid_tock, Centroid_pmsg ) )
+                                        Centroid_tick, Centroid_tock, Centroid_pmsg,
+                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        doc.c_str()) )
         return FALSE;
 
     // compute
     func = make_new_sfun( "float", "compute", Centroid_compute );
     func->add_arg( "float[]", "input" );
+    func->doc = "Manually computes the centroid from a float array.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // end the class import
@@ -181,9 +193,14 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: Flux
     //---------------------------------------------------------------------
+    
+    doc = "This UAna computes the spectral flux between successive magnitude spectra (via incoming UAna, or given manually), and outputs one value in its blob.";
+    
     if( !type_engine_import_uana_begin( env, "Flux", "UAna", env->global(), 
                                         Flux_ctor, Flux_dtor,
-                                        Flux_tick, Flux_tock, Flux_pmsg ) )
+                                        Flux_tick, Flux_tock, Flux_pmsg,
+                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        doc.c_str()) )
         return FALSE;
 
     // data offset
@@ -192,12 +209,14 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
 
     // compute
     func = make_new_mfun( "void", "reset", Flux_ctrl_reset );
+    func->doc = "Reset the extractor.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // compute
     func = make_new_sfun( "float", "compute", Flux_compute );
     func->add_arg( "float[]", "lhs" );
     func->add_arg( "float[]", "rhs" );
+    func->doc = "Manually computes the flux between two frames.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // compute2
@@ -205,6 +224,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "lhs" );
     func->add_arg( "float[]", "rhs" );
     func->add_arg( "float[]", "diff" );
+    func->doc = "Manually computes the flux between two frames, and stores the difference in a third array.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // end the class import
@@ -213,14 +233,20 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: RMS
     //---------------------------------------------------------------------
+    
+    doc = "This UAna computes the RMS power mean from a magnitude spectrum (either from an incoming UAna, or given manually), and outputs one value in its blob.";
+    
     if( !type_engine_import_uana_begin( env, "RMS", "UAna", env->global(), 
                                         NULL, NULL,
-                                        RMS_tick, RMS_tock, RMS_pmsg ) )
+                                        RMS_tick, RMS_tock, RMS_pmsg,
+                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        doc.c_str()) )
         return FALSE;
 
     // compute
     func = make_new_sfun( "float", "compute", RMS_compute );
     func->add_arg( "float[]", "input" );
+    func->doc = "Manually computes the RMS from a float array.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // end the class import
@@ -229,9 +255,14 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: RollOff
     //---------------------------------------------------------------------
+    
+    doc = "This UAna computes the spectral rolloff from a magnitude spectrum (either from incoming UAna, or given manually), and outputs one value in its blob.";
+    
     if( !type_engine_import_uana_begin( env, "RollOff", "UAna", env->global(), 
                                         RollOff_ctor, RollOff_dtor,
-                                        RollOff_tick, RollOff_tock, RollOff_pmsg ) )
+                                        RollOff_tick, RollOff_tock, RollOff_pmsg,
+                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        doc.c_str()) )
         return FALSE;
 
     // data offset
@@ -241,16 +272,19 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // compute
     func = make_new_mfun( "float", "percent", RollOff_ctrl_percent );
     func->add_arg( "float", "percent" );
+    func->doc = "Set the percentage for computing rolloff.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // compute
     func = make_new_mfun( "float", "percent", RollOff_cget_percent );
+    func->doc = "Get the percentage specified for the rolloff.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // compute
     func = make_new_sfun( "float", "compute", RollOff_compute );
     func->add_arg( "float[]", "input" );
     func->add_arg( "float", "percent" );
+    func->doc = "Manually computes the rolloff from a float array.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // end the class import
@@ -322,9 +356,14 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: zerox
     //---------------------------------------------------------------------
+    
+    doc = "Zero crossing detector.";
+    
     if( !type_engine_import_uana_begin( env, "ZeroX", "UAna", env->global(), 
                                         ZeroX_ctor, ZeroX_dtor,
-                                        ZeroX_tick, ZeroX_tock, NULL ) )
+                                        ZeroX_tick, ZeroX_tock, NULL,
+                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        doc.c_str()) )
         return FALSE;
 
     // data offset
@@ -334,6 +373,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // compute
     func = make_new_sfun( "float", "compute", ZeroX_compute );
     func->add_arg( "float[]", "input" );
+    func->doc = "Manually computes the zero crossing rate for an array.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // end import

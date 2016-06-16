@@ -24,7 +24,7 @@ while( true )
     which => modey.preset;
 
     // frequency...
-    scale[Math.random2(0,scale.cap()-1)] => int freq;
+    scale[Math.random2(0,scale.size()-1)] => int freq;
     Math.mtof( 33 + (Math.random2(0,3)*12) + freq ) => modey.freq;
 
     // velocity

@@ -4,8 +4,15 @@
             - access .x .y .z OR .r .g .b OR .value .goal .slew
   - (added) support for primitive type 'vec4' for 4D vector
             - access .x .y .z .w OR .r .g .b .a
+  - (added) VM exceptions (e.g., ArrayOutOfBounds) now print line number
+            where possible (thanks Jack Atherton!)
+  - (added) Math.gauss( x, mu, sigma )
+  - (added) .clear() for Delay, DelayA, DelayL
   - (fixed) - == and != for polar and complex types
   - (fixed) repeat statement now worked correctly for shreds
+  - (fixed) crash with --adaptive:N and ugens that used tickf e.g. WvOut2
+  - (fixed) SndBuf occasional crash at end of file
+  - (fixed)(Win) install issue where chugins and/or example files were missing
   - (removed) --blocking functionality; callback only for real-time audio
   - (internal) refactored VM to be more friendly for integration
 

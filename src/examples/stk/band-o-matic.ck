@@ -52,7 +52,7 @@ while( true )
         0.5::second *  Math.random2(1,3) => now;
 
         // scale
-        scale[Math.random2(0, scale.cap()-1)] => int freq;
+        scale[Math.random2(0, scale.size()-1)] => int freq;
         Std.mtof( 21 + Math.random2(0,5) * 12 + freq ) => band.freq;
         // note: Math.randomf() returns value between 0 and 1
         if( Math.randomf() > 0.85 ) 

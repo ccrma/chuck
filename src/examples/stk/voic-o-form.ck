@@ -84,6 +84,6 @@ while( true )
     }
 
     // pentatonic
-    scale[Math.random2(0,scale.cap()-1)] => int freq;
+    scale[Math.random2(0,scale.size()-1)] => int freq;
     Std.mtof( ( 45 + Math.random2(0,2) * 12 + freq ) ) => voc.freq;
 }

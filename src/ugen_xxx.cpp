@@ -349,8 +349,9 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: cnoise
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "CNoise", "UGen", env->global(), 
-                                        cnoise_ctor, cnoise_dtor, cnoise_tick, NULL ) )
+    doc = "Noise generator with multiple noise synthesis modes. ";
+    if( !type_engine_import_ugen_begin( env, "CNoise", "UGen", env->global(),
+                                        cnoise_ctor, cnoise_dtor, cnoise_tick, NULL, doc.c_str() ) )
         return FALSE;
 
     // add member variable
@@ -360,6 +361,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add ctrl: mode
     func = make_new_mfun( "string", "mode", cnoise_ctrl_mode );
     func->add_arg( "string", "mode" );
+    func->doc = "Noise synthesis mode. Supported modes are &quot;white&quot;, &quot;pink&quot;, &quot;flip&quot;, and &quot;xor&quot;.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: mode
     //func = make_new_mfun( "string", "mode", cnoise_cget_mode );
@@ -367,6 +369,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 
     // add ctrl: fprob
     func = make_new_mfun( "float", "fprob", cnoise_ctrl_fprob );
+    func->doc = "Probability [0-1] used for calculating XOR noise.";
     func->add_arg( "float", "fprob" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: fprob
@@ -863,7 +866,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     //add cget: attackTime
-    func = make_new_mfun( "dur", "attackTime", dyno_ctrl_attackTime );
+    func = make_new_mfun( "dur", "attackTime", dyno_cget_attackTime );
     func->doc = "Duration for the envelope to move linearly from current value to the absolute value of the signal's amplitude.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
@@ -874,7 +877,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     //add ctrl: releaseTime
-    func = make_new_mfun( "dur", "releaseTime", dyno_ctrl_releaseTime );
+    func = make_new_mfun( "dur", "releaseTime", dyno_cget_releaseTime );
     func->doc = "Duration for the envelope to decay down to around 1/10 of its current amplitude, if not brought back up by the signal.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
@@ -1405,6 +1408,8 @@ CK_DLL_TICK( foogen_tick )
         data->shred->instr = data->shred->code->instr;
         // zero out the id
         data->shred->xid = 0;
+        // set vmRef
+        data->shred->vm_ref = data->vm;
         
         // set input
         data->input = in;
@@ -2021,7 +2026,7 @@ struct delayp_data
         t_CKINT i;
         
         for ( i = 0 ; i < bufsize ; i++ ) buffer[i] = 0;
-        for ( i = 0 ; i < 3 ; i++ ) { acoeff[i] = 0; bcoeff[i] = 0; }
+        for ( i = 0 ; i < 2 ; i++ ) { acoeff[i] = 0; bcoeff[i] = 0; }
         
         acoeff[0] = 1.0;
         acoeff[1] = -.99;
@@ -2609,8 +2614,8 @@ inline t_CKUINT sndbuf_read( sndbuf_data * d, t_CKUINT frame, t_CKUINT num_frame
 inline t_CKINT sndbuf_load( sndbuf_data * d, t_CKUINT sample )
 {
     // map to bin
-    t_CKUINT bin = floorf(((t_CKFLOAT) sample) / ((t_CKFLOAT) d->chunks));
-
+    t_CKUINT bin = floor(((t_CKFLOAT) sample) / ((t_CKFLOAT) d->chunks));
+    
     assert(bin < d->chunk_num);
     
     // already loaded
@@ -2644,9 +2649,14 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
     else
     {
         if( d->curf < 0 ) d->curf = 0;
-        else if( d->curf > d->num_frames ) d->curf = d->num_frames; // ge:
+        else if( d->curf >= d->num_frames )
+        {
+            d->curf = d->num_frames; // ge:
+            d->current_val = 0;
+            return;
+        }
     }
-
+    
     t_CKUINT index = d->chan + ((t_CKINT)d->curf) * d->num_channels;
     // ensure load
     if( d->fd != NULL ) sndbuf_load( d, index );
@@ -2865,7 +2875,7 @@ CK_DLL_TICK( sndbuf_tick )
     // we're ticking once per sample ( system )
     // curf in samples;
     
-    if( !d->loop && d->curf > d->num_frames )
+    if( !d->loop && d->curf >= d->num_frames )
     {
         *out = 0;
         return TRUE;

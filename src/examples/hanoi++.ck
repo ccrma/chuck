@@ -27,7 +27,7 @@ me.dir() + "/data/kick.wav" => pegs[2].read;
 me.dir() + "/data/snare-hop.wav" => pegs[3].read;
 
 // connect to gain
-for( 1 => int i; i < pegs.cap(); i++ )
+for( 1 => int i; i < pegs.size(); i++ )
     pegs[i] => g;
 
 // the hanoi

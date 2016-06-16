@@ -51,12 +51,35 @@ using namespace std;
 
 
 //-----------------------------------------------------------------------------
+// name: Chuck_Instr()
+// desc: base class constructor
+//-----------------------------------------------------------------------------
+Chuck_Instr::Chuck_Instr() {
+    // set linepos to 0 so we can tell later whether it has been set properly
+    m_linepos = 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: name()
 // desc: ...
 //-----------------------------------------------------------------------------
 const char * Chuck_Instr::name() const
 {
      return mini_type( typeid(*this).name() );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_linepos()
+// desc: store line position for error messages
+//-----------------------------------------------------------------------------
+void Chuck_Instr::set_linepos(t_CKUINT linepos) {
+    m_linepos = linepos;
 }
 
 
@@ -291,7 +314,21 @@ void Chuck_Instr_Divide_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
     pop_( sp, 2 );
+    if( val_(sp+1) == 0 ) goto div_zero;
     push_( sp, val_(sp) / val_(sp+1) );
+    
+    return;
+div_zero:
+    // we have a problem
+    fprintf( stderr,
+        "[chuck](VM): DivideByZeroException: on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str());
+    goto done;
+
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
@@ -305,7 +342,21 @@ void Chuck_Instr_Divide_int_Reverse::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 {
     t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
     pop_( sp, 2 );
+    if( val_(sp) == 0 ) goto div_zero;
     push_( sp, val_(sp+1) / val_(sp) );
+    
+    return;
+div_zero:
+    // we have a problem
+    fprintf( stderr,
+        "[chuck](VM): DivideByZeroException: on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str());
+    goto done;
+
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
@@ -1062,8 +1113,22 @@ void Chuck_Instr_Divide_int_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 {
     t_CKINT temp, *& sp = (t_CKINT *&)shred->reg->sp;
     pop_( sp, 2 );
+    if( val_(sp) == 0 ) goto div_zero;
     temp = **(t_CKINT **)(sp+1) /= val_(sp);
     push_( sp, temp );
+    
+    return;
+div_zero:
+    // we have a problem
+    fprintf( stderr,
+        "[chuck](VM): DivideByZeroException: on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str());
+    goto done;
+
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
@@ -1584,9 +1649,9 @@ void Chuck_Instr_Add_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (string + string) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (string + string) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() ); // , shred->pc );
     goto done;
 
 done:
@@ -1628,9 +1693,9 @@ void Chuck_Instr_Add_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (string + string) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (string +=> string) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 done:
@@ -1676,9 +1741,9 @@ void Chuck_Instr_Add_string_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (string + int) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (string + int) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 done:
@@ -1724,9 +1789,9 @@ void Chuck_Instr_Add_string_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (string + float) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (string + float) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 done:
@@ -1772,9 +1837,9 @@ void Chuck_Instr_Add_int_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (int + string) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (int + string) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 done:
@@ -1820,9 +1885,9 @@ void Chuck_Instr_Add_float_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (int + string) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (int + string) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 done:
@@ -1864,9 +1929,9 @@ void Chuck_Instr_Add_int_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred *
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: () in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: () on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 done:
@@ -1908,9 +1973,9 @@ void Chuck_Instr_Add_float_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (string + string) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (string + string) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 done:
@@ -4513,9 +4578,9 @@ void Chuck_Instr_Time_Advance::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( *sp < shred->now )
     {
         // we have a problem
-        fprintf( EM_getfd(),
-            "[chuck](VM): DestTimeNegativeException: '%.6f' in shred[id=%lu:%s], PC=[%lu]\n",
-            *sp, shred->xid, shred->name.c_str(), shred->pc );
+        fprintf( EM_getfd(), 
+            "[chuck](VM): DestTimeNegativeException: '%.6f' on line[%lu] in shred[id=%lu:%s]\n",
+            *sp, m_linepos, shred->xid, shred->name.c_str() );
         // do something!
         shred->is_running = FALSE;
         shred->is_done = TRUE;
@@ -4560,9 +4625,9 @@ void Chuck_Instr_Event_Wait::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (null Event wait) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (null Event wait) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 done:
@@ -4760,8 +4825,8 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 out_of_memory:
 
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): OutOfMemory: while initializing arrays\n" );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): OutOfMemory: while initializing arrays on line[%lu]\n", m_linepos );
 
     // do something!
     shred->is_running = FALSE;
@@ -5060,8 +5125,9 @@ out_of_memory:
     goto error;
 
 error:
-    fprintf( EM_getfd(),
-        "[chuck](VM):     (note: in shred[id=%lu:%s])\n", shred->xid, shred->name.c_str() );
+    fprintf( EM_getfd(), 
+        "[chuck](VM):     (note: on line[%lu] in shred[id=%lu:%s])\n",
+        m_linepos, shred->xid, shred->name.c_str() );
 
     // done
     shred->is_running = FALSE;
@@ -5214,16 +5280,16 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (array access) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (array access) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() ); // shred->pc removed
     goto done;
 
 array_out_of_bound:
     // we have a problem
-    fprintf( EM_getfd(),
-             "[chuck](VM): ArrayOutofBounds: in shred[id=%lu:%s], PC=[%lu], index=[%ld]\n", 
-             shred->xid, shred->name.c_str(), shred->pc, i );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): ArrayOutofBounds: on line[%lu] in shred[id=%lu:%s], index=[%ld]\n",
+        m_linepos, shred->xid, shred->name.c_str(), i ); // shred->pc removed
     // go to done
     goto done;
 
@@ -5378,16 +5444,16 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (map access) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (map access) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() ); // shred->pc
     goto done;
 
 error:
     // we have a problem
-    fprintf( EM_getfd(),
-             "[chuck](VM): InternalArrayMap error: in shred[id=%lu:%s], PC=[%lu], index=[%s]\n", 
-             shred->xid, shred->name.c_str(), shred->pc, key->str.c_str() );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): InternalArrayMapError: on line[%lu] in shred[id=%lu:%s], index=[%s]\n",
+        m_linepos, shred->xid, shred->name.c_str(), key->str.c_str() ); // shred->pc
     goto done;
 
 done:
@@ -5579,18 +5645,18 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (array access) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
-    fprintf( EM_getfd(),
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (array access) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() ); // shred->pc
+    fprintf( EM_getfd(), 
         "[chuck](VM): (array dimension where exception occurred: %lu)\n", index );
     goto done;
 
 array_out_of_bound:
     // we have a problem
-    fprintf( EM_getfd(),
-             "[chuck](VM): ArrayOutofBounds: in shred[id=%lu:%s], PC=[%lu], index=[%ld]\n", 
-             shred->xid, shred->name.c_str(), shred->pc, i );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): ArrayOutofBounds: on line[%lu] in shred[id=%lu:%s], index=[%ld]\n",
+        m_linepos, shred->xid, shred->name.c_str(), i ); // shred->pc
     // go to done
     goto done;
 
@@ -5702,9 +5768,9 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (array append) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (array append) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 done:
@@ -5759,9 +5825,9 @@ void Chuck_Instr_Dot_Member_Data::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 error:
     // we have a problem
-    fprintf( EM_getfd(),
-             "[chuck](VM): NullPointerException: shred[id=%lu:%s], PC=[%lu]\n", 
-             shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
 
     // do something!
     shred->is_running = FALSE;
@@ -5800,9 +5866,9 @@ void Chuck_Instr_Dot_Member_Func::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 error:
     // we have a problem
-    fprintf( EM_getfd(),
-             "[chuck](VM): NullPointerException: shred[id=%lu:%s], PC=[%lu]\n", 
-             shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+             "[chuck](VM): NullPointerException: on line[%lu] in shred[id=%lu:%s]\n",
+            m_linepos, shred->xid, shred->name.c_str() );
 
     // do something!
     shred->is_running = FALSE;
@@ -6319,16 +6385,16 @@ void Chuck_Instr_Op_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (during string op) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (string op) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 invalid_op:
     // we have a problem
     fprintf( EM_getfd(),
-        "[chuck](VM): InvalidStringOpException: '%lu' in shred[id=%lu:%s], PC=[%lu]\n",
-        m_val, shred->xid, shred->name.c_str(), shred->pc );
+        "[chuck](VM): InvalidStringOpException: '%lu' on line[%lu] in shred[id=%lu:%s]\n",
+        m_val, m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 done:
@@ -6441,8 +6507,8 @@ void Chuck_Instr_UGen_Link::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 null_pointer:
     // we have a problem
     fprintf( EM_getfd(),
-            "[chuck](VM): NullPointerException: (UGen link) in shred[id=%lu:%s], PC=[%lu]\n",
-            shred->xid, shred->name.c_str(), shred->pc );
+        "[chuck](VM): NullPointerException: (UGen link) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     
     // do something!
     shred->is_running = FALSE;
@@ -6488,8 +6554,8 @@ void Chuck_Instr_UGen_Array_Link::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 null_pointer:
     // we have a problem
     fprintf( EM_getfd(),
-            "[chuck](VM): NullPointerException: (UGen link) in shred[id=%lu:%s], PC=[%lu]\n",
-            shred->xid, shred->name.c_str(), shred->pc );
+        "[chuck](VM): NullPointerException: (UGen link) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     
     // do something!
     shred->is_running = FALSE;
@@ -6669,8 +6735,8 @@ void Chuck_Instr_Dec_Loop_Counter::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 error:
     // we have a problem
     fprintf( EM_getfd(),
-            "[chuck](VM): loop counter error: in shred[id=%lu:%s], PC=[%lu]\n",
-            shred->xid, shred->name.c_str(), shred->pc );
+        "[chuck](VM): LoopCounterError: on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
     
 done:
@@ -6705,8 +6771,8 @@ void Chuck_Instr_Reg_Push_Loop_Counter_Deref::execute( Chuck_VM * vm, Chuck_VM_S
 error:
     // we have a problem
     fprintf( EM_getfd(),
-            "[chuck](VM): loop counter error: in shred[id=%lu:%s], PC=[%lu]\n",
-            shred->xid, shred->name.c_str(), shred->pc );
+        "[chuck](VM): LoopCounterError: on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
     
 done:
@@ -6764,9 +6830,9 @@ void Chuck_Instr_IO_in_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (IO input int) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (IO input int) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 done:
@@ -6806,9 +6872,9 @@ void Chuck_Instr_IO_in_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (IO input float) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (IO input float) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 done:
@@ -6854,11 +6920,11 @@ void Chuck_Instr_IO_in_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-            "[chuck](VM): NullPointerException: (IO input string) in shred[id=%lu:%s], PC=[%lu]\n",
-            shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (IO input string) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
-    
+
 done:
     // do something!
     shred->is_running = FALSE;
@@ -6896,9 +6962,9 @@ void Chuck_Instr_IO_out_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-        "[chuck](VM): NullPointerException: (IO output int) in shred[id=%lu:%s], PC=[%lu]\n",
-        shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (IO output int) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
         
 done:
@@ -6938,9 +7004,9 @@ void Chuck_Instr_IO_out_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-            "[chuck](VM): NullPointerException: (IO output float) in shred[id=%lu:%s], PC=[%lu]\n",
-            shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (IO output float) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
     
 done:
@@ -6982,9 +7048,9 @@ void Chuck_Instr_IO_out_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     
 null_pointer:
     // we have a problem
-    fprintf( EM_getfd(),
-            "[chuck](VM): NullPointerException: (IO output string) in shred[id=%lu:%s], PC=[%lu]\n",
-            shred->xid, shred->name.c_str(), shred->pc );
+    fprintf( EM_getfd(), 
+        "[chuck](VM): NullPointerException: (IO output string) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
     goto done;
     
 done:
@@ -7077,7 +7143,7 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         }
         else
         {
-            fprintf( err_fd, "[chuck]: internal error printing 24-word primitive...\n" );
+            fprintf( err_fd, "[chuck]: internal error printing 32-word primitive...\n" );
         }
     }
     else if( m_type_ref->size == 0 )
@@ -7235,8 +7301,8 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name)
     
     // we have a problem
     fprintf( err_fd,
-            "[chuck](VM): %s: shred[id=%lu:%s], PC=[%lu]\n",
-            name, shred->xid, shred->name.c_str(), shred->pc );
+            "[chuck](VM): %s: on line[%lu] in shred[id=%lu:%s]\n",
+            name, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
     shred->is_running = FALSE;
     shred->is_done = TRUE;
@@ -7249,8 +7315,8 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKINT desc)
     
     // we have a problem
     fprintf( err_fd,
-            "[chuck](VM): %s: '%li' in shred[id=%lu:%s], PC=[%lu]\n",
-            name, desc, shred->xid, shred->name.c_str(), shred->pc );
+            "[chuck](VM): %s: '%li' on line[%lu] in shred[id=%lu:%s]\n",
+            name, desc, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
     shred->is_running = FALSE;
     shred->is_done = TRUE;
@@ -7263,8 +7329,8 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKFLOAT desc)
     
     // we have a problem
     fprintf( err_fd,
-            "[chuck](VM): %s: '%f' in shred[id=%lu:%s], PC=[%lu]\n",
-            name, desc, shred->xid, shred->name.c_str(), shred->pc );
+            "[chuck](VM): %s: '%f' on line[%lu] in shred[id=%lu:%s]\n",
+            name, desc, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
     shred->is_running = FALSE;
     shred->is_done = TRUE;
@@ -7277,8 +7343,8 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name, const char * des
     
     // we have a problem
     fprintf( err_fd,
-            "[chuck](VM): %s: %s in shred[id=%lu:%s], PC=[%lu]\n",
-            name, desc, shred->xid, shred->name.c_str(), shred->pc );
+            "[chuck](VM): %s: %s on line[%lu] in shred[id=%lu:%s]\n",
+            name, desc, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
     shred->is_running = FALSE;
     shred->is_done = TRUE;
