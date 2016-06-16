@@ -181,7 +181,7 @@ typedef const Chuck_DL_Api::Api *CK_DL_API;
 #ifndef __CK_DLL_STATIC__
 #define CK_DLL_QUERY(name) CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKBOOL) ck_query( Chuck_DL_Query * QUERY )
 #else 
-#define CK_DLL_QUERY(name) CK_DLL_DECLVERSION CK_DLL_QUERY_STATIC(name)
+#define CK_DLL_QUERY(name) CK_DLL_QUERY_STATIC(name)
 #endif // __CK_DLL_STATIC__
 // macro for defining ChucK DLL export allocator
 // example: CK_DLL_ALLOC(foo)
