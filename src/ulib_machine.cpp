@@ -64,6 +64,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 
     // class
     QUERY->begin_class( QUERY, "Machine", "Object" );
+    QUERY->doc_class( QUERY, "Machine is ChucK runtime interface to the virtual machine. this interface can be used to manage shreds. They are similar to the On-the-fly Programming Commands, except these are invoked from within a ChucK program, and are subject to the timing mechanism." );
 
     // add add
     //! compile and spork a new shred from file at 'path' into the VM now
@@ -71,6 +72,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     //! (see example/machine.ck)
     QUERY->add_sfun( QUERY, machine_add_impl, "int", "add" );
     QUERY->add_arg( QUERY, "string", "path" );
+    QUERY->doc_func( QUERY, "Compile and spork a new shred from file at 'path' into the VM now, returns the shred ID.");
     
     // add spork
     //! same as add
@@ -81,6 +83,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     //! remove shred from VM by shred ID (returned by add/spork)
     QUERY->add_sfun( QUERY, machine_remove_impl, "int", "remove" );
     QUERY->add_arg( QUERY, "int", "id" );
+    QUERY->doc_func( QUERY, "Remove shred from VM by shred ID (returned by Machine.add).");
 
     // add replace
     //! replace shred with new shred from file
@@ -88,16 +91,20 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, machine_replace_impl, "int", "replace" );
     QUERY->add_arg( QUERY, "int", "id" );
     QUERY->add_arg( QUERY, "string", "path" );
+    QUERY->doc_func( QUERY, "Replace shred with new shred from file. Returns shred ID , or 0 on error.");
+
 
     // add replace
     //! replace shred with new shred from file
     //! returns shred ID , or 0 on error 
     QUERY->add_sfun( QUERY, machine_crash_impl, "void", "crash" );
+    QUERY->doc_func( QUERY, "Literally causes the VM to crash. the very last resort; use with care. Thanks.");
 
     // add status
     //! display current status of VM
-    //! (see example/status.ck)
+    //! (see example/status.ck) display current status of VM
     QUERY->add_sfun( QUERY, machine_status_impl, "int", "status" );
+    QUERY->doc_func( QUERY, "Display the current status of VM.");
     
     // add get intsize (width)
     //! get the intsize in bits (e.g., 32 or 64)
