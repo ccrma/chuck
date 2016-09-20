@@ -564,6 +564,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: delayp
     //---------------------------------------------------------------------
+    
     if( !type_engine_import_ugen_begin( env, "DelayP", "UGen", env->global(), 
                                         delayp_ctor, delayp_dtor, 
                                         delayp_tick, delayp_pmsg ) )
@@ -595,6 +596,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error; 
     // add cget: max
     func = make_new_mfun( "dur", "max", delayp_cget_max );
+
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
@@ -970,6 +972,7 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
 {
     Chuck_Env * env = Chuck_Env::instance();
     Chuck_DL_Func * func = NULL;
+    std::string doc;
 
     //---------------------------------------------------------------------
     // init class: LiSa; overloaded class for both LiSaBasic and LiSaMulti
@@ -977,251 +980,321 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     // author: Dan Trueman (dan /at/ music.princeton.edu)
     //---------------------------------------------------------------------
 	
-    
+    doc = "LiSa provides basic live sampling functionality.\
+    An internal buffer stores samples chucked to LiSa's input.\
+    Segments of this buffer can be played back, with ramping and\
+    speed/direction control.\
+    Multiple voice facility is built in, allowing for a single\
+        LiSa object to serve as a source for sample layering and\
+            granular textures. \
+            by Dan Trueman (2007)";
     if( !type_engine_import_ugen_begin( env, "LiSa", "UGen", env->global(),
                                         LiSaMulti_ctor, LiSaMulti_dtor,
                                         LiSaMulti_tick, NULL,
-                                        LiSaMulti_pmsg, 1, 1 ))
+                                        LiSaMulti_pmsg, 1, 1, doc.c_str() ))
         return FALSE;
 	
     // set/get buffer size
     func = make_new_mfun( "dur", "duration", LiSaMulti_size );
+    func->doc = "Set buffer size; required to allocate memory, also resets all parameter values to default.";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 	func = make_new_mfun( "dur", "duration", LiSaMulti_cget_size );
+    func->doc = "Get buffer size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // start/stop recording
     func = make_new_mfun( "int", "record", LiSaMulti_start_record );
+    func->doc = "Turn recording on and off";
     func->add_arg( "int", "toggle" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // start/stop playing
     func = make_new_mfun( "int", "play", LiSaMulti_start_play );
+    func->doc = "For particular voice (arg 1), turn on/off sample playback";
     func->add_arg( "int", "voice" );
     func->add_arg( "int", "toggle" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "play", LiSaMulti_start_play0 );
+    func->doc = "Turn on/off sample playback (voice 0)";
     func->add_arg( "int", "toggle" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // set/get playback rate
     func = make_new_mfun( "float", "rate", LiSaMulti_ctrl_rate );
+    func->doc = "For particular voice (arg 1), set playback rate";
     func->add_arg( "int", "voice" );
     func->add_arg( "float", "val" );
 	if( !type_engine_import_mfun( env, func ) ) goto error;
 	func = make_new_mfun( "float", "rate", LiSaMulti_cget_rate );
+    func->doc = "For particular voice (arg 1), get playback rate";
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "rate", LiSaMulti_ctrl_rate0 );
+    func->doc = "Set playback rate (voice 0). Note that the int/float type for this method will determine whether the rate is being set (float, for voice 0) or read (int, for voice number).";
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 	func = make_new_mfun( "float", "rate", LiSaMulti_cget_rate0 );
+    func->doc = "Get playback rate (voice 0).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // playback position
     func = make_new_mfun( "dur", "playPos", LiSaMulti_ctrl_pindex );
+    func->doc = "For particular voice (arg 1), set playback position.";
     func->add_arg( "int", "voice" );
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "playPos", LiSaMulti_cget_pindex );
+    func->doc = "For particular voice (arg 1), get playback position.";
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "playPos", LiSaMulti_ctrl_pindex0 );
+    func->doc = "Set playback position (voice 0).";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "playPos", LiSaMulti_cget_pindex0 );
+    func->doc = "Get playback position (voice 0).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // record position
     func = make_new_mfun( "dur", "recPos", LiSaMulti_ctrl_rindex );
+    func->doc = "Set record position.";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "recPos", LiSaMulti_cget_rindex );
+    func->doc = "Get record position.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // loopstart position
     func = make_new_mfun( "dur", "loopStart", LiSaMulti_ctrl_lstart );
+    func->doc = "For particular voice (arg 1), set loop starting point for playback. only applicable when .loop(voice, 1).";
     func->add_arg( "int", "voice" );
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopStart", LiSaMulti_cget_lstart );
+    func->doc = "For particular voice (arg 1), get loop starting point for playback. only applicable when .loop(voice, 1).";
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopStart", LiSaMulti_ctrl_lstart0 );
+    func->doc = "Set loop starting point for playback (voice 0). only applicable when 1 => loop.";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopStart", LiSaMulti_cget_lstart0 );
+    func->doc = "Get loop starting point for playback (voice 0). only applicable when 1 => loop.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // loopend position
     func = make_new_mfun( "dur", "loopEnd", LiSaMulti_ctrl_lend );
+    func->doc = "For particular voice (arg 1), set loop ending point for playback. only applicable when .loop(voice, 1).";
     func->add_arg( "int", "voice" );
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopEnd", LiSaMulti_cget_lend);
+     func->doc = "For particular voice (arg 1), get loop ending point for playback. only applicable when .loop(voice, 1).";
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopEnd", LiSaMulti_ctrl_lend0 );
+    func->doc = "Set loop ending point for playback (voice 0). only applicable when 1 => loop.";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopEnd", LiSaMulti_cget_lend0);
+    func->doc = "Get loop ending point for playback (voice 0). only applicable when 1 => loop.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // loop
     func = make_new_mfun( "int", "loop", LiSaMulti_ctrl_loop );
+    func->doc = "For particular voice (arg 1), turn on/off looping.";
     func->add_arg( "int", "voice" );
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "loop", LiSaMulti_cget_loop);
+    func->doc = "Turn on/off looping (voice 0).";
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "loop", LiSaMulti_ctrl_loop0 );
+    func->doc = "For particular voice (arg 1), get looping status.";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "loop", LiSaMulti_cget_loop0);
+    func->doc = "Get looping status.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // bidirectional looping
     func = make_new_mfun( "int", "bi", LiSaMulti_ctrl_bi );
+    func->doc = "For particular voice (arg 1), turn on/off bidirectional playback.";
     func->add_arg( "int", "voice" );
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "getbi", LiSaMulti_cget_bi);
+    func->doc = "Turn on/off bidirectional playback (voice 0).";
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "bi", LiSaMulti_ctrl_bi0 );
+    func->doc = "For particular voice (arg 1), get bidirectional playback status.";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "bi", LiSaMulti_cget_bi0);
+    func->doc = "Get birectional playback status.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // loopend_rec position
     func = make_new_mfun( "dur", "loopEndRec", LiSaMulti_ctrl_loop_end_rec );
+    func->doc = "Set end point in buffer for loop recording.";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopEndRec", LiSaMulti_cget_loop_end_rec);
+    func->doc = "Get end point in buffer for loop recording.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 	
 	// loop_rec toggle set; for turning on/off loop recording
     func = make_new_mfun( "int", "loopRec", LiSaMulti_ctrl_loop_rec );
+    func->doc = "Turn on/off loop recording.";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "loopRec", LiSaMulti_cget_loop_rec);
+    func->doc = "Get loop recording status.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 	
 	// look at or put sample directly in record buffer, do not pass go
     func = make_new_mfun( "float", "valueAt", LiSaMulti_ctrl_sample );
+    func->doc = "Set value directly in record buffer.";
     func->add_arg( "float", "val" );
 	func->add_arg( "dur", "index" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "valueAt", LiSaMulti_cget_sample);
+    func->doc = "Get value directly from record buffer.";
 	func->add_arg( "dur", "index" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 	
 	// set/get voiceGain
     func = make_new_mfun( "float", "voiceGain", LiSaMulti_ctrl_voicegain );
+    func->doc = "For particular voice (arg 1), set gain.";
     func->add_arg( "int", "voice" );
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "voiceGain", LiSaMulti_cget_voicegain);
+    func->doc = "Set playback gain (voice 0).";
     func->add_arg( "int", "voice" );
 	if( !type_engine_import_mfun( env, func ) ) goto error;
     
 	// set/get voicePan [value between 0 and numchans-1, to place voice]
     func = make_new_mfun( "float", "voicePan", LiSaMulti_ctrl_voicepan );
+    func->doc = "For particular voice (arg 1), set panning value [0.0, number of channels - 1.0].";
     func->add_arg( "int", "voice" );
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "voicePan", LiSaMulti_cget_voicepan);
+    func->doc = "For particular voice (arg 1), get panning value.";
     func->add_arg( "int", "voice" );
 	if( !type_engine_import_mfun( env, func ) ) goto error;
 	
 	// set/get voicePan [value between 0 and numchans-1, to place voice]
     func = make_new_mfun( "float", "pan", LiSaMulti_ctrl_voicepan );
+    func->doc = "For particular voice (arg 1), set panning value [0.0, number of channels - 1.0].";
     func->add_arg( "int", "voice" );
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "pan", LiSaMulti_cget_voicepan);
+    func->doc = "For particular voice (arg 1), get panning value.";
     func->add_arg( "int", "voice" );
 	if( !type_engine_import_mfun( env, func ) ) goto error;
 	
 	func = make_new_mfun( "float", "pan", LiSaMulti_ctrl_voicepan0 );
+    func->doc = "Set panning value [0.0, number of channels - 1.0].";
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "pan", LiSaMulti_cget_voicepan0);
+    func->doc = "Get panning value.";
 	if( !type_engine_import_mfun( env, func ) ) goto error;
 	
     // set record feedback coefficient
     func = make_new_mfun( "float", "feedback", LiSaMulti_ctrl_coeff );
+    func->doc = "Set feedback amount when overdubbing (loop recording; how much to retain).";
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "feedback", LiSaMulti_cget_coeff);
+    func->doc = "Get feedback amount when overdubbing (loop recording; how much to retain).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // clear buffer
     func = make_new_mfun( "void", "clear", LiSaMulti_ctrl_clear );
+    func->doc = "Clear recording buffer.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // get free voice
     func = make_new_mfun( "int", "getVoice", LiSaMulti_cget_voice );
+    func->doc = "Return an available voice (one that is not currently playing). Return -1 if no voice is available.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // set maxvoices
     func = make_new_mfun( "int", "maxVoices", LiSaMulti_ctrl_maxvoices );
+    func->doc = "Set the maximum number of voices allowable; 10 by default (200 is the current hardwired internal limit).";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "maxVoices", LiSaMulti_cget_maxvoices);
+    func->doc = "Get the maximum number of voices allowable; 10 by default (200 is the current hardwired internal limit).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // ramp stuff
     func = make_new_mfun( "void", "rampUp", LiSaMulti_ctrl_rampup );
+    func->doc = "For particular voice (arg 1), turn on sample playback, with ramp.";
     func->add_arg( "int", "voice" );
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     func = make_new_mfun( "void", "rampDown", LiSaMulti_ctrl_rampdown );
+    func->doc = "For particular voice (arg 1), turn off sample playback, with ramp";
     func->add_arg( "int", "voice" );
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     func = make_new_mfun( "dur", "recRamp", LiSaMulti_ctrl_rec_ramplen );
+    func->doc = "Set ramping when recording (from 0 to loopEndRec).";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     func = make_new_mfun( "void", "rampUp", LiSaMulti_ctrl_rampup0 );
+    func->doc = "Turn on sample playback, with ramp (voice 0).";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     func = make_new_mfun( "void", "rampDown", LiSaMulti_ctrl_rampdown0 );
+    func->doc = "Turn off sample playback, with ramp (voice 0).";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // get value
     func = make_new_mfun( "dur", "value", LiSaMulti_cget_value );
+    func->doc = "For particular voice (arg 1), get value from the voice.";
     func->add_arg( "int", "voice" );
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "value", LiSaMulti_cget_value0 );
+    func->doc = "Get value from voice 0.";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // track
     func = make_new_mfun( "int", "track", LiSaMulti_ctrl_track );
+    func->doc = "Identical to sync.";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "track", LiSaMulti_cget_track);
+    func->doc = "Identical to sync.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 	
 	// sync = track
     func = make_new_mfun( "int", "sync", LiSaMulti_ctrl_track );
+    func->doc = "Set input mode; (0) input is recorded to internal buffer, (1) input sets playback position [0,1] (phase value between loopStart and loopEnd for all active voices), (2) input sets playback position, interpreted as a time value in samples (only works with voice 0)";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "sync", LiSaMulti_cget_track);
+    func->doc = "Get input mode; (0) input is recorded to internal buffer, (1) input sets playback position [0,1] (phase value between loopStart and loopEnd for all active voices), (2) input sets playback position, interpreted as a time value in samples (only works with voice 0)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 	
 	// playing
     func = make_new_mfun( "int", "playing", LiSaMulti_cget_playing );
+    func->doc = "Get playing status.";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
