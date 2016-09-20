@@ -75,142 +75,175 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
 
     // add class
     QUERY->begin_class( QUERY, "Math", "Object" );
+    QUERY->doc_class( QUERY, "Math contains the standard math functions, including all trignometric functions expects angles to be in radians, as well as random number generators." );
     
     // add abs
     QUERY->add_sfun( QUERY, abs_impl, "int", "abs" );
     QUERY->add_arg( QUERY, "int", "value" );
+    QUERY->doc_func( QUERY, "Return absolute value of integer." );
     
     // add fabs
     QUERY->add_sfun( QUERY, fabs_impl, "float", "fabs" );
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Return absolute value of float." );
 
     // add sgn
     QUERY->add_sfun( QUERY, sgn_impl, "float", "sgn" );
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Return the sign of the input as -1.0 (negative), 0 (zero), or 1.0 (positive).");
     
     // sin
     QUERY->add_sfun( QUERY, sin_impl, "float", "sin" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the sine of a float.");
     
     // cos
     QUERY->add_sfun( QUERY, cos_impl, "float", "cos" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the cosine of a float.");
 
     // tan
     QUERY->add_sfun( QUERY, tan_impl, "float", "tan" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the tangent of a float.");
 
     // asin
     QUERY->add_sfun( QUERY, asin_impl, "float", "asin" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the arcsine of a float.");
 
     // acos
     QUERY->add_sfun( QUERY, acos_impl, "float", "acos" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the arccosine of a float.");
 
     // atan
     QUERY->add_sfun( QUERY, atan_impl, "float", "atan" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the arctangent of a float.");
 
     // atan2
     QUERY->add_sfun( QUERY, atan2_impl, "float", "atan2" );
     QUERY->add_arg( QUERY, "float", "y" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the principal value of the arc tangent of y/x, using the signs of both arguments to determine the quadrant of the return value.");
 
     // sinh
     QUERY->add_sfun( QUERY, sinh_impl, "float", "sinh" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the hyperbolic sine of a float.");
 
     // cosh
     QUERY->add_sfun( QUERY, cosh_impl, "float", "cosh" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the hyperbolic cosine of a float.");
 
     // tanh
     QUERY->add_sfun( QUERY, tanh_impl, "float", "tanh" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the hyperbolic tangent of a float.");
 
     // hypot
     QUERY->add_sfun( QUERY, hypot_impl, "float", "hypot" );
     QUERY->add_arg( QUERY, "float", "x" );
     QUERY->add_arg( QUERY, "float", "y" );
+    QUERY->doc_func( QUERY, "Return the euclidean distance of the orthogonal vectors (x,0) and (0,y).");
 
     // pow
     QUERY->add_sfun( QUERY, pow_impl, "float", "pow" );
     QUERY->add_arg( QUERY, "float", "x" );
     QUERY->add_arg( QUERY, "float", "y" );
+    QUERY->doc_func( QUERY, "Return x taken to the y-th power.");
 
     // sqrt
     QUERY->add_sfun( QUERY, sqrt_impl, "float", "sqrt" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the square root of a float.");
 
     // exp
     QUERY->add_sfun( QUERY, exp_impl, "float", "exp" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return e^x, the base-e exponential of x.");
 
     // log
     QUERY->add_sfun( QUERY, log_impl, "float", "log" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the natural log of a float.");
 
     // log2
     QUERY->add_sfun( QUERY, log2_impl, "float", "log2" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the logarithm of a float to base 2.");
 
     // log10
     QUERY->add_sfun( QUERY, log10_impl, "float", "log10" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return the logarithm of a float to base 10.");
 
     // floor
     QUERY->add_sfun( QUERY, floor_impl, "float", "floor" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Round to largest integral value (returned as float) not greater than x.");
 
     // ceil
     QUERY->add_sfun( QUERY, ceil_impl, "float", "ceil" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Round to smallest integral value (returned as float) not less than x.");
 
     // round
     QUERY->add_sfun( QUERY, round_impl, "float", "round" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Round to nearest integral value (returned as float).");
 
     // trunc
     QUERY->add_sfun( QUERY, trunc_impl, "float", "trunc" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Round to largest integral value (returned as float) no greater in magnitude than x.");
 
     // fmod
     QUERY->add_sfun( QUERY, fmod_impl, "float", "fmod" );
     QUERY->add_arg( QUERY, "float", "x" );
     QUERY->add_arg( QUERY, "float", "y" );
+    QUERY->doc_func( QUERY, "Return the floating point remainder of x/y.");
 
     // remainder
     QUERY->add_sfun( QUERY, remainder_impl, "float", "remainder" );
     QUERY->add_arg( QUERY, "float", "x" );
     QUERY->add_arg( QUERY, "float", "y" );
+    QUERY->doc_func( QUERY, "Return r such that r = x - n * y, where n is the integer nearest the exact value of x / y. If there are two integers closest to x / y, n shall be the even one. If r is zero, it is given the same sign as x.");
 
     // min
     QUERY->add_sfun( QUERY, min_impl, "float", "min" );
     QUERY->add_arg( QUERY, "float", "x" );
     QUERY->add_arg( QUERY, "float", "y" );
+    QUERY->doc_func( QUERY, "Return lesser of two values.");
 
     // max
     //! see \example powerup.ck
     QUERY->add_sfun( QUERY, max_impl, "float", "max" );
     QUERY->add_arg( QUERY, "float", "x" );
     QUERY->add_arg( QUERY, "float", "y" );
+    QUERY->doc_func( QUERY, "Return greater of two values.");
 
     // isinf
     QUERY->add_sfun( QUERY, isinf_impl, "int", "isinf" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return 1 if x is infinity, else return 0.");
 
     // isnan
     QUERY->add_sfun( QUERY, isnan_impl, "int", "isnan" );
     QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Return 1 if x is not a number, else return 0.");
 
     // nextpow2
     QUERY->add_sfun( QUERY, nextpow2_impl, "int", "nextpow2" );
     QUERY->add_arg( QUERY, "int", "n" );
+    QUERY->doc_func( QUERY, "Return the integral (returned as int) smallest power of 2 greater than the value of x.");
 
     // ensurepow2
     QUERY->add_sfun( QUERY, ensurepow2_impl, "int", "ensurePow2" );
     QUERY->add_arg( QUERY, "int", "n" );
+    QUERY->doc_func( QUERY, "Return the integral (returned as int) smallest power of 2 greater than the value of x.");
 
     // floatMax
     // QUERY->add_sfun( QUERY, floatMax_impl, "float", "floatMax" );
@@ -238,42 +271,52 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     //! see \example mand-o-matic.ck
     QUERY->add_sfun( QUERY, mtof_impl, "float", "mtof" ); //! midi note to frequency
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Convert a MIDI note number to frequency (Hz). Note the input value is of type float (supports fractional note number)." );
 
     // add ftom
     QUERY->add_sfun( QUERY, ftom_impl, "float", "ftom" ); //! frequency to midi note
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Convert frequency (Hz) to MIDI note number space." );
 
     // add powtodb
     QUERY->add_sfun( QUERY, powtodb_impl, "float", "powtodb" ); //! linear power to decibel 
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Convert signal power ratio to decibels (dB)." );
 
     // add rmstodb
     QUERY->add_sfun( QUERY, rmstodb_impl, "float", "rmstodb" ); //! rms to decibel
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Convert rms to decibels (dB)." );
 
     // add dbtopow
     QUERY->add_sfun( QUERY, dbtopow_impl, "float", "dbtopow" ); //! decibel to linear
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Convert decibels (dB) to signal power ratio." );
 
     // add dbtorms
     QUERY->add_sfun( QUERY, dbtorms_impl, "float", "dbtorms" ); //! decibel to rms
     QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->doc_func( QUERY, "Convert decibels (dB) to rms." );
     
     // add re
     QUERY->add_sfun( QUERY, re_impl, "float", "re" ); //! real component of complex
     QUERY->add_arg( QUERY, "complex", "value" );
+    QUERY->doc_func( QUERY, "Return the real component of a complex number." );
     
     // add im
     QUERY->add_sfun( QUERY, im_impl, "float", "im" ); //! imaginary component of complex
     QUERY->add_arg( QUERY, "complex", "value" );
+    QUERY->doc_func( QUERY, "Return the imaginary component of a complex number." );
     
     // add mag
     QUERY->add_sfun( QUERY, modulus_impl, "float", "mag" ); //! mag
     QUERY->add_arg( QUERY, "polar", "value" );
+    QUERY->doc_func( QUERY, "Return the magnitude of a polar value." );
     
     // add phase
     QUERY->add_sfun( QUERY, phase_impl, "float", "phase" ); //! phase
     QUERY->add_arg( QUERY, "polar", "value" );
+    QUERY->doc_func( QUERY, "Return the phase of a polar value." );
     
     // add rtop
     QUERY->add_sfun( QUERY, rtop_impl, "int", "rtop" ); // rect to polar
@@ -287,66 +330,73 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
 
     // add random (1.3.1.0)
     QUERY->add_sfun( QUERY, random_impl, "int", "random"); //! return int between 0 and CK_RANDOM_MAX
+    QUERY->doc_func( QUERY, "Return random integer in range 0 and Math.RANDOM_MAX." );
     
     // add random2 (1.3.1.0)
     QUERY->add_sfun( QUERY, random2_impl, "int", "random2" ); //! integer between [min,max]
     QUERY->add_arg( QUERY, "int", "min" ); 
-    QUERY->add_arg( QUERY, "int", "max" ); 
+    QUERY->add_arg( QUERY, "int", "max" );
+    QUERY->doc_func( QUERY, "Return random integer in range [min, max].");
     
     // add randomf (1.3.1.0) -- NOTE different in return semantics
     QUERY->add_sfun( QUERY, randomf_impl, "float", "randomf" ); //! random between 0 and 1.0
+    QUERY->doc_func( QUERY, "Return random float in range [0.0, 1.0]." );
     
     // add random2f (1.3.1.0)
     QUERY->add_sfun( QUERY, random2f_impl, "float", "random2f" ); //! random between min and max
     QUERY->add_arg( QUERY, "float", "min" );
     QUERY->add_arg( QUERY, "float", "max" );
+    QUERY->doc_func( QUERY, "Return random float in range [min, max]." );
     
     // add srandom (1.3.1.0)
     QUERY->add_sfun( QUERY, srandom_impl, "void", "srandom" );
     QUERY->add_arg( QUERY, "int", "seed" );
+    QUERY->doc_func( QUERY, "Provide a seed to the random function. Different seeds will generate very different sequences of random numbers even if the seeds are close together. " "Alternatively, a sequence of random numbers can be repeated by setting the same seed.");
     
     // go ahead and seed (the code can seed again for repeatability; 1.3.1.0)
     srandom( time( NULL ) );
     
-    // pi
+    // pi, "Constant for Pi."
     //! see \example math.ck
     QUERY->add_svar( QUERY, "float", "PI", TRUE, &g_pi );
+    
     //! see \example math.ck
     // QUERY->add_svar( QUERY, "float", "pi", TRUE, &g_pi );
 
-    // twopi
+    // twopi, "Constant for 2 * Pi."
     QUERY->add_svar( QUERY, "float", "TWO_PI", TRUE, &g_twopi );
-    // twopi
     // QUERY->add_svar( QUERY, "float", "two_pi", TRUE, &g_twopi );
 
-    // e
+    // e, "Constant for Euler's number, e."
     QUERY->add_svar( QUERY, "float", "E", TRUE, &g_e );
-    // e
+    
+    // e, "Constant for Euler's number, e."
     QUERY->add_svar( QUERY, "float", "e", TRUE, &g_e );
 
-    // float max
+    // float max, "Constant for the maximum value of a float."
     assert( sizeof(t_CKFLOAT) == sizeof(double) );
     QUERY->add_svar( QUERY, "float", "FLOAT_MAX", TRUE, &g_floatMax );
 
-    // float min
+    // float min, "Constant for the minimum value of a float."
     QUERY->add_svar( QUERY, "float", "FLOAT_MIN_MAG", TRUE, &g_floatMin );
 
-    // int max
+    // int max, "Constant for the maximum value of an integer."
     assert( sizeof(t_CKINT) == sizeof(long) );
     QUERY->add_svar( QUERY, "int", "INT_MAX", TRUE, &g_intMax );
 
     // infinity, using function to avoid potential "smart" compiler warning
+    // "Constant for infinity.";
     g_inf = 1.0 / fzero();
     QUERY->add_svar( QUERY, "float", "INFINITY", TRUE, &g_inf );
 
-    // random max
+    // random max, "Max value returned by Math.random(). Not to be confused with Std.rand*"
     QUERY->add_svar( QUERY, "int", "RANDOM_MAX", TRUE, &g_randomMax );
 
-    // i
+    // i, "Constant for the imaginary number, i, as a complex value."
     QUERY->add_svar( QUERY, "complex", "I", TRUE, &g_i );
     QUERY->add_svar( QUERY, "complex", "i", TRUE, &g_i );
 
-    // j
+    // j, "Constant for the imaginary number, i, as a complex value."
     QUERY->add_svar( QUERY, "complex", "J", TRUE, &g_i );
     QUERY->add_svar( QUERY, "complex", "j", TRUE, &g_i );
 
