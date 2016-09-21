@@ -109,10 +109,12 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     // add get intsize (width)
     //! get the intsize in bits (e.g., 32 or 64)
     QUERY->add_sfun( QUERY, machine_intsize_impl, "int", "intsize" );
+    QUERY->doc_func( QUERY, "Return the bit size of an integer.");
     
     // add shreds
     //! get list of active shreds by id
     QUERY->add_sfun( QUERY, machine_shreds_impl, "int[]", "shreds" );
+    QUERY->doc_func( QUERY, "Return an integer array containing the IDs of current Shred objects.");
 
     // end class
     QUERY->end_class( QUERY );
