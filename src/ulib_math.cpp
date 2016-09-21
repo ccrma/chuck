@@ -322,11 +322,13 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, rtop_impl, "int", "rtop" ); // rect to polar
     QUERY->add_arg( QUERY, "complex[]", "from" );
     QUERY->add_arg( QUERY, "polar[]", "to" );
+    QUERY->doc_func( QUERY, "Convert an array of rectangular complex numbers to an array of polar complex numbers in place (the second argument is the array that is to be modified). The total number of conversions is returned as well");
     
     // add ptor
     QUERY->add_sfun( QUERY, ptor_impl, "int", "ptor" ); // polar to rect
     QUERY->add_arg( QUERY, "polar[]", "from" );
     QUERY->add_arg( QUERY, "complex[]", "to" );
+    QUERY->doc_func( QUERY, "Convert an array of polar complex numbers to an array of rectangular complex numbers in place (the second argument is the array that is to be modified). The total number of conversions is returned as well.");
 
     // add random (1.3.1.0)
     QUERY->add_sfun( QUERY, random_impl, "int", "random"); //! return int between 0 and CK_RANDOM_MAX
