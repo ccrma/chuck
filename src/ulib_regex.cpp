@@ -55,29 +55,34 @@ DLL_QUERY regex_query( Chuck_DL_Query * QUERY )
     
     // begin class
     QUERY->begin_class( QUERY, "RegEx", "Object" );
+    QUERY->doc_class( QUERY, "Class for regular expression matching and replacing in strings. Regex style is POSIX-extended.");
     
     // add match
     QUERY->add_sfun( QUERY, regex_match, "int", "match" );
     QUERY->add_arg( QUERY, "string", "pattern");
     QUERY->add_arg( QUERY, "string", "str");
+    QUERY->doc_func( QUERY, "Return true if match for pattern is found in str, false otherwise");
     
     // add match2
     QUERY->add_sfun( QUERY, regex_match2, "int", "match" );
     QUERY->add_arg( QUERY, "string", "pattern");
     QUERY->add_arg( QUERY, "string", "str");
     QUERY->add_arg( QUERY, "string[]", "matches");
+    QUERY->doc_func( QUERY, "Return the match and sub-patterns in matches. matches[0] in the entire matched pattern, matches[1] is the first sub-pattern (if any), and so on. ");
     
     // add replace
     QUERY->add_sfun( QUERY, regex_replace, "string", "replace" );
     QUERY->add_arg( QUERY, "string", "pattern");
     QUERY->add_arg( QUERY, "string", "replacement");
     QUERY->add_arg( QUERY, "string", "str");
+    QUERY->doc_func( QUERY, "Replace the first instance of pattern in str with replacement, returning the result.");
     
     // add replaceAll
     QUERY->add_sfun( QUERY, regex_replaceAll, "string", "replaceAll" );
     QUERY->add_arg( QUERY, "string", "pattern");
     QUERY->add_arg( QUERY, "string", "replacement");
     QUERY->add_arg( QUERY, "string", "str");
+    QUERY->doc_func( QUERY, "Replace all instances of pattern in str with replacement, returning the result.");
     
     QUERY->end_class( QUERY );
     
