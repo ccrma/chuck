@@ -700,18 +700,22 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
 {
     // init as base class
     Chuck_DL_Func * func = NULL;
+    std::string doc;
     
     // log
     EM_log( CK_LOG_SEVERE, "class 'io'" );
     
+    doc = "";
+    
     // init as base class
     // TODO: ctor/dtor?
     // TODO: replace dummy with pure function
-    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL ) )
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc.c_str() ) )
         return FALSE;
     
     // add good()
     func = make_new_mfun( "int", "good", io_dummy );
+    func->doc = "_";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add close()
@@ -1491,27 +1495,34 @@ static t_CKUINT MidiOut_offset_data = 0;
 t_CKBOOL init_class_Midi( Chuck_Env * env )
 {
     Chuck_DL_Func * func = NULL;
+    std::string doc;
 
+    doc = "Creates a message for sending and receiving Midi information.";
+    
     // init base class
     // TODO: ctor/dtor?
     if( !type_engine_import_class_begin( env, "MidiMsg", "Object",
-                                         env->global(), NULL, NULL ) )
+                                         env->global(), NULL, NULL, doc.c_str() ) )
         return FALSE;
 
     // add member variable
     MidiMsg_offset_data1 = type_engine_import_mvar( env, "int", "data1", FALSE );
+    func->doc = "First byte of a Midi message, usually a status byte or command byte.";
     if( MidiMsg_offset_data1 == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
     MidiMsg_offset_data2 = type_engine_import_mvar( env, "int", "data2", FALSE );
+    func->doc = "Second byte of a Midi message, usually a note value.";
     if( MidiMsg_offset_data2 == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
     MidiMsg_offset_data3 = type_engine_import_mvar( env, "int", "data3", FALSE );
+    func->doc = "Third byte of a Midi message, usually a velocity value.";
     if( MidiMsg_offset_data3 == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
     MidiMsg_offset_when = type_engine_import_mvar( env, "dur", "when", FALSE );
+    func->doc = "";
     if( MidiMsg_offset_when == CK_INVALID_OFFSET ) goto error;
 
     // end the class import
@@ -1519,6 +1530,9 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
 
 #ifndef __DISABLE_MIDI__
     // init base class
+    
+    doc = "Class that can be ChucKed to now as an event. When receiving a message, an event is signaled and Midi information can be read.";
+    
     if( !type_engine_import_class_begin( env, "MidiIn", "Event",
                                          env->global(), MidiIn_ctor, MidiIn_dtor ) )
         return FALSE;
@@ -1526,11 +1540,13 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     // add open()
     func = make_new_mfun( "int", "open", MidiIn_open );
     func->add_arg( "int", "port" );
+    func->doc = "Open Midi device using a port number.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add open() (added 1.3.0.0)
     func = make_new_mfun( "int", "open", MidiIn_open_named );
     func->add_arg( "string", "name" );
+    func->doc = "Open Midi device using the device's name.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add good()
@@ -1543,16 +1559,19 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
 
     // add name()
     func = make_new_mfun( "string", "name", MidiIn_name );
+    func->doc = "Return the Midi device's name as string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add printerr()
     func = make_new_mfun( "void", "printerr", MidiIn_printerr );
     func->add_arg( "int", "print_or_not" );
+    func->doc = "Set error printing (1 for on, 0 for off). On by default.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add recv()
     func = make_new_mfun( "int", "recv", MidiIn_recv );
     func->add_arg( "MidiMsg", "msg" );
+    func->doc = "";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add can_wait()
@@ -1574,11 +1593,13 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     // add open()
     func = make_new_mfun( "int", "open", MidiOut_open );
     func->add_arg( "int", "port" );
+    func->doc = "Open Midi device using a port number.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add open() (added 1.3.0.0)
     func = make_new_mfun( "int", "open", MidiOut_open_named );
     func->add_arg( "string", "name" );
+    func->doc = "Open Midi device using the device's name.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add good()
@@ -1591,16 +1612,19 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
 
     // add name()
     func = make_new_mfun( "string", "name", MidiOut_name );
+    func->doc = "Return the Midi device's name as string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add printerr()
     func = make_new_mfun( "void", "printerr", MidiOut_printerr );
     func->add_arg( "int", "print_or_not" );
+    func->doc = "Set error printing (1 for on, 0 for off). On by default.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add send()
     func = make_new_mfun( "int", "send", MidiOut_send );
     func->add_arg( "MidiMsg", "msg" );
+    func->doc = "Send out a MidiMsg message.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add member variable
