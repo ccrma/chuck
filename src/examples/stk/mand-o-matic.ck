@@ -59,7 +59,7 @@ while( true )
     // position
     Math.random2f( 0.2, 0.8 ) => mand.pluckPos;
     // frequency...
-    scale[Math.random2(0,scale.cap()-1)] => int freq;
+    scale[Math.random2(0,scale.size()-1)] => int freq;
     220.0 * Math.pow( 1.05946, (Math.random2(0,2)*12) + freq ) => mand.freq;
     // pluck it!
     Math.random2f( 0.2, 0.9 ) => mand.pluck;

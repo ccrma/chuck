@@ -5,7 +5,7 @@ Blit s => JCRev r => dac;
 
 // an array
 [ 0, 2, 4, 7, 9, 11 ] @=> int hi[];
-// <<< hi.size(), hi.cap() >>>;
+// <<< hi.size() >>>;
 // <<< hi[0], hi[1], hi[2], hi[3], hi[4], hi[5] >>>;
 
 // infinite time loop

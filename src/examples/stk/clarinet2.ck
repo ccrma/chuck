@@ -39,7 +39,7 @@ while( true )
     // breath pressure
     clair.controlChange( 128, pressure );
 
-    for( int i; i < notes.cap(); i++ )
+    for( int i; i < notes.size(); i++ )
     {
         play( 12 + notes[i], Math.random2f( .6, .9 ) );
         300::ms => now;
