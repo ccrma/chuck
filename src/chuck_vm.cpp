@@ -595,7 +595,7 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
             m_shreduler->advance( frame++ );
             if( N > 0 ) N--;
         }
-        else m_shreduler->advance_v( N );
+        else m_shreduler->advance_v( N, frame );
     }
     
     // clear
@@ -1942,13 +1942,13 @@ t_CKBOOL Chuck_VM_Shreduler::shredule( Chuck_VM_Shred * shred,
 // name: advance_v()
 // desc: ...
 //-----------------------------------------------------------------------------
-void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft )
+void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
 {
     t_CKINT i, j, numFrames;
     SAMPLE gain[256], sum;
     // get audio data from VM
-    const SAMPLE * input = vm_ref->input_ref();
-    SAMPLE * output = vm_ref->output_ref();
+    const SAMPLE * input = vm_ref->input_ref() + (offset*m_num_adc_channels);
+    SAMPLE * output = vm_ref->output_ref() + (offset*m_num_dac_channels);
     
     // compute number of frames to compute; update
     numFrames = ck_min( m_max_block_size, numLeft );
@@ -1959,6 +1959,7 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft )
         this->m_samps_until_next -= numFrames;
     }
     numLeft -= numFrames;
+    offset += numFrames;
 
     // advance system 'now'
     this->now_system += numFrames;
@@ -2034,7 +2035,7 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
     t_CKUINT i;
     // input and output
     const SAMPLE * input = vm_ref->input_ref() + (N*m_num_adc_channels);
-    SAMPLE * output = vm_ref->output_ref() + (N*m_num_adc_channels);
+    SAMPLE * output = vm_ref->output_ref() + (N*m_num_dac_channels);
 
     // INPUT: loop over channels
     for( i = 0; i < m_num_adc_channels; i++ )

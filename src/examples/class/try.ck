@@ -39,7 +39,7 @@ while( true )
 {
     // trigger
     45 + Math.random2(0,3) * 12 + 
-         hi[Math.random2(0,hi.cap()-1)] => imp.t;
+         hi[Math.random2(0,hi.size()-1)] => imp.t;
     // let time pass
     195::ms => now;
     // close the envelope

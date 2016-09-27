@@ -53,6 +53,7 @@ struct Chuck_Func;
 struct Chuck_Instr
 {
 public:
+    Chuck_Instr();
     virtual ~Chuck_Instr() { }
 
 public:
@@ -62,6 +63,10 @@ public:
     virtual const char * name() const;
     virtual const char * params() const 
     { return ""; }
+
+public:
+    void set_linepos( t_CKUINT linepos );
+    t_CKUINT m_linepos;
 };
 
 

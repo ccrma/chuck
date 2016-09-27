@@ -327,7 +327,7 @@ public: // shreduling
     t_CKBOOL shredule( Chuck_VM_Shred * shred, t_CKTIME wake_time );
     Chuck_VM_Shred * get( );
     void advance( t_CKINT N );
-    void advance_v( t_CKINT & num_left );
+    void advance_v( t_CKINT & num_left, t_CKINT & offset );
     void set_adaptive( t_CKUINT max_block_size );
 
 public: // high-level shred interface

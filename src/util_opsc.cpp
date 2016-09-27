@@ -41,6 +41,7 @@
 #include "chuck_vm.h"
 
 #include <algorithm>
+#include <cstdio>
 using namespace std;
 
 
@@ -2157,9 +2158,10 @@ OSC_Address_Space::setReceiver(OSC_Receiver * recv) {
 
 void
 OSC_Address_Space::setSpec( const char *addr, const char * types ) { 
-    strncpy ( _spec, addr, 512 );
-    strncat ( _spec, "," , 512);
-    strncat ( _spec, types, 512 );
+    if( snprintf( _spec, sizeof _spec, "%s,%s", addr, types ) >= sizeof _spec) {
+        // TODO: handle the overflow more gracefully.
+        EM_log(CK_LOG_SEVERE, "OSC_Address_Space::setSpec: Not enough space in _spec buffer, data was truncated.");
+    }
     scanSpec();
     _needparse = true; 
     parseSpec(); 
