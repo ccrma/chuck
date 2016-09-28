@@ -1506,23 +1506,23 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
         return FALSE;
 
     // add member variable
-    MidiMsg_offset_data1 = type_engine_import_mvar( env, "int", "data1", FALSE );
-    func->doc = "First byte of a Midi message, usually a status byte or command byte.";
+    doc = "First byte of a Midi message, usually a status byte or command byte.";
+    MidiMsg_offset_data1 = type_engine_import_mvar( env, "int", "data1", FALSE, doc.c_str() );
     if( MidiMsg_offset_data1 == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
-    MidiMsg_offset_data2 = type_engine_import_mvar( env, "int", "data2", FALSE );
-    func->doc = "Second byte of a Midi message, usually a note value.";
+    doc = "Second byte of a Midi message, usually a note value.";
+    MidiMsg_offset_data2 = type_engine_import_mvar( env, "int", "data2", FALSE, doc.c_str() );
     if( MidiMsg_offset_data2 == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
-    MidiMsg_offset_data3 = type_engine_import_mvar( env, "int", "data3", FALSE );
-    func->doc = "Third byte of a Midi message, usually a velocity value.";
+    doc = "Third byte of a Midi message, usually a velocity value.";
+    MidiMsg_offset_data3 = type_engine_import_mvar( env, "int", "data3", FALSE, doc.c_str() );
     if( MidiMsg_offset_data3 == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
+    doc = "";
     MidiMsg_offset_when = type_engine_import_mvar( env, "dur", "when", FALSE );
-    func->doc = "";
     if( MidiMsg_offset_when == CK_INVALID_OFFSET ) goto error;
 
     // end the class import
