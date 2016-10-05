@@ -23,13 +23,13 @@ CFLAGSDEPEND+= -D__MACOSX_CORE__ $(FORCE_M32) $(ISYSROOT)
 
 FRAMEWORKS+= CoreAudio CoreMIDI CoreFoundation IOKit Carbon AppKit Foundation
 LDFLAGS+= $(FORCE_M32) $(ISYSROOT) $(addprefix -framework ,$(FRAMEWORKS)) \
-    $(LINK_EXTRAS) -lstdc++ -lm
+    $(LINK_EXTRAS) -lm -lc++
 
 CSRCS+= util_sndfile.c
 
 
 # this is to link properly on leopard...
-MACOSX_DEPLOYMENT_TARGET=10.5
+MACOSX_DEPLOYMENT_TARGET=10.9
 export MACOSX_DEPLOYMENT_TARGET
 # option 2, add this to the gcc flags: -mmacosx-version-min=10.4
 
