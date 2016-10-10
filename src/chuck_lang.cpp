@@ -1521,8 +1521,8 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     if( MidiMsg_offset_data3 == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
-    doc = "";
-    MidiMsg_offset_when = type_engine_import_mvar( env, "dur", "when", FALSE );
+    doc = "Time when the MidiMsg occured, relative to the start of the file (only valid for MidiFileIn).";
+    MidiMsg_offset_when = type_engine_import_mvar( env, "dur", "when", FALSE, doc.c_str() );
     if( MidiMsg_offset_when == CK_INVALID_OFFSET ) goto error;
 
     // end the class import
@@ -1534,7 +1534,7 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     doc = "Class that can be ChucKed to now as an event. When receiving a message, an event is signaled and Midi information can be read.";
     
     if( !type_engine_import_class_begin( env, "MidiIn", "Event",
-                                         env->global(), MidiIn_ctor, MidiIn_dtor ) )
+                                         env->global(), MidiIn_ctor, MidiIn_dtor, doc.c_str() ) )
         return FALSE;
 
     // add open()
@@ -1551,10 +1551,12 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     
     // add good()
     func = make_new_mfun( "int", "good", MidiIn_good );
+    func->doc = "Return 1 if a device has been opened for this instance and there was no error connecting to it. Return 0 if a device has not been opened or there was an error opening a device.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add num()
     func = make_new_mfun( "int", "num", MidiIn_num );
+    func->doc = "Return the device number of the device (i.e. the number passed to MidiIn/MidiOut.open).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add name()
@@ -1571,11 +1573,12 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     // add recv()
     func = make_new_mfun( "int", "recv", MidiIn_recv );
     func->add_arg( "MidiMsg", "msg" );
-    func->doc = "";
+    func->doc = "Return into the MidiMsg argument the next message in the queue from the device. Return 0 if the queue is empty or 1 if a message was in the queue and returned in the argument.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add can_wait()
     func = make_new_mfun( "int", "can_wait", MidiIn_can_wait );
+    func->doc = "Return 1 if the device has no more messages in its queue from the device, 0 if it has more messages.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add member variable
@@ -1585,9 +1588,11 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     // end the class import
     type_engine_import_class_end( env );
     
+    doc = "Class for sending out Midi messages.";
+    
     // init base class
     if( !type_engine_import_class_begin( env, "MidiOut", "Object",
-                                         env->global(), MidiOut_ctor, MidiOut_dtor ) )
+                                         env->global(), MidiOut_ctor, MidiOut_dtor, doc.c_str() ) )
         return FALSE;
 
     // add open()
@@ -1604,10 +1609,12 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     
     // add good()
     func = make_new_mfun( "int", "good", MidiOut_good );
+    func->doc = "Return 1 if a device has been opened for this instance and there was no error connecting to it. Return 0 if a device has not been opened or there was an error opening a device.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add num()
     func = make_new_mfun( "int", "num", MidiOut_num );
+    func->doc = "Return the device number of the device (i.e. the number passed to MidiIn/MidiOut.open).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add name()
@@ -1687,18 +1694,23 @@ static t_CKUINT HidOut_offset_data = 0;
 t_CKBOOL init_class_HID( Chuck_Env * env )
 {
     Chuck_DL_Func * func = NULL;
-
+    std::string doc;
+    
+    doc = "Creates a message for receiving HID information.";
+    
     // init base class
     if( !type_engine_import_class_begin( env, "HidMsg", "Object",
-                                         env->global(), NULL, NULL ) )
+                                         env->global(), NULL, NULL, doc.c_str() ) )
         return FALSE;
 
     // add member variable
-    HidMsg_offset_device_type = type_engine_import_mvar( env, "int", "deviceType", FALSE );
+    doc = "Device type that produced the messsage.";
+    HidMsg_offset_device_type = type_engine_import_mvar( env, "int", "deviceType", FALSE, doc.c_str() );
     if( HidMsg_offset_device_type == CK_INVALID_OFFSET ) goto error;
     
     // add member variable
-    HidMsg_offset_device_num = type_engine_import_mvar( env, "int", "deviceNum", FALSE );
+    doc = "Device number that produced the messsage.";
+    HidMsg_offset_device_num = type_engine_import_mvar( env, "int", "deviceNum", FALSE, doc.c_str() );
     if( HidMsg_offset_device_num == CK_INVALID_OFFSET ) goto error;
     
     // add member variable
@@ -1710,59 +1722,73 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
     if( HidMsg_offset_which == CK_INVALID_OFFSET ) goto error;
     
     // add member variable
-    HidMsg_offset_idata = type_engine_import_mvar( env, "int", "idata", FALSE );
+    doc = "Integer data generated from the Hid device.";
+    HidMsg_offset_idata = type_engine_import_mvar( env, "int", "idata", FALSE, doc.c_str() );
     if( HidMsg_offset_idata == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
-    HidMsg_offset_fdata = type_engine_import_mvar( env, "float", "fdata", FALSE );
+    doc = "Float data generate from the Hid device.";
+    HidMsg_offset_fdata = type_engine_import_mvar( env, "float", "fdata", FALSE, doc.c_str() );
     if( HidMsg_offset_fdata == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
-    HidMsg_offset_when = type_engine_import_mvar( env, "time", "when", FALSE );
+    doc = "Time when the HidMsg occured, relative to the start of the file.";
+    HidMsg_offset_when = type_engine_import_mvar( env, "time", "when", FALSE, doc.c_str() );
     if( HidMsg_offset_when == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
-    HidMsg_offset_deltax = type_engine_import_mvar( env, "int", "deltaX", FALSE );
+    doc = "Change in X-axis of pointing device.";
+    HidMsg_offset_deltax = type_engine_import_mvar( env, "int", "deltaX", FALSE, doc.c_str() );
     if( HidMsg_offset_deltax == CK_INVALID_OFFSET ) goto error;
     
     // add member variable
-    HidMsg_offset_deltay = type_engine_import_mvar( env, "int", "deltaY", FALSE );
+    doc = "Change in Y-axis of pointing device.";
+    HidMsg_offset_deltay = type_engine_import_mvar( env, "int", "deltaY", FALSE, doc.c_str() );
     if( HidMsg_offset_deltay == CK_INVALID_OFFSET ) goto error;
     
     // add member variable
-    HidMsg_offset_cursorx = type_engine_import_mvar( env, "int", "cursorX", FALSE );
+    doc = "Position of X-axis of pointing device.";
+    HidMsg_offset_cursorx = type_engine_import_mvar( env, "int", "cursorX", FALSE, doc.c_str() );
     if( HidMsg_offset_cursorx == CK_INVALID_OFFSET ) goto error;
     
     // add member variable
-    HidMsg_offset_cursory = type_engine_import_mvar( env, "int", "cursorY", FALSE );
+    doc = "Position of Y-axis of pointing device.";
+    HidMsg_offset_cursory = type_engine_import_mvar( env, "int", "cursorY", FALSE, doc.c_str() );
     if( HidMsg_offset_cursory == CK_INVALID_OFFSET ) goto error;
     
     // add member variable
-    HidMsg_offset_scaledcursorx = type_engine_import_mvar( env, "float", "scaledCursorX", FALSE );
+    doc = "Position of X-axis of pointing device, scaled between 0.0 and 1.0.";
+    HidMsg_offset_scaledcursorx = type_engine_import_mvar( env, "float", "scaledCursorX", FALSE, doc.c_str() );
     if( HidMsg_offset_scaledcursorx == CK_INVALID_OFFSET ) goto error;
     
     // add member variable
-    HidMsg_offset_scaledcursory = type_engine_import_mvar( env, "float", "scaledCursorY", FALSE );
+    doc = "Position of Y-axis of pointing device, scaled between 0.0 and 1.0.";
+    HidMsg_offset_scaledcursory = type_engine_import_mvar( env, "float", "scaledCursorY", FALSE, doc.c_str() );
     if( HidMsg_offset_scaledcursory == CK_INVALID_OFFSET ) goto error;
     
     // add member variable
-    HidMsg_offset_x = type_engine_import_mvar( env, "int", "x", FALSE );
+    doc = "Change in X-axis of pointing device (same as deltaX).";
+    HidMsg_offset_x = type_engine_import_mvar( env, "int", "x", FALSE, doc.c_str() );
     if( HidMsg_offset_x == CK_INVALID_OFFSET ) goto error;
     
     // add member variable
-    HidMsg_offset_y = type_engine_import_mvar( env, "int", "y", FALSE );
+    doc = "Change in Y-axis of pointing device (same as deltaY).";
+    HidMsg_offset_y = type_engine_import_mvar( env, "int", "y", FALSE, doc.c_str() );
     if( HidMsg_offset_y == CK_INVALID_OFFSET ) goto error;
     
     // add member variable
-    HidMsg_offset_z = type_engine_import_mvar( env, "int", "z", FALSE );
+    doc = "Change in Z-axis of pointing device.";
+    HidMsg_offset_z = type_engine_import_mvar( env, "int", "z", FALSE, doc.c_str() );
     if( HidMsg_offset_z == CK_INVALID_OFFSET ) goto error;
     
     // add member variable (added 1.3.0.0)
-    HidMsg_offset_touchx = type_engine_import_mvar( env, "float", "touchX", FALSE );
+    doc = "Position of X-axis of pointing device, scaled between 0.0 and 1.0.";
+    HidMsg_offset_touchx = type_engine_import_mvar( env, "float", "touchX", FALSE, doc.c_str() );
     if( HidMsg_offset_touchx == CK_INVALID_OFFSET ) goto error;
     
     // add member variable (added 1.3.0.0)
-    HidMsg_offset_touchy = type_engine_import_mvar( env, "float", "touchY", FALSE );
+    doc = "Position of X-axis of pointing device, scaled between 0.0 and 1.0.";
+    HidMsg_offset_touchy = type_engine_import_mvar( env, "float", "touchY", FALSE, doc.c_str() );
     if( HidMsg_offset_touchy == CK_INVALID_OFFSET ) goto error;
     
     // add member variable (added 1.3.0.0)
@@ -1790,7 +1816,8 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
     if( HidMsg_offset_key == CK_INVALID_OFFSET ) goto error;
     
     // add member variable
-    HidMsg_offset_scaled_axis_position = type_engine_import_mvar( env, "float", "scaled_axis_position", FALSE );
+    doc = "Position of the primary pointing device, scaled between 0.0 and 1.0.";
+    HidMsg_offset_scaled_axis_position = type_engine_import_mvar( env, "float", "scaled_axis_position", FALSE, doc.c_str() );
     if( HidMsg_offset_scaled_axis_position == CK_INVALID_OFFSET ) goto error;
         
     // add is_axis_motion()
