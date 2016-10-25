@@ -71,10 +71,12 @@ a_Program g_program = NULL;
     a_Stmt stmt;
     a_Exp exp;
     a_Func_Def func_def;
+    a_Default_Func_Def default_func_def;
     a_Var_Decl_List var_decl_list;
     a_Var_Decl var_decl;
     a_Type_Decl type_decl;
     a_Arg_List arg_list;
+    a_Default_Arg_List default_arg_list;
     a_Id_List id_list;
     a_Array_Sub array_sub;
     a_Complex complex_exp;
@@ -85,7 +87,8 @@ a_Program g_program = NULL;
 // expect shift/reduce conflicts
 // 1.3.3.0: changed to 38 for char literal - spencer
 // 1.3.5.3: changed to 39 for vec literal
-%expect 39
+// 1.3.6.0: changed to 40 for default funcs - jack
+%expect 40
 
 %token <sval> ID STRING_LIT CHAR_LIT
 %token <ival> NUM
@@ -118,6 +121,7 @@ a_Program g_program = NULL;
 %type <program_section> program_section
 %type <stmt> code_segment
 %type <func_def> function_definition
+%type <default_func_def> default_function_definition
 %type <class_def> class_definition
 %type <class_body> class_body
 %type <class_body> class_body2
@@ -165,6 +169,7 @@ a_Program g_program = NULL;
 %type <ival> function_decl
 %type <ival> static_decl
 %type <arg_list> arg_list
+%type <default_arg_list> default_arg_list
 %type <id_list> id_list
 %type <id_list> id_dot
 %type <array_sub> array_exp
@@ -184,6 +189,7 @@ program
         
 program_section
         : statement_list                    { $$ = new_section_stmt( $1, EM_lineNum ); }
+        | default_function_definition       { $$ = new_section_default_func_def( $1, EM_lineNum ); }
         | function_definition               { $$ = new_section_func_def( $1, EM_lineNum ); }
         | class_definition                  { $$ = new_section_class_def( $1, EM_lineNum ); }
         ;
@@ -219,6 +225,7 @@ class_body2
 
 class_section
         : statement_list                    { $$ = new_section_stmt( $1, EM_lineNum ); }
+        | default_function_definition       { $$ = new_section_default_func_def( $1, EM_lineNum ); }
         | function_definition               { $$ = new_section_func_def( $1, EM_lineNum ); }
         | class_definition                  { $$ = new_section_class_def( $1, EM_lineNum ); }
         ;
@@ -246,6 +253,17 @@ function_definition
             { $$ = new_func_def( $1, $2, $3, $4, $6, NULL, EM_lineNum ); }
         | function_decl static_decl type_decl2 ID LPAREN RPAREN SEMICOLON
             { $$ = new_func_def( $1, $2, $3, $4, NULL, NULL, EM_lineNum ); }
+        ;
+
+default_function_definition
+        : function_decl static_decl type_decl2 ID LPAREN arg_list COMMA default_arg_list RPAREN code_segment
+            { $$ = new_default_func_def( $1, $2, $3, $4, $6, $8, $10, EM_lineNum ); }
+        | function_decl static_decl type_decl2 ID LPAREN default_arg_list RPAREN code_segment
+            { $$ = new_default_func_def( $1, $2, $3, $4, NULL, $6, $8, EM_lineNum ); }
+        | function_decl static_decl type_decl2 ID LPAREN arg_list COMMA default_arg_list RPAREN SEMICOLON
+            { $$ = new_default_func_def( $1, $2, $3, $4, $6, $8, NULL, EM_lineNum ); }
+        | function_decl static_decl type_decl2 ID LPAREN default_arg_list RPAREN SEMICOLON
+            { $$ = new_default_func_def( $1, $2, $3, $4, NULL, $6, NULL, EM_lineNum ); }
         ;
 
 class_decl
@@ -296,6 +314,11 @@ type_decl2
 arg_list
         : type_decl var_decl                { $$ = new_arg_list( $1, $2, EM_lineNum ); }
         | type_decl var_decl COMMA arg_list { $$ = prepend_arg_list( $1, $2, $4, EM_lineNum ); }
+        ;
+
+default_arg_list
+        : conditional_expression CHUCK type_decl var_decl                        { $$ = new_default_arg_list( $1, $3, $4, EM_lineNum ); }
+        | conditional_expression CHUCK type_decl var_decl COMMA default_arg_list { $$ = prepend_default_arg_list( $1, $3, $4, $6, EM_lineNum ); }
         ;
 
 statement_list

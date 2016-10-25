@@ -38,6 +38,7 @@
 #include "chuck_type.h"
 #include "chuck_emit.h"
 #include "chuck_vm.h"
+#include "chuck_desugar.h"
 #include <list>
 
 

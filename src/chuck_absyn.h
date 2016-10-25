@@ -75,6 +75,7 @@ typedef struct a_Section_ * a_Section;
 typedef struct a_Stmt_List_ * a_Stmt_List;
 typedef struct a_Class_Def_ * a_Class_Def;
 typedef struct a_Func_Def_ * a_Func_Def;
+typedef struct a_Default_Func_Def_ * a_Default_Func_Def;
 typedef struct a_Code_Segment_ * a_Code_Segment;
 typedef struct a_Stmt_ * a_Stmt;
 typedef struct a_Exp_ * a_Exp;
@@ -108,6 +109,7 @@ typedef struct a_Var_Decl_ * a_Var_Decl;
 typedef struct a_Var_Decl_List_ * a_Var_Decl_List;
 typedef struct a_Type_Decl_ * a_Type_Decl;
 typedef struct a_Arg_List_ * a_Arg_List;
+typedef struct a_Default_Arg_List_ * a_Default_Arg_List;
 typedef struct a_Id_List_ * a_Id_List;
 typedef struct a_Class_Ext_ * a_Class_Ext;
 typedef struct a_Class_Body_ * a_Class_Body;
@@ -133,6 +135,8 @@ a_Program new_program( a_Section section, int pos );
 a_Program prepend_program( a_Section section, a_Program program, int pos );
 a_Section new_section_stmt( a_Stmt_List stmt_list, int pos );
 a_Section new_section_func_def( a_Func_Def func_def, int pos );
+a_Section new_section_default_func_def( a_Default_Func_Def default_func_def,
+                                        int pos );
 a_Section new_section_class_def( a_Class_Def class_def, int pos );
 a_Stmt_List new_stmt_list( a_Stmt stmt, int pos );
 a_Stmt_List prepend_stmt_list( a_Stmt stmt, a_Stmt_List stmt_list, int pos );
@@ -183,6 +187,8 @@ a_Type_Decl new_type_decl( a_Id_List xid, int ref, int pos );
 a_Type_Decl add_type_decl_array( a_Type_Decl type_decl, a_Array_Sub array, int pos );
 a_Arg_List new_arg_list( a_Type_Decl type_decl, a_Var_Decl var_decl, int pos );
 a_Arg_List prepend_arg_list( a_Type_Decl type_decl, a_Var_Decl var_decl, a_Arg_List arg_list, int pos );
+a_Default_Arg_List new_default_arg_list( a_Exp exp, a_Type_Decl type_decl, a_Var_Decl var_decl, int pos );
+a_Default_Arg_List prepend_default_arg_list( a_Exp exp, a_Type_Decl type_decl, a_Var_Decl var_decl, a_Default_Arg_List default_arg_list, int pos );
 a_Array_Sub new_array_sub( a_Exp exp, int pos );
 a_Array_Sub prepend_array_sub( a_Array_Sub array, a_Exp exp, int pos );
 a_Complex new_complex( a_Exp re, int pos );
@@ -200,6 +206,12 @@ void clean_exp( a_Exp exp );
 a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
                          a_Type_Decl type_decl, c_str name,
                          a_Arg_List arg_list, a_Stmt code, int pos );
+a_Default_Func_Def new_default_func_def( ae_Keyword func_decl,
+                                         ae_Keyword static_decl,
+                                         a_Type_Decl type_decl, c_str name,
+                                         a_Arg_List arg_list,
+                                         a_Default_Arg_List default_arg_list,
+                                         a_Stmt code, int pos );
 
 void delete_id_list( a_Id_List x );
 
@@ -231,6 +243,9 @@ struct a_Array_Sub_ { t_CKUINT depth; a_Exp exp_list; int linepos; a_Exp self;
                       int err_num; int err_pos; };
 struct a_Arg_List_ { a_Type_Decl type_decl; a_Var_Decl var_decl; t_CKTYPE type;
                      a_Arg_List next; int linepos; a_Exp self; };
+struct a_Default_Arg_List_ { a_Exp exp; a_Type_Decl type_decl;
+                             a_Var_Decl var_decl; t_CKTYPE type;
+                             a_Default_Arg_List next; int linepos; a_Exp self; };
 struct a_Complex_ { a_Exp re; a_Exp im; int linepos; a_Exp self; };
 struct a_Polar_ { a_Exp mod; a_Exp phase; int linepos; a_Exp self; };
 struct a_Vec_ { a_Exp args; int numdims; int linepos; a_Exp self; }; // ge: added 1.3.5.3
@@ -375,8 +390,26 @@ struct a_Func_Def_ {
     int linepos;
 };
 
+struct a_Default_Func_Def_ {
+    ae_Keyword func_decl;
+    ae_Keyword static_decl; 
+    a_Type_Decl type_decl;
+    t_CKTYPE ret_type;
+    S_Symbol name; 
+    a_Arg_List arg_list;
+    a_Default_Arg_List default_arg_list;
+    a_Stmt code;
+    t_CKFUNC ck_func;
+    unsigned int global;
+    unsigned int s_type;
+    unsigned int stack_depth;
+    void * dl_func_ptr;  // should be not NULL iff s_type == ae_func_builtin
+    int linepos;
+};
+
 // enum values for section types
-typedef enum { ae_section_stmt, ae_section_func, ae_section_class
+typedef enum { ae_section_stmt, ae_section_func, ae_section_class,
+               ae_section_default_func
              } ae_Section_Type;
 
 struct a_Section_
@@ -388,6 +421,7 @@ struct a_Section_
         a_Stmt_List stmt_list;
         a_Class_Def class_def;
         a_Func_Def func_def;
+        a_Default_Func_Def default_func_def;
     };
 
     int linepos;

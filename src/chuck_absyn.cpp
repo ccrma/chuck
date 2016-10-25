@@ -73,6 +73,17 @@ a_Section new_section_func_def( a_Func_Def func_def, int pos )
     return a;
 }
 
+a_Section new_section_default_func_def( a_Default_Func_Def default_func_def,
+                                        int pos )
+{
+    a_Section a = (a_Section)checked_malloc( sizeof( struct a_Section_) );
+    a->s_type = ae_section_default_func;
+    a->default_func_def = default_func_def;
+    a->linepos = pos;
+    
+    return a;
+}
+
 a_Section new_section_class_def( a_Class_Def class_def, int pos )
 {
     a_Section a = (a_Section)checked_malloc( sizeof( struct a_Section_) );
@@ -697,6 +708,32 @@ a_Arg_List prepend_arg_list( a_Type_Decl type_decl, a_Var_Decl var_decl,
     return a;
 }
 
+a_Default_Arg_List new_default_arg_list( a_Exp exp, a_Type_Decl type_decl,
+                                         a_Var_Decl var_decl, int pos )
+{
+    a_Default_Arg_List a = (a_Default_Arg_List)checked_malloc(
+        sizeof( struct a_Default_Arg_List_ ) );
+    a->exp = exp;
+    a->type_decl = type_decl;
+    a->var_decl = var_decl;
+    a->next = NULL;
+    a->linepos = pos;
+    
+    return a;
+}
+
+a_Default_Arg_List prepend_default_arg_list( a_Exp exp, a_Type_Decl type_decl,
+                                             a_Var_Decl var_decl,
+                                             a_Default_Arg_List default_arg_list,
+                                             int pos )
+{
+    a_Default_Arg_List a = new_default_arg_list( exp, type_decl, var_decl, pos );
+    a->next = default_arg_list;
+    a->linepos = pos;
+    
+    return a;
+}
+
 a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
                          a_Type_Decl type_decl, c_str name,
                          a_Arg_List arg_list, a_Stmt code, int pos )
@@ -708,6 +745,28 @@ a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
     a->type_decl = type_decl;
     a->name = insert_symbol( name );
     a->arg_list = arg_list;
+    a->s_type = ae_func_user;
+    a->code = code;
+    a->linepos = pos;
+
+    return a;
+}
+
+a_Default_Func_Def new_default_func_def( ae_Keyword func_decl,
+                                         ae_Keyword static_decl,
+                                         a_Type_Decl type_decl, c_str name,
+                                         a_Arg_List arg_list,
+                                         a_Default_Arg_List default_arg_list,
+                                         a_Stmt code, int pos )
+{
+    a_Default_Func_Def a = (a_Default_Func_Def)checked_malloc(
+        sizeof( struct a_Default_Func_Def_ ) );
+    a->func_decl = func_decl;
+    a->static_decl = static_decl;
+    a->type_decl = type_decl;
+    a->name = insert_symbol( name );
+    a->arg_list = arg_list;
+    a->default_arg_list = default_arg_list;
     a->s_type = ae_func_user;
     a->code = code;
     a->linepos = pos;

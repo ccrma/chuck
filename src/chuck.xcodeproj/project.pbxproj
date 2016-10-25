@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04E965C31DB879C9008713FC /* chuck_desugar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 04E965C11DB879C8008713FC /* chuck_desugar.cpp */; };
 		090A5BE80AA75AEA005DC04D /* util_hid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090A5BE70AA75AEA005DC04D /* util_hid.cpp */; };
 		090B4B1E0C4F038E00DF5577 /* uana_xform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */; };
 		091F328417A03A4D00686C8D /* ulib_regex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 091F327C17A03A4D00686C8D /* ulib_regex.cpp */; };
@@ -94,6 +95,8 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXFileReference section */
+		04E965C11DB879C8008713FC /* chuck_desugar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = chuck_desugar.cpp; sourceTree = "<group>"; };
+		04E965C21DB879C8008713FC /* chuck_desugar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chuck_desugar.h; sourceTree = "<group>"; };
 		090A5BE70AA75AEA005DC04D /* util_hid.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = util_hid.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = uana_xform.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1B0C4F038E00DF5577 /* uana_xform.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = uana_xform.h; sourceTree = SOURCE_ROOT; };
@@ -817,6 +820,8 @@
 				09A40B0C0A9A54DA007604EA /* chuck_console.cpp */,
 				09A40B0D0A9A54DA007604EA /* chuck_console.h */,
 				09A40B0E0A9A54DA007604EA /* chuck_def.h */,
+				04E965C11DB879C8008713FC /* chuck_desugar.cpp */,
+				04E965C21DB879C8008713FC /* chuck_desugar.h */,
 				09A40B0F0A9A54DA007604EA /* chuck_dl.cpp */,
 				09A40B100A9A54DA007604EA /* chuck_dl.h */,
 				09A40B110A9A54DA007604EA /* chuck_emit.cpp */,
@@ -1069,6 +1074,7 @@
 				09805FFC0AA10D3900915136 /* chuck_absyn.cpp in Sources */,
 				09805FFD0AA10D3A00915136 /* chuck_bbq.cpp in Sources */,
 				09922D62181601F700806471 /* message.c in Sources */,
+				04E965C31DB879C9008713FC /* chuck_desugar.cpp in Sources */,
 				09805FFE0AA10D3B00915136 /* chuck_compile.cpp in Sources */,
 				09805FFF0AA10D3C00915136 /* chuck_console.cpp in Sources */,
 				098060000AA10D3D00915136 /* chuck_dl.cpp in Sources */,

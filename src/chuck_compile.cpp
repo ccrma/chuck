@@ -349,6 +349,10 @@ t_CKBOOL Chuck_Compiler::resolve( const string & type )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Compiler::do_entire_file( Chuck_Context * context )
 {
+    // desugar
+    if( !desugar_file( context ) )
+        return FALSE;
+    
     // 0th-scan (pass 0)
     if( !type_engine_scan0_prog( env, g_program, te_do_all ) )
          return FALSE;
@@ -384,6 +388,10 @@ t_CKBOOL Chuck_Compiler::do_entire_file( Chuck_Context * context )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Compiler::do_only_classes( Chuck_Context * context )
 {
+    // desugar
+    if( !desugar_file( context ) )
+        return FALSE;
+    
     // 0th-scan (pass 0)
     if( !type_engine_scan0_prog( env, g_program, te_do_classes_only ) )
         return FALSE;
@@ -419,6 +427,10 @@ t_CKBOOL Chuck_Compiler::do_only_classes( Chuck_Context * context )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Compiler::do_all_except_classes( Chuck_Context * context )
 {
+    // desugar
+    if( !desugar_file( context ) )
+        return FALSE;
+    
     // 0th scan only deals with classes, so is not needed
 
     // 1st-scan (pass 1)
@@ -472,7 +484,11 @@ t_CKBOOL Chuck_Compiler::do_normal( const string & filename, FILE * fd, const ch
     // load the context
     if( !type_engine_load_context( env, context ) )
         return FALSE;
-
+    
+    // desugar
+    if( !desugar_file( context ) )
+        return FALSE;
+    
     // 0th-scan (pass 0)
     if( !type_engine_scan0_prog( env, g_program, te_do_all ) )
     { ret = FALSE; goto cleanup; }
