@@ -316,8 +316,8 @@ arg_list
         ;
 
 default_arg_list
-        : conditional_expression CHUCK type_decl var_decl                        { $$ = new_default_arg_list( $1, $3, $4, EM_lineNum ); }
-        | conditional_expression CHUCK type_decl var_decl COMMA default_arg_list { $$ = prepend_default_arg_list( $1, $3, $4, $6, EM_lineNum ); }
+        : decl_expression CHUCK type_decl var_decl                        { $$ = new_default_arg_list( $1, $3, $4, EM_lineNum ); }
+        | decl_expression CHUCK type_decl var_decl COMMA default_arg_list { $$ = prepend_default_arg_list( $1, $3, $4, $6, EM_lineNum ); }
         ;
 
 statement_list
