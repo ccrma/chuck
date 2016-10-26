@@ -87,8 +87,7 @@ a_Program g_program = NULL;
 // expect shift/reduce conflicts
 // 1.3.3.0: changed to 38 for char literal - spencer
 // 1.3.5.3: changed to 39 for vec literal
-// 1.3.6.0: changed to 40 for default funcs - jack
-%expect 40
+%expect 39
 
 %token <sval> ID STRING_LIT CHAR_LIT
 %token <ival> NUM
@@ -256,11 +255,11 @@ function_definition
         ;
 
 default_function_definition
-        : function_decl static_decl type_decl2 ID LPAREN arg_list COMMA default_arg_list RPAREN code_segment
+        : function_decl static_decl type_decl2 ID LPAREN arg_list SEMICOLON default_arg_list RPAREN code_segment
             { $$ = new_default_func_def( $1, $2, $3, $4, $6, $8, $10, EM_lineNum ); }
         | function_decl static_decl type_decl2 ID LPAREN default_arg_list RPAREN code_segment
             { $$ = new_default_func_def( $1, $2, $3, $4, NULL, $6, $8, EM_lineNum ); }
-        | function_decl static_decl type_decl2 ID LPAREN arg_list COMMA default_arg_list RPAREN SEMICOLON
+        | function_decl static_decl type_decl2 ID LPAREN arg_list SEMICOLON default_arg_list RPAREN SEMICOLON
             { $$ = new_default_func_def( $1, $2, $3, $4, $6, $8, NULL, EM_lineNum ); }
         | function_decl static_decl type_decl2 ID LPAREN default_arg_list RPAREN SEMICOLON
             { $$ = new_default_func_def( $1, $2, $3, $4, NULL, $6, NULL, EM_lineNum ); }
