@@ -49,10 +49,29 @@ t_CKBOOL desugar_file( Chuck_Context * context );
 
 
 //-----------------------------------------------------------------------------
+// name: desugar_class()
+// desc: desugar a class. recurse for nested classes.
+//-----------------------------------------------------------------------------
+t_CKBOOL desugar_class( a_Class_Def class_def );
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: desugar_default_func()
 // desc: desugar a function with default arguments
 //-----------------------------------------------------------------------------
 t_CKBOOL desugar_default_func( a_Program parse_tree );
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: desugar_default_method()
+// desc: desugar a class method with default arguments
+//       (classes and programs store sections in different linked lists)
+//-----------------------------------------------------------------------------
+t_CKBOOL desugar_default_method( a_Class_Body class_parse_tree );
 
 
 

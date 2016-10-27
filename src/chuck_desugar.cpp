@@ -48,12 +48,47 @@ t_CKBOOL desugar_file( Chuck_Context * context )
         // check if section is a default function
         if( parse_tree->section->s_type == ae_section_default_func )
         {
-            if( !desugar_default_func(parse_tree) ) { return FALSE; }
+            if( !desugar_default_func( parse_tree ) ) { return FALSE; }
+        }
+        else if( parse_tree->section->s_type == ae_section_class )
+        {
+            // classes can be nested
+            if( !desugar_class( parse_tree->section->class_def ) ) { return FALSE; }
         }
         // ... more syntactic sugar goes here
         
         // continue iterating
         parse_tree = parse_tree->next;
+    }
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: desugar_class()
+// desc: desugar a class. recurse for nested classes.
+//-----------------------------------------------------------------------------
+t_CKBOOL desugar_class( a_Class_Def class_def )
+{
+    a_Class_Body body = class_def->body;
+    
+    while( body )
+    {
+        if( body->section->s_type == ae_section_default_func )
+        {
+            // found method with default args
+            if( !desugar_default_method( body ) ) { return FALSE; }
+        }
+        else if( body->section->s_type == ae_section_class ) // if body is class
+        {
+            // found nested class. desugar it
+            if( !desugar_class( body->section->class_def ) ) { return FALSE; }
+        }
+        
+        body = body->next;
     }
     
     return TRUE;
@@ -216,6 +251,88 @@ t_CKBOOL desugar_default_func( a_Program parse_tree )
     // copy over
     parse_tree->section = new_functions->section;
     parse_tree->next = new_functions->next;
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: desugar_default_method_helper()
+// desc: returns the head of a_Class_Body linked list that includes all the
+//       desugared method definitions, with the tail pointing to the
+//       passed in a_Class_Body eventual_next
+//-----------------------------------------------------------------------------
+a_Class_Body desugar_default_method_helper( a_Arg_List current_args,
+                                       a_Default_Arg_List current_default_args,
+                                       a_Default_Func_Def default_func,
+                                       a_Class_Body eventual_next )
+{
+    int lp = default_func->linepos;
+    if( current_default_args )
+    {
+        return prepend_class_body(
+            new_section_func_def(
+                // function definition: a return statement chaining to next func
+                new_func_def( default_func->func_decl,
+                              default_func->static_decl,
+                              default_func->type_decl,
+                              S_name( default_func->name ),
+                              current_args,
+                              new_return_codeblock(
+                                  S_name( default_func->name ),
+                                  current_args,
+                                  current_default_args->exp,
+                                  default_func->linepos
+                              ),
+                              lp ),
+            lp ),
+            // recurse to next function
+            desugar_default_method_helper(
+                append_arg( current_args, current_default_args, default_func->linepos ),
+                current_default_args->next, default_func, eventual_next
+            ),
+        lp );
+    }
+    else
+    {
+        // base case: no default args left.
+        // return new function with original code block
+        // section points to "eventual next" to maintain the program linkedlist
+        return prepend_class_body(
+            new_section_func_def(
+                new_func_def( default_func->func_decl,
+                              default_func->static_decl,
+                              default_func->type_decl,
+                              S_name( default_func->name ),
+                              current_args,
+                              default_func->code,
+                              lp ),
+            lp ),
+        eventual_next, lp );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: desugar_default_method()
+// desc: desugar a class method with default arguments
+//       (classes and programs store sections in different linked lists)
+//-----------------------------------------------------------------------------
+t_CKBOOL desugar_default_method( a_Class_Body class_parse_tree )
+{
+    a_Class_Body new_functions = desugar_default_method_helper(
+        class_parse_tree->section->default_func_def->arg_list,
+        class_parse_tree->section->default_func_def->default_arg_list,
+        class_parse_tree->section->default_func_def,
+        class_parse_tree->next
+    );
+    // copy over
+    class_parse_tree->section = new_functions->section;
+    class_parse_tree->next = new_functions->next;
 
     return TRUE;
 }
