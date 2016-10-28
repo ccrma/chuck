@@ -181,6 +181,14 @@ t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
             ret = type_engine_scan0_class_def( env, prog->section->class_def );
             break;
         
+        case ae_section_default_func:
+            // default functions should be desugared away by this point
+            EM_error2( prog->linepos,
+                "internal error: default function program section present after desugaring in type checker pre-scan..."
+            );
+            ret = FALSE;
+            break;
+        
         default:
             EM_error2( prog->linepos,
                 "internal error: unrecognized program section in type checker pre-scan..." );
@@ -304,6 +312,14 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
             // do the class
             ret = type_engine_scan0_class_def( env, body->section->class_def );
             break;
+        
+        case ae_section_default_func:
+            // default functions should be desugared away by this point
+            EM_error2( body->linepos,
+                "internal error: default function program section present after desugaring in type checker pre-scan..."
+            );
+            ret = FALSE;
+            break;
         }
         
         // move to the next section
@@ -408,6 +424,14 @@ t_CKBOOL type_engine_scan1_prog( Chuck_Env * env, a_Program prog,
             if( how_much == te_do_no_classes ) break;
             // scan the class definition
             ret = type_engine_scan1_class_def( env, prog->section->class_def );
+            break;
+        
+        case ae_section_default_func:
+            // default functions should be desugared away by this point
+            EM_error2( prog->linepos,
+                "internal error: default function program section present after desugaring in type checker pre-scan..."
+            );
+            ret = FALSE;
             break;
         
         default:
@@ -1278,6 +1302,14 @@ t_CKBOOL type_engine_scan1_class_def( Chuck_Env * env, a_Class_Def class_def )
             // do the class
             ret = type_engine_scan1_class_def( env, body->section->class_def );
             break;
+        
+        case ae_section_default_func:
+            // default functions should be desugared away by this point
+            EM_error2( body->linepos,
+                "internal error: default function program section present after desugaring in type checker pre-scan..."
+            );
+            ret = FALSE;
+            break;
         }
         
         // move to the next section
@@ -1449,6 +1481,14 @@ t_CKBOOL type_engine_scan2_prog( Chuck_Env * env, a_Program prog,
             if( how_much == te_do_no_classes ) break;
             // scan the class definition
             ret = type_engine_scan2_class_def( env, prog->section->class_def );
+            break;
+        
+        case ae_section_default_func:
+            // default functions should be desugared away by this point
+            EM_error2( prog->linepos,
+                "internal error: default function program section present after desugaring in type checker pre-scan..."
+            );
+            ret = FALSE;
             break;
         
         default:
@@ -2398,6 +2438,14 @@ t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def )
         case ae_section_class:
             // do the class
             ret = type_engine_scan2_class_def( env, body->section->class_def );
+            break;
+        
+        case ae_section_default_func:
+            // default functions should be desugared away by this point
+            EM_error2( body->linepos,
+                "internal error: default function program section present after desugaring in type checker pre-scan..."
+            );
+            ret = FALSE;
             break;
         }
         

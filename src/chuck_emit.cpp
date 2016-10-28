@@ -212,6 +212,14 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
             // check class definition
             ret = emit_engine_emit_class_def( emit, prog->section->class_def );
             break;
+        
+        case ae_section_default_func:
+            // default functions should be desugared away by this point
+            EM_error2( prog->linepos,
+                "internal error: default function program section present after desugaring in type checker pre-scan..."
+            );
+            ret = FALSE;
+            break;
 
         default: // bad
             EM_error2( 0,
@@ -4493,6 +4501,14 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
             //EM_error2( body->section->class_def->linepos,
             //    "nested class definitions are not yet supported..." );
             //ret = FALSE;
+            break;
+        
+        case ae_section_default_func:
+            // default functions should be desugared away by this point
+            EM_error2( body->linepos,
+                "internal error: default function program section present after desugaring in type checker pre-scan..."
+            );
+            ret = FALSE;
             break;
         }
         

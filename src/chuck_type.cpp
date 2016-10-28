@@ -582,6 +582,14 @@ t_CKBOOL type_engine_check_context( Chuck_Env * env,
             ret = type_engine_check_class_def( env, prog->section->class_def );
             break;
         
+        case ae_section_default_func:
+            // default functions should be desugared away by this point
+            EM_error2( prog->linepos,
+                "internal error: default function program section present after desugaring in type checker pre-scan..."
+            );
+            ret = FALSE;
+            break;
+        
         default:
             EM_error2( prog->linepos,
                 "internal error: unrecognized program section in type checker..." );
@@ -3846,6 +3854,14 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
         case ae_section_class:
             // check it
             ret = type_engine_check_class_def( env, body->section->class_def );
+            break;
+        
+        case ae_section_default_func:
+            // default functions should be desugared away by this point
+            EM_error2( body->linepos,
+                "internal error: default function program section present after desugaring in type checker pre-scan..."
+            );
+            ret = FALSE;
             break;
         }
         
