@@ -44,7 +44,7 @@
 #endif // __PLATFORM_WIN32__
 
 // current version
-const char CK_VERSION[] = "1.3.6.0-220a-1 (chimera)";
+const char CK_VERSION[] = "1.3.6.0-220a-2 (chimera)";
 
 // global virtual machine
 Chuck_VM * g_vm = NULL;
