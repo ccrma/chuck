@@ -160,7 +160,7 @@ clean:
 	
 
 test:
-	test/test.py ./chuck test/
+	pushd test; ./test.py ../chuck .; popd
 
 # ------------------------------------------------------------------------------
 # Distribution meta-targets
