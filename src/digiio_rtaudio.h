@@ -62,7 +62,7 @@ typedef unsigned int RtAudioStreamStatus;
   #endif
 #define NUM_BUFFERS_DEFAULT          8
 #define NUM_CHANNELS_DEFAULT         2       // number of channels
-  #if defined(__PLATFORM__LINUX__)
+  #if defined(__PLATFORM_LINUX__)
 #define SAMPLING_RATE_DEFAULT        48000   // sampling rate
 #define USE_CB_DEFAULT               TRUE    // callback
   #else
