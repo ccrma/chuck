@@ -3005,13 +3005,13 @@ public:
 // name: struct Chuck_Instr_Spork_Stmt
 // desc: added 1.3.0.0 -- disable until further notice
 //-----------------------------------------------------------------------------
-//struct Chuck_Instr_Spork_Stmt : public Chuck_Instr_Unary_Op
-//{
-//public:
-//    Chuck_Instr_Spork_Stmt( t_CKUINT v = 0 ) { this->set( v ); }
-//public:
-//    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
-//};
+struct Chuck_Instr_Spork_Stmt : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Spork_Stmt( t_CKUINT v = 0 ) { this->set( v ); }
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
 
 
 

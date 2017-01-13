@@ -2130,11 +2130,11 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
     }
 
     // check code stmt; this is to eventually support sporking of code (added 1.3.0.0)
-    //if( unary->code )
-    //{
-    //    // check it!
-    //    if( !type_engine_check_stmt( env, unary->code ) ) return NULL;
-    //}
+    if( unary->code )
+    {
+        // check it!
+        if( !type_engine_check_stmt( env, unary->code ) ) return NULL;
+    }
 
     // check the op
     switch( unary->op )
@@ -2173,7 +2173,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             // spork shred (by function call)
             if( unary->exp && unary->exp->s_type == ae_exp_func_call ) return &t_shred;
             // spork shred (by code segment)
-            // else if( unary->code ) return &t_shred;
+            else if( unary->code ) return &t_shred;
             // got a problem
             else
             {

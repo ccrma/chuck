@@ -547,8 +547,8 @@ unary_expression
             { $$ = new_exp_from_unary2( ae_op_new, $2, NULL, EM_lineNum ); }
         | NEW type_decl array_exp
             { $$ = new_exp_from_unary2( ae_op_new, $2, $3, EM_lineNum ); }
-//		| SPORK TILDA code_segment
-//		    { $$ = new_exp_from_unary3( ae_op_spork, $3, EM_lineNum ); }
+		| SPORK TILDA code_segment
+		    { $$ = new_exp_from_unary3( ae_op_spork, $3, EM_lineNum ); }
         ;
 
 unary_operator

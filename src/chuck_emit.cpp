@@ -93,7 +93,7 @@ t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit, Chuck_Type * to, Chuck_Typ
 t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol, 
                                   Chuck_Value * v, t_CKBOOL emit_var, int linepos );
 // disabled until further notice (added 1.3.0.0)
-// t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt );
+t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt );
 
 
 
@@ -2799,11 +2799,13 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
                 return FALSE;
         }
         // spork ~ { ... }
-        // else if( unary->code )
-        // {
-        //     if( !emit_engine_emit_spork( emit, unary->code ) )
-        //         return FALSE;
-        // }
+        else if( unary->code )
+        {
+            if( !emit_engine_emit_spork( emit, unary->code ) )
+            {
+                return FALSE;
+            }
+        }
         else
         {
             EM_error2( unary->linepos,
@@ -4647,47 +4649,47 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
 // name: emit_engine_emit_spork()
 // desc: ...
 //-----------------------------------------------------------------------------
-//t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
-//{
-//    // push the current code
-//    emit->stack.push_back( emit->code );
-//    // make a new one (spork~exp shred)
-//    emit->code = new Chuck_Code;
-//    // handle need this
-//    emit->code->need_this = emit->env->class_def ? TRUE : FALSE;
-//    // name it
-//    emit->code->name = "spork~exp";
-//    // keep track of full path (added 1.3.0.0)
-//    emit->code->filename = emit->context->full_path;
-//    
-//    // call the code on sporkee shred
-//    if( !emit_engine_emit_stmt( emit, stmt, TRUE ) )
-//        return FALSE;
-//    
-//    // done
-//    emit->append( new Chuck_Instr_EOC );
-//    
-//    // emit it
-//    Chuck_VM_Code * code = emit_to_code( emit->code, NULL, emit->dump );
-//    
-//    // restore the code to sporker shred
-//    assert( emit->stack.size() > 0 );
-//    emit->code = emit->stack.back();
-//    // pop
-//    emit->stack.pop_back();
-//    
-//    if( code->need_this )
-//    {
-//        // push this if needed
-//        emit->append( new Chuck_Instr_Reg_Push_This );
-//    }
-//    // emit instruction that will put the code on the stack
-//    emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)code ) );
-//    // emit spork instruction - this will copy, func, args, this
-//    emit->append( new Chuck_Instr_Spork_Stmt( 0 ) );
-//    
-//    return TRUE;
-//}
+t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
+{
+    // push the current code
+    emit->stack.push_back( emit->code );
+    // make a new one (spork~exp shred)
+    emit->code = new Chuck_Code;
+    // handle need this
+    emit->code->need_this = emit->env->class_def ? TRUE : FALSE;
+    // name it
+    emit->code->name = "spork~exp";
+    // keep track of full path (added 1.3.0.0)
+    emit->code->filename = emit->context->full_path;
+    
+    // call the code on sporkee shred
+    if( !emit_engine_emit_stmt( emit, stmt, TRUE ) )
+        return FALSE;
+    
+    // done
+    emit->append( new Chuck_Instr_EOC );
+    
+    // emit it
+    Chuck_VM_Code * code = emit_to_code( emit->code, NULL, emit->dump );
+    
+    // restore the code to sporker shred
+    assert( emit->stack.size() > 0 );
+    emit->code = emit->stack.back();
+    // pop
+    emit->stack.pop_back();
+    
+    if( code->need_this )
+    {
+        // push this if needed
+        emit->append( new Chuck_Instr_Reg_Push_This );
+    }
+    // emit instruction that will put the code on the stack
+    emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)code ) );
+    // emit spork instruction - this will copy, func, args, this
+    emit->append( new Chuck_Instr_Spork_Stmt( 0 ) );
+    
+    return TRUE;
+}
 
 
 
