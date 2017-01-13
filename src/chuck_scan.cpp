@@ -945,6 +945,11 @@ t_CKBOOL type_engine_scan1_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
 {
+    // scan code blocks inside spork ~ { code };
+    if( unary->code && !type_engine_scan1_stmt( env, unary->code ) )
+    {
+        return FALSE;
+    }
     return TRUE;
 }
 
@@ -1986,6 +1991,11 @@ t_CKBOOL type_engine_scan2_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan2_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
 {
+    // scan code blocks inside spork ~ { code };
+    if( unary->code && !type_engine_scan2_stmt( env, unary->code ) )
+    {
+        return FALSE;
+    }
     return TRUE;
 }
 
