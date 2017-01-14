@@ -34,6 +34,7 @@
 #include "chuck_vm.h"
 #include "chuck_errmsg.h"
 #include "chuck_instr.h"
+#include <sstream>
 
 using namespace std;
 
@@ -4658,7 +4659,9 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
     // handle need this
     emit->code->need_this = emit->env->class_def ? TRUE : FALSE;
     // name it
-    emit->code->name = "spork~exp";
+    std::ostringstream name;
+    name << "spork~{code} [line " << stmt->linepos << "]";
+    emit->code->name = name.str();
     // keep track of full path (added 1.3.0.0)
     emit->code->filename = emit->context->full_path;
     
