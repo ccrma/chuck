@@ -4554,7 +4554,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_spork()
-// desc: ...
+// desc: spork ~ function_call()
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
 {
@@ -4647,7 +4647,7 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_spork()
-// desc: ...
+// desc: spork ~ { ... }
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
 {
