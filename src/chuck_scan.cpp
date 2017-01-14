@@ -946,9 +946,19 @@ t_CKBOOL type_engine_scan1_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 t_CKBOOL type_engine_scan1_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
 {
     // scan code blocks inside spork ~ { code };
-    if( unary->code && !type_engine_scan1_stmt( env, unary->code ) )
+    if( unary->code )
     {
-        return FALSE;
+        // keep track of old value of env->code_spork
+        t_CKBOOL outer_level_code_spork = env->code_spork;
+        // in this recursive scan, we are in a code spork
+        env->code_spork = TRUE;
+        if( !type_engine_scan1_stmt( env, unary->code ) ) {
+            // reset value of code_spork and return failure
+            env->code_spork = outer_level_code_spork;
+            return FALSE;
+        }
+        // reset value of code_spork and keep checking...
+        env->code_spork = outer_level_code_spork;
     }
     return TRUE;
 }
@@ -1992,9 +2002,19 @@ t_CKBOOL type_engine_scan2_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 t_CKBOOL type_engine_scan2_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
 {
     // scan code blocks inside spork ~ { code };
-    if( unary->code && !type_engine_scan2_stmt( env, unary->code ) )
+    if( unary->code )
     {
-        return FALSE;
+        // keep track of old value of env->code_spork
+        t_CKBOOL outer_level_code_spork = env->code_spork;
+        // in this recursive scan, we are in a code spork
+        env->code_spork = TRUE;
+        if( !type_engine_scan2_stmt( env, unary->code ) ) {
+            // reset value of code_spork and return failure
+            env->code_spork = outer_level_code_spork;
+            return FALSE;
+        }
+        // reset value of code_spork and keep checking...
+        env->code_spork = outer_level_code_spork;
     }
     return TRUE;
 }
@@ -2261,7 +2281,11 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         value->is_member = ( env->class_def != NULL && 
                              env->class_scope == 0 && 
                              env->func == NULL && !decl->is_static );
-        value->is_context_global = ( env->class_def == NULL && env->func == NULL );
+        value->is_context_global = (
+            env->class_def == NULL &&
+            env->func == NULL &&
+            !env->code_spork
+        );
         value->addr = var_decl->addr;
         // flag it until the decl is checked
         value->is_decl_checked = FALSE;

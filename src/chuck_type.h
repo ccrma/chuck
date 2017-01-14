@@ -433,6 +433,8 @@ public:
     Chuck_Func * func;
     // how far nested in a class definition
     t_CKUINT class_scope;
+    // currently in a code spork
+    t_CKBOOL code_spork;
 
     // current contexts in memory
     std::vector<Chuck_Context *> contexts;
@@ -474,6 +476,7 @@ public:
         else
             curr = this->global();
         class_def = NULL; func = NULL;
+        code_spork = FALSE;
         // make sure this is 0
         class_scope = 0;
     }
