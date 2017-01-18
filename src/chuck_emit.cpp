@@ -4689,7 +4689,8 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
     // emit instruction that will put the code on the stack
     emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)code ) );
     // emit spork instruction - this will copy, func, args, this
-    emit->append( new Chuck_Instr_Spork_Stmt( 0 ) );
+    t_CKBOOL is_nested = !stmt->stmt_code.outermost;
+    emit->append( new Chuck_Instr_Spork_Stmt( is_nested, 0 ) );
     
     return TRUE;
 }

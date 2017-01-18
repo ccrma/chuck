@@ -435,6 +435,8 @@ public:
     t_CKUINT class_scope;
     // currently in a code spork
     t_CKBOOL code_spork;
+    // how far nested in a class, func, or code spork definition (for scans)
+    t_CKUINT mixed_scope;
 
     // current contexts in memory
     std::vector<Chuck_Context *> contexts;
@@ -479,6 +481,7 @@ public:
         code_spork = FALSE;
         // make sure this is 0
         class_scope = 0;
+        mixed_scope = 0;
     }
     
     void load_user_namespace()

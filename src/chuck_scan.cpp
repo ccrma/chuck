@@ -948,6 +948,7 @@ t_CKBOOL type_engine_scan1_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
     // scan code blocks inside spork ~ { code };
     if( unary->code )
     {
+        env->mixed_scope++;
         // keep track of old value of env->code_spork
         t_CKBOOL outer_level_code_spork = env->code_spork;
         // in this recursive scan, we are in a code spork
@@ -957,8 +958,15 @@ t_CKBOOL type_engine_scan1_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             env->code_spork = outer_level_code_spork;
             return FALSE;
         }
+        // mark unary->code if this isn't outermost level
+        if( env->mixed_scope > 1 )
+        {
+            // mark unary->code
+            unary->code->stmt_code.outermost = FALSE;
+        }
         // reset value of code_spork and keep checking...
         env->code_spork = outer_level_code_spork;
+        env->mixed_scope--;
     }
     return TRUE;
 }
@@ -1257,6 +1265,7 @@ t_CKBOOL type_engine_scan1_exp_array( Chuck_Env * env, a_Exp_Array array )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_class_def( Chuck_Env * env, a_Class_Def class_def )
 {
+    env->mixed_scope++;
     // the return type
     t_CKBOOL ret = TRUE;
     // the class body
@@ -1305,6 +1314,8 @@ t_CKBOOL type_engine_scan1_class_def( Chuck_Env * env, a_Class_Def class_def )
     // pop the namesapce
     env->curr = env->nspc_stack.back();
     env->nspc_stack.pop_back();
+    
+    env->mixed_scope--;
 
     return ret;
 }
@@ -1318,6 +1329,7 @@ t_CKBOOL type_engine_scan1_class_def( Chuck_Env * env, a_Class_Def class_def )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
 {
+    env->mixed_scope++;
     a_Arg_List arg_list = NULL;
     t_CKUINT count = 0;
     // t_CKBOOL has_code = FALSE;
@@ -1409,6 +1421,7 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
         EM_error2( 0, "...in function '%s'", S_name(f->name) );
         goto error;
     }
+    env->mixed_scope--;
 
     return TRUE;
 
@@ -2004,6 +2017,7 @@ t_CKBOOL type_engine_scan2_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
     // scan code blocks inside spork ~ { code };
     if( unary->code )
     {
+        env->mixed_scope++;
         // keep track of old value of env->code_spork
         t_CKBOOL outer_level_code_spork = env->code_spork;
         // in this recursive scan, we are in a code spork
@@ -2013,8 +2027,15 @@ t_CKBOOL type_engine_scan2_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             env->code_spork = outer_level_code_spork;
             return FALSE;
         }
+        // mark unary->code if this isn't outermost level
+        if( env->mixed_scope > 1 )
+        {
+            // mark unary->code
+            unary->code->stmt_code.outermost = FALSE;
+        }
         // reset value of code_spork and keep checking...
         env->code_spork = outer_level_code_spork;
+        env->mixed_scope--;
     }
     return TRUE;
 }
@@ -2395,6 +2416,7 @@ t_CKBOOL type_engine_scan2_exp_array( Chuck_Env * env, a_Exp_Array array )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def )
 {
+    env->mixed_scope++;
     // the return type
     t_CKBOOL ret = TRUE;
     // the class body
@@ -2445,6 +2467,8 @@ t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def )
     // pop the namesapce
     env->curr = env->nspc_stack.back();
     env->nspc_stack.pop_back();
+    
+    env->mixed_scope--;
 
     return ret;
 }
@@ -2458,6 +2482,7 @@ t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
 {
+    env->mixed_scope++;
     Chuck_Type * type = NULL;
     Chuck_Value * value = NULL;
     Chuck_Func * func = NULL;
@@ -2747,6 +2772,8 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     env->curr->value.pop();    
     // clear the env's function definition
     env->func = NULL;
+    
+    env->mixed_scope--;
 
     return TRUE;
 

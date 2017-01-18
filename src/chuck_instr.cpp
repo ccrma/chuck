@@ -4543,8 +4543,17 @@ void Chuck_Instr_Spork_Stmt::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     pop_( reg_sp, 1 );
     // get the code
     Chuck_VM_Code * code = *(Chuck_VM_Code **)reg_sp;
+    
     // spork it
-    Chuck_VM_Shred * sh = vm->spork( code, shred );
+    Chuck_VM_Shred * sh;
+    if( !is_nested )
+    {
+        sh = vm->spork( code, shred );
+    }
+    else
+    {
+        sh = vm->fork( code, shred );
+    }
     
     if( code->need_this )
     {
