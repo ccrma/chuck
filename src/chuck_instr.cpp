@@ -4543,6 +4543,12 @@ void Chuck_Instr_Spork_Stmt::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     pop_( reg_sp, 1 );
     // get the code
     Chuck_VM_Code * code = *(Chuck_VM_Code **)reg_sp;
+    // check
+    if( !code->instr )
+    {
+        EM_error2( 0, "internal error: spork stmt vm code->instr NULL!" );
+        assert( FALSE );
+    }
     
     // spork it
     Chuck_VM_Shred * sh;
