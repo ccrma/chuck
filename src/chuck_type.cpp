@@ -2129,7 +2129,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
         if( !t ) return NULL;
     }
 
-    // check code stmt; this is to eventually support sporking of code (added 1.3.0.0)
+    // check code stmt; this is to support sporking of code (added 1.3.0.0)
     if( unary->code )
     {
         // check it!
