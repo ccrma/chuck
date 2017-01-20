@@ -4687,6 +4687,9 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
     // emit it
     Chuck_VM_Code * code = emit_to_code( emit->code, NULL, emit->dump );
     
+    // add reference -- prevents code being freed after being run once
+    code->add_ref();
+
     // restore the code to sporker shred
     assert( emit->stack.size() > 0 );
     emit->code = emit->stack.back();
