@@ -38,6 +38,7 @@
 #include "chuck_globals.h"
 #include "chuck_errmsg.h"
 #include "ugen_xxx.h"
+#include <string.h>
 
 #include <algorithm>
 using namespace std;
