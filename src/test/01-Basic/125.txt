@@ -1,0 +1,2 @@
+[125.ck]:line(3): can't return inside spork~{code};
+[125.ck]: ...in function 'sporkReturn'
