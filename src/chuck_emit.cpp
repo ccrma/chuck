@@ -4584,8 +4584,12 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     emit->code = new Chuck_Code;
     // handle need this
     emit->code->need_this = exp->ck_func->is_member;
-    // name it
-    emit->code->name = "spork~exp";
+    // name it: e.g. spork~foo [line 5]
+    std::ostringstream name;
+    name << "spork~"
+         << exp->ck_func->name.substr( 0, exp->ck_func->name.find( "@" ))
+         << " [line " << exp->linepos << "]";
+    emit->code->name = name.str();
     // keep track of full path (added 1.3.0.0)
     emit->code->filename = emit->context->full_path;
     // push op
