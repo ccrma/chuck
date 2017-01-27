@@ -726,6 +726,12 @@ t_CKBOOL type_engine_scan1_return( Chuck_Env * env, a_Stmt_Return stmt )
 {
     t_CKBOOL ret = FALSE;
 
+    if( env->code_spork )
+    {
+        EM_error2( stmt->linepos, "can't return inside spork~{code};" );
+        return FALSE;
+    }
+
     // check the type of the return
     if( stmt->val )
         ret = type_engine_scan1_exp( env, stmt->val );
