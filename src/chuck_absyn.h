@@ -263,6 +263,7 @@ struct a_Exp_Primary_
 
     int linepos;
     a_Exp self;
+    t_CKUINT primary_scan2_mixed_scope;
 };
 
 // enum exp type

@@ -1289,11 +1289,12 @@ t_CKTYPE type_engine_check_exp_binary( Chuck_Env * env, a_Exp_Binary binary )
 
     // type check the lhs and rhs
     t_CKTYPE left = type_engine_check_exp( env, cl );
-    t_CKTYPE right = type_engine_check_exp( env, cr );
+    // fail if left fails before checking right, to avoid
+    // confusion of two similar errors printing from the same line
+    if( !left ) return NULL;
     
-    // if either fails, then return NULL
-    if( !left || !right )
-        return NULL;
+    t_CKTYPE right = type_engine_check_exp( env, cr );
+    if( !right ) return NULL;
 
     // cross chuck
     while( cr )
@@ -2132,8 +2133,18 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
     // check code stmt; this is to support sporking of code (added 1.3.0.0)
     if( unary->code )
     {
+        t_CKBOOL outer_level_code_spork = env->code_spork;
+        // in this recursive scan, we are in a code spork
+        env->code_spork = TRUE;
         // check it!
-        if( !type_engine_check_stmt( env, unary->code ) ) return NULL;
+        if( !type_engine_check_stmt( env, unary->code ) )
+        {
+            // reset value of code_spork and return failure
+            env->code_spork = outer_level_code_spork;
+            return NULL;
+        }
+        // reset value of code_spork and keep checking...
+        env->code_spork = outer_level_code_spork;
     }
 
     // check the op
@@ -2418,6 +2429,25 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                     return NULL;
                 }
                 
+                if( // variable is non-global
+                    !v->is_context_global &&
+                    // variable is not a reserved value e.g. samp
+                    !env->key_values[S_name( exp->var )] &&
+                    // variable does not belong to a class
+                    !v->is_member && !v->is_static &&
+                    // access is in deeper scope than declaration
+                    v->decl_mixed_scope < exp->primary_scan2_mixed_scope &&
+                    // we are in a sporked codeblock
+                    env->code_spork &&
+                    // variable is primitive
+                    type_engine_check_primitive( v->type )
+                )
+                {
+                    EM_error2( exp->linepos, "non-local primitive '%s' cannot be accessed in a deeper scope than its declaration...", S_name(exp->var) );
+                    EM_error2( exp->linepos, "please use objects (wrap your primitives in an object)" );
+                    return NULL;
+                }
+
                 // 1.3.1.0: hack catch "pi"
                 // if( v->name == "pi" )
                 // {

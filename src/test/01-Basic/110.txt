@@ -1,0 +1,3 @@
+[110.ck]:line(6): non-local primitive 'f' cannot be accessed in a deeper scope than its declaration...
+[110.ck]:line(6): please use objects (wrap your primitives in an object)
+[110.ck]: ...in function 'sporkFun'

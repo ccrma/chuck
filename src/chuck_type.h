@@ -699,6 +699,8 @@ struct Chuck_Value : public Chuck_VM_Object
     t_CKBOOL is_context_global;
     // is decl checked
     t_CKBOOL is_decl_checked;
+    // what scope level it's declared in
+    t_CKUINT decl_mixed_scope;
     // 0 = public, 1 = protected, 2 = private
     t_CKUINT access;
     // owner
@@ -725,7 +727,9 @@ struct Chuck_Value : public Chuck_VM_Object
       addr = a; is_member = FALSE;
       is_static = FALSE; is_context_global = FALSE;
       is_decl_checked = TRUE; // only set to false in certain cases
-      func_ref = NULL; func_num_overloads = 0; }
+      func_ref = NULL; func_num_overloads = 0;
+      decl_mixed_scope = 0; // set during scan
+    }
 
     // destructor
     virtual ~Chuck_Value()

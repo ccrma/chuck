@@ -2055,6 +2055,8 @@ t_CKBOOL type_engine_scan2_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan2_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
 {
+    // store scope level
+    exp->primary_scan2_mixed_scope = env->mixed_scope;
     return TRUE;
 }
 
@@ -2316,6 +2318,8 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         value->addr = var_decl->addr;
         // flag it until the decl is checked
         value->is_decl_checked = FALSE;
+        // store scope level
+        value->decl_mixed_scope = env->mixed_scope;
 
         // remember the value
         var_decl->value = value;
