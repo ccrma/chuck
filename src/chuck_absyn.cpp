@@ -120,7 +120,6 @@ a_Stmt new_stmt_from_code( a_Stmt_List stmt_list, int pos )
     a->linepos = pos;
     a->stmt_code.linepos = pos;
     a->stmt_code.self = a;
-    a->stmt_code.outermost = TRUE;
 
     return a;
 }

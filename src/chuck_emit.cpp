@@ -4655,22 +4655,10 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
 {
-    // whether this code statement is nested in something other than global
-    t_CKBOOL is_nested = !stmt->stmt_code.outermost;
-    // save the current code's curr_offset (room saved for local variables)
-    t_CKUINT local_offset = emit->code->frame->curr_offset;
     // push the current code
     emit->stack.push_back( emit->code );
     // make a new one (spork~exp shred)
     emit->code = new Chuck_Code;
-    // for nested sporks
-    if( is_nested )
-    {
-        // increase curr_offset by local offset of code surrounding this.
-        // since we are going to copy its memory upon spork, we need to save
-        // room for the local variables of the memory we're copying.
-        emit->code->frame->curr_offset += local_offset;
-    }
     // handle need this
     emit->code->need_this = emit->env->class_def ? TRUE : FALSE;
     // name it
@@ -4707,7 +4695,7 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
     // emit instruction that will put the code on the stack
     emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)code ) );
     // emit spork instruction - this will copy, func, args, this
-    emit->append( new Chuck_Instr_Spork_Stmt( is_nested, 0 ) );
+    emit->append( new Chuck_Instr_Spork_Stmt( 0 ) );
     
     return TRUE;
 }

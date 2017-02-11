@@ -307,7 +307,7 @@ struct a_Stmt_While_ { int is_do; a_Exp cond; a_Stmt body; int linepos; a_Stmt s
 struct a_Stmt_Until_ { int is_do; a_Exp cond; a_Stmt body; int linepos; a_Stmt self; };
 struct a_Stmt_For_ { a_Stmt c1; a_Stmt c2; a_Exp c3; a_Stmt body; int linepos; a_Stmt self; };
 struct a_Stmt_Loop_ { a_Exp cond; a_Stmt body; int linepos; a_Stmt self; };
-struct a_Stmt_Code_ { a_Stmt_List stmt_list; int linepos; a_Stmt self; t_CKBOOL outermost; };
+struct a_Stmt_Code_ { a_Stmt_List stmt_list; int linepos; a_Stmt self; };
 struct a_Stmt_If_ { a_Exp cond; a_Stmt if_body; a_Stmt else_body; int linepos; a_Stmt self; };
 struct a_Stmt_Switch_ { a_Exp val; int linepos; a_Stmt self; };
 struct a_Stmt_Break_ { int linepos; a_Stmt self; };

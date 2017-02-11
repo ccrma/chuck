@@ -433,10 +433,8 @@ public:
     Chuck_Func * func;
     // how far nested in a class definition
     t_CKUINT class_scope;
-    // currently in a code spork
-    t_CKBOOL code_spork;
-    // how far nested in a class, func, or code spork definition (for scans)
-    t_CKUINT mixed_scope;
+    // level of code spork
+    t_CKUINT code_spork_level;
 
     // current contexts in memory
     std::vector<Chuck_Context *> contexts;
@@ -478,10 +476,9 @@ public:
         else
             curr = this->global();
         class_def = NULL; func = NULL;
-        code_spork = FALSE;
         // make sure this is 0
         class_scope = 0;
-        mixed_scope = 0;
+        code_spork_level = 0;
     }
     
     void load_user_namespace()

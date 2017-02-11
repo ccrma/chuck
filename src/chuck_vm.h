@@ -94,7 +94,6 @@ public:
 public:
     t_CKBOOL initialize( t_CKUINT size );
     t_CKBOOL shutdown();
-    t_CKBOOL copyfrom( Chuck_VM_Stack * other );
 
 //-----------------------------------------------------------------------------
 // data
@@ -169,10 +168,6 @@ public:
     t_CKBOOL initialize( Chuck_VM_Code * c, 
                          t_CKUINT mem_st_size = CVM_MEM_STACK_SIZE, 
                          t_CKUINT reg_st_size = CVM_REG_STACK_SIZE );
-    t_CKBOOL initialize2( Chuck_VM_Code * c,
-                          Chuck_VM_Shred * parent,
-                          t_CKUINT mem_st_size = CVM_MEM_STACK_SIZE,
-                          t_CKUINT reg_st_size = CVM_REG_STACK_SIZE );
     t_CKBOOL shutdown();
     t_CKBOOL run( Chuck_VM * vm );
     t_CKBOOL add( Chuck_UGen * ugen );
@@ -415,7 +410,7 @@ public: // run state; 1.3.5.3
 
 public: // shreds
     Chuck_VM_Shred * spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent );
-    Chuck_VM_Shred * fork( Chuck_VM_Code * code, Chuck_VM_Shred * parent );
+    Chuck_VM_Shred * fork( Chuck_VM_Code * code );
     Chuck_VM_Shreduler * shreduler() const;
     t_CKUINT next_id( );
 

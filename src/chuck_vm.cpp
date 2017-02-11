@@ -38,7 +38,6 @@
 #include "chuck_globals.h"
 #include "chuck_errmsg.h"
 #include "ugen_xxx.h"
-#include <cstring>
 
 #include <algorithm>
 using namespace std;
@@ -994,28 +993,11 @@ t_CKUINT Chuck_VM::srate() const
 
 //-----------------------------------------------------------------------------
 // name: fork()
-// desc: start a new shred with the same memory / registers as parent
+// desc: ...
 //-----------------------------------------------------------------------------
-Chuck_VM_Shred * Chuck_VM::fork( Chuck_VM_Code * code, Chuck_VM_Shred * parent )
+Chuck_VM_Shred * Chuck_VM::fork( Chuck_VM_Code * code )
 {
-    // allocate a new shred
-    Chuck_VM_Shred * shred = new Chuck_VM_Shred;
-    // initialize the shred, copying memory / registers (default stack size)
-    shred->initialize2( code, parent );
-    // set the name
-    shred->name = code->name;
-    // set the parent
-    shred->parent = parent;
-    // set the base ref for global
-    if( parent ) shred->base_ref = shred->parent->base_ref;
-    else shred->base_ref = shred->mem;
-    // spork it
-    this->spork( shred );
-
-    // track new shred
-    CK_TRACK( Chuck_Stats::instance()->add_shred( shred ) );
-
-    return shred;
+    return NULL;
 }
 
 
@@ -1389,32 +1371,6 @@ t_CKBOOL Chuck_VM_Stack::shutdown()
 
 
 //-----------------------------------------------------------------------------
-// name: copyfrom()
-// desc: ...
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM_Stack::copyfrom( Chuck_VM_Stack *other )
-{
-    if( !other || !other->m_is_init || !m_is_init )
-        return FALSE;
-
-    // stack and sp_max stay the same as our memory isn't moving
-    // set stack pointer at same position relative to this stack
-    sp = other->sp - other->stack + stack;
-    
-    // copy memory
-    // TODO: decide what to do if stacks are different sizes
-    //       (right now, all stacks are default size)
-    std::memcpy( stack, other->stack, other->sp_max - other->stack );
-    
-    // TODO: if stack->prev and ->next are ever used, consider
-    // copying them here
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: Chuck_VM_Shred()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -1464,53 +1420,6 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     // allocate mem and reg
     if( !mem->initialize( mem_stack_size ) ) return FALSE;
     if( !reg->initialize( reg_stack_size ) ) return FALSE;
-
-    // program counter
-    pc = 0;
-    next_pc = 1;
-    // code pointer
-    code_orig = code = c;
-    // add reference
-    code_orig->add_ref();
-    // shred in dump (all done)
-    is_dumped = FALSE;
-    // shred done
-    is_done = FALSE;
-    // shred running
-    is_running = FALSE;
-    // shred abort
-    is_abort = FALSE;
-    // set the instr
-    instr = c->instr;
-    // zero out the id
-    xid = 0;
-
-    // initialize
-    initialize_object( this, &t_shred );
-
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: initialize2()
-// desc: initialize and copy mem and reg from parent
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM_Shred::initialize2( Chuck_VM_Code * c,
-                                      Chuck_VM_Shred * parent,
-                                      t_CKUINT mem_stack_size,
-                                      t_CKUINT reg_stack_size )
-{
-    // allocate mem and reg
-    if( !mem->initialize( mem_stack_size ) ) return FALSE;
-    if( !reg->initialize( reg_stack_size ) ) return FALSE;
-    
-    // copy mem and reg from parent
-    // TODO: is copying reg necessary?
-    if( !mem->copyfrom( parent->mem ) ) return FALSE;
-    if( !reg->copyfrom( parent->reg ) ) return FALSE;
 
     // program counter
     pc = 0;

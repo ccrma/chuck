@@ -3003,20 +3003,17 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Spork_Stmt
-// desc: added 1.3.0.0 -- disable until further notice
+// desc: added 1.3.0.0
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Spork_Stmt : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Spork_Stmt( t_CKBOOL n, t_CKUINT v = 0 )
+    Chuck_Instr_Spork_Stmt( t_CKUINT v = 0 )
     {
-        is_nested = n;
         this->set( v );
     }
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
-public:
-    t_CKBOOL is_nested;
 };
 
 

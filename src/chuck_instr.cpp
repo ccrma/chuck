@@ -4551,15 +4551,7 @@ void Chuck_Instr_Spork_Stmt::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     }
     
     // spork it
-    Chuck_VM_Shred * sh;
-    if( !is_nested )
-    {
-        sh = vm->spork( code, shred );
-    }
-    else
-    {
-        sh = vm->fork( code, shred );
-    }
+    Chuck_VM_Shred * sh = vm->spork( code, shred );
     
     if( code->need_this )
     {
