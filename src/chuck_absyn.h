@@ -263,6 +263,8 @@ struct a_Exp_Primary_
 
     int linepos;
     a_Exp self;
+    // level of code spork nesting at access
+    t_CKUINT access_code_spork_level;
 };
 
 // enum exp type

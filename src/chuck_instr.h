@@ -2126,19 +2126,21 @@ public:
 struct Chuck_Instr_Reg_Push_Mem : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Reg_Push_Mem( t_CKUINT src, t_CKBOOL use_base = FALSE )
-    { this->set( src ); base = use_base; }
+    Chuck_Instr_Reg_Push_Mem( t_CKUINT src, t_CKBOOL use_base, t_CKUINT up )
+    { this->set( src ); base = use_base; up_level = up; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "src=%ld, base=%ld", m_val, base );
+      sprintf( buffer, "src=%ld, base=%ld, up_level=%ld", m_val, base, up_level );
       return buffer; }
 
 protected:
     // use global stack base
     t_CKBOOL base;
+    // num code spork frames to traverse
+    t_CKUINT up_level;
 };
 
 
@@ -2151,19 +2153,21 @@ protected:
 struct Chuck_Instr_Reg_Push_Mem2 : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Reg_Push_Mem2( t_CKUINT src, t_CKBOOL use_base = FALSE )
-    { this->set( src ); base = use_base; }
+    Chuck_Instr_Reg_Push_Mem2( t_CKUINT src, t_CKBOOL use_base, t_CKUINT up )
+    { this->set( src ); base = use_base; up_level = up; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "src=%ld, base=%ld", m_val, base );
+      sprintf( buffer, "src=%ld, base=%ld, up_level=%ld", m_val, base, up_level );
       return buffer; }
 
 protected:
     // use global stack base
     t_CKBOOL base;
+    // num code spork frames to traverse
+    t_CKUINT up_level;
 };
 
 
@@ -2176,19 +2180,21 @@ protected:
 struct Chuck_Instr_Reg_Push_Mem4 : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Reg_Push_Mem4( t_CKUINT src, t_CKBOOL use_base = FALSE )
-    { this->set( src ); base = use_base; }
+    Chuck_Instr_Reg_Push_Mem4( t_CKUINT src, t_CKBOOL use_base, t_CKUINT up )
+    { this->set( src ); base = use_base; up_level = up; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "src=%ld, base=%ld", m_val, base );
+      sprintf( buffer, "src=%ld, base=%ld, up_level=%ld", m_val, base, up_level );
       return buffer; }
 
 protected:
     // use global stack base
     t_CKBOOL base;
+    // num code spork frames to traverse
+    t_CKUINT up_level;
 };
 
 
@@ -2201,19 +2207,21 @@ protected:
 struct Chuck_Instr_Reg_Push_Mem_Vec3 : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Reg_Push_Mem_Vec3( t_CKUINT src, t_CKBOOL use_base = FALSE )
-    { this->set( src ); base = use_base; }
-    
+    Chuck_Instr_Reg_Push_Mem_Vec3( t_CKUINT src, t_CKBOOL use_base, t_CKUINT up )
+    { this->set( src ); base = use_base; up_level = up; }
+
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-        sprintf( buffer, "src=%ld, base=%ld", m_val, base );
-        return buffer; }
-    
+      sprintf( buffer, "src=%ld, base=%ld, up_level=%ld", m_val, base, up_level );
+      return buffer; }
+
 protected:
     // use global stack base
     t_CKBOOL base;
+    // num code spork frames to traverse
+    t_CKUINT up_level;
 };
 
 
@@ -2226,19 +2234,21 @@ protected:
 struct Chuck_Instr_Reg_Push_Mem_Vec4 : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Reg_Push_Mem_Vec4( t_CKUINT src, t_CKBOOL use_base = FALSE )
-    { this->set( src ); base = use_base; }
-    
+    Chuck_Instr_Reg_Push_Mem_Vec4( t_CKUINT src, t_CKBOOL use_base, t_CKUINT up )
+    { this->set( src ); base = use_base; up_level = up; }
+
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-        sprintf( buffer, "src=%ld, base=%ld", m_val, base );
-        return buffer; }
-    
+      sprintf( buffer, "src=%ld, base=%ld, up_level=%ld", m_val, base, up_level );
+      return buffer; }
+
 protected:
     // use global stack base
     t_CKBOOL base;
+    // num code spork frames to traverse
+    t_CKUINT up_level;
 };
 
 
@@ -2251,19 +2261,21 @@ protected:
 struct Chuck_Instr_Reg_Push_Mem_Addr : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Reg_Push_Mem_Addr( t_CKUINT src, t_CKBOOL use_base )
-    { this->set( src ); base = use_base; }
+    Chuck_Instr_Reg_Push_Mem_Addr( t_CKUINT src, t_CKBOOL use_base, t_CKUINT up )
+    { this->set( src ); base = use_base; up_level = up; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "src=%ld, base=%ld", m_val, base );
+      sprintf( buffer, "src=%ld, base=%ld, up_level=%ld", m_val, base, up_level );
       return buffer; }
 
 protected:
     // use global stack base
     t_CKBOOL base;
+    // num code spork frames to traverse
+    t_CKUINT up_level;
 };
 
 

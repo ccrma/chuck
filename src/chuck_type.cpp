@@ -2133,7 +2133,13 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
     if( unary->code )
     {
         // check it!
-        if( !type_engine_check_stmt( env, unary->code ) ) return NULL;
+        env->code_spork_level++;
+        if( !type_engine_check_stmt( env, unary->code ) )
+        {
+            env->code_spork_level--;
+            return NULL;
+        }
+        env->code_spork_level--;
     }
 
     // check the op

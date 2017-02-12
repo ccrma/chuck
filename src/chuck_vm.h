@@ -197,6 +197,7 @@ public: // machine components
     Chuck_VM_Code * code_orig; // the one to release
     Chuck_Instr ** instr;
     Chuck_VM_Shred * parent;
+    Chuck_VM_Shred * code_spork_parent;
     std::map<t_CKUINT, Chuck_VM_Shred *> children;
     t_CKUINT pc;
 
@@ -410,6 +411,7 @@ public: // run state; 1.3.5.3
 
 public: // shreds
     Chuck_VM_Shred * spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent );
+    Chuck_VM_Shred * spork_stmt( Chuck_VM_Code * code, Chuck_VM_Shred * parent );
     Chuck_VM_Shred * fork( Chuck_VM_Code * code );
     Chuck_VM_Shreduler * shreduler() const;
     t_CKUINT next_id( );

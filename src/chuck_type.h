@@ -694,6 +694,8 @@ struct Chuck_Value : public Chuck_VM_Object
     t_CKBOOL is_static;  // do something
     // is context-global?
     t_CKBOOL is_context_global;
+    // level of code spork nesting at declaration
+    t_CKUINT decl_code_spork_level;
     // is decl checked
     t_CKBOOL is_decl_checked;
     // 0 = public, 1 = protected, 2 = private

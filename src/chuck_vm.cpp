@@ -1017,6 +1017,38 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent 
     shred->name = code->name;
     // set the parent
     shred->parent = parent;
+    shred->code_spork_parent = parent?parent->code_spork_parent:NULL;
+    // set the base ref for global
+    if( parent ) shred->base_ref = shred->parent->base_ref;
+    else shred->base_ref = shred->mem;
+    // spork it
+    this->spork( shred );
+
+    // track new shred
+    CK_TRACK( Chuck_Stats::instance()->add_shred( shred ) );
+
+    return shred;
+}
+
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: spork_stmt()
+// desc: spork a block of code
+//-----------------------------------------------------------------------------
+Chuck_VM_Shred * Chuck_VM::spork_stmt( Chuck_VM_Code * code, Chuck_VM_Shred * parent )
+{
+    // allocate a new shred
+    Chuck_VM_Shred * shred = new Chuck_VM_Shred;
+    // initialize the shred (default stack size)
+    shred->initialize( code );
+    // set the name
+    shred->name = code->name;
+    // set the parent
+    shred->parent = parent;
+    shred->code_spork_parent = parent;
     // set the base ref for global
     if( parent ) shred->base_ref = shred->parent->base_ref;
     else shred->base_ref = shred->mem;
@@ -1382,6 +1414,7 @@ Chuck_VM_Shred::Chuck_VM_Shred()
     next = prev = NULL;
     instr = NULL;
     parent = NULL;
+    code_spork_parent = NULL;
     // obj_array = NULL;
     // obj_array_size = 0;
     base_ref = NULL;

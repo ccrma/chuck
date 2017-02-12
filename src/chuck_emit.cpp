@@ -93,7 +93,9 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp );
 t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt );
 t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit, Chuck_Type * to, Chuck_Type * from );
 t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol, 
-                                  Chuck_Value * v, t_CKBOOL emit_var, int linepos );
+                                  Chuck_Value * v, t_CKBOOL emit_var,
+                                  t_CKUINT access_code_spork_level,
+                                  int linepos );
 
 
 
@@ -2919,7 +2921,8 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         {
             // emit the symbol
             return emit_engine_emit_symbol( 
-                emit, exp->var, exp->value, exp->self->emit_var, exp->linepos );
+                emit, exp->var, exp->value, exp->self->emit_var,
+                exp->access_code_spork_level, exp->linepos );
         }
         break;
     
@@ -4709,6 +4712,7 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol, 
                                   Chuck_Value * v, t_CKBOOL emit_var,
+                                  t_CKUINT access_code_spork_level,
                                   int linepos )
 {
     // look up the value
@@ -4752,12 +4756,15 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
 
         return TRUE;
     }
+    
+    // compute number of code spork frames to ascend to make this memory access
+    t_CKUINT access_decl_diff = access_code_spork_level - v->decl_code_spork_level;
 
     // var or value
     if( emit_var )
     {
         // emit as addr
-        emit->append( new Chuck_Instr_Reg_Push_Mem_Addr( v->offset, v->is_context_global ) );
+        emit->append( new Chuck_Instr_Reg_Push_Mem_Addr( v->offset, v->is_context_global, access_decl_diff ) );
     }
     else
     {
@@ -4767,15 +4774,15 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         // check size
         // (added 1.3.1.0: iskindofint -- since in some 64-bit systems, sz_INT == sz_FLOAT)
         else if( v->type->size == sz_INT && iskindofint(v->type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
-            emit->append( new Chuck_Instr_Reg_Push_Mem( v->offset, v->is_context_global ) );
+            emit->append( new Chuck_Instr_Reg_Push_Mem( v->offset, v->is_context_global, access_decl_diff ) );
         else if( v->type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
-            emit->append( new Chuck_Instr_Reg_Push_Mem2( v->offset, v->is_context_global ) );
+            emit->append( new Chuck_Instr_Reg_Push_Mem2( v->offset, v->is_context_global, access_decl_diff ) );
         else if( v->type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
-            emit->append( new Chuck_Instr_Reg_Push_Mem4( v->offset, v->is_context_global ) );
+            emit->append( new Chuck_Instr_Reg_Push_Mem4( v->offset, v->is_context_global, access_decl_diff ) );
         else if( v->type->size == sz_VEC3 ) // ge: added 1.3.5.3
-            emit->append( new Chuck_Instr_Reg_Push_Mem_Vec3( v->offset, v->is_context_global ) );
+            emit->append( new Chuck_Instr_Reg_Push_Mem_Vec3( v->offset, v->is_context_global, access_decl_diff ) );
         else if( v->type->size == sz_VEC4 ) // ge: added 1.3.5.3
-            emit->append( new Chuck_Instr_Reg_Push_Mem_Vec4( v->offset, v->is_context_global ) );
+            emit->append( new Chuck_Instr_Reg_Push_Mem_Vec4( v->offset, v->is_context_global, access_decl_diff ) );
         else
         {
             // internal error
