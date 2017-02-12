@@ -4,11 +4,10 @@ spork ~ {
     2 => float f;
     spork ~ { 
         f * 1.1 => f;
-        if( f != 2.2 ) { <<< "failure" >>>; }
+        <<< f >>>;
     };
     1::samp => now;
-    if( f != 2.0 ) { <<< "failure" >>>; }
+    <<< f >>>;
 };
 
 2::samp => now;
-<<< "success" >>>;
