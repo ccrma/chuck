@@ -4664,6 +4664,16 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt )
     emit->code = new Chuck_Code;
     // handle need this
     emit->code->need_this = emit->env->class_def ? TRUE : FALSE;
+    // reserve space for this
+    if( emit->code->need_this ) {
+        emit->code->stack_depth += sizeof(t_CKUINT);
+        if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, FALSE ) )
+        {
+            EM_error2( stmt->linepos,
+                "(emit): internal error: cannot allocate local 'this'..." );
+            return FALSE;
+        }
+    }
     // name it
     std::ostringstream name;
     name << "spork~{code} [line " << stmt->linepos << "]";
