@@ -4586,8 +4586,8 @@ void Chuck_Instr_Spork_Stmt::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         assert( FALSE );
     }
     
-    // spork it
-    Chuck_VM_Shred * sh = vm->spork_stmt( code, shred );
+    // spork it (TRUE for is_stmt - this is a sporked codeblock)
+    Chuck_VM_Shred * sh = vm->spork( code, shred, TRUE );
     
     if( code->need_this )
     {
