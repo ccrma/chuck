@@ -5598,6 +5598,8 @@ Chuck_Value * Chuck_Context::new_Chuck_Value( Chuck_Type * t,
     value->m_v_ref = &new_values;
     // initialize it
     init_special( value );
+    // default declaration scope
+    value->decl_code_spork_level = 0;
 
     return value;
 }
