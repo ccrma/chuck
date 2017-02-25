@@ -4,5 +4,3 @@
 
 int a[1];
 a[1,1] => int b;
-
-<<< "success" >>>;
