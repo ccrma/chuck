@@ -566,7 +566,8 @@ t_CKBOOL Chuck_VM::compute()
             release_dump();
     }
     
-    return TRUE;
+    // continue executing if have shreds left or if don't-halt
+    return ( m_num_shreds || !m_halt );
 }
 
 
