@@ -3711,10 +3711,13 @@ t_CKTYPE type_engine_check_exp_array( Chuck_Env * env, a_Exp_Array array )
         // advance the list
         e = e->next;
     }
-
-    // sanity
-    assert( array->indices->depth == depth );
-
+    //TODO: Catch commas inside array subscripts earlier on, perhaps in .y
+    if( array->indices->depth != depth )
+    {
+      EM_error2( array->linepos,
+          "[..., ...] is invalid subscript syntax." );
+      return NULL;
+    }
     t_CKTYPE t = NULL;
     // make sure depth <= max
     if( depth == t_base->array_depth )
