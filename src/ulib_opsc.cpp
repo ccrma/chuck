@@ -213,7 +213,7 @@ private:
     
     OscInServer(int port) :
     m_port(port),
-    m_inMsgBuffer(CircularBuffer<OscInMsg>(12)),
+    m_inMsgBuffer(CircularBuffer<OscInMsg>(1024)),
     m_thread(XThread()),
     m_quit(false),
     m_assignedPort(-1)
@@ -256,7 +256,7 @@ public:
     m_event(event),
     m_vm(vm),
     m_port(-1),
-    m_oscMsgBuffer(CircularBuffer<OscMsg>(25))
+    m_oscMsgBuffer(CircularBuffer<OscMsg>(1024))
     {
         m_eventBuffer = m_vm->create_event_buffer();
     }
