@@ -69,7 +69,6 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     /*! \example
     math.sin( math.pi /2.0 ) => stdout;
     */
-
     // register deprecate
     type_engine_register_deprecate( env, "math", "Math" );
 
@@ -313,6 +312,10 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "x" );
     QUERY->add_arg( QUERY, "float", "mean" );
     QUERY->add_arg( QUERY, "float", "sd" );
+
+    // add function to get a "cent" interval ratio
+    QUERY->add_sfun( QUERY, cent_impl, "float", "cent" );
+    QUERY->add_arg( QUERY, "int", "cent" );
 
     // pi
     //! see \example math.ck
@@ -770,3 +773,12 @@ CK_DLL_SFUN( gauss_impl )
     // compute gaussian
     RETURN->v_float = (1.0 / (sd*::sqrt(2*M_PI))) * ::exp( -(x-mu)*(x-mu) / (2*sd*sd) );
 }
+
+// cent
+CK_DLL_SFUN( cent_impl )
+{
+  t_CKFLOAT cents = GET_CK_INT(ARGS);
+  t_CKFLOAT ratio = cents / 1200;
+  RETURN->v_float = ::pow(2, ratio);
+}
+
