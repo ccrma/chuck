@@ -49,6 +49,14 @@
 
 
 
+//-----------------------------------------------------------------------------
+// name: signal_int()
+// desc: ...
+//-----------------------------------------------------------------------------
+extern "C" void signal_int( int sig_num );
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: class ChuckSystem
@@ -64,7 +72,8 @@ public:
 
 public:
     // monolithic mode (use this only if you are in ChucK)
-    bool go( int argc, const char ** argv, t_CKBOOL clientMode = FALSE );
+    bool go( int argc, const char ** argv,
+             t_CKBOOL clientMode = FALSE, t_CKBOOL initOnly = FALSE );
 
     // OR...
     
@@ -74,6 +83,8 @@ public:
                            int channelsOut, int argc, const char ** argv );
     // shutdown in client mode
     bool clientShutdown();
+    // shutdown in api mode
+    bool clientPartialShutdown();
     
 public:
     // additional native chuck bindings/types (use with extra caution)
@@ -100,6 +111,8 @@ protected:
     Chuck_VM * m_vmRef;
     // compiler reference
     Chuck_Compiler * m_compilerRef;
+    // bbq reference
+    BBQ * m_bbq;
 };
 
 

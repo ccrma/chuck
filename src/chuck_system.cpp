@@ -305,6 +305,7 @@ Chuck_System::~Chuck_System()
 {
     if( m_vmRef )
     {
+        // TODO: this is wrong / only works if there is only one Chuck_System!
         // stop
         all_stop();
         // detach
@@ -401,9 +402,69 @@ bool Chuck_System::compileFile( const string & path, const string & argsTogether
 // name: compileCode()
 // desc: compile code directly
 //-----------------------------------------------------------------------------
-bool Chuck_System::compileCode( const std::string & code, const std::string & args, int count )
+bool Chuck_System::compileCode( const std::string & codeString, const std::string & argsTogether, int count )
 {
-    return false;
+    // sanity check
+    if( !m_compilerRef )
+    {
+        // error
+        fprintf( stderr, "[chuck]: compileFile() invoked before initialization ...\n" );
+        return false;
+    }
+
+    vector<string> args;
+    Chuck_VM_Code * code = NULL;
+    Chuck_VM_Shred * shred = NULL;
+    
+    // log
+    EM_log( CK_LOG_FINE, "compiling string..." );
+    // push indent
+    EM_pushlog();
+    
+    // append
+    string theThing = "fake_path:" + argsTogether;
+    string fakeFilename = "fake_filename";
+
+    // parse out command line arguments
+    if( !extract_args( theThing, fakeFilename, args ) )
+    {
+        // error
+        fprintf( stderr, "[chuck]: malformed filename with argument list...\n" );
+        fprintf( stderr, "    -->  '%s'", theThing.c_str() );
+        return false;
+    }
+    
+    // construct full path to be associated with the file so me.sourceDir() works
+    // (I think this is unnecessary)
+    // std::string full_path = get_full_path(filename);
+    
+    // parse, type-check, and emit (full_path added 1.3.0.0)
+    if( !m_compilerRef->go( "(from string)", NULL, codeString.c_str(), "" ) )
+        return false;
+
+    // get the code
+    code = m_compilerRef->output();
+    // name it
+    // (unfortunately we don't have a "path"
+    // code->name += path;
+
+    // log
+    EM_log( CK_LOG_FINE, "sporking %d %s...", count,
+            count == 1 ? "instance" : "instances" );
+
+    // spork it
+    while( count-- )
+    {
+        // spork
+        shred = m_vmRef->spork( code, NULL );
+        // add args
+        shred->args = args;
+    }
+
+    // pop indent
+    EM_poplog();
+
+    return true;
 }
 
 
@@ -413,6 +474,18 @@ bool Chuck_System::compileCode( const std::string & code, const std::string & ar
 // name: run()
 // desc: run engine
 //-----------------------------------------------------------------------------
+// TODO UNITY: I think that this might be the main callback?
+// and it might be as simple as calling this from within the
+// Unity audio callback... But need to be certain first.
+// (One thing is that Unity passes in # channels etc, and I think
+//  that's stored state in m_vmRef and thus would need to be set in init)
+
+
+// Need to determine also where this is called from / how the global thread callback is constructed
+// Note: this both compute()s instructions and computes audio. Yay.
+// I ***could*** just call "g_global_feedback" except no, because need to pass buffers and not bindles
+// NOTE: In -s silent mode, it just uses this->run. SOOOO I think! that the thread callback is just
+// some extra stuff around that! O_O
 void Chuck_System::run( SAMPLE * input, SAMPLE * output, int numFrames )
 {
     m_vmRef->run( numFrames, input, output );
@@ -459,7 +532,8 @@ bool Chuck_System::clientInitialize( int srate, int bufferSize, int channelsIn,
 // name: go()
 // desc: set chuck into motion
 //-----------------------------------------------------------------------------
-bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
+bool Chuck_System::go( int argc, const char ** argv,
+                       t_CKBOOL clientMode, t_CKBOOL initOnly )
 {
     Chuck_Compiler * compiler = NULL;
     Chuck_VM * vm = NULL;
@@ -928,9 +1002,12 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
 
     
 //--------------------------- AUDIO I/O SETUP ---------------------------------
-
+    
+    // TODO UNITY: disable BBQ if initOnly? what's BBQ for?
+    
     // ge: 1.3.5.3
-    bbq = g_bbq = new BBQ;
+if( g_bbq == NULL ) {
+    bbq = m_bbq = g_bbq = new BBQ;
     // set some parameters
     bbq->set_srate( srate );
     bbq->set_bufsize( buffer_size );
@@ -973,7 +1050,9 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
 
     // pop
     EM_poplog();
-
+} else {
+    bbq = m_bbq = g_bbq;
+}
     
 //------------------------- CHUCK COMPILER SETUP -----------------------------
 
@@ -1251,6 +1330,12 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
         // set the flag to true to avoid entering this function
         audio_started = TRUE;
     }
+
+    
+    // Don't run audio callback and shut down if we only wanted to init here
+    if( initOnly ) {
+        return TRUE;
+    }
     
     
     // silent mode buffers
@@ -1282,6 +1367,85 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
     clientShutdown();
 
     return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: clientShutdown()
+// desc: client mode: to manually shut it down
+//-----------------------------------------------------------------------------
+bool Chuck_System::clientPartialShutdown()
+{
+    // stop VM
+    if( m_vmRef ) m_vmRef->stop();
+    // Keep Digitalio running: don't delete our bbq
+    // set state of digital io over rtaudio (TODO: what is this? BBQ Shutdown just calls Digitalio Shutdown)
+    // Digitalio::m_end = TRUE;
+
+    
+    // TODO: only me detach; these resources seem pretty global... :|
+    // all_detach:
+    // log
+/*    EM_log( CK_LOG_INFO, "detaching all resources..." );
+    // push
+    EM_pushlog();
+    // close stk file handles
+    stk_detach( 0, NULL );
+#ifndef __DISABLE_MIDI__
+    // close midi file handles
+    midirw_detach();
+#endif // __DISABLE_MIDI__
+#ifndef __DISABLE_KBHIT__
+    // shutdown kb loop
+    KBHitManager::shutdown();
+#endif // __DISABLE_KBHIT__
+#ifndef __ALTER_HID__
+    // shutdown HID
+    HidInManager::cleanup();
+#endif // __ALTER_HID__
+    
+    Chuck_IO_Serial::shutdown();
+    // pop
+    EM_poplog();*/
+    
+    // Keep audio running: don't delete our one global bbq
+    // shutdown audio
+    /*if( g_enable_realtime_audio )
+    {
+        // log
+        EM_log( CK_LOG_SYSTEM, "shutting down real-time audio..." );
+
+        m_bbq->digi_out()->cleanup();
+        m_bbq->digi_in()->cleanup();
+        m_bbq->shutdown();
+        // wait a bit
+        usleep(50000);
+    }
+    // log
+    EM_log( CK_LOG_SYSTEM, "freeing bbq subsystem..." );
+    // clean up
+    SAFE_DELETE( m_bbq );*/
+    
+    // TODO: I don't use thread hook in init only; how to prevent it from being set?
+    /*if( g_main_thread_quit )
+        g_main_thread_quit( g_main_thread_bindle );
+    clear_main_thread_hook();*/
+    
+    // free vm (mine, not global)
+    SAFE_DELETE( m_vmRef ); m_vmRef = NULL;
+    // free the compiler (mine, not global)
+    SAFE_DELETE( m_compilerRef ); m_compilerRef = NULL;
+    
+    // wait for the shell, if it is running
+    // does the VM reset its priority to normal before exiting?
+    if( g_enable_shell )
+        while( g_shell != NULL )
+            usleep(10000);
+    
+    // done
+    return true;
 }
 
 
