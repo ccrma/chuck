@@ -151,11 +151,8 @@ Chuck_Env * Chuck_Env::our_instance = NULL;
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Env::startup()
 {
-    //assert( our_instance == NULL );
-    if( our_instance == NULL )
-    {
-        our_instance = new Chuck_Env;
-    }
+    assert( our_instance == NULL );
+    our_instance = new Chuck_Env;
     assert( our_instance != NULL );
     
     return TRUE;

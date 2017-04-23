@@ -83,7 +83,7 @@ public:
                            int channelsOut, int argc, const char ** argv );
     // shutdown in client mode
     bool clientShutdown();
-    // shutdown in api mode
+    // shutdown in multivm mode
     bool clientPartialShutdown();
     
 public:

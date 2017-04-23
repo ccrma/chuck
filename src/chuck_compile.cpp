@@ -160,8 +160,7 @@ void Chuck_Compiler::shutdown()
     EM_pushlog();
 
     // TODO: free
-    // TODO Chunity: commented this out. On overall shutdown, need to call it.
-    // type_engine_shutdown();
+    type_engine_shutdown();
     // This one was already commented out
     // emit_engine_shutdown( emitter );
     env = NULL;

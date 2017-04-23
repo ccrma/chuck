@@ -158,7 +158,9 @@ extern "C" void unity_exit()
 {
     fprintf( stderr, "[chuck]: cleaning up...\n" );
     
-    type_engine_shutdown();
+    // unnecessary. this was decommented in Chuck_Compiler shutdown because
+    // now, that is not deleted prematurely
+    //type_engine_shutdown();
     
     if( g_vm )
     {
@@ -357,24 +359,32 @@ Chuck_System::Chuck_System()
 //-----------------------------------------------------------------------------
 Chuck_System::~Chuck_System()
 {
+    // Unity TODO: it's not necessary to do ANY of this.
+    // These things are all called from all the other exit points
+    // including unity_exit()
+    // and doing them prematurely here will make necessary global
+    // resources like the Compiler and Env
+    // be unavailable for future Chuck_System>Chuck_VMs !
     if( m_vmRef )
     {
-        // TODO: this is wrong / only works if there is only one Chuck_System!
         // stop
-        all_stop();
+        // all_stop();
         // detach
-        all_detach();
+        // all_detach();
     }
     
     // things don't work so good on windows...
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+    // THIS LINE was always commented out
     // pthread_kill( g_tid_otf, 2 );
-    if( g_tid_otf ) pthread_cancel( g_tid_otf );
-    if( g_tid_whatever ) pthread_cancel( g_tid_whatever );
+    // THESE LINES I commented out myself
+    //if( g_tid_otf ) pthread_cancel( g_tid_otf );
+    //if( g_tid_whatever ) pthread_cancel( g_tid_whatever );
+    // THIS LINE was always commented out
     // if( g_tid_otf ) usleep( 50000 );
 #else
     // close handle
-    if( g_tid_otf ) CloseHandle( g_tid_otf );
+    //if( g_tid_otf ) CloseHandle( g_tid_otf );
 #endif
 }
 
@@ -1118,6 +1128,8 @@ if( g_bbq == NULL ) {
         named_dls.clear();
     }
     
+    // Only one global compiler
+if( g_compiler == NULL ) {
     // allocate the compiler
     compiler = m_compilerRef = g_compiler = new Chuck_Compiler;
     // initialize the compiler (search_apth and named_dls added 1.3.0.0 -- TODO: refactor)
@@ -1130,6 +1142,9 @@ if( g_bbq == NULL ) {
     compiler->emitter->dump = dump;
     // set auto depend
     compiler->set_auto_depend( auto_depend );
+} else {
+    compiler = m_compilerRef = g_compiler;
+}
 
     // vm synthesis subsystem - needs the type system
     if( !vm->initialize_synthesis( ) )
@@ -1427,76 +1442,16 @@ if( g_bbq == NULL ) {
 
 
 //-----------------------------------------------------------------------------
-// name: clientShutdown()
+// name: clientPartialShutdown()
 // desc: client mode: to manually shut it down
 //-----------------------------------------------------------------------------
 bool Chuck_System::clientPartialShutdown()
 {
     // stop VM
     if( m_vmRef ) m_vmRef->stop();
-    // Keep Digitalio running: don't delete our bbq
-    // set state of digital io over rtaudio (TODO: what is this? BBQ Shutdown just calls Digitalio Shutdown)
-    // Digitalio::m_end = TRUE;
 
-    
-    // TODO: only me detach; these resources seem pretty global... :|
-    // all_detach:
-    // log
-/*    EM_log( CK_LOG_INFO, "detaching all resources..." );
-    // push
-    EM_pushlog();
-    // close stk file handles
-    stk_detach( 0, NULL );
-#ifndef __DISABLE_MIDI__
-    // close midi file handles
-    midirw_detach();
-#endif // __DISABLE_MIDI__
-#ifndef __DISABLE_KBHIT__
-    // shutdown kb loop
-    KBHitManager::shutdown();
-#endif // __DISABLE_KBHIT__
-#ifndef __ALTER_HID__
-    // shutdown HID
-    HidInManager::cleanup();
-#endif // __ALTER_HID__
-    
-    Chuck_IO_Serial::shutdown();
-    // pop
-    EM_poplog();*/
-    
-    // Keep audio running: don't delete our one global bbq
-    // shutdown audio
-    /*if( g_enable_realtime_audio )
-    {
-        // log
-        EM_log( CK_LOG_SYSTEM, "shutting down real-time audio..." );
-
-        m_bbq->digi_out()->cleanup();
-        m_bbq->digi_in()->cleanup();
-        m_bbq->shutdown();
-        // wait a bit
-        usleep(50000);
-    }
-    // log
-    EM_log( CK_LOG_SYSTEM, "freeing bbq subsystem..." );
-    // clean up
-    SAFE_DELETE( m_bbq );*/
-    
-    // TODO: I don't use thread hook in init only; how to prevent it from being set?
-    /*if( g_main_thread_quit )
-        g_main_thread_quit( g_main_thread_bindle );
-    clear_main_thread_hook();*/
-    
     // free vm (mine, not global)
     SAFE_DELETE( m_vmRef ); m_vmRef = NULL;
-    // free the compiler (mine, not global)
-    SAFE_DELETE( m_compilerRef ); m_compilerRef = NULL;
-    
-    // wait for the shell, if it is running
-    // does the VM reset its priority to normal before exiting?
-    if( g_enable_shell )
-        while( g_shell != NULL )
-            usleep(10000);
     
     // done
     return true;
