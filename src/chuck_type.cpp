@@ -151,8 +151,11 @@ Chuck_Env * Chuck_Env::our_instance = NULL;
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Env::startup()
 {
-    assert( our_instance == NULL );
-    our_instance = new Chuck_Env;
+    //assert( our_instance == NULL );
+    if( our_instance == NULL )
+    {
+        our_instance = new Chuck_Env;
+    }
     assert( our_instance != NULL );
     
     return TRUE;
@@ -393,7 +396,7 @@ Chuck_Env * type_engine_init( Chuck_VM * vm )
 // name: type_engine_shutdown()
 // desc: ...
 //-----------------------------------------------------------------------------
-void type_engine_shutdown( Chuck_Env * env )
+void type_engine_shutdown()
 {
     // log
     EM_log( CK_LOG_SEVERE, "shutting down type checker..." );

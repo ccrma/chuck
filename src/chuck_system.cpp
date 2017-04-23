@@ -402,7 +402,7 @@ bool Chuck_System::compileFile( const string & path, const string & argsTogether
 // name: compileCode()
 // desc: compile code directly
 //-----------------------------------------------------------------------------
-bool Chuck_System::compileCode( const std::string & codeString, const std::string & argsTogether, int count )
+bool Chuck_System::compileCode( const char * codeString, const std::string & argsTogether, int count )
 {
     // sanity check
     if( !m_compilerRef )
@@ -439,7 +439,7 @@ bool Chuck_System::compileCode( const std::string & codeString, const std::strin
     // std::string full_path = get_full_path(filename);
     
     // parse, type-check, and emit (full_path added 1.3.0.0)
-    if( !m_compilerRef->go( "(from string)", NULL, codeString.c_str(), "" ) )
+    if( !m_compilerRef->go( "(from string)", NULL, codeString, "" ) )
         return false;
 
     // get the code

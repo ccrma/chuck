@@ -100,7 +100,7 @@ public:
     // compile a file
     bool compileFile( const std::string & path, const std::string & args, int count = 1 );
     // compile code directly
-    bool compileCode( const std::string & code, const std::string & args, int count = 1 );
+    bool compileCode( const char * code, const std::string & args, int count = 1 );
     
 public:
     // run engine
