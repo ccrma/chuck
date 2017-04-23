@@ -100,7 +100,7 @@ char g_host[256] = "127.0.0.1";
 // name: signal_int()
 // desc: ...
 //-----------------------------------------------------------------------------
-extern "C" void signal_int( int sig_num )
+void signal_int( int sig_num )
 {
     fprintf( stderr, "[chuck]: cleaning up...\n" );
 
@@ -145,6 +145,60 @@ extern "C" void signal_int( int sig_num )
 #endif
     
     exit(2);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: unity_exit()
+// desc: ...
+//-----------------------------------------------------------------------------
+extern "C" void unity_exit()
+{
+    fprintf( stderr, "[chuck]: cleaning up...\n" );
+    
+    type_engine_shutdown();
+    
+    if( g_vm )
+    {
+        // get vm
+        Chuck_VM * vm = g_vm;
+        Chuck_Compiler * compiler = g_compiler;
+        // flag the global one
+        g_vm = NULL;
+        g_compiler = NULL;
+        // if not NULL
+        if( vm )
+        {
+            // stop VM
+            vm->stop();
+            // stop (was VM::stop())
+            all_stop();
+            // detach
+            all_detach();
+        }
+
+        // things don't work so good on windows...
+#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+        // pthread_kill( g_tid_otf, 2 );
+        if( g_tid_otf ) pthread_cancel( g_tid_otf );
+        if( g_tid_whatever ) pthread_cancel( g_tid_whatever );
+        // if( g_tid_otf ) usleep( 50000 );
+#else
+        // close handle
+        if( g_tid_otf ) CloseHandle( g_tid_otf );
+#endif
+        // will this work for windows?
+        SAFE_DELETE( vm );
+        SAFE_DELETE( compiler );
+
+        // ck_close( g_sock );
+    }
+
+#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+    // pthread_join( g_tid_otf, NULL );
+#endif
 }
 
 
