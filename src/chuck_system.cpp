@@ -100,7 +100,7 @@ char g_host[256] = "127.0.0.1";
 // name: signal_int()
 // desc: ...
 //-----------------------------------------------------------------------------
-void signal_int( int sig_num )
+extern "C" void signal_int( int sig_num )
 {
     fprintf( stderr, "[chuck]: cleaning up...\n" );
 
@@ -538,18 +538,6 @@ bool Chuck_System::compileCode( const char * codeString, const std::string & arg
 // name: run()
 // desc: run engine
 //-----------------------------------------------------------------------------
-// TODO UNITY: I think that this might be the main callback?
-// and it might be as simple as calling this from within the
-// Unity audio callback... But need to be certain first.
-// (One thing is that Unity passes in # channels etc, and I think
-//  that's stored state in m_vmRef and thus would need to be set in init)
-
-
-// Need to determine also where this is called from / how the global thread callback is constructed
-// Note: this both compute()s instructions and computes audio. Yay.
-// I ***could*** just call "g_global_feedback" except no, because need to pass buffers and not bindles
-// NOTE: In -s silent mode, it just uses this->run. SOOOO I think! that the thread callback is just
-// some extra stuff around that! O_O
 void Chuck_System::run( SAMPLE * input, SAMPLE * output, int numFrames )
 {
     m_vmRef->run( numFrames, input, output );
