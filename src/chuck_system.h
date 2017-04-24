@@ -111,8 +111,6 @@ protected:
     Chuck_VM * m_vmRef;
     // compiler reference
     Chuck_Compiler * m_compilerRef;
-    // bbq reference
-    BBQ * m_bbq;
 };
 
 

@@ -1059,7 +1059,7 @@ bool Chuck_System::go( int argc, const char ** argv,
     
     // ge: 1.3.5.3
 if( g_bbq == NULL ) {
-    bbq = m_bbq = g_bbq = new BBQ;
+    bbq = g_bbq = new BBQ;
     // set some parameters
     bbq->set_srate( srate );
     bbq->set_bufsize( buffer_size );
@@ -1103,7 +1103,7 @@ if( g_bbq == NULL ) {
     // pop
     EM_poplog();
 } else {
-    bbq = m_bbq = g_bbq;
+    bbq = g_bbq;
 }
     
 //------------------------- CHUCK COMPILER SETUP -----------------------------
