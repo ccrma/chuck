@@ -111,6 +111,8 @@ protected:
     Chuck_VM * m_vmRef;
     // compiler reference
     Chuck_Compiler * m_compilerRef;
+    // whether was fully run or only initted
+    bool m_inittedOnly;
 };
 
 

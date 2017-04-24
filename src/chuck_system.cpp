@@ -359,33 +359,29 @@ Chuck_System::Chuck_System()
 //-----------------------------------------------------------------------------
 Chuck_System::~Chuck_System()
 {
-    // Unity TODO: it's not necessary to do ANY of this.
-    // These things are all called from all the other exit points
-    // including unity_exit()
-    // and doing them prematurely here will make necessary global
-    // resources like the Compiler and Env
-    // be unavailable for future Chuck_System>Chuck_VMs !
-    if( m_vmRef )
-    {
-        // stop
-        // all_stop();
-        // detach
-        // all_detach();
-    }
-    
-    // things don't work so good on windows...
+    if( m_inittedOnly ) {
+        //
+        this->clientPartialShutdown();
+    } else {
+        if( m_vmRef )
+        {
+            // stop
+            all_stop();
+            // detach
+            all_detach();
+        }
+        
+        // things don't work so good on windows...
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-    // THIS LINE was always commented out
-    // pthread_kill( g_tid_otf, 2 );
-    // THESE LINES I commented out myself
-    //if( g_tid_otf ) pthread_cancel( g_tid_otf );
-    //if( g_tid_whatever ) pthread_cancel( g_tid_whatever );
-    // THIS LINE was always commented out
-    // if( g_tid_otf ) usleep( 50000 );
+        // pthread_kill( g_tid_otf, 2 );
+        if( g_tid_otf ) pthread_cancel( g_tid_otf );
+        if( g_tid_whatever ) pthread_cancel( g_tid_whatever );
+        // if( g_tid_otf ) usleep( 50000 );
 #else
-    // close handle
-    //if( g_tid_otf ) CloseHandle( g_tid_otf );
+        // close handle
+        if( g_tid_otf ) CloseHandle( g_tid_otf );
 #endif
+    }
 }
 
 
@@ -1390,6 +1386,7 @@ if( g_compiler == NULL ) {
 
     
     // Don't run audio callback and shut down if we only wanted to init here
+    m_inittedOnly = initOnly;
     if( initOnly ) {
         return TRUE;
     }

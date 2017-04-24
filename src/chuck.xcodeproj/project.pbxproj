@@ -94,7 +94,6 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXFileReference section */
-		04F24D961EA5DA8300B36889 /* chuck_main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chuck_main.h; sourceTree = "<group>"; };
 		090A5BE70AA75AEA005DC04D /* util_hid.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = util_hid.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = uana_xform.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1B0C4F038E00DF5577 /* uana_xform.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = uana_xform.h; sourceTree = SOURCE_ROOT; };
@@ -806,7 +805,6 @@
 		09A40B000A9A52FC007604EA /* ChucK */ = {
 			isa = PBXGroup;
 			children = (
-				04F24D961EA5DA8300B36889 /* chuck_main.h */,
 				098061AD0AA15BDB00915136 /* chuck_main.cpp */,
 				869DADE11BF85F7A0069A857 /* chuck_system.cpp */,
 				869DADE21BF85F7A0069A857 /* chuck_system.h */,
