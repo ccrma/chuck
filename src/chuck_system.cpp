@@ -158,10 +158,6 @@ extern "C" void unity_exit()
 {
     fprintf( stderr, "[chuck]: cleaning up...\n" );
     
-    // unnecessary. this was decommented in Chuck_Compiler shutdown because
-    // now, that is not deleted prematurely
-    //type_engine_shutdown();
-    
     if( g_vm )
     {
         // get vm
@@ -360,8 +356,8 @@ Chuck_System::Chuck_System()
 Chuck_System::~Chuck_System()
 {
     if( m_inittedOnly ) {
-        //
-        this->clientPartialShutdown();
+        // correct non-global destruction for initOnly ->go call
+        this->clientVMShutdown();
     } else {
         if( m_vmRef )
         {
@@ -468,7 +464,7 @@ bool Chuck_System::compileCode( const char * codeString, const std::string & arg
     if( !m_compilerRef )
     {
         // error
-        fprintf( stderr, "[chuck]: compileFile() invoked before initialization ...\n" );
+        fprintf( stderr, "[chuck]: compileCode() invoked before initialization ...\n" );
         return false;
     }
 
@@ -481,9 +477,9 @@ bool Chuck_System::compileCode( const char * codeString, const std::string & arg
     // push indent
     EM_pushlog();
     
-    // append
-    string theThing = "fake_path:" + argsTogether;
-    string fakeFilename = "fake_filename";
+    // falsify filename / path for various logs
+    string theThing = "compiled_code:" + argsTogether;
+    string fakeFilename = "compiled_code";
 
     // parse out command line arguments
     if( !extract_args( theThing, fakeFilename, args ) )
@@ -499,14 +495,13 @@ bool Chuck_System::compileCode( const char * codeString, const std::string & arg
     // std::string full_path = get_full_path(filename);
     
     // parse, type-check, and emit (full_path added 1.3.0.0)
-    if( !m_compilerRef->go( "(from string)", NULL, codeString, "" ) )
+    if( !m_compilerRef->go( "compiled_code", NULL, codeString, "" ) )
         return false;
 
     // get the code
     code = m_compilerRef->output();
-    // name it
-    // (unfortunately we don't have a "path"
-    // code->name += path;
+    // name it (no path to append)
+    code->name += "compiled_code";
 
     // log
     EM_log( CK_LOG_FINE, "sporking %d %s...", count,
@@ -576,9 +571,11 @@ bool Chuck_System::clientInitialize( int srate, int bufferSize, int channelsIn,
 
 
 
+// TODO: instead of initOnly param, make it a passed-in arg flag --initonly?
 //-----------------------------------------------------------------------------
 // name: go()
-// desc: set chuck into motion
+// desc: set chuck into motion. note -- if initOnly is true, you will later
+//       need to call unity_exit() when you are finally ready to exit
 //-----------------------------------------------------------------------------
 bool Chuck_System::go( int argc, const char ** argv,
                        t_CKBOOL clientMode, t_CKBOOL initOnly )
@@ -1039,6 +1036,7 @@ bool Chuck_System::go( int argc, const char ** argv,
     
 //------------------------- VIRTUAL MACHINE SETUP -----------------------------
     
+    // TODO Unity: eliminate g_vm variable
     // allocate the vm - needs the type system
     vm = m_vmRef = g_vm = new Chuck_VM;
     // ge: refactor 2015: initialize VM
@@ -1050,9 +1048,6 @@ bool Chuck_System::go( int argc, const char ** argv,
 
     
 //--------------------------- AUDIO I/O SETUP ---------------------------------
-    
-    // TODO UNITY: disable BBQ if initOnly? what's BBQ for?
-    
     // ge: 1.3.5.3
 if( g_bbq == NULL ) {
     bbq = g_bbq = new BBQ;
@@ -1427,10 +1422,10 @@ if( g_compiler == NULL ) {
 
 
 //-----------------------------------------------------------------------------
-// name: clientPartialShutdown()
+// name: clientVMShutdown()
 // desc: client mode: to manually shut it down
 //-----------------------------------------------------------------------------
-bool Chuck_System::clientPartialShutdown()
+bool Chuck_System::clientVMShutdown()
 {
     // stop VM
     if( m_vmRef ) m_vmRef->stop();
