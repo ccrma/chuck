@@ -7932,7 +7932,7 @@ psf_log_syserr (SF_PRIVATE *psf, int error)
 
 #ifndef HAVE_SSIZE_T
     // ge: this is needed in some/earlier versions of windows
-    #ifndef __WINDOWS_MODERN__
+    #ifndef ssize_t
     typedef long ssize_t ;
     #endif
 #endif

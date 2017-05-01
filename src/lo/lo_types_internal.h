@@ -31,7 +31,9 @@ typedef __int32 int32_t;
 #ifndef WIN32
 #include <pthread.h>
 #else
-typedef void *pthread_t;
+#ifndef HAVE_PTHREAD_H
+typedef void * pthread_t;
+#endif
 #endif // WIN32
 
 #include "lo/lo_osc_types.h"

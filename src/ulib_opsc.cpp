@@ -31,6 +31,12 @@
 //         Perry R. Cook (prc@cs.princeton.edu)
 // date: Spring 2005
 //-----------------------------------------------------------------------------
+
+// lo.h ----> lo_osc_types.h needs to import <cstdint> before running itself, 
+// but ONLY when compiling this file, and NOT when compiling liblo .c files
+// so, set a flag
+#define ULIB_OPSC_CPP 
+
 #include "lo/lo.h"
 
 #include "ulib_opsc.h"
@@ -1646,3 +1652,6 @@ CK_DLL_MFUN( osc_recv_new_address_type )
 
     RETURN->v_object = new_event_obj;
 }
+
+// No longer compiling ulib_opsc.cpp
+#undef ULIB_OPSC_CPP

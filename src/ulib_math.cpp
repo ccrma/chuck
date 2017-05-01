@@ -768,5 +768,5 @@ CK_DLL_SFUN( gauss_impl )
     t_CKFLOAT sd = GET_NEXT_FLOAT(ARGS);
 
     // compute gaussian
-    RETURN->v_float = (1.0 / (sd*::sqrt(2*M_PI))) * ::exp( -(x-mu)*(x-mu) / (2*sd*sd) );
+    RETURN->v_float = (1.0 / (sd*::sqrt(TWO_PI))) * ::exp( -(x-mu)*(x-mu) / (2*sd*sd) );
 }
