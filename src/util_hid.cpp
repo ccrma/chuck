@@ -4820,7 +4820,11 @@ Windows general HID support
 #pragma mark Windows general HID support
 
 #include <windows.h>
+#ifdef __DINPUT8__
+#define DIRECTINPUT_VERSION 0x0800
+#else
 #define DIRECTINPUT_VERSION 0x0500
+#endif
 #include <dinput.h>
 
 /* for performance, we use device event notifications to tell us when a device 
@@ -4991,8 +4995,13 @@ void Joystick_init()
 
     if( lpdi == NULL )
     {
+#if DIRECTINPUT_VERSION > 0x0700
+        if( DirectInput8Create( hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+                                (LPVOID *) &lpdi, NULL) != DI_OK )
+#else
         if( DirectInputCreate( hInstance, DIRECTINPUT_VERSION, 
                                &lpdi, NULL) != DI_OK )
+#endif
         {
             lpdi = NULL;
             EM_log( CK_LOG_SEVERE, "error: unable to initialize DirectInput, initialization failed" );
@@ -5002,7 +5011,11 @@ void Joystick_init()
     }
 
     joysticks = new vector< win32_joystick * >;
+#if DIRECTINPUT_VERSION <= 0x700
     if( lpdi->EnumDevices( DIDEVTYPE_JOYSTICK, DIEnumJoystickProc, 
+#else
+    if( lpdi->EnumDevices( DI8DEVTYPE_JOYSTICK, DIEnumJoystickProc,
+#endif
                            NULL, DIEDFL_ATTACHEDONLY ) != DI_OK )
     {
         delete joysticks;
@@ -5742,8 +5755,13 @@ void Keyboard_init()
 
     if( lpdi == NULL )
     {
-        if( DirectInputCreate( hInstance, DIRECTINPUT_VERSION, 
+#if DIRECTINPUT_VERSION > 0x0700
+        if( DirectInput8Create( hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+                                (LPVOID *) &lpdi, NULL) != DI_OK )
+#else
+        if( DirectInputCreate( hInstance, DIRECTINPUT_VERSION,
                                &lpdi, NULL) != DI_OK )
+#endif
         {
             lpdi = NULL;
             EM_log( CK_LOG_SEVERE, "error: unable to initialize DirectInput, initialization failed" );
@@ -5753,7 +5771,11 @@ void Keyboard_init()
     }
 
     keyboards = new vector< win32_keyboard * >;
-    if( lpdi->EnumDevices( DIDEVTYPE_KEYBOARD, DIEnumKeyboardProc, 
+#if DIRECTINPUT_VERSION <= 0x700
+    if( lpdi->EnumDevices( DIDEVTYPE_KEYBOARD, DIEnumKeyboardProc,
+#else
+    if( lpdi->EnumDevices( DI8DEVTYPE_KEYBOARD, DIEnumKeyboardProc,
+#endif
                            NULL, DIEDFL_ATTACHEDONLY ) != DI_OK )
     {
         delete keyboards;
@@ -5981,8 +6003,13 @@ void Mouse_init()
 
     if( lpdi == NULL )
     {
+#if DIRECTINPUT_VERSION > 0x0700
+        if( DirectInput8Create( hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+                                (LPVOID *) &lpdi, NULL) != DI_OK )
+#else
         if( DirectInputCreate( hInstance, DIRECTINPUT_VERSION, 
                                &lpdi, NULL) != DI_OK )
+#endif
         {
             lpdi = NULL;
             EM_poplog();
@@ -5991,7 +6018,12 @@ void Mouse_init()
     }
 
     mice = new vector< win32_mouse * >;
+
+#if DIRECTINPUT_VERSION <= 0x700
     if( lpdi->EnumDevices( DIDEVTYPE_MOUSE, DIEnumMouseProc, 
+#else
+    if( lpdi->EnumDevices( DI8DEVTYPE_MOUSE, DIEnumMouseProc, 
+#endif
                            NULL, DIEDFL_ATTACHEDONLY ) != DI_OK )
     {
         delete mice;
