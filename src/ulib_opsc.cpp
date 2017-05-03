@@ -35,7 +35,9 @@
 // lo.h ----> lo_osc_types.h needs to import <cstdint> before running itself, 
 // but ONLY when compiling this file, and NOT when compiling liblo .c files
 // so, set a flag
+#ifdef __PLATFORM_WIN32__
 #define ULIB_OPSC_CPP 
+#endif
 
 #include "lo/lo.h"
 
@@ -1654,4 +1656,6 @@ CK_DLL_MFUN( osc_recv_new_address_type )
 }
 
 // No longer compiling ulib_opsc.cpp
+#ifdef __PLATFORM_WIN32__
 #undef ULIB_OPSC_CPP
+#endif
