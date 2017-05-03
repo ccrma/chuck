@@ -44,7 +44,11 @@
 #define t_CKFLOAT                   double
 #define t_CKDOUBLE                  double
 #define t_CKSINGLE                  float
+#ifdef __64BIT_T_CKINT__
+#define t_CKINT                     long long
+#else
 #define t_CKINT                     long
+#endif
 #define t_CKUINT                    unsigned t_CKINT
 #define t_CKBOOL                    unsigned t_CKINT
 #define t_CKBYTE                    unsigned char
