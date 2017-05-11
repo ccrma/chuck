@@ -38,6 +38,10 @@
 using namespace std;
 
 
+#include <plog/Log.h>
+
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -371,6 +375,9 @@ done:
 t_CKBOOL type_engine_scan1_prog( Chuck_Env * env, a_Program prog,
                                  te_HowMuch how_much )
 {
+    env->ast_depth = 0;
+    if( env->ast_should_log ) LOG(plog::info) << "prog, line " << prog->linepos << ", depth " << env->ast_depth;
+
     t_CKBOOL ret = TRUE;
 
     if( !prog )
@@ -435,6 +442,9 @@ t_CKBOOL type_engine_scan1_prog( Chuck_Env * env, a_Program prog,
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_stmt_list( Chuck_Env * env, a_Stmt_List list )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "stmt_list, line " << list->linepos << ", depth " << env->ast_depth;
+    
     // type check the stmt_list
     while( list )
     {
@@ -445,6 +455,8 @@ t_CKBOOL type_engine_scan1_stmt_list( Chuck_Env * env, a_Stmt_List list )
         // advance to the next statement
         list = list->next;
     }
+    
+    env->ast_depth--;
 
     return TRUE;
 }
@@ -458,6 +470,9 @@ t_CKBOOL type_engine_scan1_stmt_list( Chuck_Env * env, a_Stmt_List list )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "stmt, line " << stmt->linepos << ", depth " << env->ast_depth;
+
     t_CKBOOL ret = FALSE;
 
     if( !stmt )
@@ -549,6 +564,8 @@ t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
             ret = FALSE;
             break;
     }
+    
+    env->ast_depth--;
 
     return ret;
 }
@@ -562,6 +579,9 @@ t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_if( Chuck_Env * env, a_Stmt_If stmt )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "if, line " << stmt->linepos << ", depth " << env->ast_depth;
+    
     // check the conditional
     if( !type_engine_scan1_exp( env, stmt->cond ) )
         return FALSE;
@@ -577,6 +597,8 @@ t_CKBOOL type_engine_scan1_if( Chuck_Env * env, a_Stmt_If stmt )
         if( !type_engine_scan1_stmt( env, stmt->else_body ) )
             return FALSE;
 
+    env->ast_depth--;
+
     return TRUE;
 }
 
@@ -589,6 +611,9 @@ t_CKBOOL type_engine_scan1_if( Chuck_Env * env, a_Stmt_If stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_for( Chuck_Env * env, a_Stmt_For stmt )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "for, line " << stmt->linepos << ", depth " << env->ast_depth;
+
     // check the initial
     if( !type_engine_scan1_stmt( env, stmt->c1 ) )
         return FALSE;
@@ -607,6 +632,8 @@ t_CKBOOL type_engine_scan1_for( Chuck_Env * env, a_Stmt_For stmt )
     if( !type_engine_scan1_stmt( env, stmt->body ) )
         return FALSE;
 
+    env->ast_depth--;
+
     return TRUE;
 }
 
@@ -619,6 +646,9 @@ t_CKBOOL type_engine_scan1_for( Chuck_Env * env, a_Stmt_For stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_while( Chuck_Env * env, a_Stmt_While stmt )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "while, line " << stmt->linepos << ", depth " << env->ast_depth;
+
     // check the conditional
     if( !type_engine_scan1_exp( env, stmt->cond ) )
         return FALSE;
@@ -628,6 +658,8 @@ t_CKBOOL type_engine_scan1_while( Chuck_Env * env, a_Stmt_While stmt )
     // check the body
     if( !type_engine_scan1_stmt( env, stmt->body ) )
         return FALSE;
+    
+    env->ast_depth--;
 
     return TRUE;
 }
@@ -641,6 +673,9 @@ t_CKBOOL type_engine_scan1_while( Chuck_Env * env, a_Stmt_While stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_until( Chuck_Env * env, a_Stmt_Until stmt )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "until, line " << stmt->linepos << ", depth " << env->ast_depth;
+
     // check the conditional
     if( !type_engine_scan1_exp( env, stmt->cond ) )
         return FALSE;
@@ -650,6 +685,8 @@ t_CKBOOL type_engine_scan1_until( Chuck_Env * env, a_Stmt_Until stmt )
     // check the body
     if( !type_engine_scan1_stmt( env, stmt->body ) )
         return FALSE;
+
+    env->ast_depth--;
 
     return TRUE;
 }
@@ -663,6 +700,9 @@ t_CKBOOL type_engine_scan1_until( Chuck_Env * env, a_Stmt_Until stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_loop( Chuck_Env * env, a_Stmt_Loop stmt )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "loop, line " << stmt->linepos << ", depth " << env->ast_depth;
+
     // check the conditional
     if( !type_engine_scan1_exp( env, stmt->cond ) )
         return FALSE;
@@ -672,6 +712,8 @@ t_CKBOOL type_engine_scan1_loop( Chuck_Env * env, a_Stmt_Loop stmt )
     // check the body
     if( !type_engine_scan1_stmt( env, stmt->body ) )
         return FALSE;
+
+    env->ast_depth--;
 
     return TRUE;
 }
@@ -685,8 +727,13 @@ t_CKBOOL type_engine_scan1_loop( Chuck_Env * env, a_Stmt_Loop stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_switch( Chuck_Env * env, a_Stmt_Switch stmt )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "switch, line " << stmt->linepos << ", depth " << env->ast_depth;
+
     // TODO: implement this
     EM_error2( stmt->linepos, "switch not implemented..." );
+
+    env->ast_depth--;
 
     return FALSE;
 }
@@ -700,6 +747,12 @@ t_CKBOOL type_engine_scan1_switch( Chuck_Env * env, a_Stmt_Switch stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_break( Chuck_Env * env, a_Stmt_Break br )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "break, line " << br->linepos << ", depth " << env->ast_depth;
+    
+    
+    env->ast_depth--;
+    
     return TRUE;
 }
 
@@ -712,6 +765,12 @@ t_CKBOOL type_engine_scan1_break( Chuck_Env * env, a_Stmt_Break br )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_continue( Chuck_Env * env, a_Stmt_Continue cont )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "continue, line " << cont->linepos << ", depth " << env->ast_depth;
+    
+    
+    env->ast_depth--;
+    
     return TRUE;
 }
 
@@ -724,6 +783,9 @@ t_CKBOOL type_engine_scan1_continue( Chuck_Env * env, a_Stmt_Continue cont )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_return( Chuck_Env * env, a_Stmt_Return stmt )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "return, line " << stmt->linepos << ", depth " << env->ast_depth;
+    
     t_CKBOOL ret = FALSE;
 
     // check the type of the return
@@ -731,6 +793,8 @@ t_CKBOOL type_engine_scan1_return( Chuck_Env * env, a_Stmt_Return stmt )
         ret = type_engine_scan1_exp( env, stmt->val );
     else
         ret = TRUE;
+
+    env->ast_depth--;
 
     return ret;
 }
@@ -745,6 +809,9 @@ t_CKBOOL type_engine_scan1_return( Chuck_Env * env, a_Stmt_Return stmt )
 t_CKBOOL type_engine_scan1_code_segment( Chuck_Env * env, a_Stmt_Code stmt,
                                         t_CKBOOL push )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "code_segment, line " << stmt->linepos << ", depth " << env->ast_depth;
+    
     // class
     env->class_scope++;
     // push
@@ -755,6 +822,8 @@ t_CKBOOL type_engine_scan1_code_segment( Chuck_Env * env, a_Stmt_Code stmt,
     if( push ) env->curr->value.pop();  // env->context->nspc.value.pop();
     // class
     env->class_scope--;
+    
+    env->ast_depth--;
     
     return t;
 }
@@ -768,6 +837,9 @@ t_CKBOOL type_engine_scan1_code_segment( Chuck_Env * env, a_Stmt_Code stmt,
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp( Chuck_Env * env, a_Exp exp )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp, line " << exp->linepos << ", depth " << env->ast_depth;
+    
     a_Exp curr = exp;
     t_CKBOOL ret = TRUE;
     
@@ -836,6 +908,8 @@ t_CKBOOL type_engine_scan1_exp( Chuck_Env * env, a_Exp exp )
         curr = curr->next;
     }
 
+    env->ast_depth--;
+
     // return type
     return ret;
 }
@@ -849,6 +923,9 @@ t_CKBOOL type_engine_scan1_exp( Chuck_Env * env, a_Exp exp )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_binary( Chuck_Env * env, a_Exp_Binary binary )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp_binary, line " << binary->linepos << ", depth " << env->ast_depth;
+    
     a_Exp cl = binary->lhs, cr = binary->rhs;
 
     // type check the lhs and rhs
@@ -868,7 +945,9 @@ t_CKBOOL type_engine_scan1_exp_binary( Chuck_Env * env, a_Exp_Binary binary )
 
         cr = cr->next;
     }
-        
+    
+    env->ast_depth--;
+    
     return TRUE;
 }
 
@@ -882,7 +961,13 @@ t_CKBOOL type_engine_scan1_exp_binary( Chuck_Env * env, a_Exp_Binary binary )
 t_CKBOOL type_engine_scan1_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp rhs, 
                               a_Exp_Binary binary )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "op, line " << lhs->linepos << ", depth " << env->ast_depth;
+    
     // TODO: check for static here
+    
+    
+    env->ast_depth--;
     
     return TRUE;
 }
@@ -897,6 +982,12 @@ t_CKBOOL type_engine_scan1_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
 t_CKBOOL type_engine_scan1_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
                                     a_Exp_Binary binary )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "op_chuck, line " << lhs->linepos << ", depth " << env->ast_depth;
+
+
+    env->ast_depth--;
+    
     return TRUE;
 }
 
@@ -909,6 +1000,12 @@ t_CKBOOL type_engine_scan1_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "op_unchuck, line " << lhs->linepos << ", depth " << env->ast_depth;
+    
+    
+    env->ast_depth--;
+    
     return TRUE;
 }
 
@@ -921,6 +1018,12 @@ t_CKBOOL type_engine_scan1_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "op_upchuck, line " << lhs->linepos << ", depth " << env->ast_depth;
+    
+    
+    env->ast_depth--;
+    
     return TRUE;
 }
 
@@ -933,6 +1036,12 @@ t_CKBOOL type_engine_scan1_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "op_at_chuck, line " << lhs->linepos << ", depth " << env->ast_depth;
+
+
+    env->ast_depth--;
+    
     return TRUE;
 }
 
@@ -945,6 +1054,12 @@ t_CKBOOL type_engine_scan1_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp_unary, line " << unary->linepos << ", depth " << env->ast_depth;
+    
+    
+    env->ast_depth--;
+    
     return TRUE;
 }
 
@@ -957,6 +1072,12 @@ t_CKBOOL type_engine_scan1_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp_primary, line " << exp->linepos << ", depth " << env->ast_depth;
+    
+    
+    env->ast_depth--;
+    
     return TRUE;
 }
 
@@ -969,9 +1090,14 @@ t_CKBOOL type_engine_scan1_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_array_lit( Chuck_Env * env, a_Exp_Primary exp )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp_array_lit, line " << exp->linepos << ", depth " << env->ast_depth;
+    
     // verify there are no errors from the parser...
     if( !verify_array( exp->array ) )
         return FALSE;
+    
+    env->ast_depth--;
 
     return TRUE;
 }
@@ -985,9 +1111,14 @@ t_CKBOOL type_engine_scan1_exp_array_lit( Chuck_Env * env, a_Exp_Primary exp )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_cast( Chuck_Env * env, a_Exp_Cast cast )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp_cast, line " << cast->linepos << ", depth " << env->ast_depth;
+    
     // check the exp
     t_CKBOOL t = type_engine_scan1_exp( env, cast->exp );
     if( !t ) return FALSE;
+    
+    env->ast_depth--;
 
     return TRUE;
 }
@@ -1001,12 +1132,17 @@ t_CKBOOL type_engine_scan1_exp_cast( Chuck_Env * env, a_Exp_Cast cast )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_dur( Chuck_Env * env, a_Exp_Dur dur )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp_dur, line " << dur->linepos << ", depth " << env->ast_depth;
+    
     // type check the two components
     t_CKBOOL base = type_engine_scan1_exp( env, dur->base );
     t_CKBOOL unit = type_engine_scan1_exp( env, dur->unit );
     
     // make sure both type check
     if( !base || !unit ) return FALSE;
+    
+    env->ast_depth--;
 
     return TRUE;
 }
@@ -1020,6 +1156,9 @@ t_CKBOOL type_engine_scan1_exp_dur( Chuck_Env * env, a_Exp_Dur dur )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp_postfix, line " << postfix->linepos << ", depth " << env->ast_depth;
+    
     // check the exp
     t_CKBOOL t = type_engine_scan1_exp( env, postfix->exp );
     if( !t ) return FALSE;
@@ -1051,6 +1190,8 @@ t_CKBOOL type_engine_scan1_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
             return FALSE;
     }
     
+    env->ast_depth--;
+    
     return TRUE;
 }
 
@@ -1063,6 +1204,9 @@ t_CKBOOL type_engine_scan1_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_if( Chuck_Env * env, a_Exp_If exp_if )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp_if, line " << exp_if->linepos << ", depth " << env->ast_depth;
+    
     // check the components
     t_CKBOOL cond = type_engine_scan1_exp( env, exp_if->cond );
     t_CKBOOL if_exp = type_engine_scan1_exp( env, exp_if->if_exp );
@@ -1070,6 +1214,8 @@ t_CKBOOL type_engine_scan1_exp_if( Chuck_Env * env, a_Exp_If exp_if )
 
     // make sure everything good
     if( !cond || !if_exp || !else_exp ) return FALSE;
+    
+    env->ast_depth--;
     
     return TRUE;
 }
@@ -1083,6 +1229,12 @@ t_CKBOOL type_engine_scan1_exp_if( Chuck_Env * env, a_Exp_If exp_if )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_array_subscripts( Chuck_Env * env, a_Exp exp_list )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "array_subscripts, line " << exp_list->linepos << ", depth " << env->ast_depth;
+
+
+    env->ast_depth--;
+    
     return TRUE;
 }
 
@@ -1095,6 +1247,9 @@ t_CKBOOL type_engine_scan1_array_subscripts( Chuck_Env * env, a_Exp exp_list )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp_decl, line " << decl->linepos << ", depth " << env->ast_depth;
+    
     a_Var_Decl_List list = decl->var_decl_list;
     a_Var_Decl var_decl = NULL;
 
@@ -1144,6 +1299,8 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
     // remember : decl->ck_type = t;
     SAFE_REF_ASSIGN( decl->ck_type, t );
 
+    env->ast_depth--;
+
     return TRUE;
 }
 
@@ -1157,6 +1314,9 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
 t_CKBOOL type_engine_scan1_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp args, 
                                          t_CKFUNC & ck_func, int linepos )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp_func_call, line " << exp_func->linepos << ", depth " << env->ast_depth;
+    
     // Chuck_Func * func = NULL;
     // Chuck_Func * up = NULL;
 
@@ -1171,6 +1331,8 @@ t_CKBOOL type_engine_scan1_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
         if( !a ) return FALSE;
     }
 
+    env->ast_depth--;
+
     return TRUE;
 }
 
@@ -1183,9 +1345,18 @@ t_CKBOOL type_engine_scan1_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_func_call( Chuck_Env * env, a_Exp_Func_Call func_call )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp_func_call, line " << func_call->linepos << ", depth " << env->ast_depth;
+    
     // type check it
-    return type_engine_scan1_exp_func_call( env, func_call->func, func_call->args,
-                                           func_call->ck_func, func_call->linepos );
+    t_CKBOOL ret = type_engine_scan1_exp_func_call(
+        env, func_call->func, func_call->args,
+        func_call->ck_func, func_call->linepos
+    );
+    
+    env->ast_depth--;
+    
+    return ret;
 }
 
 
@@ -1197,9 +1368,14 @@ t_CKBOOL type_engine_scan1_exp_func_call( Chuck_Env * env, a_Exp_Func_Call func_
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member member )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp_dot_member, line " << member->linepos << ", depth " << env->ast_depth;
+    
     // type check the base
     t_CKBOOL base = type_engine_scan1_exp( env, member->base );
     if( !base ) return FALSE;
+
+    env->ast_depth--;
 
     return TRUE;
 }
@@ -1213,6 +1389,9 @@ t_CKBOOL type_engine_scan1_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_array( Chuck_Env * env, a_Exp_Array array )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "exp_array, line " << array->linepos << ", depth " << env->ast_depth;
+    
     // verify there are no errors from the parser...
     if( !verify_array( array->indices ) )
         return FALSE;
@@ -1230,6 +1409,8 @@ t_CKBOOL type_engine_scan1_exp_array( Chuck_Env * env, a_Exp_Array array )
     // count the dimension
     // t_CKUINT depth = 0;
 
+    env->ast_depth--;
+
     return TRUE;
 }
 
@@ -1242,6 +1423,9 @@ t_CKBOOL type_engine_scan1_exp_array( Chuck_Env * env, a_Exp_Array array )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_class_def( Chuck_Env * env, a_Class_Def class_def )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "class_def, line " << class_def->linepos << ", depth " << env->ast_depth;
+    
     // the return type
     t_CKBOOL ret = TRUE;
     // the class body
@@ -1291,6 +1475,8 @@ t_CKBOOL type_engine_scan1_class_def( Chuck_Env * env, a_Class_Def class_def )
     env->curr = env->nspc_stack.back();
     env->nspc_stack.pop_back();
 
+    env->ast_depth--;
+
     return ret;
 }
 
@@ -1303,6 +1489,9 @@ t_CKBOOL type_engine_scan1_class_def( Chuck_Env * env, a_Class_Def class_def )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
 {
+    env->ast_depth++;
+    if( env->ast_should_log ) LOG(plog::info) << "func_def, line " << f->linepos << ", depth " << env->ast_depth;
+    
     a_Arg_List arg_list = NULL;
     t_CKUINT count = 0;
     // t_CKBOOL has_code = FALSE;
@@ -1394,6 +1583,8 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
         EM_error2( 0, "...in function '%s'", S_name(f->name) );
         goto error;
     }
+
+    env->ast_depth--;
 
     return TRUE;
 

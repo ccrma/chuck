@@ -94,6 +94,24 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXFileReference section */
+		04446B3E1E9D942C009D9731 /* AndroidAppender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AndroidAppender.h; sourceTree = "<group>"; };
+		04446B3F1E9D942C009D9731 /* ColorConsoleAppender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorConsoleAppender.h; sourceTree = "<group>"; };
+		04446B401E9D942C009D9731 /* ConsoleAppender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConsoleAppender.h; sourceTree = "<group>"; };
+		04446B411E9D942C009D9731 /* DebugOutputAppender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DebugOutputAppender.h; sourceTree = "<group>"; };
+		04446B421E9D942C009D9731 /* EventLogAppender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventLogAppender.h; sourceTree = "<group>"; };
+		04446B431E9D942C009D9731 /* IAppender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IAppender.h; sourceTree = "<group>"; };
+		04446B441E9D942C009D9731 /* RollingFileAppender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RollingFileAppender.h; sourceTree = "<group>"; };
+		04446B461E9D942C009D9731 /* UTF8Converter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UTF8Converter.h; sourceTree = "<group>"; };
+		04446B481E9D942C009D9731 /* CsvFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CsvFormatter.h; sourceTree = "<group>"; };
+		04446B491E9D942C009D9731 /* FuncMessageFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FuncMessageFormatter.h; sourceTree = "<group>"; };
+		04446B4A1E9D942C009D9731 /* TxtFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TxtFormatter.h; sourceTree = "<group>"; };
+		04446B4B1E9D942C009D9731 /* Init.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Init.h; sourceTree = "<group>"; };
+		04446B4C1E9D942C009D9731 /* Log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Log.h; sourceTree = "<group>"; };
+		04446B4D1E9D942C009D9731 /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
+		04446B4E1E9D942C009D9731 /* Record.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Record.h; sourceTree = "<group>"; };
+		04446B4F1E9D942C009D9731 /* Severity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Severity.h; sourceTree = "<group>"; };
+		04446B501E9D942C009D9731 /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Util.h; sourceTree = "<group>"; };
+		04446B511E9D942C009D9731 /* WinApi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WinApi.h; sourceTree = "<group>"; };
 		090A5BE70AA75AEA005DC04D /* util_hid.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = util_hid.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = uana_xform.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1B0C4F038E00DF5577 /* uana_xform.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = uana_xform.h; sourceTree = SOURCE_ROOT; };
@@ -433,6 +451,55 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		04446B3C1E9D942C009D9731 /* plog */ = {
+			isa = PBXGroup;
+			children = (
+				04446B3D1E9D942C009D9731 /* Appenders */,
+				04446B451E9D942C009D9731 /* Converters */,
+				04446B471E9D942C009D9731 /* Formatters */,
+				04446B4B1E9D942C009D9731 /* Init.h */,
+				04446B4C1E9D942C009D9731 /* Log.h */,
+				04446B4D1E9D942C009D9731 /* Logger.h */,
+				04446B4E1E9D942C009D9731 /* Record.h */,
+				04446B4F1E9D942C009D9731 /* Severity.h */,
+				04446B501E9D942C009D9731 /* Util.h */,
+				04446B511E9D942C009D9731 /* WinApi.h */,
+			);
+			path = plog;
+			sourceTree = "<group>";
+		};
+		04446B3D1E9D942C009D9731 /* Appenders */ = {
+			isa = PBXGroup;
+			children = (
+				04446B3E1E9D942C009D9731 /* AndroidAppender.h */,
+				04446B3F1E9D942C009D9731 /* ColorConsoleAppender.h */,
+				04446B401E9D942C009D9731 /* ConsoleAppender.h */,
+				04446B411E9D942C009D9731 /* DebugOutputAppender.h */,
+				04446B421E9D942C009D9731 /* EventLogAppender.h */,
+				04446B431E9D942C009D9731 /* IAppender.h */,
+				04446B441E9D942C009D9731 /* RollingFileAppender.h */,
+			);
+			path = Appenders;
+			sourceTree = "<group>";
+		};
+		04446B451E9D942C009D9731 /* Converters */ = {
+			isa = PBXGroup;
+			children = (
+				04446B461E9D942C009D9731 /* UTF8Converter.h */,
+			);
+			path = Converters;
+			sourceTree = "<group>";
+		};
+		04446B471E9D942C009D9731 /* Formatters */ = {
+			isa = PBXGroup;
+			children = (
+				04446B481E9D942C009D9731 /* CsvFormatter.h */,
+				04446B491E9D942C009D9731 /* FuncMessageFormatter.h */,
+				04446B4A1E9D942C009D9731 /* TxtFormatter.h */,
+			);
+			path = Formatters;
+			sourceTree = "<group>";
+		};
 		0980603D0AA158F600915136 /* Examples */ = {
 			isa = PBXGroup;
 			children = (
@@ -952,6 +1019,7 @@
 		09A40E130A9AC96C007604EA /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				04446B3C1E9D942C009D9731 /* plog */,
 				09922D48181601F700806471 /* lo */,
 				09A5C88413DDFB350082DF50 /* RtAudio */,
 				09A40B000A9A52FC007604EA /* ChucK */,

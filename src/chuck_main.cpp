@@ -32,6 +32,7 @@
 //         (see chuck_system.*)
 //-----------------------------------------------------------------------------
 #include "chuck_system.h"
+#include <plog/Log.h>
 
 #ifndef __ALTER_ENTRY_POINT__
 int main( int argc, const char ** argv )
@@ -39,6 +40,17 @@ int main( int argc, const char ** argv )
 extern "C" int chuck_main( int argc, const char ** argv )
 #endif
 {
+    // log init
+    std::time_t rawtime;
+    std::tm* timeinfo;
+    char filename [128];
+
+    std::time(&rawtime);
+    timeinfo = std::localtime(&rawtime);
+
+    std::strftime(filename,128,"programLogs/%Y-%m-%d-%H-%M-%S.csv",timeinfo);
+    plog::init(plog::info, filename);
+
     // chuck system
     Chuck_System chuck;
     // do it
