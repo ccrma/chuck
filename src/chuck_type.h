@@ -501,6 +501,10 @@ public:
     { assert( nspc_stack.size() > 0 ); return nspc_stack.back(); }
     Chuck_Type * class_top( )
     { assert( class_stack.size() > 0 ); return class_stack.back(); }
+    
+    // check whether the context is the global context
+    t_CKBOOL is_global()
+    { return class_def == NULL && func == NULL && class_scope == 0; }
 };
 
 

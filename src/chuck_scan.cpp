@@ -1109,6 +1109,25 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         EM_error2( decl->linepos, "... in declaration ..." );
         return FALSE;
     }
+    
+    if( decl->is_external ) {
+        // fail if type unsupported
+        if( t->name != std::string("int")
+            && t->name != std::string("float")
+        )
+        {
+            EM_error2( decl->linepos, (std::string("unsupported type for external keyword: ") + t->name).c_str() );
+            EM_error2( decl->linepos, "... (supported types: int, float)" );
+            return FALSE;
+        }
+        
+        // fail if not global scope
+        if( ! env->is_global() )
+        {
+            EM_error2( decl->linepos, "external keyword cannot be used on non-global variables" );
+            return FALSE;
+        }
+    }
 
     // loop through the variables
     while( list != NULL )
