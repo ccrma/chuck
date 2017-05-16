@@ -5316,9 +5316,6 @@ t_CKBOOL type_engine_import_mfun( Chuck_Env * env, Chuck_DL_Func * mfun )
     if( !func_def )
         return FALSE;
     
-    // don't log while importing member functions
-    env->ast_should_log = FALSE;
-    
     // add the function to class
     if( !type_engine_scan1_func_def( env, func_def ) )
         return FALSE;
@@ -5329,9 +5326,6 @@ t_CKBOOL type_engine_import_mfun( Chuck_Env * env, Chuck_DL_Func * mfun )
 
     if( mfun->doc.size() > 0 )
         func_def->ck_func->doc = mfun->doc;
-    
-    // reset
-    env->ast_should_log = TRUE;
     
     return TRUE;
 }
@@ -5360,9 +5354,6 @@ t_CKBOOL type_engine_import_sfun( Chuck_Env * env, Chuck_DL_Func * sfun )
     // make into func_def
     func_def = make_dll_as_fun( sfun, TRUE, FALSE );
     
-    // don't log while importing static functions
-    env->ast_should_log = FALSE;
-    
     // add the function to class
     if( !type_engine_scan1_func_def( env, func_def ) )
         return FALSE;
@@ -5373,10 +5364,7 @@ t_CKBOOL type_engine_import_sfun( Chuck_Env * env, Chuck_DL_Func * sfun )
 
     if( sfun->doc.size() > 0 )
         func_def->ck_func->doc = sfun->doc;
-    
-    // reset
-    env->ast_should_log = TRUE;
-    
+
     return TRUE;
 }
 
@@ -5440,9 +5428,6 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
     // make exp decl
     a_Exp exp_decl = new_exp_decl( type_decl, var_decl_list, FALSE, 0 );
     
-    // don't log while importing member variables
-    env->ast_should_log = FALSE;
-    
     // add it
     if( !type_engine_scan1_exp_decl( env, &exp_decl->decl ) ||
         !type_engine_scan2_exp_decl( env, &exp_decl->decl ) ||
@@ -5451,9 +5436,6 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
         delete_id_list( path );
         return CK_INVALID_OFFSET;
     }
-    
-    // reset
-    env->ast_should_log = TRUE;
     
     if( doc != NULL )
         var_decl->value->doc = doc;
@@ -5507,9 +5489,6 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
     // add addr
     var_decl->addr = (void *)addr;
     
-    // don't log while importing static variables
-    env->ast_should_log = FALSE;
-    
     // add it
     if( !type_engine_scan1_exp_decl( env, &exp_decl->decl ) ||
         !type_engine_scan2_exp_decl( env, &exp_decl->decl ) ||
@@ -5518,9 +5497,6 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
         delete_id_list( path );
         return FALSE;
     }
-    
-    // reset
-    env->ast_should_log = TRUE;
     
     if( doc != NULL )
         var_decl->value->doc = doc;

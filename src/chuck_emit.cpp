@@ -35,6 +35,7 @@
 #include "chuck_errmsg.h"
 #include "chuck_instr.h"
 #include <sstream>
+#include <plog/Log.h>
 
 using namespace std;
 
@@ -115,6 +116,9 @@ Chuck_Emitter * emit_engine_init( Chuck_Env * env )
     Chuck_Emitter * emit = new Chuck_Emitter;
     // set the reference
     emit->env = env;
+    
+    emit->ast_depth = 0;
+    emit->ast_should_log = FALSE;
 
     return emit;
 }
@@ -150,6 +154,11 @@ t_CKBOOL emit_engine_shutdown( Chuck_Emitter *& emit )
 Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
                                        te_HowMuch how_much )
 {
+    // set initial ast depth
+    emit->ast_depth = 0;
+    // yes log
+    emit->ast_should_log = TRUE;
+    if( emit->ast_should_log ) LOG(plog::info) << "prog, line " << prog->linepos << ", depth " << emit->ast_depth;
     // make sure the code is NULL
     assert( emit->code == NULL );
     // make sure the stack is empty
@@ -245,6 +254,9 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
 
     // pop indent
     EM_poplog();
+    
+    // no log
+    emit->ast_should_log = FALSE;
 
     // return the code
     return emit->context->nspc->pre_ctor;
@@ -329,6 +341,9 @@ Chuck_VM_Code * emit_to_code( Chuck_Code * in,
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_stmt_list( Chuck_Emitter * emit, a_Stmt_List list )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "stmt_list, line " << list->linepos << ", depth " << emit->ast_depth;
+    
     t_CKBOOL ret = TRUE;
 
     // emit->push();
@@ -338,6 +353,7 @@ t_CKBOOL emit_engine_emit_stmt_list( Chuck_Emitter * emit, a_Stmt_List list )
         list = list->next;
     }
     // emit->pop();
+    emit->ast_depth--;
 
     return ret;
 }
@@ -351,9 +367,15 @@ t_CKBOOL emit_engine_emit_stmt_list( Chuck_Emitter * emit, a_Stmt_List list )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "stmt, line " << stmt->linepos << ", depth " << emit->ast_depth;
+    
     // empty stmt list
     if( !stmt )
+    {
+        emit->ast_depth--;
         return TRUE;
+    }
 
     // return
     t_CKBOOL ret = TRUE;
@@ -476,6 +498,8 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                  stmt->s_type );
             break;
     }
+    
+    emit->ast_depth--;
 
     return ret;
 }
@@ -489,6 +513,9 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "if, line " << stmt->linepos << ", depth " << emit->ast_depth;
+    
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL, * op2 = NULL;
 
@@ -573,6 +600,8 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
     // pop stack
     emit->pop_scope();
     
+    emit->ast_depth--;
+    
     return ret;
 }
 
@@ -585,6 +614,9 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "for, line " << stmt->linepos << ", depth " << emit->ast_depth;
+    
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
 
@@ -722,6 +754,8 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
     // pop break stack
     emit->code->stack_break.pop_back();
 
+    emit->ast_depth--;
+
     return ret;
 }
 
@@ -734,6 +768,9 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_while( Chuck_Emitter * emit, a_Stmt_While stmt )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "while, line " << stmt->linepos << ", depth " << emit->ast_depth;
+    
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
 
@@ -825,6 +862,8 @@ t_CKBOOL emit_engine_emit_while( Chuck_Emitter * emit, a_Stmt_While stmt )
     // pop break stack
     emit->code->stack_break.pop_back();
 
+    emit->ast_depth--;
+
     return ret;
 }
 
@@ -837,6 +876,9 @@ t_CKBOOL emit_engine_emit_while( Chuck_Emitter * emit, a_Stmt_While stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_do_while( Chuck_Emitter * emit, a_Stmt_While stmt )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "do_while, line " << stmt->linepos << ", depth " << emit->ast_depth;
+    
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
     t_CKUINT start_index = emit->next_index();
@@ -924,6 +966,8 @@ t_CKBOOL emit_engine_emit_do_while( Chuck_Emitter * emit, a_Stmt_While stmt )
     // pop break stack
     emit->code->stack_break.pop_back();
     
+    emit->ast_depth--;
+    
     return ret;
 }
 
@@ -936,6 +980,9 @@ t_CKBOOL emit_engine_emit_do_while( Chuck_Emitter * emit, a_Stmt_While stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "until, line " << stmt->linepos << ", depth " << emit->ast_depth;
+    
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
 
@@ -1025,6 +1072,8 @@ t_CKBOOL emit_engine_emit_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
     // pop break stack
     emit->code->stack_break.pop_back();
     
+    emit->ast_depth--;
+    
     return ret;
 }
 
@@ -1037,6 +1086,9 @@ t_CKBOOL emit_engine_emit_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_do_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "do_until, line " << stmt->linepos << ", depth " << emit->ast_depth;
+    
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
 
@@ -1116,6 +1168,8 @@ t_CKBOOL emit_engine_emit_do_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
     // pop break stack
     emit->code->stack_break.pop_back();
     
+    emit->ast_depth--;
+    
     return ret;
 }
 
@@ -1128,6 +1182,9 @@ t_CKBOOL emit_engine_emit_do_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "loop, line " << stmt->linepos << ", depth " << emit->ast_depth;
+    
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
     
@@ -1223,6 +1280,8 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
     // pop break stack
     emit->code->stack_break.pop_back();
 
+    emit->ast_depth--;
+
     return ret;
 }
 
@@ -1235,11 +1294,16 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_break( Chuck_Emitter * emit, a_Stmt_Break br )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "break, line " << br->linepos << ", depth " << emit->ast_depth;
+    
     // append
     Chuck_Instr_Goto * op = new Chuck_Instr_Goto( 0 );
     emit->append( op );
     // remember
     emit->code->stack_break.push_back( op );
+    
+    emit->ast_depth--;
     
     return TRUE;
 }
@@ -1253,12 +1317,17 @@ t_CKBOOL emit_engine_emit_break( Chuck_Emitter * emit, a_Stmt_Break br )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_continue( Chuck_Emitter * emit, a_Stmt_Continue cont )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "continue, line " << cont->linepos << ", depth " << emit->ast_depth;
+    
     // append
     Chuck_Instr_Goto * op = new Chuck_Instr_Goto( 0 );
     emit->append( op );
     // remember
     emit->code->stack_cont.push_back( op );
 
+    emit->ast_depth--;
+    
     return TRUE;
 }
 
@@ -1271,6 +1340,9 @@ t_CKBOOL emit_engine_emit_continue( Chuck_Emitter * emit, a_Stmt_Continue cont )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_return( Chuck_Emitter * emit, a_Stmt_Return stmt )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "return, line " << stmt->linepos << ", depth " << emit->ast_depth;
+    
     if( !emit_engine_emit_exp( emit, stmt->val ) )
         return FALSE;
 
@@ -1282,6 +1354,8 @@ t_CKBOOL emit_engine_emit_return( Chuck_Emitter * emit, a_Stmt_Return stmt )
     emit->append( instr );
     emit->code->stack_return.push_back( instr );
 
+    emit->ast_depth--;
+
     return TRUE;
 }
 
@@ -1292,7 +1366,16 @@ t_CKBOOL emit_engine_emit_return( Chuck_Emitter * emit, a_Stmt_Return stmt )
 // name:
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL emit_engine_emit_switch( Chuck_Emitter * emit, a_Stmt_Switch stmt );
+t_CKBOOL emit_engine_emit_switch( Chuck_Emitter * emit, a_Stmt_Switch stmt )
+{
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "switch, line " << stmt->linepos << ", depth " << emit->ast_depth;
+    
+    // TODO: implement switch (currently, there is a scan1 error for it)
+    
+    emit->ast_depth--;
+    return TRUE;
+}
 
 
 
@@ -1306,12 +1389,15 @@ t_CKBOOL emit_engine_emit_switch( Chuck_Emitter * emit, a_Stmt_Switch stmt );
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRef )
 {
+    emit->ast_depth++;
     // for now...
     // assert( exp->next == NULL );
 
     // loop over 
     while( exp )
     {
+        if( emit->ast_should_log ) LOG(plog::info) << "exp, line " << exp->linepos << ", depth " << emit->ast_depth;
+
         switch( exp->s_type )
         {
         case ae_exp_binary:
@@ -1396,6 +1482,8 @@ t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRe
 
         exp = exp->next;
     }
+    
+    emit->ast_depth--;
 
     return TRUE;
 }
@@ -1409,6 +1497,9 @@ t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRe
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "exp_binary, line " << binary->linepos << ", depth " << emit->ast_depth;
+    
     // sanity
     assert( binary->self->emit_var == FALSE );
 
@@ -1444,6 +1535,8 @@ t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary 
         // set branch location
         op->set( emit->next_index() );
         
+        emit->ast_depth--;
+    
         return TRUE;
     }
     
@@ -1476,6 +1569,8 @@ t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary 
         // set branch location
         op->set( emit->next_index() );
         
+        emit->ast_depth--;
+    
         return TRUE;
     }
 
@@ -1500,6 +1595,8 @@ t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary 
     if( !emit_engine_emit_op( emit, binary->op, binary->lhs, binary->rhs, binary ) )
         return FALSE;
 
+    emit->ast_depth--;
+
     return TRUE;
 }
 
@@ -1512,6 +1609,8 @@ t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary 
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "op, line " << lhs->linepos << ", depth " << emit->ast_depth << ", op " << op2str( op );
     // any implicit cast happens before this
     Chuck_Type * t_left = lhs->cast_to ? lhs->cast_to : lhs->type;
     Chuck_Type * t_right = rhs->cast_to ? rhs->cast_to : rhs->type;
@@ -2079,6 +2178,8 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         if( !emit_engine_emit_op_chuck( emit, cl, cr, binary ) )
             return FALSE;
 
+        emit->ast_depth--;
+        
         return TRUE;
     }
     
@@ -2100,6 +2201,8 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             
             cr = cr->next;
         }
+        
+        emit->ast_depth--;
 
         return TRUE;
     }
@@ -2122,6 +2225,8 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             
             cr = cr->next;
         }
+        
+        emit->ast_depth--;
 
         return TRUE;
     }
@@ -2144,6 +2249,8 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             
             cr = cr->next;
         }
+        
+        emit->ast_depth--;
 
         return TRUE;
     }
@@ -2415,6 +2522,8 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             t_left->c_name(), op2str( op ), t_right->c_name() );
         return FALSE;
     }
+    
+    emit->ast_depth--;
         
     return TRUE;
 }
@@ -2428,6 +2537,9 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "op_chuck, line " << lhs->linepos << ", depth " << emit->ast_depth;
+    
     // any implicit cast happens before this
     Chuck_Type * left = lhs->cast_to ? lhs->cast_to : lhs->type;
     Chuck_Type * right = rhs->cast_to ? rhs->cast_to : rhs->type;
@@ -2441,6 +2553,8 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
         // link, flag as NOT unchuck
         emit->append( instr = new Chuck_Instr_UGen_Link( FALSE ) );
         instr->set_linepos( lhs->linepos );
+        
+        emit->ast_depth--;
         // done
         return TRUE;
     }
@@ -2452,6 +2566,8 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
         // link, flag as NOT unchuck
         emit->append( instr = new Chuck_Instr_UGen_Array_Link( isa( left, &t_array ), isa( right, &t_array ) ) );
         instr->set_linepos( lhs->linepos );
+        
+        emit->ast_depth--;
         // done
         return TRUE;
     }
@@ -2470,6 +2586,9 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
             instr->set_linepos( lhs->linepos );
         }
 
+
+        emit->ast_depth--;
+        
         return TRUE;
     }
     
@@ -2482,6 +2601,8 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
         emit->append( instr = new Chuck_Instr_Event_Wait );
         instr->set_linepos( lhs->linepos );
 
+        emit->ast_depth--;
+
         return TRUE;
     }
     
@@ -2493,31 +2614,42 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_int );
             instr->set_linepos( rhs->linepos );
-	    return TRUE;
+	    
+            emit->ast_depth--;
+            return TRUE;
         }
         else if( isa( right, &t_float ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_float );
             instr->set_linepos( rhs->linepos );
-	    return TRUE;
+            
+            emit->ast_depth--;
+            return TRUE;
         }
         else if( isa( right, &t_string ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_string );
             instr->set_linepos( rhs->linepos );
-	    return TRUE;
+            
+            emit->ast_depth--;
+            return TRUE;
         }
     }
-
+    
+    t_CKBOOL ret;
+    
     // func call
     if( isa( right, &t_function ) )
     {
         assert( binary->ck_func != NULL );
         
         // emit
-        return emit_engine_emit_exp_func_call( emit, binary->ck_func, binary->self->type, binary->linepos );
+        ret = emit_engine_emit_exp_func_call( emit, binary->ck_func, binary->self->type, binary->linepos );
+        
+        emit->ast_depth--;
+        return ret;
     }
 
     // assignment or something else
@@ -2527,7 +2659,10 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
         if( type_engine_check_primitive( left ) || isa( left, &t_string ) )
         {
             // use at assign
-            return emit_engine_emit_op_at_chuck( emit, lhs, rhs );
+            ret = emit_engine_emit_op_at_chuck( emit, lhs, rhs );
+            
+            emit->ast_depth--;
+            return ret;
         }
     }
 
@@ -2551,6 +2686,9 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_op_unchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "op_unchuck, line " << lhs->linepos << ", depth " << emit->ast_depth;
+    
     // any implicit cast happens before this
     Chuck_Type * left = lhs->cast_to ? lhs->cast_to : lhs->type;
     Chuck_Type * right = rhs->cast_to ? rhs->cast_to : rhs->type;
@@ -2569,6 +2707,8 @@ t_CKBOOL emit_engine_emit_op_unchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs
         return FALSE;
     }
     
+    emit->ast_depth--;
+    
     return TRUE;
 }
 
@@ -2581,6 +2721,9 @@ t_CKBOOL emit_engine_emit_op_unchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_op_upchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "op_upchuck, line " << lhs->linepos << ", depth " << emit->ast_depth;
+    
     // any implicit cast happens before this
     Chuck_Type * left = lhs->cast_to ? lhs->cast_to : lhs->type;
     Chuck_Type * right = rhs->cast_to ? rhs->cast_to : rhs->type;
@@ -2600,6 +2743,8 @@ t_CKBOOL emit_engine_emit_op_upchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs
             left->c_name(), right->c_name() );
         return FALSE;
     }
+    
+    emit->ast_depth--;
 
     return TRUE;
 }
@@ -2613,6 +2758,9 @@ t_CKBOOL emit_engine_emit_op_upchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "op_at_chuck, line " << lhs->linepos << ", depth " << emit->ast_depth;
+    
     // any implicit cast happens before this
     Chuck_Type * left = lhs->cast_to ? lhs->cast_to : lhs->type;
     Chuck_Type * right = rhs->cast_to ? rhs->cast_to : rhs->type;
@@ -2668,13 +2816,15 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
                 }
             }
 
+            emit->ast_depth--;
             return TRUE;
         }
         else // objects
         {
             // assign object
             emit->append( new Chuck_Instr_Assign_Object );
-
+            
+            emit->ast_depth--;
             return TRUE;
         }
     }
@@ -2699,6 +2849,9 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "exp_unary, line " << unary->linepos << ", depth " << emit->ast_depth << ", op " << op2str( unary->op );
+    
     if( unary->op != ae_op_spork && !emit_engine_emit_exp( emit, unary->exp ) )
         return FALSE;
 
@@ -2831,6 +2984,8 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
         return FALSE;
     }
     
+    emit->ast_depth--;
+    
     return TRUE;
 }
 
@@ -2843,6 +2998,9 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "exp_primary, line " << exp->linepos << ", depth " << emit->ast_depth << ", type " << exp_type2str( exp->s_type );
+    
     t_CKUINT temp;
     t_CKDUR dur;
     Chuck_String * str = NULL;
@@ -2917,8 +3075,10 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         else
         {
             // emit the symbol
-            return emit_engine_emit_symbol( 
+            t_CKBOOL ret = emit_engine_emit_symbol(
                 emit, exp->var, exp->value, exp->self->emit_var, exp->linepos );
+            emit->ast_depth--;
+            return ret;
         }
         break;
     
@@ -3004,6 +3164,8 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         break;
     }
     
+    emit->ast_depth--;
+    
     return TRUE;
 }
 
@@ -3016,6 +3178,9 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_array_lit( Chuck_Emitter * emit, a_Array_Sub array )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "array_lit, line " << array->linepos << ", depth " << emit->ast_depth;
+    
     // go through and emit the expressions
     if( !emit_engine_emit_exp( emit, array->exp_list ) )
         return FALSE;
@@ -3035,6 +3200,8 @@ t_CKBOOL emit_engine_emit_array_lit( Chuck_Emitter * emit, a_Array_Sub array )
     emit->append( instr = new Chuck_Instr_Array_Init( type, count ) );
     instr->set_linepos( array->linepos );
 
+    emit->ast_depth--;
+
     return TRUE;
 }
 
@@ -3047,6 +3214,10 @@ t_CKBOOL emit_engine_emit_array_lit( Chuck_Emitter * emit, a_Array_Sub array )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_complex_lit( Chuck_Emitter * emit, a_Complex val )
 {
+    
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "complex_lit, line " << val->linepos << ", depth " << emit->ast_depth;
+    
     // go through and emit the real and imaginary
     if( !emit_engine_emit_exp( emit, val->re ) )
         return FALSE;
@@ -3055,6 +3226,8 @@ t_CKBOOL emit_engine_emit_complex_lit( Chuck_Emitter * emit, a_Complex val )
     // if( !emit_engine_emit_exp( emit, val->im ) )
     //     return FALSE;
 
+    emit->ast_depth--;
+    
     return TRUE;
 }
 
@@ -3067,6 +3240,9 @@ t_CKBOOL emit_engine_emit_complex_lit( Chuck_Emitter * emit, a_Complex val )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_polar_lit( Chuck_Emitter * emit, a_Polar val )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "polar_lit, line " << val->linepos << ", depth " << emit->ast_depth;
+    
     // go through and emit the mod and phase
     if( !emit_engine_emit_exp( emit, val->mod ) )
         return FALSE;
@@ -3074,6 +3250,8 @@ t_CKBOOL emit_engine_emit_polar_lit( Chuck_Emitter * emit, a_Polar val )
     // phase (not needed since linked after mod)
     // if( !emit_engine_emit_exp( emit, val->phase ) )
     //     return FALSE;
+
+    emit->ast_depth--;
 
     return TRUE;
 }
@@ -3087,6 +3265,9 @@ t_CKBOOL emit_engine_emit_polar_lit( Chuck_Emitter * emit, a_Polar val )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_vec_lit( Chuck_Emitter * emit, a_Vec val )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "vec_lit, line " << val->linepos << ", depth " << emit->ast_depth;
+    
     // go through and emit the mod and phase
     if( !emit_engine_emit_exp( emit, val->args ) )
         return FALSE;
@@ -3102,6 +3283,8 @@ t_CKBOOL emit_engine_emit_vec_lit( Chuck_Emitter * emit, a_Vec val )
         n--;
     }
     
+    emit->ast_depth--;
+    
     return TRUE;
 }
 
@@ -3114,6 +3297,9 @@ t_CKBOOL emit_engine_emit_vec_lit( Chuck_Emitter * emit, a_Vec val )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_cast( Chuck_Emitter * emit, a_Exp_Cast cast )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "exp_cast, line " << cast->linepos << ", depth " << emit->ast_depth << ", cast_to " << S_name( cast->type->xid->xid );
+    
     Chuck_Type * to = cast->self->type;
     Chuck_Type * from = cast->exp->type;
 
@@ -3122,7 +3308,10 @@ t_CKBOOL emit_engine_emit_exp_cast( Chuck_Emitter * emit, a_Exp_Cast cast )
         return FALSE;
 
     // the actual work to be done
-    return emit_engine_emit_cast( emit, to, from );
+    t_CKBOOL ret = emit_engine_emit_cast( emit, to, from );
+    
+    emit->ast_depth--;
+    return ret;
 }
 
 
@@ -3135,9 +3324,16 @@ t_CKBOOL emit_engine_emit_exp_cast( Chuck_Emitter * emit, a_Exp_Cast cast )
 t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit, 
                                 Chuck_Type * to, Chuck_Type * from )
 {
+    emit->ast_depth++;
+    // line number unknown here but can be obtained from above exp_cast log
+    if( emit->ast_should_log ) LOG(plog::info) << "cast, line UNKNOWN, depth " << emit->ast_depth << ", from " << from->name << ", to " << to->name;
+    
     // if type is already the same
     if( equals( to, from ) )
+    {
+        emit->ast_depth--;
         return TRUE;
+    }
 
     // int to float
     if( equals( to, &t_int ) && equals( from, &t_float ) )
@@ -3171,6 +3367,8 @@ t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit,
         return FALSE;
     }
 
+    emit->ast_depth--;
+
     return TRUE;
 }
 
@@ -3183,6 +3381,9 @@ t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit,
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postfix )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "exp_postfix, line " << postfix->linepos << ", depth " << emit->ast_depth << ", op " << op2str( postfix->op );
+    
     // emit the exp
     if( !emit_engine_emit_exp( emit, postfix->exp ) )
         return FALSE;
@@ -3219,8 +3420,10 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
             "(emit): internal error: unhandled postfix operator '%s'",
             op2str( postfix->op ) );
         return FALSE;
-    }        
-     
+    }
+    
+    emit->ast_depth--;
+    
     return TRUE;
 }
 
@@ -3233,6 +3436,9 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_dur( Chuck_Emitter * emit, a_Exp_Dur dur )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "exp_dur, line " << dur->linepos << ", depth " << emit->ast_depth;
+    
     // emit base
     if( !emit_engine_emit_exp( emit, dur->base ) )
         return FALSE;
@@ -3247,7 +3453,9 @@ t_CKBOOL emit_engine_emit_exp_dur( Chuck_Emitter * emit, a_Exp_Dur dur )
         
     // multiply
     emit->append( new Chuck_Instr_Times_double );
-        
+    
+    emit->ast_depth--;
+    
     return TRUE;
 }
 
@@ -3260,6 +3468,9 @@ t_CKBOOL emit_engine_emit_exp_dur( Chuck_Emitter * emit, a_Exp_Dur dur )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "exp_array, line " << array->linepos << ", depth " << emit->ast_depth;
+    
     Chuck_Type * type = NULL, * base_type = NULL;
     t_CKUINT depth = 0;
     a_Array_Sub sub = NULL;
@@ -3353,6 +3564,8 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
 
     // TODO: variable?
 
+    emit->ast_depth--;
+
     return TRUE;
 }
 
@@ -3369,6 +3582,9 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
                                          int linepos,
                                          t_CKBOOL spork )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "exp_func_call_b, line " << linepos << ", depth " << emit->ast_depth << ", name " << func->name << ", ret_type " << type->name;
+    
     // is a member?
     t_CKBOOL is_member = func->is_member;
 
@@ -3418,6 +3634,8 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     }
     instr->set_linepos(linepos);
 
+    emit->ast_depth--;
+
     return TRUE;
 }
 
@@ -3431,6 +3649,9 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
 t_CKBOOL emit_engine_emit_func_args( Chuck_Emitter * emit,
                                      a_Exp_Func_Call func_call )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "func_args, line " << func_call->linepos << ", depth " << emit->ast_depth;
+    
     // emit the args (TRUE for doAddRef added 1.3.0.0)
     if( !emit_engine_emit_exp( emit, func_call->args, TRUE ) )
     {
@@ -3438,6 +3659,8 @@ t_CKBOOL emit_engine_emit_func_args( Chuck_Emitter * emit,
                    "(emit): internal error in emitting function call arguments..." );
         return FALSE;
     }
+    
+    emit->ast_depth--;
 
     return TRUE;
 }
@@ -3453,6 +3676,9 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
                                          a_Exp_Func_Call func_call,
                                          t_CKBOOL spork )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "exp_func_call_a, line " << func_call->linepos << ", depth " << emit->ast_depth << ", name " << func_call->ck_func->name << ", ret_type " << func_call->ret_type->name;
+    
     // note: spork situations are now taken care in exp_spork...
     // please look at that one before modifying this one!
 
@@ -3472,8 +3698,10 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     }
     
     // the rest
-    return emit_engine_emit_exp_func_call( emit, func_call->ck_func, func_call->ret_type,
-                                           func_call->linepos, spork );
+    t_CKBOOL ret = emit_engine_emit_exp_func_call( emit, func_call->ck_func, func_call->ret_type,
+                                                   func_call->linepos, spork );
+    emit->ast_depth--;
+    return ret;
 }
 
 
@@ -3486,6 +3714,10 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
 t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
                                                   a_Exp_Dot_Member member )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "dot_member_special, line " << member->linepos << ", depth " << emit->ast_depth << ", name " << S_name( member->xid ) << ", type " << member->t_base->name;
+    
+    
     // whether to emit addr or value
     t_CKBOOL emit_addr = member->self->emit_var;
     
@@ -3516,6 +3748,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
             goto check_func;
         
         // done
+        emit->ast_depth--;
         return TRUE;
     }
     else if( member->t_base->xid == te_polar )
@@ -3544,6 +3777,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
             goto check_func;
         
         // done
+        emit->ast_depth--;
         return TRUE;
     }
     else if( member->t_base->xid == te_vec3 || member->t_base->xid == te_vec4 )
@@ -3577,6 +3811,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
             goto check_func;
     
         // done
+        emit->ast_depth--;
         return TRUE;
     }
 
@@ -3646,6 +3881,8 @@ check_func:
     // emit the function
     emit->append( new Chuck_Instr_Dot_Primitive_Func( (t_CKUINT)func ) );
     
+    emit->ast_depth--;
+    
     return TRUE;
 }
 
@@ -3659,6 +3896,10 @@ check_func:
 t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
                                           a_Exp_Dot_Member member )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "exp_dot_member, line " << member->linepos << ", depth " << emit->ast_depth << ", name " << S_name( member->xid ) << ", type " << member->t_base->name;
+    
+    
     // the type of the base
     Chuck_Type * t_base = NULL;
     // whether to emit addr or value
@@ -3685,7 +3926,9 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
         case te_vec3:
         case te_vec4:
             // emit special
-            return emit_engine_emit_exp_dot_member_special( emit, member );
+            t_CKBOOL ret = emit_engine_emit_exp_dot_member_special( emit, member );
+            emit->ast_depth--;
+            return ret;
             // done
             break;
     }
@@ -3817,6 +4060,8 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
         }
     }
     
+    emit->ast_depth--;
+    
     return TRUE;
 }
 
@@ -3829,6 +4074,9 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_if( Chuck_Emitter * emit, a_Exp_If exp_if )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "exp_if, line " << exp_if->linepos << ", depth " << emit->ast_depth;
+    
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL, * op2 = NULL;
 
@@ -3890,6 +4138,8 @@ t_CKBOOL emit_engine_emit_exp_if( Chuck_Emitter * emit, a_Exp_If exp_if )
     // set the op2's target
     op2->set( emit->next_index() );
 
+    emit->ast_depth--;
+
     return ret;
 }
 
@@ -3902,6 +4152,10 @@ t_CKBOOL emit_engine_emit_exp_if( Chuck_Emitter * emit, a_Exp_If exp_if )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type )
 {
+    emit->ast_depth++;
+    // don't log pre constructor for now
+    // if( emit->ast_should_log ) LOG(plog::info) << "pre_constructor, line UNKNOWN, depth " << emit->ast_depth << ", type " << type->name;
+    
     // parent first pre constructor
     if( type->parent != NULL )
         emit_engine_pre_constructor( emit, type->parent );
@@ -3915,6 +4169,8 @@ t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type )
         emit->append( new Chuck_Instr_Pre_Constructor( type->info->pre_ctor,
             emit->code->frame->curr_offset ) );
     }
+    
+    emit->ast_depth--;
 
     return TRUE;
 }
@@ -3928,6 +4184,10 @@ t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_pre_constructor_array( Chuck_Emitter * emit, Chuck_Type * type )
 {
+    emit->ast_depth++;
+    // don't log pre constructor for now
+    //if( emit->ast_should_log ) LOG(plog::info) << "pre_constructor_array, line UNKNOWN, depth " << emit->ast_depth << ", type " << type->name;
+    
     // alloc should have put all objects to made in linear list, on stack
     Chuck_Instr_Pre_Ctor_Array_Top * top = NULL;
     Chuck_Instr_Pre_Ctor_Array_Bottom * bottom = NULL;
@@ -3946,6 +4206,8 @@ t_CKBOOL emit_engine_pre_constructor_array( Chuck_Emitter * emit, Chuck_Type * t
     // clean up code
     emit->append( new Chuck_Instr_Pre_Ctor_Array_Post );
 
+    emit->ast_depth--;
+
     return TRUE;
 }
 
@@ -3958,6 +4220,10 @@ t_CKBOOL emit_engine_pre_constructor_array( Chuck_Emitter * emit, Chuck_Type * t
 t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type,
                                          a_Array_Sub array, t_CKBOOL is_ref )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "instantiate_object, line UNKNOWN, depth " << emit->ast_depth << ", type " << type->name;
+    
+    
     // if array
     if( type->array_depth )
     {
@@ -3985,6 +4251,8 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
         // call pre constructor
         emit_engine_pre_constructor( emit, type );
     }
+    
+    emit->ast_depth--;
 
     return TRUE;
 }
@@ -3999,6 +4267,9 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
 t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                                     t_CKBOOL first_exp )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "exp_decl, line " << decl->linepos << ", depth " << emit->ast_depth << ", type " << S_name( decl->type->xid->xid );
+    
     a_Var_Decl_List list = decl->var_decl_list;
     a_Var_Decl var_decl = NULL;
     Chuck_Value * value = NULL;
@@ -4206,6 +4477,8 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         list = list->next;
     }
 
+    emit->ast_depth--;
+
     return TRUE;
 }
 
@@ -4219,6 +4492,9 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
 t_CKBOOL emit_engine_emit_code_segment( Chuck_Emitter * emit, 
                                         a_Stmt_Code stmt, t_CKBOOL push )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "code_segment, line " << stmt->linepos << ", depth " << emit->ast_depth;
+    
     a_Stmt_List list = stmt->stmt_list;
 
     // loop through
@@ -4231,6 +4507,8 @@ t_CKBOOL emit_engine_emit_code_segment( Chuck_Emitter * emit,
         // next
         list = list->next;
     }
+
+    emit->ast_depth--;
 
     // TODO: push
     
@@ -4246,6 +4524,9 @@ t_CKBOOL emit_engine_emit_code_segment( Chuck_Emitter * emit,
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "func_def, line " << func_def->linepos << ", depth " << emit->ast_depth << ", name " << S_name( func_def->name ) << ", ret_type " << func_def->ret_type->name;
+    
     // get the func
     Chuck_Func * func = func_def->ck_func;
     // get the value
@@ -4411,6 +4692,8 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     emit->code = emit->stack.back();
     emit->stack.pop_back();
 
+    emit->ast_depth--;
+
     return TRUE;
 }
 
@@ -4423,6 +4706,9 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "class_def, line " << class_def->linepos << ", depth " << emit->ast_depth;
+    
     // get the type
     Chuck_Type * type = class_def->type;
     // the return type
@@ -4545,6 +4831,8 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     emit->code = emit->stack.back();
     emit->stack.pop_back();
 
+    emit->ast_depth--;
+
     return ret;
 }
 
@@ -4557,6 +4845,9 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "spork, line " << exp->linepos << ", depth " << emit->ast_depth; //<< ", name " << exp->func->?? << ", ret_type " << ??->ret_type->name;
+    
     // spork
     Chuck_Instr_Mem_Push_Imm * op = NULL;
     
@@ -4642,6 +4933,8 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     // emit spork instruction - this will copy, func, args, this
     emit->append( new Chuck_Instr_Spork( size ) );
     
+    emit->ast_depth--;
+    
     return TRUE;
 }
 
@@ -4705,6 +4998,9 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
                                   Chuck_Value * v, t_CKBOOL emit_var,
                                   int linepos )
 {
+    emit->ast_depth++;
+    if( emit->ast_should_log ) LOG(plog::info) << "symbol, line " << linepos << ", depth " << emit->ast_depth << ", name " << S_name( symbol );
+    
     // look up the value
     // Chuck_Value * v = emit->env->curr->lookup_value( symbol, TRUE );
     // it should be there
@@ -4743,6 +5039,8 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
                 "(emit): internal error: symbol transformation failed..." );
             return FALSE;
         }
+        
+        emit->ast_depth--;
 
         return TRUE;
     }
@@ -4779,6 +5077,8 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
             return FALSE;
         }
     }
+
+    emit->ast_depth--;
 
     return TRUE;
 }

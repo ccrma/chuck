@@ -242,6 +242,8 @@ typedef enum { ae_primary_var, ae_primary_num, ae_primary_float,
                ae_primary_vec, ae_primary_char, ae_primary_nil
              } ae_Exp_Primary_Type;
 
+const char * exp_type2str( ae_Exp_Primary_Type type );
+
 struct a_Exp_Primary_
 {
     ae_Exp_Primary_Type s_type;

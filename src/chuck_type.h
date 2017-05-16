@@ -433,10 +433,6 @@ public:
     Chuck_Func * func;
     // how far nested in a class definition
     t_CKUINT class_scope;
-    // how far nested in an AST
-    t_CKUINT ast_depth;
-    // whether to log AIDE logs
-    t_CKBOOL ast_should_log;
 
     // current contexts in memory
     std::vector<Chuck_Context *> contexts;
@@ -480,8 +476,6 @@ public:
         class_def = NULL; func = NULL;
         // make sure this is 0
         class_scope = 0;
-        ast_depth = 0;
-        ast_should_log = TRUE;
     }
     
     void load_user_namespace()

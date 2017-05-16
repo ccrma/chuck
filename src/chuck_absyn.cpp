@@ -962,3 +962,30 @@ const char * op2str( ae_Operator op )
 
     return op_str[index];
 }
+
+
+static const char * exp_type_str[] = {
+  "var",
+  "num",
+  "float",
+  "str",
+  "array",
+  "hack",
+  "complex",
+  "polar",
+  "vec",
+  "char",
+  "nil"
+};
+
+
+const char * exp_type2str( ae_Exp_Primary_Type type )
+{
+    t_CKINT index = (t_CKINT) type;
+    if( index < 0 || index >= (t_CKINT)(sizeof(exp_type_str)/sizeof(char *)) )
+    {
+        return "[non-existent type]";
+    }
+    return exp_type_str[index];
+}
+
