@@ -156,8 +156,8 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
 {
     // set initial ast depth
     emit->ast_depth = 0;
-    // yes log
-    emit->ast_should_log = TRUE;
+    // don't log programs, for now
+    emit->ast_should_log = FALSE;
     if( emit->ast_should_log ) LOG(plog::info) << "prog, line " << prog->linepos << ", depth " << emit->ast_depth;
     // make sure the code is NULL
     assert( emit->code == NULL );
