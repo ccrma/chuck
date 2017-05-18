@@ -35,6 +35,7 @@
 #include "chuck_errmsg.h"
 #include "chuck_instr.h"
 #include <sstream>
+#include <iostream>
 
 using namespace std;
 
@@ -4120,7 +4121,13 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 if( type->size == sz_INT && iskindofint(type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 {
                     // (added 1.3.0.0 -- is_obj)
-                    emit->append( new Chuck_Instr_Alloc_Word( local->offset, is_obj ) );
+                    Chuck_Instr_Alloc_Word * instr = new Chuck_Instr_Alloc_Word( local->offset, is_obj );
+                    if( decl->is_external )
+                    {
+                        instr->m_is_external = TRUE;
+                        instr->m_name = value->name;
+                    }
+                    emit->append( instr );
                 }
                 else if( type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 {

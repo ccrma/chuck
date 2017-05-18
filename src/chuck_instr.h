@@ -2465,6 +2465,10 @@ public:
     // was this object reference? (added 1.3.0.0)
     t_CKBOOL m_is_object;
     
+    // was this external variable? and what was its name? (added chunity/external keyword)
+    t_CKBOOL m_is_external;
+    std::string m_name;
+    
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };
 

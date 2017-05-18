@@ -145,6 +145,8 @@ Chuck_VM::Chuck_VM()
     m_init = FALSE;
     m_input_ref = NULL;
     m_output_ref = NULL;
+    
+    m_set_external_int_queue.init( 200 );
 }
 
 
@@ -583,6 +585,11 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
     m_input_ref = input; m_output_ref = output;
     // frame count
     t_CKINT frame = 0;
+
+    // for now, check for external variables once per buffer
+    // TODO: once per sample instead?
+    // TODO: handle_external_get_messages() ... etc
+    handle_external_set_messages();
 
     // loop it
     while( N )
@@ -1103,6 +1110,24 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
     // track remove shred
     CK_TRACK( Chuck_Stats::instance()->remove_shred( shred ) );
 
+    // un-track any external variables owned by this shred
+    if( m_external_int_pointers.size() > 0 )
+    {
+        std::map< std::string, Chuck_VM_External_Int >::iterator iter;
+        for( iter = m_external_int_pointers.begin(); iter != m_external_int_pointers.end(); )
+        {
+            // check all items to see if their shred matches the shred we are freeing
+            if( iter->second.m_shred == shred )
+            {
+                m_external_int_pointers.erase( iter++ );
+            }
+            else
+            {
+                iter++;
+            }
+        }
+    }
+
     // free!
     m_shreduler->remove( shred );
     // TODO: remove shred from event, with synchronization (still necessary with dump?)
@@ -1189,6 +1214,91 @@ void Chuck_VM::release_dump( )
     m_shred_dump.clear();
     // reset
     m_num_dumped_shreds = 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_int()
+// desc: get an external int by name
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_VM::get_external_int( std::string name ) {
+    // TODO: how to implement? maybe some callback?
+    return 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_int()
+// desc: set an external int by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_external_int( std::string name, t_CKINT val ) {
+    Chuck_External_Int set_int_message;
+    set_int_message.name = name;
+    set_int_message.val = val;
+    
+    m_set_external_int_queue.put( set_int_message );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_external_int()
+// desc: tell the vm that an external int is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::init_external_int( std::string name, Chuck_VM_Shred * shred, t_CKUINT offset ) {
+    // TODO: maybe do the main bookkeeping BEFORE shred starts executing....
+    Chuck_VM_External_Int new_entry;
+    new_entry.m_shred = shred;
+    new_entry.offset = offset;
+    
+    this->m_external_int_pointers[name] = new_entry;
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: handle_external_set_messages()
+// desc: update values with external set messages
+//-----------------------------------------------------------------------------
+void Chuck_VM::handle_external_set_messages() {
+    // TODO: only do one per call, to avoid taking up too much time?
+    //       if so then "if" not "while"
+    while( m_set_external_int_queue.more() ) {
+        Chuck_External_Int set_int_message;
+        if( m_set_external_int_queue.get( & set_int_message ) )
+        {
+            // TODO: I am using a LOT of object copying because I didn't feel like dealing with pointers.
+            //       Bad idea?
+            if( m_external_int_pointers.count( set_int_message.name ) > 0 ) {
+                Chuck_VM_External_Int * entry = & m_external_int_pointers[set_int_message.name];
+                
+                // TODO: what to do when shred is no longer active? need to invalidate entries
+                //       maybe in "free" function
+                Chuck_VM_Shred * shred = entry->m_shred;
+                // TODO: copy value into shred's base mem at
+                *(shred->base_ref->sp + entry->offset) = set_int_message.val;
+            }
+        }
+        else
+        {
+            // get failed
+            break;
+        }
+        
+    }
+    
+    // ... while( float queue.more() ) {} ...
+    // ... while( event queue.more() ) {} ...
 }
 
 

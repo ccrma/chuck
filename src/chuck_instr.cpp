@@ -3277,6 +3277,11 @@ void Chuck_Instr_Alloc_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     *( (t_CKUINT *)(mem_sp + m_val) ) = 0;
     // push addr onto operand stack
     push_( reg_sp, (t_CKUINT)(mem_sp + m_val) );
+    
+    if( m_is_external )
+    {
+        vm->init_external_int( m_name, shred, m_val );
+    }
 }
 
 
