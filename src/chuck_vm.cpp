@@ -147,6 +147,7 @@ Chuck_VM::Chuck_VM()
     m_output_ref = NULL;
     
     m_set_external_int_queue.init( 200 );
+    m_get_external_int_queue.init( 200 );
 }
 
 
@@ -586,14 +587,16 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
     // frame count
     t_CKINT frame = 0;
 
-    // for now, check for external variables once per buffer
-    // TODO: once per sample instead?
-    // TODO: handle_external_get_messages() ... etc
-    handle_external_set_messages();
+    // for now, check for external variables once per sample (below)
+    // TODO: once per buffer instead? (place here then)
+    
 
     // loop it
     while( N )
     {
+        // set externals before chuck code runs
+        handle_external_set_messages();
+        
         // compute shreds
         if( !compute() ) goto vm_stop;
 
@@ -604,6 +607,9 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
             if( N > 0 ) N--;
         }
         else m_shreduler->advance_v( N, frame );
+        
+        // get externals after chuck code runs
+        handle_external_get_messages();
     }
     
     // clear
@@ -1223,9 +1229,14 @@ void Chuck_VM::release_dump( )
 // name: get_external_int()
 // desc: get an external int by name
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_VM::get_external_int( std::string name ) {
-    // TODO: how to implement? maybe some callback?
-    return 0;
+t_CKBOOL Chuck_VM::get_external_int( std::string name, void (* fp)(int) ) {
+    Chuck_Get_External_Int get_int_message;
+    get_int_message.name = name;
+    get_int_message.fp = fp;
+    
+    m_get_external_int_queue.put( get_int_message );
+    
+    return TRUE;
 }
 
 
@@ -1236,7 +1247,7 @@ t_CKINT Chuck_VM::get_external_int( std::string name ) {
 // desc: set an external int by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::set_external_int( std::string name, t_CKINT val ) {
-    Chuck_External_Int set_int_message;
+    Chuck_Set_External_Int set_int_message;
     set_int_message.name = name;
     set_int_message.val = val;
     
@@ -1274,7 +1285,7 @@ void Chuck_VM::handle_external_set_messages() {
     // TODO: only do one per call, to avoid taking up too much time?
     //       if so then "if" not "while"
     while( m_set_external_int_queue.more() ) {
-        Chuck_External_Int set_int_message;
+        Chuck_Set_External_Int set_int_message;
         if( m_set_external_int_queue.get( & set_int_message ) )
         {
             // TODO: I am using a LOT of object copying because I didn't feel like dealing with pointers.
@@ -1292,6 +1303,43 @@ void Chuck_VM::handle_external_set_messages() {
         else
         {
             // get failed
+            break;
+        }
+        
+    }
+    
+    // ... while( float queue.more() ) {} ...
+    // ... while( event queue.more() ) {} ...
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: handle_external_set_messages()
+// desc: update values with external set messages
+//-----------------------------------------------------------------------------
+void Chuck_VM::handle_external_get_messages() {
+    // TODO: only do one per call, to avoid taking up too much time?
+    //       if so then "if" not "while"
+    while( m_get_external_int_queue.more() ) {
+        Chuck_Get_External_Int get_int_message;
+        if( m_get_external_int_queue.get( & get_int_message ) )
+        {
+            if( m_external_int_pointers.count( get_int_message.name ) > 0 ) {
+                // get internal storage
+                Chuck_VM_External_Int * entry = & m_external_int_pointers[get_int_message.name];
+                Chuck_VM_Shred * shred = entry->m_shred;
+
+                // fetch val
+                t_CKINT val = *(shred->base_ref->sp + entry->offset);
+                // call callback
+                get_int_message.fp( val );
+            }
+        }
+        else
+        {
+            // get failed.... sadness.... this might be bad
             break;
         }
         

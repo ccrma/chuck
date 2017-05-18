@@ -383,9 +383,21 @@ public:
 // name: struct Chuck_External_Int
 // desc: container for setting external ints
 //-----------------------------------------------------------------------------
-struct Chuck_External_Int {
+struct Chuck_Set_External_Int {
     std::string name;
     t_CKINT val;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_External_Int
+// desc: container for setting external ints
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_Int {
+    std::string name;
+    void (* fp)(int);
 };
 
 
@@ -473,13 +485,13 @@ public: // get error
     { return m_last_error.c_str(); }
 
 public:
-    // TODO: this one will need to be async, maybe take a callback
-    t_CKINT get_external_int( std::string name );
+    t_CKBOOL get_external_int( std::string name, void (* fp)(int) );
     t_CKBOOL set_external_int( std::string name, t_CKINT val );
     t_CKBOOL init_external_int( std::string name, Chuck_VM_Shred * shred, t_CKUINT offset );
 
 private:
     void handle_external_set_messages();
+    void handle_external_get_messages();
 
 
 //-----------------------------------------------------------------------------
@@ -539,8 +551,11 @@ public:
     static t_CKINT our_priority;
 
 private:
-    XCircleBuffer< Chuck_External_Int > m_set_external_int_queue;
+    // external variables
+    XCircleBuffer< Chuck_Set_External_Int > m_set_external_int_queue;
+    XCircleBuffer< Chuck_Get_External_Int > m_get_external_int_queue;
     std::map< std::string, Chuck_VM_External_Int > m_external_int_pointers;
+    
 };
 
 
