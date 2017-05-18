@@ -380,8 +380,8 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_External_Int
-// desc: container for setting external ints
+// name: struct Chuck_Set_External_Int
+// desc: container for messages to set external ints
 //-----------------------------------------------------------------------------
 struct Chuck_Set_External_Int {
     std::string name;
@@ -392,12 +392,12 @@ struct Chuck_Set_External_Int {
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_External_Int
-// desc: container for setting external ints
+// name: struct Chuck_Get_External_Int
+// desc: container for messages to get external ints
 //-----------------------------------------------------------------------------
 struct Chuck_Get_External_Int {
     std::string name;
-    void (* fp)(int);
+    void (* fp)(t_CKINT);
 };
 
 
@@ -408,6 +408,42 @@ struct Chuck_Get_External_Int {
 // desc: container for storing location of external int
 //-----------------------------------------------------------------------------
 struct Chuck_VM_External_Int {
+    Chuck_VM_Shred * m_shred;
+    t_CKUINT offset;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_Float
+// desc: container for messages to set external floats
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_Float {
+    std::string name;
+    t_CKFLOAT val;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_Float
+// desc: container for messages to get external floats
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_Float {
+    std::string name;
+    void (* fp)(t_CKFLOAT);
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_VM_External_Float
+// desc: container for storing location of external float
+//-----------------------------------------------------------------------------
+struct Chuck_VM_External_Float {
     Chuck_VM_Shred * m_shred;
     t_CKUINT offset;
 };
@@ -485,9 +521,13 @@ public: // get error
     { return m_last_error.c_str(); }
 
 public:
-    t_CKBOOL get_external_int( std::string name, void (* fp)(int) );
+    t_CKBOOL get_external_int( std::string name, void (* fp)(t_CKINT) );
     t_CKBOOL set_external_int( std::string name, t_CKINT val );
     t_CKBOOL init_external_int( std::string name, Chuck_VM_Shred * shred, t_CKUINT offset );
+
+    t_CKBOOL get_external_float( std::string name, void (* fp)(t_CKFLOAT) );
+    t_CKBOOL set_external_float( std::string name, t_CKFLOAT val );
+    t_CKBOOL init_external_float( std::string name, Chuck_VM_Shred * shred, t_CKUINT offset );
 
 private:
     void handle_external_set_messages();
@@ -555,6 +595,10 @@ private:
     XCircleBuffer< Chuck_Set_External_Int > m_set_external_int_queue;
     XCircleBuffer< Chuck_Get_External_Int > m_get_external_int_queue;
     std::map< std::string, Chuck_VM_External_Int > m_external_int_pointers;
+    
+    XCircleBuffer< Chuck_Set_External_Float > m_set_external_float_queue;
+    XCircleBuffer< Chuck_Get_External_Float > m_get_external_float_queue;
+    std::map< std::string, Chuck_VM_External_Float > m_external_float_pointers;
     
 };
 

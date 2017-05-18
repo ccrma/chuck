@@ -34,6 +34,7 @@
 
 #include <stdio.h>
 #include "chuck_def.h"
+#include "chuck_type.h"
 #include <vector>
 
 
@@ -2460,7 +2461,7 @@ struct Chuck_Instr_Alloc_Word : public Chuck_Instr_Unary_Op
 public:
     // (added 1.3.0.0 -- is_object)
     Chuck_Instr_Alloc_Word( t_CKUINT offset, t_CKBOOL is_object )
-    { this->set( offset ); m_is_object = is_object; }
+    { this->set( offset ); m_is_object = is_object; m_is_external = FALSE; }
     
     // was this object reference? (added 1.3.0.0)
     t_CKBOOL m_is_object;
@@ -2468,6 +2469,7 @@ public:
     // was this external variable? and what was its name? (added chunity/external keyword)
     t_CKBOOL m_is_external;
     std::string m_name;
+    te_Type m_type;
     
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };
@@ -2483,7 +2485,12 @@ struct Chuck_Instr_Alloc_Word2 : public Chuck_Instr_Unary_Op
 {
 public:
     Chuck_Instr_Alloc_Word2( t_CKUINT offset )
-    { this->set( offset ); }
+    { this->set( offset ); m_is_external = FALSE; }
+    
+    // was this external variable? and what was its name? (added chunity/external keyword)
+    t_CKBOOL m_is_external;
+    std::string m_name;
+    te_Type m_type;
 
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };

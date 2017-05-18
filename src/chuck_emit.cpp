@@ -4126,12 +4126,20 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     {
                         instr->m_is_external = TRUE;
                         instr->m_name = value->name;
+                        instr->m_type = type->xid;
                     }
                     emit->append( instr );
                 }
                 else if( type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 {
-                    emit->append( new Chuck_Instr_Alloc_Word2( local->offset ) );
+                    Chuck_Instr_Alloc_Word2 * instr = new Chuck_Instr_Alloc_Word2( local->offset );
+                    if( decl->is_external )
+                    {
+                        instr->m_is_external = TRUE;
+                        instr->m_name = value->name;
+                        instr->m_type = type->xid;
+                    }
+                    emit->append( instr );
                 }
                 else if( type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 {

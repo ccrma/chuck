@@ -3280,7 +3280,14 @@ void Chuck_Instr_Alloc_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     
     if( m_is_external )
     {
-        vm->init_external_int( m_name, shred, m_val );
+        if( m_type == te_int )
+        {
+            vm->init_external_int( m_name, shred, m_val );
+        }
+        else if( m_type == te_float )
+        {
+            vm->init_external_float( m_name, shred, m_val );
+        }
     }
 }
 
@@ -3300,6 +3307,18 @@ void Chuck_Instr_Alloc_Word2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     *( (t_CKFLOAT *)(mem_sp + m_val) ) = 0.0;
     // push addr onto operand stack
     push_( reg_sp, (t_CKUINT)(mem_sp + m_val) );
+    
+    if( m_is_external )
+    {
+        if( m_type == te_int )
+        {
+            vm->init_external_int( m_name, shred, m_val );
+        }
+        else if( m_type == te_float )
+        {
+            vm->init_external_float( m_name, shred, m_val );
+        }
+    }
 }
 
 
