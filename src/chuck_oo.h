@@ -42,6 +42,10 @@
 #include <fstream>
 #include "util_thread.h" // added 1.3.0.0
 
+#ifdef EXTERNAL_DEBUG_CALLBACK
+#include <sstream>
+#endif
+
 
 #ifndef __PLATFORM_WIN32__
   #include <dirent.h>
@@ -630,6 +634,18 @@ public:
     virtual void write( t_CKINT val );
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
+
+#ifdef EXTERNAL_DEBUG_CALLBACK
+public:
+    // set callback
+    void set_output_callback( void (* fp)(const char *) );
+    
+private:
+    // callback
+    void (* m_callback)(const char *);
+    // intermediate line storage
+    std::stringstream m_buffer;
+#endif
 };
 
 
@@ -668,6 +684,18 @@ public:
     virtual void write( t_CKINT val );
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
+
+#ifdef EXTERNAL_DEBUG_CALLBACK
+public:
+    // set callback
+    void set_output_callback( void (* fp)(const char *) );
+    
+private:
+    // callback
+    void (* m_callback)(const char *);
+    // intermediate line storage
+    std::stringstream m_buffer;
+#endif
 };
 
 

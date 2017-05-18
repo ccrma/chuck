@@ -3060,7 +3060,11 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
     return (THREAD_RETURN)0;
 }
 
-Chuck_IO_Chout::Chuck_IO_Chout() { }
+Chuck_IO_Chout::Chuck_IO_Chout() {
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    m_callback = NULL;
+#endif
+}
 Chuck_IO_Chout::~Chuck_IO_Chout() { }
 Chuck_IO_Chout * Chuck_IO_Chout::getInstance()
 {
@@ -3080,14 +3084,38 @@ Chuck_IO_Chout * Chuck_IO_Chout::getInstance()
     return our_chout;
 }
 
+#ifdef EXTERNAL_DEBUG_CALLBACK
+void Chuck_IO_Chout::set_output_callback( void (*fp)(const char *) )
+{
+    m_callback = fp;
+}
+#endif
+
 t_CKBOOL Chuck_IO_Chout::good()
-{ return cout.good(); }
+{
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    return m_callback != NULL;
+#else
+    return cout.good();
+#endif
+}
 
 void Chuck_IO_Chout::close()
 { /* uh can't do it */ }
 
 void Chuck_IO_Chout::flush()
-{ cout.flush(); }
+{
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    if( m_callback )
+    {
+        m_callback( m_buffer.str().c_str() );
+        // clear buffer
+        m_buffer.str( std::string() );
+    }
+#else
+    cout.flush();
+#endif
+}
 
 t_CKINT Chuck_IO_Chout::mode()
 { return 0; }
@@ -3115,19 +3143,48 @@ t_CKBOOL Chuck_IO_Chout::eof()
 
 void Chuck_IO_Chout::write( const std::string & val )
 // added 1.3.0.0: the flush
-{ cout << val; if( val == "\n" ) cout.flush(); }
+{
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    m_buffer << val;
+#else
+    cout << val;
+#endif
+    if( val == "\n" ) flush();
+}
 
 void Chuck_IO_Chout::write( t_CKINT val )
-{ cout << val; }
+{
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    m_buffer << val;
+#else
+    cout << val;
+#endif
+}
 
 void Chuck_IO_Chout::write( t_CKINT val, t_CKINT flags )
-{ cout << val; }
+{
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    m_buffer << val;
+#else
+    cout << val;
+#endif
+}
 
 void Chuck_IO_Chout::write( t_CKFLOAT val )
-{ cout << val; }
+{
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    m_buffer << val;
+#else
+    cout << val;
+#endif
+}
 
 
-Chuck_IO_Cherr::Chuck_IO_Cherr() { }
+Chuck_IO_Cherr::Chuck_IO_Cherr() {
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    m_callback = NULL;
+#endif
+}
 Chuck_IO_Cherr::~Chuck_IO_Cherr() { }
 Chuck_IO_Cherr * Chuck_IO_Cherr::getInstance()
 {
@@ -3147,14 +3204,38 @@ Chuck_IO_Cherr * Chuck_IO_Cherr::getInstance()
     return our_cherr;
 }
 
+#ifdef EXTERNAL_DEBUG_CALLBACK
+void Chuck_IO_Cherr::set_output_callback( void (*fp)(const char *) )
+{
+    m_callback = fp;
+}
+#endif
+
 t_CKBOOL Chuck_IO_Cherr::good()
-{ return cerr.good(); }
+{
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    return m_callback != NULL;
+#else
+    return cerr.good();
+#endif
+}
 
 void Chuck_IO_Cherr::close()
 { /* uh can't do it */ }
 
 void Chuck_IO_Cherr::flush()
-{ cerr.flush(); }
+{
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    if( m_callback )
+    {
+        m_callback( m_buffer.str().c_str() );
+        // clear buffer
+        m_buffer.str( std::string() );
+    }
+#else
+    cerr.flush();
+#endif
+}
 
 t_CKINT Chuck_IO_Cherr::mode()
 { return 0; }
@@ -3181,14 +3262,39 @@ t_CKBOOL Chuck_IO_Cherr::eof()
 { return TRUE; }
 
 void Chuck_IO_Cherr::write( const std::string & val )
-{ cerr << val; }
+{
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    m_buffer << val;
+#else
+    cerr << val;
+#endif
+    if( val == "\n" ) flush();
+}
 
 void Chuck_IO_Cherr::write( t_CKINT val )
-{ cerr << val; }
+{
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    m_buffer << val;
+#else
+    cerr << val;
+#endif
+}
 
 void Chuck_IO_Cherr::write( t_CKINT val, t_CKINT flags )
-{ cout << val; }
+{
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    m_buffer << val;
+#else
+    cerr << val;
+#endif
+}
 
 void Chuck_IO_Cherr::write( t_CKFLOAT val )
-{ cerr << val; }
+{
+#ifdef EXTERNAL_DEBUG_CALLBACK
+    m_buffer << val;
+#else
+    cerr << val;
+#endif
+}
 
