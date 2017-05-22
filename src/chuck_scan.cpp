@@ -1114,10 +1114,11 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         // fail if type unsupported
         if( t->name != std::string("int")
             && t->name != std::string("float")
+            && t->name != std::string("Event")
         )
         {
             EM_error2( decl->linepos, (std::string("unsupported type for external keyword: ") + t->name).c_str() );
-            EM_error2( decl->linepos, "... (supported types: int, float)" );
+            EM_error2( decl->linepos, "... (supported types: int, float, Event)" );
             return FALSE;
         }
         

@@ -452,6 +452,30 @@ struct Chuck_VM_External_Float {
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Signal_External_Event
+// desc: container for messages to signal external events
+//-----------------------------------------------------------------------------
+struct Chuck_Signal_External_Event {
+    std::string name;
+    t_CKBOOL is_broadcast;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_VM_External_Event
+// desc: container for storing location of external event
+//-----------------------------------------------------------------------------
+struct Chuck_VM_External_Event {
+    Chuck_VM_Shred * m_shred;
+    t_CKUINT offset;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_VM
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -528,6 +552,10 @@ public:
     t_CKBOOL get_external_float( std::string name, void (* fp)(t_CKFLOAT) );
     t_CKBOOL set_external_float( std::string name, t_CKFLOAT val );
     t_CKBOOL init_external_float( std::string name, Chuck_VM_Shred * shred, t_CKUINT offset );
+    
+    t_CKBOOL signal_external_event( std::string name );
+    t_CKBOOL broadcast_external_event( std::string name );
+    t_CKBOOL init_external_event( std::string name, Chuck_VM_Shred * shred, t_CKUINT offset );
 
 private:
     void handle_external_set_messages();
@@ -599,6 +627,9 @@ private:
     XCircleBuffer< Chuck_Set_External_Float > m_set_external_float_queue;
     XCircleBuffer< Chuck_Get_External_Float > m_get_external_float_queue;
     std::map< std::string, Chuck_VM_External_Float > m_external_float_pointers;
+    
+    XCircleBuffer< Chuck_Signal_External_Event > m_signal_external_event_queue;
+    std::map< std::string, Chuck_VM_External_Event > m_external_event_pointers;
     
 };
 

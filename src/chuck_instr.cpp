@@ -3288,6 +3288,10 @@ void Chuck_Instr_Alloc_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         {
             vm->init_external_float( m_name, shred, m_val );
         }
+        else if( m_type == te_event )
+        {
+            vm->init_external_event( m_name, shred, m_val );
+        }
     }
 }
 
