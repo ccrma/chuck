@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <sstream>
 #include "chuck_utils.h"
 #include "chuck_errmsg.h"
 #include "util_thread.h"
@@ -56,6 +57,124 @@ static size_t g_lasterrorIndex = strlen(g_lasterror);
 int g_loglevel = CK_LOG_CORE;
 int g_logstack = 0;
 XMutex g_logmutex;
+
+#ifdef EXTERNAL_DEBUG_CALLBACK
+
+// more local globals
+static const size_t g_buffer2_size = 1024;
+static char g_buffer2[g_buffer2_size] = "";
+std::stringstream g_stdout_stream;
+std::stringstream g_stderr_stream;
+
+// local global callbacks
+void (*g_stdout_callback)(const char *) = NULL;
+void (*g_stderr_callback)(const char *) = NULL;
+
+void ck_fprintf_stdout( const char * format, ... )
+{
+    // evaluate the format string
+    va_list args;
+    va_start( args, format );
+    vsnprintf( g_buffer2, g_buffer2_size, format, args );
+    va_end( args );
+    
+    // send the formatted string to the buffer
+    g_stdout_stream << g_buffer2;
+    
+    // try flushing
+    ck_fflush_stdout();
+}
+
+
+void ck_fprintf_stderr( const char * format, ... )
+{
+    // evaluate the format string
+    va_list args;
+    va_start( args, format );
+    vsnprintf( g_buffer2, g_buffer2_size, format, args );
+    va_end( args );
+    
+    // send the formatted string to the buffer
+    g_stderr_stream << g_buffer2;
+    
+    // try flushing
+    ck_fflush_stderr();
+}
+
+
+void ck_fflush_stdout()
+{
+    if( g_stdout_callback == NULL ) { return; }
+
+    // check if stream contains a newline
+    if( g_stdout_stream.str().find( '\n' ) != std::string::npos )
+    {
+        // if so, emit to callback
+        g_stdout_callback( g_stdout_stream.str().c_str() );
+        // and clear buffer
+        g_stdout_stream.str( std::string() );
+    }
+}
+
+
+void ck_fflush_stderr()
+{
+    if( g_stderr_callback == NULL ) { return; }
+    
+    // check if stream contains a newline
+    if( g_stderr_stream.str().find( '\n' ) != std::string::npos )
+    {
+        // if so, emit to callback
+        g_stderr_callback( g_stderr_stream.str().c_str() );
+        // and clear buffer
+        g_stderr_stream.str( std::string() );
+    }
+}
+
+
+void ck_vfprintf_stdout( const char * format, va_list args )
+{
+    if( g_stdout_callback == NULL ) { return; }
+    
+    // evaluate the format string
+    vsnprintf( g_buffer2, g_buffer2_size, format, args );
+    
+    // send the formatted string to the buffer
+    g_stdout_stream << g_buffer2;
+    
+    // try flushing
+    ck_fflush_stdout();
+}
+
+
+void ck_vfprintf_stderr( const char * format, va_list args )
+{
+    if( g_stderr_callback == NULL ) { return; }
+    
+    // evaluate the format string
+    vsnprintf( g_buffer2, g_buffer2_size, format, args );
+    
+    // send the formatted string to the buffer
+    g_stderr_stream << g_buffer2;
+    
+    // try flushing
+    ck_fflush_stderr();
+}
+
+
+
+void ck_set_stdout_callback( void (*callback)(const char *) )
+{
+    g_stdout_callback = callback;
+}
+
+
+void ck_set_stderr_callback( void (*callback)(const char *) )
+{
+    g_stderr_callback = callback;
+}
+
+#endif
 
 // name
 static const char * g_str[] = {

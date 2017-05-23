@@ -67,6 +67,33 @@ void EM_newline( );
 #define CK_LOG_NONE             0  // set this to log nothing
 
 // printing
+#ifdef EXTERNAL_DEBUG_CALLBACK
+void ck_fprintf_stdout( const char * format, ... );
+void ck_fprintf_stderr( const char * format, ... );
+void ck_fflush_stdout();
+void ck_fflush_stderr();
+void ck_vfprintf_stdout( const char * format, va_list args );
+void ck_vfprintf_stderr( const char * format, va_list args );
+// TODO: how to do CK_STDCOUT and CK_STDCERR...
+// can redirect them to the global stream, I think... see the links...
+// but how to know when to flush it?
+
+// callbacks
+void ck_set_stdout_callback( void (*callback)(const char *) );
+void ck_set_stderr_callback( void (*callback)(const char *) );
+
+#define CK_FPRINTF_STDOUT(...) ck_fprintf_stdout(__VA_ARGS__)
+#define CK_FPRINTF_STDERR(...) ck_fprintf_stderr(__VA_ARGS__)
+#define CK_FFLUSH_STDOUT() ck_fflush_stdout()
+#define CK_FFLUSH_STDERR() ck_fflush_stderr()
+#define CK_VFPRINTF_STDOUT(message, ap) ck_vfprintf_stdout(message, ap)
+#define CK_VFPRINTF_STDERR(message, ap) ck_vfprintf_stderr(message, ap)
+#define CK_STDCOUT std::cout
+#define CK_STDCERR std::cerr
+
+
+#else
+
 #define CK_FPRINTF_STDOUT(...) fprintf(stdout, __VA_ARGS__)
 #define CK_FPRINTF_STDERR(...) fprintf(stderr, __VA_ARGS__)
 #define CK_FFLUSH_STDOUT() fflush(stdout)
@@ -75,6 +102,7 @@ void EM_newline( );
 #define CK_VFPRINTF_STDERR(message, ap) vfprintf(stderr, message, ap)
 #define CK_STDCOUT std::cout
 #define CK_STDCERR std::cerr
+#endif
 
 void EM_log( int, c_constr, ... );
 void EM_setlog( int );
