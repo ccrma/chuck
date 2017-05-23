@@ -1538,7 +1538,7 @@ bool ColumnReader::init( const string & filename, long col )
     // hmm
     if( col < 1 )
     {
-        cerr << "column must be greater than 0!!!" << endl;
+        CK_STDCERR << "column must be greater than 0!!!" << endl;
         return false;
     }
 
@@ -1547,7 +1547,7 @@ bool ColumnReader::init( const string & filename, long col )
     // yes
     if( !fin.good() )
     {
-        cerr << "ColumnReader: cannot open file: '" << filename << "'..." << endl;
+        CK_STDCERR << "ColumnReader: cannot open file: '" << filename << "'..." << endl;
         return false;
     }
 
@@ -1557,14 +1557,14 @@ bool ColumnReader::init( const string & filename, long col )
     // read first line
     if( !fin.getline( line, len ) )
     {
-        cerr << "ColumnReader: cannot read first line: '" << filename << "'..." << endl;
+        CK_STDCERR << "ColumnReader: cannot read first line: '" << filename << "'..." << endl;
         return false;
     }
 
     // get the name
     if( !get_str( n ) )
     {
-        cerr << "ColumnReader: cannot seek to column " << col << ": " << filename << "..." << endl;
+        CK_STDCERR << "ColumnReader: cannot seek to column " << col << ": " << filename << "..." << endl;
         return false;
     }
 
@@ -1577,7 +1577,7 @@ bool ColumnReader::init( const string & filename, long col )
         // get value
         if( !get_double( v ) )
         {
-            cerr << "ColumnReader: cannot read column " << v << " on line i: " << n << "..." << endl;
+            CK_STDCERR << "ColumnReader: cannot read column " << v << " on line i: " << n << "..." << endl;
             return false;
         }
 
@@ -1587,7 +1587,7 @@ bool ColumnReader::init( const string & filename, long col )
     // well
     if( values.size() == 0 )
     {
-        cerr << "ColumnReader: file doesn't not contain data after first line: " << n << "..." << endl;
+        CK_STDCERR << "ColumnReader: file doesn't not contain data after first line: " << n << "..." << endl;
         return false;
     }
 
@@ -1603,7 +1603,7 @@ double ColumnReader::curr()
 {
     if( where >= values.size() )
     {
-        cerr << "ColumnReader: trying to read beyond end of file: " << n << "..." << endl;
+        CK_STDCERR << "ColumnReader: trying to read beyond end of file: " << n << "..." << endl;
         return 0.0;
     }
 
@@ -1627,7 +1627,7 @@ bool ColumnReader::get_double( double & out )
         // check
         if( *curr == '\0' )
         {
-            cerr << "ColumnReader: cannot find column " << column << ": " << n << endl;
+            CK_STDCERR << "ColumnReader: cannot find column " << column << ": " << n << endl;
             return false;
         }
 
@@ -1665,7 +1665,7 @@ bool ColumnReader::get_str( string & out )
         // check
         if( *curr == '\0' )
         {
-            cerr << "ColumnReader: cannot find column " << column << ": " << n << endl;
+            CK_STDCERR << "ColumnReader: cannot find column " << column << ": " << n << endl;
             return false;
         }
 

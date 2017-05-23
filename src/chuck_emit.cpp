@@ -4850,7 +4850,7 @@ void Chuck_Emitter::pop_scope( )
     {
         // get local
         Chuck_Local * local = locals[i];
-        // std::cerr << "local: " << local->offset << " " << local->is_obj << std::endl;
+        // CK_STDCERR << "local: " << local->offset << " " << local->is_obj << std::endl;
         // check to see if it's an object
         if( local->is_obj )
         {
