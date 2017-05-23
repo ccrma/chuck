@@ -16510,7 +16510,7 @@ MY_FLOAT Whistle :: tick()
     if (frameCount >= (1470 / subSample))   {
       frameCount = 0;
       // printf("%f %f %f\n",tempVectorP->getX(),tempVectorP->getY(),envOut);
-      fflush(stdout);
+      CK_FFLUSH_STDOUT();
     }
 #endif
     envOut = envelope.tick();
