@@ -143,7 +143,7 @@ bool PatternMatch( const char *  pattern, const char * test )
         }
     case ']'    :
     case '}'    :
-        fprintf( stderr, "[chuck](via OSC): spurious %c in pattern \".../%s/...\"\n", pattern[0], theWholePattern );
+        CK_FPRINTF_STDERR( "[chuck](via OSC): spurious %c in pattern \".../%s/...\"\n", pattern[0], theWholePattern );
         return FALSE;
     case '['    :
         return MatchBrackets (pattern,test);
@@ -176,7 +176,7 @@ static bool MatchBrackets( const char * pattern, const char * test )
     const char *p = pattern;
 
     if(pattern[1] == 0) {
-        fprintf( stderr, "[chuck](via OSC): unterminated [ in pattern \".../%s/...\"\n", theWholePattern );
+        CK_FPRINTF_STDERR( "[chuck](via OSC): unterminated [ in pattern \".../%s/...\"\n", theWholePattern );
         return FALSE;
     }
 
@@ -187,7 +187,7 @@ static bool MatchBrackets( const char * pattern, const char * test )
 
     while (*p != ']') {
         if(*p == 0) {
-            fprintf( stderr,"[chuck](via OSC): unterminated [ in pattern \".../%s/...\"\n", theWholePattern );
+            CK_FPRINTF_STDERR( "[chuck](via OSC): unterminated [ in pattern \".../%s/...\"\n", theWholePattern );
         return FALSE;
         }
 
@@ -214,7 +214,7 @@ advance:
 
     while (*p != ']') {
         if(*p == 0) {
-            fprintf( stderr,"[chuck](via OSC): unterminated [ in pattern \".../%s/...\"\n", theWholePattern );
+            CK_FPRINTF_STDERR( "[chuck](via OSC): unterminated [ in pattern \".../%s/...\"\n", theWholePattern );
             return FALSE;
         }
         p++;
@@ -230,7 +230,7 @@ static bool MatchList( const char * pattern, const char * test )
 
     for(restOfPattern = pattern; *restOfPattern != '}'; restOfPattern++) {
         if(*restOfPattern == 0) {
-            fprintf( stderr,"[chuck](via OSC): unterminated { in pattern \".../%s/...\"\n", theWholePattern );
+            CK_FPRINTF_STDERR( "[chuck](via OSC): unterminated { in pattern \".../%s/...\"\n", theWholePattern );
             return FALSE;
         }
     }
@@ -1147,7 +1147,7 @@ UDP_Port_Listener::UDP_Port_Listener( int port )
 
 UDP_Port_Listener::~UDP_Port_Listener()
 {
-    //fprintf(stderr , "port listener destructor\n"); 
+    //CK_FPRINTF_STDERR( "port listener destructor\n" );
     close();
     // usleep( 10 );    // do we need this ? 
     delete m_in;
@@ -1394,7 +1394,7 @@ void UDP_Transmitter::set_host( char * hostaddress, int port )
       host = gethostbyname(hostaddress); // get the IP address of the server
       if(host == NULL)
       {
-         fprintf( stderr, "[chuck](via OSC): UDP_Transmitter: unknown host: %s\n", hostaddress);
+         CK_FPRINTF_STDERR( "[chuck](via OSC): UDP_Transmitter: unknown host: %s\n", hostaddress);
          _status = UDP_ERROR;
          return;
       }
@@ -1556,7 +1556,7 @@ void
 OSC_Transmitter::addInt ( int4byte i ) { 
     int osc_err = OSC_writeIntArg ( &_osc, i );
     if( osc_err ) { 
-       fprintf ( stderr, "[chuck](via OSC): error writing packet: %d %s\n", osc_err, OSC_errorMessage );
+       CK_FPRINTF_STDERR( "[chuck](via OSC): error writing packet: %d %s\n", osc_err, OSC_errorMessage );
        //failure action???
     }    
     tryMessage();
@@ -1566,7 +1566,7 @@ void
 OSC_Transmitter::addFloat ( float f ) { 
     int osc_err = OSC_writeFloatArg ( &_osc, f );
     if( osc_err ) { 
-       fprintf ( stderr, "[chuck](via OSC): error writing packet: %d %s\n", osc_err, OSC_errorMessage );
+       CK_FPRINTF_STDERR( "[chuck](via OSC): error writing packet: %d %s\n", osc_err, OSC_errorMessage );
         //failure action???
     }    
     tryMessage();
@@ -1576,7 +1576,7 @@ void
 OSC_Transmitter::addString ( char * s ) { 
     int osc_err = OSC_writeStringArg ( &_osc, s );
     if( osc_err ) { 
-       fprintf ( stderr, "[chuck](via OSC): error writing packet: %d %s\n", osc_err, OSC_errorMessage );
+       CK_FPRINTF_STDERR( "[chuck](via OSC): error writing packet: %d %s\n", osc_err, OSC_errorMessage );
         //failure action???
     }  
     tryMessage();
@@ -1607,7 +1607,7 @@ OSC_Transmitter::holdMessage(bool b) {
 void
 OSC_Transmitter::kickMessage() { 
     if( !OSC_isBufferDone(&_osc) ) { 
-        fprintf(stderr, "[chuck](via OSC): error -> sending incomplete packet!\n");
+        CK_FPRINTF_STDERR( "[chuck](via OSC): error -> sending incomplete packet!\n" );
     }
     _out->send( OSC_getPacket(&_osc), OSC_packetSize(&_osc) );
     OSC_resetBuffer(&_osc);
@@ -1796,7 +1796,7 @@ bool OSC_Receiver::get_mesg( OSCMesg * bucket )
         // next write _may_ fuck with _in_read 
         // where when resizing the buffer...
         *bucket = *next_read();
-        // fprintf(stderr, "r"); //read: %d of %d \n", _in_read, _inbox_size);
+        // CK_FPRINTF_STDERR( "r" ); //read: %d of %d \n", _in_read, _inbox_size);
         _io_mutex->release();
         return true;
     }
@@ -1818,10 +1818,10 @@ void OSC_Receiver::parse( char * mesg, int mesgLen )
    
     for( i = 0 ; i < mesgLen; i++ )
     {
-      fprintf(stderr, "\t%c(%0x):", mesg[i], mesg[i]);
+      CK_FPRINTF_STDERR( "\t%c(%0x):", mesg[i], mesg[i] );
     }
 
-    fprintf( stderr, "\n" );
+    CK_FPRINTF_STDERR( "\n" );
 }
 
 void
@@ -1837,7 +1837,7 @@ OSC_Receiver::next_write()
    
    if( next == _in_read ) { 
       
-      // fprintf(stderr, "OSC::need to resize...");
+      // CK_FPRINTF_STDERR( "OSC::need to resize..." );
          
       _io_mutex->acquire(); //don't let next read return a bogus pointer
 
@@ -1905,18 +1905,18 @@ OSC_Receiver::next_write()
             for( int i = _inbox_size; i < new_size; i++ ) _inbox[i].payload = NULL;           
          }
          else { 
-            // fprintf(stderr, "fuck!  fucking buffer reallocation error!\n");
+            // CK_FPRINTF_STDERR( "oh no!! buffer reallocation error!\n" );
             exit(0);
          }
 
          next = (_in_write+1)%new_size; //where we're headed..
          _inbox_size = new_size;
 
-         // fprintf(stderr, "(%d)", _inbox_size);
+         // CK_FPRINTF_STDERR( "(%d)", _inbox_size );
          // UNLOCK MUTEX
       }
       else { 
-         // fprintf(stderr, "max buffer...dropping old mesg %d\n", next);
+         // CK_FPRINTF_STDERR( "max buffer...dropping old mesg %d\n", next );
          _in_read = (next+1)%_inbox_size;         
       }
 
@@ -1973,7 +1973,7 @@ OSC_Receiver::handle_mesg( char * buf, int len )
 
    if( mrp->payload == NULL ) {
       mrp->payload = (char *)malloc( OSCINBUFSIZE * sizeof(char) );
-      // fprintf(stderr, "oscrecv:mallocing %d bytes\n", OSCINBUFSIZE);
+      // CK_FPRINTF_STDERR( "oscrecv:mallocing %d bytes\n", OSCINBUFSIZE );
    }
 
    memcpy( (void*)mrp->payload, (const void*)buf, len ); // copy data from buffer to message payload
@@ -1993,7 +1993,7 @@ void OSC_Receiver::handle_bundle( char * b, int len )
    // no scheduling for now
    // just immediately unpack everything
 
-   // fprintf(stderr, "bundle (length %d)\n", len);
+   // CK_FPRINTF_STDERR( "bundle (length %d)\n", len );
    
    int off = 16; //skip "#bundle\0timetags"
 
@@ -2079,7 +2079,7 @@ void OSC_Receiver::distribute_message( OSCMesg * msg )
     {
         if( _address_space[i]->try_queue_mesg( msg ) )
         {
-            // fprintf ( stderr, "broadcasting %x from %x\n", (uint)_address_space[i]->SELF, (uint)_address_space[i] );
+            // CK_FPRINTF_STDERR( "broadcasting %x from %x\n", (uint)_address_space[i]->SELF, (uint)_address_space[i] );
             // if the event has any shreds queued, fire them off..
             ((Chuck_Event *)_address_space[i]->SELF)->queue_broadcast( m_event_buffer );
         }
@@ -2220,7 +2220,7 @@ OSC_Address_Space::parseSpec() {
    strcpy ( _address, _spec );
    strcpy ( _type , type );
 
-//   fprintf(stderr," parsing spec- address %s :: type %s\n", _address, _type);
+//   CK_FPRINTF_STDERR( " parsing spec- address %s :: type %s\n", _address, _type );
 
    int n = strlen ( type );
    _noArgs = ( n == 0 );
@@ -2245,7 +2245,7 @@ OSC_Address_Space::resizeQueue( int n )
 
     EM_log( CK_LOG_INFO, "OSC_Address (%s) -- buffer full ( r:%d , w:%d, of %d(x%d) ), resizing...",
             _address, _qread, _qwrite, _queueSize, _dataSize );
-    // fprintf( stderr, "--- hasMesg ( %d ) nextMesg ( %d )\n", (int) has_mesg(), (int)next_mesg()  );
+    // CK_FPRINTF_STDERR( "--- hasMesg ( %d ) nextMesg ( %d )\n", (int) has_mesg(), (int)next_mesg()  );
 
     // we're the server... all we know is that the contents of qread are in the current_buffer, 
     // so we can move the data, but we don't want to move ahead and lose it just yet.
@@ -2267,7 +2267,7 @@ OSC_Address_Space::resizeQueue( int n )
         // just copy the whole thing to the start of the new buffer ( adding more space to the end ) 
         memcpy( (void*)_new_queue, (const void*)_queue, _queueSize * chunkSize);
         // _qwrite and _qread can stay right where they are. 
-        // fprintf(stderr, "resize - case 1\n");
+        // CK_FPRINTF_STDERR( "resize - case 1\n" );
     }
     else
     { 
@@ -2323,9 +2323,9 @@ OSC_Address_Space::message_matches( OSCMesg * m ) {
     char * type = m->types+1;
     if( m->types == NULL || strcmp( _type , type ) != 0 ) { 
 //        if( type )
-//            fprintf(stderr, "error, mismatched type string( %s ) vs ( %s ) \n", _type, type ) ;
+//            CK_FPRINTF_STDERR( "error, mismatched type string( %s ) vs ( %s ) \n", _type, type );
 //        else 
-//            fprintf( stderr, "error, missing type string (expecting %s) \n", _type );
+//            CK_FPRINTF_STDERR( "error, missing type string (expecting %s) \n", _type );
         return false;
     }
     return true;
@@ -2506,7 +2506,7 @@ OSC_Address_Space::queue_mesg( OSCMesg * m )
                 _vals[i].t = OSC_STRING;
                 _vals[i].s = (char *) realloc ( _vals[i].s, clen * sizeof(char) );
                 memcpy ( _vals[i].s, data, clen ); // make a copy of the data...
-                // fprintf(stderr, "add string |%s| ( %d ) \n", _vals[i].s, clen  );
+                // CK_FPRINTF_STDERR( "add string |%s| ( %d ) \n", _vals[i].s, clen );
                 data += (((clen-1) >> 2) + 1) << 2;
                 // data += clen + 4 - clen % 4;
             break;
@@ -2530,8 +2530,8 @@ OSC_Address_Space::queue_mesg( OSCMesg * m )
     //review
     /*
       for( i=0; i < _nvals; i++ ) {
-      fprintf(stderr, "%d %f : ", i, _val[i] );
+      CK_FPRINTF_STDERR( "%d %f : ", i, _val[i] );
       }
-      fprintf(stderr, "\n");
+      CK_FPRINTF_STDERR( "\n" );
     */
 }

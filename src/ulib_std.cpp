@@ -663,9 +663,9 @@ CK_DLL_SFUN( system_impl )
     // check globals for permission
     if( !g_enable_system_cmd )
     {
-        fprintf( stderr, "[chuck]:error: VM not authorized to call Std.system( string )...\n" );
-        fprintf( stderr, "[chuck]:  (command string was: \"%s\")\n", cmd );
-        fprintf( stderr, "[chuck]:  (note: enable via --caution-to-the-wind flag or other means)\n" );
+        CK_FPRINTF_STDERR( "[chuck]:error: VM not authorized to call Std.system( string )...\n" );
+        CK_FPRINTF_STDERR( "[chuck]:  (command string was: \"%s\")\n", cmd );
+        CK_FPRINTF_STDERR( "[chuck]:  (note: enable via --caution-to-the-wind flag or other means)\n" );
         RETURN->v_int = 0;
     }
     else

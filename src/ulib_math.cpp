@@ -559,7 +559,7 @@ CK_DLL_SFUN( floatMax_impl )
     else
     {
         // error
-        fprintf( stderr, "[chuck]: internal error determining size of 'float' in floatMax()\n" );
+        CK_FPRINTF_STDERR( "[chuck]: internal error determining size of 'float' in floatMax()\n" );
         RETURN->v_float = 0; // TODO: return NaN?
     }
 }
@@ -573,7 +573,7 @@ CK_DLL_SFUN( intMax_impl )
     else
     {
         // error
-        fprintf( stderr, "[chuck]: internal error determining size of 'int' in intMax()\n" );
+        CK_FPRINTF_STDERR( "[chuck]: internal error determining size of 'int' in intMax()\n" );
         RETURN->v_int = 0;
     }
 }

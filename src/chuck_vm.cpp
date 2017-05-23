@@ -940,19 +940,19 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     else if( msg->type == MSG_TIME )
     {
         float srate = m_srate; // 1.3.5.3; was: (float)Digitalio::sampling_rate();
-        fprintf( stderr, "[chuck](VM): the values of now:\n" );
-        fprintf( stderr, "  now = %.6f (samp)\n", m_shreduler->now_system );
-        fprintf( stderr, "      = %.6f (second)\n", m_shreduler->now_system / srate );
-        fprintf( stderr, "      = %.6f (minute)\n", m_shreduler->now_system / srate / 60.0f );
-        fprintf( stderr, "      = %.6f (hour)\n", m_shreduler->now_system / srate / 60.0f / 60.0f );
-        fprintf( stderr, "      = %.6f (day)\n", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f );
-        fprintf( stderr, "      = %.6f (week)\n", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f / 7.0f );
+        CK_FPRINTF_STDERR( "[chuck](VM): the values of now:\n" );
+        CK_FPRINTF_STDERR( "  now = %.6f (samp)\n", m_shreduler->now_system );
+        CK_FPRINTF_STDERR( "      = %.6f (second)\n", m_shreduler->now_system / srate );
+        CK_FPRINTF_STDERR( "      = %.6f (minute)\n", m_shreduler->now_system / srate / 60.0f );
+        CK_FPRINTF_STDERR( "      = %.6f (hour)\n", m_shreduler->now_system / srate / 60.0f / 60.0f );
+        CK_FPRINTF_STDERR( "      = %.6f (day)\n", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f );
+        CK_FPRINTF_STDERR( "      = %.6f (week)\n", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f / 7.0f );
     }
     else if( msg->type == MSG_RESET_ID )
     {
         t_CKUINT n = m_shreduler->highest();
         m_shred_id = n;
-        fprintf( stderr, "[chuck](VM): reseting shred id to %lu...\n", m_shred_id + 1 );
+        CK_FPRINTF_STDERR( "[chuck](VM): reseting shred id to %lu...\n", m_shred_id + 1 );
     }
 
 done:
@@ -1667,7 +1667,7 @@ t_CKBOOL Chuck_VM_Stack::initialize( t_CKUINT size )
 out_of_memory:
 
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): OutOfMemory: while allocating stack\n" );
 
     // return FALSE
@@ -1956,20 +1956,20 @@ t_CKBOOL Chuck_VM_Shred::run( Chuck_VM * vm )
     while( is_running && *loop_running && !is_abort )
     {
 //-----------------------------------------------------------------------------
-CK_VM_DEBUG( fprintf(stderr, "CK_VM_DEBUG =--------------------------------=\n") );
-CK_VM_DEBUG( fprintf(stderr, "CK_VM_DEBUG shred %04lu code %s pc %04lu %s( %s )\n",
+CK_VM_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG =--------------------------------=\n" ) );
+CK_VM_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG shred %04lu code %s pc %04lu %s( %s )\n",
              this->xid, this->code->name.c_str(), this->pc, instr[pc]->name(),
-             instr[pc]->params()) );
+             instr[pc]->params() ) );
 CK_VM_DEBUG( t_CKBYTE * t_mem_sp = this->mem->sp );
 CK_VM_DEBUG( t_CKBYTE * t_reg_sp = this->mem->sp );
 //-----------------------------------------------------------------------------
         // execute the instruction
         instr[pc]->execute( vm, this );
 //-----------------------------------------------------------------------------
-CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08lx\n",
-                    (unsigned long) t_mem_sp, (unsigned long) this->mem->sp));
-CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
-                    (unsigned long) t_reg_sp, (unsigned long) this->reg->sp));
+CK_VM_DEBUG(CK_FPRINTF_STDERR( "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08lx\n",
+                    (unsigned long) t_mem_sp, (unsigned long) this->mem->sp ));
+CK_VM_DEBUG(CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
+                    (unsigned long) t_reg_sp, (unsigned long) this->reg->sp ));
 //-----------------------------------------------------------------------------
         // set to next_pc;
         pc = next_pc;
@@ -2653,14 +2653,14 @@ void Chuck_VM_Shreduler::status( )
     t_CKUINT h = m_status.t_hour;
     t_CKUINT m = m_status.t_minute;
     t_CKUINT sec = m_status.t_second;
-    fprintf( stdout, "[chuck](VM): status (now == %ldh%ldm%lds, %.1f samps) ...\n",
+    CK_FPRINTF_STDOUT( "[chuck](VM): status (now == %ldh%ldm%lds, %.1f samps) ...\n",
              h, m, sec, m_status.now_system );
 
     // print status
     for( t_CKUINT i = 0; i < m_status.list.size(); i++ )
     {
         shred = m_status.list[i];
-        fprintf( stdout, 
+        CK_FPRINTF_STDOUT( 
             "    [shred id]: %ld  [source]: %s  [spork time]: %.2fs ago%s\n",
             shred->xid, mini( shred->name.c_str() ),
             (m_status.now_system - shred->start) / m_status.srate,

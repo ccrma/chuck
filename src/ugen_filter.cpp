@@ -1023,7 +1023,7 @@ CK_DLL_DTOR( FilterBasic_dtor )
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( FilterBasic_tick )
 {
-    fprintf( stderr, "FilterBasic.tick() --> FitlerBasic is virtual!\n" );
+    CK_FPRINTF_STDERR( "FilterBasic.tick() --> FitlerBasic is virtual!\n" );
     return TRUE;
 }
 

@@ -15140,14 +15140,14 @@ void Stk :: sleep(unsigned long milliseconds)
 void Stk :: handleError( const char *message, StkError::TYPE type )
 {
     if (type == StkError::WARNING) {
-        fprintf(stderr, "%s\n", message);
+        CK_FPRINTF_STDERR( "%s\n", message );
     } else if (type == StkError::DEBUG_WARNING) {
 #if defined(_STK_DEBUG_)
-        fprintf(stderr, "%s\n", message);
+        CK_FPRINTF_STDERR( "%s\n", message );
 #endif
     } else {
         // print error message before throwing.
-        fprintf(stderr, "%s\n", message);
+        CK_FPRINTF_STDERR( "%s\n", message );
         throw StkError(message, type);
     }
 }
@@ -18477,7 +18477,7 @@ bool WvOut :: setMatFile( const char *fileName )
   if ( fseek(fd, 0, SEEK_END) == -1 ) goto error;
 
   byteswap = false;
-  fprintf( stderr, "[chuck]:(via STK): creating MAT-file (%s) containing MATLAB array: %s\n", name, arrayName);
+  CK_FPRINTF_STDERR( "[chuck]:(via STK): creating MAT-file (%s) containing MATLAB array: %s\n", name, arrayName);
   return true;
 
  error:
@@ -19048,7 +19048,7 @@ CK_DLL_CTOR( Instrmnt_ctor )
 {
     // initialize member object
     OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data) = (t_CKUINT)0;
-    // fprintf( stderr,"[chuck](via STK): error : StkInstrument is virtual!\n");
+    // CK_FPRINTF_STDERR( "[chuck](via STK): error : StkInstrument is virtual!\n");
 }
 
 
@@ -19069,7 +19069,7 @@ CK_DLL_DTOR( Instrmnt_dtor )
 CK_DLL_TICK( Instrmnt_tick )
 {
     Instrmnt * i = (Instrmnt *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    if( !out ) fprintf( stderr,"[chuck](via STK): we warned you...\n");
+    if( !out ) CK_FPRINTF_STDERR( "[chuck](via STK): we warned you...\n");
     *out = i->tick();
     return TRUE;
 }
@@ -23126,7 +23126,7 @@ CK_DLL_PMSG( FilterStk_pmsg )
 CK_DLL_CTRL( FilterStk_ctrl_coefs )
 {
     // FilterStk * d = (FilterStk *)OBJ_MEMBER_UINT(SELF, FilterStk_offset_data);
-    fprintf( stderr, "FilterStk.coefs :: not implemented\n" );
+    CK_FPRINTF_STDERR( "FilterStk.coefs :: not implemented\n" );
 }
 
 
@@ -23897,7 +23897,7 @@ CK_DLL_CGET( PoleZero_cget_blockZero )
 CK_DLL_CTOR( FM_ctor  )
 {
     OBJ_MEMBER_UINT(SELF, FM_offset_data) = 0;
-    // fprintf( stderr, "[chuck](via STK): error -- FM is virtual!\n" );
+    // CK_FPRINTF_STDERR( "[chuck](via STK): error -- FM is virtual!\n" );
 }
 
 
@@ -23908,7 +23908,7 @@ CK_DLL_CTOR( FM_ctor  )
 CK_DLL_DTOR( FM_dtor  )
 { 
     // delete (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
-    // fprintf( stderr, "error -- FM is virtual!\n" );
+    // CK_FPRINTF_STDERR( "error -- FM is virtual!\n" );
 }
 
 
@@ -23919,7 +23919,7 @@ CK_DLL_DTOR( FM_dtor  )
 CK_DLL_TICK( FM_tick )
 {
     FM * m = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
-    fprintf(stderr,"[chuck](via STK): error -- FM tick is virtual!\n");
+    CK_FPRINTF_STDERR( "[chuck](via STK): error -- FM tick is virtual!\n" );
     *out = m->tick();
     return TRUE;
 }
@@ -25954,7 +25954,7 @@ CK_DLL_CTRL( WvIn_ctrl_path )
     catch( StkError & e )
     {
         const char * s = e.getMessage();
-        // fprintf( stderr, "[chuck](via STK): WvIn cannot load file '%s'\n", c );
+        // CK_FPRINTF_STDERR( "[chuck](via STK): WvIn cannot load file '%s'\n", c );
         s = "";
     }
     RETURN->v_string = &(w->str_filename);
@@ -26333,7 +26333,7 @@ CK_DLL_CTRL( WvOut_ctrl_wavFilename )
     try { w->openFile( filename, 1, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
     catch( StkError & e )
     {
-        // fprintf( stderr, "%s\n", e.getMessage() );
+        // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
         goto done;
     }
     g_wv[w] = w;
@@ -26368,7 +26368,7 @@ CK_DLL_CTRL( WvOut2_ctrl_wavFilename )
     try { w->openFile( filename, 2, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
     catch( StkError & e )
     {
-        // fprintf( stderr, "%s\n", e.getMessage() );
+        // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
         goto done;
     }
     g_wv[w] = w;
@@ -26610,7 +26610,7 @@ CK_DLL_DTOR( BLT_dtor )
 
 CK_DLL_TICK( BLT_tick )
 {
-    fprintf( stderr, "BLT is virtual!\n" );
+    CK_FPRINTF_STDERR( "BLT is virtual!\n" );
     return TRUE;
 }
 

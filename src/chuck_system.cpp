@@ -102,7 +102,7 @@ char g_host[256] = "127.0.0.1";
 //-----------------------------------------------------------------------------
 extern "C" void signal_int( int sig_num )
 {
-    fprintf( stderr, "[chuck]: cleaning up...\n" );
+    CK_FPRINTF_STDERR( "[chuck]: cleaning up...\n" );
 
     if( g_vm )
     {
@@ -156,7 +156,7 @@ extern "C" void signal_int( int sig_num )
 //-----------------------------------------------------------------------------
 extern "C" void unity_exit()
 {
-    fprintf( stderr, "[chuck]: cleaning up...\n" );
+    CK_FPRINTF_STDERR( "[chuck]: cleaning up...\n" );
     
     if( g_vm )
     {
@@ -230,14 +230,14 @@ static t_CKBOOL init_shell( Chuck_Shell * shell, Chuck_Shell_UI * ui, Chuck_VM *
     // initialize shell UI
     if( !ui->init() )
     {
-        fprintf( stderr, "[chuck]: error starting shell UI...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: error starting shell UI...\n" );
         return FALSE;
     }
 
     // initialize
     if( !shell->init( vm, ui ) )
     {
-        fprintf( stderr, "[chuck]: error starting shell...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: error starting shell...\n" );
         return FALSE;
     }
 
@@ -278,8 +278,8 @@ static t_CKBOOL get_count( const char * arg, t_CKUINT * out )
 //-----------------------------------------------------------------------------
 static void version()
 {
-    fprintf( stderr, "\n" );
-    fprintf( stderr, "chuck version: %s\n", CK_VERSION );
+    CK_FPRINTF_STDERR( "\n" );
+    CK_FPRINTF_STDERR( "chuck version: %s\n", CK_VERSION );
 
     // platform string
     string platform = "";
@@ -306,9 +306,9 @@ static void version()
     platform = "uh... unknown";
 #endif
     
-    fprintf( stderr, "   %s : %ld-bit\n", platform.c_str(), machine_intsize() );
-    fprintf( stderr, "   http://chuck.cs.princeton.edu/\n" );
-    fprintf( stderr, "   http://chuck.stanford.edu/\n\n" );
+    CK_FPRINTF_STDERR( "   %s : %ld-bit\n", platform.c_str(), machine_intsize() );
+    CK_FPRINTF_STDERR( "   http://chuck.cs.princeton.edu/\n" );
+    CK_FPRINTF_STDERR( "   http://chuck.stanford.edu/\n\n" );
 }
 
 
@@ -321,15 +321,15 @@ static void version()
 static void usage()
 {
     // (note: optional colon added 1.3.0.0)
-    fprintf( stderr, "usage: chuck --[options|commands] [+-=^] file1 file2 file3 ...\n" );
-    fprintf( stderr, "   [options] = halt|loop|audio|silent|dump|nodump|server|about|probe|\n" );
-    fprintf( stderr, "               channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|\n" );
-    fprintf( stderr, "               srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
-    fprintf( stderr, "               remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
-    fprintf( stderr, "               callback|deprecate:{stop|warn|ignore}|\n" );
-    fprintf( stderr, "               chugin-load:{auto|off}|chugin-path:<path>|chugin:<name>\n" );
-    fprintf( stderr, "   [commands] = add|remove|replace|remove.all|status|time|kill\n" );
-    fprintf( stderr, "   [+-=^] = shortcuts for add, remove, replace, status\n" );
+    CK_FPRINTF_STDERR( "usage: chuck --[options|commands] [+-=^] file1 file2 file3 ...\n" );
+    CK_FPRINTF_STDERR( "   [options] = halt|loop|audio|silent|dump|nodump|server|about|probe|\n" );
+    CK_FPRINTF_STDERR( "               channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|\n" );
+    CK_FPRINTF_STDERR( "               srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
+    CK_FPRINTF_STDERR( "               remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
+    CK_FPRINTF_STDERR( "               callback|deprecate:{stop|warn|ignore}|\n" );
+    CK_FPRINTF_STDERR( "               chugin-load:{auto|off}|chugin-path:<path>|chugin:<name>\n" );
+    CK_FPRINTF_STDERR( "   [commands] = add|remove|replace|remove.all|status|time|kill\n" );
+    CK_FPRINTF_STDERR( "   [+-=^] = shortcuts for add, remove, replace, status\n" );
     version();
 }
 
@@ -393,7 +393,7 @@ bool Chuck_System::compileFile( const string & path, const string & argsTogether
     if( !m_compilerRef )
     {
         // error
-        fprintf( stderr, "[chuck]: compileFile() invoked before initialization ...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: compileFile() invoked before initialization ...\n" );
         return false;
     }
 
@@ -414,8 +414,8 @@ bool Chuck_System::compileFile( const string & path, const string & argsTogether
     if( !extract_args( theThing, filename, args ) )
     {
         // error
-        fprintf( stderr, "[chuck]: malformed filename with argument list...\n" );
-        fprintf( stderr, "    -->  '%s'", theThing.c_str() );
+        CK_FPRINTF_STDERR( "[chuck]: malformed filename with argument list...\n" );
+        CK_FPRINTF_STDERR( "    -->  '%s'", theThing.c_str() );
         return false;
     }
     
@@ -464,7 +464,7 @@ bool Chuck_System::compileCode( const char * codeString, const std::string & arg
     if( !m_compilerRef )
     {
         // error
-        fprintf( stderr, "[chuck]: compileCode() invoked before initialization ...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: compileCode() invoked before initialization ...\n" );
         return false;
     }
 
@@ -485,8 +485,8 @@ bool Chuck_System::compileCode( const char * codeString, const std::string & arg
     if( !extract_args( theThing, fakeFilename, args ) )
     {
         // error
-        fprintf( stderr, "[chuck]: malformed filename with argument list...\n" );
-        fprintf( stderr, "    -->  '%s'", theThing.c_str() );
+        CK_FPRINTF_STDERR( "[chuck]: malformed filename with argument list...\n" );
+        CK_FPRINTF_STDERR( "    -->  '%s'", theThing.c_str() );
         return false;
     }
     
@@ -732,8 +732,8 @@ bool Chuck_System::go( int argc, const char ** argv,
                 else
                 {
                     // error
-                    fprintf( stderr, "[chuck]: invalid arguments for '--dac:'\n" );
-                    fprintf( stderr, "[chuck]: (see 'chuck --help' for more info)\n" );
+                    CK_FPRINTF_STDERR( "[chuck]: invalid arguments for '--dac:'\n" );
+                    CK_FPRINTF_STDERR( "[chuck]: (see 'chuck --help' for more info)\n" );
                     exit( 1 );
                 }
             }
@@ -762,8 +762,8 @@ bool Chuck_System::go( int argc, const char ** argv,
                 else
                 {
                     // error
-                    fprintf( stderr, "[chuck]: invalid arguments for '--adc:'\n" );
-                    fprintf( stderr, "[chuck]: (see 'chuck --help' for more info)\n" );
+                    CK_FPRINTF_STDERR( "[chuck]: invalid arguments for '--adc:'\n" );
+                    CK_FPRINTF_STDERR( "[chuck]: (see 'chuck --help' for more info)\n" );
                     exit( 1 );
                 }
             }
@@ -837,8 +837,8 @@ bool Chuck_System::go( int argc, const char ** argv,
                 else
                 {
                     // error
-                    fprintf( stderr, "[chuck]: invalid arguments for '--deprecate'...\n" );
-                    fprintf( stderr, "[chuck]: ... (looking for :stop, :warn, or :ignore)\n" );
+                    CK_FPRINTF_STDERR( "[chuck]: invalid arguments for '--deprecate'...\n" );
+                    CK_FPRINTF_STDERR( "[chuck]: ... (looking for :stop, :warn, or :ignore)\n" );
                     exit( 1 );
                 }
             }
@@ -852,8 +852,8 @@ bool Chuck_System::go( int argc, const char ** argv,
                 else
                 {
                     // error
-                    fprintf( stderr, "[chuck]: invalid arguments for '--chugin-load'...\n" );
-                    fprintf( stderr, "[chuck]: ... (looking for :auto or :off)\n" );
+                    CK_FPRINTF_STDERR( "[chuck]: invalid arguments for '--chugin-load'...\n" );
+                    CK_FPRINTF_STDERR( "[chuck]: ... (looking for :auto or :off)\n" );
                     exit( 1 );
                 }
             }
@@ -913,7 +913,7 @@ bool Chuck_System::go( int argc, const char ** argv,
                 if( is_otf ) exit( 1 );
 
                 // done
-                fprintf( stderr, "[chuck]: invalid flag '%s'\n", argv[i] );
+                CK_FPRINTF_STDERR( "[chuck]: invalid flag '%s'\n", argv[i] );
                 usage();
                 exit( 1 );
             }
@@ -972,7 +972,7 @@ bool Chuck_System::go( int argc, const char ** argv,
     
     if ( !files && vm_halt && !g_enable_shell && !clientMode )
     {
-        fprintf( stderr, "[chuck]: no input files... (try --help)\n" );
+        CK_FPRINTF_STDERR( "[chuck]: no input files... (try --help)\n" );
         exit( 1 );
     }
 
@@ -995,7 +995,7 @@ bool Chuck_System::go( int argc, const char ** argv,
     // make sure vm
     if( no_vm )
     {
-        fprintf( stderr, "[chuck]: '--empty' can only be used with shell...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: '--empty' can only be used with shell...\n" );
         exit( 1 );
     }
     
@@ -1010,8 +1010,8 @@ bool Chuck_System::go( int argc, const char ** argv,
         }
         else
         {
-            fprintf( stderr, "[chuck]: unable to find dac '%s'...\n", dac_name.c_str() );
-            fprintf( stderr, "[chuck]: | (try --probe to enumerate audio device info)\n" );
+            CK_FPRINTF_STDERR( "[chuck]: unable to find dac '%s'...\n", dac_name.c_str() );
+            CK_FPRINTF_STDERR( "[chuck]: | (try --probe to enumerate audio device info)\n" );
             exit( 1 );
         }
     }
@@ -1027,8 +1027,8 @@ bool Chuck_System::go( int argc, const char ** argv,
         }
         else
         {
-            fprintf( stderr, "[chuck]: unable to find adc '%s'...\n", adc_name.c_str() );
-            fprintf( stderr, "[chuck]: | (try --probe to enumerate audio device info)\n" );
+            CK_FPRINTF_STDERR( "[chuck]: unable to find adc '%s'...\n", adc_name.c_str() );
+            CK_FPRINTF_STDERR( "[chuck]: | (try --probe to enumerate audio device info)\n" );
             exit( 1 );
         }
     }
@@ -1042,7 +1042,7 @@ bool Chuck_System::go( int argc, const char ** argv,
     // ge: refactor 2015: initialize VM
     if( !vm->initialize( srate, dac_chans, adc_chans, adaptive_size, vm_halt ) )
     {
-        fprintf( stderr, "[chuck]: %s\n", vm->last_error() );
+        CK_FPRINTF_STDERR( "[chuck]: %s\n", vm->last_error() );
         exit( 1 );
     }
 
@@ -1114,7 +1114,7 @@ if( g_compiler == NULL ) {
     // initialize the compiler (search_apth and named_dls added 1.3.0.0 -- TODO: refactor)
     if( !compiler->initialize( vm, dl_search_path, named_dls ) )
     {
-        fprintf( stderr, "[chuck]: error initializing compiler...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: error initializing compiler...\n" );
         exit( 1 );
     }
     // enable dump
@@ -1128,7 +1128,7 @@ if( g_compiler == NULL ) {
     // vm synthesis subsystem - needs the type system
     if( !vm->initialize_synthesis( ) )
     {
-        fprintf( stderr, "[chuck]: %s\n", vm->last_error() );
+        CK_FPRINTF_STDERR( "[chuck]: %s\n", vm->last_error() );
         exit( 1 );
     }
 
@@ -1270,7 +1270,7 @@ if( g_compiler == NULL ) {
         if( !Chuck_VM::set_priority( Chuck_VM::our_priority, vm ) )
         {
             // error
-            fprintf( stderr, "[chuck]: %s\n", vm->last_error() );
+            CK_FPRINTF_STDERR( "[chuck]: %s\n", vm->last_error() );
             exit( 1 );
         }
     }
@@ -1289,7 +1289,7 @@ if( g_compiler == NULL ) {
         g_sock = ck_tcp_create( 1 );
         if( !g_sock || !ck_bind( g_sock, g_port ) || !ck_listen( g_sock, 10 ) )
         {
-            fprintf( stderr, "[chuck]: cannot bind to tcp port %li...\n", g_port );
+            CK_FPRINTF_STDERR( "[chuck]: cannot bind to tcp port %li...\n", g_port );
             ck_close( g_sock );
             g_sock = NULL;
         }
@@ -1499,7 +1499,7 @@ bool Chuck_System::bind( f_ck_query queryFunc, const string & name )
     if( !m_compilerRef )
     {
         // error
-        fprintf( stderr,
+        CK_FPRINTF_STDERR(
             "[chuck]: ChucK_System::bind() invoked before initialization ...\n" );
         return false;
     }

@@ -2940,7 +2940,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
             // error (TODO: why is this a SAFE_RELEASE and not SAFE_DELETE?)
             SAFE_RELEASE( str );
             // error out
-            fprintf( stderr, 
+            CK_FPRINTF_STDERR( 
                 "[chuck](emitter): OutOfMemory: while allocating string literal '%s'\n", exp->str );
             return FALSE;
         }
@@ -4531,7 +4531,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
         if( !type->info->class_data )
         {
             // we have a problem
-            fprintf( stderr, 
+            CK_FPRINTF_STDERR( 
                 "[chuck](emitter): OutOfMemory: while allocating static data '%s'\n", type->c_name() );
             // flag
             ret = FALSE;

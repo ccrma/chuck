@@ -92,7 +92,7 @@ void Chuck_Instr::set_linepos(t_CKUINT linepos) {
 static void handle_overflow( Chuck_VM_Shred * shred, Chuck_VM * vm )
 {
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): Exception StackOverflow in shred[id=%lu:%s], PC=[%lu]\n",
         shred->xid, shred->name.c_str(), shred->pc );
     // do something!
@@ -318,7 +318,7 @@ void Chuck_Instr_Divide_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     return;
 div_zero:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): DivideByZeroException: on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str());
     goto done;
@@ -346,7 +346,7 @@ void Chuck_Instr_Divide_int_Reverse::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     return;
 div_zero:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): DivideByZeroException: on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str());
     goto done;
@@ -1118,7 +1118,7 @@ void Chuck_Instr_Divide_int_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
     return;
 div_zero:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): DivideByZeroException: on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str());
     goto done;
@@ -1647,7 +1647,7 @@ void Chuck_Instr_Add_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (string + string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() ); // , shred->pc );
     goto done;
@@ -1691,7 +1691,7 @@ void Chuck_Instr_Add_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (string +=> string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -1739,7 +1739,7 @@ void Chuck_Instr_Add_string_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (string + int) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -1787,7 +1787,7 @@ void Chuck_Instr_Add_string_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (string + float) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -1835,7 +1835,7 @@ void Chuck_Instr_Add_int_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (int + string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -1883,7 +1883,7 @@ void Chuck_Instr_Add_float_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (int + string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -1927,7 +1927,7 @@ void Chuck_Instr_Add_int_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred *
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: () on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -1971,7 +1971,7 @@ void Chuck_Instr_Add_float_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (string + string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -3610,7 +3610,7 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
 out_of_memory:
 
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): OutOfMemory: while instantiating object '%s'\n",
         type->c_name() );
 
@@ -3688,7 +3688,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
 out_of_memory:
 
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): OutOfMemory: while instantiating object '%s'\n",
         type->c_name() );
 
@@ -3970,7 +3970,7 @@ void Chuck_Instr_Assign_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // release
     if( done ) done->release();
 
-//    fprintf(stderr, "obj: 0x%08x\n", *obj);
+//    CK_FPRINTF_STDERR( "obj: 0x%08x\n", *obj );
 
     // copy
     // memcpy( (void *)*(reg_sp+1), *obj, sizeof(t_CKUINT) );
@@ -4604,7 +4604,7 @@ void Chuck_Instr_Time_Advance::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( *sp < shred->now )
     {
         // we have a problem
-        fprintf( stderr, 
+        CK_FPRINTF_STDERR( 
             "[chuck](VM): DestTimeNegativeException: '%.6f' on line[%lu] in shred[id=%lu:%s]\n",
             *sp, m_linepos, shred->xid, shred->name.c_str() );
         // do something!
@@ -4651,7 +4651,7 @@ void Chuck_Instr_Event_Wait::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (null Event wait) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -4851,7 +4851,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 out_of_memory:
 
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): OutOfMemory: while initializing arrays on line[%lu]\n", m_linepos );
 
     // do something!
@@ -5018,13 +5018,13 @@ Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
 
 out_of_memory:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): OutOfMemory: while allocating arrays...\n" );
     goto error;
 
 negative_array_size:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): NegativeArraySize: while allocating arrays...\n" );
     goto error;
 
@@ -5140,18 +5140,18 @@ void Chuck_Instr_Array_Alloc::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 overflow:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): OverFlow: requested array size too big...\n" );
     goto error;
 
 out_of_memory:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): OutOfMemory: while allocating arrays...\n" );
     goto error;
 
 error:
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM):     (note: on line[%lu] in shred[id=%lu:%s])\n",
         m_linepos, shred->xid, shred->name.c_str() );
 
@@ -5306,14 +5306,14 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (array access) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() ); // shred->pc removed
     goto done;
 
 array_out_of_bound:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): ArrayOutofBounds: on line[%lu] in shred[id=%lu:%s], index=[%ld]\n",
         m_linepos, shred->xid, shred->name.c_str(), i ); // shred->pc removed
     // go to done
@@ -5470,14 +5470,14 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (map access) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() ); // shred->pc
     goto done;
 
 error:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): InternalArrayMapError: on line[%lu] in shred[id=%lu:%s], index=[%s]\n",
         m_linepos, shred->xid, shred->name.c_str(), key->str.c_str() ); // shred->pc
     goto done;
@@ -5671,16 +5671,16 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (array access) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() ); // shred->pc
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): (array dimension where exception occurred: %lu)\n", index );
     goto done;
 
 array_out_of_bound:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): ArrayOutofBounds: on line[%lu] in shred[id=%lu:%s], index=[%ld]\n",
         m_linepos, shred->xid, shred->name.c_str(), i ); // shred->pc
     // go to done
@@ -5794,7 +5794,7 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (array append) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -5851,7 +5851,7 @@ void Chuck_Instr_Dot_Member_Data::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 error:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
 
@@ -5892,7 +5892,7 @@ void Chuck_Instr_Dot_Member_Func::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 error:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
              "[chuck](VM): NullPointerException: on line[%lu] in shred[id=%lu:%s]\n",
             m_linepos, shred->xid, shred->name.c_str() );
 
@@ -6411,14 +6411,14 @@ void Chuck_Instr_Op_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (string op) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 invalid_op:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): InvalidStringOpException: '%lu' on line[%lu] in shred[id=%lu:%s]\n",
         m_val, m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -6532,7 +6532,7 @@ void Chuck_Instr_UGen_Link::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     
 null_pointer:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): NullPointerException: (UGen link) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     
@@ -6579,7 +6579,7 @@ void Chuck_Instr_UGen_Array_Link::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
     
 null_pointer:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): NullPointerException: (UGen link) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     
@@ -6760,7 +6760,7 @@ void Chuck_Instr_Dec_Loop_Counter::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     
 error:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): LoopCounterError: on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -6796,7 +6796,7 @@ void Chuck_Instr_Reg_Push_Loop_Counter_Deref::execute( Chuck_VM * vm, Chuck_VM_S
     
 error:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): LoopCounterError: on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -6856,7 +6856,7 @@ void Chuck_Instr_IO_in_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (IO input int) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -6898,7 +6898,7 @@ void Chuck_Instr_IO_in_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (IO input float) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -6929,9 +6929,9 @@ void Chuck_Instr_IO_in_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // the string
     Chuck_String ** ppStr = (Chuck_String **)(sp+1);
     
-//    fprintf(stderr, "ppIO: 0x%08x\n", ppIO);
-//    fprintf(stderr, "ppStr: 0x%08x\n", ppStr);
-//    fprintf(stderr, "*ppStr: 0x%08x\n", *ppStr);
+//    CK_FPRINTF_STDERR( "ppIO: 0x%08x\n", ppIO );
+//    CK_FPRINTF_STDERR( "ppStr: 0x%08x\n", ppStr );
+//    CK_FPRINTF_STDERR( "*ppStr: 0x%08x\n", *ppStr );
     
     // check it
     if( *(ppIO) == NULL || *(ppStr) == NULL ) goto null_pointer;
@@ -6946,7 +6946,7 @@ void Chuck_Instr_IO_in_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (IO input string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -6988,7 +6988,7 @@ void Chuck_Instr_IO_out_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (IO output int) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -7030,7 +7030,7 @@ void Chuck_Instr_IO_out_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (IO output float) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -7074,7 +7074,7 @@ void Chuck_Instr_IO_out_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (IO output string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -7110,20 +7110,20 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         {
             // print it
             if( *(sp-1) == 0 && isa( m_type_ref, &t_object ) )
-                fprintf( stderr, "null :(%s)\n", m_type_ref->c_name() );
+                CK_FPRINTF_STDERR( "null :(%s)\n", m_type_ref->c_name() );
             else
-                fprintf( stderr, "%ld :(%s)\n", *(sp-1), m_type_ref->c_name() );
+                CK_FPRINTF_STDERR( "%ld :(%s)\n", *(sp-1), m_type_ref->c_name() );
         }
         else
         {
-            fprintf( stderr, "\"%s\" : (%s)\n", ((Chuck_String *)*(sp-1))->str.c_str(), m_type_ref->c_name() );
+            CK_FPRINTF_STDERR( "\"%s\" : (%s)\n", ((Chuck_String *)*(sp-1))->str.c_str(), m_type_ref->c_name() );
         }
     }
     else if( m_type_ref->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
         // print it
-        fprintf( stderr, "%f :(%s)\n", *(sp-1), m_type_ref->c_name() );
+        CK_FPRINTF_STDERR( "%f :(%s)\n", *(sp-1), m_type_ref->c_name() );
     }
     else if( m_type_ref->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
@@ -7131,17 +7131,17 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         {
             t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
             // print it
-            fprintf( stderr, "#(%.4f,%.4f) :(%s)\n", *(sp-2), *(sp-1), m_type_ref->c_name() );
+            CK_FPRINTF_STDERR( "#(%.4f,%.4f) :(%s)\n", *(sp-2), *(sp-1), m_type_ref->c_name() );
         }
         else if( m_type_ref->xid == te_polar )
         {
             t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
             // print it
-            fprintf( stderr, "%%(%.4f,%.4f*pi) :(%s)\n", *(sp-2), *(sp-1)/ONE_PI, m_type_ref->c_name() );
+            CK_FPRINTF_STDERR( "%%(%.4f,%.4f*pi) :(%s)\n", *(sp-2), *(sp-1)/ONE_PI, m_type_ref->c_name() );
         }
         else
         {
-            fprintf( stderr, "[chuck]: internal error printing 16-word primitive...\n" );
+            CK_FPRINTF_STDERR( "[chuck]: internal error printing 16-word primitive...\n" );
         }
     }
     else if( m_type_ref->size == sz_VEC3 ) // 1.3.5.3
@@ -7150,11 +7150,11 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         {
             t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
             // print it
-            fprintf( stderr, "@(%.4f,%.4f,%.4f) :(%s)\n", *(sp-3), *(sp-2), *(sp-1), m_type_ref->c_name() );
+            CK_FPRINTF_STDERR( "@(%.4f,%.4f,%.4f) :(%s)\n", *(sp-3), *(sp-2), *(sp-1), m_type_ref->c_name() );
         }
         else
         {
-            fprintf( stderr, "[chuck]: internal error printing 24-word primitive...\n" );
+            CK_FPRINTF_STDERR( "[chuck]: internal error printing 24-word primitive...\n" );
         }
     }
     else if( m_type_ref->size == sz_VEC4 ) // 1.3.5.3
@@ -7163,16 +7163,16 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         {
             t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
             // print it
-            fprintf( stderr, "@(%.4f,%.4f,%.4f,%.4f) :(%s)\n", *(sp-4), *(sp-3), *(sp-2), *(sp-1), m_type_ref->c_name() );
+            CK_FPRINTF_STDERR( "@(%.4f,%.4f,%.4f,%.4f) :(%s)\n", *(sp-4), *(sp-3), *(sp-2), *(sp-1), m_type_ref->c_name() );
         }
         else
         {
-            fprintf( stderr, "[chuck]: internal error printing 32-word primitive...\n" );
+            CK_FPRINTF_STDERR( "[chuck]: internal error printing 32-word primitive...\n" );
         }
     }
     else if( m_type_ref->size == 0 )
     {
-        fprintf( stderr, "... :(%s)\n", m_type_ref->c_name() );
+        CK_FPRINTF_STDERR( "... :(%s)\n", m_type_ref->c_name() );
     }
     else
         assert( FALSE );
@@ -7240,20 +7240,20 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
                 {
                     // print it
                     if( *(sp-1) == 0 )
-                        fprintf( stderr, "null " );
+                        CK_FPRINTF_STDERR( "null " );
                     else
-                        fprintf( stderr, "0x%lx ", *(sp) );
+                        CK_FPRINTF_STDERR( "0x%lx ", *(sp) );
                 }
                 else
                 {
                     // print it
-                    fprintf( stderr, "%ld ", *(sp) );
+                    CK_FPRINTF_STDERR( "%ld ", *(sp) );
                 }
             }
             else
             {
                 Chuck_String * str = ((Chuck_String *)*(sp));
-                fprintf( stderr, "%s ", str->str.c_str() );
+                CK_FPRINTF_STDERR( "%s ", str->str.c_str() );
             }
 
             the_sp += sz_INT; // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -7262,7 +7262,7 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         {
             t_CKFLOAT * sp = (t_CKFLOAT *)the_sp;
             // print it
-            fprintf( stderr, "%f ", *(sp) );
+            CK_FPRINTF_STDERR( "%f ", *(sp) );
 
             the_sp += sz_FLOAT; // ISSUE: 64-bit (fixed 1.3.1.0)
         }
@@ -7271,10 +7271,10 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             t_CKFLOAT * sp = (t_CKFLOAT *)the_sp;
             if( type->xid == te_complex )
                 // print it
-                fprintf( stderr, "#(%.4f,%.4f) ", *(sp), *(sp+1) );
+                CK_FPRINTF_STDERR( "#(%.4f,%.4f) ", *(sp), *(sp+1) );
             else if( type->xid == te_polar )
                 // print it
-                fprintf( stderr, "%%(%.4f,%.4f*pi) ", *(sp), *(sp+1)/ONE_PI );
+                CK_FPRINTF_STDERR( "%%(%.4f,%.4f*pi) ", *(sp), *(sp+1)/ONE_PI );
 
             the_sp += sz_COMPLEX; // ISSUE: 64-bit (fixed 1.3.1.0)
         }
@@ -7283,7 +7283,7 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             t_CKFLOAT * sp = (t_CKFLOAT *)the_sp;
             if( type->xid == te_vec3 )
                 // print it
-                fprintf( stderr, "#(%.4f,%.4f,%.4f) ", *(sp), *(sp+1), *(sp+2) );
+                CK_FPRINTF_STDERR( "#(%.4f,%.4f,%.4f) ", *(sp), *(sp+1), *(sp+2) );
             
             the_sp += sz_VEC3; // ISSUE: 64-bit (fixed 1.3.1.0)
         }
@@ -7292,19 +7292,19 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             t_CKFLOAT * sp = (t_CKFLOAT *)the_sp;
             if( type->xid == te_vec4 )
                 // print it
-                fprintf( stderr, "#(%.4f,%.4f,%.4f,%.4f) ", *(sp), *(sp+1), *(sp+2), *(sp+3) );
+                CK_FPRINTF_STDERR( "#(%.4f,%.4f,%.4f,%.4f) ", *(sp), *(sp+1), *(sp+2), *(sp+3) );
             
             the_sp += sz_VEC4; // ISSUE: 64-bit (fixed 1.3.1.0)
         }
         else if( type->size == 0 )
         {
-            fprintf( stderr, "... " );
+            CK_FPRINTF_STDERR( "... " );
         }
         else
             assert( FALSE );
     }
 
-    fprintf( stderr, "\n" );
+    CK_FPRINTF_STDERR( "\n" );
     
     // flush
     fflush( stderr );
@@ -7321,7 +7321,7 @@ const char * Chuck_Instr_Gack::params() const
 void throw_exception(Chuck_VM_Shred * shred, const char * name)
 {
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
             "[chuck](VM): %s: on line[%lu] in shred[id=%lu:%s]\n",
             name, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
@@ -7333,7 +7333,7 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name)
 void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKINT desc)
 {
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
             "[chuck](VM): %s: '%li' on line[%lu] in shred[id=%lu:%s]\n",
             name, desc, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
@@ -7345,7 +7345,7 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKINT desc)
 void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKFLOAT desc)
 {
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
             "[chuck](VM): %s: '%f' on line[%lu] in shred[id=%lu:%s]\n",
             name, desc, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
@@ -7357,7 +7357,7 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKFLOAT desc)
 void throw_exception(Chuck_VM_Shred * shred, const char * name, const char * desc)
 {
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
             "[chuck](VM): %s: %s on line[%lu] in shred[id=%lu:%s]\n",
             name, desc, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!

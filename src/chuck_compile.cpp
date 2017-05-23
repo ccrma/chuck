@@ -578,11 +578,11 @@ t_CKBOOL load_module( Chuck_Env * env, f_ck_query query,
     if( (query_failed = !(dll->load( query ) && dll->query())) ||
         !type_engine_add_dll( env, dll, nspc ) )
     {
-        fprintf( stderr, 
+        CK_FPRINTF_STDERR( 
                  "[chuck]: internal error loading module '%s.%s'...\n", 
                  nspc, name );
         if( query_failed )
-            fprintf( stderr, "       %s", dll->last_error() );
+            CK_FPRINTF_STDERR( "       %s", dll->last_error() );
 
         return FALSE;
     }

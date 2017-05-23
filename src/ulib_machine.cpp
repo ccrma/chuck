@@ -150,7 +150,7 @@ t_CKUINT machine_intsize()
 // add
 CK_DLL_SFUN( machine_crash_impl )
 {
-    fprintf( stderr, "[chuck]: crashing...\n" );
+    CK_FPRINTF_STDERR( "[chuck]: crashing...\n" );
     *(volatile int *)0 = 0;
 }
 

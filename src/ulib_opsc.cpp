@@ -1303,7 +1303,7 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
 
 error:
 
-    fprintf( stderr, "class import error!\n" );
+    CK_FPRINTF_STDERR( "class import error!\n" );
     // end the class import
     type_engine_import_class_end( env );
     return FALSE;
@@ -1432,8 +1432,8 @@ CK_DLL_MFUN( osc_send_kickMesg ) {
 CK_DLL_CTOR( osc_address_ctor ) { 
     OSC_Address_Space * addr = new OSC_Address_Space();
     addr->SELF = SELF;
-//    fprintf(stderr,"address:ptr %x\n", (uint)addr);
-//    fprintf(stderr,"self:ptr %x\n", (uint)SELF);
+//    CK_FPRINTF_STDERR("address:ptr %x\n", (uint)addr );
+//    CK_FPRINTF_STDERR("self:ptr %x\n", (uint)SELF );
     OBJ_MEMBER_INT(SELF, osc_address_offset_data) = (t_CKINT)addr;
 }
 

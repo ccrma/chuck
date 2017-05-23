@@ -2944,7 +2944,7 @@ static int TiltSensor_detect()
         powerbookKernFunc = 21;
 
     // 1.3.1.0: added cast to t_CKINT
-	fprintf( stdout, "osx_version = %ld \n", (t_CKINT)osx_version );
+	CK_FPRINTF_STDOUT( "osx_version = %ld \n", (t_CKINT)osx_version );
     
     // ibook/powerbook (OS X 10.4.x) tilt sensor interface
     if( TiltSensor_test( powerbookKernFunc, "IOI2CMotionSensor", kSMSPowerbookDataType ) )
@@ -3649,7 +3649,7 @@ t_CKINT WiiRemote::connect()
         EM_log( CK_LOG_WARNING, "hid: error: opening Wii Remote Controller L2CAP connection" );
         return -1;
     }
-    //fprintf( stderr, "l2cap control channel ref: 0x%x\n", control_channel );
+    //CK_FPRINTF_STDERR( "l2cap control channel ref: 0x%x\n", control_channel );
     if( IOBluetoothDeviceOpenL2CAPChannelAsync( device, &interrupt_channel, 19, 
                                                 Bluetooth_device_interrupt_event, 
                                                 this ) != kIOReturnSuccess )
@@ -4083,7 +4083,7 @@ void WiiRemote::control_send( const void * data, unsigned int size )
     //for( int i = 0; i < size; i++ )
     //    printf( " %02x", buf[i] );
     //printf( "\n" );
-    //fprintf( stderr, "l2cap control channel ref: 0x%x\n", control_channel );
+    //CK_FPRINTF_STDERR( "l2cap control channel ref: 0x%x\n", control_channel );
     
     IOReturn result;
     result = IOBluetoothL2CAPChannelWriteSync( control_channel, buf, size );
@@ -4887,7 +4887,7 @@ t_CKINT TiltSensor_setPollRate( t_CKINT usec )
     // sanity
     assert( usec >= 0 );
     // not supported
-    fprintf( stderr, "TiltSensor - setPollRate is not (yet) supported on this platform...\n" );
+    CK_FPRINTF_STDERR( "TiltSensor - setPollRate is not (yet) supported on this platform...\n" );
     return -1;
 }
 
@@ -4895,7 +4895,7 @@ t_CKINT TiltSensor_setPollRate( t_CKINT usec )
 t_CKINT TiltSensor_getPollRate( )
 {
     // not supported
-    fprintf( stderr, "TiltSensor - getPollRate is not (yet) supported on this platform...\n" );
+    CK_FPRINTF_STDERR( "TiltSensor - getPollRate is not (yet) supported on this platform...\n" );
     return -1;
 }
 
@@ -7173,7 +7173,7 @@ t_CKINT TiltSensor_setPollRate( t_CKINT usec )
     // sanity
     assert( usec >= 0 );
     // not supported
-    fprintf( stderr, "TiltSensor - setPollRate is not (yet) supported on this platform...\n" );
+    CK_FPRINTF_STDERR( "TiltSensor - setPollRate is not (yet) supported on this platform...\n" );
     return -1;
 }
 
@@ -7181,7 +7181,7 @@ t_CKINT TiltSensor_setPollRate( t_CKINT usec )
 t_CKINT TiltSensor_getPollRate( )
 {
     // not supported
-    fprintf( stderr, "TiltSensor - getPollRate is not (yet) supported on this platform...\n" );
+    CK_FPRINTF_STDERR( "TiltSensor - getPollRate is not (yet) supported on this platform...\n" );
     return -1;
 }
 

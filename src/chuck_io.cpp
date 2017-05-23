@@ -950,7 +950,7 @@ t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
 // peek next byte
 t_CKINT Chuck_IO_Serial::peek_buffer()
 {
-    // fprintf(stderr, "Chuck_IO_Serial::peek_buffer %i/%i\n", m_io_buf_pos, m_io_buf_available);
+    // CK_FPRINTF_STDERR( "Chuck_IO_Serial::peek_buffer %i/%i\n", m_io_buf_pos, m_io_buf_available);
     
     if(m_io_buf_pos >= m_io_buf_available)
     {
@@ -969,7 +969,7 @@ t_CKINT Chuck_IO_Serial::peek_buffer()
 // return -1 on error/exit condition
 t_CKINT Chuck_IO_Serial::pull_buffer()
 {
-    // fprintf(stderr, "Chuck_IO_Serial::pull_buffer %i/%i\n", m_io_buf_pos, m_io_buf_available);
+    // CK_FPRINTF_STDERR( "Chuck_IO_Serial::pull_buffer %i/%i\n", m_io_buf_pos, m_io_buf_available);
     
     if(m_io_buf_pos >= m_io_buf_available)
     {

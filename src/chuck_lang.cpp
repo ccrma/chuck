@@ -2224,7 +2224,7 @@ CK_DLL_MFUN( object_toString )
         if( !str )
         {
             // TODO: make this exception
-            fprintf( stderr, "[chuck]: Object.toString() out of memory!\n" );
+            CK_FPRINTF_STDERR( "[chuck]: Object.toString() out of memory!\n" );
             RETURN->v_object = NULL;
             return;
         }
@@ -3237,7 +3237,7 @@ CK_DLL_MFUN( fileio_writefloat )
 CK_DLL_MFUN( chout_close )
 {
     // problem
-    fprintf( stderr, "[chuck]: cannot close 'chout'...\n" );
+    CK_FPRINTF_STDERR( "[chuck]: cannot close 'chout'...\n" );
     Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
     c->close();
 }
@@ -3356,7 +3356,7 @@ CK_DLL_MFUN( chout_writefloat )
 CK_DLL_MFUN( cherr_close )
 {
     // problem
-    fprintf( stderr, "[chuck]: cannot close 'cherr'...\n" );
+    CK_FPRINTF_STDERR( "[chuck]: cannot close 'cherr'...\n" );
     Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
     c->close();
 }
@@ -4020,7 +4020,7 @@ CK_DLL_MFUN( array_set_size )
     if( size < 0 )
     {
         // TODO: make this exception
-        fprintf( stderr, "[chuck](via array): attempt to set negative array size!\n" );
+        CK_FPRINTF_STDERR( "[chuck](via array): attempt to set negative array size!\n" );
         RETURN->v_int = 0;
     }
     else
@@ -4055,7 +4055,7 @@ CK_DLL_MFUN( array_set_capacity )
     if( capacity < 0 )
     {
         // TODO: make this exception
-        fprintf( stderr, "[chuck](via array): attempt to set negative array capacity!\n" );
+        CK_FPRINTF_STDERR( "[chuck](via array): attempt to set negative array capacity!\n" );
         RETURN->v_int = 0;
     }
     else
@@ -4342,7 +4342,7 @@ CK_DLL_MFUN( HidIn_open )
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     t_CKINT type = GET_NEXT_INT(ARGS);
     t_CKINT num = GET_NEXT_INT(ARGS);
-    // fprintf(stderr, "HidIn_open %li %li\n", type, num);
+    // CK_FPRINTF_STDERR( "HidIn_open %li %li\n", type, num );
     RETURN->v_int = min->open( type, num );
 }
 
@@ -4573,7 +4573,7 @@ CK_DLL_SFUN( HidIn_ctrl_tiltPollRate )
     if( !SHRED || !SHRED->vm_ref )
     {
         // problem
-        fprintf( stderr, "[chuck](via HID): can't set tiltPollRate on NULL shred/VM...\n" );
+        CK_FPRINTF_STDERR( "[chuck](via HID): can't set tiltPollRate on NULL shred/VM...\n" );
         RETURN->v_dur = 0;
         return;
     }
@@ -4598,7 +4598,7 @@ CK_DLL_SFUN( HidIn_cget_tiltPollRate )
     if( !SHRED || !SHRED->vm_ref )
     {
         // problem
-        fprintf( stderr, "[chuck](via HID): can't get tiltPollRate on NULL shred/VM...\n" );
+        CK_FPRINTF_STDERR( "[chuck](via HID): can't get tiltPollRate on NULL shred/VM...\n" );
         RETURN->v_dur = 0;
         return;
     }

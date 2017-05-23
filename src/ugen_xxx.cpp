@@ -1591,7 +1591,7 @@ public:
       rand_bits++;
       randt = randt >> 1;
     }
-    // fprintf(stderr, "random bits - %d", rand_bits );
+    // CK_FPRINTF_STDERR( "random bits - %d", rand_bits );
     setMode ( "pink" );
   } 
   ~CNoise_Data() {}
@@ -1656,7 +1656,7 @@ t_CKINT CNoise_Data::pink_tick( SAMPLE * out )
     for ( t_CKINT i = 0 ; i < pink_depth ; i++ ) { pink_array[i] = rand(); last += pink_array[i]; } 
     scale = 2.0 / ((double)RAND_MAX  * ( pink_depth + 1.0 ) );
     bias = 0.0;
-    // fprintf( stderr, "scale %f %f %d %d \n", scale, bias, RAND_MAX, pink_depth + 1 );
+    // CK_FPRINTF_STDERR( "scale %f %f %d %d \n", scale, bias, RAND_MAX, pink_depth + 1 );
   }
 
   t_CKINT pind = 0;
@@ -1716,37 +1716,37 @@ CNoise_Data::fbm_tick( SAMPLE * out ) {
 void
 CNoise_Data::setMode( const char * c ) { 
   if ( strcmp ( c, "white" ) == 0 ) { 
-    // fprintf(stderr, "white noise\n");
+    // CK_FPRINTF_STDERR( "white noise\n" );
     mode = NOISE_WHITE;    
     scale = 2.0 / (t_CKFLOAT)RAND_MAX;
     bias = -1.0;
   }
   if ( strcmp ( c, "pink" ) == 0 ) { 
-    // fprintf(stderr, "pink noise\n");
+    // CK_FPRINTF_STDERR( "pink noise\n" );
     mode = NOISE_PINK;
     scale = 2.0 / (double)(RAND_MAX  * ( pink_depth + 1 ) );
     bias = -1.0;
   }
   if ( strcmp ( c, "flip" ) == 0) { 
-    // fprintf(stderr, "bitflip noise\n");
+    // CK_FPRINTF_STDERR( "bitflip noise\n" );
     mode = NOISE_FLIP;
     scale = 2.0 / (t_CKFLOAT)RAND_MAX;
     bias = -1.0;
   }
   if ( strcmp ( c, "xor" ) == 0) {
-    // fprintf(stderr, "xor noise\n"); 
+    // CK_FPRINTF_STDERR( "xor noise\n" );
     mode = NOISE_XOR;
     scale = 2.0 / (t_CKFLOAT)RAND_MAX;
     bias = -1.0;
   }
   if ( strcmp ( c, "brown" ) == 0) { 
-    // fprintf(stderr, "brownian noise\n");
+    // CK_FPRINTF_STDERR( "brownian noise\n" );
     mode = NOISE_BROWN;
     scale = 2.0 / (t_CKFLOAT)RAND_MAX;
     bias = -1.0;
   }
   if ( strcmp ( c, "fbm" ) == 0) {   
-    // fprintf(stderr, "fbm noise\n");
+    // CK_FPRINTF_STDERR( "fbm noise\n" );
     mode = NOISE_FBM;
     scale = 2.0 / (t_CKFLOAT)RAND_MAX;
     bias = -1.0;
@@ -2115,7 +2115,7 @@ CK_DLL_TICK( delayp_tick )
                 sampi = ( i + d->bufsize * 2 ) % d->bufsize;
 #ifdef _DEBUG 
                 if ( d->lasti == sampi ) { 
-                    fprintf( stderr, "[chuck](via Curve): over!\n");
+                    CK_FPRINTF_STDERR( "[chuck](via Curve): over!\n");
                 }
                 d->lasti = sampi;
 #endif
@@ -2130,7 +2130,7 @@ CK_DLL_TICK( delayp_tick )
                 sampi = ( i + d->bufsize * 2 ) % d->bufsize;
 #ifdef _DEBUG
                 if ( d->lasti == sampi ) { 
-                    fprintf(stderr, "[chuck](via Curve): over!\n");
+                    CK_FPRINTF_STDERR( "[chuck](via Curve): over!\n" );
                 }
                 d->lasti = sampi;
 #endif
@@ -2187,7 +2187,7 @@ CK_DLL_CTRL( delayp_ctrl_delay )
 
     if ( target != d->offset_target ) {
         if ( target > d->bufsize ) { 
-            fprintf( stderr, "[chuck](via delayp): delay time %f over max!  set max first!\n", target);
+            CK_FPRINTF_STDERR( "[chuck](via delayp): delay time %f over max!  set max first!\n", target);
             return;
         }
         d->offset_target = target;
@@ -2629,7 +2629,7 @@ inline t_CKINT sndbuf_load( sndbuf_data * d, t_CKUINT sample )
     
     // log
     // EM_log( CK_LOG_FINER, "chunk test: pos: %d bin: %d read:%d/%d", where, bin, d->chunks_read, d->num_frames );
-//    fprintf(stderr, "chunks: loaded bin %lu\n", bin);
+//    CK_FPRINTF_STDERR( "chunks: loaded bin %lu\n", bin );
 
     return ret;
 }
@@ -2763,7 +2763,7 @@ void sndbuf_sinc_interpolate( sndbuf_data *d, SAMPLE * out )
 void sndbuf_make_sinc( sndbuf_data * d )
 {
     t_CKINT i;
-    // fprintf(stderr, "building sinc table\n" );
+    // CK_FPRINTF_STDERR( "building sinc table\n" );
     double temp, win_freq, win;
     win_freq = ONE_PI / d->sinc_width / d->sinc_samples_per_zero_crossing;
     t_CKINT tabsize = d->sinc_width * d->sinc_samples_per_zero_crossing;
@@ -3117,7 +3117,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
                 d->buffer[j] = sin(2*ONE_PI*j/rawsize);
         }
         else {
-            fprintf( stderr, "[chuck](via SndBuf): cannot load '%s'\n", filename );
+            CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot load '%s'\n", filename );
             return;
         }
 
@@ -3129,7 +3129,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         struct stat s;
         if( stat( filename, &s ) )
         {
-            fprintf( stderr, "[chuck](via SndBuf): cannot stat file '%s'...\n", filename );
+            CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot stat file '%s'...\n", filename );
             return;
         }
 
@@ -3139,7 +3139,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         const char * format = (const char *)strrchr( filename, '.');
         if( format && strcmp( format, ".raw" ) == 0 )
         { 
-            fprintf( stderr, "[chuck](via SndBuf) %s :: type is '.raw'...\n    assuming 16 bit signed mono (PCM)\n", filename );
+            CK_FPRINTF_STDERR( "[chuck](via SndBuf) %s :: type is '.raw'...\n    assuming 16 bit signed mono (PCM)\n", filename );
             info.format = SF_FORMAT_RAW | SF_FORMAT_PCM_16 | SF_ENDIAN_CPU ;
             info.channels = 1;
             info.samplerate = 44100;
@@ -3150,8 +3150,8 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         t_CKINT er = sf_error( d->fd );
         if( er )
         {
-            fprintf( stderr, "[chuck](via SndBuf): sndfile error '%li' opening '%s'...\n", er, filename );
-            fprintf( stderr, "[chuck](via SndBuf): (reason: %s)\n", sf_strerror( d->fd ) );
+            CK_FPRINTF_STDERR( "[chuck](via SndBuf): sndfile error '%li' opening '%s'...\n", er, filename );
+            CK_FPRINTF_STDERR( "[chuck](via SndBuf): (reason: %s)\n", sf_strerror( d->fd ) );
             if( d->fd ) sf_close( d->fd );
             // escape
             return;
@@ -3201,7 +3201,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
             // check
             if( f != (t_CKUINT)d->num_frames )
             {
-                fprintf( stderr, "[chuck](via SndBuf): read %lu rather than %ld frames from %s\n",
+                CK_FPRINTF_STDERR( "[chuck](via SndBuf): read %lu rather than %ld frames from %s\n",
                          f, size, filename );
                 sf_close( d->fd ); d->fd = NULL;
                 return;
@@ -3235,7 +3235,7 @@ CK_DLL_CTRL( sndbuf_ctrl_write )
     struct stat s;
     if( stat( filename, &s ) )
     {
-        fprintf( stderr, "[chuck](via SndBuf): cannot stat file '%s'...\n", filename );
+        CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot stat file '%s'...\n", filename );
         return;
     }
     
@@ -3737,7 +3737,7 @@ struct LiSaMulti_data
     {
         mdata = (SAMPLE *)malloc((length + 1) * sizeof(SAMPLE)); //extra sample for safety....
         if(!mdata)  {
-            fprintf(stderr, "LiSaBasic: unable to allocate memory!\n");
+            CK_FPRINTF_STDERR( "LiSaBasic: unable to allocate memory!\n" );
             return false;
         }
         
@@ -3806,10 +3806,10 @@ struct LiSaMulti_data
             // ramp stuff here
             if(rindex < rec_ramplen) {
                 tempsample *= (rindex * rec_ramplen_inv);
-				//fprintf(stderr, "ramping up %f\n", rindex * rec_ramplen_inv);
+				//CK_FPRINTF_STDERR( "ramping up %f\n", rindex * rec_ramplen_inv );
             } else if(rindex > (loop_end_rec - rec_ramplen)) {
                 tempsample *= (loop_end_rec - rindex) * rec_ramplen_inv;
-				//fprintf(stderr, "ramping down %f\n", (loop_end_rec - rindex) * rec_ramplen_inv);
+				//CK_FPRINTF_STDERR( "ramping down %f\n", (loop_end_rec - rindex) * rec_ramplen_inv );
             }
             mdata[rindex] = tempsample;
             rindex++;
@@ -3837,7 +3837,7 @@ struct LiSaMulti_data
 
         } else if(pindex[which] >= mdata_len || pindex[which] < 0) { //should be >=, no?
             play[which] = 0;
-            //fprintf(stderr, "turning voice %d off!\n", which);
+            //CK_FPRINTF_STDERR( "turning voice %d off!\n", which );
             return (SAMPLE) 0.;
         }
         
@@ -3912,7 +3912,7 @@ struct LiSaMulti_data
     // ramp stuff
     inline void ramp_up(t_CKINT voicenum, t_CKDUR uptime)
     {            
-        // fprintf(stderr, "ramping up voice %d", voicenum);
+        // CK_FPRINTF_STDERR( "ramping up voice %d", voicenum );
 
         rampup[voicenum] = true;
         play[voicenum] = true;
@@ -4022,7 +4022,7 @@ struct LiSaMulti_data
 	
 		if ( index >= mdata_len || index < 0 ) {
 			index = 0;
-			fprintf(stderr, "LiSa: trying to put sample out of buffer range; ignoring");
+			CK_FPRINTF_STDERR( "LiSa: trying to put sample out of buffer range; ignoring" );
 		} else mdata[index] = insample;
 	
 	}
@@ -4032,7 +4032,7 @@ struct LiSaMulti_data
 	
 		if ( where > mdata_len || where < 0 ) {
 			where = 0;
-			fprintf(stderr, "LiSa: trying to grab sample out of buffer range; ignoring");
+			CK_FPRINTF_STDERR( "LiSa: trying to grab sample out of buffer range; ignoring" );
 			return 0.;
 		} else {
 		        
@@ -4080,7 +4080,7 @@ CK_DLL_CTOR( LiSaMulti_ctor )
 			
 	Chuck_UGen * ugen = (Chuck_UGen *)SELF;
 	f->num_chans = ugen->m_multi_chan_size > 0 ? ugen->m_multi_chan_size : 1;
-    //fprintf(stderr, "LiSa: number of channels = %d\n", f->num_chans);
+    //CK_FPRINTF_STDERR( "LiSa: number of channels = %d\n", f->num_chans );
 	f->outsamples = new SAMPLE[f->num_chans];
 	memset( f->outsamples, 0, (f->num_chans)*sizeof(SAMPLE) );
 	
@@ -4139,7 +4139,7 @@ CK_DLL_TICKF( LiSaMulti_tickf )
     for(unsigned int frame_idx = 0; frame_idx < nframes; frame_idx++)
     {
         SAMPLE * temp_out_samples = d->tick_multi( in[frame_idx*nchans+1] );
-//        fprintf(stderr, "%0.2f ", in[frame_idx*nchans+0]);
+//        CK_FPRINTF_STDERR( "%0.2f ", in[frame_idx*nchans+0] );
         
         for(unsigned int chan_idx = 0; chan_idx < nchans; chan_idx++)
         {
@@ -4160,7 +4160,7 @@ CK_DLL_CTRL( LiSaMulti_size )
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     t_CKDUR buflen = GET_NEXT_DUR(ARGS);
     if (buflen > LiSa_MAXBUFSIZE) {
-        fprintf(stderr, "LiSa: buffer size request too large, resizing\n");
+        CK_FPRINTF_STDERR( "LiSa: buffer size request too large, resizing\n" );
         buflen = LiSa_MAXBUFSIZE;
     }
     d->buffer_alloc((t_CKINT)buflen);
@@ -4198,7 +4198,7 @@ CK_DLL_CTRL( LiSaMulti_start_play )
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     t_CKINT which = GET_NEXT_INT(ARGS);
     d->play[which] = GET_NEXT_INT(ARGS);
-    //fprintf(stderr, "voice %d playing = %d\n", which, d->play[which]);
+    //CK_FPRINTF_STDERR( "voice %d playing = %d\n", which, d->play[which] );
 	
 	//turn off ramping toggles
 	d->rampdown[which] = false;
@@ -4217,7 +4217,7 @@ CK_DLL_CTRL( LiSaMulti_start_play0 )
 
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     d->play[0] = GET_NEXT_INT(ARGS);
-    //fprintf(stderr, "voice %d playing = %d\n", which, d->play[which]);
+    //CK_FPRINTF_STDERR( "voice %d playing = %d\n", which, d->play[which] );
 
 	//turn off ramping toggles
 	d->rampdown[0] = false;
@@ -4238,7 +4238,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_rate )
     t_CKINT which = GET_NEXT_INT(ARGS);
     d->p_inc[which] = (t_CKDOUBLE)GET_NEXT_FLOAT(ARGS); 
 														
-    //fprintf(stderr, "setting voice %d rate to %f\n", which, d->p_inc[which]);
+    //CK_FPRINTF_STDERR( "setting voice %d rate to %f\n", which, d->p_inc[which] );
     
     RETURN->v_float = d->p_inc[which];
 }
@@ -4249,7 +4249,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_rate0 )
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     d->p_inc[0] = (t_CKDOUBLE)GET_CK_FLOAT(ARGS);  
 	
-    //fprintf(stderr, "setting voice %d rate to %f\n", 0, d->p_inc[0]);
+    //CK_FPRINTF_STDERR( "setting voice %d rate to %f\n", 0, d->p_inc[0] );
     
     RETURN->v_float = d->p_inc[0];
 }
@@ -4263,7 +4263,7 @@ CK_DLL_CTRL( LiSaMulti_cget_rate )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     t_CKINT which = GET_NEXT_INT(ARGS);
-    //fprintf(stderr, "setting voice %d rate to %f\n", which, d->p_inc[which]);
+    //CK_FPRINTF_STDERR( "setting voice %d rate to %f\n", which, d->p_inc[which] );
     
     RETURN->v_float = d->p_inc[which];
 }
@@ -4272,7 +4272,7 @@ CK_DLL_CTRL( LiSaMulti_cget_rate )
 CK_DLL_CTRL( LiSaMulti_cget_rate0 )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-    //fprintf(stderr, "setting voice %d rate to %f\n", which, d->p_inc[which]);
+    //CK_FPRINTF_STDERR( "setting voice %d rate to %f\n", which, d->p_inc[which] );
     
     RETURN->v_float = d->p_inc[0];
 }
@@ -4663,7 +4663,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicepan )
 	
 	for(i=0; i<d->num_chans; i++) {
 		t_CKINT panTrunc = (t_CKINT)d->voicePan[which];
-		//fprintf(stderr, "panTrunc = %d, panFloat = %f, i = %d\n", panTrunc, d->voicePan[which], i);
+		//CK_FPRINTF_STDERR( "panTrunc = %d, panFloat = %f, i = %d\n", panTrunc, d->voicePan[which], i );
 		if(i == panTrunc) {
 			d->channelGain[which][i] = 1. - ( d->voicePan[which] - (t_CKFLOAT)i );
 			if(i == d->num_chans - 1) {
@@ -4679,7 +4679,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicepan )
 			
 		}
 		
-		//fprintf(stderr, "gain for channel %d and voice %d = %f\n", i, which, d->channelGain[which][i]);
+		//CK_FPRINTF_STDERR( "gain for channel %d and voice %d = %f\n", i, which, d->channelGain[which][i] );
 	}
     
     RETURN->v_float = (t_CKFLOAT)d->voicePan[which];
@@ -4711,7 +4711,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicepan0 )
 	
 	for(i=0; i<d->num_chans; i++) {
 		t_CKINT panTrunc = (t_CKINT)d->voicePan[which];
-		//fprintf(stderr, "panTrunc = %d, panFloat = %f, i = %d\n", panTrunc, d->voicePan[which], i);
+		//CK_FPRINTF_STDERR( "panTrunc = %d, panFloat = %f, i = %d\n", panTrunc, d->voicePan[which], i );
 		if(i == panTrunc) {
 			d->channelGain[which][i] = 1. - ( d->voicePan[which] - (t_CKFLOAT)i );
 			if(i == d->num_chans - 1) {
@@ -4727,7 +4727,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicepan0 )
 			
 		}
 		
-		//fprintf(stderr, "gain for channel %d and voice %d = %f\n", i, which, d->channelGain[which][i]);
+		//CK_FPRINTF_STDERR( "gain for channel %d and voice %d = %f\n", i, which, d->channelGain[which][i] );
 	}
     
     RETURN->v_float = (t_CKFLOAT)d->voicePan[which];
@@ -4870,7 +4870,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_maxvoices )
     d->maxvoices = GET_NEXT_INT(ARGS);
 	if( d->maxvoices > LiSa_MAXVOICES) {
 		d->maxvoices = LiSa_MAXVOICES;
-		fprintf(stderr, "LiSa: MAXVOICES limited to  %d.\n", LiSa_MAXVOICES);
+		CK_FPRINTF_STDERR( "LiSa: MAXVOICES limited to  %d.\n", LiSa_MAXVOICES );
 	}
     RETURN->v_int = d->maxvoices;
 }
@@ -4949,7 +4949,7 @@ CK_DLL_CGET( LiSaMulti_cget_playing )
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
 	t_CKINT voice = GET_NEXT_INT(ARGS);
 	if(voice >= d->maxvoices) {
-		fprintf(stderr, "LiSa: requesting info greater than MAXVOICES %d.\n", LiSa_MAXVOICES);
+		CK_FPRINTF_STDERR( "LiSa: requesting info greater than MAXVOICES %d.\n", LiSa_MAXVOICES );
 		voice = 0;
 	}
 	

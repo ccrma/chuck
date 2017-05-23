@@ -608,7 +608,7 @@ public:
     // reset
     void reset()
     {
-        // fprintf( stderr, "type: %s %i\n", c_name(), (t_CKUINT)this );
+        // CK_FPRINTF_STDERR( "type: %s %i\n", c_name(), (t_CKUINT)this );
         xid = te_void; 
         size = array_depth = obj_size = 0;
         is_copy = FALSE;

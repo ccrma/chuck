@@ -154,28 +154,28 @@ void EM_error( int pos, const char * message, ... )
     // separate errmsgs with newlines
     if( g_lasterror[0] != '\0' ) lastErrorCat( "\n" );
     
-    fprintf( stderr, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    CK_FPRINTF_STDERR( "[%s]:", *fileName ? mini(fileName) : "chuck" );
     sprintf( g_buffer, "[%s]:", *fileName ? mini(fileName) : "chuck" );
     lastErrorCat( g_buffer );
     if(lines)
     {
-        fprintf(stderr, "line(%d).char(%d):", num, pos-lines->i );
+        CK_FPRINTF_STDERR( "line(%d).char(%d):", num, pos-lines->i );
         sprintf( g_buffer, "line(%d).char(%d):", num, pos-lines->i );
         lastErrorCat( g_buffer );
     }
-    fprintf(stderr, " " );
+    CK_FPRINTF_STDERR( " " );
     lastErrorCat( " " );
     
     va_start(ap, message);
-    vfprintf(stderr, message, ap);
+    CK_VFPRINTF_STDERR( message, ap);
     va_end(ap);
 
     va_start(ap, message);
     vsprintf( g_buffer, message, ap );
     va_end(ap);
     
-    fprintf(stderr, "\n");
-    fflush( stderr );
+    CK_FPRINTF_STDERR( "\n");
+    CK_FFLUSH_STDERR();
     lastErrorCat( g_buffer );
 }
 
@@ -190,20 +190,20 @@ void EM_error2( int line, const char * message, ... )
     // separate errmsgs with newlines
     if( g_lasterror[0] != '\0' ) lastErrorCat( "\n" );
     
-    fprintf( stderr, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    CK_FPRINTF_STDERR( "[%s]:", *fileName ? mini(fileName) : "chuck" );
     sprintf( g_buffer, "[%s]:", *fileName ? mini(fileName) : "chuck" );
     lastErrorCat( g_buffer );
     if(line)
     {
-        fprintf( stderr, "line(%d):", line );
+        CK_FPRINTF_STDERR( "line(%d):", line );
         sprintf( g_buffer, "line(%d):", line );
         lastErrorCat( g_buffer );
     }
-    fprintf( stderr, " " );
+    CK_FPRINTF_STDERR( " " );
     lastErrorCat( " " );
 
     va_start( ap, message );
-    vfprintf( stderr, message, ap );
+    CK_VFPRINTF_STDERR( message, ap );
     va_end( ap );
 
     va_start( ap, message );
@@ -211,8 +211,8 @@ void EM_error2( int line, const char * message, ... )
     va_end( ap );
 
     lastErrorCat( g_buffer );
-    fprintf( stderr, "\n" );
-    fflush( stderr );
+    CK_FPRINTF_STDERR( "\n" );
+    CK_FFLUSH_STDERR();
 }
 
 
@@ -226,20 +226,20 @@ void EM_error2b( int line, const char * message, ... )
     // separate errmsgs with newlines
     if( g_lasterror[0] != '\0' ) lastErrorCat( "\n" );
     
-    fprintf( stderr, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    CK_FPRINTF_STDERR( "[%s]:", *fileName ? mini(fileName) : "chuck" );
     sprintf( g_buffer, "[%s]:", *fileName ? mini(fileName) : "chuck" );
     lastErrorCat( g_buffer );
     if(line)
     {
-        fprintf( stderr, "line(%d):", line );
+        CK_FPRINTF_STDERR( "line(%d):", line );
         sprintf( g_buffer, "line(%d):", line );
         lastErrorCat( g_buffer );
     }
-    fprintf( stderr, " " );
+    CK_FPRINTF_STDERR( " " );
     lastErrorCat( " " );
 
     va_start( ap, message );
-    vfprintf( stderr, message, ap );
+    CK_VFPRINTF_STDERR( message, ap );
     va_end( ap );
 
     va_start( ap, message );
@@ -247,8 +247,8 @@ void EM_error2b( int line, const char * message, ... )
     va_end( ap );
 
     lastErrorCat( g_buffer );
-    fprintf( stdout, "\n" );
-    fflush( stdout );
+    CK_FPRINTF_STDOUT( "\n" );
+    CK_FFLUSH_STDOUT();
 }
 
 
@@ -264,7 +264,7 @@ void EM_error3( const char * message, ... )
     g_buffer[0] = '\0';
 
     va_start( ap, message );
-    vfprintf( stderr, message, ap );
+    CK_VFPRINTF_STDERR( message, ap );
     va_end( ap );
 
     va_start( ap, message );
@@ -272,8 +272,8 @@ void EM_error3( const char * message, ... )
     va_end( ap );
 
     lastErrorCat( g_buffer );
-    fprintf( stderr, "\n" );
-    fflush( stderr );
+    CK_FPRINTF_STDERR( "\n" );
+    CK_FFLUSH_STDERR();
 }
 
 
@@ -289,19 +289,19 @@ void EM_log( int level, const char * message, ... )
     if( level > g_loglevel ) return;
 
     g_logmutex.acquire();
-    fprintf( stderr, "[chuck]:" );
-    fprintf( stderr, "(%i:%s): ", level, g_str[level] );
+    CK_FPRINTF_STDERR( "[chuck]:" );
+    CK_FPRINTF_STDERR( "(%i:%s): ", level, g_str[level] );
 
-    // if( g_logstack ) fprintf( stderr, " " );
+    // if( g_logstack ) CK_FPRINTF_STDERR( " " );
     for( int i = 0; i < g_logstack; i++ )
-        fprintf( stderr, " | " );
+        CK_FPRINTF_STDERR( " | " );
 
     va_start( ap, message );
-    vfprintf( stderr, message, ap );
+    CK_VFPRINTF_STDERR( message, ap );
     va_end( ap );
 
-    fprintf( stderr, "\n" );
-    fflush( stderr );
+    CK_FPRINTF_STDERR( "\n" );
+    CK_FFLUSH_STDERR();
     g_logmutex.release();
 }
 

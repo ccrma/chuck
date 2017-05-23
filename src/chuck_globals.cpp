@@ -151,7 +151,7 @@ extern "C" t_CKBOOL all_stop( )
 //-----------------------------------------------------------------------------
 extern "C" void signal_pipe( int sig_num )
 {
-    fprintf( stderr, "[chuck]: sigpipe handled - broken pipe (no connection)...\n" );
+    CK_FPRINTF_STDERR( "[chuck]: sigpipe handled - broken pipe (no connection)...\n" );
     if( g_sigpipe_mode )
     {
         all_detach();

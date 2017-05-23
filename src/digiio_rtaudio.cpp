@@ -379,7 +379,7 @@ static unsigned int __stdcall watch_dog( void * )
     {
         // get
         time = get_current_time( TRUE );
-        // fprintf( stderr, "last: %f now: %f\n", g_watchdog_time, time );
+        // CK_FPRINTF_STDERR( "last: %f now: %f\n", g_watchdog_time, time );
 
         // resting
         if( g_watchdog_state == FALSE )

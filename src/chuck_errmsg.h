@@ -66,6 +66,16 @@ void EM_newline( );
 #define CK_LOG_CORE             1
 #define CK_LOG_NONE             0  // set this to log nothing
 
+// printing
+#define CK_FPRINTF_STDOUT(...) fprintf(stdout, __VA_ARGS__)
+#define CK_FPRINTF_STDERR(...) fprintf(stderr, __VA_ARGS__)
+#define CK_FFLUSH_STDOUT() fflush(stdout)
+#define CK_FFLUSH_STDERR() fflush(stderr)
+#define CK_VFPRINTF_STDOUT(message, ap) vfprintf(stdout, message, ap)
+#define CK_VFPRINTF_STDERR(message, ap) vfprintf(stderr, message, ap)
+#define CK_STDCOUT std::cout
+#define CK_STDCERR std::cerr
+
 void EM_log( int, c_constr, ... );
 void EM_setlog( int );
 void EM_pushlog();
