@@ -74,13 +74,13 @@ void ck_fflush_stdout();
 void ck_fflush_stderr();
 void ck_vfprintf_stdout( const char * format, va_list args );
 void ck_vfprintf_stderr( const char * format, va_list args );
-// TODO: how to do CK_STDCOUT and CK_STDCERR...
-// can redirect them to the global stream, I think... see the links...
-// but how to know when to flush it?
 
 // callbacks
 void ck_set_stdout_callback( void (*callback)(const char *) );
 void ck_set_stderr_callback( void (*callback)(const char *) );
+
+// TODO: redirect CK_STDCOUT and CK_STDCERR. This is made complicated by
+//  the fact that it needs to be callable from both C and C++.
 
 #define CK_FPRINTF_STDOUT(...) ck_fprintf_stdout(__VA_ARGS__)
 #define CK_FPRINTF_STDERR(...) ck_fprintf_stderr(__VA_ARGS__)
