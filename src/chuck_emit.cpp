@@ -4128,6 +4128,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                         instr->m_name = value->name;
                         instr->m_type = type->xid;
                     }
+                    instr->set_linepos( decl->linepos );
                     emit->append( instr );
                 }
                 else if( type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -4139,6 +4140,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                         instr->m_name = value->name;
                         instr->m_type = type->xid;
                     }
+                    instr->set_linepos( decl->linepos );
                     emit->append( instr );
                 }
                 else if( type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)

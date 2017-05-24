@@ -3265,6 +3265,26 @@ void Chuck_Instr_EOC::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 
 //-----------------------------------------------------------------------------
+// name: alloc_error()
+// desc: display error message and exit shred
+//-----------------------------------------------------------------------------
+void alloc_error( Chuck_VM_Shred * shred, std::string name, t_CKUINT linepos )
+{
+    // display error
+    CK_FPRINTF_STDERR( 
+        "[chuck](VM): DuplicateExternalVariableError: external variable name %s already in use; duplicate is on line[%lu] in shred[id=%lu:%s]\n",
+        name.c_str(), linepos, shred->xid, shred->name.c_str()
+    );
+    
+    // exit shred
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: execute()
 // desc: alloc local
 //-----------------------------------------------------------------------------
@@ -3282,15 +3302,27 @@ void Chuck_Instr_Alloc_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     {
         if( m_type == te_int )
         {
-            vm->init_external_int( m_name, shred, m_val );
+            if( !vm->init_external_int( m_name, shred, m_val ) )
+            {
+                // external int name already in use
+                alloc_error( shred, m_name, m_linepos );
+            }
         }
         else if( m_type == te_float )
         {
-            vm->init_external_float( m_name, shred, m_val );
+            if( !vm->init_external_float( m_name, shred, m_val ) )
+            {
+                // external float name already in use
+                alloc_error( shred, m_name, m_linepos );
+            }
         }
         else if( m_type == te_event )
         {
-            vm->init_external_event( m_name, shred, m_val );
+            if( !vm->init_external_event( m_name, shred, m_val ) )
+            {
+                // external event name already in use
+                alloc_error( shred, m_name, m_linepos );
+            }
         }
     }
 }
@@ -3316,11 +3348,19 @@ void Chuck_Instr_Alloc_Word2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     {
         if( m_type == te_int )
         {
-            vm->init_external_int( m_name, shred, m_val );
+            if( !vm->init_external_int( m_name, shred, m_val ) )
+            {
+                // external int name already in use
+                alloc_error( shred, m_name, m_linepos );
+            }
         }
         else if( m_type == te_float )
         {
-            vm->init_external_float( m_name, shred, m_val );
+            if( !vm->init_external_float( m_name, shred, m_val ) )
+            {
+                // external float name already in use
+                alloc_error( shred, m_name, m_linepos );
+            }
         }
     }
 }

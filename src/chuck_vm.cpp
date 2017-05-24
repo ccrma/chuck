@@ -1120,6 +1120,7 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
     CK_TRACK( Chuck_Stats::instance()->remove_shred( shred ) );
 
     // un-track any external variables owned by this shred
+    // for external ints
     if( m_external_int_pointers.size() > 0 )
     {
         std::map< std::string, Chuck_VM_External_Int >::iterator iter;
@@ -1129,6 +1130,42 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
             if( iter->second.m_shred == shred )
             {
                 m_external_int_pointers.erase( iter++ );
+            }
+            else
+            {
+                iter++;
+            }
+        }
+    }
+    
+    // for external floats
+    if( m_external_float_pointers.size() > 0 )
+    {
+        std::map< std::string, Chuck_VM_External_Float >::iterator iter;
+        for( iter = m_external_float_pointers.begin(); iter != m_external_float_pointers.end(); )
+        {
+            // check all items to see if their shred matches the shred we are freeing
+            if( iter->second.m_shred == shred )
+            {
+                m_external_float_pointers.erase( iter++ );
+            }
+            else
+            {
+                iter++;
+            }
+        }
+    }
+    
+    // for external events
+    if( m_external_event_pointers.size() > 0 )
+    {
+        std::map< std::string, Chuck_VM_External_Event >::iterator iter;
+        for( iter = m_external_event_pointers.begin(); iter != m_external_event_pointers.end(); )
+        {
+            // check all items to see if their shred matches the shred we are freeing
+            if( iter->second.m_shred == shred )
+            {
+                m_external_event_pointers.erase( iter++ );
             }
             else
             {
@@ -1267,6 +1304,8 @@ t_CKBOOL Chuck_VM::set_external_int( std::string name, t_CKINT val ) {
 // desc: tell the vm that an external int is now available
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::init_external_int( std::string name, Chuck_VM_Shred * shred, t_CKUINT offset ) {
+    if( m_external_int_pointers.count( name ) != 0 ) { return FALSE; }
+    
     Chuck_VM_External_Int new_entry;
     new_entry.m_shred = shred;
     new_entry.offset = offset;
@@ -1318,6 +1357,8 @@ t_CKBOOL Chuck_VM::set_external_float( std::string name, t_CKFLOAT val ) {
 // desc: tell the vm that an external float is now available
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::init_external_float( std::string name, Chuck_VM_Shred * shred, t_CKUINT offset ) {
+    if( m_external_float_pointers.count( name ) != 0 ) { return FALSE; }
+    
     Chuck_VM_External_Float new_entry;
     new_entry.m_shred = shred;
     new_entry.offset = offset;
@@ -1369,6 +1410,8 @@ t_CKBOOL Chuck_VM::broadcast_external_event( std::string name ) {
 // desc: tell the vm that an external float is now available
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::init_external_event( std::string name, Chuck_VM_Shred * shred, t_CKUINT offset ) {
+    if( m_external_event_pointers.count( name ) != 0 ) { return FALSE; }
+    
     Chuck_VM_External_Event new_entry;
     new_entry.m_shred = shred;
     new_entry.offset = offset;
