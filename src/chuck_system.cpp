@@ -1430,6 +1430,12 @@ bool Chuck_System::clientVMShutdown()
     // stop VM
     if( m_vmRef ) m_vmRef->stop();
 
+    // wait for it to stop...
+    while( m_vmRef->running() )
+    {
+        usleep(1000);
+    }
+
     // free vm (mine, not global)
     SAFE_DELETE( m_vmRef ); m_vmRef = NULL;
     
