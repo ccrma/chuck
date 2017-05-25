@@ -1977,6 +1977,8 @@ void Chuck_Event::signal()
         m_queue.pop();
         m_queue_lock.release();
         Chuck_VM_Shreduler * shreduler = shred->vm_ref->shreduler();
+        // release the extra ref we added when we started waiting for this event
+        SAFE_RELEASE( shred->event );
         shred->event = NULL;
         shreduler->remove_blocked( shred );
         shreduler->shredule( shred );
@@ -2005,6 +2007,9 @@ t_CKBOOL Chuck_Event::remove( Chuck_VM_Shred * shred )
         if( m_queue.front() != shred )
             temp.push( m_queue.front() );
         else {
+            // this safe_release might cause the deletion of the object while we are still using it.
+            // so, put it in the caller -- Chuck_VM_Shreduler::remove_blocked
+            //SAFE_RELEASE( shred->event );
             shred->event = NULL;
             removed = TRUE;
         }
@@ -2097,6 +2102,11 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
         // add event to shred
         assert( shred->event == NULL );
         shred->event = this;
+        // the shred might need the event pointer after it's been released by the
+        // vm instruction Chuck_Instr_Release_Object2, in order to tell the event
+        // to forget the shred. So, add another reference so it won't be freed
+        // until the shred is done with it.
+        SAFE_ADD_REF( shred->event );
 
         // add shred to shreduler
         vm->shreduler()->add_blocked( shred );

@@ -2216,7 +2216,15 @@ t_CKBOOL Chuck_VM_Shreduler::remove_blocked( Chuck_VM_Shred * shred )
     blocked.erase( iter );
 
     // remove from event
-    if( shred->event != NULL ) shred->event->remove( shred );
+    if( shred->event != NULL )
+    {
+        Chuck_Event * event_to_release = shred->event;
+        // this call causes shred->event to become a null pointer
+        shred->event->remove( shred );
+        // but, we still have to release the event afterward
+        // to signify that the shred is done using the event
+        SAFE_RELEASE( event_to_release );
+    }
     
     return TRUE;
 }
