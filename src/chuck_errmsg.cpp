@@ -166,13 +166,141 @@ void ck_vfprintf_stderr( const char * format, va_list args )
 void ck_set_stdout_callback( void (*callback)(const char *) )
 {
     g_stdout_callback = callback;
+#ifdef __cplusplus
+    g_ck_stdoutstream.set_callback( callback );
+#endif
 }
 
 
 void ck_set_stderr_callback( void (*callback)(const char *) )
 {
     g_stderr_callback = callback;
+#ifdef __cplusplus
+    g_ck_stderrstream.set_callback( callback );
+#endif
 }
+
+#ifdef __cplusplus
+extern "C++" {
+
+Ck_Stdstream::Ck_Stdstream()
+{
+    m_callback = NULL;
+}
+
+
+Ck_Stdstream::~Ck_Stdstream()
+{
+}
+
+
+Ck_Stdstream& Ck_Stdstream::operator<<( const std::string val )
+{
+    m_stream << val;
+    if( val == CK_STDENDL )
+    {
+        this->flush();
+    }
+    return *this;
+}
+
+
+Ck_Stdstream& Ck_Stdstream::operator<<( const char * val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+Ck_Stdstream& Ck_Stdstream::operator<<( const double val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+Ck_Stdstream& Ck_Stdstream::operator<<( const float val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+Ck_Stdstream& Ck_Stdstream::operator<<( const unsigned long long val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+Ck_Stdstream& Ck_Stdstream::operator<<( const long long val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+Ck_Stdstream& Ck_Stdstream::operator<<( const unsigned long val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+Ck_Stdstream& Ck_Stdstream::operator<<( const long val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+Ck_Stdstream& Ck_Stdstream::operator<<( const unsigned int val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+Ck_Stdstream& Ck_Stdstream::operator<<( const int val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+Ck_Stdstream& Ck_Stdstream::operator<<( const bool val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+
+
+
+void Ck_Stdstream::set_callback( void (*callback)( const char * ) )
+{
+    m_callback = callback;
+}
+
+
+void Ck_Stdstream::flush()
+{
+    if( m_callback != NULL )
+    {
+        // send to callback
+        m_callback( m_stream.str().c_str() );
+        // clear buffer
+        m_stream.str( std::string() );
+    }
+}
+
+
+Ck_Stdstream g_ck_stdoutstream;
+Ck_Stdstream g_ck_stderrstream;
+
+}
+#endif
 
 #endif
 

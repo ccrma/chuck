@@ -79,18 +79,62 @@ void ck_vfprintf_stderr( const char * format, va_list args );
 void ck_set_stdout_callback( void (*callback)(const char *) );
 void ck_set_stderr_callback( void (*callback)(const char *) );
 
-// TODO: redirect CK_STDCOUT and CK_STDCERR. This is made complicated by
-//  the fact that it needs to be callable from both C and C++.
-
 #define CK_FPRINTF_STDOUT(...) ck_fprintf_stdout(__VA_ARGS__)
 #define CK_FPRINTF_STDERR(...) ck_fprintf_stderr(__VA_ARGS__)
 #define CK_FFLUSH_STDOUT() ck_fflush_stdout()
 #define CK_FFLUSH_STDERR() ck_fflush_stderr()
 #define CK_VFPRINTF_STDOUT(message, ap) ck_vfprintf_stdout(message, ap)
 #define CK_VFPRINTF_STDERR(message, ap) ck_vfprintf_stderr(message, ap)
+
+#ifdef __cplusplus
+// c++: custom stream-like thing
+extern "C++" {
+#include <sstream>
+
+class Ck_Stdstream
+{
+public:
+    Ck_Stdstream();
+    ~Ck_Stdstream();
+
+    // there's probably a way to do this with templates or something
+    // this is not that way
+    Ck_Stdstream& operator<<( const std::string val );
+    Ck_Stdstream& operator<<( const char * val );
+    Ck_Stdstream& operator<<( const double val );
+    Ck_Stdstream& operator<<( const float val );
+    Ck_Stdstream& operator<<( const unsigned long long val );
+    Ck_Stdstream& operator<<( const long long val );
+    Ck_Stdstream& operator<<( const unsigned long val );
+    Ck_Stdstream& operator<<( const long val );
+    Ck_Stdstream& operator<<( const unsigned int val );
+    Ck_Stdstream& operator<<( const int val );
+    Ck_Stdstream& operator<<( const bool val );
+
+    void set_callback( void (*callback)(const char *) );
+
+private:
+    void flush();
+    std::stringstream m_stream;
+    void (*m_callback)(const char *);
+};
+
+
+extern Ck_Stdstream g_ck_stdoutstream;
+extern Ck_Stdstream g_ck_stderrstream;
+
+#define CK_STDCOUT g_ck_stdoutstream
+#define CK_STDCERR g_ck_stderrstream
+#define CK_STDENDL std::string("\n")
+
+}
+#else
+// c: oh well
 #define CK_STDCOUT std::cout
 #define CK_STDCERR std::cerr
+#define CK_STDENDL std::endl
 
+#endif
 
 #else
 
@@ -102,6 +146,7 @@ void ck_set_stderr_callback( void (*callback)(const char *) );
 #define CK_VFPRINTF_STDERR(message, ap) vfprintf(stderr, message, ap)
 #define CK_STDCOUT std::cout
 #define CK_STDCERR std::cerr
+#define CK_STDENDL std::endl
 #endif
 
 void EM_log( int, c_constr, ... );
