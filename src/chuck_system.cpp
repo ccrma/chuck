@@ -344,6 +344,7 @@ Chuck_System::Chuck_System()
 {
     m_vmRef = NULL;
     m_compilerRef = NULL;
+    m_initOnly = FALSE;
 }
 
 
@@ -355,7 +356,7 @@ Chuck_System::Chuck_System()
 //-----------------------------------------------------------------------------
 Chuck_System::~Chuck_System()
 {
-    if( m_inittedOnly ) {
+    if( m_initOnly ) {
         // correct non-global destruction for initOnly ->go call
         this->clientVMShutdown();
     } else {
@@ -535,6 +536,7 @@ void Chuck_System::run( SAMPLE * input, SAMPLE * output, int numFrames )
 
 
 
+
 //-----------------------------------------------------------------------------
 // name: initialize()
 // desc: initialize chuck system
@@ -576,8 +578,7 @@ bool Chuck_System::clientInitialize( int srate, int bufferSize, int channelsIn,
 // desc: set chuck into motion. note -- if initOnly is true, you will later
 //       need to call unity_exit() when you are finally ready to exit
 //-----------------------------------------------------------------------------
-bool Chuck_System::go( int argc, const char ** argv,
-                       t_CKBOOL clientMode, t_CKBOOL initOnly )
+bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
 {
     Chuck_Compiler * compiler = NULL;
     Chuck_VM * vm = NULL;
@@ -681,6 +682,16 @@ bool Chuck_System::go( int argc, const char ** argv,
                 enable_server = FALSE;
             else if( !strcmp(argv[i], "--callback") )
                 block = FALSE;
+            else if( !strcmp( argv[i], "--external-callback" ) )
+            {
+                // caller will call the Chuck_System->run itself
+                m_initOnly = TRUE;
+                // --external-callback implies --loop: wait for incoming shreds
+                vm_halt = FALSE;
+                enable_server = TRUE;
+                // --external-callback implies --silent: don't engage the main thread hook
+                g_enable_realtime_audio = FALSE;
+            }
             // blocking removed, ge: 1.3.5.3
             // else if( !strcmp(argv[i], "--blocking") )
             //     block = TRUE;
@@ -1387,8 +1398,7 @@ if( g_compiler == NULL ) {
 
     
     // Don't run audio callback and shut down if we only wanted to init here
-    m_inittedOnly = initOnly;
-    if( initOnly ) {
+    if( m_initOnly ) {
         return TRUE;
     }
     

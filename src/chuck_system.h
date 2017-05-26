@@ -72,8 +72,7 @@ public:
 
 public:
     // monolithic mode (use this only if you are in ChucK)
-    bool go( int argc, const char ** argv,
-             t_CKBOOL clientMode = FALSE, t_CKBOOL initOnly = FALSE );
+    bool go( int argc, const char ** argv, t_CKBOOL clientMode = FALSE );
 
     // OR...
     
@@ -112,7 +111,7 @@ protected:
     // compiler reference
     Chuck_Compiler * m_compilerRef;
     // whether was fully run or only initted
-    bool m_inittedOnly;
+    bool m_initOnly;
     // another dir to look for chugins and me.dir() for compiled code
     std::string m_dataDir;
 };
