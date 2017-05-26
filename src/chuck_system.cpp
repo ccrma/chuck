@@ -572,11 +572,9 @@ bool Chuck_System::clientInitialize( int srate, int bufferSize, int channelsIn,
 
 
 
-// TODO: instead of initOnly param, make it a passed-in arg flag --initonly?
 //-----------------------------------------------------------------------------
 // name: go()
-// desc: set chuck into motion. note -- if initOnly is true, you will later
-//       need to call unity_exit() when you are finally ready to exit
+// desc: set chuck into motion
 //-----------------------------------------------------------------------------
 bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
 {
