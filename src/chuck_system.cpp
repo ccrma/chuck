@@ -491,11 +491,10 @@ bool Chuck_System::compileCode( const char * codeString, const std::string & arg
     }
     
     // construct full path to be associated with the file so me.sourceDir() works
-    // (I think this is unnecessary)
-    // std::string full_path = get_full_path(filename);
+    std::string full_path = m_dataDir + "/compiled_code";
     
     // parse, type-check, and emit (full_path added 1.3.0.0)
-    if( !m_compilerRef->go( "compiled_code", NULL, codeString, "" ) )
+    if( !m_compilerRef->go( "compiled_code", NULL, codeString, full_path ) )
         return false;
 
     // get the code
@@ -878,6 +877,13 @@ bool Chuck_System::go( int argc, const char ** argv,
             else if( !strncmp(argv[i], "-g", sizeof("-g")-1) )
             {
                 named_dls.push_back(argv[i]+sizeof("-g")-1);
+            }
+            else if( !strncmp( argv[i], "--data-dir:", sizeof("--data-dir:")-1 ) )
+            {
+                // get the rest, store for later
+                m_dataDir = std::string( argv[i]+sizeof("--data-dir:")-1 );
+                // also look for chugins here
+                dl_search_path.push_back( m_dataDir );
             }
             else if( !strcmp( argv[i], "--probe" ) )
                 probe = TRUE;

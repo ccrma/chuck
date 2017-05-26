@@ -113,6 +113,8 @@ protected:
     Chuck_Compiler * m_compilerRef;
     // whether was fully run or only initted
     bool m_inittedOnly;
+    // another dir to look for chugins and me.dir() for compiled code
+    std::string m_dataDir;
 };
 
 
