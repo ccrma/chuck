@@ -2547,8 +2547,8 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     while( (ent = readdir( m_dir )) ) // fixed 1.3.0.0: removed warning
     {
         Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
-        s->str = std::string( ent->d_name );
-        if ( s->str != ".." && s->str != "." )
+        s->set( std::string( ent->d_name ) );
+        if ( s->get() != ".." && s->get() != "." )
             // don't include .. and . in the list
             entrylist.push_back( s );
     }

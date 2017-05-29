@@ -624,7 +624,7 @@ CK_DLL_MFUN(oscout_dest)
         goto error;
     }
     
-    if(!out->setDestination(host->str, port))
+    if(!out->setDestination(host->get(), port))
         goto error;
     
     RETURN->v_object = SELF;
@@ -647,7 +647,7 @@ CK_DLL_MFUN(oscout_start)
         goto error;
     }
     
-    if(!out->start(method->str))
+    if(!out->start(method->get()))
         goto error;
     
     RETURN->v_object = SELF;
@@ -678,10 +678,10 @@ CK_DLL_MFUN(oscout_startDest)
         goto error;
     }
     
-    if(!out->setDestination(host->str, port))
+    if(!out->setDestination(host->get(), port))
         goto error;
     
-    if(!out->start(method->str))
+    if(!out->start(method->get()))
         goto error;
     
     RETURN->v_object = SELF;
@@ -732,7 +732,7 @@ CK_DLL_MFUN(oscout_addString)
     
     Chuck_String *s = GET_NEXT_STRING(ARGS);
     
-    if(!out->add(s->str))
+    if(!out->add(s->get()))
         goto error;
     
     RETURN->v_object = SELF;
@@ -837,7 +837,7 @@ CK_DLL_MFUN(oscin_addAddress)
         goto error;
     }
 
-    in->addMethod(address->str);
+    in->addMethod(address->get());
     
 error:
     return;
@@ -855,7 +855,7 @@ CK_DLL_MFUN(oscin_removeAddress)
         goto error;
     }
     
-    in->removeMethod(address->str);
+    in->removeMethod(address->get());
     
 error:
     return;
@@ -911,8 +911,8 @@ CK_DLL_MFUN(oscin_recv)
     
     RETURN->v_int = in->get(msg);
     
-    OBJ_MEMBER_STRING(msg_obj, oscmsg_offset_address)->str = msg.path;
-    OBJ_MEMBER_STRING(msg_obj, oscmsg_offset_typetag)->str = msg.type;
+    OBJ_MEMBER_STRING(msg_obj, oscmsg_offset_address)->set( msg.path );
+    OBJ_MEMBER_STRING(msg_obj, oscmsg_offset_typetag)->set( msg.type );
     
     args_obj = (Chuck_Array4 *) OBJ_MEMBER_OBJECT(msg_obj, oscmsg_offset_args);
     args_obj->clear();
@@ -928,16 +928,16 @@ CK_DLL_MFUN(oscin_recv)
         switch(msg.type[i])
         {
             case 'i':
-                OBJ_MEMBER_STRING(arg_obj, oscarg_offset_type)->str = "i";
+                OBJ_MEMBER_STRING(arg_obj, oscarg_offset_type)->set( "i" );
                 OBJ_MEMBER_INT(arg_obj, oscarg_offset_i) = msg.args[i].i;
                 break;
             case 'f':
-                OBJ_MEMBER_STRING(arg_obj, oscarg_offset_type)->str = "f";
+                OBJ_MEMBER_STRING(arg_obj, oscarg_offset_type)->set( "f" );
                 OBJ_MEMBER_FLOAT(arg_obj, oscarg_offset_f) = msg.args[i].f;
                 break;
             case 's':
-                OBJ_MEMBER_STRING(arg_obj, oscarg_offset_type)->str = "s";
-                OBJ_MEMBER_STRING(arg_obj, oscarg_offset_s)->str = msg.args[i].s;
+                OBJ_MEMBER_STRING(arg_obj, oscarg_offset_type)->set( "s" );
+                OBJ_MEMBER_STRING(arg_obj, oscarg_offset_s)->set( msg.args[i].s );
                 break;
         }
         
@@ -1336,7 +1336,7 @@ CK_DLL_MFUN( osc_send_setHost ) {
     OSC_Transmitter* xmit = (OSC_Transmitter *)OBJ_MEMBER_INT(SELF, osc_send_offset_data);
     Chuck_String* host = GET_NEXT_STRING(ARGS);
     t_CKINT port = GET_NEXT_INT(ARGS);
-    xmit->setHost( (char*) host->str.c_str(), port );
+    xmit->setHost( (char*) host->get().c_str(), port );
 }
 
 //----------------------------------------------
@@ -1347,7 +1347,7 @@ CK_DLL_MFUN( osc_send_startMesg ) {
     OSC_Transmitter* xmit = (OSC_Transmitter *)OBJ_MEMBER_INT(SELF, osc_send_offset_data);
     Chuck_String* address = GET_NEXT_STRING(ARGS);
     Chuck_String* args = GET_NEXT_STRING(ARGS);
-    xmit->startMessage( (char*) address->str.c_str(), (char*) args->str.c_str() );
+    xmit->startMessage( (char*) address->get().c_str(), (char*) args->get().c_str() );
 }
 
 //----------------------------------------------
@@ -1357,7 +1357,7 @@ CK_DLL_MFUN( osc_send_startMesg ) {
 CK_DLL_MFUN( osc_send_startMesg_spec ) { 
     OSC_Transmitter* xmit = (OSC_Transmitter *)OBJ_MEMBER_INT(SELF, osc_send_offset_data);
     Chuck_String* spec = GET_NEXT_STRING(ARGS);
-    xmit->startMessage( (char*) spec->str.c_str() );
+    xmit->startMessage( (char*) spec->get().c_str() );
 }
 
 //----------------------------------------------
@@ -1384,7 +1384,7 @@ CK_DLL_MFUN( osc_send_addFloat ) {
 //-----------------------------------------------
 CK_DLL_MFUN( osc_send_addString ) { 
     OSC_Transmitter* xmit = (OSC_Transmitter *)OBJ_MEMBER_INT(SELF, osc_send_offset_data);
-    xmit->addString( (char*)(GET_NEXT_STRING(ARGS))->str.c_str() );
+    xmit->addString( (char*)(GET_NEXT_STRING(ARGS))->get().c_str() );
 }
 
 //----------------------------------------------
@@ -1444,7 +1444,7 @@ CK_DLL_DTOR( osc_address_dtor ) {
 
 CK_DLL_MFUN( osc_address_set ) { 
     OSC_Address_Space * addr = (OSC_Address_Space *)OBJ_MEMBER_INT( SELF, osc_address_offset_data );
-    addr->setSpec ( (char*)(GET_NEXT_STRING(ARGS))->str.c_str() );
+    addr->setSpec ( (char*)(GET_NEXT_STRING(ARGS))->get().c_str() );
     RETURN->v_int = 0;
 }
 
@@ -1608,7 +1608,7 @@ CK_DLL_MFUN( osc_recv_new_address )
     
     // added 1.3.1.1: fix potential race condition
     //OSC_Address_Space * new_addr_obj = recv->new_event( (char*)spec_obj->str.c_str() );
-    OSC_Address_Space * new_addr_obj = new OSC_Address_Space( (char*)spec_obj->str.c_str() );
+    OSC_Address_Space * new_addr_obj = new OSC_Address_Space( (char*)spec_obj->get().c_str() );
 
     /* wolf in sheep's clothing
     initialize_object( new_addr_obj , osc_addr_type_ptr ); //initialize in vm
@@ -1638,7 +1638,7 @@ CK_DLL_MFUN( osc_recv_new_address_type )
     OSC_Receiver * recv = (OSC_Receiver *)OBJ_MEMBER_INT(SELF, osc_recv_offset_data);
     Chuck_String * addr_obj = (Chuck_String*)GET_NEXT_STRING(ARGS); //listener object class...
     Chuck_String * type_obj = (Chuck_String*)GET_NEXT_STRING(ARGS); //listener object class...
-    OSC_Address_Space * new_addr_obj = recv->new_event( (char*)addr_obj->str.c_str(), (char*)type_obj->str.c_str() );
+    OSC_Address_Space * new_addr_obj = recv->new_event( (char*)addr_obj->get().c_str(), (char*)type_obj->get().c_str() );
 
     /* wolf in sheep's clothing
     initialize_object( new_addr_obj , osc_addr_type_ptr ); //initialize in vm

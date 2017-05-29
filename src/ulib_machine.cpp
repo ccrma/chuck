@@ -157,7 +157,7 @@ CK_DLL_SFUN( machine_crash_impl )
 // add
 CK_DLL_SFUN( machine_add_impl )
 {
-    const char * v = GET_CK_STRING(ARGS)->str.c_str();
+    const char * v = GET_CK_STRING(ARGS)->get().c_str();
     Net_Msg msg;
 
     msg.type = MSG_ADD;
@@ -180,7 +180,7 @@ CK_DLL_SFUN( machine_remove_impl )
 CK_DLL_SFUN( machine_replace_impl )
 {
     t_CKINT v = GET_NEXT_INT(ARGS);
-    const char * v2 = GET_NEXT_STRING(ARGS)->str.c_str();
+    const char * v2 = GET_NEXT_STRING(ARGS)->get().c_str();
     Net_Msg msg;
     
     msg.type = MSG_REPLACE;
