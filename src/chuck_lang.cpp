@@ -3987,7 +3987,7 @@ CK_DLL_MFUN( string_parent )
 #ifdef WIN32
     // SPENCERTODO: make this legit on windows
     if(i == string::npos)
-        i = str->get().rfind('\\', str->str.length()-2);
+        i = str->get().rfind('\\', str->get().length()-2);
 #endif // WIN32
     
     Chuck_String * parent = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
