@@ -459,8 +459,8 @@ public:
     Chuck_String( const std::string & s = "" ) { set( s ); }
     ~Chuck_String() { }
 
-    void set( std::string s ) { str = s; charptr = str.c_str(); }
-    std::string get() { return str; }
+    void set( const std::string & s ) { str = s; charptr = str.c_str(); }
+    const std::string & get() { return str; }
     const char * getChar() { return charptr; }
 
 private:
