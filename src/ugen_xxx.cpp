@@ -3413,8 +3413,8 @@ public:
   
   int count; //diagnostic
 
-  Dyno_Data() {
-    ms = g_vm->srate() / 1000.0;
+  Dyno_Data( Chuck_VM * vm ) {
+    ms = vm->srate() / 1000.0;
     xd = 0.0;
     count = 0;
     sideInput = 0;
@@ -3447,9 +3447,6 @@ public:
   void setRatio(t_CKFLOAT newRatio);
   t_CKFLOAT getRatio();
 };
-
-// ge: commented out 1.3.5.3 -- not sure how this ever worked
-// const t_CKDUR Dyno_Data::ms = g_vm->srate() * 1.0 / 1000.0;
 
 //setters for the timing constants
 void Dyno_Data::setAttackTime(t_CKDUR t) {
@@ -3648,7 +3645,7 @@ CK_DLL_CGET( dyno_cget_externalSideInput ) {
 //constructor
 CK_DLL_CTOR( dyno_ctor )
 {
-    OBJ_MEMBER_UINT(SELF, dyno_offset_data) = (t_CKUINT)new Dyno_Data;
+    OBJ_MEMBER_UINT(SELF, dyno_offset_data) = (t_CKUINT)new Dyno_Data( SHRED->vm_ref );
 }
 
 CK_DLL_DTOR( dyno_dtor )
