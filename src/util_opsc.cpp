@@ -1616,7 +1616,7 @@ OSC_Transmitter::kickMessage() {
 
 // OSC_RECEIVER
 
-OSC_Receiver::OSC_Receiver():
+OSC_Receiver::OSC_Receiver( Chuck_VM * vm ):
     // _listening(false),
     // _inbufsize(OSCINBUFSIZE),
     _port(-1),
@@ -1633,6 +1633,8 @@ OSC_Receiver::OSC_Receiver():
     _address_num(0),
     m_event_buffer(NULL)
 {
+    // store vm ref
+    m_vmRef = vm;
     // allocate inbox
     _inbox = (OSCMesg *)malloc( sizeof(OSCMesg) * _inbox_size );
     // initialize payload
@@ -1651,10 +1653,12 @@ OSC_Receiver::OSC_Receiver():
     init();
 }
 
-OSC_Receiver::OSC_Receiver( UDP_Receiver * in )
+OSC_Receiver::OSC_Receiver( Chuck_VM * vm, UDP_Receiver * in )
 {
     // _in = in;
     _port = -1;
+    // store vm ref
+    m_vmRef = vm;
 }
 
 void OSC_Receiver::init()
@@ -1688,7 +1692,7 @@ OSC_Receiver::~OSC_Receiver()
     // TODO: do this thread-safely
     // if( m_event_buffer )
     // {
-    //     g_vm->destroy_event_buffer( m_event_buffer );
+    //     m_vmRef->destroy_event_buffer( m_event_buffer );
     //     m_event_buffer = NULL;
     // }
     
@@ -1742,7 +1746,7 @@ bool
 OSC_Receiver::listen()
 {
     if( m_event_buffer == NULL )
-        m_event_buffer = g_vm->create_event_buffer();
+        m_event_buffer = m_vmRef->create_event_buffer();
     
     unsubscribe(); // in case we're connected.
     

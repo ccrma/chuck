@@ -496,10 +496,12 @@ protected:
     
     CBufferSimple * m_event_buffer;
     
+    Chuck_VM * m_vmRef;
+    
 public:
     
-    OSC_Receiver();
-    OSC_Receiver( UDP_Receiver * in );
+    OSC_Receiver( Chuck_VM * vm );
+    OSC_Receiver( Chuck_VM * vm, UDP_Receiver * in );
     virtual ~OSC_Receiver();
     
     //setup //takedown

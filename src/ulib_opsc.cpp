@@ -1515,7 +1515,7 @@ CK_DLL_MFUN( osc_address_next_string  ) {
 //-----------------------------------------------
 CK_DLL_CTOR( osc_recv_ctor )
 {
-    OSC_Receiver * recv = new OSC_Receiver();
+    OSC_Receiver * recv = new OSC_Receiver( SHRED->vm_ref );
     OBJ_MEMBER_INT( SELF, osc_send_offset_data ) = (t_CKINT)recv;
 }
 
