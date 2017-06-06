@@ -102,48 +102,7 @@ char g_host[256] = "127.0.0.1";
 //-----------------------------------------------------------------------------
 extern "C" void signal_int( int sig_num )
 {
-    CK_FPRINTF_STDERR( "[chuck]: cleaning up...\n" );
-
-    if( g_vm )
-    {
-        // get vm
-        Chuck_VM * vm = g_vm;
-        Chuck_Compiler * compiler = g_compiler;
-        // flag the global one
-        g_vm = NULL;
-        g_compiler = NULL;
-        // if not NULL
-        if( vm )
-        {
-            // stop VM
-            vm->stop();
-            // stop (was VM::stop())
-            all_stop();
-            // detach
-            all_detach();
-        }
-
-        // things don't work so good on windows...
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-        // pthread_kill( g_tid_otf, 2 );
-        if( g_tid_otf ) pthread_cancel( g_tid_otf );
-        if( g_tid_whatever ) pthread_cancel( g_tid_whatever );
-        // if( g_tid_otf ) usleep( 50000 );
-#else
-        // close handle
-        if( g_tid_otf ) CloseHandle( g_tid_otf );
-#endif
-        // will this work for windows?
-        SAFE_DELETE( vm );
-        SAFE_DELETE( compiler );
-
-        // ck_close( g_sock );
-    }
-
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-    // pthread_join( g_tid_otf, NULL );
-#endif
-    
+    global_cleanup();
     exit(2);
 }
 
@@ -151,10 +110,10 @@ extern "C" void signal_int( int sig_num )
 
 
 //-----------------------------------------------------------------------------
-// name: unity_exit()
+// name: global_cleanup()
 // desc: ...
 //-----------------------------------------------------------------------------
-extern "C" void unity_exit()
+extern "C" void global_cleanup()
 {
     CK_FPRINTF_STDERR( "[chuck]: cleaning up...\n" );
     
