@@ -106,6 +106,7 @@ protected:
     DWORD__    * m_in_count;
     DWORD__    * m_out_count;
     DWORD__    m_max_midi_device;
+    Chuck_VM * m_vmRef;
 };
 
 

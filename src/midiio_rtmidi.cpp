@@ -52,7 +52,8 @@
 std::vector<RtMidiIn *> MidiInManager::the_mins;
 std::vector<CBufferAdvance *> MidiInManager::the_bufs;
 std::vector<RtMidiOut *> MidiOutManager::the_mouts;
-CBufferSimple * MidiInManager::m_event_buffer = NULL;
+std::map< Chuck_VM *, CBufferSimple * > MidiInManager::m_event_buffers;
+
 
 
 
@@ -330,14 +331,14 @@ MidiIn::~MidiIn( )
 // name: open()
 // desc: open
 //-----------------------------------------------------------------------------
-t_CKBOOL MidiIn::open( t_CKUINT device_num )
+t_CKBOOL MidiIn::open( Chuck_VM * vm, t_CKUINT device_num )
 {
     // close if already opened
     if( m_valid )
         this->close();
     
     // open
-    return m_valid = MidiInManager::open( this, (t_CKINT)device_num );
+    return m_valid = MidiInManager::open( this, vm, (t_CKINT)device_num );
 }
 
 
@@ -347,14 +348,14 @@ t_CKBOOL MidiIn::open( t_CKUINT device_num )
 // name: open()
 // desc: open
 //-----------------------------------------------------------------------------
-t_CKBOOL MidiIn::open( const std::string & name )
+t_CKBOOL MidiIn::open( Chuck_VM * vm, const std::string & name )
 {
     // close if already opened
     if( m_valid )
         this->close();
     
     // open
-    return m_valid = MidiInManager::open( this, name );
+    return m_valid = MidiInManager::open( this, vm, name );
 }
 
 
@@ -374,19 +375,19 @@ MidiInManager::~MidiInManager()
 }
 
 
-t_CKBOOL MidiInManager::open( MidiIn * min, t_CKINT device_num )
+t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
 {
     // see if port not already open
     if( device_num >= (t_CKINT)the_mins.capacity() || !the_mins[device_num] )
     {
-        if( m_event_buffer == NULL )
+        if( m_event_buffers.count( vm ) == 0 )
         {
-            m_event_buffer = g_vm->create_event_buffer();
+            m_event_buffers[vm] = vm->create_event_buffer();
         }
         
         // allocate the buffer
         CBufferAdvance * cbuf = new CBufferAdvance;
-        if( !cbuf->initialize( BUFFER_SIZE, sizeof(MidiMsg), m_event_buffer ) )
+        if( !cbuf->initialize( BUFFER_SIZE, sizeof(MidiMsg), m_event_buffers[vm] ) )
         {
             if( !min->m_suppress_output )
                 EM_error2( 0, "MidiIn: couldn't allocate CBuffer for port %i...", device_num );
@@ -442,7 +443,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, t_CKINT device_num )
 
 
 
-t_CKBOOL MidiInManager::open( MidiIn * min, const std::string & name )
+t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, const std::string & name )
 {
     t_CKINT device_num = -1;
     
@@ -494,7 +495,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, const std::string & name )
         return FALSE;
     }
     
-    t_CKBOOL result = open( min, device_num );
+    t_CKBOOL result = open( min, vm, device_num );
     
     return result;
 }

@@ -57,6 +57,7 @@ BBQ::BBQ()
     memset( m_out_count, 0, m_max_midi_device * sizeof(DWORD__) );
     //m_midi_out[0] = new MidiOut;
     //m_midi_in[0] = new MidiIn;
+    m_vmRef = NULL;
 }
 
 
@@ -91,6 +92,8 @@ BOOL__ BBQ::initialize( DWORD__ num_dac_channels, DWORD__ num_adc_channels,
 {
     set_inouts( adc, dac );
     set_chans( num_adc_channels, num_dac_channels );
+
+    m_vmRef = vm_ref;
 
     return Digitalio::initialize( 
         num_dac_channels, num_adc_channels,
@@ -236,11 +239,16 @@ MidiIn * BBQ::midi_in( DWORD__ index )
 {
     if( index >= m_max_midi_device )
         return NULL;
+    
+    if( m_vmRef == NULL )
+    {
+        return NULL;
+    }
         
     if( m_midi_in[index] == NULL )
     {
         m_midi_in[index] = new MidiIn;
-        if( !m_midi_in[index]->open( index ) )
+        if( !m_midi_in[index]->open( m_vmRef, index ) )
         {
             delete m_midi_in[index];
             m_midi_in[index] = NULL;

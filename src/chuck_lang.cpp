@@ -4148,14 +4148,14 @@ CK_DLL_MFUN( MidiIn_open )
 {
     MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
     t_CKINT port = GET_CK_INT(ARGS);
-    RETURN->v_int = min->open( port );
+    RETURN->v_int = min->open( SHRED->vm_ref, port );
 }
 
 CK_DLL_MFUN( MidiIn_open_named ) // added 1.3.0.0
 {
     MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
     Chuck_String * name = GET_CK_STRING(ARGS);
-    RETURN->v_int = min->open( name->str );
+    RETURN->v_int = min->open( SHRED->vm_ref, name->str );
 }
 
 CK_DLL_MFUN( MidiIn_good )
