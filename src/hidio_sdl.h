@@ -92,8 +92,8 @@ public:
     ~HidIn();
 
 public:
-    t_CKBOOL open( t_CKINT device_type, t_CKINT device_num );
-    t_CKBOOL open( std::string & name, t_CKUINT device_type = CK_HID_DEV_COUNT );
+    t_CKBOOL open( Chuck_VM * vm, t_CKINT device_type, t_CKINT device_num );
+    t_CKBOOL open( Chuck_VM * vm, std::string & name, t_CKUINT device_type = CK_HID_DEV_COUNT );
     t_CKBOOL close();
     t_CKBOOL read( t_CKINT type, t_CKINT num, HidMsg * msg );
     t_CKBOOL send( const HidMsg * msg );
@@ -127,8 +127,8 @@ public:
     static void init();
     static void init_default_drivers();
     static void cleanup();
-    static t_CKBOOL open( HidIn * hin, t_CKINT device_type, t_CKINT device_num );
-    static t_CKBOOL open( HidIn * hin, t_CKINT device_type, std::string & device_name );
+    static t_CKBOOL open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, t_CKINT device_num );
+    static t_CKBOOL open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, std::string & device_name );
     static t_CKBOOL close( HidIn * hin );
     
     static void probeHidIn();
@@ -142,7 +142,7 @@ public:
 
     static void push_message( HidMsg & msg );
     
-    static CBufferSimple * m_event_buffer;
+    static std::map< Chuck_VM *, CBufferSimple * > m_event_buffers;
     
 protected:
     static std::vector< std::vector<PhyHidDevIn *> > the_matrix;

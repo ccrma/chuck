@@ -56,7 +56,7 @@ struct PhyHidDevIn
 public:
     PhyHidDevIn();
     ~PhyHidDevIn();
-    t_CKBOOL open( t_CKINT type, t_CKUINT number );
+    t_CKBOOL open( Chuck_VM * vm, t_CKINT type, t_CKUINT number );
     t_CKBOOL read( t_CKINT element_type, t_CKINT element_num, HidMsg * msg );
     t_CKBOOL send( const HidMsg * msg );
     t_CKBOOL close();
@@ -96,7 +96,7 @@ t_CKBOOL HidInManager::thread_going = FALSE;
 t_CKBOOL HidInManager::has_init = FALSE;
 CBufferSimple * HidInManager::msg_buffer = NULL;
 std::vector<PhyHidDevOut *> HidOutManager::the_phouts;
-CBufferSimple * HidInManager::m_event_buffer = NULL;
+std::map< Chuck_VM *, CBufferSimple * > HidInManager::m_event_buffers;
 
 //-----------------------------------------------------------------------------
 // name: PhyHidDevIn()
@@ -126,7 +126,7 @@ PhyHidDevIn::~PhyHidDevIn()
 // name: open()
 // desc: opens the device of specified type and id
 //-----------------------------------------------------------------------------
-t_CKBOOL PhyHidDevIn::open( t_CKINT type, t_CKUINT number )
+t_CKBOOL PhyHidDevIn::open( Chuck_VM * vm, t_CKINT type, t_CKUINT number )
 {
     // int temp;
 
@@ -166,7 +166,7 @@ t_CKBOOL PhyHidDevIn::open( t_CKINT type, t_CKUINT number )
     
     // allocate the buffer
     cbuf = new CBufferAdvance;
-    if( !cbuf->initialize( BUFFER_SIZE, sizeof(HidMsg), HidInManager::m_event_buffer ) )
+    if( !cbuf->initialize( BUFFER_SIZE, sizeof(HidMsg), HidInManager::m_event_buffers[vm] ) )
     {
         // log
         EM_log( CK_LOG_WARNING, "PhyHidDevIn: open operation failed: cannot initialize buffer" );
@@ -426,14 +426,14 @@ HidIn::~HidIn( )
 // name: open()
 // desc: open
 //-----------------------------------------------------------------------------
-t_CKBOOL HidIn::open( t_CKINT device_type, t_CKINT device_num )
+t_CKBOOL HidIn::open( Chuck_VM * vm, t_CKINT device_type, t_CKINT device_num )
 {
     // close if already opened
     if( m_valid )
         this->close();
     
     // open
-    return m_valid = HidInManager::open( this, device_type, device_num );
+    return m_valid = HidInManager::open( this, vm, device_type, device_num );
 }
 
 
@@ -443,14 +443,14 @@ t_CKBOOL HidIn::open( t_CKINT device_type, t_CKINT device_num )
 // name: open()
 // desc: open
 //-----------------------------------------------------------------------------
-t_CKBOOL HidIn::open( std::string & name, t_CKUINT device_type )
+t_CKBOOL HidIn::open( Chuck_VM * vm, std::string & name, t_CKUINT device_type )
 {
     // close if already opened
     if( m_valid )
         this->close();
     
     // open
-    return m_valid = HidInManager::open( this, device_type, name );
+    return m_valid = HidInManager::open( this, vm, device_type, name );
 }
 
 
@@ -609,11 +609,14 @@ void HidInManager::cleanup()
             SAFE_DELETE( msg_buffer );
         }
         
-        if(m_event_buffer)
+        for( std::map< Chuck_VM *, CBufferSimple * >::iterator it =
+             m_event_buffers.begin(); it != m_event_buffers.end(); it++ )
         {
-            if(g_vm) g_vm->destroy_event_buffer(m_event_buffer);
-            m_event_buffer = NULL;
+            Chuck_VM * vm = it->first;
+            CBufferSimple * event_buffer = it->second;
+            vm->destroy_event_buffer( event_buffer );
         }
+        m_event_buffers.clear();
         
         // init
         has_init = FALSE;
@@ -622,7 +625,7 @@ void HidInManager::cleanup()
 }
 
 
-t_CKBOOL HidInManager::open( HidIn * hin, t_CKINT device_type, t_CKINT device_num )
+t_CKBOOL HidInManager::open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, t_CKINT device_num )
 {
     // init?
     if( has_init == FALSE )
@@ -630,9 +633,9 @@ t_CKBOOL HidInManager::open( HidIn * hin, t_CKINT device_type, t_CKINT device_nu
         init();
     }
     
-    if(m_event_buffer == NULL)
+    if( m_event_buffers.count( vm ) == 0 )
     {
-        m_event_buffer = g_vm->create_event_buffer();
+        m_event_buffers[vm] = vm->create_event_buffer();
     }
 
     // check type
@@ -664,7 +667,7 @@ t_CKBOOL HidInManager::open( HidIn * hin, t_CKINT device_type, t_CKINT device_nu
         // allocate
         PhyHidDevIn * phin = new PhyHidDevIn;
         // open
-        if( !phin->open( device_type, device_num ) )
+        if( !phin->open( vm, device_type, device_num ) )
         {
             // log
             // should this use EM_log instead, with a higher log level?
@@ -701,7 +704,7 @@ t_CKBOOL HidInManager::open( HidIn * hin, t_CKINT device_type, t_CKINT device_nu
 
 
 
-t_CKBOOL HidInManager::open( HidIn * hin, t_CKINT device_type, std::string & device_name )
+t_CKBOOL HidInManager::open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, std::string & device_name )
 {
     // init?
     if( has_init == FALSE )
@@ -709,9 +712,9 @@ t_CKBOOL HidInManager::open( HidIn * hin, t_CKINT device_type, std::string & dev
         init();
     }
     
-    if(m_event_buffer == NULL)
+    if( m_event_buffers.count( vm ) == 0 )
     {
-        m_event_buffer = g_vm->create_event_buffer();
+        m_event_buffers[vm] = vm->create_event_buffer();
     }
     
     t_CKINT device_type_start = 1;
@@ -765,7 +768,7 @@ t_CKBOOL HidInManager::open( HidIn * hin, t_CKINT device_type, std::string & dev
             
             if(name == device_name)
             {
-                return open( hin, i, j );
+                return open( hin, vm, i, j );
             }
         }
     }

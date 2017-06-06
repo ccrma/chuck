@@ -4343,41 +4343,41 @@ CK_DLL_MFUN( HidIn_open )
     t_CKINT type = GET_NEXT_INT(ARGS);
     t_CKINT num = GET_NEXT_INT(ARGS);
     // CK_FPRINTF_STDERR( "HidIn_open %li %li\n", type, num );
-    RETURN->v_int = min->open( type, num );
+    RETURN->v_int = min->open( SHRED->vm_ref, type, num );
 }
 
 CK_DLL_MFUN( HidIn_open_named )
 {
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     Chuck_String * name = GET_NEXT_STRING(ARGS);
-    RETURN->v_int = min->open( name->str );
+    RETURN->v_int = min->open( SHRED->vm_ref, name->str );
 }
 
 CK_DLL_MFUN( HidIn_open_joystick )
 {
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     t_CKINT num = GET_NEXT_INT(ARGS);
-    RETURN->v_int = min->open( CK_HID_DEV_JOYSTICK, num );
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_JOYSTICK, num );
 }
 
 CK_DLL_MFUN( HidIn_open_mouse )
 {
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     t_CKINT num = GET_NEXT_INT(ARGS);
-    RETURN->v_int = min->open( CK_HID_DEV_MOUSE, num );
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_MOUSE, num );
 }
 
 CK_DLL_MFUN( HidIn_open_keyboard )
 {
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     t_CKINT num = GET_NEXT_INT(ARGS);
-    RETURN->v_int = min->open( CK_HID_DEV_KEYBOARD, num );
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_KEYBOARD, num );
 }
 
 CK_DLL_MFUN( HidIn_open_tiltsensor )
 {
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-    RETURN->v_int = min->open( CK_HID_DEV_TILTSENSOR, 0 );
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_TILTSENSOR, 0 );
 }
 
 CK_DLL_MFUN( HidIn_good )
@@ -4548,7 +4548,7 @@ CK_DLL_SFUN( HidIn_read_tilt_sensor )
     if( !hi )
     {
         hi = new HidIn;
-        if( !hi->open( CK_HID_DEV_TILTSENSOR, 0 ) )
+        if( !hi->open( SHRED->vm_ref, CK_HID_DEV_TILTSENSOR, 0 ) )
         {
             hi_good = FALSE;
             return;
