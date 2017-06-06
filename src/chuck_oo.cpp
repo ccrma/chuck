@@ -318,12 +318,8 @@ Chuck_Object::~Chuck_Object()
         if( type->has_destructor )
         {
             // sanity check
-            // TODO Chunity: Replaced this assert with an if() because type->info is occasionally null! :(
-            // why does that happen?
-            // assert( type->info->dtor && type->info->dtor->native_func );
-            if( type->info && type->info->dtor && type->info->dtor->native_func ) {
-                ((f_dtor)(type->info->dtor->native_func))( this, NULL, Chuck_DL_Api::Api::instance() );
-            }
+            assert( type->info->dtor && type->info->dtor->native_func );
+            ((f_dtor)(type->info->dtor->native_func))( this, NULL, Chuck_DL_Api::Api::instance() );
         }
 
         // go up the inheritance
