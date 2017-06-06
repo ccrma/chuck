@@ -131,7 +131,7 @@ void Chuck_IO_Serial::shutdown()
 }
 
 
-Chuck_IO_Serial::Chuck_IO_Serial() :
+Chuck_IO_Serial::Chuck_IO_Serial( Chuck_VM * vm ) :
 m_asyncRequests(CircularBuffer<Request>(32)),
 m_asyncResponses(CircularBuffer<Request>(32)),
 m_asyncWriteRequests(CircularBuffer<Request>(32)),
@@ -156,6 +156,8 @@ m_writeBuffer(1024)
     m_do_exit = FALSE;
     
     s_serials.push_back(this);
+    
+    m_vmRef = vm;
 }
 
 Chuck_IO_Serial::~Chuck_IO_Serial()
@@ -164,7 +166,7 @@ Chuck_IO_Serial::~Chuck_IO_Serial()
     m_do_write_thread = FALSE;
     SAFE_DELETE(m_read_thread);
     if( m_event_buffer )
-        g_vm->destroy_event_buffer( m_event_buffer );
+        m_vmRef->destroy_event_buffer( m_event_buffer );
     
     close();
     
@@ -719,7 +721,7 @@ void Chuck_IO_Serial::start_read_thread()
         m_read_thread->start(shell_read_cb, this);
 #endif         
         assert(m_event_buffer == NULL);
-        m_event_buffer = g_vm->create_event_buffer();
+        m_event_buffer = m_vmRef->create_event_buffer();
     }
 }
 
@@ -1773,7 +1775,7 @@ CK_DLL_SFUN( serialio_list )
 
 CK_DLL_ALLOC( serialio_alloc )
 {
-    return new Chuck_IO_Serial;
+    return new Chuck_IO_Serial( SHRED->vm_ref );
 }
 
 CK_DLL_CTOR( serialio_ctor )

@@ -47,7 +47,7 @@
 struct Chuck_IO_Serial : public Chuck_IO
 {
 public:
-    Chuck_IO_Serial();
+    Chuck_IO_Serial( Chuck_VM * vm );
     virtual ~Chuck_IO_Serial();
     
     static void shutdown();
@@ -190,6 +190,8 @@ protected:
     t_CKBOOL m_do_exit;
     
     static std::list<Chuck_IO_Serial *> s_serials;
+    
+    Chuck_VM * m_vmRef;
 };
 
 
