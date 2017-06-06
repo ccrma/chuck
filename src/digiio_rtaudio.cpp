@@ -67,6 +67,7 @@ DWORD__ Digitalio::m_bps = BITS_PER_SAMPLE_DEFAULT;
 DWORD__ Digitalio::m_buffer_size = BUFFER_SIZE_DEFAULT;
 DWORD__ Digitalio::m_num_buffers = NUM_BUFFERS_DEFAULT;
 RtAudio * Digitalio::m_rtaudio = NULL;
+Chuck_VM * Digitalio::m_vmRef = NULL;
 SAMPLE * Digitalio::m_buffer_out = NULL;
 SAMPLE * Digitalio::m_buffer_in = NULL;
 SAMPLE ** Digitalio::m_write_ptr = NULL;
@@ -497,6 +498,7 @@ BOOL__ Digitalio::initialize( DWORD__ num_dac_channels,
     m_go = 0;
     m_end = 0;
     m_block = block;
+    m_vmRef = vm_ref;
 
     DWORD__ num_channels;
     unsigned int bufsize = m_buffer_size;
@@ -961,7 +963,7 @@ BOOL__ Digitalio::start( )
 
 #if defined(__CHIP_MODE__)
     if( !m_start )
-        m_start = MoAudio::start( MoAudio_cb, g_vm );
+        m_start = MoAudio::start( MoAudio_cb, m_vmRef );
 #endif // __CHIP_MODE__
 
     return m_start;
