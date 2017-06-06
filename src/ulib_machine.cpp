@@ -116,7 +116,6 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 
 
 
-static Chuck_VM * the_vm = NULL;
 static Chuck_Compiler * the_compiler = NULL;
 static proc_msg_func the_func = NULL;
 //-----------------------------------------------------------------------------
@@ -125,7 +124,6 @@ static proc_msg_func the_func = NULL;
 //-----------------------------------------------------------------------------
 t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func proc_msg )
 {
-    the_vm = g_vm;
     the_compiler = compiler;
     the_func = proc_msg;
 
@@ -162,7 +160,7 @@ CK_DLL_SFUN( machine_add_impl )
 
     msg.type = MSG_ADD;
     strcpy( msg.buffer, v );
-    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, TRUE, NULL );
+    RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
 }
 
 // remove
@@ -173,7 +171,7 @@ CK_DLL_SFUN( machine_remove_impl )
     
     msg.type = MSG_REMOVE;
     msg.param = v;
-    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, TRUE, NULL );
+    RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
 }
 
 // replace
@@ -186,7 +184,7 @@ CK_DLL_SFUN( machine_replace_impl )
     msg.type = MSG_REPLACE;
     msg.param = v;
     strcpy( msg.buffer, v2 );
-    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, TRUE, NULL );
+    RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
 }
 
 // status
@@ -195,7 +193,7 @@ CK_DLL_SFUN( machine_status_impl )
     Net_Msg msg;
     
     msg.type = MSG_STATUS;
-    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, TRUE, NULL );
+    RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
 }
 
 // intsize
