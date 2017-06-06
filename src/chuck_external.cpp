@@ -42,14 +42,50 @@ bool g_globals_initted = FALSE;
 // name: ensureGlobalsInitted()
 // desc: launch and destroy a ChucK to init all global resources
 //-----------------------------------------------------------------------------
-void ensureGlobalsInitted()
+void ensureGlobalsInitted( const char * dataDir )
 {
     if( !g_globals_initted )
     {
         // starting and quitting a chuck causes many global variables to be initialized
-        Chuck_External::quitChuck( Chuck_External::startChuck() );
+        Chuck_External::quitChuck( Chuck_External::startChuck( dataDir ) );
         g_globals_initted = TRUE;
     }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: initialSetup()
+// desc: set up without chugins
+//-----------------------------------------------------------------------------
+void Chuck_External::initialSetup()
+{
+    ensureGlobalsInitted("");
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: initialSetup()
+// desc: set up with chugins
+//-----------------------------------------------------------------------------
+void Chuck_External::initialSetup( const char * chuginDir )
+{
+    ensureGlobalsInitted( chuginDir );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: finalCleanup()
+// desc: clean up globals in preparation for final quit
+//-----------------------------------------------------------------------------
+void Chuck_External::finalCleanup()
+{
+    global_cleanup();
 }
 
 
@@ -222,7 +258,7 @@ t_CKBOOL Chuck_External::broadcastExternalEvent( Chuck_System * chuck, const cha
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_External::setChoutCallback( void (* callback)(const char *) )
 {
-    ensureGlobalsInitted();
+    if( !g_globals_initted ) return FALSE;
     Chuck_IO_Chout::getInstance()->set_output_callback( callback );
     return true;
 }
@@ -236,7 +272,7 @@ t_CKBOOL Chuck_External::setChoutCallback( void (* callback)(const char *) )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_External::setCherrCallback( void (* callback)(const char *) )
 {
-    ensureGlobalsInitted();
+    if( !g_globals_initted ) return FALSE;
     Chuck_IO_Cherr::getInstance()->set_output_callback( callback );
     return true;
 }
@@ -250,7 +286,7 @@ t_CKBOOL Chuck_External::setCherrCallback( void (* callback)(const char *) )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_External::setStdoutCallback( void (* callback)(const char *) )
 {
-    ensureGlobalsInitted();
+    if( !g_globals_initted ) return FALSE;
     ck_set_stdout_callback( callback );
     return true;
 }
@@ -264,22 +300,13 @@ t_CKBOOL Chuck_External::setStdoutCallback( void (* callback)(const char *) )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_External::setStderrCallback( void (* callback)(const char *) )
 {
-    ensureGlobalsInitted();
+    if( !g_globals_initted ) return FALSE;
     ck_set_stderr_callback( callback );
     return true;
 }
 
 
 
-
-//-----------------------------------------------------------------------------
-// name: finalCleanup()
-// desc: clean up globals in preparation for final quit
-//-----------------------------------------------------------------------------
-void Chuck_External::finalCleanup()
-{
-    global_cleanup();
-}
 
 
 

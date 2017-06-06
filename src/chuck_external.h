@@ -56,6 +56,10 @@
 class Chuck_External
 {
 public:
+    static void initialSetup();
+    static void initialSetup( const char * chuginDir );
+    static void finalCleanup();
+
     static Chuck_System * startChuck();
     static Chuck_System * startChuck( const char * dataDir );
     static void quitChuck( Chuck_System * chuck );
@@ -71,8 +75,6 @@ public:
     static t_CKBOOL setCherrCallback( void (* callback)(const char *) );
     static t_CKBOOL setStdoutCallback( void (* callback)(const char *) );
     static t_CKBOOL setStderrCallback( void (* callback)(const char *) );
-    
-    static void finalCleanup();
 };
 
 
