@@ -3048,7 +3048,7 @@ CK_DLL_MFUN( fileio_readint )
      args->fileio_obj = f;
      args->intArg = defaultflags;
      // set shred to wait for I/O completion
-     f->m_asyncEvent->wait( SHRED, g_vm );
+     f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
      // start thread
      bool ret = f->m_thread->start( f->readInt_thread, (void *)args );
      if (!ret) {
@@ -3113,8 +3113,8 @@ CK_DLL_MFUN( fileio_writestring )
         args->fileio_obj = f;
         args->stringArg = std::string(val);
         // set shred to wait for I/O completion
-        // TODO: make sure using g_vm is OK
-        f->m_asyncEvent->wait( SHRED, g_vm );
+        assert( SHRED != NULL );
+        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
         // start thread
         bool ret = f->m_thread->start( f->writeStr_thread, (void *)args );
         if (!ret) {
@@ -3145,8 +3145,8 @@ CK_DLL_MFUN( fileio_writeint )
         args->fileio_obj = f;
         args->intArg = val;
         // set shred to wait for I/O completion
-        // TODO: make sure using g_vm is OK
-        f->m_asyncEvent->wait( SHRED, g_vm );
+        assert( SHRED != NULL );
+        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
         // start thread
         bool ret = f->m_thread->start( f->writeInt_thread, (void *)args );
         if (!ret) {
@@ -3179,8 +3179,8 @@ CK_DLL_MFUN( fileio_writeintflags )
         args->fileio_obj = f;
         args->intArg = val;
         // set shred to wait for I/O completion
-        // TODO: make sure using g_vm is OK
-        f->m_asyncEvent->wait( SHRED, g_vm );
+        assert( SHRED != NULL );
+        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
         // start thread
         bool ret = f->m_thread->start( f->writeInt_thread, (void *)args );
         if (!ret) {
@@ -3211,8 +3211,8 @@ CK_DLL_MFUN( fileio_writefloat )
         args->fileio_obj = f;
         args->floatArg = val;
         // set shred to wait for I/O completion
-        // TODO: make sure using g_vm is OK
-        f->m_asyncEvent->wait( SHRED, g_vm );
+        assert( SHRED != NULL );
+        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
         // start thread
         bool ret = f->m_thread->start( f->writeFloat_thread, (void *)args );
         if (!ret) {
@@ -3535,7 +3535,7 @@ CK_DLL_MFUN( shred_getArg )
     // total
     t_CKINT num = derhs->args.size();
 
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     str->str = ( i < num ? derhs->args[i] : "" );
     RETURN->v_string = str; 
 }
@@ -3544,7 +3544,7 @@ CK_DLL_MFUN( shred_sourcePath ) // added 1.3.0.0
 {
     Chuck_VM_Shred * derhs = (Chuck_VM_Shred *)SELF;
     
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     str->str = derhs->code->filename;
     RETURN->v_string = str; 
 }
@@ -3553,7 +3553,7 @@ CK_DLL_MFUN( shred_sourceDir ) // added 1.3.0.0
 {
     Chuck_VM_Shred * derhs = (Chuck_VM_Shred *)SELF;
     
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     
     str->str = extract_filepath_dir(derhs->code->filename);
     
@@ -3569,7 +3569,7 @@ CK_DLL_MFUN( shred_sourceDir2 ) // added 1.3.2.0
     if( i < 0 ) i = -i;
 
     // new chuck string
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     // set the content
     str->str = extract_filepath_dir(derhs->code->filename);
     // up
@@ -3598,7 +3598,7 @@ CK_DLL_MFUN( string_length )
 CK_DLL_MFUN( string_upper )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     str->str = toupper( s->str );
     RETURN->v_string = str;
 }
@@ -3606,7 +3606,7 @@ CK_DLL_MFUN( string_upper )
 CK_DLL_MFUN( string_lower )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     str->str = tolower( s->str );
     RETURN->v_string = str;
 }
@@ -3614,7 +3614,7 @@ CK_DLL_MFUN( string_lower )
 CK_DLL_MFUN( string_ltrim )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     str->str = ltrim( s->str );
     RETURN->v_string = str;
 }
@@ -3622,7 +3622,7 @@ CK_DLL_MFUN( string_ltrim )
 CK_DLL_MFUN( string_rtrim )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     str->str = rtrim( s->str );
     RETURN->v_string = str;
 }
@@ -3630,7 +3630,7 @@ CK_DLL_MFUN( string_rtrim )
 CK_DLL_MFUN( string_trim )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     str->str = trim( s->str );
     RETURN->v_string = str;
 }
@@ -4181,7 +4181,7 @@ CK_DLL_MFUN( MidiIn_name )
 {
     MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
     // TODO: memory leak, please fix, Thanks.
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     // only if valid
     if( min->good() )
         a->str = min->min->getPortName( min->num() );
@@ -4254,7 +4254,7 @@ CK_DLL_MFUN( MidiOut_name )
 {
     MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
     // TODO: memory leak, please fix, Thanks.
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     // only if valid
     if( mout->good() )
         a->str = mout->mout->getPortName( mout->num() );
@@ -4403,12 +4403,12 @@ CK_DLL_MFUN( HidIn_name )
 {
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     // TODO: memory leak, please fix, Thanks.
-    // Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    // Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     // only if valid
     // if( min->good() )
     //     a->str = min->phin->getPortName( min->num() );
     // TODO: is null problem?
-    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     RETURN->v_string->str = min->name();
 }
 
@@ -4654,7 +4654,7 @@ CK_DLL_MFUN( HidOut_name )
 {
     // HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
     // TODO: memory leak, please fix, Thanks.
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     // only if valid
     // if( mout->good() )
     //     a->str = mout->mout->getPortName( mout->num() );

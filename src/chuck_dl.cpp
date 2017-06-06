@@ -1085,14 +1085,16 @@ static Chuck_DL_Api::Object ck_create( Chuck_DL_Api::Type t )
     assert( t != NULL );
     
     Chuck_Type * type = ( Chuck_Type * ) t;
-    Chuck_Object * o = instantiate_and_initialize_object( type, NULL );
+    // TODO: eliminate g_vm somehow
+    Chuck_Object * o = instantiate_and_initialize_object( type, g_vm );
     
     return ( Chuck_DL_Api::Object ) o;
 }
 
 static Chuck_DL_Api::String ck_create_string( std::string & str )
 {
-    Chuck_String * string = ( Chuck_String * ) instantiate_and_initialize_object( &t_string, NULL );
+    // TODO: eliminate g_vm somehow
+    Chuck_String * string = ( Chuck_String * ) instantiate_and_initialize_object( &t_string, g_vm );
     
     string->str = str;
     

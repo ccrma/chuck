@@ -526,7 +526,7 @@ public:
 struct Chuck_IO_File : Chuck_IO
 {
 public:
-    Chuck_IO_File();
+    Chuck_IO_File( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual ~Chuck_IO_File();
     
 public:
@@ -596,6 +596,9 @@ protected:
     long m_dir_start;
     // path
     std::string m_path;
+    // vm and shred
+    Chuck_VM * m_vmRef;
+    Chuck_VM_Shred * m_shredRef;
 };
 
 

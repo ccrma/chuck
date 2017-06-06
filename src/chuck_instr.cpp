@@ -3631,7 +3631,7 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
         {
             // allocate ugen for each
             Chuck_Object * obj = instantiate_and_initialize_object(
-                &t_ugen, ugen->shred );
+                &t_ugen, ugen->shred, ugen->vm );
             // cast to ugen
             ugen->m_multi_chan[i] = (Chuck_UGen *)obj;
             // additional reference count
@@ -3666,14 +3666,40 @@ out_of_memory:
 
 //-----------------------------------------------------------------------------
 // name: instantiate_and_initialize_object()
-// desc: ...
+// desc: call this one if you have a non-null shred
 //-----------------------------------------------------------------------------
 Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Shred * shred )
 {
+    assert( shred != NULL );
+    return instantiate_and_initialize_object( type, shred, shred->vm_ref );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: instantiate_and_initialize_object()
+// desc: call this one if you don't have a shred
+//-----------------------------------------------------------------------------
+Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM * vm )
+{
+    assert( vm != NULL );
+    return instantiate_and_initialize_object( type, NULL, vm );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: instantiate_and_initialize_object()
+// desc: you probably shouldn't call this version. call the one that takes a
+//       shred if you have a non-null shred, otherwise call the one that
+//       takes a vm
+//-----------------------------------------------------------------------------
+Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm )
+{
     Chuck_Object * object = NULL;
     Chuck_UAna * uana = NULL;
-    // TODO: this is a hack!
-    Chuck_VM * vm_ref = shred ? shred->vm_ref : g_vm;
 
     // sanity
     assert( type != NULL );
@@ -3685,7 +3711,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
         // check type TODO: make this faster
         if( type->allocator )
             object = type->allocator( shred, Chuck_DL_Api::Api::instance() );
-        else if( isa( type, &t_fileio ) ) object = new Chuck_IO_File;
+        else if( isa( type, &t_fileio ) ) object = new Chuck_IO_File( vm, shred );
         else if( isa( type, &t_event ) ) object = new Chuck_Event;
         else if( isa( type, &t_string ) ) object = new Chuck_String;
         // TODO: is this ok?
@@ -3702,12 +3728,12 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
         {
             // uana
             object = ugen = uana = new Chuck_UAna;
-            ugen->alloc_v( vm_ref->shreduler()->m_max_block_size );
+            ugen->alloc_v( vm->shreduler()->m_max_block_size );
         }
         else 
         {
             object = ugen = new Chuck_UGen;
-            ugen->alloc_v( vm_ref->shreduler()->m_max_block_size );
+            ugen->alloc_v( vm->shreduler()->m_max_block_size );
         }
 
         if( shred )
@@ -3715,6 +3741,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
             ugen->shred = shred;
             shred->add( ugen );
         }
+        ugen->vm = vm;
     }
     
     // check to see enough memory

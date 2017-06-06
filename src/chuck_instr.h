@@ -3950,6 +3950,8 @@ protected:
 
 // runtime functions
 Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Shred * shred );
+Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM * vm );
+Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm );
 // initialize object using Type
 t_CKBOOL initialize_object( Chuck_Object * obj, Chuck_Type * type );
 // "throw exception" (halt current shred, print message)

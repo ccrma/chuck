@@ -195,7 +195,7 @@ CK_DLL_SFUN( regex_match2 )
     {
         for(i = 0; i < regex.re_nsub+1; i++)
         {
-            Chuck_String * match = (Chuck_String *) instantiate_and_initialize_object(&t_string, NULL);
+            Chuck_String * match = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
             
             if(matcharray[i].rm_so >= 0 && matcharray[i].rm_eo > 0)
                 match->str = std::string(str->str, matcharray[i].rm_so,
