@@ -456,10 +456,15 @@ protected:
 struct Chuck_String : Chuck_Object
 {
 public:
-    Chuck_String( const std::string & s = "" ) { str = s; }
+    Chuck_String( const std::string & s = "" ) { set( s ); }
     ~Chuck_String() { }
 
-public:
+    void set( const std::string & s ) { str = s; charptr = str.c_str(); }
+    const std::string & get() { return str; }
+    const char * getChar() { return charptr; }
+
+private:
+    const char * charptr;
     std::string str;
 };
 

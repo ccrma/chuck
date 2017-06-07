@@ -2944,7 +2944,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
                 "[chuck](emitter): OutOfMemory: while allocating string literal '%s'\n", exp->str );
             return FALSE;
         }
-        str->str = exp->str;
+        str->set( exp->str );
         temp = (t_CKUINT)str;
         emit->append( new Chuck_Instr_Reg_Push_Imm( temp ) );
         // add reference for string literal (added 1.3.0.2)

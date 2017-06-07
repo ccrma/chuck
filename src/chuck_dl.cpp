@@ -1096,7 +1096,7 @@ static Chuck_DL_Api::String ck_create_string( std::string & str )
     // TODO: eliminate g_vm somehow
     Chuck_String * string = ( Chuck_String * ) instantiate_and_initialize_object( &t_string, g_vm );
     
-    string->str = str;
+    string->set( str );
     
     return ( Chuck_DL_Api::String ) string;
 }
@@ -1136,7 +1136,7 @@ static t_CKBOOL ck_set_string( Chuck_DL_Api::String s, std::string & str )
     assert( s != NULL );
     
     Chuck_String * string = ( Chuck_String * ) s;
-    string->str = str;
+    string->set( str );
     
     return TRUE;
 }

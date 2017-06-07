@@ -469,7 +469,7 @@ Chuck_String * Chuck_IO_Serial::readLine()
     Chuck_String * str = new Chuck_String;
     initialize_object(str, &t_string);
     
-    str->str = string((char *)m_tmp_buf);
+    str->set( string((char *)m_tmp_buf) );
     
     return str;
 }
@@ -1042,7 +1042,7 @@ t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
     // TODO: eof
     
     str = new Chuck_String;
-    str->str = std::string((char *)m_tmp_buf, len);
+    str->set( std::string((char *)m_tmp_buf, len) );
     
     r.m_val = (t_CKUINT) str;
     r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_SUCCESS;

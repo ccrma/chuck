@@ -658,7 +658,7 @@ CK_DLL_SFUN( sgn_impl )
 // system
 CK_DLL_SFUN( system_impl )
 {
-    const char * cmd = GET_CK_STRING(ARGS)->str.c_str();
+    const char * cmd = GET_CK_STRING(ARGS)->get().c_str();
 
     // check globals for permission
     if( !g_enable_system_cmd )
@@ -685,7 +685,7 @@ CK_DLL_SFUN( atoi_impl )
     Chuck_String * str = GET_CK_STRING(ARGS);
     if( str )
     {
-        const char * v = str->str.c_str();
+        const char * v = str->get().c_str();
         RETURN->v_int = atoi( v );
     }
     else
@@ -700,7 +700,7 @@ CK_DLL_SFUN( atof_impl )
     Chuck_String * str = GET_CK_STRING(ARGS);
     if( str )
     {
-        const char * v = GET_CK_STRING(ARGS)->str.c_str();
+        const char * v = GET_CK_STRING(ARGS)->get().c_str();
         RETURN->v_float = atof( v );
     }
     else
@@ -715,7 +715,7 @@ CK_DLL_SFUN( itoa_impl )
     t_CKINT i = GET_CK_INT(ARGS);
     // TODO: memory leak, please fix.  Thanks.
     Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
-    a->str = itoa( i );
+    a->set( itoa( i ) );
     RETURN->v_string = a;
 }
 
@@ -725,7 +725,7 @@ CK_DLL_SFUN( ftoa_impl )
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
     t_CKINT p = GET_NEXT_INT(ARGS);
     Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
-    a->str = ftoa( f, (t_CKUINT)p );
+    a->set( ftoa( f, (t_CKUINT)p ) );
     RETURN->v_string = a;
 }
 
@@ -740,18 +740,18 @@ CK_DLL_SFUN( ftoi_impl )
 static Chuck_String g_str; // PROBLEM: not thread friendly
 CK_DLL_SFUN( getenv_impl )
 {
-    const char * v = GET_CK_STRING(ARGS)->str.c_str();
+    const char * v = GET_CK_STRING(ARGS)->get().c_str();
     const char * s = getenv( v );
     Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
-    a->str = s ? s : "";
+    a->set( s ? s : "" );
     RETURN->v_string = a;
 }
 
 // setenv
 CK_DLL_SFUN( setenv_impl )
 {
-    const char * v1 = GET_NEXT_STRING(ARGS)->str.c_str();
-    const char * v2 = GET_NEXT_STRING(ARGS)->str.c_str();
+    const char * v1 = GET_NEXT_STRING(ARGS)->get().c_str();
+    const char * v2 = GET_NEXT_STRING(ARGS)->get().c_str();
     RETURN->v_int = setenv( v1, v2, 1 );
 }
 
@@ -1301,7 +1301,7 @@ CK_DLL_MFUN( Skot_prompt )
 CK_DLL_MFUN( Skot_prompt2 )
 {
     LineEvent * le = (LineEvent *)OBJ_MEMBER_INT(SELF, Skot_offset_data);
-    const char * v = GET_CK_STRING(ARGS)->str.c_str();
+    const char * v = GET_CK_STRING(ARGS)->get().c_str();
     le->prompt( v );
     RETURN->v_int = (t_CKINT)(SELF);
 }
@@ -1317,7 +1317,7 @@ CK_DLL_MFUN( Skot_getLine )
     LineEvent * le = (LineEvent *)OBJ_MEMBER_INT(SELF, Skot_offset_data);
     // TODO: memory leak
     Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
-    a->str = le->getLine();
+    a->set( le->getLine() );
     RETURN->v_string = a;
 }
 
@@ -1420,7 +1420,7 @@ CK_DLL_MFUN( StrTok_set )
 {
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
     Chuck_String * s = GET_CK_STRING(ARGS);
-    if( s ) tokens->set( s->str );
+    if( s ) tokens->set( s->get() );
     else tokens->set( "" );
 }
 
@@ -1440,7 +1440,7 @@ CK_DLL_MFUN( StrTok_next )
 {
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
     Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
-    a->str = tokens->next();
+    a->set( tokens->next() );
     RETURN->v_string = a;
 }
 
@@ -1449,7 +1449,7 @@ CK_DLL_MFUN( StrTok_next2 )
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
     Chuck_String * a = GET_CK_STRING(ARGS);
     string s = tokens->next();
-    if( a ) a->str = s;
+    if( a ) a->set( s );
     RETURN->v_string = a;
 }
 
@@ -1459,7 +1459,7 @@ CK_DLL_MFUN( StrTok_get )
     t_CKINT index = GET_NEXT_INT(ARGS);
     Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
     string s = tokens->get( index );
-    a->str = s;
+    a->set( s );
     RETURN->v_string = a;
 }
 
@@ -1469,7 +1469,7 @@ CK_DLL_MFUN( StrTok_get2 )
     t_CKINT index = GET_NEXT_INT(ARGS);
     Chuck_String * a = GET_NEXT_STRING(ARGS);
     string s = tokens->get( index );
-    if( a ) a->str = s;
+    if( a ) a->set( s );
     RETURN->v_string = a;
 }
 

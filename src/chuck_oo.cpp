@@ -2544,10 +2544,12 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     {
         // not sure whether m_shredRef is NULL, so pass both shred and vm
         Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( &t_string, m_shredRef, m_vmRef );
-        s->str = std::string( ent->d_name );
-        if ( s->str != ".." && s->str != "." )
+        s->set( std::string( ent->d_name ) );
+        if ( s->get() != ".." && s->get() != "." )
+        {
             // don't include .. and . in the list
             entrylist.push_back( s );
+        }
     }
     
     // make array
