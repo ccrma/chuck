@@ -1157,7 +1157,7 @@ extern CHUCK_THREAD g_tid_whatever;
 map<LineEvent *, LineEvent *> g_le_map;
 XMutex g_le_mutex;
 string g_le_what;
-extern Chuck_VM * g_vm;
+extern Chuck_Compiler * g_compiler;
 
 void * le_cb( void * p )
 {
@@ -1173,7 +1173,10 @@ void * le_cb( void * p )
             usleep( 10000 );
 
         // check
-        if( !g_vm ) break;
+        // jack: changed from g_vm when removing g_vm
+        // check if the global compiler is null; if it is, that means
+        // a global cleanup has happened and we should exit
+        if( !g_compiler ) break;
 
         // do the prompt
         cout << g_le_what;
