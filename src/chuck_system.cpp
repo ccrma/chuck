@@ -571,6 +571,7 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
     t_CKINT  log_level = CK_LOG_CORE;
     t_CKINT  deprecate_level = 1; // 1 == warn
     t_CKINT  chugin_load = 1; // 1 == auto (variable added 1.3.0.0)
+    t_CKBOOL update_otf_vm = TRUE; // whether to make this new VM the one that receives OTF commands
     string   filename = "";
     vector<string> args;
 
@@ -853,6 +854,11 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
                 // also look for chugins here
                 dl_search_path.push_back( m_dataDir );
             }
+            else if( !strcmp( argv[i], "--no-otf" ) )
+            {
+                // don't use this new vm for otf commands (use the previous one)
+                update_otf_vm = FALSE;
+            }
             else if( !strcmp( argv[i], "--probe" ) )
                 probe = TRUE;
             else if( !strcmp( argv[i], "--poop" ) )
@@ -1018,6 +1024,11 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
     {
         CK_FPRINTF_STDERR( "[chuck]: %s\n", vm->last_error() );
         exit( 1 );
+    }
+    
+    if( update_otf_vm )
+    {
+        set_otf_vm( vm );
     }
 
     

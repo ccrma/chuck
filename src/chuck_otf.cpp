@@ -53,6 +53,21 @@ using namespace std;
 // log level
 t_CKUINT g_otf_log = CK_LOG_INFO;
 
+// local globals
+Chuck_VM * otf_vm = NULL;
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_otf_vm()
+// desc: set which vm should receive otf commands
+//-----------------------------------------------------------------------------
+void set_otf_vm( Chuck_VM * vm )
+{
+    otf_vm = vm;
+}
+
 
 
 
@@ -638,7 +653,7 @@ void * otf_cb( void * p )
         client = ck_accept( g_sock );
         if( !client )
         {
-            if( g_vm ) CK_FPRINTF_STDERR( "[chuck]: socket error during accept()...\n" );
+            if( otf_vm ) CK_FPRINTF_STDERR( "[chuck]: socket error during accept()...\n" );
             usleep( 40000 );
             ck_close( client );
             continue;
@@ -665,9 +680,9 @@ void * otf_cb( void * p )
 
         while( msg.type != MSG_DONE )
         {
-            if( g_vm )
+            if( otf_vm )
             {
-                if( !otf_process_msg( g_vm, g_compiler, &msg, FALSE, client ) )
+                if( !otf_process_msg( otf_vm, g_compiler, &msg, FALSE, client ) )
                 {
                     ret.param = FALSE;
                     strcpy( (char *)ret.buffer, EM_lasterror() );

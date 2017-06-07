@@ -87,6 +87,9 @@ ck_socket otf_send_connect( const char * host, int port );
 // callback
 void * otf_cb( void * p );
 
+// set which vm should receive otf commands
+void set_otf_vm( Chuck_VM * vm );
+
 
 extern const char * poop[];
 extern long poop_size;
