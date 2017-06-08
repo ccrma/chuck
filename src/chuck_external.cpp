@@ -112,8 +112,8 @@ Chuck_System * Chuck_External::startChuck( const char * dataDir )
     Chuck_System * chuck = new Chuck_System;
     
     // equivalent to "chuck --loop --silent" on command line,
-    // but without engaging the audio loop -- we'll do that
-    // via the Unity callback
+    // but without engaging the audio loop -- the caller is responsible
+    // for calling audioCallback()
     std::vector< const char * > argsVector;
     argsVector.push_back( "chuck" );
     argsVector.push_back( "--external-callback" );

@@ -85,7 +85,7 @@ a_Program g_program = NULL;
 // expect shift/reduce conflicts
 // 1.3.3.0: changed to 38 for char literal - spencer
 // 1.3.5.3: changed to 39 for vec literal
-// chunity: changed to 40 for external keyword
+// external chuck: changed to 40 for external keyword
 %expect 40
 
 %token <sval> ID STRING_LIT CHAR_LIT
