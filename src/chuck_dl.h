@@ -627,14 +627,26 @@ typedef void * String;
 struct Api
 {
 public:
-    static Api g_api;
-    static inline const Api * instance() { return &g_api; }
+    static std::map< Chuck_VM *, Api > g_apis;
+    static inline const Api * instance( Chuck_VM * vm )
+    {
+        if( g_apis.count( vm ) == 0 )
+        {
+            g_apis[vm];
+            g_apis[vm].m_vmRef = vm;
+        }
+        return &( g_apis[vm] );
+    }
+    
+    // public vm ref: for use in library functions only, but
+    // public so that it can be easily accessed from DLLs
+    Chuck_VM * m_vmRef;
     
     struct VMApi
     {
         VMApi();
         
-        t_CKUINT (* const get_srate)();
+        t_CKUINT (* const get_srate)( CK_DL_API );
     } * const vm;
     
     struct ObjectApi
@@ -642,20 +654,20 @@ public:
         ObjectApi();
         
     private:
-        Type (* const get_type)( std::string &name );
+        Type (* const get_type)( CK_DL_API, std::string &name );
 
-        Object (* const create)( Type type );
+        Object (* const create)( CK_DL_API, Type type );
         
-        String (* const create_string)( std::string &value );
+        String (* const create_string)( CK_DL_API, std::string &value );
         
-        t_CKBOOL (* const get_mvar_int)( Object object, std::string &name, t_CKINT &value );
-        t_CKBOOL (* const get_mvar_float)( Object object, std::string &name, t_CKFLOAT &value );
-        t_CKBOOL (* const get_mvar_dur)( Object object, std::string &name, t_CKDUR &value );
-        t_CKBOOL (* const get_mvar_time)( Object object, std::string &name, t_CKTIME &value );
-        t_CKBOOL (* const get_mvar_string)( Object object, std::string &name, String &value );
-        t_CKBOOL (* const get_mvar_object)( Object object, std::string &name, Object &value );
+        t_CKBOOL (* const get_mvar_int)( CK_DL_API, Object object, std::string &name, t_CKINT &value );
+        t_CKBOOL (* const get_mvar_float)( CK_DL_API, Object object, std::string &name, t_CKFLOAT &value );
+        t_CKBOOL (* const get_mvar_dur)( CK_DL_API, Object object, std::string &name, t_CKDUR &value );
+        t_CKBOOL (* const get_mvar_time)( CK_DL_API, Object object, std::string &name, t_CKTIME &value );
+        t_CKBOOL (* const get_mvar_string)( CK_DL_API, Object object, std::string &name, String &value );
+        t_CKBOOL (* const get_mvar_object)( CK_DL_API, Object object, std::string &name, Object &value );
         
-        t_CKBOOL (* const set_string)( String string, std::string &value );
+        t_CKBOOL (* const set_string)( CK_DL_API, String string, std::string &value );
         
     } * const object;
     
@@ -664,12 +676,13 @@ public:
     object(new ObjectApi)
     {}
     
-private:
-    Api(Api &a) :
+public:
+    Api(const Api &a) :
     vm(a.vm),
     object(a.object)
-    { assert(0); };
+    { m_vmRef = a.m_vmRef; };
     
+private:
     Api &operator=(Api &a) { assert(0); return a; }
 };
     

@@ -3718,7 +3718,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
     {
         // check type TODO: make this faster
         if( type->allocator )
-            object = type->allocator( shred, Chuck_DL_Api::Api::instance() );
+            object = type->allocator( shred, Chuck_DL_Api::Api::instance( vm ) );
         else if( isa( type, &t_fileio ) ) object = new Chuck_IO_File( vm, shred );
         else if( isa( type, &t_event ) ) object = new Chuck_Event;
         else if( isa( type, &t_string ) ) object = new Chuck_String;
@@ -4392,14 +4392,14 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // cast to right type
         f_ctor f = (f_ctor)func->native_func;
         // call (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
-        f( (Chuck_Object *)(*mem_sp), mem_sp + 1, shred, Chuck_DL_Api::Api::instance() );
+        f( (Chuck_Object *)(*mem_sp), mem_sp + 1, shred, Chuck_DL_Api::Api::instance( vm ) );
     }
     else
     {
         // cast to right type
         f_mfun f = (f_mfun)func->native_func;
         // call the function (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
-        f( (Chuck_Object *)(*mem_sp), mem_sp + 1, &retval, shred, Chuck_DL_Api::Api::instance() );
+        f( (Chuck_Object *)(*mem_sp), mem_sp + 1, &retval, shred, Chuck_DL_Api::Api::instance( vm ) );
     }
     // pop (TODO: check if this is right)
     mem_sp -= push;
@@ -4507,7 +4507,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     if( overflow_( shred->mem ) ) goto error_overflow;
 
     // call the function (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
-    f( mem_sp, &retval, shred, Chuck_DL_Api::Api::instance() );
+    f( mem_sp, &retval, shred, Chuck_DL_Api::Api::instance( vm ) );
     mem_sp -= push;
 
     // push the return
@@ -6423,7 +6423,7 @@ void Chuck_Instr_Cast_object2string::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     // return
     Chuck_DL_Return RETURN;
     // get toString from it (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
-    object_toString( obj, NULL, &RETURN, NULL, Chuck_DL_Api::Api::instance() );
+    object_toString( obj, NULL, &RETURN, NULL, Chuck_DL_Api::Api::instance( vm ) );
     Chuck_String * str = RETURN.v_string;
     // set it
     push_( sp, (t_CKUINT)str );

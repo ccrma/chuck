@@ -319,7 +319,8 @@ Chuck_Object::~Chuck_Object()
         {
             // sanity check
             assert( type->info->dtor && type->info->dtor->native_func );
-            ((f_dtor)(type->info->dtor->native_func))( this, NULL, Chuck_DL_Api::Api::instance() );
+            // TODO: don't pass a null vm to Chuck_DL_Api
+            ((f_dtor)(type->info->dtor->native_func))( this, NULL, Chuck_DL_Api::Api::instance( NULL ) );
         }
 
         // go up the inheritance
@@ -2081,7 +2082,7 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
     f_mfun canwaitplease = (f_mfun)this->vtable->funcs[our_can_wait]->code->native_func;
     // TODO: check this is right shred
     // added 1.3.0.0: the DL API instance
-    canwaitplease( this, NULL, &RETURN, shred, Chuck_DL_Api::Api::instance() );
+    canwaitplease( this, NULL, &RETURN, shred, Chuck_DL_Api::Api::instance( vm ) );
     // RETURN.v_int = 1;
 
     // see if we can wait

@@ -904,7 +904,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
 
         if( m_op > 0 ) // UGEN_OP_TICK
         {
-            m_valid = tickf( this, m_multi_in_v, m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance() );
+            m_valid = tickf( this, m_multi_in_v, m_multi_out_v, 1, NULL, Chuck_DL_Api::Api::instance( this->vm ) );
                 
             if( !m_valid ) memset( m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size );
             
@@ -962,7 +962,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
         if( m_op > 0 ) // UGEN_OP_TICK
         {
             // tick the ugen (Chuck_DL_Api::Api::instance() added 1.3.0.0)
-            if( tick ) m_valid = tick( this, m_sum, &m_current, NULL, Chuck_DL_Api::Api::instance() );
+            if( tick ) m_valid = tick( this, m_sum, &m_current, NULL, Chuck_DL_Api::Api::instance( this->vm ) );
             if( !m_valid ) m_current = 0.0f;
             // apply gain and pan
             m_current *= m_gain * m_pan;
@@ -1105,7 +1105,7 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
         if( m_op > 0) // UGEN_OP_TICK
         {
             // compute samples with tickf
-            m_valid = tickf( this, m_multi_in_v, m_multi_out_v, numFrames, NULL, Chuck_DL_Api::Api::instance() );
+            m_valid = tickf( this, m_multi_in_v, m_multi_out_v, numFrames, NULL, Chuck_DL_Api::Api::instance( this->vm ) );
             
             // zero samples if not valid
             if( !m_valid ) memset( m_multi_out_v, 0, sizeof(SAMPLE) * m_multi_chan_size * numFrames );
@@ -1185,7 +1185,7 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
             // tick the ugen (Chuck_DL_Api::Api::instance() added 1.3.0.0)
             if( tick )
                 for( j = 0; j < numFrames; j++ )
-                    m_valid = tick( this, m_sum_v[j], &(m_current_v[j]), NULL, Chuck_DL_Api::Api::instance() );
+                    m_valid = tick( this, m_sum_v[j], &(m_current_v[j]), NULL, Chuck_DL_Api::Api::instance( this->vm ) );
             if( !m_valid )
                 for( j = 0; j < numFrames; j++ )
                     m_current_v[j] = 0.0f;
@@ -1460,7 +1460,7 @@ t_CKBOOL Chuck_UAna::system_tock( t_CKTIME now )
     if( m_op > 0 )  // UGEN_OP_TOCK
     {
         // tock the uana (Chuck_DL_Api::Api::instance() added 1.3.0.0)
-        if( tock ) m_valid = tock( this, this, blobProxy(), NULL, Chuck_DL_Api::Api::instance() );
+        if( tock ) m_valid = tock( this, this, blobProxy(), NULL, Chuck_DL_Api::Api::instance( this->vm ) );
         if( !m_valid ) { /* clear out blob? */ }
 		// timestamp the blob
 		blobProxy()->when() = now;
