@@ -151,6 +151,7 @@ Chuck_VM::Chuck_VM()
     m_set_external_float_queue.init( 200 );
     m_get_external_float_queue.init( 200 );
     m_signal_external_event_queue.init( 200 );
+    m_spork_external_shred_queue.init( 200 );
     
     g_num_vms_running++;
 }
@@ -603,6 +604,8 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
     // loop it
     while( N )
     {
+        // spork newly compiled files before trying set messages
+        handle_external_spork_messages();
         // set externals before chuck code runs
         handle_external_set_messages();
         
@@ -1275,6 +1278,25 @@ void Chuck_VM::release_dump( )
 // name: get_external_int()
 // desc: get an external int by name
 //-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::spork_async( Chuck_VM_Code * code, Chuck_VM_Shred * parent, vector<string> * args )
+{
+    Chuck_Spork_External_Shred spork_shred_message;
+    spork_shred_message.code = code;
+    spork_shred_message.parent = parent;
+    spork_shred_message.args = args;
+    
+    m_spork_external_shred_queue.put( spork_shred_message );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_int()
+// desc: get an external int by name
+//-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::get_external_int( std::string name, void (* fp)(t_CKINT) ) {
     Chuck_Get_External_Int get_int_message;
     get_int_message.name = name;
@@ -1568,6 +1590,32 @@ void Chuck_VM::handle_external_get_messages() {
         }
         
     }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: handle_external_set_messages()
+// desc: update values with external set messages
+//-----------------------------------------------------------------------------
+void Chuck_VM::handle_external_spork_messages() {
+    while( m_spork_external_shred_queue.more() ) {
+        Chuck_Spork_External_Shred spork_shred_message;
+        if( m_spork_external_shred_queue.get( & spork_shred_message ) )
+        {
+            Chuck_VM_Shred * shred = this->spork( spork_shred_message.code, spork_shred_message.parent );
+            shred->args = *(spork_shred_message.args);
+            delete spork_shred_message.args;
+        }
+        else
+        {
+            // get failed...
+            break;
+        }
+        
+    }
+    
 }
 
 

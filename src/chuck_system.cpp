@@ -415,7 +415,7 @@ bool Chuck_System::compileFile( const string & path, const string & argsTogether
 // name: compileCode()
 // desc: compile code directly
 //-----------------------------------------------------------------------------
-bool Chuck_System::compileCode( const char * codeString, const std::string & argsTogether, int count )
+bool Chuck_System::compileCode( const char * codeString, const std::string & argsTogether, int count, t_CKBOOL spork_async )
 {
     // sanity check
     if( !m_compilerRef )
@@ -425,7 +425,7 @@ bool Chuck_System::compileCode( const char * codeString, const std::string & arg
         return false;
     }
 
-    vector<string> args;
+    vector<string> * args = new vector<string>;
     Chuck_VM_Code * code = NULL;
     Chuck_VM_Shred * shred = NULL;
     
@@ -439,7 +439,7 @@ bool Chuck_System::compileCode( const char * codeString, const std::string & arg
     string fakeFilename = "compiled_code";
 
     // parse out command line arguments
-    if( !extract_args( theThing, fakeFilename, args ) )
+    if( !extract_args( theThing, fakeFilename, *args ) )
     {
         // error
         CK_FPRINTF_STDERR( "[chuck]: malformed filename with argument list...\n" );
@@ -466,10 +466,18 @@ bool Chuck_System::compileCode( const char * codeString, const std::string & arg
     // spork it
     while( count-- )
     {
-        // spork
-        shred = m_vmRef->spork( code, NULL );
-        // add args
-        shred->args = args;
+        if( spork_async )
+        {
+            m_vmRef->spork_async( code, NULL, args );
+        }
+        else
+        {
+            // spork
+            shred = m_vmRef->spork( code, NULL );
+            // add args
+            shred->args = *args;
+            delete args;
+        }
     }
 
     // pop indent
