@@ -173,7 +173,8 @@ void Chuck_External::audioCallback(
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_External::runCode( Chuck_System * chuck, const char * code )
 {
-    return chuck->compileCode( code, "" );
+    // spork it with no args, 1 time, asynchronously
+    return chuck->compileCode( code, "", 1, TRUE );
 }
 
 
