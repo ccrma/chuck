@@ -30,6 +30,7 @@
 // date: Spring 2004
 //-----------------------------------------------------------------------------
 #include "chuck_type.h"
+#include "chuck_compile.h"
 #include "ulib_math.h"
 #include "util_math.h"
 #include "ulib_std.h"
@@ -62,7 +63,7 @@ static void srandom( unsigned s ) { srand( s ); }
 DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
 {
     // get global
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->compiler_ref->env;
     // name
     QUERY->setname( QUERY, "Math" );
 

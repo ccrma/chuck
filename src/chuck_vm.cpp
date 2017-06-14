@@ -126,6 +126,7 @@ public:
 //-----------------------------------------------------------------------------
 Chuck_VM::Chuck_VM()
 {
+    m_env = NULL;
     m_shreds = NULL;
     m_num_shreds = 0;
     m_shreduler = NULL;
@@ -897,7 +898,10 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         }
         
         // clear user type system
-        Chuck_Env::instance()->clear_user_namespace();
+        if( m_env )
+        {
+            m_env->clear_user_namespace();
+        }
         
         m_shred_id = 0;
         m_num_shreds = 0;

@@ -39,6 +39,7 @@
 #include "chuck_type.h"
 #include "util_math.h"
 #include "chuck_vm.h"
+#include "chuck_compile.h"
 #include "chuck_lang.h"
 #include "chuck_globals.h"
 #include <stdlib.h>
@@ -1235,7 +1236,7 @@ CK_DLL_MFUN( MidiFileIn_rewind );
 DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
 {
 
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->compiler_ref->env;
     Chuck_DL_Func * func = NULL;
 
     std::string doc;

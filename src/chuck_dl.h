@@ -646,7 +646,7 @@ public:
         ObjectApi();
         
     private:
-        Type (* const get_type)( std::string &name );
+        Type (* const get_type)( Chuck_VM_Shred *, std::string &name );
 
         Object (* const create)( Type type );
         

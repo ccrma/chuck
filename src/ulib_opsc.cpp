@@ -44,6 +44,7 @@
 #include "ulib_opsc.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
+#include "chuck_compile.h"
 #include "chuck_dl.h"
 #include "util_opsc.h"
 #include "chuck_instr.h"
@@ -917,7 +918,7 @@ CK_DLL_MFUN(oscin_recv)
     args_obj = (Chuck_Array4 *) OBJ_MEMBER_OBJECT(msg_obj, oscmsg_offset_args);
     args_obj->clear();
     
-    oscarg_type = type_engine_find_type(Chuck_Env::instance(), str2list("OscArg"));
+    oscarg_type = type_engine_find_type( SHRED->vm_ref->m_env, str2list("OscArg") );
     
     for(i = 0; i < msg.args.size(); i++)
     {
@@ -1154,7 +1155,7 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     
     
     // get the env
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = query->compiler_ref->env;
     Chuck_DL_Func * func = NULL;
 
     // init base class
