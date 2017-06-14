@@ -103,8 +103,7 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
             return;
         }
         
-        // HACK: env::instance will not work for multiple compilers
-        Chuck_Type * ck_parent_type = type_engine_find_type( Chuck_Env::instance(), parent_path );
+        Chuck_Type * ck_parent_type = type_engine_find_type( query->compiler_ref->env, parent_path );
         
         delete_id_list( parent_path );
         
@@ -293,7 +292,7 @@ t_CKUINT CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query,
         return CK_INVALID_OFFSET;
     }
     
-    Chuck_Type * ck_type = type_engine_find_type( Chuck_Env::instance(), path );
+    Chuck_Type * ck_type = type_engine_find_type( query->compiler_ref->env, path );
     
     delete_id_list( path );
     
@@ -1070,9 +1069,9 @@ static t_CKUINT ck_get_srate(CK_DL_API api, Chuck_VM_Shred * shred)
     return shred->vm_ref->srate();
 }
 
-static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, std::string & name )
+static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM_Shred * shred, std::string & name )
 {
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = shred->vm_ref->m_env;
     a_Id_List list = new_id_list( name.c_str(), 0 ); // TODO: nested types
     
     Chuck_Type * t = type_engine_find_type( env, list );

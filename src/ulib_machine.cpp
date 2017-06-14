@@ -32,6 +32,7 @@
 #include "ulib_machine.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
+#include "chuck_compile.h"
 #include "chuck_errmsg.h"
 #include "chuck_globals.h"
 #include "chuck_instr.h"
@@ -46,7 +47,7 @@
 DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 {
     // get global env instance
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->compiler_ref->env;
     // set name of this query
     QUERY->setname( QUERY, "Machine" );
 

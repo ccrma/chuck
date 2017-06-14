@@ -33,6 +33,7 @@
 #include "uana_xform.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
+#include "chuck_compile.h"
 #include "chuck_instr.h"
 #include "chuck_lang.h"
 #include "util_buffers.h"
@@ -161,7 +162,7 @@ static t_CKINT float_array_size = 0;
 //-----------------------------------------------------------------------------
 DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
 {
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->compiler_ref->env;
     Chuck_DL_Func * func = NULL;
     
     std::string doc;

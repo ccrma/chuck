@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 #include "ugen_filter.h"
 #include "chuck_type.h"
+#include "chuck_compile.h"
 #include <math.h>
 #include <stdlib.h>
 
@@ -60,7 +61,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     
     std::string doc;
     
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->compiler_ref->env;
 
     Chuck_DL_Func * func = NULL;
 

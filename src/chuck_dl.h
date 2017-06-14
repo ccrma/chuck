@@ -646,7 +646,7 @@ public:
         ObjectApi();
         
     private:
-        Type (* const get_type)( CK_DL_API, std::string &name );
+        Type (* const get_type)( CK_DL_API, Chuck_VM_Shred *, std::string &name );
 
         Object (* const create)( CK_DL_API, Chuck_VM_Shred *, Type type );
         

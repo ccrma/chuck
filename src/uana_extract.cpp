@@ -33,6 +33,7 @@
 #include "uana_extract.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
+#include "chuck_compile.h"
 #include "chuck_instr.h"
 #include "chuck_lang.h"
 #include "chuck_errmsg.h"
@@ -147,7 +148,7 @@ void xcorr_normalize( SAMPLE * buffy, t_CKINT bs, SAMPLE * f, t_CKINT fs, SAMPLE
 //-----------------------------------------------------------------------------
 DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
 {
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->compiler_ref->env;
     Chuck_DL_Func * func = NULL;
     
     std::string doc;
