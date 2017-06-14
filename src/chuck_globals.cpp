@@ -48,8 +48,6 @@ const char CK_VERSION[] = "1.3.5.3-rc1 (chimera)";
 
 // global virtual machine
 Chuck_VM * g_vm = NULL;
-// global compiler
-Chuck_Compiler * g_compiler = NULL;
 // the shell
 Chuck_Shell * g_shell = NULL;
 // global BBQ audio layer
@@ -84,6 +82,8 @@ t_CKBOOL g_enable_realtime_audio = TRUE;
 f_mainthreadhook g_main_thread_hook = NULL;
 f_mainthreadquit g_main_thread_quit = NULL;
 void * g_main_thread_bindle = NULL;
+// num vms running; used to quit le_cb thread // added 1.3.6.0
+t_CKUINT g_num_vms_running = 0;
 
 
 

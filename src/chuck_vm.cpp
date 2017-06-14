@@ -151,6 +151,8 @@ Chuck_VM::Chuck_VM()
     m_set_external_float_queue.init( 200 );
     m_get_external_float_queue.init( 200 );
     m_signal_external_event_queue.init( 200 );
+    
+    g_num_vms_running++;
 }
 
 
@@ -162,7 +164,11 @@ Chuck_VM::Chuck_VM()
 //-----------------------------------------------------------------------------
 Chuck_VM::~Chuck_VM()
 {
-    if( m_init ) shutdown();
+    if( m_init )
+    {
+        shutdown();
+    }
+    g_num_vms_running--;
 }
 
 
