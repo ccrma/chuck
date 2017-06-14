@@ -634,7 +634,7 @@ public:
     {
         VMApi();
         
-        t_CKUINT (* const get_srate)();
+        t_CKUINT (* const get_srate)(CK_DL_API, Chuck_VM_Shred *);
     } * const vm;
     
     struct ObjectApi
@@ -642,20 +642,20 @@ public:
         ObjectApi();
         
     private:
-        Type (* const get_type)( std::string &name );
+        Type (* const get_type)( CK_DL_API, std::string &name );
 
-        Object (* const create)( Type type );
+        Object (* const create)( CK_DL_API, Chuck_VM_Shred *, Type type );
         
-        String (* const create_string)( std::string &value );
+        String (* const create_string)( CK_DL_API, Chuck_VM_Shred *, std::string &value );
         
-        t_CKBOOL (* const get_mvar_int)( Object object, std::string &name, t_CKINT &value );
-        t_CKBOOL (* const get_mvar_float)( Object object, std::string &name, t_CKFLOAT &value );
-        t_CKBOOL (* const get_mvar_dur)( Object object, std::string &name, t_CKDUR &value );
-        t_CKBOOL (* const get_mvar_time)( Object object, std::string &name, t_CKTIME &value );
-        t_CKBOOL (* const get_mvar_string)( Object object, std::string &name, String &value );
-        t_CKBOOL (* const get_mvar_object)( Object object, std::string &name, Object &value );
+        t_CKBOOL (* const get_mvar_int)( CK_DL_API, Object object, std::string &name, t_CKINT &value );
+        t_CKBOOL (* const get_mvar_float)( CK_DL_API, Object object, std::string &name, t_CKFLOAT &value );
+        t_CKBOOL (* const get_mvar_dur)( CK_DL_API, Object object, std::string &name, t_CKDUR &value );
+        t_CKBOOL (* const get_mvar_time)( CK_DL_API, Object object, std::string &name, t_CKTIME &value );
+        t_CKBOOL (* const get_mvar_string)( CK_DL_API, Object object, std::string &name, String &value );
+        t_CKBOOL (* const get_mvar_object)( CK_DL_API, Object object, std::string &name, Object &value );
         
-        t_CKBOOL (* const set_string)( String string, std::string &value );
+        t_CKBOOL (* const set_string)( CK_DL_API, String string, std::string &value );
         
     } * const object;
     
