@@ -141,54 +141,16 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def );
 a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static,
                             t_CKBOOL is_base_primtive );
 
-// static
-Chuck_Env * Chuck_Env::our_instance = NULL;
+
 
 
 //-----------------------------------------------------------------------------
-// name: startup()
-// desc:
+// name: new_instance()
+// desc: alloc a new Chuck_Env
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Env::startup()
+Chuck_Env * Chuck_Env::new_instance()
 {
-    // TODO: one instance per vm? Only because VMs might have different sample rates??
-    // or, enforce all vms have same srate?
-    // Will other type engine things have to be made non-global because of this?
-    // potentially sweeping ramifications...
-    // One thing for sure is that t_class and t_thread might need their own .info per thread because this is a Chuck_Namespace* and that might be where custom classes are stored...
-    assert( our_instance == NULL );
-    our_instance = new Chuck_Env;
-    assert( our_instance != NULL );
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: instance()
-// desc: ...
-//-----------------------------------------------------------------------------
-Chuck_Env * Chuck_Env::instance()
-{
-    return our_instance;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: shutdown()
-// desc: ...
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Env::shutdown()
-{
-    assert( our_instance != NULL );
-    SAFE_DELETE( our_instance );
-    assert( our_instance == NULL );
-
-    return TRUE;
+    return new Chuck_Env;
 }
 
 
@@ -206,9 +168,7 @@ Chuck_Env * type_engine_init( Chuck_VM * vm )
     EM_pushlog();
 
     // allocate a new env
-    if( !Chuck_Env::startup() ) return NULL;
-    // get the instance
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = Chuck_Env::new_instance();
     // set the name of global namespace
     env->global()->name = "global";
     // set the current namespace to global
@@ -404,7 +364,7 @@ void type_engine_shutdown( Chuck_Env * env )
     EM_log( CK_LOG_SEVERE, "shutting down type checker..." );
 
     // shut it down
-    env->shutdown();
+    SAFE_DELETE( env );
     
     // TODO: free these properly
     SAFE_RELEASE( t_object.info );
