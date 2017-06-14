@@ -55,6 +55,7 @@ t_CKUINT g_otf_log = CK_LOG_INFO;
 
 // local globals
 Chuck_VM * otf_vm = NULL;
+Chuck_Compiler * otf_compiler = NULL;
 
 
 
@@ -66,6 +67,18 @@ Chuck_VM * otf_vm = NULL;
 void set_otf_vm( Chuck_VM * vm )
 {
     otf_vm = vm;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_otf_compiler()
+// desc: set which compiler should receive otf commands
+//-----------------------------------------------------------------------------
+void set_otf_compiler( Chuck_Compiler * compiler )
+{
+    otf_compiler = compiler;
 }
 
 
@@ -682,7 +695,7 @@ void * otf_cb( void * p )
         {
             if( otf_vm )
             {
-                if( !otf_process_msg( otf_vm, g_compiler, &msg, FALSE, client ) )
+                if( !otf_process_msg( otf_vm, otf_compiler, &msg, FALSE, client ) )
                 {
                     ret.param = FALSE;
                     strcpy( (char *)ret.buffer, EM_lasterror() );

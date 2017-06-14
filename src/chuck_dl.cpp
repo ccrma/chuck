@@ -520,7 +520,7 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
     // 1.3.2.0: import class into type engine if at top level
     if( query->stack.size() == 1 ) // top level class
     {
-        if( !type_engine_add_class_from_dl(g_compiler->env, query->curr_class) )
+        if( !type_engine_add_class_from_dl( query->compiler_ref->env, query->curr_class ) )
         {
             EM_log(CK_LOG_SEVERE, "[chuck](DL): error importing class '%s' into type engine",
                    query->curr_class->name.c_str());
@@ -553,9 +553,10 @@ Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query
                                                           f_mainthreadquit quit,
                                                           void * bindle )
 {
-    assert(g_vm);
+    assert( query->compiler_ref );
+    assert( query->compiler_ref->vm_ref );
     
-    return new Chuck_DL_MainThreadHook( hook, quit, bindle, g_vm );
+    return new Chuck_DL_MainThreadHook( hook, quit, bindle, query->compiler_ref->vm_ref );
 }
 
 //-----------------------------------------------------------------------------
@@ -918,7 +919,7 @@ const char * Chuck_DLL::name() const
 // name: Chuck_DL_Query
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_DL_Query::Chuck_DL_Query( )
+Chuck_DL_Query::Chuck_DL_Query( Chuck_Compiler * compiler )
 {
     // set the pointers to functions so the module can call
     setname = ck_setname;
@@ -938,6 +939,7 @@ Chuck_DL_Query::Chuck_DL_Query( )
     doc_class = ck_doc_class;
     doc_func = ck_doc_func;
     doc_var = ck_doc_var;
+    compiler_ref = compiler;
     
 //    memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
     

@@ -89,6 +89,8 @@ void * otf_cb( void * p );
 
 // set which vm should receive otf commands
 void set_otf_vm( Chuck_VM * vm );
+// set which compiler should receive otf commands
+void set_otf_compiler( Chuck_Compiler * compiler );
 
 
 extern const char * poop[];
