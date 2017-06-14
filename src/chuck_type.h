@@ -785,7 +785,7 @@ struct Chuck_Func : public Chuck_VM_Object
 // initialize the type engine
 Chuck_Env * type_engine_init( Chuck_VM * vm );
 // shutdown the type engine
-void type_engine_shutdown();
+void type_engine_shutdown( Chuck_Env * env );
 // load a context to be type-checked or emitted
 t_CKBOOL type_engine_load_context( Chuck_Env * env, Chuck_Context * context );
 // unload a context after being emitted

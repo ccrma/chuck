@@ -151,6 +151,11 @@ Chuck_Env * Chuck_Env::our_instance = NULL;
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Env::startup()
 {
+    // TODO: one instance per vm? Only because VMs might have different sample rates??
+    // or, enforce all vms have same srate?
+    // Will other type engine things have to be made non-global because of this?
+    // potentially sweeping ramifications...
+    // One thing for sure is that t_class and t_thread might need their own .info per thread because this is a Chuck_Namespace* and that might be where custom classes are stored...
     assert( our_instance == NULL );
     our_instance = new Chuck_Env;
     assert( our_instance != NULL );
@@ -393,13 +398,13 @@ Chuck_Env * type_engine_init( Chuck_VM * vm )
 // name: type_engine_shutdown()
 // desc: ...
 //-----------------------------------------------------------------------------
-void type_engine_shutdown()
+void type_engine_shutdown( Chuck_Env * env )
 {
     // log
     EM_log( CK_LOG_SEVERE, "shutting down type checker..." );
 
     // shut it down
-    Chuck_Env::shutdown();
+    env->shutdown();
     
     // TODO: free these properly
     SAFE_RELEASE( t_object.info );

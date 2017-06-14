@@ -162,7 +162,7 @@ void Chuck_Compiler::shutdown()
     EM_pushlog();
 
     // TODO: free
-    type_engine_shutdown();
+    type_engine_shutdown( env );
     // emit_engine_shutdown( emitter );
     env = NULL;
     emitter = NULL;
