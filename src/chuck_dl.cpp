@@ -103,8 +103,7 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
             return;
         }
         
-        // HACK: env::instance will not work for multiple compilers
-        Chuck_Type * ck_parent_type = type_engine_find_type( Chuck_Env::instance(), parent_path );
+        Chuck_Type * ck_parent_type = type_engine_find_type( query->compiler_ref->env, parent_path );
         
         delete_id_list( parent_path );
         
@@ -293,7 +292,7 @@ t_CKUINT CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query,
         return CK_INVALID_OFFSET;
     }
     
-    Chuck_Type * ck_type = type_engine_find_type( Chuck_Env::instance(), path );
+    Chuck_Type * ck_type = type_engine_find_type( query->compiler_ref->env, path );
     
     delete_id_list( path );
     
@@ -520,7 +519,7 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
     // 1.3.2.0: import class into type engine if at top level
     if( query->stack.size() == 1 ) // top level class
     {
-        if( !type_engine_add_class_from_dl(g_compiler->env, query->curr_class) )
+        if( !type_engine_add_class_from_dl( query->compiler_ref->env, query->curr_class ) )
         {
             EM_log(CK_LOG_SEVERE, "[chuck](DL): error importing class '%s' into type engine",
                    query->curr_class->name.c_str());
@@ -553,9 +552,10 @@ Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query
                                                           f_mainthreadquit quit,
                                                           void * bindle )
 {
-    assert(g_vm);
+    assert( query->compiler_ref );
+    assert( query->compiler_ref->vm_ref );
     
-    return new Chuck_DL_MainThreadHook( hook, quit, bindle, g_vm );
+    return new Chuck_DL_MainThreadHook( hook, quit, bindle, query->compiler_ref->vm_ref );
 }
 
 //-----------------------------------------------------------------------------
@@ -918,7 +918,7 @@ const char * Chuck_DLL::name() const
 // name: Chuck_DL_Query
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_DL_Query::Chuck_DL_Query( )
+Chuck_DL_Query::Chuck_DL_Query( Chuck_Compiler * compiler )
 {
     // set the pointers to functions so the module can call
     setname = ck_setname;
@@ -938,6 +938,7 @@ Chuck_DL_Query::Chuck_DL_Query( )
     doc_class = ck_doc_class;
     doc_func = ck_doc_func;
     doc_var = ck_doc_var;
+    compiler_ref = compiler;
     
 //    memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
     
@@ -1068,9 +1069,10 @@ static t_CKUINT ck_get_srate(CK_DL_API api, Chuck_VM_Shred * shred)
     return shred->vm_ref->srate();
 }
 
-static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, std::string & name )
+
+static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM_Shred * shred, std::string & name )
 {
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = shred->vm_ref->m_env;
     a_Id_List list = new_id_list( name.c_str(), 0 ); // TODO: nested types
     
     Chuck_Type * t = type_engine_find_type( env, list );

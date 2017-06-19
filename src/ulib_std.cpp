@@ -39,6 +39,7 @@
 #include "util_string.h"
 #include "util_thread.h"
 #include "chuck_type.h"
+#include "chuck_compile.h"
 #include "chuck_instr.h"
 #include "chuck_globals.h"
 
@@ -146,7 +147,7 @@ static t_CKUINT Cereal_offset_data = 0;
 DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 {
     // get global
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->compiler_ref->env;
     // set name
     QUERY->setname( QUERY, "Std" );
 
@@ -1157,7 +1158,7 @@ extern CHUCK_THREAD g_tid_whatever;
 map<LineEvent *, LineEvent *> g_le_map;
 XMutex g_le_mutex;
 string g_le_what;
-extern Chuck_Compiler * g_compiler;
+extern t_CKUINT g_num_vms_running;
 
 void * le_cb( void * p )
 {
@@ -1174,9 +1175,9 @@ void * le_cb( void * p )
 
         // check
         // jack: changed from g_vm when removing g_vm
-        // check if the global compiler is null; if it is, that means
-        // a global cleanup has happened and we should exit
-        if( !g_compiler ) break;
+        // check if any vms are still running; if yes, that means
+        // we are done and we should exit
+        if( g_num_vms_running == 0 ) break;
 
         // do the prompt
         cout << g_le_what;

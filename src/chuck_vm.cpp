@@ -126,6 +126,7 @@ public:
 //-----------------------------------------------------------------------------
 Chuck_VM::Chuck_VM()
 {
+    m_env = NULL;
     m_shreds = NULL;
     m_num_shreds = 0;
     m_shreduler = NULL;
@@ -152,6 +153,8 @@ Chuck_VM::Chuck_VM()
     m_get_external_float_queue.init( 200 );
     m_signal_external_event_queue.init( 200 );
     m_spork_external_shred_queue.init( 200 );
+    
+    g_num_vms_running++;
 }
 
 
@@ -163,7 +166,11 @@ Chuck_VM::Chuck_VM()
 //-----------------------------------------------------------------------------
 Chuck_VM::~Chuck_VM()
 {
-    if( m_init ) shutdown();
+    if( m_init )
+    {
+        shutdown();
+    }
+    g_num_vms_running--;
 }
 
 
@@ -894,7 +901,10 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         }
         
         // clear user type system
-        Chuck_Env::instance()->clear_user_namespace();
+        if( m_env )
+        {
+            m_env->clear_user_namespace();
+        }
         
         m_shred_id = 0;
         m_num_shreds = 0;

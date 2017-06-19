@@ -35,6 +35,7 @@
 #include "ugen_osc.h"
 #include "chuck_type.h"
 #include "chuck_ugen.h"
+#include "chuck_compile.h"
 #include <math.h>
 #include <stdio.h>
 
@@ -52,7 +53,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     // srate
     g_srate = QUERY->srate;
     // get the env
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->compiler_ref->env;
 
     Chuck_DL_Func * func = NULL;
 
@@ -911,7 +912,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     // srate
     g_srate = QUERY->srate;
     // get the env
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->compiler_ref->env;
     std::string doc;
     Chuck_DL_Func * func = NULL;
     

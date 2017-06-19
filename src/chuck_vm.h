@@ -581,6 +581,7 @@ private:
 // data
 //-----------------------------------------------------------------------------
 public:
+    Chuck_Env * m_env;
     // ugen
     Chuck_UGen * m_adc;
     Chuck_UGen * m_dac;

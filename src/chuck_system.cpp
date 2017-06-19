@@ -121,10 +121,8 @@ extern "C" void global_cleanup()
     {
         // get vm
         Chuck_VM * vm = g_vm;
-        Chuck_Compiler * compiler = g_compiler;
         // flag the global one
         g_vm = NULL;
-        g_compiler = NULL;
         // if not NULL
         if( vm )
         {
@@ -148,7 +146,6 @@ extern "C" void global_cleanup()
 #endif
         // will this work for windows?
         SAFE_DELETE( vm );
-        SAFE_DELETE( compiler );
 
         // ck_close( g_sock );
     }
@@ -1100,10 +1097,8 @@ if( g_bbq == NULL ) {
         named_dls.clear();
     }
     
-    // Only one global compiler
-if( g_compiler == NULL ) {
     // allocate the compiler
-    compiler = m_compilerRef = g_compiler = new Chuck_Compiler;
+    compiler = m_compilerRef = new Chuck_Compiler;
     // initialize the compiler (search_apth and named_dls added 1.3.0.0 -- TODO: refactor)
     if( !compiler->initialize( vm, dl_search_path, named_dls ) )
     {
@@ -1114,9 +1109,12 @@ if( g_compiler == NULL ) {
     compiler->emitter->dump = dump;
     // set auto depend
     compiler->set_auto_depend( auto_depend );
-} else {
-    compiler = m_compilerRef = g_compiler;
-}
+
+    if( update_otf_vm )
+    {
+        // also update otf compiler
+        set_otf_compiler( compiler );
+    }
 
     // vm synthesis subsystem - needs the type system
     if( !vm->initialize_synthesis( ) )
@@ -1431,6 +1429,9 @@ bool Chuck_System::clientVMShutdown()
     // free vm (mine, not global)
     SAFE_DELETE( m_vmRef ); m_vmRef = NULL;
     
+    // free my compiler
+    SAFE_DELETE( m_compilerRef ); m_compilerRef = NULL;
+    
     // done
     return true;
 }
@@ -1472,7 +1473,7 @@ bool Chuck_System::clientShutdown()
     // free vm
     SAFE_DELETE( g_vm ); m_vmRef = NULL;
     // free the compiler
-    SAFE_DELETE( g_compiler ); m_compilerRef = NULL;
+    SAFE_DELETE( m_compilerRef ); m_compilerRef = NULL;
     
     // wait for the shell, if it is running
     // does the VM reset its priority to normal before exiting?

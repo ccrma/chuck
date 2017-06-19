@@ -65,7 +65,7 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
                                 const char * extension, 
                                 std::list<std::string> & chugin_search_paths,
                                 std::list<std::string> & named_dls);
-t_CKBOOL load_module( Chuck_Env * env, f_ck_query query, const char * name, const char * nspc );
+t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query query, const char * name, const char * nspc );
 
 
 
@@ -109,11 +109,15 @@ t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm,
     EM_log( CK_LOG_SYSTEM, "initializing compiler..." );
     // push indent level
     EM_pushlog();
+    
+    vm_ref = vm;
 
     // allocate the type checker
     env = type_engine_init( vm );
     // add reference
     env->add_ref();
+    // store in vm
+    vm_ref->m_env = env;
     
     // allocate the emitter
     emitter = emit_engine_init( env );
@@ -160,7 +164,7 @@ void Chuck_Compiler::shutdown()
     EM_pushlog();
 
     // TODO: free
-    type_engine_shutdown();
+    type_engine_shutdown( env );
     // emit_engine_shutdown( emitter );
     env = NULL;
     emitter = NULL;
@@ -208,7 +212,7 @@ t_CKBOOL Chuck_Compiler::bind( f_ck_query query_func, const std::string & name,
     type_engine_load_context( env, context );
     
     // do it
-    if( !load_module( env, query_func, name.c_str(), nspc.c_str() ) ) goto error;
+    if( !load_module( this, env, query_func, name.c_str(), nspc.c_str() ) ) goto error;
 
     // clear context
     type_engine_unload_context( env );
@@ -566,14 +570,14 @@ Chuck_VM_Code * Chuck_Compiler::output()
 // name: load_module()
 // desc: load a dll and add it
 //-----------------------------------------------------------------------------
-t_CKBOOL load_module( Chuck_Env * env, f_ck_query query, 
+t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query query,
                       const char * name, const char * nspc )
 {
     Chuck_DLL * dll = NULL;
     t_CKBOOL query_failed = FALSE;
     
     // load osc
-    dll = new Chuck_DLL( name );
+    dll = new Chuck_DLL( compiler, name );
     // (fixed: 1.3.0.0) query_failed now catches either failure of load or query
     if( (query_failed = !(dll->load( query ) && dll->query())) ||
         !type_engine_add_dll( env, dll, nspc ) )
@@ -620,35 +624,35 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
 
     // load
     EM_log( CK_LOG_SEVERE, "module osc..." );
-    load_module( env, osc_query, "osc", "global" );
+    load_module( compiler, env, osc_query, "osc", "global" );
     EM_log( CK_LOG_SEVERE, "module xxx..." );
-    load_module( env, xxx_query, "xxx", "global" );
+    load_module( compiler, env, xxx_query, "xxx", "global" );
     EM_log( CK_LOG_SEVERE, "module filter..." );
-    load_module( env, filter_query, "filter", "global" );
+    load_module( compiler, env, filter_query, "filter", "global" );
     EM_log( CK_LOG_SEVERE, "module STK..." );
-    load_module( env, stk_query, "stk", "global" );
+    load_module( compiler, env, stk_query, "stk", "global" );
     EM_log( CK_LOG_SEVERE, "module xform..." );
-    load_module( env, xform_query, "xform", "global" );
+    load_module( compiler, env, xform_query, "xform", "global" );
     EM_log( CK_LOG_SEVERE, "module extract..." );
-    load_module( env, extract_query, "extract", "global" );
+    load_module( compiler, env, extract_query, "extract", "global" );
     
     // load
     EM_log( CK_LOG_SEVERE, "class 'machine'..." );
-    if( !load_module( env, machine_query, "Machine", "global" ) ) goto error;
+    if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
     machine_init( compiler, otf_process_msg );
     EM_log( CK_LOG_SEVERE, "class 'std'..." );
-    if( !load_module( env, libstd_query, "Std", "global" ) ) goto error;
+    if( !load_module( compiler, env, libstd_query, "Std", "global" ) ) goto error;
     EM_log( CK_LOG_SEVERE, "class 'math'..." );
-    if( !load_module( env, libmath_query, "Math", "global" ) ) goto error;
+    if( !load_module( compiler, env, libmath_query, "Math", "global" ) ) goto error;
 
 // ge: these currently don't compile on "modern" windows versions (1.3.5.3)
 #ifndef __WINDOWS_MODERN__
     EM_log( CK_LOG_SEVERE, "class 'opsc'..." );
-    if( !load_module( env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
+    if( !load_module( compiler, env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
 #endif
     EM_log( CK_LOG_SEVERE, "class 'RegEx'..." );
-    if( !load_module( env, regex_query, "RegEx", "global" ) ) goto error;
-    // if( !load_module( env, net_query, "net", "global" ) ) goto error;
+    if( !load_module( compiler, env, regex_query, "RegEx", "global" ) ) goto error;
+    // if( !load_module( compiler, env, net_query, "net", "global" ) ) goto error;
     
     if( !init_class_HID( env ) ) goto error;
     if( !init_class_serialio( env ) ) goto error;
@@ -692,7 +696,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
     
     EM_log(CK_LOG_SEVERE, "loading chugin '%s'", name);
     
-    Chuck_DLL * dll = new Chuck_DLL(name);
+    Chuck_DLL * dll = new Chuck_DLL( compiler, name );
     t_CKBOOL query_failed = FALSE;
     
     if((query_failed = !(dll->load(dl_path) && dll->query())) ||

@@ -52,8 +52,6 @@ class  BBQ;
 extern const char CK_VERSION[];
 // global virtual machine
 extern Chuck_VM * g_vm;
-// global compiler
-extern Chuck_Compiler * g_compiler;
 // the shell
 extern Chuck_Shell * g_shell;
 // global BBQ audio layer, ge: 1.3.5.3
@@ -82,6 +80,8 @@ extern t_CKBOOL g_enable_realtime_audio;
 extern f_mainthreadhook g_main_thread_hook;
 extern f_mainthreadquit g_main_thread_quit;
 extern void * g_main_thread_bindle;
+// num vms running; used to quit le_cb thread // added 1.3.6.0
+extern t_CKUINT g_num_vms_running;
 
 
 // global detach

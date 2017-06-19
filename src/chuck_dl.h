@@ -73,6 +73,7 @@ struct Chuck_UGen;
 struct Chuck_UAna;
 struct Chuck_UAnaBlobProxy;
 struct Chuck_DL_MainThreadHook;
+struct Chuck_Compiler;
 namespace Chuck_DL_Api { struct Api; }
 
 
@@ -377,6 +378,8 @@ struct Chuck_DL_Query
     t_CKUINT bufsize;
     // line pos
     int linepos;
+    // compiler
+    Chuck_Compiler * compiler_ref;
     
     // added 1.3.2.0
     f_create_main_thread_hook create_main_thread_hook;
@@ -389,7 +392,7 @@ struct Chuck_DL_Query
     f_add_example add_ex;
     
     // constructor
-    Chuck_DL_Query();
+    Chuck_DL_Query( Chuck_Compiler * compiler );
     // desctructor
     ~Chuck_DL_Query() { this->clear(); }
     // clear
@@ -577,8 +580,9 @@ public:
     
 public:
     // constructor
-    Chuck_DLL( const char * xid = NULL )
+    Chuck_DLL( Chuck_Compiler * compiler, const char * xid = NULL )
         : m_handle(NULL), m_id(xid ? xid : ""),
+        m_query( compiler ),
         m_done_query(FALSE), m_query_func(NULL), m_version_func(NULL)
     { }
     // destructor
@@ -642,7 +646,7 @@ public:
         ObjectApi();
         
     private:
-        Type (* const get_type)( CK_DL_API, std::string &name );
+        Type (* const get_type)( CK_DL_API, Chuck_VM_Shred *, std::string &name );
 
         Object (* const create)( CK_DL_API, Chuck_VM_Shred *, Type type );
         

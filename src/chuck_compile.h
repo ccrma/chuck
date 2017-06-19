@@ -60,6 +60,8 @@ public: // data
     Chuck_Emitter * emitter;
     // generated code
     Chuck_VM_Code * code;
+    // vm
+    Chuck_VM * vm_ref;
 
     // auto-depend flag
     t_CKBOOL m_auto_depend;
