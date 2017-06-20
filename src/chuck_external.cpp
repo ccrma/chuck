@@ -47,7 +47,7 @@ void ensureGlobalsInitted( const char * dataDir )
     if( !g_globals_initted )
     {
         // starting and quitting a chuck causes many global variables to be initialized
-        Chuck_External::quitChuck( Chuck_External::startChuck( dataDir ) );
+        Chuck_External::quitChuck( Chuck_External::startChuck( 44100, dataDir ) );
         g_globals_initted = TRUE;
     }
 }
@@ -95,9 +95,9 @@ void Chuck_External::finalCleanup()
 // name: startChuck()
 // desc: launch a ChucK with no data dir
 //-----------------------------------------------------------------------------
-Chuck_System * Chuck_External::startChuck()
+Chuck_System * Chuck_External::startChuck( t_CKUINT sampleRate )
 {
-    return startChuck( "" );
+    return startChuck( sampleRate, "" );
 };
 
 
@@ -107,7 +107,7 @@ Chuck_System * Chuck_External::startChuck()
 // name: startChuck()
 // desc: launch a ChucK
 //-----------------------------------------------------------------------------
-Chuck_System * Chuck_External::startChuck( const char * dataDir )
+Chuck_System * Chuck_External::startChuck( t_CKUINT sampleRate, const char * dataDir )
 {
     Chuck_System * chuck = new Chuck_System;
     
@@ -120,8 +120,11 @@ Chuck_System * Chuck_External::startChuck( const char * dataDir )
     // need to store arg2 for the c_str() pointer to be right
     std::string arg2 = std::string( "--data-dir:" ) + std::string( dataDir );
     argsVector.push_back( arg2.c_str() );
+    std::stringstream arg3;
+    arg3 << "--srate:" << sampleRate;
+    argsVector.push_back( arg3.str().c_str() );
     const char ** args = (const char **) & argsVector[0];
-    chuck->go( 3, args );
+    chuck->go( argsVector.size(), args );
     
     return chuck;
 };

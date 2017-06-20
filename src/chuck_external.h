@@ -60,8 +60,8 @@ public:
     static void initialSetup( const char * chuginDir );
     static void finalCleanup();
 
-    static Chuck_System * startChuck();
-    static Chuck_System * startChuck( const char * dataDir );
+    static Chuck_System * startChuck( t_CKUINT sampleRate );
+    static Chuck_System * startChuck( t_CKUINT sampleRate, const char * dataDir );
     static void quitChuck( Chuck_System * chuck );
     static void audioCallback( Chuck_System * chuck, SAMPLE * inbuffer, SAMPLE * outbuffer, unsigned int length, unsigned int inchannels, unsigned int outchannels );
     static t_CKBOOL runCode( Chuck_System * chuck, const char * code );
