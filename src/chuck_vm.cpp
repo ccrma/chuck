@@ -1040,6 +1040,8 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent 
 {
     // allocate a new shred
     Chuck_VM_Shred * shred = new Chuck_VM_Shred;
+    // set the vm
+    shred->vm_ref = this;
     // initialize the shred (default stack size)
     shred->initialize( code );
     // set the name
@@ -1073,8 +1075,6 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Shred * shred )
     shred->now = shred->wake_time = m_shreduler->now_system;
     // set the id
     shred->xid = next_id();
-    // set the vm
-    shred->vm_ref = this;
     // add ref
     shred->add_ref();
     // add it to the parent

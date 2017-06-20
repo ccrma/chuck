@@ -116,8 +116,6 @@ t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm,
     env = type_engine_init( vm );
     // add reference
     env->add_ref();
-    // store in vm
-    vm_ref->m_env = env;
     
     // allocate the emitter
     emitter = emit_engine_init( env );

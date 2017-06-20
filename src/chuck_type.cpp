@@ -221,6 +221,8 @@ Chuck_Env * type_engine_init( Chuck_VM * vm )
 
     // allocate a new env
     Chuck_Env * env = Chuck_Env::new_instance();
+    // store in vm
+    vm->m_env = env;
     // set the name of global namespace
     env->global()->name = "global";
     // set the current namespace to global
