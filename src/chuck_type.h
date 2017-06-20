@@ -435,7 +435,7 @@ public:
     t_CKINT deprecate_level;
 
     // destructor
-    virtual ~Chuck_Env() { }
+    virtual ~Chuck_Env();
 
     // reset
     void reset( )

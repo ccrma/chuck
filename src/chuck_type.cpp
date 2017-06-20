@@ -209,6 +209,50 @@ Chuck_Env::Chuck_Env( )
 
 
 //-----------------------------------------------------------------------------
+// name: ~Chuck_Env()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_Env::~Chuck_Env()
+{
+    SAFE_RELEASE( t_object->info );
+    SAFE_RELEASE( t_array->info );
+    SAFE_RELEASE( t_string->info );
+    SAFE_RELEASE( t_ugen->info );
+    SAFE_RELEASE( t_uanablob->info );
+    SAFE_RELEASE( t_uana->info );
+    SAFE_RELEASE( t_shred->info );
+    SAFE_RELEASE( t_event->info );
+    SAFE_RELEASE( t_class->info );
+    SAFE_RELEASE( t_thread->info );
+    SAFE_RELEASE( t_io->info );
+    SAFE_RELEASE( t_fileio->info );
+    SAFE_RELEASE( t_chout->info );  // added 1.3.0.0
+    SAFE_RELEASE( t_cherr->info );  // added 1.3.0.0
+    SAFE_RELEASE( t_vec3->info );  // added 1.3.5.3
+    SAFE_RELEASE( t_vec4->info );  // added 1.3.5.3
+    
+    SAFE_DELETE( t_object );
+    SAFE_DELETE( t_array );
+    SAFE_DELETE( t_string );
+    SAFE_DELETE( t_ugen );
+    SAFE_DELETE( t_uanablob );
+    SAFE_DELETE( t_uana );
+    SAFE_DELETE( t_shred );
+    SAFE_DELETE( t_event );
+    SAFE_DELETE( t_class );
+    SAFE_DELETE( t_thread );
+    SAFE_DELETE( t_io );
+    SAFE_DELETE( t_fileio );
+    SAFE_DELETE( t_chout );  // added 1.3.0.0
+    SAFE_DELETE( t_cherr );  // added 1.3.0.0
+    SAFE_DELETE( t_vec3 );  // added 1.3.5.3
+    SAFE_DELETE( t_vec4 );  // added 1.3.5.3
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: type_engine_init()
 // desc: initialize a type engine
 //-----------------------------------------------------------------------------
@@ -416,27 +460,9 @@ void type_engine_shutdown( Chuck_Env * env )
 {
     // log
     EM_log( CK_LOG_SEVERE, "shutting down type checker..." );
-
+    
     // shut it down
     SAFE_DELETE( env );
-    
-    // TODO: free these properly
-    /*SAFE_RELEASE( t_object.info );
-    SAFE_RELEASE( t_array.info );
-    SAFE_RELEASE( t_string.info );
-    SAFE_RELEASE( t_ugen.info );
-    SAFE_RELEASE( t_uanablob.info );
-    SAFE_RELEASE( t_uana.info );
-    SAFE_RELEASE( t_shred.info );
-    SAFE_RELEASE( t_event.info );
-    SAFE_RELEASE( t_class.info );
-    SAFE_RELEASE( t_thread.info );
-    SAFE_RELEASE( t_io.info );
-    SAFE_RELEASE( t_fileio.info );
-    SAFE_RELEASE( t_chout.info );  // added 1.3.0.0
-    SAFE_RELEASE( t_cherr.info );  // added 1.3.0.0
-    SAFE_RELEASE( t_vec3.info );  // added 1.3.5.3
-    SAFE_RELEASE( t_vec4.info );  // added 1.3.5.3*/
     
     // log
     EM_log( CK_LOG_SEVERE, "type checker shutdown complete." );
@@ -2644,7 +2670,7 @@ t_CKTYPE type_engine_check_exp_array_lit( Chuck_Env * env, a_Exp_Primary exp )
     t->array_type = type->array_depth ? type->array_type : type;
     // TODO: verify the following is correct
     // set namespace
-    t->info = t_array.info;
+    t->info = t_array->info;
     // add reference
     t->info->add_ref();
     // set owner
