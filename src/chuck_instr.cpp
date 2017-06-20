@@ -3723,7 +3723,11 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
         else if( isa( type, vm->m_env->t_event ) ) object = new Chuck_Event;
         else if( isa( type, vm->m_env->t_string ) ) object = new Chuck_String;
         // TODO: is this ok?
-        else if( isa( type, vm->m_env->t_shred ) ) object = new Chuck_VM_Shred;
+        else if( isa( type, vm->m_env->t_shred ) )
+        {
+            object = new Chuck_VM_Shred;
+            ( ( Chuck_VM_Shred * )object )->vm_ref = vm;
+        }
         // TODO: is this ok?
         else object = new Chuck_Object;
     }

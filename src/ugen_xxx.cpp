@@ -1357,6 +1357,7 @@ CK_DLL_CTOR( foogen_ctor )
         code->need_this = 0;
         
         data->shred = new Chuck_VM_Shred;
+        data->shred->vm_ref = SHRED->vm_ref;
         data->shred->initialize(code);
     }
     else
