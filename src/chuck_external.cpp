@@ -118,11 +118,15 @@ Chuck_System * Chuck_External::startChuck( t_CKUINT sampleRate, const char * dat
     argsVector.push_back( "chuck" );
     argsVector.push_back( "--external-callback" );
     // need to store arg2 for the c_str() pointer to be right
+    // (otherwise, we try to parse junk file and get "input in flex scanner failed")
     std::string arg2 = std::string( "--data-dir:" ) + std::string( dataDir );
     argsVector.push_back( arg2.c_str() );
-    std::stringstream arg3;
-    arg3 << "--srate:" << sampleRate;
-    argsVector.push_back( arg3.str().c_str() );
+    std::stringstream arg3stream;
+    arg3stream << "--srate:" << sampleRate;
+    // need to store arg3 for the c_str() pointer to be right
+    // (otherwise, we try to parse junk file and get "input in flex scanner failed")
+    std::string arg3 = arg3stream.str();
+    argsVector.push_back( arg3.c_str() );
     const char ** args = (const char **) & argsVector[0];
     chuck->go( argsVector.size(), args );
     
