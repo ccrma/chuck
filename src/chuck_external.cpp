@@ -263,7 +263,7 @@ t_CKBOOL Chuck_External::broadcastExternalEvent( Chuck_System * chuck, const cha
 t_CKBOOL Chuck_External::setChoutCallback( void (* callback)(const char *) )
 {
     if( !g_globals_initted ) return FALSE;
-    Chuck_IO_Chout::getInstance()->set_output_callback( callback );
+    Chuck_IO_Chout::set_output_callback( callback );
     return true;
 }
 
@@ -277,7 +277,7 @@ t_CKBOOL Chuck_External::setChoutCallback( void (* callback)(const char *) )
 t_CKBOOL Chuck_External::setCherrCallback( void (* callback)(const char *) )
 {
     if( !g_globals_initted ) return FALSE;
-    Chuck_IO_Cherr::getInstance()->set_output_callback( callback );
+    Chuck_IO_Cherr::set_output_callback( callback );
     return true;
 }
 

@@ -62,8 +62,14 @@ const t_CKINT Chuck_IO_File::FLAG_WRITEONLY = 0x20;
 const t_CKINT Chuck_IO_File::FLAG_APPEND = 0x40;
 const t_CKINT Chuck_IO_File::TYPE_ASCII = 0x80;
 const t_CKINT Chuck_IO_File::TYPE_BINARY = 0x100;
-Chuck_IO_Chout * Chuck_IO_Chout::our_chout = NULL;
-Chuck_IO_Cherr * Chuck_IO_Cherr::our_cherr = NULL;
+std::map< Chuck_VM *, Chuck_IO_Chout * > Chuck_IO_Chout::our_chouts;
+std::map< Chuck_VM *, Chuck_IO_Cherr * > Chuck_IO_Cherr::our_cherrs;
+#ifdef EXTERNAL_DEBUG_CALLBACK
+void (* Chuck_IO_Chout::m_callback)(const char *) = NULL;
+void (* Chuck_IO_Cherr::m_callback)(const char *) = NULL;
+std::stringstream Chuck_IO_Chout::m_buffer;
+std::stringstream Chuck_IO_Cherr::m_buffer;
+#endif
 
 
 
@@ -2151,7 +2157,7 @@ Chuck_IO_File::Chuck_IO_File( Chuck_VM * vm, Chuck_VM_Shred * shred )
     m_dir = NULL;
     m_dir_start = 0;
     m_asyncEvent = new Chuck_Event;
-    initialize_object( m_asyncEvent, &t_event );
+    initialize_object( m_asyncEvent, vm->m_env->t_event );
     m_thread = new XThread;
 }
 
@@ -2532,7 +2538,7 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     {
         EM_error3( "[chuck](via FileIO): cannot get list: no directory open" );
         Chuck_Array4 *ret = new Chuck_Array4( TRUE, 0 );
-        initialize_object( ret, &t_array );
+        initialize_object( ret, m_vmRef->m_env->t_array );
         return ret;
     }
     
@@ -2543,7 +2549,7 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     while( (ent = readdir( m_dir )) ) // fixed 1.3.0.0: removed warning
     {
         // not sure whether m_shredRef is NULL, so pass both shred and vm
-        Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( &t_string, m_shredRef, m_vmRef );
+        Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( m_vmRef->m_env->t_string, m_shredRef, m_vmRef );
         s->set( std::string( ent->d_name ) );
         if ( s->get() != ".." && s->get() != "." )
         {
@@ -2554,7 +2560,7 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     
     // make array
     Chuck_Array4 *array = new Chuck_Array4( true, entrylist.size() );
-    initialize_object( array, &t_array );
+    initialize_object( array, m_vmRef->m_env->t_array );
     for ( int i = 0; i < entrylist.size(); i++ )
         array->set( i, (t_CKUINT) entrylist[i] );
     return array;
@@ -3075,22 +3081,22 @@ Chuck_IO_Chout::Chuck_IO_Chout() {
 #endif
 }
 Chuck_IO_Chout::~Chuck_IO_Chout() { }
-Chuck_IO_Chout * Chuck_IO_Chout::getInstance()
+Chuck_IO_Chout * Chuck_IO_Chout::getInstance( Chuck_VM * vm )
 {
     // check
-    if( !our_chout )
+    if( our_chouts.count( vm ) == 0 )
     {
-        // allocate
-        our_chout = new Chuck_IO_Chout;
+        // allocate (TODO: clean up? this was never explicitly cleaned up when it was just one either)
+        our_chouts[vm] = new Chuck_IO_Chout;
         // ref count
-        our_chout->add_ref();
+        our_chouts[vm]->add_ref();
         // initialize object (added 1.3.0.0)
-        initialize_object( our_chout, &t_chout );
+        initialize_object( our_chouts[vm], vm->m_env->t_chout );
         // lock so it can't be deleted
-        our_chout->lock();
+        our_chouts[vm]->lock();
     }
 
-    return our_chout;
+    return our_chouts[vm];
 }
 
 #ifdef EXTERNAL_DEBUG_CALLBACK
@@ -3195,22 +3201,22 @@ Chuck_IO_Cherr::Chuck_IO_Cherr() {
 #endif
 }
 Chuck_IO_Cherr::~Chuck_IO_Cherr() { }
-Chuck_IO_Cherr * Chuck_IO_Cherr::getInstance()
+Chuck_IO_Cherr * Chuck_IO_Cherr::getInstance( Chuck_VM * vm )
 {
-    // check pointe
-    if( !our_cherr )
+    // check
+    if( our_cherrs.count( vm ) == 0 )
     {
         // allocate
-        our_cherr = new Chuck_IO_Cherr;
+        our_cherrs[vm] = new Chuck_IO_Cherr;
         // add rev
-        our_cherr->add_ref();
+        our_cherrs[vm]->add_ref();
         // initialize (added 1.3.0.0)
-        initialize_object( our_cherr, &t_cherr );
+        initialize_object( our_cherrs[vm], vm->m_env->t_cherr );
         // lock so can't be deleted conventionally
-        our_cherr->lock();
+        our_cherrs[vm]->lock();
     }
 
-    return our_cherr;
+    return our_cherrs[vm];
 }
 
 #ifdef EXTERNAL_DEBUG_CALLBACK

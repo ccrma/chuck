@@ -615,12 +615,13 @@ protected:
 //-----------------------------------------------------------------------------
 struct Chuck_IO_Chout : Chuck_IO
 {
-public:
+private:
     Chuck_IO_Chout();
+public:
     virtual ~Chuck_IO_Chout();
 
-    static Chuck_IO_Chout * our_chout;
-    static Chuck_IO_Chout * getInstance();
+    static std::map< Chuck_VM *, Chuck_IO_Chout * > our_chouts;
+    static Chuck_IO_Chout * getInstance( Chuck_VM * vm );
     
 public:
     // meta
@@ -646,13 +647,13 @@ public:
 #ifdef EXTERNAL_DEBUG_CALLBACK
 public:
     // set callback
-    void set_output_callback( void (* fp)(const char *) );
+    static void set_output_callback( void (* fp)(const char *) );
     
 private:
     // callback
-    void (* m_callback)(const char *);
+    static void (* m_callback)(const char *);
     // intermediate line storage
-    std::stringstream m_buffer;
+    static std::stringstream m_buffer;
 #endif
 };
 
@@ -665,12 +666,14 @@ private:
 //-----------------------------------------------------------------------------
 struct Chuck_IO_Cherr : Chuck_IO
 {
-public:
+private:
     Chuck_IO_Cherr();
+
+public:
     virtual ~Chuck_IO_Cherr();
     
-    static Chuck_IO_Cherr * our_cherr;
-    static Chuck_IO_Cherr * getInstance();
+    static std::map< Chuck_VM *, Chuck_IO_Cherr * > our_cherrs;
+    static Chuck_IO_Cherr * getInstance( Chuck_VM * vm );
     
 public:
     // meta
@@ -696,13 +699,13 @@ public:
 #ifdef EXTERNAL_DEBUG_CALLBACK
 public:
     // set callback
-    void set_output_callback( void (* fp)(const char *) );
+    static void set_output_callback( void (* fp)(const char *) );
     
 private:
     // callback
-    void (* m_callback)(const char *);
+    static void (* m_callback)(const char *);
     // intermediate line storage
-    std::stringstream m_buffer;
+    static std::stringstream m_buffer;
 #endif
 };
 

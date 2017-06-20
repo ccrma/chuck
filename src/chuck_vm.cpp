@@ -378,7 +378,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     m_bunghole = new Chuck_UGen;
     m_bunghole->add_ref();
     m_bunghole->lock();
-    initialize_object( m_bunghole, &t_ugen );
+    initialize_object( m_bunghole, m_env->t_ugen );
     m_bunghole->tick = NULL;
     m_bunghole->alloc_v( m_shreduler->m_max_block_size );
     m_shreduler->m_dac = m_dac;
@@ -1873,7 +1873,7 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     xid = 0;
 
     // initialize
-    initialize_object( this, &t_shred );
+    initialize_object( this, vm_ref->m_env->t_shred );
 
     return TRUE;
 }

@@ -1311,11 +1311,11 @@ CK_DLL_CTOR( foogen_ctor )
            // ensure has one argument
            func->def->arg_list != NULL &&
            // ensure first argument is float
-           func->def->arg_list->type == &t_float &&
+           func->def->arg_list->type == SHRED->vm_ref->m_env->t_float &&
            // ensure has only one argument
            func->def->arg_list->next == NULL &&
            // ensure returns float
-           func->def->ret_type == &t_float )
+           func->def->ret_type == SHRED->vm_ref->m_env->t_float )
         {
             tick_fun_index = i;
             break;

@@ -768,7 +768,7 @@ error:
 
 CK_DLL_CTOR(oscarg_ctor)
 {
-    Chuck_String *type = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    Chuck_String *type = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->m_env->t_string, SHRED);
     SAFE_ADD_REF(type);
     OBJ_MEMBER_STRING(SELF, oscarg_offset_type) = type;
     
@@ -776,7 +776,7 @@ CK_DLL_CTOR(oscarg_ctor)
     
     OBJ_MEMBER_FLOAT(SELF, oscarg_offset_f) = 0.0;
     
-    Chuck_String *s = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    Chuck_String *s = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->m_env->t_string, SHRED);
     SAFE_ADD_REF(s);
     OBJ_MEMBER_STRING(SELF, oscarg_offset_s) = s;
 }
@@ -960,16 +960,16 @@ error:
 
 CK_DLL_CTOR(oscmsg_ctor)
 {
-    Chuck_String *address = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    Chuck_String *address = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->m_env->t_string, SHRED);
     SAFE_ADD_REF(address);
     OBJ_MEMBER_STRING(SELF, oscmsg_offset_address) = address;
     
-    Chuck_String *typetag = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    Chuck_String *typetag = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->m_env->t_string, SHRED);
     SAFE_ADD_REF(typetag);
     OBJ_MEMBER_STRING(SELF, oscmsg_offset_typetag) = typetag;
     
     Chuck_Array4 *args = new Chuck_Array4(TRUE);
-    initialize_object(args, &t_array);
+    initialize_object(args, SHRED->vm_ref->m_env->t_array);
     args->clear();
     SAFE_ADD_REF(args);
     OBJ_MEMBER_OBJECT(SELF, oscmsg_offset_args) = args;
@@ -1502,7 +1502,7 @@ CK_DLL_MFUN( osc_address_next_string  ) {
     OSC_Address_Space * addr = (OSC_Address_Space *)OBJ_MEMBER_INT( SELF, osc_address_offset_data );
     char * cs = addr->next_string();
     Chuck_String * ckstr = ( cs ) ? new Chuck_String( cs ) : new Chuck_String("");
-    initialize_object( ckstr, &t_string );
+    initialize_object( ckstr, SHRED->vm_ref->m_env->t_string );
     RETURN->v_string = ckstr;
 }
 

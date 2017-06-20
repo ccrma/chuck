@@ -3060,7 +3060,7 @@ public:
 struct Chuck_Instr_Array_Init : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Array_Init( Chuck_Type * the_type, t_CKINT length );
+    Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * the_type, t_CKINT length );
     virtual ~Chuck_Instr_Array_Init();
 
 public:
@@ -3084,7 +3084,7 @@ protected:
 struct Chuck_Instr_Array_Alloc : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Array_Alloc( t_CKUINT depth, Chuck_Type * the_type,
+    Chuck_Instr_Array_Alloc( Chuck_Env * env, t_CKUINT depth, Chuck_Type * the_type,
         t_CKUINT offset, t_CKBOOL ref );
     virtual ~Chuck_Instr_Array_Alloc();
 

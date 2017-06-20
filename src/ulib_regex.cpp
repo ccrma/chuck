@@ -34,6 +34,7 @@
 #include "chuck_errmsg.h"
 #include "chuck_instr.h"
 #include "chuck_type.h"
+#include "chuck_vm.h"
 
 #ifdef WIN32
 #include "regex/regex.h"
@@ -195,7 +196,7 @@ CK_DLL_SFUN( regex_match2 )
     {
         for(i = 0; i < regex.re_nsub+1; i++)
         {
-            Chuck_String * match = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+            Chuck_String * match = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->m_env->t_string, SHRED);
             
             if(matcharray[i].rm_so >= 0 && matcharray[i].rm_eo > 0)
                 match->set( std::string(str->get(), matcharray[i].rm_so,
@@ -236,7 +237,7 @@ CK_DLL_SFUN( regex_replace )
     Chuck_String * replace = GET_NEXT_STRING(ARGS);
     Chuck_String * str = GET_NEXT_STRING(ARGS);
     
-    Chuck_String * ret = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    Chuck_String * ret = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->m_env->t_string, SHRED);
     ret->set( str->get() );
     
     regex_t regex;
@@ -317,7 +318,7 @@ CK_DLL_SFUN( regex_replaceAll )
     Chuck_String * replace = GET_NEXT_STRING(ARGS);
     Chuck_String * str = GET_NEXT_STRING(ARGS);
     
-    Chuck_String * ret = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    Chuck_String * ret = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->m_env->t_string, SHRED);
     ret->set( str->get() );
     
     regex_t regex;

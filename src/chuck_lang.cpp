@@ -780,7 +780,7 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_sfun( env, func ) ) goto error;
     func = make_new_sfun( "string", "newlineEx2VistaHWNDVisualFoxProA", io_newline );
     if( !type_engine_import_sfun( env, func ) ) goto error;
-    initialize_object( g_newline, &t_string );
+    initialize_object( g_newline, env->t_string );
     g_newline->set( "\n" );
     
     // add READ_INT32
@@ -2219,7 +2219,7 @@ CK_DLL_MFUN( object_toString )
     if( !str )
     {
         // new it
-        str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+        str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
         // check it
         if( !str )
         {
@@ -2417,7 +2417,7 @@ CK_DLL_CTRL( ugen_connected )
 CK_DLL_CTOR( uana_ctor )
 {
     // make an actual blob
-    Chuck_Object * blob = instantiate_and_initialize_object( &t_uanablob, SHRED );
+    Chuck_Object * blob = instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_uanablob, SHRED );
     // TODO: check out of memory
     assert( blob != NULL );
     // make a blob proxy
@@ -2602,13 +2602,13 @@ CK_DLL_CTOR( uanablob_ctor )
     OBJ_MEMBER_TIME(SELF, uanablob_offset_when) = 0;
     // fvals
     Chuck_Array8 * arr8 = new Chuck_Array8( 8 );
-    initialize_object( arr8, &t_array );
+    initialize_object( arr8, SHRED->vm_ref->m_env->t_array );
     // TODO: check out of memory
     arr8->add_ref();
     OBJ_MEMBER_INT(SELF, uanablob_offset_fvals) = (t_CKINT)arr8;
     // cvals
     Chuck_Array16 * arr16 = new Chuck_Array16( 8 );
-    initialize_object( arr16, &t_array );
+    initialize_object( arr16, SHRED->vm_ref->m_env->t_array );
     // TODO: check out of memory
     arr16->add_ref();
     OBJ_MEMBER_INT(SELF, uanablob_offset_cvals) = (t_CKINT)arr16;
@@ -3238,32 +3238,32 @@ CK_DLL_MFUN( chout_close )
 {
     // problem
     CK_FPRINTF_STDERR( "[chuck]: cannot close 'chout'...\n" );
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     c->close();
 }
 
 CK_DLL_MFUN( chout_good )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     RETURN->v_int = c->good();
 }
 
 CK_DLL_MFUN( chout_flush )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     c->flush();
 }
 
 CK_DLL_MFUN( chout_getmode )
 {
     // problem
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     RETURN->v_int = c->mode();
 }
 
 CK_DLL_MFUN( chout_setmode )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     c->mode( GET_NEXT_INT(ARGS) );
     RETURN->v_int = c->mode();
 }
@@ -3281,14 +3281,14 @@ CK_DLL_MFUN( chout_setmode )
 
 CK_DLL_MFUN( chout_readline )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     Chuck_String * ret = c->readLine();
     RETURN->v_object = ret;
 }
 
 CK_DLL_MFUN( chout_readint )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     RETURN->v_int = c->readInt( Chuck_IO::INT32 );
 }
 
@@ -3296,7 +3296,7 @@ CK_DLL_MFUN( chout_readintflags )
 {    
     t_CKINT flags = GET_NEXT_INT(ARGS);
     
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     t_CKINT ret = c->readInt( flags );
     
     RETURN->v_int = ret;
@@ -3304,21 +3304,21 @@ CK_DLL_MFUN( chout_readintflags )
 
 CK_DLL_MFUN( chout_readfloat )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     t_CKFLOAT ret = c->readFloat();
     RETURN->v_float = ret;
 }
 
 CK_DLL_MFUN( chout_eof )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     t_CKBOOL ret = c->eof();
     RETURN->v_int = ret;
 }
 
 CK_DLL_MFUN( chout_more )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     t_CKBOOL ret = !c->eof();
     RETURN->v_int = ret;
 }
@@ -3327,7 +3327,7 @@ CK_DLL_MFUN( chout_writestring )
 {
     std::string val = GET_NEXT_STRING(ARGS)->get();
 
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     c->write( val );
 }
 
@@ -3335,7 +3335,7 @@ CK_DLL_MFUN( chout_writeint )
 {
     t_CKINT val = GET_NEXT_INT(ARGS);
     
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     c->write(val);
 }
 
@@ -3343,7 +3343,7 @@ CK_DLL_MFUN( chout_writefloat )
 {
     t_CKFLOAT val = GET_NEXT_FLOAT(ARGS);
     
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     c->write(val);
 }
 
@@ -3357,32 +3357,32 @@ CK_DLL_MFUN( cherr_close )
 {
     // problem
     CK_FPRINTF_STDERR( "[chuck]: cannot close 'cherr'...\n" );
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
+    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
     c->close();
 }
 
 CK_DLL_MFUN( cherr_good )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
+    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
     RETURN->v_int = c->good();
 }
 
 CK_DLL_MFUN( cherr_flush )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
+    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
     c->flush();
 }
 
 CK_DLL_MFUN( cherr_getmode )
 {
     // problem
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
+    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
     RETURN->v_int = c->mode();
 }
 
 CK_DLL_MFUN( cherr_setmode )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
+    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
     c->mode( GET_NEXT_INT(ARGS) );
     RETURN->v_int = c->mode();
 }
@@ -3400,14 +3400,14 @@ CK_DLL_MFUN( cherr_setmode )
 
 CK_DLL_MFUN( cherr_readline )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
+    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
     Chuck_String * ret = c->readLine();
     RETURN->v_object = ret;
 }
 
 CK_DLL_MFUN( cherr_readint )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
+    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
     RETURN->v_int = c->readInt( Chuck_IO::INT32 );
 }
 
@@ -3415,7 +3415,7 @@ CK_DLL_MFUN( cherr_readintflags )
 {    
     t_CKINT flags = GET_NEXT_INT(ARGS);
     
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
+    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
     t_CKINT ret = c->readInt( flags );
     
     RETURN->v_int = ret;
@@ -3423,21 +3423,21 @@ CK_DLL_MFUN( cherr_readintflags )
 
 CK_DLL_MFUN( cherr_readfloat )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
+    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
     t_CKFLOAT ret = c->readFloat();
     RETURN->v_float = ret;
 }
 
 CK_DLL_MFUN( cherr_eof )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
+    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
     t_CKBOOL ret = c->eof();
     RETURN->v_int = ret;
 }
 
 CK_DLL_MFUN( cherr_more )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
+    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
     t_CKBOOL ret = !c->eof();
     RETURN->v_int = ret;
 }
@@ -3446,7 +3446,7 @@ CK_DLL_MFUN( cherr_writestring )
 {
     std::string val = GET_NEXT_STRING(ARGS)->get();
     
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
+    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
     c->write( val );
 }
 
@@ -3454,7 +3454,7 @@ CK_DLL_MFUN( cherr_writeint )
 {
     t_CKINT val = GET_NEXT_INT(ARGS);
     
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance();
+    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
     c->write(val);
 }
 
@@ -3462,7 +3462,7 @@ CK_DLL_MFUN( cherr_writefloat )
 {
     t_CKFLOAT val = GET_NEXT_FLOAT(ARGS);
     
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance();
+    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
     c->write(val);
 }
 
@@ -3535,7 +3535,7 @@ CK_DLL_MFUN( shred_getArg )
     // total
     t_CKINT num = derhs->args.size();
 
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     str->set( ( i < num ? derhs->args[i] : "" ) );
     RETURN->v_string = str; 
 }
@@ -3544,7 +3544,7 @@ CK_DLL_MFUN( shred_sourcePath ) // added 1.3.0.0
 {
     Chuck_VM_Shred * derhs = (Chuck_VM_Shred *)SELF;
     
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     str->set( derhs->code->filename );
     RETURN->v_string = str;
 }
@@ -3553,7 +3553,7 @@ CK_DLL_MFUN( shred_sourceDir ) // added 1.3.0.0
 {
     Chuck_VM_Shred * derhs = (Chuck_VM_Shred *)SELF;
     
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     
     str->set( extract_filepath_dir(derhs->code->filename) );
     
@@ -3569,7 +3569,7 @@ CK_DLL_MFUN( shred_sourceDir2 ) // added 1.3.2.0
     if( i < 0 ) i = -i;
 
     // new chuck string
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     // set the content
     str->set( extract_filepath_dir(derhs->code->filename) );
     // up
@@ -3598,7 +3598,7 @@ CK_DLL_MFUN( string_length )
 CK_DLL_MFUN( string_upper )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     str->set( toupper( s->get() ) );
     RETURN->v_string = str;
 }
@@ -3606,7 +3606,7 @@ CK_DLL_MFUN( string_upper )
 CK_DLL_MFUN( string_lower )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     str->set( tolower( s->get() ) );
     RETURN->v_string = str;
 }
@@ -3614,7 +3614,7 @@ CK_DLL_MFUN( string_lower )
 CK_DLL_MFUN( string_ltrim )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     str->set( ltrim( s->get() ) );
     RETURN->v_string = str;
 }
@@ -3622,7 +3622,7 @@ CK_DLL_MFUN( string_ltrim )
 CK_DLL_MFUN( string_rtrim )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     str->set( rtrim( s->get() ) );
     RETURN->v_string = str;
 }
@@ -3630,7 +3630,7 @@ CK_DLL_MFUN( string_rtrim )
 CK_DLL_MFUN( string_trim )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     str->set( trim( s->get() ) );
     RETURN->v_string = str;
 }
@@ -3688,7 +3688,7 @@ CK_DLL_MFUN(string_substring)
         return;
     }
 
-    Chuck_String * ss = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    Chuck_String * ss = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->m_env->t_string, SHRED);
     ss->set( str->get().substr(start) );
     
     RETURN->v_string = ss;
@@ -3714,7 +3714,7 @@ CK_DLL_MFUN(string_substringN)
         return;
     }
     
-    Chuck_String * ss = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    Chuck_String * ss = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->m_env->t_string, SHRED);
     ss->set( str->get().substr(start, length) );
     
     RETURN->v_string = ss;
@@ -3990,7 +3990,7 @@ CK_DLL_MFUN( string_parent )
         i = str->get().rfind('\\', str->get().length()-2);
 #endif // WIN32
     
-    Chuck_String * parent = (Chuck_String *) instantiate_and_initialize_object(&t_string, SHRED);
+    Chuck_String * parent = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->m_env->t_string, SHRED);
     
     if(i != string::npos)
     {
@@ -4195,7 +4195,7 @@ CK_DLL_MFUN( MidiIn_name )
 {
     MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
     // TODO: memory leak, please fix, Thanks.
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     // only if valid
     if( min->good() )
         a->set( min->min->getPortName( min->num() ) );
@@ -4268,7 +4268,7 @@ CK_DLL_MFUN( MidiOut_name )
 {
     MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
     // TODO: memory leak, please fix, Thanks.
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     // only if valid
     if( mout->good() )
         a->set( mout->mout->getPortName( mout->num() ) );
@@ -4418,12 +4418,12 @@ CK_DLL_MFUN( HidIn_name )
 {
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     // TODO: memory leak, please fix, Thanks.
-    // Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    // Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     // only if valid
     // if( min->good() )
     //     a->str = min->phin->getPortName( min->num() );
     // TODO: is null problem?
-    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     RETURN->v_string->set( min->name() );
 }
 
@@ -4669,7 +4669,7 @@ CK_DLL_MFUN( HidOut_name )
 {
     // HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
     // TODO: memory leak, please fix, Thanks.
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, SHRED );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
     // only if valid
     // if( mout->good() )
     //     a->str = mout->mout->getPortName( mout->num() );
