@@ -3075,11 +3075,7 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
     return (THREAD_RETURN)0;
 }
 
-Chuck_IO_Chout::Chuck_IO_Chout() {
-#ifdef EXTERNAL_DEBUG_CALLBACK
-    m_callback = NULL;
-#endif
-}
+Chuck_IO_Chout::Chuck_IO_Chout() { }
 Chuck_IO_Chout::~Chuck_IO_Chout() { }
 Chuck_IO_Chout * Chuck_IO_Chout::getInstance( Chuck_VM * vm )
 {
@@ -3195,11 +3191,7 @@ void Chuck_IO_Chout::write( t_CKFLOAT val )
 }
 
 
-Chuck_IO_Cherr::Chuck_IO_Cherr() {
-#ifdef EXTERNAL_DEBUG_CALLBACK
-    m_callback = NULL;
-#endif
-}
+Chuck_IO_Cherr::Chuck_IO_Cherr() { }
 Chuck_IO_Cherr::~Chuck_IO_Cherr() { }
 Chuck_IO_Cherr * Chuck_IO_Cherr::getInstance( Chuck_VM * vm )
 {
