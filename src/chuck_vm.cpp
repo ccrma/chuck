@@ -607,8 +607,6 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
     {
         // spork newly compiled files before trying set messages
         handle_external_spork_messages();
-        // set externals before chuck code runs
-        handle_external_set_messages();
         
         // compute shreds
         if( !compute() ) goto vm_stop;
@@ -621,6 +619,9 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
         }
         else m_shreduler->advance_v( N, frame );
         
+        // set externals after chuck code runs
+        // (give new shreds a chance to init their variables)
+        handle_external_set_messages();
         // get externals after chuck code runs
         handle_external_get_messages();
     }
