@@ -355,6 +355,19 @@ struct Chuck_DL_Query
     // end class/namespace, compile it
     f_end_class end_class;
     
+    // added 1.3.2.0
+    f_create_main_thread_hook create_main_thread_hook;
+    
+    // added 1.3.5
+    Chuck_DL_Value * last_var;
+    f_doc_class doc_class;
+    f_doc_func doc_func;
+    f_doc_var doc_var;
+    f_add_example add_ex;
+    
+    // compiler - added 1.3.6
+    Chuck_Compiler * compiler_ref;
+    
     // name
     std::string name;
     // current class
@@ -378,18 +391,6 @@ struct Chuck_DL_Query
     t_CKUINT bufsize;
     // line pos
     int linepos;
-    // compiler
-    Chuck_Compiler * compiler_ref;
-    
-    // added 1.3.2.0
-    f_create_main_thread_hook create_main_thread_hook;
-    
-    // added 1.3.5
-    Chuck_DL_Value * last_var;
-    f_doc_class doc_class;
-    f_doc_func doc_func;
-    f_doc_var doc_var;
-    f_add_example add_ex;
     
     // constructor
     Chuck_DL_Query( Chuck_Compiler * compiler );
