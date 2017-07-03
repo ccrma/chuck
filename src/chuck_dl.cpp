@@ -432,7 +432,7 @@ void CK_DLL_CALL ck_add_ugen_func( Chuck_DL_Query * query, f_tick ugen_tick, f_p
 
 
 //-----------------------------------------------------------------------------
-// name: ck_add_ugen_func()
+// name: ck_add_ugen_funcf()
 // desc: (ugen only) add tick and pmsg functions
 //-----------------------------------------------------------------------------
 void CK_DLL_CALL ck_add_ugen_funcf( Chuck_DL_Query * query, f_tickf ugen_tickf, f_pmsg ugen_pmsg, t_CKUINT num_in, t_CKUINT num_out )
@@ -467,6 +467,22 @@ void CK_DLL_CALL ck_add_ugen_funcf( Chuck_DL_Query * query, f_tickf ugen_tickf, 
     query->curr_class->ugen_num_in = num_in;
     query->curr_class->ugen_num_out = num_out;
     query->curr_func = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_add_ugen_funcf_auto_num_channels()
+// desc: (ugen only) add tick and pmsg functions. specify num channels by vm.
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_add_ugen_funcf_auto_num_channels( Chuck_DL_Query * query,
+    f_tickf ugen_tickf, f_pmsg ugen_pmsg )
+{
+    ck_add_ugen_funcf( query, ugen_tickf, ugen_pmsg,
+        query->compiler_ref->vm_ref->m_num_adc_channels,
+        query->compiler_ref->vm_ref->m_num_dac_channels
+    );
 }
 
 
@@ -932,6 +948,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Compiler * compiler )
     add_arg = ck_add_arg;
     add_ugen_func = ck_add_ugen_func;
     add_ugen_funcf = ck_add_ugen_funcf;
+    add_ugen_funcf_auto_num_channels = ck_add_ugen_funcf_auto_num_channels;
     add_ugen_ctrl = ck_add_ugen_ctrl;
     end_class = ck_end_class;
     create_main_thread_hook = ck_create_main_thread_hook;
