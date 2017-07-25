@@ -622,6 +622,7 @@ public:
 
     static std::map< Chuck_VM *, Chuck_IO_Chout * > our_chouts;
     static Chuck_IO_Chout * getInstance( Chuck_VM * vm );
+    static void cleanupInstance( Chuck_VM * vm );
     
 public:
     // meta
@@ -674,6 +675,7 @@ public:
     
     static std::map< Chuck_VM *, Chuck_IO_Cherr * > our_cherrs;
     static Chuck_IO_Cherr * getInstance( Chuck_VM * vm );
+    static void cleanupInstance( Chuck_VM * vm );
     
 public:
     // meta

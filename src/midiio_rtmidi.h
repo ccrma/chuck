@@ -174,6 +174,7 @@ public:
     static t_CKBOOL open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num );
     static t_CKBOOL open( MidiIn * min, Chuck_VM * vm, const std::string & name );
     static t_CKBOOL close( MidiIn * min );
+    static void cleanup_buffer( Chuck_VM * vm );
 
     static void cb_midi_input( double deltatime, std::vector<unsigned char> * msg,
                                void *userData );

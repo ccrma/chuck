@@ -37,6 +37,8 @@
 #include "chuck_io.h"
 #include "chuck_globals.h"
 #include "chuck_errmsg.h"
+#include "hidio_sdl.h"
+#include "midiio_rtmidi.h"
 #include "ugen_xxx.h"
 
 #include <algorithm>
@@ -410,7 +412,21 @@ t_CKBOOL Chuck_VM::shutdown()
     // push indent
     EM_pushlog();
     // unlockdown
+    // TODO: don't unlock all objects for all VMs? see relockdown below
     Chuck_VM_Object::unlock_all();
+    
+    // tell chout and cherr to cleanup
+    EM_log( CK_LOG_SYSTEM, "freeing chout and cherr instances..." );
+    Chuck_IO_Chout::cleanupInstance( this );
+    Chuck_IO_Cherr::cleanupInstance( this );
+    
+    // tell HidInManager to cleanup
+    EM_log( CK_LOG_SYSTEM, "freeing HidInManager buffer..." );
+    HidInManager::cleanup_buffer( this );
+    
+    // tell MidiInManager to cleanup
+    EM_log( CK_LOG_SYSTEM, "freeing MidiInManager buffer..." );
+    MidiInManager::cleanup_buffer( this );
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing shreduler..." );
@@ -456,6 +472,9 @@ t_CKBOOL Chuck_VM::shutdown()
     
     // set state
     m_init = FALSE;
+    
+    // relockdown (added 1.3.6.0)
+    Chuck_VM_Object::lock_all();
 
     // log
     EM_log( CK_LOG_SYSTEM, "virtual machine shutdown complete." );

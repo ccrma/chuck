@@ -130,6 +130,7 @@ public:
     static t_CKBOOL open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, t_CKINT device_num );
     static t_CKBOOL open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, std::string & device_name );
     static t_CKBOOL close( HidIn * hin );
+    static void cleanup_buffer( Chuck_VM * vm );
     
     static void probeHidIn();
     static void probeHidOut();

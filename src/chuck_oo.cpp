@@ -3095,6 +3095,15 @@ Chuck_IO_Chout * Chuck_IO_Chout::getInstance( Chuck_VM * vm )
     return our_chouts[vm];
 }
 
+void Chuck_IO_Chout::cleanupInstance( Chuck_VM * vm )
+{
+    if( our_chouts.count( vm ) > 0 )
+    {
+        SAFE_RELEASE( our_chouts[vm] );
+        our_chouts.erase( vm );
+    }
+}
+
 #ifdef EXTERNAL_DEBUG_CALLBACK
 void Chuck_IO_Chout::set_output_callback( void (*fp)(const char *) )
 {
@@ -3209,6 +3218,15 @@ Chuck_IO_Cherr * Chuck_IO_Cherr::getInstance( Chuck_VM * vm )
     }
 
     return our_cherrs[vm];
+}
+
+void Chuck_IO_Cherr::cleanupInstance( Chuck_VM *vm )
+{
+    if( our_cherrs.count( vm ) > 0 )
+    {
+        SAFE_RELEASE( our_cherrs[vm] );
+        our_cherrs.erase( vm );
+    }
 }
 
 #ifdef EXTERNAL_DEBUG_CALLBACK

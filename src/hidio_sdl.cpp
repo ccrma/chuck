@@ -791,6 +791,22 @@ t_CKBOOL HidInManager::close( HidIn * hin )
 
 
 
+
+//-----------------------------------------------------------------------------
+// name: cleanupBuffer()
+// desc: cleanup buffer
+//-----------------------------------------------------------------------------
+void HidInManager::cleanup_buffer( Chuck_VM *vm )
+{
+    if( m_event_buffers.count( vm ) > 0 )
+    {
+        vm->destroy_event_buffer( m_event_buffers[vm] );
+        m_event_buffers.erase( vm );
+    }
+}
+
+
+
 //-----------------------------------------------------------------------------
 // name: close()
 // desc: close

@@ -501,6 +501,24 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, const std::string & n
 }
 
 
+
+
+//-----------------------------------------------------------------------------
+// name: cleanup_buffer()
+// desc: cleanup buffer
+//-----------------------------------------------------------------------------
+void MidiInManager::cleanup_buffer( Chuck_VM * vm )
+{
+    if( m_event_buffers.count( vm ) > 0 )
+    {
+        vm->destroy_event_buffer( m_event_buffers[vm] );
+        m_event_buffers.erase( vm );
+    }
+}
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: close()
 // desc: close
