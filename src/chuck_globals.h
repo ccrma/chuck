@@ -36,6 +36,7 @@
 #include "chuck_dl.h"
 #include "util_network.h"
 #include "util_thread.h"
+#include <list>
 
 
 
@@ -44,14 +45,15 @@
 struct Chuck_VM;
 struct Chuck_Compiler;
 class  Chuck_Shell;
+class  Chuck_System;
 class  BBQ;
 
 
 // exports
 // current version
 extern const char CK_VERSION[];
-// global virtual machine
-extern Chuck_VM * g_vm;
+// the systems
+extern std::list< Chuck_System * > g_systems;
 // the shell
 extern Chuck_Shell * g_shell;
 // global BBQ audio layer, ge: 1.3.5.3

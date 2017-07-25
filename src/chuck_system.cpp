@@ -102,6 +102,7 @@ char g_host[256] = "127.0.0.1";
 //-----------------------------------------------------------------------------
 extern "C" void signal_int( int sig_num )
 {
+    CK_FPRINTF_STDERR( "[chuck]: cleaning up...\n" );
     global_cleanup();
     exit(2);
 }
@@ -115,40 +116,60 @@ extern "C" void signal_int( int sig_num )
 //-----------------------------------------------------------------------------
 extern "C" void global_cleanup()
 {
-    CK_FPRINTF_STDERR( "[chuck]: cleaning up...\n" );
-    
-    if( g_vm )
+    // if any Chuck_Systems are left, delete them
+    while( !g_systems.empty() )
     {
-        // get vm
-        Chuck_VM * vm = g_vm;
-        // flag the global one
-        g_vm = NULL;
-        // if not NULL
-        if( vm )
-        {
-            // stop VM
-            vm->stop();
-            // stop (was VM::stop())
-            all_stop();
-            // detach
-            all_detach();
-        }
-
-        // things don't work so good on windows...
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-        // pthread_kill( g_tid_otf, 2 );
-        if( g_tid_otf ) pthread_cancel( g_tid_otf );
-        if( g_tid_whatever ) pthread_cancel( g_tid_whatever );
-        // if( g_tid_otf ) usleep( 50000 );
-#else
-        // close handle
-        if( g_tid_otf ) CloseHandle( g_tid_otf );
-#endif
-        // will this work for windows?
-        SAFE_DELETE( vm );
-
-        // ck_close( g_sock );
+        Chuck_System * next_chuck = g_systems.front();
+        // delete Chuck_System causes a g_systems.remove which modifies the list
+        // and thus g_systems.front() will be different next time
+        delete next_chuck;
     }
+    
+    // request bbq shutdown
+    all_stop();
+    
+    // request MIDI, etc. files open be closed
+    all_detach();
+    
+        // shutdown audio
+    if( g_enable_realtime_audio )
+    {
+        // log
+        EM_log( CK_LOG_SYSTEM, "shutting down real-time audio..." );
+
+        g_bbq->digi_out()->cleanup();
+        g_bbq->digi_in()->cleanup();
+        g_bbq->shutdown();
+        // m_audio = FALSE;
+    }
+    // log
+    EM_log( CK_LOG_SYSTEM, "freeing bbq subsystem..." );
+    // clean up
+    SAFE_DELETE( g_bbq );
+    
+    if( g_main_thread_quit )
+        g_main_thread_quit( g_main_thread_bindle );
+    clear_main_thread_hook();
+    
+    // wait for the shell, if it is running
+    // does the VM reset its priority to normal before exiting?
+    if( g_enable_shell )
+        while( g_shell != NULL )
+            usleep(10000);
+    
+
+    // things don't work so good on windows...
+#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+    // pthread_kill( g_tid_otf, 2 );
+    if( g_tid_otf ) pthread_cancel( g_tid_otf );
+    if( g_tid_whatever ) pthread_cancel( g_tid_whatever );
+    // if( g_tid_otf ) usleep( 50000 );
+#else
+    // close handle
+    if( g_tid_otf ) CloseHandle( g_tid_otf );
+#endif
+
+    // ck_close( g_sock );
 
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
     // pthread_join( g_tid_otf, NULL );
@@ -312,29 +333,7 @@ Chuck_System::Chuck_System()
 //-----------------------------------------------------------------------------
 Chuck_System::~Chuck_System()
 {
-    if( m_initOnly ) {
-        // correct non-global destruction for initOnly ->go call
-        this->clientVMShutdown();
-    } else {
-        if( m_vmRef )
-        {
-            // stop
-            all_stop();
-            // detach
-            all_detach();
-        }
-        
-        // things don't work so good on windows...
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-        // pthread_kill( g_tid_otf, 2 );
-        if( g_tid_otf ) pthread_cancel( g_tid_otf );
-        if( g_tid_whatever ) pthread_cancel( g_tid_whatever );
-        // if( g_tid_otf ) usleep( 50000 );
-#else
-        // close handle
-        if( g_tid_otf ) CloseHandle( g_tid_otf );
-#endif
-    }
+    this->clientShutdown();
 }
 
 
@@ -616,6 +615,9 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
     
     // set log level
     EM_setlog( log_level );
+    
+    // add myself to the list of Chuck_Systems that might need to be cleaned up
+    g_systems.push_back( this );
 
 
 //------------------------- COMMAND LINE ARGUMENTS -----------------------------
@@ -1022,9 +1024,8 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
     
 //------------------------- VIRTUAL MACHINE SETUP -----------------------------
     
-    // TODO Unity: eliminate g_vm variable
     // allocate the vm - needs the type system
-    vm = m_vmRef = g_vm = new Chuck_VM;
+    vm = m_vmRef = new Chuck_VM;
     // ge: refactor 2015: initialize VM
     if( !vm->initialize( srate, dac_chans, adc_chans, adaptive_size, vm_halt ) )
     {
@@ -1413,18 +1414,21 @@ if( g_bbq == NULL ) {
 
 
 //-----------------------------------------------------------------------------
-// name: clientVMShutdown()
+// name: clientShutdown()
 // desc: client mode: to manually shut it down
 //-----------------------------------------------------------------------------
-bool Chuck_System::clientVMShutdown()
+bool Chuck_System::clientShutdown()
 {
     // stop VM
-    if( m_vmRef ) m_vmRef->stop();
-
-    // wait for it to stop...
-    while( m_vmRef->running() )
+    if( m_vmRef )
     {
-        usleep(1000);
+        m_vmRef->stop();
+
+        // wait for it to stop...
+        while( m_vmRef->running() )
+        {
+            usleep(1000);
+        }
     }
 
     // free vm (mine, not global)
@@ -1433,54 +1437,8 @@ bool Chuck_System::clientVMShutdown()
     // free my compiler
     SAFE_DELETE( m_compilerRef ); m_compilerRef = NULL;
     
-    // done
-    return true;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: clientShutdown()
-// desc: client mode: to manually shut it down
-//-----------------------------------------------------------------------------
-bool Chuck_System::clientShutdown()
-{
-    // stop
-    all_stop();
-    // detach
-    all_detach();
-    
-    // shutdown audio
-    if( g_enable_realtime_audio )
-    {
-        // log
-        EM_log( CK_LOG_SYSTEM, "shutting down real-time audio..." );
-
-        g_bbq->digi_out()->cleanup();
-        g_bbq->digi_in()->cleanup();
-        g_bbq->shutdown();
-        // m_audio = FALSE;
-    }
-    // log
-    EM_log( CK_LOG_SYSTEM, "freeing bbq subsystem..." );
-    // clean up
-    SAFE_DELETE( g_bbq );
-    
-    if( g_main_thread_quit )
-        g_main_thread_quit( g_main_thread_bindle );
-    clear_main_thread_hook();
-    
-    // free vm
-    SAFE_DELETE( g_vm ); m_vmRef = NULL;
-    // free the compiler
-    SAFE_DELETE( m_compilerRef ); m_compilerRef = NULL;
-    
-    // wait for the shell, if it is running
-    // does the VM reset its priority to normal before exiting?
-    if( g_enable_shell )
-        while( g_shell != NULL )
-            usleep(10000);
+    // remove myself from g_systems: I no longer need to be cleaned up
+    g_systems.remove( this );
     
     // done
     return true;

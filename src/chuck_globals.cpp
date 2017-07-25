@@ -39,6 +39,7 @@
 #include "hidio_sdl.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <list>
 #ifndef __PLATFORM_WIN32__
 #include <unistd.h>
 #endif // __PLATFORM_WIN32__
@@ -46,8 +47,8 @@
 // current version
 const char CK_VERSION[] = "1.3.5.3-rc1 (chimera)";
 
-// global virtual machine
-Chuck_VM * g_vm = NULL;
+// the systems
+std::list< Chuck_System * > g_systems;
 // the shell
 Chuck_Shell * g_shell = NULL;
 // global BBQ audio layer
@@ -130,8 +131,6 @@ extern "C" t_CKBOOL all_stop( )
     // log
     EM_log( CK_LOG_SEVERE, "requesting ALL STOP system loop..." );
 
-    // stop VM
-    if( g_vm ) g_vm->stop();
     // set state
     Digitalio::m_end = TRUE;
     // stop things

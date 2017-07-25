@@ -82,8 +82,6 @@ public:
                            int channelsOut, int argc, const char ** argv );
     // shutdown in client mode
     bool clientShutdown();
-    // only shutdown vm in multivm mode
-    bool clientVMShutdown();
     
 public:
     // additional native chuck bindings/types (use with extra caution)

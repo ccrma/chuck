@@ -40,9 +40,11 @@ extern "C" int chuck_main( int argc, const char ** argv )
 #endif
 {
     // chuck system
-    Chuck_System chuck;
+    Chuck_System * chuck = new Chuck_System;
     // do it
-    chuck.go( argc, argv );
+    chuck->go( argc, argv );
+    // clean up
+    global_cleanup();
     
     return 0;
 }
