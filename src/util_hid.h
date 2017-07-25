@@ -44,7 +44,7 @@ struct HidMsg
     t_CKINT device_num;  // device number
     t_CKINT type;        // message type
     t_CKINT eid;         // element id
-#ifdef __64BIT_T_CKINT__
+#ifdef _WIN64
     long idata[4];       // int data (code using this expects a "long" rather than a "t_CKINT")
 #else
     t_CKINT idata[4];    // int data

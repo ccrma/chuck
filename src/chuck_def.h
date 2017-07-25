@@ -44,7 +44,7 @@
 #define t_CKFLOAT                   double
 #define t_CKDOUBLE                  double
 #define t_CKSINGLE                  float
-#ifdef __64BIT_T_CKINT__
+#ifdef _WIN64
 #define t_CKINT                     long long
 #else
 #define t_CKINT                     long

@@ -4820,7 +4820,7 @@ Windows general HID support
 #pragma mark Windows general HID support
 
 #include <windows.h>
-#ifdef __DINPUT8__
+#ifdef _WIN64
 #define DIRECTINPUT_VERSION 0x0800
 #else
 #define DIRECTINPUT_VERSION 0x0500
