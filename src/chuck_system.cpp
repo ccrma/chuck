@@ -1148,7 +1148,7 @@ if( g_bbq == NULL ) {
     }
 
     // set deprecate
-    compiler->env->deprecate_level = deprecate_level;
+    compiler->env_ref->deprecate_level = deprecate_level;
 
     // reset count
     count = 1;
@@ -1217,7 +1217,7 @@ if( g_bbq == NULL ) {
         EM_poplog();
     }
     
-    compiler->env->load_user_namespace();
+    compiler->env_ref->load_user_namespace();
     
     // log
     EM_log( CK_LOG_SEVERE, "starting compilation..." );

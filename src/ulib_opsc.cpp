@@ -1155,7 +1155,7 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     
     
     // get the env
-    Chuck_Env * env = query->compiler_ref->env;
+    Chuck_Env * env = query->compiler_ref->env_ref;
     Chuck_DL_Func * func = NULL;
 
     // init base class

@@ -103,7 +103,7 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
             return;
         }
         
-        Chuck_Type * ck_parent_type = type_engine_find_type( query->compiler_ref->env, parent_path );
+        Chuck_Type * ck_parent_type = type_engine_find_type( query->compiler_ref->env_ref, parent_path );
         
         delete_id_list( parent_path );
         
@@ -292,7 +292,7 @@ t_CKUINT CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query,
         return CK_INVALID_OFFSET;
     }
     
-    Chuck_Type * ck_type = type_engine_find_type( query->compiler_ref->env, path );
+    Chuck_Type * ck_type = type_engine_find_type( query->compiler_ref->env_ref, path );
     
     delete_id_list( path );
     
@@ -535,7 +535,7 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
     // 1.3.2.0: import class into type engine if at top level
     if( query->stack.size() == 1 ) // top level class
     {
-        if( !type_engine_add_class_from_dl( query->compiler_ref->env, query->curr_class ) )
+        if( !type_engine_add_class_from_dl( query->compiler_ref->env_ref, query->curr_class ) )
         {
             EM_log(CK_LOG_SEVERE, "[chuck](DL): error importing class '%s' into type engine",
                    query->curr_class->name.c_str());

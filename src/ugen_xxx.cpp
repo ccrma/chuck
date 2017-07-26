@@ -101,7 +101,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 {
     g_srate = QUERY->srate;
     // get the env
-    Chuck_Env * env = QUERY->compiler_ref->env;
+    Chuck_Env * env = QUERY->compiler_ref->env_ref;
 
     Chuck_DL_Func * func = NULL;
     std::string doc;
@@ -969,7 +969,7 @@ static t_CKUINT LiSaMulti_offset_data = 0;
 #define LiSa_channels 10 //max channels for multichannel LiSa
 DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
 {
-    Chuck_Env * env = QUERY->compiler_ref->env;
+    Chuck_Env * env = QUERY->compiler_ref->env_ref;
     Chuck_DL_Func * func = NULL;
 
     //---------------------------------------------------------------------

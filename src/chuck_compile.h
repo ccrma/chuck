@@ -55,7 +55,7 @@ struct Chuck_Compiler
 {
 public: // data
     // type-checking environment
-    Chuck_Env * env;
+    Chuck_Env * env_ref;
     // emitter
     Chuck_Emitter * emitter;
     // generated code
