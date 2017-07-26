@@ -715,7 +715,7 @@ CK_DLL_SFUN( itoa_impl )
 {
     t_CKINT i = GET_CK_INT(ARGS);
     // TODO: memory leak, please fix.  Thanks.
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env_ref->t_string, SHRED );
     a->set( itoa( i ) );
     RETURN->v_string = a;
 }
@@ -725,7 +725,7 @@ CK_DLL_SFUN( ftoa_impl )
 {
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
     t_CKINT p = GET_NEXT_INT(ARGS);
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env_ref->t_string, SHRED );
     a->set( ftoa( f, (t_CKUINT)p ) );
     RETURN->v_string = a;
 }
@@ -743,7 +743,7 @@ CK_DLL_SFUN( getenv_impl )
 {
     const char * v = GET_CK_STRING(ARGS)->get().c_str();
     const char * s = getenv( v );
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env_ref->t_string, SHRED );
     a->set( s ? s : "" );
     RETURN->v_string = a;
 }
@@ -1317,7 +1317,7 @@ CK_DLL_MFUN( Skot_getLine )
 {
     LineEvent * le = (LineEvent *)OBJ_MEMBER_INT(SELF, Skot_offset_data);
     // TODO: memory leak
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env_ref->t_string, SHRED );
     a->set( le->getLine() );
     RETURN->v_string = a;
 }
@@ -1440,7 +1440,7 @@ CK_DLL_MFUN( StrTok_more )
 CK_DLL_MFUN( StrTok_next )
 {
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env_ref->t_string, SHRED );
     a->set( tokens->next() );
     RETURN->v_string = a;
 }
@@ -1458,7 +1458,7 @@ CK_DLL_MFUN( StrTok_get )
 {
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
     t_CKINT index = GET_NEXT_INT(ARGS);
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->m_env->t_string, SHRED );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env_ref->t_string, SHRED );
     string s = tokens->get( index );
     a->set( s );
     RETURN->v_string = a;

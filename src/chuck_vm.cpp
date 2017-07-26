@@ -128,7 +128,7 @@ public:
 //-----------------------------------------------------------------------------
 Chuck_VM::Chuck_VM()
 {
-    m_env = NULL;
+    env_ref = NULL;
     m_shreds = NULL;
     m_num_shreds = 0;
     m_shreduler = NULL;
@@ -380,7 +380,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     m_bunghole = new Chuck_UGen;
     m_bunghole->add_ref();
     m_bunghole->lock();
-    initialize_object( m_bunghole, m_env->t_ugen );
+    initialize_object( m_bunghole, env_ref->t_ugen );
     m_bunghole->tick = NULL;
     m_bunghole->alloc_v( m_shreduler->m_max_block_size );
     m_shreduler->m_dac = m_dac;
@@ -920,9 +920,9 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         }
         
         // clear user type system
-        if( m_env )
+        if( env_ref )
         {
-            m_env->clear_user_namespace();
+            env_ref->clear_user_namespace();
         }
         
         m_shred_id = 0;
@@ -1892,7 +1892,7 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     xid = 0;
 
     // initialize
-    initialize_object( this, vm_ref->m_env->t_shred );
+    initialize_object( this, vm_ref->env_ref->t_shred );
 
     return TRUE;
 }

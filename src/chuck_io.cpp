@@ -467,7 +467,7 @@ Chuck_String * Chuck_IO_Serial::readLine()
     }
     
     Chuck_String * str = new Chuck_String;
-    initialize_object(str, m_vmRef->m_env->t_string);
+    initialize_object(str, m_vmRef->env_ref->t_string);
     
     str->set( string((char *)m_tmp_buf) );
     
@@ -818,7 +818,7 @@ Chuck_Array * Chuck_IO_Serial::getBytes()
        r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
-        initialize_object(arr, m_vmRef->m_env->t_array);
+        initialize_object(arr, m_vmRef->env_ref->t_array);
         m_asyncResponses.get(r);
     }
     
@@ -841,7 +841,7 @@ Chuck_Array * Chuck_IO_Serial::getInts()
        r.m_type == TYPE_INT && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
-        initialize_object(arr, m_vmRef->m_env->t_array);
+        initialize_object(arr, m_vmRef->env_ref->t_array);
         m_asyncResponses.get(r);
     }
     
@@ -864,7 +864,7 @@ Chuck_Array * Chuck_IO_Serial::getFloats()
        r.m_type == TYPE_FLOAT && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
-        initialize_object(arr, m_vmRef->m_env->t_array);
+        initialize_object(arr, m_vmRef->env_ref->t_array);
         m_asyncResponses.get(r);
     }
     
@@ -1760,12 +1760,12 @@ CK_DLL_SFUN( serialio_list )
     
     // ISSUE: 64-bit
     Chuck_Array4 * array = new Chuck_Array4(TRUE, 0);
-    initialize_object( array, SHRED->vm_ref->m_env->t_array );
+    initialize_object( array, SHRED->vm_ref->env_ref->t_array );
     
     for(vector<string>::iterator i = devices.begin(); i != devices.end(); i++)
     {
         Chuck_String * name = new Chuck_String(*i);
-        initialize_object(name, SHRED->vm_ref->m_env->t_string);
+        initialize_object(name, SHRED->vm_ref->env_ref->t_string);
         array->push_back((t_CKUINT) name);
     }
     
