@@ -652,7 +652,7 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
                 // caller will call the Chuck_System->run itself
                 m_initOnly = TRUE;
                 // --external-callback implies --loop: wait for incoming shreds
-                // (don't enable server, which waits on TCP8888
+                // (don't enable server, which waits on TCP8888)
                 vm_halt = FALSE;
                 enable_server = FALSE;
                 // --external-callback implies --silent: don't engage the main thread hook

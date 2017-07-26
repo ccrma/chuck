@@ -2466,7 +2466,7 @@ public:
     // was this object reference? (added 1.3.0.0)
     t_CKBOOL m_is_object;
     
-    // was this external variable? and what was its name? (added external keyword)
+    // was this external variable? and what was its name? (added 1.3.6.0)
     t_CKBOOL m_is_external;
     std::string m_name;
     te_Type m_type;
@@ -2487,7 +2487,7 @@ public:
     Chuck_Instr_Alloc_Word2( t_CKUINT offset )
     { this->set( offset ); m_is_external = FALSE; }
     
-    // was this external variable? and what was its name? (added external keyword)
+    // was this external variable? and what was its name? (added 1.3.6.0)
     t_CKBOOL m_is_external;
     std::string m_name;
     te_Type m_type;

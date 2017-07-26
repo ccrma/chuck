@@ -619,7 +619,6 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 
     // for now, check for external variables once per sample (below)
     // TODO: once per buffer instead? (place here then)
-    
 
     // loop it
     while( N )
