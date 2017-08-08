@@ -866,21 +866,27 @@ const Chuck_DL_Query * Chuck_DLL::query( )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_DLL::unload()
 {
+    std::cout << "chuck_dll unload 0" << std::endl;
     if( !m_handle && !m_query_func )
     {
+    std::cout << "chuck_dll unload 0a" << std::endl;
         m_last_error = "cannot unload dynamic library - nothing open...";
         return FALSE;
     }
+        std::cout << "chuck_dll unload 1" << std::endl;
 
     // if( m_detach_func ) m_detach_func( 0, NULL );
 
     if( m_handle )
     {
+        std::cout << "chuck_dll unload 2" << std::endl;
         dlclose( m_handle );
         m_handle = NULL;
+            std::cout << "chuck_dll unload 3" << std::endl;
     }
     else
         m_query_func = NULL;
+    std::cout << "chuck_dll unload 4" << std::endl;
 
     return TRUE;
 }

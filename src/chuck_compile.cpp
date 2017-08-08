@@ -162,19 +162,25 @@ void Chuck_Compiler::shutdown()
     EM_pushlog();
 
     // TODO: free
+        std::cout << "compiler shutdown 0" << std::endl;
     type_engine_shutdown( env_ref );
+        std::cout << "compiler shutdown 1" << std::endl;
     // emit_engine_shutdown( emitter );
     env_ref = NULL;
     emitter = NULL;
     code = NULL;
     m_auto_depend = FALSE;
+    std::cout << "compiler shutdown 2" << std::endl;
     m_recent.clear();
+    std::cout << "compiler shutdown 3" << std::endl;
     
     for(std::list<Chuck_DLL *>::iterator i = m_dlls.begin();
         i != m_dlls.end(); i++)
     {
+        std::cout << "deleting dll " << (*i)->name() << std::endl;
         delete (*i);
     }
+    std::cout << "compiler shutdown 4   " << std::endl;
     
     m_dlls.clear();
 

@@ -214,39 +214,72 @@ Chuck_Env::Chuck_Env( )
 //-----------------------------------------------------------------------------
 Chuck_Env::~Chuck_Env()
 {
+    std::cout << "chuck_env dtor 0" << std::endl;
     SAFE_RELEASE( t_object->info );
+    std::cout << "chuck_env dtor 1" << std::endl;
     SAFE_RELEASE( t_array->info );
+    std::cout << "chuck_env dtor 2" << std::endl;
     SAFE_RELEASE( t_string->info );
+    std::cout << "chuck_env dtor 3" << std::endl;
     SAFE_RELEASE( t_ugen->info );
+    std::cout << "chuck_env dtor 4" << std::endl;
     SAFE_RELEASE( t_uanablob->info );
+    std::cout << "chuck_env dtor 5" << std::endl;
     SAFE_RELEASE( t_uana->info );
+    std::cout << "chuck_env dtor 6" << std::endl;
     SAFE_RELEASE( t_shred->info );
+    std::cout << "chuck_env dtor 7" << std::endl;
     SAFE_RELEASE( t_event->info );
+    std::cout << "chuck_env dtor 8" << std::endl;
     SAFE_RELEASE( t_class->info );
+    std::cout << "chuck_env dtor 9" << std::endl;
     SAFE_RELEASE( t_thread->info );
+    std::cout << "chuck_env dtor 10" << std::endl;
     SAFE_RELEASE( t_io->info );
+    std::cout << "chuck_env dtor 11" << std::endl;
     SAFE_RELEASE( t_fileio->info );
+    std::cout << "chuck_env dtor 12" << std::endl;
     SAFE_RELEASE( t_chout->info );  // added 1.3.0.0
+    std::cout << "chuck_env dtor 13" << std::endl;
     SAFE_RELEASE( t_cherr->info );  // added 1.3.0.0
+    std::cout << "chuck_env dtor 14" << std::endl;
     SAFE_RELEASE( t_vec3->info );  // added 1.3.5.3
+    std::cout << "chuck_env dtor 15" << std::endl;
     SAFE_RELEASE( t_vec4->info );  // added 1.3.5.3
+    std::cout << "chuck_env dtor 16" << std::endl;
     
     SAFE_DELETE( t_object );
+    std::cout << "chuck_env dtor 17" << std::endl;
     SAFE_DELETE( t_array );
+    std::cout << "chuck_env dtor 18" << std::endl;
     SAFE_DELETE( t_string );
+    std::cout << "chuck_env dtor 19" << std::endl;
     SAFE_DELETE( t_ugen );
+    std::cout << "chuck_env dtor 20" << std::endl;
     SAFE_DELETE( t_uanablob );
+    std::cout << "chuck_env dtor 21" << std::endl;
     SAFE_DELETE( t_uana );
+    std::cout << "chuck_env dtor 22" << std::endl;
     SAFE_DELETE( t_shred );
+    std::cout << "chuck_env dtor 23" << std::endl;
     SAFE_DELETE( t_event );
+    std::cout << "chuck_env dtor 24" << std::endl;
     SAFE_DELETE( t_class );
+    std::cout << "chuck_env dtor 25" << std::endl;
     SAFE_DELETE( t_thread );
+    std::cout << "chuck_env dtor 26" << std::endl;
     SAFE_DELETE( t_io );
+    std::cout << "chuck_env dtor 27" << std::endl;
     SAFE_DELETE( t_fileio );
+    std::cout << "chuck_env dtor 28" << std::endl;
     SAFE_DELETE( t_chout );  // added 1.3.0.0
+    std::cout << "chuck_env dtor 29" << std::endl;
     SAFE_DELETE( t_cherr );  // added 1.3.0.0
+    std::cout << "chuck_env dtor 30" << std::endl;
     SAFE_DELETE( t_vec3 );  // added 1.3.5.3
+    std::cout << "chuck_env dtor 31" << std::endl;
     SAFE_DELETE( t_vec4 );  // added 1.3.5.3
+    std::cout << "chuck_env dtor 32" << std::endl;
 }
 
 
@@ -458,14 +491,16 @@ Chuck_Env * type_engine_init( Chuck_VM * vm )
 //-----------------------------------------------------------------------------
 void type_engine_shutdown( Chuck_Env * env )
 {
+std::cout << "type_engine_shutdown 0" << std::endl;
     // log
     EM_log( CK_LOG_SEVERE, "shutting down type checker..." );
-    
+std::cout << "type_engine_shutdown 1" << std::endl;
     // shut it down
     SAFE_DELETE( env );
-    
+    std::cout << "type_engine_shutdown 2" << std::endl;
     // log
     EM_log( CK_LOG_SEVERE, "type checker shutdown complete." );
+    std::cout << "type_engine_shutdown 3" << std::endl;
 }
 
 
