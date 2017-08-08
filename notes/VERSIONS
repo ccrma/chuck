@@ -9,7 +9,7 @@
               allows custom callbacks for out and err messages from ChucK
   - (added) external keyword - for communicating variable values to and from
             C++ code using Chuck_External API
-  - (added) getChar() method for Chuck_Strings, so that chugins with a different
+  - (added) c_str() method for Chuck_Strings, so that chugins with a different
             definition of std::string can still construct their own string
   - (changed) API for chugin API calls
               - now API variable must be passed
