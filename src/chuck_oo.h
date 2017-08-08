@@ -461,7 +461,7 @@ public:
 
     void set( const std::string & s ) { str = s; charptr = str.c_str(); }
     const std::string & get() { return str; }
-    const char * getChar() { return charptr; }
+    const char * c_str() { return charptr; }
 
 private:
     const char * charptr;
