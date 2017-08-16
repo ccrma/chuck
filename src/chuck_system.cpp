@@ -619,7 +619,7 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
                 }
             }
             else if( !strncmp(argv[i], "--dac", 5) )
-                dac = atoi( argv[i]+6 ) > 0 ? atoi( argv[i]+6 ) : 0;
+                dac = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 0;
             else if( !strncmp(argv[i], "--adc:", 6) ) // (added 1.3.0.0)
             {
                 // advance pointer to beginning of argument
