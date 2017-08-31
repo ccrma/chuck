@@ -339,7 +339,11 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_svar( QUERY, "float", "FLOAT_MIN_MAG", TRUE, &g_floatMin );
 
     // int max
+#ifdef _WIN64
+    assert( sizeof(t_CKINT) == sizeof(long long) );
+#else
     assert( sizeof(t_CKINT) == sizeof(long) );
+#endif
     QUERY->add_svar( QUERY, "int", "INT_MAX", TRUE, &g_intMax );
 
     // infinity, using function to avoid potential "smart" compiler warning

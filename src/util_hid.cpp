@@ -4823,7 +4823,11 @@ Windows general HID support
 #ifdef _WIN64
 #define DIRECTINPUT_VERSION 0x0800
 #else
+#ifdef __USE_DINPUT8LIB__
+#define DIRECTINPUT_VERSION 0x0800
+#else
 #define DIRECTINPUT_VERSION 0x0500
+#endif
 #endif
 #include <dinput.h>
 
