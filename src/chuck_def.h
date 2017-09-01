@@ -106,6 +106,9 @@ typedef const char *                c_constr;
 #define CK_DDN                      CK_DDN_SINGLE
 #endif
 
+// for external use
+#define t_ckSAMPLE                  SAMPLE
+
 // sample complex
 typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 
