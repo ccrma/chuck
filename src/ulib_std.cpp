@@ -147,7 +147,7 @@ static t_CKUINT Cereal_offset_data = 0;
 DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 {
     // get global
-    Chuck_Env * env = QUERY->compiler_ref->env_ref;
+    Chuck_Env * env = QUERY->compiler_ref->env();
     // set name
     QUERY->setname( QUERY, "Std" );
 

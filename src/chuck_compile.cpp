@@ -76,7 +76,7 @@ t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query que
 //-----------------------------------------------------------------------------
 Chuck_Compiler::Chuck_Compiler()
 {
-    env_ref = NULL;
+    m_env_ref = NULL;
     emitter = NULL;
     code = NULL;
 }
@@ -110,15 +110,15 @@ t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm,
     // push indent level
     EM_pushlog();
     
-    vm_ref = vm;
+    m_vm_ref = vm;
 
     // allocate the type checker
-    env_ref = type_engine_init( vm );
+    m_env_ref = type_engine_init( vm );
     // add reference
-    env_ref->add_ref();
+    m_env_ref->add_ref();
     
     // allocate the emitter
-    emitter = emit_engine_init( env_ref );
+    emitter = emit_engine_init( m_env_ref );
     // add reference
     emitter->add_ref();
     // set auto depend to 0
@@ -162,9 +162,9 @@ void Chuck_Compiler::shutdown()
     EM_pushlog();
 
     // TODO: free
-    type_engine_shutdown( env_ref );
+    type_engine_shutdown( m_env_ref );
     // emit_engine_shutdown( emitter );
-    env_ref = NULL;
+    m_env_ref = NULL;
     emitter = NULL;
     code = NULL;
     m_auto_depend = FALSE;
@@ -200,7 +200,7 @@ t_CKBOOL Chuck_Compiler::bind( f_ck_query query_func, const std::string & name,
     EM_pushlog();
     
     // get env
-    Chuck_Env * env = this->env_ref;
+    Chuck_Env * env = this->m_env_ref;
     // make context
     Chuck_Context * context = type_engine_make_context(
         NULL, string("@[bind:") + name + string("]") );
@@ -284,10 +284,10 @@ t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * st
         if( !context ) return FALSE;
 
         // reset the env
-        env_ref->reset();
+        m_env_ref->reset();
 
         // load the context
-        if( !type_engine_load_context( env_ref, context ) )
+        if( !type_engine_load_context( m_env_ref, context ) )
             return FALSE;
 
         // do entire file
@@ -305,12 +305,12 @@ t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * st
 cleanup:
 
         // commit
-        if( ret ) env_ref->global()->commit();
+        if( ret ) m_env_ref->global()->commit();
         // or rollback
-        else env_ref->global()->rollback();
+        else m_env_ref->global()->rollback();
 
         // unload the context from the type-checker
-        if( !type_engine_unload_context( env_ref ) )
+        if( !type_engine_unload_context( m_env_ref ) )
         {
             EM_error2( 0, "internal error unloading context...\n" );
             return FALSE;
@@ -352,19 +352,19 @@ t_CKBOOL Chuck_Compiler::resolve( const string & type )
 t_CKBOOL Chuck_Compiler::do_entire_file( Chuck_Context * context )
 {
     // 0th-scan (pass 0)
-    if( !type_engine_scan0_prog( env_ref, g_program, te_do_all ) )
+    if( !type_engine_scan0_prog( m_env_ref, g_program, te_do_all ) )
          return FALSE;
 
     // 1st-scan (pass 1)
-    if( !type_engine_scan1_prog( env_ref, g_program, te_do_all ) )
+    if( !type_engine_scan1_prog( m_env_ref, g_program, te_do_all ) )
         return FALSE;
 
     // 2nd-scan (pass 2)
-    if( !type_engine_scan2_prog( env_ref, g_program, te_do_all ) )
+    if( !type_engine_scan2_prog( m_env_ref, g_program, te_do_all ) )
         return FALSE;
 
     // check the program (pass 3)
-    if( !type_engine_check_context( env_ref, context, te_do_all ) )
+    if( !type_engine_check_context( m_env_ref, context, te_do_all ) )
         return FALSE;
 
     // emit (pass 4)
@@ -387,19 +387,19 @@ t_CKBOOL Chuck_Compiler::do_entire_file( Chuck_Context * context )
 t_CKBOOL Chuck_Compiler::do_only_classes( Chuck_Context * context )
 {
     // 0th-scan (pass 0)
-    if( !type_engine_scan0_prog( env_ref, g_program, te_do_classes_only ) )
+    if( !type_engine_scan0_prog( m_env_ref, g_program, te_do_classes_only ) )
         return FALSE;
 
     // 1st-scan (pass 1)
-    if( !type_engine_scan1_prog( env_ref, g_program, te_do_classes_only ) )
+    if( !type_engine_scan1_prog( m_env_ref, g_program, te_do_classes_only ) )
         return FALSE;
 
     // 2nd-scan (pass 2)
-    if( !type_engine_scan2_prog( env_ref, g_program, te_do_classes_only ) )
+    if( !type_engine_scan2_prog( m_env_ref, g_program, te_do_classes_only ) )
         return FALSE;
 
     // check the program (pass 3)
-    if( !type_engine_check_context( env_ref, context, te_do_classes_only ) )
+    if( !type_engine_check_context( m_env_ref, context, te_do_classes_only ) )
         return FALSE;
 
     // emit (pass 4)
@@ -424,15 +424,15 @@ t_CKBOOL Chuck_Compiler::do_all_except_classes( Chuck_Context * context )
     // 0th scan only deals with classes, so is not needed
 
     // 1st-scan (pass 1)
-    if( !type_engine_scan1_prog( env_ref, g_program, te_do_no_classes ) )
+    if( !type_engine_scan1_prog( m_env_ref, g_program, te_do_no_classes ) )
         return FALSE;
 
     // 2nd-scan (pass 2)
-    if( !type_engine_scan2_prog( env_ref, g_program, te_do_no_classes ) )
+    if( !type_engine_scan2_prog( m_env_ref, g_program, te_do_no_classes ) )
         return FALSE;
 
     // check the program (pass 3)
-    if( !type_engine_check_context( env_ref, context, te_do_no_classes ) )
+    if( !type_engine_check_context( m_env_ref, context, te_do_no_classes ) )
         return FALSE;
 
     // emit (pass 4)
@@ -469,26 +469,26 @@ t_CKBOOL Chuck_Compiler::do_normal( const string & filename, FILE * fd, const ch
     context->full_path = full_path;
 
     // reset the env
-    env_ref->reset();
+    m_env_ref->reset();
 
     // load the context
-    if( !type_engine_load_context( env_ref, context ) )
+    if( !type_engine_load_context( m_env_ref, context ) )
         return FALSE;
 
     // 0th-scan (pass 0)
-    if( !type_engine_scan0_prog( env_ref, g_program, te_do_all ) )
+    if( !type_engine_scan0_prog( m_env_ref, g_program, te_do_all ) )
     { ret = FALSE; goto cleanup; }
 
     // 1st-scan (pass 1)
-    if( !type_engine_scan1_prog( env_ref, g_program, te_do_all ) )
+    if( !type_engine_scan1_prog( m_env_ref, g_program, te_do_all ) )
     { ret = FALSE; goto cleanup; }
 
     // 2nd-scan (pass 2)
-    if( !type_engine_scan2_prog( env_ref, g_program, te_do_all ) )
+    if( !type_engine_scan2_prog( m_env_ref, g_program, te_do_all ) )
     { ret = FALSE; goto cleanup; }
 
     // check the program (pass 3)
-    if( !type_engine_check_context( env_ref, context, te_do_all ) )
+    if( !type_engine_check_context( m_env_ref, context, te_do_all ) )
     { ret = FALSE; goto cleanup; }
 
     // emit (pass 4)
@@ -498,12 +498,12 @@ t_CKBOOL Chuck_Compiler::do_normal( const string & filename, FILE * fd, const ch
 cleanup:
 
     // commit
-    if( ret ) env_ref->global()->commit();
+    if( ret ) m_env_ref->global()->commit();
     // or rollback
-    else env_ref->global()->rollback();
+    else m_env_ref->global()->rollback();
 
     // unload the context from the type-checker
-    if( !type_engine_unload_context( env_ref ) )
+    if( !type_engine_unload_context( m_env_ref ) )
     {
         EM_error2( 0, "internal error unloading context...\n" );
         return FALSE;
@@ -607,7 +607,7 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     EM_pushlog();
     
     // get env
-    Chuck_Env * env = compiler->env_ref;
+    Chuck_Env * env = compiler->env();
     // make context
     Chuck_Context * context = type_engine_make_context( NULL, "@[internal]" );
     // reset env - not needed since we just created the env
@@ -690,7 +690,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
                                        const char * name,
                                        const char * dl_path )
 {
-    Chuck_Env * env = compiler->env_ref;
+    Chuck_Env * env = compiler->env();
     
     EM_log(CK_LOG_SEVERE, "loading chugin '%s'", name);
     
@@ -844,7 +844,7 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
     EM_pushlog();
     
     // get env
-    Chuck_Env * env = compiler->env_ref;
+    Chuck_Env * env = compiler->env();
     // make context
     Chuck_Context * context = type_engine_make_context( NULL, "@[external]" );
     // reset env - not needed since we just created the env

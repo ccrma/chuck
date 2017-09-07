@@ -47,7 +47,7 @@
 DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 {
     // get global env instance
-    Chuck_Env * env = QUERY->compiler_ref->env_ref;
+    Chuck_Env * env = QUERY->compiler_ref->env();
     // set name of this query
     QUERY->setname( QUERY, "Machine" );
 

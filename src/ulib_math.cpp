@@ -63,7 +63,7 @@ static void srandom( unsigned s ) { srand( s ); }
 DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
 {
     // get global
-    Chuck_Env * env = QUERY->compiler_ref->env_ref;
+    Chuck_Env * env = QUERY->compiler_ref->env();
     // name
     QUERY->setname( QUERY, "Math" );
 

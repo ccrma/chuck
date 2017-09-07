@@ -53,15 +53,25 @@ struct Chuck_DLL;
 //-----------------------------------------------------------------------------
 struct Chuck_Compiler
 {
-public: // data
+protected: // data
     // type-checking environment
-    Chuck_Env * env_ref;
+    Chuck_Env * m_env_ref;
+    // vm
+    Chuck_VM * m_vm_ref;
+    
+public: // get protected data
+    // REFACTOR-2017: get associated, per-compiler environment
+    Chuck_Env * env() const { return m_env_ref; }
+    // REFACTOR-2017: get associated, per-compiler VM
+    Chuck_VM * vm() const { return m_vm_ref; }
+
+    
+public: // data
     // emitter
     Chuck_Emitter * emitter;
     // generated code
     Chuck_VM_Code * code;
-    // vm
-    Chuck_VM * vm_ref;
+
 
     // auto-depend flag
     t_CKBOOL m_auto_depend;
@@ -99,6 +109,7 @@ public: // compile
     t_CKBOOL resolve( const std::string & type );
     // get the code generated from the last go()
     Chuck_VM_Code * output( );
+
 
 protected: // internal
     // do entire file
