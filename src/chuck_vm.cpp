@@ -1044,7 +1044,7 @@ t_CKUINT Chuck_VM::srate() const
 // name: spork()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent, bool immediate )
+Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent, t_CKBOOL immediate )
 {
     // allocate a new shred
     Chuck_VM_Shred * shred = new Chuck_VM_Shred;
