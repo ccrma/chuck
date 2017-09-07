@@ -600,7 +600,8 @@ t_CKBOOL Chuck_VM::compute()
     }
     
     // continue executing if have shreds left or if don't-halt
-    return ( m_num_shreds || !m_halt );
+    // or if have shreds to add
+    return ( m_num_shreds || !m_halt || m_spork_external_shred_queue.more() );
 }
 
 
