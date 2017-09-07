@@ -1862,7 +1862,7 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     xid = 0;
 
     // initialize
-    initialize_object( this, vm_ref->m_env_ref->t_shred );
+    initialize_object( this, vm_ref->env()->t_shred );
 
     return TRUE;
 }
