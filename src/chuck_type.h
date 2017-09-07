@@ -515,6 +515,8 @@ public:
     Chuck_Type * t_cherr;
     Chuck_Type * t_thread;
     Chuck_Type * t_class;
+    Chuck_Type * t_dac;
+    Chuck_Type * t_adc;
 };
 
 

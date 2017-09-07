@@ -230,6 +230,8 @@ Chuck_Env::~Chuck_Env()
     SAFE_RELEASE( t_cherr->info );  // added 1.3.0.0
     SAFE_RELEASE( t_vec3->info );  // added 1.3.5.3
     SAFE_RELEASE( t_vec4->info );  // added 1.3.5.3
+    SAFE_RELEASE( t_dac->info ); // REFACTOR-2017
+    SAFE_RELEASE( t_adc->info ); // REFACTOR-2017
     
     SAFE_DELETE( t_object );
     SAFE_DELETE( t_array );
@@ -247,6 +249,8 @@ Chuck_Env::~Chuck_Env()
     SAFE_DELETE( t_cherr );  // added 1.3.0.0
     SAFE_DELETE( t_vec3 );  // added 1.3.5.3
     SAFE_DELETE( t_vec4 );  // added 1.3.5.3
+    SAFE_DELETE( t_dac ); // REFACTOR-2017
+    SAFE_DELETE( t_adc ); // REFACTOR-2017
 }
 
 
@@ -2369,14 +2373,14 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                 // not assignable
                 exp->self->s_meta = ae_meta_value;
                 // ugen
-                t = g_t_dac;
+                t = env->t_dac;
             }
             else if( str == "adc" ) // adc
             {
                 // not assignable
                 exp->self->s_meta = ae_meta_value;
                 // ugen
-                t = g_t_adc;
+                t = env->t_adc;
             }
             else if( str == "blackhole" ) // blackhole
             {

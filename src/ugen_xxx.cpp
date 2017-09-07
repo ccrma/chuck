@@ -89,8 +89,7 @@ static t_CKUINT sndbuf_offset_data = 0;
 static t_CKUINT dyno_offset_data = 0;
 // static t_CKUINT zerox_offset_data = 0;
 
-Chuck_Type * g_t_dac = NULL;
-Chuck_Type * g_t_adc = NULL;
+
 
 
 //-----------------------------------------------------------------------------
@@ -232,7 +231,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: dac
     //---------------------------------------------------------------------
-    if( !(g_t_dac = type_engine_import_ugen_begin( env, "DAC", "UGen_Stereo", env->global(), 
+    if( !(env->t_dac = type_engine_import_ugen_begin( env, "DAC", "UGen_Stereo", env->global(),
                                                    NULL, NULL, NULL, NULL, 2, 2 )) )
         return FALSE;
 
@@ -246,7 +245,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: adc
     //---------------------------------------------------------------------
-    if( !(g_t_adc = type_engine_import_ugen_begin( env, "ADC", "UGen_Stereo", env->global(), 
+    if( !(env->t_adc = type_engine_import_ugen_begin( env, "ADC", "UGen_Stereo", env->global(),
                                                    (f_ctor)NULL, (f_dtor)NULL, (f_tick)NULL, (f_pmsg)NULL, 0, 2 )) )
         return FALSE;
 

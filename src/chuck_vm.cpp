@@ -331,7 +331,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
         return FALSE;
     }
 
-    if( !g_t_dac || !g_t_adc )
+    if( !env_ref->t_dac || !env_ref->t_adc )
     {
         m_last_error = "VM initialize_synthesis() called before type system initialized";
         return FALSE;
@@ -351,9 +351,10 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     // log
     EM_log( CK_LOG_SEVERE, "initializing 'dac'..." );
     // allocate dac and adc
-    g_t_dac->ugen_info->num_outs = 
-        g_t_dac->ugen_info->num_ins = m_num_dac_channels;
-    m_dac = (Chuck_UGen *)instantiate_and_initialize_object( g_t_dac, this );
+    env_ref->t_array;
+    env_ref->t_dac->ugen_info->num_outs =
+        env_ref->t_dac->ugen_info->num_ins = m_num_dac_channels;
+    m_dac = (Chuck_UGen *)instantiate_and_initialize_object( env_ref->t_dac, this );
     // Chuck_DL_Api::Api::instance() added 1.3.0.0
     object_ctor( m_dac, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: this can't be the place to do this
     stereo_ctor( m_dac, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: is the NULL shred a problem?
@@ -364,9 +365,9 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
 
     // log
     EM_log( CK_LOG_SEVERE, "initializing 'adc'..." );
-    g_t_adc->ugen_info->num_ins = 
-        g_t_adc->ugen_info->num_outs = m_num_adc_channels;
-    m_adc = (Chuck_UGen *)instantiate_and_initialize_object( g_t_adc, this );
+    env_ref->t_adc->ugen_info->num_ins =
+        env_ref->t_adc->ugen_info->num_outs = m_num_adc_channels;
+    m_adc = (Chuck_UGen *)instantiate_and_initialize_object( env_ref->t_adc, this );
     // Chuck_DL_Api::Api::instance() added 1.3.0.0
     object_ctor( m_adc, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: this can't be the place to do this
     stereo_ctor( m_adc, NULL, NULL, Chuck_DL_Api::Api::instance() );
