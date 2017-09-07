@@ -934,7 +934,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         t_CKUINT xid = 0;
         Chuck_VM_Shred * shred = NULL;
         if( msg->shred ) shred = this->spork( msg->shred );
-        else shred = this->spork( msg->code, NULL );
+        else shred = this->spork( msg->code, NULL, TRUE );
         xid = shred->xid;
         if( msg->args ) shred->args = *(msg->args);
 
@@ -1041,22 +1041,10 @@ t_CKUINT Chuck_VM::srate() const
 
 
 //-----------------------------------------------------------------------------
-// name: fork()
-// desc: ...
-//-----------------------------------------------------------------------------
-Chuck_VM_Shred * Chuck_VM::fork( Chuck_VM_Code * code )
-{
-    return NULL;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: spork()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent )
+Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent, bool immediate )
 {
     // allocate a new shred
     Chuck_VM_Shred * shred = new Chuck_VM_Shred;
@@ -1071,8 +1059,16 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent 
     // set the base ref for global
     if( parent ) shred->base_ref = shred->parent->base_ref;
     else shred->base_ref = shred->mem;
-    // spork it
-    this->spork( shred );
+    if( immediate )
+    {
+        // spork it
+        this->spork( shred );
+    }
+    else
+    {
+        // spork it later
+        m_spork_external_shred_queue.put( shred );
+    }
 
     // track new shred
     CK_TRACK( Chuck_Stats::instance()->add_shred( shred ) );
@@ -1293,25 +1289,6 @@ void Chuck_VM::release_dump( )
     m_shred_dump.clear();
     // reset
     m_num_dumped_shreds = 0;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_external_int()
-// desc: get an external int by name
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::spork_async( Chuck_VM_Code * code, Chuck_VM_Shred * parent, vector<string> * args )
-{
-    Chuck_Spork_External_Shred spork_shred_message;
-    spork_shred_message.code = code;
-    spork_shred_message.parent = parent;
-    spork_shred_message.args = args;
-    
-    m_spork_external_shred_queue.put( spork_shred_message );
-    
-    return TRUE;
 }
 
 
@@ -1625,12 +1602,10 @@ void Chuck_VM::handle_external_get_messages() {
 //-----------------------------------------------------------------------------
 void Chuck_VM::handle_external_spork_messages() {
     while( m_spork_external_shred_queue.more() ) {
-        Chuck_Spork_External_Shred spork_shred_message;
-        if( m_spork_external_shred_queue.get( & spork_shred_message ) )
+        Chuck_VM_Shred * shred;
+        if( m_spork_external_shred_queue.get( & shred ) )
         {
-            Chuck_VM_Shred * shred = this->spork( spork_shred_message.code, spork_shred_message.parent );
-            shred->args = *(spork_shred_message.args);
-            delete spork_shred_message.args;
+            this->spork( shred );
         }
         else
         {

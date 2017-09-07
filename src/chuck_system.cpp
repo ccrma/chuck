@@ -343,7 +343,7 @@ Chuck_System::~Chuck_System()
 // name: compileFile()
 // desc: compile a file
 //-----------------------------------------------------------------------------
-bool Chuck_System::compileFile( const string & path, const string & argsTogether, int count )
+bool Chuck_System::compileFile( const string & path, const string & argsTogether, int count, t_CKBOOL spork_async )
 {
     // sanity check
     if( !m_compilerRef )
@@ -396,7 +396,7 @@ bool Chuck_System::compileFile( const string & path, const string & argsTogether
     while( count-- )
     {
         // spork
-        shred = m_vmRef->spork( code, NULL );
+        shred = m_vmRef->spork( code, NULL, !spork_async );
         // add args
         shred->args = args;
     }
@@ -424,7 +424,7 @@ bool Chuck_System::compileCode( const char * codeString, const std::string & arg
         return false;
     }
 
-    vector<string> * args = new vector<string>;
+    vector<string> args;
     Chuck_VM_Code * code = NULL;
     Chuck_VM_Shred * shred = NULL;
     
@@ -438,7 +438,7 @@ bool Chuck_System::compileCode( const char * codeString, const std::string & arg
     string fakeFilename = "compiled_code";
 
     // parse out command line arguments
-    if( !extract_args( theThing, fakeFilename, *args ) )
+    if( !extract_args( theThing, fakeFilename, args ) )
     {
         // error
         CK_FPRINTF_STDERR( "[chuck]: malformed filename with argument list...\n" );
@@ -465,18 +465,10 @@ bool Chuck_System::compileCode( const char * codeString, const std::string & arg
     // spork it
     while( count-- )
     {
-        if( spork_async )
-        {
-            m_vmRef->spork_async( code, NULL, args );
-        }
-        else
-        {
-            // spork
-            shred = m_vmRef->spork( code, NULL );
-            // add args
-            shred->args = *args;
-            delete args;
-        }
+        // spork
+        shred = m_vmRef->spork( code, NULL, !spork_async );
+        // add args
+        shred->args = args;
     }
 
     // pop indent
@@ -1203,7 +1195,7 @@ if( g_bbq == NULL ) {
                 // code->name += string(argv[i]);
 
                 // spork it
-                shred = vm->spork( code, NULL );
+                shred = vm->spork( code, NULL, TRUE );
             }
             
             // pop indent

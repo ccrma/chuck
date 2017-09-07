@@ -380,19 +380,6 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Spork_External_Shred
-// desc: container for messages to spork shreds from externally compiled code
-//-----------------------------------------------------------------------------
-struct Chuck_Spork_External_Shred {
-    Chuck_VM_Code * code;
-    Chuck_VM_Shred * parent;
-    std::vector<std::string> * args;
-};
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: struct Chuck_Set_External_Int
 // desc: container for messages to set external ints
 //-----------------------------------------------------------------------------
@@ -519,9 +506,8 @@ public: // run state; 1.3.5.3
     t_CKBOOL & runningState() { return m_is_running; }
 
 public: // shreds
-    Chuck_VM_Shred * spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent );
-    t_CKBOOL spork_async( Chuck_VM_Code * code, Chuck_VM_Shred * parent, std::vector<std::string> * args );
-    Chuck_VM_Shred * fork( Chuck_VM_Code * code );
+    Chuck_VM_Shred * spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
+                            t_CKBOOL immediate = FALSE );
     Chuck_VM_Shreduler * shreduler() const;
     t_CKUINT next_id( );
 
@@ -647,7 +633,7 @@ private:
     XCircleBuffer< Chuck_Signal_External_Event > m_signal_external_event_queue;
     std::map< std::string, Chuck_VM_External_Event > m_external_event_pointers;
     
-    XCircleBuffer< Chuck_Spork_External_Shred > m_spork_external_shred_queue;
+    XCircleBuffer< Chuck_VM_Shred * > m_spork_external_shred_queue;
     
 };
 

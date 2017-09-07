@@ -4601,7 +4601,7 @@ void Chuck_Instr_Spork::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // get the code
     Chuck_VM_Code * code = *(Chuck_VM_Code **)reg_sp;
     // spork it
-    Chuck_VM_Shred * sh = vm->spork( code, shred );
+    Chuck_VM_Shred * sh = vm->spork( code, shred, TRUE );
     // pop the stack
     pop_( reg_sp, 1 );
     // get the func
