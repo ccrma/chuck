@@ -326,6 +326,15 @@ typedef t_CKBOOL (CK_DLL_CALL * f_doc_var)( Chuck_DL_Query * query, const char *
 //-----------------------------------------------------------------------------
 struct Chuck_DL_Query
 {
+protected:
+    // REFACTOR-2017: compiler ref
+    Chuck_Compiler * m_compiler_ref;
+
+public:
+    // REFACTOR-2017: get associated compiler
+    Chuck_Compiler * compiler() const { return m_compiler_ref; }
+
+public:
     // function pointers - to be called from client module
     //   QUERY->setname( QUERY, ... );
     //
@@ -367,9 +376,6 @@ struct Chuck_DL_Query
     f_doc_func doc_func;
     f_doc_var doc_var;
     f_add_example add_ex;
-    
-    // compiler - added 1.3.6
-    Chuck_Compiler * compiler_ref;
     
     // name
     std::string name;

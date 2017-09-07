@@ -148,7 +148,7 @@ void xcorr_normalize( SAMPLE * buffy, t_CKINT bs, SAMPLE * f, t_CKINT fs, SAMPLE
 //-----------------------------------------------------------------------------
 DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
 {
-    Chuck_Env * env = QUERY->compiler_ref->env();
+    Chuck_Env * env = QUERY->compiler()->env();
     Chuck_DL_Func * func = NULL;
     
     std::string doc;
