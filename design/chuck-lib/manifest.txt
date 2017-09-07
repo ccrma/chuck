@@ -1,0 +1,34 @@
+chuck engine files
+-----
+chuck.h
+chuck.cpp
+chuck_vm.h
+chuck_vm.cpp
+
+
+chuck host files
+-----
+
+
+
+TODO:
+----
+• change spork() to spork() immediate in instr and vm
+• remove serialio from chuck_vm.h
+• add setEnvRef() to chuck_vm.h
+• revisit external implementation: 
+same syntax, but use dictionary; add access/write instructions;
+• add MIDI/HID vm register/unregister in chuck.cpp
+• g_num_vms_running => ChucK::numVMrunning;
+• delete the env somewhere?
+• move static Chuck_VM_Objects to a per-VM list?
+• move Chuck_VM:setPriority() elsewhere (host?)
+• move g_t_dac
+
+TODO: Questions for Spencer
+---
+chuck_vm.h: 
+    // HACK - spencer (added 1.3.2.0)
+    // add/remove SerialIO devices to close on shred exit
+    t_CKVOID add_serialio( Chuck_IO_Serial * serial );
+    t_CKVOID remove_serialio( Chuck_IO_Serial * serial );
