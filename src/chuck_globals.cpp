@@ -45,7 +45,7 @@
 #endif // __PLATFORM_WIN32__
 
 // current version
-const char CK_VERSION[] = "1.3.5.3-rc1 (chimera)";
+const char CK_VERSION[] = "1.3.6.0-rc1 (numchuck)";
 
 // the systems
 std::list< Chuck_System * > g_systems;
