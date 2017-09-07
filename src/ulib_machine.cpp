@@ -206,7 +206,7 @@ CK_DLL_SFUN( machine_intsize_impl )
 CK_DLL_SFUN( machine_shreds_impl )
 {
     Chuck_Array4 *array = new Chuck_Array4(FALSE);
-    initialize_object(array, SHRED->vm_ref->env_ref->t_array);
+    initialize_object(array, SHRED->vm_ref->env()->t_array);
     array->clear();
     
     Chuck_VM_Status status;

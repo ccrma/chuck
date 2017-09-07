@@ -563,11 +563,20 @@ private:
     void handle_external_spork_messages();
 
 
+public:
+    // REFACTOR-2017: get associated, per-VM environment
+    Chuck_Env * env() const { return m_env_ref; }
+    void setEnv( Chuck_Env * env ) { m_env_ref = env; }
+
+
 //-----------------------------------------------------------------------------
 // data
 //-----------------------------------------------------------------------------
+protected:
+    // REFACTOR-2017: added per-VM env ref
+    Chuck_Env * m_env_ref;
+
 public:
-    Chuck_Env * env_ref;
     // ugen
     Chuck_UGen * m_adc;
     Chuck_UGen * m_dac;

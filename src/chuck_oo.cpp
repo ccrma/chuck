@@ -2157,7 +2157,7 @@ Chuck_IO_File::Chuck_IO_File( Chuck_VM * vm, Chuck_VM_Shred * shred )
     m_dir = NULL;
     m_dir_start = 0;
     m_asyncEvent = new Chuck_Event;
-    initialize_object( m_asyncEvent, vm->env_ref->t_event );
+    initialize_object( m_asyncEvent, vm->env()->t_event );
     m_thread = new XThread;
 }
 
@@ -2538,7 +2538,7 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     {
         EM_error3( "[chuck](via FileIO): cannot get list: no directory open" );
         Chuck_Array4 *ret = new Chuck_Array4( TRUE, 0 );
-        initialize_object( ret, m_vmRef->env_ref->t_array );
+        initialize_object( ret, m_vmRef->env()->t_array );
         return ret;
     }
     
@@ -2549,7 +2549,7 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     while( (ent = readdir( m_dir )) ) // fixed 1.3.0.0: removed warning
     {
         // not sure whether m_shredRef is NULL, so pass both shred and vm
-        Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( m_vmRef->env_ref->t_string, m_shredRef, m_vmRef );
+        Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( m_vmRef->env()->t_string, m_shredRef, m_vmRef );
         s->set( std::string( ent->d_name ) );
         if ( s->get() != ".." && s->get() != "." )
         {
@@ -2560,7 +2560,7 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     
     // make array
     Chuck_Array4 *array = new Chuck_Array4( true, entrylist.size() );
-    initialize_object( array, m_vmRef->env_ref->t_array );
+    initialize_object( array, m_vmRef->env()->t_array );
     for ( int i = 0; i < entrylist.size(); i++ )
         array->set( i, (t_CKUINT) entrylist[i] );
     return array;
@@ -3087,7 +3087,7 @@ Chuck_IO_Chout * Chuck_IO_Chout::getInstance( Chuck_VM * vm )
         // ref count
         our_chouts[vm]->add_ref();
         // initialize object (added 1.3.0.0)
-        initialize_object( our_chouts[vm], vm->env_ref->t_chout );
+        initialize_object( our_chouts[vm], vm->env()->t_chout );
         // lock so it can't be deleted
         our_chouts[vm]->lock();
     }
@@ -3212,7 +3212,7 @@ Chuck_IO_Cherr * Chuck_IO_Cherr::getInstance( Chuck_VM * vm )
         // add rev
         our_cherrs[vm]->add_ref();
         // initialize (added 1.3.0.0)
-        initialize_object( our_cherrs[vm], vm->env_ref->t_cherr );
+        initialize_object( our_cherrs[vm], vm->env()->t_cherr );
         // lock so can't be deleted conventionally
         our_cherrs[vm]->lock();
     }
