@@ -351,7 +351,6 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     // log
     EM_log( CK_LOG_SEVERE, "initializing 'dac'..." );
     // allocate dac and adc
-    env_ref->t_array;
     env_ref->t_dac->ugen_info->num_outs =
         env_ref->t_dac->ugen_info->num_ins = m_num_dac_channels;
     m_dac = (Chuck_UGen *)instantiate_and_initialize_object( env_ref->t_dac, this );
