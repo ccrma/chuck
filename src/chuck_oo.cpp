@@ -2150,6 +2150,8 @@ Chuck_IO::~Chuck_IO()
 //-----------------------------------------------------------------------------
 Chuck_IO_File::Chuck_IO_File( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
+    m_vmRef = vm;
+    m_shredRef = shred;
     // zero things out
     m_flags = 0;
     m_iomode = MODE_SYNC;
