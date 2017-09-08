@@ -47,7 +47,7 @@
 //-----------------------------------------------------------------------------
 typedef enum {
     // general types
-    te_int, te_uint, te_single, te_float, te_double, te_time, te_dur,
+    te_none = 0, te_int, te_uint, te_single, te_float, te_double, te_time, te_dur,
     te_complex, te_polar, te_string, te_thread, te_shred, te_class,
     te_function, te_object, te_user, te_array, te_null, te_ugen, te_uana, 
     te_event, te_void, te_stdout, te_stderr, te_adc, te_dac, te_bunghole, 
