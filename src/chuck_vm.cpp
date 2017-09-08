@@ -126,11 +126,10 @@ public:
 // name: Chuck_VM()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_VM::Chuck_VM( Chuck_Carrier * carrier )
+Chuck_VM::Chuck_VM()
 {
     // REFACTOR-2017: add carrier
-    m_carrier = carrier;
-    m_carrier->vm = this;
+    m_carrier = NULL;
     
     m_shreds = NULL;
     m_num_shreds = 0;

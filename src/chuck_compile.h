@@ -66,6 +66,8 @@ public: // get protected data
     Chuck_VM * vm() const { return m_carrier->vm; }
     // REFACTOR-2017: get associated, per-compiler carrier
     Chuck_Carrier * carrier() const { return m_carrier; }
+    // set carrier
+    t_CKBOOL setCarrier( Chuck_Carrier * c ) { m_carrier = c; return TRUE; }
 
     
 public: // data
@@ -85,7 +87,7 @@ public: // data
     
 public: // to all
     // contructor
-    Chuck_Compiler( Chuck_Carrier * carrier );
+    Chuck_Compiler();
     // destructor
     virtual ~Chuck_Compiler();
 

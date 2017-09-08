@@ -485,13 +485,14 @@ struct Chuck_VM : Chuck_Object
 // functions
 //-----------------------------------------------------------------------------
 public:
-    Chuck_VM( Chuck_Carrier * carrier );
+    Chuck_VM();
     ~Chuck_VM();
 
 public: // init
     t_CKBOOL initialize( t_CKUINT srate, t_CKUINT dac_chan, t_CKUINT adc_chan,
                          t_CKUINT adaptive, t_CKBOOL halt );
     t_CKBOOL initialize_synthesis( );
+    t_CKBOOL setCarrier( Chuck_Carrier * c ) { m_carrier = c; return TRUE; }
     t_CKBOOL shutdown();
     t_CKBOOL has_init() { return m_init; }
 

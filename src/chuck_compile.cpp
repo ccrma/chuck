@@ -74,15 +74,14 @@ t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query que
 // name: Chuck_Compiler()
 // desc: constructor
 //-----------------------------------------------------------------------------
-Chuck_Compiler::Chuck_Compiler( Chuck_Carrier * carrier )
+Chuck_Compiler::Chuck_Compiler()
 {
     m_env_ref = NULL;
     emitter = NULL;
     code = NULL;
     
     // REFACTOR-2017: add carrier
-    m_carrier = carrier;
-    m_carrier->compiler = this;
+    m_carrier = NULL;
 }
 
 
