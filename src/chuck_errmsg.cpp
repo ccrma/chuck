@@ -35,6 +35,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <sstream>
+#include <iostream>
 #include "chuck_utils.h"
 #include "chuck_errmsg.h"
 #include "util_thread.h"
@@ -57,8 +58,6 @@ static size_t g_lasterrorIndex = strlen(g_lasterror);
 int g_loglevel = CK_LOG_CORE;
 int g_logstack = 0;
 XMutex g_logmutex;
-
-#ifdef EXTERNAL_DEBUG_CALLBACK
 
 // more local globals
 static const size_t g_buffer2_size = 1024;
@@ -104,28 +103,43 @@ void ck_fprintf_stderr( const char * format, ... )
 
 void ck_fflush_stdout()
 {
-    if( g_stdout_callback == NULL ) { return; }
-
     // check if stream contains a newline
     if( g_stdout_stream.str().find( '\n' ) != std::string::npos )
     {
-        // if so, emit to callback
-        g_stdout_callback( g_stdout_stream.str().c_str() );
+        // if so, print it
+        if( g_stdout_callback == NULL ) {
+            // send to stdout
+            fprintf( stdout, "%s", g_stdout_stream.str().c_str() );
+        }
+        else
+        {
+            // emit to callback
+            g_stdout_callback( g_stdout_stream.str().c_str() );
+        }
         // and clear buffer
         g_stdout_stream.str( std::string() );
+        
     }
 }
 
 
 void ck_fflush_stderr()
 {
-    if( g_stderr_callback == NULL ) { return; }
-    
     // check if stream contains a newline
     if( g_stderr_stream.str().find( '\n' ) != std::string::npos )
     {
-        // if so, emit to callback
-        g_stderr_callback( g_stderr_stream.str().c_str() );
+        // if so, print it
+        if( g_stderr_callback == NULL )
+        {
+            // send to stderr
+            fprintf( stderr, "%s", g_stderr_stream.str().c_str() );
+        }
+        else
+        {
+            // emit to callback
+            g_stderr_callback( g_stderr_stream.str().c_str() );
+        }
+
         // and clear buffer
         g_stderr_stream.str( std::string() );
     }
@@ -134,8 +148,6 @@ void ck_fflush_stderr()
 
 void ck_vfprintf_stdout( const char * format, va_list args )
 {
-    if( g_stdout_callback == NULL ) { return; }
-    
     // evaluate the format string
     vsnprintf( g_buffer2, g_buffer2_size, format, args );
     
@@ -149,8 +161,6 @@ void ck_vfprintf_stdout( const char * format, va_list args )
 
 void ck_vfprintf_stderr( const char * format, va_list args )
 {
-    if( g_stderr_callback == NULL ) { return; }
-    
     // evaluate the format string
     vsnprintf( g_buffer2, g_buffer2_size, format, args );
     
@@ -183,9 +193,10 @@ void ck_set_stderr_callback( void (*callback)(const char *) )
 #ifdef __cplusplus
 extern "C++" {
 
-ChuckOutStream::ChuckOutStream()
+ChuckOutStream::ChuckOutStream( bool isErr )
 {
     m_callback = NULL;
+    m_isErr = isErr;
 }
 
 
@@ -290,19 +301,36 @@ void ChuckOutStream::flush()
     {
         // send to callback
         m_callback( m_stream.str().c_str() );
-        // clear buffer
-        m_stream.str( std::string() );
     }
+    else
+    {
+        // print it
+        if( m_isErr )
+        {
+            // to cerr
+            std::cerr << m_stream.str().c_str();
+            std::cerr.flush();
+        }
+        else
+        {
+            // to cout
+            std::cout << m_stream.str().c_str();
+            std::cout.flush();
+        }
+    }
+    // clear buffer
+    m_stream.str( std::string() );
 }
 
 
-ChuckOutStream g_ck_stdoutstream;
-ChuckOutStream g_ck_stderrstream;
+ChuckOutStream g_ck_stdoutstream( FALSE );
+ChuckOutStream g_ck_stderrstream( TRUE );
 
 }
 #endif
 
-#endif
+
+
 
 // name
 static const char * g_str[] = {

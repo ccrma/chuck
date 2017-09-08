@@ -40,11 +40,10 @@
 #include <map>
 #include <queue>
 #include <fstream>
+#include <sstream>
 #include "util_thread.h" // added 1.3.0.0
 
-#ifdef EXTERNAL_DEBUG_CALLBACK
-#include <sstream>
-#endif
+
 
 
 #ifndef __PLATFORM_WIN32__
@@ -644,7 +643,6 @@ public:
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
 
-#ifdef EXTERNAL_DEBUG_CALLBACK
 public:
     // set callback
     static void set_output_callback( void (* fp)(const char *) );
@@ -654,7 +652,6 @@ private:
     static void (* m_callback)(const char *);
     // intermediate line storage
     static std::stringstream m_buffer;
-#endif
 };
 
 
@@ -697,7 +694,6 @@ public:
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
 
-#ifdef EXTERNAL_DEBUG_CALLBACK
 public:
     // set callback
     static void set_output_callback( void (* fp)(const char *) );
@@ -707,7 +703,6 @@ private:
     static void (* m_callback)(const char *);
     // intermediate line storage
     static std::stringstream m_buffer;
-#endif
 };
 
 

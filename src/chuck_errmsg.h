@@ -67,7 +67,6 @@ void EM_newline( );
 #define CK_LOG_NONE             0  // set this to log nothing
 
 // printing
-#ifdef EXTERNAL_DEBUG_CALLBACK
 void ck_fprintf_stdout( const char * format, ... );
 void ck_fprintf_stderr( const char * format, ... );
 void ck_fflush_stdout();
@@ -94,7 +93,7 @@ extern "C++" {
 class ChuckOutStream
 {
 public:
-    ChuckOutStream();
+    ChuckOutStream( bool isErr );
     ~ChuckOutStream();
 
     // there's probably a way to do this with templates or something
@@ -117,6 +116,7 @@ private:
     void flush();
     std::stringstream m_stream;
     void (*m_callback)(const char *);
+    bool m_isErr;
 };
 
 
@@ -136,18 +136,6 @@ extern ChuckOutStream g_ck_stderrstream;
 
 #endif
 
-#else
-
-#define CK_FPRINTF_STDOUT(...) fprintf(stdout, __VA_ARGS__)
-#define CK_FPRINTF_STDERR(...) fprintf(stderr, __VA_ARGS__)
-#define CK_FFLUSH_STDOUT() fflush(stdout)
-#define CK_FFLUSH_STDERR() fflush(stderr)
-#define CK_VFPRINTF_STDOUT(message, ap) vfprintf(stdout, message, ap)
-#define CK_VFPRINTF_STDERR(message, ap) vfprintf(stderr, message, ap)
-#define CK_STDCOUT std::cout
-#define CK_STDCERR std::cerr
-#define CK_STDENDL std::endl
-#endif
 
 void EM_log( int, c_constr, ... );
 void EM_setlog( int );

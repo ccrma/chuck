@@ -5,8 +5,7 @@
             - specify the sample rate
             - optionally specify the directory that me.dir() should evaluate to;
               this dir will also be scanned for chugins
-            - optionally use the EXTERNAL_DEBUG_CALLBACK compiler flag. if enabled,
-              allows custom callbacks for out and err messages from ChucK
+            - optionally use custom callbacks for out and err messages from ChucK
   - (added) external keyword - for communicating variable values to and from
             C++ code using Chuck_External API
   - (added) c_str() method for Chuck_Strings, so that chugins with a different
