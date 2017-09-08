@@ -459,13 +459,13 @@ public:
     Chuck_String( const std::string & s = "" ) { set( s ); }
     ~Chuck_String() { }
 
-    void set( const std::string & s ) { str = s; charptr = str.c_str(); }
-    const std::string & get() { return str; }
-    const char * c_str() { return charptr; }
+    void set( const std::string & s ) { m_str = s; m_charptr = m_str.c_str(); }
+    const std::string & str() { return m_str; }
+    const char * c_str() { return m_charptr; }
 
 private:
-    const char * charptr;
-    std::string str;
+    const char * m_charptr;
+    std::string m_str;
 };
 
 
@@ -531,7 +531,7 @@ public:
 struct Chuck_IO_File : Chuck_IO
 {
 public:
-    Chuck_IO_File( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    Chuck_IO_File( Chuck_VM * vm );
     virtual ~Chuck_IO_File();
     
 public:
@@ -603,7 +603,6 @@ protected:
     std::string m_path;
     // vm and shred
     Chuck_VM * m_vmRef;
-    Chuck_VM_Shred * m_shredRef;
 };
 
 

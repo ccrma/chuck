@@ -2148,10 +2148,9 @@ Chuck_IO::~Chuck_IO()
 // name: Chuck_IO_File()
 // desc: constructor
 //-----------------------------------------------------------------------------
-Chuck_IO_File::Chuck_IO_File( Chuck_VM * vm, Chuck_VM_Shred * shred )
+Chuck_IO_File::Chuck_IO_File( Chuck_VM * vm )
 {
     m_vmRef = vm;
-    m_shredRef = shred;
     // zero things out
     m_flags = 0;
     m_iomode = MODE_SYNC;
@@ -2550,8 +2549,8 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     struct dirent *ent;
     while( (ent = readdir( m_dir )) ) // fixed 1.3.0.0: removed warning
     {
-        // not sure whether m_shredRef is NULL, so pass both shred and vm
-        Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( m_vmRef->env()->t_string, m_shredRef, m_vmRef );
+        // pass NULL as shred ref
+        Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( m_vmRef->env()->t_string, NULL, m_vmRef );
         s->set( std::string( ent->d_name ) );
         if ( s->get() != ".." && s->get() != "." )
         {
