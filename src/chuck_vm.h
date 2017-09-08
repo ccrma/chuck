@@ -485,7 +485,7 @@ struct Chuck_VM : Chuck_Object
 // functions
 //-----------------------------------------------------------------------------
 public:
-    Chuck_VM();
+    Chuck_VM( Chuck_Carrier * carrier );
     ~Chuck_VM();
 
 public: // init
@@ -565,8 +565,7 @@ private:
 
 public:
     // REFACTOR-2017: get associated, per-VM environment
-    Chuck_Env * env() const { return m_env_ref; }
-    void setEnv( Chuck_Env * env ) { m_env_ref = env; }
+    Chuck_Env * env() const { return m_carrier->env; }
 
 
 //-----------------------------------------------------------------------------
@@ -574,7 +573,7 @@ public:
 //-----------------------------------------------------------------------------
 protected:
     // REFACTOR-2017: added per-VM env ref
-    Chuck_Env * m_env_ref;
+    Chuck_Carrier * m_carrier;
 
 public:
     // ugen

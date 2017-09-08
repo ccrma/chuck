@@ -1017,7 +1017,7 @@ bool Chuck_System::go( int argc, const char ** argv, t_CKBOOL clientMode )
 //------------------------- VIRTUAL MACHINE SETUP -----------------------------
     
     // allocate the vm - needs the type system
-    vm = m_vmRef = new Chuck_VM;
+    vm = m_vmRef = new Chuck_VM( &m_carrier );
     // ge: refactor 2015: initialize VM
     if( !vm->initialize( srate, dac_chans, adc_chans, adaptive_size, vm_halt ) )
     {
@@ -1092,9 +1092,9 @@ if( g_bbq == NULL ) {
     }
     
     // allocate the compiler
-    compiler = m_compilerRef = new Chuck_Compiler;
+    compiler = m_compilerRef = new Chuck_Compiler( &m_carrier );
     // initialize the compiler (search_apth and named_dls added 1.3.0.0 -- TODO: refactor)
-    if( !compiler->initialize( vm, dl_search_path, named_dls ) )
+    if( !compiler->initialize( dl_search_path, named_dls ) )
     {
         CK_FPRINTF_STDERR( "[chuck]: error initializing compiler...\n" );
         exit( 1 );

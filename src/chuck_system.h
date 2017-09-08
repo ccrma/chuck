@@ -112,6 +112,9 @@ protected:
     bool m_initOnly;
     // another dir to look for chugins and me.dir() for compiled code
     std::string m_dataDir;
+protected:
+    // REFACTOR-2017: my carrier
+    Chuck_Carrier m_carrier;
 };
 
 

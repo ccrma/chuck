@@ -103,7 +103,7 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
             return;
         }
         
-        Chuck_Type * ck_parent_type = type_engine_find_type( query->compiler()->env(), parent_path );
+        Chuck_Type * ck_parent_type = type_engine_find_type( query->env(), parent_path );
         
         delete_id_list( parent_path );
         
@@ -292,7 +292,7 @@ t_CKUINT CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query,
         return CK_INVALID_OFFSET;
     }
     
-    Chuck_Type * ck_type = type_engine_find_type( query->compiler()->env(), path );
+    Chuck_Type * ck_type = type_engine_find_type( query->env(), path );
     
     delete_id_list( path );
     
@@ -480,8 +480,8 @@ void CK_DLL_CALL ck_add_ugen_funcf_auto_num_channels( Chuck_DL_Query * query,
     f_tickf ugen_tickf, f_pmsg ugen_pmsg )
 {
     ck_add_ugen_funcf( query, ugen_tickf, ugen_pmsg,
-        query->compiler()->vm()->m_num_adc_channels,
-        query->compiler()->vm()->m_num_dac_channels
+        query->vm()->m_num_adc_channels,
+        query->vm()->m_num_dac_channels
     );
 }
 
@@ -535,7 +535,7 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
     // 1.3.2.0: import class into type engine if at top level
     if( query->stack.size() == 1 ) // top level class
     {
-        if( !type_engine_add_class_from_dl( query->compiler()->env(), query->curr_class ) )
+        if( !type_engine_add_class_from_dl( query->env(), query->curr_class ) )
         {
             EM_log(CK_LOG_SEVERE, "[chuck](DL): error importing class '%s' into type engine",
                    query->curr_class->name.c_str());
@@ -569,9 +569,9 @@ Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query
                                                           void * bindle )
 {
     assert( query->compiler() );
-    assert( query->compiler()->vm() );
+    assert( query->vm() );
     
-    return new Chuck_DL_MainThreadHook( hook, quit, bindle, query->compiler()->vm() );
+    return new Chuck_DL_MainThreadHook( hook, quit, bindle, query->vm() );
 }
 
 //-----------------------------------------------------------------------------
@@ -934,7 +934,7 @@ const char * Chuck_DLL::name() const
 // name: Chuck_DL_Query
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_DL_Query::Chuck_DL_Query( Chuck_Compiler * compiler )
+Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
 {
     // set the pointers to functions so the module can call
     setname = ck_setname;
@@ -955,7 +955,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Compiler * compiler )
     doc_class = ck_doc_class;
     doc_func = ck_doc_func;
     doc_var = ck_doc_var;
-    m_compiler_ref = compiler;
+    m_carrier = carrier;
     
 //    memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
     

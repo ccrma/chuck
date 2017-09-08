@@ -61,7 +61,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     
     std::string doc;
     
-    Chuck_Env * env = QUERY->compiler()->env();
+    Chuck_Env * env = QUERY->env();
 
     Chuck_DL_Func * func = NULL;
 

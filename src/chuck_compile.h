@@ -56,14 +56,16 @@ struct Chuck_Compiler
 protected: // data
     // type-checking environment
     Chuck_Env * m_env_ref;
-    // vm
-    Chuck_VM * m_vm_ref;
+    // carrier
+    Chuck_Carrier * m_carrier;
     
 public: // get protected data
     // REFACTOR-2017: get associated, per-compiler environment
     Chuck_Env * env() const { return m_env_ref; }
     // REFACTOR-2017: get associated, per-compiler VM
-    Chuck_VM * vm() const { return m_vm_ref; }
+    Chuck_VM * vm() const { return m_carrier->vm; }
+    // REFACTOR-2017: get associated, per-compiler carrier
+    Chuck_Carrier * carrier() const { return m_carrier; }
 
     
 public: // data
@@ -83,13 +85,12 @@ public: // data
     
 public: // to all
     // contructor
-    Chuck_Compiler();
+    Chuck_Compiler( Chuck_Carrier * carrier );
     // destructor
     virtual ~Chuck_Compiler();
 
     // initialize
-    t_CKBOOL initialize( Chuck_VM * vm, 
-                         std::list<std::string> & chugin_search_paths, 
+    t_CKBOOL initialize( std::list<std::string> & chugin_search_paths,
                          std::list<std::string> & named_dls );
     // shutdown
     void shutdown();

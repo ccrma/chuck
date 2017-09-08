@@ -53,7 +53,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     // srate
     g_srate = QUERY->srate;
     // get the env
-    Chuck_Env * env = QUERY->compiler()->env();
+    Chuck_Env * env = QUERY->env();
 
     Chuck_DL_Func * func = NULL;
 
@@ -912,7 +912,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     // srate
     g_srate = QUERY->srate;
     // get the env
-    Chuck_Env * env = QUERY->compiler()->env();
+    Chuck_Env * env = QUERY->env();
     std::string doc;
     Chuck_DL_Func * func = NULL;
     

@@ -74,11 +74,15 @@ t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query que
 // name: Chuck_Compiler()
 // desc: constructor
 //-----------------------------------------------------------------------------
-Chuck_Compiler::Chuck_Compiler()
+Chuck_Compiler::Chuck_Compiler( Chuck_Carrier * carrier )
 {
     m_env_ref = NULL;
     emitter = NULL;
     code = NULL;
+    
+    // REFACTOR-2017: add carrier
+    m_carrier = carrier;
+    m_carrier->compiler = this;
 }
 
 
@@ -101,19 +105,16 @@ Chuck_Compiler::~Chuck_Compiler()
 // name: initialize()
 // desc: initialize the compiler
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm, 
-                                     std::list<std::string> & chugin_search_paths,
+t_CKBOOL Chuck_Compiler::initialize( std::list<std::string> & chugin_search_paths,
                                      std::list<std::string> & named_dls )
 {
     // log
     EM_log( CK_LOG_SYSTEM, "initializing compiler..." );
     // push indent level
     EM_pushlog();
-    
-    m_vm_ref = vm;
 
     // allocate the type checker
-    m_env_ref = type_engine_init( vm );
+    m_env_ref = type_engine_init( m_carrier );
     // add reference
     m_env_ref->add_ref();
     
@@ -575,7 +576,7 @@ t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query que
     t_CKBOOL query_failed = FALSE;
     
     // load osc
-    dll = new Chuck_DLL( compiler, name );
+    dll = new Chuck_DLL( compiler->carrier(), name );
     // (fixed: 1.3.0.0) query_failed now catches either failure of load or query
     if( (query_failed = !(dll->load( query ) && dll->query())) ||
         !type_engine_add_dll( env, dll, nspc ) )
@@ -694,7 +695,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
     
     EM_log(CK_LOG_SEVERE, "loading chugin '%s'", name);
     
-    Chuck_DLL * dll = new Chuck_DLL( compiler, name );
+    Chuck_DLL * dll = new Chuck_DLL( compiler->carrier(), name );
     t_CKBOOL query_failed = FALSE;
     
     if((query_failed = !(dll->load(dl_path) && dll->query())) ||

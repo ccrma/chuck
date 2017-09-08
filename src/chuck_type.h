@@ -799,7 +799,7 @@ struct Chuck_Func : public Chuck_VM_Object
 // primary chuck type checker interface
 //-----------------------------------------------------------------------------
 // initialize the type engine
-Chuck_Env * type_engine_init( Chuck_VM * vm );
+Chuck_Env * type_engine_init( Chuck_Carrier * carrier );
 // shutdown the type engine
 void type_engine_shutdown( Chuck_Env * env );
 // load a context to be type-checked or emitted

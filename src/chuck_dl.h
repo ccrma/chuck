@@ -39,6 +39,7 @@
 
 #include "chuck_def.h"
 #include "chuck_oo.h"
+#include "chuck_carrier.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -327,12 +328,14 @@ typedef t_CKBOOL (CK_DLL_CALL * f_doc_var)( Chuck_DL_Query * query, const char *
 struct Chuck_DL_Query
 {
 protected:
-    // REFACTOR-2017: compiler ref
-    Chuck_Compiler * m_compiler_ref;
+    // REFACTOR-2017: carrier ref
+    Chuck_Carrier * m_carrier;
 
 public:
-    // REFACTOR-2017: get associated compiler
-    Chuck_Compiler * compiler() const { return m_compiler_ref; }
+    // REFACTOR-2017: get associated compiler, vm, env
+    Chuck_Compiler * compiler() const { return m_carrier->compiler; }
+    Chuck_VM * vm() const { return m_carrier->vm; }
+    Chuck_Env * env() const { return m_carrier->env; }
 
 public:
     // function pointers - to be called from client module
@@ -402,7 +405,7 @@ public:
     int linepos;
     
     // constructor
-    Chuck_DL_Query( Chuck_Compiler * compiler );
+    Chuck_DL_Query( Chuck_Carrier * carrier );
     // desctructor
     ~Chuck_DL_Query() { this->clear(); }
     // clear
@@ -590,9 +593,9 @@ public:
     
 public:
     // constructor
-    Chuck_DLL( Chuck_Compiler * compiler, const char * xid = NULL )
+    Chuck_DLL( Chuck_Carrier * carrier, const char * xid = NULL )
         : m_handle(NULL), m_id(xid ? xid : ""),
-        m_query( compiler ),
+        m_query( carrier ),
         m_done_query(FALSE), m_query_func(NULL), m_version_func(NULL)
     { }
     // destructor

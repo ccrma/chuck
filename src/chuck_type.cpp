@@ -260,7 +260,7 @@ Chuck_Env::~Chuck_Env()
 // name: type_engine_init()
 // desc: initialize a type engine
 //-----------------------------------------------------------------------------
-Chuck_Env * type_engine_init( Chuck_VM * vm )
+Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
 {
     // log
     EM_log( CK_LOG_SEVERE, "initializing type checker..." );
@@ -269,12 +269,13 @@ Chuck_Env * type_engine_init( Chuck_VM * vm )
 
     // allocate a new env
     Chuck_Env * env = Chuck_Env::new_instance();
-    // store in vm
-    vm->setEnv( env );
     // set the name of global namespace
     env->global()->name = "global";
     // set the current namespace to global
     env->curr = env->global();
+    
+    // REFACTOR-2017: store env in carrier
+    carrier->env = env;
 
     // enter the default global type mapping : lock VM objects to catch deletion
     env->global()->type.add( env->t_void->name, env->t_void );          env->t_void->lock();
@@ -305,7 +306,7 @@ Chuck_Env * type_engine_init( Chuck_VM * vm )
     // dur value
     t_CKDUR samp = 1.0;
     // TODO:
-    t_CKDUR second = vm->srate() * samp;
+    t_CKDUR second = carrier->vm->srate() * samp;
     // t_CKDUR second = 44100 * samp;
     t_CKDUR ms = second / 1000.0;
     t_CKDUR minute = second * 60.0;
@@ -357,8 +358,9 @@ Chuck_Env * type_engine_init( Chuck_VM * vm )
     env->global()->value.add( "maybe", new Chuck_Value( env->t_int, "maybe", new t_CKFLOAT(.5), FALSE ) );
     env->global()->value.add( "pi", new Chuck_Value( env->t_float, "pi", new t_CKFLOAT(ONE_PI), TRUE ) );
     env->global()->value.add( "global", new Chuck_Value( env->t_class, "global", env->global(), TRUE ) );
-    env->global()->value.add( "chout", new Chuck_Value( env->t_io, "chout", Chuck_IO_Chout::getInstance( vm ), TRUE ) );
-    env->global()->value.add( "cherr", new Chuck_Value( env->t_io, "cherr", Chuck_IO_Cherr::getInstance( vm ), TRUE ) );
+    // TODO: Add Chuck_IO_Chout and Cherr to the carrier - this is where they are constructed, I think!
+    env->global()->value.add( "chout", new Chuck_Value( env->t_io, "chout", Chuck_IO_Chout::getInstance( carrier->vm ), TRUE ) );
+    env->global()->value.add( "cherr", new Chuck_Value( env->t_io, "cherr", Chuck_IO_Cherr::getInstance( carrier->vm ), TRUE ) );
 
     // TODO: can't use the following now is local to shred
     // env->global()->value.add( "now", new Chuck_Value( env->t_time, "now", &(vm->shreduler()->now_system), TRUE ) );
