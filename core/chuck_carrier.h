@@ -61,6 +61,15 @@ struct Chuck_Carrier
     Chuck_VM * vm;
     Chuck_IO_Chout * chout;
     Chuck_IO_Cherr * cherr;
+    
+    // constructor
+    Chuck_Carrier() :
+        compiler( NULL ),
+        env( NULL ),
+        vm( NULL ),
+        chout( NULL ),
+        cherr( NULL )
+        { }
 };
 
 

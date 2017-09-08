@@ -35,6 +35,7 @@
 #define __CHUCK_OO_H__
 
 #include "chuck_def.h"
+#include "chuck_carrier.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -621,7 +622,7 @@ protected:
 struct Chuck_IO_Chout : Chuck_IO
 {
 public:
-    Chuck_IO_Chout();
+    Chuck_IO_Chout( Chuck_Carrier * carrier );
     virtual ~Chuck_IO_Chout();
 
 public:
@@ -666,7 +667,7 @@ private:
 struct Chuck_IO_Cherr : Chuck_IO
 {
 public:
-    Chuck_IO_Cherr();
+    Chuck_IO_Cherr( Chuck_Carrier * carrier );
     virtual ~Chuck_IO_Cherr();
     
 public:

@@ -597,9 +597,11 @@ protected:
     void handle_external_spork_messages();
 
 public:
-    // REFACTOR-2017: get associated, per-VM environment
+    // REFACTOR-2017: get associated, per-VM environment, chout, cherr
     Chuck_Carrier * carrier() const { return m_carrier; }
     Chuck_Env * env() const { return m_carrier->env; }
+    Chuck_IO_Chout * chout() const { return m_carrier->chout; }
+    Chuck_IO_Cherr * cherr() const { return m_carrier->cherr; }
 
 
 //-----------------------------------------------------------------------------
