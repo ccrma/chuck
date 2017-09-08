@@ -6565,7 +6565,7 @@ void Chuck_Instr_Bunghole::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 void Chuck_Instr_Chout::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-    push_( reg_sp, (t_CKUINT)vm->carrier()->chout );
+    push_( reg_sp, (t_CKUINT)vm->chout() );
 }
 
 
@@ -6578,7 +6578,7 @@ void Chuck_Instr_Chout::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 void Chuck_Instr_Cherr::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-    push_( reg_sp, (t_CKUINT)vm->carrier()->cherr );
+    push_( reg_sp, (t_CKUINT)vm->cherr() );
 }
 
 
