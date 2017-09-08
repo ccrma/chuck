@@ -34,7 +34,8 @@
 
 #include "chuck_oo.h"
 #include "chuck_ugen.h"
-#include "x-buffer.h"
+#include "chuck_carrier.h"
+#include "util_buffer.h"
 
 // tracking
 #ifdef __CHUCK_STAT_TRACK__
@@ -517,6 +518,7 @@ public: // init
     t_CKBOOL initialize( t_CKUINT srate, t_CKUINT dac_chan, t_CKUINT adc_chan,
                          t_CKUINT adaptive, t_CKBOOL halt );
     t_CKBOOL initialize_synthesis( );
+    t_CKBOOL setCarrier( Chuck_Carrier * c ) { m_carrier = c; return TRUE; }
     t_CKBOOL shutdown();
     t_CKBOOL has_init() { return m_init; }
 
@@ -596,15 +598,16 @@ protected:
 
 public:
     // REFACTOR-2017: get associated, per-VM environment
-    Chuck_Env * env() const { return m_env_ref; }
+    Chuck_Carrier * carrier() const { return m_carrier; }
+    Chuck_Env * env() const { return m_carrier->env; }
 
 
 //-----------------------------------------------------------------------------
 // data
 //-----------------------------------------------------------------------------
 protected:
-    // REFACTOR-2017: added per-VM env ref
-    Chuck_Env * m_env_ref;
+    // REFACTOR-2017: added per-ChucK carrier
+    Chuck_Carrier * m_carrier;
     
 public:
     // ugen

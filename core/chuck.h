@@ -40,6 +40,7 @@
 #include "chuck_compile.h"
 #include "chuck_dl.h"
 #include "chuck_vm.h"
+#include "chuck_carrier.h"
 #include <string>
 
 
@@ -97,9 +98,9 @@ public:
 
 public:
     // get VM (dangerous)
-    Chuck_VM * vm() { return m_vmRef; }
+    Chuck_VM * vm() { return m_carrier->vm; }
     // get compiler (dangerous)
-    Chuck_Compiler * compiler() { return m_compilerRef; }
+    Chuck_Compiler * compiler() { return m_carrier->compiler; }
 
 protected:
     // initialize
@@ -115,10 +116,8 @@ protected:
     static t_CKUINT o_numVMs;
     
 protected:
-    // virtual machine reference
-    Chuck_VM * m_vmRef;
-    // compiler reference
-    Chuck_Compiler * m_compilerRef;
+    // core elements: compiler, VM, etc.
+    Chuck_Carrier * m_carrier;
 };
 
 
