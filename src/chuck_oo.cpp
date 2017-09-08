@@ -62,8 +62,6 @@ const t_CKINT Chuck_IO_File::FLAG_WRITEONLY = 0x20;
 const t_CKINT Chuck_IO_File::FLAG_APPEND = 0x40;
 const t_CKINT Chuck_IO_File::TYPE_ASCII = 0x80;
 const t_CKINT Chuck_IO_File::TYPE_BINARY = 0x100;
-std::map< Chuck_VM *, Chuck_IO_Chout * > Chuck_IO_Chout::our_chouts;
-std::map< Chuck_VM *, Chuck_IO_Cherr * > Chuck_IO_Cherr::our_cherrs;
 void (* Chuck_IO_Chout::m_callback)(const char *) = NULL;
 void (* Chuck_IO_Cherr::m_callback)(const char *) = NULL;
 std::stringstream Chuck_IO_Chout::m_buffer;
@@ -3074,34 +3072,18 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
     return (THREAD_RETURN)0;
 }
 
-Chuck_IO_Chout::Chuck_IO_Chout() { }
+Chuck_IO_Chout::Chuck_IO_Chout( Chuck_Carrier * carrier ) {
+    // store
+    carrier->chout = this;
+    // add ref
+    this->add_ref();
+    // initialize (added 1.3.0.0)
+    initialize_object( this, carrier->env->t_chout );
+    // lock so can't be deleted conventionally
+    this->lock();
+}
+
 Chuck_IO_Chout::~Chuck_IO_Chout() { }
-Chuck_IO_Chout * Chuck_IO_Chout::getInstance( Chuck_VM * vm )
-{
-    // check
-    if( our_chouts.count( vm ) == 0 )
-    {
-        // allocate (TODO: clean up? this was never explicitly cleaned up when it was just one either)
-        our_chouts[vm] = new Chuck_IO_Chout;
-        // ref count
-        our_chouts[vm]->add_ref();
-        // initialize object (added 1.3.0.0)
-        initialize_object( our_chouts[vm], vm->env()->t_chout );
-        // lock so it can't be deleted
-        our_chouts[vm]->lock();
-    }
-
-    return our_chouts[vm];
-}
-
-void Chuck_IO_Chout::cleanupInstance( Chuck_VM * vm )
-{
-    if( our_chouts.count( vm ) > 0 )
-    {
-        SAFE_RELEASE( our_chouts[vm] );
-        our_chouts.erase( vm );
-    }
-}
 
 void Chuck_IO_Chout::set_output_callback( void (*fp)(const char *) )
 {
@@ -3180,34 +3162,18 @@ void Chuck_IO_Chout::write( t_CKFLOAT val )
 }
 
 
-Chuck_IO_Cherr::Chuck_IO_Cherr() { }
+Chuck_IO_Cherr::Chuck_IO_Cherr( Chuck_Carrier * carrier ) {
+    // store
+    carrier->cherr = this;
+    // add ref
+    this->add_ref();
+    // initialize (added 1.3.0.0)
+    initialize_object( this, carrier->env->t_cherr );
+    // lock so can't be deleted conventionally
+    this->lock();
+}
+
 Chuck_IO_Cherr::~Chuck_IO_Cherr() { }
-Chuck_IO_Cherr * Chuck_IO_Cherr::getInstance( Chuck_VM * vm )
-{
-    // check
-    if( our_cherrs.count( vm ) == 0 )
-    {
-        // allocate
-        our_cherrs[vm] = new Chuck_IO_Cherr;
-        // add rev
-        our_cherrs[vm]->add_ref();
-        // initialize (added 1.3.0.0)
-        initialize_object( our_cherrs[vm], vm->env()->t_cherr );
-        // lock so can't be deleted conventionally
-        our_cherrs[vm]->lock();
-    }
-
-    return our_cherrs[vm];
-}
-
-void Chuck_IO_Cherr::cleanupInstance( Chuck_VM *vm )
-{
-    if( our_cherrs.count( vm ) > 0 )
-    {
-        SAFE_RELEASE( our_cherrs[vm] );
-        our_cherrs.erase( vm );
-    }
-}
 
 void Chuck_IO_Cherr::set_output_callback( void (*fp)(const char *) )
 {

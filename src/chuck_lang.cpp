@@ -3238,32 +3238,32 @@ CK_DLL_MFUN( chout_close )
 {
     // problem
     CK_FPRINTF_STDERR( "[chuck]: cannot close 'chout'...\n" );
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->close();
 }
 
 CK_DLL_MFUN( chout_good )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     RETURN->v_int = c->good();
 }
 
 CK_DLL_MFUN( chout_flush )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->flush();
 }
 
 CK_DLL_MFUN( chout_getmode )
 {
     // problem
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     RETURN->v_int = c->mode();
 }
 
 CK_DLL_MFUN( chout_setmode )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->mode( GET_NEXT_INT(ARGS) );
     RETURN->v_int = c->mode();
 }
@@ -3281,14 +3281,14 @@ CK_DLL_MFUN( chout_setmode )
 
 CK_DLL_MFUN( chout_readline )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     Chuck_String * ret = c->readLine();
     RETURN->v_object = ret;
 }
 
 CK_DLL_MFUN( chout_readint )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     RETURN->v_int = c->readInt( Chuck_IO::INT32 );
 }
 
@@ -3296,7 +3296,7 @@ CK_DLL_MFUN( chout_readintflags )
 {    
     t_CKINT flags = GET_NEXT_INT(ARGS);
     
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     t_CKINT ret = c->readInt( flags );
     
     RETURN->v_int = ret;
@@ -3304,21 +3304,21 @@ CK_DLL_MFUN( chout_readintflags )
 
 CK_DLL_MFUN( chout_readfloat )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     t_CKFLOAT ret = c->readFloat();
     RETURN->v_float = ret;
 }
 
 CK_DLL_MFUN( chout_eof )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     t_CKBOOL ret = c->eof();
     RETURN->v_int = ret;
 }
 
 CK_DLL_MFUN( chout_more )
 {
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     t_CKBOOL ret = !c->eof();
     RETURN->v_int = ret;
 }
@@ -3327,7 +3327,7 @@ CK_DLL_MFUN( chout_writestring )
 {
     std::string val = GET_NEXT_STRING(ARGS)->str();
 
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->write( val );
 }
 
@@ -3335,7 +3335,7 @@ CK_DLL_MFUN( chout_writeint )
 {
     t_CKINT val = GET_NEXT_INT(ARGS);
     
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->write(val);
 }
 
@@ -3343,7 +3343,7 @@ CK_DLL_MFUN( chout_writefloat )
 {
     t_CKFLOAT val = GET_NEXT_FLOAT(ARGS);
     
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->write(val);
 }
 
@@ -3357,32 +3357,32 @@ CK_DLL_MFUN( cherr_close )
 {
     // problem
     CK_FPRINTF_STDERR( "[chuck]: cannot close 'cherr'...\n" );
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
+    Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     c->close();
 }
 
 CK_DLL_MFUN( cherr_good )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
+    Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     RETURN->v_int = c->good();
 }
 
 CK_DLL_MFUN( cherr_flush )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
+    Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     c->flush();
 }
 
 CK_DLL_MFUN( cherr_getmode )
 {
     // problem
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
+    Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     RETURN->v_int = c->mode();
 }
 
 CK_DLL_MFUN( cherr_setmode )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
+    Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     c->mode( GET_NEXT_INT(ARGS) );
     RETURN->v_int = c->mode();
 }
@@ -3400,14 +3400,14 @@ CK_DLL_MFUN( cherr_setmode )
 
 CK_DLL_MFUN( cherr_readline )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
+    Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     Chuck_String * ret = c->readLine();
     RETURN->v_object = ret;
 }
 
 CK_DLL_MFUN( cherr_readint )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
+    Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     RETURN->v_int = c->readInt( Chuck_IO::INT32 );
 }
 
@@ -3415,7 +3415,7 @@ CK_DLL_MFUN( cherr_readintflags )
 {    
     t_CKINT flags = GET_NEXT_INT(ARGS);
     
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
+    Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     t_CKINT ret = c->readInt( flags );
     
     RETURN->v_int = ret;
@@ -3423,21 +3423,21 @@ CK_DLL_MFUN( cherr_readintflags )
 
 CK_DLL_MFUN( cherr_readfloat )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
+    Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     t_CKFLOAT ret = c->readFloat();
     RETURN->v_float = ret;
 }
 
 CK_DLL_MFUN( cherr_eof )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
+    Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     t_CKBOOL ret = c->eof();
     RETURN->v_int = ret;
 }
 
 CK_DLL_MFUN( cherr_more )
 {
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
+    Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     t_CKBOOL ret = !c->eof();
     RETURN->v_int = ret;
 }
@@ -3446,7 +3446,7 @@ CK_DLL_MFUN( cherr_writestring )
 {
     std::string val = GET_NEXT_STRING(ARGS)->str();
     
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
+    Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     c->write( val );
 }
 
@@ -3454,7 +3454,7 @@ CK_DLL_MFUN( cherr_writeint )
 {
     t_CKINT val = GET_NEXT_INT(ARGS);
     
-    Chuck_IO_Chout * c = Chuck_IO_Chout::getInstance( SHRED->vm_ref );
+    Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->write(val);
 }
 
@@ -3462,7 +3462,7 @@ CK_DLL_MFUN( cherr_writefloat )
 {
     t_CKFLOAT val = GET_NEXT_FLOAT(ARGS);
     
-    Chuck_IO_Cherr * c = Chuck_IO_Cherr::getInstance( SHRED->vm_ref );
+    Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     c->write(val);
 }
 

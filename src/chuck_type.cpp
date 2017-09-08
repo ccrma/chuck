@@ -358,9 +358,8 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     env->global()->value.add( "maybe", new Chuck_Value( env->t_int, "maybe", new t_CKFLOAT(.5), FALSE ) );
     env->global()->value.add( "pi", new Chuck_Value( env->t_float, "pi", new t_CKFLOAT(ONE_PI), TRUE ) );
     env->global()->value.add( "global", new Chuck_Value( env->t_class, "global", env->global(), TRUE ) );
-    // TODO: Add Chuck_IO_Chout and Cherr to the carrier - this is where they are constructed, I think!
-    env->global()->value.add( "chout", new Chuck_Value( env->t_io, "chout", Chuck_IO_Chout::getInstance( carrier->vm ), TRUE ) );
-    env->global()->value.add( "cherr", new Chuck_Value( env->t_io, "cherr", Chuck_IO_Cherr::getInstance( carrier->vm ), TRUE ) );
+    env->global()->value.add( "chout", new Chuck_Value( env->t_io, "chout", new Chuck_IO_Chout( carrier ), TRUE ) );
+    env->global()->value.add( "cherr", new Chuck_Value( env->t_io, "cherr", new Chuck_IO_Cherr( carrier ), TRUE ) );
 
     // TODO: can't use the following now is local to shred
     // env->global()->value.add( "now", new Chuck_Value( env->t_time, "now", &(vm->shreduler()->now_system), TRUE ) );

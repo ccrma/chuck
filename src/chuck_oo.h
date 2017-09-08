@@ -35,6 +35,7 @@
 #define __CHUCK_OO_H__
 
 #include "chuck_def.h"
+#include "chuck_carrier.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -613,14 +614,9 @@ protected:
 //-----------------------------------------------------------------------------
 struct Chuck_IO_Chout : Chuck_IO
 {
-private:
-    Chuck_IO_Chout();
 public:
+    Chuck_IO_Chout( Chuck_Carrier * carrier );
     virtual ~Chuck_IO_Chout();
-
-    static std::map< Chuck_VM *, Chuck_IO_Chout * > our_chouts;
-    static Chuck_IO_Chout * getInstance( Chuck_VM * vm );
-    static void cleanupInstance( Chuck_VM * vm );
     
 public:
     // meta
@@ -645,10 +641,12 @@ public:
 
 public:
     // set callback
+    // TODO: make non-static
     static void set_output_callback( void (* fp)(const char *) );
     
 private:
     // callback
+    // TODO: make non-static
     static void (* m_callback)(const char *);
     // intermediate line storage
     static std::stringstream m_buffer;
@@ -663,15 +661,9 @@ private:
 //-----------------------------------------------------------------------------
 struct Chuck_IO_Cherr : Chuck_IO
 {
-private:
-    Chuck_IO_Cherr();
-
 public:
+    Chuck_IO_Cherr( Chuck_Carrier * carrier );
     virtual ~Chuck_IO_Cherr();
-    
-    static std::map< Chuck_VM *, Chuck_IO_Cherr * > our_cherrs;
-    static Chuck_IO_Cherr * getInstance( Chuck_VM * vm );
-    static void cleanupInstance( Chuck_VM * vm );
     
 public:
     // meta
@@ -696,10 +688,12 @@ public:
 
 public:
     // set callback
+    // TODO: make non-static
     static void set_output_callback( void (* fp)(const char *) );
     
 private:
     // callback
+    // TODO: make non-static
     static void (* m_callback)(const char *);
     // intermediate line storage
     static std::stringstream m_buffer;

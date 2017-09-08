@@ -420,8 +420,8 @@ t_CKBOOL Chuck_VM::shutdown()
     
     // tell chout and cherr to cleanup
     EM_log( CK_LOG_SYSTEM, "freeing chout and cherr instances..." );
-    Chuck_IO_Chout::cleanupInstance( this );
-    Chuck_IO_Cherr::cleanupInstance( this );
+    SAFE_RELEASE( m_carrier->chout );
+    SAFE_RELEASE( m_carrier->cherr );
     
     // tell HidInManager to cleanup
     EM_log( CK_LOG_SYSTEM, "freeing HidInManager buffer..." );
