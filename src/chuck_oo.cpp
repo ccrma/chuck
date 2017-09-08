@@ -2552,7 +2552,7 @@ Chuck_Array4 * Chuck_IO_File::dirList()
         // pass NULL as shred ref
         Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( m_vmRef->env()->t_string, NULL, m_vmRef );
         s->set( std::string( ent->d_name ) );
-        if ( s->get() != ".." && s->get() != "." )
+        if ( s->str() != ".." && s->str() != "." )
         {
             // don't include .. and . in the list
             entrylist.push_back( s );

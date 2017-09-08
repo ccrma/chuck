@@ -110,13 +110,13 @@ CK_DLL_SFUN( regex_match )
         goto error;
     }
     
-    result = regcomp(&regex, pattern->get().c_str(), REG_EXTENDED | REG_NOSUB);
+    result = regcomp(&regex, pattern->str().c_str(), REG_EXTENDED | REG_NOSUB);
     if(result != 0)
         goto error;
     
     r_free = TRUE;
     
-    result = regexec(&regex, str->get().c_str(), 0, NULL, 0);
+    result = regexec(&regex, str->str().c_str(), 0, NULL, 0);
     
     RETURN->v_int = (result == 0 ? 1 : 0);
     
@@ -177,7 +177,7 @@ CK_DLL_SFUN( regex_match2 )
     // bugfix: array.clear() doesnt seem to work? 
     matches->set_size(0);
     
-    result = regcomp(&regex, pattern->get().c_str(), REG_EXTENDED);
+    result = regcomp(&regex, pattern->str().c_str(), REG_EXTENDED);
     if(result != 0)
         goto error;
     
@@ -185,7 +185,7 @@ CK_DLL_SFUN( regex_match2 )
     
     matcharray = new regmatch_t[regex.re_nsub+1];
     
-    result = regexec(&regex, str->get().c_str(), regex.re_nsub+1, matcharray, 0);
+    result = regexec(&regex, str->str().c_str(), regex.re_nsub+1, matcharray, 0);
     
     RETURN->v_int = (result == 0 ? 1 : 0);
     
@@ -199,7 +199,7 @@ CK_DLL_SFUN( regex_match2 )
             Chuck_String * match = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
             
             if(matcharray[i].rm_so >= 0 && matcharray[i].rm_eo > 0)
-                match->set( std::string(str->get(), matcharray[i].rm_so,
+                match->set( std::string(str->str(), matcharray[i].rm_so,
                                          matcharray[i].rm_eo-matcharray[i].rm_so) );
                                          
             matches->push_back((t_CKUINT) match);
@@ -238,7 +238,7 @@ CK_DLL_SFUN( regex_replace )
     Chuck_String * str = GET_NEXT_STRING(ARGS);
     
     Chuck_String * ret = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
-    ret->set( str->get() );
+    ret->set( str->str() );
     
     regex_t regex;
     t_CKBOOL r_free = FALSE;
@@ -265,7 +265,7 @@ CK_DLL_SFUN( regex_replace )
     }
     
     // compile regex
-    result = regcomp(&regex, pattern->get().c_str(), REG_EXTENDED);
+    result = regcomp(&regex, pattern->str().c_str(), REG_EXTENDED);
     if(result != 0)
         goto error;
     
@@ -273,7 +273,7 @@ CK_DLL_SFUN( regex_replace )
     
     // perform match
     matcharray = new regmatch_t[regex.re_nsub+1];
-    result = regexec(&regex, str->get().c_str(), regex.re_nsub+1, matcharray, 0);
+    result = regexec(&regex, str->str().c_str(), regex.re_nsub+1, matcharray, 0);
     
     regfree(&regex);
     r_free = FALSE;
@@ -281,9 +281,9 @@ CK_DLL_SFUN( regex_replace )
     // perform substitution
     if(result == 0 && matcharray[0].rm_so >= 0 && matcharray[0].rm_eo >= 0)
     {
-        std::string s = ret->get();
+        std::string s = ret->str();
         s.replace(matcharray[0].rm_so,
-                  matcharray[0].rm_eo-matcharray[0].rm_so, replace->get());
+                  matcharray[0].rm_eo-matcharray[0].rm_so, replace->str());
         ret->set( s );
     }
     
@@ -319,7 +319,7 @@ CK_DLL_SFUN( regex_replaceAll )
     Chuck_String * str = GET_NEXT_STRING(ARGS);
     
     Chuck_String * ret = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
-    ret->set( str->get() );
+    ret->set( str->str() );
     
     regex_t regex;
     t_CKBOOL r_free = FALSE;
@@ -347,7 +347,7 @@ CK_DLL_SFUN( regex_replaceAll )
     }
     
     // compile regex
-    result = regcomp(&regex, pattern->get().c_str(), REG_EXTENDED);
+    result = regcomp(&regex, pattern->str().c_str(), REG_EXTENDED);
     if(result != 0)
         goto error;
     
@@ -356,22 +356,22 @@ CK_DLL_SFUN( regex_replaceAll )
     // perform match
     matcharray = new regmatch_t[regex.re_nsub+1];
     
-    while(pos < str->get().size())
+    while(pos < str->str().size())
     {
-        result = regexec(&regex, ret->get().c_str()+pos, regex.re_nsub+1, matcharray, 0);
+        result = regexec(&regex, ret->str().c_str()+pos, regex.re_nsub+1, matcharray, 0);
         
         // perform substitution
         if(result != 0)
             break;
         else if(matcharray[0].rm_so >= 0 && matcharray[0].rm_eo >= 0)
         {
-            std::string s = ret->get();
+            std::string s = ret->str();
             s.replace(pos+matcharray[0].rm_so,
                       matcharray[0].rm_eo-matcharray[0].rm_so,
-                      replace->get());
+                      replace->str());
             ret->set( s );
             
-            pos = pos + matcharray[0].rm_so + replace->get().size();
+            pos = pos + matcharray[0].rm_so + replace->str().size();
         }
     }
     

@@ -91,25 +91,25 @@ void ck_set_stderr_callback( void (*callback)(const char *) );
 extern "C++" {
 #include <sstream>
 
-class Ck_Stdstream
+class ChuckOutStream
 {
 public:
-    Ck_Stdstream();
-    ~Ck_Stdstream();
+    ChuckOutStream();
+    ~ChuckOutStream();
 
     // there's probably a way to do this with templates or something
     // this is not that way
-    Ck_Stdstream& operator<<( const std::string val );
-    Ck_Stdstream& operator<<( const char * val );
-    Ck_Stdstream& operator<<( const double val );
-    Ck_Stdstream& operator<<( const float val );
-    Ck_Stdstream& operator<<( const unsigned long long val );
-    Ck_Stdstream& operator<<( const long long val );
-    Ck_Stdstream& operator<<( const unsigned long val );
-    Ck_Stdstream& operator<<( const long val );
-    Ck_Stdstream& operator<<( const unsigned int val );
-    Ck_Stdstream& operator<<( const int val );
-    Ck_Stdstream& operator<<( const bool val );
+    ChuckOutStream& operator<<( const std::string val );
+    ChuckOutStream& operator<<( const char * val );
+    ChuckOutStream& operator<<( const double val );
+    ChuckOutStream& operator<<( const float val );
+    ChuckOutStream& operator<<( const unsigned long long val );
+    ChuckOutStream& operator<<( const long long val );
+    ChuckOutStream& operator<<( const unsigned long val );
+    ChuckOutStream& operator<<( const long val );
+    ChuckOutStream& operator<<( const unsigned int val );
+    ChuckOutStream& operator<<( const int val );
+    ChuckOutStream& operator<<( const bool val );
 
     void set_callback( void (*callback)(const char *) );
 
@@ -120,8 +120,8 @@ private:
 };
 
 
-extern Ck_Stdstream g_ck_stdoutstream;
-extern Ck_Stdstream g_ck_stderrstream;
+extern ChuckOutStream g_ck_stdoutstream;
+extern ChuckOutStream g_ck_stderrstream;
 
 #define CK_STDCOUT g_ck_stdoutstream
 #define CK_STDCERR g_ck_stderrstream

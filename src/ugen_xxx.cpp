@@ -1759,7 +1759,7 @@ CK_DLL_CTRL( cnoise_ctrl_mode )
 {
     CNoise_Data * d = ( CNoise_Data * )OBJ_MEMBER_UINT(SELF, cnoise_offset_data);
     //const char * mode= (const char *)*(char **)GET_CK_STRING(ARGS);
-    const char * mode= GET_NEXT_STRING(ARGS)->get().c_str();
+    const char * mode= GET_NEXT_STRING(ARGS)->str().c_str();
     d->setMode(mode);
 }
 
@@ -2989,7 +2989,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     Chuck_String * ckfilename = GET_CK_STRING(ARGS);
-    const char * filename = ckfilename->get().c_str();
+    const char * filename = ckfilename->str().c_str();
     
     // return filename
     RETURN->v_string = ckfilename;

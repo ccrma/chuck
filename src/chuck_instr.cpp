@@ -1639,7 +1639,7 @@ void Chuck_Instr_Add_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
     // concat
     // result->str = lhs->str + rhs->str;
-    result->set( lhs->get() + rhs->get() );
+    result->set( lhs->str() + rhs->str() );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(result) );
@@ -1684,7 +1684,7 @@ void Chuck_Instr_Add_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
     // concat
     // (*rhs_ptr)->str += lhs->str;
-    (*rhs_ptr)->set( (*rhs_ptr)->get() + lhs->get() );
+    (*rhs_ptr)->set( (*rhs_ptr)->str() + lhs->str() );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(*rhs_ptr) );
@@ -1733,7 +1733,7 @@ void Chuck_Instr_Add_string_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
     // concat
     // result->str = lhs->str + ::itoa(rhs);
-    result->set( lhs->get() + ::itoa( rhs ) );
+    result->set( lhs->str() + ::itoa( rhs ) );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(result) );
@@ -1782,7 +1782,7 @@ void Chuck_Instr_Add_string_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
     // concat
     // result->str = lhs->str + ::ftoa(rhs, 4);
-    result->set( lhs->get() + ::ftoa( rhs, 4 ) );
+    result->set( lhs->str() + ::ftoa( rhs, 4 ) );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(result) );
@@ -1831,7 +1831,7 @@ void Chuck_Instr_Add_int_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
     // concat
     // result->str = ::itoa(lhs) + rhs->str;
-    result->set( ::itoa(lhs) + rhs->get() );
+    result->set( ::itoa(lhs) + rhs->str() );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(result) );
@@ -1880,7 +1880,7 @@ void Chuck_Instr_Add_float_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
     // concat
     // result->str = ::ftoa(lhs, 4) + rhs->str;
-    result->set( ::ftoa( lhs, 4 ) + rhs->get() );
+    result->set( ::ftoa( lhs, 4 ) + rhs->str() );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(result) );
@@ -1925,7 +1925,7 @@ void Chuck_Instr_Add_int_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred *
 
     // concat
     // (*rhs_ptr)->str += ::itoa(lhs);
-    (*rhs_ptr)->set( (*rhs_ptr)->get() + ::itoa(lhs) );
+    (*rhs_ptr)->set( (*rhs_ptr)->str() + ::itoa(lhs) );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(*rhs_ptr) );
@@ -1970,7 +1970,7 @@ void Chuck_Instr_Add_float_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred
 
     // concat
     // (*rhs_ptr)->str += ::ftoa(lhs, 4);
-    (*rhs_ptr)->set( (*rhs_ptr)->get() + ::ftoa(lhs, 4) );
+    (*rhs_ptr)->set( (*rhs_ptr)->str() + ::ftoa(lhs, 4) );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(*rhs_ptr) );
@@ -3719,7 +3719,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
         // check type TODO: make this faster
         if( type->allocator )
             object = type->allocator( shred, Chuck_DL_Api::Api::instance() );
-        else if( isa( type, vm->env()->t_fileio ) ) object = new Chuck_IO_File( vm, shred );
+        else if( isa( type, vm->env()->t_fileio ) ) object = new Chuck_IO_File( vm );
         else if( isa( type, vm->env()->t_event ) ) object = new Chuck_Event;
         else if( isa( type, vm->env()->t_string ) ) object = new Chuck_String;
         // TODO: is this ok?
@@ -4079,7 +4079,7 @@ void Chuck_Instr_Assign_String::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // release any previous reference
     if( *rhs_ptr )
     {
-        if( lhs ) (*rhs_ptr)->set( lhs->get() );
+        if( lhs ) (*rhs_ptr)->set( lhs->str() );
         else
         {
             // release reference
@@ -4095,7 +4095,7 @@ void Chuck_Instr_Assign_String::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             (*rhs_ptr) = (Chuck_String *)instantiate_and_initialize_object( vm->env()->t_string, shred );
             // add ref
             (*rhs_ptr)->add_ref();
-            (*rhs_ptr)->set( lhs->get() );
+            (*rhs_ptr)->set( lhs->str() );
         }
         //EM_error2( 0, "internal error: somehow the type checker has allowed NULL strings" );
         //EM_error2( 0, "we are sorry for the inconvenience but..." );
@@ -5442,14 +5442,14 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( key->get() );
+            val = arr->addr( key->str() );
             // exception
             if( !val ) goto error;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->get(), &val ) )
+            if( !arr->get( key->str(), &val ) )
                 goto error;
             // push the value
             push_( sp, val );
@@ -5464,14 +5464,14 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( key->get() );
+            val = arr->addr( key->str() );
             // exception
             if( !val ) goto error;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->get(), &fval ) )
+            if( !arr->get( key->str(), &fval ) )
                 goto error;
             // push the value
             push_( ((t_CKFLOAT *&)sp), fval );
@@ -5486,14 +5486,14 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( key->get() );
+            val = arr->addr( key->str() );
             // exception
             if( !val ) goto error;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->get(), &cval ) )
+            if( !arr->get( key->str(), &cval ) )
                 goto error;
             // push the value
             push_( ((t_CKCOMPLEX *&)sp), cval );
@@ -5508,14 +5508,14 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( key->get() );
+            val = arr->addr( key->str() );
             // exception
             if( !val ) goto error;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->get(), &v3 ) )
+            if( !arr->get( key->str(), &v3 ) )
                 goto error;
             // push the value
             push_( ((t_CKVEC3 *&)sp), v3 );
@@ -5530,14 +5530,14 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( key->get() );
+            val = arr->addr( key->str() );
             // exception
             if( !val ) goto error;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->get(), &v4 ) )
+            if( !arr->get( key->str(), &v4 ) )
                 goto error;
             // push the value
             push_( ((t_CKVEC4 *&)sp), v4 );
@@ -5559,7 +5559,7 @@ error:
     // we have a problem
     CK_FPRINTF_STDERR( 
         "[chuck](VM): InternalArrayMapError: on line[%lu] in shred[id=%lu:%s], index=[%s]\n",
-        m_linepos, shred->xid, shred->name.c_str(), key->get().c_str() ); // shred->pc
+        m_linepos, shred->xid, shred->name.c_str(), key->str().c_str() ); // shred->pc
     goto done;
 
 done:
@@ -5611,7 +5611,7 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
             // get index
             Chuck_String * key = (Chuck_String *)(i);
             // get the array
-            if( !base->get( key->get(), &val ) )
+            if( !base->get( key->str(), &val ) )
                 goto array_out_of_bound;
         }
         else
@@ -6459,27 +6459,27 @@ void Chuck_Instr_Op_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     switch( m_val )
     {
     case ae_op_eq:
-        push_( sp, lhs->get() == rhs->get() );
+        push_( sp, lhs->str() == rhs->str() );
     break;
 
     case ae_op_neq:
-        push_( sp, lhs->get() != rhs->get() );
+        push_( sp, lhs->str() != rhs->str() );
     break;
 
     case ae_op_lt:
-        push_( sp, lhs->get() < rhs->get() );
+        push_( sp, lhs->str() < rhs->str() );
     break;
 
     case ae_op_le:
-        push_( sp, lhs->get() <= rhs->get() );
+        push_( sp, lhs->str() <= rhs->str() );
     break;
 
     case ae_op_gt:
-        push_( sp, lhs->get() > rhs->get() );
+        push_( sp, lhs->str() > rhs->str() );
     break;
 
     case ae_op_ge:
-        push_( sp, lhs->get() >= rhs->get() );
+        push_( sp, lhs->str() >= rhs->str() );
     break;
 
     default:
@@ -7008,7 +7008,7 @@ void Chuck_Instr_IO_in_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     Chuck_IO ** ppIO = (Chuck_IO **)sp;
     // the string
     Chuck_String ** ppStr = (Chuck_String **)(sp+1);
-    std::string s = (*ppStr)->get();
+    std::string s = (*ppStr)->str();
     
 //    CK_FPRINTF_STDERR( "ppIO: 0x%08x\n", ppIO );
 //    CK_FPRINTF_STDERR( "ppStr: 0x%08x\n", ppStr );
@@ -7147,7 +7147,7 @@ void Chuck_Instr_IO_out_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( *(ppIO) == NULL || *(ppStr) == NULL ) goto null_pointer;
     
     // write the variable
-    (*ppIO)->write( (*ppStr)->get().c_str() );
+    (*ppIO)->write( (*ppStr)->str().c_str() );
     
     // push the IO
     push_( sp, (t_CKINT)(*(ppIO)) );
@@ -7198,7 +7198,7 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         }
         else
         {
-            CK_FPRINTF_STDERR( "\"%s\" : (%s)\n", ((Chuck_String *)*(sp-1))->get().c_str(), m_type_ref->c_name() );
+            CK_FPRINTF_STDERR( "\"%s\" : (%s)\n", ((Chuck_String *)*(sp-1))->str().c_str(), m_type_ref->c_name() );
         }
     }
     else if( m_type_ref->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -7335,7 +7335,7 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             else
             {
                 Chuck_String * str = ((Chuck_String *)*(sp));
-                CK_FPRINTF_STDERR( "%s ", str->get().c_str() );
+                CK_FPRINTF_STDERR( "%s ", str->str().c_str() );
             }
 
             the_sp += sz_INT; // ISSUE: 64-bit (fixed 1.3.1.0)

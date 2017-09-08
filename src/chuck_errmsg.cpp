@@ -183,18 +183,18 @@ void ck_set_stderr_callback( void (*callback)(const char *) )
 #ifdef __cplusplus
 extern "C++" {
 
-Ck_Stdstream::Ck_Stdstream()
+ChuckOutStream::ChuckOutStream()
 {
     m_callback = NULL;
 }
 
 
-Ck_Stdstream::~Ck_Stdstream()
+ChuckOutStream::~ChuckOutStream()
 {
 }
 
 
-Ck_Stdstream& Ck_Stdstream::operator<<( const std::string val )
+ChuckOutStream& ChuckOutStream::operator<<( const std::string val )
 {
     m_stream << val;
     if( val == CK_STDENDL )
@@ -205,70 +205,70 @@ Ck_Stdstream& Ck_Stdstream::operator<<( const std::string val )
 }
 
 
-Ck_Stdstream& Ck_Stdstream::operator<<( const char * val )
+ChuckOutStream& ChuckOutStream::operator<<( const char * val )
 {
     m_stream << val;
     return *this;
 }
 
 
-Ck_Stdstream& Ck_Stdstream::operator<<( const double val )
+ChuckOutStream& ChuckOutStream::operator<<( const double val )
 {
     m_stream << val;
     return *this;
 }
 
 
-Ck_Stdstream& Ck_Stdstream::operator<<( const float val )
+ChuckOutStream& ChuckOutStream::operator<<( const float val )
 {
     m_stream << val;
     return *this;
 }
 
 
-Ck_Stdstream& Ck_Stdstream::operator<<( const unsigned long long val )
+ChuckOutStream& ChuckOutStream::operator<<( const unsigned long long val )
 {
     m_stream << val;
     return *this;
 }
 
 
-Ck_Stdstream& Ck_Stdstream::operator<<( const long long val )
+ChuckOutStream& ChuckOutStream::operator<<( const long long val )
 {
     m_stream << val;
     return *this;
 }
 
 
-Ck_Stdstream& Ck_Stdstream::operator<<( const unsigned long val )
+ChuckOutStream& ChuckOutStream::operator<<( const unsigned long val )
 {
     m_stream << val;
     return *this;
 }
 
 
-Ck_Stdstream& Ck_Stdstream::operator<<( const long val )
+ChuckOutStream& ChuckOutStream::operator<<( const long val )
 {
     m_stream << val;
     return *this;
 }
 
 
-Ck_Stdstream& Ck_Stdstream::operator<<( const unsigned int val )
+ChuckOutStream& ChuckOutStream::operator<<( const unsigned int val )
 {
     m_stream << val;
     return *this;
 }
 
 
-Ck_Stdstream& Ck_Stdstream::operator<<( const int val )
+ChuckOutStream& ChuckOutStream::operator<<( const int val )
 {
     m_stream << val;
     return *this;
 }
 
 
-Ck_Stdstream& Ck_Stdstream::operator<<( const bool val )
+ChuckOutStream& ChuckOutStream::operator<<( const bool val )
 {
     m_stream << val;
     return *this;
@@ -278,13 +278,13 @@ Ck_Stdstream& Ck_Stdstream::operator<<( const bool val )
 
 
 
-void Ck_Stdstream::set_callback( void (*callback)( const char * ) )
+void ChuckOutStream::set_callback( void (*callback)( const char * ) )
 {
     m_callback = callback;
 }
 
 
-void Ck_Stdstream::flush()
+void ChuckOutStream::flush()
 {
     if( m_callback != NULL )
     {
@@ -296,8 +296,8 @@ void Ck_Stdstream::flush()
 }
 
 
-Ck_Stdstream g_ck_stdoutstream;
-Ck_Stdstream g_ck_stderrstream;
+ChuckOutStream g_ck_stdoutstream;
+ChuckOutStream g_ck_stderrstream;
 
 }
 #endif

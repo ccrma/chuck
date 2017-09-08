@@ -659,7 +659,7 @@ CK_DLL_SFUN( sgn_impl )
 // system
 CK_DLL_SFUN( system_impl )
 {
-    const char * cmd = GET_CK_STRING(ARGS)->get().c_str();
+    const char * cmd = GET_CK_STRING(ARGS)->str().c_str();
 
     // check globals for permission
     if( !g_enable_system_cmd )
@@ -686,7 +686,7 @@ CK_DLL_SFUN( atoi_impl )
     Chuck_String * str = GET_CK_STRING(ARGS);
     if( str )
     {
-        const char * v = str->get().c_str();
+        const char * v = str->str().c_str();
         RETURN->v_int = atoi( v );
     }
     else
@@ -701,7 +701,7 @@ CK_DLL_SFUN( atof_impl )
     Chuck_String * str = GET_CK_STRING(ARGS);
     if( str )
     {
-        const char * v = GET_CK_STRING(ARGS)->get().c_str();
+        const char * v = GET_CK_STRING(ARGS)->str().c_str();
         RETURN->v_float = atof( v );
     }
     else
@@ -741,7 +741,7 @@ CK_DLL_SFUN( ftoi_impl )
 static Chuck_String g_str; // PROBLEM: not thread friendly
 CK_DLL_SFUN( getenv_impl )
 {
-    const char * v = GET_CK_STRING(ARGS)->get().c_str();
+    const char * v = GET_CK_STRING(ARGS)->str().c_str();
     const char * s = getenv( v );
     Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
     a->set( s ? s : "" );
@@ -751,8 +751,8 @@ CK_DLL_SFUN( getenv_impl )
 // setenv
 CK_DLL_SFUN( setenv_impl )
 {
-    const char * v1 = GET_NEXT_STRING(ARGS)->get().c_str();
-    const char * v2 = GET_NEXT_STRING(ARGS)->get().c_str();
+    const char * v1 = GET_NEXT_STRING(ARGS)->str().c_str();
+    const char * v2 = GET_NEXT_STRING(ARGS)->str().c_str();
     RETURN->v_int = setenv( v1, v2, 1 );
 }
 
@@ -1302,7 +1302,7 @@ CK_DLL_MFUN( Skot_prompt )
 CK_DLL_MFUN( Skot_prompt2 )
 {
     LineEvent * le = (LineEvent *)OBJ_MEMBER_INT(SELF, Skot_offset_data);
-    const char * v = GET_CK_STRING(ARGS)->get().c_str();
+    const char * v = GET_CK_STRING(ARGS)->str().c_str();
     le->prompt( v );
     RETURN->v_int = (t_CKINT)(SELF);
 }
@@ -1421,7 +1421,7 @@ CK_DLL_MFUN( StrTok_set )
 {
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
     Chuck_String * s = GET_CK_STRING(ARGS);
-    if( s ) tokens->set( s->get() );
+    if( s ) tokens->set( s->str() );
     else tokens->set( "" );
 }
 

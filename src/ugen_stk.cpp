@@ -24746,7 +24746,7 @@ CK_DLL_CTRL( Mandolin_ctrl_bodyIR )
 {
     Mandolin * m = (Mandolin *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     Chuck_String * str = GET_NEXT_STRING(ARGS);
-    m->setBodyIR( str->get().c_str(), strstr(str->get().c_str(), ".raw") != NULL );
+    m->setBodyIR( str->str().c_str(), strstr(str->str().c_str(), ".raw") != NULL );
     RETURN->v_string = str;
 }
 
@@ -25674,7 +25674,7 @@ CK_DLL_CTRL( VoicForm_ctrl_quiet )
 CK_DLL_CTRL( VoicForm_ctrl_phoneme )
 {
     VoicForm * v = (VoicForm *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    const char * c = GET_CK_STRING(ARGS)->get().c_str();
+    const char * c = GET_CK_STRING(ARGS)->str().c_str();
     v->setPhoneme( c );
     RETURN->v_string = &(v->str_phoneme);
 }
@@ -25950,7 +25950,7 @@ CK_DLL_CTRL( WvIn_ctrl_rate )
 CK_DLL_CTRL( WvIn_ctrl_path )
 {
     WvIn * w = (WvIn *)OBJ_MEMBER_UINT(SELF, WvIn_offset_data);
-    const char * c = GET_CK_STRING(ARGS)->get().c_str();
+    const char * c = GET_CK_STRING(ARGS)->str().c_str();
     try { w->openFile( c, FALSE, FALSE ); }
     catch( StkError & e )
     {
@@ -26192,18 +26192,18 @@ CK_DLL_PMSG( WvOut_pmsg )
 CK_DLL_CTRL( WvOut_ctrl_matFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->get().c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.get().c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.get().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.get().c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").mat" );
         filename = buffer;
     }
@@ -26223,18 +26223,18 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_matFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->get().c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.get().c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.get().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.get().c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").mat" );
         filename = buffer;
     }
@@ -26254,18 +26254,18 @@ done:
 CK_DLL_CTRL( WvOut_ctrl_sndFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->get().c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.get().c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.get().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.get().c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").snd" );
         filename = buffer;
     }
@@ -26285,18 +26285,18 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_sndFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->get().c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.get().c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.get().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.get().c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").snd" );
         filename = buffer;
     }
@@ -26316,18 +26316,18 @@ done:
 CK_DLL_CTRL( WvOut_ctrl_wavFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->get().c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.get().c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.get().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.get().c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").wav" );
         filename = buffer;
     }
@@ -26351,18 +26351,18 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_wavFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->get().c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.get().c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.get().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.get().c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").wav" );
         filename = buffer;
     }
@@ -26386,18 +26386,18 @@ done:
 CK_DLL_CTRL( WvOut_ctrl_rawFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->get().c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.get().c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.get().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.get().c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").raw" );
         filename = buffer;
     }
@@ -26417,18 +26417,18 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_rawFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->get().c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.get().c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.get().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.get().c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").raw" );
         filename = buffer;
     }
@@ -26448,18 +26448,18 @@ done:
 CK_DLL_CTRL( WvOut_ctrl_aifFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->get().c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.get().c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.get().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.get().c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").aiff" );
         filename = buffer;
     }
@@ -26479,18 +26479,18 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_aifFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->get().c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.get().c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.get().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.get().c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").aiff" );
         filename = buffer;
     }
@@ -26561,7 +26561,7 @@ CK_DLL_CGET( WvOut_cget_record )
 CK_DLL_CTRL( WvOut_ctrl_autoPrefix )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    w->autoPrefix.set( GET_NEXT_STRING(ARGS)->get().c_str() );
+    w->autoPrefix.set( GET_NEXT_STRING(ARGS)->str().c_str() );
     RETURN->v_string = &w->autoPrefix;
 }
 
@@ -26902,7 +26902,7 @@ CK_DLL_MFUN( MidiFileIn_open )
     
     try
     {
-        f = new stk::MidiFileIn(str->get());
+        f = new stk::MidiFileIn(str->str());
         OBJ_MEMBER_UINT(SELF, MidiFileIn_offset_data) = (t_CKUINT) f;
         RETURN->v_int = 1;
     }
