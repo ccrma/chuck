@@ -74,7 +74,6 @@ struct Chuck_UGen;
 struct Chuck_UAna;
 struct Chuck_UAnaBlobProxy;
 struct Chuck_DL_MainThreadHook;
-struct Chuck_Compiler;
 namespace Chuck_DL_Api { struct Api; }
 
 

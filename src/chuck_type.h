@@ -377,9 +377,6 @@ struct Chuck_Context : public Chuck_VM_Object
 struct Chuck_Env : public Chuck_VM_Object
 {
 public:
-    static Chuck_Env * new_instance();
-
-private:
     // constructor
     Chuck_Env();
 

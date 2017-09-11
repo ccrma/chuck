@@ -146,18 +146,6 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static,
 
 
 //-----------------------------------------------------------------------------
-// name: new_instance()
-// desc: alloc a new Chuck_Env
-//-----------------------------------------------------------------------------
-Chuck_Env * Chuck_Env::new_instance()
-{
-    return new Chuck_Env;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: Chuck_Env()
 // desc: constructor
 //-----------------------------------------------------------------------------
@@ -268,7 +256,7 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     EM_pushlog();
 
     // allocate a new env
-    Chuck_Env * env = Chuck_Env::new_instance();
+    Chuck_Env * env = new Chuck_Env;
     // set the name of global namespace
     env->global()->name = "global";
     // set the current namespace to global
