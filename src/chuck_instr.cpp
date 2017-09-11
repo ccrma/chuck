@@ -3308,7 +3308,7 @@ void Chuck_Instr_Alloc_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     
     if( m_is_external )
     {
-        if( m_type == te_int )
+        if( m_type == te_externalInt )
         {
             if( !vm->init_external_int( m_name, shred, m_val ) )
             {
@@ -3316,7 +3316,7 @@ void Chuck_Instr_Alloc_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
                 alloc_error( shred, m_name, m_linepos );
             }
         }
-        else if( m_type == te_float )
+        else if( m_type == te_externalFloat )
         {
             if( !vm->init_external_float( m_name, shred, m_val ) )
             {
@@ -3324,7 +3324,7 @@ void Chuck_Instr_Alloc_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
                 alloc_error( shred, m_name, m_linepos );
             }
         }
-        else if( m_type == te_event )
+        else if( m_type == te_externalEvent )
         {
             if( !vm->init_external_event( m_name, shred, m_val ) )
             {

@@ -4008,6 +4008,32 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
     t_CKBOOL is_obj = FALSE;
     t_CKBOOL is_ref = FALSE;
     t_CKBOOL is_init = FALSE;
+    
+    t_CKTYPE t = type_engine_find_type( emit->env, decl->type->xid );
+    te_ExternalType externalType;
+    
+    if( decl->is_external ) {
+        if( isa( t, emit->env->t_int ) )
+        {
+            externalType = te_externalInt;
+        }
+        else if( isa( t, emit->env->t_float ) )
+        {
+            externalType = te_externalFloat;
+        }
+        else if( isa( t, emit->env->t_event ) )
+        {
+            // kind-of-event (te_Type for this would be te_user, which is not helpful)
+            externalType = te_externalEvent;
+        }
+        else
+        {
+            // fail if type unsupported
+            EM_error2( decl->linepos, (std::string("unsupported type for external keyword: ") + t->name).c_str() );
+            EM_error2( decl->linepos, "... (supported types: int, float, Event)" );
+            return FALSE;
+        }
+    }
 
     // loop through vars
     while( list )
@@ -4126,7 +4152,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     {
                         instr->m_is_external = TRUE;
                         instr->m_name = value->name;
-                        instr->m_type = type->xid;
+                        instr->m_type = externalType;
                     }
                     instr->set_linepos( decl->linepos );
                     emit->append( instr );

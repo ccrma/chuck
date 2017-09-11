@@ -2469,7 +2469,7 @@ public:
     // was this external variable? and what was its name? (added 1.3.6.0)
     t_CKBOOL m_is_external;
     std::string m_name;
-    te_Type m_type;
+    te_ExternalType m_type;
     
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };

@@ -59,6 +59,18 @@ typedef enum {
 
 
 //-----------------------------------------------------------------------------
+// name: enum te_ExternalType
+// desc: ChucK types for external vars: int, float, (subclass of) Event
+//       (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+typedef enum {
+    te_externalInt, te_externalFloat, te_externalEvent
+} te_ExternalType;
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: enum te_HowMuch
 // desc: how much to scan/type check
 //-----------------------------------------------------------------------------

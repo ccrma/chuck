@@ -1110,18 +1110,8 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         return FALSE;
     }
     
+    // REFACTOR-2017: TODO: remove this once using the map/dictionary implementation and non-globals are allowed
     if( decl->is_external ) {
-        // fail if type unsupported
-        if( t->name != std::string("int")
-            && t->name != std::string("float")
-            && t->name != std::string("Event")
-        )
-        {
-            EM_error2( decl->linepos, (std::string("unsupported type for external keyword: ") + t->name).c_str() );
-            EM_error2( decl->linepos, "... (supported types: int, float, Event)" );
-            return FALSE;
-        }
-        
         // fail if not global scope
         if( ! env->is_global() )
         {
