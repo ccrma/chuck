@@ -37,15 +37,20 @@
 #ifndef __CHUCK_CARRIER_H__
 #define __CHUCK_CARRIER_H__
 
+#include "chuck_def.h"
 
 
 
-// forward references
+
+// forward references (C++)
 class Chuck_Compiler;
 class Chuck_VM;
 class Chuck_Env;
 class Chuck_IO_Chout;
 class Chuck_IO_Cherr;
+
+// forward references ("C")
+struct ck_socket;
 
 
 
@@ -62,14 +67,20 @@ struct Chuck_Carrier
     Chuck_IO_Chout * chout;
     Chuck_IO_Cherr * cherr;
     
+    // OTF programming things
+    ck_socket otf_socket;
+    t_CKINT otf_port;
+    
     // constructor
     Chuck_Carrier() :
         compiler( NULL ),
         env( NULL ),
         vm( NULL ),
         chout( NULL ),
-        cherr( NULL )
-        { }
+        cherr( NULL ),
+        otf_socket( NULL ),
+        otf_port( 0 )
+    { }
 };
 
 
