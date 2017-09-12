@@ -99,8 +99,6 @@ struct Chuck_Emitter : public Chuck_VM_Object
 {
     // reference to the type checker environment
     Chuck_Env * env;
-    // reference to VM
-    Chuck_VM * vm;
 
     // current code
     Chuck_Code * code;
@@ -121,7 +119,7 @@ struct Chuck_Emitter : public Chuck_VM_Object
 
     // constructor
     Chuck_Emitter()
-    { env = NULL; vm = NULL; code = NULL; context = NULL; 
+    { env = NULL; code = NULL; context = NULL; 
       nspc = NULL; func = NULL; dump = FALSE; }
 
     // destructor

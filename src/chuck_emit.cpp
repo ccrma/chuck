@@ -4153,7 +4153,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     if( externalType == te_externalEvent )
                     {
                         // init and construct it now!
-                        if( !emit->vm->init_external_event( value->name, t ) )
+                        if( !emit->env->vm()->init_external_event( value->name, t ) )
                         {
                             // if the type doesn't exactly match (different kinds of Event), then fail.
                             EM_error2( decl->linepos,

@@ -191,6 +191,9 @@ Chuck_Env::Chuck_Env( )
     t_cherr = new Chuck_Type( this, te_cherr, "StdErr", t_io, sizeof(void *) );
     t_thread = new Chuck_Type( this, te_thread, "Thread", t_object, sizeof(void *) );
     t_class = new Chuck_Type( this, te_class, "Class", t_object, sizeof(void *) );
+    
+    // REFACTOR-2017: carrier
+    m_carrier = NULL;
 }
 
 
@@ -264,6 +267,8 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     
     // REFACTOR-2017: store env in carrier
     carrier->env = env;
+    // and store carrier in env
+    env->set_carrier( carrier );
 
     // enter the default global type mapping : lock VM objects to catch deletion
     env->global()->type.add( env->t_void->name, env->t_void );          env->t_void->lock();

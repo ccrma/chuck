@@ -392,6 +392,14 @@ public:
     // constructor
     Chuck_Env();
 
+// REFACTOR-2017: carrier and accessors
+public:
+    void set_carrier( Chuck_Carrier * carrier ) { m_carrier = carrier; }
+    Chuck_VM * vm() { return m_carrier->vm; }
+
+protected:
+    Chuck_Carrier * m_carrier;
+
 protected:
     // global namespace
     Chuck_Namespace * global_nspc;
