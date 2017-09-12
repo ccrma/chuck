@@ -2282,25 +2282,39 @@ void Chuck_Instr_Reg_Push_Mem_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Reg_Push_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
-    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-
+    
     // get external map content
-    t_CKUINT val;
-    if( m_type == te_externalInt )
-    {
-        val = (t_CKUINT) vm->get_external_int_value( m_name );
+    switch( m_type ) {
+        case te_externalInt:
+        {
+            // int pointer to registers
+            t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+            t_CKUINT val = (t_CKUINT) vm->get_external_int_value( m_name );
+            
+            // push external map content into int-reg stack
+            push_( reg_sp, val );
+        }
+            break;
+        case te_externalFloat:
+        {
+            // float pointer to registers
+            t_CKFLOAT *& reg_sp = (t_CKFLOAT *&)shred->reg->sp;
+            t_CKFLOAT val = (t_CKFLOAT) vm->get_external_float_value( m_name );
+            
+            // push external map content into float-reg stack
+            push_( reg_sp, val );
+        }
+            break;
+        case te_externalEvent:
+        {
+            t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+            t_CKUINT val = (t_CKUINT) vm->get_external_event( m_name );
+            
+            // push external map content into event-reg stack
+            push_( reg_sp, val );
+        }
+            break;
     }
-    else if( m_type == te_externalFloat )
-    {
-        val = (t_CKUINT) vm->get_external_float_value( m_name );
-    }
-    else if( m_type == te_externalEvent )
-    {
-        val = (t_CKUINT) vm->get_external_event( m_name );
-    }
-
-    // push external map content into reg stack
-    push_( reg_sp, val );
 }
 
 
@@ -2332,17 +2346,17 @@ void Chuck_Instr_Reg_Push_External_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred 
     
     // find addr
     t_CKUINT addr;
-    if( m_type == te_externalInt )
-    {
-        addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
-    }
-    else if( m_type == te_externalFloat )
-    {
-        addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
-    }
-    else if( m_type == te_externalEvent )
-    {
-        addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
+    switch( m_type ) {
+        case te_externalInt:
+            addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
+            break;
+        case te_externalFloat:
+            addr = (t_CKUINT) vm->get_ptr_to_external_float( m_name );
+            break;
+        case te_externalEvent:
+            addr = (t_CKUINT) vm->get_ptr_to_external_event( m_name );
+            break;
+            
     }
 
     // push mem stack addr into reg stack
@@ -3547,20 +3561,19 @@ void Chuck_Instr_Alloc_Word_External::execute( Chuck_VM * vm, Chuck_VM_Shred * s
     t_CKUINT addr = 0;
 
     // init in the correct vm map according to the type
-    if( m_type == te_externalInt )
-    {
-        vm->init_external_int( m_name );
-        addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
-    }
-    else if( m_type == te_externalFloat )
-    {
-        vm->init_external_float( m_name );
-        addr = (t_CKUINT) vm->get_ptr_to_external_float( m_name );
-    }
-    else if( m_type == te_externalEvent )
-    {
-        // no need to init, it has already been initted during emit
-        addr = (t_CKUINT) vm->get_ptr_to_external_event( m_name );
+    switch( m_type ) {
+        case te_externalInt:
+            vm->init_external_int( m_name );
+            addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
+            break;
+        case te_externalFloat:
+            vm->init_external_float( m_name );
+            addr = (t_CKUINT) vm->get_ptr_to_external_float( m_name );
+            break;
+        case te_externalEvent:
+            // no need to init, it has already been initted during emit
+            addr = (t_CKUINT) vm->get_ptr_to_external_event( m_name );
+            break;
     }
     
     // push addr onto operand stack
