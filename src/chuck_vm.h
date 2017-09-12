@@ -644,6 +644,8 @@ public:
 
 private:
     // external variables
+    void cleanup_external_variables();
+    
     XCircleBuffer< Chuck_Set_External_Int > m_set_external_int_queue;
     XCircleBuffer< Chuck_Get_External_Int > m_get_external_int_queue;
     std::map< std::string, Chuck_External_Int_Container * > m_external_ints;

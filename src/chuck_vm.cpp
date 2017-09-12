@@ -417,6 +417,9 @@ t_CKBOOL Chuck_VM::shutdown()
     // TODO: don't unlock all objects for all VMs? see relockdown below
     Chuck_VM_Object::unlock_all();
     
+    // REFACTOR-2017: clean up after my external variables
+    cleanup_external_variables();
+    
     // tell chout and cherr to cleanup
     EM_log( CK_LOG_SYSTEM, "freeing chout and cherr instances..." );
     SAFE_RELEASE( m_carrier->chout );
@@ -478,8 +481,6 @@ t_CKBOOL Chuck_VM::shutdown()
     // relockdown (added 1.3.6.0)
     Chuck_VM_Object::lock_all();
     
-    // REFACTOR-2017 TODO: clean up external maps!!!
-
     // log
     EM_log( CK_LOG_SYSTEM, "virtual machine shutdown complete." );
 
@@ -1485,6 +1486,41 @@ Chuck_Event * Chuck_VM::get_external_event( std::string name )
 Chuck_Event * * Chuck_VM::get_ptr_to_external_event( std::string name )
 {
     return &( m_external_events[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: cleanup_external_variables()
+// desc: set a pointer directly on the vm (internal)
+//-----------------------------------------------------------------------------
+void Chuck_VM::cleanup_external_variables()
+{
+    // ints: delete containers and clear map
+    for( std::map< std::string, Chuck_External_Int_Container * >::iterator it=
+         m_external_ints.begin(); it!=m_external_ints.end(); it++ )
+    {
+        delete (it->second);
+    }
+    m_external_ints.clear();
+    
+    // floats: delete containers and clear map
+    for( std::map< std::string, Chuck_External_Float_Container * >::iterator it=
+         m_external_floats.begin(); it!=m_external_floats.end(); it++ )
+    {
+        delete (it->second);
+    }
+    m_external_floats.clear();
+    
+    // events: release events, delete containers, and clear map
+    for( std::map< std::string, Chuck_External_Event_Container * >::iterator it=
+         m_external_events.begin(); it!=m_external_events.end(); it++ )
+    {
+        SAFE_RELEASE( it->second->val );
+        delete (it->second);
+    }
+    m_external_events.clear();
 }
 
 
