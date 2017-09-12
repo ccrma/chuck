@@ -2678,6 +2678,11 @@ public:
     Chuck_Instr_Alloc_Word_External()
     { this->set( 0 ); }
     
+    virtual const char * params() const
+    { static char buffer[256];
+      sprintf( buffer, "name='%s'", m_name.c_str() );
+      return buffer; }
+    
     // external name and type
     std::string m_name;
     te_ExternalType m_type;

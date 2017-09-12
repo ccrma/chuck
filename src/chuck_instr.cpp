@@ -3542,19 +3542,29 @@ void Chuck_Instr_Alloc_Member_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Alloc_Word_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+    
+    t_CKUINT addr = 0;
+
     // init in the correct vm map according to the type
     if( m_type == te_externalInt )
     {
         vm->init_external_int( m_name );
+        addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
     }
     else if( m_type == te_externalFloat )
     {
         vm->init_external_float( m_name );
+        addr = (t_CKUINT) vm->get_ptr_to_external_float( m_name );
     }
     else if( m_type == te_externalEvent )
     {
         // no need to init, it has already been initted during emit
+        addr = (t_CKUINT) vm->get_ptr_to_external_event( m_name );
     }
+    
+    // push addr onto operand stack
+    push_( reg_sp, addr );
 }
 
 

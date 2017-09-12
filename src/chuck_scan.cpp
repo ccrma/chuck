@@ -2257,7 +2257,7 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         value->is_decl_checked = FALSE;
         
         // flag as external
-        value->is_external = TRUE;
+        value->is_external = decl->is_external;
 
         // remember the value
         var_decl->value = value;

@@ -1441,11 +1441,18 @@ t_CKBOOL Chuck_VM::broadcast_external_event( std::string name ) {
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::init_external_event( std::string name, Chuck_Type * type ) {
 
+    // if it hasn't been initted yet
     if( m_external_events.count( name ) == 0 ) {
+        // create a new storage container
         m_external_events[name] = new Chuck_External_Event_Container;
+        // create the chuck object
         m_external_events[name]->val =
             (Chuck_Event *) instantiate_and_initialize_object( type, this );
+        // add a reference to it so it won't be deleted
+        m_external_events[name]->val->add_ref();
+        // store its type in the container, too (is it a user-defined class?)
         m_external_events[name]->type = type;
+        //CK_STDCOUT << "initted " << type->name.c_str() << " " << name << CK_STDENDL;
     }
     // already exists. check if there's a type mismatch.
     else if( type->name != m_external_events[name]->type->name )
@@ -2055,7 +2062,6 @@ CK_VM_DEBUG( t_CKBYTE * t_reg_sp = this->mem->sp );
 //-----------------------------------------------------------------------------
         // execute the instruction
         instr[pc]->execute( vm, this );
-        CK_STDCOUT << "after PC " << pc << ", external i is now " << vm->get_external_int_value( "i" ) << CK_STDENDL;
 //-----------------------------------------------------------------------------
 CK_VM_DEBUG(CK_FPRINTF_STDERR( "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08lx\n",
                     (unsigned long) t_mem_sp, (unsigned long) this->mem->sp ));
