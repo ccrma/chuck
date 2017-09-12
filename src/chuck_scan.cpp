@@ -1109,16 +1109,6 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         EM_error2( decl->linepos, "... in declaration ..." );
         return FALSE;
     }
-    
-    // REFACTOR-2017: TODO: remove this once using the map/dictionary implementation and non-globals are allowed
-    if( decl->is_external ) {
-        // fail if not global scope
-        if( ! env->is_global() )
-        {
-            EM_error2( decl->linepos, "external keyword cannot be used on non-global variables" );
-            return FALSE;
-        }
-    }
 
     // loop through the variables
     while( list != NULL )
@@ -2254,7 +2244,7 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         // enter into value binding
         env->curr->value.add( var_decl->xid,
             value = env->context->new_Chuck_Value( type, S_name(var_decl->xid) ) );
-
+        
         // remember the owner
         value->owner = env->curr;
         value->owner_class = env->func ? NULL : env->class_def;
@@ -2265,6 +2255,9 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         value->addr = var_decl->addr;
         // flag it until the decl is checked
         value->is_decl_checked = FALSE;
+        
+        // flag as external
+        value->is_external = TRUE;
 
         // remember the value
         var_decl->value = value;

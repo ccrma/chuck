@@ -722,6 +722,8 @@ struct Chuck_Value : public Chuck_VM_Object
     t_CKBOOL is_context_global;
     // is decl checked
     t_CKBOOL is_decl_checked;
+    // is external (added REFACTOR-2017)
+    t_CKBOOL is_external;
     // 0 = public, 1 = protected, 2 = private
     t_CKUINT access;
     // owner
@@ -748,6 +750,7 @@ struct Chuck_Value : public Chuck_VM_Object
       addr = a; is_member = FALSE;
       is_static = FALSE; is_context_global = FALSE;
       is_decl_checked = TRUE; // only set to false in certain cases
+      is_external = FALSE;
       func_ref = NULL; func_num_overloads = 0; }
 
     // destructor

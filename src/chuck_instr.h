@@ -2246,6 +2246,31 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Push_External
+// desc: push a variable from external map to reg stack
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Push_External : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Reg_Push_External( std::string name, te_ExternalType type )
+    { this->set( 0 ); m_name = name; m_type = type; }
+
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    virtual const char * params() const
+    { static char buffer[256];
+      sprintf( buffer, "name='%s'", m_name.c_str() );
+      return buffer; }
+
+public:
+    std::string m_name;
+    te_ExternalType m_type;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Reg_Push_Mem_Addr
 // desc: push addr from mem stack to reg stack
 //-----------------------------------------------------------------------------
@@ -2266,6 +2291,32 @@ protected:
     // use global stack base
     t_CKBOOL base;
 };
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Push_External_Addr
+// desc: push addr from external storage to reg stack
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Push_External_Addr : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Reg_Push_External_Addr( std::string name, te_ExternalType type )
+    { this->set( 0 ); m_name = name; m_type = type; }
+
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    virtual const char * params() const
+    { static char buffer[256];
+      sprintf( buffer, "name='%s'", m_name.c_str() );
+      return buffer; }
+
+protected:
+    std::string m_name;
+    te_ExternalType m_type;
+};
+
 
 
 
@@ -2461,15 +2512,10 @@ struct Chuck_Instr_Alloc_Word : public Chuck_Instr_Unary_Op
 public:
     // (added 1.3.0.0 -- is_object)
     Chuck_Instr_Alloc_Word( t_CKUINT offset, t_CKBOOL is_object )
-    { this->set( offset ); m_is_object = is_object; m_is_external = FALSE; }
+    { this->set( offset ); }
     
     // was this object reference? (added 1.3.0.0)
     t_CKBOOL m_is_object;
-    
-    // was this external variable? and what was its name? (added 1.3.6.0)
-    t_CKBOOL m_is_external;
-    std::string m_name;
-    te_ExternalType m_type;
     
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };
@@ -2485,13 +2531,8 @@ struct Chuck_Instr_Alloc_Word2 : public Chuck_Instr_Unary_Op
 {
 public:
     Chuck_Instr_Alloc_Word2( t_CKUINT offset )
-    { this->set( offset ); m_is_external = FALSE; }
+    { this->set( offset ); }
     
-    // was this external variable? and what was its name? (added 1.3.6.0)
-    t_CKBOOL m_is_external;
-    std::string m_name;
-    te_Type m_type;
-
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };
 
@@ -2619,6 +2660,27 @@ struct Chuck_Instr_Alloc_Member_Vec4 : public Chuck_Instr_Unary_Op
 public:
     Chuck_Instr_Alloc_Member_Vec4( t_CKUINT offset  )
     { this->set( offset ); }
+    
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Alloc_Word_External
+// desc: alloc in vm external maps
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Alloc_Word_External : public Chuck_Instr_Unary_Op
+{
+public:
+    // (added 1.3.0.0 -- is_object)
+    Chuck_Instr_Alloc_Word_External()
+    { this->set( 0 ); }
+    
+    // external name and type
+    std::string m_name;
+    te_ExternalType m_type;
     
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };

@@ -2278,6 +2278,36 @@ void Chuck_Instr_Reg_Push_Mem_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 //-----------------------------------------------------------------------------
 // name: execute()
+// desc: push value from external maps to register stack
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_Push_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+
+    // get external map content
+    t_CKUINT val;
+    if( m_type == te_externalInt )
+    {
+        val = (t_CKUINT) vm->get_external_int_value( m_name );
+    }
+    else if( m_type == te_externalFloat )
+    {
+        val = (t_CKUINT) vm->get_external_float_value( m_name );
+    }
+    else if( m_type == te_externalEvent )
+    {
+        val = (t_CKUINT) vm->get_external_event( m_name );
+    }
+
+    // push external map content into reg stack
+    push_( reg_sp, val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Reg_Push_Mem_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
@@ -2287,6 +2317,36 @@ void Chuck_Instr_Reg_Push_Mem_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
     // push mem stack addr into reg stack
     push_( reg_sp, (t_CKUINT)(mem_sp + m_val) );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_Push_External_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+    
+    // find addr
+    t_CKUINT addr;
+    if( m_type == te_externalInt )
+    {
+        addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
+    }
+    else if( m_type == te_externalFloat )
+    {
+        addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
+    }
+    else if( m_type == te_externalEvent )
+    {
+        addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
+    }
+
+    // push mem stack addr into reg stack
+    push_( reg_sp, addr );
 }
 
 
@@ -3272,24 +3332,6 @@ void Chuck_Instr_EOC::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 #pragma mark === Allocation ===
 
 
-//-----------------------------------------------------------------------------
-// name: alloc_error()
-// desc: display error message and exit shred
-//-----------------------------------------------------------------------------
-void alloc_error( Chuck_VM_Shred * shred, std::string name, t_CKUINT linepos )
-{
-    // display error
-    CK_FPRINTF_STDERR( 
-        "[chuck](VM): DuplicateExternalVariableError: external variable name %s already in use; duplicate is on line[%lu] in shred[id=%lu:%s]\n",
-        name.c_str(), linepos, shred->xid, shred->name.c_str()
-    );
-    
-    // exit shred
-    shred->is_running = FALSE;
-    shred->is_done = TRUE;
-}
-
-
 
 
 //-----------------------------------------------------------------------------
@@ -3305,34 +3347,6 @@ void Chuck_Instr_Alloc_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     *( (t_CKUINT *)(mem_sp + m_val) ) = 0;
     // push addr onto operand stack
     push_( reg_sp, (t_CKUINT)(mem_sp + m_val) );
-    
-    if( m_is_external )
-    {
-        if( m_type == te_externalInt )
-        {
-            if( !vm->init_external_int( m_name, shred, m_val ) )
-            {
-                // external int name already in use
-                alloc_error( shred, m_name, m_linepos );
-            }
-        }
-        else if( m_type == te_externalFloat )
-        {
-            if( !vm->init_external_float( m_name, shred, m_val ) )
-            {
-                // external float name already in use
-                alloc_error( shred, m_name, m_linepos );
-            }
-        }
-        else if( m_type == te_externalEvent )
-        {
-            if( !vm->init_external_event( m_name, shred, m_val ) )
-            {
-                // external event name already in use
-                alloc_error( shred, m_name, m_linepos );
-            }
-        }
-    }
 }
 
 
@@ -3351,26 +3365,6 @@ void Chuck_Instr_Alloc_Word2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     *( (t_CKFLOAT *)(mem_sp + m_val) ) = 0.0;
     // push addr onto operand stack
     push_( reg_sp, (t_CKUINT)(mem_sp + m_val) );
-    
-    if( m_is_external )
-    {
-        if( m_type == te_int )
-        {
-            if( !vm->init_external_int( m_name, shred, m_val ) )
-            {
-                // external int name already in use
-                alloc_error( shred, m_name, m_linepos );
-            }
-        }
-        else if( m_type == te_float )
-        {
-            if( !vm->init_external_float( m_name, shred, m_val ) )
-            {
-                // external float name already in use
-                alloc_error( shred, m_name, m_linepos );
-            }
-        }
-    }
 }
 
 
@@ -3537,6 +3531,30 @@ void Chuck_Instr_Alloc_Member_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
     ( (t_CKVEC4 *)(obj->data + m_val) )->w = 0.0;
     // push addr onto operand stack
     push_( reg_sp, (t_CKUINT)(obj->data + m_val) );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: alloc external
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Alloc_Word_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // init in the correct vm map according to the type
+    if( m_type == te_externalInt )
+    {
+        vm->init_external_int( m_name );
+    }
+    else if( m_type == te_externalFloat )
+    {
+        vm->init_external_float( m_name );
+    }
+    else if( m_type == te_externalEvent )
+    {
+        // no need to init, it has already been initted during emit
+    }
 }
 
 
