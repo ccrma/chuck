@@ -1,0 +1,2 @@
+[chuck](VM): NullPointerException: (array access) on line[3] in shred[id=1:./01-Basic/84.ck]
+[chuck](VM): (array dimension where exception occurred: 0)
