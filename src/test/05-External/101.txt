@@ -1,0 +1,1 @@
+[101.ck]:line(9): (emit): external Event 'e' has different type 'myEvent' than already existing external Event of the same name
