@@ -1153,8 +1153,6 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
     // track remove shred
     CK_TRACK( Chuck_Stats::instance()->remove_shred( shred ) );
 
-    // TODO: un-track any external events, other objects, owned by this shred?
-
     // free!
     m_shreduler->remove( shred );
     // TODO: remove shred from event, with synchronization (still necessary with dump?)
