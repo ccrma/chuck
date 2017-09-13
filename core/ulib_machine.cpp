@@ -34,7 +34,6 @@
 #include "chuck_vm.h"
 #include "chuck_compile.h"
 #include "chuck_errmsg.h"
-#include "chuck_globals.h"
 #include "chuck_instr.h"
 
 

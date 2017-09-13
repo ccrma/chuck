@@ -37,10 +37,8 @@
 #include "chuck_instr.h"
 #include "chuck_vm.h"
 #include "chuck_ugen.h"
-#include "chuck_bbq.h"
 #include "chuck_dl.h"
 #include "chuck_errmsg.h"
-#include "chuck_globals.h"
 
 #include "util_string.h"
 

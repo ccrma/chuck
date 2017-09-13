@@ -38,7 +38,6 @@
 #include "chuck_vm.h"
 #include "chuck_errmsg.h"
 #include "chuck_ugen.h"
-#include "chuck_globals.h"
 #include "hidio_sdl.h"
 #include "util_string.h"
 #include "util_serial.h"

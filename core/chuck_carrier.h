@@ -50,7 +50,9 @@ class Chuck_IO_Chout;
 class Chuck_IO_Cherr;
 
 // forward references ("C")
-struct ck_socket;
+struct ck_socket_;
+typedef struct ck_socket_ * ck_socket;
+
 
 
 

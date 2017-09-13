@@ -35,7 +35,7 @@
 #include "chuck_oo.h"
 #include "chuck_ugen.h"
 #include "chuck_carrier.h"
-#include "util_buffer.h"
+#include "util_buffers.h"
 
 // tracking
 #ifdef __CHUCK_STAT_TRACK__
@@ -480,7 +480,7 @@ struct Chuck_Signal_External_Event
     std::string name;
     t_CKBOOL is_broadcast;
     // constructor
-    Chuck_VM_External_Float() : is_broadcast(TRUE) { }
+    Chuck_Signal_External_Event() : is_broadcast(TRUE) { }
 };
 
 

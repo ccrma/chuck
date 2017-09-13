@@ -34,7 +34,6 @@
 #include "util_serial.h"
 #include "chuck_instr.h"
 #include "chuck_type.h"
-#include "chuck_globals.h"
 #include "chuck_vm.h"
 
 #ifndef __WINDOWS_DS__

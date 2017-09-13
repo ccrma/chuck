@@ -463,9 +463,9 @@ public:
     // set string (makes copy)
     void set( const std::string & s ) { m_str = s; m_charptr = m_str.c_str(); }
     // get as standard c++ string
-    const std::string & str() { return str; }
+    const std::string & str() { return m_str; }
     // get as C string (NOTE: use this in dynamical modules like chugins!)
-    const char * c_str() { return charptr; }
+    const char * c_str() { return m_charptr; }
 
 private:
     // c pointer | HACK: needed for ensure string passing in dynamic modules

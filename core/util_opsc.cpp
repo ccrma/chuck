@@ -37,7 +37,6 @@
 #include "util_thread.h"
 
 #include "chuck_errmsg.h"
-#include "chuck_globals.h"
 #include "chuck_vm.h"
 
 #include <algorithm>

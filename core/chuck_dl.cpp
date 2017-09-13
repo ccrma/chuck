@@ -36,10 +36,8 @@
 //-----------------------------------------------------------------------------
 #include "chuck_dl.h"
 #include "chuck_errmsg.h"
-#include "chuck_bbq.h"
 #include "chuck_type.h"
 #include "chuck_instr.h"
-#include "chuck_globals.h"
 #include "chuck_compile.h"
 #include "chuck_vm.h"
 #include <sstream>
