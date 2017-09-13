@@ -441,3 +441,83 @@ unsigned XWriteThread::write_cb(void * _thiss)
     
     return 0;
 }
+
+
+
+
+#ifdef __MACOSX_CORE__
+t_CKINT XThreadUtil::our_priority = 85;
+#else
+t_CKINT XThreadUtil::our_priority = 0x7fffffff;
+#endif
+
+
+
+
+#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+//-----------------------------------------------------------------------------
+// name: set_priority()
+// desc: set thread priority
+//-----------------------------------------------------------------------------
+t_CKBOOL XThreadUtil::set_priority( CHUCK_THREAD tid, t_CKINT priority )
+{
+    struct sched_param param;
+    int policy;
+    
+    // log
+    EM_log( CK_LOG_FINE, "setting thread priority to: %ld...", priority );
+    
+    // get for thread
+    if( pthread_getschedparam( tid, &policy, &param) )
+        return FALSE;
+    
+    // priority
+    param.sched_priority = priority;
+    // policy
+    policy = SCHED_RR;
+    // set for thread, pthread style
+    if( pthread_setschedparam( tid, policy, &param ) )
+        return FALSE;
+    
+    return TRUE;
+}
+//-----------------------------------------------------------------------------
+// name: set_priority()
+// desc: set thread priority for self
+//-----------------------------------------------------------------------------
+t_CKBOOL XThreadUtil::set_priority( t_CKINT priority )
+{
+    // pass it along with self thread
+    set_priority( pthread_self(), priority );
+    return TRUE;
+}
+#else
+//-----------------------------------------------------------------------------
+// name: set_priority()
+// desc: set thread priority
+//-----------------------------------------------------------------------------
+t_CKBOOL XThreadUtil::set_priority( CHUCK_THREAD tid, t_CKINT priority )
+{
+    // if priority is 0 then done
+    if( !priority ) return TRUE;
+    
+    // log
+    EM_log( CK_LOG_FINE, "setting thread priority to: %ld...", priority );
+    
+    // set the priority the thread, windows style
+    if( !SetThreadPriority( tid, priority ) )
+        return FALSE;
+    
+    return TRUE;
+}
+//-----------------------------------------------------------------------------
+// name: set_priority()
+// desc: set thread priority for self
+//-----------------------------------------------------------------------------
+t_CKBOOL XThreadUtil::set_priority( t_CKINT priority )
+{
+    // pass it along with self thread
+    set_priority( GetCurrentThread(), priority );
+    return TRUE;
+}
+#endif
