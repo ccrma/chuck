@@ -35,7 +35,6 @@
 #include "hidio_sdl.h"
 #include "util_hid.h"
 #include "chuck_errmsg.h"
-#include "chuck_globals.h"
 #include "chuck_vm.h"
 
 #ifndef __PLATFORM_WIN32__

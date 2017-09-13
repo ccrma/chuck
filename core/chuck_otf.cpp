@@ -32,7 +32,6 @@
 #include "chuck_otf.h"
 #include "chuck_compile.h"
 #include "chuck_errmsg.h"
-#include "chuck_globals.h"
 #include "util_thread.h"
 #include "util_string.h"
 

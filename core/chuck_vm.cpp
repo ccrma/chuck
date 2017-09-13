@@ -35,7 +35,6 @@
 #include "chuck_type.h"
 #include "chuck_dl.h"
 #include "chuck_io.h"
-#include "chuck_globals.h"
 #include "chuck_errmsg.h"
 #include "ugen_xxx.h"
 

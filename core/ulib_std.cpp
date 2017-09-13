@@ -41,7 +41,6 @@
 #include "chuck_type.h"
 #include "chuck_compile.h"
 #include "chuck_instr.h"
-#include "chuck_globals.h"
 
 #if defined(__PLATFORM_WIN32__)
 
