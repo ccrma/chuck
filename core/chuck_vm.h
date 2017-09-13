@@ -659,11 +659,6 @@ protected:
     // TODO: vector? (added 1.3.0.0 to fix uber-crash)
     std::list<CBufferSimple *> m_event_buffers;
 
-public:
-    // priority
-    static t_CKBOOL set_priority( t_CKINT priority, Chuck_VM * vm );
-    static t_CKINT our_priority;
-
 protected:
     // REFACTOR-2017: for external variables
     XCircleBuffer<Chuck_Set_External_Int> m_set_external_int_queue;
