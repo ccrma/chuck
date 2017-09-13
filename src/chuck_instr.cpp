@@ -3557,7 +3557,6 @@ void Chuck_Instr_Alloc_Member_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 void Chuck_Instr_Alloc_Word_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-    
     t_CKUINT addr = 0;
 
     // init in the correct vm map according to the type

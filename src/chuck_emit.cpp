@@ -4069,11 +4069,17 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             }
             else if( !is_ref )
             {
-                // set
-                is_init = TRUE;
-                // instantiate object (not array)
-                if( !emit_engine_instantiate_object( emit, type, list->var_decl->array, is_ref ) )
-                    return FALSE;
+                // REFACTOR-2017: don't emit instructions to instantiate
+                // external variables -- they are init/instantiated
+                // during emit (see below in this function)
+                if( !decl->is_external )
+                {
+                    // set
+                    is_init = TRUE;
+                    // instantiate object (not array)
+                    if( !emit_engine_instantiate_object( emit, type, list->var_decl->array, is_ref ) )
+                        return FALSE;
+                }
             }
         }
 
@@ -4232,10 +4238,16 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             }
             else if( !is_ref )
             {
-                // set
-                is_init = TRUE;
-                // assign the object
-                emit->append( new Chuck_Instr_Assign_Object );
+                // REFACTOR-2017: don't add an Assign_Object instruction for
+                // external objects -- they should be instantiated during emit,
+                // not during runtime and therefore don't need an assign instr
+                if( !decl->is_external )
+                {
+                    // set
+                    is_init = TRUE;
+                    // assign the object
+                    emit->append( new Chuck_Instr_Assign_Object );
+                }
             }
         }
 

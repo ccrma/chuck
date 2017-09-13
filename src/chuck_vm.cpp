@@ -1449,11 +1449,11 @@ t_CKBOOL Chuck_VM::init_external_event( std::string name, Chuck_Type * type ) {
         // create the chuck object
         m_external_events[name]->val =
             (Chuck_Event *) instantiate_and_initialize_object( type, this );
-        // add a reference to it so it won't be deleted
+        // add a reference to it so it won't be deleted until we're done
+        // cleaning up the VM
         m_external_events[name]->val->add_ref();
         // store its type in the container, too (is it a user-defined class?)
         m_external_events[name]->type = type;
-        //CK_STDCOUT << "initted " << type->name.c_str() << " " << name << CK_STDENDL;
     }
     // already exists. check if there's a type mismatch.
     else if( type->name != m_external_events[name]->type->name )
@@ -1568,7 +1568,7 @@ void Chuck_VM::handle_external_set_messages() {
         {
             // ensure it exists
             if( m_external_events.count( signal_event_message.name ) > 0 ) {
-            Chuck_Event * event = m_external_events[signal_event_message.name]->val;
+                Chuck_Event * event = get_external_event( signal_event_message.name );
                 if( signal_event_message.is_broadcast )
                 {
                     event->broadcast();
