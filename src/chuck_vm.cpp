@@ -1535,7 +1535,8 @@ void Chuck_VM::handle_external_set_messages() {
         Chuck_Set_External_Int set_int_message;
         if( m_set_external_int_queue.get( & set_int_message ) )
         {
-            // set even if it doesn't already exist
+            // ensure the container exists
+            init_external_int( set_int_message.name );
             m_external_ints[set_int_message.name]->val = set_int_message.val;
         }
         else
@@ -1550,6 +1551,8 @@ void Chuck_VM::handle_external_set_messages() {
         Chuck_Set_External_Float set_float_message;
         if( m_set_external_float_queue.get( & set_float_message ) )
         {
+            // ensure the container exists
+            init_external_float( set_float_message.name );
             m_external_floats[set_float_message.name]->val = set_float_message.val;
         }
         else
