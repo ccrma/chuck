@@ -4134,7 +4134,8 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             {
                 // allocate a place on the local stack
                 // (added 1.3.0.0 -- is_obj for tracking objects ref count on stack)
-                local = emit->alloc_local( type->size, value->name, is_ref, is_obj );
+                local = emit->alloc_local( type->size, value->name,
+                    is_ref, is_obj, decl->is_external );
                 if( !local )
                 {
                     EM_error2( decl->linepos,
@@ -4355,7 +4356,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     {
         // put function on stack
         // ge: added FALSE to the 'is_obj' argument, 2012 april (added 1.3.0.0)
-        local = emit->alloc_local( value->type->size, value->name, TRUE, FALSE );
+        local = emit->alloc_local( value->type->size, value->name, TRUE, FALSE, FALSE );
         // remember the offset
         value->offset = local->offset;
         // write to mem stack
@@ -4388,7 +4389,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         emit->code->stack_depth += sizeof(t_CKUINT);
         // add this
         // ge: added FALSE to the 'is_obj' argument, 2012 april (added 1.3.0.0)
-        if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, FALSE ) )
+        if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, FALSE, FALSE ) )
         {
             EM_error2( a->linepos,
                 "(emit): internal error: cannot allocate local 'this'..." );
@@ -4414,7 +4415,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         emit->code->stack_depth += type->size;
         // allocate a place on the local stack
         // ge: added 'is_obj' 2012 april
-        local = emit->alloc_local( type->size, value->name, is_ref, is_obj );
+        local = emit->alloc_local( type->size, value->name, is_ref, is_obj, FALSE );
         if( !local )
         {
             EM_error2( a->linepos,
@@ -4536,7 +4537,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     // add this
     // ge: added TRUE to the 'is_obj' argument, 2012 april (added 1.3.0.0)
     // TODO: verify this is right, and not over-ref counted / cleaned up?
-    if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, TRUE ) )
+    if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, TRUE, FALSE ) )
     {
         EM_error2( class_def->linepos,
             "(emit): internal error: cannot allocate local 'this'..." );
@@ -4945,8 +4946,12 @@ void Chuck_Emitter::pop_scope( )
         // check to see if it's an object
         if( local->is_obj )
         {
-            // emit instruction to release the object
-            this->append( new Chuck_Instr_Release_Object2( local->offset ) );
+            // (REFACTOR-2017: don't release external objects)
+            if( !local->is_external )
+            {
+                // emit instruction to release the object
+                this->append( new Chuck_Instr_Release_Object2( local->offset ) );
+            }
         }
         
         // reclaim local; null out to be safe
