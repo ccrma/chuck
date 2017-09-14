@@ -4914,8 +4914,14 @@ void Chuck_Emitter::addref_on_scope()
         // check to see if it's an object
         if( local->is_obj )
         {
-            // emit instruction to add reference
-            this->append( new Chuck_Instr_AddRef_Object2( local->offset ) );
+            // REFACTOR-2017: Don't do if local is external
+            // Note: I don't think addref_on_scope() is used anywhere,
+            // but I am doing this to mirror pop_scope() below, which IS used
+            if( !local->is_external )
+            {
+                // emit instruction to add reference
+                this->append( new Chuck_Instr_AddRef_Object2( local->offset ) );
+            }
         }
     }
 }
