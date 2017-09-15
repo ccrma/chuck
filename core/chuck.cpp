@@ -282,7 +282,7 @@ t_CKFLOAT ChucK::getParamFloat( const std::string & key )
 //-----------------------------------------------------------------------------
 std::string ChucK::getParamString( const std::string & key )
 {
-    if( m_params.count( key ) > 0 && ck_param_types[key] == ck_param_int )
+    if( m_params.count( key ) > 0 && ck_param_types[key] == ck_param_string )
     {
         return m_params[key];
     }
