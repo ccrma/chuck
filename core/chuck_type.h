@@ -59,6 +59,18 @@ typedef enum {
 
 
 //-----------------------------------------------------------------------------
+// name: enum te_ExternalType
+// desc: ChucK types for external vars: int, float, (subclass of) Event
+//       (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+typedef enum {
+    te_externalInt, te_externalFloat, te_externalEvent
+} te_ExternalType;
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: enum te_HowMuch
 // desc: how much to scan/type check
 //-----------------------------------------------------------------------------
@@ -382,6 +394,14 @@ struct Chuck_Env : public Chuck_VM_Object
 public:
     // constructor
     Chuck_Env();
+
+// REFACTOR-2017: carrier and accessors
+public:
+    void set_carrier( Chuck_Carrier * carrier ) { m_carrier = carrier; }
+    Chuck_VM * vm() { return m_carrier->vm; }
+
+protected:
+    Chuck_Carrier * m_carrier;
 
 protected:
     // global namespace
@@ -713,6 +733,8 @@ struct Chuck_Value : public Chuck_VM_Object
     t_CKBOOL is_context_global;
     // is decl checked
     t_CKBOOL is_decl_checked;
+    // is external (added REFACTOR-2017)
+    t_CKBOOL is_external;
     // 0 = public, 1 = protected, 2 = private
     t_CKUINT access;
     // owner
@@ -739,6 +761,7 @@ struct Chuck_Value : public Chuck_VM_Object
       addr = a; is_member = FALSE;
       is_static = FALSE; is_context_global = FALSE;
       is_decl_checked = TRUE; // only set to false in certain cases
+      is_external = FALSE;
       func_ref = NULL; func_num_overloads = 0; }
 
     // destructor

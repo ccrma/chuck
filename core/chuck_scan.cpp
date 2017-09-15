@@ -1109,27 +1109,6 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         EM_error2( decl->linepos, "... in declaration ..." );
         return FALSE;
     }
-    
-    // REFACTOR-2017: external keyword support
-    if( decl->is_external )
-    {
-        // fail if type unsupported
-        if( !isa( t, env->t_int )        // t->name != std::string("int")
-            && !isa( t, env->t_float )   // && t->name != std::string("float")
-            && !isa( t, env->t_event ) ) // t->name != std::string("Event")
-        {
-            EM_error2( decl->linepos, (std::string("unsupported type for external keyword: ") + t->name).c_str() );
-            EM_error2( decl->linepos, "... (supported types: int, float, Event)" );
-            return FALSE;
-        }
-        
-        // fail if not global scope
-        if( ! env->is_global() )
-        {
-            EM_error2( decl->linepos, "external keyword cannot be used on non-global variables" );
-            return FALSE;
-        }
-    }
 
     // loop through the variables
     while( list != NULL )
@@ -2276,6 +2255,9 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         value->addr = var_decl->addr;
         // flag it until the decl is checked
         value->is_decl_checked = FALSE;
+        
+        // flag as external
+        value->is_external = decl->is_external;
 
         // remember the value
         var_decl->value = value;
