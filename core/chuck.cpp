@@ -382,8 +382,13 @@ bool ChucK::init()
     return true;
     
 cleanup:
+    // TODO: a different way to unlock?
+    // unlock all objects to delete chout, cherr
+    Chuck_VM_Object::unlock_all();
     SAFE_RELEASE( m_carrier->chout );
     SAFE_RELEASE( m_carrier->cherr );
+    // relock
+    Chuck_VM_Object::lock_all();
     SAFE_DELETE( m_carrier->vm );
     SAFE_DELETE( m_carrier->compiler );
     m_carrier->env = NULL;
@@ -415,8 +420,13 @@ bool ChucK::shutdown()
     }
 
     // free vm, compiler, friends
+    // TODO: a different way to unlock?
+    // unlock all objects to delete chout, cherr
+    Chuck_VM_Object::unlock_all();
     SAFE_RELEASE( m_carrier->chout );
     SAFE_RELEASE( m_carrier->cherr );
+    // relock
+    Chuck_VM_Object::lock_all();
     SAFE_DELETE( m_carrier->vm );
     SAFE_DELETE( m_carrier->compiler );
     m_carrier->otf_socket = NULL; // TODO: properly dealloc
@@ -602,6 +612,9 @@ void ChucK::run( SAMPLE * input, SAMPLE * output, int numFrames )
 {
     // make sure we started...
     if( !m_carrier->vm->running() ) this->start();
+    
+    // call the callback
+    m_carrier->vm->run( numFrames, input, output );
 }
 
 
