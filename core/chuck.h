@@ -40,18 +40,27 @@
 #include "chuck_compile.h"
 #include "chuck_dl.h"
 #include "chuck_vm.h"
+#include "chuck_shell.h"
 #include "chuck_carrier.h"
 #include <string>
+#include <map>
 
 
 
 
 // ChucK param names -- used in setParam(...) and getParam*(...)
 #define CHUCK_PARAM_SAMPLE_RATE         "SAMPLE_RATE"
+#define CHUCK_PARAM_INPUT_CHANNELS      "INPUT_CHANNELS"
+#define CHUCK_PARAM_OUTPUT_CHANNELS     "OUTPUT_CHANNELS"
+#define CHUCK_PARAM_VM_ADAPTIVE         "VM_ADAPTIVE"
+#define CHUCK_PARAM_VM_HALT             "VM_HALT"
+#define CHUCK_PARAM_OTF_PORT            "OTF_PORT"
 #define CHUCK_PARAM_LOG_LEVEL           "LOG_LEVEL"
 #define CHUCK_PARAM_DUMP_INSTRUCTIONS   "DUMP_INSTRUCTIONS"
+#define CHUCK_PARAM_AUTO_DEPEND         "AUTO_DEPEND"
 #define CHUCK_PARAM_DEPRECATE_LEVEL     "DEPRECATE_LEVEL"
 #define CHUCK_PARAM_WORKING_DIRECTORY   "WORKING_DIRECTORY"
+#define CHUCK_PARAM_CHUGIN_DIRECTORY    "CHUGIN_DIRECTORY"
 
 
 
@@ -86,9 +95,12 @@ public:
     bool compileCode( const std::string & code, const std::string & args, int count = 1 );
 
 public:
+    // initialize ChucK (using params)
+    bool init();
     // explicit start (optionally -- done as neede from run())
     bool start();
 
+public:
     // run engine (call from callback)
     void run( SAMPLE * input, SAMPLE * output, int numFrames );
 
@@ -103,21 +115,34 @@ public:
     Chuck_Compiler * compiler() { return m_carrier->compiler; }
 
 protected:
-    // initialize
-    bool init();
     // shutdown
     bool shutdown();
     
 public: // static functions
+    // chuck version
+    static const char * version();
+    // chuck int size (in bits)
+    static t_CKUINT intSize();
+    // number of ChucK's
     static t_CKUINT numVMs() { return o_numVMs; };
-    
+    // --poop compatibilty
+    static void poop();
+
 protected:
+    // chuck version
+    static const char VERSION[];
     // number of VMs -- managed from VM constructor/destructors
     static t_CKUINT o_numVMs;
     
 protected:
+    // initialize default params
+    void initDefaultParams();
+    
+protected:
     // core elements: compiler, VM, etc.
     Chuck_Carrier * m_carrier;
+    // chuck params
+    std::map<std::string, std::string> m_params;
 };
 
 
