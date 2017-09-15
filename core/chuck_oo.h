@@ -648,13 +648,13 @@ public:
 
 public: // REFACTOR-2017
     // set callback
-    static void set_output_callback( void (* fp)(const char *) );
+    void set_output_callback( void (* fp)(const char *) );
     
 private:
     // callback
-    static void (* m_callback)(const char *);
+    void (* m_callback)(const char *);
     // intermediate line storage
-    static std::stringstream m_buffer;
+    std::stringstream m_buffer;
 };
 
 
@@ -693,13 +693,13 @@ public:
 
 public:
     // set callback | REFACTOR-2017
-    static void set_output_callback( void (* fp)(const char *) );
+    void set_output_callback( void (* fp)(const char *) );
     
 private:
     // callback
-    static void (* m_callback)(const char *);
+    void (* m_callback)(const char *);
     // intermediate line storage
-    static std::stringstream m_buffer;
+    std::stringstream m_buffer;
 };
 
 

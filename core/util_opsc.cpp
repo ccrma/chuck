@@ -1216,8 +1216,8 @@ THREAD_RETURN (THREAD_TYPE udp_port_listener_thread)( void * data )
     UDP_Port_Listener * upl = (UDP_Port_Listener *) data;
 
     // priority boost
-    if( Chuck_VM::our_priority != 0x7fffffff )
-        Chuck_VM::set_priority( Chuck_VM::our_priority, NULL );
+    if( XThreadUtil::our_priority != 0x7fffffff )
+        XThreadUtil::set_priority( XThreadUtil::our_priority );
 
     EM_log( CK_LOG_INFO, "UDP_Port_Listener:: starting receive loop...\n" );
     int mLen;
@@ -1703,8 +1703,8 @@ THREAD_RETURN (THREAD_TYPE osc_recv_thread)( void * data )
     OSC_Receiver * oscar = (OSC_Receiver * )data;
 
     // priority boost
-    if( Chuck_VM::our_priority != 0x7fffffff )
-        Chuck_VM::set_priority( Chuck_VM::our_priority, NULL );
+    if( XThreadUtil::our_priority != 0x7fffffff )
+        XThreadUtil::set_priority( XThreadUtil::our_priority );
 
     do {
         oscar->recv_mesg();

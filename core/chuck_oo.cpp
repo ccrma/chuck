@@ -62,10 +62,6 @@ const t_CKINT Chuck_IO_File::FLAG_WRITEONLY = 0x20;
 const t_CKINT Chuck_IO_File::FLAG_APPEND = 0x40;
 const t_CKINT Chuck_IO_File::TYPE_ASCII = 0x80;
 const t_CKINT Chuck_IO_File::TYPE_BINARY = 0x100;
-void (* Chuck_IO_Chout::m_callback)(const char *) = NULL;
-void (* Chuck_IO_Cherr::m_callback)(const char *) = NULL;
-std::stringstream Chuck_IO_Chout::m_buffer;
-std::stringstream Chuck_IO_Cherr::m_buffer;
 
 
 
@@ -3116,7 +3112,9 @@ Chuck_IO_Chout::Chuck_IO_Chout( Chuck_Carrier * carrier ) {
     this->lock();
 }
 
-Chuck_IO_Chout::~Chuck_IO_Chout() { }
+Chuck_IO_Chout::~Chuck_IO_Chout() {
+    m_callback = NULL;
+}
 
 void Chuck_IO_Chout::set_output_callback( void (*fp)(const char *) )
 {
@@ -3206,7 +3204,9 @@ Chuck_IO_Cherr::Chuck_IO_Cherr( Chuck_Carrier * carrier ) {
     this->lock();
 }
 
-Chuck_IO_Cherr::~Chuck_IO_Cherr() { }
+Chuck_IO_Cherr::~Chuck_IO_Cherr() {
+    m_callback = NULL;
+}
 
 void Chuck_IO_Cherr::set_output_callback( void (*fp)(const char *) )
 {

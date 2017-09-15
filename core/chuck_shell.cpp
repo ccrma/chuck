@@ -48,8 +48,9 @@
 
 using namespace std;
 
+// REFACTOR-2017: TODO Ge: where should this live? not in chuck_main if it's in core!
 // global shell pointer (lives in chuck_main)
-extern Chuck_Shell * g_shell;
+Chuck_Shell * g_shell;
 
 //-----------------------------------------------------------------------------
 // name: tokenize_string
@@ -703,9 +704,12 @@ void Chuck_Shell::exit()
 {
     stop = TRUE;
     
+    // REFACTOR 2017 TODO Ge: all_stop
+/*    
     if( process_vm != NULL )
         all_stop(); // ge: 1.3.5.3
         // process_vm->stop();
+*/
 }
 
 //-----------------------------------------------------------------------------

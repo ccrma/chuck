@@ -38,6 +38,7 @@
 #define __CHUCK_CARRIER_H__
 
 #include "chuck_def.h"
+#include "util_thread.h"
 
 
 
