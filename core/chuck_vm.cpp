@@ -332,6 +332,9 @@ t_CKBOOL Chuck_VM::shutdown()
     // unlockdown
     // REFACTOR-2017: TODO: don't unlock all objects for all VMs? see relockdown below
     Chuck_VM_Object::unlock_all();
+    
+    // REFACTOR-2017: clean up after my external variables
+    cleanup_external_variables();
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing shreduler..." );
@@ -1057,61 +1060,6 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
     // track remove shred
     CK_TRACK( Chuck_Stats::instance()->remove_shred( shred ) );
 
-    // un-track any external variables owned by this shred
-    // for external ints
-    if( m_external_int_pointers.size() > 0 )
-    {
-        std::map< std::string, Chuck_VM_External_Int >::iterator iter;
-        for( iter = m_external_int_pointers.begin(); iter != m_external_int_pointers.end(); )
-        {
-            // check all items to see if their shred matches the shred we are freeing
-            if( iter->second.m_shred == shred )
-            {
-                m_external_int_pointers.erase( iter++ );
-            }
-            else
-            {
-                iter++;
-            }
-        }
-    }
-    
-    // for external floats
-    if( m_external_float_pointers.size() > 0 )
-    {
-        std::map< std::string, Chuck_VM_External_Float >::iterator iter;
-        for( iter = m_external_float_pointers.begin(); iter != m_external_float_pointers.end(); )
-        {
-            // check all items to see if their shred matches the shred we are freeing
-            if( iter->second.m_shred == shred )
-            {
-                m_external_float_pointers.erase( iter++ );
-            }
-            else
-            {
-                iter++;
-            }
-        }
-    }
-    
-    // for external events
-    if( m_external_event_pointers.size() > 0 )
-    {
-        std::map< std::string, Chuck_VM_External_Event >::iterator iter;
-        for( iter = m_external_event_pointers.begin(); iter != m_external_event_pointers.end(); )
-        {
-            // check all items to see if their shred matches the shred we are freeing
-            if( iter->second.m_shred == shred )
-            {
-                m_external_event_pointers.erase( iter++ );
-            }
-            else
-            {
-                iter++;
-            }
-        }
-    }
-
     // free!
     m_shreduler->remove( shred );
     // TODO: remove shred from event, with synchronization (still necessary with dump?)
@@ -1207,10 +1155,11 @@ void Chuck_VM::release_dump( )
 // name: get_external_int()
 // desc: get an external int by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::get_external_int( std::string name, void (* fp)(t_CKINT) ) {
-    Chuck_Get_External_Int get_int_message;
+t_CKBOOL Chuck_VM::get_external_int( std::string name,
+                                     void (* callback)(t_CKINT) ) {
+    Chuck_Get_External_Int_Request get_int_message;
     get_int_message.name = name;
-    get_int_message.fp = fp;
+    get_int_message.fp = callback;
     
     m_get_external_int_queue.put( get_int_message );
     
@@ -1225,7 +1174,7 @@ t_CKBOOL Chuck_VM::get_external_int( std::string name, void (* fp)(t_CKINT) ) {
 // desc: set an external int by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::set_external_int( std::string name, t_CKINT val ) {
-    Chuck_Set_External_Int set_int_message;
+    Chuck_Set_External_Int_Request set_int_message;
     set_int_message.name = name;
     set_int_message.val = val;
     
@@ -1241,16 +1190,41 @@ t_CKBOOL Chuck_VM::set_external_int( std::string name, t_CKINT val ) {
 // name: init_external_int()
 // desc: tell the vm that an external int is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_external_int( std::string name, Chuck_VM_Shred * shred, t_CKUINT offset ) {
-    if( m_external_int_pointers.count( name ) != 0 ) { return FALSE; }
-    
-    Chuck_VM_External_Int new_entry;
-    new_entry.m_shred = shred;
-    new_entry.offset = offset;
-    
-    this->m_external_int_pointers[name] = new_entry;
+t_CKBOOL Chuck_VM::init_external_int( std::string name )
+{
+    if( m_external_ints.count( name ) == 0 )
+    {
+        m_external_ints[name] = new Chuck_External_Int_Container;
+    }
     
     return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_int_value()
+// desc: get a value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_VM::get_external_int_value( std::string name )
+{
+    // ensure exists
+    init_external_int( name );
+    
+    return m_external_ints[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_int_value()
+// desc: set a value directly to the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKINT * Chuck_VM::get_ptr_to_external_int( std::string name )
+{
+    return &( m_external_ints[name]->val );
 }
 
 
@@ -1260,10 +1234,11 @@ t_CKBOOL Chuck_VM::init_external_int( std::string name, Chuck_VM_Shred * shred, 
 // name: get_external_float()
 // desc: get an external float by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::get_external_float( std::string name, void (* fp)(t_CKFLOAT) ) {
-    Chuck_Get_External_Float get_float_message;
+t_CKBOOL Chuck_VM::get_external_float( std::string name,
+                                       void (* callback)(t_CKFLOAT) ) {
+    Chuck_Get_External_Float_Request get_float_message;
     get_float_message.name = name;
-    get_float_message.fp = fp;
+    get_float_message.fp = callback;
     
     m_get_external_float_queue.put( get_float_message );
     
@@ -1278,7 +1253,7 @@ t_CKBOOL Chuck_VM::get_external_float( std::string name, void (* fp)(t_CKFLOAT) 
 // desc: set an external float by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::set_external_float( std::string name, t_CKFLOAT val ) {
-    Chuck_Set_External_Float set_float_message;
+    Chuck_Set_External_Float_Request set_float_message;
     set_float_message.name = name;
     set_float_message.val = val;
     
@@ -1294,16 +1269,41 @@ t_CKBOOL Chuck_VM::set_external_float( std::string name, t_CKFLOAT val ) {
 // name: init_external_float()
 // desc: tell the vm that an external float is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_external_float( std::string name, Chuck_VM_Shred * shred, t_CKUINT offset ) {
-    if( m_external_float_pointers.count( name ) != 0 ) { return FALSE; }
-    
-    Chuck_VM_External_Float new_entry;
-    new_entry.m_shred = shred;
-    new_entry.offset = offset;
-    
-    this->m_external_float_pointers[name] = new_entry;
+t_CKBOOL Chuck_VM::init_external_float( std::string name )
+{
+    if( m_external_floats.count( name ) == 0 )
+    {
+        m_external_floats[name] = new Chuck_External_Float_Container;
+    }
     
     return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_float_value()
+// desc: get a value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKFLOAT Chuck_VM::get_external_float_value( std::string name )
+{
+    // ensure exists
+    init_external_float( name );
+    
+    return m_external_floats[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_float_value()
+// desc: set a value directly to the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKFLOAT * Chuck_VM::get_ptr_to_external_float( std::string name )
+{
+    return &( m_external_floats[name]->val );
 }
 
 
@@ -1314,7 +1314,7 @@ t_CKBOOL Chuck_VM::init_external_float( std::string name, Chuck_VM_Shred * shred
 // desc: signal() an Event by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::signal_external_event( std::string name ) {
-    Chuck_Signal_External_Event signal_event_message;
+    Chuck_Signal_External_Event_Request signal_event_message;
     signal_event_message.name = name;
     signal_event_message.is_broadcast = FALSE;
     
@@ -1331,7 +1331,7 @@ t_CKBOOL Chuck_VM::signal_external_event( std::string name ) {
 // desc: broadcast() an Event by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::broadcast_external_event( std::string name ) {
-    Chuck_Signal_External_Event signal_event_message;
+    Chuck_Signal_External_Event_Request signal_event_message;
     signal_event_message.name = name;
     signal_event_message.is_broadcast = TRUE;
     
@@ -1347,16 +1347,87 @@ t_CKBOOL Chuck_VM::broadcast_external_event( std::string name ) {
 // name: init_external_event()
 // desc: tell the vm that an external float is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_external_event( std::string name, Chuck_VM_Shred * shred, t_CKUINT offset ) {
-    if( m_external_event_pointers.count( name ) != 0 ) { return FALSE; }
-    
-    Chuck_VM_External_Event new_entry;
-    new_entry.m_shred = shred;
-    new_entry.offset = offset;
-    
-    this->m_external_event_pointers[name] = new_entry;
+t_CKBOOL Chuck_VM::init_external_event( std::string name, Chuck_Type * type ) {
+
+    // if it hasn't been initted yet
+    if( m_external_events.count( name ) == 0 ) {
+        // create a new storage container
+        m_external_events[name] = new Chuck_External_Event_Container;
+        // create the chuck object
+        m_external_events[name]->val =
+            (Chuck_Event *) instantiate_and_initialize_object( type, this );
+        // add a reference to it so it won't be deleted until we're done
+        // cleaning up the VM
+        m_external_events[name]->val->add_ref();
+        // store its type in the container, too (is it a user-defined class?)
+        m_external_events[name]->type = type;
+    }
+    // already exists. check if there's a type mismatch.
+    else if( type->name != m_external_events[name]->type->name )
+    {
+        return FALSE;
+    }
     
     return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_event_pointer()
+// desc: get a pointer directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Event * Chuck_VM::get_external_event( std::string name )
+{
+    return m_external_events[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_event_pointer()
+// desc: set a pointer directly on the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Event * * Chuck_VM::get_ptr_to_external_event( std::string name )
+{
+    return &( m_external_events[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: cleanup_external_variables()
+// desc: set a pointer directly on the vm (internal)
+//-----------------------------------------------------------------------------
+void Chuck_VM::cleanup_external_variables()
+{
+    // ints: delete containers and clear map
+    for( std::map< std::string, Chuck_External_Int_Container * >::iterator it=
+         m_external_ints.begin(); it!=m_external_ints.end(); it++ )
+    {
+        delete (it->second);
+    }
+    m_external_ints.clear();
+    
+    // floats: delete containers and clear map
+    for( std::map< std::string, Chuck_External_Float_Container * >::iterator it=
+         m_external_floats.begin(); it!=m_external_floats.end(); it++ )
+    {
+        delete (it->second);
+    }
+    m_external_floats.clear();
+    
+    // events: release events, delete containers, and clear map
+    for( std::map< std::string, Chuck_External_Event_Container * >::iterator it=
+         m_external_events.begin(); it!=m_external_events.end(); it++ )
+    {
+        SAFE_RELEASE( it->second->val );
+        delete (it->second);
+    }
+    m_external_events.clear();
 }
 
 
@@ -1370,19 +1441,12 @@ void Chuck_VM::handle_external_set_messages() {
     // TODO: only do one per call, to avoid taking up too much time?
     //       if so then "if" not "while"
     while( m_set_external_int_queue.more() ) {
-        Chuck_Set_External_Int set_int_message;
+        Chuck_Set_External_Int_Request set_int_message;
         if( m_set_external_int_queue.get( & set_int_message ) )
         {
-            // TODO: I am using a LOT of object copying because I didn't feel like dealing with pointers.
-            //       Bad idea?
-            if( m_external_int_pointers.count( set_int_message.name ) > 0 )
-            {
-                // get internal storage
-                Chuck_VM_External_Int * entry = & m_external_int_pointers[set_int_message.name];
-                Chuck_VM_Shred * shred = entry->m_shred;
-                // store value into shred stack
-                *((t_CKINT *)(shred->base_ref->sp + entry->offset)) = set_int_message.val;
-            }
+            // ensure the container exists
+            init_external_int( set_int_message.name );
+            m_external_ints[set_int_message.name]->val = set_int_message.val;
         }
         else
         {
@@ -1393,17 +1457,12 @@ void Chuck_VM::handle_external_set_messages() {
     }
     
     while( m_set_external_float_queue.more() ) {
-        Chuck_Set_External_Float set_float_message;
+        Chuck_Set_External_Float_Request set_float_message;
         if( m_set_external_float_queue.get( & set_float_message ) )
         {
-            if( m_external_float_pointers.count( set_float_message.name ) > 0 )
-            {
-                // get internal storage
-                Chuck_VM_External_Float * entry = & m_external_float_pointers[set_float_message.name];
-                Chuck_VM_Shred * shred = entry->m_shred;
-                // store value into shred stack
-                *((t_CKFLOAT *)(shred->base_ref->sp + entry->offset)) = set_float_message.val;
-            }
+            // ensure the container exists
+            init_external_float( set_float_message.name );
+            m_external_floats[set_float_message.name]->val = set_float_message.val;
         }
         else
         {
@@ -1414,16 +1473,12 @@ void Chuck_VM::handle_external_set_messages() {
     }
     
     while( m_signal_external_event_queue.more() ) {
-        Chuck_Signal_External_Event signal_event_message;
+        Chuck_Signal_External_Event_Request signal_event_message;
         if( m_signal_external_event_queue.get( & signal_event_message ) )
         {
-            if( m_external_event_pointers.count( signal_event_message.name ) > 0 )
-            {
-                // get internal storage
-                Chuck_VM_External_Event * entry = & m_external_event_pointers[signal_event_message.name];
-                Chuck_VM_Shred * shred = entry->m_shred;
-                
-                Chuck_Event * event = (Chuck_Event *) (*((t_CKUINT *)(shred->base_ref->sp + entry->offset)));
+            // ensure it exists
+            if( m_external_events.count( signal_event_message.name ) > 0 ) {
+                Chuck_Event * event = get_external_event( signal_event_message.name );
                 if( signal_event_message.is_broadcast )
                 {
                     event->broadcast();
@@ -1433,7 +1488,6 @@ void Chuck_VM::handle_external_set_messages() {
                     event->signal();
                 }
             }
-        
         }
         else
         {
@@ -1451,23 +1505,15 @@ void Chuck_VM::handle_external_set_messages() {
 // desc: update values with external set messages
 //-----------------------------------------------------------------------------
 void Chuck_VM::handle_external_get_messages() {
-    // TODO: only do one per call, to avoid taking up too much time?
-    //       if so then "if" not "while"
     while( m_get_external_int_queue.more() ) {
-        Chuck_Get_External_Int get_int_message;
-        if( m_get_external_int_queue.get( & get_int_message ) )
+        Chuck_Get_External_Int_Request get_int_message;
+        if( m_get_external_int_queue.get( & get_int_message ) &&
+            get_int_message.fp != NULL )
         {
-            if( m_external_int_pointers.count( get_int_message.name ) > 0 )
-            {
-                // get internal storage
-                Chuck_VM_External_Int * entry = & m_external_int_pointers[get_int_message.name];
-                Chuck_VM_Shred * shred = entry->m_shred;
-
-                // fetch val
-                t_CKINT val = *((t_CKINT *)(shred->base_ref->sp + entry->offset));
-                // call callback
-                get_int_message.fp( val );
-            }
+            // ensure the value exists
+            init_external_int( get_int_message.name );
+            // call the callback with the value
+            get_int_message.fp( m_external_ints[get_int_message.name]->val );
         }
         else
         {
@@ -1478,20 +1524,14 @@ void Chuck_VM::handle_external_get_messages() {
     }
     
     while( m_get_external_float_queue.more() ) {
-        Chuck_Get_External_Float get_float_message;
-        if( m_get_external_float_queue.get( & get_float_message ) )
+        Chuck_Get_External_Float_Request get_float_message;
+        if( m_get_external_float_queue.get( & get_float_message ) &&
+            get_float_message.fp != NULL )
         {
-            if( m_external_float_pointers.count( get_float_message.name ) > 0 )
-            {
-                // get internal storage
-                Chuck_VM_External_Float * entry = & m_external_float_pointers[get_float_message.name];
-                Chuck_VM_Shred * shred = entry->m_shred;
-                
-                // fetch val
-                t_CKFLOAT val = *((t_CKFLOAT *)(shred->base_ref->sp + entry->offset));
-                // call callback
-                get_float_message.fp( val );
-            }
+            // ensure value exists
+            init_external_float( get_float_message.name );
+            // call callback with float
+            get_float_message.fp( m_external_floats[get_float_message.name]->val );
         }
         else
         {
