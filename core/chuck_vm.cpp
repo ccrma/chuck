@@ -454,6 +454,11 @@ t_CKBOOL Chuck_VM::compute()
     // REFACTOR-2017: spork queued shreds
     // spork newly compiled files before trying set messages
     handle_external_spork_messages();
+    
+    // REFACTOR-2017: set externals
+    handle_external_set_messages();
+    // REFACTOR-2017: get externals
+    handle_external_get_messages();
 
     // iteration until no more shreds/events/messages
     while( iterate )
@@ -508,13 +513,6 @@ t_CKBOOL Chuck_VM::compute()
         if( m_num_dumped_shreds > 0 )
             release_dump();
     }
-
-    // REFACTOR-2017: set externals after chuck code runs
-    // (give new shreds a chance to init their variables)
-    handle_external_set_messages();
-    // REFACTOR-2017: get externals after chuck code runs
-    // REFACTOR-2017: TODO: move these up to before while loop after dictionary impl
-    handle_external_get_messages();
 
     // continue executing if have shreds left or if don't-halt
     // or if have shreds to add
