@@ -1152,13 +1152,27 @@ protected:
 // global variables
 t_CKBOOL g_le_launched = FALSE;
 t_CKBOOL g_le_wait = TRUE;
-// CHUCK_THREAD g_tid_le = 0;
-extern CHUCK_THREAD g_tid_whatever;
+CHUCK_THREAD g_le_thread = 0;
 map<LineEvent *, LineEvent *> g_le_map;
 XMutex g_le_mutex;
 string g_le_what;
 extern t_CKUINT g_num_vms_running; // REFACTOR-2017
 
+// final cleanup (per host)
+void le_cleanup()
+{
+    if( g_le_thread )
+    {
+        // cancel thread
+        pthread_cancel( g_le_thread );
+        g_le_thread = 0;
+        // reset
+        g_le_launched = FALSE;
+        g_le_wait = TRUE;
+    }
+}
+
+// le callback
 void * le_cb( void * p )
 {
     char line[2048];
@@ -1230,7 +1244,8 @@ LineEvent::LineEvent( Chuck_Event * SELF )
 
 LineEvent::~LineEvent()
 {
-    // do nothing
+    // remove from global map
+    g_le_map.erase( this );
 }
 
 void LineEvent::prompt( const string & what )

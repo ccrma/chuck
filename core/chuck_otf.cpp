@@ -725,3 +725,21 @@ const char * poop[] = {
 };
 
 long poop_size = sizeof( poop ) / sizeof( char * );
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: uh()
+// desc: ...
+//-----------------------------------------------------------------------------
+void uh( )
+{
+    srand( time( NULL ) );
+    while( true )
+    {
+        int n = (int)(rand() / (float)RAND_MAX * poop_size);
+        printf( "%s\n", poop[n] );
+        usleep( (unsigned long)(rand() / (float)RAND_MAX * 2000000) );
+    }
+}

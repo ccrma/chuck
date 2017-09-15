@@ -72,6 +72,7 @@ struct Chuck_Carrier
     // OTF programming things
     ck_socket otf_socket;
     t_CKINT otf_port;
+    CHUCK_THREAD otf_thread;
     
     // constructor
     Chuck_Carrier() :
@@ -81,7 +82,8 @@ struct Chuck_Carrier
         chout( NULL ),
         cherr( NULL ),
         otf_socket( NULL ),
-        otf_port( 0 )
+        otf_port( 0 ),
+        otf_thread( 0 )
     { }
 };
 
