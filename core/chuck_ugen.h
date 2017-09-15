@@ -147,6 +147,8 @@ public: // data
 
     // the shred on which the ugen is created
     Chuck_VM_Shred * shred;
+    // the vm on which the ugen is created
+    Chuck_VM * vm;
     // owner
     Chuck_UGen * owner;
     

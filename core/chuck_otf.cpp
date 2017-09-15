@@ -392,7 +392,8 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
                   int * is_otf )
 {
     Net_Msg msg;
-    g_sigpipe_mode = 1;
+    // REFACTOR-2017 TODO: wat is global sigpipe mode
+//    g_sigpipe_mode = 1;
     int tasks_total = 0, tasks_done = 0;
     ck_socket dest = NULL;
     if( is_otf ) *is_otf = TRUE;
@@ -632,7 +633,8 @@ void * otf_cb( void * p )
     // signal( SIGINT, signal_int );
 #ifndef __PLATFORM_WIN32__
     // catch SIGPIPE
-    signal( SIGPIPE, signal_pipe );
+// REFACTOR 2017: TODO register global signal_pipe function
+//    signal( SIGPIPE, signal_pipe );
 #endif
 
     while( true )

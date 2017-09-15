@@ -661,7 +661,8 @@ CK_DLL_SFUN( system_impl )
     const char * cmd = GET_CK_STRING(ARGS)->str().c_str();
 
     // check globals for permission
-    if( !g_enable_system_cmd )
+// REFACTOR-2017: TODO reenable --caution-to-the-wind?
+/*    if( !g_enable_system_cmd )
     {
         CK_FPRINTF_STDERR( "[chuck]:error: VM not authorized to call Std.system( string )...\n" );
         CK_FPRINTF_STDERR( "[chuck]:  (command string was: \"%s\")\n", cmd );
@@ -669,6 +670,7 @@ CK_DLL_SFUN( system_impl )
         RETURN->v_int = 0;
     }
     else
+*/
     {
         // log
         EM_log( CK_LOG_SEVERE, "invoking system( CMD )..." );
@@ -1156,7 +1158,6 @@ CHUCK_THREAD g_le_thread = 0;
 map<LineEvent *, LineEvent *> g_le_map;
 XMutex g_le_mutex;
 string g_le_what;
-extern t_CKUINT g_num_vms_running; // REFACTOR-2017
 
 // final cleanup (per host)
 void le_cleanup()
@@ -1186,11 +1187,10 @@ void * le_cb( void * p )
         while( g_le_wait )
             usleep( 10000 );
 
-        // check
-        // jack: changed from g_vm when removing g_vm
-        // check if any vms are still running; if yes, that means
-        // we are done and we should exit | REFACTOR-2017
-        if( g_num_vms_running == 0 ) break;
+        // REFACTOR-2017: TODO Ge:
+        // I removed the check here for if there are no more vms running
+        // Theoretically, we will always just kill this thread from outside of
+        // it. Does that sound right to you?
 
         // do the prompt
         cout << g_le_what;
@@ -1226,7 +1226,7 @@ LineEvent::LineEvent( Chuck_Event * SELF )
     if( !g_le_launched )
     {
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-        pthread_create( &g_tid_whatever, NULL, le_cb, NULL );
+        pthread_create( &g_le_thread, NULL, le_cb, NULL );
 #else
         g_tid_whatever = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)le_cb, NULL, 0, 0 );
 #endif

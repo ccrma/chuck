@@ -26112,8 +26112,11 @@ CK_DLL_CTOR( WvOut_ctor )
 {
     WvOut * yo = new WvOut;
     yo->autoPrefix.set( "chuck-session" );
-    // ge: 1.3.5.3
+    // REFACTOR-2017 TODO Ge: Fix wvout realtime audio
+/*    // ge: 1.3.5.3
     yo->asyncIO = g_enable_realtime_audio;
+*/
+    yo->asyncIO = FALSE;
     // yo->asyncIO = SHRED->vm_ref->m_audio;
     OBJ_MEMBER_UINT(SELF, WvOut_offset_data) = (t_CKUINT)yo;
 }

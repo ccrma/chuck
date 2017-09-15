@@ -556,7 +556,8 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
 }
 
 
-
+// REFACTOR-2017: Ge TODO: confirm deletion
+/*
 //-----------------------------------------------------------------------------
 // name: ck_create_main_thread_hook()
 // desc: ...
@@ -571,6 +572,7 @@ Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query
     
     return new Chuck_DL_MainThreadHook( hook, quit, bindle, query->vm() );
 }
+*/
 
 //-----------------------------------------------------------------------------
 // name: ck_doc_class()
@@ -949,7 +951,10 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     add_ugen_funcf_auto_num_channels = ck_add_ugen_funcf_auto_num_channels;
     add_ugen_ctrl = ck_add_ugen_ctrl;
     end_class = ck_end_class;
+    // REFACTOR-2017: Ge TODO: confirm deletion
+    /*
     create_main_thread_hook = ck_create_main_thread_hook;
+    */
     doc_class = ck_doc_class;
     doc_func = ck_doc_func;
     doc_var = ck_doc_var;
@@ -961,12 +966,8 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     reserved = NULL;
     curr_class = NULL;
     curr_func = NULL;
-  
-#ifndef __CKDL_NO_BBQ__
-    srate = Digitalio::sampling_rate() ; bufsize = Digitalio::buffer_size();
-#else
-    srate = 0; bufsize = 0;
-#endif
+    
+    srate = carrier->vm->srate();
 
     linepos = 0;
 }
@@ -1027,7 +1028,8 @@ Chuck_DL_Func::~Chuck_DL_Func()
 }
 
 
-
+// REFACTOR-2017: Ge TODO: confirm deletion
+/*
 t_CKBOOL ck_mthook_activate(Chuck_DL_MainThreadHook *hook)
 {
     // ge: changed in 1.3.5.3
@@ -1064,7 +1066,7 @@ activate(ck_mthook_activate),
 deactivate(ck_mthook_deactivate),
 m_active(FALSE)
 { }
-
+*/
 
 
 /*******************************************************************************

@@ -84,15 +84,15 @@ public:
     bool setParam( const std::string & name, t_CKFLOAT value );
     bool setParam( const std::string & name, const std::string & value );
     // get params
-    t_CKINT getParamInt( const std::string & key ) const;
-    t_CKFLOAT getParamFloat( const std::string & key ) const;
-    std::string getParamString( const std::string & key ) const;
+    t_CKINT getParamInt( const std::string & key );
+    t_CKFLOAT getParamFloat( const std::string & key );
+    std::string getParamString( const std::string & key );
 
 public:
     // compile a file (can be called anytime)
-    bool compileFile( const std::string & path, const std::string & args, int count = 1 );
+    bool compileFile( const std::string & path, const std::string & argsTogether, int count = 1 );
     // compile code directly
-    bool compileCode( const std::string & code, const std::string & args, int count = 1 );
+    bool compileCode( const std::string & code, const std::string & argsTogether, int count = 1 );
 
 public:
     // initialize ChucK (using params)
@@ -113,6 +113,26 @@ public:
     Chuck_VM * vm() { return m_carrier->vm; }
     // get compiler (dangerous)
     Chuck_Compiler * compiler() { return m_carrier->compiler; }
+
+public:
+    // external variables - set and get
+    t_CKBOOL setExternalInt( const char * name, t_CKINT val );
+    t_CKBOOL getExternalInt( const char * name, void (* callback)(t_CKINT) );
+    t_CKBOOL setExternalFloat( const char * name, t_CKFLOAT val );
+    t_CKBOOL getExternalFloat( const char * name, void (* callback)(t_CKFLOAT) );
+    t_CKBOOL signalExternalEvent( const char * name );
+    t_CKBOOL broadcastExternalEvent( const char * name );
+    
+public:
+    // external callback functions
+    t_CKBOOL setChoutCallback( void (* callback)(const char *) );
+    t_CKBOOL setCherrCallback( void (* callback)(const char *) );
+    static t_CKBOOL setStdoutCallback( void (* callback)(const char *) );
+    static t_CKBOOL setStderrCallback( void (* callback)(const char *) );
+
+public:
+    // TODO Ge: name choice? should this exist?
+    static void finalCleanup();
 
 protected:
     // shutdown
@@ -143,6 +163,8 @@ protected:
     Chuck_Carrier * m_carrier;
     // chuck params
     std::map<std::string, std::string> m_params;
+    // did user init?
+    t_CKBOOL m_init;
 };
 
 
