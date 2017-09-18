@@ -563,11 +563,6 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 vm_stop:
     // stop, 1.3.5.3
     this->stop();
-    // REFACTOR-2017: TODO Ge: confirm deletion
-/*    // TODO: move this to be per VM?
-    if( g_main_thread_quit )
-        g_main_thread_quit( g_main_thread_bindle );
-    clear_main_thread_hook();*/
 
     // log
     EM_log( CK_LOG_SYSTEM, "virtual machine stopped..." );
