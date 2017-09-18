@@ -556,23 +556,7 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
 }
 
 
-// REFACTOR-2017: Ge TODO: confirm deletion
-/*
-//-----------------------------------------------------------------------------
-// name: ck_create_main_thread_hook()
-// desc: ...
-//-----------------------------------------------------------------------------
-Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query * query,
-                                                          f_mainthreadhook hook,
-                                                          f_mainthreadquit quit,
-                                                          void * bindle )
-{
-    assert( query->compiler() );
-    assert( query->vm() );
-    
-    return new Chuck_DL_MainThreadHook( hook, quit, bindle, query->vm() );
-}
-*/
+
 
 //-----------------------------------------------------------------------------
 // name: ck_doc_class()
@@ -951,10 +935,6 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     add_ugen_funcf_auto_num_channels = ck_add_ugen_funcf_auto_num_channels;
     add_ugen_ctrl = ck_add_ugen_ctrl;
     end_class = ck_end_class;
-    // REFACTOR-2017: Ge TODO: confirm deletion
-    /*
-    create_main_thread_hook = ck_create_main_thread_hook;
-    */
     doc_class = ck_doc_class;
     doc_func = ck_doc_func;
     doc_var = ck_doc_var;
@@ -1028,45 +1008,6 @@ Chuck_DL_Func::~Chuck_DL_Func()
 }
 
 
-// REFACTOR-2017: Ge TODO: confirm deletion
-/*
-t_CKBOOL ck_mthook_activate(Chuck_DL_MainThreadHook *hook)
-{
-    // ge: changed in 1.3.5.3
-    hook->m_active = set_main_thread_hook(hook->m_hook,
-                                          hook->m_quit,
-                                          hook->m_bindle);
-//    hook->m_active = hook->m_vm->set_main_thread_hook(hook->m_hook,
-//                                                      hook->m_quit,
-//                                                      hook->m_bindle);
-    return hook->m_active;
-}
-
-t_CKBOOL ck_mthook_deactivate(Chuck_DL_MainThreadHook *hook)
-{
-    if(hook->m_active)
-        // ge: changed in 1.3.5.3
-        return clear_main_thread_hook();
-        // return hook->m_vm->clear_main_thread_hook();
-    else
-        return FALSE;
-}
-
-//-----------------------------------------------------------------------------
-// name: Chuck_DL_MainThreadHook()
-// desc: ...
-//-----------------------------------------------------------------------------
-Chuck_DL_MainThreadHook::Chuck_DL_MainThreadHook(f_mainthreadhook hook, f_mainthreadquit quit,
-                                                 void * bindle, Chuck_VM * vm) :
-m_hook(hook),
-m_quit(quit),
-m_vm(vm),
-m_bindle(bindle),
-activate(ck_mthook_activate),
-deactivate(ck_mthook_deactivate),
-m_active(FALSE)
-{ }
-*/
 
 
 /*******************************************************************************

@@ -73,10 +73,6 @@ struct Chuck_DLL;
 struct Chuck_UGen;
 struct Chuck_UAna;
 struct Chuck_UAnaBlobProxy;
-// REFACTOR-2017: Ge TODO: confirm deletion
-/*
-struct Chuck_DL_MainThreadHook;
-*/
 namespace Chuck_DL_Api { struct Api; }
 
 
@@ -308,11 +304,6 @@ typedef void (CK_DLL_CALL * f_add_ugen_ctrl)( Chuck_DL_Query * query, f_ctrl ctr
                                               const char * type, const char * name );
 // end class/namespace - must correspondent with begin_class.  returns false on error
 typedef t_CKBOOL (CK_DLL_CALL * f_end_class)( Chuck_DL_Query * query );
-// REFACTOR-2017: Ge TODO: confirm deletion
-/*
-// register
-typedef Chuck_DL_MainThreadHook * (CK_DLL_CALL * f_create_main_thread_hook)( Chuck_DL_Query * query, f_mainthreadhook hook, f_mainthreadquit quit, void * bindle );
-*/
     
 // documentation
 // set current class documentation
@@ -374,13 +365,7 @@ public:
     f_add_ugen_ctrl add_ugen_ctrl;
     // end class/namespace, compile it
     f_end_class end_class;
-    
-    // REFACTOR-2017: Ge TODO: confirm deletion
-/*
-    // added 1.3.2.0
-    f_create_main_thread_hook create_main_thread_hook;
-*/
-    
+
     // added 1.3.5
     Chuck_DL_Value * last_var;
     f_doc_class doc_class;
@@ -640,25 +625,6 @@ protected:
     f_ck_query m_query_func;
     Chuck_DL_Query m_query;
 };
-
-
-// REFACTOR-2017: TODO Ge: confirm deletion
-/*
-struct Chuck_DL_MainThreadHook
-{
-public:
-    Chuck_DL_MainThreadHook(f_mainthreadhook hook, f_mainthreadquit quit,
-                            void * bindle, Chuck_VM * vm);
-    t_CKBOOL (* const activate)(Chuck_DL_MainThreadHook *);
-    t_CKBOOL (* const deactivate)(Chuck_DL_MainThreadHook *);
-    
-    Chuck_VM * const m_vm;
-    f_mainthreadhook const m_hook;
-    f_mainthreadquit const m_quit;
-    void * const m_bindle;
-    t_CKBOOL m_active;
-};
-*/
 
 
 

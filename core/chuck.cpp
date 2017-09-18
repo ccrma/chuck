@@ -382,19 +382,8 @@ bool ChucK::init()
     return true;
     
 cleanup:
-    // TODO: a different way to unlock?
-    // unlock all objects to delete chout, cherr
-    Chuck_VM_Object::unlock_all();
-    SAFE_RELEASE( m_carrier->chout );
-    SAFE_RELEASE( m_carrier->cherr );
-    // relock
-    Chuck_VM_Object::lock_all();
-    SAFE_DELETE( m_carrier->vm );
-    SAFE_DELETE( m_carrier->compiler );
-    m_carrier->env = NULL;
-    m_carrier->otf_socket = NULL; // TODO: properly dealloc
-    m_carrier->otf_port = 0;
-    m_carrier->otf_thread = 0; // TODO: properly dealloc
+    // shutdown, dealloc
+    shutdown();
     
     return false;
 }
@@ -429,6 +418,7 @@ bool ChucK::shutdown()
     Chuck_VM_Object::lock_all();
     SAFE_DELETE( m_carrier->vm );
     SAFE_DELETE( m_carrier->compiler );
+    m_carrier->env = NULL;
     m_carrier->otf_socket = NULL; // TODO: properly dealloc
     m_carrier->otf_port = 0;
     m_carrier->otf_thread = 0; // TODO: properly dealloc
@@ -585,6 +575,8 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
 
 
 //-----------------------------------------------------------------------------
+// name: start()
+// desc: start chuck instance
 //-----------------------------------------------------------------------------
 bool ChucK::start()
 {
@@ -606,7 +598,8 @@ bool ChucK::start()
 
 
 //-----------------------------------------------------------------------------
-// run engine (call from callback)
+// name: run()
+// desc: run engine (call from host callback)
 //-----------------------------------------------------------------------------
 void ChucK::run( SAMPLE * input, SAMPLE * output, int numFrames )
 {
@@ -621,7 +614,7 @@ void ChucK::run( SAMPLE * input, SAMPLE * output, int numFrames )
 
 
 //-----------------------------------------------------------------------------
-// name: setExternalInt
+// name: setExternalInt()
 // desc: send a message to set the value of an external int
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setExternalInt( const char * name, t_CKINT val )
@@ -634,7 +627,7 @@ t_CKBOOL ChucK::setExternalInt( const char * name, t_CKINT val )
 
 
 //-----------------------------------------------------------------------------
-// name: getExternalInt
+// name: getExternalInt()
 // desc: send a message to get the value of an external int via callback
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::getExternalInt( const char * name, void (* callback)(t_CKINT) )
@@ -647,7 +640,7 @@ t_CKBOOL ChucK::getExternalInt( const char * name, void (* callback)(t_CKINT) )
 
 
 //-----------------------------------------------------------------------------
-// name: setExternalFloat
+// name: setExternalFloat()
 // desc: send a message to set the value of an external float
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setExternalFloat( const char * name, t_CKFLOAT val )
@@ -660,7 +653,7 @@ t_CKBOOL ChucK::setExternalFloat( const char * name, t_CKFLOAT val )
 
 
 //-----------------------------------------------------------------------------
-// name: getExternalFloat
+// name: getExternalFloat()
 // desc: send a message to get the value of an external float via callback
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::getExternalFloat( const char * name, void (* callback)(t_CKFLOAT) )
@@ -673,7 +666,7 @@ t_CKBOOL ChucK::getExternalFloat( const char * name, void (* callback)(t_CKFLOAT
 
 
 //-----------------------------------------------------------------------------
-// name: signalExternalEvent
+// name: signalExternalEvent()
 // desc: send a message to signal an external event
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::signalExternalEvent( const char * name )
@@ -686,7 +679,7 @@ t_CKBOOL ChucK::signalExternalEvent( const char * name )
 
 
 //-----------------------------------------------------------------------------
-// name: broadcastExternalEvent
+// name: broadcastExternalEvent()
 // desc: send a message to broadcast an external event
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::broadcastExternalEvent( const char * name )
@@ -699,7 +692,7 @@ t_CKBOOL ChucK::broadcastExternalEvent( const char * name )
 
 
 //-----------------------------------------------------------------------------
-// name: setChoutCallback
+// name: setChoutCallback()
 // desc: provide a callback where Chout print statements are routed
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setChoutCallback( void (* callback)(const char *) )
@@ -713,7 +706,7 @@ t_CKBOOL ChucK::setChoutCallback( void (* callback)(const char *) )
 
 
 //-----------------------------------------------------------------------------
-// name: setCherrCallback
+// name: setCherrCallback()
 // desc: provide a callback where Cherr print statements are routed
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setCherrCallback( void (* callback)(const char *) )
@@ -727,7 +720,7 @@ t_CKBOOL ChucK::setCherrCallback( void (* callback)(const char *) )
 
 
 //-----------------------------------------------------------------------------
-// name: setStdoutCallback
+// name: setStdoutCallback()
 // desc: provide a callback where stdout print statements are routed
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setStdoutCallback( void (* callback)(const char *) )
@@ -740,7 +733,7 @@ t_CKBOOL ChucK::setStdoutCallback( void (* callback)(const char *) )
 
 
 //-----------------------------------------------------------------------------
-// name: setStderrCallback
+// name: setStderrCallback()
 // desc: provide a callback where <<< >>> and stdout print statements are routed
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setStderrCallback( void (* callback)(const char *) )
@@ -753,7 +746,7 @@ t_CKBOOL ChucK::setStderrCallback( void (* callback)(const char *) )
 
 
 //-----------------------------------------------------------------------------
-// name: finalCleanup
+// name: finalCleanup()
 // desc: provide a callback where <<< >>> and stdout print statements are routed
 //-----------------------------------------------------------------------------
 void ChucK::finalCleanup()
