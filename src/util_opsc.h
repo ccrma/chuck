@@ -496,10 +496,12 @@ protected:
     
     CBufferSimple * m_event_buffer;
     
-public:
+    // REFACTOR-2017: VM ref
+    Chuck_VM * m_vmRef;
     
-    OSC_Receiver();
-    OSC_Receiver( UDP_Receiver * in );
+public:
+    OSC_Receiver( Chuck_VM * vm );
+    OSC_Receiver( Chuck_VM * vm, UDP_Receiver * in );
     virtual ~OSC_Receiver();
     
     //setup //takedown
@@ -626,4 +628,3 @@ public:
 
 
 #endif // _OSC_H_INCLUDED_
-

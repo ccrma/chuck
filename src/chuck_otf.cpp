@@ -32,7 +32,6 @@
 #include "chuck_otf.h"
 #include "chuck_compile.h"
 #include "chuck_errmsg.h"
-#include "chuck_globals.h"
 #include "util_thread.h"
 #include "util_string.h"
 
@@ -144,7 +143,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
     FILE * fd = NULL;
     t_CKUINT ret = 0;
 
-    // fprintf( stderr, "UDP message recv...\n" );
+    // CK_FPRINTF_STDERR( "UDP message recv...\n" );
     if( msg->type == MSG_REPLACE || msg->type == MSG_ADD )
     {
         string filename;
@@ -154,8 +153,8 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         if( !extract_args( msg->buffer, filename, args ) )
         {
             // error
-            fprintf( stderr, "[chuck]: malformed filename with argument list...\n" );
-            fprintf( stderr, "    -->  '%s'", msg->buffer );
+            CK_FPRINTF_STDERR( "[chuck]: malformed filename with argument list...\n" );
+            CK_FPRINTF_STDERR( "    -->  '%s'", msg->buffer );
             SAFE_DELETE(cmd);
             goto cleanup;
         }
@@ -175,7 +174,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
             fd = recv_file( *msg, (ck_socket)data );
             if( !fd )
             {
-                fprintf( stderr, "[chuck]: incoming source transfer '%s' failed...\n",
+                CK_FPRINTF_STDERR( "[chuck]: incoming source transfer '%s' failed...\n",
                     mini(msg->buffer) );
                 SAFE_DELETE(cmd);
                 goto cleanup;
@@ -221,7 +220,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
     }
     else
     {
-        fprintf( stderr, "[chuck]: unrecognized incoming command from network: '%li'\n", cmd->type );
+        CK_FPRINTF_STDERR( "[chuck]: unrecognized incoming command from network: '%li'\n", cmd->type );
         SAFE_DELETE(cmd);
         goto cleanup;
     }
@@ -264,8 +263,8 @@ int otf_send_file( const char * fname, Net_Msg & msg, const char * op,
     if( !extract_args( fname, filename, args ) )
     {
         // error
-        fprintf( stderr, "[chuck]: malformed filename + argument list...\n" );
-        fprintf( stderr, "    -->  '%s'", fname );
+        CK_FPRINTF_STDERR( "[chuck]: malformed filename + argument list...\n" );
+        CK_FPRINTF_STDERR( "    -->  '%s'", fname );
         return FALSE;
     }
 
@@ -277,13 +276,13 @@ int otf_send_file( const char * fname, Net_Msg & msg, const char * op,
     fd = open_cat_ck( buf );
     if( !fd )
     {
-        fprintf( stderr, "[chuck]: cannot open file '%s' for [%s]...\n", filename.c_str(), op );
+        CK_FPRINTF_STDERR( "[chuck]: cannot open file '%s' for [%s]...\n", filename.c_str(), op );
         return FALSE;
     }
 
     if( !chuck_parse( (char *)filename.c_str(), fd ) )
     {
-        fprintf( stderr, "[chuck]: skipping file '%s' for [%s]...\n", filename.c_str(), op );
+        CK_FPRINTF_STDERR( "[chuck]: skipping file '%s' for [%s]...\n", filename.c_str(), op );
         fclose( fd );
         return FALSE;
     }
@@ -318,7 +317,7 @@ int otf_send_file( const char * fname, Net_Msg & msg, const char * op,
         if( !msg.param3 )
         {
             // error encountered
-            fprintf( stderr, "[chuck]: error while reading '%s'...\n", filename.c_str() );
+            CK_FPRINTF_STDERR( "[chuck]: error while reading '%s'...\n", filename.c_str() );
             // mark done
             left = 0;
             // error flag
@@ -363,7 +362,7 @@ ck_socket otf_send_connect( const char * host, int port )
     ck_socket sock = ck_tcp_create( 0 );
     if( !sock )
     {
-        fprintf( stderr, "[chuck]: cannot open socket to send command...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: cannot open socket to send command...\n" );
         return NULL;
     }
 
@@ -372,7 +371,7 @@ ck_socket otf_send_connect( const char * host, int port )
     
     if( !ck_connect( sock, host, port ) )
     {
-        fprintf( stderr, "cannot open TCP socket on %s:%i...\n", host, port );
+        CK_FPRINTF_STDERR( "cannot open TCP socket on %s:%i...\n", host, port );
         ck_close( sock );
         return NULL;
     }
@@ -393,7 +392,8 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
                   int * is_otf )
 {
     Net_Msg msg;
-    g_sigpipe_mode = 1;
+    // REFACTOR-2017 TODO: wat is global sigpipe mode
+//    g_sigpipe_mode = 1;
     int tasks_total = 0, tasks_done = 0;
     ck_socket dest = NULL;
     if( is_otf ) *is_otf = TRUE;
@@ -405,7 +405,7 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
     {
         if( ++i >= argc )
         {
-            fprintf( stderr, "[chuck]: not enough arguments following [add]...\n" );
+            CK_FPRINTF_STDERR( "[chuck]: not enough arguments following [add]...\n" );
             goto error;
         }
 
@@ -429,7 +429,7 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
     {
         if( ++i >= argc )
         {
-            fprintf( stderr, "[chuck]: not enough arguments following [remove]...\n" );
+            CK_FPRINTF_STDERR( "[chuck]: not enough arguments following [remove]...\n" );
             goto error;
         }
 
@@ -463,7 +463,7 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
     {
         if( ++i >= argc )
         {
-            fprintf( stderr, "[chuck]: not enough arguments following [replace]...\n" );
+            CK_FPRINTF_STDERR( "[chuck]: not enough arguments following [replace]...\n" );
             goto error;
         }
 
@@ -474,7 +474,7 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
 
         if( ++i >= argc )
         {
-            fprintf( stderr, "[chuck]: not enough arguments following [replace]...\n" );
+            CK_FPRINTF_STDERR( "[chuck]: not enough arguments following [replace]...\n" );
             goto error;
         }
 
@@ -575,8 +575,8 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
         otf_ntoh( &msg );
         if( !msg.param )
         {
-            fprintf( stderr, "[chuck(remote)]:operation failed (sorry)" );
-            fprintf( stderr, "...(reason: %s)\n", 
+            CK_FPRINTF_STDERR( "[chuck(remote)]:operation failed (sorry)" );
+            CK_FPRINTF_STDERR( "...(reason: %s)\n", 
                 ( strstr( (char *)msg.buffer, ":" ) ? strstr( (char *)msg.buffer, ":" ) + 1 : (char *)msg.buffer ) );
         }
         else
@@ -586,7 +586,7 @@ int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, 
     }
     else
     {
-        fprintf( stderr, "[chuck]: remote operation timed out...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: remote operation timed out...\n" );
     }
     // close the sock
     ck_close( dest );
@@ -625,20 +625,25 @@ void * otf_cb( void * p )
     Net_Msg ret;
     ck_socket client;
     int n;
+    
+    // REFACTOR-2017: get per-VM carrier
+    Chuck_Carrier * carrier = (Chuck_Carrier *)p;
 
     // catch SIGINT
     // signal( SIGINT, signal_int );
 #ifndef __PLATFORM_WIN32__
     // catch SIGPIPE
-    signal( SIGPIPE, signal_pipe );
+// REFACTOR 2017: TODO register global signal_pipe function
+//    signal( SIGPIPE, signal_pipe );
 #endif
 
     while( true )
     {
-        client = ck_accept( g_sock );
+        // REFACTOR-2017: change g_sock to per-VM socket
+        client = ck_accept( carrier->otf_socket );
         if( !client )
         {
-            if( g_vm ) fprintf( stderr, "[chuck]: socket error during accept()...\n" );
+            if( carrier->vm ) CK_FPRINTF_STDERR( "[chuck]: socket error during accept()...\n" );
             usleep( 40000 );
             ck_close( client );
             continue;
@@ -650,7 +655,7 @@ void * otf_cb( void * p )
         otf_ntoh( &msg );
         if( n != sizeof(msg) )
         {
-            fprintf( stderr, "[chuck]: 0-length packet...\n" );
+            CK_FPRINTF_STDERR( "[chuck]: 0-length packet...\n" );
             usleep( 40000 );
             ck_close( client );
             continue;
@@ -658,16 +663,16 @@ void * otf_cb( void * p )
         
         if( msg.header != NET_HEADER )
         {
-            fprintf( stderr, "[chuck]: header mismatch - possible endian lunacy...\n" );
+            CK_FPRINTF_STDERR( "[chuck]: header mismatch - possible endian lunacy...\n" );
             ck_close( client );
             continue;
         }
 
         while( msg.type != MSG_DONE )
         {
-            if( g_vm )
+            if( carrier->vm )
             {
-                if( !otf_process_msg( g_vm, g_compiler, &msg, FALSE, client ) )
+                if( !otf_process_msg( carrier->vm, carrier->compiler, &msg, FALSE, client ) )
                 {
                     ret.param = FALSE;
                     strcpy( (char *)ret.buffer, EM_lasterror() );
@@ -722,3 +727,21 @@ const char * poop[] = {
 };
 
 long poop_size = sizeof( poop ) / sizeof( char * );
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: uh()
+// desc: ...
+//-----------------------------------------------------------------------------
+void uh( )
+{
+    srand( time( NULL ) );
+    while( true )
+    {
+        int n = (int)(rand() / (float)RAND_MAX * poop_size);
+        printf( "%s\n", poop[n] );
+        usleep( (unsigned long)(rand() / (float)RAND_MAX * 2000000) );
+    }
+}

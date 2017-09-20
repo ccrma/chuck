@@ -30,6 +30,7 @@
 // date: Spring 2004
 //-----------------------------------------------------------------------------
 #include "chuck_type.h"
+#include "chuck_compile.h"
 #include "ulib_math.h"
 #include "util_math.h"
 #include "ulib_std.h"
@@ -62,7 +63,7 @@ static void srandom( unsigned s ) { srand( s ); }
 DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
 {
     // get global
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->env();
     // name
     QUERY->setname( QUERY, "Math" );
 
@@ -338,7 +339,11 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_svar( QUERY, "float", "FLOAT_MIN_MAG", TRUE, &g_floatMin );
 
     // int max
+#ifdef _WIN64 // REFACTOR-2017
+    assert( sizeof(t_CKINT) == sizeof(long long) );
+#else
     assert( sizeof(t_CKINT) == sizeof(long) );
+#endif
     QUERY->add_svar( QUERY, "int", "INT_MAX", TRUE, &g_intMax );
 
     // infinity, using function to avoid potential "smart" compiler warning
@@ -559,7 +564,7 @@ CK_DLL_SFUN( floatMax_impl )
     else
     {
         // error
-        fprintf( stderr, "[chuck]: internal error determining size of 'float' in floatMax()\n" );
+        CK_FPRINTF_STDERR( "[chuck]: internal error determining size of 'float' in floatMax()\n" );
         RETURN->v_float = 0; // TODO: return NaN?
     }
 }
@@ -573,7 +578,7 @@ CK_DLL_SFUN( intMax_impl )
     else
     {
         // error
-        fprintf( stderr, "[chuck]: internal error determining size of 'int' in intMax()\n" );
+        CK_FPRINTF_STDERR( "[chuck]: internal error determining size of 'int' in intMax()\n" );
         RETURN->v_int = 0;
     }
 }
@@ -768,5 +773,5 @@ CK_DLL_SFUN( gauss_impl )
     t_CKFLOAT sd = GET_NEXT_FLOAT(ARGS);
 
     // compute gaussian
-    RETURN->v_float = (1.0 / (sd*::sqrt(2*M_PI))) * ::exp( -(x-mu)*(x-mu) / (2*sd*sd) );
+    RETURN->v_float = (1.0 / (sd*::sqrt(TWO_PI))) * ::exp( -(x-mu)*(x-mu) / (2*sd*sd) );
 }

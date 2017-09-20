@@ -17,6 +17,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef WIN32
+ /* Define to 1 if you have the timespec struct.
+    pthread is going to import time.h and then complain that
+	it wants to redefine something already found in time.h.
+  */
+#define HAVE_STRUCT_TIMESPEC 1
+#endif
+#define HAVE_PTHREAD_H 1
 #include <pthread.h>
 #include <sys/types.h>
 

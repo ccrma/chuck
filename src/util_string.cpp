@@ -31,6 +31,7 @@
 // date: Summer 2005
 //-----------------------------------------------------------------------------
 #include "util_string.h"
+#include "chuck_errmsg.h"
 
 #ifdef __PLATFORM_WIN32__
 #include <Windows.h>
@@ -281,7 +282,7 @@ t_CKBOOL extract_args( const string & token,
                 else
                 {
                     // error: recognized escape target
-                    fprintf( stderr, "[chuck]: unrecognized escape sequence: \\%c", s[i+1] );
+                    CK_FPRINTF_STDERR( "[chuck]: unrecognized escape sequence: \\%c", s[i+1] );
                     // return false
                     ret = FALSE;
                     // go clean
@@ -297,7 +298,7 @@ t_CKBOOL extract_args( const string & token,
         // check mask
         if( mask && mask[i] )
         {
-            //fprintf(stderr, "skipping %c\n", s[i]);
+            //CK_FPRINTF_STDERR( "skipping %c\n", s[i] );
             // mark the next as false
             ignoreNext = TRUE;
             // skip this one
@@ -345,10 +346,10 @@ t_CKBOOL extract_args( const string & token,
     }
     
     // testing code - spencer 1.3.2.0
-//    fprintf(stderr, "INPUT: %s\n", token.c_str());
-//    fprintf(stderr, "FILENAME: %s\n", filename.c_str());
+//    CK_FPRINTF_STDERR( "INPUT: %s\n", token.c_str() );
+//    CK_FPRINTF_STDERR( "FILENAME: %s\n", filename.c_str() );
 //    for(i = 0; i < args.size(); i++)
-//        fprintf(stderr, "ARG: %s\n", args[i].c_str());
+//        CK_FPRINTF_STDERR( "ARG: %s\n", args[i].c_str() );
 
 done:
     // reclaim

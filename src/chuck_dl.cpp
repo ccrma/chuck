@@ -36,10 +36,8 @@
 //-----------------------------------------------------------------------------
 #include "chuck_dl.h"
 #include "chuck_errmsg.h"
-#include "chuck_bbq.h"
 #include "chuck_type.h"
 #include "chuck_instr.h"
-#include "chuck_globals.h"
 #include "chuck_compile.h"
 #include "chuck_vm.h"
 #include <sstream>
@@ -103,8 +101,7 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
             return;
         }
         
-        // HACK: env::instance will not work for multiple compilers
-        Chuck_Type * ck_parent_type = type_engine_find_type( Chuck_Env::instance(), parent_path );
+        Chuck_Type * ck_parent_type = type_engine_find_type( query->env(), parent_path );
         
         delete_id_list( parent_path );
         
@@ -293,7 +290,7 @@ t_CKUINT CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query,
         return CK_INVALID_OFFSET;
     }
     
-    Chuck_Type * ck_type = type_engine_find_type( Chuck_Env::instance(), path );
+    Chuck_Type * ck_type = type_engine_find_type( query->env(), path );
     
     delete_id_list( path );
     
@@ -433,7 +430,7 @@ void CK_DLL_CALL ck_add_ugen_func( Chuck_DL_Query * query, f_tick ugen_tick, f_p
 
 
 //-----------------------------------------------------------------------------
-// name: ck_add_ugen_func()
+// name: ck_add_ugen_funcf()
 // desc: (ugen only) add tick and pmsg functions
 //-----------------------------------------------------------------------------
 void CK_DLL_CALL ck_add_ugen_funcf( Chuck_DL_Query * query, f_tickf ugen_tickf, f_pmsg ugen_pmsg, t_CKUINT num_in, t_CKUINT num_out )
@@ -468,6 +465,22 @@ void CK_DLL_CALL ck_add_ugen_funcf( Chuck_DL_Query * query, f_tickf ugen_tickf, 
     query->curr_class->ugen_num_in = num_in;
     query->curr_class->ugen_num_out = num_out;
     query->curr_func = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_add_ugen_funcf_auto_num_channels()
+// desc: (ugen only) add tick and pmsg functions. specify num channels by vm.
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_add_ugen_funcf_auto_num_channels( Chuck_DL_Query * query,
+    f_tickf ugen_tickf, f_pmsg ugen_pmsg )
+{
+    ck_add_ugen_funcf( query, ugen_tickf, ugen_pmsg,
+        query->vm()->m_num_adc_channels,
+        query->vm()->m_num_dac_channels
+    );
 }
 
 
@@ -520,7 +533,7 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
     // 1.3.2.0: import class into type engine if at top level
     if( query->stack.size() == 1 ) // top level class
     {
-        if( !type_engine_add_class_from_dl(g_compiler->env, query->curr_class) )
+        if( !type_engine_add_class_from_dl( query->env(), query->curr_class ) )
         {
             EM_log(CK_LOG_SEVERE, "[chuck](DL): error importing class '%s' into type engine",
                    query->curr_class->name.c_str());
@@ -544,19 +557,6 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
 
 
 
-//-----------------------------------------------------------------------------
-// name: ck_create_main_thread_hook()
-// desc: ...
-//-----------------------------------------------------------------------------
-Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query * query,
-                                                          f_mainthreadhook hook,
-                                                          f_mainthreadquit quit,
-                                                          void * bindle )
-{
-    assert(g_vm);
-    
-    return new Chuck_DL_MainThreadHook( hook, quit, bindle, g_vm );
-}
 
 //-----------------------------------------------------------------------------
 // name: ck_doc_class()
@@ -918,7 +918,7 @@ const char * Chuck_DLL::name() const
 // name: Chuck_DL_Query
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_DL_Query::Chuck_DL_Query( )
+Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
 {
     // set the pointers to functions so the module can call
     setname = ck_setname;
@@ -932,12 +932,13 @@ Chuck_DL_Query::Chuck_DL_Query( )
     add_arg = ck_add_arg;
     add_ugen_func = ck_add_ugen_func;
     add_ugen_funcf = ck_add_ugen_funcf;
+    add_ugen_funcf_auto_num_channels = ck_add_ugen_funcf_auto_num_channels;
     add_ugen_ctrl = ck_add_ugen_ctrl;
     end_class = ck_end_class;
-    create_main_thread_hook = ck_create_main_thread_hook;
     doc_class = ck_doc_class;
     doc_func = ck_doc_func;
     doc_var = ck_doc_var;
+    m_carrier = carrier;
     
 //    memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
     
@@ -945,12 +946,8 @@ Chuck_DL_Query::Chuck_DL_Query( )
     reserved = NULL;
     curr_class = NULL;
     curr_func = NULL;
-  
-#ifndef __CKDL_NO_BBQ__
-    srate = Digitalio::sampling_rate() ; bufsize = Digitalio::buffer_size();
-#else
-    srate = 0; bufsize = 0;
-#endif
+    
+    srate = carrier->vm->srate();
 
     linepos = 0;
 }
@@ -1012,44 +1009,6 @@ Chuck_DL_Func::~Chuck_DL_Func()
 
 
 
-t_CKBOOL ck_mthook_activate(Chuck_DL_MainThreadHook *hook)
-{
-    // ge: changed in 1.3.5.3
-    hook->m_active = set_main_thread_hook(hook->m_hook,
-                                          hook->m_quit,
-                                          hook->m_bindle);
-//    hook->m_active = hook->m_vm->set_main_thread_hook(hook->m_hook,
-//                                                      hook->m_quit,
-//                                                      hook->m_bindle);
-    return hook->m_active;
-}
-
-t_CKBOOL ck_mthook_deactivate(Chuck_DL_MainThreadHook *hook)
-{
-    if(hook->m_active)
-        // ge: changed in 1.3.5.3
-        return clear_main_thread_hook();
-        // return hook->m_vm->clear_main_thread_hook();
-    else
-        return FALSE;
-}
-
-//-----------------------------------------------------------------------------
-// name: Chuck_DL_MainThreadHook()
-// desc: ...
-//-----------------------------------------------------------------------------
-Chuck_DL_MainThreadHook::Chuck_DL_MainThreadHook(f_mainthreadhook hook, f_mainthreadquit quit,
-                                                 void * bindle, Chuck_VM * vm) :
-m_hook(hook),
-m_quit(quit),
-m_vm(vm),
-m_bindle(bindle),
-activate(ck_mthook_activate),
-deactivate(ck_mthook_deactivate),
-m_active(FALSE)
-{ }
-
-
 
 /*******************************************************************************
  
@@ -1063,14 +1022,14 @@ namespace Chuck_DL_Api
 }
 
 
-static t_CKUINT ck_get_srate()
+static t_CKUINT ck_get_srate(CK_DL_API api, Chuck_VM_Shred * shred)
 {
-    return g_vm->srate();
+    return shred->vm_ref->srate();
 }
 
-static Chuck_DL_Api::Type ck_get_type( std::string & name )
+static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM_Shred * shred, std::string & name )
 {
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = shred->vm_ref->env();
     a_Id_List list = new_id_list( name.c_str(), 0 ); // TODO: nested types
     
     Chuck_Type * t = type_engine_find_type( env, list );
@@ -1080,61 +1039,61 @@ static Chuck_DL_Api::Type ck_get_type( std::string & name )
     return ( Chuck_DL_Api::Type ) t;
 }
 
-static Chuck_DL_Api::Object ck_create( Chuck_DL_Api::Type t )
+static Chuck_DL_Api::Object ck_create( CK_DL_API api, Chuck_VM_Shred * shred, Chuck_DL_Api::Type t )
 {
     assert( t != NULL );
     
     Chuck_Type * type = ( Chuck_Type * ) t;
-    Chuck_Object * o = instantiate_and_initialize_object( type, NULL );
+    Chuck_Object * o = instantiate_and_initialize_object( type, shred->vm_ref );
     
     return ( Chuck_DL_Api::Object ) o;
 }
 
-static Chuck_DL_Api::String ck_create_string( std::string & str )
+static Chuck_DL_Api::String ck_create_string( CK_DL_API api, Chuck_VM_Shred * shred, std::string & str )
 {
-    Chuck_String * string = ( Chuck_String * ) instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * string = ( Chuck_String * ) instantiate_and_initialize_object( shred->vm_ref->env()->t_string, shred->vm_ref );
     
-    string->str = str;
+    string->set( str );
     
     return ( Chuck_DL_Api::String ) string;
 }
 
-static t_CKBOOL ck_get_mvar_int( Chuck_DL_Api::Object, std::string &, t_CKINT & )
+static t_CKBOOL ck_get_mvar_int( CK_DL_API api, Chuck_DL_Api::Object, std::string &, t_CKINT & )
 {
     return TRUE;
 }
 
-static t_CKBOOL ck_get_mvar_float( Chuck_DL_Api::Object, std::string &, t_CKFLOAT & )
+static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object, std::string &, t_CKFLOAT & )
 {
     return TRUE;
 }
 
-static t_CKBOOL ck_get_mvar_dur( Chuck_DL_Api::Object, std::string &, t_CKDUR & )
+static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object, std::string &, t_CKDUR & )
 {
     return TRUE;
 }
 
-static t_CKBOOL ck_get_mvar_time( Chuck_DL_Api::Object, std::string &, t_CKTIME & )
+static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object, std::string &, t_CKTIME & )
 {
     return TRUE;
 }
 
-static t_CKBOOL ck_get_mvar_string( Chuck_DL_Api::Object, std::string &, Chuck_DL_Api::String & )
+static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object, std::string &, Chuck_DL_Api::String & )
 {
     return TRUE;
 }
 
-static t_CKBOOL ck_get_mvar_object( Chuck_DL_Api::Object, std::string &, Chuck_DL_Api::Object & )
+static t_CKBOOL ck_get_mvar_object( CK_DL_API api, Chuck_DL_Api::Object, std::string &, Chuck_DL_Api::Object & )
 {
     return TRUE;
 }
 
-static t_CKBOOL ck_set_string( Chuck_DL_Api::String s, std::string & str )
+static t_CKBOOL ck_set_string( CK_DL_API api, Chuck_DL_Api::String s, std::string & str )
 {
     assert( s != NULL );
     
     Chuck_String * string = ( Chuck_String * ) s;
-    string->str = str;
+    string->set( str );
     
     return TRUE;
 }

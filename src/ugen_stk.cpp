@@ -39,6 +39,7 @@
 #include "chuck_type.h"
 #include "util_math.h"
 #include "chuck_vm.h"
+#include "chuck_compile.h"
 #include "chuck_lang.h"
 #include "chuck_globals.h"
 #include <stdlib.h>
@@ -1235,7 +1236,7 @@ CK_DLL_MFUN( MidiFileIn_rewind );
 DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
 {
 
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->env();
     Chuck_DL_Func * func = NULL;
 
     std::string doc;
@@ -5292,7 +5293,7 @@ void BandedWG :: setFrequency(MY_FLOAT frequency)
 {
   freakency = frequency;
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): BandedWG: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): BandedWG: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     freakency = 220.0;
   }
   if (freakency > 1568.0) freakency = 1568.0;
@@ -5307,13 +5308,13 @@ void BandedWG :: setFrequency(MY_FLOAT frequency)
       delay[i].setDelay( length );
       gains[i]=basegains[i];
       //      gains[i]=(MY_FLOAT) pow(basegains[i], 1/((MY_FLOAT)delay[i].getDelay()));
-      //      std::cerr << gains[i];
+      //      CK_STDCERR << gains[i];
     }
     else    {
       nModes = i;
       break;
     }
-    //  std::cerr << std::endl;
+    //  CK_STDCERR << CK_STDENDL;
 
     // Set the bandpass filter resonances
     radius = 1.0 - ONE_PI * 32 / Stk::sampleRate(); //freakency * modes[i] / Stk::sampleRate()/32;
@@ -5371,7 +5372,7 @@ void BandedWG :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
     this->startBowing(amplitude, amplitude * 0.001);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): BandedWG: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): BandedWG: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -5381,7 +5382,7 @@ void BandedWG :: noteOff(MY_FLOAT amplitude)
     this->stopBowing((1.0 - amplitude) * 0.005);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): BandedWG: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): BandedWG: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -5434,11 +5435,11 @@ void BandedWG :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): BandedWG: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): BandedWG: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): BandedWG: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): BandedWG: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_BowPressure_) { // 2
@@ -5469,7 +5470,7 @@ void BandedWG :: controlChange(int number, MY_FLOAT value)
   else if (number == __SK_ModWheel_) { // 1
     //    baseGain = 0.9989999999 + (0.001 * norm );
     baseGain = 0.8999999999999999 + (0.1 * norm);
-    //  std::cerr << "[chuck](via STK): Yuck!" << std::endl;
+    //  CK_STDCERR << "[chuck](via STK): Yuck!" << CK_STDENDL;
     for (int i=0; i<nModes; i++)
       gains[i]=(MY_FLOAT) basegains[i]*baseGain;
     //      gains[i]=(MY_FLOAT) pow(baseGain, (int)((MY_FLOAT)delay[i].getDelay()+i));
@@ -5488,10 +5489,10 @@ void BandedWG :: controlChange(int number, MY_FLOAT value)
   else if (number == __SK_ProphesyRibbon_) // 16
     this->setPreset((int) value);  
   else
-    std::cerr << "[chuck](via STK): BandedWG: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): BandedWG: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): BandedWG: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): BandedWG: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -5571,7 +5572,7 @@ void BeeThree :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->keyOn();
 
 #if defined(_STK_DEBUG_)
-  cerr << "BeeThree: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << endl;
+  CK_STDCERR << "BeeThree: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -6164,7 +6165,7 @@ void BlowBotl :: setFrequency(MY_FLOAT frequency)
 {
   MY_FLOAT freakency = frequency;
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): BlowBotl: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): BlowBotl: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     freakency = 220.0;
   }
 
@@ -6194,7 +6195,7 @@ void BlowBotl :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   outputGain = amplitude + 0.001;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): BlowBotl: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): BlowBotl: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -6203,7 +6204,7 @@ void BlowBotl :: noteOff(MY_FLOAT amplitude)
   this->stopBlowing(amplitude * 0.02);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): BlowBotl: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): BlowBotl: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -6234,11 +6235,11 @@ void BlowBotl :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): BlowBotl: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): BlowBotl: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): BlowBotl: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): BlowBotl: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if( number == __SK_NoiseLevel_ ) { // 4
@@ -6256,10 +6257,10 @@ void BlowBotl :: controlChange(int number, MY_FLOAT value)
     m_volume = norm;
   }
   else
-    std::cerr << "[chuck](via STK): BlowBotl: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): BlowBotl: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): BlowBotl: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): BlowBotl: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -6400,7 +6401,7 @@ void BlowHole :: setFrequency(MY_FLOAT frequency)
 {
   MY_FLOAT freakency = frequency;
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): BlowHole: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): BlowHole: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     freakency = 220.0;
   }
 
@@ -6464,7 +6465,7 @@ void BlowHole :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   outputGain = amplitude + 0.001;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): BlowHole: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): BlowHole: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -6473,7 +6474,7 @@ void BlowHole :: noteOff(MY_FLOAT amplitude)
   this->stopBlowing(amplitude * 0.01);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): BlowHole: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): BlowHole: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -6517,11 +6518,11 @@ void BlowHole :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): BlowHole: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): BlowHole: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): BlowHole: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): BlowHole: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_ReedStiffness_) { // 2 
@@ -6541,10 +6542,10 @@ void BlowHole :: controlChange(int number, MY_FLOAT value)
     envelope->setValue( norm );
   }
   else
-    std::cerr << "[chuck](via STK): BlowHole: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): BlowHole: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): BlowHole: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): BlowHole: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -6703,7 +6704,7 @@ void Bowed :: setFrequency(MY_FLOAT frequency)
 {
   MY_FLOAT freakency = frequency;
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): Bowed: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Bowed: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     freakency = 220.0;
   }
 
@@ -6736,7 +6737,7 @@ void Bowed :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->setFrequency(frequency);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Bowed: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Bowed: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -6745,7 +6746,7 @@ void Bowed :: noteOff(MY_FLOAT amplitude)
   this->stopBowing(((MY_FLOAT) 1.0 - amplitude) * (MY_FLOAT) 0.005);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Bowed: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Bowed: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -6788,11 +6789,11 @@ void Bowed :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): Bowed: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Bowed: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): Bowed: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Bowed: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_BowPressure_) { // 2
@@ -6818,10 +6819,10 @@ void Bowed :: controlChange(int number, MY_FLOAT value)
     adsr->setTarget(norm);
   }
   else
-    std::cerr << "[chuck](via STK): Bowed: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Bowed: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Bowed: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): Bowed: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -6910,7 +6911,7 @@ void Brass :: setFrequency(MY_FLOAT frequency)
 {
   MY_FLOAT freakency = frequency;
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): Brass: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Brass: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     freakency = 220.0;
   }
 
@@ -6929,7 +6930,7 @@ void Brass :: setLip(MY_FLOAT frequency)
 {
   MY_FLOAT freakency = frequency;
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): Brass: setLip parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Brass: setLip parameter is less than or equal to zero!" << CK_STDENDL;
     freakency = 220.0;
   }
 
@@ -6955,7 +6956,7 @@ void Brass :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->startBlowing(amplitude, amplitude * 0.001);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Brass: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Brass: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -6964,7 +6965,7 @@ void Brass :: noteOff(MY_FLOAT amplitude)
   this->stopBlowing(amplitude * 0.005);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Brass: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Brass: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -6991,11 +6992,11 @@ void Brass :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): Brass: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Brass: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): Brass: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Brass: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_LipTension_) { // 2
@@ -7018,10 +7019,10 @@ void Brass :: controlChange(int number, MY_FLOAT value)
     adsr->setTarget( norm );
   }
   else
-    std::cerr << "[chuck](via STK): Brass: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Brass: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Brass: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): Brass: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -7089,11 +7090,11 @@ void Chorus :: setEffectMix(MY_FLOAT mix)
 {
   effectMix = mix;
   if ( mix < 0.0 ) {
-    std::cerr << "[chuck](via STK): Chorus: setEffectMix parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Chorus: setEffectMix parameter is less than zero!" << CK_STDENDL;
     effectMix = 0.0;
   }
   else if ( mix > 1.0 ) {
-    std::cerr << "[chuck](via STK): Chorus: setEffectMix parameter is greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Chorus: setEffectMix parameter is greater than 1.0!" << CK_STDENDL;
     effectMix = 1.0;
   }
 }
@@ -7231,7 +7232,7 @@ void Clarinet :: setFrequency(MY_FLOAT frequency)
 {
   MY_FLOAT freakency = frequency;
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): Clarinet: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Clarinet: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     freakency = 220.0;
   }
 
@@ -7264,7 +7265,7 @@ void Clarinet :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   outputGain = amplitude + (MY_FLOAT) 0.001;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Clarinet: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Clarinet: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -7273,7 +7274,7 @@ void Clarinet :: noteOff(MY_FLOAT amplitude)
   this->stopBlowing(amplitude * (MY_FLOAT) 0.01);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Clarinet: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Clarinet: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -7307,11 +7308,11 @@ void Clarinet :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): Clarinet: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Clarinet: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): Clarinet: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Clarinet: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_ReedStiffness_) { // 2
@@ -7335,10 +7336,10 @@ void Clarinet :: controlChange(int number, MY_FLOAT value)
     envelope->setValue(norm);
   }
   else
-    std::cerr << "[chuck](via STK): Clarinet: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Clarinet: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Clarinet: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): Clarinet: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -7405,13 +7406,13 @@ void Delay :: clear(void)
 void Delay :: setDelay(long theDelay)
 {
   if (theDelay > length-1) { // The value is too big.
-    std::cerr << "[chuck](via STK): Delay: setDelay(" << theDelay << ") too big!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Delay: setDelay(" << theDelay << ") too big!" << CK_STDENDL;
     // Force delay to maxLength.
     outPoint = inPoint + 1;
     delay = length - 1;
   }
   else if (theDelay < 0 ) {
-    std::cerr << "[chuck](via STK): Delay: setDelay(" << theDelay << ") less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Delay: setDelay(" << theDelay << ") less than zero!" << CK_STDENDL;
     outPoint = inPoint;
     delay = 0;
   }
@@ -7454,11 +7455,11 @@ MY_FLOAT Delay :: contentsAt(unsigned long tapDelay) const
 {
   long i = tapDelay;
   if (i < 1) {
-    std::cerr << "[chuck](via STK): Delay: contentsAt(" << tapDelay << ") too small!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Delay: contentsAt(" << tapDelay << ") too small!" << CK_STDENDL;
     i = 1;
   }
   else if (i > delay) {
-    std::cerr << "[chuck](via STK): Delay: contentsAt(" << tapDelay << ") too big!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Delay: contentsAt(" << tapDelay << ") too big!" << CK_STDENDL;
     i = (long) delay;
   }
 
@@ -7587,13 +7588,13 @@ void DelayA :: setDelay(MY_FLOAT theDelay)
   MY_FLOAT outPointer;
 
   if (theDelay > length-1) {
-    std::cerr << "[chuck](via STK): DelayA: setDelay(" << theDelay << ") too big!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): DelayA: setDelay(" << theDelay << ") too big!" << CK_STDENDL;
     // Force delay to maxLength
     outPointer = inPoint + 1.0;
     delay = length - 1;
   }
   else if (theDelay < 0.5) {
-    std::cerr << "[chuck](via STK): DelayA: setDelay(" << theDelay << ") less than 0.5 not possible!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): DelayA: setDelay(" << theDelay << ") less than 0.5 not possible!" << CK_STDENDL;
     outPointer = inPoint + 0.4999999999;
     delay = 0.5;
   }
@@ -7726,13 +7727,13 @@ void DelayL :: setDelay(MY_FLOAT theDelay)
   MY_FLOAT outPointer;
 
   if (theDelay > length-1) {
-    std::cerr << "[chuck](via STK): DelayL: setDelay(" << theDelay << ") too big!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): DelayL: setDelay(" << theDelay << ") too big!" << CK_STDENDL;
     // Force delay to maxLength
     outPointer = inPoint + 1.0;
     delay = length - 1;
   }
   else if (theDelay < 0 ) {
-    std::cerr << "[chuck](via STK): DelayL: setDelay(" << theDelay << ") less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): DelayL: setDelay(" << theDelay << ") less than zero!" << CK_STDENDL;
     outPointer = inPoint;
     delay = 0;
   }
@@ -7859,16 +7860,16 @@ Drummer :: ~Drummer()
 void Drummer :: noteOn(MY_FLOAT instrument, MY_FLOAT amplitude)
 {
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Drummer: NoteOn instrument = " << instrument << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Drummer: NoteOn instrument = " << instrument << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 
   MY_FLOAT gain = amplitude;
   if ( amplitude > 1.0 ) {
-    std::cerr << "[chuck](via STK): Drummer: noteOn amplitude parameter is greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Drummer: noteOn amplitude parameter is greater than 1.0!" << CK_STDENDL;
     gain = 1.0;
   }
   else if ( amplitude < 0.0 ) {
-    std::cerr << "[chuck](via STK): Drummer: noteOn amplitude parameter is less than 0.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Drummer: noteOn amplitude parameter is less than 0.0!" << CK_STDENDL;
     return;
   }
 
@@ -7915,9 +7916,9 @@ void Drummer :: noteOn(MY_FLOAT instrument, MY_FLOAT amplitude)
   }
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Number Sounding = " << nSounding << std::endl;
-  for (i=0; i<nSounding; i++) std::cerr << sounding[i] << "  ";
-  std::cerr << "[chuck](via STK): \n";
+  CK_STDCERR << "[chuck](via STK): Number Sounding = " << nSounding << CK_STDENDL;
+  for (i=0; i<nSounding; i++) CK_STDCERR << sounding[i] << "  ";
+  CK_STDCERR << "[chuck](via STK): \n";
 #endif
 }
 
@@ -8009,11 +8010,11 @@ void Echo :: setDelay(MY_FLOAT delay)
 {
   MY_FLOAT size = delay;
   if ( delay < 0.0 ) {
-    std::cerr << "[chuck](via STK): Echo: setDelay parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Echo: setDelay parameter is less than zero!" << CK_STDENDL;
     size = 0.0;
   }
   else if ( delay > length ) {
-    std::cerr << "[chuck](via STK): Echo: setDelay parameter is greater than delay length!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Echo: setDelay parameter is greater than delay length!" << CK_STDENDL;
     size = length;
   }
 
@@ -8024,11 +8025,11 @@ void Echo :: setEffectMix(MY_FLOAT mix)
 {
   effectMix = mix;
   if ( mix < 0.0 ) {
-    std::cerr << "[chuck](via STK): Echo: setEffectMix parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Echo: setEffectMix parameter is less than zero!" << CK_STDENDL;
     effectMix = 0.0;
   }
   else if ( mix > 1.0 ) {
-    std::cerr << "[chuck](via STK): Echo: setEffectMix parameter is greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Echo: setEffectMix parameter is greater than 1.0!" << CK_STDENDL;
     effectMix = 1.0;
   }
 }
@@ -8302,11 +8303,11 @@ void FM :: setFrequency(MY_FLOAT frequency)
 void FM :: setRatio(int waveIndex, MY_FLOAT ratio)
 {
   if ( waveIndex < 0 ) {
-    std::cerr << "[chuck](via STK): FM: setRatio waveIndex parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): FM: setRatio waveIndex parameter is less than zero!" << CK_STDENDL;
     return;
   }
   else if ( waveIndex >= nOperators ) {
-    std::cerr << "[chuck](via STK): FM: setRatio waveIndex parameter is greater than the number of operators!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): FM: setRatio waveIndex parameter is greater than the number of operators!" << CK_STDENDL;
     return;
   }
 
@@ -8320,11 +8321,11 @@ void FM :: setRatio(int waveIndex, MY_FLOAT ratio)
 void FM :: setGain(int waveIndex, MY_FLOAT gain)
 {
   if ( waveIndex < 0 ) {
-    std::cerr << "[chuck](via STK): FM: setGain waveIndex parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): FM: setGain waveIndex parameter is less than zero!" << CK_STDENDL;
     return;
   }
   else if ( waveIndex >= nOperators ) {
-    std::cerr << "[chuck](via STK): FM: setGain waveIndex parameter is greater than the number of operators!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): FM: setGain waveIndex parameter is greater than the number of operators!" << CK_STDENDL;
     return;
   }
 
@@ -8368,7 +8369,7 @@ void FM :: noteOff(MY_FLOAT amplitude)
   keyOff();
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): FM: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): FM: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -8377,11 +8378,11 @@ void FM :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): FM: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): FM: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): FM: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): FM: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_Breath_) // 2
@@ -8399,10 +8400,10 @@ void FM :: controlChange(int number, MY_FLOAT value)
     adsr[3]->setTarget( norm );
   }
   else
-    std::cerr << "[chuck](via STK): FM: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): FM: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): FM: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): FM: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -8526,7 +8527,7 @@ void FMVoices :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->keyOn();
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): FMVoices: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): FMVoices: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -8559,11 +8560,11 @@ void FMVoices :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): FMVoices: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): FMVoices: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): FMVoices: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): FMVoices: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
 
@@ -8583,10 +8584,10 @@ void FMVoices :: controlChange(int number, MY_FLOAT value)
     tilt[2] = tilt[1] * norm;
   }
   else
-    std::cerr << "[chuck](via STK): FMVoices: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): FMVoices: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): FMVoices: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): FMVoices: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -8938,7 +8939,7 @@ void Flute :: setFrequency(MY_FLOAT frequency)
 {
   lastFrequency = frequency;
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): Flute: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Flute: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     lastFrequency = 220.0;
   }
 
@@ -8959,7 +8960,7 @@ void Flute :: setFrequency(MY_FLOAT frequency)
 void Flute :: startBlowing(MY_FLOAT amplitude, MY_FLOAT rate)
 {
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Flute: startblowing " << amplitude << " " << rate << endl;
+  CK_STDCERR << "[chuck](via STK): Flute: startblowing " << amplitude << " " << rate << CK_STDENDL;
 #endif
   adsr->setAttackRate(rate);
   maxPressure = amplitude / (MY_FLOAT) 0.8;
@@ -8979,7 +8980,7 @@ void Flute :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   outputGain = amplitude + 0.001;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Flute: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Flute: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -8988,7 +8989,7 @@ void Flute :: noteOff(MY_FLOAT amplitude)
   this->stopBlowing(amplitude * 0.02);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Flute: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Flute: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -9040,11 +9041,11 @@ void Flute :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): Flute: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Flute: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): Flute: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Flute: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_JetDelay_) // 2
@@ -9064,10 +9065,10 @@ void Flute :: controlChange(int number, MY_FLOAT value)
     adsr->setTarget( norm );
   }
   else
-    std::cerr << "[chuck](via STK): Flute: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Flute: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Flute: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): Flute: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -9260,7 +9261,7 @@ void HevyMetl :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->keyOn();
 
 #if defined(_STK_DEBUG_)
-  cerr << "HevyMetl: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << endl;
+  CK_STDCERR << "HevyMetl: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -9313,7 +9314,7 @@ Instrmnt :: ~Instrmnt()
 
 void Instrmnt :: setFrequency(MY_FLOAT frequency)
 {
-  std::cerr << "[chuck](via STK): Instrmnt: virtual setFrequency function call!" << std::endl;
+  CK_STDCERR << "[chuck](via STK): Instrmnt: virtual setFrequency function call!" << CK_STDENDL;
   // m_frequency = frequency;
 }
 
@@ -9637,11 +9638,11 @@ void Mandolin :: pluck(MY_FLOAT amplitude)
   waveDone = false;
   pluckAmplitude = amplitude;
   if ( amplitude < 0.0 ) {
-    std::cerr << "[chuck](via STK): Mandolin: pluck amplitude parameter less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mandolin: pluck amplitude parameter less than zero!" << CK_STDENDL;
     pluckAmplitude = 0.0;
   }
   else if ( amplitude > 1.0 ) {
-    std::cerr << "[chuck](via STK): Mandolin: pluck amplitude parameter greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mandolin: pluck amplitude parameter greater than 1.0!" << CK_STDENDL;
     pluckAmplitude = 1.0;
   }
 
@@ -9655,11 +9656,11 @@ void Mandolin :: pluck(MY_FLOAT amplitude, MY_FLOAT position)
   // Pluck position puts zeroes at position * length.
   pluckPosition = position;
   if ( position < 0.0 ) {
-    std::cerr << "[chuck](via STK): Mandolin: pluck position parameter less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mandolin: pluck position parameter less than zero!" << CK_STDENDL;
     pluckPosition = 0.0;
   }
   else if ( position > 1.0 ) {
-    std::cerr << "[chuck](via STK): Mandolin: pluck position parameter greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mandolin: pluck position parameter greater than 1.0!" << CK_STDENDL;
     pluckPosition = 1.0;
   }
 
@@ -9672,7 +9673,7 @@ void Mandolin :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->pluck(amplitude);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Mandolin: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Mandolin: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -9720,11 +9721,11 @@ void Mandolin :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): Mandolin: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mandolin: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): Mandolin: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mandolin: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_BodySize_) // 2
@@ -9738,10 +9739,10 @@ void Mandolin :: controlChange(int number, MY_FLOAT value)
   else if (number == __SK_AfterTouch_Cont_) // 128
     mic = (int) (norm * 11.0);
   else
-    std::cerr << "[chuck](via STK): Mandolin: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mandolin: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Mandolin: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): Mandolin: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -9891,11 +9892,11 @@ void Mesh2D :: setNX(short lenX)
 {
   NX = lenX;
   if ( lenX < 2 ) {
-    std::cerr << "[chuck](via STK): Mesh2D::setNX(" << lenX << "): Minimum length is 2!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mesh2D::setNX(" << lenX << "): Minimum length is 2!" << CK_STDENDL;
     NX = 2;
   }
   else if ( lenX > NXMAX ) {
-    std::cerr << "[chuck](via STK): Mesh2D::setNX(" << lenX << "): Maximum length is " << NXMAX << "!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mesh2D::setNX(" << lenX << "): Maximum length is " << NXMAX << "!" << CK_STDENDL;
     NX = NXMAX;
   }
 }
@@ -9904,11 +9905,11 @@ void Mesh2D :: setNY(short lenY)
 {
   NY = lenY;
   if ( lenY < 2 ) {
-    std::cerr << "[chuck](via STK): Mesh2D::setNY(" << lenY << "): Minimum length is 2!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mesh2D::setNY(" << lenY << "): Minimum length is 2!" << CK_STDENDL;
     NY = 2;
   }
   else if ( lenY > NYMAX ) {
-    std::cerr << "[chuck](via STK): Mesh2D::setNY(" << lenY << "): Maximum length is " << NYMAX << "!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mesh2D::setNY(" << lenY << "): Maximum length is " << NYMAX << "!" << CK_STDENDL;
     NY = NYMAX;
   }
 }
@@ -9917,11 +9918,11 @@ void Mesh2D :: setDecay(MY_FLOAT decayFactor)
 {
   MY_FLOAT gain = decayFactor;
   if ( decayFactor < 0.0 ) {
-    std::cerr << "[chuck](via STK): Mesh2D::setDecay decayFactor value is less than 0.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mesh2D::setDecay decayFactor value is less than 0.0!" << CK_STDENDL;
     gain = 0.0;
   }
   else if ( decayFactor > 1.0 ) {
-    std::cerr << "[chuck](via STK): Mesh2D::setDecay decayFactor value is greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mesh2D::setDecay decayFactor value is greater than 1.0!" << CK_STDENDL;
     gain = 1.0;
   }
 
@@ -9936,22 +9937,22 @@ void Mesh2D :: setDecay(MY_FLOAT decayFactor)
 void Mesh2D :: setInputPosition(MY_FLOAT xFactor, MY_FLOAT yFactor)
 {
   if ( xFactor < 0.0 ) {
-    std::cerr << "[chuck](via STK): Mesh2D::setInputPosition xFactor value is less than 0.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mesh2D::setInputPosition xFactor value is less than 0.0!" << CK_STDENDL;
     xInput = 0;
   }
   else if ( xFactor > 1.0 ) {
-    std::cerr << "[chuck](via STK): Mesh2D::setInputPosition xFactor value is greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mesh2D::setInputPosition xFactor value is greater than 1.0!" << CK_STDENDL;
     xInput = NX - 1;
   }
   else
     xInput = (short) (xFactor * (NX - 1));
 
   if ( yFactor < 0.0 ) {
-    std::cerr << "[chuck](via STK): Mesh2D::setInputPosition yFactor value is less than 0.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mesh2D::setInputPosition yFactor value is less than 0.0!" << CK_STDENDL;
     yInput = 0;
   }
   else if ( yFactor > 1.0 ) {
-    std::cerr << "[chuck](via STK): Mesh2D::setInputPosition yFactor value is greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mesh2D::setInputPosition yFactor value is greater than 1.0!" << CK_STDENDL;
     yInput = NY - 1;
   }
   else
@@ -9971,14 +9972,14 @@ void Mesh2D :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   }
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Mesh2D: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Mesh2D: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
 void Mesh2D :: noteOff(MY_FLOAT amplitude)
 {
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Mesh2D: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Mesh2D: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -10108,11 +10109,11 @@ void Mesh2D :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): Mesh2D: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mesh2D: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): Mesh2D: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mesh2D: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == 2) // 2
@@ -10126,10 +10127,10 @@ void Mesh2D :: controlChange(int number, MY_FLOAT value)
   else if (number == __SK_AfterTouch_Cont_) // 128
    ;
   else
-    std::cerr << "[chuck](via STK): Mesh2D: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Mesh2D: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Mesh2D: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): Mesh2D: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 /***************************************************/
@@ -10226,11 +10227,11 @@ void Modal :: setFrequency(MY_FLOAT frequency)
 void Modal :: setRatioAndRadius(int modeIndex, MY_FLOAT ratio, MY_FLOAT radius)
 {
   if ( modeIndex < 0 ) {
-    std::cerr << "[chuck](via STK): Modal: setRatioAndRadius modeIndex parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Modal: setRatioAndRadius modeIndex parameter is less than zero!" << CK_STDENDL;
     return;
   }
   else if ( modeIndex >= nModes ) {
-    std::cerr << "[chuck](via STK): Modal: setRatioAndRadius modeIndex parameter is greater than the number of operators!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Modal: setRatioAndRadius modeIndex parameter is greater than the number of operators!" << CK_STDENDL;
     return;
   }
 
@@ -10245,7 +10246,7 @@ void Modal :: setRatioAndRadius(int modeIndex, MY_FLOAT ratio, MY_FLOAT radius)
     while (temp * baseFrequency > nyquist) temp *= (MY_FLOAT) 0.5;
     ratios[modeIndex] = temp;
 #if defined(_STK_DEBUG_)
-    std::cerr << "[chuck](via STK): Modal : Aliasing would occur here ... correcting." << std::endl;
+    CK_STDCERR << "[chuck](via STK): Modal : Aliasing would occur here ... correcting." << CK_STDENDL;
 #endif
   }
   radii[modeIndex] = radius;
@@ -10270,11 +10271,11 @@ void Modal :: setDirectGain(MY_FLOAT aGain)
 void Modal :: setModeGain(int modeIndex, MY_FLOAT gain)
 {
   if ( modeIndex < 0 ) {
-    std::cerr << "[chuck](via STK): Modal: setModeGain modeIndex parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Modal: setModeGain modeIndex parameter is less than zero!" << CK_STDENDL;
     return;
   }
   else if ( modeIndex >= nModes ) {
-    std::cerr << "[chuck](via STK): Modal: setModeGain modeIndex parameter is greater than the number of operators!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Modal: setModeGain modeIndex parameter is greater than the number of operators!" << CK_STDENDL;
     return;
   }
 
@@ -10285,11 +10286,11 @@ void Modal :: strike(MY_FLOAT amplitude)
 {
   MY_FLOAT gain = amplitude;
   if ( amplitude < 0.0 ) {
-    std::cerr << "[chuck](via STK): Modal: strike amplitude is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Modal: strike amplitude is less than zero!" << CK_STDENDL;
     gain = 0.0;
   }
   else if ( amplitude > 1.0 ) {
-    std::cerr << "[chuck](via STK): Modal: strike amplitude is greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Modal: strike amplitude is greater than 1.0!" << CK_STDENDL;
     gain = 1.0;
   }
 
@@ -10315,7 +10316,7 @@ void Modal :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->strike(amplitude);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Modal: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Modal: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -10326,7 +10327,7 @@ void Modal :: noteOff(MY_FLOAT amplitude)
   this->damp(1.0 - (amplitude * 0.03));
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Modal: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Modal: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -10425,11 +10426,11 @@ void ModalBar :: setStickHardness(MY_FLOAT hardness)
 {
   stickHardness = hardness;
   if ( hardness < 0.0 ) {
-    std::cerr << "[chuck](via STK): ModalBar: setStickHardness parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): ModalBar: setStickHardness parameter is less than zero!" << CK_STDENDL;
     stickHardness = 0.0;
   }
   else if ( hardness > 1.0 ) {
-    std::cerr << "[chuck](via STK): ModalBar: setStickHarness parameter is greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): ModalBar: setStickHarness parameter is greater than 1.0!" << CK_STDENDL;
     stickHardness = 1.0;
   }
 
@@ -10441,11 +10442,11 @@ void ModalBar :: setStrikePosition(MY_FLOAT position)
 {
   strikePosition = position;
   if ( position < 0.0 ) {
-    std::cerr << "[chuck](via STK): ModalBar: setStrikePositions parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): ModalBar: setStrikePositions parameter is less than zero!" << CK_STDENDL;
     strikePosition = 0.0;
   }
   else if ( position > 1.0 ) {
-    std::cerr << "[chuck](via STK): ModalBar: setStrikePosition parameter is greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): ModalBar: setStrikePosition parameter is greater than 1.0!" << CK_STDENDL;
     strikePosition = 1.0;
   }
 
@@ -10530,11 +10531,11 @@ void ModalBar :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): ModalBar: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): ModalBar: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): ModalBar: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): ModalBar: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_StickHardness_) // 2
@@ -10557,10 +10558,10 @@ void ModalBar :: controlChange(int number, MY_FLOAT value)
     envelope->setTarget( norm );
     m_volume = norm;
   } else
-    std::cerr << "[chuck](via STK): ModalBar: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): ModalBar: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): ModalBar: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): ModalBar: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -10703,7 +10704,7 @@ void Moog :: setFrequency(MY_FLOAT frequency)
 {
   baseFrequency = frequency;
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): Moog: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Moog: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     baseFrequency = 220.0;
   }
 
@@ -10741,7 +10742,7 @@ void Moog :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   filters[1]->setSweepRate( filterRate * 22050.0 / Stk::sampleRate() );
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Moog: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Moog: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -10777,11 +10778,11 @@ void Moog :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): Moog: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Moog: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): Moog: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Moog: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_FilterQ_) // 2
@@ -10799,10 +10800,10 @@ void Moog :: controlChange(int number, MY_FLOAT value)
     m_volume = norm;
     }
   else
-    std::cerr << "[chuck](via STK): Moog: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Moog: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Moog: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): Moog: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -11374,7 +11375,7 @@ void PercFlut :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->keyOn();
 
 #if defined(_STK_DEBUG_)
-  cerr << "PercFlut: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << endl;
+  CK_STDCERR << "PercFlut: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -11620,7 +11621,7 @@ Phonemes :: ~Phonemes(void)
 const char *Phonemes :: name( unsigned int index )
 {
   if ( index > 31 ) {
-    std::cerr << "[chuck](via STK): Phonemes: name index is greater than 31!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Phonemes: name index is greater than 31!" << CK_STDENDL;
     return 0;
   }
   return phonemeNames[index];
@@ -11629,7 +11630,7 @@ const char *Phonemes :: name( unsigned int index )
 MY_FLOAT Phonemes :: voiceGain( unsigned int index )
 {
   if ( index > 31 ) {
-    std::cerr << "[chuck](via STK): Phonemes: voiceGain index is greater than 31!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Phonemes: voiceGain index is greater than 31!" << CK_STDENDL;
     return 0.0;
   }
   return phonemeGains[index][0];
@@ -11638,7 +11639,7 @@ MY_FLOAT Phonemes :: voiceGain( unsigned int index )
 MY_FLOAT Phonemes :: noiseGain( unsigned int index )
 {
   if ( index > 31 ) {
-    std::cerr << "[chuck](via STK): Phonemes: noiseGain index is greater than 31!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Phonemes: noiseGain index is greater than 31!" << CK_STDENDL;
     return 0.0;
   }
   return phonemeGains[index][1];
@@ -11647,11 +11648,11 @@ MY_FLOAT Phonemes :: noiseGain( unsigned int index )
 MY_FLOAT Phonemes :: formantFrequency( unsigned int index, unsigned int partial )
 {
   if ( index > 31 ) {
-    std::cerr << "[chuck](via STK): Phonemes: formantFrequency index is greater than 31!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Phonemes: formantFrequency index is greater than 31!" << CK_STDENDL;
     return 0.0;
   }
   if ( partial > 3 ) {
-    std::cerr << "[chuck](via STK): Phonemes: formantFrequency partial is greater than 3!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Phonemes: formantFrequency partial is greater than 3!" << CK_STDENDL;
     return 0.0;
   }
   return phonemeParameters[index][partial][0];
@@ -11660,11 +11661,11 @@ MY_FLOAT Phonemes :: formantFrequency( unsigned int index, unsigned int partial 
 MY_FLOAT Phonemes :: formantRadius( unsigned int index, unsigned int partial )
 {
   if ( index > 31 ) {
-    std::cerr << "[chuck](via STK): Phonemes: formantRadius index is greater than 31!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Phonemes: formantRadius index is greater than 31!" << CK_STDENDL;
     return 0.0;
   }
   if ( partial > 3 ) {
-    std::cerr << "[chuck](via STK): Phonemes: formantRadius partial is greater than 3!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Phonemes: formantRadius partial is greater than 3!" << CK_STDENDL;
     return 0.0;
   }
   return phonemeParameters[index][partial][1];
@@ -11673,11 +11674,11 @@ MY_FLOAT Phonemes :: formantRadius( unsigned int index, unsigned int partial )
 MY_FLOAT Phonemes :: formantGain( unsigned int index, unsigned int partial )
 {
   if ( index > 31 ) {
-    std::cerr << "[chuck](via STK): Phonemes: formantGain index is greater than 31!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Phonemes: formantGain index is greater than 31!" << CK_STDENDL;
     return 0.0;
   }
   if ( partial > 3 ) {
-    std::cerr << "[chuck](via STK): Phonemes: formantGain partial is greater than 3!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Phonemes: formantGain partial is greater than 3!" << CK_STDENDL;
     return 0.0;
   }
   return phonemeParameters[index][partial][2];
@@ -11723,11 +11724,11 @@ void PitShift :: setEffectMix(MY_FLOAT mix)
 {
   effectMix = mix;
   if ( mix < 0.0 ) {
-    std::cerr << "[chuck](via STK): PitShift: setEffectMix parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): PitShift: setEffectMix parameter is less than zero!" << CK_STDENDL;
     effectMix = 0.0;
   }
   else if ( mix > 1.0 ) {
-    std::cerr << "[chuck](via STK): PitShift: setEffectMix parameter is greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): PitShift: setEffectMix parameter is greater than 1.0!" << CK_STDENDL;
     effectMix = 1.0;
   }
 }
@@ -11841,7 +11842,7 @@ void PluckTwo :: setFrequency(MY_FLOAT frequency)
 {
   lastFrequency = frequency;
   if ( lastFrequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): PluckTwo: setFrequency parameter less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): PluckTwo: setFrequency parameter less than or equal to zero!" << CK_STDENDL;
     lastFrequency = 220.0;
   }
 
@@ -11868,7 +11869,7 @@ void PluckTwo :: setDetune(MY_FLOAT detune)
 {
   detuning = detune;
   if ( detuning <= 0.0 ) {
-    std::cerr << "[chuck](via STK): PluckTwo: setDetune parameter less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): PluckTwo: setDetune parameter less than or equal to zero!" << CK_STDENDL;
     detuning = 0.1;
   }
   delayLine->setDelay(( lastLength / detuning) - (MY_FLOAT) 0.5);
@@ -11885,11 +11886,11 @@ void PluckTwo :: setPluckPosition(MY_FLOAT position)
 {
   pluckPosition = position;
   if ( position < 0.0 ) {
-    std::cerr << "[chuck](via STK): PluckTwo: setPluckPosition parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): PluckTwo: setPluckPosition parameter is less than zero!" << CK_STDENDL;
     pluckPosition = 0.0;
   }
   else if ( position > 1.0 ) {
-    std::cerr << "[chuck](via STK): PluckTwo: setPluckPosition parameter is greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): PluckTwo: setPluckPosition parameter is greater than 1.0!" << CK_STDENDL;
     pluckPosition = 1.0;
   }
 }
@@ -11906,7 +11907,7 @@ void PluckTwo :: noteOff(MY_FLOAT amplitude)
   loopGain =  ((MY_FLOAT) 1.0 - amplitude) * (MY_FLOAT) 0.5;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): PluckTwo: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): PluckTwo: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -11960,7 +11961,7 @@ void Plucked :: setFrequency(MY_FLOAT frequency)
 {
   MY_FLOAT freakency = frequency;
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): Plucked: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Plucked: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     freakency = 220.0;
   }
 
@@ -11980,11 +11981,11 @@ void Plucked :: pluck(MY_FLOAT amplitude)
 {
   MY_FLOAT gain = amplitude;
   if ( gain > 1.0 ) {
-    std::cerr << "[chuck](via STK): Plucked: pluck amplitude greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Plucked: pluck amplitude greater than 1.0!" << CK_STDENDL;
     gain = 1.0;
   }
   else if ( gain < 0.0 ) {
-    std::cerr << "[chuck](via STK): Plucked: pluck amplitude less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Plucked: pluck amplitude less than zero!" << CK_STDENDL;
     gain = 0.0;
   }
 
@@ -12001,7 +12002,7 @@ void Plucked :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->pluck(amplitude);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Plucked: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Plucked: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -12009,16 +12010,16 @@ void Plucked :: noteOff(MY_FLOAT amplitude)
 {
   loopGain = (MY_FLOAT) 1.0 - amplitude;
   if ( loopGain < 0.0 ) {
-    std::cerr << "[chuck](via STK): Plucked: noteOff amplitude greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Plucked: noteOff amplitude greater than 1.0!" << CK_STDENDL;
     loopGain = 0.0;
   }
   else if ( loopGain > 1.0 ) {
-    std::cerr << "[chuck](via STK): Plucked: noteOff amplitude less than or zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Plucked: noteOff amplitude less than or zero!" << CK_STDENDL;
     loopGain = (MY_FLOAT) 0.99999;
   }
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Plucked: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Plucked: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -12256,7 +12257,7 @@ void Resonate :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->setResonance(frequency, poleRadius);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Resonate: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Resonate: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 void Resonate :: noteOff(MY_FLOAT amplitude)
@@ -12264,7 +12265,7 @@ void Resonate :: noteOff(MY_FLOAT amplitude)
   this->keyOff();
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Resonate: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Resonate: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -12272,17 +12273,17 @@ void Resonate :: setResonance(MY_FLOAT frequency, MY_FLOAT radius)
 {
   poleFrequency = frequency;
   if ( frequency < 0.0 ) {
-    std::cerr << "[chuck](via STK): Resonate: setResonance frequency parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Resonate: setResonance frequency parameter is less than zero!" << CK_STDENDL;
     poleFrequency = 0.0;
   }
 
   poleRadius = radius;
   if ( radius < 0.0 ) {
-    std::cerr << "[chuck](via STK): Resonate: setResonance radius parameter is less than 0.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Resonate: setResonance radius parameter is less than 0.0!" << CK_STDENDL;
     poleRadius = 0.0;
   }
   else if ( radius >= 1.0 ) {
-    std::cerr << "[chuck](via STK): Resonate: setResonance radius parameter is greater than or equal to 1.0, which is unstable!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Resonate: setResonance radius parameter is greater than or equal to 1.0, which is unstable!" << CK_STDENDL;
     poleRadius = 0.9999;
   }
   filter->setResonance( poleFrequency, poleRadius, TRUE );
@@ -12292,13 +12293,13 @@ void Resonate :: setNotch(MY_FLOAT frequency, MY_FLOAT radius)
 {
   zeroFrequency = frequency;
   if ( frequency < 0.0 ) {
-    std::cerr << "[chuck](via STK): Resonate: setNotch frequency parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Resonate: setNotch frequency parameter is less than zero!" << CK_STDENDL;
     zeroFrequency = 0.0;
   }
 
   zeroRadius = radius;
   if ( radius < 0.0 ) {
-    std::cerr << "[chuck](via STK): Resonate: setNotch radius parameter is less than 0.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Resonate: setNotch radius parameter is less than 0.0!" << CK_STDENDL;
     zeroRadius = 0.0;
   }
   
@@ -12322,11 +12323,11 @@ void Resonate :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): Resonate: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Resonate: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): Resonate: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Resonate: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == 2) // 2
@@ -12340,10 +12341,10 @@ void Resonate :: controlChange(int number, MY_FLOAT value)
   else if (number == __SK_AfterTouch_Cont_) // 128
     adsr->setTarget( norm );
   else
-    std::cerr << "[chuck](via STK): Resonate: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Resonate: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Resonate: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): Resonate: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 /***************************************************/
@@ -12489,7 +12490,7 @@ void Rhodey :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->keyOn();
 
 #if defined(_STK_DEBUG_)
-  cerr << "Rhodey: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << endl;
+  CK_STDCERR << "Rhodey: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -12914,7 +12915,7 @@ void Sampler :: noteOff(MY_FLOAT amplitude)
   this->keyOff();
 
 #if defined(_STK_DEBUG_)
-  cerr << "Sampler: NoteOff amplitude = " << amplitude << endl;
+  CK_STDCERR << "Sampler: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -13025,7 +13026,7 @@ void Saxofony :: setFrequency(MY_FLOAT frequency)
 {
   MY_FLOAT freakency = frequency;
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): Saxofony: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Saxofony: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     freakency = 220.0;
   }
 
@@ -13074,7 +13075,7 @@ void Saxofony :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   outputGain = amplitude + 0.001;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Saxofony: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Saxofony: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -13083,7 +13084,7 @@ void Saxofony :: noteOff(MY_FLOAT amplitude)
   this->stopBlowing(amplitude * 0.01);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Saxofony: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Saxofony: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -13113,11 +13114,11 @@ void Saxofony :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): Saxofony: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Saxofony: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): Saxofony: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Saxofony: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_ReedStiffness_) { // 2
@@ -13145,10 +13146,10 @@ void Saxofony :: controlChange(int number, MY_FLOAT value)
     m_aperture = norm;
   }
   else
-    std::cerr << "[chuck](via STK): Saxofony: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Saxofony: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Saxofony: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): Saxofony: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 
 }
@@ -13503,7 +13504,7 @@ int Shakers :: setupName(char* instr)
   }
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Shakers: Setting instrument to " << instrs[which] << std::endl;
+  CK_STDCERR << "[chuck](via STK): Shakers: Setting instrument to " << instrs[which] << CK_STDENDL;
 #endif
 
   return this->setupNum(which);
@@ -13979,7 +13980,7 @@ void Shakers :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   if (instType==10 || instType==3) ratchetPos += 1;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Shakers: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Shakers: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -14068,11 +14069,11 @@ void Shakers :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): Shakers: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Shakers: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): Shakers: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Shakers: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   MY_FLOAT temp;
@@ -14163,10 +14164,10 @@ void Shakers :: controlChange(int number, MY_FLOAT value)
     this->setupNum(instType);
   }                                       
   else
-    std::cerr << "[chuck](via STK): Shakers: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Shakers: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Shakers: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): Shakers: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -14365,7 +14366,7 @@ void Simple :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   filter->setGain(amplitude); 
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Simple: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Simple: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 void Simple :: noteOff(MY_FLOAT amplitude)
@@ -14373,7 +14374,7 @@ void Simple :: noteOff(MY_FLOAT amplitude)
   keyOff();
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Simple: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Simple: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -14401,11 +14402,11 @@ void Simple :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): Clarinet: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Clarinet: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): Clarinet: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Clarinet: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_Breath_) // 2
@@ -14421,10 +14422,10 @@ void Simple :: controlChange(int number, MY_FLOAT value)
   else if (number == __SK_AfterTouch_Cont_) // 128
     adsr->setTarget( norm );
   else
-    std::cerr << "[chuck](via STK): Simple: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Simple: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Simple: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): Simple: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -14614,7 +14615,7 @@ void Sitar :: setFrequency(MY_FLOAT frequency)
 {
   MY_FLOAT freakency = frequency;
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): Sitar: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Sitar: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     freakency = 220.0;
   }
 
@@ -14640,7 +14641,7 @@ void Sitar :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   amGain = 0.1 * amplitude;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Sitar: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Sitar: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -14648,16 +14649,16 @@ void Sitar :: noteOff(MY_FLOAT amplitude)
 {
   loopGain = (MY_FLOAT) 1.0 - amplitude;
   if ( loopGain < 0.0 ) {
-    std::cerr << "[chuck](via STK): Plucked: noteOff amplitude greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Plucked: noteOff amplitude greater than 1.0!" << CK_STDENDL;
     loopGain = 0.0;
   }
   else if ( loopGain > 1.0 ) {
-    std::cerr << "[chuck](via STK): Plucked: noteOff amplitude less than or zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Plucked: noteOff amplitude less than or zero!" << CK_STDENDL;
     loopGain = (MY_FLOAT) 0.99999;
   }
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Plucked: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Plucked: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -14852,7 +14853,7 @@ void StifKarp :: setFrequency(MY_FLOAT frequency)
 {
   lastFrequency = frequency; 
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): StifKarp: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): StifKarp: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     lastFrequency = 220.0;
   }
 
@@ -14898,11 +14899,11 @@ void StifKarp :: setStretch(MY_FLOAT stretch)
 void StifKarp :: setPickupPosition(MY_FLOAT position) {
   pickupPosition = position;
   if ( position < 0.0 ) {
-    std::cerr << "[chuck](via STK): StifKarp: setPickupPosition parameter is less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): StifKarp: setPickupPosition parameter is less than zero!" << CK_STDENDL;
     pickupPosition = 0.0;
   }
   else if ( position > 1.0 ) {
-    std::cerr << "[chuck](via STK): StifKarp: setPickupPosition parameter is greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): StifKarp: setPickupPosition parameter is greater than 1.0!" << CK_STDENDL;
     pickupPosition = 1.0;
   }
 
@@ -14921,11 +14922,11 @@ void StifKarp :: pluck(MY_FLOAT amplitude)
 {
   MY_FLOAT gain = amplitude;
   if ( gain > 1.0 ) {
-    std::cerr << "[chuck](via STK): StifKarp: pluck amplitude greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): StifKarp: pluck amplitude greater than 1.0!" << CK_STDENDL;
     gain = 1.0;
   }
   else if ( gain < 0.0 ) {
-    std::cerr << "[chuck](via STK): StifKarp: pluck amplitude less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): StifKarp: pluck amplitude less than zero!" << CK_STDENDL;
     gain = 0.0;
   }
 
@@ -14943,7 +14944,7 @@ void StifKarp :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->pluck(amplitude);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): StifKarp: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): StifKarp: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -14951,17 +14952,17 @@ void StifKarp :: noteOff(MY_FLOAT amplitude)
 {
   MY_FLOAT gain = amplitude;
   if ( gain > 1.0 ) {
-    std::cerr << "[chuck](via STK): StifKarp: noteOff amplitude greater than 1.0!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): StifKarp: noteOff amplitude greater than 1.0!" << CK_STDENDL;
     gain = 1.0;
   }
   else if ( gain < 0.0 ) {
-    std::cerr << "[chuck](via STK): StifKarp: noteOff amplitude less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): StifKarp: noteOff amplitude less than zero!" << CK_STDENDL;
     gain = 0.0;
   }
   loopGain =  (1.0 - gain) * 0.5;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): StifPluck: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): StifPluck: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -14986,11 +14987,11 @@ void StifKarp :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): StifKarp: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): StifKarp: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): StifKarp: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): StifKarp: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_PickPosition_) // 4
@@ -15002,10 +15003,10 @@ void StifKarp :: controlChange(int number, MY_FLOAT value)
   else if (number == __SK_StringDetune_) // 1
     setStretch( 0.9 + (0.1 * (1.0 - norm)) );
   else
-    std::cerr << "[chuck](via STK): StifKarp: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): StifKarp: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): StifKarp: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): StifKarp: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -15140,14 +15141,14 @@ void Stk :: sleep(unsigned long milliseconds)
 void Stk :: handleError( const char *message, StkError::TYPE type )
 {
     if (type == StkError::WARNING) {
-        fprintf(stderr, "%s\n", message);
+        CK_FPRINTF_STDERR( "%s\n", message );
     } else if (type == StkError::DEBUG_WARNING) {
 #if defined(_STK_DEBUG_)
-        fprintf(stderr, "%s\n", message);
+        CK_FPRINTF_STDERR( "%s\n", message );
 #endif
     } else {
         // print error message before throwing.
-        fprintf(stderr, "%s\n", message);
+        CK_FPRINTF_STDERR( "%s\n", message );
         throw StkError(message, type);
     }
 }
@@ -15286,11 +15287,11 @@ MY_FLOAT Table :: tick(MY_FLOAT index)
   long temp;
 
   if (index > length-1) {
-    std::cerr << "[chuck](via STK): Table: Index (" << index << ") exceeds table length ... sticking at end!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Table: Index (" << index << ") exceeds table length ... sticking at end!" << CK_STDENDL;
     index = length-1;
   }
   else if (index < 0.0) {
-    std::cerr << "[chuck](via STK): Table: Index (" << index << ") is less than zero ... setting to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Table: Index (" << index << ") is less than zero ... setting to zero!" << CK_STDENDL;
     index = 0.0;
   }
 
@@ -15387,7 +15388,7 @@ void TubeBell :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->keyOn();
 
 #if defined(_STK_DEBUG_)
-  cerr << "TubeBell: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << endl;
+  CK_STDCERR << "TubeBell: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -15766,7 +15767,7 @@ void VoicForm :: setFrequency(MY_FLOAT frequency)
 {
   MY_FLOAT freakency = frequency;
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): VoicForm: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): VoicForm: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     freakency = 220.0;
   }
 
@@ -15793,16 +15794,16 @@ bool VoicForm :: setPhoneme( const char *phoneme )
             setUnVoiced( Phonemes::noiseGain( i ) );
             m_phonemeNum = i;
 #if defined(_STK_DEBUG_)
-            std::cerr << "[chuck](via STK): VoicForm: found formant " << phoneme << " (number " << i << ")" << std::endl;
+            CK_STDCERR << "[chuck](via STK): VoicForm: found formant " << phoneme << " (number " << i << ")" << CK_STDENDL;
 #endif
         }
         i++;
     }
 
     if( !found )
-        std::cerr << "[chuck](via STK): VoicForm: phoneme " << phoneme << " not found!" << std::endl;
+        CK_STDCERR << "[chuck](via STK): VoicForm: phoneme " << phoneme << " not found!" << CK_STDENDL;
     else
-        str_phoneme.str = Phonemes::name( m_phonemeNum );
+        str_phoneme.set( Phonemes::name( m_phonemeNum ) );
 
     return found;
 }
@@ -15820,7 +15821,7 @@ void VoicForm :: setUnVoiced(MY_FLOAT nGain)
 void VoicForm :: setFilterSweepRate(int whichOne, MY_FLOAT rate)
 {
   if ( whichOne < 0 || whichOne > 3 ) {
-    std::cerr << "[chuck](via STK): VoicForm: setFilterSweepRate filter argument outside range 0-3!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): VoicForm: setFilterSweepRate filter argument outside range 0-3!" << CK_STDENDL;
     return;
   }
 
@@ -15888,11 +15889,11 @@ void VoicForm :: controlChange(int number, MY_FLOAT value)
     MY_FLOAT norm = value * ONE_OVER_128;
     if ( norm < 0 ) {
         norm = 0.0;
-        std::cerr << "[chuck](via STK): VoicForm: Control value less than zero!" << std::endl;
+        CK_STDCERR << "[chuck](via STK): VoicForm: Control value less than zero!" << CK_STDENDL;
     }
     else if ( norm > 1.0 ) {
         norm = 1.0;
-        std::cerr << "[chuck](via STK): VoicForm: Control value exceeds nominal range!" << std::endl;
+        CK_STDCERR << "[chuck](via STK): VoicForm: Control value exceeds nominal range!" << CK_STDENDL;
     }
 
     if (number == __SK_Breath_) { // 2
@@ -15937,10 +15938,10 @@ void VoicForm :: controlChange(int number, MY_FLOAT value)
         onepole->setPole( 0.97 - ( norm * 0.2) );
   }
   else
-    std::cerr << "[chuck](via STK): VoicForm: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): VoicForm: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): VoicForm: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): VoicForm: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -15996,7 +15997,7 @@ void Voicer :: addInstrument( Instrmnt *instrument, int channel )
 {
   //voices = (Voice *) realloc( (void *) voices, nVoices+1 * sizeof( Voice ) );
   if ( nVoices == maxVoices ) {
-    std::cerr << "[chuck](via STK): Voicer: Maximum number of voices already added!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Voicer: Maximum number of voices already added!!" << CK_STDENDL;
     return;
   }
 
@@ -16455,7 +16456,7 @@ void Whistle :: setFrequency(MY_FLOAT frequency)
 {
   MY_FLOAT freakency = frequency * 4;  // the whistle is a transposing instrument
   if ( frequency <= 0.0 ) {
-    std::cerr << "[chuck](via STK): Whistle: setFrequency parameter is less than or equal to zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Whistle: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
     freakency = 220.0;
   }
 
@@ -16479,7 +16480,7 @@ void Whistle :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   setFrequency(frequency);
   startBlowing(amplitude*2.0 ,amplitude * 0.2);
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Whistle: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Whistle: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -16488,7 +16489,7 @@ void Whistle :: noteOff(MY_FLOAT amplitude)
   this->stopBlowing(amplitude * 0.02);
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Whistle: NoteOff amplitude = " << amplitude << std::endl;
+  CK_STDCERR << "[chuck](via STK): Whistle: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -16510,7 +16511,7 @@ MY_FLOAT Whistle :: tick()
     if (frameCount >= (1470 / subSample))   {
       frameCount = 0;
       // printf("%f %f %f\n",tempVectorP->getX(),tempVectorP->getY(),envOut);
-      fflush(stdout);
+      CK_FFLUSH_STDOUT();
     }
 #endif
     envOut = envelope.tick();
@@ -16592,11 +16593,11 @@ void Whistle :: controlChange(int number, MY_FLOAT value)
   MY_FLOAT norm = value * ONE_OVER_128;
   if ( norm < 0 ) {
     norm = 0.0;
-    std::cerr << "[chuck](via STK): Whistle: Control value less than zero!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Whistle: Control value less than zero!" << CK_STDENDL;
   }
   else if ( norm > 1.0 ) {
     norm = 1.0;
-    std::cerr << "[chuck](via STK): Whistle: Control value exceeds nominal range!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Whistle: Control value exceeds nominal range!" << CK_STDENDL;
   }
 
   if (number == __SK_NoiseLevel_) // 4
@@ -16612,10 +16613,10 @@ void Whistle :: controlChange(int number, MY_FLOAT value)
   else if (number == __SK_Sustain_)  // 64
   { if (value < 1.0) subSample = 1; }
   else
-    std::cerr << "[chuck](via STK): Whistle: Undefined Control Number (" << number << ")!!" << std::endl;
+    CK_STDCERR << "[chuck](via STK): Whistle: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
 
 #if defined(_STK_DEBUG_)
-  std::cerr << "[chuck](via STK): Whistle: controlChange number = " << number << ", value = " << value << std::endl;
+  CK_STDCERR << "[chuck](via STK): Whistle: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
 
@@ -16705,7 +16706,7 @@ void Wurley :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   this->keyOn();
 
 #if defined(_STK_DEBUG_)
-  cerr << "Wurley: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << endl;
+  CK_STDCERR << "Wurley: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
@@ -16842,14 +16843,14 @@ void WvIn :: closeFile( void )
 {
     if ( fd ) fclose( fd );
     finished = true;
-    str_filename.str = "";
+    str_filename.set( "" );
 }
 
 void WvIn :: openFile( const char *fileName, bool raw, bool doNormalize, bool generate )
 {
     unsigned long lastChannels = channels;
     unsigned long samples, lastSamples = (bufferSize+1)*channels;
-    str_filename.str = fileName;
+    str_filename.set( fileName );
     //strncpy ( m_filename, fileName, 255 );
     //m_filename[255] = '\0';
     if(!generate || !strstr(fileName, "special:"))
@@ -17995,14 +17996,14 @@ void WvOut :: closeFile( void )
     totalCount = 0;
   }
 
-  str_filename.str = "";
+  str_filename.set( "" );
   //m_filename[0] = '\0';
 }
 
 void WvOut :: openFile( const char *fileName, unsigned int nChannels, WvOut::FILE_TYPE type, Stk::STK_FORMAT format )
 {
   closeFile();
-  str_filename.str = fileName;
+  str_filename.set( fileName );
   //strncpy( m_filename, fileName, 255);
   //if ( strlen( fileName ) > 255 ) 
   //  m_filename[255] = '\0';
@@ -18477,7 +18478,7 @@ bool WvOut :: setMatFile( const char *fileName )
   if ( fseek(fd, 0, SEEK_END) == -1 ) goto error;
 
   byteswap = false;
-  fprintf( stderr, "[chuck]:(via STK): creating MAT-file (%s) containing MATLAB array: %s\n", name, arrayName);
+  CK_FPRINTF_STDERR( "[chuck]:(via STK): creating MAT-file (%s) containing MATLAB array: %s\n", name, arrayName);
   return true;
 
  error:
@@ -18674,7 +18675,7 @@ MidiFileIn :: MidiFileIn( std::string fileName )
     // Attempt to open the file.
     file_.open( fileName.c_str(), std::ios::in | std::ios::binary );
     if ( !file_ ) {
-        std::cout << "MidiFileIn: error opening or finding file (" <<  fileName << ").";
+        CK_STDCOUT << "MidiFileIn: error opening or finding file (" <<  fileName << ").";
         handleError( "", StkError::FILE_NOT_FOUND );
     }
     
@@ -18689,7 +18690,7 @@ MidiFileIn :: MidiFileIn( std::string fileName )
 #endif
     length = (SINT32 *) &buffer;
     if ( strncmp( chunkType, "MThd", 4 ) || ( *length != 6 ) ) {
-        std::cout << "MidiFileIn: file (" <<  fileName << ") does not appear to be a MIDI file!";
+        CK_STDCOUT << "MidiFileIn: file (" <<  fileName << ") does not appear to be a MIDI file!";
         handleError( "", StkError::FILE_UNKNOWN_FORMAT );
     }
     
@@ -18701,7 +18702,7 @@ MidiFileIn :: MidiFileIn( std::string fileName )
 #endif
     data = (SINT16 *) &buffer;
     if ( *data < 0 || *data > 2 ) {
-        std::cout << "MidiFileIn: the file (" <<  fileName << ") format is invalid!";
+        CK_STDCOUT << "MidiFileIn: the file (" <<  fileName << ") format is invalid!";
         handleError( "", StkError::FILE_ERROR );
     }
     format_ = *data;
@@ -18712,7 +18713,7 @@ MidiFileIn :: MidiFileIn( std::string fileName )
     swap16((unsigned char *)&buffer);
 #endif
     if ( format_ == 0 && *data != 1 ) {
-        std::cout << "MidiFileIn: invalid number of tracks (>1) for a file format = 0!";
+        CK_STDCOUT << "MidiFileIn: invalid number of tracks (>1) for a file format = 0!";
         handleError( "", StkError::FILE_ERROR );
     }
     nTracks_ = *data;
@@ -18801,7 +18802,7 @@ MidiFileIn :: MidiFileIn( std::string fileName )
     return;
     
 error:
-    std::cout << "MidiFileIn: error reading from file (" <<  fileName << ").";
+    CK_STDCOUT << "MidiFileIn: error reading from file (" <<  fileName << ").";
     handleError( "", StkError::FILE_ERROR );
 }
 
@@ -18815,7 +18816,7 @@ MidiFileIn :: ~MidiFileIn()
 void MidiFileIn :: rewindTrack( unsigned int track )
 {
     if ( track >= nTracks_ ) {
-        std::cout << "MidiFileIn::getNextEvent: invalid track argument (" <<  track << ").";
+        CK_STDCOUT << "MidiFileIn::getNextEvent: invalid track argument (" <<  track << ").";
         handleError( "", StkError::WARNING ); return;
     }
     
@@ -18828,7 +18829,7 @@ double MidiFileIn :: getTickSeconds( unsigned int track )
 {
     // Return the current tick value in seconds for the given track.
     if ( track >= nTracks_ ) {
-        std::cout << "MidiFileIn::getTickSeconds: invalid track argument (" <<  track << ").";
+        CK_STDCOUT << "MidiFileIn::getTickSeconds: invalid track argument (" <<  track << ").";
         handleError( "", StkError::WARNING ); return 0.0;
     }
     
@@ -18853,7 +18854,7 @@ unsigned long MidiFileIn :: getNextEvent( std::vector<unsigned char> *event, uns
     
     event->clear();
     if ( track >= nTracks_ ) {
-        std::cout << "MidiFileIn::getNextEvent: invalid track argument (" <<  track << ").";
+        CK_STDCOUT << "MidiFileIn::getNextEvent: invalid track argument (" <<  track << ").";
         handleError( "", StkError::WARNING ); return 0;
     }
     
@@ -18947,7 +18948,7 @@ unsigned long MidiFileIn :: getNextEvent( std::vector<unsigned char> *event, uns
     return ticks;
     
 error:
-    std::cout << "MidiFileIn::getNextEvent: file read error!";
+    CK_STDCOUT << "MidiFileIn::getNextEvent: file read error!";
     handleError( "", StkError::FILE_ERROR );
     return 0;
 }
@@ -18958,19 +18959,19 @@ unsigned long MidiFileIn :: getNextMidiEvent( std::vector<unsigned char> *midiEv
     // specified track (default = 0) and return the event delta time in
     // ticks.  Meta-Events preceeding this event are skipped and ignored.
     if ( track >= nTracks_ ) {
-        std::cout << "MidiFileIn::getNextMidiEvent: invalid track argument (" <<  track << ").";
+        CK_STDCOUT << "MidiFileIn::getNextMidiEvent: invalid track argument (" <<  track << ").";
         handleError( "", StkError::WARNING ); return 0;
     }
     
     unsigned long ticks = getNextEvent( midiEvent, track );
     while ( midiEvent->size() && ( midiEvent->at(0) >= 0xF0 ) ) {
         //for ( unsigned int i=0; i<midiEvent->size(); i++ )
-        //std::cout << "event byte = " << i << ", value = " << (int)midiEvent->at(i) << std::endl;
+        //CK_STDCOUT << "event byte = " << i << ", value = " << (int)midiEvent->at(i) << CK_STDENDL;
         ticks = getNextEvent( midiEvent, track );
     }
     
     //for ( unsigned int i=0; i<midiEvent->size(); i++ )
-    //std::cout << "event byte = " << i << ", value = " << (int)midiEvent->at(i) << std::endl;
+    //CK_STDCOUT << "event byte = " << i << ", value = " << (int)midiEvent->at(i) << CK_STDENDL;
     
     return ticks;
 }
@@ -19048,7 +19049,7 @@ CK_DLL_CTOR( Instrmnt_ctor )
 {
     // initialize member object
     OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data) = (t_CKUINT)0;
-    // fprintf( stderr,"[chuck](via STK): error : StkInstrument is virtual!\n");
+    // CK_FPRINTF_STDERR( "[chuck](via STK): error : StkInstrument is virtual!\n");
 }
 
 
@@ -19069,7 +19070,7 @@ CK_DLL_DTOR( Instrmnt_dtor )
 CK_DLL_TICK( Instrmnt_tick )
 {
     Instrmnt * i = (Instrmnt *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    if( !out ) fprintf( stderr,"[chuck](via STK): we warned you...\n");
+    if( !out ) CK_FPRINTF_STDERR( "[chuck](via STK): we warned you...\n");
     *out = i->tick();
     return TRUE;
 }
@@ -23126,7 +23127,7 @@ CK_DLL_PMSG( FilterStk_pmsg )
 CK_DLL_CTRL( FilterStk_ctrl_coefs )
 {
     // FilterStk * d = (FilterStk *)OBJ_MEMBER_UINT(SELF, FilterStk_offset_data);
-    fprintf( stderr, "FilterStk.coefs :: not implemented\n" );
+    CK_FPRINTF_STDERR( "FilterStk.coefs :: not implemented\n" );
 }
 
 
@@ -23897,7 +23898,7 @@ CK_DLL_CGET( PoleZero_cget_blockZero )
 CK_DLL_CTOR( FM_ctor  )
 {
     OBJ_MEMBER_UINT(SELF, FM_offset_data) = 0;
-    // fprintf( stderr, "[chuck](via STK): error -- FM is virtual!\n" );
+    // CK_FPRINTF_STDERR( "[chuck](via STK): error -- FM is virtual!\n" );
 }
 
 
@@ -23908,7 +23909,7 @@ CK_DLL_CTOR( FM_ctor  )
 CK_DLL_DTOR( FM_dtor  )
 { 
     // delete (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
-    // fprintf( stderr, "error -- FM is virtual!\n" );
+    // CK_FPRINTF_STDERR( "error -- FM is virtual!\n" );
 }
 
 
@@ -23919,7 +23920,7 @@ CK_DLL_DTOR( FM_dtor  )
 CK_DLL_TICK( FM_tick )
 {
     FM * m = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
-    fprintf(stderr,"[chuck](via STK): error -- FM tick is virtual!\n");
+    CK_FPRINTF_STDERR( "[chuck](via STK): error -- FM tick is virtual!\n" );
     *out = m->tick();
     return TRUE;
 }
@@ -24745,7 +24746,7 @@ CK_DLL_CTRL( Mandolin_ctrl_bodyIR )
 {
     Mandolin * m = (Mandolin *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     Chuck_String * str = GET_NEXT_STRING(ARGS);
-    m->setBodyIR( str->str.c_str(), strstr(str->str.c_str(), ".raw") != NULL );
+    m->setBodyIR( str->str().c_str(), strstr(str->str().c_str(), ".raw") != NULL );
     RETURN->v_string = str;
 }
 
@@ -25673,7 +25674,7 @@ CK_DLL_CTRL( VoicForm_ctrl_quiet )
 CK_DLL_CTRL( VoicForm_ctrl_phoneme )
 {
     VoicForm * v = (VoicForm *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    const char * c = GET_CK_STRING(ARGS)->str.c_str(); 
+    const char * c = GET_CK_STRING(ARGS)->str().c_str();
     v->setPhoneme( c );
     RETURN->v_string = &(v->str_phoneme);
 }
@@ -25949,12 +25950,12 @@ CK_DLL_CTRL( WvIn_ctrl_rate )
 CK_DLL_CTRL( WvIn_ctrl_path )
 {
     WvIn * w = (WvIn *)OBJ_MEMBER_UINT(SELF, WvIn_offset_data);
-    const char * c = GET_CK_STRING(ARGS)->str.c_str();
+    const char * c = GET_CK_STRING(ARGS)->str().c_str();
     try { w->openFile( c, FALSE, FALSE ); }
     catch( StkError & e )
     {
         const char * s = e.getMessage();
-        // fprintf( stderr, "[chuck](via STK): WvIn cannot load file '%s'\n", c );
+        // CK_FPRINTF_STDERR( "[chuck](via STK): WvIn cannot load file '%s'\n", c );
         s = "";
     }
     RETURN->v_string = &(w->str_filename);
@@ -26110,9 +26111,12 @@ std::map<WvOut *, WvOut *> g_wv;
 CK_DLL_CTOR( WvOut_ctor )
 {
     WvOut * yo = new WvOut;
-    yo->autoPrefix.str = "chuck-session";
-    // ge: 1.3.5.3
+    yo->autoPrefix.set( "chuck-session" );
+    // REFACTOR-2017 TODO Ge: Fix wvout realtime audio
+/*    // ge: 1.3.5.3
     yo->asyncIO = g_enable_realtime_audio;
+*/
+    yo->asyncIO = FALSE;
     // yo->asyncIO = SHRED->vm_ref->m_audio;
     OBJ_MEMBER_UINT(SELF, WvOut_offset_data) = (t_CKUINT)yo;
 }
@@ -26191,18 +26195,18 @@ CK_DLL_PMSG( WvOut_pmsg )
 CK_DLL_CTRL( WvOut_ctrl_matFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").mat" );
         filename = buffer;
     }
@@ -26222,18 +26226,18 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_matFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").mat" );
         filename = buffer;
     }
@@ -26253,18 +26257,18 @@ done:
 CK_DLL_CTRL( WvOut_ctrl_sndFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").snd" );
         filename = buffer;
     }
@@ -26284,18 +26288,18 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_sndFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").snd" );
         filename = buffer;
     }
@@ -26315,25 +26319,25 @@ done:
 CK_DLL_CTRL( WvOut_ctrl_wavFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").wav" );
         filename = buffer;
     }
     try { w->openFile( filename, 1, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
     catch( StkError & e )
     {
-        // fprintf( stderr, "%s\n", e.getMessage() );
+        // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
         goto done;
     }
     g_wv[w] = w;
@@ -26350,25 +26354,25 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_wavFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").wav" );
         filename = buffer;
     }
     try { w->openFile( filename, 2, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
     catch( StkError & e )
     {
-        // fprintf( stderr, "%s\n", e.getMessage() );
+        // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
         goto done;
     }
     g_wv[w] = w;
@@ -26385,18 +26389,18 @@ done:
 CK_DLL_CTRL( WvOut_ctrl_rawFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").raw" );
         filename = buffer;
     }
@@ -26416,18 +26420,18 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_rawFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").raw" );
         filename = buffer;
     }
@@ -26447,18 +26451,18 @@ done:
 CK_DLL_CTRL( WvOut_ctrl_aifFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").aiff" );
         filename = buffer;
     }
@@ -26478,18 +26482,18 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_aifFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str.c_str();
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
     // special
     if( strstr( filename, "special:auto" ) )
     {
         time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str.c_str() );
+        strcpy( buffer, w->autoPrefix.str().c_str() );
         strcat( buffer, "(" );
         strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str.c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str.c_str())+17] = 'm';
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
         strcat( buffer, ").aiff" );
         filename = buffer;
     }
@@ -26560,7 +26564,7 @@ CK_DLL_CGET( WvOut_cget_record )
 CK_DLL_CTRL( WvOut_ctrl_autoPrefix )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    w->autoPrefix.str = GET_NEXT_STRING(ARGS)->str.c_str();
+    w->autoPrefix.set( GET_NEXT_STRING(ARGS)->str().c_str() );
     RETURN->v_string = &w->autoPrefix;
 }
 
@@ -26610,7 +26614,7 @@ CK_DLL_DTOR( BLT_dtor )
 
 CK_DLL_TICK( BLT_tick )
 {
-    fprintf( stderr, "BLT is virtual!\n" );
+    CK_FPRINTF_STDERR( "BLT is virtual!\n" );
     return TRUE;
 }
 
@@ -26901,7 +26905,7 @@ CK_DLL_MFUN( MidiFileIn_open )
     
     try
     {
-        f = new stk::MidiFileIn(str->str);
+        f = new stk::MidiFileIn(str->str());
         OBJ_MEMBER_UINT(SELF, MidiFileIn_offset_data) = (t_CKUINT) f;
         RETURN->v_int = 1;
     }

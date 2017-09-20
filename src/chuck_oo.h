@@ -35,12 +35,15 @@
 #define __CHUCK_OO_H__
 
 #include "chuck_def.h"
+#include "chuck_carrier.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <queue>
 #include <fstream>
+#include <sstream> // REFACTOR-2017: for custom output
 #include "util_thread.h" // added 1.3.0.0
+
 
 
 #ifndef __PLATFORM_WIN32__
@@ -452,11 +455,23 @@ protected:
 struct Chuck_String : Chuck_Object
 {
 public:
-    Chuck_String( const std::string & s = "" ) { str = s; }
+    // constructor
+    Chuck_String( const std::string & s = "" ) { set( s ); }
+    // destructor
     ~Chuck_String() { }
 
-public:
-    std::string str;
+    // set string (makes copy)
+    void set( const std::string & s ) { m_str = s; m_charptr = m_str.c_str(); }
+    // get as standard c++ string
+    const std::string & str() { return m_str; }
+    // get as C string (NOTE: use this in dynamical modules like chugins!)
+    const char * c_str() { return m_charptr; }
+
+private:
+    // c pointer | HACK: needed for ensure string passing in dynamic modules
+    const char * m_charptr; // REFACTOR-2017
+    // c++ string
+    std::string m_str;
 };
 
 
@@ -522,7 +537,8 @@ public:
 struct Chuck_IO_File : Chuck_IO
 {
 public:
-    Chuck_IO_File();
+    // REFACTOR-2017
+    Chuck_IO_File( Chuck_VM * vm );
     virtual ~Chuck_IO_File();
     
 public:
@@ -592,6 +608,8 @@ protected:
     long m_dir_start;
     // path
     std::string m_path;
+    // vm and shred
+    Chuck_VM * m_vmRef;
 };
 
 
@@ -604,12 +622,9 @@ protected:
 struct Chuck_IO_Chout : Chuck_IO
 {
 public:
-    Chuck_IO_Chout();
+    Chuck_IO_Chout( Chuck_Carrier * carrier );
     virtual ~Chuck_IO_Chout();
 
-    static Chuck_IO_Chout * our_chout;
-    static Chuck_IO_Chout * getInstance();
-    
 public:
     // meta
     virtual t_CKBOOL good();
@@ -630,6 +645,16 @@ public:
     virtual void write( t_CKINT val );
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
+
+public: // REFACTOR-2017
+    // set callback
+    void set_output_callback( void (* fp)(const char *) );
+    
+private:
+    // callback
+    void (* m_callback)(const char *);
+    // intermediate line storage
+    std::stringstream m_buffer;
 };
 
 
@@ -642,11 +667,8 @@ public:
 struct Chuck_IO_Cherr : Chuck_IO
 {
 public:
-    Chuck_IO_Cherr();
+    Chuck_IO_Cherr( Chuck_Carrier * carrier );
     virtual ~Chuck_IO_Cherr();
-    
-    static Chuck_IO_Cherr * our_cherr;
-    static Chuck_IO_Cherr * getInstance();
     
 public:
     // meta
@@ -668,7 +690,19 @@ public:
     virtual void write( t_CKINT val );
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
+
+public:
+    // set callback | REFACTOR-2017
+    void set_output_callback( void (* fp)(const char *) );
+    
+private:
+    // callback
+    void (* m_callback)(const char *);
+    // intermediate line storage
+    std::stringstream m_buffer;
 };
+
+
 
 
 #endif

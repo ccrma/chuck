@@ -37,10 +37,8 @@
 #include "chuck_instr.h"
 #include "chuck_vm.h"
 #include "chuck_ugen.h"
-#include "chuck_bbq.h"
 #include "chuck_dl.h"
 #include "chuck_errmsg.h"
-#include "chuck_globals.h"
 
 #include "util_string.h"
 
@@ -92,7 +90,7 @@ void Chuck_Instr::set_linepos(t_CKUINT linepos) {
 static void handle_overflow( Chuck_VM_Shred * shred, Chuck_VM * vm )
 {
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): Exception StackOverflow in shred[id=%lu:%s], PC=[%lu]\n",
         shred->xid, shred->name.c_str(), shred->pc );
     // do something!
@@ -318,7 +316,7 @@ void Chuck_Instr_Divide_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     return;
 div_zero:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): DivideByZeroException: on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str());
     goto done;
@@ -346,7 +344,7 @@ void Chuck_Instr_Divide_int_Reverse::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     return;
 div_zero:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): DivideByZeroException: on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str());
     goto done;
@@ -1118,7 +1116,7 @@ void Chuck_Instr_Divide_int_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
     return;
 div_zero:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): DivideByZeroException: on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str());
     goto done;
@@ -1635,10 +1633,11 @@ void Chuck_Instr_Add_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( !rhs || !lhs ) goto null_pointer;
 
     // make new string
-    result = (Chuck_String *)instantiate_and_initialize_object( &t_string, shred );
+    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->t_string, shred );
 
     // concat
-    result->str = lhs->str + rhs->str;
+    // result->str = lhs->str + rhs->str;
+    result->set( lhs->str() + rhs->str() );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(result) );
@@ -1647,7 +1646,7 @@ void Chuck_Instr_Add_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (string + string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() ); // , shred->pc );
     goto done;
@@ -1682,7 +1681,8 @@ void Chuck_Instr_Add_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
     if( !(*rhs_ptr) ) goto null_pointer;
 
     // concat
-    (*rhs_ptr)->str += lhs->str;
+    // (*rhs_ptr)->str += lhs->str;
+    (*rhs_ptr)->set( (*rhs_ptr)->str() + lhs->str() );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(*rhs_ptr) );
@@ -1691,7 +1691,7 @@ void Chuck_Instr_Add_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (string +=> string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -1727,10 +1727,11 @@ void Chuck_Instr_Add_string_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
     if( !lhs ) goto null_pointer;
 
     // make new string
-    result = (Chuck_String *)instantiate_and_initialize_object( &t_string, shred );
+    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->t_string, shred );
 
     // concat
-    result->str = lhs->str + ::itoa(rhs);
+    // result->str = lhs->str + ::itoa(rhs);
+    result->set( lhs->str() + ::itoa( rhs ) );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(result) );
@@ -1739,7 +1740,7 @@ void Chuck_Instr_Add_string_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (string + int) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -1775,10 +1776,11 @@ void Chuck_Instr_Add_string_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     if( !lhs ) goto null_pointer;
 
     // make new string
-    result = (Chuck_String *)instantiate_and_initialize_object( &t_string, shred );
+    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->t_string, shred );
 
     // concat
-    result->str = lhs->str + ::ftoa(rhs, 4);
+    // result->str = lhs->str + ::ftoa(rhs, 4);
+    result->set( lhs->str() + ::ftoa( rhs, 4 ) );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(result) );
@@ -1787,7 +1789,7 @@ void Chuck_Instr_Add_string_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (string + float) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -1823,10 +1825,11 @@ void Chuck_Instr_Add_int_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
     if( !rhs ) goto null_pointer;
 
     // make new string
-    result = (Chuck_String *)instantiate_and_initialize_object( &t_string, shred );
+    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->t_string, shred );
 
     // concat
-    result->str = ::itoa(lhs) + rhs->str;
+    // result->str = ::itoa(lhs) + rhs->str;
+    result->set( ::itoa(lhs) + rhs->str() );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(result) );
@@ -1835,7 +1838,7 @@ void Chuck_Instr_Add_int_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (int + string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -1871,10 +1874,11 @@ void Chuck_Instr_Add_float_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     if( !rhs ) goto null_pointer;
 
     // make new string
-    result = (Chuck_String *)instantiate_and_initialize_object( &t_string, shred );
+    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->t_string, shred );
 
     // concat
-    result->str = ::ftoa(lhs, 4) + rhs->str;
+    // result->str = ::ftoa(lhs, 4) + rhs->str;
+    result->set( ::ftoa( lhs, 4 ) + rhs->str() );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(result) );
@@ -1883,7 +1887,7 @@ void Chuck_Instr_Add_float_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (int + string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -1918,7 +1922,8 @@ void Chuck_Instr_Add_int_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred *
     if( !(*rhs_ptr) ) goto null_pointer;
 
     // concat
-    (*rhs_ptr)->str += ::itoa(lhs);
+    // (*rhs_ptr)->str += ::itoa(lhs);
+    (*rhs_ptr)->set( (*rhs_ptr)->str() + ::itoa(lhs) );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(*rhs_ptr) );
@@ -1927,7 +1932,7 @@ void Chuck_Instr_Add_int_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred *
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: () on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -1962,7 +1967,8 @@ void Chuck_Instr_Add_float_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred
     if( !(*rhs_ptr) ) goto null_pointer;
 
     // concat
-    (*rhs_ptr)->str += ::ftoa(lhs, 4);
+    // (*rhs_ptr)->str += ::ftoa(lhs, 4);
+    (*rhs_ptr)->set( (*rhs_ptr)->str() + ::ftoa(lhs, 4) );
 
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)(*rhs_ptr) );
@@ -1971,7 +1977,7 @@ void Chuck_Instr_Add_float_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (string + string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -2270,6 +2276,50 @@ void Chuck_Instr_Reg_Push_Mem_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 //-----------------------------------------------------------------------------
 // name: execute()
+// desc: push value from external maps to register stack
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_Push_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    
+    // get external map content
+    switch( m_type ) {
+        case te_externalInt:
+        {
+            // int pointer to registers
+            t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+            t_CKUINT val = (t_CKUINT) vm->get_external_int_value( m_name );
+            
+            // push external map content into int-reg stack
+            push_( reg_sp, val );
+        }
+            break;
+        case te_externalFloat:
+        {
+            // float pointer to registers
+            t_CKFLOAT *& reg_sp = (t_CKFLOAT *&)shred->reg->sp;
+            t_CKFLOAT val = (t_CKFLOAT) vm->get_external_float_value( m_name );
+            
+            // push external map content into float-reg stack
+            push_( reg_sp, val );
+        }
+            break;
+        case te_externalEvent:
+        {
+            t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+            t_CKUINT val = (t_CKUINT) vm->get_external_event( m_name );
+            
+            // push external map content into event-reg stack
+            push_( reg_sp, val );
+        }
+            break;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Reg_Push_Mem_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
@@ -2279,6 +2329,36 @@ void Chuck_Instr_Reg_Push_Mem_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
     // push mem stack addr into reg stack
     push_( reg_sp, (t_CKUINT)(mem_sp + m_val) );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_Push_External_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+    
+    // find addr
+    t_CKUINT addr;
+    switch( m_type ) {
+        case te_externalInt:
+            addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
+            break;
+        case te_externalFloat:
+            addr = (t_CKUINT) vm->get_ptr_to_external_float( m_name );
+            break;
+        case te_externalEvent:
+            addr = (t_CKUINT) vm->get_ptr_to_external_event( m_name );
+            break;
+            
+    }
+
+    // push mem stack addr into reg stack
+    push_( reg_sp, addr );
 }
 
 
@@ -3264,6 +3344,8 @@ void Chuck_Instr_EOC::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 #pragma mark === Allocation ===
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: alloc local
@@ -3466,6 +3548,38 @@ void Chuck_Instr_Alloc_Member_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 
 
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: alloc external
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Alloc_Word_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+    t_CKUINT addr = 0;
+
+    // init in the correct vm map according to the type
+    switch( m_type ) {
+        case te_externalInt:
+            vm->init_external_int( m_name );
+            addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
+            break;
+        case te_externalFloat:
+            vm->init_external_float( m_name );
+            addr = (t_CKUINT) vm->get_ptr_to_external_float( m_name );
+            break;
+        case te_externalEvent:
+            // no need to init, it has already been initted during emit
+            addr = (t_CKUINT) vm->get_ptr_to_external_event( m_name );
+            break;
+    }
+    
+    // push addr onto operand stack
+    push_( reg_sp, addr );
+}
+
+
+
+
 #pragma mark === Object Initialization/Construction ===
 
 
@@ -3561,9 +3675,9 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
         // allocate the channels
         for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         {
-            // allocate ugen for each
+            // allocate ugen for each | REFACTOR-2017: added ugen->vm
             Chuck_Object * obj = instantiate_and_initialize_object(
-                &t_ugen, ugen->shred );
+                ugen->vm->env()->t_ugen, ugen->shred, ugen->vm );
             // cast to ugen
             ugen->m_multi_chan[i] = (Chuck_UGen *)obj;
             // additional reference count
@@ -3582,7 +3696,7 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
 out_of_memory:
 
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): OutOfMemory: while instantiating object '%s'\n",
         type->c_name() );
 
@@ -3598,14 +3712,40 @@ out_of_memory:
 
 //-----------------------------------------------------------------------------
 // name: instantiate_and_initialize_object()
-// desc: ...
+// desc: call this one if you have a non-null shred
 //-----------------------------------------------------------------------------
 Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Shred * shred )
 {
+    assert( shred != NULL );
+    return instantiate_and_initialize_object( type, shred, shred->vm_ref );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: instantiate_and_initialize_object()
+// desc: call this one if you don't have a shred
+//-----------------------------------------------------------------------------
+Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM * vm )
+{
+    assert( vm != NULL );
+    return instantiate_and_initialize_object( type, NULL, vm );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: instantiate_and_initialize_object()
+// desc: you probably shouldn't call this version. call the one that takes a
+//       shred if you have a non-null shred, otherwise call the one that
+//       takes a vm
+//-----------------------------------------------------------------------------
+Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm )
+{
     Chuck_Object * object = NULL;
     Chuck_UAna * uana = NULL;
-    // TODO: this is a hack!
-    Chuck_VM * vm_ref = shred ? shred->vm_ref : g_vm;
 
     // sanity
     assert( type != NULL );
@@ -3617,11 +3757,15 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
         // check type TODO: make this faster
         if( type->allocator )
             object = type->allocator( shred, Chuck_DL_Api::Api::instance() );
-        else if( isa( type, &t_fileio ) ) object = new Chuck_IO_File;
-        else if( isa( type, &t_event ) ) object = new Chuck_Event;
-        else if( isa( type, &t_string ) ) object = new Chuck_String;
+        else if( isa( type, vm->env()->t_fileio ) ) object = new Chuck_IO_File( vm );
+        else if( isa( type, vm->env()->t_event ) ) object = new Chuck_Event;
+        else if( isa( type, vm->env()->t_string ) ) object = new Chuck_String;
         // TODO: is this ok?
-        else if( isa( type, &t_shred ) ) object = new Chuck_VM_Shred;
+        else if( isa( type, vm->env()->t_shred ) )
+        {
+            object = new Chuck_VM_Shred;
+            ((Chuck_VM_Shred * )object)->vm_ref = vm; // REFACTOR-2017
+        }
         // TODO: is this ok?
         else object = new Chuck_Object;
     }
@@ -3634,12 +3778,12 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
         {
             // uana
             object = ugen = uana = new Chuck_UAna;
-            ugen->alloc_v( vm_ref->shreduler()->m_max_block_size );
+            ugen->alloc_v( vm->shreduler()->m_max_block_size );
         }
         else 
         {
             object = ugen = new Chuck_UGen;
-            ugen->alloc_v( vm_ref->shreduler()->m_max_block_size );
+            ugen->alloc_v( vm->shreduler()->m_max_block_size );
         }
 
         if( shred )
@@ -3647,6 +3791,9 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
             ugen->shred = shred;
             shred->add( ugen );
         }
+        
+        // REFACTOR-2017: added
+        ugen->vm = vm;
     }
     
     // check to see enough memory
@@ -3660,7 +3807,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
 out_of_memory:
 
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): OutOfMemory: while instantiating object '%s'\n",
         type->c_name() );
 
@@ -3942,7 +4089,7 @@ void Chuck_Instr_Assign_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // release
     if( done ) done->release();
 
-//    fprintf(stderr, "obj: 0x%08x\n", *obj);
+//    CK_FPRINTF_STDERR( "obj: 0x%08x\n", *obj );
 
     // copy
     // memcpy( (void *)*(reg_sp+1), *obj, sizeof(t_CKUINT) );
@@ -3972,7 +4119,7 @@ void Chuck_Instr_Assign_String::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // release any previous reference
     if( *rhs_ptr )
     {
-        if( lhs ) (*rhs_ptr)->str = lhs->str;
+        if( lhs ) (*rhs_ptr)->set( lhs->str() );
         else
         {
             // release reference
@@ -3985,10 +4132,10 @@ void Chuck_Instr_Assign_String::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // if left is not null, yes
         if( lhs != NULL )
         {
-            (*rhs_ptr) = (Chuck_String *)instantiate_and_initialize_object( &t_string, shred );
+            (*rhs_ptr) = (Chuck_String *)instantiate_and_initialize_object( vm->env()->t_string, shred );
             // add ref
             (*rhs_ptr)->add_ref();
-            (*rhs_ptr)->str = lhs->str;
+            (*rhs_ptr)->set( lhs->str() );
         }
         //EM_error2( 0, "internal error: somehow the type checker has allowed NULL strings" );
         //EM_error2( 0, "we are sorry for the inconvenience but..." );
@@ -4494,7 +4641,7 @@ void Chuck_Instr_Spork::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // get the code
     Chuck_VM_Code * code = *(Chuck_VM_Code **)reg_sp;
     // spork it
-    Chuck_VM_Shred * sh = vm->spork( code, shred );
+    Chuck_VM_Shred * sh = vm->spork( code, shred, TRUE );
     // pop the stack
     pop_( reg_sp, 1 );
     // get the func
@@ -4576,7 +4723,7 @@ void Chuck_Instr_Time_Advance::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( *sp < shred->now )
     {
         // we have a problem
-        fprintf( stderr, 
+        CK_FPRINTF_STDERR( 
             "[chuck](VM): DestTimeNegativeException: '%.6f' on line[%lu] in shred[id=%lu:%s]\n",
             *sp, m_linepos, shred->xid, shred->name.c_str() );
         // do something!
@@ -4623,7 +4770,7 @@ void Chuck_Instr_Event_Wait::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (null Event wait) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -4643,7 +4790,7 @@ done:
 // name: Chuck_Instr_Array_Init()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Type * t, t_CKINT length )
+Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * t, t_CKINT length )
 {
     // set
     m_length = length;
@@ -4653,8 +4800,8 @@ Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Type * t, t_CKINT length )
     // m_type_ref->add_ref();
     // type
     m_param_str = new char[64];
-    // obj
-    m_is_obj = isobj( m_type_ref );
+    // obj | REFACTOR-2017: added env
+    m_is_obj = isobj( env, m_type_ref );
     const char * str = m_type_ref->c_name();
     t_CKUINT len = strlen( str );
     // copy
@@ -4712,7 +4859,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // problem
         if( !array ) goto out_of_memory;
         // initialize object
-        initialize_object( array, &t_array );
+        initialize_object( array, vm->env()->t_array );
         // set array type
         array->m_array_type = m_type_ref;
         m_type_ref->add_ref();
@@ -4735,7 +4882,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // fill array
         t_CKFLOAT * sp = (t_CKFLOAT *)reg_sp;
         // intialize object
-        initialize_object( array, &t_array );
+        initialize_object( array, vm->env()->t_array );
         // set array type
         array->m_array_type = m_type_ref;
         m_type_ref->add_ref();
@@ -4758,7 +4905,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // fill array
         t_CKCOMPLEX * sp = (t_CKCOMPLEX *)reg_sp;
         // intialize object
-        initialize_object( array, &t_array );
+        initialize_object( array, vm->env()->t_array );
         // set array type
         array->m_array_type = m_type_ref;
         m_type_ref->add_ref();
@@ -4781,7 +4928,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // fill array
         t_CKVEC3 * sp = (t_CKVEC3 *)reg_sp;
         // intialize object
-        initialize_object( array, &t_array );
+        initialize_object( array, vm->env()->t_array );
         // set array type
         array->m_array_type = m_type_ref;
         m_type_ref->add_ref();
@@ -4804,7 +4951,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // fill array
         t_CKVEC4 * sp = (t_CKVEC4 *)reg_sp;
         // intialize object
-        initialize_object( array, &t_array );
+        initialize_object( array, vm->env()->t_array );
         // set array type
         array->m_array_type = m_type_ref;
         m_type_ref->add_ref();
@@ -4823,7 +4970,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 out_of_memory:
 
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): OutOfMemory: while initializing arrays on line[%lu]\n", m_linepos );
 
     // do something!
@@ -4838,7 +4985,7 @@ out_of_memory:
 // name: Chuck_Instr_Array_Alloc()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_Instr_Array_Alloc::Chuck_Instr_Array_Alloc( t_CKUINT depth, Chuck_Type * t,
+Chuck_Instr_Array_Alloc::Chuck_Instr_Array_Alloc( Chuck_Env * env, t_CKUINT depth, Chuck_Type * t,
                                                   t_CKUINT offset, t_CKBOOL is_ref )
 {
     // set
@@ -4849,8 +4996,8 @@ Chuck_Instr_Array_Alloc::Chuck_Instr_Array_Alloc( t_CKUINT depth, Chuck_Type * t
     // m_type_ref->add_ref();
     // type
     m_param_str = new char[64];
-    // obj
-    m_is_obj = isobj( m_type_ref );
+    // obj | REFACTOR-2017: added env
+    m_is_obj = isobj( env, m_type_ref );
     // offset for pre constructor
     m_stack_offset = offset;
     // is object ref
@@ -4891,7 +5038,8 @@ Chuck_Instr_Array_Alloc::~Chuck_Instr_Array_Alloc()
 // name: do_alloc_array()
 // desc: 1.3.1.0 -- changed size to kind
 //-----------------------------------------------------------------------------
-Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
+Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
+                               t_CKINT * capacity, const t_CKINT * top,
                                t_CKUINT kind, t_CKBOOL is_obj,
                                t_CKUINT * objs, t_CKINT & index )
 {
@@ -4925,7 +5073,7 @@ Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
             }
 
             // initialize object
-            initialize_object( base, &t_array );
+            initialize_object( base, vm->env()->t_array );
             return base;
         }
         else if( kind == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -4934,7 +5082,7 @@ Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
             if( !base ) goto out_of_memory;
             
             // initialize object
-            initialize_object( base, &t_array );
+            initialize_object( base, vm->env()->t_array );
             return base;
         }
         else if( kind == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -4943,7 +5091,7 @@ Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
             if( !base ) goto out_of_memory;
             
             // initialize object
-            initialize_object( base, &t_array );
+            initialize_object( base, vm->env()->t_array );
             return base;
         }
         else if( kind == kindof_VEC3 ) // 1.3.5.3
@@ -4952,7 +5100,7 @@ Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
             if( !base ) goto out_of_memory;
             
             // initialize object
-            initialize_object( base, &t_array );
+            initialize_object( base, vm->env()->t_array );
             return base;
         }
         else if( kind == kindof_VEC4 ) // 1.3.5.3
@@ -4961,7 +5109,7 @@ Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
             if( !base ) goto out_of_memory;
             
             // initialize object
-            initialize_object( base, &t_array );
+            initialize_object( base, vm->env()->t_array );
             return base;
         }
 
@@ -4976,8 +5124,8 @@ Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
     // allocate the next level
     for( i = 0; i < *capacity; i++ )
     {
-        // the next
-        next = do_alloc_array( capacity+1, top, kind, is_obj, objs, index );
+        // the next | REFACTOR-2017: added vm
+        next = do_alloc_array( vm, capacity+1, top, kind, is_obj, objs, index );
         // error if NULL
         if( !next ) goto error;
         // set that, with ref count
@@ -4985,18 +5133,18 @@ Chuck_Object * do_alloc_array( t_CKINT * capacity, const t_CKINT * top,
     }
 
     // initialize object
-    initialize_object( base, &t_array );
+    initialize_object( base, vm->env()->t_array );
     return base;
 
 out_of_memory:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): OutOfMemory: while allocating arrays...\n" );
     goto error;
 
 negative_array_size:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): NegativeArraySize: while allocating arrays...\n" );
     goto error;
 
@@ -5075,11 +5223,11 @@ void Chuck_Instr_Array_Alloc::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // }
     }
 
-    // recursively allocate
-    ref = (t_CKUINT)do_alloc_array( 
+    // recursively allocate | REFACTOR-2017: added env
+    ref = (t_CKUINT)do_alloc_array( vm,
         (t_CKINT *)(reg_sp - m_depth),
         (t_CKINT *)(reg_sp - 1),
-        getkindof(m_type_ref), // 1.3.1.0: changed; was 'm_type_ref->size'
+        getkindof(vm->env(), m_type_ref), // 1.3.1.0: changed; was 'm_type_ref->size'
         m_is_obj,
         obj_array, index 
     );
@@ -5112,18 +5260,18 @@ void Chuck_Instr_Array_Alloc::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 overflow:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): OverFlow: requested array size too big...\n" );
     goto error;
 
 out_of_memory:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): OutOfMemory: while allocating arrays...\n" );
     goto error;
 
 error:
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM):     (note: on line[%lu] in shred[id=%lu:%s])\n",
         m_linepos, shred->xid, shred->name.c_str() );
 
@@ -5278,14 +5426,14 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (array access) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() ); // shred->pc removed
     goto done;
 
 array_out_of_bound:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): ArrayOutofBounds: on line[%lu] in shred[id=%lu:%s], index=[%ld]\n",
         m_linepos, shred->xid, shred->name.c_str(), i ); // shred->pc removed
     // go to done
@@ -5334,14 +5482,14 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( key->str );
+            val = arr->addr( key->str() );
             // exception
             if( !val ) goto error;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->str, &val ) )
+            if( !arr->get( key->str(), &val ) )
                 goto error;
             // push the value
             push_( sp, val );
@@ -5356,14 +5504,14 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( key->str );
+            val = arr->addr( key->str() );
             // exception
             if( !val ) goto error;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->str, &fval ) )
+            if( !arr->get( key->str(), &fval ) )
                 goto error;
             // push the value
             push_( ((t_CKFLOAT *&)sp), fval );
@@ -5378,14 +5526,14 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( key->str );
+            val = arr->addr( key->str() );
             // exception
             if( !val ) goto error;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->str, &cval ) )
+            if( !arr->get( key->str(), &cval ) )
                 goto error;
             // push the value
             push_( ((t_CKCOMPLEX *&)sp), cval );
@@ -5400,14 +5548,14 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( key->str );
+            val = arr->addr( key->str() );
             // exception
             if( !val ) goto error;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->str, &v3 ) )
+            if( !arr->get( key->str(), &v3 ) )
                 goto error;
             // push the value
             push_( ((t_CKVEC3 *&)sp), v3 );
@@ -5422,14 +5570,14 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( key->str );
+            val = arr->addr( key->str() );
             // exception
             if( !val ) goto error;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->str, &v4 ) )
+            if( !arr->get( key->str(), &v4 ) )
                 goto error;
             // push the value
             push_( ((t_CKVEC4 *&)sp), v4 );
@@ -5442,16 +5590,16 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (map access) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() ); // shred->pc
     goto done;
 
 error:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): InternalArrayMapError: on line[%lu] in shred[id=%lu:%s], index=[%s]\n",
-        m_linepos, shred->xid, shred->name.c_str(), key->str.c_str() ); // shred->pc
+        m_linepos, shred->xid, shred->name.c_str(), key->str().c_str() ); // shred->pc
     goto done;
 
 done:
@@ -5503,7 +5651,7 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
             // get index
             Chuck_String * key = (Chuck_String *)(i);
             // get the array
-            if( !base->get( key->str, &val ) )
+            if( !base->get( key->str(), &val ) )
                 goto array_out_of_bound;
         }
         else
@@ -5643,16 +5791,16 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (array access) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() ); // shred->pc
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): (array dimension where exception occurred: %lu)\n", index );
     goto done;
 
 array_out_of_bound:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): ArrayOutofBounds: on line[%lu] in shred[id=%lu:%s], index=[%ld]\n",
         m_linepos, shred->xid, shred->name.c_str(), i ); // shred->pc
     // go to done
@@ -5766,7 +5914,7 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (array append) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -5823,7 +5971,7 @@ void Chuck_Instr_Dot_Member_Data::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 error:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
 
@@ -5864,7 +6012,7 @@ void Chuck_Instr_Dot_Member_Func::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 error:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
              "[chuck](VM): NullPointerException: on line[%lu] in shred[id=%lu:%s]\n",
             m_linepos, shred->xid, shred->name.c_str() );
 
@@ -6351,27 +6499,27 @@ void Chuck_Instr_Op_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     switch( m_val )
     {
     case ae_op_eq:
-        push_( sp, lhs->str == rhs->str );
+        push_( sp, lhs->str() == rhs->str() );
     break;
 
     case ae_op_neq:
-        push_( sp, lhs->str != rhs->str );
+        push_( sp, lhs->str() != rhs->str() );
     break;
 
     case ae_op_lt:
-        push_( sp, lhs->str < rhs->str );
+        push_( sp, lhs->str() < rhs->str() );
     break;
 
     case ae_op_le:
-        push_( sp, lhs->str <= rhs->str );
+        push_( sp, lhs->str() <= rhs->str() );
     break;
 
     case ae_op_gt:
-        push_( sp, lhs->str > rhs->str );
+        push_( sp, lhs->str() > rhs->str() );
     break;
 
     case ae_op_ge:
-        push_( sp, lhs->str >= rhs->str );
+        push_( sp, lhs->str() >= rhs->str() );
     break;
 
     default:
@@ -6383,14 +6531,14 @@ void Chuck_Instr_Op_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (string op) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
 invalid_op:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): InvalidStringOpException: '%lu' on line[%lu] in shred[id=%lu:%s]\n",
         m_val, m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -6452,7 +6600,7 @@ void Chuck_Instr_Bunghole::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 void Chuck_Instr_Chout::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-    push_( reg_sp, (t_CKUINT)Chuck_IO_Chout::getInstance() );
+    push_( reg_sp, (t_CKUINT) vm->chout() );
 }
 
 
@@ -6465,7 +6613,7 @@ void Chuck_Instr_Chout::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 void Chuck_Instr_Cherr::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-    push_( reg_sp, (t_CKUINT)Chuck_IO_Cherr::getInstance() );
+    push_( reg_sp, (t_CKUINT) vm->cherr() );
 }
 
 
@@ -6504,7 +6652,7 @@ void Chuck_Instr_UGen_Link::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     
 null_pointer:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): NullPointerException: (UGen link) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     
@@ -6551,7 +6699,7 @@ void Chuck_Instr_UGen_Array_Link::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
     
 null_pointer:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): NullPointerException: (UGen link) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     
@@ -6732,7 +6880,7 @@ void Chuck_Instr_Dec_Loop_Counter::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     
 error:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): LoopCounterError: on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -6768,7 +6916,7 @@ void Chuck_Instr_Reg_Push_Loop_Counter_Deref::execute( Chuck_VM * vm, Chuck_VM_S
     
 error:
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
         "[chuck](VM): LoopCounterError: on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -6828,7 +6976,7 @@ void Chuck_Instr_IO_in_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (IO input int) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -6870,7 +7018,7 @@ void Chuck_Instr_IO_in_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (IO input float) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -6900,16 +7048,18 @@ void Chuck_Instr_IO_in_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     Chuck_IO ** ppIO = (Chuck_IO **)sp;
     // the string
     Chuck_String ** ppStr = (Chuck_String **)(sp+1);
+    std::string s; // = (*ppStr)->str();
     
-//    fprintf(stderr, "ppIO: 0x%08x\n", ppIO);
-//    fprintf(stderr, "ppStr: 0x%08x\n", ppStr);
-//    fprintf(stderr, "*ppStr: 0x%08x\n", *ppStr);
+//    CK_FPRINTF_STDERR( "ppIO: 0x%08x\n", ppIO );
+//    CK_FPRINTF_STDERR( "ppStr: 0x%08x\n", ppStr );
+//    CK_FPRINTF_STDERR( "*ppStr: 0x%08x\n", *ppStr );
     
     // check it
     if( *(ppIO) == NULL || *(ppStr) == NULL ) goto null_pointer;
     
     // read into the variable
-    (*ppIO)->readString( (*ppStr)->str );
+    (*ppIO)->readString( s );
+    (*ppStr)->set( s );
     
     // push the IO
     push_( sp, (t_CKINT)(*(ppIO)) );
@@ -6918,7 +7068,7 @@ void Chuck_Instr_IO_in_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (IO input string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -6960,7 +7110,7 @@ void Chuck_Instr_IO_out_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (IO output int) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -7002,7 +7152,7 @@ void Chuck_Instr_IO_out_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (IO output float) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -7037,7 +7187,7 @@ void Chuck_Instr_IO_out_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( *(ppIO) == NULL || *(ppStr) == NULL ) goto null_pointer;
     
     // write the variable
-    (*ppIO)->write( (*ppStr)->str.c_str() );
+    (*ppIO)->write( (*ppStr)->str().c_str() );
     
     // push the IO
     push_( sp, (t_CKINT)(*(ppIO)) );
@@ -7046,7 +7196,7 @@ void Chuck_Instr_IO_out_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): NullPointerException: (IO output string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
@@ -7075,27 +7225,27 @@ Chuck_Instr_Hack::~Chuck_Instr_Hack()
 void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     // look at the type (1.3.1.0: added iskindofint)
-    if( m_type_ref->size == sz_INT && iskindofint(m_type_ref) ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    if( m_type_ref->size == sz_INT && iskindofint(vm->env(), m_type_ref) ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         t_CKINT * sp = (t_CKINT *)shred->reg->sp;
-        if( !isa( m_type_ref, &t_string ) ||  *(sp-1) == 0 )
+        if( !isa( m_type_ref, vm->env()->t_string ) ||  *(sp-1) == 0 )
         {
             // print it
-            if( *(sp-1) == 0 && isa( m_type_ref, &t_object ) )
-                fprintf( stderr, "null :(%s)\n", m_type_ref->c_name() );
+            if( *(sp-1) == 0 && isa( m_type_ref, vm->env()->t_object ) )
+                CK_FPRINTF_STDERR( "null :(%s)\n", m_type_ref->c_name() );
             else
-                fprintf( stderr, "%ld :(%s)\n", *(sp-1), m_type_ref->c_name() );
+                CK_FPRINTF_STDERR( "%ld :(%s)\n", *(sp-1), m_type_ref->c_name() );
         }
         else
         {
-            fprintf( stderr, "\"%s\" : (%s)\n", ((Chuck_String *)*(sp-1))->str.c_str(), m_type_ref->c_name() );
+            CK_FPRINTF_STDERR( "\"%s\" : (%s)\n", ((Chuck_String *)*(sp-1))->str().c_str(), m_type_ref->c_name() );
         }
     }
     else if( m_type_ref->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
         // print it
-        fprintf( stderr, "%f :(%s)\n", *(sp-1), m_type_ref->c_name() );
+        CK_FPRINTF_STDERR( "%f :(%s)\n", *(sp-1), m_type_ref->c_name() );
     }
     else if( m_type_ref->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
@@ -7103,17 +7253,17 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         {
             t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
             // print it
-            fprintf( stderr, "#(%.4f,%.4f) :(%s)\n", *(sp-2), *(sp-1), m_type_ref->c_name() );
+            CK_FPRINTF_STDERR( "#(%.4f,%.4f) :(%s)\n", *(sp-2), *(sp-1), m_type_ref->c_name() );
         }
         else if( m_type_ref->xid == te_polar )
         {
             t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
             // print it
-            fprintf( stderr, "%%(%.4f,%.4f*pi) :(%s)\n", *(sp-2), *(sp-1)/ONE_PI, m_type_ref->c_name() );
+            CK_FPRINTF_STDERR( "%%(%.4f,%.4f*pi) :(%s)\n", *(sp-2), *(sp-1)/ONE_PI, m_type_ref->c_name() );
         }
         else
         {
-            fprintf( stderr, "[chuck]: internal error printing 16-word primitive...\n" );
+            CK_FPRINTF_STDERR( "[chuck]: internal error printing 16-word primitive...\n" );
         }
     }
     else if( m_type_ref->size == sz_VEC3 ) // 1.3.5.3
@@ -7122,11 +7272,11 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         {
             t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
             // print it
-            fprintf( stderr, "@(%.4f,%.4f,%.4f) :(%s)\n", *(sp-3), *(sp-2), *(sp-1), m_type_ref->c_name() );
+            CK_FPRINTF_STDERR( "@(%.4f,%.4f,%.4f) :(%s)\n", *(sp-3), *(sp-2), *(sp-1), m_type_ref->c_name() );
         }
         else
         {
-            fprintf( stderr, "[chuck]: internal error printing 24-word primitive...\n" );
+            CK_FPRINTF_STDERR( "[chuck]: internal error printing 24-word primitive...\n" );
         }
     }
     else if( m_type_ref->size == sz_VEC4 ) // 1.3.5.3
@@ -7135,22 +7285,22 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         {
             t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
             // print it
-            fprintf( stderr, "@(%.4f,%.4f,%.4f,%.4f) :(%s)\n", *(sp-4), *(sp-3), *(sp-2), *(sp-1), m_type_ref->c_name() );
+            CK_FPRINTF_STDERR( "@(%.4f,%.4f,%.4f,%.4f) :(%s)\n", *(sp-4), *(sp-3), *(sp-2), *(sp-1), m_type_ref->c_name() );
         }
         else
         {
-            fprintf( stderr, "[chuck]: internal error printing 32-word primitive...\n" );
+            CK_FPRINTF_STDERR( "[chuck]: internal error printing 32-word primitive...\n" );
         }
     }
     else if( m_type_ref->size == 0 )
     {
-        fprintf( stderr, "... :(%s)\n", m_type_ref->c_name() );
+        CK_FPRINTF_STDERR( "... :(%s)\n", m_type_ref->c_name() );
     }
     else
         assert( FALSE );
 
     // flush
-    fflush( stderr );
+    CK_FFLUSH_STDERR();
 }
 
 const char * Chuck_Instr_Hack::params() const
@@ -7203,29 +7353,29 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         Chuck_Type * type = m_type_refs[i];
 
         // look at the type (1.3.1.0: added is kindofint)
-        if( type->size == sz_INT && iskindofint(type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
+        if( type->size == sz_INT && iskindofint(vm->env(), type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
             t_CKINT * sp = (t_CKINT *)the_sp;
-            if( !isa( type, &t_string ) ||  *(sp) == 0 )
+            if( !isa( type, vm->env()->t_string ) ||  *(sp) == 0 )
             {
-                if( isa( type, &t_object ) )
+                if( isa( type, vm->env()->t_object ) )
                 {
                     // print it
                     if( *(sp-1) == 0 )
-                        fprintf( stderr, "null " );
+                        CK_FPRINTF_STDERR( "null " );
                     else
-                        fprintf( stderr, "0x%lx ", *(sp) );
+                        CK_FPRINTF_STDERR( "0x%lx ", *(sp) );
                 }
                 else
                 {
                     // print it
-                    fprintf( stderr, "%ld ", *(sp) );
+                    CK_FPRINTF_STDERR( "%ld ", *(sp) );
                 }
             }
             else
             {
                 Chuck_String * str = ((Chuck_String *)*(sp));
-                fprintf( stderr, "%s ", str->str.c_str() );
+                CK_FPRINTF_STDERR( "%s ", str->str().c_str() );
             }
 
             the_sp += sz_INT; // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -7234,7 +7384,7 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         {
             t_CKFLOAT * sp = (t_CKFLOAT *)the_sp;
             // print it
-            fprintf( stderr, "%f ", *(sp) );
+            CK_FPRINTF_STDERR( "%f ", *(sp) );
 
             the_sp += sz_FLOAT; // ISSUE: 64-bit (fixed 1.3.1.0)
         }
@@ -7243,10 +7393,10 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             t_CKFLOAT * sp = (t_CKFLOAT *)the_sp;
             if( type->xid == te_complex )
                 // print it
-                fprintf( stderr, "#(%.4f,%.4f) ", *(sp), *(sp+1) );
+                CK_FPRINTF_STDERR( "#(%.4f,%.4f) ", *(sp), *(sp+1) );
             else if( type->xid == te_polar )
                 // print it
-                fprintf( stderr, "%%(%.4f,%.4f*pi) ", *(sp), *(sp+1)/ONE_PI );
+                CK_FPRINTF_STDERR( "%%(%.4f,%.4f*pi) ", *(sp), *(sp+1)/ONE_PI );
 
             the_sp += sz_COMPLEX; // ISSUE: 64-bit (fixed 1.3.1.0)
         }
@@ -7255,7 +7405,7 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             t_CKFLOAT * sp = (t_CKFLOAT *)the_sp;
             if( type->xid == te_vec3 )
                 // print it
-                fprintf( stderr, "#(%.4f,%.4f,%.4f) ", *(sp), *(sp+1), *(sp+2) );
+                CK_FPRINTF_STDERR( "#(%.4f,%.4f,%.4f) ", *(sp), *(sp+1), *(sp+2) );
             
             the_sp += sz_VEC3; // ISSUE: 64-bit (fixed 1.3.1.0)
         }
@@ -7264,22 +7414,22 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             t_CKFLOAT * sp = (t_CKFLOAT *)the_sp;
             if( type->xid == te_vec4 )
                 // print it
-                fprintf( stderr, "#(%.4f,%.4f,%.4f,%.4f) ", *(sp), *(sp+1), *(sp+2), *(sp+3) );
+                CK_FPRINTF_STDERR( "#(%.4f,%.4f,%.4f,%.4f) ", *(sp), *(sp+1), *(sp+2), *(sp+3) );
             
             the_sp += sz_VEC4; // ISSUE: 64-bit (fixed 1.3.1.0)
         }
         else if( type->size == 0 )
         {
-            fprintf( stderr, "... " );
+            CK_FPRINTF_STDERR( "... " );
         }
         else
             assert( FALSE );
     }
 
-    fprintf( stderr, "\n" );
+    CK_FPRINTF_STDERR( "\n" );
     
     // flush
-    fflush( stderr );
+    CK_FFLUSH_STDERR();
 }
 
 const char * Chuck_Instr_Gack::params() const
@@ -7293,7 +7443,7 @@ const char * Chuck_Instr_Gack::params() const
 void throw_exception(Chuck_VM_Shred * shred, const char * name)
 {
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
             "[chuck](VM): %s: on line[%lu] in shred[id=%lu:%s]\n",
             name, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
@@ -7305,7 +7455,7 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name)
 void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKINT desc)
 {
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
             "[chuck](VM): %s: '%li' on line[%lu] in shred[id=%lu:%s]\n",
             name, desc, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
@@ -7317,7 +7467,7 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKINT desc)
 void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKFLOAT desc)
 {
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
             "[chuck](VM): %s: '%f' on line[%lu] in shred[id=%lu:%s]\n",
             name, desc, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!
@@ -7329,7 +7479,7 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKFLOAT desc)
 void throw_exception(Chuck_VM_Shred * shred, const char * name, const char * desc)
 {
     // we have a problem
-    fprintf( stderr,
+    CK_FPRINTF_STDERR(
             "[chuck](VM): %s: %s on line[%lu] in shred[id=%lu:%s]\n",
             name, desc, shred->instr[shred->pc]->m_linepos, shred->xid, shred->name.c_str() ); //, shred->pc );
     // do something!

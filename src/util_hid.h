@@ -44,7 +44,11 @@ struct HidMsg
     t_CKINT device_num;  // device number
     t_CKINT type;        // message type
     t_CKINT eid;         // element id
+#ifdef _WIN64 // REFACTOR-2017
+    long idata[4];       // int data (code using this expects a "long" rather than a "t_CKINT")
+#else
     t_CKINT idata[4];    // int data
+#endif
     t_CKFLOAT fdata[4];  // float data
     
 #ifdef __cplusplus

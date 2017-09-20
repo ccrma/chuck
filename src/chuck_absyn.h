@@ -173,6 +173,7 @@ a_Exp new_exp_from_if( a_Exp cond, a_Exp lhs, a_Exp rhs, int pos );
 a_Exp new_exp_from_complex( a_Complex, int pos );
 a_Exp new_exp_from_polar( a_Polar, int pos );
 a_Exp new_exp_from_vec( a_Vec, int pos ); // ge: added 1.3.5.3
+a_Exp new_exp_decl_external( a_Type_Decl type_decl, a_Var_Decl_List var_decl_list, int is_static, int pos );
 a_Exp new_exp_decl( a_Type_Decl type_decl, a_Var_Decl_List var_decl_list, int is_static, int pos );
 a_Exp new_exp_from_hack( a_Exp exp, int pos );
 a_Exp new_exp_from_nil( int pos );
@@ -220,7 +221,7 @@ struct a_Exp_Func_Call_ { a_Exp func; a_Exp args; t_CKTYPE ret_type;
                           t_CKFUNC ck_func; t_CKVMCODE ck_vm_code; int linepos; a_Exp self; };
 struct a_Exp_Dot_Member_ { a_Exp base; t_CKTYPE t_base; S_Symbol xid; int linepos; a_Exp self; };
 struct a_Exp_If_ { a_Exp cond; a_Exp if_exp; a_Exp else_exp; int linepos; a_Exp self; };
-struct a_Exp_Decl_ { a_Type_Decl type; a_Var_Decl_List var_decl_list; int num_var_decls; int is_static; 
+struct a_Exp_Decl_ { a_Type_Decl type; a_Var_Decl_List var_decl_list; int num_var_decls; int is_static; int is_external;
                      t_CKTYPE ck_type; int linepos; a_Exp self; };
 struct a_Exp_Hack_ { a_Exp exp; int linepos; a_Exp self; };
 struct a_Var_Decl_List_ { a_Var_Decl var_decl; a_Var_Decl_List next; int linepos; a_Exp self; };

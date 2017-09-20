@@ -35,7 +35,6 @@
 #include "chuck_type.h"
 #include "chuck_dl.h"
 #include "chuck_io.h"
-#include "chuck_globals.h"
 #include "chuck_errmsg.h"
 #include "ugen_xxx.h"
 
@@ -126,6 +125,10 @@ public:
 //-----------------------------------------------------------------------------
 Chuck_VM::Chuck_VM()
 {
+    // REFACTOR-2017: refs
+    m_carrier = NULL;
+    
+    // data
     m_shreds = NULL;
     m_num_shreds = 0;
     m_shreduler = NULL;
@@ -145,6 +148,14 @@ Chuck_VM::Chuck_VM()
     m_init = FALSE;
     m_input_ref = NULL;
     m_output_ref = NULL;
+    
+    // REFACTOR-2017: TODO might want to dynamically grow queue?
+    m_set_external_int_queue.init( 1024 );
+    m_get_external_int_queue.init( 1024 );
+    m_set_external_float_queue.init( 1024 );
+    m_get_external_float_queue.init( 1024 );
+    m_signal_external_event_queue.init( 1024 );
+    m_spork_external_shred_queue.init( 8192 );
 }
 
 
@@ -156,96 +167,17 @@ Chuck_VM::Chuck_VM()
 //-----------------------------------------------------------------------------
 Chuck_VM::~Chuck_VM()
 {
-    if( m_init ) shutdown();
+    // check if init
+    if( m_init )
+    {
+        // cleanup
+        shutdown();
+    }
 }
 
 
 
 
-// dac tick
-//UGEN_TICK __dac_tick( Chuck_Object * SELF, SAMPLE in, SAMPLE * out ) 
-//{ *out = in; return TRUE; }
-//UGEN_TICK __bunghole_tick( Chuck_Object * SELF, SAMPLE in, SAMPLE * out )
-//{ *out = 0.0f; return TRUE; }
-
-
-// static
-#ifdef __MACOSX_CORE__
-t_CKINT Chuck_VM::our_priority = 85;
-#else
-t_CKINT Chuck_VM::our_priority = 0x7fffffff;
-#endif
-
-
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-//-----------------------------------------------------------------------------
-// name: set_priority()
-// desc: ...
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::set_priority( t_CKINT priority, Chuck_VM * vm )
-{
-    struct sched_param param;
-    pthread_t tid = pthread_self();
-    int policy;
-
-    // log
-    EM_log( CK_LOG_INFO, "setting thread priority to: %ld...", priority );
-
-    // get for thread
-    if( pthread_getschedparam( tid, &policy, &param) ) 
-    {
-        if( vm )
-            vm->m_last_error = "could not get current scheduling parameters";
-        return FALSE;
-    }
-
-    // priority
-    param.sched_priority = priority;
-    // policy
-    policy = SCHED_RR;
-    // set for thread
-    if( pthread_setschedparam( tid, policy, &param ) )
-    {
-        if( vm )
-            vm->m_last_error = "could not set new scheduling parameters";
-        return FALSE;
-    }
-    
-    return TRUE;
-}
-#else
-//-----------------------------------------------------------------------------
-// name: set_priority()
-// desc: ...
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::set_priority( t_CKINT priority, Chuck_VM * vm )
-{
-    // if priority is 0 then done
-    if( !priority ) return TRUE;
-
-    // set the priority class of the process
-    // if( !SetPriorityClass( GetCurrentProcess(), HIGH_PRIORITY_CLASS ) )
-    //     return FALSE;
-
-    // log
-    EM_log( CK_LOG_INFO, "setting thread priority to: %ld...", priority );
-
-    // set the priority the thread
-    // if( !SetThreadPriority( GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL ) )
-    if( !SetThreadPriority( GetCurrentThread(), priority ) )
-    {
-        if( vm )
-            vm->m_last_error = "could not set new scheduling parameters";
-        return FALSE;
-    }
-
-    return TRUE;
-}
-#endif
-
-
-
-        
 //-----------------------------------------------------------------------------
 // name: initialize()
 // desc: ...
@@ -315,7 +247,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
         return FALSE;
     }
 
-    if( !g_t_dac || !g_t_adc )
+    if( !env()->t_dac || !env()->t_adc )
     {
         m_last_error = "VM initialize_synthesis() called before type system initialized";
         return FALSE;
@@ -334,10 +266,10 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
 
     // log
     EM_log( CK_LOG_SEVERE, "initializing 'dac'..." );
-    // allocate dac and adc
-    g_t_dac->ugen_info->num_outs = 
-        g_t_dac->ugen_info->num_ins = m_num_dac_channels;
-    m_dac = (Chuck_UGen *)instantiate_and_initialize_object( g_t_dac, NULL );
+    // allocate dac and adc (REFACTOR-2017: g_t_dac changed to env()->t_dac)
+    env()->t_dac->ugen_info->num_outs =
+        env()->t_dac->ugen_info->num_ins = m_num_dac_channels;
+    m_dac = (Chuck_UGen *)instantiate_and_initialize_object( env()->t_dac, this );
     // Chuck_DL_Api::Api::instance() added 1.3.0.0
     object_ctor( m_dac, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: this can't be the place to do this
     stereo_ctor( m_dac, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: is the NULL shred a problem?
@@ -348,9 +280,10 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
 
     // log
     EM_log( CK_LOG_SEVERE, "initializing 'adc'..." );
-    g_t_adc->ugen_info->num_ins = 
-        g_t_adc->ugen_info->num_outs = m_num_adc_channels;
-    m_adc = (Chuck_UGen *)instantiate_and_initialize_object( g_t_adc, NULL );
+    // (REFACTOR-2017: g_t_adc changed to env()->t_adc)
+    env()->t_adc->ugen_info->num_ins =
+        env()->t_adc->ugen_info->num_outs = m_num_adc_channels;
+    m_adc = (Chuck_UGen *)instantiate_and_initialize_object( env()->t_adc, this );
     // Chuck_DL_Api::Api::instance() added 1.3.0.0
     object_ctor( m_adc, NULL, NULL, Chuck_DL_Api::Api::instance() ); // TODO: this can't be the place to do this
     stereo_ctor( m_adc, NULL, NULL, Chuck_DL_Api::Api::instance() );
@@ -364,7 +297,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     m_bunghole = new Chuck_UGen;
     m_bunghole->add_ref();
     m_bunghole->lock();
-    initialize_object( m_bunghole, &t_ugen );
+    initialize_object( m_bunghole, env()->t_ugen );
     m_bunghole->tick = NULL;
     m_bunghole->alloc_v( m_shreduler->m_max_block_size );
     m_shreduler->m_dac = m_dac;
@@ -395,8 +328,13 @@ t_CKBOOL Chuck_VM::shutdown()
     EM_log( CK_LOG_SYSTEM, "shutting down virtual machine..." );
     // push indent
     EM_pushlog();
+    
     // unlockdown
+    // REFACTOR-2017: TODO: don't unlock all objects for all VMs? see relockdown below
     Chuck_VM_Object::unlock_all();
+    
+    // REFACTOR-2017: clean up after my external variables
+    cleanup_external_variables();
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing shreduler..." );
@@ -442,6 +380,10 @@ t_CKBOOL Chuck_VM::shutdown()
     
     // set state
     m_init = FALSE;
+    
+    // relockdown (added 1.3.6.0)
+    // REFACTOR-2017: TODO -- remove once made per-VM
+    Chuck_VM_Object::lock_all();
 
     // log
     EM_log( CK_LOG_SYSTEM, "virtual machine shutdown complete." );
@@ -511,6 +453,15 @@ t_CKBOOL Chuck_VM::compute()
     Chuck_Msg * msg = NULL;
     Chuck_Event * event = NULL;
     t_CKBOOL iterate = TRUE;
+    
+    // REFACTOR-2017: spork queued shreds
+    // spork newly compiled files before trying set messages
+    handle_external_spork_messages();
+    
+    // REFACTOR-2017: set externals
+    handle_external_set_messages();
+    // REFACTOR-2017: get externals
+    handle_external_get_messages();
 
     // iteration until no more shreds/events/messages
     while( iterate )
@@ -565,9 +516,10 @@ t_CKBOOL Chuck_VM::compute()
         if( m_num_dumped_shreds > 0 )
             release_dump();
     }
-    
+
     // continue executing if have shreds left or if don't-halt
-    return ( m_num_shreds || !m_halt );
+    // or if have shreds to add
+    return ( m_num_shreds || !m_halt || m_spork_external_shred_queue.more() );
 }
 
 
@@ -583,6 +535,9 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
     m_input_ref = input; m_output_ref = output;
     // frame count
     t_CKINT frame = 0;
+
+    // for now, check for external variables once per sample (below)
+    // TODO: once per buffer instead? (place here then)
 
     // loop it
     while( N )
@@ -608,10 +563,6 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 vm_stop:
     // stop, 1.3.5.3
     this->stop();
-    // TODO: move this to be per VM?
-    if( g_main_thread_quit )
-        g_main_thread_quit( g_main_thread_bindle );
-    clear_main_thread_hook();
 
     // log
     EM_log( CK_LOG_SYSTEM, "virtual machine stopped..." );
@@ -875,7 +826,10 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         }
         
         // clear user type system
-        Chuck_Env::instance()->clear_user_namespace();
+        if( env() )
+        {
+            env()->clear_user_namespace();
+        }
         
         m_shred_id = 0;
         m_num_shreds = 0;
@@ -885,7 +839,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         t_CKUINT xid = 0;
         Chuck_VM_Shred * shred = NULL;
         if( msg->shred ) shred = this->spork( msg->shred );
-        else shred = this->spork( msg->code, NULL );
+        else shred = this->spork( msg->code, NULL, TRUE );
         xid = shred->xid;
         if( msg->args ) shred->args = *(msg->args);
 
@@ -898,7 +852,8 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     {
         EM_error3( "[chuck](VM): KILL received...." );
         // close file handles and clean up
-        all_detach();
+        // REFACTOR-2017: TODO all_detach function
+        // all_detach();
         // TODO: free more memory?
 
         // log
@@ -924,19 +879,19 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     else if( msg->type == MSG_TIME )
     {
         float srate = m_srate; // 1.3.5.3; was: (float)Digitalio::sampling_rate();
-        fprintf( stderr, "[chuck](VM): the values of now:\n" );
-        fprintf( stderr, "  now = %.6f (samp)\n", m_shreduler->now_system );
-        fprintf( stderr, "      = %.6f (second)\n", m_shreduler->now_system / srate );
-        fprintf( stderr, "      = %.6f (minute)\n", m_shreduler->now_system / srate / 60.0f );
-        fprintf( stderr, "      = %.6f (hour)\n", m_shreduler->now_system / srate / 60.0f / 60.0f );
-        fprintf( stderr, "      = %.6f (day)\n", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f );
-        fprintf( stderr, "      = %.6f (week)\n", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f / 7.0f );
+        CK_FPRINTF_STDERR( "[chuck](VM): the values of now:\n" );
+        CK_FPRINTF_STDERR( "  now = %.6f (samp)\n", m_shreduler->now_system );
+        CK_FPRINTF_STDERR( "      = %.6f (second)\n", m_shreduler->now_system / srate );
+        CK_FPRINTF_STDERR( "      = %.6f (minute)\n", m_shreduler->now_system / srate / 60.0f );
+        CK_FPRINTF_STDERR( "      = %.6f (hour)\n", m_shreduler->now_system / srate / 60.0f / 60.0f );
+        CK_FPRINTF_STDERR( "      = %.6f (day)\n", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f );
+        CK_FPRINTF_STDERR( "      = %.6f (week)\n", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f / 7.0f );
     }
     else if( msg->type == MSG_RESET_ID )
     {
         t_CKUINT n = m_shreduler->highest();
         m_shred_id = n;
-        fprintf( stderr, "[chuck](VM): reseting shred id to %lu...\n", m_shred_id + 1 );
+        CK_FPRINTF_STDERR( "[chuck](VM): reseting shred id to %lu...\n", m_shred_id + 1 );
     }
 
 done:
@@ -992,25 +947,16 @@ t_CKUINT Chuck_VM::srate() const
 
 
 //-----------------------------------------------------------------------------
-// name: fork()
-// desc: ...
-//-----------------------------------------------------------------------------
-Chuck_VM_Shred * Chuck_VM::fork( Chuck_VM_Code * code )
-{
-    return NULL;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: spork()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent )
+Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
+                                  t_CKBOOL immediate )
 {
     // allocate a new shred
     Chuck_VM_Shred * shred = new Chuck_VM_Shred;
+    // set the vm
+    shred->vm_ref = this;
     // initialize the shred (default stack size)
     shred->initialize( code );
     // set the name
@@ -1020,8 +966,16 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent 
     // set the base ref for global
     if( parent ) shred->base_ref = shred->parent->base_ref;
     else shred->base_ref = shred->mem;
-    // spork it
-    this->spork( shred );
+    if( immediate )
+    {
+        // spork it
+        this->spork( shred );
+    }
+    else
+    {
+        // spork it later
+        m_spork_external_shred_queue.put( shred );
+    }
 
     // track new shred
     CK_TRACK( Chuck_Stats::instance()->add_shred( shred ) );
@@ -1044,8 +998,6 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Shred * shred )
     shred->now = shred->wake_time = m_shreduler->now_system;
     // set the id
     shred->xid = next_id();
-    // set the vm
-    shred->vm_ref = this;
     // add ref
     shred->add_ref();
     // add it to the parent
@@ -1195,6 +1147,424 @@ void Chuck_VM::release_dump( )
 
 
 //-----------------------------------------------------------------------------
+// name: get_external_int()
+// desc: get an external int by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_external_int( std::string name,
+                                     void (* callback)(t_CKINT) ) {
+    Chuck_Get_External_Int_Request get_int_message;
+    get_int_message.name = name;
+    get_int_message.fp = callback;
+    
+    m_get_external_int_queue.put( get_int_message );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_int()
+// desc: set an external int by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_external_int( std::string name, t_CKINT val ) {
+    Chuck_Set_External_Int_Request set_int_message;
+    set_int_message.name = name;
+    set_int_message.val = val;
+    
+    m_set_external_int_queue.put( set_int_message );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_external_int()
+// desc: tell the vm that an external int is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::init_external_int( std::string name )
+{
+    if( m_external_ints.count( name ) == 0 )
+    {
+        m_external_ints[name] = new Chuck_External_Int_Container;
+    }
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_int_value()
+// desc: get a value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_VM::get_external_int_value( std::string name )
+{
+    // ensure exists
+    init_external_int( name );
+    
+    return m_external_ints[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_int_value()
+// desc: set a value directly to the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKINT * Chuck_VM::get_ptr_to_external_int( std::string name )
+{
+    return &( m_external_ints[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_float()
+// desc: get an external float by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_external_float( std::string name,
+                                       void (* callback)(t_CKFLOAT) ) {
+    Chuck_Get_External_Float_Request get_float_message;
+    get_float_message.name = name;
+    get_float_message.fp = callback;
+    
+    m_get_external_float_queue.put( get_float_message );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_float()
+// desc: set an external float by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_external_float( std::string name, t_CKFLOAT val ) {
+    Chuck_Set_External_Float_Request set_float_message;
+    set_float_message.name = name;
+    set_float_message.val = val;
+    
+    m_set_external_float_queue.put( set_float_message );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_external_float()
+// desc: tell the vm that an external float is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::init_external_float( std::string name )
+{
+    if( m_external_floats.count( name ) == 0 )
+    {
+        m_external_floats[name] = new Chuck_External_Float_Container;
+    }
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_float_value()
+// desc: get a value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKFLOAT Chuck_VM::get_external_float_value( std::string name )
+{
+    // ensure exists
+    init_external_float( name );
+    
+    return m_external_floats[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_float_value()
+// desc: set a value directly to the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKFLOAT * Chuck_VM::get_ptr_to_external_float( std::string name )
+{
+    return &( m_external_floats[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: signal_external_event()
+// desc: signal() an Event by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::signal_external_event( std::string name ) {
+    Chuck_Signal_External_Event_Request signal_event_message;
+    signal_event_message.name = name;
+    signal_event_message.is_broadcast = FALSE;
+    
+    m_signal_external_event_queue.put( signal_event_message );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: broadcast_external_event()
+// desc: broadcast() an Event by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::broadcast_external_event( std::string name ) {
+    Chuck_Signal_External_Event_Request signal_event_message;
+    signal_event_message.name = name;
+    signal_event_message.is_broadcast = TRUE;
+    
+    m_signal_external_event_queue.put( signal_event_message );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_external_event()
+// desc: tell the vm that an external float is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::init_external_event( std::string name, Chuck_Type * type ) {
+
+    // if it hasn't been initted yet
+    if( m_external_events.count( name ) == 0 ) {
+        // create a new storage container
+        m_external_events[name] = new Chuck_External_Event_Container;
+        // create the chuck object
+        m_external_events[name]->val =
+            (Chuck_Event *) instantiate_and_initialize_object( type, this );
+        // add a reference to it so it won't be deleted until we're done
+        // cleaning up the VM
+        m_external_events[name]->val->add_ref();
+        // store its type in the container, too (is it a user-defined class?)
+        m_external_events[name]->type = type;
+    }
+    // already exists. check if there's a type mismatch.
+    else if( type->name != m_external_events[name]->type->name )
+    {
+        return FALSE;
+    }
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_event_pointer()
+// desc: get a pointer directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Event * Chuck_VM::get_external_event( std::string name )
+{
+    return m_external_events[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_event_pointer()
+// desc: set a pointer directly on the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Event * * Chuck_VM::get_ptr_to_external_event( std::string name )
+{
+    return &( m_external_events[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: cleanup_external_variables()
+// desc: set a pointer directly on the vm (internal)
+//-----------------------------------------------------------------------------
+void Chuck_VM::cleanup_external_variables()
+{
+    // ints: delete containers and clear map
+    for( std::map< std::string, Chuck_External_Int_Container * >::iterator it=
+         m_external_ints.begin(); it!=m_external_ints.end(); it++ )
+    {
+        delete (it->second);
+    }
+    m_external_ints.clear();
+    
+    // floats: delete containers and clear map
+    for( std::map< std::string, Chuck_External_Float_Container * >::iterator it=
+         m_external_floats.begin(); it!=m_external_floats.end(); it++ )
+    {
+        delete (it->second);
+    }
+    m_external_floats.clear();
+    
+    // events: release events, delete containers, and clear map
+    for( std::map< std::string, Chuck_External_Event_Container * >::iterator it=
+         m_external_events.begin(); it!=m_external_events.end(); it++ )
+    {
+        SAFE_RELEASE( it->second->val );
+        delete (it->second);
+    }
+    m_external_events.clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: handle_external_set_messages()
+// desc: update values with external set messages
+//-----------------------------------------------------------------------------
+void Chuck_VM::handle_external_set_messages() {
+    // TODO: only do one per call, to avoid taking up too much time?
+    //       if so then "if" not "while"
+    while( m_set_external_int_queue.more() ) {
+        Chuck_Set_External_Int_Request set_int_message;
+        if( m_set_external_int_queue.get( & set_int_message ) )
+        {
+            // ensure the container exists
+            init_external_int( set_int_message.name );
+            m_external_ints[set_int_message.name]->val = set_int_message.val;
+        }
+        else
+        {
+            // get failed
+            break;
+        }
+        
+    }
+    
+    while( m_set_external_float_queue.more() ) {
+        Chuck_Set_External_Float_Request set_float_message;
+        if( m_set_external_float_queue.get( & set_float_message ) )
+        {
+            // ensure the container exists
+            init_external_float( set_float_message.name );
+            m_external_floats[set_float_message.name]->val = set_float_message.val;
+        }
+        else
+        {
+            // get failed
+            break;
+        }
+        
+    }
+    
+    while( m_signal_external_event_queue.more() ) {
+        Chuck_Signal_External_Event_Request signal_event_message;
+        if( m_signal_external_event_queue.get( & signal_event_message ) )
+        {
+            // ensure it exists
+            if( m_external_events.count( signal_event_message.name ) > 0 ) {
+                Chuck_Event * event = get_external_event( signal_event_message.name );
+                if( signal_event_message.is_broadcast )
+                {
+                    event->broadcast();
+                }
+                else
+                {
+                    event->signal();
+                }
+            }
+        }
+        else
+        {
+            // get failed
+            break;
+        }
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: handle_external_set_messages()
+// desc: update values with external set messages
+//-----------------------------------------------------------------------------
+void Chuck_VM::handle_external_get_messages() {
+    while( m_get_external_int_queue.more() ) {
+        Chuck_Get_External_Int_Request get_int_message;
+        if( m_get_external_int_queue.get( & get_int_message ) &&
+            get_int_message.fp != NULL )
+        {
+            // ensure the value exists
+            init_external_int( get_int_message.name );
+            // call the callback with the value
+            get_int_message.fp( m_external_ints[get_int_message.name]->val );
+        }
+        else
+        {
+            // get failed.... sadness.... this might be bad
+            break;
+        }
+        
+    }
+    
+    while( m_get_external_float_queue.more() ) {
+        Chuck_Get_External_Float_Request get_float_message;
+        if( m_get_external_float_queue.get( & get_float_message ) &&
+            get_float_message.fp != NULL )
+        {
+            // ensure value exists
+            init_external_float( get_float_message.name );
+            // call callback with float
+            get_float_message.fp( m_external_floats[get_float_message.name]->val );
+        }
+        else
+        {
+            // get failed.... sadness.... this might be bad
+            break;
+        }
+        
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: handle_external_set_messages()
+// desc: update values with external set messages
+//-----------------------------------------------------------------------------
+void Chuck_VM::handle_external_spork_messages() {
+    while( m_spork_external_shred_queue.more() ) {
+        Chuck_VM_Shred * shred;
+        if( m_spork_external_shred_queue.get( & shred ) )
+        {
+            this->spork( shred );
+        }
+        else
+        {
+            // get failed...
+            break;
+        }
+        
+    }
+    
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: set_main_thread_hook()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -1337,7 +1707,7 @@ t_CKBOOL Chuck_VM_Stack::initialize( t_CKUINT size )
 out_of_memory:
 
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](VM): OutOfMemory: while allocating stack\n" );
 
     // return FALSE
@@ -1442,7 +1812,7 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     xid = 0;
 
     // initialize
-    initialize_object( this, &t_shred );
+    initialize_object( this, vm_ref->env()->t_shred );
 
     return TRUE;
 }
@@ -1626,20 +1996,20 @@ t_CKBOOL Chuck_VM_Shred::run( Chuck_VM * vm )
     while( is_running && *loop_running && !is_abort )
     {
 //-----------------------------------------------------------------------------
-CK_VM_DEBUG( fprintf(stderr, "CK_VM_DEBUG =--------------------------------=\n") );
-CK_VM_DEBUG( fprintf(stderr, "CK_VM_DEBUG shred %04lu code %s pc %04lu %s( %s )\n",
+CK_VM_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG =--------------------------------=\n" ) );
+CK_VM_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG shred %04lu code %s pc %04lu %s( %s )\n",
              this->xid, this->code->name.c_str(), this->pc, instr[pc]->name(),
-             instr[pc]->params()) );
+             instr[pc]->params() ) );
 CK_VM_DEBUG( t_CKBYTE * t_mem_sp = this->mem->sp );
 CK_VM_DEBUG( t_CKBYTE * t_reg_sp = this->mem->sp );
 //-----------------------------------------------------------------------------
         // execute the instruction
         instr[pc]->execute( vm, this );
 //-----------------------------------------------------------------------------
-CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08lx\n",
-                    (unsigned long) t_mem_sp, (unsigned long) this->mem->sp));
-CK_VM_DEBUG(fprintf(stderr, "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
-                    (unsigned long) t_reg_sp, (unsigned long) this->reg->sp));
+CK_VM_DEBUG(CK_FPRINTF_STDERR( "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08lx\n",
+                    (unsigned long) t_mem_sp, (unsigned long) this->mem->sp ));
+CK_VM_DEBUG(CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
+                    (unsigned long) t_reg_sp, (unsigned long) this->reg->sp ));
 //-----------------------------------------------------------------------------
         // set to next_pc;
         pc = next_pc;
@@ -1843,7 +2213,15 @@ t_CKBOOL Chuck_VM_Shreduler::remove_blocked( Chuck_VM_Shred * shred )
     blocked.erase( iter );
 
     // remove from event
-    if( shred->event != NULL ) shred->event->remove( shred );
+    if( shred->event != NULL )
+    {
+        Chuck_Event * event_to_release = shred->event;
+        // this call causes shred->event to become a null pointer
+        shred->event->remove( shred );
+        // but, we still have to release the event afterward
+        // to signify that the shred is done using the event
+        SAFE_RELEASE( event_to_release );
+    }
     
     return TRUE;
 }
@@ -2323,14 +2701,14 @@ void Chuck_VM_Shreduler::status( )
     t_CKUINT h = m_status.t_hour;
     t_CKUINT m = m_status.t_minute;
     t_CKUINT sec = m_status.t_second;
-    fprintf( stdout, "[chuck](VM): status (now == %ldh%ldm%lds, %.1f samps) ...\n",
+    CK_FPRINTF_STDOUT( "[chuck](VM): status (now == %ldh%ldm%lds, %.1f samps) ...\n",
              h, m, sec, m_status.now_system );
 
     // print status
     for( t_CKUINT i = 0; i < m_status.list.size(); i++ )
     {
         shred = m_status.list[i];
-        fprintf( stdout, 
+        CK_FPRINTF_STDOUT( 
             "    [shred id]: %ld  [source]: %s  [spork time]: %.2fs ago%s\n",
             shred->xid, mini( shred->name.c_str() ),
             (m_status.now_system - shred->start) / m_status.srate,

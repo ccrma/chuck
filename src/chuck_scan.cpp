@@ -250,7 +250,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
 
     // allocate new type
     assert( env->context != NULL );
-    the_class = env->context->new_Chuck_Type();
+    the_class = env->context->new_Chuck_Type( env );
     // add reference
     SAFE_ADD_REF( the_class );
     // set the fields
@@ -325,7 +325,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
         Chuck_Type * type = NULL;
 
         // allocate value
-        type = t_class.copy( env );
+        type = env->t_class->copy( env );
         type->actual_type = the_class;
         value = env->context->new_Chuck_Value( type, the_class->name );
         value->owner = env->curr;
@@ -1348,7 +1348,7 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
         // create the new array type
         t = new_array_type(
             env,  // the env
-            &t_array,  // the array base class, usually &t_array
+            env->t_array,  // the array base class
             f->type_decl->array->depth,  // the depth of the new type
             t2,  // the 'array_type'
             env->curr  // the owner namespace
@@ -2172,7 +2172,7 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
     }
 
     // primitive
-    if( (isprim( type ) || isa( type, &t_string )) && decl->type->ref )  // TODO: string
+    if( (isprim( env, type ) || isa( type, env->t_string )) && decl->type->ref )  // TODO: string
     {
         EM_error2( decl->linepos,
             "cannot declare references (@) of primitive type '%s'...",
@@ -2227,7 +2227,7 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
             // create the new array type
             type = new_array_type(
                 env,  // the env
-                &t_array,  // the array base class, usually &t_array
+                env->t_array,  // the array base class
                 var_decl->array->depth,  // the depth of the new type
                 t2,  // the 'array_type'
                 env->curr  // the owner namespace
@@ -2255,6 +2255,9 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         value->addr = var_decl->addr;
         // flag it until the decl is checked
         value->is_decl_checked = FALSE;
+        
+        // flag as external
+        value->is_external = decl->is_external;
 
         // remember the value
         var_decl->value = value;
@@ -2457,7 +2460,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     if(( overload = env->curr->lookup_value( f->name, FALSE ) ))
     {
         // if value
-        if( !isa( overload->type, &t_function ) )
+        if( !isa( overload->type, env->t_function ) )
         {
             EM_error2( f->linepos, 
                 "function name '%s' is already used by another value", S_name(f->name) );
@@ -2513,10 +2516,10 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     }
 
     // make a new type for the function
-    type = env->context->new_Chuck_Type();
+    type = env->context->new_Chuck_Type( env );
     type->xid = te_function;
     type->name = "[function]";
-    type->parent = &t_function;
+    type->parent = env->t_function;
     type->size = sizeof(void *);
     type->func = func;
 
@@ -2550,7 +2553,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     assert( f->ret_type != NULL );
 
     // primitive
-    if( (isprim( f->ret_type ) /*|| isa( f->ret_type, &t_string )*/)
+    if( (isprim( env, f->ret_type ) /*|| isa( f->ret_type, &t_string )*/)
         && f->type_decl->ref )  // TODO: string
     {
         EM_error2( f->type_decl->linepos,
@@ -2599,7 +2602,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         //}
 
         // primitive
-        if( (isprim( arg_list->type ) /*|| isa( arg_list->type, &t_string )*/)
+        if( (isprim( env, arg_list->type ) /*|| isa( arg_list->type, &t_string )*/)
             && arg_list->type_decl->ref )  // TODO: string
         {
             EM_error2( arg_list->type_decl->linepos,
@@ -2631,7 +2634,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
             // create the new array type
             t = new_array_type(
                 env,  // the env
-                &t_array,  // the array base class, usually &t_array
+                env->t_array,  // the array base class
                 arg_list->var_decl->array->depth,  // the depth of the new type
                 t2,  // the 'array_type'
                 env->curr  // the owner namespace

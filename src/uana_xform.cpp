@@ -33,6 +33,7 @@
 #include "uana_xform.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
+#include "chuck_compile.h"
 #include "chuck_instr.h"
 #include "chuck_lang.h"
 #include "util_buffers.h"
@@ -161,7 +162,7 @@ static t_CKINT float_array_size = 0;
 //-----------------------------------------------------------------------------
 DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
 {
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->env();
     Chuck_DL_Func * func = NULL;
     
     std::string doc;
@@ -302,7 +303,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
 
     // initialize static data
     Windowing_array = new Chuck_Array8();
-    initialize_object( Windowing_array, &t_array );
+    initialize_object( Windowing_array, QUERY->env()->t_array );
     // TODO: yes? reference count
     Windowing_array->add_ref();
     // set size
@@ -634,7 +635,7 @@ t_CKBOOL FFT_object::resize( t_CKINT size )
     if( !m_buffer || !m_spectrum )
     {
         // out of memory
-        fprintf( stderr, "[chuck]: FFT failed to allocate %ld, %ld buffers...\n",
+        CK_FPRINTF_STDERR( "[chuck]: FFT failed to allocate %ld, %ld buffers...\n",
             size, size/2 );
         // clean
         SAFE_DELETE_ARRAY( m_buffer );
@@ -684,7 +685,7 @@ t_CKBOOL FFT_object::window( Chuck_Array8 * win, t_CKINT win_size )
         if( !m_window )
         {
             // out of memory
-            fprintf( stderr, "[chuck]: FFT failed to allocate %ldxSAMPLE window...\n",
+            CK_FPRINTF_STDERR( "[chuck]: FFT failed to allocate %ldxSAMPLE window...\n",
                 m_size );
             // done
             return FALSE;
@@ -730,7 +731,7 @@ void FFT_object::transform()
     if( m_buffer == NULL && m_spectrum == NULL )
     {
         // out of memory
-        fprintf( stderr, "[chuck]: FFT failure due to NULL buffer...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: FFT failure due to NULL buffer...\n" );
         // bye
         return;
     }
@@ -1018,7 +1019,7 @@ CK_DLL_CTRL( FFT_ctrl_size )
 
 invalid_size:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](IFFT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
@@ -1172,7 +1173,7 @@ t_CKBOOL IFFT_object::resize( t_CKINT size )
     if( !m_buffer || !m_inverse )
     {
         // out of memory
-        fprintf( stderr, "[chuck]: IFFT failed to allocate %ld, %ld buffers...\n",
+        CK_FPRINTF_STDERR( "[chuck]: IFFT failed to allocate %ld, %ld buffers...\n",
             size/2, size );
         // clean
         SAFE_DELETE_ARRAY( m_buffer );
@@ -1220,7 +1221,7 @@ t_CKBOOL IFFT_object::window( Chuck_Array8 * win, t_CKINT win_size )
         if( !m_window )
         {
             // out of memory
-            fprintf( stderr, "[chuck]: IFFT failed to allocate %ldxSAMPLE window...\n",
+            CK_FPRINTF_STDERR( "[chuck]: IFFT failed to allocate %ldxSAMPLE window...\n",
                 m_size );
             // done
             return FALSE;
@@ -1263,7 +1264,7 @@ void IFFT_object::transform( )
     if( m_buffer == NULL && m_inverse == NULL )
     {
         // out of memory
-        fprintf( stderr, "[chuck]: IFFT failure due to NULL buffer...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: IFFT failure due to NULL buffer...\n" );
         // bye
         return;
     }
@@ -1475,7 +1476,7 @@ CK_DLL_MFUN( IFFT_transform )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](IFFT): NullPointerException (argument is NULL)\n");
     goto done;
 
@@ -1551,7 +1552,7 @@ CK_DLL_CTRL( IFFT_ctrl_size )
 
 invalid_size:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](IFFT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
@@ -1638,7 +1639,7 @@ static t_CKBOOL prepare_window( void * ARGS, Chuck_VM_Shred * SHRED, t_CKINT & s
 
 out_of_memory:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](Windowing): OutOfMemoryException (allocating FLOAT[%ld])\n",
         float_array_size );
     goto done;
@@ -1871,7 +1872,7 @@ t_CKBOOL Flip_object::resize( t_CKINT size )
     if( !m_buffer )
     {
         // out of memory
-        fprintf( stderr, "[chuck]: Flip failed to allocate %ld buffer...\n",
+        CK_FPRINTF_STDERR( "[chuck]: Flip failed to allocate %ld buffer...\n",
             size );
         // clean
         SAFE_DELETE_ARRAY( m_buffer );
@@ -1919,7 +1920,7 @@ t_CKBOOL Flip_object::window( Chuck_Array8 * win, t_CKINT win_size )
         if( !m_window )
         {
             // out of memory
-            fprintf( stderr, "[chuck]: Flip failed to allocate %ldxSAMPLE window...\n",
+            CK_FPRINTF_STDERR( "[chuck]: Flip failed to allocate %ldxSAMPLE window...\n",
                 m_size );
             // done
             return FALSE;
@@ -1965,7 +1966,7 @@ void Flip_object::transform( )
     if( m_buffer == NULL )
     {
         // out of memory
-        fprintf( stderr, "[chuck]: Flip failure due to NULL buffer...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: Flip failure due to NULL buffer...\n" );
         // bye
         return;
     }
@@ -2193,7 +2194,7 @@ CK_DLL_CTRL( Flip_ctrl_size )
 
 invalid_size:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](IFFT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
@@ -2336,7 +2337,7 @@ t_CKBOOL UnFlip_object::resize( t_CKINT size )
     if( !m_buffer )
     {
         // out of memory
-        fprintf( stderr, "[chuck]: UnFlip failed to allocate %ld buffer...\n",
+        CK_FPRINTF_STDERR( "[chuck]: UnFlip failed to allocate %ld buffer...\n",
             size );
         // clean
         SAFE_DELETE_ARRAY( m_buffer );
@@ -2382,7 +2383,7 @@ t_CKBOOL UnFlip_object::window( Chuck_Array8 * win, t_CKINT win_size )
         if( !m_window )
         {
             // out of memory
-            fprintf( stderr, "[chuck]: UnFlip failed to allocate %ldxSAMPLE window...\n",
+            CK_FPRINTF_STDERR( "[chuck]: UnFlip failed to allocate %ldxSAMPLE window...\n",
                 m_size );
             // done
             return FALSE;
@@ -2425,7 +2426,7 @@ void UnFlip_object::transform( )
     if( m_buffer == NULL )
     {
         // out of memory
-        fprintf( stderr, "[chuck]: UnFlip failure due to NULL buffer...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: UnFlip failure due to NULL buffer...\n" );
         // bye
         return;
     }
@@ -2626,7 +2627,7 @@ CK_DLL_MFUN( UnFlip_take )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](UnFlip): NullPointerException (argument is NULL)\n");
     goto done;
 
@@ -2702,7 +2703,7 @@ CK_DLL_CTRL( UnFlip_ctrl_size )
 
 invalid_size:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](UnFlip): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
@@ -2858,7 +2859,7 @@ t_CKBOOL DCT_object::resize( t_CKINT size )
     if( !m_buffer || !m_spectrum || !m_matrix )
     {
         // out of memory
-        fprintf( stderr, "[chuck]: DCT failed to allocate %ld, %ld buffers...\n",
+        CK_FPRINTF_STDERR( "[chuck]: DCT failed to allocate %ld, %ld buffers...\n",
             size, size/2 );
         // clean
         SAFE_DELETE_ARRAY( m_buffer );
@@ -2911,7 +2912,7 @@ t_CKBOOL DCT_object::window( Chuck_Array8 * win, t_CKINT win_size )
         if( !m_window )
         {
             // out of memory
-            fprintf( stderr, "[chuck]: DCT failed to allocate %ldxSAMPLE window...\n",
+            CK_FPRINTF_STDERR( "[chuck]: DCT failed to allocate %ldxSAMPLE window...\n",
                 m_size );
             // done
             return FALSE;
@@ -2957,7 +2958,7 @@ void DCT_object::transform( )
     if( m_buffer == NULL && m_spectrum == NULL )
     {
         // out of memory
-        fprintf( stderr, "[chuck]: DCT failure due to NULL buffer...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: DCT failure due to NULL buffer...\n" );
         // bye
         return;
     }
@@ -3180,7 +3181,7 @@ CK_DLL_CTRL( DCT_ctrl_size )
 
 invalid_size:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](IDCT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
@@ -3335,7 +3336,7 @@ t_CKBOOL IDCT_object::resize( t_CKINT size )
     if( !m_buffer || !m_inverse || !m_matrix )
     {
         // out of memory
-        fprintf( stderr, "[chuck]: IDCT failed to allocate %ld, %ld, %ldx%ld buffers...\n",
+        CK_FPRINTF_STDERR( "[chuck]: IDCT failed to allocate %ld, %ld, %ldx%ld buffers...\n",
             size, size, size, size );
         // clean
         SAFE_DELETE_ARRAY( m_buffer );
@@ -3386,7 +3387,7 @@ t_CKBOOL IDCT_object::window( Chuck_Array8 * win, t_CKINT win_size )
         if( !m_window )
         {
             // out of memory
-            fprintf( stderr, "[chuck]: IDCT failed to allocate %ldxSAMPLE window...\n",
+            CK_FPRINTF_STDERR( "[chuck]: IDCT failed to allocate %ldxSAMPLE window...\n",
                 m_size );
             // done
             return FALSE;
@@ -3429,7 +3430,7 @@ void IDCT_object::transform( )
     if( m_buffer == NULL && m_inverse == NULL )
     {
         // out of memory
-        fprintf( stderr, "[chuck]: IDCT failure due to NULL buffer...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: IDCT failure due to NULL buffer...\n" );
         // bye
         return;
     }
@@ -3637,7 +3638,7 @@ CK_DLL_MFUN( IDCT_transform )
 
 null_pointer:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](IDCT): NullPointerException (argument is NULL)\n");
     goto done;
 
@@ -3709,7 +3710,7 @@ CK_DLL_CTRL( IDCT_ctrl_size )
 
 invalid_size:
     // we have a problem
-    fprintf( stderr, 
+    CK_FPRINTF_STDERR( 
         "[chuck](IDCT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
