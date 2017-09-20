@@ -23,351 +23,125 @@
 -----------------------------------------------------------------------------*/
 
 //-----------------------------------------------------------------------------
-// name: digiio_rtaudio.h
-// desc: digitalio over RtAudio (from Gary Scavone)
+// name: chuck_audio.h
+// desc: chuck host digital audio I/O, using RtAudio (from Gary Scavone)
 //
 // author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
 //         Spencer Salazar (spencer@ccrma.stanford.edu)
 // RtAudio by: Gary Scavone
 // date: Spring 2004
 //-----------------------------------------------------------------------------
-#ifndef __DIGITAL_IO_H__
-#define __DIGITAL_IO_H__
+#ifndef __CHUCK_AUDIO_H__
+#define __CHUCK_AUDIO_H__
 
 #include "chuck_def.h"
 #include <string>
-#ifndef __CHIP_MODE__
 #include "RtAudio/RtAudio.h"
-#else
-class RtAudio;
-typedef unsigned int RtAudioStreamStatus;
-#endif // __CHIP_MODE__
 
 
 
 
 //-----------------------------------------------------------------------------
-// define and forward references
+// define, defaults, forward references
 //-----------------------------------------------------------------------------
-// #ifndef SAFE_DELETE
-// #define SAFE_DELETE(p)       { if(p) { delete (p);     (p)=NULL; } }
-// #define SAFE_DELETE_ARRAY(p) { if(p) { delete[] (p);   (p)=NULL; } }
-// #endif
-
-// defaults
-  #if defined(__MACOSX_CORE__)
-#define BUFFER_SIZE_DEFAULT          256
-  #else
-#define BUFFER_SIZE_DEFAULT          512
-  #endif
-#define NUM_BUFFERS_DEFAULT          8
 #define NUM_CHANNELS_DEFAULT         2       // number of channels
-  #if defined(__PLATFORM_LINUX__)
-#define SAMPLING_RATE_DEFAULT        48000   // sampling rate
-#define USE_CB_DEFAULT               TRUE    // callback
-  #else
-#define SAMPLING_RATE_DEFAULT        44100   // sampling rate
-#define USE_CB_DEFAULT               TRUE    // callback
-  #endif
-#define BITS_PER_SAMPLE_DEFAULT      16      // sample size
+#define NUM_BUFFERS_DEFAULT          8       // number buffers
 #define DEVICE_NUM_OUT_DEFAULT       0
 #define DEVICE_NUM_IN_DEFAULT        0
-
-// sample types
-// #define SAMPLE_SHORT         short
-// #define SAMPLE_INTERNAL      SAMPLE_SHORT
-// #define SAMPLE               float
-// #define S_MAX                0x7fff  // max value for 16 bit
-// #define S_MIN                -0x7fff // min value for 16 bit
-
-// external to internal sample conversion
-// #define SAMPLE_TO_INTERNAL(s) ( (SAMPLE_INTERNAL)((SAMPLE)S_MAX * s) )
-// #define INTERNAL_TO_SAMPLE(s) ( (SAMPLE)((SAMPLE)s / S_MAX) )
-
-// types
-#define BOOL__                 DWORD__
-#define DWORD__                unsigned long
-#define SINT__                 long
-#define UINT__                 DWORD__
-#define BYTE__                 unsigned char
-
-
-#ifndef FALSE
-  #define FALSE                0
-#endif
-#ifndef TRUE
-  #define TRUE                 1
+// sample rate defaults by platform
+#if defined(__PLATFORM_LINUX__)
+#define SAMPLE_RATE_DEFAULT      48000
+#define BUFFER_SIZE_DEFAULT        256
+#else if defined(__PLATFORM_MACOSX__)
+#define SAMPLE_RATE_DEFAULT      44100
+#define BUFFER_SIZE_DEFAULT        256
+#else
+#define SAMPLE_RATE_DEFAULT      44100
+#define BUFFER_SIZE_DEFAULT        512
 #endif
 
-class RtAudio;
-struct Chuck_VM;
+
+
+
+// audio callback definition
+void (* f_audio_cb)( SAMPLE * input, SAMPLE * output, t_CKUINT numFrames,
+                     t_CKUINT numInChans, t_CKUINT numOutChans, void * userData );
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: Digitalio
-// desc: ...
+// name: class ChuckAudio
+// desc: chuck host audio I/O
 //-----------------------------------------------------------------------------
-class Digitalio
+class ChuckAudio
 {
 public:
-    static BOOL__ initialize( DWORD__ num_dac_channels,
-                              DWORD__ num_adc_channels,
-                              DWORD__ sampling_rate,
-                              DWORD__ bps,
-                              DWORD__ buffer_size,
-                              DWORD__ num_buffers,
-                              DWORD__ block,
-                              Chuck_VM * vm_ref,
-                              BOOL__ rt_audio,
-                              void * callback,
-                              void * data,
-                              // force_srate added 1.3.1.2
-                              BOOL__ force_srate );
-    static BOOL__ watchdog_start();
-    static BOOL__ watchdog_stop();
+    static t_CKBOOL initialize( t_CKUINT num_dac_channels,
+                                t_CKUINT num_adc_channels,
+                                t_CKUINT sample_rate,
+                                t_CKUINT buffer_size,
+                                t_CKUINT num_buffers,
+                                f_audio_cb callback,
+                                void * data,
+                                // force_srate added 1.3.1.2
+                                t_CKBOOL force_srate );
     static void shutdown();
+    static t_CKBOOL start();
+    static t_CKBOOL stop();
+
+public: // watchdog stuff
+    static t_CKBOOL watchdog_start();
+    static t_CKBOOL watchdog_stop();
+
+public: // device info
+    // probe audio devices
     static void probe();
-    
-    static DWORD__ device_named( const std::string & name, t_CKBOOL needs_dac = FALSE, t_CKBOOL needs_adc = FALSE );
+    // get device number by name?
+    static t_CKUINT device_named( const std::string & name,
+                                  t_CKBOOL needs_dac = FALSE,
+                                  t_CKBOOL needs_adc = FALSE );
 
 public:
-    static DWORD__ sampling_rate( ) { return m_sampling_rate; }
-    static DWORD__ num_channels_out( ) { return m_num_channels_out; }
-    static DWORD__ num_channels_in( ) { return m_num_channels_in; }
-    static DWORD__ dac_num( ) { return m_dac_n; }
-    static DWORD__ adc_num( ) { return m_adc_n; }
-    static DWORD__ bps( ) { return m_bps; }
-    static DWORD__ buffer_size( ) { return m_buffer_size; }
-    static DWORD__ num_buffers( ) { return m_num_buffers; }
-    static RtAudio * audio( ) { return m_rtaudio; }
-    static BOOL__  start( );
-    static BOOL__  stop( );
-    //static BOOL__  tick( );
-    static void    set_extern( SAMPLE * in, SAMPLE * out )
-                   { m_extern_in = in; m_extern_out = out; } 
-    static int cb( void *output_buffer, void *input_buffer,
-                   unsigned int buffer_size,
-                   double streamTime,
-                   RtAudioStreamStatus status,
-                   void *user_data );
-    static int cb2( void *output_buffer, void *input_buffer,
-                    unsigned int buffer_size,
-                    double streamTime,
-                    RtAudioStreamStatus status,
-                    void *user_data );
+    static t_CKUINT srate() { return m_sample_rate; }
+    static t_CKUINT num_channels_out() { return m_num_channels_out; }
+    static t_CKUINT num_channels_in() { return m_num_channels_in; }
+    static t_CKUINT dac_num() { return m_dac_n; }
+    static t_CKUINT adc_num() { return m_adc_n; }
+    static t_CKUINT bps() { return m_bps; }
+    static t_CKUINT buffer_size() { return m_buffer_size; }
+    static t_CKUINT num_buffers() { return m_num_buffers; }
+    static RtAudio * audio() { return m_rtaudio; }
+
+    static void set_extern( SAMPLE * in, SAMPLE * out )
+        { m_extern_in = in; m_extern_out = out; }
+    static int cb( void * output_buffer, void * input_buffer, unsigned int buffer_size,
+        double streamTime, RtAudioStreamStatus status, void * user_data );
 
 public: // data
-    static BOOL__ m_init;
-    static DWORD__ m_start;
-    static DWORD__ m_tick_count;
-    static DWORD__ m_num_channels_out;
-    static DWORD__ m_num_channels_in;
-    static DWORD__ m_sampling_rate;
-    static DWORD__ m_bps;
-    static DWORD__ m_buffer_size;
-    static DWORD__ m_num_buffers;
-    static RtAudio * m_rtaudio;
+    static t_CKBOOL m_init;
+    static t_CKBOOL m_start;
+    static t_CKBOOL m_go; // counter of # of times callback called
+    static t_CKBOOL m_silent; // if true, will output silence
+    static t_CKUINT m_num_channels_out;
+    static t_CKUINT m_num_channels_in;
+    static t_CKUINT m_sample_rate;
+    static t_CKUINT m_bps;
+    static t_CKUINT m_buffer_size;
+    static t_CKUINT m_num_buffers;
     static SAMPLE * m_buffer_out;
     static SAMPLE * m_buffer_in;
-    static SAMPLE ** m_write_ptr;
-    static SAMPLE ** m_read_ptr;
-    static SAMPLE * m_extern_in;
-    static SAMPLE * m_extern_out;
-    static BOOL__ m_out_ready;
-    static BOOL__ m_in_ready;
-    static BOOL__ m_use_cb;
-    static DWORD__ m_go;
-    static DWORD__ m_end;
-    static DWORD__ m_block;
-    static DWORD__ m_xrun;
+    static SAMPLE * m_extern_in; // for things like audicle
+    static SAMPLE * m_extern_out; // for things like audicle
 
-    static DWORD__ m_dac_n;
-    static DWORD__ m_adc_n;
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: TickOut
-// desc: ...
-//-----------------------------------------------------------------------------
-class TickOut
-{
-public:
-    virtual ~TickOut() {}
-
-public:
-    virtual BOOL__ reset() { return true; }
-    virtual BOOL__ tick_out( SAMPLE s ) = 0;
-    virtual BOOL__ tick_out( SAMPLE l, SAMPLE r ) = 0;
-    virtual BOOL__ tick_out( const SAMPLE * out, DWORD__ n ) = 0;
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: TickIn
-// desc: ...
-//-----------------------------------------------------------------------------
-class TickIn
-{
-public:
-    virtual ~TickIn() { }
-
-public:
-    virtual BOOL__ reset() { return true; }
-    
-    virtual BOOL__ tick_in( SAMPLE * in ) = 0;
-    virtual BOOL__ tick_in( SAMPLE * l, SAMPLE * r ) = 0;
-    virtual BOOL__ tick_in( SAMPLE * in, DWORD__ n ) = 0;
-
-    virtual SAMPLE tick( )
-    { SAMPLE in; return ( tick_in( &in ) ? in : (SAMPLE)0.0f ); }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: class DigitalOut
-// desc: ...
-//-----------------------------------------------------------------------------
-class DigitalOut : public TickOut
-{
-public:
-    DigitalOut();
-    ~DigitalOut();
-
-public:
-    BOOL__ initialize();
-    void cleanup();
-
-    BOOL__ start();
-    BOOL__ stop();
-
-public:
-    virtual BOOL__ tick_out( SAMPLE s );
-    virtual BOOL__ tick_out( SAMPLE l, SAMPLE r );
-    virtual BOOL__ tick_out( const SAMPLE * samples, DWORD__ n );
-
-public:
-    DWORD__ render();
-
-protected:
-    SAMPLE * m_data_ptr_out;
-    SAMPLE * m_data_max_out;
-
-    inline BOOL__ prepare_tick_out();
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: class DigitalIn
-// desc: ...
-//-----------------------------------------------------------------------------
-class DigitalIn : public TickIn
-{
-public:
-    DigitalIn();
-    ~DigitalIn();
-
-public: // in
-    BOOL__ initialize();
-    void cleanup();
-
-    BOOL__ start();
-    BOOL__ stop();
-
-public:
-    virtual BOOL__ tick_in( SAMPLE * s );
-    virtual BOOL__ tick_in( SAMPLE * l, SAMPLE * r );
-    virtual BOOL__ tick_in( SAMPLE * samples, DWORD__ n );
-
-public:
-    DWORD__ capture( );
-
-protected:
-    SAMPLE * m_data;
-    SAMPLE * m_data_ptr_in;
-    SAMPLE * m_data_max_in;
-
-    inline BOOL__ prepare_tick_in();
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: AudioBufferX
-// desc: ...
-//-----------------------------------------------------------------------------
-class AudioBufferX
-{
-public:
-    AudioBufferX( DWORD__ size = 0 );
-
-public:
-    BOOL__ initialize( DWORD__ size );
-    void cleanup();
-    SAMPLE * data();
-    DWORD__ size();
-
-protected:
-    SAMPLE * m_data;
-    DWORD__ m_size;
-
-    SAMPLE * m_ptr_curr;
-    SAMPLE * m_ptr_end;
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: AudioBufferIn
-// desc: ...
-//-----------------------------------------------------------------------------
-class AudioBufferIn : public TickIn, public AudioBufferX
-{
-public:
-    AudioBufferIn( DWORD__ size = 0 );
-    virtual ~AudioBufferIn();
-
-public:
-    virtual BOOL__ reset();
-    virtual BOOL__ tick_in( SAMPLE * in );
-    virtual BOOL__ tick_in( SAMPLE * l, SAMPLE * r );
-    virtual BOOL__ tick_in( SAMPLE * in, DWORD__ n );
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: AudioBufferOut
-// desc: ...
-//-----------------------------------------------------------------------------
-class AudioBufferOut : public TickOut, public AudioBufferX
-{
-public:
-    AudioBufferOut( DWORD__ size = 0 );
-    virtual ~AudioBufferOut();
-
-public:
-    virtual BOOL__ reset();
-    virtual BOOL__ tick_out( SAMPLE s );
-    virtual BOOL__ tick_out( SAMPLE l, SAMPLE r );
-    virtual BOOL__ tick_out( const SAMPLE * out, DWORD__ n );
+    static RtAudio * m_rtaudio;
+    static t_CKUINT m_dac_n;
+    static t_CKUINT m_adc_n;
+    static f_audio_cb m_audio_cb;
+    static void * m_cb_user_data;
 };
 
 
 
 
 #endif
-
