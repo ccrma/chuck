@@ -541,6 +541,14 @@ a_Exp new_exp_from_if( a_Exp cond, a_Exp if_exp, a_Exp else_exp, int pos )
     return a;
 }
 
+a_Exp new_exp_decl_external( a_Type_Decl type, a_Var_Decl_List var_decl_list, int is_static, int pos )
+{
+    a_Exp a = new_exp_decl( type, var_decl_list, is_static, pos );
+    a->decl.is_external = 1;
+
+    return a;
+}
+
 a_Exp new_exp_decl( a_Type_Decl type, a_Var_Decl_List var_decl_list, int is_static, int pos )
 {
     a_Exp a = (a_Exp)checked_malloc( sizeof( struct a_Exp_ ) );

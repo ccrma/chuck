@@ -106,7 +106,7 @@ t_CKBOOL chuck_parse( c_constr fname, FILE * fd, c_constr code )
     // sanity check
     if( fd && code )
     {
-        fprintf( stderr, "[chuck](via parser): (internal) both fd and code specified!\n" );
+        CK_FPRINTF_STDERR( "[chuck](via parser): (internal) both fd and code specified!\n" );
         return FALSE;
     }
 

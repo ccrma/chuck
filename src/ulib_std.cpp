@@ -39,8 +39,8 @@
 #include "util_string.h"
 #include "util_thread.h"
 #include "chuck_type.h"
+#include "chuck_compile.h"
 #include "chuck_instr.h"
-#include "chuck_globals.h"
 
 #if defined(__PLATFORM_WIN32__)
 
@@ -146,7 +146,7 @@ static t_CKUINT Cereal_offset_data = 0;
 DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 {
     // get global
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->env();
     // set name
     QUERY->setname( QUERY, "Std" );
 
@@ -658,17 +658,19 @@ CK_DLL_SFUN( sgn_impl )
 // system
 CK_DLL_SFUN( system_impl )
 {
-    const char * cmd = GET_CK_STRING(ARGS)->str.c_str();
+    const char * cmd = GET_CK_STRING(ARGS)->str().c_str();
 
     // check globals for permission
-    if( !g_enable_system_cmd )
+// REFACTOR-2017: TODO reenable --caution-to-the-wind?
+/*    if( !g_enable_system_cmd )
     {
-        fprintf( stderr, "[chuck]:error: VM not authorized to call Std.system( string )...\n" );
-        fprintf( stderr, "[chuck]:  (command string was: \"%s\")\n", cmd );
-        fprintf( stderr, "[chuck]:  (note: enable via --caution-to-the-wind flag or other means)\n" );
+        CK_FPRINTF_STDERR( "[chuck]:error: VM not authorized to call Std.system( string )...\n" );
+        CK_FPRINTF_STDERR( "[chuck]:  (command string was: \"%s\")\n", cmd );
+        CK_FPRINTF_STDERR( "[chuck]:  (note: enable via --caution-to-the-wind flag or other means)\n" );
         RETURN->v_int = 0;
     }
     else
+*/
     {
         // log
         EM_log( CK_LOG_SEVERE, "invoking system( CMD )..." );
@@ -685,7 +687,7 @@ CK_DLL_SFUN( atoi_impl )
     Chuck_String * str = GET_CK_STRING(ARGS);
     if( str )
     {
-        const char * v = str->str.c_str();
+        const char * v = str->str().c_str();
         RETURN->v_int = atoi( v );
     }
     else
@@ -700,7 +702,7 @@ CK_DLL_SFUN( atof_impl )
     Chuck_String * str = GET_CK_STRING(ARGS);
     if( str )
     {
-        const char * v = GET_CK_STRING(ARGS)->str.c_str();
+        const char * v = GET_CK_STRING(ARGS)->str().c_str();
         RETURN->v_float = atof( v );
     }
     else
@@ -714,8 +716,8 @@ CK_DLL_SFUN( itoa_impl )
 {
     t_CKINT i = GET_CK_INT(ARGS);
     // TODO: memory leak, please fix.  Thanks.
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
-    a->str = itoa( i );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    a->set( itoa( i ) );
     RETURN->v_string = a;
 }
 
@@ -724,8 +726,8 @@ CK_DLL_SFUN( ftoa_impl )
 {
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
     t_CKINT p = GET_NEXT_INT(ARGS);
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
-    a->str = ftoa( f, (t_CKUINT)p );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    a->set( ftoa( f, (t_CKUINT)p ) );
     RETURN->v_string = a;
 }
 
@@ -740,18 +742,18 @@ CK_DLL_SFUN( ftoi_impl )
 static Chuck_String g_str; // PROBLEM: not thread friendly
 CK_DLL_SFUN( getenv_impl )
 {
-    const char * v = GET_CK_STRING(ARGS)->str.c_str();
+    const char * v = GET_CK_STRING(ARGS)->str().c_str();
     const char * s = getenv( v );
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
-    a->str = s ? s : "";
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    a->set( s ? s : "" );
     RETURN->v_string = a;
 }
 
 // setenv
 CK_DLL_SFUN( setenv_impl )
 {
-    const char * v1 = GET_NEXT_STRING(ARGS)->str.c_str();
-    const char * v2 = GET_NEXT_STRING(ARGS)->str.c_str();
+    const char * v1 = GET_NEXT_STRING(ARGS)->str().c_str();
+    const char * v2 = GET_NEXT_STRING(ARGS)->str().c_str();
     RETURN->v_int = setenv( v1, v2, 1 );
 }
 
@@ -1152,13 +1154,26 @@ protected:
 // global variables
 t_CKBOOL g_le_launched = FALSE;
 t_CKBOOL g_le_wait = TRUE;
-// CHUCK_THREAD g_tid_le = 0;
-extern CHUCK_THREAD g_tid_whatever;
+CHUCK_THREAD g_le_thread = 0;
 map<LineEvent *, LineEvent *> g_le_map;
 XMutex g_le_mutex;
 string g_le_what;
-extern Chuck_VM * g_vm;
 
+// final cleanup (per host)
+void le_cleanup()
+{
+    if( g_le_thread )
+    {
+        // cancel thread
+        pthread_cancel( g_le_thread );
+        g_le_thread = 0;
+        // reset
+        g_le_launched = FALSE;
+        g_le_wait = TRUE;
+    }
+}
+
+// le callback
 void * le_cb( void * p )
 {
     char line[2048];
@@ -1172,8 +1187,10 @@ void * le_cb( void * p )
         while( g_le_wait )
             usleep( 10000 );
 
-        // check
-        if( !g_vm ) break;
+        // REFACTOR-2017: TODO Ge:
+        // I removed the check here for if there are no more vms running
+        // Theoretically, we will always just kill this thread from outside of
+        // it. Does that sound right to you?
 
         // do the prompt
         cout << g_le_what;
@@ -1209,7 +1226,7 @@ LineEvent::LineEvent( Chuck_Event * SELF )
     if( !g_le_launched )
     {
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-        pthread_create( &g_tid_whatever, NULL, le_cb, NULL );
+        pthread_create( &g_le_thread, NULL, le_cb, NULL );
 #else
         g_tid_whatever = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)le_cb, NULL, 0, 0 );
 #endif
@@ -1227,7 +1244,8 @@ LineEvent::LineEvent( Chuck_Event * SELF )
 
 LineEvent::~LineEvent()
 {
-    // do nothing
+    // remove from global map
+    g_le_map.erase( this );
 }
 
 void LineEvent::prompt( const string & what )
@@ -1298,7 +1316,7 @@ CK_DLL_MFUN( Skot_prompt )
 CK_DLL_MFUN( Skot_prompt2 )
 {
     LineEvent * le = (LineEvent *)OBJ_MEMBER_INT(SELF, Skot_offset_data);
-    const char * v = GET_CK_STRING(ARGS)->str.c_str();
+    const char * v = GET_CK_STRING(ARGS)->str().c_str();
     le->prompt( v );
     RETURN->v_int = (t_CKINT)(SELF);
 }
@@ -1313,8 +1331,8 @@ CK_DLL_MFUN( Skot_getLine )
 {
     LineEvent * le = (LineEvent *)OBJ_MEMBER_INT(SELF, Skot_offset_data);
     // TODO: memory leak
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
-    a->str = le->getLine();
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    a->set( le->getLine() );
     RETURN->v_string = a;
 }
 
@@ -1417,7 +1435,7 @@ CK_DLL_MFUN( StrTok_set )
 {
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
     Chuck_String * s = GET_CK_STRING(ARGS);
-    if( s ) tokens->set( s->str );
+    if( s ) tokens->set( s->str() );
     else tokens->set( "" );
 }
 
@@ -1436,8 +1454,8 @@ CK_DLL_MFUN( StrTok_more )
 CK_DLL_MFUN( StrTok_next )
 {
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
-    a->str = tokens->next();
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    a->set( tokens->next() );
     RETURN->v_string = a;
 }
 
@@ -1446,7 +1464,7 @@ CK_DLL_MFUN( StrTok_next2 )
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
     Chuck_String * a = GET_CK_STRING(ARGS);
     string s = tokens->next();
-    if( a ) a->str = s;
+    if( a ) a->set( s );
     RETURN->v_string = a;
 }
 
@@ -1454,9 +1472,9 @@ CK_DLL_MFUN( StrTok_get )
 {
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
     t_CKINT index = GET_NEXT_INT(ARGS);
-    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
     string s = tokens->get( index );
-    a->str = s;
+    a->set( s );
     RETURN->v_string = a;
 }
 
@@ -1466,7 +1484,7 @@ CK_DLL_MFUN( StrTok_get2 )
     t_CKINT index = GET_NEXT_INT(ARGS);
     Chuck_String * a = GET_NEXT_STRING(ARGS);
     string s = tokens->get( index );
-    if( a ) a->str = s;
+    if( a ) a->set( s );
     RETURN->v_string = a;
 }
 
@@ -1538,7 +1556,7 @@ bool ColumnReader::init( const string & filename, long col )
     // hmm
     if( col < 1 )
     {
-        cerr << "column must be greater than 0!!!" << endl;
+        CK_STDCERR << "column must be greater than 0!!!" << CK_STDENDL;
         return false;
     }
 
@@ -1547,7 +1565,7 @@ bool ColumnReader::init( const string & filename, long col )
     // yes
     if( !fin.good() )
     {
-        cerr << "ColumnReader: cannot open file: '" << filename << "'..." << endl;
+        CK_STDCERR << "ColumnReader: cannot open file: '" << filename << "'..." << CK_STDENDL;
         return false;
     }
 
@@ -1557,14 +1575,14 @@ bool ColumnReader::init( const string & filename, long col )
     // read first line
     if( !fin.getline( line, len ) )
     {
-        cerr << "ColumnReader: cannot read first line: '" << filename << "'..." << endl;
+        CK_STDCERR << "ColumnReader: cannot read first line: '" << filename << "'..." << CK_STDENDL;
         return false;
     }
 
     // get the name
     if( !get_str( n ) )
     {
-        cerr << "ColumnReader: cannot seek to column " << col << ": " << filename << "..." << endl;
+        CK_STDCERR << "ColumnReader: cannot seek to column " << col << ": " << filename << "..." << CK_STDENDL;
         return false;
     }
 
@@ -1577,7 +1595,7 @@ bool ColumnReader::init( const string & filename, long col )
         // get value
         if( !get_double( v ) )
         {
-            cerr << "ColumnReader: cannot read column " << v << " on line i: " << n << "..." << endl;
+            CK_STDCERR << "ColumnReader: cannot read column " << v << " on line i: " << n << "..." << CK_STDENDL;
             return false;
         }
 
@@ -1587,7 +1605,7 @@ bool ColumnReader::init( const string & filename, long col )
     // well
     if( values.size() == 0 )
     {
-        cerr << "ColumnReader: file doesn't not contain data after first line: " << n << "..." << endl;
+        CK_STDCERR << "ColumnReader: file doesn't not contain data after first line: " << n << "..." << CK_STDENDL;
         return false;
     }
 
@@ -1603,7 +1621,7 @@ double ColumnReader::curr()
 {
     if( where >= values.size() )
     {
-        cerr << "ColumnReader: trying to read beyond end of file: " << n << "..." << endl;
+        CK_STDCERR << "ColumnReader: trying to read beyond end of file: " << n << "..." << CK_STDENDL;
         return 0.0;
     }
 
@@ -1627,7 +1645,7 @@ bool ColumnReader::get_double( double & out )
         // check
         if( *curr == '\0' )
         {
-            cerr << "ColumnReader: cannot find column " << column << ": " << n << endl;
+            CK_STDCERR << "ColumnReader: cannot find column " << column << ": " << n << CK_STDENDL;
             return false;
         }
 
@@ -1665,7 +1683,7 @@ bool ColumnReader::get_str( string & out )
         // check
         if( *curr == '\0' )
         {
-            cerr << "ColumnReader: cannot find column " << column << ": " << n << endl;
+            CK_STDCERR << "ColumnReader: cannot find column " << column << ": " << n << CK_STDENDL;
             return false;
         }
 

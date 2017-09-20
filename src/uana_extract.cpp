@@ -33,6 +33,7 @@
 #include "uana_extract.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
+#include "chuck_compile.h"
 #include "chuck_instr.h"
 #include "chuck_lang.h"
 #include "chuck_errmsg.h"
@@ -147,7 +148,7 @@ void xcorr_normalize( SAMPLE * buffy, t_CKINT bs, SAMPLE * f, t_CKINT fs, SAMPLE
 //-----------------------------------------------------------------------------
 DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
 {
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->env();
     Chuck_DL_Func * func = NULL;
     
     std::string doc;
@@ -1104,7 +1105,7 @@ struct Corr_Object
         if( fbuf == NULL || gbuf == NULL || buffy == NULL )
         {
             // error
-            fprintf( stderr, "[chuck]: Corr failed to allocate %ld-element buffer(s)...",
+            CK_FPRINTF_STDERR( "[chuck]: Corr failed to allocate %ld-element buffer(s)...",
                 mincap );
             // clean up
             this->reset();

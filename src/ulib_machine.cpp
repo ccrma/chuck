@@ -32,8 +32,8 @@
 #include "ulib_machine.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
+#include "chuck_compile.h"
 #include "chuck_errmsg.h"
-#include "chuck_globals.h"
 #include "chuck_instr.h"
 
 
@@ -46,7 +46,7 @@
 DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 {
     // get global env instance
-    Chuck_Env * env = Chuck_Env::instance();
+    Chuck_Env * env = QUERY->env();
     // set name of this query
     QUERY->setname( QUERY, "Machine" );
 
@@ -116,7 +116,6 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 
 
 
-static Chuck_VM * the_vm = NULL;
 static Chuck_Compiler * the_compiler = NULL;
 static proc_msg_func the_func = NULL;
 //-----------------------------------------------------------------------------
@@ -125,7 +124,6 @@ static proc_msg_func the_func = NULL;
 //-----------------------------------------------------------------------------
 t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func proc_msg )
 {
-    the_vm = g_vm;
     the_compiler = compiler;
     the_func = proc_msg;
 
@@ -150,19 +148,19 @@ t_CKUINT machine_intsize()
 // add
 CK_DLL_SFUN( machine_crash_impl )
 {
-    fprintf( stderr, "[chuck]: crashing...\n" );
+    CK_FPRINTF_STDERR( "[chuck]: crashing...\n" );
     *(volatile int *)0 = 0;
 }
 
 // add
 CK_DLL_SFUN( machine_add_impl )
 {
-    const char * v = GET_CK_STRING(ARGS)->str.c_str();
+    const char * v = GET_CK_STRING(ARGS)->str().c_str();
     Net_Msg msg;
 
     msg.type = MSG_ADD;
     strcpy( msg.buffer, v );
-    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, TRUE, NULL );
+    RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
 }
 
 // remove
@@ -173,20 +171,20 @@ CK_DLL_SFUN( machine_remove_impl )
     
     msg.type = MSG_REMOVE;
     msg.param = v;
-    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, TRUE, NULL );
+    RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
 }
 
 // replace
 CK_DLL_SFUN( machine_replace_impl )
 {
     t_CKINT v = GET_NEXT_INT(ARGS);
-    const char * v2 = GET_NEXT_STRING(ARGS)->str.c_str();
+    const char * v2 = GET_NEXT_STRING(ARGS)->str().c_str();
     Net_Msg msg;
     
     msg.type = MSG_REPLACE;
     msg.param = v;
     strcpy( msg.buffer, v2 );
-    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, TRUE, NULL );
+    RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
 }
 
 // status
@@ -195,7 +193,7 @@ CK_DLL_SFUN( machine_status_impl )
     Net_Msg msg;
     
     msg.type = MSG_STATUS;
-    RETURN->v_int = (int)the_func( the_vm, the_compiler, &msg, TRUE, NULL );
+    RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
 }
 
 // intsize
@@ -207,7 +205,7 @@ CK_DLL_SFUN( machine_intsize_impl )
 CK_DLL_SFUN( machine_shreds_impl )
 {
     Chuck_Array4 *array = new Chuck_Array4(FALSE);
-    initialize_object(array, &t_array);
+    initialize_object(array, SHRED->vm_ref->env()->t_array);
     array->clear();
     
     Chuck_VM_Status status;

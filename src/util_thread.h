@@ -98,6 +98,26 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// name: struct XThreadUtil
+// desc: general thread utility
+//-----------------------------------------------------------------------------
+struct XThreadUtil
+{
+public:
+    // set priority on thread
+    static t_CKBOOL set_priority( CHUCK_THREAD tid, t_CKINT priority );
+    // set priority on current thread
+    static t_CKBOOL set_priority( t_CKINT priority );
+
+public:
+    // not sure what this exactly
+    static t_CKINT our_priority;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct XMutex
 // desc: ...
 //-----------------------------------------------------------------------------

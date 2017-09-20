@@ -2944,7 +2944,7 @@ static int TiltSensor_detect()
         powerbookKernFunc = 21;
 
     // 1.3.1.0: added cast to t_CKINT
-	fprintf( stdout, "osx_version = %ld \n", (t_CKINT)osx_version );
+	CK_FPRINTF_STDOUT( "osx_version = %ld \n", (t_CKINT)osx_version );
     
     // ibook/powerbook (OS X 10.4.x) tilt sensor interface
     if( TiltSensor_test( powerbookKernFunc, "IOI2CMotionSensor", kSMSPowerbookDataType ) )
@@ -3649,7 +3649,7 @@ t_CKINT WiiRemote::connect()
         EM_log( CK_LOG_WARNING, "hid: error: opening Wii Remote Controller L2CAP connection" );
         return -1;
     }
-    //fprintf( stderr, "l2cap control channel ref: 0x%x\n", control_channel );
+    //CK_FPRINTF_STDERR( "l2cap control channel ref: 0x%x\n", control_channel );
     if( IOBluetoothDeviceOpenL2CAPChannelAsync( device, &interrupt_channel, 19, 
                                                 Bluetooth_device_interrupt_event, 
                                                 this ) != kIOReturnSuccess )
@@ -4083,7 +4083,7 @@ void WiiRemote::control_send( const void * data, unsigned int size )
     //for( int i = 0; i < size; i++ )
     //    printf( " %02x", buf[i] );
     //printf( "\n" );
-    //fprintf( stderr, "l2cap control channel ref: 0x%x\n", control_channel );
+    //CK_FPRINTF_STDERR( "l2cap control channel ref: 0x%x\n", control_channel );
     
     IOReturn result;
     result = IOBluetoothL2CAPChannelWriteSync( control_channel, buf, size );
@@ -4820,7 +4820,15 @@ Windows general HID support
 #pragma mark Windows general HID support
 
 #include <windows.h>
+#ifdef _WIN64 // REFACTOR-2017
+#define DIRECTINPUT_VERSION 0x0800
+#else
+#ifdef __USE_DINPUT8LIB__
+#define DIRECTINPUT_VERSION 0x0800
+#else
 #define DIRECTINPUT_VERSION 0x0500
+#endif
+#endif
 #include <dinput.h>
 
 /* for performance, we use device event notifications to tell us when a device 
@@ -4883,7 +4891,7 @@ t_CKINT TiltSensor_setPollRate( t_CKINT usec )
     // sanity
     assert( usec >= 0 );
     // not supported
-    fprintf( stderr, "TiltSensor - setPollRate is not (yet) supported on this platform...\n" );
+    CK_FPRINTF_STDERR( "TiltSensor - setPollRate is not (yet) supported on this platform...\n" );
     return -1;
 }
 
@@ -4891,7 +4899,7 @@ t_CKINT TiltSensor_setPollRate( t_CKINT usec )
 t_CKINT TiltSensor_getPollRate( )
 {
     // not supported
-    fprintf( stderr, "TiltSensor - getPollRate is not (yet) supported on this platform...\n" );
+    CK_FPRINTF_STDERR( "TiltSensor - getPollRate is not (yet) supported on this platform...\n" );
     return -1;
 }
 
@@ -4991,8 +4999,13 @@ void Joystick_init()
 
     if( lpdi == NULL )
     {
+#if DIRECTINPUT_VERSION > 0x0700 // REFACTOR-2017
+        if( DirectInput8Create( hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+                                (LPVOID *) &lpdi, NULL) != DI_OK )
+#else
         if( DirectInputCreate( hInstance, DIRECTINPUT_VERSION, 
                                &lpdi, NULL) != DI_OK )
+#endif
         {
             lpdi = NULL;
             EM_log( CK_LOG_SEVERE, "error: unable to initialize DirectInput, initialization failed" );
@@ -5002,7 +5015,11 @@ void Joystick_init()
     }
 
     joysticks = new vector< win32_joystick * >;
+#if DIRECTINPUT_VERSION <= 0x700 // REFACTOR-2017
     if( lpdi->EnumDevices( DIDEVTYPE_JOYSTICK, DIEnumJoystickProc, 
+#else
+    if( lpdi->EnumDevices( DI8DEVTYPE_JOYSTICK, DIEnumJoystickProc,
+#endif
                            NULL, DIEDFL_ATTACHEDONLY ) != DI_OK )
     {
         delete joysticks;
@@ -5742,8 +5759,13 @@ void Keyboard_init()
 
     if( lpdi == NULL )
     {
-        if( DirectInputCreate( hInstance, DIRECTINPUT_VERSION, 
+#if DIRECTINPUT_VERSION > 0x0700 // REFACTOR-2017
+        if( DirectInput8Create( hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+                                (LPVOID *) &lpdi, NULL) != DI_OK )
+#else
+        if( DirectInputCreate( hInstance, DIRECTINPUT_VERSION,
                                &lpdi, NULL) != DI_OK )
+#endif
         {
             lpdi = NULL;
             EM_log( CK_LOG_SEVERE, "error: unable to initialize DirectInput, initialization failed" );
@@ -5753,7 +5775,11 @@ void Keyboard_init()
     }
 
     keyboards = new vector< win32_keyboard * >;
-    if( lpdi->EnumDevices( DIDEVTYPE_KEYBOARD, DIEnumKeyboardProc, 
+#if DIRECTINPUT_VERSION <= 0x700 // REFACTOR-2017
+    if( lpdi->EnumDevices( DIDEVTYPE_KEYBOARD, DIEnumKeyboardProc,
+#else
+    if( lpdi->EnumDevices( DI8DEVTYPE_KEYBOARD, DIEnumKeyboardProc,
+#endif
                            NULL, DIEDFL_ATTACHEDONLY ) != DI_OK )
     {
         delete keyboards;
@@ -5981,8 +6007,13 @@ void Mouse_init()
 
     if( lpdi == NULL )
     {
+#if DIRECTINPUT_VERSION > 0x0700 // REFACTOR-2017
+        if( DirectInput8Create( hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+                                (LPVOID *) &lpdi, NULL) != DI_OK )
+#else
         if( DirectInputCreate( hInstance, DIRECTINPUT_VERSION, 
                                &lpdi, NULL) != DI_OK )
+#endif
         {
             lpdi = NULL;
             EM_poplog();
@@ -5991,7 +6022,12 @@ void Mouse_init()
     }
 
     mice = new vector< win32_mouse * >;
+
+#if DIRECTINPUT_VERSION <= 0x700 // REFACTOR-2017
     if( lpdi->EnumDevices( DIDEVTYPE_MOUSE, DIEnumMouseProc, 
+#else
+    if( lpdi->EnumDevices( DI8DEVTYPE_MOUSE, DIEnumMouseProc, 
+#endif
                            NULL, DIEDFL_ATTACHEDONLY ) != DI_OK )
     {
         delete mice;
@@ -7141,7 +7177,7 @@ t_CKINT TiltSensor_setPollRate( t_CKINT usec )
     // sanity
     assert( usec >= 0 );
     // not supported
-    fprintf( stderr, "TiltSensor - setPollRate is not (yet) supported on this platform...\n" );
+    CK_FPRINTF_STDERR( "TiltSensor - setPollRate is not (yet) supported on this platform...\n" );
     return -1;
 }
 
@@ -7149,7 +7185,7 @@ t_CKINT TiltSensor_setPollRate( t_CKINT usec )
 t_CKINT TiltSensor_getPollRate( )
 {
     // not supported
-    fprintf( stderr, "TiltSensor - getPollRate is not (yet) supported on this platform...\n" );
+    CK_FPRINTF_STDERR( "TiltSensor - getPollRate is not (yet) supported on this platform...\n" );
     return -1;
 }
 

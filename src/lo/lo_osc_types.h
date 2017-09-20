@@ -22,6 +22,10 @@
  * constants.
  */
 
+#ifdef ULIB_OPSC_CPP
+#include <cstdint>
+#endif
+
 #ifdef _MSC_VER
 #define int32_t __int32
 #define int64_t __int64

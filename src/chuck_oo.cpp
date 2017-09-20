@@ -62,8 +62,6 @@ const t_CKINT Chuck_IO_File::FLAG_WRITEONLY = 0x20;
 const t_CKINT Chuck_IO_File::FLAG_APPEND = 0x40;
 const t_CKINT Chuck_IO_File::TYPE_ASCII = 0x80;
 const t_CKINT Chuck_IO_File::TYPE_BINARY = 0x100;
-Chuck_IO_Chout * Chuck_IO_Chout::our_chout = NULL;
-Chuck_IO_Cherr * Chuck_IO_Cherr::our_cherr = NULL;
 
 
 
@@ -106,7 +104,7 @@ void Chuck_VM_Object::add_ref()
     }
 
     // added 1.3.0.0
-    CK_MEMMGMT_TRACK(fprintf(stderr, "Chuck_VM_Object::add_ref() : 0x%08x, %s, %lu\n", this, typeid(*this).name(), m_ref_count));
+    CK_MEMMGMT_TRACK(CK_FPRINTF_STDERR( "Chuck_VM_Object::add_ref() : 0x%08x, %s, %lu\n", this, typeid(*this).name(), m_ref_count));
     // string n = typeid(*this).name();
     // cerr << "ADDREF: " << dec << n << " " << m_ref_count << " 0x" << hex << (int)this << endl;
 }
@@ -126,7 +124,7 @@ void Chuck_VM_Object::release()
     m_ref_count--;
     
     // added 1.3.0.0
-    CK_MEMMGMT_TRACK(fprintf(stderr, "Chuck_VM_Object::release() : 0x%08x, %s, %ulu\n", this, typeid(*this).name(), m_ref_count));
+    CK_MEMMGMT_TRACK(CK_FPRINTF_STDERR( "Chuck_VM_Object::release() : 0x%08x, %s, %ulu\n", this, typeid(*this).name(), m_ref_count));
     // string n = typeid(*this).name();
     // cerr << "RELEASE: " << dec << n << " " << m_ref_count << " 0x" << hex << (int)this << endl;
 
@@ -1969,19 +1967,29 @@ void Chuck_Event::signal()
     m_queue_lock.acquire();
     if( !m_queue.empty() )
     {
+        // get the shred on top of the queue
         Chuck_VM_Shred * shred = m_queue.front();
+        // pop the top
         m_queue.pop();
+        // release it!
         m_queue_lock.release();
+        // REFACTOR-2017: BUG-FIX
+        // release the extra ref we added when we started waiting for this event
+        SAFE_RELEASE( shred->event );
+        // get shreduler
         Chuck_VM_Shreduler * shreduler = shred->vm_ref->shreduler();
-        shred->event = NULL;
+        // remove the blocked shred from the list
         shreduler->remove_blocked( shred );
+        // shredule the signaled shred
         shreduler->shredule( shred );
         // push the current time
         t_CKTIME *& sp = (t_CKTIME *&)shred->reg->sp;
         push_( sp, shreduler->now_system );
     }
     else
+    {
         m_queue_lock.release();
+    }
 }
 
 
@@ -1989,26 +1997,46 @@ void Chuck_Event::signal()
 
 //-----------------------------------------------------------------------------
 // name: remove()
-// desc: remove a shred from the event queue.
+// desc: remove a shred from the event queue
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Event::remove( Chuck_VM_Shred * shred )
 {
     queue<Chuck_VM_Shred *> temp;
     t_CKBOOL removed = FALSE;
+
+    // lock
     m_queue_lock.acquire();
+    // while something in queue
     while( !m_queue.empty() )
     {
+        // check if the shred we are looking for
         if( m_queue.front() != shred )
+        {
+            // if not, enqueue it into temp
             temp.push( m_queue.front() );
-        else {
+        }
+        else
+        {
+            // TARPIT: this might seem like the right place for
+            // SAFE_RELEASE(shred->event), however this might cause
+            // the deletion of the object while we are still using it.
+            // so, put it in the caller: Chuck_VM_Shreduler::remove_blocked()
+
+            // zero out
             shred->event = NULL;
+            // flag
             removed = TRUE;
         }
+
+        // pop the top
         m_queue.pop();
     }
 
+    // copy temp back to queue
     m_queue = temp;
+    // release lock
     m_queue_lock.release();
+
     return removed;
 }
 
@@ -2017,8 +2045,8 @@ t_CKBOOL Chuck_Event::remove( Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: queue_broadcast()
-// desc: queue the event to broadcast a event/condition variable, by the owner
-//       of the queue
+// desc: queue the event to broadcast a event/condition variable,
+//       by the owner of the queue
 //       added 1.3.0.0: event_buffer to fix big-ass bug
 //-----------------------------------------------------------------------------
 void Chuck_Event::queue_broadcast( CBufferSimple * event_buffer )
@@ -2027,7 +2055,9 @@ void Chuck_Event::queue_broadcast( CBufferSimple * event_buffer )
     m_queue_lock.acquire();
     if( !m_queue.empty() )
     {
+        // get shred (only to get the VM ref)
         Chuck_VM_Shred * shred = m_queue.front();
+        // release lock
         m_queue_lock.release();
         // queue the event on the vm (added 1.3.0.0: event_buffer)
         shred->vm_ref->queue_event( this, 1, event_buffer );
@@ -2047,13 +2077,19 @@ void Chuck_Event::queue_broadcast( CBufferSimple * event_buffer )
 //-----------------------------------------------------------------------------
 void Chuck_Event::broadcast()
 {
+    // lock queue
     m_queue_lock.acquire();
+    // while not empty
     while( !m_queue.empty() )
     {
+        // release first
         m_queue_lock.release();
+        // signal the next shred
         this->signal();
+        // lock again
         m_queue_lock.acquire();
     }
+    // release
     m_queue_lock.release();
 }
 
@@ -2093,6 +2129,11 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
         // add event to shred
         assert( shred->event == NULL );
         shred->event = this;
+        // the shred might need the event pointer after it's been released by the
+        // vm instruction Chuck_Instr_Release_Object2, in order to tell the event
+        // to forget the shred. So, add another reference so it won't be freed
+        // until the shred is done with it.  REFACTOR-2017
+        SAFE_ADD_REF( shred->event );
 
         // add shred to shreduler
         vm->shreduler()->add_blocked( shred );
@@ -2132,8 +2173,9 @@ Chuck_IO::~Chuck_IO()
 // name: Chuck_IO_File()
 // desc: constructor
 //-----------------------------------------------------------------------------
-Chuck_IO_File::Chuck_IO_File()
+Chuck_IO_File::Chuck_IO_File( Chuck_VM * vm )
 {
+    m_vmRef = vm;
     // zero things out
     m_flags = 0;
     m_iomode = MODE_SYNC;
@@ -2141,7 +2183,7 @@ Chuck_IO_File::Chuck_IO_File()
     m_dir = NULL;
     m_dir_start = 0;
     m_asyncEvent = new Chuck_Event;
-    initialize_object( m_asyncEvent, &t_event );
+    initialize_object( m_asyncEvent, vm->env()->t_event );
     m_thread = new XThread;
 }
 
@@ -2522,7 +2564,7 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     {
         EM_error3( "[chuck](via FileIO): cannot get list: no directory open" );
         Chuck_Array4 *ret = new Chuck_Array4( TRUE, 0 );
-        initialize_object( ret, &t_array );
+        initialize_object( ret, m_vmRef->env()->t_array );
         return ret;
     }
     
@@ -2532,16 +2574,19 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     struct dirent *ent;
     while( (ent = readdir( m_dir )) ) // fixed 1.3.0.0: removed warning
     {
-        Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( &t_string, NULL );
-        s->str = std::string( ent->d_name );
-        if ( s->str != ".." && s->str != "." )
+        // pass NULL as shred ref
+        Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( m_vmRef->env()->t_string, NULL, m_vmRef );
+        s->set( std::string( ent->d_name ) );
+        if ( s->str() != ".." && s->str() != "." )
+        {
             // don't include .. and . in the list
             entrylist.push_back( s );
+        }
     }
     
     // make array
     Chuck_Array4 *array = new Chuck_Array4( true, entrylist.size() );
-    initialize_object( array, &t_array );
+    initialize_object( array, m_vmRef->env()->t_array );
     for ( int i = 0; i < entrylist.size(); i++ )
         array->set( i, (t_CKUINT) entrylist[i] );
     return array;
@@ -3056,34 +3101,50 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
     return (THREAD_RETURN)0;
 }
 
-Chuck_IO_Chout::Chuck_IO_Chout() { }
-Chuck_IO_Chout::~Chuck_IO_Chout() { }
-Chuck_IO_Chout * Chuck_IO_Chout::getInstance()
-{
-    // check
-    if( !our_chout )
-    {
-        // allocate
-        our_chout = new Chuck_IO_Chout;
-        // ref count
-        our_chout->add_ref();
-        // initialize object (added 1.3.0.0)
-        initialize_object( our_chout, &t_chout );
-        // lock so it can't be deleted
-        our_chout->lock();
-    }
+Chuck_IO_Chout::Chuck_IO_Chout( Chuck_Carrier * carrier ) {
+    // store
+    carrier->chout = this;
+    // add ref
+    this->add_ref();
+    // initialize (added 1.3.0.0)
+    initialize_object( this, carrier->env->t_chout );
+    // lock so can't be deleted conventionally
+    this->lock();
+}
 
-    return our_chout;
+Chuck_IO_Chout::~Chuck_IO_Chout() {
+    m_callback = NULL;
+}
+
+void Chuck_IO_Chout::set_output_callback( void (*fp)(const char *) )
+{
+    m_callback = fp;
 }
 
 t_CKBOOL Chuck_IO_Chout::good()
-{ return cout.good(); }
+{
+    return m_callback != NULL || cout.good();
+}
 
 void Chuck_IO_Chout::close()
 { /* uh can't do it */ }
 
 void Chuck_IO_Chout::flush()
-{ cout.flush(); }
+{
+    if( m_callback )
+    {
+        // send to callback
+        m_callback( m_buffer.str().c_str() );
+    }
+    else
+    {
+        // print to cout
+        cout << m_buffer.str().c_str();
+        cout.flush();
+    }
+    // clear buffer
+    m_buffer.str( std::string() );
+}
 
 t_CKINT Chuck_IO_Chout::mode()
 { return 0; }
@@ -3111,46 +3172,71 @@ t_CKBOOL Chuck_IO_Chout::eof()
 
 void Chuck_IO_Chout::write( const std::string & val )
 // added 1.3.0.0: the flush
-{ cout << val; if( val == "\n" ) cout.flush(); }
+{
+    m_buffer << val;
+    if( val == "\n" ) flush();
+}
 
 void Chuck_IO_Chout::write( t_CKINT val )
-{ cout << val; }
+{
+    m_buffer << val;
+}
 
 void Chuck_IO_Chout::write( t_CKINT val, t_CKINT flags )
-{ cout << val; }
+{
+    m_buffer << val;
+}
 
 void Chuck_IO_Chout::write( t_CKFLOAT val )
-{ cout << val; }
-
-
-Chuck_IO_Cherr::Chuck_IO_Cherr() { }
-Chuck_IO_Cherr::~Chuck_IO_Cherr() { }
-Chuck_IO_Cherr * Chuck_IO_Cherr::getInstance()
 {
-    // check pointe
-    if( !our_cherr )
-    {
-        // allocate
-        our_cherr = new Chuck_IO_Cherr;
-        // add rev
-        our_cherr->add_ref();
-        // initialize (added 1.3.0.0)
-        initialize_object( our_cherr, &t_cherr );
-        // lock so can't be deleted conventionally
-        our_cherr->lock();
-    }
+    m_buffer << val;
+}
 
-    return our_cherr;
+
+Chuck_IO_Cherr::Chuck_IO_Cherr( Chuck_Carrier * carrier ) {
+    // store
+    carrier->cherr = this;
+    // add ref
+    this->add_ref();
+    // initialize (added 1.3.0.0)
+    initialize_object( this, carrier->env->t_cherr );
+    // lock so can't be deleted conventionally
+    this->lock();
+}
+
+Chuck_IO_Cherr::~Chuck_IO_Cherr() {
+    m_callback = NULL;
+}
+
+void Chuck_IO_Cherr::set_output_callback( void (*fp)(const char *) )
+{
+    m_callback = fp;
 }
 
 t_CKBOOL Chuck_IO_Cherr::good()
-{ return cerr.good(); }
+{
+    return m_callback != NULL || cerr.good();
+}
 
 void Chuck_IO_Cherr::close()
 { /* uh can't do it */ }
 
 void Chuck_IO_Cherr::flush()
-{ cerr.flush(); }
+{
+    if( m_callback )
+    {
+        // send to callback
+        m_callback( m_buffer.str().c_str() );
+    }
+    else
+    {
+        // send to cerr
+        cerr << m_buffer.str().c_str();
+        cerr.flush();
+    }
+    // clear buffer
+    m_buffer.str( std::string() );
+}
 
 t_CKINT Chuck_IO_Cherr::mode()
 { return 0; }
@@ -3177,14 +3263,23 @@ t_CKBOOL Chuck_IO_Cherr::eof()
 { return TRUE; }
 
 void Chuck_IO_Cherr::write( const std::string & val )
-{ cerr << val; }
+{
+    m_buffer << val;
+    if( val == "\n" ) flush();
+}
 
 void Chuck_IO_Cherr::write( t_CKINT val )
-{ cerr << val; }
+{
+    m_buffer << val;
+}
 
 void Chuck_IO_Cherr::write( t_CKINT val, t_CKINT flags )
-{ cout << val; }
+{
+    m_buffer << val;
+}
 
 void Chuck_IO_Cherr::write( t_CKFLOAT val )
-{ cerr << val; }
+{
+    m_buffer << val;
+}
 

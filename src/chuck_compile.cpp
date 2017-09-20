@@ -65,7 +65,7 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
                                 const char * extension, 
                                 std::list<std::string> & chugin_search_paths,
                                 std::list<std::string> & named_dls);
-t_CKBOOL load_module( Chuck_Env * env, f_ck_query query, const char * name, const char * nspc );
+t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query query, const char * name, const char * nspc );
 
 
 
@@ -76,9 +76,11 @@ t_CKBOOL load_module( Chuck_Env * env, f_ck_query query, const char * name, cons
 //-----------------------------------------------------------------------------
 Chuck_Compiler::Chuck_Compiler()
 {
-    env = NULL;
     emitter = NULL;
     code = NULL;
+    
+    // REFACTOR-2017: add carrier
+    m_carrier = NULL;
 }
 
 
@@ -101,8 +103,7 @@ Chuck_Compiler::~Chuck_Compiler()
 // name: initialize()
 // desc: initialize the compiler
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm, 
-                                     std::list<std::string> & chugin_search_paths,
+t_CKBOOL Chuck_Compiler::initialize( std::list<std::string> & chugin_search_paths,
                                      std::list<std::string> & named_dls )
 {
     // log
@@ -111,7 +112,7 @@ t_CKBOOL Chuck_Compiler::initialize( Chuck_VM * vm,
     EM_pushlog();
 
     // allocate the type checker
-    env = type_engine_init( vm );
+    Chuck_Env * env = type_engine_init( m_carrier );
     // add reference
     env->add_ref();
     
@@ -160,9 +161,9 @@ void Chuck_Compiler::shutdown()
     EM_pushlog();
 
     // TODO: free
-    type_engine_shutdown( env );
+    type_engine_shutdown( env() );
+    // TODO: check if emitter gets cleaned up
     // emit_engine_shutdown( emitter );
-    env = NULL;
     emitter = NULL;
     code = NULL;
     m_auto_depend = FALSE;
@@ -198,7 +199,7 @@ t_CKBOOL Chuck_Compiler::bind( f_ck_query query_func, const std::string & name,
     EM_pushlog();
     
     // get env
-    Chuck_Env * env = this->env;
+    Chuck_Env * env = this->env();
     // make context
     Chuck_Context * context = type_engine_make_context(
         NULL, string("@[bind:") + name + string("]") );
@@ -208,7 +209,7 @@ t_CKBOOL Chuck_Compiler::bind( f_ck_query query_func, const std::string & name,
     type_engine_load_context( env, context );
     
     // do it
-    if( !load_module( env, query_func, name.c_str(), nspc.c_str() ) ) goto error;
+    if( !load_module( this, env, query_func, name.c_str(), nspc.c_str() ) ) goto error;
 
     // clear context
     type_engine_unload_context( env );
@@ -282,10 +283,10 @@ t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * st
         if( !context ) return FALSE;
 
         // reset the env
-        env->reset();
+        env()->reset();
 
         // load the context
-        if( !type_engine_load_context( env, context ) )
+        if( !type_engine_load_context( env(), context ) )
             return FALSE;
 
         // do entire file
@@ -303,12 +304,12 @@ t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * st
 cleanup:
 
         // commit
-        if( ret ) env->global()->commit();
+        if( ret ) env()->global()->commit();
         // or rollback
-        else env->global()->rollback();
+        else env()->global()->rollback();
 
         // unload the context from the type-checker
-        if( !type_engine_unload_context( env ) )
+        if( !type_engine_unload_context( env() ) )
         {
             EM_error2( 0, "internal error unloading context...\n" );
             return FALSE;
@@ -350,19 +351,19 @@ t_CKBOOL Chuck_Compiler::resolve( const string & type )
 t_CKBOOL Chuck_Compiler::do_entire_file( Chuck_Context * context )
 {
     // 0th-scan (pass 0)
-    if( !type_engine_scan0_prog( env, g_program, te_do_all ) )
+    if( !type_engine_scan0_prog( env(), g_program, te_do_all ) )
          return FALSE;
 
     // 1st-scan (pass 1)
-    if( !type_engine_scan1_prog( env, g_program, te_do_all ) )
+    if( !type_engine_scan1_prog( env(), g_program, te_do_all ) )
         return FALSE;
 
     // 2nd-scan (pass 2)
-    if( !type_engine_scan2_prog( env, g_program, te_do_all ) )
+    if( !type_engine_scan2_prog( env(), g_program, te_do_all ) )
         return FALSE;
 
     // check the program (pass 3)
-    if( !type_engine_check_context( env, context, te_do_all ) )
+    if( !type_engine_check_context( env(), context, te_do_all ) )
         return FALSE;
 
     // emit (pass 4)
@@ -385,19 +386,19 @@ t_CKBOOL Chuck_Compiler::do_entire_file( Chuck_Context * context )
 t_CKBOOL Chuck_Compiler::do_only_classes( Chuck_Context * context )
 {
     // 0th-scan (pass 0)
-    if( !type_engine_scan0_prog( env, g_program, te_do_classes_only ) )
+    if( !type_engine_scan0_prog( env(), g_program, te_do_classes_only ) )
         return FALSE;
 
     // 1st-scan (pass 1)
-    if( !type_engine_scan1_prog( env, g_program, te_do_classes_only ) )
+    if( !type_engine_scan1_prog( env(), g_program, te_do_classes_only ) )
         return FALSE;
 
     // 2nd-scan (pass 2)
-    if( !type_engine_scan2_prog( env, g_program, te_do_classes_only ) )
+    if( !type_engine_scan2_prog( env(), g_program, te_do_classes_only ) )
         return FALSE;
 
     // check the program (pass 3)
-    if( !type_engine_check_context( env, context, te_do_classes_only ) )
+    if( !type_engine_check_context( env(), context, te_do_classes_only ) )
         return FALSE;
 
     // emit (pass 4)
@@ -422,15 +423,15 @@ t_CKBOOL Chuck_Compiler::do_all_except_classes( Chuck_Context * context )
     // 0th scan only deals with classes, so is not needed
 
     // 1st-scan (pass 1)
-    if( !type_engine_scan1_prog( env, g_program, te_do_no_classes ) )
+    if( !type_engine_scan1_prog( env(), g_program, te_do_no_classes ) )
         return FALSE;
 
     // 2nd-scan (pass 2)
-    if( !type_engine_scan2_prog( env, g_program, te_do_no_classes ) )
+    if( !type_engine_scan2_prog( env(), g_program, te_do_no_classes ) )
         return FALSE;
 
     // check the program (pass 3)
-    if( !type_engine_check_context( env, context, te_do_no_classes ) )
+    if( !type_engine_check_context( env(), context, te_do_no_classes ) )
         return FALSE;
 
     // emit (pass 4)
@@ -467,26 +468,26 @@ t_CKBOOL Chuck_Compiler::do_normal( const string & filename, FILE * fd, const ch
     context->full_path = full_path;
 
     // reset the env
-    env->reset();
+    env()->reset();
 
     // load the context
-    if( !type_engine_load_context( env, context ) )
+    if( !type_engine_load_context( env(), context ) )
         return FALSE;
 
     // 0th-scan (pass 0)
-    if( !type_engine_scan0_prog( env, g_program, te_do_all ) )
+    if( !type_engine_scan0_prog( env(), g_program, te_do_all ) )
     { ret = FALSE; goto cleanup; }
 
     // 1st-scan (pass 1)
-    if( !type_engine_scan1_prog( env, g_program, te_do_all ) )
+    if( !type_engine_scan1_prog( env(), g_program, te_do_all ) )
     { ret = FALSE; goto cleanup; }
 
     // 2nd-scan (pass 2)
-    if( !type_engine_scan2_prog( env, g_program, te_do_all ) )
+    if( !type_engine_scan2_prog( env(), g_program, te_do_all ) )
     { ret = FALSE; goto cleanup; }
 
     // check the program (pass 3)
-    if( !type_engine_check_context( env, context, te_do_all ) )
+    if( !type_engine_check_context( env(), context, te_do_all ) )
     { ret = FALSE; goto cleanup; }
 
     // emit (pass 4)
@@ -496,12 +497,12 @@ t_CKBOOL Chuck_Compiler::do_normal( const string & filename, FILE * fd, const ch
 cleanup:
 
     // commit
-    if( ret ) env->global()->commit();
+    if( ret ) env()->global()->commit();
     // or rollback
-    else env->global()->rollback();
+    else env()->global()->rollback();
 
     // unload the context from the type-checker
-    if( !type_engine_unload_context( env ) )
+    if( !type_engine_unload_context( env() ) )
     {
         EM_error2( 0, "internal error unloading context...\n" );
         return FALSE;
@@ -566,23 +567,23 @@ Chuck_VM_Code * Chuck_Compiler::output()
 // name: load_module()
 // desc: load a dll and add it
 //-----------------------------------------------------------------------------
-t_CKBOOL load_module( Chuck_Env * env, f_ck_query query, 
+t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query query,
                       const char * name, const char * nspc )
 {
     Chuck_DLL * dll = NULL;
     t_CKBOOL query_failed = FALSE;
     
     // load osc
-    dll = new Chuck_DLL( name );
+    dll = new Chuck_DLL( compiler->carrier(), name );
     // (fixed: 1.3.0.0) query_failed now catches either failure of load or query
     if( (query_failed = !(dll->load( query ) && dll->query())) ||
         !type_engine_add_dll( env, dll, nspc ) )
     {
-        fprintf( stderr, 
+        CK_FPRINTF_STDERR( 
                  "[chuck]: internal error loading module '%s.%s'...\n", 
                  nspc, name );
         if( query_failed )
-            fprintf( stderr, "       %s", dll->last_error() );
+            CK_FPRINTF_STDERR( "       %s", dll->last_error() );
 
         return FALSE;
     }
@@ -605,7 +606,7 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     EM_pushlog();
     
     // get env
-    Chuck_Env * env = compiler->env;
+    Chuck_Env * env = compiler->env();
     // make context
     Chuck_Context * context = type_engine_make_context( NULL, "@[internal]" );
     // reset env - not needed since we just created the env
@@ -620,35 +621,35 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
 
     // load
     EM_log( CK_LOG_SEVERE, "module osc..." );
-    load_module( env, osc_query, "osc", "global" );
+    load_module( compiler, env, osc_query, "osc", "global" );
     EM_log( CK_LOG_SEVERE, "module xxx..." );
-    load_module( env, xxx_query, "xxx", "global" );
+    load_module( compiler, env, xxx_query, "xxx", "global" );
     EM_log( CK_LOG_SEVERE, "module filter..." );
-    load_module( env, filter_query, "filter", "global" );
+    load_module( compiler, env, filter_query, "filter", "global" );
     EM_log( CK_LOG_SEVERE, "module STK..." );
-    load_module( env, stk_query, "stk", "global" );
+    load_module( compiler, env, stk_query, "stk", "global" );
     EM_log( CK_LOG_SEVERE, "module xform..." );
-    load_module( env, xform_query, "xform", "global" );
+    load_module( compiler, env, xform_query, "xform", "global" );
     EM_log( CK_LOG_SEVERE, "module extract..." );
-    load_module( env, extract_query, "extract", "global" );
+    load_module( compiler, env, extract_query, "extract", "global" );
     
     // load
     EM_log( CK_LOG_SEVERE, "class 'machine'..." );
-    if( !load_module( env, machine_query, "Machine", "global" ) ) goto error;
+    if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
     machine_init( compiler, otf_process_msg );
     EM_log( CK_LOG_SEVERE, "class 'std'..." );
-    if( !load_module( env, libstd_query, "Std", "global" ) ) goto error;
+    if( !load_module( compiler, env, libstd_query, "Std", "global" ) ) goto error;
     EM_log( CK_LOG_SEVERE, "class 'math'..." );
-    if( !load_module( env, libmath_query, "Math", "global" ) ) goto error;
+    if( !load_module( compiler, env, libmath_query, "Math", "global" ) ) goto error;
 
 // ge: these currently don't compile on "modern" windows versions (1.3.5.3)
 #ifndef __WINDOWS_MODERN__
     EM_log( CK_LOG_SEVERE, "class 'opsc'..." );
-    if( !load_module( env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
+    if( !load_module( compiler, env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
 #endif
     EM_log( CK_LOG_SEVERE, "class 'RegEx'..." );
-    if( !load_module( env, regex_query, "RegEx", "global" ) ) goto error;
-    // if( !load_module( env, net_query, "net", "global" ) ) goto error;
+    if( !load_module( compiler, env, regex_query, "RegEx", "global" ) ) goto error;
+    // if( !load_module( compiler, env, net_query, "net", "global" ) ) goto error;
     
     if( !init_class_HID( env ) ) goto error;
     if( !init_class_serialio( env ) ) goto error;
@@ -688,11 +689,11 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
                                        const char * name,
                                        const char * dl_path )
 {
-    Chuck_Env * env = compiler->env;
+    Chuck_Env * env = compiler->env();
     
     EM_log(CK_LOG_SEVERE, "loading chugin '%s'", name);
     
-    Chuck_DLL * dll = new Chuck_DLL(name);
+    Chuck_DLL * dll = new Chuck_DLL( compiler->carrier(), name );
     t_CKBOOL query_failed = FALSE;
     
     if((query_failed = !(dll->load(dl_path) && dll->query())) ||
@@ -842,7 +843,7 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
     EM_pushlog();
     
     // get env
-    Chuck_Env * env = compiler->env;
+    Chuck_Env * env = compiler->env();
     // make context
     Chuck_Context * context = type_engine_make_context( NULL, "@[external]" );
     // reset env - not needed since we just created the env

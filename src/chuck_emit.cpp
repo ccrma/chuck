@@ -35,6 +35,7 @@
 #include "chuck_errmsg.h"
 #include "chuck_instr.h"
 #include <sstream>
+#include <iostream>
 
 using namespace std;
 
@@ -387,7 +388,7 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                         // (added 1.3.1.0 -- multiply by type size; #64-bit)
                         // (fixed 1.3.1.2 -- uh... decl should also be int-sized, so changed to INT/WORD)
                         emit->append( new Chuck_Instr_Reg_Pop_Word4( exp->decl.num_var_decls * sz_INT / sz_WORD ) );
-                    else if( exp->type->size == sz_INT && iskindofint(exp->type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
+                    else if( exp->type->size == sz_INT && iskindofint(emit->env, exp->type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
                         emit->append( new Chuck_Instr_Reg_Pop_Word );
                     else if( exp->type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
                         emit->append( new Chuck_Instr_Reg_Pop_Word2 );
@@ -518,7 +519,7 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
         
     default:
         // check for IO
-        if( isa( stmt->cond->type, &t_io ) )
+        if( isa( stmt->cond->type, emit->env->t_io ) )
         {
             // push 0
             emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
@@ -627,7 +628,7 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
         
         default:
             // check for IO
-            if( isa( stmt->c2->stmt_exp->type, &t_io ) )
+            if( isa( stmt->c2->stmt_exp->type, emit->env->t_io ) )
             {
                 // push 0
                 emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
@@ -770,7 +771,7 @@ t_CKBOOL emit_engine_emit_while( Chuck_Emitter * emit, a_Stmt_While stmt )
         
     default:
         // check for IO
-        if( isa( stmt->cond->type, &t_io ) )
+        if( isa( stmt->cond->type, emit->env->t_io ) )
         {
             // push 0
             emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
@@ -883,7 +884,7 @@ t_CKBOOL emit_engine_emit_do_while( Chuck_Emitter * emit, a_Stmt_While stmt )
         
     default:
         // check for IO
-        if( isa( stmt->cond->type, &t_io ) )
+        if( isa( stmt->cond->type, emit->env->t_io ) )
         {
             // push 0
             emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
@@ -972,7 +973,7 @@ t_CKBOOL emit_engine_emit_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
         
     default:
         // check for IO
-        if( isa( stmt->cond->type, &t_io ) )
+        if( isa( stmt->cond->type, emit->env->t_io ) )
         {
             // push 0
             emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
@@ -1388,7 +1389,7 @@ t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRe
         
         // check if we need to handle ref (added 1.3.0.0)
         // (NOTE: cast shouldn't matter since pointer width should remain constant)
-        if( doAddRef && isobj( exp->type ) )
+        if( doAddRef && isobj( emit->env, exp->type ) )
         {
             // add ref in place on the stack
             emit->append( new Chuck_Instr_Reg_AddRef_Object3() );
@@ -1482,7 +1483,7 @@ t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary 
     // whether to track object references on stack (added 1.3.0.2)
     t_CKBOOL doRef = FALSE;
     // check to see if this is a function call (added 1.3.0.2)
-    if( isa( binary->rhs->type, &t_function ) )
+    if( isa( binary->rhs->type, emit->env->t_function ) )
     {
         // take care of objects in terms of reference counting
         doRef = TRUE;
@@ -1533,22 +1534,22 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             emit->append( instr = new Chuck_Instr_Add_double );
         }
         // string + string
-        else if( isa( t_left, &t_string ) && isa( t_right, &t_string ) )
+        else if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
         {
             // concatenate
             emit->append( instr = new Chuck_Instr_Add_string );
             instr->set_linepos( lhs->linepos );
         }
         // left: string
-        else if( isa( t_left, &t_string ) )
+        else if( isa( t_left, emit->env->t_string ) )
         {
             // + int
-            if( isa( t_right, &t_int ) )
+            if( isa( t_right, emit->env->t_int ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_string_int );
                 instr->set_linepos( lhs->linepos );
             }
-            else if( isa( t_right, &t_float ) )
+            else if( isa( t_right, emit->env->t_float ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_string_float );
                 instr->set_linepos( lhs->linepos );
@@ -1562,15 +1563,15 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             }
         }
         // right: string
-        else if( isa( t_right, &t_string ) )
+        else if( isa( t_right, emit->env->t_string ) )
         {
             // + int
-            if( isa( t_left, &t_int ) )
+            if( isa( t_left, emit->env->t_int ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_int_string );
                 instr->set_linepos( rhs->linepos );
             }
-            else if( isa( t_left, &t_float ) )
+            else if( isa( t_left, emit->env->t_float ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_float_string );
                 instr->set_linepos( rhs->linepos );
@@ -1630,23 +1631,23 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             emit->append( instr = new Chuck_Instr_Add_double_Assign );
         }
         // string + string
-        else if( isa( t_left, &t_string ) && isa( t_right, &t_string ) )
+        else if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
         {
             // concatenate
             emit->append( instr = new Chuck_Instr_Add_string_Assign );
             instr->set_linepos( lhs->linepos );
         }
         // right: string
-        else if( isa( t_right, &t_string ) )
+        else if( isa( t_right, emit->env->t_string ) )
         {
             // + int
-            if( isa( t_left, &t_int ) )
+            if( isa( t_left, emit->env->t_int ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_int_string_Assign );
                 // null exceptions will occur from string: use rhs, not lhs
                 instr->set_linepos( rhs->linepos );
             }
-            else if( isa( t_left, &t_float ) )
+            else if( isa( t_left, emit->env->t_float ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_float_string_Assign );
                 instr->set_linepos( rhs->linepos );
@@ -1959,7 +1960,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
 
         case te_array:
             // check size (1.3.1.0: changed to getkindof)
-            emit->append( instr = new Chuck_Instr_Array_Append( getkindof( t_left->array_type ) ) );
+            emit->append( instr = new Chuck_Instr_Array_Append( getkindof( emit->env, t_left->array_type ) ) );
             instr->set_linepos( lhs->linepos );
             break;
 
@@ -2153,13 +2154,13 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
 
     // -------------------------------- bool -----------------------------------        
     case ae_op_eq:
-        if( isa( t_left, &t_string ) && isa( t_right, &t_string ) 
-            && !isa( t_left, &t_null ) && !isa( t_right, &t_null ) ) // !null
+        if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string )
+            && !isa( t_left, emit->env->t_null ) && !isa( t_right, emit->env->t_null ) ) // !null
         {
             emit->append( instr = new Chuck_Instr_Op_string( op ) );
             instr->set_linepos( lhs->linepos );
         }
-        else if( isa( t_left, &t_object ) && isa( t_right, &t_object ) )
+        else if( isa( t_left, emit->env->t_object ) && isa( t_right, emit->env->t_object ) )
             emit->append( instr = new Chuck_Instr_Eq_int );
         else
         {
@@ -2190,14 +2191,14 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         break;
     
     case ae_op_neq:
-        if( isa( t_left, &t_string ) && isa( t_right, &t_string )
-            && !isa( t_left, &t_null ) && !isa( t_right, &t_null ) ) // !null
+        if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string )
+            && !isa( t_left, emit->env->t_null ) && !isa( t_right, emit->env->t_null ) ) // !null
             // added 1.3.2.0 (spencer)
         {
             emit->append( instr = new Chuck_Instr_Op_string( op ) );
             instr->set_linepos( lhs->linepos );
         }
-        else if( isa( t_left, &t_object ) && isa( t_right, &t_object ) )
+        else if( isa( t_left, emit->env->t_object ) && isa( t_right, emit->env->t_object ) )
             emit->append( instr = new Chuck_Instr_Neq_int );
         else
         {
@@ -2240,7 +2241,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         default:
-            if( isa( t_left, &t_string ) && isa( t_right, &t_string ) )
+            if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
             {
                 emit->append( instr = new Chuck_Instr_Op_string( op ) );
                 instr->set_linepos( lhs->linepos );
@@ -2262,25 +2263,25 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         default:
-            if( isa( t_left, &t_string ) && isa( t_right, &t_string ) )
+            if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
             {
                 emit->append( instr = new Chuck_Instr_Op_string( op ) );
                 instr->set_linepos( lhs->linepos );
             }
-            else if( isa( t_left, &t_io ) )
+            else if( isa( t_left, emit->env->t_io ) )
             {
                 // output
-                if( isa( t_right, &t_int ) )
+                if( isa( t_right, emit->env->t_int ) )
                 {
                     emit->append( instr = new Chuck_Instr_IO_out_int );
                     instr->set_linepos( rhs->linepos );
                 }
-                else if( isa( t_right, &t_float ) )
+                else if( isa( t_right, emit->env->t_float ) )
                 {
                     emit->append( instr = new Chuck_Instr_IO_out_float );
                     instr->set_linepos( rhs->linepos );
                 }
-                else if( isa( t_right, &t_string ) )
+                else if( isa( t_right, emit->env->t_string ) )
                 {
                     emit->append( instr = new Chuck_Instr_IO_out_string );
                     instr->set_linepos( rhs->linepos );
@@ -2303,7 +2304,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         default:
-            if( isa( t_left, &t_string ) && isa( t_right, &t_string ) )
+            if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
             {
                 emit->append( instr = new Chuck_Instr_Op_string( op ) );
                 instr->set_linepos( lhs->linepos );
@@ -2325,7 +2326,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         default:
-            if( isa( t_left, &t_string ) && isa( t_right, &t_string ) )
+            if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
             {
                 emit->append( instr = new Chuck_Instr_Op_string( op ) );
                 instr->set_linepos( lhs->linepos );
@@ -2369,7 +2370,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             instr->set_linepos( rhs->linepos );
             break;
         default:
-            if( isa( t_right, &t_string ) )
+            if( isa( t_right, emit->env->t_string ) )
             {
                 emit->append( instr = new Chuck_Instr_IO_out_string );
                 instr->set_linepos( rhs->linepos );
@@ -2390,7 +2391,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             instr->set_linepos( rhs->linepos );
             break;
         default:
-            if( isa( t_right, &t_string ) )
+            if( isa( t_right, emit->env->t_string ) )
             {
                 emit->append( instr = new Chuck_Instr_IO_in_string );
                 instr->set_linepos( rhs->linepos );
@@ -2436,7 +2437,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     Chuck_Instr * instr = NULL;
     
     // ugen => ugen
-    if( isa( left, &t_ugen ) && isa( right, &t_ugen ) )
+    if( isa( left, emit->env->t_ugen ) && isa( right, emit->env->t_ugen ) )
     {
         // link, flag as NOT unchuck
         emit->append( instr = new Chuck_Instr_UGen_Link( FALSE ) );
@@ -2446,18 +2447,18 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     }
     
     // ugen[] => ugen[] (or permutation)
-    if( ( isa( left, &t_ugen ) || ( isa( left, &t_array ) && isa( left->array_type, &t_ugen ) ) ) &&
-        ( isa( right, &t_ugen ) || ( isa( right, &t_array ) && isa( right->array_type, &t_ugen ) ) ) )
+    if( ( isa( left, emit->env->t_ugen ) || ( isa( left, emit->env->t_array ) && isa( left->array_type, emit->env->t_ugen ) ) ) &&
+        ( isa( right, emit->env->t_ugen ) || ( isa( right, emit->env->t_array ) && isa( right->array_type, emit->env->t_ugen ) ) ) )
     {
         // link, flag as NOT unchuck
-        emit->append( instr = new Chuck_Instr_UGen_Array_Link( isa( left, &t_array ), isa( right, &t_array ) ) );
+        emit->append( instr = new Chuck_Instr_UGen_Array_Link( isa( left, emit->env->t_array ), isa( right, emit->env->t_array ) ) );
         instr->set_linepos( lhs->linepos );
         // done
         return TRUE;
     }
     
     // time advance
-    if( isa( left, &t_dur ) && isa( right, &t_time ) && rhs->s_meta == ae_meta_var )
+    if( isa( left, emit->env->t_dur ) && isa( right, emit->env->t_time ) && rhs->s_meta == ae_meta_var )
     {
         // add the two
         emit->append( new Chuck_Instr_Add_double );
@@ -2474,7 +2475,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     }
     
     // time advance
-    if( isa( left, &t_event ) && isa( right, &t_time ) && rhs->s_meta == ae_meta_var &&
+    if( isa( left, emit->env->t_event ) && isa( right, emit->env->t_time ) && rhs->s_meta == ae_meta_var &&
         rhs->s_type == ae_exp_primary && !strcmp( "now", S_name(rhs->primary.var) ) )
     {
         // pop now
@@ -2486,23 +2487,23 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     }
     
     // input
-    if( isa( left, &t_io ) )
+    if( isa( left, emit->env->t_io ) )
     {
-        if( isa( right, &t_int ) )
+        if( isa( right, emit->env->t_int ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_int );
             instr->set_linepos( rhs->linepos );
 	    return TRUE;
         }
-        else if( isa( right, &t_float ) )
+        else if( isa( right, emit->env->t_float ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_float );
             instr->set_linepos( rhs->linepos );
 	    return TRUE;
         }
-        else if( isa( right, &t_string ) )
+        else if( isa( right, emit->env->t_string ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_string );
@@ -2512,7 +2513,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     }
 
     // func call
-    if( isa( right, &t_function ) )
+    if( isa( right, emit->env->t_function ) )
     {
         assert( binary->ck_func != NULL );
         
@@ -2524,7 +2525,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     if( isa( left, right ) )
     {
         // basic types?
-        if( type_engine_check_primitive( left ) || isa( left, &t_string ) )
+        if( type_engine_check_primitive( emit->env, left ) || isa( left, emit->env->t_string ) )
         {
             // use at assign
             return emit_engine_emit_op_at_chuck( emit, lhs, rhs );
@@ -2556,7 +2557,7 @@ t_CKBOOL emit_engine_emit_op_unchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs
     Chuck_Type * right = rhs->cast_to ? rhs->cast_to : rhs->type;
     
     // if ugen
-    if( isa( left, &t_ugen ) && isa( right, &t_ugen ) )
+    if( isa( left, emit->env->t_ugen ) && isa( right, emit->env->t_ugen ) )
     {
         // no connect
         emit->append( new Chuck_Instr_UGen_UnLink );
@@ -2586,7 +2587,7 @@ t_CKBOOL emit_engine_emit_op_upchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs
     Chuck_Type * right = rhs->cast_to ? rhs->cast_to : rhs->type;
 
     // if ugen
-    if( isa( left, &t_uana ) && isa( right, &t_uana ) )
+    if( isa( left, emit->env->t_uana ) && isa( right, emit->env->t_uana ) )
     {
         // connect; flag it as unchuck
         Chuck_Instr * instr = NULL;
@@ -2621,7 +2622,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
     if( isa( left, right ) )
     {
         // basic types?
-        if( type_engine_check_primitive( left ) || isa( left, &t_string ) )
+        if( type_engine_check_primitive( emit->env, left ) || isa( left, emit->env->t_string ) )
         {
             // assigment?
             if( rhs->s_meta != ae_meta_var )
@@ -2641,7 +2642,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
                 emit->append( instr = new Chuck_Instr_Time_Advance );
                 instr->set_linepos( lhs->linepos );
             }
-            else if( isa( left, &t_string ) ) // string
+            else if( isa( left, emit->env->t_string ) ) // string
             {
                 // assign string
                 emit->append( new Chuck_Instr_Assign_String );
@@ -2650,7 +2651,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
             {
                 // assign primitive
                 // added 1.3.1.0: iskindofint -- since on some 64-bit systems, sz_INT == sz_FLOAT
-                if( right->size == sz_INT && iskindofint(right) ) // ISSUE: 64-bit (fixed 1.3.1.0)
+                if( right->size == sz_INT && iskindofint(emit->env, right) ) // ISSUE: 64-bit (fixed 1.3.1.0)
                     emit->append( new Chuck_Instr_Assign_Primitive );
                 else if( right->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
                     emit->append( new Chuck_Instr_Assign_Primitive2 );
@@ -2719,7 +2720,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
         }
 
         // increment
-        if( equals( unary->exp->type, &t_int ) )
+        if( equals( unary->exp->type, emit->env->t_int ) )
             emit->append( new Chuck_Instr_PreInc_int );
         else
         {
@@ -2740,7 +2741,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
         }
 
         // decrement
-        if( equals( unary->exp->type, &t_int ) )
+        if( equals( unary->exp->type, emit->env->t_int ) )
             emit->append( new Chuck_Instr_PreDec_int );
         else
         {
@@ -2753,7 +2754,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
 
     case ae_op_tilda:
         // complement
-        if( equals( unary->exp->type, &t_int ) )
+        if( equals( unary->exp->type, emit->env->t_int ) )
             emit->append( new Chuck_Instr_Complement_int );
         else
         {
@@ -2766,7 +2767,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
 
     case ae_op_exclamation:
         // !
-        if( equals( unary->exp->type, &t_int ) )
+        if( equals( unary->exp->type, emit->env->t_int ) )
             emit->append( new Chuck_Instr_Not_int );
         else
         {
@@ -2779,9 +2780,9 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
         
     case ae_op_minus:
         // negate
-        if( equals( unary->exp->type, &t_int ) )
+        if( equals( unary->exp->type, emit->env->t_int ) )
             emit->append( new Chuck_Instr_Negate_int );
-        else if( equals( unary->exp->type, &t_float ) )
+        else if( equals( unary->exp->type, emit->env->t_float ) )
             emit->append( new Chuck_Instr_Negate_double );
         else
         {
@@ -2816,7 +2817,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
     case ae_op_new:
 
         // if this is an object
-        if( isobj( t ) )
+        if( isobj( emit->env, t ) )
         {
             // instantiate object, including array
             if( !emit_engine_instantiate_object( emit, t, unary->array, unary->type->ref ) )
@@ -2934,16 +2935,16 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
     case ae_primary_str:
         // TODO: fix this
         str = new Chuck_String();
-        if( !str || !initialize_object( str, &t_string ) )
+        if( !str || !initialize_object( str, emit->env->t_string ) )
         {
             // error (TODO: why is this a SAFE_RELEASE and not SAFE_DELETE?)
             SAFE_RELEASE( str );
             // error out
-            fprintf( stderr, 
+            CK_FPRINTF_STDERR( 
                 "[chuck](emitter): OutOfMemory: while allocating string literal '%s'\n", exp->str );
             return FALSE;
         }
-        str->str = exp->str;
+        str->set( exp->str );
         temp = (t_CKUINT)str;
         emit->append( new Chuck_Instr_Reg_Push_Imm( temp ) );
         // add reference for string literal (added 1.3.0.2)
@@ -3032,7 +3033,7 @@ t_CKBOOL emit_engine_emit_array_lit( Chuck_Emitter * emit, a_Array_Sub array )
 
     // construct array dynamically
     Chuck_Instr * instr = NULL;
-    emit->append( instr = new Chuck_Instr_Array_Init( type, count ) );
+    emit->append( instr = new Chuck_Instr_Array_Init( emit->env, type, count ) );
     instr->set_linepos( array->linepos );
 
     return TRUE;
@@ -3140,28 +3141,28 @@ t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit,
         return TRUE;
 
     // int to float
-    if( equals( to, &t_int ) && equals( from, &t_float ) )
+    if( equals( to, emit->env->t_int ) && equals( from, emit->env->t_float ) )
         emit->append( new Chuck_Instr_Cast_double2int );
     // float to int
-    else if( equals( to, &t_float ) && equals( from, &t_int ) )
+    else if( equals( to, emit->env->t_float ) && equals( from, emit->env->t_int ) )
         emit->append( new Chuck_Instr_Cast_int2double );
-    else if( equals( to, &t_complex ) && equals( from, &t_int ) )
+    else if( equals( to, emit->env->t_complex ) && equals( from, emit->env->t_int ) )
         emit->append( new Chuck_Instr_Cast_int2complex );
-    else if( equals( to, &t_polar ) && equals( from, &t_int ) )
+    else if( equals( to, emit->env->t_polar ) && equals( from, emit->env->t_int ) )
         emit->append( new Chuck_Instr_Cast_int2polar );
-    else if( equals( to, &t_complex ) && equals( from, &t_float ) )
+    else if( equals( to, emit->env->t_complex ) && equals( from, emit->env->t_float ) )
         emit->append( new Chuck_Instr_Cast_double2complex );
-    else if( equals( to, &t_polar ) && equals( from, &t_float ) )
+    else if( equals( to, emit->env->t_polar ) && equals( from, emit->env->t_float ) )
         emit->append( new Chuck_Instr_Cast_double2polar );
-    else if( equals( to, &t_polar ) && equals( from, &t_complex ) )
+    else if( equals( to, emit->env->t_polar ) && equals( from, emit->env->t_complex ) )
         emit->append( new Chuck_Instr_Cast_complex2polar );
-    else if( equals( to, &t_complex ) && equals( from, &t_polar ) )
+    else if( equals( to, emit->env->t_complex ) && equals( from, emit->env->t_polar ) )
         emit->append( new Chuck_Instr_Cast_polar2complex );
-    else if( equals( to, &t_vec3 ) && equals( from, &t_vec4 ) )
+    else if( equals( to, emit->env->t_vec3 ) && equals( from, emit->env->t_vec4 ) )
         emit->append( new Chuck_Instr_Cast_vec4tovec3 );
-    else if( equals( to, &t_vec4 ) && equals( from, &t_vec3 ) )
+    else if( equals( to, emit->env->t_vec4 ) && equals( from, emit->env->t_vec3 ) )
         emit->append( new Chuck_Instr_Cast_vec3tovec4 );
-    else if( equals( to, &t_string ) && isa( from, &t_object ) && !isa( from, &t_string ) )
+    else if( equals( to, emit->env->t_string ) && isa( from, emit->env->t_object ) && !isa( from, emit->env->t_string ) )
         emit->append( new Chuck_Instr_Cast_object2string );
     // up cast - do nothing
     else if( !isa( to, from ) && !isa( from, to ) )
@@ -3191,7 +3192,7 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
     switch( postfix->op )
     {
     case ae_op_plusplus:
-        if( equals( postfix->exp->type, &t_int ) )
+        if( equals( postfix->exp->type, emit->env->t_int ) )
             emit->append( new Chuck_Instr_PostInc_int );
         else
         {
@@ -3203,7 +3204,7 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
     break;
 
     case ae_op_minusminus:
-        if( equals( postfix->exp->type, &t_int ) )
+        if( equals( postfix->exp->type, emit->env->t_int ) )
             emit->append( new Chuck_Instr_PostDec_int );
         else
         {
@@ -3238,7 +3239,7 @@ t_CKBOOL emit_engine_emit_exp_dur( Chuck_Emitter * emit, a_Exp_Dur dur )
         return FALSE;
 
     // cast
-    if( equals( dur->base->type, &t_int ) )
+    if( equals( dur->base->type, emit->env->t_int ) )
         emit->append( new Chuck_Instr_Cast_int2double );
 
     // emit unit
@@ -3308,7 +3309,7 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
         return FALSE;
 
     // find out first element
-    if( isa( exp->type, &t_string ) )
+    if( isa( exp->type, emit->env->t_string ) )
         is_str = TRUE;
 
     // make sure
@@ -3328,9 +3329,9 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
         Chuck_Instr * instr = NULL;
         // emit the array access (1.3.1.0: use getkindof instead of type->size)
         if( is_str )
-            emit->append( instr = new Chuck_Instr_Array_Map_Access( getkindof(type), is_var ) );
+            emit->append( instr = new Chuck_Instr_Array_Map_Access( getkindof(emit->env, type), is_var ) );
         else
-            emit->append( instr = new Chuck_Instr_Array_Access( getkindof(type), is_var ) );
+            emit->append( instr = new Chuck_Instr_Array_Access( getkindof(emit->env, type), is_var ) );
         instr->set_linepos( array->linepos );
     }
     else
@@ -3338,14 +3339,14 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
         // the pointer
         Chuck_Instr_Array_Access_Multi * aam = NULL;
         // emit the multi array access (1.3.1.0: use getkindof instead of type->size)
-        emit->append( aam = new Chuck_Instr_Array_Access_Multi( depth, getkindof(type), is_var ) );
+        emit->append( aam = new Chuck_Instr_Array_Access_Multi( depth, getkindof(emit->env, type), is_var ) );
         aam->set_linepos( array->linepos );
         // add type info (1.3.1.0) -- to support mixed string & int indexing (thanks Robin Haberkorn)
         a_Exp e = exp;
         while( e )
         {
             // check if string
-            aam->indexIsAssociative().push_back( isa( exp->type, &t_string ) );
+            aam->indexIsAssociative().push_back( isa( exp->type, emit->env->t_string ) );
             // next
             e = e->next;
         }
@@ -3388,7 +3389,7 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     // TODO: member functions and static functions
     // call the function
     t_CKUINT size = type->size;
-    t_CKUINT kind = getkindof( type ); // added 1.3.1.0
+    t_CKUINT kind = getkindof( emit->env, type ); // added 1.3.1.0
         
     // the pointer
     Chuck_Instr * instr = NULL;
@@ -3594,7 +3595,7 @@ check_func:
     // the type of the base
     Chuck_Type * t_base = member->t_base;
     // is the base a class/namespace or a variable
-    t_CKBOOL base_static = isa( member->t_base, &t_class );
+    t_CKBOOL base_static = isa( member->t_base, emit->env->t_class );
     // a function
     Chuck_Func * func = NULL;
     // a non-function value
@@ -3612,7 +3613,7 @@ check_func:
         return FALSE;
     }
         
-    if( !isfunc( member->self->type ) )
+    if( !isfunc( emit->env, member->self->type ) )
     {
         // should not get here
         EM_error2( member->base->linepos,
@@ -3664,7 +3665,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
     // whether to emit addr or value
     t_CKBOOL emit_addr = member->self->emit_var;
     // is the base a class/namespace or a variable
-    t_CKBOOL base_static = isa( member->t_base, &t_class );
+    t_CKBOOL base_static = isa( member->t_base, emit->env->t_class );
     // a function
     Chuck_Func * func = NULL;
     // a non-function value
@@ -3701,7 +3702,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
     if( !base_static )
     {
         // if is a func
-        if( isfunc( member->self->type ) )
+        if( isfunc( emit->env, member->self->type ) )
         {
             // get the func
             value = type_engine_find_value( t_base, member->xid );
@@ -3748,7 +3749,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
                 emit_engine_emit_exp( emit, member->base );
                 // lookup the member (1.3.1.0: changed to use getkindof instead of type size)
                 emit->append( instr = new Chuck_Instr_Dot_Member_Data(
-                    offset, getkindof(member->self->type), emit_addr ) );
+                    offset, getkindof(emit->env, member->self->type), emit_addr ) );
                 instr->set_linepos( member->linepos );
             }
             else
@@ -3758,7 +3759,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
                 {
                     // emit builtin (1.3.1.0: changed to use getkindof instead of type size)
                     emit->append( new Chuck_Instr_Dot_Static_Import_Data(
-                        value->addr, getkindof(member->self->type), emit_addr ) );
+                        value->addr, getkindof(emit->env, member->self->type), emit_addr ) );
                 }
                 else
                 {
@@ -3766,7 +3767,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
                     emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)t_base ) );
                     // emit the static value (1.3.1.0: changed to use getkindof in addition to size)
                     emit->append( new Chuck_Instr_Dot_Static_Data(
-                        offset, member->self->type->size, getkindof(member->self->type), emit_addr ) );
+                        offset, member->self->type->size, getkindof(emit->env, member->self->type), emit_addr ) );
                 }
             }
         }
@@ -3779,7 +3780,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
         //emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)t_base ) );
 
         // if is a func
-        if( isfunc( member->self->type ) )
+        if( isfunc( emit->env, member->self->type ) )
         {
             // emit the type - spencer
             emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)t_base ) );
@@ -3802,7 +3803,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
             {
                 // emit (1.3.1.0: changed to use getkindof instead of type size)
                 emit->append( new Chuck_Instr_Dot_Static_Import_Data(
-                    value->addr, getkindof(member->self->type), emit_addr ) );
+                    value->addr, getkindof(emit->env, member->self->type), emit_addr ) );
             }
             else
             {
@@ -3812,7 +3813,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
                 offset = value->offset;
                 // emit the member (1.3.1.0: changed to use getkindof in addition to size)
                 emit->append( new Chuck_Instr_Dot_Static_Data(
-                    offset, member->self->type->size, getkindof(member->self->type), emit_addr ) );
+                    offset, member->self->type->size, getkindof(emit->env, member->self->type), emit_addr ) );
             }
         }
     }
@@ -3965,13 +3966,13 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
         emit_engine_emit_exp( emit, array->exp_list );
         // emit array allocation
         Chuck_Instr * instr = NULL;
-        emit->append( instr = new Chuck_Instr_Array_Alloc(
+        emit->append( instr = new Chuck_Instr_Array_Alloc( emit->env,
             type->array_depth, type->array_type, emit->code->frame->curr_offset,
             is_ref ) );
         instr->set_linepos( array->linepos );
 
         // handle constructor
-        if( isobj( type->array_type ) && !is_ref )
+        if( isobj( emit->env, type->array_type ) && !is_ref )
         {
             // call pre constructor for array
             emit_engine_pre_constructor_array( emit, type->array_type );
@@ -4007,6 +4008,33 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
     t_CKBOOL is_obj = FALSE;
     t_CKBOOL is_ref = FALSE;
     t_CKBOOL is_init = FALSE;
+    
+    t_CKTYPE t = type_engine_find_type( emit->env, decl->type->xid );
+    te_ExternalType externalType;
+    
+    if( decl->is_external )
+    {
+        if( isa( t, emit->env->t_int ) )
+        {
+            externalType = te_externalInt;
+        }
+        else if( isa( t, emit->env->t_float ) )
+        {
+            externalType = te_externalFloat;
+        }
+        else if( isa( t, emit->env->t_event ) )
+        {
+            // kind-of-event (te_Type for this would be te_user, which is not helpful)
+            externalType = te_externalEvent;
+        }
+        else
+        {
+            // fail if type unsupported
+            EM_error2( decl->linepos, (std::string("unsupported type for external keyword: ") + t->name).c_str() );
+            EM_error2( decl->linepos, "... (supported types: int, float, Event)" );
+            return FALSE;
+        }
+    }
 
     // loop through vars
     while( list )
@@ -4018,7 +4046,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         // get the type of the value
         type = value->type;
         // is the variable a reference
-        is_obj = isobj( type );
+        is_obj = isobj( emit->env, type );
         // do alloc or not
         is_ref = decl->type->ref;
         // not init
@@ -4041,11 +4069,17 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             }
             else if( !is_ref )
             {
-                // set
-                is_init = TRUE;
-                // instantiate object (not array)
-                if( !emit_engine_instantiate_object( emit, type, list->var_decl->array, is_ref ) )
-                    return FALSE;
+                // REFACTOR-2017: don't emit instructions to instantiate
+                // external variables -- they are init/instantiated
+                // during emit (see below in this function)
+                if( !decl->is_external )
+                {
+                    // set
+                    is_init = TRUE;
+                    // instantiate object (not array)
+                    if( !emit_engine_instantiate_object( emit, type, list->var_decl->array, is_ref ) )
+                        return FALSE;
+                }
             }
         }
 
@@ -4075,7 +4109,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         {
             // zero out location in object, and leave addr on operand stack
             // added 1.3.1.0: iskindofint -- on some 64-bit systems, sz_int == sz_FLOAT
-            if( type->size == sz_INT && iskindofint(type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
+            if( type->size == sz_INT && iskindofint(emit->env, type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 emit->append( new Chuck_Instr_Alloc_Member_Word( value->offset ) );
             else if( type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 emit->append( new Chuck_Instr_Alloc_Member_Word2( value->offset ) );
@@ -4100,7 +4134,8 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             {
                 // allocate a place on the local stack
                 // (added 1.3.0.0 -- is_obj for tracking objects ref count on stack)
-                local = emit->alloc_local( type->size, value->name, is_ref, is_obj );
+                local = emit->alloc_local( type->size, value->name,
+                    is_ref, is_obj, decl->is_external );
                 if( !local )
                 {
                     EM_error2( decl->linepos,
@@ -4112,19 +4147,47 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 // put in the value
                 value->offset = local->offset;
 
+                // REFACTOR-2017: external declaration
+                if( decl->is_external )
+                {
+                    Chuck_Instr_Alloc_Word_External * instr = new Chuck_Instr_Alloc_Word_External();
+                    instr->m_name = value->name;
+                    instr->m_type = externalType;
+                    instr->set_linepos( decl->linepos );
+                    emit->append( instr );
+                    
+                    // if it's an event, we need to initialize it and check if the exact type matches
+                    if( externalType == te_externalEvent )
+                    {
+                        // init and construct it now!
+                        if( !emit->env->vm()->init_external_event( value->name, t ) )
+                        {
+                            // if the type doesn't exactly match (different kinds of Event), then fail.
+                            EM_error2( decl->linepos,
+                                "(emit): external Event '%s' has different type '%s' than already existing external Event of the same name",
+                                value->name.c_str(), t->name.c_str() );
+                            return FALSE;
+                        }
+                    }
+                    
+                }
                 // zero out location in memory, and leave addr on operand stack
                 // TODO: this is wrong for static
                 // BAD:
                 // FIX:
                 // added 1.3.1.0: iskindofint -- since on some 64-bit systems, sz_INT == sz_FLOAT
-                if( type->size == sz_INT && iskindofint(type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
+                else if( type->size == sz_INT && iskindofint(emit->env, type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 {
                     // (added 1.3.0.0 -- is_obj)
-                    emit->append( new Chuck_Instr_Alloc_Word( local->offset, is_obj ) );
+                    Chuck_Instr_Alloc_Word * instr = new Chuck_Instr_Alloc_Word( local->offset, is_obj );
+                    instr->set_linepos( decl->linepos );
+                    emit->append( instr );
                 }
                 else if( type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 {
-                    emit->append( new Chuck_Instr_Alloc_Word2( local->offset ) );
+                    Chuck_Instr_Alloc_Word2 * instr = new Chuck_Instr_Alloc_Word2( local->offset );
+                    instr->set_linepos( decl->linepos );
+                    emit->append( instr );
                 }
                 else if( type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 {
@@ -4152,7 +4215,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)emit->env->class_def ) );
                 // emit the static value (1.3.1.0: changed to use getkindof in addition to size)
                 emit->append( new Chuck_Instr_Dot_Static_Data(
-                    value->offset, value->type->size, getkindof(value->type), TRUE ) );
+                    value->offset, value->type->size, getkindof(emit->env, value->type), TRUE ) );
             }
         }
 
@@ -4176,10 +4239,16 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             }
             else if( !is_ref )
             {
-                // set
-                is_init = TRUE;
-                // assign the object
-                emit->append( new Chuck_Instr_Assign_Object );
+                // REFACTOR-2017: don't add an Assign_Object instruction for
+                // external objects -- they should be instantiated during emit,
+                // not during runtime and therefore don't need an assign instr
+                if( !decl->is_external )
+                {
+                    // set
+                    is_init = TRUE;
+                    // assign the object
+                    emit->append( new Chuck_Instr_Assign_Object );
+                }
             }
         }
 
@@ -4287,7 +4356,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     {
         // put function on stack
         // ge: added FALSE to the 'is_obj' argument, 2012 april (added 1.3.0.0)
-        local = emit->alloc_local( value->type->size, value->name, TRUE, FALSE );
+        local = emit->alloc_local( value->type->size, value->name, TRUE, FALSE, FALSE );
         // remember the offset
         value->offset = local->offset;
         // write to mem stack
@@ -4320,7 +4389,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         emit->code->stack_depth += sizeof(t_CKUINT);
         // add this
         // ge: added FALSE to the 'is_obj' argument, 2012 april (added 1.3.0.0)
-        if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, FALSE ) )
+        if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, FALSE, FALSE ) )
         {
             EM_error2( a->linepos,
                 "(emit): internal error: cannot allocate local 'this'..." );
@@ -4339,14 +4408,14 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         // get the type
         type = value->type;
         // is object? (added ge: 2012 april | added 1.3.0.0)
-        is_obj = isobj( type );
+        is_obj = isobj( emit->env, type );
         // get ref
         is_ref = a->type_decl->ref;
         // get the size
         emit->code->stack_depth += type->size;
         // allocate a place on the local stack
         // ge: added 'is_obj' 2012 april
-        local = emit->alloc_local( type->size, value->name, is_ref, is_obj );
+        local = emit->alloc_local( type->size, value->name, is_ref, is_obj, FALSE );
         if( !local )
         {
             EM_error2( a->linepos,
@@ -4376,7 +4445,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     
     // added by spencer June 2014 (1.3.5.0) 
     // ensure return
-    if( func_def->ret_type && func_def->ret_type != &t_void )
+    if( func_def->ret_type && func_def->ret_type != emit->env->t_void )
     {
         emit->append( new Chuck_Instr_Reg_Push_Imm(0) );
         
@@ -4468,7 +4537,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     // add this
     // ge: added TRUE to the 'is_obj' argument, 2012 april (added 1.3.0.0)
     // TODO: verify this is right, and not over-ref counted / cleaned up?
-    if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, TRUE ) )
+    if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, TRUE, FALSE ) )
     {
         EM_error2( class_def->linepos,
             "(emit): internal error: cannot allocate local 'this'..." );
@@ -4516,7 +4585,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
         if( !type->info->class_data )
         {
             // we have a problem
-            fprintf( stderr, 
+            CK_FPRINTF_STDERR( 
                 "[chuck](emitter): OutOfMemory: while allocating static data '%s'\n", type->c_name() );
             // flag
             ret = FALSE;
@@ -4716,6 +4785,33 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
             S_name(symbol) );
         return FALSE;
     }
+    
+    // if external, find what type
+    // (due to user classes, this info is only available during emit)
+    te_ExternalType external_type;
+    if( v->is_external )
+    {
+        if( isa( v->type, emit->env->t_int ) )
+        {
+            external_type = te_externalInt;
+        }
+        else if( isa( v->type, emit->env->t_float ) )
+        {
+            external_type = te_externalFloat;
+        }
+        else if( isa( v->type, emit->env->t_event ) )
+        {
+            external_type = te_externalEvent;
+        }
+        else
+        {
+            // internal error
+            EM_error2( linepos,
+                "(emit): internal error: unknown external type '%s'...",
+                v->type->name.c_str() );
+            return FALSE;
+        }
+    }
 
     // if part of class - this only works because x.y is handled separately
     if( v->owner_class && (v->is_member || v->is_static) )
@@ -4751,16 +4847,27 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
     if( emit_var )
     {
         // emit as addr
-        emit->append( new Chuck_Instr_Reg_Push_Mem_Addr( v->offset, v->is_context_global ) );
+        if( v->is_external )
+        {
+            emit->append( new Chuck_Instr_Reg_Push_External_Addr( v->name, external_type ) );
+        }
+        else
+        {
+            emit->append( new Chuck_Instr_Reg_Push_Mem_Addr( v->offset, v->is_context_global ) );
+        }
     }
     else
     {
         // special case
         if( v->func_ref )
             emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)v->func_ref ) );
+        else if( v->is_external )
+        {
+            emit->append( new Chuck_Instr_Reg_Push_External( v->name, external_type ) );
+        }
         // check size
         // (added 1.3.1.0: iskindofint -- since in some 64-bit systems, sz_INT == sz_FLOAT)
-        else if( v->type->size == sz_INT && iskindofint(v->type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
+        else if( v->type->size == sz_INT && iskindofint(emit->env, v->type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
             emit->append( new Chuck_Instr_Reg_Push_Mem( v->offset, v->is_context_global ) );
         else if( v->type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
             emit->append( new Chuck_Instr_Reg_Push_Mem2( v->offset, v->is_context_global ) );
@@ -4807,8 +4914,14 @@ void Chuck_Emitter::addref_on_scope()
         // check to see if it's an object
         if( local->is_obj )
         {
-            // emit instruction to add reference
-            this->append( new Chuck_Instr_AddRef_Object2( local->offset ) );
+            // REFACTOR-2017: Don't do if local is external
+            // Note: I don't think addref_on_scope() is used anywhere,
+            // but I am doing this to mirror pop_scope() below, which IS used
+            if( !local->is_external )
+            {
+                // emit instruction to add reference
+                this->append( new Chuck_Instr_AddRef_Object2( local->offset ) );
+            }
         }
     }
 }
@@ -4835,12 +4948,16 @@ void Chuck_Emitter::pop_scope( )
     {
         // get local
         Chuck_Local * local = locals[i];
-        // std::cerr << "local: " << local->offset << " " << local->is_obj << std::endl;
+        // CK_STDCERR << "local: " << local->offset << " " << local->is_obj << CK_STDENDL;
         // check to see if it's an object
         if( local->is_obj )
         {
-            // emit instruction to release the object
-            this->append( new Chuck_Instr_Release_Object2( local->offset ) );
+            // (REFACTOR-2017: don't release external objects)
+            if( !local->is_external )
+            {
+                // emit instruction to release the object
+                this->append( new Chuck_Instr_Release_Object2( local->offset ) );
+            }
         }
         
         // reclaim local; null out to be safe
@@ -4868,7 +4985,7 @@ t_CKBOOL Chuck_Emitter::find_dur( const string & name, t_CKDUR * out )
     *out = 0.0;
     // get value from env
     Chuck_Value * value = env->global()->lookup_value( name, FALSE );
-    if( !value || !equals( value->type, &t_dur ) ) return FALSE;
+    if( !value || !equals( value->type, env->t_dur ) ) return FALSE;
     // copy
     *out = *( (t_CKDUR *)value->addr );
     
@@ -4897,7 +5014,7 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
             is_ref ) );
 
         // handle constructor
-        //if( isobj( type->array_type ) && !is_ref )
+        //if( isobj( emit->env, type->array_type ) && !is_ref )
         //{
         //    // TODO:
         //    EM_error2( array->linepos, "internal error: object array constructor not impl..." );
@@ -4907,7 +5024,7 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
     else if( !is_ref ) // not array
     {
         // if ugen
-        //if( isa( type, &t_ugen ) )
+        //if( isa( type, emit->env->t_ugen ) )
         //{
         //    // get the ugen info
         //    Chuck_UGen_Info * info = decl->self->type->ugen;

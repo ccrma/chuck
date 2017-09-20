@@ -34,6 +34,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <sstream>
+#include <iostream>
 #include "chuck_utils.h"
 #include "chuck_errmsg.h"
 #include "util_thread.h"
@@ -56,6 +58,279 @@ static size_t g_lasterrorIndex = strlen(g_lasterror);
 int g_loglevel = CK_LOG_CORE;
 int g_logstack = 0;
 XMutex g_logmutex;
+
+// more local globals
+static const size_t g_buffer2_size = 1024;
+static char g_buffer2[g_buffer2_size] = "";
+std::stringstream g_stdout_stream;
+std::stringstream g_stderr_stream;
+
+// local global callbacks
+void (*g_stdout_callback)(const char *) = NULL;
+void (*g_stderr_callback)(const char *) = NULL;
+
+void ck_fprintf_stdout( const char * format, ... )
+{
+    // evaluate the format string
+    va_list args;
+    va_start( args, format );
+    vsnprintf( g_buffer2, g_buffer2_size, format, args );
+    va_end( args );
+    
+    // send the formatted string to the buffer
+    g_stdout_stream << g_buffer2;
+    
+    // try flushing
+    ck_fflush_stdout();
+}
+
+
+void ck_fprintf_stderr( const char * format, ... )
+{
+    // evaluate the format string
+    va_list args;
+    va_start( args, format );
+    vsnprintf( g_buffer2, g_buffer2_size, format, args );
+    va_end( args );
+    
+    // send the formatted string to the buffer
+    g_stderr_stream << g_buffer2;
+    
+    // try flushing
+    ck_fflush_stderr();
+}
+
+
+void ck_fflush_stdout()
+{
+    // check if stream contains a newline
+    if( g_stdout_stream.str().find( '\n' ) != std::string::npos )
+    {
+        // if so, print it
+        if( g_stdout_callback == NULL ) {
+            // send to stdout
+            fprintf( stdout, "%s", g_stdout_stream.str().c_str() );
+        }
+        else
+        {
+            // emit to callback
+            g_stdout_callback( g_stdout_stream.str().c_str() );
+        }
+        // and clear buffer
+        g_stdout_stream.str( std::string() );
+        
+    }
+}
+
+
+void ck_fflush_stderr()
+{
+    // check if stream contains a newline
+    if( g_stderr_stream.str().find( '\n' ) != std::string::npos )
+    {
+        // if so, print it
+        if( g_stderr_callback == NULL )
+        {
+            // send to stderr
+            fprintf( stderr, "%s", g_stderr_stream.str().c_str() );
+        }
+        else
+        {
+            // emit to callback
+            g_stderr_callback( g_stderr_stream.str().c_str() );
+        }
+
+        // and clear buffer
+        g_stderr_stream.str( std::string() );
+    }
+}
+
+
+void ck_vfprintf_stdout( const char * format, va_list args )
+{
+    // evaluate the format string
+    vsnprintf( g_buffer2, g_buffer2_size, format, args );
+    
+    // send the formatted string to the buffer
+    g_stdout_stream << g_buffer2;
+    
+    // try flushing
+    ck_fflush_stdout();
+}
+
+
+void ck_vfprintf_stderr( const char * format, va_list args )
+{
+    // evaluate the format string
+    vsnprintf( g_buffer2, g_buffer2_size, format, args );
+    
+    // send the formatted string to the buffer
+    g_stderr_stream << g_buffer2;
+    
+    // try flushing
+    ck_fflush_stderr();
+}
+
+
+
+void ck_set_stdout_callback( void (*callback)(const char *) )
+{
+    g_stdout_callback = callback;
+#ifdef __cplusplus
+    g_ck_stdoutstream.set_callback( callback );
+#endif
+}
+
+
+void ck_set_stderr_callback( void (*callback)(const char *) )
+{
+    g_stderr_callback = callback;
+#ifdef __cplusplus
+    g_ck_stderrstream.set_callback( callback );
+#endif
+}
+
+#ifdef __cplusplus
+extern "C++" {
+
+ChuckOutStream::ChuckOutStream( bool isErr )
+{
+    m_callback = NULL;
+    m_isErr = isErr;
+}
+
+
+ChuckOutStream::~ChuckOutStream()
+{
+}
+
+
+ChuckOutStream& ChuckOutStream::operator<<( const std::string val )
+{
+    m_stream << val;
+    if( val == CK_STDENDL )
+    {
+        this->flush();
+    }
+    return *this;
+}
+
+
+ChuckOutStream& ChuckOutStream::operator<<( const char * val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+ChuckOutStream& ChuckOutStream::operator<<( const double val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+ChuckOutStream& ChuckOutStream::operator<<( const float val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+ChuckOutStream& ChuckOutStream::operator<<( const unsigned long long val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+ChuckOutStream& ChuckOutStream::operator<<( const long long val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+ChuckOutStream& ChuckOutStream::operator<<( const unsigned long val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+ChuckOutStream& ChuckOutStream::operator<<( const long val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+ChuckOutStream& ChuckOutStream::operator<<( const unsigned int val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+ChuckOutStream& ChuckOutStream::operator<<( const int val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+ChuckOutStream& ChuckOutStream::operator<<( const bool val )
+{
+    m_stream << val;
+    return *this;
+}
+
+
+
+
+
+void ChuckOutStream::set_callback( void (*callback)( const char * ) )
+{
+    m_callback = callback;
+}
+
+
+void ChuckOutStream::flush()
+{
+    if( m_callback != NULL )
+    {
+        // send to callback
+        m_callback( m_stream.str().c_str() );
+    }
+    else
+    {
+        // print it
+        if( m_isErr )
+        {
+            // to cerr
+            std::cerr << m_stream.str().c_str();
+            std::cerr.flush();
+        }
+        else
+        {
+            // to cout
+            std::cout << m_stream.str().c_str();
+            std::cout.flush();
+        }
+    }
+    // clear buffer
+    m_stream.str( std::string() );
+}
+
+
+ChuckOutStream g_ck_stdoutstream( FALSE );
+ChuckOutStream g_ck_stderrstream( TRUE );
+
+}
+#endif
+
+
+
 
 // name
 static const char * g_str[] = {
@@ -154,28 +429,28 @@ void EM_error( int pos, const char * message, ... )
     // separate errmsgs with newlines
     if( g_lasterror[0] != '\0' ) lastErrorCat( "\n" );
     
-    fprintf( stderr, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    CK_FPRINTF_STDERR( "[%s]:", *fileName ? mini(fileName) : "chuck" );
     sprintf( g_buffer, "[%s]:", *fileName ? mini(fileName) : "chuck" );
     lastErrorCat( g_buffer );
     if(lines)
     {
-        fprintf(stderr, "line(%d).char(%d):", num, pos-lines->i );
+        CK_FPRINTF_STDERR( "line(%d).char(%d):", num, pos-lines->i );
         sprintf( g_buffer, "line(%d).char(%d):", num, pos-lines->i );
         lastErrorCat( g_buffer );
     }
-    fprintf(stderr, " " );
+    CK_FPRINTF_STDERR( " " );
     lastErrorCat( " " );
     
     va_start(ap, message);
-    vfprintf(stderr, message, ap);
+    CK_VFPRINTF_STDERR( message, ap);
     va_end(ap);
 
     va_start(ap, message);
     vsprintf( g_buffer, message, ap );
     va_end(ap);
     
-    fprintf(stderr, "\n");
-    fflush( stderr );
+    CK_FPRINTF_STDERR( "\n");
+    CK_FFLUSH_STDERR();
     lastErrorCat( g_buffer );
 }
 
@@ -190,20 +465,20 @@ void EM_error2( int line, const char * message, ... )
     // separate errmsgs with newlines
     if( g_lasterror[0] != '\0' ) lastErrorCat( "\n" );
     
-    fprintf( stderr, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    CK_FPRINTF_STDERR( "[%s]:", *fileName ? mini(fileName) : "chuck" );
     sprintf( g_buffer, "[%s]:", *fileName ? mini(fileName) : "chuck" );
     lastErrorCat( g_buffer );
     if(line)
     {
-        fprintf( stderr, "line(%d):", line );
+        CK_FPRINTF_STDERR( "line(%d):", line );
         sprintf( g_buffer, "line(%d):", line );
         lastErrorCat( g_buffer );
     }
-    fprintf( stderr, " " );
+    CK_FPRINTF_STDERR( " " );
     lastErrorCat( " " );
 
     va_start( ap, message );
-    vfprintf( stderr, message, ap );
+    CK_VFPRINTF_STDERR( message, ap );
     va_end( ap );
 
     va_start( ap, message );
@@ -211,8 +486,8 @@ void EM_error2( int line, const char * message, ... )
     va_end( ap );
 
     lastErrorCat( g_buffer );
-    fprintf( stderr, "\n" );
-    fflush( stderr );
+    CK_FPRINTF_STDERR( "\n" );
+    CK_FFLUSH_STDERR();
 }
 
 
@@ -226,20 +501,20 @@ void EM_error2b( int line, const char * message, ... )
     // separate errmsgs with newlines
     if( g_lasterror[0] != '\0' ) lastErrorCat( "\n" );
     
-    fprintf( stderr, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    CK_FPRINTF_STDERR( "[%s]:", *fileName ? mini(fileName) : "chuck" );
     sprintf( g_buffer, "[%s]:", *fileName ? mini(fileName) : "chuck" );
     lastErrorCat( g_buffer );
     if(line)
     {
-        fprintf( stderr, "line(%d):", line );
+        CK_FPRINTF_STDERR( "line(%d):", line );
         sprintf( g_buffer, "line(%d):", line );
         lastErrorCat( g_buffer );
     }
-    fprintf( stderr, " " );
+    CK_FPRINTF_STDERR( " " );
     lastErrorCat( " " );
 
     va_start( ap, message );
-    vfprintf( stderr, message, ap );
+    CK_VFPRINTF_STDERR( message, ap );
     va_end( ap );
 
     va_start( ap, message );
@@ -247,8 +522,8 @@ void EM_error2b( int line, const char * message, ... )
     va_end( ap );
 
     lastErrorCat( g_buffer );
-    fprintf( stdout, "\n" );
-    fflush( stdout );
+    CK_FPRINTF_STDOUT( "\n" );
+    CK_FFLUSH_STDOUT();
 }
 
 
@@ -264,7 +539,7 @@ void EM_error3( const char * message, ... )
     g_buffer[0] = '\0';
 
     va_start( ap, message );
-    vfprintf( stderr, message, ap );
+    CK_VFPRINTF_STDERR( message, ap );
     va_end( ap );
 
     va_start( ap, message );
@@ -272,8 +547,8 @@ void EM_error3( const char * message, ... )
     va_end( ap );
 
     lastErrorCat( g_buffer );
-    fprintf( stderr, "\n" );
-    fflush( stderr );
+    CK_FPRINTF_STDERR( "\n" );
+    CK_FFLUSH_STDERR();
 }
 
 
@@ -289,19 +564,19 @@ void EM_log( int level, const char * message, ... )
     if( level > g_loglevel ) return;
 
     g_logmutex.acquire();
-    fprintf( stderr, "[chuck]:" );
-    fprintf( stderr, "(%i:%s): ", level, g_str[level] );
+    CK_FPRINTF_STDERR( "[chuck]:" );
+    CK_FPRINTF_STDERR( "(%i:%s): ", level, g_str[level] );
 
-    // if( g_logstack ) fprintf( stderr, " " );
+    // if( g_logstack ) CK_FPRINTF_STDERR( " " );
     for( int i = 0; i < g_logstack; i++ )
-        fprintf( stderr, " | " );
+        CK_FPRINTF_STDERR( " | " );
 
     va_start( ap, message );
-    vfprintf( stderr, message, ap );
+    CK_VFPRINTF_STDERR( message, ap );
     va_end( ap );
 
-    fprintf( stderr, "\n" );
-    fflush( stderr );
+    CK_FPRINTF_STDERR( "\n" );
+    CK_FFLUSH_STDERR();
     g_logmutex.release();
 }
 

@@ -181,4 +181,4 @@
 #define _CRT_SECURE_NO_DEPRECATE 1
 
 /* #define snprintf sprintf_s */
-#define snprintf _snprintf
+//#define snprintf _snprintf

@@ -32,6 +32,7 @@
 #include "chuck_shell.h"
 #include "chuck_otf.h"
 #include "chuck_globals.h"
+#include "chuck_errmsg.h"
 #include "util_network.h"
 #include "util_string.h"
 
@@ -47,8 +48,9 @@
 
 using namespace std;
 
+// REFACTOR-2017: TODO Ge: where should this live? not in chuck_main if it's in core!
 // global shell pointer (lives in chuck_main)
-extern Chuck_Shell * g_shell;
+Chuck_Shell * g_shell;
 
 //-----------------------------------------------------------------------------
 // name: tokenize_string
@@ -272,7 +274,7 @@ t_CKBOOL Chuck_Shell::init( Chuck_VM * vm, Chuck_Shell_UI * ui )
     // ui
     if( ui == NULL )
     {
-        fprintf( stderr, "[chuck](via shell): NULL ui passed to Chuck_Shell::init..." );
+        CK_FPRINTF_STDERR( "[chuck](via shell): NULL ui passed to Chuck_Shell::init..." );
         return FALSE;
     }
     
@@ -283,7 +285,7 @@ t_CKBOOL Chuck_Shell::init( Chuck_VM * vm, Chuck_Shell_UI * ui )
     Chuck_Shell_Network_VM * cspv = new Chuck_Shell_Network_VM();
     if( !cspv->init( "localhost", 8888 ) )
     {
-        fprintf( stderr, "[chuck](via shell): error initializing process VM..." );
+        CK_FPRINTF_STDERR( "[chuck](via shell): error initializing process VM..." );
         SAFE_DELETE( cspv );
         return FALSE;
     }
@@ -420,7 +422,7 @@ void Chuck_Shell::run()
     // make sure
     if(initialized == FALSE)
     {
-        fprintf( stderr, "[chuck](via shell): shell not initialized...\n" );
+        CK_FPRINTF_STDERR( "[chuck](via shell): shell not initialized...\n" );
         return;
     }
 
@@ -467,7 +469,6 @@ t_CKBOOL Chuck_Shell::execute( string & in, string & out )
 {
     if( !initialized )
     {
-        //fprintf();
         return FALSE;
     }
     
@@ -703,9 +704,12 @@ void Chuck_Shell::exit()
 {
     stop = TRUE;
     
+    // REFACTOR 2017 TODO Ge: all_stop
+/*    
     if( process_vm != NULL )
         all_stop(); // ge: 1.3.5.3
         // process_vm->stop();
+*/
 }
 
 //-----------------------------------------------------------------------------

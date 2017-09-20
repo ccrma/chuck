@@ -87,10 +87,14 @@ ck_socket otf_send_connect( const char * host, int port );
 // callback
 void * otf_cb( void * p );
 
+// --poop
+void uh();
 
+// yes
 extern const char * poop[];
 extern long poop_size;
 extern t_CKUINT g_otf_log;
+
 
 
 

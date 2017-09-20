@@ -34,7 +34,6 @@
 #include "util_serial.h"
 #include "chuck_instr.h"
 #include "chuck_type.h"
-#include "chuck_globals.h"
 #include "chuck_vm.h"
 
 #ifndef __WINDOWS_DS__
@@ -131,7 +130,7 @@ void Chuck_IO_Serial::shutdown()
 }
 
 
-Chuck_IO_Serial::Chuck_IO_Serial() :
+Chuck_IO_Serial::Chuck_IO_Serial( Chuck_VM * vm ) :
 m_asyncRequests(CircularBuffer<Request>(32)),
 m_asyncResponses(CircularBuffer<Request>(32)),
 m_asyncWriteRequests(CircularBuffer<Request>(32)),
@@ -156,6 +155,8 @@ m_writeBuffer(1024)
     m_do_exit = FALSE;
     
     s_serials.push_back(this);
+    
+    m_vmRef = vm;
 }
 
 Chuck_IO_Serial::~Chuck_IO_Serial()
@@ -164,7 +165,7 @@ Chuck_IO_Serial::~Chuck_IO_Serial()
     m_do_write_thread = FALSE;
     SAFE_DELETE(m_read_thread);
     if( m_event_buffer )
-        g_vm->destroy_event_buffer( m_event_buffer );
+        m_vmRef->destroy_event_buffer( m_event_buffer );
     
     close();
     
@@ -465,9 +466,9 @@ Chuck_String * Chuck_IO_Serial::readLine()
     }
     
     Chuck_String * str = new Chuck_String;
-    initialize_object(str, &t_string);
+    initialize_object(str, m_vmRef->env()->t_string);
     
-    str->str = string((char *)m_tmp_buf);
+    str->set( string((char *)m_tmp_buf) );
     
     return str;
 }
@@ -719,7 +720,7 @@ void Chuck_IO_Serial::start_read_thread()
         m_read_thread->start(shell_read_cb, this);
 #endif         
         assert(m_event_buffer == NULL);
-        m_event_buffer = g_vm->create_event_buffer();
+        m_event_buffer = m_vmRef->create_event_buffer();
     }
 }
 
@@ -816,7 +817,7 @@ Chuck_Array * Chuck_IO_Serial::getBytes()
        r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
-        initialize_object(arr, &t_array);
+        initialize_object(arr, m_vmRef->env()->t_array);
         m_asyncResponses.get(r);
     }
     
@@ -839,7 +840,7 @@ Chuck_Array * Chuck_IO_Serial::getInts()
        r.m_type == TYPE_INT && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
-        initialize_object(arr, &t_array);
+        initialize_object(arr, m_vmRef->env()->t_array);
         m_asyncResponses.get(r);
     }
     
@@ -862,7 +863,7 @@ Chuck_Array * Chuck_IO_Serial::getFloats()
        r.m_type == TYPE_FLOAT && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
-        initialize_object(arr, &t_array);
+        initialize_object(arr, m_vmRef->env()->t_array);
         m_asyncResponses.get(r);
     }
     
@@ -950,7 +951,7 @@ t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
 // peek next byte
 t_CKINT Chuck_IO_Serial::peek_buffer()
 {
-    // fprintf(stderr, "Chuck_IO_Serial::peek_buffer %i/%i\n", m_io_buf_pos, m_io_buf_available);
+    // CK_FPRINTF_STDERR( "Chuck_IO_Serial::peek_buffer %i/%i\n", m_io_buf_pos, m_io_buf_available);
     
     if(m_io_buf_pos >= m_io_buf_available)
     {
@@ -969,7 +970,7 @@ t_CKINT Chuck_IO_Serial::peek_buffer()
 // return -1 on error/exit condition
 t_CKINT Chuck_IO_Serial::pull_buffer()
 {
-    // fprintf(stderr, "Chuck_IO_Serial::pull_buffer %i/%i\n", m_io_buf_pos, m_io_buf_available);
+    // CK_FPRINTF_STDERR( "Chuck_IO_Serial::pull_buffer %i/%i\n", m_io_buf_pos, m_io_buf_available);
     
     if(m_io_buf_pos >= m_io_buf_available)
     {
@@ -1040,7 +1041,7 @@ t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
     // TODO: eof
     
     str = new Chuck_String;
-    str->str = std::string((char *)m_tmp_buf, len);
+    str->set( std::string((char *)m_tmp_buf, len) );
     
     r.m_val = (t_CKUINT) str;
     r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_SUCCESS;
@@ -1758,12 +1759,12 @@ CK_DLL_SFUN( serialio_list )
     
     // ISSUE: 64-bit
     Chuck_Array4 * array = new Chuck_Array4(TRUE, 0);
-    initialize_object( array, &t_array );
+    initialize_object( array, SHRED->vm_ref->env()->t_array );
     
     for(vector<string>::iterator i = devices.begin(); i != devices.end(); i++)
     {
         Chuck_String * name = new Chuck_String(*i);
-        initialize_object(name, &t_string);
+        initialize_object(name, SHRED->vm_ref->env()->t_string);
         array->push_back((t_CKUINT) name);
     }
     
@@ -1773,7 +1774,7 @@ CK_DLL_SFUN( serialio_list )
 
 CK_DLL_ALLOC( serialio_alloc )
 {
-    return new Chuck_IO_Serial;
+    return new Chuck_IO_Serial( SHRED->vm_ref );
 }
 
 CK_DLL_CTOR( serialio_ctor )
