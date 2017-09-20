@@ -39,7 +39,9 @@
 
 // function prototypes
 t_CKBOOL init_shell( Chuck_Shell * shell, Chuck_Shell_UI * ui, Chuck_VM * vm );
+bool go( int argc, const char ** argv );
 void global_cleanup();
+void all_stop();
 void usage();
 void uh();
 t_CKBOOL get_count( const char * arg, t_CKUINT * out );
@@ -73,8 +75,6 @@ t_CKUINT g_watchdog_countermeasure_priority = 0;
 #endif
 // watchdog timeout
 t_CKFLOAT g_watchdog_timeout = 0.5;
-// thread id for whatever
-CHUCK_THREAD g_tid_whatever = 0;
 // flag for Std.system( string )
 t_CKBOOL g_enable_system_cmd = FALSE;
 // flag for enabling shell, ge: 1.3.5.3
@@ -170,7 +170,7 @@ static void version()
 // name: usage()
 // desc: ...
 //-----------------------------------------------------------------------------
-static void usage()
+void usage()
 {
     // (note: optional colon added 1.3.0.0)
     CK_FPRINTF_STDERR( "usage: chuck --[options|commands] [+-=^] file1 file2 file3 ...\n" );
@@ -192,7 +192,7 @@ static void usage()
 // name: get_count()
 // desc: get the thing after -- or - as number
 //-----------------------------------------------------------------------------
-static t_CKBOOL get_count( const char * arg, t_CKUINT * out )
+t_CKBOOL get_count( const char * arg, t_CKUINT * out )
 {
     // no comment
     if( !strncmp( arg, "--", 2 ) ) arg += 2;
@@ -236,40 +236,14 @@ extern "C" void signal_int( int sig_num )
 //-----------------------------------------------------------------------------
 void global_cleanup()
 {
-    // if any Chuck_Systems are left, delete them
-    while( !g_systems.empty() )
-    {
-        Chuck_System * next_chuck = g_systems.front();
-        // delete Chuck_System causes a g_systems.remove which modifies the list
-        // and thus g_systems.front() will be different next time
-        delete next_chuck;
-    }
+    SAFE_DELETE( the_chuck );
     
     // request bbq shutdown
+    // REFACTOR-2017 TODO: Shut down audio system
     all_stop();
     
     // request MIDI, etc. files open be closed
     all_detach();
-    
-    // shutdown audio
-    if( g_enable_realtime_audio )
-    {
-        // log
-        EM_log( CK_LOG_SYSTEM, "shutting down real-time audio..." );
-        
-        g_bbq->digi_out()->cleanup();
-        g_bbq->digi_in()->cleanup();
-        g_bbq->shutdown();
-        // m_audio = FALSE;
-    }
-    // log
-    EM_log( CK_LOG_SYSTEM, "freeing bbq subsystem..." );
-    // clean up
-    SAFE_DELETE( g_bbq );
-    
-    if( g_main_thread_quit )
-        g_main_thread_quit( g_main_thread_bindle );
-    clear_main_thread_hook();
     
     // wait for the shell, if it is running
     // does the VM reset its priority to normal before exiting?
@@ -279,21 +253,28 @@ void global_cleanup()
 
     // things don't work so good on windows...
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-    // pthread_kill( g_tid_otf, 2 );
-    if( g_tid_otf ) pthread_cancel( g_tid_otf );
-    if( g_tid_whatever ) pthread_cancel( g_tid_whatever );
-    // if( g_tid_otf ) usleep( 50000 );
+    // REFACTOR-2017 TODO: Cancel otf, le_cb threads? Does this happen in ~ChucK()?
+//    if( g_tid_otf ) pthread_cancel( g_tid_otf );
+//    if( g_tid_whatever ) pthread_cancel( g_tid_whatever );
 #else
     // close handle
     if( g_tid_otf ) CloseHandle( g_tid_otf );
 #endif
-    
-    // ck_close( g_sock );
-    
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-    // pthread_join( g_tid_otf, NULL );
-#endif
 }
+
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: all_stop()
+// desc: ...
+//-----------------------------------------------------------------------------
+void all_stop()
+{
+    // TODO:
+}
+
 
 
 
@@ -302,7 +283,7 @@ void global_cleanup()
 // name: init_shell()
 // desc: ...
 //-----------------------------------------------------------------------------
-static t_CKBOOL init_shell( Chuck_Shell * shell, Chuck_Shell_UI * ui, Chuck_VM * vm )
+t_CKBOOL init_shell( Chuck_Shell * shell, Chuck_Shell_UI * ui, Chuck_VM * vm )
 {
     // initialize shell UI
     if( !ui->init() )
@@ -428,17 +409,6 @@ bool go( int argc, const char ** argv )
                 enable_server = FALSE;
             else if( !strcmp(argv[i], "--callback") )
                 block = FALSE;
-            else if( !strcmp( argv[i], "--external-callback" ) )
-            {
-                // caller will call the Chuck_System->run itself
-                m_initOnly = TRUE;
-                // --external-callback implies --loop: wait for incoming shreds
-                // (don't enable server, which waits on TCP8888)
-                vm_halt = FALSE;
-                enable_server = FALSE;
-                // --external-callback implies --silent: don't engage the main thread hook
-                g_enable_realtime_audio = FALSE;
-            }
             // blocking removed, ge: 1.3.5.3
             // else if( !strcmp(argv[i], "--blocking") )
             //     block = TRUE;
