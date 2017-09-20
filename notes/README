@@ -2,8 +2,8 @@
 ChucK: a Concurrent, On-the-fly, Audio Programming Language
 
 ChucK home page:
-    http://chuck.cs.princeton.edu/
     http://chuck.stanford.edu/
+    http://chuck.cs.princeton.edu/
 
 ---
 what is it: ChucK is a general-purpose programming language, intended for 
@@ -30,30 +30,30 @@ authors:
   see AUTHORS  
 
 ChucK home page:
-    http://chuck.cs.princeton.edu/
     http://chuck.stanford.edu/
+    http://chuck.cs.princeton.edu/
 
 ChucK documentation:
-    http://chuck.cs.princeton.edu/doc/
-
-Princeton Sound Lab:
-    http://soundlab.cs.princeton.edu/
+    http://chuck.stanford.edu/doc/
 
 CCRMA:
     http://ccrma.stanford.edu/
+
+Princeton Sound Lab:
+    http://soundlab.cs.princeton.edu/
 
 ---
 
 *** QUICK START ***
 
-Visit the ChucK home page (http://chuck.cs.princeton.edu/)
+Visit the ChucK home page (http://chuck.stanford.edu/)
   - the ChucK tutorial
   - documentation
   - developer's guide
   - programmer's guide
   - publications
 
-- HTML version: (http://chuck.cs.princeton.edu/doc/)
+- HTML version: (http://chuck.stanford.edu/doc/)
     (we recommend reading HTML version)
 
 - TEXT only documents:
