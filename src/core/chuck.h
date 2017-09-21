@@ -45,6 +45,7 @@
 #include "ulib_machine.h"
 #include "util_math.h"
 #include "util_string.h"
+#include "hidio_sdl.h"
 #include "midiio_rtmidi.h"
 #include <string>
 #include <map>
@@ -58,12 +59,13 @@
 #define CHUCK_PARAM_OUTPUT_CHANNELS     "OUTPUT_CHANNELS"
 #define CHUCK_PARAM_VM_ADAPTIVE         "VM_ADAPTIVE"
 #define CHUCK_PARAM_VM_HALT             "VM_HALT"
+#define CHUCK_PARAM_OTF_ENABLE          "OTF_ENABLE"
 #define CHUCK_PARAM_OTF_PORT            "OTF_PORT"
-#define CHUCK_PARAM_LOG_LEVEL           "LOG_LEVEL"
 #define CHUCK_PARAM_DUMP_INSTRUCTIONS   "DUMP_INSTRUCTIONS"
 #define CHUCK_PARAM_AUTO_DEPEND         "AUTO_DEPEND"
 #define CHUCK_PARAM_DEPRECATE_LEVEL     "DEPRECATE_LEVEL"
 #define CHUCK_PARAM_WORKING_DIRECTORY   "WORKING_DIRECTORY"
+#define CHUCK_PARAM_CHUGIN_ENABLE       "CHUGIN_ENABLE"
 #define CHUCK_PARAM_CHUGIN_DIRECTORY    "CHUGIN_DIRECTORY"
 
 
@@ -151,6 +153,10 @@ public: // static functions
     static t_CKUINT numVMs() { return o_numVMs; };
     // --poop compatibilty
     static void poop();
+    // set log level -- this should eventually be per-VM?
+    static void setLogLevel( t_CKINT level );
+    // get log level -- also per-VM?
+    static t_CKINT getLogLevel();
 
 protected:
     // chuck version

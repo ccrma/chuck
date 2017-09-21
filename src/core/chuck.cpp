@@ -38,7 +38,18 @@
 #include "chuck_errmsg.h"
 #include "chuck_otf.h"
 #include "ulib_machine.h"
+#include "util_network.h"
 #include "util_string.h"
+
+#ifndef __PLATFORM_WIN32__
+#include <unistd.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/param.h>   // added 1.3.0.0
+#else
+#include <direct.h>      // added 1.3.0.0
+#define MAXPATHLEN (255) // addec 1.3.0.0
+#endif // #ifndef __PLATFORM_WIN32__
 
 
 
@@ -49,10 +60,12 @@
 #define CHUCK_PARAM_OUTPUT_CHANNELS_DEFAULT      "2"
 #define CHUCK_PARAM_VM_ADAPTIVE_DEFAULT          "0"
 #define CHUCK_PARAM_VM_HALT_DEFAULT              "0"
+#define CHUCK_PARAM_OTF_ENABLE_DEFAULT           "0"
 #define CHUCK_PARAM_OTF_PORT_DEFAULT             "8888"
 #define CHUCK_PARAM_DUMP_INSTRUCTIONS_DEFAULT    "0"
 #define CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT      "1"
 #define CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT    ""
+#define CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT        "1"
 #define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT     ""
 
 
@@ -155,22 +168,26 @@ void ChucK::initDefaultParams()
     m_params[CHUCK_PARAM_OUTPUT_CHANNELS] = CHUCK_PARAM_OUTPUT_CHANNELS_DEFAULT;
     m_params[CHUCK_PARAM_VM_ADAPTIVE] = CHUCK_PARAM_VM_ADAPTIVE_DEFAULT;
     m_params[CHUCK_PARAM_VM_HALT] = CHUCK_PARAM_VM_HALT_DEFAULT;
+    m_params[CHUCK_PARAM_OTF_ENABLE] = CHUCK_PARAM_OTF_ENABLE_DEFAULT;
     m_params[CHUCK_PARAM_OTF_PORT] = CHUCK_PARAM_OTF_PORT_DEFAULT;
     m_params[CHUCK_PARAM_DUMP_INSTRUCTIONS] = CHUCK_PARAM_DUMP_INSTRUCTIONS_DEFAULT;
     m_params[CHUCK_PARAM_DEPRECATE_LEVEL] = CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT;
     m_params[CHUCK_PARAM_WORKING_DIRECTORY] = CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT;
     m_params[CHUCK_PARAM_CHUGIN_DIRECTORY] = CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT;
+    m_params[CHUCK_PARAM_CHUGIN_ENABLE] = CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT;
     
     ck_param_types[CHUCK_PARAM_SAMPLE_RATE] =       ck_param_int;
     ck_param_types[CHUCK_PARAM_INPUT_CHANNELS] =    ck_param_int;
     ck_param_types[CHUCK_PARAM_OUTPUT_CHANNELS] =   ck_param_int;
     ck_param_types[CHUCK_PARAM_VM_ADAPTIVE] =       ck_param_int;
     ck_param_types[CHUCK_PARAM_VM_HALT] =           ck_param_int;
+    ck_param_types[CHUCK_PARAM_OTF_ENABLE] =        ck_param_int;
     ck_param_types[CHUCK_PARAM_OTF_PORT] =          ck_param_int;
     ck_param_types[CHUCK_PARAM_DUMP_INSTRUCTIONS] = ck_param_int;
     ck_param_types[CHUCK_PARAM_DEPRECATE_LEVEL] =   ck_param_int;
     ck_param_types[CHUCK_PARAM_WORKING_DIRECTORY] = ck_param_string;
     ck_param_types[CHUCK_PARAM_CHUGIN_DIRECTORY] =  ck_param_string;
+    ck_param_types[CHUCK_PARAM_CHUGIN_ENABLE] =     ck_param_int;
 }
 
 
@@ -300,6 +317,11 @@ std::string ChucK::getParamString( const std::string & key )
 //-----------------------------------------------------------------------------
 bool ChucK::init()
 {
+    Chuck_VM_Code * code = NULL;
+    Chuck_VM_Shred * shred = NULL;
+    std::string cwd;
+    char cstr_cwd[MAXPATHLEN];
+    
     // sanity check
     if( m_carrier->vm != NULL )
     {
@@ -320,7 +342,7 @@ bool ChucK::init()
     string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
     string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
     t_CKUINT deprecate = getParamInt( CHUCK_PARAM_DEPRECATE_LEVEL );
-    // TODO: chugin load option
+
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path;
     if( workingDir != std::string("") )
@@ -333,8 +355,7 @@ bool ChucK::init()
     }
     // list of individually named chug-ins (added 1.3.0.0)
     std::list<std::string> named_dls;
-    
-    
+
     // instantiate VM
     m_carrier->vm = new Chuck_VM();
     // reference back to carrier
@@ -344,6 +365,14 @@ bool ChucK::init()
     {
         CK_FPRINTF_STDERR( "[chuck]: %s\n", m_carrier->vm->last_error() );
         goto cleanup;
+    }
+
+    // if chugin load is off, then clear the lists (added 1.3.0.0 -- TODO: refactor)
+    if( getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) == 0 )
+    {
+        // turn off chugin load
+        dl_search_path.clear();
+        named_dls.clear();
     }
     
     // instantiate compiler
@@ -371,10 +400,104 @@ bool ChucK::init()
         goto cleanup;
     }
     
-    // TODO: load chugins
+    // figure out current working directory (added 1.3.0.0)
+    // is this needed for current path to work correctly?!
+    if( getcwd(cstr_cwd, MAXPATHLEN) == NULL )
+    {
+        // uh...
+        EM_log( CK_LOG_SEVERE, "error: unable to determine current working directory!" );
+    }
+    else
+    {
+        cwd = std::string(cstr_cwd);
+        cwd = normalize_directory_separator(cwd) + "/";
+    }
+    
+    // whether or not chug should be enabled (added 1.3.0.0)
+    if( getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) != 0 )
+    {
+        // log
+        EM_log( CK_LOG_SEVERE, "pre-loading ChucK libs..." );
+        EM_pushlog();
+        
+        // iterate over list of ck files that the compiler found
+        for( std::list<std::string>::iterator j =
+            compiler()->m_cklibs_to_preload.begin();
+            j != compiler()->m_cklibs_to_preload.end(); j++)
+        {
+            // the filename
+            std::string filename = *j;
+            
+            // log
+            EM_log( CK_LOG_SEVERE, "preloading '%s'...", filename.c_str() );
+            // push indent
+            EM_pushlog();
+            
+            // SPENCERTODO: what to do for full path
+            std::string full_path = filename;
+            
+            // parse, type-check, and emit
+            if( compiler()->go( filename, NULL, NULL, full_path ) )
+            {
+                // TODO: how to compilation handle?
+                //return 1;
+                
+                // get the code
+                code = compiler()->output();
+                // name it - TODO?
+                // code->name += string(argv[i]);
+                
+                // spork it
+                shred = vm()->spork( code, NULL, TRUE );
+            }
+            
+            // pop indent
+            EM_poplog();
+        }
+        
+        // clear the list of chuck files to preload
+        compiler()->m_cklibs_to_preload.clear();
+        
+        // pop log
+        EM_poplog();
+    }
     
     // load user namespace
     m_carrier->env->load_user_namespace();
+    
+    // server
+    if( getParamInt( CHUCK_PARAM_OTF_ENABLE ) != 0 )
+    {
+        m_carrier->otf_port = getParamInt( CHUCK_PARAM_OTF_PORT );
+        // log
+        EM_log( CK_LOG_SYSTEM, "starting listener on port: %d...",
+                m_carrier->otf_port );
+        
+        // start tcp server
+        m_carrier->otf_socket = ck_tcp_create( 1 );
+        if( !m_carrier->otf_socket ||
+            !ck_bind( m_carrier->otf_socket, m_carrier->otf_port ) ||
+            !ck_listen( m_carrier->otf_socket, 10 ) )
+        {
+            CK_FPRINTF_STDERR( "[chuck]: cannot bind to tcp port %li...\n", m_carrier->otf_port );
+            ck_close( m_carrier->otf_socket );
+            m_carrier->otf_socket = NULL;
+        }
+        else
+        {
+#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+            pthread_create( &m_carrier->otf_thread, NULL, otf_cb, NULL );
+#else
+            m_carrier->otf_thread = CreateThread( NULL, 0,
+                (LPTHREAD_START_ROUTINE)otf_cb, NULL, 0, 0 );
+#endif
+        }
+    }
+    else
+    {
+        // log
+        EM_log( CK_LOG_SYSTEM, "OTF server/listener: OFF" );
+    }
     
     // did user init?
     m_init = TRUE;
@@ -495,6 +618,9 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
     // pop indent
     EM_poplog();
     
+    // reset the parser
+    reset_parse();
+    
     return true;
 }
 
@@ -567,7 +693,10 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
     
     // pop indent
     EM_poplog();
-    
+
+    // reset the parser
+    reset_parse();
+
     return true;
 }
 
@@ -753,6 +882,28 @@ void ChucK::finalCleanup()
 {
     // REFACTOR-2017 TODO Ge:
     // stop le_cb, ...?
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// set log level -- this should eventually be per-VM?
+//-----------------------------------------------------------------------------
+void ChucK::setLogLevel( t_CKINT level )
+{
+    EM_setlog( level );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// get log level -- also per-VM?
+//-----------------------------------------------------------------------------
+t_CKINT ChucK::getLogLevel()
+{
+    return g_loglevel;
 }
 
 
