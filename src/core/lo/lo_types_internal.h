@@ -36,7 +36,7 @@ typedef void * pthread_t;
 #endif
 #endif // WIN32
 
-#include "lo/lo_osc_types.h"
+#include "lo_osc_types.h"
 
 typedef void (*lo_err_handler)(int num, const char *msg, const char *path);
 

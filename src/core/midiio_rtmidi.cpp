@@ -35,7 +35,6 @@
 #ifndef __DISABLE_MIDI__
 
 #include "chuck_errmsg.h"
-#include "chuck_globals.h"
 #include "chuck_vm.h"
 #include <vector>
 #include <map>

@@ -38,8 +38,8 @@
 #endif
 
 #include "lo_types_internal.h"
-#include "lo/lo.h"
-#include "lo/lo_throw.h"
+#include "lo.h"
+#include "lo_throw.h"
 
 static void thread_func(void *data);
 

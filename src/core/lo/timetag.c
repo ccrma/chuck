@@ -15,7 +15,7 @@
  */
 
 #include "lo_types_internal.h"
-#include "lo/lo.h"
+#include "lo.h"
 
 #ifdef _MSC_VER
 lo_timetag lo_get_tt_immediate() { lo_timetag tt = {0U,1U}; return tt; }

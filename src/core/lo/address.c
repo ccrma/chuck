@@ -35,7 +35,7 @@
 #endif
 
 #include "lo_types_internal.h"
-#include "lo/lo.h"
+#include "lo.h"
 #include "config.h"
 
 lo_address lo_address_new_with_proto(int proto, const char *host, const char *port)
