@@ -146,13 +146,13 @@ extern ChuckOutStream g_ck_stderrstream;
 
 
 
-void EM_log( int, c_constr, ... );
-void EM_setlog( int );
+void EM_log( t_CKINT, c_constr, ... );
+void EM_setlog( t_CKINT );
 void EM_pushlog();
 void EM_poplog();
 
 // actual level
-extern int g_loglevel;
+extern t_CKINT g_loglevel;
 // macro to compare
 #define DO_LOG(x) ( x <= g_loglevel )
 

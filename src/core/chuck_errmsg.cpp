@@ -55,8 +55,8 @@ static const size_t LASTERROR_SIZE = 1024;
 static char g_lasterror[LASTERROR_SIZE] = "[chuck]: (no error)";
 static size_t g_lasterrorIndex = strlen(g_lasterror);
 // log globals
-int g_loglevel = CK_LOG_CORE;
-int g_logstack = 0;
+t_CKINT g_loglevel = CK_LOG_CORE;
+t_CKINT g_logstack = 0;
 XMutex g_logmutex;
 
 // more local globals
@@ -553,7 +553,7 @@ void EM_error3( const char * message, ... )
 
 
 // log
-void EM_log( int level, const char * message, ... )
+void EM_log( t_CKINT level, const char * message, ... )
 {
     va_list ap;
 
@@ -582,14 +582,14 @@ void EM_log( int level, const char * message, ... )
 
 
 // set log level
-void EM_setlog( int level )
+void EM_setlog( t_CKINT level )
 {
     if( level > CK_LOG_CRAZY ) level = CK_LOG_CRAZY;
     else if( level < CK_LOG_NONE ) level = CK_LOG_NONE;
     g_loglevel = level;
 
     // log this
-    EM_log( CK_LOG_SYSTEM, "setting log level to: %i (%s)...", level, g_str[level] );
+    EM_log( CK_LOG_SYSTEM, "setting log level to: %li (%s)...", level, g_str[level] );
 }
 
 // push log

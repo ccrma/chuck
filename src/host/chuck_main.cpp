@@ -53,7 +53,7 @@ void cb( t_CKSAMPLE * in, t_CKSAMPLE * out, t_CKUINT numFrames,
 
 // C functions
 extern "C" void signal_int( int sig_num );
-
+extern "C" void signal_pipe( int sig_num );
 
 
 
@@ -67,7 +67,7 @@ CHUCK_THREAD g_tid_shell = 0;
 // default destination host name
 char g_otf_dest[256] = "127.0.0.1";
 // otf listener port
-t_CKUINT g_otf_port = 8888;
+t_CKINT g_otf_port = 8888;
 
 // the shell
 Chuck_Shell * g_shell = NULL;
@@ -254,6 +254,27 @@ extern "C" void signal_int( int sig_num )
 
 
 
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: signal_pipe()
+// desc: ...
+//-----------------------------------------------------------------------------
+extern "C" void signal_pipe( int sig_num )
+{
+    fprintf( stderr, "[chuck]: sigpipe handled - broken pipe (no connection)...\n" );
+    if( g_sigpipe_mode )
+    {
+        all_detach();
+        // exit( 2 );
+    }
+}
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: global_cleanup()
 // desc: ...
@@ -364,6 +385,8 @@ bool go( int argc, const char ** argv )
     t_CKBOOL update_otf_vm = TRUE;
     string   filename = "";
     vector<string> args;
+    Chuck_VM_Code * code = NULL;
+    Chuck_VM_Shred * shred = NULL;
     
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path;
@@ -791,132 +814,52 @@ bool go( int argc, const char ** argv )
     the_chuck->setParam( CHUCK_PARAM_VM_ADAPTIVE, adaptive_size );
     the_chuck->setParam( CHUCK_PARAM_VM_HALT, (t_CKINT)(vm_halt) );
     the_chuck->setParam( CHUCK_PARAM_OTF_PORT, g_otf_port );
-    the_chuck->setParam( CHUCK_PARAM_LOG_LEVEL, g_loglevel );
-    the_chuck->setParam( CHUCK_PARAM_, );
-    the_chuck->setParam( CHUCK_PARAM_, );
-    the_chuck->setParam( CHUCK_PARAM_, );
-    the_chuck->setParam( CHUCK_PARAM_, );
+    the_chuck->setParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, (t_CKINT)dump );
+    the_chuck->setParam( CHUCK_PARAM_AUTO_DEPEND, (t_CKINT)auto_depend );
+    the_chuck->setParam( CHUCK_PARAM_DEPRECATE_LEVEL, deprecate_level );
+    the_chuck->setLogLevel( log_level );
     
     // initialize
-    
-
-    
-    //------------------------- VIRTUAL MACHINE SETUP -----------------------------
-    
-    // allocate the vm - needs the type system
-    vm = m_carrier.vm = m_vmRef = new Chuck_VM;
-    m_carrier.vm->setCarrier( &m_carrier );
-    
-    // ge: refactor 2015: initialize VM
-    if( !vm->initialize( srate, dac_chans, adc_chans, adaptive_size, vm_halt ) )
-    {
-        CK_FPRINTF_STDERR( "[chuck]: %s\n", vm->last_error() );
-        exit( 1 );
-    }
-    
-    if( update_otf_vm )
-    {
-        set_otf_vm( vm );
-    }
-    
+    the_chuck->init();
     
     //--------------------------- AUDIO I/O SETUP ---------------------------------
+    // log
+    EM_log( CK_LOG_SYSTEM, "initializing audio I/O..." );
+    // push
+    EM_pushlog();
+    // log
+    EM_log( CK_LOG_SYSTEM, "probing '%s' audio subsystem...", g_enable_realtime_audio ? "real-time" : "fake-time" );
+    
     // initialize audio system
-    t_CKBOOL retval = ChuckAudio::initialize( numInChannels, numOutChannels,
-        srate, bufferSize, numBuffers, cb, NULL, FALSE );
+    t_CKBOOL retval = ChuckAudio::initialize( adc_chans, dac_chans,
+        srate, buffer_size, num_buffers, cb, (void *)the_chuck, force_srate );
     // check
     if( !retval )
     {
-        // BADDDD
-    }
-    
-    // ge: 1.3.5.3
-    if( g_bbq == NULL ) {
-        bbq = g_bbq = new BBQ;
-        // set some parameters
-        bbq->set_srate( srate );
-        bbq->set_bufsize( buffer_size );
-        bbq->set_numbufs( num_buffers );
-        bbq->set_inouts( adc, dac );
-        bbq->set_chans( adc_chans, dac_chans );
-        
-        // log
-        EM_log( CK_LOG_SYSTEM, "initializing audio I/O..." );
-        // push
-        EM_pushlog();
-        // log
-        EM_log( CK_LOG_SYSTEM, "probing '%s' audio subsystem...", g_enable_realtime_audio ? "real-time" : "fake-time" );
-        
-        // probe / init (this shouldn't start audio yet...
-        // moved here 1.3.1.2; to main ge: 1.3.5.3)
-        if( !bbq->initialize( dac_chans, adc_chans, srate, 16, buffer_size, num_buffers,
-                             dac, adc, block, vm, g_enable_realtime_audio, NULL, NULL, force_srate ) )
-        {
-            EM_log( CK_LOG_SYSTEM,
-                   "cannot initialize audio device (use --silent/-s for non-realtime)" );
-            // pop
-            EM_poplog();
-            // done
-            exit( 1 );
-        }
-        
-        // log
-        EM_log( CK_LOG_SYSTEM, "real-time audio: %s", g_enable_realtime_audio ? "YES" : "NO" );
-        EM_log( CK_LOG_SYSTEM, "mode: %s", block ? "BLOCKING" : "CALLBACK" );
-        EM_log( CK_LOG_SYSTEM, "sample rate: %ld", srate );
-        EM_log( CK_LOG_SYSTEM, "buffer size: %ld", buffer_size );
-        if( g_enable_realtime_audio )
-        {
-            EM_log( CK_LOG_SYSTEM, "num buffers: %ld", num_buffers );
-            EM_log( CK_LOG_SYSTEM, "adc: %ld dac: %d", adc, dac );
-            EM_log( CK_LOG_SYSTEM, "adaptive block processing: %ld", adaptive_size > 1 ? adaptive_size : 0 );
-        }
-        EM_log( CK_LOG_SYSTEM, "channels in: %ld out: %ld", adc_chans, dac_chans );
-        
+        EM_log( CK_LOG_SYSTEM,
+               "cannot initialize audio device (use --silent/-s for non-realtime)" );
         // pop
         EM_poplog();
-    } else {
-        bbq = g_bbq;
-    }
-    
-    //------------------------- CHUCK COMPILER SETUP -----------------------------
-    
-    // if chugin load is off, then clear the lists (added 1.3.0.0 -- TODO: refactor)
-    if( chugin_load == 0 )
-    {
-        // turn off chugin load
-        dl_search_path.clear();
-        named_dls.clear();
-    }
-    
-    // allocate the compiler
-    compiler = m_carrier.compiler = m_compilerRef = new Chuck_Compiler;
-    m_carrier.compiler->setCarrier( &m_carrier );
-    
-    // initialize the compiler (search_apth and named_dls added 1.3.0.0 -- TODO: refactor)
-    if( !compiler->initialize( dl_search_path, named_dls ) )
-    {
-        CK_FPRINTF_STDERR( "[chuck]: error initializing compiler...\n" );
-        exit( 1 );
-    }
-    // enable dump
-    compiler->emitter->dump = dump;
-    // set auto depend
-    compiler->set_auto_depend( auto_depend );
-    
-    if( update_otf_vm )
-    {
-        // also update otf compiler
-        set_otf_compiler( compiler );
-    }
-    
-    // vm synthesis subsystem - needs the type system
-    if( !vm->initialize_synthesis( ) )
-    {
-        CK_FPRINTF_STDERR( "[chuck]: %s\n", vm->last_error() );
+        // done
         exit( 1 );
     }
     
+    // log
+    EM_log( CK_LOG_SYSTEM, "real-time audio: %s", g_enable_realtime_audio ? "YES" : "NO" );
+    EM_log( CK_LOG_SYSTEM, "mode: %s", block ? "BLOCKING" : "CALLBACK" );
+    EM_log( CK_LOG_SYSTEM, "sample rate: %ld", srate );
+    EM_log( CK_LOG_SYSTEM, "buffer size: %ld", buffer_size );
+    if( g_enable_realtime_audio )
+    {
+        EM_log( CK_LOG_SYSTEM, "num buffers: %ld", num_buffers );
+        EM_log( CK_LOG_SYSTEM, "adc: %ld dac: %d", adc, dac );
+        EM_log( CK_LOG_SYSTEM, "adaptive block processing: %ld", adaptive_size > 1 ? adaptive_size : 0 );
+    }
+    EM_log( CK_LOG_SYSTEM, "channels in: %ld out: %ld", adc_chans, dac_chans );
+    
+    // pop
+    EM_poplog();
+
 #ifndef __ALTER_HID__
     // pre-load hid
     if( load_hid ) HidInManager::init();
@@ -935,81 +878,12 @@ bool go( int argc, const char ** argv )
         // instantiate
         g_shell = new Chuck_Shell;
         // initialize
-        if( !init_shell( g_shell, new Chuck_Console, vm ) )
+        if( !init_shell( g_shell, new Chuck_Console(), the_chuck->vm() ) )
             exit( 1 );
     }
-    
-    // set deprecate
-    compiler->env()->deprecate_level = deprecate_level;
-    
+
     // reset count
     count = 1;
-    
-    // figure out current working directory (added 1.3.0.0)
-    std::string cwd;
-    {
-        char cstr_cwd[MAXPATHLEN];
-        if( getcwd(cstr_cwd, MAXPATHLEN) == NULL )
-        {
-            // uh...
-            EM_log( CK_LOG_SEVERE, "error: unable to determine current working directory!" );
-        }
-        else
-        {
-            cwd = std::string(cstr_cwd);
-            cwd = normalize_directory_separator(cwd) + "/";
-        }
-    }
-    
-    // whether or not chug should be enabled (added 1.3.0.0)
-    if( chugin_load )
-    {
-        // log
-        EM_log( CK_LOG_SEVERE, "pre-loading ChucK libs..." );
-        EM_pushlog();
-        
-        // iterate over list of ck files that the compiler found
-        for( std::list<std::string>::iterator j = compiler->m_cklibs_to_preload.begin();
-            j != compiler->m_cklibs_to_preload.end(); j++)
-        {
-            // the filename
-            std::string filename = *j;
-            
-            // log
-            EM_log( CK_LOG_SEVERE, "preloading '%s'...", filename.c_str() );
-            // push indent
-            EM_pushlog();
-            
-            // SPENCERTODO: what to do for full path
-            std::string full_path = filename;
-            
-            // parse, type-check, and emit
-            if( compiler->go( filename, NULL, NULL, full_path ) )
-            {
-                // TODO: how to compilation handle?
-                //return 1;
-                
-                // get the code
-                code = compiler->output();
-                // name it - TODO?
-                // code->name += string(argv[i]);
-                
-                // spork it
-                shred = vm->spork( code, NULL, TRUE );
-            }
-            
-            // pop indent
-            EM_poplog();
-        }
-        
-        // clear the list of chuck files to preload
-        compiler->m_cklibs_to_preload.clear();
-        
-        // pop log
-        EM_poplog();
-    }
-    
-    compiler->env()->load_user_namespace();
     
     // log
     EM_log( CK_LOG_SEVERE, "starting compilation..." );
@@ -1026,9 +900,9 @@ bool go( int argc, const char ** argv )
         if( argv[i][0] == '-' || argv[i][0] == '+' )
         {
             if( !strcmp(argv[i], "--dump") || !strcmp(argv[i], "+d" ) )
-                compiler->emitter->dump = TRUE;
+                the_chuck->compiler()->emitter->dump = TRUE;
             else if( !strcmp(argv[i], "--nodump") || !strcmp(argv[i], "-d" ) )
-                compiler->emitter->dump = FALSE;
+                the_chuck->compiler()->emitter->dump = FALSE;
             else
                 get_count( argv[i], &count );
             
@@ -1036,7 +910,7 @@ bool go( int argc, const char ** argv )
         }
         
         // compile it!
-        compileFile( argv[i], "", count );
+        the_chuck->compileFile( argv[i], "", count );
         
         // reset count
         count = 1;
@@ -1045,56 +919,22 @@ bool go( int argc, const char ** argv )
     // pop indent
     EM_poplog();
     
-    // reset the parser
-    reset_parse();
-    
     // boost priority
-    if( Chuck_VM::our_priority != 0x7fffffff )
+    if( XThreadUtil::our_priority != 0x7fffffff )
     {
         // try
-        if( !Chuck_VM::set_priority( Chuck_VM::our_priority, vm ) )
+        if( !XThreadUtil::set_priority( XThreadUtil::our_priority ) )
         {
             // error
-            CK_FPRINTF_STDERR( "[chuck]: %s\n", vm->last_error() );
+            CK_FPRINTF_STDERR( "[chuck]: error setting thread priority...\n" );
             exit( 1 );
         }
     }
     
     
-    //----------------------- ON-THE-FLY SERVER SETUP -----------------------------
+    //----------------------- SHELL SETUP -----------------------------
     
-    // server
-    if( enable_server )
-    {
-#ifndef __DISABLE_OTF_SERVER__
-        // log
-        EM_log( CK_LOG_SYSTEM, "starting listener on port: %d...", g_port );
-        
-        // start tcp server
-        g_sock = ck_tcp_create( 1 );
-        if( !g_sock || !ck_bind( g_sock, g_port ) || !ck_listen( g_sock, 10 ) )
-        {
-            CK_FPRINTF_STDERR( "[chuck]: cannot bind to tcp port %li...\n", g_port );
-            ck_close( g_sock );
-            g_sock = NULL;
-        }
-        else
-        {
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-            pthread_create( &g_tid_otf, NULL, otf_cb, NULL );
-#else
-            g_tid_otf = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)otf_cb, NULL, 0, 0 );
-#endif
-        }
-#endif // __DISABLE_OTF_SERVER__
-    }
-    else
-    {
-        // log
-        EM_log( CK_LOG_SYSTEM, "OTF server/listener: OFF" );
-    }
-    
-    // start shell on separate thread
+    // start shell on separate thread | REFACTOR-2017: per-VM?!?
     if( g_enable_shell )
     {
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
@@ -1104,7 +944,6 @@ bool go( int argc, const char ** argv )
 #endif
     }
     
-    
     //-------------------------- MAIN CHUCK LOOP!!! -----------------------------
     
     // log
@@ -1112,64 +951,13 @@ bool go( int argc, const char ** argv )
     // push indent
     EM_pushlog();
     
-    // set run state
-    vm->start();
-    
-    EM_log( CK_LOG_SEVERE, "initializing audio buffers..." );
-    if( !bbq->digi_out()->initialize( ) )
-    {
-        EM_log( CK_LOG_SYSTEM,
-               "cannot open audio output (use --silent/-s)" );
-        exit(1);
-    }
-    
-    // initialize input
-    bbq->digi_in()->initialize( );
+    // start it!
+    the_chuck->start();
     
     // log
     EM_log( CK_LOG_SEVERE, "virtual machine running..." );
     // pop indent
     EM_poplog();
-    
-    // NOTE: non-blocking callback only, ge: 1.3.5.3
-    
-    // compute shreds before first sample
-    if( !vm->compute() )
-    {
-        // done, 1.3.5.3
-        vm->stop();
-        // log
-        EM_log( CK_LOG_SYSTEM, "virtual machine stopped..." );
-    }
-    
-    // check client mode
-    if( clientMode )
-    {
-        // done!
-        return TRUE;
-    }
-    
-    // start audio
-    if( !audio_started )
-    {
-        // audio
-        if( !audio_started && g_enable_realtime_audio )
-        {
-            EM_log( CK_LOG_SEVERE, "starting real-time audio..." );
-            bbq->digi_out()->start();
-            bbq->digi_in()->start();
-        }
-        
-        // set the flag to true to avoid entering this function
-        audio_started = TRUE;
-    }
-    
-    
-    // Don't run audio callback and shut down if we only wanted to init here
-    if( m_initOnly ) {
-        return TRUE;
-    }
-    
     
     // silent mode buffers
     SAMPLE * input = new SAMPLE[buffer_size*adc_chans];
@@ -1179,25 +967,20 @@ bool go( int argc, const char ** argv )
     memset( output, 0, sizeof(SAMPLE)*buffer_size*dac_chans );
     
     // wait
-    while( vm->running() )
+    while( the_chuck->vm()->running() )
     {
         // real-time audio
         if( g_enable_realtime_audio )
         {
-            if( g_main_thread_hook && g_main_thread_quit )
-                g_main_thread_hook( g_main_thread_bindle );
-            else
-                usleep( 1000 );
+            usleep( 10000 );
         }
         else // silent mode
         {
             // keep running as fast as possible
-            this->run( input, output, buffer_size );
+            the_chuck->run( input, output, buffer_size );
         }
     }
     
-    // shutdown
-    clientShutdown();
-    
     return TRUE;
 }
+
