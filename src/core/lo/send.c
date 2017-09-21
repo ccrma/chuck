@@ -41,7 +41,7 @@
 #endif
 
 #include "lo_types_internal.h"
-#include "lo/lo.h"
+#include "lo.h"
 
 #ifndef MSG_NOSIGNAL
 #define MSG_NOSIGNAL 0

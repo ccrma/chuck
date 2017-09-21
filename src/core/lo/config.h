@@ -1,80 +1,42 @@
-/* config.h for Windows. */
 
-/* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
-   systems. This function is required for `alloca.c' support on those systems.
-*/
-/* #undef CRAY_STACKSEG_END */
 
-/* Define to 1 if using `alloca.c'. */
-/* #undef C_ALLOCA */
+#if defined(__MACOSX_CORE__) || defined(__PLATFORM_LINUX__)
 
-/* Define to 1 if translation of program messages to the user's native
-   language is requested. */
-/* #undef ENABLE_NLS */
+/* config.h.  Generated from config.h.in by configure.  */
+/* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Define to 1 if you have `alloca', as a function or macro. */
-#define HAVE_ALLOCA 1
-
-/* Define to 1 if you have <alloca.h> and it should be used (not on Ultrix).
-   */
-/* #undef HAVE_ALLOCA_H */
-
-/* Define to 1 if you have <malloc.h> and it should be used. */
-#define HAVE_MALLOC_H 1
-
-/* Define if the GNU dcgettext() function is already present or preinstalled.
-   */
-/* #undef HAVE_DCGETTEXT */
+/* Define this to enable ipv6. */
+/* #undef ENABLE_IPV6 */
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
-#undef HAVE_DLFCN_H
+#define HAVE_DLFCN_H 1
 
-/* Define to 1 if you have the <getopt.h> header file. */
-#define HAVE_GETOPT_H 1
-
-/* Define to 1 if you have the `getopt_long' function. */
-#define HAVE_GETOPT_LONG 1
-
-/* Define if the GNU gettext() function is already present or preinstalled. */
-#undef HAVE_GETTEXT
-
-/* Define if you have the iconv() function. */
-#undef HAVE_ICONV
+/* Define to 1 if inet_aton() is available. */
+#define HAVE_INET_ATON 1
 
 /* Define to 1 if you have the <inttypes.h> header file. */
-#undef HAVE_INTTYPES_H
+#define HAVE_INTTYPES_H 1
 
-/* Define to 1 if you have the `isascii' function. */
-#define HAVE_ISASCII 1
+/* Define to 1 if you have the `m' library (-lm). */
+/* #undef HAVE_LIBM */
 
-/* Define to 1 if you have the `isblank' function. */
-/* #undef HAVE_ISBLANK */
-
-/* Define to 1 if you have the `iswctype' function. */
-#define HAVE_ISWCTYPE 1
-
-/* Define to 1 if you have the `iswlower' function. */
-#define HAVE_ISWLOWER 1
-
-/* Define to 1 if you have the `iswupper' function. */
-#define HAVE_ISWUPPER 1
-
-/* Define to 1 if you have the `mbrtowc' function. */
-#define HAVE_MBRTOWC 1
-
-/* Define to 1 if the system has the type `mbstate_t'. */
-#define HAVE_MBSTATE_T 1
-
-/* Define to 1 if you have the `mbtowc' function. */
-#define HAVE_MBTOWC 1
+/* Define to 1 if you have the `pthread' library (-lpthread). */
+#define HAVE_LIBPTHREAD 1
 
 /* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
+#define HAVE_MEMORY_H 1
 
-/* Define to 1 if you have the <regex.h> header file. */
-#undef HAVE_REGEX_H
-                                                                                                /* Define to 1 if the system has the type `reg_errcode_t'. */
-#undef HAVE_REG_ERRCODE_T
+/* Define to 1 if you have the <netdb.h> header file. */
+#define HAVE_NETDB_H 1
+
+/* Define to 1 if you have the <netinet/in.h> header file. */
+#define HAVE_NETINET_IN_H 1
+
+/* Define to 1 if poll() is available. */
+#define HAVE_POLL 1
+
+/* Define to 1 if select() is available. */
+#define HAVE_SELECT 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
@@ -88,97 +50,151 @@
 /* Define to 1 if you have the <string.h> header file. */
 #define HAVE_STRING_H 1
 
+/* Define to 1 if you have the <sys/socket.h> header file. */
+#define HAVE_SYS_SOCKET_H 1
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
 
-/* Define to 1 if you have the `towlower' function. */
-#undef HAVE_TOWLOWER
-
-/* Define to 1 if you have the `towupper' function. */
-#define HAVE_TOWUPPER 1
-
 /* Define to 1 if you have the <unistd.h> header file. */
-/* #undef HAVE_UNISTD_H */
+#define HAVE_UNISTD_H 1
 
-/* Define to 1 if you have the <wchar.h> header file. */
-#define HAVE_WCHAR_H 1
+/* If machine is bigendian */
+#define LO_BIGENDIAN "0"
 
-/* Define to 1 if the system has the type `wchar_t'. */
-#define HAVE_WCHAR_T 1
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#define LT_OBJDIR ".libs/"
 
-/* Define to 1 if you have the `wcschr' function. */
-#define HAVE_WCSCHR 1
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+/* #undef NO_MINUS_C_MINUS_O */
 
-/* Define to 1 if you have the `wcscpy' function. */
-#define HAVE_WCSCPY 1
+/* Name of package */
+#define PACKAGE "liblo"
 
-/* Define to 1 if you have the `wcslen' function. */
-#define HAVE_WCSLEN 1
+/* Define to the address where bug reports for this package should be sent. */
+#define PACKAGE_BUGREPORT "liblo-devel@lists.sourceforge.net"
 
-/* Define to 1 if you have the `wcsncpy' function. */
-#define HAVE_WCSNCPY 1
+/* Define to the full name of this package. */
+#define PACKAGE_NAME "liblo"
 
-/* Define to 1 if you have the `wcsrtombs' function. */
-#define HAVE_WCSRTOMBS 1
+/* Define to the full name and version of this package. */
+#define PACKAGE_STRING "liblo 0.26"
 
-/* Define to 1 if you have the `wcstombs' function. */
-/* #undef HAVE_WCSTOMBS */
+/* Define to the one symbol short name of this package. */
+#define PACKAGE_TARNAME "liblo"
 
-/* Define to 1 if you have the `wctype' function. */
-#define HAVE_WCTYPE 1
-
-/* Define to 1 if you have the <wctype.h> header file. */
-#define HAVE_WCTYPE_H 1
-
-/* Define if you want to disable debug assertions. */
-/* #undef NDEBUG */
+/* Define to the version of this package. */
+#define PACKAGE_VERSION "0.26"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
-/* Define if you want to enable approximate matching functionality. */
-#define TRE_APPROX 1
-
-/* Define if you want TRE to print debug messages to stdout. */
-/* #undef TRE_DEBUG */
-
-/* Define to enable multibyte character set support. */
-/* #define TRE_MULTIBYTE 1 */
-
-/* Define to a field in the regex_t struct where TRE should store a pointer to
-   the internal tre_tnfa_t structure */
-#define TRE_REGEX_T_FIELD value
-
-/* Define to the absolute path to the system regex.h */
-/* #undef TRE_SYSTEM_REGEX_H_PATH */
-
-/* Define to include the system regex.h from TRE regex.h */
-/* #undef TRE_USE_SYSTEM_REGEX_H */
-
-/* Define to enable wide character (wchar_t) support. */
-/* #define TRE_WCHAR 1 */
-
-/* Define to the maximum value of wchar_t if not already defined elsewhere */
-/* #undef WCHAR_MAX */
-
-/* Define if wchar_t is signed */
-/* #undef WCHAR_T_SIGNED */
-
-/* Define if wchar_t is unsigned */
-#define WCHAR_T_UNSIGNED 1
+/* Version number of package */
+#define VERSION "0.26"
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */
 
-/* Define as `__inline' if that's what the C compiler calls it, or to nothing
-   if it is not supported. */
-#define inline __inline
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+/* #undef size_t */
 
-/* Avoid silly warnings about "insecure" functions. */
-#define _CRT_SECURE_NO_DEPRECATE 1
+#else // WIN32
 
-/* #define snprintf sprintf_s */
-//#define snprintf _snprintf
+/* config.h.  Generated from config.h.in by configure.  */
+/* config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* Define this to enable ipv6. */
+/* #undef ENABLE_IPV6 */
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+/* #undef HAVE_DLFCN_H */
+
+/* Define to 1 if inet_aton() is available. */
+/* #undef HAVE_INET_ATON */
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#define HAVE_INTTYPES_H 1
+
+/* Define to 1 if you have the `pthread' library (-lpthread). */
+/* #undef HAVE_LIBPTHREAD */
+
+/* Define to 1 if you have the <memory.h> header file. */
+#define HAVE_MEMORY_H 1
+
+/* Define to 1 if you have the <netdb.h> header file. */
+/* #undef HAVE_NETDB_H */
+
+/* Define to 1 if you have the <netinet/in.h> header file. */
+/* #undef HAVE_NETINET_IN_H */
+
+/* Define to 1 if poll() is available. */
+/* #undef HAVE_POLL */
+
+/* Define to 1 if select() is available. */
+#define HAVE_SELECT 1
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#define HAVE_STDINT_H 1
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#define HAVE_STDLIB_H 1
+
+/* Define to 1 if you have the <strings.h> header file. */
+#define HAVE_STRINGS_H 1
+
+/* Define to 1 if you have the <string.h> header file. */
+#define HAVE_STRING_H 1
+
+/* Define to 1 if you have the <sys/socket.h> header file. */
+/* #undef HAVE_SYS_SOCKET_H */
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#define HAVE_SYS_STAT_H 1
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#define HAVE_SYS_TYPES_H 1
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#define HAVE_UNISTD_H 1
+
+/* If machine is bigendian */
+#define LO_BIGENDIAN "0"
+
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+/* #undef NO_MINUS_C_MINUS_O */
+
+/* Name of package */
+#define PACKAGE "liblo"
+
+/* Define to the address where bug reports for this package should be sent. */
+#define PACKAGE_BUGREPORT "liblo-devel@lists.sourceforge.net"
+
+/* Define to the full name of this package. */
+#define PACKAGE_NAME "liblo"
+
+/* Define to the full name and version of this package. */
+#define PACKAGE_STRING "liblo " /*VERSION*/
+
+/* Define to the one symbol short name of this package. */
+#define PACKAGE_TARNAME "liblo"
+
+/* Define to the version of this package. */
+#define PACKAGE_VERSION /*VERSION*/
+
+/* Define to 1 if you have the ANSI C header files. */
+#define STDC_HEADERS 1
+
+/* Version number of package */
+#define VERSION /*VERSION*/
+
+/* Define to empty if `const' does not conform to ANSI C. */
+/* #undef const */
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+/* #undef size_t */
+
+#endif // defined(__MACOSX_CORE__) || defined(__PLATFORM_LINUX__)

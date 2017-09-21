@@ -71,6 +71,17 @@ typedef void (* f_audio_cb)( SAMPLE * input, SAMPLE * output,
 
 
 
+// real-time watch dog
+extern t_CKBOOL g_do_watchdog;
+// countermeasure
+extern t_CKUINT g_watchdog_countermeasure_priority;
+// watchdog timeout
+extern t_CKFLOAT g_watchdog_timeout;
+
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: class ChuckAudio
 // desc: chuck host audio I/O

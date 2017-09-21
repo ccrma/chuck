@@ -31,7 +31,6 @@
 //-----------------------------------------------------------------------------
 #include "chuck_shell.h"
 #include "chuck_otf.h"
-#include "chuck_globals.h"
 #include "chuck_errmsg.h"
 #include "util_network.h"
 #include "util_string.h"
@@ -50,7 +49,7 @@ using namespace std;
 
 // REFACTOR-2017: TODO Ge: where should this live? not in chuck_main if it's in core!
 // global shell pointer (lives in chuck_main)
-Chuck_Shell * g_shell;
+extern Chuck_Shell * g_shell;
 
 //-----------------------------------------------------------------------------
 // name: tokenize_string

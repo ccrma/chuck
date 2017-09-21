@@ -35,7 +35,7 @@
 //-----------------------------------------------------------------------------
 #include "chuck_audio.h"
 #include "chuck_errmsg.h"
-#include "chuck_globals.h"
+#include "util_thread.h"
 #include <limits.h>
 #include "rtmidi.h"
 
@@ -56,6 +56,22 @@
 #else
 #define CK_RTAUDIO_FORMAT RTAUDIO_FLOAT32
 #endif
+
+
+
+
+// real-time watch dog
+t_CKBOOL g_do_watchdog = FALSE;
+// countermeasure
+#ifdef __MACOSX_CORE__
+t_CKUINT g_watchdog_countermeasure_priority = 10;
+#elif defined(__PLATFORM_WIN32__) && !defined(__WINDOWS_PTHREAD__)
+t_CKUINT g_watchdog_countermeasure_priority = THREAD_PRIORITY_LOWEST;
+#else
+t_CKUINT g_watchdog_countermeasure_priority = 0;
+#endif
+// watchdog timeout
+t_CKFLOAT g_watchdog_timeout = 0.5;
 
 
 
@@ -205,7 +221,7 @@ t_CKUINT ChuckAudio::device_named( const std::string & name, t_CKBOOL needs_dac,
     }
     
     // get count    
-    int devices = rta->getDeviceCount();
+    int devices = audio->getDeviceCount();
     int device_no = -1;
     
     // loop
@@ -307,7 +323,7 @@ static unsigned int __stdcall watch_dog( void * )
     t_CKFLOAT time = 0;
 
     // boost priority?
-    t_CKUINT priority = Chuck_VM::our_priority;
+    t_CKUINT priority = XThreadUtil::our_priority;
 
     // log
     EM_log( CK_LOG_SEVERE, "starting real-time watch dog processs..." );
@@ -409,7 +425,7 @@ t_CKBOOL ChuckAudio::watchdog_stop()
     // stop things
     g_do_watchdog = FALSE;
     // wait a bit | TODO: is this needed?
-    usleep( 100000 )
+    usleep( 100000 );
     // delete watchdog thread | TODO: is this safe?
     SAFE_DELETE( g_watchdog_thread );
     
@@ -447,7 +463,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
     // remember callback
     m_audio_cb = callback;
     // remember user data to pass to callback
-    m_cb_user_data = user_data;
+    m_cb_user_data = data;
 
     // # of channels
     t_CKUINT num_channels = 0;
@@ -529,7 +545,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
         for( long i = 0; i < device_info.sampleRates.size(); i++ )
         {
             // difference
-            long diff = device_info.sampleRates[i] - sampling_rate;
+            long diff = device_info.sampleRates[i] - sample_rate;
             // check // ge: changed from abs to labs, 2015.11
             if( ::labs(diff) < closestDiff )
             {
@@ -556,7 +572,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
             if( force_srate )
             {
                 // request sample rate not found, error out
-                EM_error2( 0, "unsupported sample rate (%d) requested...", sampling_rate );
+                EM_error2( 0, "unsupported sample rate (%d) requested...", sample_rate );
                 EM_error2( 0, "| (try --probe to enumerate available sample rates)" );
                 return m_init = FALSE;
             }
@@ -566,17 +582,17 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
             {
                 // log
                 EM_log( CK_LOG_SEVERE, "new sample rate (next highest): %d -> %d",
-                        sampling_rate, device_info.sampleRates[nextHighest] );
+                        sample_rate, device_info.sampleRates[nextHighest] );
                 // update sampling rate
-                m_sampling_rate = sampling_rate = device_info.sampleRates[nextHighest];
+                m_sample_rate = sample_rate = device_info.sampleRates[nextHighest];
             }
             else if( closestIndex >= 0 ) // nothing higher
             {
                 // log
                 EM_log( CK_LOG_SEVERE, "new sample rate (closest): %d -> %d",
-                        sampling_rate, device_info.sampleRates[closestIndex] );
+                        sample_rate, device_info.sampleRates[closestIndex] );
                 // update sampling rate
-                m_sampling_rate = sampling_rate = device_info.sampleRates[closestIndex];
+                m_sample_rate = sample_rate = device_info.sampleRates[closestIndex];
             }
             else
             {
@@ -655,8 +671,8 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
         m_rtaudio->openStream(
             m_num_channels_out > 0 ? &output_parameters : NULL,
             m_num_channels_in > 0 ? &input_parameters : NULL,
-            CK_RTAUDIO_FORMAT, sampling_rate, &bufsize,
-            m_use_cb ? ( block ? &cb : &cb2 ) : NULL, vm_ref,
+            CK_RTAUDIO_FORMAT, sample_rate, &bufsize,
+            cb, m_cb_user_data,
             &stream_options );
     } catch( RtError err ) {
         // log
@@ -706,7 +722,7 @@ int ChuckAudio::cb( void * output_buffer, void * input_buffer, unsigned int buff
     t_CKUINT len = buffer_size * sizeof(SAMPLE) * m_num_channels_out;
     
     // priority boost
-    if( !m_go && Chuck_VM::our_priority != 0x7fffffff )
+    if( !m_go && XThreadUtil::our_priority != 0x7fffffff )
     {
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
         g_tid_synthesis = pthread_self();
@@ -757,9 +773,16 @@ int ChuckAudio::cb( void * output_buffer, void * input_buffer, unsigned int buff
         m_num_channels_in, m_num_channels_out, m_cb_user_data );
 
     // copy local buffer to be rendered
-    if( !m_end ) memcpy( output_buffer, m_buffer_out, len );
+    // REFACTOR-2017: TODO: m_end was the signal to end, what should it be now?
+    //if( !m_end )
+    {
+        memcpy( output_buffer, m_buffer_out, len );
+    }
     // set all elements of local buffer to silence
-    else memset( output_buffer, 0, len );
+    //else
+    //{
+    //    memset( output_buffer, 0, len );
+    //}
 
     // copy to extern
     if( m_extern_out ) memcpy( m_extern_out, output_buffer, len );

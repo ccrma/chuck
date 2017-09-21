@@ -36,7 +36,7 @@ extern "C" {
 #include <pthread.h>
 #endif // WIN32
 
-#include "lo/lo_osc_types.h"
+#include "lo_osc_types.h"
 
 /**
  * \brief A reference to an OSC service.

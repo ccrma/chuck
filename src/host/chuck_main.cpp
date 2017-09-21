@@ -73,18 +73,6 @@ t_CKINT g_otf_port = 8888;
 Chuck_Shell * g_shell = NULL;
 // global variables
 t_CKUINT g_sigpipe_mode = 0;
-// real-time watch dog
-t_CKBOOL g_do_watchdog = FALSE;
-// countermeasure
-#ifdef __MACOSX_CORE__
-t_CKUINT g_watchdog_countermeasure_priority = 10;
-#elif defined(__PLATFORM_WIN32__) && !defined(__WINDOWS_PTHREAD__)
-t_CKUINT g_watchdog_countermeasure_priority = THREAD_PRIORITY_LOWEST;
-#else
-t_CKUINT g_watchdog_countermeasure_priority = 0;
-#endif
-// watchdog timeout
-t_CKFLOAT g_watchdog_timeout = 0.5;
 // flag for Std.system( string )
 t_CKBOOL g_enable_system_cmd = FALSE;
 // flag for enabling shell, ge: 1.3.5.3
@@ -267,7 +255,8 @@ extern "C" void signal_pipe( int sig_num )
     fprintf( stderr, "[chuck]: sigpipe handled - broken pipe (no connection)...\n" );
     if( g_sigpipe_mode )
     {
-        all_detach();
+        // REFACTOR-2017: TODO. all_detach?
+        //all_detach();
         // exit( 2 );
     }
 }
@@ -288,7 +277,8 @@ void global_cleanup()
     all_stop();
     
     // request MIDI, etc. files open be closed
-    all_detach();
+    // REFACTOR-2017: TODO. all_detach?
+    //all_detach();
     
     // wait for the shell, if it is running
     // does the VM reset its priority to normal before exiting?
@@ -385,8 +375,6 @@ bool go( int argc, const char ** argv )
     t_CKBOOL update_otf_vm = TRUE;
     string   filename = "";
     vector<string> args;
-    Chuck_VM_Code * code = NULL;
-    Chuck_VM_Shred * shred = NULL;
     
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path;

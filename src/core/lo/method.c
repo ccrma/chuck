@@ -17,7 +17,7 @@
 #include <stdio.h>
 
 #include "lo_types_internal.h"
-#include "lo/lo.h"
+#include "lo.h"
 
 void lo_method_pp(lo_method m)
 {

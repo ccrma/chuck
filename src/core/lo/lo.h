@@ -25,11 +25,11 @@ extern "C" {
  * \file lo.h The liblo main headerfile and high-level API functions.
  */
 
-#include "lo/lo_endian.h"
-#include "lo/lo_types.h"
-#include "lo/lo_osc_types.h"
-#include "lo/lo_errors.h"
-#include "lo/lo_lowlevel.h"
+#include "lo_endian.h"
+#include "lo_types.h"
+#include "lo_osc_types.h"
+#include "lo_errors.h"
+#include "lo_lowlevel.h"
 
 /**
  * \defgroup liblo High-level OSC API
@@ -344,7 +344,7 @@ void *lo_blob_dataptr(lo_blob b);
 
 /** @} */
 
-#include "lo/lo_macros.h"
+#include "lo_macros.h"
 
 #ifdef __cplusplus
 }
