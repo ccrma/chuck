@@ -50,22 +50,23 @@
 #define DEVICE_NUM_IN_DEFAULT        0
 // sample rate defaults by platform
 #if defined(__PLATFORM_LINUX__)
-#define SAMPLE_RATE_DEFAULT      48000
-#define BUFFER_SIZE_DEFAULT        256
-#else if defined(__PLATFORM_MACOSX__)
-#define SAMPLE_RATE_DEFAULT      44100
-#define BUFFER_SIZE_DEFAULT        256
+  #define SAMPLE_RATE_DEFAULT      48000
+  #define BUFFER_SIZE_DEFAULT        256
+#elif defined(__PLATFORM_MACOSX__)
+  #define SAMPLE_RATE_DEFAULT      44100
+  #define BUFFER_SIZE_DEFAULT        256
 #else
-#define SAMPLE_RATE_DEFAULT      44100
-#define BUFFER_SIZE_DEFAULT        512
+  #define SAMPLE_RATE_DEFAULT      44100
+  #define BUFFER_SIZE_DEFAULT        512
 #endif
 
 
 
 
 // audio callback definition
-void (* f_audio_cb)( SAMPLE * input, SAMPLE * output, t_CKUINT numFrames,
-                     t_CKUINT numInChans, t_CKUINT numOutChans, void * userData );
+typedef void (* f_audio_cb)( SAMPLE * input, SAMPLE * output,
+    t_CKUINT numFrames, t_CKUINT numInChans, t_CKUINT numOutChans,
+    void * userData );
 
 
 

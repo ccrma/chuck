@@ -188,8 +188,8 @@
 		098060A50AA159A200915136 /* func_overload_multi.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = func_overload_multi.ck; path = examples/func/func_overload_multi.ck; sourceTree = SOURCE_ROOT; };
 		098060A60AA159A200915136 /* func_recursion.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = func_recursion.ck; path = examples/func/func_recursion.ck; sourceTree = SOURCE_ROOT; };
 		098060A70AA159A200915136 /* func_void.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = func_void.ck; path = examples/func/func_void.ck; sourceTree = SOURCE_ROOT; };
-		098060A80AA159A200915136 /* hanoi.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = hanoi.ck; path = examples/hanoi.ck; sourceTree = SOURCE_ROOT; };
-		098060A90AA159A200915136 /* hanoi++.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = "hanoi++.ck"; path = "examples/hanoi++.ck"; sourceTree = SOURCE_ROOT; };
+		098060A80AA159A200915136 /* hanoi.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = hanoi.ck; path = ../../examples/hanoi.ck; sourceTree = SOURCE_ROOT; };
+		098060A90AA159A200915136 /* hanoi++.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = "hanoi++.ck"; path = "../../examples/hanoi++.ck"; sourceTree = SOURCE_ROOT; };
 		098060AB0AA159A200915136 /* joy-fm.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = "joy-fm.ck"; path = "examples/hid/joy-fm.ck"; sourceTree = SOURCE_ROOT; };
 		098060AC0AA159A200915136 /* joy-noise.ck */ = {isa = PBXFileReference; fileEncoding = 30; languageSpecificationIdentifier = c; lastKnownFileType = text; name = "joy-noise.ck"; path = "examples/hid/joy-noise.ck"; sourceTree = SOURCE_ROOT; };
 		098060AD0AA159A200915136 /* joy-shake.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = "joy-shake.ck"; path = "examples/hid/joy-shake.ck"; sourceTree = SOURCE_ROOT; };
@@ -214,18 +214,18 @@
 		098060C40AA159A300915136 /* OSC_xmit.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = OSC_xmit.ck; path = examples/osc/OSC_xmit.ck; sourceTree = SOURCE_ROOT; };
 		098060C50AA159A300915136 /* r.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = r.ck; path = examples/osc/r.ck; sourceTree = SOURCE_ROOT; };
 		098060C60AA159A300915136 /* s.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = s.ck; path = examples/osc/s.ck; sourceTree = SOURCE_ROOT; };
-		098060C70AA159A300915136 /* otf_01.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_01.ck; path = examples/otf_01.ck; sourceTree = SOURCE_ROOT; };
-		098060C80AA159A300915136 /* otf_02.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_02.ck; path = examples/otf_02.ck; sourceTree = SOURCE_ROOT; };
-		098060C90AA159A300915136 /* otf_03.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_03.ck; path = examples/otf_03.ck; sourceTree = SOURCE_ROOT; };
-		098060CA0AA159A300915136 /* otf_04.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_04.ck; path = examples/otf_04.ck; sourceTree = SOURCE_ROOT; };
-		098060CB0AA159A300915136 /* otf_05.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_05.ck; path = examples/otf_05.ck; sourceTree = SOURCE_ROOT; };
-		098060CC0AA159A300915136 /* otf_06.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_06.ck; path = examples/otf_06.ck; sourceTree = SOURCE_ROOT; };
-		098060CD0AA159A300915136 /* otf_07.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_07.ck; path = examples/otf_07.ck; sourceTree = SOURCE_ROOT; };
+		098060C70AA159A300915136 /* otf_01.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_01.ck; path = ../../examples/otf_01.ck; sourceTree = SOURCE_ROOT; };
+		098060C80AA159A300915136 /* otf_02.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_02.ck; path = ../../examples/otf_02.ck; sourceTree = SOURCE_ROOT; };
+		098060C90AA159A300915136 /* otf_03.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_03.ck; path = ../../examples/otf_03.ck; sourceTree = SOURCE_ROOT; };
+		098060CA0AA159A300915136 /* otf_04.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_04.ck; path = ../../examples/otf_04.ck; sourceTree = SOURCE_ROOT; };
+		098060CB0AA159A300915136 /* otf_05.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_05.ck; path = ../../examples/otf_05.ck; sourceTree = SOURCE_ROOT; };
+		098060CC0AA159A300915136 /* otf_06.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_06.ck; path = ../../examples/otf_06.ck; sourceTree = SOURCE_ROOT; };
+		098060CD0AA159A300915136 /* otf_07.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = otf_07.ck; path = ../../examples/otf_07.ck; sourceTree = SOURCE_ROOT; };
 		098060CF0AA159A300915136 /* machine.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = machine.ck; path = examples/shred/machine.ck; sourceTree = SOURCE_ROOT; };
 		098060D00AA159A300915136 /* powerup.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = powerup.ck; path = examples/shred/powerup.ck; sourceTree = SOURCE_ROOT; };
 		098060D10AA159A300915136 /* spork.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = spork.ck; path = examples/shred/spork.ck; sourceTree = SOURCE_ROOT; };
 		098060D20AA159A300915136 /* spork2.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = spork2.ck; path = examples/shred/spork2.ck; sourceTree = SOURCE_ROOT; };
-		098060D30AA159A300915136 /* status.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = status.ck; path = examples/status.ck; sourceTree = SOURCE_ROOT; };
+		098060D30AA159A300915136 /* status.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = status.ck; path = ../../examples/status.ck; sourceTree = SOURCE_ROOT; };
 		098060D50AA159A300915136 /* curly2.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = curly2.ck; path = examples/stereo/curly2.ck; sourceTree = SOURCE_ROOT; };
 		098060D60AA159A300915136 /* larry2.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = larry2.ck; path = examples/stereo/larry2.ck; sourceTree = SOURCE_ROOT; };
 		098060D70AA159A300915136 /* moe2.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = moe2.ck; path = examples/stereo/moe2.ck; sourceTree = SOURCE_ROOT; };
@@ -295,9 +295,9 @@
 		09922D5B181601F700806471 /* server.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = server.c; path = ../core/lo/server.c; sourceTree = "<group>"; };
 		09922D5C181601F700806471 /* server_thread.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = server_thread.c; path = ../core/lo/server_thread.c; sourceTree = "<group>"; };
 		09922D5E181601F700806471 /* timetag.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = timetag.c; path = ../core/lo/timetag.c; sourceTree = "<group>"; };
-		09A1E6120CBA1AEC001FAD6F /* makefile.alsa */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.alsa; sourceTree = SOURCE_ROOT; };
-		09A1E6130CBA1AEC001FAD6F /* makefile.jack */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.jack; sourceTree = SOURCE_ROOT; };
-		09A1E6170CBA1AEC001FAD6F /* makefile.win32 */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.win32; sourceTree = SOURCE_ROOT; };
+		09A1E6120CBA1AEC001FAD6F /* makefile.alsa */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; name = makefile.alsa; path = ../makefile.alsa; sourceTree = SOURCE_ROOT; };
+		09A1E6130CBA1AEC001FAD6F /* makefile.jack */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; name = makefile.jack; path = ../makefile.jack; sourceTree = SOURCE_ROOT; };
+		09A1E6170CBA1AEC001FAD6F /* makefile.win32 */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; name = makefile.win32; path = ../makefile.win32; sourceTree = SOURCE_ROOT; };
 		09A40B060A9A54DA007604EA /* chuck_absyn.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = chuck_absyn.cpp; path = ../core/chuck_absyn.cpp; sourceTree = SOURCE_ROOT; };
 		09A40B070A9A54DA007604EA /* chuck_absyn.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = chuck_absyn.h; path = ../core/chuck_absyn.h; sourceTree = SOURCE_ROOT; };
 		09A40B0A0A9A54DA007604EA /* chuck_compile.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = chuck_compile.cpp; path = ../core/chuck_compile.cpp; sourceTree = SOURCE_ROOT; };
@@ -388,25 +388,13 @@
 		09A40BD50A9A57C6007604EA /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = /System/Library/Frameworks/CoreAudio.framework; sourceTree = "<absolute>"; };
 		09A40BD60A9A57C6007604EA /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = /System/Library/Frameworks/CoreMIDI.framework; sourceTree = "<absolute>"; };
 		09A40BD70A9A57C6007604EA /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
-		09A40DC80A9AC677007604EA /* makefile.osx */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile.osx; sourceTree = SOURCE_ROOT; };
-		09A40DD20A9AC6D3007604EA /* makefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; path = makefile; sourceTree = SOURCE_ROOT; usesTabs = 1; };
-		09A40F290A9AE5FE007604EA /* COPYING */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = COPYING; path = ../notes/COPYING; sourceTree = SOURCE_ROOT; };
-		09A40F2A0A9AE5FE007604EA /* INSTALL */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = INSTALL; path = ../notes/INSTALL; sourceTree = SOURCE_ROOT; };
-		09A40F2C0A9AE5FE007604EA /* VERSIONS */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = VERSIONS; path = ../notes/VERSIONS; sourceTree = SOURCE_ROOT; };
+		09A40DC80A9AC677007604EA /* makefile.osx */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; name = makefile.osx; path = ../makefile.osx; sourceTree = SOURCE_ROOT; };
+		09A40DD20A9AC6D3007604EA /* makefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; name = makefile; path = ../makefile; sourceTree = SOURCE_ROOT; usesTabs = 1; };
 		09A5C88913DDFB350082DF50 /* RtAudio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RtAudio.cpp; path = ../host/RtAudio/RtAudio.cpp; sourceTree = "<group>"; };
 		09A5C88A13DDFB350082DF50 /* RtAudio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RtAudio.h; path = ../host/RtAudio/RtAudio.h; sourceTree = "<group>"; };
 		09A5C88B13DDFB350082DF50 /* RtError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RtError.h; path = ../host/RtAudio/RtError.h; sourceTree = "<group>"; };
-		09AAE1A618211D8F002C9B92 /* makefile.pulse */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = makefile.pulse; sourceTree = "<group>"; };
+		09AAE1A618211D8F002C9B92 /* makefile.pulse */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = makefile.pulse; path = ../makefile.pulse; sourceTree = SOURCE_ROOT; };
 		09F05F580B74558400023899 /* tilt.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = tilt.ck; path = examples/hid/tilt.ck; sourceTree = SOURCE_ROOT; };
-		09F5E1E3158C401E0038B393 /* AUTHORS */ = {isa = PBXFileReference; lastKnownFileType = text; name = AUTHORS; path = ../notes/AUTHORS; sourceTree = "<group>"; };
-		09F5E1E4158C401E0038B393 /* README.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = README.txt; path = ../notes/bin/README.txt; sourceTree = "<group>"; };
-		09F5E1E5158C401E0038B393 /* DEVELOPER */ = {isa = PBXFileReference; lastKnownFileType = text; name = DEVELOPER; path = ../notes/DEVELOPER; sourceTree = "<group>"; };
-		09F5E1E6158C401E0038B393 /* GOTO */ = {isa = PBXFileReference; lastKnownFileType = text; name = GOTO; path = ../notes/doc/GOTO; sourceTree = "<group>"; };
-		09F5E1E7158C401E0038B393 /* PROGRAMMER */ = {isa = PBXFileReference; lastKnownFileType = text; name = PROGRAMMER; path = ../notes/PROGRAMMER; sourceTree = "<group>"; };
-		09F5E1E8158C401E0038B393 /* QUICKSTART */ = {isa = PBXFileReference; lastKnownFileType = text; name = QUICKSTART; path = ../notes/QUICKSTART; sourceTree = "<group>"; };
-		09F5E1E9158C401E0038B393 /* README */ = {isa = PBXFileReference; lastKnownFileType = text; name = README; path = ../notes/README; sourceTree = "<group>"; };
-		09F5E1EA158C401E0038B393 /* THANKS */ = {isa = PBXFileReference; lastKnownFileType = text; name = THANKS; path = ../notes/THANKS; sourceTree = "<group>"; };
-		09F5E1EB158C401E0038B393 /* TODO */ = {isa = PBXFileReference; lastKnownFileType = text; name = TODO; path = ../notes/TODO; sourceTree = "<group>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -427,27 +415,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		04393ABF1F7332B3008E9322 /* ChucK Host */ = {
+		04393ABF1F7332B3008E9322 /* host */ = {
 			isa = PBXGroup;
 			children = (
+				09A5C88413DDFB350082DF50 /* RtAudio */,
 				04393AC01F733300008E9322 /* chuck_audio.cpp */,
 				04393AC11F733300008E9322 /* chuck_audio.h */,
 				04393AC21F733300008E9322 /* chuck_console.cpp */,
 				04393AC31F733300008E9322 /* chuck_console.h */,
 				04393AC41F733300008E9322 /* chuck_main.cpp */,
 			);
-			name = "ChucK Host";
+			name = host;
 			sourceTree = "<group>";
 		};
-		0980603D0AA158F600915136 /* Examples */ = {
-			isa = PBXGroup;
-			children = (
-				0980603E0AA1590B00915136 /* ChucK */,
-			);
-			name = Examples;
-			sourceTree = "<group>";
-		};
-		0980603E0AA1590B00915136 /* ChucK */ = {
+		0980603D0AA158F600915136 /* examples */ = {
 			isa = PBXGroup;
 			children = (
 				0980604E0AA159A100915136 /* array */,
@@ -479,9 +460,9 @@
 				098061000AA159A300915136 /* time */,
 				098061030AA159A300915136 /* type */,
 			);
-			name = ChucK;
-			path = examples;
-			sourceTree = "<group>";
+			name = examples;
+			path = ../../examples;
+			sourceTree = SOURCE_ROOT;
 		};
 		0980604E0AA159A100915136 /* array */ = {
 			isa = PBXGroup;
@@ -493,7 +474,7 @@
 				098060530AA159A100915136 /* array_sub_assign.ck */,
 			);
 			name = array;
-			path = examples/array;
+			path = ../../examples/array;
 			sourceTree = SOURCE_ROOT;
 		};
 		098060540AA159A100915136 /* basic */ = {
@@ -543,7 +524,7 @@
 				0980607E0AA159A200915136 /* zerox.ck */,
 			);
 			name = basic;
-			path = examples/basic;
+			path = ../../examples/basic;
 			sourceTree = SOURCE_ROOT;
 		};
 		0980607F0AA159A200915136 /* class */ = {
@@ -553,7 +534,7 @@
 				098060810AA159A200915136 /* try.ck */,
 			);
 			name = class;
-			path = examples/class;
+			path = ../../examples/class;
 			sourceTree = SOURCE_ROOT;
 		};
 		098060820AA159A200915136 /* ctrl */ = {
@@ -568,7 +549,7 @@
 				098060890AA159A200915136 /* ctrl_until.ck */,
 			);
 			name = ctrl;
-			path = examples/ctrl;
+			path = ../../examples/ctrl;
 			sourceTree = SOURCE_ROOT;
 		};
 		0980608E0AA159A200915136 /* data */ = {
@@ -582,7 +563,7 @@
 				098060940AA159A200915136 /* snare.wav */,
 			);
 			name = data;
-			path = examples/data;
+			path = ../../examples/data;
 			sourceTree = SOURCE_ROOT;
 		};
 		098060950AA159A200915136 /* event */ = {
@@ -599,7 +580,7 @@
 				0980609F0AA159A200915136 /* signal4.ck */,
 			);
 			name = event;
-			path = examples/event;
+			path = ../../examples/event;
 			sourceTree = SOURCE_ROOT;
 		};
 		098060A00AA159A200915136 /* func */ = {
@@ -614,7 +595,7 @@
 				098060A70AA159A200915136 /* func_void.ck */,
 			);
 			name = func;
-			path = examples/func;
+			path = ../../examples/func;
 			sourceTree = SOURCE_ROOT;
 		};
 		098060AA0AA159A200915136 /* hid */ = {
@@ -631,7 +612,7 @@
 				098060B10AA159A200915136 /* mouse-fm.ck */,
 			);
 			name = hid;
-			path = examples/hid;
+			path = ../../examples/hid;
 			sourceTree = SOURCE_ROOT;
 		};
 		098060B20AA159A200915136 /* midi */ = {
@@ -643,7 +624,7 @@
 				098060B60AA159A200915136 /* polyfony2.ck */,
 			);
 			name = midi;
-			path = examples/midi;
+			path = ../../examples/midi;
 			sourceTree = SOURCE_ROOT;
 		};
 		098060B70AA159A200915136 /* multi */ = {
@@ -654,7 +635,7 @@
 				098060BA0AA159A300915136 /* we-robot.ck */,
 			);
 			name = multi;
-			path = examples/multi;
+			path = ../../examples/multi;
 			sourceTree = SOURCE_ROOT;
 		};
 		098060BB0AA159A300915136 /* oper */ = {
@@ -667,7 +648,7 @@
 				098060C00AA159A300915136 /* oper_pre_inc.ck */,
 			);
 			name = oper;
-			path = examples/oper;
+			path = ../../examples/oper;
 			sourceTree = SOURCE_ROOT;
 		};
 		098060C10AA159A300915136 /* osc */ = {
@@ -680,7 +661,7 @@
 				098060C60AA159A300915136 /* s.ck */,
 			);
 			name = osc;
-			path = examples/osc;
+			path = ../../examples/osc;
 			sourceTree = SOURCE_ROOT;
 		};
 		098060CE0AA159A300915136 /* shred */ = {
@@ -692,7 +673,7 @@
 				098060D20AA159A300915136 /* spork2.ck */,
 			);
 			name = shred;
-			path = examples/shred;
+			path = ../../examples/shred;
 			sourceTree = SOURCE_ROOT;
 		};
 		098060D40AA159A300915136 /* stereo */ = {
@@ -705,7 +686,7 @@
 				098060D90AA159A300915136 /* stereo_noise.ck */,
 			);
 			name = stereo;
-			path = examples/stereo;
+			path = ../../examples/stereo;
 			sourceTree = SOURCE_ROOT;
 		};
 		098060DA0AA159A300915136 /* stk */ = {
@@ -748,7 +729,7 @@
 				098060FD0AA159A300915136 /* wurley3.ck */,
 			);
 			name = stk;
-			path = examples/stk;
+			path = ../../examples/stk;
 			sourceTree = SOURCE_ROOT;
 		};
 		098060FE0AA159A300915136 /* string */ = {
@@ -757,7 +738,7 @@
 				098060FF0AA159A300915136 /* strops.ck */,
 			);
 			name = string;
-			path = examples/string;
+			path = ../../examples/string;
 			sourceTree = SOURCE_ROOT;
 		};
 		098061000AA159A300915136 /* time */ = {
@@ -767,7 +748,7 @@
 				098061020AA159A300915136 /* time_types.ck */,
 			);
 			name = time;
-			path = examples/time;
+			path = ../../examples/time;
 			sourceTree = SOURCE_ROOT;
 		};
 		098061030AA159A300915136 /* type */ = {
@@ -777,7 +758,7 @@
 				098061050AA159A300915136 /* type_primitives.ck */,
 			);
 			name = type;
-			path = examples/type;
+			path = ../../examples/type;
 			sourceTree = SOURCE_ROOT;
 		};
 		09922D48181601F700806471 /* lo */ = {
@@ -808,9 +789,10 @@
 			path = lo;
 			sourceTree = "<group>";
 		};
-		09A40B000A9A52FC007604EA /* ChucK Core */ = {
+		09A40B000A9A52FC007604EA /* core */ = {
 			isa = PBXGroup;
 			children = (
+				09922D48181601F700806471 /* lo */,
 				04393AC81F733747008E9322 /* chuck.cpp */,
 				04393AC91F733747008E9322 /* chuck.h */,
 				09A40B060A9A54DA007604EA /* chuck_absyn.cpp */,
@@ -911,29 +893,10 @@
 				0966E6C815CFBB0F0099CBD8 /* util_serial.cpp */,
 				0966E6CB15CFBB240099CBD8 /* util_serial.h */,
 			);
-			name = "ChucK Core";
+			name = core;
 			sourceTree = "<group>";
 		};
-		09A40D840A9AC51D007604EA /* Notes */ = {
-			isa = PBXGroup;
-			children = (
-				09A40F2C0A9AE5FE007604EA /* VERSIONS */,
-				09F5E1E3158C401E0038B393 /* AUTHORS */,
-				09F5E1E4158C401E0038B393 /* README.txt */,
-				09F5E1E5158C401E0038B393 /* DEVELOPER */,
-				09F5E1E6158C401E0038B393 /* GOTO */,
-				09F5E1E7158C401E0038B393 /* PROGRAMMER */,
-				09F5E1E8158C401E0038B393 /* QUICKSTART */,
-				09F5E1E9158C401E0038B393 /* README */,
-				09F5E1EA158C401E0038B393 /* THANKS */,
-				09F5E1EB158C401E0038B393 /* TODO */,
-				09A40F290A9AE5FE007604EA /* COPYING */,
-				09A40F2A0A9AE5FE007604EA /* INSTALL */,
-			);
-			name = Notes;
-			sourceTree = "<group>";
-		};
-		09A40DE10A9AC76F007604EA /* Makefiles */ = {
+		09A40DE10A9AC76F007604EA /* makefiles */ = {
 			isa = PBXGroup;
 			children = (
 				09AAE1A618211D8F002C9B92 /* makefile.pulse */,
@@ -943,18 +906,16 @@
 				09A40DD20A9AC6D3007604EA /* makefile */,
 				09A40DC80A9AC677007604EA /* makefile.osx */,
 			);
-			name = Makefiles;
+			name = makefiles;
 			sourceTree = "<group>";
 		};
-		09A40E130A9AC96C007604EA /* Sources */ = {
+		09A40E130A9AC96C007604EA /* src */ = {
 			isa = PBXGroup;
 			children = (
-				09A40B000A9A52FC007604EA /* ChucK Core */,
-				04393ABF1F7332B3008E9322 /* ChucK Host */,
-				09922D48181601F700806471 /* lo */,
-				09A5C88413DDFB350082DF50 /* RtAudio */,
+				09A40B000A9A52FC007604EA /* core */,
+				04393ABF1F7332B3008E9322 /* host */,
 			);
-			name = Sources;
+			name = src;
 			sourceTree = "<group>";
 		};
 		09A5C88413DDFB350082DF50 /* RtAudio */ = {
@@ -990,10 +951,9 @@
 		29B97314FDCFA39411CA2CEA /* miniAudicle */ = {
 			isa = PBXGroup;
 			children = (
-				09A40E130A9AC96C007604EA /* Sources */,
-				09A40DE10A9AC76F007604EA /* Makefiles */,
-				0980603D0AA158F600915136 /* Examples */,
-				09A40D840A9AC51D007604EA /* Notes */,
+				09A40E130A9AC96C007604EA /* src */,
+				09A40DE10A9AC76F007604EA /* makefiles */,
+				0980603D0AA158F600915136 /* examples */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 			);

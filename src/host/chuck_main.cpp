@@ -33,11 +33,14 @@
 //-----------------------------------------------------------------------------
 #include "chuck.h"
 #include "chuck_audio.h"
+#include "chuck_console.h"
 
 
 
 
+//-----------------------------------------------------------------------------
 // function prototypes
+//-----------------------------------------------------------------------------
 t_CKBOOL init_shell( Chuck_Shell * shell, Chuck_Shell_UI * ui, Chuck_VM * vm );
 bool go( int argc, const char ** argv );
 void global_cleanup();
@@ -52,12 +55,19 @@ void cb( t_CKSAMPLE * in, t_CKSAMPLE * out, t_CKUINT numFrames,
 extern "C" void signal_int( int sig_num );
 
 
+
+
+//-----------------------------------------------------------------------------
+// global variables
+//-----------------------------------------------------------------------------
 // the one ChucK, for command line host
 ChucK * the_chuck;
 // thread id for shell
 CHUCK_THREAD g_tid_shell = 0;
 // default destination host name
 char g_otf_dest[256] = "127.0.0.1";
+// otf listener port
+t_CKUINT g_otf_port = 8888;
 
 // the shell
 Chuck_Shell * g_shell = NULL;
@@ -87,6 +97,20 @@ f_mainthreadquit g_main_thread_quit = NULL;
 void * g_main_thread_bindle = NULL;
 // num vms running; used to quit le_cb thread // added 1.3.6.0
 t_CKUINT g_num_vms_running = 0;
+
+
+
+// priority stuff
+#if defined(__MACOSX_CORE__)
+t_CKINT g_priority = 80;
+t_CKINT g_priority_low = 60;
+#elif defined(__PLATFORM_WIN32__) && !defined(__WINDOWS_PTHREAD__)
+t_CKINT g_priority = THREAD_PRIORITY_HIGHEST;
+t_CKINT g_priority_low = THREAD_PRIORITY_HIGHEST;
+#else
+t_CKINT g_priority = 0x7fffffff;
+t_CKINT g_priority_low = 0x7fffffff;
+#endif
 
 
 
@@ -312,16 +336,16 @@ t_CKBOOL init_shell( Chuck_Shell * shell, Chuck_Shell_UI * ui, Chuck_VM * vm )
 bool go( int argc, const char ** argv )
 {
     t_CKBOOL vm_halt = TRUE;
-    t_CKUINT srate = SAMPLE_RATE_DEFAULT;
+    t_CKINT srate = SAMPLE_RATE_DEFAULT;
     t_CKBOOL force_srate = FALSE; // added 1.3.1.2
-    t_CKUINT buffer_size = BUFFER_SIZE_DEFAULT;
-    t_CKUINT num_buffers = NUM_BUFFERS_DEFAULT;
-    t_CKUINT dac = 0;
-    t_CKUINT adc = 0;
+    t_CKINT buffer_size = BUFFER_SIZE_DEFAULT;
+    t_CKINT num_buffers = NUM_BUFFERS_DEFAULT;
+    t_CKINT dac = 0;
+    t_CKINT adc = 0;
     std::string dac_name = ""; // added 1.3.0.0
     std::string adc_name = ""; // added 1.3.0.0
-    t_CKUINT dac_chans = 2;
-    t_CKUINT adc_chans = 2;
+    t_CKINT dac_chans = 2;
+    t_CKINT adc_chans = 2;
     t_CKBOOL dump = FALSE;
     t_CKBOOL probe = FALSE;
     t_CKBOOL set_priority = FALSE;
@@ -525,17 +549,17 @@ bool go( int argc, const char ** argv )
             else if( !strncmp(argv[i], "--nowatchdog", 12) )
                 do_watchdog = FALSE;
             else if( !strncmp(argv[i], "--remote:", 9) ) // (added 1.3.0.0)
-                strcpy( g_host, argv[i]+9 );
+                strcpy( g_otf_dest, argv[i]+9 );
             else if( !strncmp(argv[i], "--remote", 8) )
-                strcpy( g_host, argv[i]+8 );
+                strcpy( g_otf_dest, argv[i]+8 );
             else if( !strncmp(argv[i], "@", 1) )
-                strcpy( g_host, argv[i]+1 );
+                strcpy( g_otf_dest, argv[i]+1 );
             else if( !strncmp(argv[i], "--port:", 7) ) // (added 1.3.0.0)
-                g_port = atoi( argv[i]+7 );
+                g_otf_port = atoi( argv[i]+7 );
             else if( !strncmp(argv[i], "--port", 6) )
-                g_port = atoi( argv[i]+6 );
+                g_otf_port = atoi( argv[i]+6 );
             else if( !strncmp(argv[i], "-p", 2) )
-                g_port = atoi( argv[i]+2 );
+                g_otf_port = atoi( argv[i]+2 );
             else if( !strncmp(argv[i], "--auto", 6) )
                 auto_depend = TRUE;
             else if( !strncmp(argv[i], "-u", 2) )
@@ -606,13 +630,6 @@ bool go( int argc, const char ** argv )
             {
                 named_dls.push_back(argv[i]+sizeof("-g")-1);
             }
-            else if( !strncmp( argv[i], "--data-dir:", sizeof("--data-dir:")-1 ) )
-            {
-                // get the rest, store for later
-                m_dataDir = std::string( argv[i]+sizeof("--data-dir:")-1 );
-                // also look for chugins here
-                dl_search_path.push_back( m_dataDir );
-            }
             else if( !strcmp( argv[i], "--no-otf" ) )
             {
                 // don't use this new vm for otf commands (use the previous one)
@@ -645,7 +662,7 @@ bool go( int argc, const char ** argv )
                 EM_setlog( log_level );
                 
                 // do it
-                if( otf_send_cmd( argc, argv, i, g_host, g_port, &is_otf ) )
+                if( otf_send_cmd( argc, argv, i, g_otf_dest, g_otf_port, &is_otf ) )
                     exit( 0 );
                 
                 // is otf
@@ -670,7 +687,7 @@ bool go( int argc, const char ** argv )
     // probe
     if( probe )
     {
-        Digitalio::probe();
+        ChuckAudio::probe();
         
 #ifndef __DISABLE_MIDI__
         EM_error2b( 0, "" );
@@ -694,22 +711,13 @@ bool go( int argc, const char ** argv )
     if( !set_priority && !block ) g_priority = g_priority_low;
     if( !set_priority && !g_enable_realtime_audio ) g_priority = 0x7fffffff;
     // set priority
-    Chuck_VM::our_priority = g_priority;
+    XThreadUtil::our_priority = g_priority;
     // set watchdog
     g_do_watchdog = do_watchdog;
     // set adaptive size
     if( adaptive_size < 0 ) adaptive_size = buffer_size;
     
-    // check
-    if( clientMode )
-    {
-        // silent mode always in client mode
-        g_enable_realtime_audio = FALSE;
-        // no halt
-        vm_halt = FALSE;
-    }
-    
-    if ( !files && vm_halt && !g_enable_shell && !clientMode )
+    if( !files && vm_halt && !g_enable_shell )
     {
         CK_FPRINTF_STDERR( "[chuck]: no input files... (try --help)\n" );
         exit( 1 );
@@ -721,7 +729,7 @@ bool go( int argc, const char ** argv )
         // instantiate
         g_shell = new Chuck_Shell;
         // initialize
-        if( !init_shell( g_shell, new Chuck_Console, NULL ) )
+        if( !init_shell( g_shell, new Chuck_Console(), NULL ) )
             exit( 1 );
         // no vm is needed, just start running the shell now
         g_shell->run();
@@ -742,7 +750,7 @@ bool go( int argc, const char ** argv )
     if( dac_name.size() > 0 )
     {
         // check with RtAudio
-        int dev = Digitalio::device_named( dac_name, TRUE, FALSE );
+        int dev = ChuckAudio::device_named( dac_name, TRUE, FALSE );
         if( dev >= 0 )
         {
             dac = dev;
@@ -759,7 +767,7 @@ bool go( int argc, const char ** argv )
     if( adc_name.size() > 0 )
     {
         // check with RtAudio
-        int dev = Digitalio::device_named( adc_name, FALSE, TRUE );
+        int dev = ChuckAudio::device_named( adc_name, FALSE, TRUE );
         if( dev >= 0 )
         {
             adc = dev;
@@ -775,6 +783,21 @@ bool go( int argc, const char ** argv )
     //------------------------- VIRTUAL MACHINE SETUP -----------------------------
     // instantiate ChucK
     the_chuck = new ChucK();
+    
+    // set params
+    the_chuck->setParam( CHUCK_PARAM_SAMPLE_RATE, srate );
+    the_chuck->setParam( CHUCK_PARAM_INPUT_CHANNELS, adc_chans );
+    the_chuck->setParam( CHUCK_PARAM_OUTPUT_CHANNELS, dac_chans );
+    the_chuck->setParam( CHUCK_PARAM_VM_ADAPTIVE, adaptive_size );
+    the_chuck->setParam( CHUCK_PARAM_VM_HALT, (t_CKINT)(vm_halt) );
+    the_chuck->setParam( CHUCK_PARAM_OTF_PORT, g_otf_port );
+    the_chuck->setParam( CHUCK_PARAM_LOG_LEVEL, g_loglevel );
+    the_chuck->setParam( CHUCK_PARAM_, );
+    the_chuck->setParam( CHUCK_PARAM_, );
+    the_chuck->setParam( CHUCK_PARAM_, );
+    the_chuck->setParam( CHUCK_PARAM_, );
+    
+    // initialize
     
 
     
