@@ -242,10 +242,6 @@ extern "C" void signal_int( int sig_num )
 
 
 
-
-
-
-
 //-----------------------------------------------------------------------------
 // name: signal_pipe()
 // desc: ...
@@ -808,7 +804,11 @@ bool go( int argc, const char ** argv )
     the_chuck->setLogLevel( log_level );
     
     // initialize
-    the_chuck->init();
+    if( !the_chuck->init() )
+    {
+        CK_FPRINTF_STDERR( "[chuck]: failed to initialize...\n" );
+        exit( 1 );
+    }
     
     //--------------------------- AUDIO I/O SETUP ---------------------------------
     // log
@@ -953,6 +953,9 @@ bool go( int argc, const char ** argv )
     // zero out
     memset( input, 0, sizeof(SAMPLE)*buffer_size*adc_chans );
     memset( output, 0, sizeof(SAMPLE)*buffer_size*dac_chans );
+    
+    // start audio
+    ChuckAudio::start();
     
     // wait
     while( the_chuck->vm()->running() )
