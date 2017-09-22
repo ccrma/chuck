@@ -167,6 +167,14 @@ protected:
 protected:
     // initialize default params
     void initDefaultParams();
+    // init VM
+    bool initVM();
+    // init compiler
+    bool initCompiler();
+    // init chugin system
+    bool initChugins();
+    // init OTF programming system
+    bool initOTF();
     
 protected:
     // core elements: compiler, VM, etc.

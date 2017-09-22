@@ -131,6 +131,8 @@ ChucK::~ChucK()
     shutdown();
     // decrement the numChucKs
     o_numVMs--;
+    // clean up the carrier
+    SAFE_DELETE( m_carrier );
 }
 
 
@@ -145,6 +147,7 @@ enum ck_param_type
 {
     ck_param_int, ck_param_float, ck_param_string
 };
+
 
 
 
@@ -313,22 +316,51 @@ std::string ChucK::getParamString( const std::string & key )
 
 
 //-----------------------------------------------------------------------------
-// initialize ChucK (using params)
+// name: init()
+// desc: initialize ChucK (using params)
 //-----------------------------------------------------------------------------
 bool ChucK::init()
 {
-    Chuck_VM_Code * code = NULL;
-    Chuck_VM_Shred * shred = NULL;
-    std::string cwd;
-    char cstr_cwd[MAXPATHLEN];
-    
     // sanity check
-    if( m_carrier->vm != NULL )
+    if( m_init == TRUE )
     {
         CK_FPRINTF_STDERR( "[chuck]: VM already initialized...\n" );
         return false;
     }
+
+    // initialize VM
+    if( !initVM() ) goto cleanup;
     
+    // initialize compiler
+    if( !initCompiler() ) goto cleanup;
+    
+    // initialize chugin system
+    if( !initChugins() ) goto cleanup;
+
+    // initialize OTF programming system
+    if( !initOTF() ) goto cleanup;
+    
+    // did user init?
+    m_init = TRUE;
+    
+    return true;
+    
+cleanup:
+    // shutdown, dealloc
+    shutdown();
+    
+    return false;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: initVM()
+// desc: initialize VM
+//-----------------------------------------------------------------------------
+bool ChucK::initVM()
+{
     // get VM params
     t_CKUINT srate = getParamInt( CHUCK_PARAM_SAMPLE_RATE );
     t_CKUINT outs = getParamInt( CHUCK_PARAM_OUTPUT_CHANNELS );
@@ -336,13 +368,36 @@ bool ChucK::init()
     t_CKUINT adaptiveSize = getParamInt( CHUCK_PARAM_VM_ADAPTIVE );
     t_CKBOOL halt = getParamInt( CHUCK_PARAM_VM_HALT ) != 0;
     
+    // instantiate VM
+    m_carrier->vm = new Chuck_VM();
+    // reference back to carrier
+    m_carrier->vm->setCarrier( m_carrier );
+    // initialize VM
+    if( !m_carrier->vm->initialize( srate, outs, ins, adaptiveSize, halt ) )
+    {
+        CK_FPRINTF_STDERR( "[chuck]: %s\n", m_carrier->vm->last_error() );
+        return false;
+    }
+    
+    return true;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: initCompiler()
+// desc: initialize compiler
+//-----------------------------------------------------------------------------
+bool ChucK::initCompiler()
+{
     // get compiler params
     t_CKBOOL dump = getParamInt( CHUCK_PARAM_DUMP_INSTRUCTIONS ) != 0;
     t_CKBOOL auto_depend = getParamInt( CHUCK_PARAM_AUTO_DEPEND ) != 0;
     string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
     string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
     t_CKUINT deprecate = getParamInt( CHUCK_PARAM_DEPRECATE_LEVEL );
-
+    
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path;
     if( workingDir != std::string("") )
@@ -355,18 +410,7 @@ bool ChucK::init()
     }
     // list of individually named chug-ins (added 1.3.0.0)
     std::list<std::string> named_dls;
-
-    // instantiate VM
-    m_carrier->vm = new Chuck_VM();
-    // reference back to carrier
-    m_carrier->vm->setCarrier( m_carrier );
-    // initialize VM
-    if( !m_carrier->vm->initialize( srate, outs, ins, adaptiveSize, halt ) )
-    {
-        CK_FPRINTF_STDERR( "[chuck]: %s\n", m_carrier->vm->last_error() );
-        goto cleanup;
-    }
-
+    
     // if chugin load is off, then clear the lists (added 1.3.0.0 -- TODO: refactor)
     if( getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) == 0 )
     {
@@ -384,7 +428,7 @@ bool ChucK::init()
     if( !m_carrier->compiler->initialize( dl_search_path, named_dls ) )
     {
         CK_FPRINTF_STDERR( "[chuck]: compiler failed to initialize...\n" );
-        goto cleanup;
+        return false;
     }
     // set dump flag
     m_carrier->compiler->emitter->dump = dump;
@@ -392,13 +436,16 @@ bool ChucK::init()
     m_carrier->compiler->set_auto_depend( auto_depend );
     // set deprecation level
     m_carrier->env->deprecate_level = deprecate;
-    
-    // VM + type system integration
+
+    // VM + type system integration (needs to be done after compiler)
     if( !m_carrier->vm->initialize_synthesis() )
     {
         CK_FPRINTF_STDERR( "[chuck]: %s\n", m_carrier->vm->last_error() );
-        goto cleanup;
+        return false;
     }
+    
+    std::string cwd;
+    char cstr_cwd[MAXPATHLEN];
     
     // figure out current working directory (added 1.3.0.0)
     // is this needed for current path to work correctly?!
@@ -412,6 +459,21 @@ bool ChucK::init()
         cwd = std::string(cstr_cwd);
         cwd = normalize_directory_separator(cwd) + "/";
     }
+
+    return true;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: initChugin()
+// desc: initialize chugin system
+//-----------------------------------------------------------------------------
+bool ChucK::initChugins()
+{
+    Chuck_VM_Code * code = NULL;
+    Chuck_VM_Shred * shred = NULL;
     
     // whether or not chug should be enabled (added 1.3.0.0)
     if( getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) != 0 )
@@ -457,27 +519,46 @@ bool ChucK::init()
         
         // clear the list of chuck files to preload
         compiler()->m_cklibs_to_preload.clear();
-        
+
         // pop log
         EM_poplog();
+        
+        return true;
     }
-    
+    else
+    {
+        // log
+        EM_log( CK_LOG_SYSTEM, "chugin system: OFF" );
+    }
+
     // load user namespace
     m_carrier->env->load_user_namespace();
-    
+
+    return true;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: initOTF()
+// desc: init OTF programming system
+//-----------------------------------------------------------------------------
+bool ChucK::initOTF()
+{
     // server
     if( getParamInt( CHUCK_PARAM_OTF_ENABLE ) != 0 )
     {
         m_carrier->otf_port = getParamInt( CHUCK_PARAM_OTF_PORT );
         // log
         EM_log( CK_LOG_SYSTEM, "starting listener on port: %d...",
-                m_carrier->otf_port );
+               m_carrier->otf_port );
         
         // start tcp server
         m_carrier->otf_socket = ck_tcp_create( 1 );
         if( !m_carrier->otf_socket ||
-            !ck_bind( m_carrier->otf_socket, m_carrier->otf_port ) ||
-            !ck_listen( m_carrier->otf_socket, 10 ) )
+           !ck_bind( m_carrier->otf_socket, m_carrier->otf_port ) ||
+           !ck_listen( m_carrier->otf_socket, 10 ) )
         {
             CK_FPRINTF_STDERR( "[chuck]: cannot bind to tcp port %li...\n", m_carrier->otf_port );
             ck_close( m_carrier->otf_socket );
@@ -489,7 +570,7 @@ bool ChucK::init()
             pthread_create( &m_carrier->otf_thread, NULL, otf_cb, NULL );
 #else
             m_carrier->otf_thread = CreateThread( NULL, 0,
-                (LPTHREAD_START_ROUTINE)otf_cb, NULL, 0, 0 );
+                                                 (LPTHREAD_START_ROUTINE)otf_cb, NULL, 0, 0 );
 #endif
         }
     }
@@ -499,23 +580,15 @@ bool ChucK::init()
         EM_log( CK_LOG_SYSTEM, "OTF server/listener: OFF" );
     }
     
-    // did user init?
-    m_init = TRUE;
-    
     return true;
-    
-cleanup:
-    // shutdown, dealloc
-    shutdown();
-    
-    return false;
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// shutdown ChucK
+// name: shutdown()
+// desc: shutdown ChucK instance
 //-----------------------------------------------------------------------------
 bool ChucK::shutdown()
 {
@@ -545,6 +618,9 @@ bool ChucK::shutdown()
     m_carrier->otf_socket = NULL; // TODO: properly dealloc
     m_carrier->otf_port = 0;
     m_carrier->otf_thread = 0; // TODO: properly dealloc
+    
+    // flag
+    m_init = FALSE;
 
     // done
     return true;
