@@ -303,7 +303,10 @@ void global_cleanup()
 //-----------------------------------------------------------------------------
 void all_stop()
 {
-    ChuckAudio::shutdown();
+    if( g_enable_realtime_audio )
+    {
+        ChuckAudio::shutdown();
+    }
     // REFACTOR-2017: TODO: other things? le_cb?
 }
 
@@ -822,17 +825,20 @@ bool go( int argc, const char ** argv )
     EM_log( CK_LOG_SYSTEM, "probing '%s' audio subsystem...", g_enable_realtime_audio ? "real-time" : "fake-time" );
     
     // initialize audio system
-    t_CKBOOL retval = ChuckAudio::initialize( adc_chans, dac_chans,
-        srate, buffer_size, num_buffers, cb, (void *)the_chuck, force_srate );
-    // check
-    if( !retval )
+    if( g_enable_realtime_audio )
     {
-        EM_log( CK_LOG_SYSTEM,
-               "cannot initialize audio device (use --silent/-s for non-realtime)" );
-        // pop
-        EM_poplog();
-        // done
-        exit( 1 );
+        t_CKBOOL retval = ChuckAudio::initialize( adc_chans, dac_chans,
+            srate, buffer_size, num_buffers, cb, (void *)the_chuck, force_srate );
+        // check
+        if( !retval )
+        {
+            EM_log( CK_LOG_SYSTEM,
+                   "cannot initialize audio device (use --silent/-s for non-realtime)" );
+            // pop
+            EM_poplog();
+            // done
+            exit( 1 );
+        }
     }
     
     // log
@@ -958,7 +964,10 @@ bool go( int argc, const char ** argv )
     memset( output, 0, sizeof(SAMPLE)*buffer_size*dac_chans );
     
     // start audio
-    ChuckAudio::start();
+    if( g_enable_realtime_audio )
+    {
+        ChuckAudio::start();
+    }
     
     // wait
     while( the_chuck->vm()->running() )
