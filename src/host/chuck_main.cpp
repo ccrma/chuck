@@ -266,11 +266,11 @@ extern "C" void signal_pipe( int sig_num )
 //-----------------------------------------------------------------------------
 void global_cleanup()
 {
-    SAFE_DELETE( the_chuck );
-    
-    // request bbq shutdown
-    // REFACTOR-2017 TODO: Shut down audio system
+    // REFACTOR-2017: shut down audio system
     all_stop();
+
+    SAFE_DELETE( the_chuck );
+
     
     // request MIDI, etc. files open be closed
     // REFACTOR-2017: TODO. all_detach?
@@ -303,7 +303,8 @@ void global_cleanup()
 //-----------------------------------------------------------------------------
 void all_stop()
 {
-    // TODO:
+    ChuckAudio::shutdown();
+    // REFACTOR-2017: TODO: other things? le_cb?
 }
 
 
@@ -798,6 +799,8 @@ bool go( int argc, const char ** argv )
     the_chuck->setParam( CHUCK_PARAM_VM_ADAPTIVE, adaptive_size );
     the_chuck->setParam( CHUCK_PARAM_VM_HALT, (t_CKINT)(vm_halt) );
     the_chuck->setParam( CHUCK_PARAM_OTF_PORT, g_otf_port );
+    // REFACTOR-2017: enable otf
+    //the_chuck->setParam( CHUCK_PARAM_OTF_ENABLE, (t_CKINT) TRUE );
     the_chuck->setParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, (t_CKINT)dump );
     the_chuck->setParam( CHUCK_PARAM_AUTO_DEPEND, (t_CKINT)auto_depend );
     the_chuck->setParam( CHUCK_PARAM_DEPRECATE_LEVEL, deprecate_level );
