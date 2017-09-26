@@ -1,51 +1,24 @@
-DESTDIR?=/usr/local/bin
-COREDIR=core
-HOSTDIR=host
-CK_PLATFORM=
-
-
-########################## DEFAULT MAKE TARGET #################################
 # default target: print usage message and quit
 current: 
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
 	@echo "   make osx, make osx-ub, make cygwin, or make win32"
 
-
-############################## MAKE INSTALL ####################################
-install:
-	mkdir -p $(DESTDIR)
-	cp $(wildcard chuck chuck.exe) $(DESTDIR)/
-	chmod 755 $(DESTDIR)/$(wildcard chuck chuck.exe)
-
-ifneq ($(CK_TARGET),)
-.DEFAULT_GOAL:=$(CK_TARGET)
-ifeq ($(MAKECMDGOALS),)
-MAKECMDGOALS:=$(.DEFAULT_GOAL)
-endif
-endif
-
-
-############################## MAKE INSTALL ####################################
 .PHONY: osx linux-pulse linux-jack linux-alsa cygwin osx-rl test
-osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
+osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck-core
 
 win32:
 	make -f makefile.win32
 
 CK_VERSION=1.3.6.0
 
-
-########################### COMPILATION TOOLS ##################################
 LEX=flex
 YACC=bison
 CC=gcc
 CXX=g++
 LD=g++
 
-
-############################# COMPILER FLAGS ###################################
-CFLAGS+=-I. -I$(COREDIR) -I$(COREDIR)/lo
+CFLAGS+=-I. -Ilo
 
 ifneq ($(CHUCK_STAT),)
 CFLAGS+= -D__CHUCK_STAT_TRACK__
@@ -70,66 +43,56 @@ ifneq ($(findstring arm,$(shell uname -m)),)
 CFLAGS+= -ffast-math
 endif
 
-
-######################### PLATFORM-SPECIFIC THINGS #############################
 ifneq (,$(strip $(filter osx bin-dist-osx,$(MAKECMDGOALS))))
-include $(COREDIR)/makefile.x/makefile.osx
+include makefile.x/makefile.osx
 endif
 
 ifneq (,$(strip $(filter linux-pulse,$(MAKECMDGOALS))))
-include makefile.pulse
+include makefile.x/makefile.pulse
 endif
 
 ifneq (,$(strip $(filter linux-jack,$(MAKECMDGOALS))))
-include makefile.jack
+include makefile.x/makefile.jack
 endif
 
 ifneq (,$(strip $(filter linux-alsa,$(MAKECMDGOALS))))
-include makefile.alsa
+include makefile.x/makefile.alsa
 endif
 
 ifneq (,$(strip $(filter cygwin,$(MAKECMDGOALS))))
-include makefile.cygwin
+include makefile.x/makefile.cygwin
 endif
 
 ifneq (,$(strip $(filter osx-rl,$(MAKECMDGOALS))))
-include makefile.rl
+include makefile.x/makefile.rl
 endif
 
-
 ########################## CHUCK CORE LIB TARGETS ##############################
-COBJS_CORE+= chuck.tab.o chuck.yy.o util_math.o util_network.o util_raw.o \
-	util_xforms.o
-CXXOBJS_CORE+= chuck.o chuck_absyn.o chuck_parse.o chuck_errmsg.o \
-	chuck_frame.o chuck_symbol.o chuck_table.o chuck_utils.o \
-	chuck_vm.o chuck_instr.o chuck_scan.o chuck_type.o chuck_emit.o \
-	chuck_compile.o chuck_dl.o chuck_oo.o chuck_lang.o chuck_ugen.o \
-	chuck_otf.o chuck_stats.o chuck_shell.o chuck_io.o hidio_sdl.o \
-	midiio_rtmidi.o rtmidi.o ugen_osc.o ugen_filter.o \
-	ugen_stk.o ugen_xxx.o ulib_machine.o ulib_math.o ulib_std.o \
-	ulib_opsc.o ulib_regex.o util_buffers.o util_console.o \
-	util_string.o util_thread.o util_opsc.o util_serial.o \
-	util_hid.o uana_xform.o uana_extract.o
-LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
-	lo/pattern_match.o lo/send.o lo/server.o lo/server_thread.o lo/timetag.o
+CSRCS_CORE+= chuck.tab.c chuck.yy.c util_math.c util_network.c util_raw.c \
+	util_xforms.c
+CXXSRCS_CORE+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
+	chuck_frame.cpp chuck_symbol.cpp chuck_table.cpp chuck_utils.cpp \
+	chuck_vm.cpp chuck_instr.cpp chuck_scan.cpp chuck_type.cpp \
+	chuck_emit.cpp chuck_compile.cpp chuck_dl.cpp chuck_oo.cpp \
+	chuck_lang.cpp chuck_ugen.cpp chuck_otf.cpp chuck_stats.cpp \
+	chuck_shell.cpp chuck_io.cpp hidio_sdl.cpp chuck.cpp \
+	midiio_rtmidi.cpp rtmidi.cpp ugen_osc.cpp ugen_filter.cpp \
+	ugen_stk.cpp ugen_xxx.cpp ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
+	ulib_opsc.cpp ulib_regex.cpp util_buffers.cpp util_console.cpp \
+	util_string.cpp util_thread.cpp util_opsc.cpp util_serial.cpp \
+	util_hid.cpp uana_xform.cpp uana_extract.cpp
+LO_CSRCS+= lo/address.c lo/blob.c lo/bundle.c lo/message.c lo/method.c \
+    lo/pattern_match.c lo/send.c lo/server.c lo/server_thread.c lo/timetag.c
+################################################################################
 
+CSRCS+= $(CSRCS_CORE) $(SF_CSRCS)
+CXXSRCS+= $(CXXSRCS_CORE)
 
-############################ CHUCK HOST TARGETS ################################
-CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp RtAudio/RtAudio.cpp
+COBJS=$(CSRCS:.c=.o)
+CXXOBJS=$(CXXSRCS:.cpp=.o)
+LO_COBJS=$(LO_CSRCS:.c=.o)
+OBJS=$(COBJS) $(CXXOBJS) $(LO_COBJS)
 
-
-############################ OBJECT FILE TARGETS ###############################
-CXXOBJS_HOST=$(addprefix $(HOSTDIR)/,$(CXXSRCS_HOST:.cpp=.o))
-
-COBJS=$(COBJS_HOST) $(addprefix $(COREDIR)/,$(COBJS_CORE))
-CXXOBJS=$(CXXOBJS_HOST) $(addprefix $(COREDIR)/,$(CXXOBJS_CORE))
-LO_COBJS=$(addprefix $(COREDIR)/,$(LO_COBJS_CORE))
-SF_COBJS=$(addprefix $(COREDIR)/,$(SF_CSRCS:.c=.o))
-OBJS=$(COBJS) $(CXXOBJS) $(LO_COBJS) $(SF_COBJS)
-
-
-############################ ADDITIONAL FLAGS ##################################
-# for liblo headers
 LO_CFLAGS=-DHAVE_CONFIG_H -I.
 
 # remove -arch options
@@ -141,8 +104,6 @@ else
 ARCHOPTS=
 endif
 
-
-############################ DISTRIBUTION INFO #################################
 NOTES=AUTHORS DEVELOPER PROGRAMMER README TODO COPYING INSTALL QUICKSTART \
  THANKS VERSIONS
 BIN_NOTES=README.txt
@@ -154,33 +115,39 @@ CK_SVN=https://chuck-dev.stanford.edu/svn/chuck/
 # pull in dependency info for *existing* .o files
 -include $(OBJS:.o=.d)
 
+chuck-core: $(OBJS)
+	@echo '[chuck-core]: all core chuck components built...'
 
-############################# MAIN COMPILATION #################################
-chuck: $(COBJS_HOST) $(CXXOBJS_HOST)
-	make $(MAKECMDGOALS) -C $(COREDIR)
-	$(LD) -o chuck $(OBJS) $(LDFLAGS) $(ARCHOPTS)
+chuck.tab.c chuck.tab.h: chuck.y
+	$(YACC) -dv -b chuck chuck.y
 
-$(COBJS_HOST): %.o: %.c
-	$(CC) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
-	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
+chuck.yy.c: chuck.lex
+	$(LEX) -ochuck.yy.c chuck.lex
 
-$(CXXOBJS_HOST): %.o: %.cpp
+chuck_win32.c: chuck.yy.c
+	$(LEX) --nounistd -ochuck.yy.c chuck.lex
+	cat chuck.tab.c chuck.yy.c > $@
+
+chuck_win32.h: chuck.tab.h
+	cat chuck.tab.h > $@
+
+$(CXXOBJS): %.o: %.cpp
 	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
+$(COBJS): %.o: %.c
+	$(CC) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
+	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
+
+$(LO_COBJS): %.o: %.c
+	$(CC) $(CFLAGS) $(LO_CFLAGS) $(ARCHOPTS) -c $< -o $@
+	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $(LO_CFLAGS) $< > $*.d
+
 clean: 
-	@rm -rf $(wildcard chuck chuck.exe) *.o *.d $(OBJS) \
-        $(patsubst %.o,%.d,$(OBJS)) *~ $(COREDIR)/chuck.output \
-	$(COREDIR)/chuck.tab.h $(COREDIR)/chuck.tab.c \
-        $(COREDIR)/chuck.yy.c $(DIST_DIR){,.tgz,.zip} Release Debug
-	
+	@rm -rf *.o *.d $(OBJS) \
+         $(patsubst %.o,%.d,$(OBJS)) *~ chuck.output chuck.tab.h chuck.tab.c \
+         chuck.yy.c $(DIST_DIR){,.tgz,.zip} Release Debug
 
-############################### RUN TEST #######################################
-test:
-	pushd test; ./test.py ../chuck .; popd
-
-
-############################### DISTRIBUTION ###################################
 # ------------------------------------------------------------------------------
 # Distribution meta-targets
 # ------------------------------------------------------------------------------
@@ -247,3 +214,5 @@ src-dist:
 	cp $(addprefix ../notes/,$(NOTES)) $(DIST_DIR)
 # tar/gzip
 	tar czf $(DIST_DIR).tgz $(DIST_DIR)
+
+
