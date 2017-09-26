@@ -25,7 +25,7 @@ FRAMEWORKS+= CoreAudio CoreMIDI CoreFoundation IOKit Carbon AppKit Foundation
 LDFLAGS+= $(FORCE_M32) $(ISYSROOT) $(addprefix -framework ,$(FRAMEWORKS)) \
     $(LINK_EXTRAS) -lstdc++ -lm
 
-CSRCS+= util_sndfile.c
+SF_CSRCS+= util_sndfile.c
 
 
 # this is to link properly on leopard...
