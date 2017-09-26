@@ -605,6 +605,23 @@ bool ChucK::shutdown()
     }
 
     // free vm, compiler, friends
+    // first, otf
+    // REFACTOR-2017 TODO: le_cb?
+    
+    // cancel otf thread
+#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+    if( m_carrier->otf_thread ) pthread_cancel( m_carrier->otf_thread );
+#else
+    if( m_carrier->otf_thread ) CloseHandle( m_carrier->otf_thread );
+#endif
+    // close otf socket
+    if( m_carrier->otf_socket ) ck_close( m_carrier->otf_socket );
+    
+    // reset
+    m_carrier->otf_socket = NULL;
+    m_carrier->otf_port = 0;
+    m_carrier->otf_thread = 0;
+    
     // TODO: a different way to unlock?
     // unlock all objects to delete chout, cherr
     Chuck_VM_Object::unlock_all();
@@ -612,12 +629,10 @@ bool ChucK::shutdown()
     SAFE_RELEASE( m_carrier->cherr );
     // relock
     Chuck_VM_Object::lock_all();
+    // clean up vm, compiler
     SAFE_DELETE( m_carrier->vm );
     SAFE_DELETE( m_carrier->compiler );
     m_carrier->env = NULL;
-    m_carrier->otf_socket = NULL; // TODO: properly dealloc
-    m_carrier->otf_port = 0;
-    m_carrier->otf_thread = 0; // TODO: properly dealloc
     
     // flag
     m_init = FALSE;
