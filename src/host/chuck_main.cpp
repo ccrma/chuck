@@ -42,6 +42,7 @@
 // function prototypes
 //-----------------------------------------------------------------------------
 t_CKBOOL init_shell( Chuck_Shell * shell, Chuck_Shell_UI * ui, Chuck_VM * vm );
+void * shell_cb( void * p );
 bool go( int argc, const char ** argv );
 void global_cleanup();
 void all_stop();
@@ -335,6 +336,38 @@ t_CKBOOL init_shell( Chuck_Shell * shell, Chuck_Shell_UI * ui, Chuck_VM * vm )
     }
     
     return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: shell_cb
+// desc: thread routine
+//-----------------------------------------------------------------------------
+void * shell_cb( void * p )
+{
+    Chuck_Shell * shell;
+    // log
+    EM_log( CK_LOG_INFO, "starting thread routine for shell..." );
+    
+    // assuming this is absolutely necessary, an assert may be better
+    assert( p != NULL );
+    
+    shell = ( Chuck_Shell * ) p;
+    
+    //atexit( wait_for_shell );
+    
+    // run the shell
+    shell->run();
+    
+    // delete and set to NULL
+    SAFE_DELETE( g_shell );
+    // perhaps let shell destructor clean up mode and ui?
+    
+    EM_log( CK_LOG_INFO, "exiting thread routine for shell..." );
+    
+    return NULL;
 }
 
 
