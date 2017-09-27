@@ -39,7 +39,7 @@ def run_test(exe, path, filename, attempt):
                 with open(path.replace(".ck", ".txt")) as answerFile:
                     answer = answerFile.read()
 
-                if answer != result:
+                if answer.replace("\r\n", "\n") != result.replace("\r\n", "\n"):
                     handle_failure(exe, path, filename, attempt, result)
                 else:
                     successes += 1

@@ -44,11 +44,11 @@
 
 
 // forward references (C++)
-class Chuck_Compiler;
-class Chuck_VM;
-class Chuck_Env;
-class Chuck_IO_Chout;
-class Chuck_IO_Cherr;
+struct Chuck_Compiler;
+struct Chuck_VM;
+struct Chuck_Env;
+struct Chuck_IO_Chout;
+struct Chuck_IO_Cherr;
 
 // forward references ("C")
 struct ck_socket_;
