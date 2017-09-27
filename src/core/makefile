@@ -116,7 +116,7 @@ CK_SVN=https://chuck-dev.stanford.edu/svn/chuck/
 -include $(OBJS:.o=.d)
 
 chuck-core: $(OBJS)
-	@echo '[chuck-core]: all core chuck components built...'
+	@echo '[chuck-core]: all components built...'
 
 chuck.tab.c chuck.tab.h: chuck.y
 	$(YACC) -dv -b chuck chuck.y

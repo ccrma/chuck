@@ -156,8 +156,13 @@ CK_SVN=https://chuck-dev.stanford.edu/svn/chuck/
 
 
 ############################# MAIN COMPILATION #################################
-chuck: $(COBJS_HOST) $(CXXOBJS_HOST)
+chuck-core:
+	@echo -------------
+	@echo [chuck-core]: compiling...
 	make $(MAKECMDGOALS) -C $(COREDIR)
+	@echo -------------
+
+chuck: chuck-core $(COBJS_HOST) $(CXXOBJS_HOST)
 	$(LD) -o chuck $(OBJS) $(LDFLAGS) $(ARCHOPTS)
 
 $(COBJS_HOST): %.o: %.c
