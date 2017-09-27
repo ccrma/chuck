@@ -47,9 +47,8 @@
 
 using namespace std;
 
-// REFACTOR-2017: TODO Ge: where should this live? not in chuck_main if it's in core!
-// global shell pointer (lives in chuck_main)
-extern Chuck_Shell * g_shell;
+
+
 
 //-----------------------------------------------------------------------------
 // name: tokenize_string
@@ -189,36 +188,6 @@ int win32_tmpnam(char *file_path)
 #endif
 
 
-//-----------------------------------------------------------------------------
-// name: shell_cb
-// desc: thread routine
-//-----------------------------------------------------------------------------
-void * shell_cb( void * p )
-{
-    Chuck_Shell * shell;
-    // log
-    EM_log( CK_LOG_INFO, "starting thread routine for shell..." );
-
-    // assuming this is absolutely necessary, an assert may be better
-    assert( p != NULL );
-    
-    shell = ( Chuck_Shell * ) p;
-    
-    //atexit( wait_for_shell );
-    
-    // run the shell
-    shell->run();
-    
-    // delete and set to NULL
-    SAFE_DELETE( g_shell );
-    // perhaps let shell destructor clean up mode and ui?
-    
-    EM_log( CK_LOG_INFO, "exiting thread routine for shell..." );
-
-    return NULL;
-}
-
-
 
 
 //-----------------------------------------------------------------------------
@@ -234,6 +203,9 @@ Chuck_Shell::Chuck_Shell()
     stop = FALSE;
     code_entry_active = FALSE;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: ~Chuck_Shell()
@@ -253,6 +225,9 @@ Chuck_Shell::~Chuck_Shell()
     // flag
     initialized = FALSE;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: init()
@@ -409,6 +384,9 @@ t_CKBOOL Chuck_Shell::init( Chuck_VM * vm, Chuck_Shell_UI * ui )
     return TRUE;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: run()
 // desc: ...
@@ -459,6 +437,9 @@ void Chuck_Shell::run()
     // log
     EM_log( CK_LOG_SYSTEM, "exiting chuck shell..." );
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute
@@ -551,6 +532,9 @@ t_CKBOOL Chuck_Shell::execute( string & in, string & out )
     return TRUE;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: start_code()
 // desc: ...
@@ -561,6 +545,9 @@ void Chuck_Shell::start_code()
     code_entry_active = TRUE;
     scope = 0;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: continue_code()
@@ -601,6 +588,9 @@ void Chuck_Shell::continue_code( string & in )
     // the end of this code block -- lets execute it on the current_vm
         code_entry_active = FALSE;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: do_code()
@@ -676,6 +666,9 @@ void Chuck_Shell::do_code( string & code, string & out, string command )
     prompt = variables["COMMAND_PROMPT"];
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: do_context()
 // desc: ...
@@ -684,6 +677,9 @@ void Chuck_Shell::do_code_context( string & )
 {
     
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: close()
@@ -694,6 +690,9 @@ void Chuck_Shell::close()
     stop = TRUE;
     // 
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: kill()
@@ -711,6 +710,9 @@ void Chuck_Shell::exit()
 */
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: init()
 // desc: ...
@@ -722,6 +724,9 @@ t_CKBOOL Chuck_Shell_Network_VM::init( const string & hostname, t_CKINT port )
     return TRUE;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: copy()
 // desc: ...
@@ -732,6 +737,9 @@ Chuck_Shell_VM * Chuck_Shell_Network_VM::copy()
     net_vm->init( hostname, port );
     return net_vm;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: add_shred()
@@ -781,6 +789,9 @@ t_CKBOOL Chuck_Shell_Network_VM::add_shred( const vector< string > & files,
     return return_val;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: remove_shred()
 // desc: ...
@@ -829,6 +840,9 @@ t_CKBOOL Chuck_Shell_Network_VM::remove_shred( const vector< string > & ids,
     return return_val;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: remove_all()
 // desc: ...
@@ -847,6 +861,9 @@ t_CKBOOL Chuck_Shell_Network_VM::remove_all( string & out )
     return return_val;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: remove_last()
 // desc: ...
@@ -864,6 +881,9 @@ t_CKBOOL Chuck_Shell_Network_VM::remove_last( string & out )
     
     return return_val;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: replace_shred()
@@ -924,6 +944,9 @@ t_CKBOOL Chuck_Shell_Network_VM::replace_shred( const vector< string > &vec,
     return return_val;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: status()
 // desc: ...
@@ -944,6 +967,9 @@ t_CKBOOL Chuck_Shell_Network_VM::status( string & out )
     
     return return_val;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: kill()
@@ -967,6 +993,9 @@ t_CKBOOL Chuck_Shell_Network_VM::kill( string & out )
     return return_val;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: fullname()
 // desc: returns a somewhat descriptive full name for this VM
@@ -979,6 +1008,9 @@ string Chuck_Shell_Network_VM::fullname()
     return hostname + buf;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: init()
 // desc: ...
@@ -987,6 +1019,9 @@ t_CKBOOL Chuck_Shell_UI::init()
 {
     return TRUE;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: init()
@@ -998,6 +1033,9 @@ t_CKBOOL Chuck_Shell::Command::init( Chuck_Shell * caller )
     return TRUE;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: usage()
 // desc: ...
@@ -1007,6 +1045,9 @@ string Chuck_Shell::Command::usage()
     return "no usage specified";
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: long_usage()
 // desc: ...
@@ -1015,6 +1056,9 @@ string Chuck_Shell::Command::long_usage()
 {
     return "no usage specified";
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1045,6 +1089,9 @@ t_CKINT Chuck_Shell::Command_Add::execute( vector< string > & argv,
     return result;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: usage()
 // desc: ...
@@ -1053,7 +1100,10 @@ string Chuck_Shell::Command_Add::usage()
 {
     return "add file ...";
 }
-                                           
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
@@ -1081,6 +1131,9 @@ t_CKINT Chuck_Shell::Command_Remove::execute( vector< string > & argv,
     return result;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: usage()
 // desc: ...
@@ -1089,6 +1142,9 @@ string Chuck_Shell::Command_Remove::usage()
 {
     return "remove shred_number ...";
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1117,6 +1173,9 @@ t_CKINT Chuck_Shell::Command_Removeall::execute( vector< string > & argv,
     return result;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: usage()
 // desc: ...
@@ -1125,6 +1184,9 @@ string Chuck_Shell::Command_Removeall::usage()
 {
     return "removeall";
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1146,6 +1208,9 @@ t_CKINT Chuck_Shell::Command_Removelast::execute( vector< string > & argv,
     return result;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: usage()
 // desc: ...
@@ -1154,6 +1219,9 @@ string Chuck_Shell::Command_Removelast::usage()
 {
     return "removelast";
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1173,6 +1241,9 @@ t_CKINT Chuck_Shell::Command_Replace::execute( vector< string > & argv,
     return 0;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: usage()
 // desc: ...
@@ -1181,6 +1252,9 @@ string Chuck_Shell::Command_Replace::usage()
 {
     return "replace shred_id file ...";
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1209,6 +1283,9 @@ t_CKINT Chuck_Shell::Command_Status::execute( vector< string > & argv,
     return result;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: usage()
 // desc: ...
@@ -1217,6 +1294,9 @@ string Chuck_Shell::Command_Status::usage()
 {
     return "status";
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1232,6 +1312,9 @@ t_CKINT Chuck_Shell::Command_Kill::execute( vector< string > & argv,
     return 0;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
@@ -1243,14 +1326,18 @@ t_CKINT Chuck_Shell::Command_Close::execute( vector< string > & argv,
     
     out += "closing chuck shell...  bye!\n";
     
-    if( g_shell != NULL )
-        out += "(note: in-process VM still running, hit ctrl-c to exit)\n";
+    // REFACTOR-2017: removed: this needs to be done outside
+    // if( g_shell != NULL )
+    //     out += "(note: in-process VM still running, hit ctrl-c to exit)\n";
     
     if( argv.size() > 0 )
         out += "close: warning: ignoring excess arguments...\n";
 
     return 0;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1265,6 +1352,9 @@ t_CKINT Chuck_Shell::Command_Exit::execute( vector< string > & argv,
 
     return 0;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1393,6 +1483,9 @@ t_CKINT Chuck_Shell::Command_Ls::execute( vector< string > & argv,
     return 0;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
@@ -1427,6 +1520,9 @@ t_CKINT Chuck_Shell::Command_Cd::execute( vector< string > & argv,
     return 0;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
@@ -1460,6 +1556,9 @@ t_CKINT Chuck_Shell::Command_Pwd::execute( vector< string > & argv,
     
     return 0;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1507,6 +1606,9 @@ t_CKINT Chuck_Shell::Command_Alias::execute( vector< string > & argv,
     return 0;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
@@ -1527,6 +1629,9 @@ t_CKINT Chuck_Shell::Command_Unalias::execute( vector< string > & argv,
 
     return 0;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1560,6 +1665,9 @@ t_CKINT Chuck_Shell::Command_Source::execute( vector< string > & argv,
     return 0;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
@@ -1570,6 +1678,9 @@ t_CKINT Chuck_Shell::Command_Help::execute( vector< string > & argv,
     out += "";
     return 0;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: init()
@@ -1619,6 +1730,9 @@ t_CKBOOL Chuck_Shell::Command_VM::init( Chuck_Shell * caller )
     return TRUE;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: ~Command_VM()
 // desc: ...
@@ -1631,6 +1745,9 @@ Chuck_Shell::Command_VM::~Command_VM()
     for( i = 0; i != len; i++ )
         SAFE_DELETE( allocated_commands[i] );
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1657,6 +1774,9 @@ t_CKINT Chuck_Shell::Command_VM::execute( vector< string > & argv,
     return 0;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: usage()
 // desc: ...
@@ -1665,6 +1785,9 @@ string Chuck_Shell::Command_VM::usage()
 {
     return "vm [command] [args] ...";
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1741,6 +1864,9 @@ t_CKINT Chuck_Shell::Command_VMAttach::execute( vector < string > & argv,
     return result;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
@@ -1772,6 +1898,9 @@ t_CKINT Chuck_Shell::Command_VMAdd::execute( vector< string > & argv,
     return 0;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
@@ -1797,6 +1926,9 @@ t_CKINT Chuck_Shell::Command_VMRemove::execute( vector< string > & argv,
 
     return 0;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1829,6 +1961,9 @@ t_CKINT Chuck_Shell::Command_VMSwap::execute( vector< string > & argv,
 
     return 0;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1863,6 +1998,9 @@ t_CKINT Chuck_Shell::Command_VMList::execute( vector< string > & argv,
     return 0;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
@@ -1888,6 +2026,9 @@ t_CKINT Chuck_Shell::Command_VMAttachAdd::execute( vector< string > & argv,
     
     return result;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: init()
@@ -1938,6 +2079,9 @@ t_CKBOOL Chuck_Shell::Command_Code::init( Chuck_Shell * caller )
     return TRUE;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: ~Command_Code()
 // desc: ...
@@ -1950,6 +2094,9 @@ Chuck_Shell::Command_Code::~Command_Code()
     for( i = 0; i != len; i++ )
         SAFE_DELETE( allocated_commands[i] );
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -1976,6 +2123,9 @@ t_CKINT Chuck_Shell::Command_Code::execute( vector< string > & argv,
     return 0;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: usage()
 // desc: ...
@@ -1984,6 +2134,9 @@ string Chuck_Shell::Command_Code::usage()
 {
     return "code [command] [args] ...";
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -2011,6 +2164,9 @@ t_CKINT Chuck_Shell::Command_CodeSave::execute( vector < string > & argv,
     return 0;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
@@ -2028,6 +2184,9 @@ t_CKINT Chuck_Shell::Command_CodeList::execute( vector < string > & argv,
 
     return 0;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -2062,6 +2221,9 @@ t_CKINT Chuck_Shell::Command_CodeAdd::execute( vector < string > & argv,
 
     return 0;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -2101,6 +2263,9 @@ t_CKINT Chuck_Shell::Command_CodePrint::execute( vector < string > & argv,
     return 0;
 }   
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
@@ -2130,6 +2295,9 @@ t_CKINT Chuck_Shell::Command_CodeDelete::execute( vector < string > & argv,
 
     return 0;
 }   
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -2188,7 +2356,10 @@ t_CKINT Chuck_Shell::Command_CodeWrite::execute( vector < string > & argv,
         out += "warning: ignoring excess arguments...\n";
 
     return 0;
-}   
+}
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
