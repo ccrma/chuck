@@ -115,7 +115,8 @@ LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
 
 
 ############################ CHUCK HOST TARGETS ################################
-CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp RtAudio/RtAudio.cpp
+CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp \
+	RtAudio/RtAudio.cpp
 
 
 ############################ OBJECT FILE TARGETS ###############################
