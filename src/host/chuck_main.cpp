@@ -34,6 +34,7 @@
 #include "chuck.h"
 #include "chuck_audio.h"
 #include "chuck_console.h"
+#include <signal.h>
 
 
 
@@ -283,14 +284,14 @@ void global_cleanup()
         while( g_shell != NULL )
             usleep(10000);
 
+    // REFACTOR-2017 TODO: Cancel otf, le_cb threads? Does this happen in ~ChucK()?
     // things don't work so good on windows...
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-    // REFACTOR-2017 TODO: Cancel otf, le_cb threads? Does this happen in ~ChucK()?
 //    if( g_tid_otf ) pthread_cancel( g_tid_otf );
 //    if( g_tid_whatever ) pthread_cancel( g_tid_whatever );
 #else
     // close handle
-    if( g_tid_otf ) CloseHandle( g_tid_otf );
+//    if( g_tid_otf ) CloseHandle( g_tid_otf );
 #endif
 }
 

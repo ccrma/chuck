@@ -1165,7 +1165,11 @@ void le_cleanup()
     if( g_le_thread )
     {
         // cancel thread
+#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
         pthread_cancel( g_le_thread );
+#else
+        CloseHandle( g_le_thread );
+#endif
         g_le_thread = 0;
         // reset
         g_le_launched = FALSE;
@@ -1228,7 +1232,7 @@ LineEvent::LineEvent( Chuck_Event * SELF )
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
         pthread_create( &g_le_thread, NULL, le_cb, NULL );
 #else
-        g_tid_whatever = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)le_cb, NULL, 0, 0 );
+        g_le_thread = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)le_cb, NULL, 0, 0 );
 #endif
         g_le_launched = TRUE;
     }

@@ -4820,7 +4820,7 @@ Windows general HID support
 #pragma mark Windows general HID support
 
 #include <windows.h>
-#ifdef _WIN64 // REFACTOR-2017
+#ifdef __WINDOWS_MODERN__ // REFACTOR-2017
 #define DIRECTINPUT_VERSION 0x0800
 #else
 #ifdef __USE_DINPUT8LIB__

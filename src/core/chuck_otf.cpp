@@ -40,6 +40,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <signal.h>
+#include <time.h>
 
 #ifndef __PLATFORM_WIN32__
 #include <unistd.h>
