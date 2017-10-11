@@ -9,7 +9,7 @@ CK_PLATFORM=
 current: 
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
-	@echo "   make osx, make osx-ub, make cygwin, or make win32"
+	@echo "   make osx, make cygwin, or make win32"
 
 
 ############################## MAKE INSTALL ####################################
@@ -31,7 +31,7 @@ endif
 osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
 
 win32:
-	make -f makefile.win32
+	make -f $(COREDIR)/makefile.x/makefile.win32
 
 CK_VERSION=1.3.6.0
 
@@ -77,23 +77,23 @@ include $(COREDIR)/makefile.x/makefile.osx
 endif
 
 ifneq (,$(strip $(filter linux-pulse,$(MAKECMDGOALS))))
-include makefile.pulse
+include $(COREDIR)/makefile.x/makefile.pulse
 endif
 
 ifneq (,$(strip $(filter linux-jack,$(MAKECMDGOALS))))
-include makefile.jack
+include $(COREDIR)/makefile.x/makefile.jack
 endif
 
 ifneq (,$(strip $(filter linux-alsa,$(MAKECMDGOALS))))
-include makefile.alsa
+include $(COREDIR)/makefile.x/makefile.alsa
 endif
 
 ifneq (,$(strip $(filter cygwin,$(MAKECMDGOALS))))
-include makefile.cygwin
+include $(COREDIR)/makefile.x/makefile.cygwin
 endif
 
 ifneq (,$(strip $(filter osx-rl,$(MAKECMDGOALS))))
-include makefile.rl
+include $(COREDIR)/makefile.x/makefile.rl
 endif
 
 
