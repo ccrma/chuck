@@ -66,7 +66,11 @@
 #define CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT      "1"
 #define CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT    ""
 #define CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT        "1"
-#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT     ""
+#ifndef __PLATFORM_WIN32__
+#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT     "/usr/local/lib/chuck"
+#else // __PLATFORM_WIN32__
+#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT     "C:\\Program Files\\ChucK\\chugins"
+#endif // __PLATFORM_WIN32__
 
 
 
