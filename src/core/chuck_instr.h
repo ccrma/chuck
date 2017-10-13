@@ -2512,7 +2512,7 @@ struct Chuck_Instr_Alloc_Word : public Chuck_Instr_Unary_Op
 public:
     // (added 1.3.0.0 -- is_object)
     Chuck_Instr_Alloc_Word( t_CKUINT offset, t_CKBOOL is_object )
-    { this->set( offset ); }
+    { this->set( offset ); m_is_object = is_object; }
     
     // was this object reference? (added 1.3.0.0)
     t_CKBOOL m_is_object;
