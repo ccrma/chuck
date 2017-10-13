@@ -522,8 +522,8 @@ void EM_error2b( int line, const char * message, ... )
     va_end( ap );
 
     lastErrorCat( g_buffer );
-    CK_FPRINTF_STDOUT( "\n" );
-    CK_FFLUSH_STDOUT();
+    CK_FPRINTF_STDERR( "\n" );
+    CK_FFLUSH_STDERR();
 }
 
 
