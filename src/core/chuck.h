@@ -54,19 +54,21 @@
 
 
 // ChucK param names -- used in setParam(...) and getParam*(...)
-#define CHUCK_PARAM_SAMPLE_RATE         "SAMPLE_RATE"
-#define CHUCK_PARAM_INPUT_CHANNELS      "INPUT_CHANNELS"
-#define CHUCK_PARAM_OUTPUT_CHANNELS     "OUTPUT_CHANNELS"
-#define CHUCK_PARAM_VM_ADAPTIVE         "VM_ADAPTIVE"
-#define CHUCK_PARAM_VM_HALT             "VM_HALT"
-#define CHUCK_PARAM_OTF_ENABLE          "OTF_ENABLE"
-#define CHUCK_PARAM_OTF_PORT            "OTF_PORT"
-#define CHUCK_PARAM_DUMP_INSTRUCTIONS   "DUMP_INSTRUCTIONS"
-#define CHUCK_PARAM_AUTO_DEPEND         "AUTO_DEPEND"
-#define CHUCK_PARAM_DEPRECATE_LEVEL     "DEPRECATE_LEVEL"
-#define CHUCK_PARAM_WORKING_DIRECTORY   "WORKING_DIRECTORY"
-#define CHUCK_PARAM_CHUGIN_ENABLE       "CHUGIN_ENABLE"
-#define CHUCK_PARAM_CHUGIN_DIRECTORY    "CHUGIN_DIRECTORY"
+#define CHUCK_PARAM_SAMPLE_RATE             "SAMPLE_RATE"
+#define CHUCK_PARAM_INPUT_CHANNELS          "INPUT_CHANNELS"
+#define CHUCK_PARAM_OUTPUT_CHANNELS         "OUTPUT_CHANNELS"
+#define CHUCK_PARAM_VM_ADAPTIVE             "VM_ADAPTIVE"
+#define CHUCK_PARAM_VM_HALT                 "VM_HALT"
+#define CHUCK_PARAM_OTF_ENABLE              "OTF_ENABLE"
+#define CHUCK_PARAM_OTF_PORT                "OTF_PORT"
+#define CHUCK_PARAM_DUMP_INSTRUCTIONS       "DUMP_INSTRUCTIONS"
+#define CHUCK_PARAM_AUTO_DEPEND             "AUTO_DEPEND"
+#define CHUCK_PARAM_DEPRECATE_LEVEL         "DEPRECATE_LEVEL"
+#define CHUCK_PARAM_WORKING_DIRECTORY       "WORKING_DIRECTORY"
+#define CHUCK_PARAM_CHUGIN_ENABLE           "CHUGIN_ENABLE"
+#define CHUCK_PARAM_CHUGIN_DIRECTORY        "CHUGIN_DIRECTORY"
+#define CHUCK_PARAM_USER_CHUGINS            "USER_CHUGINS"
+#define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES "USER_CHUGIN_DIRECTORIES"
 
 
 
@@ -87,12 +89,14 @@ public:
     // set parameter by name
     // -- all params should have reasonable defaults
     bool setParam( const std::string & name, t_CKINT value );
-    bool setParam( const std::string & name, t_CKFLOAT value );
+    bool setParamFloat( const std::string & name, t_CKFLOAT value );
     bool setParam( const std::string & name, const std::string & value );
+    bool setParam( const std::string & name, const std::list< std::string > & value );
     // get params
     t_CKINT getParamInt( const std::string & key );
     t_CKFLOAT getParamFloat( const std::string & key );
     std::string getParamString( const std::string & key );
+    std::list< std::string > getParamStringList( const std::string & key );
 
 public:
     // compile a file (can be called anytime)
@@ -183,6 +187,8 @@ protected:
     Chuck_Carrier * m_carrier;
     // chuck params
     std::map<std::string, std::string> m_params;
+    // chuck list params
+    std::map< std::string, std::list<std::string> > m_listParams;
     // did user init?
     t_CKBOOL m_init;
 };

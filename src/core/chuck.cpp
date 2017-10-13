@@ -71,6 +71,8 @@
 #else // __PLATFORM_WIN32__
 #define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT     "C:\\Program Files\\ChucK\\chugins"
 #endif // __PLATFORM_WIN32__
+#define CHUCK_PARAM_USER_CHUGINS_DEFAULT        std::list<std::string>()
+#define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT std::list<std::string>()
 
 
 
@@ -149,7 +151,7 @@ ChucK::~ChucK()
 //-----------------------------------------------------------------------------
 enum ck_param_type
 {
-    ck_param_int, ck_param_float, ck_param_string
+    ck_param_int, ck_param_float, ck_param_string, ck_param_string_list
 };
 
 
@@ -182,19 +184,23 @@ void ChucK::initDefaultParams()
     m_params[CHUCK_PARAM_WORKING_DIRECTORY] = CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT;
     m_params[CHUCK_PARAM_CHUGIN_DIRECTORY] = CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT;
     m_params[CHUCK_PARAM_CHUGIN_ENABLE] = CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT;
+    m_listParams[CHUCK_PARAM_USER_CHUGINS] = CHUCK_PARAM_USER_CHUGINS_DEFAULT;
+    m_listParams[CHUCK_PARAM_USER_CHUGIN_DIRECTORIES] = CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT;
     
-    ck_param_types[CHUCK_PARAM_SAMPLE_RATE] =       ck_param_int;
-    ck_param_types[CHUCK_PARAM_INPUT_CHANNELS] =    ck_param_int;
-    ck_param_types[CHUCK_PARAM_OUTPUT_CHANNELS] =   ck_param_int;
-    ck_param_types[CHUCK_PARAM_VM_ADAPTIVE] =       ck_param_int;
-    ck_param_types[CHUCK_PARAM_VM_HALT] =           ck_param_int;
-    ck_param_types[CHUCK_PARAM_OTF_ENABLE] =        ck_param_int;
-    ck_param_types[CHUCK_PARAM_OTF_PORT] =          ck_param_int;
-    ck_param_types[CHUCK_PARAM_DUMP_INSTRUCTIONS] = ck_param_int;
-    ck_param_types[CHUCK_PARAM_DEPRECATE_LEVEL] =   ck_param_int;
-    ck_param_types[CHUCK_PARAM_WORKING_DIRECTORY] = ck_param_string;
-    ck_param_types[CHUCK_PARAM_CHUGIN_DIRECTORY] =  ck_param_string;
-    ck_param_types[CHUCK_PARAM_CHUGIN_ENABLE] =     ck_param_int;
+    ck_param_types[CHUCK_PARAM_SAMPLE_RATE]             = ck_param_int;
+    ck_param_types[CHUCK_PARAM_INPUT_CHANNELS]          = ck_param_int;
+    ck_param_types[CHUCK_PARAM_OUTPUT_CHANNELS]         = ck_param_int;
+    ck_param_types[CHUCK_PARAM_VM_ADAPTIVE]             = ck_param_int;
+    ck_param_types[CHUCK_PARAM_VM_HALT]                 = ck_param_int;
+    ck_param_types[CHUCK_PARAM_OTF_ENABLE]              = ck_param_int;
+    ck_param_types[CHUCK_PARAM_OTF_PORT]                = ck_param_int;
+    ck_param_types[CHUCK_PARAM_DUMP_INSTRUCTIONS]       = ck_param_int;
+    ck_param_types[CHUCK_PARAM_DEPRECATE_LEVEL]         = ck_param_int;
+    ck_param_types[CHUCK_PARAM_WORKING_DIRECTORY]       = ck_param_string;
+    ck_param_types[CHUCK_PARAM_CHUGIN_DIRECTORY]        = ck_param_string;
+    ck_param_types[CHUCK_PARAM_CHUGIN_ENABLE]           = ck_param_int;
+    ck_param_types[CHUCK_PARAM_USER_CHUGINS]            = ck_param_string_list;
+    ck_param_types[CHUCK_PARAM_USER_CHUGIN_DIRECTORIES] = ck_param_string_list;
 }
 
 
@@ -223,10 +229,10 @@ bool ChucK::setParam( const std::string & name, t_CKINT value )
 
 
 //-----------------------------------------------------------------------------
-// name: setParam()
+// name: setParamFloat()
 // desc: set a float param by name
 //-----------------------------------------------------------------------------
-bool ChucK::setParam( const std::string & name, t_CKFLOAT value )
+bool ChucK::setParamFloat( const std::string & name, t_CKFLOAT value )
 {
     if( m_params.count( name ) > 0 && ck_param_types[name] == ck_param_float )
     {
@@ -265,6 +271,27 @@ bool ChucK::setParam( const std::string & name, const std::string & value )
 
 
 //-----------------------------------------------------------------------------
+// name: setParam()
+// desc: set a string list param by name
+//-----------------------------------------------------------------------------
+bool ChucK::setParam( const std::string & name, const std::list< std::string > & value )
+{
+    if( m_listParams.count( name ) > 0 &&
+        ck_param_types[name] == ck_param_string_list )
+    {
+        m_listParams[name] = value;
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: getParamInt()
 // desc: get an int param
 //-----------------------------------------------------------------------------
@@ -283,7 +310,7 @@ t_CKINT ChucK::getParamInt( const std::string & key )
 
 
 //-----------------------------------------------------------------------------
-// name: getParamInt()
+// name: getParamFloat()
 // desc: get a float param
 //-----------------------------------------------------------------------------
 t_CKFLOAT ChucK::getParamFloat( const std::string & key )
@@ -313,6 +340,26 @@ std::string ChucK::getParamString( const std::string & key )
     else
     {
         return "";
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getParamStringList()
+// desc: get a string param
+//-----------------------------------------------------------------------------
+std::list< std::string > ChucK::getParamStringList( const std::string & key )
+{
+    if( m_listParams.count( key ) > 0 &&
+        ck_param_types[key] == ck_param_string_list )
+    {
+        return m_listParams[key];
+    }
+    else
+    {
+        return std::list< std::string >();
     }
 }
 
@@ -403,7 +450,7 @@ bool ChucK::initCompiler()
     t_CKUINT deprecate = getParamInt( CHUCK_PARAM_DEPRECATE_LEVEL );
     
     // list of search pathes (added 1.3.0.0)
-    std::list<std::string> dl_search_path;
+    std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES );
     if( workingDir != std::string("") )
     {
         dl_search_path.push_back( workingDir );
@@ -413,7 +460,7 @@ bool ChucK::initCompiler()
         dl_search_path.push_back( chuginDir );
     }
     // list of individually named chug-ins (added 1.3.0.0)
-    std::list<std::string> named_dls;
+    std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
     
     // if chugin load is off, then clear the lists (added 1.3.0.0 -- TODO: refactor)
     if( getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) == 0 )
