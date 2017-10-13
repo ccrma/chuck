@@ -38,6 +38,7 @@
 #include "util_math.h"
 #include "util_string.h"
 #include "util_thread.h"
+#include "chuck.h"
 #include "chuck_type.h"
 #include "chuck_compile.h"
 #include "chuck_instr.h"
@@ -661,8 +662,7 @@ CK_DLL_SFUN( system_impl )
     const char * cmd = GET_CK_STRING(ARGS)->str().c_str();
 
     // check globals for permission
-// REFACTOR-2017: TODO reenable --caution-to-the-wind?
-/*    if( !g_enable_system_cmd )
+    if( !ChucK::enableSystemCall )
     {
         CK_FPRINTF_STDERR( "[chuck]:error: VM not authorized to call Std.system( string )...\n" );
         CK_FPRINTF_STDERR( "[chuck]:  (command string was: \"%s\")\n", cmd );
@@ -670,7 +670,6 @@ CK_DLL_SFUN( system_impl )
         RETURN->v_int = 0;
     }
     else
-*/
     {
         // log
         EM_log( CK_LOG_SEVERE, "invoking system( CMD )..." );

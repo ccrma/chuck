@@ -71,9 +71,9 @@
 
 
 // chuck statics
-// version
 const char ChucK::VERSION[] = "1.3.6.0-rc1 (numchuck)";
 t_CKUINT ChucK::o_numVMs = 0;
+t_CKBOOL ChucK::enableSystemCall = FALSE;
 
 
 
@@ -557,8 +557,8 @@ bool ChucK::initOTF()
         // start tcp server
         m_carrier->otf_socket = ck_tcp_create( 1 );
         if( !m_carrier->otf_socket ||
-           !ck_bind( m_carrier->otf_socket, m_carrier->otf_port ) ||
-           !ck_listen( m_carrier->otf_socket, 10 ) )
+            !ck_bind( m_carrier->otf_socket, m_carrier->otf_port ) ||
+            !ck_listen( m_carrier->otf_socket, 10 ) )
         {
             CK_FPRINTF_STDERR( "[chuck]: cannot bind to tcp port %li...\n", m_carrier->otf_port );
             ck_close( m_carrier->otf_socket );
@@ -567,10 +567,11 @@ bool ChucK::initOTF()
         else
         {
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-            pthread_create( &m_carrier->otf_thread, NULL, otf_cb, NULL );
+            pthread_create( &m_carrier->otf_thread, NULL, otf_cb, m_carrier );
 #else
             m_carrier->otf_thread = CreateThread( NULL, 0,
-                                                 (LPTHREAD_START_ROUTINE)otf_cb, NULL, 0, 0 );
+                                                  (LPTHREAD_START_ROUTINE)otf_cb,
+                                                  m_carrier, 0, 0 );
 #endif
         }
     }

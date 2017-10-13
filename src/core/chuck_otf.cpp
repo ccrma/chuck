@@ -644,7 +644,8 @@ void * otf_cb( void * p )
         client = ck_accept( carrier->otf_socket );
         if( !client )
         {
-            if( carrier->vm ) CK_FPRINTF_STDERR( "[chuck]: socket error during accept()...\n" );
+            if( carrier->vm )
+                EM_log( CK_LOG_INFO, "[chuck]: socket error during accept()...\n" );
             usleep( 40000 );
             ck_close( client );
             continue;

@@ -748,6 +748,9 @@ bool go( int argc, const char ** argv )
         exit( 0 );
     }
     
+    // set caution to wind
+    ChucK::enableSystemCall = g_enable_system_cmd;
+    
     // check buffer size
     buffer_size = ensurepow2( buffer_size );
     // check mode and blocking
@@ -836,8 +839,7 @@ bool go( int argc, const char ** argv )
     the_chuck->setParam( CHUCK_PARAM_VM_ADAPTIVE, adaptive_size );
     the_chuck->setParam( CHUCK_PARAM_VM_HALT, (t_CKINT)(vm_halt) );
     the_chuck->setParam( CHUCK_PARAM_OTF_PORT, g_otf_port );
-    // REFACTOR-2017: enable otf
-    //the_chuck->setParam( CHUCK_PARAM_OTF_ENABLE, (t_CKINT) TRUE );
+    the_chuck->setParam( CHUCK_PARAM_OTF_ENABLE, (t_CKINT)TRUE );
     the_chuck->setParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, (t_CKINT)dump );
     the_chuck->setParam( CHUCK_PARAM_AUTO_DEPEND, (t_CKINT)auto_depend );
     the_chuck->setParam( CHUCK_PARAM_DEPRECATE_LEVEL, deprecate_level );
