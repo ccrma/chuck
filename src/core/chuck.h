@@ -157,6 +157,8 @@ public: // static functions
     static void setLogLevel( t_CKINT level );
     // get log level -- also per-VM?
     static t_CKINT getLogLevel();
+    // use with care: if true, this enables system() calls from code
+    static t_CKBOOL enableSystemCall;
 
 protected:
     // chuck version
