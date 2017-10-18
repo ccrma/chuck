@@ -36,7 +36,12 @@
 #include "chuck_console.h"
 #include <signal.h>
 
-
+#if defined(__PLATFORM_WIN32__)
+  #include <windows.h>
+#else
+  #include <unistd.h>
+  #include <pthread.h>
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -742,7 +747,7 @@ bool go( int argc, const char ** argv )
         EM_error2b( 0, "" );
 #endif  // __DISABLE_MIDI__
         
-        // HidInManager::probeHidIn();
+        HidInManager::probeHidIn();
         
         // exit
         exit( 0 );
