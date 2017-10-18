@@ -451,10 +451,6 @@ bool ChucK::initCompiler()
     
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES );
-    if( workingDir != std::string("") )
-    {
-        dl_search_path.push_back( workingDir );
-    }
     if( chuginDir != std::string("") )
     {
         dl_search_path.push_back( chuginDir );
