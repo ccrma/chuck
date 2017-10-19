@@ -61,6 +61,10 @@ typedef DWORD uint32_t;
 #endif
 #endif 
 
+#ifdef __PLATFORM_LINUX__
+#include <stdint.h>
+#endif
+
 
 // available baud rates
 const t_CKUINT Chuck_IO_Serial::CK_BAUD_2400   = 2400;
