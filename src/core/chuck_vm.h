@@ -457,6 +457,24 @@ struct Chuck_Signal_External_Event_Request
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Listen_For_External_Event_Request
+// desc: container for messages to wait on external events (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Listen_For_External_Event_Request
+{
+    std::string name;
+    t_CKBOOL listen_forever;
+    t_CKBOOL deregister;
+    void (* callback)(void);
+    // constructor
+    Chuck_Listen_For_External_Event_Request() : listen_forever(FALSE),
+        deregister(FALSE), callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_External_Int_Container
 // desc: container for external ints
 //-----------------------------------------------------------------------------
@@ -581,6 +599,8 @@ public:
     
     t_CKBOOL signal_external_event( std::string name );
     t_CKBOOL broadcast_external_event( std::string name );
+    t_CKBOOL listen_for_external_event( std::string name, void (* callback)(void), t_CKBOOL listen_forever );
+    t_CKBOOL stop_listening_for_external_event( std::string name, void (* callback)(void) );
     
 public:
     // REFACTOR-2017: externally accessible variables.
@@ -681,6 +701,7 @@ private:
     std::map< std::string, Chuck_External_Float_Container * > m_external_floats;
     
     XCircleBuffer< Chuck_Signal_External_Event_Request > m_signal_external_event_queue;
+    XCircleBuffer< Chuck_Listen_For_External_Event_Request > m_listen_for_external_event_queue;
     std::map< std::string, Chuck_External_Event_Container * > m_external_events;
     
     XCircleBuffer< Chuck_VM_Shred * > m_spork_external_shred_queue;

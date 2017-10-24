@@ -155,6 +155,7 @@ Chuck_VM::Chuck_VM()
     m_set_external_float_queue.init( 1024 );
     m_get_external_float_queue.init( 1024 );
     m_signal_external_event_queue.init( 1024 );
+    m_listen_for_external_event_queue.init( 1024 );
     m_spork_external_shred_queue.init( 8192 );
 }
 
@@ -498,14 +499,22 @@ t_CKBOOL Chuck_VM::compute()
 
         // broadcast queued events
         while( m_event_buffer->get( &event, 1 ) )
-        { event->broadcast(); iterate = TRUE; }
+        {
+            event->broadcast();
+            event->broadcast_external();
+            iterate = TRUE;
+        }
         
         // loop over thread-specific queued event buffers (added 1.3.0.0)
         for( list<CBufferSimple *>::const_iterator i = m_event_buffers.begin();
              i != m_event_buffers.end(); i++ )
         {
             while( (*i)->get( &event, 1 ) )
-            { event->broadcast(); iterate = TRUE; }
+            {
+                event->broadcast();
+                event->broadcast_external();
+                iterate = TRUE;
+            }
         }
 
         // process messages
@@ -1337,6 +1346,48 @@ t_CKBOOL Chuck_VM::broadcast_external_event( std::string name ) {
 
 
 
+//-----------------------------------------------------------------------------
+// name: listen_for_external_event()
+// desc: listen for an Event by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::listen_for_external_event( std::string name,
+    void (* callback)(void), t_CKBOOL listen_forever )
+{
+    Chuck_Listen_For_External_Event_Request listen_event_message;
+    listen_event_message.callback = callback;
+    listen_event_message.name = name;
+    listen_event_message.listen_forever = listen_forever;
+    listen_event_message.deregister = FALSE;
+    
+    m_listen_for_external_event_queue.put( listen_event_message );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: stop_listening_for_external_event()
+// desc: listen for an Event by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::stop_listening_for_external_event( std::string name,
+    void (* callback)(void) )
+{
+    Chuck_Listen_For_External_Event_Request listen_event_message;
+    listen_event_message.callback = callback;
+    listen_event_message.name = name;
+    listen_event_message.listen_forever = FALSE;
+    listen_event_message.deregister = TRUE;
+    
+    m_listen_for_external_event_queue.put( listen_event_message );
+    
+    return TRUE;
+}
+
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: init_external_event()
@@ -1477,10 +1528,12 @@ void Chuck_VM::handle_external_set_messages() {
                 if( signal_event_message.is_broadcast )
                 {
                     event->broadcast();
+                    event->broadcast_external();
                 }
                 else
                 {
                     event->signal();
+                    event->signal_external();
                 }
             }
         }
@@ -1527,6 +1580,35 @@ void Chuck_VM::handle_external_get_messages() {
             init_external_float( get_float_message.name );
             // call callback with float
             get_float_message.fp( m_external_floats[get_float_message.name]->val );
+        }
+        else
+        {
+            // get failed.... sadness.... this might be bad
+            break;
+        }
+        
+    }
+    
+    while( m_listen_for_external_event_queue.more() ) {
+        Chuck_Listen_For_External_Event_Request listen_message;
+        if( m_listen_for_external_event_queue.get( & listen_message ) &&
+            listen_message.callback != NULL )
+        {
+            // ensure it exists
+            if( m_external_events.count( listen_message.name ) > 0 ) {
+                Chuck_Event * event = get_external_event( listen_message.name );
+                if( listen_message.deregister )
+                {
+                    // deregister
+                    event->remove_listen( listen_message.callback );
+                }
+                else
+                {
+                    // register
+                    event->external_listen( listen_message.callback,
+                        listen_message.listen_forever );
+                }
+            }
         }
         else
         {

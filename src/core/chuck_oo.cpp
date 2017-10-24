@@ -2044,6 +2044,136 @@ t_CKBOOL Chuck_Event::remove( Chuck_VM_Shred * shred )
 
 
 //-----------------------------------------------------------------------------
+// name: external_listen()
+// desc: register a callback to an external event
+//-----------------------------------------------------------------------------
+void Chuck_Event::external_listen( void (* cb)(void),
+    t_CKBOOL listen_forever )
+{
+    // storage
+    Chuck_External_Event_Listener new_listener;
+    
+    // store cb and whether to listen until canceled
+    new_listener.callback = cb;
+    new_listener.listen_forever = listen_forever;
+    
+    // store storage
+    m_external_queue.push( new_listener );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: remove_listen()
+// desc: deregister a callback to an external event
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Event::remove_listen( void (* cb)(void) )
+{
+    std::queue<Chuck_External_Event_Listener> temp;
+    t_CKBOOL removed = FALSE;
+
+    // lock
+    m_queue_lock.acquire();
+    // while something in queue
+    while( !m_external_queue.empty() )
+    {
+        // check if the callback we are looking for
+        if( m_external_queue.front().callback != cb )
+        {
+            // if not, enqueue it into temp
+            temp.push( m_external_queue.front() );
+        }
+        else
+        {
+            // flag, don't add to temp
+            removed = TRUE;
+        }
+
+        // pop the top
+        m_queue.pop();
+    }
+
+    // copy temp back to queue
+    m_external_queue = temp;
+    // release lock
+    m_queue_lock.release();
+
+    return removed;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: signal_external()
+// desc: call an external callback listener
+//-----------------------------------------------------------------------------
+void Chuck_Event::signal_external()
+{
+    m_queue_lock.acquire();
+    
+    if( !m_external_queue.empty() )
+    {
+        // get the listener on top of the queue
+        Chuck_External_Event_Listener listener = m_external_queue.front();
+        // pop the top
+        m_external_queue.pop();
+        // call callback
+        if( listener.callback != NULL )
+        {
+            listener.callback();
+        }
+        // if call forever, add back to m_external_queue
+        if( listener.listen_forever )
+        {
+            m_external_queue.push( listener );
+        }
+    }
+    
+    m_queue_lock.release();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: broadcast_external()
+// desc: call an external callback listener
+//-----------------------------------------------------------------------------
+void Chuck_Event::broadcast_external()
+{
+    m_queue_lock.acquire();
+    std::queue< Chuck_External_Event_Listener > call_again;
+    
+    while( !m_external_queue.empty() )
+    {
+        // get the listener on top of the queue
+        Chuck_External_Event_Listener listener = m_external_queue.front();
+        // pop the top
+        m_external_queue.pop();
+        // call callback
+        if( listener.callback != NULL )
+        {
+            listener.callback();
+        }
+        // if call forever, add back to m_external_queue
+        if( listener.listen_forever )
+        {
+            call_again.push( listener );
+        }
+    }
+    
+    // for those that should be called again, store them again
+    m_external_queue = call_again;
+    
+    m_queue_lock.release();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: queue_broadcast()
 // desc: queue the event to broadcast a event/condition variable,
 //       by the owner of the queue
@@ -3077,6 +3207,7 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeStr_thread ) ( void *data )
     Chuck_Event *e = args->fileio_obj->m_asyncEvent;
     delete args;
     e->broadcast(); // wake up
+    e->broadcast_external();
     
     return (THREAD_RETURN)0;
 }
@@ -3086,6 +3217,7 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeInt_thread ) ( void *data )
     async_args *args = (async_args *)data;
     args->fileio_obj->write ( args->intArg );
     args->fileio_obj->m_asyncEvent->broadcast(); // wake up
+    args->fileio_obj->m_asyncEvent->broadcast_external();
     delete args;
     
     return (THREAD_RETURN)0;
@@ -3096,6 +3228,7 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
     async_args *args = (async_args *)data;
     args->fileio_obj->write ( args->floatArg );
     args->fileio_obj->m_asyncEvent->broadcast(); // wake up
+    args->fileio_obj->m_asyncEvent->broadcast_external();
     delete args;
     
     return (THREAD_RETURN)0;

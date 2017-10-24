@@ -125,13 +125,15 @@ public:
     Chuck_Compiler * compiler() { return m_carrier->compiler; }
 
 public:
-    // external variables - set and get
+    // external variables - set, get, listen
     t_CKBOOL setExternalInt( const char * name, t_CKINT val );
     t_CKBOOL getExternalInt( const char * name, void (* callback)(t_CKINT) );
     t_CKBOOL setExternalFloat( const char * name, t_CKFLOAT val );
     t_CKBOOL getExternalFloat( const char * name, void (* callback)(t_CKFLOAT) );
     t_CKBOOL signalExternalEvent( const char * name );
     t_CKBOOL broadcastExternalEvent( const char * name );
+    t_CKBOOL listenForExternalEvent( const char * name, void (* callback)(void), t_CKBOOL listen_forever );
+    t_CKBOOL stopListeningForExternalEvent( const char * name, void (* callback)(void) );
     
 public:
     // external callback functions
