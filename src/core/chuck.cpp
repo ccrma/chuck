@@ -888,7 +888,7 @@ void ChucK::run( SAMPLE * input, SAMPLE * output, int numFrames )
 t_CKBOOL ChucK::setExternalInt( const char * name, t_CKINT val )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return !m_carrier->vm->set_external_int( std::string( name ), val );
+    return m_carrier->vm->set_external_int( std::string( name ), val );
 }
 
 
@@ -901,7 +901,7 @@ t_CKBOOL ChucK::setExternalInt( const char * name, t_CKINT val )
 t_CKBOOL ChucK::getExternalInt( const char * name, void (* callback)(t_CKINT) )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return !m_carrier->vm->get_external_int( std::string( name ), callback );
+    return m_carrier->vm->get_external_int( std::string( name ), callback );
 }
 
 
@@ -914,7 +914,7 @@ t_CKBOOL ChucK::getExternalInt( const char * name, void (* callback)(t_CKINT) )
 t_CKBOOL ChucK::setExternalFloat( const char * name, t_CKFLOAT val )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return !m_carrier->vm->set_external_float( std::string( name ), val );
+    return m_carrier->vm->set_external_float( std::string( name ), val );
 }
 
 
@@ -927,7 +927,7 @@ t_CKBOOL ChucK::setExternalFloat( const char * name, t_CKFLOAT val )
 t_CKBOOL ChucK::getExternalFloat( const char * name, void (* callback)(t_CKFLOAT) )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return !m_carrier->vm->get_external_float( std::string( name ), callback );
+    return m_carrier->vm->get_external_float( std::string( name ), callback );
 }
 
 
@@ -940,7 +940,7 @@ t_CKBOOL ChucK::getExternalFloat( const char * name, void (* callback)(t_CKFLOAT
 t_CKBOOL ChucK::signalExternalEvent( const char * name )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return !m_carrier->vm->signal_external_event( std::string( name ) );
+    return m_carrier->vm->signal_external_event( std::string( name ) );
 }
 
 
@@ -953,7 +953,7 @@ t_CKBOOL ChucK::signalExternalEvent( const char * name )
 t_CKBOOL ChucK::broadcastExternalEvent( const char * name )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return !m_carrier->vm->broadcast_external_event( std::string( name ) );
+    return m_carrier->vm->broadcast_external_event( std::string( name ) );
 }
 
 
