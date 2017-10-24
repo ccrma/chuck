@@ -422,6 +422,20 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: Chuck_External_Event_Listener
+// desc: base Listener struct
+//-----------------------------------------------------------------------------
+struct Chuck_External_Event_Listener
+{
+    void (* callback)(void);
+    t_CKBOOL listen_forever;
+    Chuck_External_Event_Listener() : callback(NULL), listen_forever(FALSE) {};
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_Event
 // desc: base Chuck Event class
 //-----------------------------------------------------------------------------
@@ -432,6 +446,10 @@ public:
     void broadcast();
     void wait( Chuck_VM_Shred * shred, Chuck_VM * vm );
     t_CKBOOL remove( Chuck_VM_Shred * shred );
+    void signal_external();
+    void broadcast_external();
+    void external_listen( void (* cb)(void), t_CKBOOL listen_forever );
+    t_CKBOOL remove_listen( void (* cb)(void) );
 
 public: // internal
     // added 1.3.0.0: queue_broadcast now takes event_buffer
@@ -443,6 +461,7 @@ public:
 protected:
     std::queue<Chuck_VM_Shred *> m_queue;
     XMutex m_queue_lock;
+    std::queue<Chuck_External_Event_Listener> m_external_queue;
 };
 
 

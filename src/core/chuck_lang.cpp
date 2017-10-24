@@ -2700,12 +2700,14 @@ CK_DLL_MFUN( event_signal )
 {
     Chuck_Event * d = (Chuck_Event *)SELF;
     d->signal();
+    d->signal_external();
 }
 
 CK_DLL_MFUN( event_broadcast )
 {
     Chuck_Event * d = (Chuck_Event *)SELF;
     d->broadcast();
+    d->broadcast_external();
 }
 
 CK_DLL_MFUN( event_wait )

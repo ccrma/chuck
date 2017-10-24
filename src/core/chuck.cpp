@@ -960,6 +960,36 @@ t_CKBOOL ChucK::broadcastExternalEvent( const char * name )
 
 
 //-----------------------------------------------------------------------------
+// name: listenForExternalEvent()
+// desc: send a message to broadcast an external event
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::listenForExternalEvent( const char * name, void (* callback)(void),
+    t_CKBOOL listen_forever )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->listen_for_external_event( std::string( name ),
+        callback, listen_forever );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: stopListeningForExternalEvent()
+// desc: send a message to broadcast an external event
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::stopListeningForExternalEvent( const char * name,
+    void (* callback)(void) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->stop_listening_for_external_event(
+        std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: setChoutCallback()
 // desc: provide a callback where Chout print statements are routed
 //-----------------------------------------------------------------------------
