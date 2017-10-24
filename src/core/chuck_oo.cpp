@@ -2091,7 +2091,7 @@ t_CKBOOL Chuck_Event::remove_listen( void (* cb)(void) )
         }
 
         // pop the top
-        m_queue.pop();
+        m_external_queue.pop();
     }
 
     // copy temp back to queue
