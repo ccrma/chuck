@@ -154,6 +154,8 @@ Chuck_VM::Chuck_VM()
     m_get_external_int_queue.init( 1024 );
     m_set_external_float_queue.init( 1024 );
     m_get_external_float_queue.init( 1024 );
+    m_set_external_string_queue.init( 1024 );
+    m_get_external_string_queue.init( 1024 );
     m_signal_external_event_queue.init( 1024 );
     m_listen_for_external_event_queue.init( 1024 );
     m_spork_external_shred_queue.init( 8192 );
@@ -1160,7 +1162,8 @@ void Chuck_VM::release_dump( )
 // desc: get an external int by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::get_external_int( std::string name,
-                                     void (* callback)(t_CKINT) ) {
+    void (* callback)(t_CKINT) )
+{
     Chuck_Get_External_Int_Request get_int_message;
     get_int_message.name = name;
     get_int_message.fp = callback;
@@ -1177,7 +1180,8 @@ t_CKBOOL Chuck_VM::get_external_int( std::string name,
 // name: set_external_int()
 // desc: set an external int by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::set_external_int( std::string name, t_CKINT val ) {
+t_CKBOOL Chuck_VM::set_external_int( std::string name, t_CKINT val )
+{
     Chuck_Set_External_Int_Request set_int_message;
     set_int_message.name = name;
     set_int_message.val = val;
@@ -1239,7 +1243,8 @@ t_CKINT * Chuck_VM::get_ptr_to_external_int( std::string name )
 // desc: get an external float by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::get_external_float( std::string name,
-                                       void (* callback)(t_CKFLOAT) ) {
+    void (* callback)(t_CKFLOAT) )
+{
     Chuck_Get_External_Float_Request get_float_message;
     get_float_message.name = name;
     get_float_message.fp = callback;
@@ -1256,7 +1261,8 @@ t_CKBOOL Chuck_VM::get_external_float( std::string name,
 // name: set_external_float()
 // desc: set an external float by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::set_external_float( std::string name, t_CKFLOAT val ) {
+t_CKBOOL Chuck_VM::set_external_float( std::string name, t_CKFLOAT val )
+{
     Chuck_Set_External_Float_Request set_float_message;
     set_float_message.name = name;
     set_float_message.val = val;
@@ -1308,6 +1314,93 @@ t_CKFLOAT Chuck_VM::get_external_float_value( std::string name )
 t_CKFLOAT * Chuck_VM::get_ptr_to_external_float( std::string name )
 {
     return &( m_external_floats[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_string()
+// desc: get an external string by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_external_string( std::string name,
+        void (* callback)(const char *) )
+{
+    Chuck_Get_External_String_Request get_string_message;
+    get_string_message.name = name;
+    get_string_message.fp = callback;
+    
+    m_get_external_string_queue.put( get_string_message );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_string()
+// desc: set an external string by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_external_string( std::string name, std::string val )
+{
+    Chuck_Set_External_String_Request set_string_message;
+    set_string_message.name = name;
+    set_string_message.val = val;
+    
+    m_set_external_string_queue.put( set_string_message );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_external_string()
+// desc: tell the vm that an external string is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::init_external_string( std::string name )
+{
+    if( m_external_strings.count( name ) == 0 )
+    {
+        // init
+        m_external_strings[name] = new Chuck_External_String_Container;
+        m_external_strings[name]->val = new Chuck_String;
+        
+        // add reference to prevent deletion
+        m_external_strings[name]->val->add_ref();
+        
+    }
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_string_value()
+// desc: get a value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_String * Chuck_VM::get_external_string( std::string name )
+{
+    // ensure exists
+    init_external_string( name );
+    
+    return m_external_strings[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_string_value()
+// desc: set a value directly to the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_String * * Chuck_VM::get_ptr_to_external_string( std::string name )
+{
+    return &( m_external_strings[name]->val );
 }
 
 
@@ -1391,7 +1484,7 @@ t_CKBOOL Chuck_VM::stop_listening_for_external_event( std::string name,
 
 //-----------------------------------------------------------------------------
 // name: init_external_event()
-// desc: tell the vm that an external float is now available
+// desc: tell the vm that an external event is now available
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::init_external_event( std::string name, Chuck_Type * type ) {
 
@@ -1466,6 +1559,15 @@ void Chuck_VM::cleanup_external_variables()
     }
     m_external_floats.clear();
     
+    // strings: release strings, delete containers, and clear map
+    for( std::map< std::string, Chuck_External_String_Container * >::iterator it=
+         m_external_strings.begin(); it!=m_external_strings.end(); it++ )
+    {
+        SAFE_RELEASE( it->second->val );
+        delete (it->second);
+    }
+    m_external_strings.clear();
+    
     // events: release events, delete containers, and clear map
     for( std::map< std::string, Chuck_External_Event_Container * >::iterator it=
          m_external_events.begin(); it!=m_external_events.end(); it++ )
@@ -1509,6 +1611,22 @@ void Chuck_VM::handle_external_set_messages() {
             // ensure the container exists
             init_external_float( set_float_message.name );
             m_external_floats[set_float_message.name]->val = set_float_message.val;
+        }
+        else
+        {
+            // get failed
+            break;
+        }
+        
+    }
+    
+    while( m_set_external_string_queue.more() ) {
+        Chuck_Set_External_String_Request set_string_message;
+        if( m_set_external_string_queue.get( & set_string_message ) )
+        {
+            // ensure the container exists
+            init_external_string( set_string_message.name );
+            m_external_strings[set_string_message.name]->val->set( set_string_message.val );
         }
         else
         {
@@ -1580,6 +1698,24 @@ void Chuck_VM::handle_external_get_messages() {
             init_external_float( get_float_message.name );
             // call callback with float
             get_float_message.fp( m_external_floats[get_float_message.name]->val );
+        }
+        else
+        {
+            // get failed.... sadness.... this might be bad
+            break;
+        }
+        
+    }
+    
+    while( m_get_external_string_queue.more() ) {
+        Chuck_Get_External_String_Request get_string_message;
+        if( m_get_external_string_queue.get( & get_string_message ) &&
+            get_string_message.fp != NULL )
+        {
+            // ensure value exists
+            init_external_string( get_string_message.name );
+            // call callback with string
+            get_string_message.fp( m_external_strings[get_string_message.name]->val->c_str() );
         }
         else
         {

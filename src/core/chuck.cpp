@@ -934,6 +934,34 @@ t_CKBOOL ChucK::getExternalFloat( const char * name, void (* callback)(t_CKFLOAT
 
 
 //-----------------------------------------------------------------------------
+// name: setExternalString()
+// desc: send a message to set the value of an external string
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::setExternalString( const char * name, const char * val )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->set_external_string( std::string( name ),
+        std::string( val ) );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getExternalString()
+// desc: send a message to get the value of an external string via callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getExternalString( const char * name,
+    void (* callback)( const char * ) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->get_external_string( std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: signalExternalEvent()
 // desc: send a message to signal an external event
 //-----------------------------------------------------------------------------

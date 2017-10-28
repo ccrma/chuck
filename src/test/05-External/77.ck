@@ -4,10 +4,10 @@
 if(me.args())
     me.arg(0) => Std.atoi => num;
 
-me.dir() => string meDir;
-me.dir(1) => string meDir1;
-me.dir(2) => string meDir2;
-me.dir(3) => string meDir3;
+me.dir() => external string meDir;
+me.dir(1) => external string meDir1;
+me.dir(2) => external string meDir2;
+me.dir(3) => external string meDir3;
 
 if(meDir1 + "05-External/" != meDir)
 {

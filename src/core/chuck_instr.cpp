@@ -2303,6 +2303,16 @@ void Chuck_Instr_Reg_Push_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
             push_( reg_sp, val );
         }
             break;
+        case te_externalString:
+        {
+            // pointer to registers
+            t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+            t_CKUINT val = (t_CKUINT) vm->get_external_string( m_name );
+            
+            // push external map content into string-reg stack
+            push_( reg_sp, val );
+        }
+            break;
         case te_externalEvent:
         {
             t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
@@ -2350,6 +2360,9 @@ void Chuck_Instr_Reg_Push_External_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred 
             break;
         case te_externalFloat:
             addr = (t_CKUINT) vm->get_ptr_to_external_float( m_name );
+            break;
+        case te_externalString:
+            addr = (t_CKUINT) vm->get_ptr_to_external_string( m_name );
             break;
         case te_externalEvent:
             addr = (t_CKUINT) vm->get_ptr_to_external_event( m_name );
@@ -3566,6 +3579,10 @@ void Chuck_Instr_Alloc_Word_External::execute( Chuck_VM * vm, Chuck_VM_Shred * s
         case te_externalFloat:
             vm->init_external_float( m_name );
             addr = (t_CKUINT) vm->get_ptr_to_external_float( m_name );
+            break;
+        case te_externalString:
+            vm->init_external_string( m_name );
+            addr = (t_CKUINT) vm->get_ptr_to_external_string( m_name );
             break;
         case te_externalEvent:
             // no need to init, it has already been initted during emit
