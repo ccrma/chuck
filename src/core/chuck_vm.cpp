@@ -1364,9 +1364,11 @@ t_CKBOOL Chuck_VM::init_external_string( std::string name )
 {
     if( m_external_strings.count( name ) == 0 )
     {
-        // init
+        // make container
         m_external_strings[name] = new Chuck_External_String_Container;
-        m_external_strings[name]->val = new Chuck_String;
+        // init
+        m_external_strings[name]->val = (Chuck_String *)
+            instantiate_and_initialize_object( this->env()->t_string, this );
         
         // add reference to prevent deletion
         m_external_strings[name]->val->add_ref();
