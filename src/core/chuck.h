@@ -130,6 +130,8 @@ public:
     t_CKBOOL getExternalInt( const char * name, void (* callback)(t_CKINT) );
     t_CKBOOL setExternalFloat( const char * name, t_CKFLOAT val );
     t_CKBOOL getExternalFloat( const char * name, void (* callback)(t_CKFLOAT) );
+    t_CKBOOL setExternalString( const char * name, const char * val );
+    t_CKBOOL getExternalString( const char * name, void (* callback)(const char *) );
     t_CKBOOL signalExternalEvent( const char * name );
     t_CKBOOL broadcastExternalEvent( const char * name );
     t_CKBOOL listenForExternalEvent( const char * name, void (* callback)(void), t_CKBOOL listen_forever );

@@ -4022,6 +4022,10 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         {
             externalType = te_externalFloat;
         }
+        else if( isa( t, emit->env->t_string ) )
+        {
+            externalType = te_externalString;
+        }
         else if( isa( t, emit->env->t_event ) )
         {
             // kind-of-event (te_Type for this would be te_user, which is not helpful)
@@ -4031,7 +4035,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         {
             // fail if type unsupported
             EM_error2( decl->linepos, (std::string("unsupported type for external keyword: ") + t->name).c_str() );
-            EM_error2( decl->linepos, "... (supported types: int, float, Event)" );
+            EM_error2( decl->linepos, "... (supported types: int, float, string, Event)" );
             return FALSE;
         }
     }
@@ -4798,6 +4802,10 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         else if( isa( v->type, emit->env->t_float ) )
         {
             external_type = te_externalFloat;
+        }
+        else if( isa( v->type, emit->env->t_string ) )
+        {
+            external_type = te_externalString;
         }
         else if( isa( v->type, emit->env->t_event ) )
         {

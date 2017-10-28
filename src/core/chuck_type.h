@@ -64,7 +64,7 @@ typedef enum {
 //       (REFACTOR-2017)
 //-----------------------------------------------------------------------------
 typedef enum {
-    te_externalInt, te_externalFloat, te_externalEvent
+    te_externalInt, te_externalFloat, te_externalString, te_externalEvent
 } te_ExternalType;
 
 

@@ -475,6 +475,36 @@ struct Chuck_Listen_For_External_Event_Request
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_String_Request
+// desc: container for messages to set external strings (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_String_Request
+{
+    std::string name;
+    std::string val;
+    // constructor
+    Chuck_Set_External_String_Request() { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_String_Request
+// desc: container for messages to get external strings (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_String_Request
+{
+    std::string name;
+    void (* fp)(const char *);
+    // constructor
+    Chuck_Get_External_String_Request() : fp(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_External_Int_Container
 // desc: container for external ints
 //-----------------------------------------------------------------------------
@@ -509,6 +539,19 @@ struct Chuck_External_Event_Container {
     Chuck_Type * type;
     
     Chuck_External_Event_Container() { val = NULL; type = NULL; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_External_String_Container
+// desc: container for external ints
+//-----------------------------------------------------------------------------
+struct Chuck_External_String_Container {
+    Chuck_String * val;
+    
+    Chuck_External_String_Container() { val = NULL; }
 };
 
 
@@ -597,6 +640,9 @@ public:
     t_CKBOOL get_external_float( std::string name, void (* callback)(t_CKFLOAT) );
     t_CKBOOL set_external_float( std::string name, t_CKFLOAT val );
     
+    t_CKBOOL get_external_string( std::string name, void (* callback)(const char *) );
+    t_CKBOOL set_external_string( std::string name, std::string val );
+    
     t_CKBOOL signal_external_event( std::string name );
     t_CKBOOL broadcast_external_event( std::string name );
     t_CKBOOL listen_for_external_event( std::string name, void (* callback)(void), t_CKBOOL listen_forever );
@@ -613,6 +659,10 @@ public:
     t_CKBOOL init_external_float( std::string name );
     t_CKFLOAT get_external_float_value( std::string name );
     t_CKFLOAT * get_ptr_to_external_float( std::string name );
+    
+    t_CKBOOL init_external_string( std::string name );
+    Chuck_String * get_external_string( std::string name );
+    Chuck_String * * get_ptr_to_external_string( std::string name );
     
     t_CKBOOL init_external_event( std::string name, Chuck_Type * type );
     Chuck_Event * get_external_event( std::string name );
@@ -699,6 +749,10 @@ private:
     XCircleBuffer< Chuck_Set_External_Float_Request > m_set_external_float_queue;
     XCircleBuffer< Chuck_Get_External_Float_Request > m_get_external_float_queue;
     std::map< std::string, Chuck_External_Float_Container * > m_external_floats;
+    
+    XCircleBuffer< Chuck_Set_External_String_Request > m_set_external_string_queue;
+    XCircleBuffer< Chuck_Get_External_String_Request > m_get_external_string_queue;
+    std::map< std::string, Chuck_External_String_Container * > m_external_strings;
     
     XCircleBuffer< Chuck_Signal_External_Event_Request > m_signal_external_event_queue;
     XCircleBuffer< Chuck_Listen_For_External_Event_Request > m_listen_for_external_event_queue;
