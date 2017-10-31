@@ -220,6 +220,9 @@ void Chuck_UGen::init()
     m_is_subgraph = FALSE;
     m_inlet = m_outlet = NULL;
     m_multi_in_v = m_multi_out_v = NULL;
+    
+    // yes more hacks (add some time after REFACTOR-2017)
+    m_is_buffered = FALSE;
 }
 
 

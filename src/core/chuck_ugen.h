@@ -154,6 +154,9 @@ public: // data
     
     // what a hack!
     t_CKBOOL m_is_uana;
+    
+    // what a hack! (added some time after REFACTOR-2017)
+    t_CKBOOL m_is_buffered;
 };
 
 

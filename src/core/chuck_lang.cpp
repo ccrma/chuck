@@ -182,6 +182,15 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "UGen", "right" );
     func->doc = "Return true if this ugen's output is connected to the input of the argument. Return false otherwise. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add buffered
+    func = make_new_mfun( "int", "buffered", ugen_buffered );
+    func->add_arg( "int", "val" );
+    func->doc = "Set the ugen's buffered operation mode. If true, the ugen stores a buffer of its most recent samples, which can be fetched using external variables in the host language.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    func = make_new_mfun( "int", "buffered", ugen_cget_buffered );
+    func->doc = "Return the ugen's buffered operation mode.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end
     type_engine_import_class_end( env );
@@ -2409,6 +2418,36 @@ CK_DLL_CTRL( ugen_connected )
     }
 
     RETURN->v_int = ret;
+}
+
+CK_DLL_MFUN( ugen_buffered )
+{
+    // get as ugen
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    // get arg
+    t_CKINT buffered = GET_CK_INT( ARGS );
+    // set op
+    ugen->m_is_buffered = buffered;
+    // set return
+    RETURN->v_int = ugen->m_is_buffered;
+
+    // for multiple channels
+    Chuck_DL_Return ret;
+    for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
+        ugen_buffered( ugen->m_multi_chan[i], ARGS, &ret, SHRED, API );
+    // added 1.3.0.2 -- apply op to subgraph outlet
+    if( ugen->inlet() )
+        ugen->inlet()->m_is_buffered = buffered;
+    if( ugen->outlet() )
+        ugen->outlet()->m_is_buffered = buffered;
+}
+
+CK_DLL_MFUN( ugen_cget_buffered )
+{
+    // get as ugen
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    // set return
+    RETURN->v_int = ugen->m_is_buffered;
 }
 
 
