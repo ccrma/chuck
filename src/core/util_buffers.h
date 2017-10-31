@@ -445,7 +445,7 @@ void XCircleBuffer<T>::init( long length )
     // allocate
     m_buffer = new T[length];
     // check
-    if( m_buffer < 0 )
+    if( m_buffer == NULL )
     {
         // doh
         std::cerr << "[XCircleBuffer]: failed to allocate buffer of length '"
