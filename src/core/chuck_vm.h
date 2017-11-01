@@ -531,14 +531,28 @@ struct Chuck_External_Float_Container {
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_External_Int_Container
-// desc: container for external ints
+// name: struct Chuck_External_Event_Container
+// desc: container for external events
 //-----------------------------------------------------------------------------
 struct Chuck_External_Event_Container {
     Chuck_Event * val;
     Chuck_Type * type;
     
     Chuck_External_Event_Container() { val = NULL; type = NULL; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_External_UGen_Container
+// desc: container for external ugens
+//-----------------------------------------------------------------------------
+struct Chuck_External_UGen_Container {
+    Chuck_UGen * val;
+    Chuck_Type * type;
+    
+    Chuck_External_UGen_Container() { val = NULL; type = NULL; }
 };
 
 
@@ -668,6 +682,10 @@ public:
     Chuck_Event * get_external_event( std::string name );
     Chuck_Event * * get_ptr_to_external_event( std::string name );
 
+    t_CKBOOL init_external_ugen( std::string name, Chuck_Type * type );
+    Chuck_UGen * get_external_ugen( std::string name );
+    Chuck_UGen * * get_ptr_to_external_ugen( std::string name );
+    
 protected:
     // REFACTOR-2017: external queue
     void handle_external_set_messages();
@@ -757,6 +775,8 @@ private:
     XCircleBuffer< Chuck_Signal_External_Event_Request > m_signal_external_event_queue;
     XCircleBuffer< Chuck_Listen_For_External_Event_Request > m_listen_for_external_event_queue;
     std::map< std::string, Chuck_External_Event_Container * > m_external_events;
+    
+    std::map< std::string, Chuck_External_UGen_Container * > m_external_ugens;
     
     XCircleBuffer< Chuck_VM_Shred * > m_spork_external_shred_queue;
 };
