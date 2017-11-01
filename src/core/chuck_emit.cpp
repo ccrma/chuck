@@ -4031,11 +4031,17 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             // kind-of-event (te_Type for this would be te_user, which is not helpful)
             externalType = te_externalEvent;
         }
+        else if( isa( t, emit->env->t_ugen ) )
+        {
+            // kind-of-ugen (te_Type might not be te_ugen, so we store externalUGen in our own field)
+            externalType = te_externalUGen;
+            
+        }
         else
         {
             // fail if type unsupported
             EM_error2( decl->linepos, (std::string("unsupported type for external keyword: ") + t->name).c_str() );
-            EM_error2( decl->linepos, "... (supported types: int, float, string, Event)" );
+            EM_error2( decl->linepos, "... (supported types: int, float, string, Event, UGen)" );
             return FALSE;
         }
     }
@@ -4169,6 +4175,19 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                             // if the type doesn't exactly match (different kinds of Event), then fail.
                             EM_error2( decl->linepos,
                                 "(emit): external Event '%s' has different type '%s' than already existing external Event of the same name",
+                                value->name.c_str(), t->name.c_str() );
+                            return FALSE;
+                        }
+                    }
+                    // if it's a ugen, we need to initialize it and check if the exact type matches
+                    else if( externalType == te_externalUGen )
+                    {
+                        // init and construct it now!
+                        if( !emit->env->vm()->init_external_ugen( value->name, t ) )
+                        {
+                            // if the type doesn't exactly match (different kinds of Event), then fail.
+                            EM_error2( decl->linepos,
+                                "(emit): external UGen '%s' has different type '%s' than already existing external UGen of the same name",
                                 value->name.c_str(), t->name.c_str() );
                             return FALSE;
                         }
@@ -4810,6 +4829,10 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         else if( isa( v->type, emit->env->t_event ) )
         {
             external_type = te_externalEvent;
+        }
+        else if( isa( v->type, emit->env->t_ugen ) )
+        {
+            external_type = te_externalUGen;
         }
         else
         {

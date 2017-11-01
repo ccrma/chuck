@@ -49,7 +49,7 @@ using namespace std;
 #endif
 
 // uncomment to compile VM debug messages
-#define CK_VM_DEBUG_ENABLE (0)
+#define CK_VM_DEBUG_ENABLE (1)
 
 #if CK_VM_DEBUG_ENABLE
 #define CK_VM_DEBUG(x) x
@@ -1516,8 +1516,8 @@ t_CKBOOL Chuck_VM::init_external_event( std::string name, Chuck_Type * type ) {
 
 
 //-----------------------------------------------------------------------------
-// name: get_external_event_pointer()
-// desc: get a pointer directly from the vm (internal)
+// name: get_external_event()
+// desc: get directly from the vm (internal)
 //-----------------------------------------------------------------------------
 Chuck_Event * Chuck_VM::get_external_event( std::string name )
 {
@@ -1528,12 +1528,67 @@ Chuck_Event * Chuck_VM::get_external_event( std::string name )
 
 
 //-----------------------------------------------------------------------------
-// name: set_external_event_pointer()
-// desc: set a pointer directly on the vm (internal)
+// name: get_ptr_to_external_event()
+// desc: get a pointer directly from the vm (internal)
 //-----------------------------------------------------------------------------
 Chuck_Event * * Chuck_VM::get_ptr_to_external_event( std::string name )
 {
     return &( m_external_events[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_external_ugen()
+// desc: tell the vm that an external ugen is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::init_external_ugen( std::string name, Chuck_Type * type ) {
+
+    // if it hasn't been initted yet
+    if( m_external_ugens.count( name ) == 0 ) {
+        // create a new storage container
+        m_external_ugens[name] = new Chuck_External_UGen_Container;
+        // create the chuck object
+        m_external_ugens[name]->val =
+            (Chuck_UGen *) instantiate_and_initialize_object( type, this );
+        // add a reference to it so it won't be deleted until we're done
+        // cleaning up the VM
+        m_external_ugens[name]->val->add_ref();
+        // store its type in the container, too (is it a user-defined class?)
+        m_external_ugens[name]->type = type;
+    }
+    // already exists. check if there's a type mismatch.
+    else if( type->name != m_external_ugens[name]->type->name )
+    {
+        return FALSE;
+    }
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_ugen()
+// desc: get directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_UGen * Chuck_VM::get_external_ugen( std::string name )
+{
+    return m_external_ugens[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_ptr_to_external_ugen()
+// desc: get ptr directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_UGen * * Chuck_VM::get_ptr_to_external_ugen( std::string name )
+{
+    return &( m_external_ugens[name]->val );
 }
 
 
@@ -1578,6 +1633,15 @@ void Chuck_VM::cleanup_external_variables()
         delete (it->second);
     }
     m_external_events.clear();
+    
+    // ugens: release ugens, delete containers, and clear map
+    for( std::map< std::string, Chuck_External_UGen_Container * >::iterator it=
+         m_external_ugens.begin(); it!=m_external_ugens.end(); it++ )
+    {
+        SAFE_RELEASE( it->second->val );
+        delete (it->second);
+    }
+    m_external_ugens.clear();
 }
 
 

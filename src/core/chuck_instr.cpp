@@ -2321,6 +2321,14 @@ void Chuck_Instr_Reg_Push_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
             // push external map content into event-reg stack
             push_( reg_sp, val );
         }
+        case te_externalUGen:
+        {
+            t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+            t_CKUINT val = (t_CKUINT) vm->get_external_ugen( m_name );
+            
+            // push external map content into event-reg stack
+            push_( reg_sp, val );
+        }
             break;
     }
 }
@@ -2366,6 +2374,9 @@ void Chuck_Instr_Reg_Push_External_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred 
             break;
         case te_externalEvent:
             addr = (t_CKUINT) vm->get_ptr_to_external_event( m_name );
+            break;
+        case te_externalUGen:
+            addr = (t_CKUINT) vm->get_ptr_to_external_ugen( m_name );
             break;
             
     }
@@ -3587,6 +3598,10 @@ void Chuck_Instr_Alloc_Word_External::execute( Chuck_VM * vm, Chuck_VM_Shred * s
         case te_externalEvent:
             // no need to init, it has already been initted during emit
             addr = (t_CKUINT) vm->get_ptr_to_external_event( m_name );
+            break;
+        case te_externalUGen:
+            // no need to init, it has already been initted during emit
+            addr = (t_CKUINT) vm->get_ptr_to_external_ugen( m_name );
             break;
     }
     
