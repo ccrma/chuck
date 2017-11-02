@@ -34,6 +34,7 @@
 
 #include "chuck_oo.h"
 #include "chuck_ugen.h"
+#include "chuck_type.h"
 #include "chuck_carrier.h"
 #include "util_buffers.h"
 
@@ -682,17 +683,16 @@ public:
     Chuck_String * get_external_string( std::string name );
     Chuck_String * * get_ptr_to_external_string( std::string name );
     
-    t_CKBOOL does_external_event_need_ctor_call( std::string name );
-    void external_event_ctor_was_called( std::string name );
     t_CKBOOL init_external_event( std::string name, Chuck_Type * type );
     Chuck_Event * get_external_event( std::string name );
     Chuck_Event * * get_ptr_to_external_event( std::string name );
 
-    t_CKBOOL does_external_ugen_need_ctor_call( std::string name );
-    void external_ugen_ctor_was_called( std::string name );
     t_CKBOOL init_external_ugen( std::string name, Chuck_Type * type );
     Chuck_UGen * get_external_ugen( std::string name );
     Chuck_UGen * * get_ptr_to_external_ugen( std::string name );
+    
+    t_CKBOOL should_call_external_ctor( std::string name, te_ExternalType type );
+    void external_ctor_was_called( std::string name, te_ExternalType type );
     
 protected:
     // REFACTOR-2017: external queue

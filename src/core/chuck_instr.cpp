@@ -3622,15 +3622,13 @@ void Chuck_Instr_Alloc_Word_External::execute( Chuck_VM * vm, Chuck_VM_Shred * s
             addr = (t_CKUINT) vm->get_ptr_to_external_string( m_name );
             break;
         case te_externalEvent:
-            // events are already init in emit, but might need to execute ctors
-            m_should_execute_ctors =
-                vm->does_external_event_need_ctor_call( m_name );
+            // events are already init in emit
+            // but might need to execute ctors (below)
             addr = (t_CKUINT) vm->get_external_event( m_name );
             break;
         case te_externalUGen:
-            // ugens are already init in emit, but might need to execute ctors
-            m_should_execute_ctors =
-                vm->does_external_ugen_need_ctor_call( m_name );
+            // ugens are already init in emit
+            // but might need to execute ctors (below)
             addr = (t_CKUINT) vm->get_external_ugen( m_name );
             break;
     }
@@ -3639,25 +3637,14 @@ void Chuck_Instr_Alloc_Word_External::execute( Chuck_VM * vm, Chuck_VM_Shred * s
     push_( reg_sp, addr );
     
     // if we have ctors to execute, do it
-    if( m_should_execute_ctors )
+    if( m_should_execute_ctors &&
+        vm->should_call_external_ctor( m_name, m_type ) )
     {
         // call ctors
         call_all_parent_pre_constructors( vm, shred,
             m_chuck_type, m_stack_offset );
         // tell VM we did it so that it will never be done again for m_name
-        switch( m_type ) {
-            case te_externalInt:
-            case te_externalFloat:
-            case te_externalString:
-                // do nothing for these basic types
-                break;
-            case te_externalEvent:
-                vm->external_event_ctor_was_called( m_name );
-                break;
-            case te_externalUGen:
-                vm->external_ugen_ctor_was_called( m_name );
-                break;
-        }
+        vm->external_ctor_was_called( m_name, m_type );
     }
 }
 
