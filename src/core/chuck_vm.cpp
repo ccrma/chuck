@@ -1767,8 +1767,10 @@ void Chuck_VM::handle_external_set_messages() {
         Chuck_Signal_External_Event_Request signal_event_message;
         if( m_signal_external_event_queue.get( & signal_event_message ) )
         {
-            // ensure it exists
-            if( m_external_events.count( signal_event_message.name ) > 0 ) {
+            // ensure it exists and it doesn't need its ctor called
+            if( m_external_events.count( signal_event_message.name ) > 0 &&
+                !should_call_external_ctor( signal_event_message.name, te_externalEvent ) )
+            {
                 Chuck_Event * event = get_external_event( signal_event_message.name );
                 if( signal_event_message.is_broadcast )
                 {
@@ -1857,8 +1859,10 @@ void Chuck_VM::handle_external_get_messages() {
         if( m_listen_for_external_event_queue.get( & listen_message ) &&
             listen_message.callback != NULL )
         {
-            // ensure it exists
-            if( m_external_events.count( listen_message.name ) > 0 ) {
+            // ensure it exists and it doesn't need its ctor called
+            if( m_external_events.count( listen_message.name ) > 0 &&
+                !should_call_external_ctor( listen_message.name, te_externalEvent ) )
+            {
                 Chuck_Event * event = get_external_event( listen_message.name );
                 if( listen_message.deregister )
                 {
