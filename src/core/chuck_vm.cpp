@@ -1484,34 +1484,6 @@ t_CKBOOL Chuck_VM::stop_listening_for_external_event( std::string name,
 
 
 //-----------------------------------------------------------------------------
-// name: does_external_event_need_ctor_call()
-// desc: ask the vm if an external event has been constructed after init
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::does_external_event_need_ctor_call( std::string name )
-{
-    return m_external_events.count( name ) > 0 &&
-        m_external_events[name]->ctor_needs_to_be_called;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: external_event_ctor_was_called()
-// desc: tell the vm that an external event no longer needs to be constructed
-//-----------------------------------------------------------------------------
-void Chuck_VM::external_event_ctor_was_called( std::string name )
-{
-    if( m_external_events.count( name ) > 0 )
-    {
-        m_external_events[name]->ctor_needs_to_be_called = FALSE;
-    }
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: init_external_event()
 // desc: tell the vm that an external event is now available
 //-----------------------------------------------------------------------------
@@ -1561,34 +1533,6 @@ Chuck_Event * Chuck_VM::get_external_event( std::string name )
 Chuck_Event * * Chuck_VM::get_ptr_to_external_event( std::string name )
 {
     return &( m_external_events[name]->val );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: does_external_ugen_need_ctor_call()
-// desc: ask the vm if an external ugen has been constructed after init
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::does_external_ugen_need_ctor_call( std::string name )
-{
-    return m_external_ugens.count( name ) > 0 &&
-        m_external_ugens[name]->ctor_needs_to_be_called;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: external_ugen_ctor_was_called()
-// desc: tell the vm that an external ugen has been constructed after init
-//-----------------------------------------------------------------------------
-void Chuck_VM::external_ugen_ctor_was_called( std::string name )
-{
-    if( m_external_ugens.count( name ) > 0 )
-    {
-        m_external_ugens[name]->ctor_needs_to_be_called = FALSE;
-    }
 }
 
 
@@ -1645,6 +1589,67 @@ Chuck_UGen * Chuck_VM::get_external_ugen( std::string name )
 Chuck_UGen * * Chuck_VM::get_ptr_to_external_ugen( std::string name )
 {
     return &( m_external_ugens[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: should_call_external_ctor()
+// desc: ask the vm if an external needs to be constructed after init
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::should_call_external_ctor( std::string name,
+    te_ExternalType type )
+{
+    switch( type )
+    {
+        case te_externalInt:
+        case te_externalFloat:
+        case te_externalString:
+            // these basic types don't have ctors
+            return FALSE;
+            break;
+        case te_externalEvent:
+            return m_external_events.count( name ) > 0 &&
+                m_external_events[name]->ctor_needs_to_be_called;
+            break;
+        case te_externalUGen:
+            return m_external_ugens.count( name ) > 0 &&
+                m_external_ugens[name]->ctor_needs_to_be_called;
+            break;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: external_ctor_was_called()
+// desc: tell the vm that an external has been constructed after init
+//-----------------------------------------------------------------------------
+void Chuck_VM::external_ctor_was_called( std::string name,
+    te_ExternalType type )
+{
+    switch( type )
+    {
+        case te_externalInt:
+        case te_externalFloat:
+        case te_externalString:
+            // do nothing for these basic types
+            break;
+        case te_externalEvent:
+            if( m_external_events.count( name ) > 0 )
+            {
+                m_external_events[name]->ctor_needs_to_be_called = FALSE;
+            }
+            break;
+        case te_externalUGen:
+            if( m_external_ugens.count( name ) > 0 )
+            {
+                m_external_ugens[name]->ctor_needs_to_be_called = FALSE;
+            }
+            break;
+    }
 }
 
 
