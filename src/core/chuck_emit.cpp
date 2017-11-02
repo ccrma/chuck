@@ -4008,6 +4008,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
     t_CKBOOL is_obj = FALSE;
     t_CKBOOL is_ref = FALSE;
     t_CKBOOL is_init = FALSE;
+    t_CKBOOL needs_external_ctor = FALSE;
     
     t_CKTYPE t = type_engine_find_type( emit->env, decl->type->xid );
     te_ExternalType externalType;
@@ -4030,12 +4031,15 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         {
             // kind-of-event (te_Type for this would be te_user, which is not helpful)
             externalType = te_externalEvent;
+            // need to call ctors
+            needs_external_ctor = TRUE;
         }
         else if( isa( t, emit->env->t_ugen ) )
         {
             // kind-of-ugen (te_Type might not be te_ugen, so we store externalUGen in our own field)
             externalType = te_externalUGen;
-            
+            // need to call ctors
+            needs_external_ctor = TRUE;
         }
         else
         {
@@ -4164,7 +4168,14 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     instr->m_name = value->name;
                     instr->m_type = externalType;
                     instr->set_linepos( decl->linepos );
-                    emit->append( instr );
+                    
+                    // extra fields for objects that need their ctors called
+                    if( needs_external_ctor )
+                    {
+                        instr->m_chuck_type = type;
+                        instr->m_stack_offset = local->offset;
+                        instr->m_should_execute_ctors = TRUE;
+                    }
                     
                     // if it's an event, we need to initialize it and check if the exact type matches
                     if( externalType == te_externalEvent )
@@ -4174,7 +4185,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                         {
                             // if the type doesn't exactly match (different kinds of Event), then fail.
                             EM_error2( decl->linepos,
-                                "(emit): external Event '%s' has different type '%s' than already existing external Event of the same name",
+                                "external Event '%s' has different type '%s' than already existing external Event of the same name",
                                 value->name.c_str(), t->name.c_str() );
                             return FALSE;
                         }
@@ -4187,12 +4198,14 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                         {
                             // if the type doesn't exactly match (different kinds of Event), then fail.
                             EM_error2( decl->linepos,
-                                "(emit): external UGen '%s' has different type '%s' than already existing external UGen of the same name",
+                                "external UGen '%s' has different type '%s' than already existing external UGen of the same name",
                                 value->name.c_str(), t->name.c_str() );
                             return FALSE;
                         }
                     }
                     
+                    // add instruction
+                    emit->append( instr );
                 }
                 // zero out location in memory, and leave addr on operand stack
                 // TODO: this is wrong for static

@@ -537,8 +537,10 @@ struct Chuck_External_Float_Container {
 struct Chuck_External_Event_Container {
     Chuck_Event * val;
     Chuck_Type * type;
+    t_CKBOOL ctor_needs_to_be_called;
     
-    Chuck_External_Event_Container() { val = NULL; type = NULL; }
+    Chuck_External_Event_Container() { val = NULL; type = NULL;
+        ctor_needs_to_be_called = TRUE; }
 };
 
 
@@ -551,8 +553,10 @@ struct Chuck_External_Event_Container {
 struct Chuck_External_UGen_Container {
     Chuck_UGen * val;
     Chuck_Type * type;
+    t_CKBOOL ctor_needs_to_be_called;
     
-    Chuck_External_UGen_Container() { val = NULL; type = NULL; }
+    Chuck_External_UGen_Container() { val = NULL; type = NULL;
+        ctor_needs_to_be_called = TRUE; }
 };
 
 
@@ -678,10 +682,14 @@ public:
     Chuck_String * get_external_string( std::string name );
     Chuck_String * * get_ptr_to_external_string( std::string name );
     
+    t_CKBOOL does_external_event_need_ctor_call( std::string name );
+    void external_event_ctor_was_called( std::string name );
     t_CKBOOL init_external_event( std::string name, Chuck_Type * type );
     Chuck_Event * get_external_event( std::string name );
     Chuck_Event * * get_ptr_to_external_event( std::string name );
 
+    t_CKBOOL does_external_ugen_need_ctor_call( std::string name );
+    void external_ugen_ctor_was_called( std::string name );
     t_CKBOOL init_external_ugen( std::string name, Chuck_Type * type );
     Chuck_UGen * get_external_ugen( std::string name );
     Chuck_UGen * * get_ptr_to_external_ugen( std::string name );
