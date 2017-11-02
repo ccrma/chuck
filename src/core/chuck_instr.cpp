@@ -2321,6 +2321,7 @@ void Chuck_Instr_Reg_Push_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
             // push external map content into event-reg stack
             push_( reg_sp, val );
         }
+            break;
         case te_externalUGen:
         {
             t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
@@ -2373,6 +2374,7 @@ void Chuck_Instr_Reg_Push_External_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred 
             addr = (t_CKUINT) vm->get_ptr_to_external_string( m_name );
             break;
         case te_externalEvent:
+            // TODO: should this be a * or a * * ?
             addr = (t_CKUINT) vm->get_ptr_to_external_event( m_name );
             break;
         case te_externalUGen:
@@ -3572,6 +3574,30 @@ void Chuck_Instr_Alloc_Member_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 
 
+inline void call_pre_constructor( Chuck_VM * vm, Chuck_VM_Shred * shred,
+    Chuck_VM_Code * pre_ctor, t_CKUINT stack_offset );
+//-----------------------------------------------------------------------------
+// name: call_all_parent_pre_constructors()
+// desc: traverse up type parent tree calling pre constructors top-down
+//-----------------------------------------------------------------------------
+void call_all_parent_pre_constructors( Chuck_VM * vm, Chuck_VM_Shred * shred,
+    Chuck_Type * type, t_CKUINT stack_offset )
+{
+    // first, call parent ctor
+    if( type->parent != NULL )
+    {
+        call_all_parent_pre_constructors( vm, shred, type->parent, stack_offset );
+    }
+    // now, call my ctor
+    if( type->has_constructor )
+    {
+        call_pre_constructor( vm, shred, type->info->pre_ctor, stack_offset );
+    }
+}
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: alloc external
@@ -3596,17 +3622,43 @@ void Chuck_Instr_Alloc_Word_External::execute( Chuck_VM * vm, Chuck_VM_Shred * s
             addr = (t_CKUINT) vm->get_ptr_to_external_string( m_name );
             break;
         case te_externalEvent:
-            // no need to init, it has already been initted during emit
-            addr = (t_CKUINT) vm->get_ptr_to_external_event( m_name );
+            // events are already init in emit, but might need to execute ctors
+            m_should_execute_ctors =
+                vm->does_external_event_need_ctor_call( m_name );
+            addr = (t_CKUINT) vm->get_external_event( m_name );
             break;
         case te_externalUGen:
-            // no need to init, it has already been initted during emit
-            addr = (t_CKUINT) vm->get_ptr_to_external_ugen( m_name );
+            // ugens are already init in emit, but might need to execute ctors
+            m_should_execute_ctors =
+                vm->does_external_ugen_need_ctor_call( m_name );
+            addr = (t_CKUINT) vm->get_external_ugen( m_name );
             break;
     }
     
     // push addr onto operand stack
     push_( reg_sp, addr );
+    
+    // if we have ctors to execute, do it
+    if( m_should_execute_ctors )
+    {
+        // call ctors
+        call_all_parent_pre_constructors( vm, shred,
+            m_chuck_type, m_stack_offset );
+        // tell VM we did it so that it will never be done again for m_name
+        switch( m_type ) {
+            case te_externalInt:
+            case te_externalFloat:
+            case te_externalString:
+                // do nothing for these basic types
+                break;
+            case te_externalEvent:
+                vm->external_event_ctor_was_called( m_name );
+                break;
+            case te_externalUGen:
+                vm->external_ugen_ctor_was_called( m_name );
+                break;
+        }
+    }
 }
 
 

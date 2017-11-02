@@ -49,7 +49,7 @@ using namespace std;
 #endif
 
 // uncomment to compile VM debug messages
-#define CK_VM_DEBUG_ENABLE (1)
+#define CK_VM_DEBUG_ENABLE (0)
 
 #if CK_VM_DEBUG_ENABLE
 #define CK_VM_DEBUG(x) x
@@ -1483,13 +1483,40 @@ t_CKBOOL Chuck_VM::stop_listening_for_external_event( std::string name,
 
 
 
+//-----------------------------------------------------------------------------
+// name: does_external_event_need_ctor_call()
+// desc: ask the vm if an external event has been constructed after init
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::does_external_event_need_ctor_call( std::string name )
+{
+    return m_external_events.count( name ) > 0 &&
+        m_external_events[name]->ctor_needs_to_be_called;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: external_event_ctor_was_called()
+// desc: tell the vm that an external event no longer needs to be constructed
+//-----------------------------------------------------------------------------
+void Chuck_VM::external_event_ctor_was_called( std::string name )
+{
+    if( m_external_events.count( name ) > 0 )
+    {
+        m_external_events[name]->ctor_needs_to_be_called = FALSE;
+    }
+}
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: init_external_event()
 // desc: tell the vm that an external event is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_external_event( std::string name, Chuck_Type * type ) {
-
+t_CKBOOL Chuck_VM::init_external_event( std::string name, Chuck_Type * type )
+{
     // if it hasn't been initted yet
     if( m_external_events.count( name ) == 0 ) {
         // create a new storage container
@@ -1540,10 +1567,39 @@ Chuck_Event * * Chuck_VM::get_ptr_to_external_event( std::string name )
 
 
 //-----------------------------------------------------------------------------
+// name: does_external_ugen_need_ctor_call()
+// desc: ask the vm if an external ugen has been constructed after init
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::does_external_ugen_need_ctor_call( std::string name )
+{
+    return m_external_ugens.count( name ) > 0 &&
+        m_external_ugens[name]->ctor_needs_to_be_called;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: external_ugen_ctor_was_called()
+// desc: tell the vm that an external ugen has been constructed after init
+//-----------------------------------------------------------------------------
+void Chuck_VM::external_ugen_ctor_was_called( std::string name )
+{
+    if( m_external_ugens.count( name ) > 0 )
+    {
+        m_external_ugens[name]->ctor_needs_to_be_called = FALSE;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: init_external_ugen()
 // desc: tell the vm that an external ugen is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_external_ugen( std::string name, Chuck_Type * type ) {
+t_CKBOOL Chuck_VM::init_external_ugen( std::string name, Chuck_Type * type )
+{
 
     // if it hasn't been initted yet
     if( m_external_ugens.count( name ) == 0 ) {
