@@ -345,6 +345,21 @@ t_CKBOOL Chuck_Compiler::resolve( const string & type )
 
 
 //-----------------------------------------------------------------------------
+// name: setReplaceDac()
+// desc: tell the compiler whether dac should be replaced in scripts
+//       with the name of an external UGen, and if so which one
+//-----------------------------------------------------------------------------
+void Chuck_Compiler::setReplaceDac( t_CKBOOL shouldReplaceDac,
+    const std::string & replacement )
+{
+    emitter->should_replace_dac = shouldReplaceDac;
+    emitter->dac_replacement = replacement;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: do_entire_file()
 // desc: parse, type-check, and emit a program
 //-----------------------------------------------------------------------------

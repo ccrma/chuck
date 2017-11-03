@@ -1595,6 +1595,32 @@ t_CKBOOL Chuck_VM::init_external_ugen( std::string name, Chuck_Type * type )
 
 
 //-----------------------------------------------------------------------------
+// name: is_external_ugen_init()
+// desc: has an external ugen been initialized during emit?
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::is_external_ugen_init( std::string name )
+{
+    return m_external_ugens.count( name ) > 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: is_external_ugen_valid()
+// desc: has an external ugen been initialized during emit
+//       and constructed during runtime?
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::is_external_ugen_valid( std::string name )
+{
+    return is_external_ugen_init( name ) &&
+        !should_call_external_ctor( name, te_externalUGen );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: get_external_ugen()
 // desc: get directly from the vm (internal)
 //-----------------------------------------------------------------------------

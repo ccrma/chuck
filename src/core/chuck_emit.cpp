@@ -225,6 +225,21 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         // the next
         prog = prog->next;
     }
+    
+    // error-checking: was dac-replacement initted?
+    if( emit->should_replace_dac )
+    {
+        if( !emit->env->vm()->is_external_ugen_init( emit->dac_replacement ) )
+        {
+            EM_error2( 0, "compiler error: dac replacement '%s' was never initialized...",
+                emit->dac_replacement.c_str() );
+            EM_error2( 0, " ... (hint: need to declare this variable as an external UGen)" );
+            ret = FALSE;
+        }
+    
+        // (also need to make sure it was constructed; see runtime error in
+        // Chuck_Instr_Reg_Push_External)
+    }
 
     if( ret )
     {
@@ -2889,7 +2904,21 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         }
         else if( exp->var == insert_symbol( "dac" ) )
         {
-            emit->append( new Chuck_Instr_DAC );
+            // should replace dac with external ugen?
+            if( emit->should_replace_dac )
+            {
+                // push the external UGen on to the stack
+                Chuck_Instr_Reg_Push_External * instr =
+                    new Chuck_Instr_Reg_Push_External(
+                        emit->dac_replacement, te_externalUGen );
+                instr->set_linepos( exp->linepos );
+                emit->append( instr );
+            }
+            else
+            {
+                // proceed as normal -- push the dac onto the stack~
+                emit->append( new Chuck_Instr_DAC );
+            }
         }
         else if( exp->var == insert_symbol( "adc" ) )
         {
@@ -4907,7 +4936,10 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
             emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)v->func_ref ) );
         else if( v->is_external )
         {
-            emit->append( new Chuck_Instr_Reg_Push_External( v->name, external_type ) );
+            Chuck_Instr_Reg_Push_External * instr =
+                new Chuck_Instr_Reg_Push_External( v->name, external_type );
+            instr->set_linepos( linepos );
+            emit->append( instr );
         }
         // check size
         // (added 1.3.1.0: iskindofint -- since in some 64-bit systems, sz_INT == sz_FLOAT)

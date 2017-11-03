@@ -2324,6 +2324,15 @@ void Chuck_Instr_Reg_Push_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
             break;
         case te_externalUGen:
         {
+            if( !vm->is_external_ugen_valid( m_name ) )
+            {
+                // we have a problem
+                CK_FPRINTF_STDERR(
+                    "[chuck](VM): UninitializedUGenException: on line[%lu] in shred[id=%lu:%s]\n[chuck](VM): ... (hint: need to declare external UGen earlier in file)\n",
+                    m_linepos, shred->xid, shred->name.c_str());
+                goto error;
+            }
+        
             t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
             t_CKUINT val = (t_CKUINT) vm->get_external_ugen( m_name );
             
@@ -2332,6 +2341,14 @@ void Chuck_Instr_Reg_Push_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
         }
             break;
     }
+    
+    return;
+    
+error:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+    
 }
 
 
