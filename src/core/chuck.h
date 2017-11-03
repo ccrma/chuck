@@ -136,6 +136,7 @@ public:
     t_CKBOOL broadcastExternalEvent( const char * name );
     t_CKBOOL listenForExternalEvent( const char * name, void (* callback)(void), t_CKBOOL listen_forever );
     t_CKBOOL stopListeningForExternalEvent( const char * name, void (* callback)(void) );
+    t_CKBOOL getExternalUGenSamples( const char * name, SAMPLE * buffer, int numSamples );
     
 public:
     // external callback functions

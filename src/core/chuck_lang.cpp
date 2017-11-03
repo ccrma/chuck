@@ -2427,7 +2427,7 @@ CK_DLL_MFUN( ugen_buffered )
     // get arg
     t_CKINT buffered = GET_CK_INT( ARGS );
     // set op
-    ugen->m_is_buffered = buffered;
+    ugen->set_is_buffered( buffered );
     // set return
     RETURN->v_int = ugen->m_is_buffered;
 

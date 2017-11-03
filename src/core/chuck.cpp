@@ -1018,6 +1018,21 @@ t_CKBOOL ChucK::stopListeningForExternalEvent( const char * name,
 
 
 //-----------------------------------------------------------------------------
+// name: getExternalUGenSamples()
+// desc: directly get ugen samples (call only from audio thread!!!)
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getExternalUGenSamples( const char * name,
+    SAMPLE * buffer, int numSamples )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->get_external_ugen_samples(
+        std::string( name ), buffer, numSamples );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: setChoutCallback()
 // desc: provide a callback where Chout print statements are routed
 //-----------------------------------------------------------------------------
