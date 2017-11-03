@@ -110,6 +110,9 @@ public: // compile
     // get the code generated from the last go()
     Chuck_VM_Code * output( );
 
+public: // replace-dac
+    void setReplaceDac( t_CKBOOL shouldReplaceDac, const std::string & replacement );
+
 protected: // internal
     // do entire file
     t_CKBOOL do_entire_file( Chuck_Context * context );

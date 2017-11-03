@@ -690,6 +690,8 @@ public:
     Chuck_Event * * get_ptr_to_external_event( std::string name );
 
     t_CKBOOL init_external_ugen( std::string name, Chuck_Type * type );
+    t_CKBOOL is_external_ugen_init( std::string name );
+    t_CKBOOL is_external_ugen_valid( std::string name );
     Chuck_UGen * get_external_ugen( std::string name );
     Chuck_UGen * * get_ptr_to_external_ugen( std::string name );
     
