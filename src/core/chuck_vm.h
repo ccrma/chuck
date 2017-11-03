@@ -667,6 +667,8 @@ public:
     t_CKBOOL listen_for_external_event( std::string name, void (* callback)(void), t_CKBOOL listen_forever );
     t_CKBOOL stop_listening_for_external_event( std::string name, void (* callback)(void) );
     
+    t_CKBOOL get_external_ugen_samples( std::string name, SAMPLE * buffer, int numFrames );
+    
 public:
     // REFACTOR-2017: externally accessible variables.
     // these internal functions are to be used only by other

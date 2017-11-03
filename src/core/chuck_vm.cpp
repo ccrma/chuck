@@ -1542,6 +1542,30 @@ Chuck_Event * * Chuck_VM::get_ptr_to_external_event( std::string name )
 // name: init_external_ugen()
 // desc: tell the vm that an external ugen is now available
 //-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_external_ugen_samples( std::string name,
+    SAMPLE * buffer, int numFrames )
+{
+    // if hasn't been init, or it has been init and hasn't been constructed,
+    if( m_external_ugens.count( name ) == 0 ||
+        should_call_external_ctor( name, te_externalUGen ) )
+    {
+        // fail without doing anything
+        return FALSE;
+    }
+    
+    // else, fill (if the ugen isn't buffered, then it will fill with zeroes)
+    m_external_ugens[name]->val->get_buffer( buffer, numFrames );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_external_ugen()
+// desc: tell the vm that an external ugen is now available
+//-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::init_external_ugen( std::string name, Chuck_Type * type )
 {
 

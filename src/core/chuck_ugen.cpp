@@ -223,6 +223,8 @@ void Chuck_UGen::init()
     
     // yes more hacks (add some time after REFACTOR-2017)
     m_is_buffered = FALSE;
+    // buffer empty for any ugen that is not buffered
+    m_buffer.resize( 0 );
 }
 
 
@@ -362,6 +364,62 @@ t_CKUINT Chuck_UGen::get_num_src()
 {
     return m_num_src;
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_is_buffered()
+// dsec: set whether we should store our old samples
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_UGen::set_is_buffered( t_CKBOOL buffered )
+{
+    // check if value is really changing. if not, return
+    if( ( buffered && m_is_buffered ) || ( !buffered && !m_is_buffered ) )
+    {
+        return TRUE;
+    }
+    
+    if( buffered )
+    {
+        // alloc
+        // (TODO: smarter way of maximum size of my buffer)
+        m_buffer.resize( 8192 );
+    }
+    else
+    {
+        // dealloc
+        m_buffer.resize( 0 );
+    }
+    
+    // store flag
+    m_is_buffered = buffered;
+    
+    return TRUE;
+    
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_buffer()
+// dsec: get the most recent buffer of samples
+//-----------------------------------------------------------------------------
+void Chuck_UGen::get_buffer( SAMPLE * buffer, t_CKINT num_elem )
+{
+    if( m_is_buffered )
+    {
+        // if we actually store our samples, give them num_elem of them
+        m_buffer.get( buffer, num_elem );
+    }
+    else
+    {
+        // otherwise, give them 0
+        memset( buffer, 0, sizeof( SAMPLE ) * num_elem );
+    }
+}
+
 
 
 
@@ -989,6 +1047,13 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
         }
     }
     
+    // store in buffer
+    if( m_is_buffered )
+    {
+        // m_current is the mono mixdown of all channels (if > 1)
+        m_buffer.put( m_current );
+    }
+    
     return m_valid;
 }
 
@@ -1219,6 +1284,16 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
         
         // save as last
         m_last = m_current_v[numFrames-1];
+    }
+    
+    // store in buffer
+    if( m_is_buffered )
+    {
+        // m_current_v is the mono mixdown of all channels (if > 1)
+        for( j = 0; j < numFrames; j++ )
+        {
+            m_buffer.put( m_current_v[j] );
+        }
     }
     
     return m_valid;
