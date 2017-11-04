@@ -150,15 +150,7 @@ Chuck_VM::Chuck_VM()
     m_output_ref = NULL;
     
     // REFACTOR-2017: TODO might want to dynamically grow queue?
-    m_set_external_int_queue.init( 1024 );
-    m_get_external_int_queue.init( 1024 );
-    m_set_external_float_queue.init( 1024 );
-    m_get_external_float_queue.init( 1024 );
-    m_set_external_string_queue.init( 1024 );
-    m_get_external_string_queue.init( 1024 );
-    m_signal_external_event_queue.init( 1024 );
-    m_listen_for_external_event_queue.init( 1024 );
-    m_spork_external_shred_queue.init( 8192 );
+    m_external_request_queue.init( 16384 );
 }
 
 
@@ -457,14 +449,8 @@ t_CKBOOL Chuck_VM::compute()
     Chuck_Event * event = NULL;
     t_CKBOOL iterate = TRUE;
     
-    // REFACTOR-2017: spork queued shreds
-    // spork newly compiled files before trying set messages
-    handle_external_spork_messages();
-    
-    // REFACTOR-2017: set externals
-    handle_external_set_messages();
-    // REFACTOR-2017: get externals
-    handle_external_get_messages();
+    // REFACTOR-2017: spork queued shreds, handle external messages
+    handle_external_queue_messages();
 
     // iteration until no more shreds/events/messages
     while( iterate )
@@ -529,8 +515,9 @@ t_CKBOOL Chuck_VM::compute()
     }
 
     // continue executing if have shreds left or if don't-halt
-    // or if have shreds to add
-    return ( m_num_shreds || !m_halt || m_spork_external_shred_queue.more() );
+    // or if have messages to process
+    // (TODO: restrict this to just shred-messages to pass, as it once was?)
+    return ( m_num_shreds || !m_halt || m_external_request_queue.more() );
 }
 
 
@@ -985,7 +972,11 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
     else
     {
         // spork it later
-        m_spork_external_shred_queue.put( shred );
+        Chuck_External_Request spork_request;
+        spork_request.type = spork_shred_request;
+        spork_request.shred = shred;
+
+        m_external_request_queue.put( spork_request );
     }
 
     // track new shred
@@ -1164,11 +1155,16 @@ void Chuck_VM::release_dump( )
 t_CKBOOL Chuck_VM::get_external_int( std::string name,
     void (* callback)(t_CKINT) )
 {
-    Chuck_Get_External_Int_Request get_int_message;
-    get_int_message.name = name;
-    get_int_message.fp = callback;
+    Chuck_Get_External_Int_Request * get_int_message = 
+        new Chuck_Get_External_Int_Request;
+    get_int_message->name = name;
+    get_int_message->fp = callback;
     
-    m_get_external_int_queue.put( get_int_message );
+    Chuck_External_Request r;
+    r.type = get_external_int_request;
+    r.getIntRequest = get_int_message;
+
+    m_external_request_queue.put( r );
     
     return TRUE;
 }
@@ -1182,11 +1178,16 @@ t_CKBOOL Chuck_VM::get_external_int( std::string name,
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::set_external_int( std::string name, t_CKINT val )
 {
-    Chuck_Set_External_Int_Request set_int_message;
-    set_int_message.name = name;
-    set_int_message.val = val;
+    Chuck_Set_External_Int_Request * set_int_message =
+        new Chuck_Set_External_Int_Request;
+    set_int_message->name = name;
+    set_int_message->val = val;
     
-    m_set_external_int_queue.put( set_int_message );
+    Chuck_External_Request r;
+    r.type = set_external_int_request;
+    r.setIntRequest = set_int_message;
+
+    m_external_request_queue.put( r );
     
     return TRUE;
 }
@@ -1245,11 +1246,16 @@ t_CKINT * Chuck_VM::get_ptr_to_external_int( std::string name )
 t_CKBOOL Chuck_VM::get_external_float( std::string name,
     void (* callback)(t_CKFLOAT) )
 {
-    Chuck_Get_External_Float_Request get_float_message;
-    get_float_message.name = name;
-    get_float_message.fp = callback;
+    Chuck_Get_External_Float_Request * get_float_message =
+        new Chuck_Get_External_Float_Request;
+    get_float_message->name = name;
+    get_float_message->fp = callback;
     
-    m_get_external_float_queue.put( get_float_message );
+    Chuck_External_Request r;
+    r.type = get_external_float_request;
+    r.getFloatRequest = get_float_message;
+
+    m_external_request_queue.put( r );
     
     return TRUE;
 }
@@ -1263,11 +1269,16 @@ t_CKBOOL Chuck_VM::get_external_float( std::string name,
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::set_external_float( std::string name, t_CKFLOAT val )
 {
-    Chuck_Set_External_Float_Request set_float_message;
-    set_float_message.name = name;
-    set_float_message.val = val;
+    Chuck_Set_External_Float_Request * set_float_message =
+        new Chuck_Set_External_Float_Request;
+    set_float_message->name = name;
+    set_float_message->val = val;
     
-    m_set_external_float_queue.put( set_float_message );
+    Chuck_External_Request r;
+    r.type = set_external_float_request;
+    r.setFloatRequest = set_float_message;
+
+    m_external_request_queue.put( r );
     
     return TRUE;
 }
@@ -1326,11 +1337,16 @@ t_CKFLOAT * Chuck_VM::get_ptr_to_external_float( std::string name )
 t_CKBOOL Chuck_VM::get_external_string( std::string name,
         void (* callback)(const char *) )
 {
-    Chuck_Get_External_String_Request get_string_message;
-    get_string_message.name = name;
-    get_string_message.fp = callback;
+    Chuck_Get_External_String_Request * get_string_message =
+        new Chuck_Get_External_String_Request;
+    get_string_message->name = name;
+    get_string_message->fp = callback;
     
-    m_get_external_string_queue.put( get_string_message );
+    Chuck_External_Request r;
+    r.type = get_external_string_request;
+    r.getStringRequest = get_string_message;
+
+    m_external_request_queue.put( r );
     
     return TRUE;
 }
@@ -1344,11 +1360,16 @@ t_CKBOOL Chuck_VM::get_external_string( std::string name,
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::set_external_string( std::string name, std::string val )
 {
-    Chuck_Set_External_String_Request set_string_message;
-    set_string_message.name = name;
-    set_string_message.val = val;
+    Chuck_Set_External_String_Request * set_string_message =
+        new Chuck_Set_External_String_Request;
+    set_string_message->name = name;
+    set_string_message->val = val;
     
-    m_set_external_string_queue.put( set_string_message );
+    Chuck_External_Request r;
+    r.type = set_external_string_request;
+    r.setStringRequest = set_string_message;
+
+    m_external_request_queue.put( r );
     
     return TRUE;
 }
@@ -1417,7 +1438,11 @@ t_CKBOOL Chuck_VM::signal_external_event( std::string name ) {
     signal_event_message.name = name;
     signal_event_message.is_broadcast = FALSE;
     
-    m_signal_external_event_queue.put( signal_event_message );
+    Chuck_External_Request r;
+    r.type = signal_external_event_request;
+    r.signalEventRequest = signal_event_message;
+
+    m_external_request_queue.put( r );
     
     return TRUE;
 }
@@ -1434,7 +1459,11 @@ t_CKBOOL Chuck_VM::broadcast_external_event( std::string name ) {
     signal_event_message.name = name;
     signal_event_message.is_broadcast = TRUE;
     
-    m_signal_external_event_queue.put( signal_event_message );
+    Chuck_External_Request r;
+    r.type = signal_external_event_request;
+    r.signalEventRequest = signal_event_message;
+
+    m_external_request_queue.put( r );
     
     return TRUE;
 }
@@ -1454,7 +1483,11 @@ t_CKBOOL Chuck_VM::listen_for_external_event( std::string name,
     listen_event_message.listen_forever = listen_forever;
     listen_event_message.deregister = FALSE;
     
-    m_listen_for_external_event_queue.put( listen_event_message );
+    Chuck_External_Request r;
+    r.type = listen_for_external_event_request;
+    r.listenForEventRequest = listen_event_message;
+
+    m_external_request_queue.put( r );
     
     return TRUE;
 }
@@ -1475,7 +1508,11 @@ t_CKBOOL Chuck_VM::stop_listening_for_external_event( std::string name,
     listen_event_message.listen_forever = FALSE;
     listen_event_message.deregister = TRUE;
     
-    m_listen_for_external_event_queue.put( listen_event_message );
+    Chuck_External_Request r;
+    r.type = listen_for_external_event_request;
+    r.listenForEventRequest = listen_event_message;
+
+    m_external_request_queue.put( r );
     
     return TRUE;
 }
@@ -1759,205 +1796,131 @@ void Chuck_VM::cleanup_external_variables()
 
 
 //-----------------------------------------------------------------------------
-// name: handle_external_set_messages()
-// desc: update values with external set messages
+// name: handle_external_queue_messages()
+// desc: update vm with set, get, listen, spork, etc. messages
 //-----------------------------------------------------------------------------
-void Chuck_VM::handle_external_set_messages() {
-    // TODO: only do one per call, to avoid taking up too much time?
-    //       if so then "if" not "while"
-    while( m_set_external_int_queue.more() ) {
-        Chuck_Set_External_Int_Request set_int_message;
-        if( m_set_external_int_queue.get( & set_int_message ) )
+void Chuck_VM::handle_external_queue_messages() 
+{
+    while( m_external_request_queue.more() )
+    {
+        Chuck_External_Request message;
+        if( m_external_request_queue.get( & message ) )
         {
-            // ensure the container exists
-            init_external_int( set_int_message.name );
-            m_external_ints[set_int_message.name]->val = set_int_message.val;
-        }
-        else
-        {
-            // get failed
-            break;
-        }
-        
-    }
-    
-    while( m_set_external_float_queue.more() ) {
-        Chuck_Set_External_Float_Request set_float_message;
-        if( m_set_external_float_queue.get( & set_float_message ) )
-        {
-            // ensure the container exists
-            init_external_float( set_float_message.name );
-            m_external_floats[set_float_message.name]->val = set_float_message.val;
-        }
-        else
-        {
-            // get failed
-            break;
-        }
-        
-    }
-    
-    while( m_set_external_string_queue.more() ) {
-        Chuck_Set_External_String_Request set_string_message;
-        if( m_set_external_string_queue.get( & set_string_message ) )
-        {
-            // ensure the container exists
-            init_external_string( set_string_message.name );
-            m_external_strings[set_string_message.name]->val->set( set_string_message.val );
-        }
-        else
-        {
-            // get failed
-            break;
-        }
-        
-    }
-    
-    while( m_signal_external_event_queue.more() ) {
-        Chuck_Signal_External_Event_Request signal_event_message;
-        if( m_signal_external_event_queue.get( & signal_event_message ) )
-        {
-            // ensure it exists and it doesn't need its ctor called
-            if( m_external_events.count( signal_event_message.name ) > 0 &&
-                !should_call_external_ctor( signal_event_message.name, te_externalEvent ) )
+            switch( message.type )
             {
-                Chuck_Event * event = get_external_event( signal_event_message.name );
-                if( signal_event_message.is_broadcast )
+
+            case spork_shred_request:
+                // spork the shred!
+                this->spork( message.shred );
+                break;
+
+            case set_external_int_request:
+                // ensure the container exists
+                init_external_int( message.setIntRequest.name );
+                // set int
+                m_external_ints[message.setIntRequest.name]->val = message.setIntRequest.val;
+                break;
+
+            case get_external_int_request:
+                // ensure fp is not null
+                if( message.getIntRequest.fp != NULL )
                 {
-                    event->broadcast();
-                    event->broadcast_external();
+                    // ensure the value exists
+                    init_external_int( message.getIntRequest.name );
+                    // call the callback with the value
+                    message.getIntRequest.fp( m_external_ints[message.getIntRequest.name]->val );
                 }
-                else
+                break;
+
+            case set_external_float_request:
+                // ensure the container exists
+                init_external_float( message.setFloatRequest.name );
+                // set float
+                m_external_floats[message.setFloatRequest.name]->val = message.setFloatRequest.val;
+                break;
+
+            case get_external_float_request:
+                // ensure fp is not null
+                if( message.getFloatRequest.fp != NULL )
                 {
-                    event->signal();
-                    event->signal_external();
+                    // ensure value exists
+                    init_external_float( message.getFloatRequest.name );
+                    // call callback with float
+                    message.getFloatRequest.fp( m_external_floats[message.getFloatRequest.name]->val );
                 }
+                break;
+
+            case set_external_string_request:
+                // ensure the container exists
+                init_external_string( message.setStringRequest.name );
+                // set string
+                m_external_strings[message.setStringRequest.name]->val->set( message.setStringRequest.val );
+                break;
+
+            case get_external_string_request:
+                // ensure fp is not null
+                if( message.getStringRequest.fp != NULL )
+                {
+                    // ensure value exists
+                    init_external_string( message.getStringRequest.name );
+                    // call callback with string
+                    message.getStringRequest.fp( m_external_strings[message.getStringRequest.name]->val->c_str() );
+                }
+                break;
+
+            case signal_external_event_request:
+                // ensure it exists and it doesn't need its ctor called
+                if( m_external_events.count( message.signalEventRequest.name ) > 0 &&
+                    !should_call_external_ctor( message.signalEventRequest.name, te_externalEvent ) )
+                {
+                    // get the event
+                    Chuck_Event * event = get_external_event( message.signalEventRequest.name );
+                    // signal it, or broadcast it
+                    if( message.signalEventRequest.is_broadcast )
+                    {
+                        event->broadcast();
+                        event->broadcast_external();
+                    }
+                    else
+                    {
+                        event->signal();
+                        event->signal_external();
+                    }
+                }
+                break;
+
+            case listen_for_external_event_request:
+                // ensure callback is not null
+                if( message.listenForEventRequest.callback != NULL )
+                {
+                    // ensure it exists and it doesn't need its ctor called
+                    if( m_external_events.count( message.listenForEventRequest.name ) > 0 &&
+                        !should_call_external_ctor( message.listenForEventRequest.name, te_externalEvent ) )
+                    {
+                        // get event
+                        Chuck_Event * event = get_external_event( message.listenForEventRequest.name );
+                        if( message.listenForEventRequest.deregister )
+                        {
+                            // deregister
+                            event->remove_listen( message.listenForEventRequest.callback );
+                        }
+                        else
+                        {
+                            // register
+                            event->external_listen( message.listenForEventRequest.callback,
+                                message.listenForEventRequest.listen_forever );
+                        }
+                    }
+                }
+                break;
             }
         }
         else
         {
-            // get failed
+            // get failed. problem?
             break;
         }
     }
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: handle_external_set_messages()
-// desc: update values with external set messages
-//-----------------------------------------------------------------------------
-void Chuck_VM::handle_external_get_messages() {
-    while( m_get_external_int_queue.more() ) {
-        Chuck_Get_External_Int_Request get_int_message;
-        if( m_get_external_int_queue.get( & get_int_message ) &&
-            get_int_message.fp != NULL )
-        {
-            // ensure the value exists
-            init_external_int( get_int_message.name );
-            // call the callback with the value
-            get_int_message.fp( m_external_ints[get_int_message.name]->val );
-        }
-        else
-        {
-            // get failed.... sadness.... this might be bad
-            break;
-        }
-        
-    }
-    
-    while( m_get_external_float_queue.more() ) {
-        Chuck_Get_External_Float_Request get_float_message;
-        if( m_get_external_float_queue.get( & get_float_message ) &&
-            get_float_message.fp != NULL )
-        {
-            // ensure value exists
-            init_external_float( get_float_message.name );
-            // call callback with float
-            get_float_message.fp( m_external_floats[get_float_message.name]->val );
-        }
-        else
-        {
-            // get failed.... sadness.... this might be bad
-            break;
-        }
-        
-    }
-    
-    while( m_get_external_string_queue.more() ) {
-        Chuck_Get_External_String_Request get_string_message;
-        if( m_get_external_string_queue.get( & get_string_message ) &&
-            get_string_message.fp != NULL )
-        {
-            // ensure value exists
-            init_external_string( get_string_message.name );
-            // call callback with string
-            get_string_message.fp( m_external_strings[get_string_message.name]->val->c_str() );
-        }
-        else
-        {
-            // get failed.... sadness.... this might be bad
-            break;
-        }
-        
-    }
-    
-    while( m_listen_for_external_event_queue.more() ) {
-        Chuck_Listen_For_External_Event_Request listen_message;
-        if( m_listen_for_external_event_queue.get( & listen_message ) &&
-            listen_message.callback != NULL )
-        {
-            // ensure it exists and it doesn't need its ctor called
-            if( m_external_events.count( listen_message.name ) > 0 &&
-                !should_call_external_ctor( listen_message.name, te_externalEvent ) )
-            {
-                Chuck_Event * event = get_external_event( listen_message.name );
-                if( listen_message.deregister )
-                {
-                    // deregister
-                    event->remove_listen( listen_message.callback );
-                }
-                else
-                {
-                    // register
-                    event->external_listen( listen_message.callback,
-                        listen_message.listen_forever );
-                }
-            }
-        }
-        else
-        {
-            // get failed.... sadness.... this might be bad
-            break;
-        }
-        
-    }
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: handle_external_set_messages()
-// desc: update values with external set messages
-//-----------------------------------------------------------------------------
-void Chuck_VM::handle_external_spork_messages() {
-    while( m_spork_external_shred_queue.more() ) {
-        Chuck_VM_Shred * shred;
-        if( m_spork_external_shred_queue.get( & shred ) )
-        {
-            this->spork( shred );
-        }
-        else
-        {
-            // get failed...
-            break;
-        }
-        
-    }
-    
 }
 
 

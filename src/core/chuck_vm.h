@@ -506,6 +506,68 @@ struct Chuck_Get_External_String_Request
 
 
 //-----------------------------------------------------------------------------
+// name: enum External_Request_Type
+// desc: what kind of external message request is this? (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+enum Chuck_External_Request_Type
+{
+    set_external_int_request,
+    get_external_int_request,
+    set_external_float_request,
+    get_external_float_request,
+    set_external_string_request,
+    get_external_string_request,
+    signal_external_event_request,
+    listen_for_external_event_request,
+    spork_shred_request
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: strct External_Request
+// desc: an external request (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_External_Request
+{
+    Chuck_External_Request_Type type;
+    union {
+        Chuck_Set_External_Int_Request * setIntRequest;
+        Chuck_Get_External_Int_Request * getIntRequest;
+        Chuck_Set_External_Float_Request * setFloatRequest;
+        Chuck_Get_External_Float_Request * getFloatRequest;
+        Chuck_Set_External_String_Request * setStringRequest;
+        Chuck_Get_External_String_Request * getStringRequest;
+        Chuck_Signal_External_Event_Request * signalEventRequest;
+        Chuck_Listen_For_External_Event_Request * listenForEventRequest;
+        Chuck_VM_Shred * shred;
+    };
+
+    ~Chuck_External_Request() {
+        switch( type )
+        {
+        case spork_shred_request:
+            // do nothing
+            break;
+        case set_external_int_request:
+            SAFE_DELETE (setIntRequest);
+            break;
+        get_external_int_request,
+        set_external_float_request,
+        get_external_float_request,
+        set_external_string_request,
+        get_external_string_request,
+        signal_external_event_request,
+        listen_for_external_event_request,
+        }
+    }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_External_Int_Container
 // desc: container for external ints
 //-----------------------------------------------------------------------------
@@ -700,10 +762,7 @@ public:
     
 protected:
     // REFACTOR-2017: external queue
-    void handle_external_set_messages();
-    void handle_external_get_messages();
-    // REFACTOR-2017: spork queue
-    void handle_external_spork_messages();
+    void handle_external_queue_messages();
 
 public:
     // REFACTOR-2017: get associated, per-VM environment, chout, cherr
@@ -772,25 +831,13 @@ private:
     // external variables
     void cleanup_external_variables();
     
-    XCircleBuffer< Chuck_Set_External_Int_Request > m_set_external_int_queue;
-    XCircleBuffer< Chuck_Get_External_Int_Request > m_get_external_int_queue;
     std::map< std::string, Chuck_External_Int_Container * > m_external_ints;
-    
-    XCircleBuffer< Chuck_Set_External_Float_Request > m_set_external_float_queue;
-    XCircleBuffer< Chuck_Get_External_Float_Request > m_get_external_float_queue;
     std::map< std::string, Chuck_External_Float_Container * > m_external_floats;
-    
-    XCircleBuffer< Chuck_Set_External_String_Request > m_set_external_string_queue;
-    XCircleBuffer< Chuck_Get_External_String_Request > m_get_external_string_queue;
     std::map< std::string, Chuck_External_String_Container * > m_external_strings;
-    
-    XCircleBuffer< Chuck_Signal_External_Event_Request > m_signal_external_event_queue;
-    XCircleBuffer< Chuck_Listen_For_External_Event_Request > m_listen_for_external_event_queue;
     std::map< std::string, Chuck_External_Event_Container * > m_external_events;
-    
     std::map< std::string, Chuck_External_UGen_Container * > m_external_ugens;
     
-    XCircleBuffer< Chuck_VM_Shred * > m_spork_external_shred_queue;
+    XCircleBuffer< Chuck_External_Request > m_external_request_queue;
 };
 
 
