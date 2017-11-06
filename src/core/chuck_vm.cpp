@@ -1149,6 +1149,200 @@ void Chuck_VM::release_dump( )
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_Int_Request
+// desc: container for messages to set external ints (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_Int_Request
+{
+    std::string name;
+    t_CKINT val;
+    // constructor
+    Chuck_Set_External_Int_Request() : val(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_Int_Request
+// desc: container for messages to get external ints (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_Int_Request
+{
+    std::string name;
+    void (* fp)(t_CKINT);
+    // constructor
+    Chuck_Get_External_Int_Request() : fp(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_Float_Request
+// desc: container for messages to set external floats (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_Float_Request
+{
+    std::string name;
+    t_CKFLOAT val;
+    // constructor
+    Chuck_Set_External_Float_Request() : val(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_Float_Request
+// desc: container for messages to get external floats (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_Float_Request
+{
+    std::string name;
+    void (* fp)(t_CKFLOAT);
+    // constructor
+    Chuck_Get_External_Float_Request() : fp(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Signal_External_Event_Request
+// desc: container for messages to signal external events (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Signal_External_Event_Request
+{
+    std::string name;
+    t_CKBOOL is_broadcast;
+    // constructor
+    Chuck_Signal_External_Event_Request() : is_broadcast(TRUE) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Listen_For_External_Event_Request
+// desc: container for messages to wait on external events (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Listen_For_External_Event_Request
+{
+    std::string name;
+    t_CKBOOL listen_forever;
+    t_CKBOOL deregister;
+    void (* callback)(void);
+    // constructor
+    Chuck_Listen_For_External_Event_Request() : listen_forever(FALSE),
+        deregister(FALSE), callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_String_Request
+// desc: container for messages to set external strings (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_String_Request
+{
+    std::string name;
+    std::string val;
+    // constructor
+    Chuck_Set_External_String_Request() { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_String_Request
+// desc: container for messages to get external strings (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_String_Request
+{
+    std::string name;
+    void (* fp)(const char *);
+    // constructor
+    Chuck_Get_External_String_Request() : fp(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_External_Int_Container
+// desc: container for external ints
+//-----------------------------------------------------------------------------
+struct Chuck_External_Int_Container {
+    t_CKINT val;
+    
+    Chuck_External_Int_Container() { val = 0; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_External_Float_Container
+// desc: container for external ints
+//-----------------------------------------------------------------------------
+struct Chuck_External_Float_Container {
+    t_CKFLOAT val;
+    
+    Chuck_External_Float_Container() { val = 0; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_External_String_Container
+// desc: container for external ints
+//-----------------------------------------------------------------------------
+struct Chuck_External_String_Container {
+    Chuck_String * val;
+    
+    Chuck_External_String_Container() { val = NULL; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_External_Event_Container
+// desc: container for external events
+//-----------------------------------------------------------------------------
+struct Chuck_External_Event_Container {
+    Chuck_Event * val;
+    Chuck_Type * type;
+    t_CKBOOL ctor_needs_to_be_called;
+    
+    Chuck_External_Event_Container() { val = NULL; type = NULL;
+        ctor_needs_to_be_called = TRUE; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_External_UGen_Container
+// desc: container for external ugens
+//-----------------------------------------------------------------------------
+struct Chuck_External_UGen_Container {
+    Chuck_UGen * val;
+    Chuck_Type * type;
+    t_CKBOOL ctor_needs_to_be_called;
+    
+    Chuck_External_UGen_Container() { val = NULL; type = NULL;
+        ctor_needs_to_be_called = TRUE; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: get_external_int()
 // desc: get an external int by name
 //-----------------------------------------------------------------------------
@@ -1434,9 +1628,10 @@ Chuck_String * * Chuck_VM::get_ptr_to_external_string( std::string name )
 // desc: signal() an Event by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::signal_external_event( std::string name ) {
-    Chuck_Signal_External_Event_Request signal_event_message;
-    signal_event_message.name = name;
-    signal_event_message.is_broadcast = FALSE;
+    Chuck_Signal_External_Event_Request * signal_event_message =
+        new Chuck_Signal_External_Event_Request;
+    signal_event_message->name = name;
+    signal_event_message->is_broadcast = FALSE;
     
     Chuck_External_Request r;
     r.type = signal_external_event_request;
@@ -1455,9 +1650,10 @@ t_CKBOOL Chuck_VM::signal_external_event( std::string name ) {
 // desc: broadcast() an Event by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::broadcast_external_event( std::string name ) {
-    Chuck_Signal_External_Event_Request signal_event_message;
-    signal_event_message.name = name;
-    signal_event_message.is_broadcast = TRUE;
+    Chuck_Signal_External_Event_Request * signal_event_message =
+        new Chuck_Signal_External_Event_Request;
+    signal_event_message->name = name;
+    signal_event_message->is_broadcast = TRUE;
     
     Chuck_External_Request r;
     r.type = signal_external_event_request;
@@ -1477,11 +1673,12 @@ t_CKBOOL Chuck_VM::broadcast_external_event( std::string name ) {
 t_CKBOOL Chuck_VM::listen_for_external_event( std::string name,
     void (* callback)(void), t_CKBOOL listen_forever )
 {
-    Chuck_Listen_For_External_Event_Request listen_event_message;
-    listen_event_message.callback = callback;
-    listen_event_message.name = name;
-    listen_event_message.listen_forever = listen_forever;
-    listen_event_message.deregister = FALSE;
+    Chuck_Listen_For_External_Event_Request * listen_event_message =
+        new Chuck_Listen_For_External_Event_Request;
+    listen_event_message->callback = callback;
+    listen_event_message->name = name;
+    listen_event_message->listen_forever = listen_forever;
+    listen_event_message->deregister = FALSE;
     
     Chuck_External_Request r;
     r.type = listen_for_external_event_request;
@@ -1502,11 +1699,12 @@ t_CKBOOL Chuck_VM::listen_for_external_event( std::string name,
 t_CKBOOL Chuck_VM::stop_listening_for_external_event( std::string name,
     void (* callback)(void) )
 {
-    Chuck_Listen_For_External_Event_Request listen_event_message;
-    listen_event_message.callback = callback;
-    listen_event_message.name = name;
-    listen_event_message.listen_forever = FALSE;
-    listen_event_message.deregister = TRUE;
+    Chuck_Listen_For_External_Event_Request * listen_event_message =
+        new Chuck_Listen_For_External_Event_Request;
+    listen_event_message->callback = callback;
+    listen_event_message->name = name;
+    listen_event_message->listen_forever = FALSE;
+    listen_event_message->deregister = TRUE;
     
     Chuck_External_Request r;
     r.type = listen_for_external_event_request;
@@ -1816,67 +2014,79 @@ void Chuck_VM::handle_external_queue_messages()
 
             case set_external_int_request:
                 // ensure the container exists
-                init_external_int( message.setIntRequest.name );
+                init_external_int( message.setIntRequest->name );
                 // set int
-                m_external_ints[message.setIntRequest.name]->val = message.setIntRequest.val;
+                m_external_ints[message.setIntRequest->name]->val = message.setIntRequest->val;
+                // clean up request storage
+                delete message.setIntRequest;
                 break;
 
             case get_external_int_request:
                 // ensure fp is not null
-                if( message.getIntRequest.fp != NULL )
+                if( message.getIntRequest->fp != NULL )
                 {
                     // ensure the value exists
-                    init_external_int( message.getIntRequest.name );
+                    init_external_int( message.getIntRequest->name );
                     // call the callback with the value
-                    message.getIntRequest.fp( m_external_ints[message.getIntRequest.name]->val );
+                    message.getIntRequest->fp( m_external_ints[message.getIntRequest->name]->val );
                 }
+                // clean up request storage
+                delete message.getIntRequest;
                 break;
 
             case set_external_float_request:
                 // ensure the container exists
-                init_external_float( message.setFloatRequest.name );
+                init_external_float( message.setFloatRequest->name );
                 // set float
-                m_external_floats[message.setFloatRequest.name]->val = message.setFloatRequest.val;
+                m_external_floats[message.setFloatRequest->name]->val = message.setFloatRequest->val;
+                // clean up request storage
+                delete message.setFloatRequest;
                 break;
 
             case get_external_float_request:
                 // ensure fp is not null
-                if( message.getFloatRequest.fp != NULL )
+                if( message.getFloatRequest->fp != NULL )
                 {
                     // ensure value exists
-                    init_external_float( message.getFloatRequest.name );
+                    init_external_float( message.getFloatRequest->name );
                     // call callback with float
-                    message.getFloatRequest.fp( m_external_floats[message.getFloatRequest.name]->val );
+                    message.getFloatRequest->fp( m_external_floats[message.getFloatRequest->name]->val );
                 }
+                // clean up request storage
+                delete message.getFloatRequest;
                 break;
 
             case set_external_string_request:
                 // ensure the container exists
-                init_external_string( message.setStringRequest.name );
+                init_external_string( message.setStringRequest->name );
                 // set string
-                m_external_strings[message.setStringRequest.name]->val->set( message.setStringRequest.val );
+                m_external_strings[message.setStringRequest->name]->val->set( message.setStringRequest->val );
+                // clean up request storage
+                delete message.setStringRequest;
                 break;
 
             case get_external_string_request:
                 // ensure fp is not null
-                if( message.getStringRequest.fp != NULL )
+                if( message.getStringRequest->fp != NULL )
                 {
                     // ensure value exists
-                    init_external_string( message.getStringRequest.name );
+                    init_external_string( message.getStringRequest->name );
                     // call callback with string
-                    message.getStringRequest.fp( m_external_strings[message.getStringRequest.name]->val->c_str() );
+                    message.getStringRequest->fp( m_external_strings[message.getStringRequest->name]->val->c_str() );
                 }
+                // clean up request storage
+                delete message.getStringRequest;
                 break;
 
             case signal_external_event_request:
                 // ensure it exists and it doesn't need its ctor called
-                if( m_external_events.count( message.signalEventRequest.name ) > 0 &&
-                    !should_call_external_ctor( message.signalEventRequest.name, te_externalEvent ) )
+                if( m_external_events.count( message.signalEventRequest->name ) > 0 &&
+                    !should_call_external_ctor( message.signalEventRequest->name, te_externalEvent ) )
                 {
                     // get the event
-                    Chuck_Event * event = get_external_event( message.signalEventRequest.name );
+                    Chuck_Event * event = get_external_event( message.signalEventRequest->name );
                     // signal it, or broadcast it
-                    if( message.signalEventRequest.is_broadcast )
+                    if( message.signalEventRequest->is_broadcast )
                     {
                         event->broadcast();
                         event->broadcast_external();
@@ -1887,31 +2097,34 @@ void Chuck_VM::handle_external_queue_messages()
                         event->signal_external();
                     }
                 }
+                // clean up request storage
+                delete message.signalEventRequest;
                 break;
 
             case listen_for_external_event_request:
                 // ensure callback is not null
-                if( message.listenForEventRequest.callback != NULL )
+                if( message.listenForEventRequest->callback != NULL )
                 {
-                    // ensure it exists and it doesn't need its ctor called
-                    if( m_external_events.count( message.listenForEventRequest.name ) > 0 &&
-                        !should_call_external_ctor( message.listenForEventRequest.name, te_externalEvent ) )
+                    // ensure it exists
+                    if( m_external_events.count( message.listenForEventRequest->name ) > 0 )
                     {
                         // get event
-                        Chuck_Event * event = get_external_event( message.listenForEventRequest.name );
-                        if( message.listenForEventRequest.deregister )
+                        Chuck_Event * event = get_external_event( message.listenForEventRequest->name );
+                        if( message.listenForEventRequest->deregister )
                         {
                             // deregister
-                            event->remove_listen( message.listenForEventRequest.callback );
+                            event->remove_listen( message.listenForEventRequest->callback );
                         }
                         else
                         {
                             // register
-                            event->external_listen( message.listenForEventRequest.callback,
-                                message.listenForEventRequest.listen_forever );
+                            event->external_listen( message.listenForEventRequest->callback,
+                                message.listenForEventRequest->listen_forever );
                         }
                     }
                 }
+                // clean up request storage
+                delete message.listenForEventRequest;
                 break;
             }
         }
