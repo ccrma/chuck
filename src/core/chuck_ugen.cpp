@@ -411,7 +411,7 @@ void Chuck_UGen::get_buffer( SAMPLE * buffer, t_CKINT num_elem )
     if( m_is_buffered )
     {
         // if we actually store our samples, give them num_elem of them
-        m_buffer.get( buffer, num_elem );
+        m_buffer.get_most_recent( buffer, num_elem );
     }
     else
     {
