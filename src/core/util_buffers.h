@@ -152,6 +152,7 @@ public:
 public:
     void put( SAMPLE next );
     void get( SAMPLE * buffer, t_CKINT num_elem );
+    void get_most_recent( SAMPLE * buffer, t_CKINT num_elem );
 
 protected:
     SAMPLE * m_data;

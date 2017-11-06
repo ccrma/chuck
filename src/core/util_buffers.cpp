@@ -615,7 +615,7 @@ void AccumBuffer::put( SAMPLE data )
 
 //-----------------------------------------------------------------------------
 // name: get()
-// desc: get
+// desc: get least recent num_elem (starting with our oldest element)
 //-----------------------------------------------------------------------------
 void AccumBuffer::get( SAMPLE * buffer, t_CKINT num_elem )
 {
@@ -635,6 +635,58 @@ void AccumBuffer::get( SAMPLE * buffer, t_CKINT num_elem )
     {
         // amount
         amount = m_write_offset;
+        // to copy
+        t_CKINT tocopy2 = ck_min( left, amount );
+        // update left
+        left -= tocopy2;
+        // copy before the write pointer
+        memcpy( buffer + tocopy, m_data, tocopy2 * sizeof(SAMPLE) );
+
+        // more?
+        if( left )
+        {
+            // make sure
+            assert( m_max_elem == (tocopy + tocopy2) );
+            assert( num_elem > m_max_elem );
+            // zero it out
+            memset( buffer + m_max_elem, 0, (num_elem - m_max_elem) * sizeof(SAMPLE) );
+        }
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_most_recent()
+// desc: get most recent num_elem. (get() gets least recent num_elem)
+//-----------------------------------------------------------------------------
+void AccumBuffer::get_most_recent( SAMPLE * buffer, t_CKINT num_elem )
+{
+    // compute offset of starting point to copy memory
+    t_CKINT startOffset = m_write_offset - num_elem;
+    // wrap around until have a valid offset
+    while( startOffset < 0 )
+    {
+        startOffset += m_max_elem;
+    }
+
+    // left to copy
+    t_CKINT left = num_elem;
+    // amount
+    t_CKINT amount = m_max_elem - startOffset;
+    // to copy
+    t_CKINT tocopy = ck_min( left, amount );
+    // update left
+    left -= tocopy;
+    // copy after the write pointer
+    memcpy( buffer, m_data + startOffset, tocopy * sizeof(SAMPLE) );
+
+    // more?
+    if( left )
+    {
+        // amount
+        amount = startOffset;
         // to copy
         t_CKINT tocopy2 = ck_min( left, amount );
         // update left
