@@ -115,6 +115,10 @@ public:
     void run( SAMPLE * input, SAMPLE * output, int numFrames );
 
 public:
+    // is initialized
+    bool running() { return m_init; }
+    
+public:
     // additional native chuck bindings/types (use with extra caution)
     bool bind( f_ck_query queryFunc, const std::string & name );
 
