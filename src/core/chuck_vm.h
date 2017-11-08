@@ -381,116 +381,52 @@ public:
 
 
 
+// Forward references for external messages, storage
+struct Chuck_Set_External_Int_Request;
+struct Chuck_Get_External_Int_Request;
+struct Chuck_Set_External_Float_Request;
+struct Chuck_Get_External_Float_Request;
+struct Chuck_Signal_External_Event_Request;
+struct Chuck_External_Int_Container;
+struct Chuck_External_Float_Container;
+struct Chuck_External_Event_Container;
+
+
+
+
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Set_External_Int_Request
-// desc: container for messages to set external ints (REFACTOR-2017)
+// name: enum External_Request_Type
+// desc: what kind of external message request is this? (REFACTOR-2017)
 //-----------------------------------------------------------------------------
-struct Chuck_Set_External_Int_Request
+enum Chuck_External_Request_Type
 {
-    std::string name;
-    t_CKINT val;
-    // constructor
-    Chuck_Set_External_Int_Request() : val(0) { }
+    set_external_int_request,
+    get_external_int_request,
+    set_external_float_request,
+    get_external_float_request,
+    signal_external_event_request,
+    spork_shred_request
 };
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Get_External_Int_Request
-// desc: container for messages to get external ints (REFACTOR-2017)
+// name: strct External_Request
+// desc: an external request (REFACTOR-2017)
 //-----------------------------------------------------------------------------
-struct Chuck_Get_External_Int_Request
+struct Chuck_External_Request
 {
-    std::string name;
-    void (* fp)(t_CKINT);
-    // constructor
-    Chuck_Get_External_Int_Request() : fp(NULL) { }
-};
+    Chuck_External_Request_Type type;
+    union {
+        Chuck_Set_External_Int_Request * setIntRequest;
+        Chuck_Get_External_Int_Request * getIntRequest;
+        Chuck_Set_External_Float_Request * setFloatRequest;
+        Chuck_Get_External_Float_Request * getFloatRequest;
+        Chuck_Signal_External_Event_Request * signalEventRequest;
+        Chuck_VM_Shred * shred;
+    };
 
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Set_External_Float_Request
-// desc: container for messages to set external floats (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Set_External_Float_Request
-{
-    std::string name;
-    t_CKFLOAT val;
-    // constructor
-    Chuck_Set_External_Float_Request() : val(0) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_External_Float_Request
-// desc: container for messages to get external floats (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_External_Float_Request
-{
-    std::string name;
-    void (* fp)(t_CKFLOAT);
-    // constructor
-    Chuck_Get_External_Float_Request() : fp(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Signal_External_Event_Request
-// desc: container for messages to signal external events (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Signal_External_Event_Request
-{
-    std::string name;
-    t_CKBOOL is_broadcast;
-    // constructor
-    Chuck_Signal_External_Event_Request() : is_broadcast(TRUE) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_External_Int_Container
-// desc: container for external ints
-//-----------------------------------------------------------------------------
-struct Chuck_External_Int_Container {
-    t_CKINT val;
-    
-    Chuck_External_Int_Container() { val = 0; }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_External_Float_Container
-// desc: container for external ints
-//-----------------------------------------------------------------------------
-struct Chuck_External_Float_Container {
-    t_CKFLOAT val;
-    
-    Chuck_External_Float_Container() { val = 0; }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_External_Int_Container
-// desc: container for external ints
-//-----------------------------------------------------------------------------
-struct Chuck_External_Event_Container {
-    Chuck_Event * val;
-    Chuck_Type * type;
-    
-    Chuck_External_Event_Container() { val = NULL; type = NULL; }
 };
 
 
@@ -600,10 +536,7 @@ public:
 
 protected:
     // REFACTOR-2017: external queue
-    void handle_external_set_messages();
-    void handle_external_get_messages();
-    // REFACTOR-2017: spork queue
-    void handle_external_spork_messages();
+    void handle_external_queue_messages();
 
 public:
     // REFACTOR-2017: get associated, per-VM environment, chout, cherr
@@ -671,19 +604,12 @@ protected:
 private:
     // external variables
     void cleanup_external_variables();
-    
-    XCircleBuffer< Chuck_Set_External_Int_Request > m_set_external_int_queue;
-    XCircleBuffer< Chuck_Get_External_Int_Request > m_get_external_int_queue;
+
     std::map< std::string, Chuck_External_Int_Container * > m_external_ints;
-    
-    XCircleBuffer< Chuck_Set_External_Float_Request > m_set_external_float_queue;
-    XCircleBuffer< Chuck_Get_External_Float_Request > m_get_external_float_queue;
     std::map< std::string, Chuck_External_Float_Container * > m_external_floats;
-    
-    XCircleBuffer< Chuck_Signal_External_Event_Request > m_signal_external_event_queue;
     std::map< std::string, Chuck_External_Event_Container * > m_external_events;
     
-    XCircleBuffer< Chuck_VM_Shred * > m_spork_external_shred_queue;
+    XCircleBuffer< Chuck_External_Request > m_external_request_queue;
 };
 
 
