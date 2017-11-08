@@ -534,6 +534,9 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
     // frame count
     t_CKINT frame = 0;
 
+    // zero output buffer
+    memset( output, 0, N*m_num_dac_channels*sizeof(SAMPLE) );
+
     // for now, check for external variables once per sample (below)
     // TODO: once per buffer instead? (place here then)
 
@@ -1275,7 +1278,8 @@ struct Chuck_Get_External_String_Request
 // name: struct Chuck_External_Int_Container
 // desc: container for external ints
 //-----------------------------------------------------------------------------
-struct Chuck_External_Int_Container {
+struct Chuck_External_Int_Container
+{
     t_CKINT val;
     
     Chuck_External_Int_Container() { val = 0; }
@@ -1286,9 +1290,10 @@ struct Chuck_External_Int_Container {
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_External_Float_Container
-// desc: container for external ints
+// desc: container for external floats
 //-----------------------------------------------------------------------------
-struct Chuck_External_Float_Container {
+struct Chuck_External_Float_Container
+{
     t_CKFLOAT val;
     
     Chuck_External_Float_Container() { val = 0; }
@@ -1314,7 +1319,8 @@ struct Chuck_External_String_Container {
 // name: struct Chuck_External_Event_Container
 // desc: container for external events
 //-----------------------------------------------------------------------------
-struct Chuck_External_Event_Container {
+struct Chuck_External_Event_Container
+{
     Chuck_Event * val;
     Chuck_Type * type;
     t_CKBOOL ctor_needs_to_be_called;
@@ -1347,7 +1353,7 @@ struct Chuck_External_UGen_Container {
 // desc: get an external int by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::get_external_int( std::string name,
-    void (* callback)(t_CKINT) )
+                                     void (* callback)(t_CKINT) )
 {
     Chuck_Get_External_Int_Request * get_int_message = 
         new Chuck_Get_External_Int_Request;
@@ -1422,8 +1428,8 @@ t_CKINT Chuck_VM::get_external_int_value( std::string name )
 
 
 //-----------------------------------------------------------------------------
-// name: set_external_int_value()
-// desc: set a value directly to the vm (internal)
+// name: get_ptr_to_external_int()
+// desc: get a pointer directly from the vm (internal)
 //-----------------------------------------------------------------------------
 t_CKINT * Chuck_VM::get_ptr_to_external_int( std::string name )
 {
@@ -1438,7 +1444,7 @@ t_CKINT * Chuck_VM::get_ptr_to_external_int( std::string name )
 // desc: get an external float by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::get_external_float( std::string name,
-    void (* callback)(t_CKFLOAT) )
+                                       void (* callback)(t_CKFLOAT) )
 {
     Chuck_Get_External_Float_Request * get_float_message =
         new Chuck_Get_External_Float_Request;
@@ -1513,8 +1519,8 @@ t_CKFLOAT Chuck_VM::get_external_float_value( std::string name )
 
 
 //-----------------------------------------------------------------------------
-// name: set_external_float_value()
-// desc: set a value directly to the vm (internal)
+// name: get_ptr_to_external_float()
+// desc: get a pointer directly to the vm (internal)
 //-----------------------------------------------------------------------------
 t_CKFLOAT * Chuck_VM::get_ptr_to_external_float( std::string name )
 {
@@ -1627,7 +1633,8 @@ Chuck_String * * Chuck_VM::get_ptr_to_external_string( std::string name )
 // name: signal_external_event()
 // desc: signal() an Event by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::signal_external_event( std::string name ) {
+t_CKBOOL Chuck_VM::signal_external_event( std::string name )
+{
     Chuck_Signal_External_Event_Request * signal_event_message =
         new Chuck_Signal_External_Event_Request;
     signal_event_message->name = name;
@@ -1649,7 +1656,8 @@ t_CKBOOL Chuck_VM::signal_external_event( std::string name ) {
 // name: broadcast_external_event()
 // desc: broadcast() an Event by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::broadcast_external_event( std::string name ) {
+t_CKBOOL Chuck_VM::broadcast_external_event( std::string name )
+{
     Chuck_Signal_External_Event_Request * signal_event_message =
         new Chuck_Signal_External_Event_Request;
     signal_event_message->name = name;
@@ -1751,7 +1759,7 @@ t_CKBOOL Chuck_VM::init_external_event( std::string name, Chuck_Type * type )
 
 //-----------------------------------------------------------------------------
 // name: get_external_event()
-// desc: get directly from the vm (internal)
+// desc: get a pointer directly from the vm (internal)
 //-----------------------------------------------------------------------------
 Chuck_Event * Chuck_VM::get_external_event( std::string name )
 {
@@ -1763,7 +1771,7 @@ Chuck_Event * Chuck_VM::get_external_event( std::string name )
 
 //-----------------------------------------------------------------------------
 // name: get_ptr_to_external_event()
-// desc: get a pointer directly from the vm (internal)
+// desc: get a pointer pointer directly from the vm (internal)
 //-----------------------------------------------------------------------------
 Chuck_Event * * Chuck_VM::get_ptr_to_external_event( std::string name )
 {
@@ -1997,7 +2005,7 @@ void Chuck_VM::cleanup_external_variables()
 // name: handle_external_queue_messages()
 // desc: update vm with set, get, listen, spork, etc. messages
 //-----------------------------------------------------------------------------
-void Chuck_VM::handle_external_queue_messages() 
+void Chuck_VM::handle_external_queue_messages()
 {
     while( m_external_request_queue.more() )
     {

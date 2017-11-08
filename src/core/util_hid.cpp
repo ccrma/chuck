@@ -7537,8 +7537,15 @@ const char * Mouse_name( int m )
         return NULL;
     return mice->at( m )->name;
 }
-    
-void Keyboard_configure( const char * filename )
+
+/** return codes for Keyboard_configure */
+enum {
+    HID_KB_CONFIG_SUCCESS = 0,
+    HID_KB_CONFIG_INVALID,
+    HID_KB_CONFIG_ERROR_CANTOPEN,
+};
+
+int Keyboard_configure( const char * filename )
 {
     struct stat statbuf;
     int fd, devmajor, devminor;
@@ -7548,39 +7555,39 @@ void Keyboard_configure( const char * filename )
     unsigned char keycaps[(KEY_MAX / 8) + 1];
     
     if( stat( filename, &statbuf ) == -1 )
-        return;
+        return HID_KB_CONFIG_ERROR_CANTOPEN;
 
     if( S_ISCHR( statbuf.st_mode ) == 0 )
-        return; /* not a character device... */
+        return HID_KB_CONFIG_INVALID; /* not a character device... */
     
     devmajor = ( statbuf.st_rdev & 0xFF00 ) >> 8;
     devminor = ( statbuf.st_rdev & 0x00FF );
     if ( ( devmajor != 13 ) || ( devminor < 64 ) || ( devminor > 96 ) )
-        return; /* not an evdev. */
+        return HID_KB_CONFIG_INVALID; /* not an evdev. */
     
     if( ( fd = open( filename, O_RDONLY | O_NONBLOCK ) ) < 0 )
-        return;
-        
+        return HID_KB_CONFIG_ERROR_CANTOPEN;
+    
     memset( relcaps, 0, sizeof( relcaps ) );
     memset( abscaps, 0, sizeof( abscaps ) );
     memset( keycaps, 0, sizeof( keycaps ) );
     
     int num_keys = 0;
     if( ioctl( fd, EVIOCGBIT( EV_KEY, sizeof( keycaps ) ), keycaps ) == -1 )
-        return;
+        return HID_KB_CONFIG_INVALID;
         
     if( ioctl( fd, EVIOCGBIT( EV_REL, sizeof( relcaps ) ), relcaps ) != -1 )
     {
         for( int i = 0; i < sizeof( relcaps ); i++ )
             if( relcaps[i] )
-                return;
+                return HID_KB_CONFIG_INVALID;
     }
     
     if( ioctl( fd, EVIOCGBIT( EV_ABS, sizeof( abscaps ) ), abscaps ) != -1 )
     {
         for( int i = 0; i < sizeof( abscaps ); i++ )
             if( abscaps[i] )
-                return;
+                return HID_KB_CONFIG_INVALID;
     }
     
     for( int i = 0; i < sizeof( keycaps ); i++ )
@@ -7600,6 +7607,8 @@ void Keyboard_configure( const char * filename )
     strncpy( keyboard->filename, filename, CK_HID_STRBUFSIZE );
     keyboards->push_back( keyboard );
     EM_log( CK_LOG_INFO, "keyboard: found device %s", keyboard->name );
+    
+    return HID_KB_CONFIG_SUCCESS;
 }
 
 void Keyboard_init()
@@ -7623,7 +7632,10 @@ void Keyboard_init()
     if( dir_handle == NULL )
     {
         if( errno == EACCES )
-            EM_log( CK_LOG_WARNING, "hid: error opening %s, unable to initialize keyboards", CK_HID_DIR );
+        {
+            ck_fprintf_stderr( "hid: error opening %s, unable to initialize keyboards\n", CK_HID_DIR );
+            ck_fprintf_stderr( "hid: please verify you have read permissions to device directory '%s' to use HID keyboard input devices\n",  CK_HID_DIR );
+        }
         EM_poplog();
         return;
     }
@@ -7634,7 +7646,13 @@ void Keyboard_init()
         {
             snprintf( buf, CK_HID_STRBUFSIZE, "%s/%s", CK_HID_DIR, 
                       dir_entity->d_name );
-            Keyboard_configure( buf );
+            int result = Keyboard_configure( buf );
+            
+            if(result == HID_KB_CONFIG_ERROR_CANTOPEN)
+            {
+                ck_fprintf_stderr( "hid: error opening %s, unable to check for keyboard\n", buf );
+                ck_fprintf_stderr( "hid: please verify you have read permissions to input device '%s' to use as HID keyboard input device\n",  buf );
+            }
         }
     }
 
