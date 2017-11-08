@@ -536,6 +536,9 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
     // frame count
     t_CKINT frame = 0;
 
+    // zero output buffer
+    memset( output, 0, N*m_num_dac_channels*sizeof(SAMPLE) );
+
     // for now, check for external variables once per sample (below)
     // TODO: once per buffer instead? (place here then)
 
