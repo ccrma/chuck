@@ -657,11 +657,8 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     EM_log( CK_LOG_SEVERE, "class 'math'..." );
     if( !load_module( compiler, env, libmath_query, "Math", "global" ) ) goto error;
 
-// ge: these currently don't compile on "modern" windows versions (1.3.5.3)
-#ifndef __WINDOWS_MODERN__
     EM_log( CK_LOG_SEVERE, "class 'opsc'..." );
     if( !load_module( compiler, env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
-#endif
     EM_log( CK_LOG_SEVERE, "class 'RegEx'..." );
     if( !load_module( compiler, env, regex_query, "RegEx", "global" ) ) goto error;
     // if( !load_module( compiler, env, net_query, "net", "global" ) ) goto error;
