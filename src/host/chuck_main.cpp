@@ -264,7 +264,7 @@ extern "C" void signal_pipe( int sig_num )
         // delete the chuck
         SAFE_DELETE( the_chuck );
         // later
-        exit( 2 );
+        // exit( 2 );
     }
 }
 
