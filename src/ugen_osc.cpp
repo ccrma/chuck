@@ -1295,7 +1295,7 @@ CK_DLL_CTRL( gen5_coeffs )
     Chuck_Array8 * in_args = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
     
     // fprintf(stdout, "calling gen10coeffs, %d\n", weights);
-    if(in_args<0) return;
+    if(in_args<(Chuck_Array8 *)0) return;
     size = in_args->size();
     if(size >= genX_MAX_COEFFS) size = genX_MAX_COEFFS - 1;
     
@@ -1350,7 +1350,7 @@ CK_DLL_CTRL( gen7_coeffs )
     Chuck_Array8 * in_args = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
     
     // fprintf(stdout, "calling gen10coeffs, %d\n", weights);
-    if(in_args<0) return;
+    if(in_args<(Chuck_Array8 *)0) return;
     size = in_args->size();
     if(size >= genX_MAX_COEFFS) size = genX_MAX_COEFFS - 1;
     
@@ -1403,7 +1403,7 @@ CK_DLL_CTRL( gen9_coeffs )
     Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
     
     // fprintf(stdout, "calling gen10coeffs, %d\n", weights);
-    if(weights<0) return;
+    if(weights<(Chuck_Array8 *)0) return;
     size = weights->size();
     if(size >= genX_MAX_COEFFS) size = genX_MAX_COEFFS - 1;
     
@@ -1453,7 +1453,7 @@ CK_DLL_CTRL( gen10_coeffs )
     Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
     
     // fprintf(stdout, "calling gen10coeffs, %d\n", weights);
-    if(weights<0) return;
+    if(weights<(Chuck_Array8 *)0) return;
     size = weights->size();
     if(size >= genX_MAX_COEFFS) size = genX_MAX_COEFFS - 1;
     
@@ -1504,7 +1504,7 @@ CK_DLL_CTRL( gen17_coeffs )
     Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
     
     // fprintf(stdout, "calling gen17coeffs, %d\n", weights);
-    if(weights<0) return;
+    if(weights<(Chuck_Array8 *)0) return;
     size = weights->size();
     if(size >= genX_MAX_COEFFS) size = genX_MAX_COEFFS - 1;
     
@@ -1565,7 +1565,7 @@ CK_DLL_CTRL( curve_coeffs )
     Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
     
     // fprintf(stdout, "calling gen17coeffs, %d\n", weights);
-    if(weights<0) goto done;
+    if(weights<(Chuck_Array8 *)0) goto done;
 
     nargs = weights->size();
     if (nargs < 5 || (nargs % 3) != 2)  {   // check number of args
