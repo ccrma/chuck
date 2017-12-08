@@ -75,7 +75,7 @@ CXXSRCS_CORE+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	chuck_vm.cpp chuck_instr.cpp chuck_scan.cpp chuck_type.cpp \
 	chuck_emit.cpp chuck_compile.cpp chuck_dl.cpp chuck_oo.cpp \
 	chuck_lang.cpp chuck_ugen.cpp chuck_otf.cpp chuck_stats.cpp \
-	chuck_shell.cpp chuck_io.cpp hidio_sdl.cpp chuck.cpp \
+	chuck_shell.cpp chuck_io.cpp hidio_sdl.cpp chuck.cpp chuck_carrier.cpp \
 	midiio_rtmidi.cpp rtmidi.cpp ugen_osc.cpp ugen_filter.cpp \
 	ugen_stk.cpp ugen_xxx.cpp ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
 	ulib_opsc.cpp ulib_regex.cpp util_buffers.cpp util_console.cpp \

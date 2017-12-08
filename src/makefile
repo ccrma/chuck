@@ -104,8 +104,8 @@ CXXOBJS_CORE+= chuck.o chuck_absyn.o chuck_parse.o chuck_errmsg.o \
 	chuck_frame.o chuck_symbol.o chuck_table.o chuck_utils.o \
 	chuck_vm.o chuck_instr.o chuck_scan.o chuck_type.o chuck_emit.o \
 	chuck_compile.o chuck_dl.o chuck_oo.o chuck_lang.o chuck_ugen.o \
-	chuck_otf.o chuck_stats.o chuck_shell.o chuck_io.o hidio_sdl.o \
-	midiio_rtmidi.o rtmidi.o ugen_osc.o ugen_filter.o \
+	chuck_otf.o chuck_stats.o chuck_shell.o chuck_io.o chuck_carrier.o \
+	hidio_sdl.o midiio_rtmidi.o rtmidi.o ugen_osc.o ugen_filter.o \
 	ugen_stk.o ugen_xxx.o ulib_machine.o ulib_math.o ulib_std.o \
 	ulib_opsc.o ulib_regex.o util_buffers.o util_console.o \
 	util_string.o util_thread.o util_opsc.o util_serial.o \

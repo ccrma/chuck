@@ -31,8 +31,8 @@
 // date: fall 2017
 //
 // additional authors:
-//         Jack Atherton (lja@ccrma.stanford.edu)
-//         Spencer Salazar (spencer@ccrma.stanford.edu)
+//       Jack Atherton (lja@ccrma.stanford.edu)
+//       Spencer Salazar (spencer@ccrma.stanford.edu)
 //-----------------------------------------------------------------------------
 #include "chuck.h"
 #include "chuck_errmsg.h"
@@ -40,6 +40,7 @@
 #include "ulib_machine.h"
 #include "util_network.h"
 #include "util_string.h"
+#include "ugen_stk.h"
 
 #ifndef __PLATFORM_WIN32__
 #include <unistd.h>
@@ -55,21 +56,22 @@
 
 
 // chuck param defaults
-#define CHUCK_PARAM_SAMPLE_RATE_DEFAULT          "44100"
-#define CHUCK_PARAM_INPUT_CHANNELS_DEFAULT       "2"
-#define CHUCK_PARAM_OUTPUT_CHANNELS_DEFAULT      "2"
-#define CHUCK_PARAM_VM_ADAPTIVE_DEFAULT          "0"
-#define CHUCK_PARAM_VM_HALT_DEFAULT              "0"
-#define CHUCK_PARAM_OTF_ENABLE_DEFAULT           "0"
-#define CHUCK_PARAM_OTF_PORT_DEFAULT             "8888"
-#define CHUCK_PARAM_DUMP_INSTRUCTIONS_DEFAULT    "0"
-#define CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT      "1"
-#define CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT    ""
-#define CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT        "1"
+#define CHUCK_PARAM_SAMPLE_RATE_DEFAULT            "44100"
+#define CHUCK_PARAM_INPUT_CHANNELS_DEFAULT         "2"
+#define CHUCK_PARAM_OUTPUT_CHANNELS_DEFAULT        "2"
+#define CHUCK_PARAM_VM_ADAPTIVE_DEFAULT            "0"
+#define CHUCK_PARAM_VM_HALT_DEFAULT                "0"
+#define CHUCK_PARAM_OTF_ENABLE_DEFAULT             "0"
+#define CHUCK_PARAM_OTF_PORT_DEFAULT               "8888"
+#define CHUCK_PARAM_DUMP_INSTRUCTIONS_DEFAULT      "0"
+#define CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT        "1"
+#define CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT      ""
+#define CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT          "1"
+#define CHUCK_PARAM_HINT_IS_REALTIME_AUDIO_DEFAULT "0"
 #ifndef __PLATFORM_WIN32__
-#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT     "/usr/local/lib/chuck"
+#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       "/usr/local/lib/chuck"
 #else // __PLATFORM_WIN32__
-#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT     "C:\\Program Files\\ChucK\\chugins"
+#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       "C:\\Program Files\\ChucK\\chugins"
 #endif // __PLATFORM_WIN32__
 #define CHUCK_PARAM_USER_CHUGINS_DEFAULT        std::list<std::string>()
 #define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT std::list<std::string>()
@@ -116,6 +118,8 @@ ChucK::ChucK()
 {
     // instantiate the carrier!
     m_carrier = new Chuck_Carrier();
+    // set reference back to this
+    m_carrier->chuck = this;
     // increment the numChucKs
     o_numVMs++;
     // initialize default params
@@ -186,6 +190,7 @@ void ChucK::initDefaultParams()
     m_params[CHUCK_PARAM_CHUGIN_ENABLE] = CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT;
     m_listParams[CHUCK_PARAM_USER_CHUGINS] = CHUCK_PARAM_USER_CHUGINS_DEFAULT;
     m_listParams[CHUCK_PARAM_USER_CHUGIN_DIRECTORIES] = CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT;
+    m_params[CHUCK_PARAM_HINT_IS_REALTIME_AUDIO] = CHUCK_PARAM_HINT_IS_REALTIME_AUDIO_DEFAULT;
     
     ck_param_types[CHUCK_PARAM_SAMPLE_RATE]             = ck_param_int;
     ck_param_types[CHUCK_PARAM_INPUT_CHANNELS]          = ck_param_int;
@@ -201,6 +206,7 @@ void ChucK::initDefaultParams()
     ck_param_types[CHUCK_PARAM_CHUGIN_ENABLE]           = ck_param_int;
     ck_param_types[CHUCK_PARAM_USER_CHUGINS]            = ck_param_string_list;
     ck_param_types[CHUCK_PARAM_USER_CHUGIN_DIRECTORIES] = ck_param_string_list;
+    ck_param_types[CHUCK_PARAM_HINT_IS_REALTIME_AUDIO]  = ck_param_int;
 }
 
 
@@ -655,6 +661,9 @@ bool ChucK::shutdown()
     // free vm, compiler, friends
     // first, otf
     // REFACTOR-2017 TODO: le_cb?
+    
+    // STK-specific
+    stk_detach( m_carrier );
     
     // cancel otf thread
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
