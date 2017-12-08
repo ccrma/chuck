@@ -694,6 +694,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         if( !shred )
         {
             shred = new Chuck_VM_Shred;
+            shred->vm_ref = this;
             shred->initialize( msg->code );
             shred->name = msg->code->name;
             shred->base_ref = shred->mem;
