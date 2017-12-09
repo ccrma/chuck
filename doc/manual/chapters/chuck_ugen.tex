@@ -1609,6 +1609,58 @@ extends Event
 }
 
 \chuckugen{
+\ugen{OscOut}
+\begin{chuckitemize}
+\item New Open Sound Control output
+\end{chuckitemize}
+\control
+\begin{chuckitemize}
+\item {\bf .dest} (string(host), int(port), WRITE) {\it set port on the host to receive}
+\item {\bf .start} (string(method), WRITE) {\it begin message for method/address}
+\item {\bf .start} (string(method), string(host), int(port), WRITE) {\it begin message for method/address and destination}
+\item {\bf .add} (int(value), WRITE) {\it append value}
+\item {\bf .add} (float(value), WRITE) {\it append value}
+\item {\bf .add} (string(value), WRITE) {\it append value}
+\item {\bf .send} () {\it finish and send message}
+\end{chuckitemize}
+(see events tutorial)
+}
+
+\chuckugen{
+\ugen{OscIn}
+\begin{chuckitemize}
+\item New Open Sound Control input
+\end{chuckitemize}
+\control
+\begin{chuckitemize}
+\item {\bf .port} (int, READ/WRITE) {\it set port to receive}
+\item {\bf .addAddress} (string(address), WRITE) {\it add OSC address/spec to receive}
+\item {\bf .removeAddress} (string(address), WRITE) {\it remove OSC address/spec to receive}
+\item {\bf .removeAllAddresses} () {\it remove all previously added OSC addresses/specs}
+\item {\bf .listenAll} () {\it listen for all OSC messages}
+\item {\bf .recv} (OscMsg, WRITE) \textrightarrow bool {\it return next message from queue or return false if queue empty}
+\end{chuckitemize}
+(see events tutorial)
+}
+
+\chuckugen{
+\ugen{OscMsg}
+\begin{chuckitemize}
+\item New Open Sound Control message
+\end{chuckitemize}
+\control
+\begin{chuckitemize}
+\item {\bf .address} (string READ/WRITE) {\it OSC address}
+\item {\bf .typetag} (string READ/WRITE) {\it OSC type tag}
+\item {\bf .numArgs} (int READ) {\it count of OSC arguments}
+\item {\bf .getInt} (int READ) \textrightarrow int {\it get i'th argument as int}
+\item {\bf .getFloat} (int READ) \textrightarrow int {\it get i'th argument as float}
+\item {\bf .getString} (int READ) \textrightarrow string {\it get i'th argument as string}
+\end{chuckitemize}
+(see events tutorial)
+}
+
+\chuckugen{
 \ugen{KBHit}
 \begin{chuckitemize}
 \item ascii keyboard event
