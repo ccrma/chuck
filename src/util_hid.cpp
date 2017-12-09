@@ -6180,6 +6180,21 @@ const char * Mouse_name( int m )
 
 #elif defined( __PLATFORM_WIN32__ ) || defined( __WINDOWS_PTHREAD__ ) && defined( USE_RAWINPUT )
 
+void Hid_init()
+{
+
+}
+
+void Hid_poll()
+{
+
+}
+
+void Hid_quit()
+{
+
+}
+
 void Joystick_init()
 {
     
@@ -6208,6 +6223,11 @@ int Joystick_open( int js )
 int Joystick_close( int js )
 {
     return -1;
+}
+
+const char * Joystick_name( int js )
+{
+    return NULL;
 }
 
 void Mouse_init()
@@ -6240,6 +6260,11 @@ int Mouse_close( int js )
     return -1;
 }
 
+const char * Mouse_name( int m )
+{
+    return NULL;
+}
+
 void Keyboard_init()
 {
     
@@ -6270,6 +6295,20 @@ int Keyboard_close( int js )
     return -1;
 }
 
+const char * Keyboard_name( int kb )
+{
+    return NULL;
+}
+
+t_CKINT TiltSensor_setPollRate( t_CKINT usec )
+{
+    return -1;
+}
+
+t_CKINT TiltSensor_getPollRate( )
+{
+    return -1;
+}
 
 
 #elif defined(__PLATFORM_LINUX__)
