@@ -1562,7 +1562,10 @@ extends Event
 \begin{chuckitemize}
 \item {\bf .port} (int, READ/WRITE) {\it set port to receive}
 \item {\bf .listen} () {\it starts object listening to port}
+\item {\bf .listen} (int(port)) {\it starts object listening to port}
+\item {\bf .event} (string(spec), READ/WRITE) {\it define string for event to receive in form ``address[,types]''}
 \item {\bf .event} (string(name), string(type), READ/WRITE) {\it define string for event to receive}
+\item {\bf .stop} () {\it stops listening to port}
 \end{chuckitemize}
 (see events tutorial)
 }
@@ -1574,8 +1577,16 @@ extends Event
 \end{chuckitemize}
 \control
 \begin{chuckitemize}
-\item {\bf .setHost} (string(host), int(port), READ/WRITE) {\it set port on the host to receive}
-\item {\bf .startMsg} (string(name), string(type), READ/WRITE)  {\it  define string for event to send}
+\item {\bf .setHost} (string(host), int(port), WRITE) {\it set port on the host to receive}
+\item {\bf .startMsg} (string(spec), WRITE)  {\it start message, spec should be in form ``address[,types...]''}
+\item {\bf .startMsg} (string(address), string(types), WRITE)  {\it start message with address and types}
+\item {\bf .addInt} (int(value), WRITE)  {\it  append value to message}
+\item {\bf .addFloat} (float(value), WRITE)  {\it append value to message}
+\item {\bf .addString} (string(value), WRITE)  {\it append value to message}
+\item {\bf .openBundle} (time(value), WRITE)  {\it start bundle with the 'immediately' time tag}
+\item {\bf .closeBundle} (WRITE)  {\it close current bundle}
+\item {\bf .hold} (bool(on), WRITE)  {\it don't send messages immediately, hold until kicked or until a message is finished without this flag}
+\item {\bf .kick} (WRITE)  {\it kick currently held message}
 \end{chuckitemize}
 (see events tutorial)
 }
@@ -1588,9 +1599,11 @@ extends Event
 extends Event
 \control
 \begin{chuckitemize}
-\item {\bf .nextMsg} (int, READ) {\it the number of messages in queue}
-\item {\bf .getFloat} (float, READ) {\it gets float from message}
-\item {\bf .getInt} (int, READ) {\it gets int from message}
+\item {\bf .nextMsg} (READ) \textrightarrow bool {\it try to get next message from queue, return false if none left}
+\item {\bf .getFloat} (READ) \textrightarrow float {\it gets next value from message as float}
+\item {\bf .getInt} (READ) \textrightarrow int {\it gets next value from message as int}
+\item {\bf .getString} (READ) \textrightarrow string {\it gets next value from message as string}
+\item {\bf .hasMsg} (READ) \textrightarrow bool {\it check if there are messages left in queue}
 \end{chuckitemize}
 (see events tutorial)
 }
