@@ -53,15 +53,13 @@
 using namespace std;
 
 
-#ifdef __WINDOWS_DS__
+#if defined(_MSC_VER) && (_MSC_VER < 1700)
 typedef BYTE uint8_t;
 typedef WORD uint16_t;
-// ge: this needed in earlier/some versions of windows
-#ifndef __WINDOWS_MODERN__
 typedef DWORD uint32_t;
+#else
+#include <stdint.h>
 #endif
-#endif 
-
 
 // available baud rates
 const t_CKUINT Chuck_IO_Serial::CK_BAUD_2400   = 2400;

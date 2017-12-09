@@ -21,13 +21,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <errno.h>
 #include <float.h>
 #include <sys/types.h>
 
 #ifdef _MSC_VER
 #define _WINSOCKAPI_
+#if (_MSC_VER < 1900)
 #define snprintf _snprintf
+#endif // _MSC_VER < 1900
 #else
 #include <unistd.h>
 #endif

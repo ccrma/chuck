@@ -22,12 +22,12 @@
  * constants.
  */
 
-#ifdef _MSC_VER
-#define int32_t __int32
-#define int64_t __int64
-#define uint32_t unsigned __int32
-#define uint64_t unsigned __int64
-#define uint8_t unsigned __int8
+#if defined(_MSC_VER) && (_MSC_VER < 1700)
+typedef __int32 int32_t;
+typedef __int64 int64_t;
+typedef unsigned __int32 uint32_t;
+typedef unsigned __int64 uint64_t;
+typedef unsigned __int8 uint8_t;
 #else
 #include <stdint.h>
 #endif

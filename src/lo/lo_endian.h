@@ -23,6 +23,9 @@
 
 #ifdef _MSC_VER
 #define inline __inline
+#endif
+
+#if defined(_MSC_VER) && (_MSC_VER < 1700)
 #define uint64_t unsigned __int64
 #define uint32_t unsigned __int32
 #else

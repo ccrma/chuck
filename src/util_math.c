@@ -61,7 +61,7 @@ double trunc( double a )
 
 
 // ge: this is needed in some/earlier versions of windows
-#ifndef __WINDOWS_MODERN__
+#if defined(_MSC_VER) && (_MSC_VER < 1800)
 //-----------------------------------------------------------------------------
 // name: remainder()
 // desc: ...

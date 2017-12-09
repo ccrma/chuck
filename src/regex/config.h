@@ -181,4 +181,6 @@
 #define _CRT_SECURE_NO_DEPRECATE 1
 
 /* #define snprintf sprintf_s */
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
 #define snprintf _snprintf
+#endif

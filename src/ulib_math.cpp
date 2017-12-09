@@ -29,6 +29,11 @@
 // author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
 // date: Spring 2004
 //-----------------------------------------------------------------------------
+
+#ifdef __PLATFORM_WIN32__
+#define _USE_MATH_DEFINES
+#endif
+
 #include "chuck_type.h"
 #include "ulib_math.h"
 #include "util_math.h"

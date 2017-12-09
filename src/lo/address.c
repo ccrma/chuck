@@ -19,11 +19,11 @@
 #include <string.h>
 #include <sys/types.h>
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
 #include <io.h>
 #define snprintf _snprintf
 #else
-#include <unistd.h>
+#include <stdio.h>
 #endif
 
 #ifdef WIN32

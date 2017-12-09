@@ -43,10 +43,10 @@ extern "C" {
 
     double round( double a );
     double trunc( double a );
-#ifndef __WINDOWS_MODERN__
-    double remainder( long a, long b );
 #endif
 
+#if defined(_MSC_VER) && (_MSC_VER < 1800)
+    double remainder( long a, long b );
 #endif
 
 // mtof
