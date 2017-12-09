@@ -1509,8 +1509,12 @@ extends \hypertarget{ugen_FM}{FM}
 extends Event
 \control
 \begin{chuckitemize}
-\item {\bf .open} (int, READ/WRITE) {\it set port to receive}
-\item {\bf .recv} (MidiMsg, READ) {\it receives MIDI input}
+\item {\bf .open} (int, READ/WRITE) \textrightarrow bool {\it set port to receive}
+\item {\bf .open} (string, READ/WRITE) \textrightarrow bool {\it set port to receive, exact name match or substring}
+\item {\bf .recv} (MidiMsg, READ) \textrightarrow bool {\it receives MIDI input, returns false if no data available}
+\item {\bf .good} (READ only) \textrightarrow bool {\it check if open}
+\item {\bf .num} (READ only) \textrightarrow int {\it port number}
+\item {\bf .name} (READ only) \textrightarrow string {\it port name}
 \end{chuckitemize}
 (see MIDI tutorial)
 }
@@ -1523,8 +1527,12 @@ extends Event
 extends Event
 \control
 \begin{chuckitemize}
-\item {\bf .open} (int, READ/WRITE) {\it set port to send}
+\item {\bf .open} (int, READ/WRITE) \textrightarrow bool {\it set port to send}
+\item {\bf .open} (string, READ/WRITE) \textrightarrow bool {\it set port to send, exact name match or substring}
 \item {\bf .send} (MidiMsg, WRITE) {\it sends MIDI output}
+\item {\bf .good} (READ only) \textrightarrow bool {\it check if open}
+\item {\bf .num} (READ only) \textrightarrow int {\it port number}
+\item {\bf .name} (READ only) \textrightarrow string {\it port name}
 \end{chuckitemize}
 (see MIDI tutorial)
 }
