@@ -347,6 +347,19 @@ SOURCE=.\chuck_symbol.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\chuck_system.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\chuck_table.cpp
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
@@ -872,6 +885,10 @@ SOURCE=.\chuck_stats.h
 # Begin Source File
 
 SOURCE=.\chuck_symbol.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\chuck_system.h
 # End Source File
 # Begin Source File
 
