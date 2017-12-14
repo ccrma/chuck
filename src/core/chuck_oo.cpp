@@ -96,12 +96,12 @@ void Chuck_VM_Object::add_ref()
     // increment reference count
     m_ref_count++;
 
-    // if going from 0 to 1
-    if( m_ref_count == 1 )
-    {
-        // add to vm allocator
-        Chuck_VM_Alloc::instance()->add_object( this );
-    }
+//    // if going from 0 to 1
+//    if( m_ref_count == 1 )
+//    {
+//        // add to vm allocator
+//        Chuck_VM_Alloc::instance()->add_object( this );
+//    }
 
     // added 1.3.0.0
     CK_MEMMGMT_TRACK(CK_FPRINTF_STDERR( "Chuck_VM_Object::add_ref() : 0x%08x, %s, %lu\n", this, typeid(*this).name(), m_ref_count));
@@ -141,8 +141,8 @@ void Chuck_VM_Object::release()
             *(int *)0 = 1;
         }
 
-        // tell the object manager to set this free
-        Chuck_VM_Alloc::instance()->free_object( this );
+//        // tell the object manager to set this free
+//        Chuck_VM_Alloc::instance()->free_object( this );
     }
 }
 
@@ -192,23 +192,23 @@ void Chuck_VM_Object::unlock_all()
 
 
 // static member
-Chuck_VM_Alloc * Chuck_VM_Alloc::our_instance = NULL;
+// Chuck_VM_Alloc * Chuck_VM_Alloc::our_instance = NULL;
 
 
 //-----------------------------------------------------------------------------
 // name: instance()
 // desc: return static instance
 //-----------------------------------------------------------------------------
-Chuck_VM_Alloc * Chuck_VM_Alloc::instance()
-{
-    if( !our_instance )
-    {
-        our_instance = new Chuck_VM_Alloc;
-        assert( our_instance != NULL );
-    }
-    
-    return our_instance;
-}
+//Chuck_VM_Alloc * Chuck_VM_Alloc::instance()
+//{
+//    if( !our_instance )
+//    {
+//        our_instance = new Chuck_VM_Alloc;
+//        assert( our_instance != NULL );
+//    }
+//    
+//    return our_instance;
+//}
 
 
 
@@ -217,18 +217,18 @@ Chuck_VM_Alloc * Chuck_VM_Alloc::instance()
 // name: add_object()
 // desc: add newly allocated vm object
 //-----------------------------------------------------------------------------
-void Chuck_VM_Alloc::add_object( Chuck_VM_Object * obj )
-{
-    // do log
-    if( DO_LOG( CK_LOG_CRAZY ) )
-    {
-        // log it
-        EM_log( CK_LOG_CRAZY, "adding '%s' (0x%lx)...",
-            mini_type( typeid(*obj).name() ), obj );
-    }
-
-    // add it to map
-}
+//void Chuck_VM_Alloc::add_object( Chuck_VM_Object * obj )
+//{
+//    // do log
+//    if( DO_LOG( CK_LOG_CRAZY ) )
+//    {
+//        // log it
+//        EM_log( CK_LOG_CRAZY, "adding '%s' (0x%lx)...",
+//            mini_type( typeid(*obj).name() ), obj );
+//    }
+//
+//    // add it to map
+//}
 
 
 
@@ -237,24 +237,24 @@ void Chuck_VM_Alloc::add_object( Chuck_VM_Object * obj )
 // name: free_object()
 // desc: free vm object - reference count should be 0
 //-----------------------------------------------------------------------------
-void Chuck_VM_Alloc::free_object( Chuck_VM_Object * obj )
-{
-    // make sure the ref count is 0
-    assert( obj && obj->m_ref_count == 0 );
-
-    // do log
-    if( DO_LOG( CK_LOG_FINEST ) )
-    {
-        // log it
-        EM_log( CK_LOG_FINEST, "freeing '%s' (0x%lx)...",
-            mini_type( typeid(*obj).name() ), obj );
-    }
-
-    // remove it from map
-
-    // delete it
-    delete obj;
-}
+//void Chuck_VM_Alloc::free_object( Chuck_VM_Object * obj )
+//{
+//    // make sure the ref count is 0
+//    assert( obj && obj->m_ref_count == 0 );
+//
+//    // do log
+//    if( DO_LOG( CK_LOG_FINEST ) )
+//    {
+//        // log it
+//        EM_log( CK_LOG_FINEST, "freeing '%s' (0x%lx)...",
+//            mini_type( typeid(*obj).name() ), obj );
+//    }
+//
+//    // remove it from map
+//
+//    // delete it
+//    delete obj;
+//}
 
 
 
@@ -262,9 +262,9 @@ void Chuck_VM_Alloc::free_object( Chuck_VM_Object * obj )
 //-----------------------------------------------------------------------------
 // name: Chuck_VM_Alloc()
 // desc: constructor
-//-----------------------------------------------------------------------------
-Chuck_VM_Alloc::Chuck_VM_Alloc()
-{ }
+////-----------------------------------------------------------------------------
+//Chuck_VM_Alloc::Chuck_VM_Alloc()
+//{ }
 
 
 
@@ -273,8 +273,8 @@ Chuck_VM_Alloc::Chuck_VM_Alloc()
 // name: ~Chuck_VM_Alloc()
 // desc: destructor
 //-----------------------------------------------------------------------------
-Chuck_VM_Alloc::~Chuck_VM_Alloc()
-{ }
+//Chuck_VM_Alloc::~Chuck_VM_Alloc()
+//{ }
 
 
 
@@ -295,7 +295,7 @@ Chuck_Object::Chuck_Object()
     data = NULL;
 
     // add to vm allocator
-    Chuck_VM_Alloc::instance()->add_object( this );
+    // Chuck_VM_Alloc::instance()->add_object( this );
 }
 
 
