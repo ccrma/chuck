@@ -141,8 +141,10 @@ void Chuck_VM_Object::release()
             *(int *)0 = 1;
         }
 
-//        // tell the object manager to set this free
-//        Chuck_VM_Alloc::instance()->free_object( this );
+        // tell the object manager to set this free
+        // Chuck_VM_Alloc::instance()->free_object( this );
+        // REFACTOR-2017: doing this for now
+        delete this;        
     }
 }
 
