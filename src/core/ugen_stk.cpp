@@ -26094,26 +26094,25 @@ CK_DLL_CGET( WaveLoop_cget_phaseOffset )
 // name: getCarrier()
 // desc: get ChucK_Carrier from Chuck_VM_Shred, with error checking
 //-----------------------------------------------------------------------------
-Chuck_Carrier * getCarrier( Chuck_VM_Shred * shred )
+Chuck_Carrier * getCarrier( Chuck_VM * vm, const std::string & where = "" )
 {
-    if( shred == NULL )
+    if( vm == NULL )
     {
-        CK_STDCERR << "[chuck](via STK): WvOut ctor NULL shred!" << CK_STDENDL;
+        CK_STDCERR << "[chuck](via STK): NULL VM ref!";
+        if( where != "" ) CK_STDCERR << " where: '" << where << "'";
+        CK_STDCERR << CK_STDENDL;
         return NULL;
     }
-    else if( shred->vm_ref == NULL )
+    else if( vm->carrier() == NULL )
     {
-        CK_STDCERR << "[chuck](via STK): WvOut ctor NULL VM ref!" << CK_STDENDL;
-        return NULL;
-    }
-    else if( shred->vm_ref->carrier() == NULL )
-    {
-        CK_STDCERR << "[chuck](via STK): WvOut ctor NULL VM carrier!" << CK_STDENDL;
+        CK_STDCERR << "[chuck](via STK): NULL VM carrier!";;
+        if( where != "" ) CK_STDCERR << " where: '" << where << "'";
+        CK_STDCERR << CK_STDENDL;
         return NULL;
     }
     
     // return it
-    return shred->vm_ref->carrier();
+    return vm->carrier();
 }
 
 
@@ -26131,7 +26130,7 @@ CK_DLL_CTOR( WvOut_ctor )
     // default write mode is synchronous
     yo->asyncIO = FALSE;
     // get the carrier
-    Chuck_Carrier * carrier = getCarrier( SHRED );
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctor" );
     // check
     if( carrier != NULL )
     {
@@ -26165,7 +26164,7 @@ CK_DLL_DTOR( WvOut_dtor )
     w->closeFile();
     
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( SHRED );
+    Chuck_Carrier * carrier = getCarrier( ((Chuck_UGen *)(SELF))->vm, "WvOut dtor" );
     // check
     if( carrier != NULL )
     {
@@ -26247,7 +26246,7 @@ CK_DLL_CTRL( WvOut_ctrl_matFilename )
     char buffer[1024];
     
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( SHRED );
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl matFilename" );
 
     // special
     if( strstr( filename, "special:auto" ) )
@@ -26289,7 +26288,7 @@ CK_DLL_CTRL( WvOut2_ctrl_matFilename )
     char buffer[1024];
     
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( SHRED );
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl matFilename" );
 
     // special
     if( strstr( filename, "special:auto" ) )
@@ -26331,7 +26330,7 @@ CK_DLL_CTRL( WvOut_ctrl_sndFilename )
     char buffer[1024];
     
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( SHRED );
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl sndFilename" );
 
     // special
     if( strstr( filename, "special:auto" ) )
@@ -26373,7 +26372,7 @@ CK_DLL_CTRL( WvOut2_ctrl_sndFilename )
     char buffer[1024];
     
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( SHRED );
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl sndFilename" );
 
     // special
     if( strstr( filename, "special:auto" ) )
@@ -26415,7 +26414,7 @@ CK_DLL_CTRL( WvOut_ctrl_wavFilename )
     char buffer[1024];
     
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( SHRED );
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl wavFilename" );
 
     // special
     if( strstr( filename, "special:auto" ) )
@@ -26461,7 +26460,7 @@ CK_DLL_CTRL( WvOut2_ctrl_wavFilename )
     char buffer[1024];
     
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( SHRED );
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl wavFilename" );
 
     // special
     if( strstr( filename, "special:auto" ) )
@@ -26507,7 +26506,7 @@ CK_DLL_CTRL( WvOut_ctrl_rawFilename )
     char buffer[1024];
     
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( SHRED );
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl rawFilename" );
 
     // special
     if( strstr( filename, "special:auto" ) )
@@ -26549,7 +26548,7 @@ CK_DLL_CTRL( WvOut2_ctrl_rawFilename )
     char buffer[1024];
     
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( SHRED );
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl rawFilename" );
 
     // special
     if( strstr( filename, "special:auto" ) )
@@ -26591,7 +26590,7 @@ CK_DLL_CTRL( WvOut_ctrl_aifFilename )
     char buffer[1024];
     
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( SHRED );
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl aifFilename" );
 
     // special
     if( strstr( filename, "special:auto" ) )
@@ -26633,7 +26632,7 @@ CK_DLL_CTRL( WvOut2_ctrl_aifFilename )
     char buffer[1024];
     
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( SHRED );
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl aifFilename" );
 
     // special
     if( strstr( filename, "special:auto" ) )
@@ -26687,7 +26686,7 @@ CK_DLL_CTRL( WvOut_ctrl_closeFile )
     w->closeFile();
     
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( SHRED );
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl closeFile" );
     // check
     if( carrier != NULL )
     {
