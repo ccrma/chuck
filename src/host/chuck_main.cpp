@@ -351,7 +351,7 @@ void all_detach()
 //#endif // __DISABLE_KBHIT__
 //#ifndef __ALTER_HID__
 //    // shutdown HID
-//    HidInManager::cleanup();
+    HidInManager::cleanup();
 //#endif // __ALTER_HID__
 //    
 //    Chuck_IO_Serial::shutdown();
