@@ -774,15 +774,15 @@ int ChuckAudio::cb( void * output_buffer, void * input_buffer, unsigned int buff
 
     // copy local buffer to be rendered
     // REFACTOR-2017: TODO: m_end was the signal to end, what should it be now?
-    //if( !m_end )
+    if( m_start ) // REFACTOR-2017: now using m_start to gate this
     {
         memcpy( output_buffer, m_buffer_out, len );
     }
     // set all elements of local buffer to silence
-    //else
-    //{
-    //    memset( output_buffer, 0, len );
-    //}
+    else
+    {
+        memset( output_buffer, 0, len );
+    }
 
     // copy to extern
     if( m_extern_out ) memcpy( m_extern_out, output_buffer, len );

@@ -103,7 +103,7 @@ public:
 public:
     // where
     std::vector<Chuck_VM_Object *> * m_v_ref;
-    
+
 private:
     void init_ref();
 };
