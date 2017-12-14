@@ -115,7 +115,11 @@ t_CKINT g_priority_low = 0x7fffffff;
 // name: main()
 // desc: ...
 //-----------------------------------------------------------------------------
+#ifndef __CHUCK_NO_MAIN__
 int main( int argc, const char ** argv )
+#else
+int chuck_main( int argc, const char ** argv )
+#endif // __CHUCK_NO_MAIN__
 {
     // parse, init, run!
     go( argc, argv );
