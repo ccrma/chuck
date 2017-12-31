@@ -1,7 +1,5 @@
 ChucK : install instructions
 
-version: 1.3.x.x (chimera) 
-
 ---
 ChucK home:
     http://chuck.cs.princeton.edu/
