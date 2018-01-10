@@ -175,8 +175,8 @@ $(CXXOBJS_HOST): %.o: %.cpp
 	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
 clean: 
-	@rm -rf $(wildcard chuck chuck.exe) *.o *.d $(OBJS) \
-        $(patsubst %.o,%.d,$(OBJS)) *~ $(COREDIR)/chuck.output \
+	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} $(OBJS) \
+        $(patsubst %.o,%.d,$(OBJS))*~ $(COREDIR)/chuck.output \
 	$(COREDIR)/chuck.tab.h $(COREDIR)/chuck.tab.c \
         $(COREDIR)/chuck.yy.c $(DIST_DIR){,.tgz,.zip} Release Debug
 	
