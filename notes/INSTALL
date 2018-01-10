@@ -1,7 +1,5 @@
 ChucK : Build Instructions 
 
-version: 1.3.x.x (chimera) 
-
 ---
 
 ChucK home:
@@ -10,9 +8,6 @@ ChucK home:
 
 Got questions?
     http://chuck.cs.princeton.edu/community.html
-
-email us:
-    gewang@cs.princeton.edu | ge@ccrma.stanford.edu
 
 online version of this document:
     http://chuck.cs.princeton.edu/doc/build/
