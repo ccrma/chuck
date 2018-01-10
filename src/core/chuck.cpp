@@ -36,6 +36,7 @@
 //-----------------------------------------------------------------------------
 #include "chuck.h"
 #include "chuck_errmsg.h"
+#include "chuck_io.h"
 #include "chuck_otf.h"
 #include "ulib_machine.h"
 #include "util_network.h"
@@ -81,6 +82,7 @@
 // chuck statics
 const char ChucK::VERSION[] = "1.3.6.0 (numchucks)";
 t_CKUINT ChucK::o_numVMs = 0;
+t_CKBOOL ChucK::o_isGlobalInit = FALSE;
 t_CKBOOL ChucK::enableSystemCall = FALSE;
 
 
@@ -126,6 +128,9 @@ ChucK::ChucK()
     initDefaultParams();
     // did user init?
     m_init = FALSE;
+    
+    // global init, if needed
+    if( !o_isGlobalInit ) globalInit();
 }
 
 
@@ -1023,11 +1028,63 @@ t_CKBOOL ChucK::setStderrCallback( void (* callback)(const char *) )
 
 
 //-----------------------------------------------------------------------------
-// name: finalCleanup()
-// desc: provide a callback where <<< >>> and stdout print statements are routed
+// name: globalInit()
+// desc: init all things once (for all ChucK instances)
 //-----------------------------------------------------------------------------
-void ChucK::finalCleanup()
+t_CKBOOL ChucK::globalInit()
 {
+    // sanity check
+    if( o_isGlobalInit ) return FALSE;
+    
+    // nothing to do, for now
+    
+    // set flag
+    o_isGlobalInit = TRUE;
+    
+    // done
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: globalCleanup()
+// desc: clean up all things
+//-----------------------------------------------------------------------------
+void ChucK::globalCleanup()
+{
+    // sanity check
+    if( !o_isGlobalInit ) return;
+    // set flag
+    o_isGlobalInit = FALSE;
+    
+    // log
+    EM_log( CK_LOG_INFO, "detaching all resources..." );
+    // push
+    EM_pushlog();
+    
+    //#ifndef __DISABLE_MIDI__
+    // close midi file handles
+    // midirw_detach();
+    //#endif // __DISABLE_MIDI__
+    
+    #ifndef __ALTER_HID__
+    // shutdown HID
+    HidInManager::cleanup();
+    #endif // __ALTER_HID__
+    
+    // shutdown serial
+    Chuck_IO_Serial::shutdown();
+
+    #ifndef __DISABLE_KBHIT__
+    // shutdown kb loop
+    // KBHitManager::shutdown();
+    #endif // __DISABLE_KBHIT__
+
+    // pop
+    EM_poplog();
+    
     // REFACTOR-2017 TODO Ge:
     // stop le_cb, ...?
 }

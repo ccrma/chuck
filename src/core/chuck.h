@@ -146,8 +146,12 @@ public:
     static t_CKBOOL setStderrCallback( void (* callback)(const char *) );
 
 public:
-    // TODO Ge: name choice? should this exist?
-    static void finalCleanup();
+    // global initialization for all instances (called once at beginning)
+    static t_CKBOOL globalInit();
+    // global cleanup for all instances (called once at end)
+    static void globalCleanup();
+    // flag for global init
+    static t_CKBOOL o_isGlobalInit;
 
 protected:
     // shutdown
