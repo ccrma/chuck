@@ -90,6 +90,7 @@
   <ItemGroup>
     <ClCompile Include="..\core\chuck.cpp" />
     <ClCompile Include="..\core\chuck_absyn.cpp" />
+    <ClCompile Include="..\core\chuck_carrier.cpp" />
     <ClCompile Include="..\core\chuck_compile.cpp" />
     <ClCompile Include="..\host\chuck_audio.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\core;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
