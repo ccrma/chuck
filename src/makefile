@@ -196,19 +196,13 @@ src-dist:
 # clean out old dists
 	rm -rf $(DIST_DIR) $(DIST_DIR){.tgz,.zip}
 # create directories
-	mkdir $(DIST_DIR) $(DIST_DIR)/doc $(DIST_DIR)/src $(DIST_DIR)/examples
+	mkdir $(DIST_DIR) $(DIST_DIR)/src $(DIST_DIR)/examples
 # copy src
-	git archive HEAD . | tar -x -C $(DIST_DIR)/src
+	git archive HEAD src | tar -x -C $(DIST_DIR)
 	rm -r $(DIST_DIR)/src/test 
-# copy manual + notes
-	cp $(addprefix ../notes/doc/,$(DOC_NOTES)) $(DIST_DIR)/doc
 # copy examples
-	git archive HEAD ../examples | tar -x -C $(DIST_DIR)/
-	# svn export $(CK_SVN)/trunk/src/examples $(DIST_DIR)/examples 2>&1 > /dev/null
-#cp -r examples $(DIST_DIR)/examples
-# remove .svn directories
-#-find $(DIST_DIR)/examples/ -name '.svn' -exec rm -rf '{}' \; &> /dev/null
+	git archive HEAD examples | tar -x -C $(DIST_DIR)
 # copy notes
-	cp $(addprefix ../notes/,$(NOTES)) $(DIST_DIR)
+	cp $(addprefix notes/,$(NOTES)) $(DIST_DIR)
 # tar/gzip
 	tar czf $(DIST_DIR).tgz $(DIST_DIR)
