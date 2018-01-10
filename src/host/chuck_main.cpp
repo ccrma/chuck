@@ -263,10 +263,8 @@ extern "C" void signal_pipe( int sig_num )
     fprintf( stderr, "[chuck]: sigpipe handled - broken pipe (no connection)...\n" );
     if( g_sigpipe_mode )
     {
-        // REFACTOR-2017: all_detach
-        all_detach();
-        // delete the chuck
-        SAFE_DELETE( the_chuck );
+        // clean up everything!
+        global_cleanup();
         // later
         exit( 2 );
     }
@@ -284,13 +282,13 @@ void global_cleanup()
     // REFACTOR-2017: shut down audio system
     all_stop();
 
-    // request MIDI, etc. files be closed
-    // REFACTOR-2017: TODO. all_detach:
-    all_detach();
-
     // delete the chuck
     SAFE_DELETE( the_chuck );
-    
+
+    // request MIDI, etc. files be closed
+    // REFACTOR-2017: TODO; RESOLVED: used to be all_detach()
+    ChucK::globalCleanup();
+
     // wait for the shell, if it is running
     // does the VM reset its priority to normal before exiting?
     if( g_enable_shell )
@@ -323,40 +321,6 @@ void all_stop()
         ChuckAudio::shutdown();
     }
     // REFACTOR-2017: TODO: other things? le_cb?
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: all_detach()
-// desc: called during cleanup to close all open file handles
-//-----------------------------------------------------------------------------
-void all_detach()
-{
-    // REFACTOR-2017: stk_detach() has moved to per-VM cleanup
-    // REFACTOR-2017: TODO figure out what to do with this
-
-    // log
-    EM_log( CK_LOG_INFO, "detaching all resources..." );
-    // push
-    EM_pushlog();
-//#ifndef __DISABLE_MIDI__
-//    // close midi file handles
-//    midirw_detach();
-//#endif // __DISABLE_MIDI__
-//#ifndef __DISABLE_KBHIT__
-//    // shutdown kb loop
-//    KBHitManager::shutdown();
-//#endif // __DISABLE_KBHIT__
-//#ifndef __ALTER_HID__
-//    // shutdown HID
-    HidInManager::cleanup();
-//#endif // __ALTER_HID__
-//    
-//    Chuck_IO_Serial::shutdown();
-    // pop
-    EM_poplog();
 }
 
 
