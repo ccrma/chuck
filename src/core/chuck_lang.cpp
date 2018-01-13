@@ -2280,7 +2280,7 @@ CK_DLL_MFUN( ugen_op )
     Chuck_DL_Return ret;
     // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
-        ugen_op( ugen->m_multi_chan[i], ARGS, &ret, SHRED, API );
+        ugen_op( ugen->m_multi_chan[i], ARGS, &ret, VM, SHRED, API );
     // added 1.3.0.2 -- apply op to subgraph outlet
     if( ugen->inlet() )
         ugen->inlet()->m_op = op;
@@ -2324,7 +2324,7 @@ CK_DLL_MFUN( ugen_next )
     Chuck_DL_Return ret;
     // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
-        ugen_next( ugen->m_multi_chan[i], ARGS, &ret, SHRED, API );
+        ugen_next( ugen->m_multi_chan[i], ARGS, &ret, VM, SHRED, API );
     // added 1.3.0.2 -- apply op to subgraph outlet
     if( ugen->outlet() )
     {
@@ -2356,7 +2356,7 @@ CK_DLL_MFUN( ugen_gain )
     Chuck_DL_Return ret;
     // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
-        ugen_gain( ugen->m_multi_chan[i], ARGS, &ret, SHRED, API );
+        ugen_gain( ugen->m_multi_chan[i], ARGS, &ret, VM, SHRED, API );
     // added 1.3.0.2 -- apply gain to subgraph outlet
     if( ugen->outlet() )
         ugen->outlet()->m_gain = (SAMPLE) gain;
@@ -2463,7 +2463,7 @@ CK_DLL_CTOR( uana_ctor )
     // remember it
     OBJ_MEMBER_INT(SELF, uana_offset_blob) = (t_CKINT)proxy;
     // HACK: DANGER: manually call blob's ctor (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
-    uanablob_ctor( blob, NULL, SHRED, API );
+    uanablob_ctor( blob, NULL, VM, SHRED, API );
 }
 
 CK_DLL_DTOR( uana_dtor )
@@ -2500,7 +2500,7 @@ CK_DLL_MFUN( uana_upchuck )
         Chuck_DL_Return ret;
         // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
         for( t_CKUINT i = 0; i < uana->m_multi_chan_size; i++ )
-            uana_upchuck( uana->m_multi_chan[i], ARGS, &ret, SHRED, API );
+            uana_upchuck( uana->m_multi_chan[i], ARGS, &ret, VM, SHRED, API );
 
         // tock it (TODO: order relative to multiple channels?)
         uana->system_tock( vm->shreduler()->now_system );

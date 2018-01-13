@@ -31,8 +31,8 @@
 // date: fall 2017
 //
 // additional authors:
-//         Jack Atherton (lja@ccrma.stanford.edu)
-//         Spencer Salazar (spencer@ccrma.stanford.edu)
+//       Jack Atherton (lja@ccrma.stanford.edu)
+//       Spencer Salazar (spencer@ccrma.stanford.edu)
 //-----------------------------------------------------------------------------
 #ifndef __CHUCK_H__
 #define __CHUCK_H__
@@ -69,6 +69,7 @@
 #define CHUCK_PARAM_CHUGIN_DIRECTORY        "CHUGIN_DIRECTORY"
 #define CHUCK_PARAM_USER_CHUGINS            "USER_CHUGINS"
 #define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES "USER_CHUGIN_DIRECTORIES"
+#define CHUCK_PARAM_HINT_IS_REALTIME_AUDIO  "HINT_IS_REALTIME_AUDIO"
 
 
 
@@ -150,8 +151,12 @@ public:
     static t_CKBOOL setStderrCallback( void (* callback)(const char *) );
 
 public:
-    // TODO Ge: name choice? should this exist?
-    static void finalCleanup();
+    // global initialization for all instances (called once at beginning)
+    static t_CKBOOL globalInit();
+    // global cleanup for all instances (called once at end)
+    static void globalCleanup();
+    // flag for global init
+    static t_CKBOOL o_isGlobalInit;
 
 protected:
     // shutdown

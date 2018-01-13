@@ -40,10 +40,14 @@
 
 #include "chuck_dl.h"
 
+// forward reference; REFACTOR-2017
+struct Chuck_Carrier;
 
 // query
 DLL_QUERY stk_query( Chuck_DL_Query * QUERY );
-t_CKBOOL  stk_detach( t_CKUINT type, void * data );
+t_CKBOOL  stk_detach( Chuck_Carrier * carrier );
+
+
 
 
 // this determines STK float type and de-denormal method
@@ -54,6 +58,8 @@ t_CKBOOL  stk_detach( t_CKUINT type, void * data );
 #define MY_FLOAT float
 #define CK_STK_DDN CK_DDN_SINGLE
 #endif
+
+
 
 
 /***************************************************/
@@ -5409,17 +5415,12 @@ class WvOut : public Stk
   static const FILE_TYPE WVOUT_AIF; /*!< AIFF file type. */
   static const FILE_TYPE WVOUT_MAT; /*!< Matlab MAT-file type. */
 
-    // chuck: asynchronous data writer thread
-    static XWriteThread * s_writeThread;
-    
     // chuck: override stdio fwrite/etc. functions
     size_t fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream);
     int fseek(FILE *stream, long offset, int whence);
     int fflush(FILE *stream);
     int fclose(FILE *stream);
     size_t fread(void *ptr, size_t size, size_t nitems, FILE *stream);
-    
-    static void shutdown();
     
   //! Default constructor.
   WvOut();
@@ -5518,7 +5519,9 @@ class WvOut : public Stk
   t_CKUINT flush;
   t_CKFLOAT fileGain;
     
-    t_CKBOOL asyncIO;
+  // spencer: for data asynch write
+  t_CKBOOL asyncIO;
+  XWriteThread * asyncWriteThread;
 };
 
 #endif // defined(__WVOUT_H)

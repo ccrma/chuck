@@ -52,6 +52,7 @@ void * shell_cb( void * p );
 bool go( int argc, const char ** argv );
 void global_cleanup();
 void all_stop();
+void all_detach();
 void usage();
 void uh();
 t_CKBOOL get_count( const char * arg, t_CKUINT * out );
@@ -114,7 +115,11 @@ t_CKINT g_priority_low = 0x7fffffff;
 // name: main()
 // desc: ...
 //-----------------------------------------------------------------------------
+#ifndef __CHUCK_NO_MAIN__
 int main( int argc, const char ** argv )
+#else
+int chuck_main( int argc, const char ** argv )
+#endif // __CHUCK_NO_MAIN__
 {
     // parse, init, run!
     go( argc, argv );
@@ -258,9 +263,10 @@ extern "C" void signal_pipe( int sig_num )
     fprintf( stderr, "[chuck]: sigpipe handled - broken pipe (no connection)...\n" );
     if( g_sigpipe_mode )
     {
-        // REFACTOR-2017: TODO. all_detach?
-        //all_detach();
-        // exit( 2 );
+        // clean up everything!
+        global_cleanup();
+        // later
+        exit( 2 );
     }
 }
 
@@ -276,13 +282,13 @@ void global_cleanup()
     // REFACTOR-2017: shut down audio system
     all_stop();
 
+    // delete the chuck
     SAFE_DELETE( the_chuck );
 
-    
-    // request MIDI, etc. files open be closed
-    // REFACTOR-2017: TODO. all_detach?
-    //all_detach();
-    
+    // request MIDI, etc. files be closed
+    // REFACTOR-2017: TODO; RESOLVED: used to be all_detach()
+    ChucK::globalCleanup();
+
     // wait for the shell, if it is running
     // does the VM reset its priority to normal before exiting?
     if( g_enable_shell )
@@ -316,7 +322,6 @@ void all_stop()
     }
     // REFACTOR-2017: TODO: other things? le_cb?
 }
-
 
 
 
@@ -539,7 +544,7 @@ bool go( int argc, const char ** argv )
                 }
             }
             else if( !strncmp(argv[i], "--dac", 5) )
-                dac = atoi( argv[i]+6 ) > 0 ? atoi( argv[i]+6 ) : 0;
+                dac = atoi( argv[i]+5 ) > 0 ? atoi( argv[i]+5 ) : 0;
             else if( !strncmp(argv[i], "--adc:", 6) ) // (added 1.3.0.0)
             {
                 // advance pointer to beginning of argument
@@ -850,6 +855,8 @@ bool go( int argc, const char ** argv )
     the_chuck->setParam( CHUCK_PARAM_DEPRECATE_LEVEL, deprecate_level );
     the_chuck->setParam( CHUCK_PARAM_USER_CHUGINS, named_dls );
     the_chuck->setParam( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES, dl_search_path );
+    // set hint, so internally can advise things like async data writes etc.
+    the_chuck->setParam( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO, g_enable_realtime_audio );
     the_chuck->setLogLevel( log_level );
     
     // initialize
@@ -870,6 +877,9 @@ bool go( int argc, const char ** argv )
     // initialize audio system
     if( g_enable_realtime_audio )
     {
+        // TODO: refactor initialize() to take in the dac and adc nums
+        ChuckAudio::m_adc_n = adc;
+        ChuckAudio::m_dac_n = dac;
         t_CKBOOL retval = ChuckAudio::initialize( adc_chans, dac_chans,
             srate, buffer_size, num_buffers, cb, (void *)the_chuck, force_srate );
         // check

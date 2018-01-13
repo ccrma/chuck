@@ -103,7 +103,7 @@ public:
 public:
     // where
     std::vector<Chuck_VM_Object *> * m_v_ref;
-    
+
 private:
     void init_ref();
 };
@@ -115,25 +115,25 @@ private:
 // name: struct Chuck_VM_Alloc
 // desc: vm object manager
 //-----------------------------------------------------------------------------
-struct Chuck_VM_Alloc
-{
-public:
-    static Chuck_VM_Alloc * instance();
-    
-public:
-    void add_object( Chuck_VM_Object * obj );
-    void free_object( Chuck_VM_Object * obj );
-
-protected:
-    static Chuck_VM_Alloc * our_instance;
-
-protected:
-    Chuck_VM_Alloc();
-    ~Chuck_VM_Alloc();
-
-protected: // data
-    std::map<Chuck_VM_Object *, void *> m_objects;
-};
+//struct Chuck_VM_Alloc
+//{
+//public:
+//    static Chuck_VM_Alloc * instance();
+//    
+//public:
+//    void add_object( Chuck_VM_Object * obj );
+//    void free_object( Chuck_VM_Object * obj );
+//
+//protected:
+//    static Chuck_VM_Alloc * our_instance;
+//
+//protected:
+//    Chuck_VM_Alloc();
+//    ~Chuck_VM_Alloc();
+//
+//protected: // data
+//    std::map<Chuck_VM_Object *, void *> m_objects;
+//};
 
 
 

@@ -23,7 +23,7 @@
  -----------------------------------------------------------------------------*/
 
 //-----------------------------------------------------------------------------
-// file: chuck_carrier.h
+// file: chuck_carrier.cpp
 // desc: carrier of things associated with each ChucK instance
 //       REFACTOR-2017
 //
@@ -32,76 +32,20 @@
 //         Spencer Salazar (spencer@ccrma.stanford.edu)
 // date: fall 2017
 //-----------------------------------------------------------------------------
-#ifndef __CHUCK_CARRIER_H__
-#define __CHUCK_CARRIER_H__
-
-#include "chuck_def.h"
-#include "util_thread.h"
-#include <map>
-
-
-
-
-// forward references (C++)
-struct ChucK;
-struct Chuck_Compiler;
-struct Chuck_VM;
-struct Chuck_Env;
-struct Chuck_IO_Chout;
-struct Chuck_IO_Cherr;
-
-// forward references ("C")
-struct ck_socket_;
-typedef struct ck_socket_ * ck_socket;
-
-// forward references (STK-specific)
-class WvOut;
-class XWriteThread;
+#include "chuck_carrier.h"
+#include "chuck.h"
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Carrier
-// desc: carrier of per-ChucK-instance things; each
+// name: hintIsRealtimeAudio()
+// desc: get hint: is this VM on a realtime audio thread?
 //-----------------------------------------------------------------------------
-struct Chuck_Carrier
+t_CKBOOL Chuck_Carrier::hintIsRealtimeAudio()
 {
-    ChucK * chuck;
-    Chuck_Compiler * compiler;
-    Chuck_Env * env;
-    Chuck_VM * vm;
-    Chuck_IO_Chout * chout;
-    Chuck_IO_Cherr * cherr;
-    
-    // OTF programming things
-    ck_socket otf_socket;
-    t_CKINT otf_port;
-    CHUCK_THREAD otf_thread;
-    
-    // STK-specific
-    XWriteThread * stk_writeThread;
-    std::map<WvOut *, WvOut *> stk_wvOutMap;
-    
-    // constructor
-    Chuck_Carrier() :
-        chuck(NULL),
-        compiler( NULL ),
-        env( NULL ),
-        vm( NULL ),
-        chout( NULL ),
-        cherr( NULL ),
-        otf_socket( NULL ),
-        otf_port( 0 ),
-        otf_thread( 0 ),
-        stk_writeThread( NULL )
-    { }
-    
-    // get hint: is realtime audio?
-    t_CKBOOL hintIsRealtimeAudio();
-};
-
-
-
-
-#endif
+    // check
+    if( !chuck ) return FALSE;
+    // get hint
+    return chuck->getParamInt( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO ) != 0;
+}

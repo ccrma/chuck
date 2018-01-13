@@ -924,7 +924,7 @@ CK_DLL_MFUN(oscin_recv)
     {
         Chuck_Object * arg_obj = instantiate_and_initialize_object(oscarg_type, SHRED);
         // HACK: manually call osc_arg ctor
-        oscarg_ctor(arg_obj, NULL, SHRED, API);
+        oscarg_ctor(arg_obj, NULL, VM, SHRED, API);
         
         switch(msg.type[i])
         {
