@@ -2434,7 +2434,7 @@ CK_DLL_MFUN( ugen_buffered )
     // for multiple channels
     Chuck_DL_Return ret;
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
-        ugen_buffered( ugen->m_multi_chan[i], ARGS, &ret, SHRED, API );
+        ugen_buffered( ugen->m_multi_chan[i], ARGS, &ret, VM, SHRED, API );
     // added 1.3.0.2 -- apply op to subgraph outlet
     if( ugen->inlet() )
         ugen->inlet()->m_is_buffered = buffered;
