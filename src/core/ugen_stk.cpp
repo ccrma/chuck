@@ -41,6 +41,7 @@
 #include "chuck_vm.h"
 #include "chuck_compile.h"
 #include "chuck_lang.h"
+#include "chuck_carrier.h"
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -17883,14 +17884,10 @@ struct mathdr {
   // There's more, but it's of variable length
 };
 
-
-XWriteThread *WvOut::s_writeThread = NULL;
-
-
 size_t WvOut::fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream)
 {
     if(asyncIO)
-        return s_writeThread->fwrite(ptr, size, nitems, stream);
+        return asyncWriteThread->fwrite(ptr, size, nitems, stream);
     else
         return ::fwrite(ptr, size, nitems, stream);
 }
@@ -17898,7 +17895,7 @@ size_t WvOut::fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream
 int WvOut::fseek(FILE *stream, long offset, int whence)
 {
     if(asyncIO)
-        return s_writeThread->fseek(stream, offset, whence);
+        return asyncWriteThread->fseek(stream, offset, whence);
     else
         return ::fseek(stream, offset, whence);
 }
@@ -17906,7 +17903,7 @@ int WvOut::fseek(FILE *stream, long offset, int whence)
 int WvOut::fflush(FILE *stream)
 {
     if(asyncIO)
-        return s_writeThread->fflush(stream);
+        return asyncWriteThread->fflush(stream);
     else
         return ::fflush(stream);
 }
@@ -17914,7 +17911,7 @@ int WvOut::fflush(FILE *stream)
 int WvOut::fclose(FILE *stream)
 {
     if(asyncIO)
-        return s_writeThread->fclose(stream);
+        return asyncWriteThread->fclose(stream);
     else
         return ::fclose(stream);
 }
@@ -17924,15 +17921,6 @@ size_t WvOut::fread(void *ptr, size_t size, size_t nitems, FILE *stream)
     // can't read asynchronously (yet)
     assert(0);
     return 0;
-}
-
-void WvOut::shutdown()
-{
-    if(s_writeThread)
-    {
-        s_writeThread->shutdown(); // deletes itself
-        s_writeThread = NULL;
-    }
 }
 
 WvOut :: WvOut()
@@ -17967,10 +17955,10 @@ void WvOut :: init()
   start = TRUE;
   flush = 0;
   fileGain = 1;
-    
-    if(s_writeThread == NULL)
-        s_writeThread = new XWriteThread(2<<20, 32);
-    asyncIO = TRUE;
+  
+  // spencer: added as flag for off-thread write
+  asyncIO = FALSE;
+  asyncWriteThread = NULL;
 }
 
 void WvOut :: closeFile( void )
@@ -26100,7 +26088,35 @@ CK_DLL_CGET( WaveLoop_cget_phaseOffset )
 }
 
 
-std::map<WvOut *, WvOut *> g_wv;
+
+
+//-----------------------------------------------------------------------------
+// name: getCarrier()
+// desc: get ChucK_Carrier from Chuck_VM_Shred, with error checking
+//-----------------------------------------------------------------------------
+Chuck_Carrier * getCarrier( Chuck_VM * vm, const std::string & where = "" )
+{
+    if( vm == NULL )
+    {
+        CK_STDCERR << "[chuck](via STK): NULL VM ref!";
+        if( where != "" ) CK_STDCERR << " where: '" << where << "'";
+        CK_STDCERR << CK_STDENDL;
+        return NULL;
+    }
+    else if( vm->carrier() == NULL )
+    {
+        CK_STDCERR << "[chuck](via STK): NULL VM carrier!";;
+        if( where != "" ) CK_STDCERR << " where: '" << where << "'";
+        CK_STDCERR << CK_STDENDL;
+        return NULL;
+    }
+    
+    // return it
+    return vm->carrier();
+}
+
+
+
 
 // WvOut
 //-----------------------------------------------------------------------------
@@ -26111,14 +26127,31 @@ CK_DLL_CTOR( WvOut_ctor )
 {
     WvOut * yo = new WvOut;
     yo->autoPrefix.set( "chuck-session" );
-    // REFACTOR-2017 TODO Ge: Fix wvout realtime audio
-/*    // ge: 1.3.5.3
-    yo->asyncIO = g_enable_realtime_audio;
-*/
+    // default write mode is synchronous
     yo->asyncIO = FALSE;
-    // yo->asyncIO = SHRED->vm_ref->m_audio;
+    // get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctor" );
+    // check
+    if( carrier != NULL )
+    {
+        // REFACTOR-2017 TODO Ge: Fix wvout realtime audio [DONE]
+        // check if need to create per-VM write thread
+        if( carrier->stk_writeThread == NULL )
+        {
+            // create new write thread, one per VM
+            carrier->stk_writeThread = new XWriteThread( 2<<20, 32 );
+        }
+        
+        // REFACTOR-2017: set async mode, if on realtime audio thread...
+        yo->asyncIO = carrier->hintIsRealtimeAudio();
+        yo->asyncWriteThread = carrier->stk_writeThread;
+    }
+
+    // set offset data
     OBJ_MEMBER_UINT(SELF, WvOut_offset_data) = (t_CKUINT)yo;
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -26129,13 +26162,23 @@ CK_DLL_DTOR( WvOut_dtor )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     w->closeFile();
-    std::map<WvOut *, WvOut *>::iterator iter;
-    iter = g_wv.find( w );
-    if(iter != g_wv.end())
-        g_wv.erase( iter );
+    
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( ((Chuck_UGen *)(SELF))->vm, "WvOut dtor" );
+    // check
+    if( carrier != NULL )
+    {
+        std::map<WvOut *, WvOut *>::iterator iter;
+        iter = carrier->stk_wvOutMap.find( w );
+        if(iter != carrier->stk_wvOutMap.end())
+            carrier->stk_wvOutMap.erase( iter );
+    }
+
     delete (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     OBJ_MEMBER_UINT(SELF, WvOut_offset_data) = 0;
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -26150,6 +26193,7 @@ CK_DLL_TICK( WvOut_tick )
     *out = in; // pass samples downstream
     return TRUE;
 }
+
 
 
 
@@ -26176,6 +26220,8 @@ CK_DLL_TICKF( WvOut2_tickf )
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: WvOut_pmsg()
 // desc: PMSG function ...
@@ -26184,6 +26230,8 @@ CK_DLL_PMSG( WvOut_pmsg )
 {
     return TRUE;
 }
+
+
 
 
 // XXX chuck got mono, so we have one channel. fix later.
@@ -26197,6 +26245,9 @@ CK_DLL_CTRL( WvOut_ctrl_matFilename )
     const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl matFilename" );
+
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -26211,11 +26262,19 @@ CK_DLL_CTRL( WvOut_ctrl_matFilename )
     }
     try { w->openFile( filename, 1, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
     catch( StkError & e ) { goto done; }
-    g_wv[w] = w;
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
     
 done:
     RETURN->v_string = &(w->str_filename);
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -26228,6 +26287,9 @@ CK_DLL_CTRL( WvOut2_ctrl_matFilename )
     const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl matFilename" );
+
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -26242,11 +26304,19 @@ CK_DLL_CTRL( WvOut2_ctrl_matFilename )
     }
     try { w->openFile( filename, 2, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
     catch( StkError & e ) { goto done; }
-    g_wv[w] = w;
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
     
 done:
     RETURN->v_string = &(w->str_filename);
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -26259,6 +26329,9 @@ CK_DLL_CTRL( WvOut_ctrl_sndFilename )
     const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl sndFilename" );
+
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -26273,11 +26346,19 @@ CK_DLL_CTRL( WvOut_ctrl_sndFilename )
     }
     try { w->openFile( filename, 1, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
     catch( StkError & e ) { goto done; }
-    g_wv[w] = w;
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
     
 done:
     RETURN->v_string = &(w->str_filename);
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -26290,6 +26371,9 @@ CK_DLL_CTRL( WvOut2_ctrl_sndFilename )
     const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl sndFilename" );
+
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -26304,11 +26388,19 @@ CK_DLL_CTRL( WvOut2_ctrl_sndFilename )
     }
     try { w->openFile( filename, 2, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
     catch( StkError & e ) { goto done; }
-    g_wv[w] = w;
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
     
 done:
     RETURN->v_string = &(w->str_filename);
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -26321,6 +26413,9 @@ CK_DLL_CTRL( WvOut_ctrl_wavFilename )
     const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl wavFilename" );
+
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -26339,11 +26434,19 @@ CK_DLL_CTRL( WvOut_ctrl_wavFilename )
         // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
         goto done;
     }
-    g_wv[w] = w;
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
     
 done:
     RETURN->v_string = &(w->str_filename);
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -26356,6 +26459,9 @@ CK_DLL_CTRL( WvOut2_ctrl_wavFilename )
     const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl wavFilename" );
+
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -26374,11 +26480,19 @@ CK_DLL_CTRL( WvOut2_ctrl_wavFilename )
         // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
         goto done;
     }
-    g_wv[w] = w;
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
     
 done:
     RETURN->v_string = &(w->str_filename);
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -26391,6 +26505,9 @@ CK_DLL_CTRL( WvOut_ctrl_rawFilename )
     const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl rawFilename" );
+
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -26405,11 +26522,19 @@ CK_DLL_CTRL( WvOut_ctrl_rawFilename )
     }
     try { w->openFile( filename, 1, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
     catch( StkError & e ) { goto done; }
-    g_wv[w] = w;
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
     
 done:
     RETURN->v_string = &(w->str_filename);
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -26422,6 +26547,9 @@ CK_DLL_CTRL( WvOut2_ctrl_rawFilename )
     const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl rawFilename" );
+
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -26436,11 +26564,19 @@ CK_DLL_CTRL( WvOut2_ctrl_rawFilename )
     }
     try { w->openFile( filename, 2, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
     catch( StkError & e ) { goto done; }
-    g_wv[w] = w;
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
     
 done:
     RETURN->v_string = &(w->str_filename);
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -26453,6 +26589,9 @@ CK_DLL_CTRL( WvOut_ctrl_aifFilename )
     const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl aifFilename" );
+
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -26467,11 +26606,19 @@ CK_DLL_CTRL( WvOut_ctrl_aifFilename )
     }
     try { w->openFile( filename, 1, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
     catch( StkError & e ) { goto done; }
-    g_wv[w] = w;
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
     
 done:
     RETURN->v_string = &(w->str_filename);
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -26484,6 +26631,9 @@ CK_DLL_CTRL( WvOut2_ctrl_aifFilename )
     const char * filename = GET_CK_STRING(ARGS)->str().c_str();
     char buffer[1024];
     
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl aifFilename" );
+
     // special
     if( strstr( filename, "special:auto" ) )
     {
@@ -26498,11 +26648,19 @@ CK_DLL_CTRL( WvOut2_ctrl_aifFilename )
     }
     try { w->openFile( filename, 2, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
     catch( StkError & e ) { goto done; }
-    g_wv[w] = w;
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
     
 done:
     RETURN->v_string = &(w->str_filename);
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -26516,6 +26674,8 @@ CK_DLL_CGET( WvOut_cget_filename )
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: WvOut_ctrl_closeFile()
 // desc: CTRL function ...
@@ -26525,11 +26685,21 @@ CK_DLL_CTRL( WvOut_ctrl_closeFile )
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     w->closeFile();
     
-    std::map<WvOut *, WvOut *>::iterator iter;
-    iter = g_wv.find( w );
-    if(iter != g_wv.end())
-        g_wv.erase( iter );
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl closeFile" );
+    // check
+    if( carrier != NULL )
+    {
+        // remove from map
+        std::map<WvOut *, WvOut *>::iterator iter;
+        iter = carrier->stk_wvOutMap.find( w );
+        if(iter != carrier->stk_wvOutMap.end())
+            carrier->stk_wvOutMap.erase( iter );
+    }
+    
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -26993,26 +27163,38 @@ CK_DLL_MFUN( MidiFileIn_rewind )
         f->rewindTrack();
 }
 
-//-----------------------------------------------------------------------------
-// name: ck_detach()
-// desc: ...
-//-----------------------------------------------------------------------------
-t_CKBOOL stk_detach( t_CKUINT type, void * data )
-{
-    std::map<WvOut *, WvOut *>::iterator iter;
 
+
+
+//-----------------------------------------------------------------------------
+// name: stk_detach()
+// desc: called upon per-VM cleanup; REFACTOR-2017
+//-----------------------------------------------------------------------------
+t_CKBOOL stk_detach( Chuck_Carrier * carrier )
+{
     // log
     EM_log( CK_LOG_INFO, "(via STK): detaching file handles..." );
     
-    for( iter = g_wv.begin(); iter != g_wv.end(); iter++ )
+    // check
+    if( carrier != NULL )
     {
-        (*iter).second->closeFile();
+        // close files
+        std::map<WvOut *, WvOut *>::iterator iter;
+        for( iter = carrier->stk_wvOutMap.begin();
+             iter != carrier->stk_wvOutMap.end(); iter++ ) {
+            (*iter).second->closeFile();
+        }
+        
+        // TODO: release the WvOut
+        carrier->stk_wvOutMap.clear();
+        
+        // deal with per-VM stk write thread
+        if( carrier->stk_writeThread )
+        {
+            carrier->stk_writeThread->shutdown(); // deletes itself
+            carrier->stk_writeThread = NULL;
+        }
     }
-    
-    // TODO: release the WvOut
-    g_wv.clear();
-    
-    WvOut::shutdown();
     
     return TRUE;
 }
