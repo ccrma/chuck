@@ -43,7 +43,7 @@
 
 
 // forward references (C++)
-struct ChucK;
+class  ChucK;
 struct Chuck_Compiler;
 struct Chuck_VM;
 struct Chuck_Env;
