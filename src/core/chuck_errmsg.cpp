@@ -126,13 +126,13 @@ void ck_fflush_stdout()
 void ck_fflush_stderr()
 {
     // check if stream contains a newline
-    if( g_stderr_stream.str().find( '\n' ) != std::string::npos )
     {
         // if so, print it
         if( g_stderr_callback == NULL )
         {
             // send to stderr
             fprintf( stderr, "%s", g_stderr_stream.str().c_str() );
+            fflush( stderr );
         }
         else
         {
