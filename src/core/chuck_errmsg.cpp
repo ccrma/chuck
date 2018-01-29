@@ -103,45 +103,56 @@ void ck_fprintf_stderr( const char * format, ... )
 
 void ck_fflush_stdout()
 {
-    // check if stream contains a newline
-    if( g_stdout_stream.str().find( '\n' ) != std::string::npos )
+    // no callback? just flush it
+    if( g_stdout_callback == NULL )
     {
-        // if so, print it
-        if( g_stdout_callback == NULL ) {
-            // send to stdout
-            fprintf( stdout, "%s", g_stdout_stream.str().c_str() );
-        }
-        else
-        {
-            // emit to callback
-            g_stdout_callback( g_stdout_stream.str().c_str() );
-        }
+        // send to stdout
+        fprintf( stdout, "%s", g_stdout_stream.str().c_str() );
+        fflush( stdout );
+        
         // and clear buffer
         g_stdout_stream.str( std::string() );
-        
+    }
+    else
+    {
+        // yes callback.
+        // check if stream contains a newline
+        if( g_stdout_stream.str().find( '\n' ) != std::string::npos )
+        {
+            // if so, emit to callback
+            g_stdout_callback( g_stdout_stream.str().c_str() );
+            
+            // and clear buffer
+            g_stdout_stream.str( std::string() );
+        }
     }
 }
 
 
 void ck_fflush_stderr()
 {
-    // check if stream contains a newline
+    // no callback? just flush it
+    if( g_stderr_callback == NULL )
     {
-        // if so, print it
-        if( g_stderr_callback == NULL )
-        {
-            // send to stderr
-            fprintf( stderr, "%s", g_stderr_stream.str().c_str() );
-            fflush( stderr );
-        }
-        else
-        {
-            // emit to callback
-            g_stderr_callback( g_stderr_stream.str().c_str() );
-        }
-
+        // send to stderr
+        fprintf( stderr, "%s", g_stderr_stream.str().c_str() );
+        fflush( stderr );
+        
         // and clear buffer
         g_stderr_stream.str( std::string() );
+    }
+    else
+    {
+        // yes callback.
+        // check if stream contains a newline
+        if( g_stderr_stream.str().find( '\n' ) != std::string::npos )
+        {
+            // if so, emit to callback
+            g_stderr_callback( g_stderr_stream.str().c_str() );
+            
+            // and clear buffer
+            g_stderr_stream.str( std::string() );
+        }
     }
 }
 
