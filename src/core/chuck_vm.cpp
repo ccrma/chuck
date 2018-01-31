@@ -37,6 +37,8 @@
 #include "chuck_io.h"
 #include "chuck_errmsg.h"
 #include "ugen_xxx.h"
+#include "hidio_sdl.h"  // 1.4.0.0
+
 
 #include <algorithm>
 using namespace std;
@@ -335,6 +337,11 @@ t_CKBOOL Chuck_VM::shutdown()
     EM_log( CK_LOG_SYSTEM, "freeing shreduler..." );
     // free the shreduler
     SAFE_DELETE( m_shreduler );
+    
+    // log
+    EM_log( CK_LOG_SYSTEM, "unregistering VM from HID manager..." );
+    // clean up this vm
+    HidInManager::cleanup_buffer( this );
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing msg/reply/event buffers..." );
