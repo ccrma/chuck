@@ -3785,7 +3785,7 @@ struct LiSaMulti_data
         
         if(record) {
             if(looprec) {
-                if(rindex >= loop_end_rec)  rindex = 0;
+                if(rindex >= loop_end_rec)  rindex = loop_start[0];
                 tempsample = coeff * mdata[rindex] + insample;
                 //mdata[rindex] = coeff * mdata[rindex] + insample;
                 //rindex++;
