@@ -84,6 +84,7 @@
 		098060340AA14E8700915136 /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09A40BD60A9A57C6007604EA /* CoreMIDI.framework */; };
 		098060350AA14E8800915136 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97325FDCFA39411CA2CEA /* Foundation.framework */; };
 		098060360AA14E8900915136 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09A40BD70A9A57C6007604EA /* IOKit.framework */; };
+		0982F19A2021871C005B1521 /* chuck_carrier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0982F1992021871C005B1521 /* chuck_carrier.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -300,6 +301,7 @@
 		098061050AA159A300915136 /* type_primitives.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = type_primitives.ck; path = examples/type/type_primitives.ck; sourceTree = SOURCE_ROOT; };
 		09812B980C6E394A00D1D68C /* uana_extract.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = uana_extract.cpp; path = ../core/uana_extract.cpp; sourceTree = SOURCE_ROOT; };
 		09812B990C6E394A00D1D68C /* uana_extract.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = uana_extract.h; path = ../core/uana_extract.h; sourceTree = SOURCE_ROOT; };
+		0982F1992021871C005B1521 /* chuck_carrier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = chuck_carrier.cpp; path = ../core/chuck_carrier.cpp; sourceTree = "<group>"; };
 		098C58470B2A1E9A00931934 /* mouse.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = mouse.ck; path = examples/hid/mouse.ck; sourceTree = SOURCE_ROOT; };
 		09922D49181601F700806471 /* address.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = address.c; path = ../core/lo/address.c; sourceTree = SOURCE_ROOT; };
 		09922D4A181601F700806471 /* blob.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = blob.c; path = ../core/lo/blob.c; sourceTree = SOURCE_ROOT; };
@@ -836,6 +838,7 @@
 				09922D48181601F700806471 /* lo */,
 				04393AC81F733747008E9322 /* chuck.cpp */,
 				04393AC91F733747008E9322 /* chuck.h */,
+				0982F1992021871C005B1521 /* chuck_carrier.cpp */,
 				09A40B060A9A54DA007604EA /* chuck_absyn.cpp */,
 				09A40B070A9A54DA007604EA /* chuck_absyn.h */,
 				09A40B0A0A9A54DA007604EA /* chuck_compile.cpp */,
@@ -1150,6 +1153,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				04393AC61F733300008E9322 /* chuck_console.cpp in Sources */,
+				0982F19A2021871C005B1521 /* chuck_carrier.cpp in Sources */,
 				04393AC51F733300008E9322 /* chuck_audio.cpp in Sources */,
 				0916775E1F7CAFC800248F78 /* chuck_main.cpp in Sources */,
 				0916775F1F7CAFCC00248F78 /* RtAudio.cpp in Sources */,
@@ -1192,7 +1196,7 @@
 				);
 				INSTALL_PATH = "$(HOME)/bin";
 				MACH_O_TYPE = staticlib;
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = chuck;
 			};
@@ -1223,7 +1227,7 @@
 				);
 				INSTALL_PATH = "$(HOME)/bin";
 				MACH_O_TYPE = staticlib;
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = chuck;
 			};
@@ -1251,7 +1255,7 @@
 					.,
 				);
 				INSTALL_PATH = "$(HOME)/bin";
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = chuck;
 			};
@@ -1279,7 +1283,7 @@
 					.,
 				);
 				INSTALL_PATH = "$(HOME)/bin";
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = chuck;
 			};
