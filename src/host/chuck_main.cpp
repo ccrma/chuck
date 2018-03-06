@@ -282,12 +282,13 @@ void global_cleanup()
     // REFACTOR-2017: shut down audio system
     all_stop();
 
-    // delete the chuck
-    SAFE_DELETE( the_chuck );
-
     // request MIDI, etc. files be closed
     // REFACTOR-2017: TODO; RESOLVED: used to be all_detach()
+    // need to call this before deleting the_chuck/the VM
     ChucK::globalCleanup();
+    
+    // delete the chuck
+    SAFE_DELETE( the_chuck );
 
     // wait for the shell, if it is running
     // does the VM reset its priority to normal before exiting?
