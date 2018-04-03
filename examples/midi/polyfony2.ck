@@ -78,24 +78,26 @@ while( true )
     while( min.recv( msg ) )
     {
         // catch only noteon
-        if( msg.data1 != 144 )
-            continue;
-
-        // check velocity
-        if( msg.data3 > 0 )
-        {
-            // store midi note number
-            msg.data2 => on.note;
-            // store velocity
-            msg.data3 => on.velocity;
-            // signal the event
-            on.signal();
-            // yield without advancing time to allow shred to run
-            me.yield();
+        if( (msg.data1 & 0xf0) == 0x90 ){
+            // check velocity
+            if( msg.data3 > 0 )
+            {
+                // store midi note number
+                msg.data2 => on.note;
+                // store velocity
+                msg.data3 => on.velocity;
+                // signal the event
+                on.signal();
+                // yield without advancing time to allow shred to run
+                me.yield();
+            }
+            else
+            {
+                if( us[msg.data2] != null ) us[msg.data2].signal();
+            }
         }
-        else
-        {
-            if( us[msg.data2] != null ) us[msg.data2].signal();
+        else if( (msg.data1 & 0xf0) == 0x80 ){
+            us[msg.data2].signal();
         }
     }
 }
