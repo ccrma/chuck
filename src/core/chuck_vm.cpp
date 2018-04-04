@@ -1924,7 +1924,7 @@ Chuck_UGen * * Chuck_VM::get_ptr_to_external_ugen( std::string name )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::init_external_array( std::string name, Chuck_Type * type, te_ExternalType arr_type )
 {
-    if( m_external_strings.count( name ) == 0 )
+    if( m_external_arrays.count( name ) == 0 )
     {
         // make container
         m_external_arrays[name] = new Chuck_External_Array_Container( arr_type );
@@ -2090,8 +2090,10 @@ void Chuck_VM::cleanup_external_variables()
     for( std::map< std::string, Chuck_External_Array_Container * >::iterator it=
          m_external_arrays.begin(); it!=m_external_arrays.end(); it++ )
     {
-        // TODO: release if I ever add reference
-        //SAFE_RELEASE( it->second->array );
+        // release. array initialization adds a reference,
+        // but the release instruction is prevented from being
+        // used on all external objects (including arrays)
+        SAFE_RELEASE( it->second->array );
         delete (it->second);
     }
     m_external_arrays.clear();
