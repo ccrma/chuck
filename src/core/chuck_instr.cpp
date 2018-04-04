@@ -2340,6 +2340,18 @@ void Chuck_Instr_Reg_Push_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
             push_( reg_sp, val );
         }
             break;
+        case te_externalArraySymbol:
+        {
+            // all array allocations return a Chuck_Object * casted to an int
+            // --> put exactly that on the stack
+            t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+            t_CKUINT val = (t_CKUINT) vm->get_external_array( m_name );
+            
+            // push external map content into object-reg stack
+            push_( reg_sp, val );
+        
+        }
+            break;
     }
     
     return;
@@ -2396,6 +2408,9 @@ void Chuck_Instr_Reg_Push_External_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred 
             break;
         case te_externalUGen:
             addr = (t_CKUINT) vm->get_ptr_to_external_ugen( m_name );
+            break;
+        case te_externalArraySymbol:
+            addr = (t_CKUINT) vm->get_ptr_to_external_array( m_name );
             break;
             
     }
@@ -3625,30 +3640,65 @@ void Chuck_Instr_Alloc_Word_External::execute( Chuck_VM * vm, Chuck_VM_Shred * s
     t_CKUINT addr = 0;
 
     // init in the correct vm map according to the type
-    switch( m_type ) {
-        case te_externalInt:
-            vm->init_external_int( m_name );
-            addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
-            break;
-        case te_externalFloat:
-            vm->init_external_float( m_name );
-            addr = (t_CKUINT) vm->get_ptr_to_external_float( m_name );
-            break;
-        case te_externalString:
-            vm->init_external_string( m_name );
-            addr = (t_CKUINT) vm->get_ptr_to_external_string( m_name );
-            break;
-        case te_externalEvent:
-            // events are already init in emit
-            // but might need to execute ctors (below)
-            addr = (t_CKUINT) vm->get_external_event( m_name );
-            break;
-        case te_externalUGen:
-            // ugens are already init in emit
-            // but might need to execute ctors (below)
-            addr = (t_CKUINT) vm->get_external_ugen( m_name );
-            break;
+    if( m_is_array )
+    {
+        switch( m_type )
+        {
+            case te_externalInt:
+            case te_externalFloat:
+                vm->init_external_array( m_name, m_chuck_type, m_type );
+                addr = (t_CKUINT) vm->get_ptr_to_external_array( m_name );
+                break;
+            case te_externalString:
+                EM_error2( 0, "external string arrays are currently disabled." );
+                goto error;
+                break;
+            case te_externalEvent:
+                EM_error2( 0, "external Event arrays are currently disabled." );
+                goto error;
+                break;
+            case te_externalUGen:
+                EM_error2( 0, "external UGen arrays are currently disabled." );
+                goto error;
+                break;
+            case te_externalArraySymbol:
+                EM_error2( 0, "(internal error) symbol-only external type used in allocation" );
+                goto error;
+        }
+    
     }
+    else
+    {
+        // not array
+        switch( m_type ) {
+            case te_externalInt:
+                vm->init_external_int( m_name );
+                addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
+                break;
+            case te_externalFloat:
+                vm->init_external_float( m_name );
+                addr = (t_CKUINT) vm->get_ptr_to_external_float( m_name );
+                break;
+            case te_externalString:
+                vm->init_external_string( m_name );
+                addr = (t_CKUINT) vm->get_ptr_to_external_string( m_name );
+                break;
+            case te_externalEvent:
+                // events are already init in emit
+                // but might need to execute ctors (below)
+                addr = (t_CKUINT) vm->get_external_event( m_name );
+                break;
+            case te_externalUGen:
+                // ugens are already init in emit
+                // but might need to execute ctors (below)
+                addr = (t_CKUINT) vm->get_external_ugen( m_name );
+                break;
+            case te_externalArraySymbol:
+                EM_error2( 0, "(internal error) symbol-only external type used in allocation" );
+                goto error;
+        }
+    }
+    
     
     // push addr onto operand stack
     push_( reg_sp, addr );
@@ -3663,6 +3713,13 @@ void Chuck_Instr_Alloc_Word_External::execute( Chuck_VM * vm, Chuck_VM_Shred * s
         // tell VM we did it so that it will never be done again for m_name
         vm->external_ctor_was_called( m_name, m_type );
     }
+    
+    return;
+    
+error:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 

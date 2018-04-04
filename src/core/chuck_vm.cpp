@@ -1314,7 +1314,8 @@ struct Chuck_External_Float_Container
 // name: struct Chuck_External_String_Container
 // desc: container for external ints
 //-----------------------------------------------------------------------------
-struct Chuck_External_String_Container {
+struct Chuck_External_String_Container
+{
     Chuck_String * val;
     
     Chuck_External_String_Container() { val = NULL; }
@@ -1344,13 +1345,35 @@ struct Chuck_External_Event_Container
 // name: struct Chuck_External_UGen_Container
 // desc: container for external ugens
 //-----------------------------------------------------------------------------
-struct Chuck_External_UGen_Container {
+struct Chuck_External_UGen_Container
+{
     Chuck_UGen * val;
     Chuck_Type * type;
     t_CKBOOL ctor_needs_to_be_called;
     
     Chuck_External_UGen_Container() { val = NULL; type = NULL;
         ctor_needs_to_be_called = TRUE; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_External_Array_Container
+// desc: container for external arrays
+//-----------------------------------------------------------------------------
+struct Chuck_External_Array_Container
+{
+    Chuck_Object * array;
+    te_ExternalType array_type;
+    t_CKBOOL ctor_needs_to_be_called;
+    
+    Chuck_External_Array_Container( te_ExternalType arr_type )
+    {
+        array = NULL;
+        ctor_needs_to_be_called = FALSE;
+        array_type = arr_type;
+    }
 };
 
 
@@ -1896,6 +1919,56 @@ Chuck_UGen * * Chuck_VM::get_ptr_to_external_ugen( std::string name )
 
 
 //-----------------------------------------------------------------------------
+// name: init_external_array()
+// desc: tell the vm that an external string is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::init_external_array( std::string name, Chuck_Type * type, te_ExternalType arr_type )
+{
+    if( m_external_strings.count( name ) == 0 )
+    {
+        // make container
+        m_external_arrays[name] = new Chuck_External_Array_Container( arr_type );
+        // do not init
+        m_external_arrays[name]->array = NULL;
+        // external variable type
+        m_external_arrays[name]->array_type = arr_type;
+        // note: Chuck_Type * is currently unused, but may be necessary later
+        // TODO: how to init if user sets it before any script makes it?
+        // TODO: how to keep reference to prevent from being deleted if
+        //  a script ends and takes the array with it?
+    }
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_array()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Object * Chuck_VM::get_external_array( std::string name )
+{
+    return m_external_arrays[name]->array;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_ptr_to_external_array()
+// desc: get ptr directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Object * * Chuck_VM::get_ptr_to_external_array( std::string name )
+{
+    return &( m_external_arrays[name]->array );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: should_call_external_ctor()
 // desc: ask the vm if an external needs to be constructed after init
 //-----------------------------------------------------------------------------
@@ -1917,6 +1990,11 @@ t_CKBOOL Chuck_VM::should_call_external_ctor( std::string name,
         case te_externalUGen:
             return m_external_ugens.count( name ) > 0 &&
                 m_external_ugens[name]->ctor_needs_to_be_called;
+            break;
+        case te_externalArraySymbol:
+            // this case is only used for array-as-symbol, not array-as-decl.
+            // if arrays need their ctors called, we need a rearchitecture!
+            return FALSE;
             break;
     }
 }
@@ -1949,6 +2027,9 @@ void Chuck_VM::external_ctor_was_called( std::string name,
             {
                 m_external_ugens[name]->ctor_needs_to_be_called = FALSE;
             }
+            break;
+        case te_externalArraySymbol:
+            // do nothing
             break;
     }
 }
@@ -2004,6 +2085,17 @@ void Chuck_VM::cleanup_external_variables()
         delete (it->second);
     }
     m_external_ugens.clear();
+    
+    // arrays: release arrays, delete containers, and clear map
+    for( std::map< std::string, Chuck_External_Array_Container * >::iterator it=
+         m_external_arrays.begin(); it!=m_external_arrays.end(); it++ )
+    {
+        // TODO: release if I ever add reference
+        //SAFE_RELEASE( it->second->array );
+        delete (it->second);
+    }
+    m_external_arrays.clear();
+    
 }
 
 

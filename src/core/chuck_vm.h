@@ -396,6 +396,7 @@ struct Chuck_External_Float_Container;
 struct Chuck_External_String_Container;
 struct Chuck_External_Event_Container;
 struct Chuck_External_UGen_Container;
+struct Chuck_External_Array_Container;
 
 
 
@@ -563,6 +564,10 @@ public:
     Chuck_UGen * get_external_ugen( std::string name );
     Chuck_UGen * * get_ptr_to_external_ugen( std::string name );
     
+    t_CKBOOL init_external_array( std::string name, Chuck_Type * type, te_ExternalType arr_type );
+    Chuck_Object * get_external_array( std::string name );
+    Chuck_Object * * get_ptr_to_external_array( std::string name );
+    
     t_CKBOOL should_call_external_ctor( std::string name, te_ExternalType type );
     void external_ctor_was_called( std::string name, te_ExternalType type );
     
@@ -642,6 +647,7 @@ private:
     std::map< std::string, Chuck_External_String_Container * > m_external_strings;
     std::map< std::string, Chuck_External_Event_Container * > m_external_events;
     std::map< std::string, Chuck_External_UGen_Container * > m_external_ugens;
+    std::map< std::string, Chuck_External_Array_Container * > m_external_arrays;
     
     XCircleBuffer< Chuck_External_Request > m_external_request_queue;
 };
