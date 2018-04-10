@@ -1283,6 +1283,100 @@ struct Chuck_Get_External_String_Request
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_Int_Array_Request
+// desc: container for messages to set external int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_Int_Array_Request
+{
+    std::string name;
+    std::vector< t_CKINT > arrayValues;
+    // constructor
+    Chuck_Set_External_Int_Array_Request() { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_Int_Array_Request
+// desc: container for messages to get external arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_Int_Array_Request
+{
+    std::string name;
+    void (* callback)(t_CKINT[], t_CKUINT);
+    // constructor
+    Chuck_Get_External_Int_Array_Request() : callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_Int_Array_Value_Request
+// desc: container for messages to set individual elements of int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_Int_Array_Value_Request
+{
+    std::string name;
+    t_CKUINT index;
+    t_CKINT value;
+    // constructor
+    Chuck_Set_External_Int_Array_Value_Request() : index(-1), value(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_Int_Array_Value_Request
+// desc: container for messages to get individual elements of int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_Int_Array_Value_Request
+{
+    std::string name;
+    t_CKUINT index;
+    void (* callback)(t_CKINT);
+    // constructor
+    Chuck_Get_External_Int_Array_Value_Request() : index(-1), callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_Associative_Int_Array_Value_Request
+// desc: container for messages to set elements of associative int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_Associative_Int_Array_Value_Request
+{
+    std::string name;
+    std::string key;
+    t_CKINT value;
+    // constructor
+    Chuck_Set_External_Associative_Int_Array_Value_Request() : value(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_Associative_Int_Array_Value_Request
+// desc: container for messages to get elements of associative int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_Associative_Int_Array_Value_Request
+{
+    std::string name;
+    std::string key;
+    void (* callback)(t_CKINT);
+    // constructor
+    Chuck_Get_External_Associative_Int_Array_Value_Request() : callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_External_Int_Container
 // desc: container for external ints
 //-----------------------------------------------------------------------------
@@ -1919,6 +2013,152 @@ Chuck_UGen * * Chuck_VM::get_ptr_to_external_ugen( std::string name )
 
 
 //-----------------------------------------------------------------------------
+// name: set_external_int_array()
+// desc: tell the vm to set an entire int array
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_external_int_array( std::string name, t_CKINT arrayValues[], t_CKUINT numValues )
+{
+    Chuck_Set_External_Int_Array_Request * message =
+        new Chuck_Set_External_Int_Array_Request;
+    message->name = name;
+    message->arrayValues.resize( numValues );
+    for( int i = 0; i < numValues; i++ )
+    {
+        message->arrayValues[i] = arrayValues[i];
+    }
+    
+    Chuck_External_Request r;
+    r.type = set_external_int_array_request;
+    r.setIntArrayRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_int_array()
+// desc: tell the vm to get an entire int array
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_external_int_array( std::string name, void (* callback)(t_CKINT[], t_CKUINT))
+{
+    Chuck_Get_External_Int_Array_Request * message =
+        new Chuck_Get_External_Int_Array_Request;
+    message->name = name;
+    message->callback = callback;
+    
+    Chuck_External_Request r;
+    r.type = get_external_int_array_request;
+    r.getIntArrayRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_int_array_value()
+// desc: tell the vm to set one value of an int array by index
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_external_int_array_value( std::string name, t_CKUINT index, t_CKINT value )
+{
+    Chuck_Set_External_Int_Array_Value_Request * message =
+        new Chuck_Set_External_Int_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->value = value;
+    
+    Chuck_External_Request r;
+    r.type = set_external_int_array_value_request;
+    r.setIntArrayValueRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_int_array_value()
+// desc: tell the vm to get one value of an int array by index
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_external_int_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKINT) )
+{
+    Chuck_Get_External_Int_Array_Value_Request * message =
+        new Chuck_Get_External_Int_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->callback = callback;
+    
+    Chuck_External_Request r;
+    r.type = get_external_int_array_value_request;
+    r.getIntArrayValueRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_associative_int_array_value()
+// desc: tell the vm to set one value of an associative array by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_external_associative_int_array_value( std::string name, std::string key, t_CKINT value )
+{
+    Chuck_Set_External_Associative_Int_Array_Value_Request * message =
+        new Chuck_Set_External_Associative_Int_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->value = value;
+    
+    Chuck_External_Request r;
+    r.type = set_external_associative_int_array_value_request;
+    r.setAssociativeIntArrayValueRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_associative_int_array_value()
+// desc: tell the vm to get one value of an associative array by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_external_associative_int_array_value( std::string name, std::string key, void (* callback)(t_CKINT) )
+{
+    Chuck_Get_External_Associative_Int_Array_Value_Request * message =
+        new Chuck_Get_External_Associative_Int_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->callback = callback;
+    
+    Chuck_External_Request r;
+    r.type = get_external_associative_int_array_value_request;
+    r.getAssociativeIntArrayValueRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: init_external_array()
 // desc: tell the vm that an external string is now available
 //-----------------------------------------------------------------------------
@@ -2235,6 +2475,162 @@ void Chuck_VM::handle_external_queue_messages()
                 }
                 // clean up request storage
                 delete message.listenForEventRequest;
+                break;
+            case set_external_int_array_request:
+                {
+                    // replace an entire array, if it exists
+                    Chuck_Set_External_Int_Array_Request * request =
+                        message.setIntArrayRequest;
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet? is it an int array?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalInt )
+                        {
+                            // it exists! get existing array, new size
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            t_CKUINT newSize = request->arrayValues.size();
+                            
+                            // resize and copy in
+                            intArray->set_size( newSize );
+                            for( int i = 0; i < newSize; i++ )
+                            {
+                                intArray->set( i, request->arrayValues[i] );
+                            }
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                delete message.setIntArrayRequest;
+                break;
+            case get_external_int_array_request:
+                {
+                    // fetch an entire array, if it exists
+                    Chuck_Get_External_Int_Array_Request * request =
+                        message.getIntArrayRequest;
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalInt &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            // TODO: why is m_vector a vector of unsigned ints...??
+                            request->callback(
+                                (t_CKINT *) &(intArray->m_vector[0]),
+                                intArray->size()
+                            );
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                delete message.getIntArrayRequest;
+                break;
+            case set_external_int_array_value_request:
+                {
+                    // set a single value, if array exists and index in range
+                    Chuck_Set_External_Int_Array_Value_Request * request =
+                        message.setIntArrayValueRequest;
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet? is it an int array?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalInt )
+                        {
+                            // it exists! get existing array
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            // set! (if index within range)
+                            if( intArray->size() > request->index )
+                            {
+                                intArray->set( request->index, request->value );
+                            }
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                delete message.setIntArrayValueRequest;
+                break;
+            case get_external_int_array_value_request:
+                {
+                    // get a single value, if array exists and index in range
+                    Chuck_Get_External_Int_Array_Value_Request * request =
+                        message.getIntArrayValueRequest;
+                    // fetch an entire array, if it exists
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalInt &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            // TODO why is it unsigned int storage?
+                            t_CKUINT result = 0;
+                            intArray->get( request->index, &result );
+                            request->callback( result );
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                delete message.getIntArrayValueRequest;
+                break;
+            case set_external_associative_int_array_value_request:
+                {
+                    // set a single value by key, if array exists
+                    Chuck_Set_External_Associative_Int_Array_Value_Request * request =
+                        message.setAssociativeIntArrayValueRequest;
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet? is it an int array?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalInt )
+                        {
+                            // it exists! get existing array
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            // set!
+                            intArray->set( request->key, request->value );
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                delete message.setAssociativeIntArrayValueRequest;
+                break;
+            case get_external_associative_int_array_value_request:
+                {
+                    // get a single value by key, if array exists and key in map
+                    Chuck_Get_External_Associative_Int_Array_Value_Request * request =
+                        message.getAssociativeIntArrayValueRequest;
+                    // fetch an entire array, if it exists
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalInt &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            // TODO why is it unsigned int storage?
+                            t_CKUINT result = 0;
+                            intArray->get( request->key, &result );
+                            request->callback( result );
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                delete message.getAssociativeIntArrayValueRequest;
                 break;
             }
         }
