@@ -142,6 +142,13 @@ public:
     t_CKBOOL listenForExternalEvent( const char * name, void (* callback)(void), t_CKBOOL listen_forever );
     t_CKBOOL stopListeningForExternalEvent( const char * name, void (* callback)(void) );
     t_CKBOOL getExternalUGenSamples( const char * name, SAMPLE * buffer, int numSamples );
+    // arrays
+    t_CKBOOL setExternalIntArray( const char * name, t_CKINT arrayValues[], t_CKUINT numValues );
+    t_CKBOOL getExternalIntArray( const char * name, void (* callback)(t_CKINT[], t_CKUINT));
+    t_CKBOOL setExternalIntArrayValue( const char * name, t_CKUINT index, t_CKINT value );
+    t_CKBOOL getExternalIntArrayValue( const char * name, t_CKUINT index, void (* callback)(t_CKINT) );
+    t_CKBOOL setExternalAssociativeIntArrayValue( const char * name, char * key, t_CKINT value );
+    t_CKBOOL getExternalAssociativeIntArrayValue( const char * name, char * key, void (* callback)(t_CKINT) );
     
 public:
     // external callback functions

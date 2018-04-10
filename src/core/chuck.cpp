@@ -1045,6 +1045,91 @@ t_CKBOOL ChucK::getExternalUGenSamples( const char * name,
 
 
 
+//-----------------------------------------------------------------------------
+// name: setExternalIntArray()
+// desc: send a message to set an external int array
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::setExternalIntArray( const char * name,
+    t_CKINT arrayValues[], t_CKUINT numValues )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->set_external_int_array( std::string( name ),
+        arrayValues, numValues );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getExternalIntArray()
+// desc: send a message to get an external int array with a callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getExternalIntArray( const char * name,
+    void (* callback)(t_CKINT[], t_CKUINT))
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->get_external_int_array(
+        std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setExternalIntArrayValue()
+// desc: send a message to set an external int array value by index
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::setExternalIntArrayValue( const char * name, t_CKUINT index, t_CKINT value )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->set_external_int_array_value(
+        std::string( name ), index, value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getExternalIntArrayValue()
+// desc: send a message to get an external int array value by index
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getExternalIntArrayValue( const char * name, t_CKUINT index, void (* callback)(t_CKINT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->get_external_int_array_value(
+        std::string( name ), index, callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setExternalAssociativeIntArrayValue()
+// desc: send a message to set an external int array value by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::setExternalAssociativeIntArrayValue( const char * name, char * key, t_CKINT value )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->set_external_associative_int_array_value(
+        std::string( name ), std::string( key ), value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getExternalAssociativeIntArrayValue()
+// desc: send a message to get an external int array value by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getExternalAssociativeIntArrayValue( const char * name, char * key, void (* callback)(t_CKINT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->get_external_associative_int_array_value(
+        std::string( name ), std::string( key ), callback );
+}
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: setChoutCallback()
