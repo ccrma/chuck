@@ -397,6 +397,12 @@ struct Chuck_Set_External_Int_Array_Value_Request;
 struct Chuck_Get_External_Int_Array_Value_Request;
 struct Chuck_Set_External_Associative_Int_Array_Value_Request;
 struct Chuck_Get_External_Associative_Int_Array_Value_Request;
+struct Chuck_Set_External_Float_Array_Request;
+struct Chuck_Get_External_Float_Array_Request;
+struct Chuck_Set_External_Float_Array_Value_Request;
+struct Chuck_Get_External_Float_Array_Value_Request;
+struct Chuck_Set_External_Associative_Float_Array_Value_Request;
+struct Chuck_Get_External_Associative_Float_Array_Value_Request;
 
 // Forward references for external storage
 struct Chuck_External_Int_Container;
@@ -432,6 +438,13 @@ enum Chuck_External_Request_Type
     get_external_int_array_value_request,
     set_external_associative_int_array_value_request,
     get_external_associative_int_array_value_request,
+    // float arrays
+    set_external_float_array_request,
+    get_external_float_array_request,
+    set_external_float_array_value_request,
+    get_external_float_array_value_request,
+    set_external_associative_float_array_value_request,
+    get_external_associative_float_array_value_request,
     // shreds
     spork_shred_request
 };
@@ -464,6 +477,13 @@ struct Chuck_External_Request
         Chuck_Get_External_Int_Array_Value_Request * getIntArrayValueRequest;
         Chuck_Set_External_Associative_Int_Array_Value_Request * setAssociativeIntArrayValueRequest;
         Chuck_Get_External_Associative_Int_Array_Value_Request * getAssociativeIntArrayValueRequest;
+        // float arrays
+        Chuck_Set_External_Float_Array_Request * setFloatArrayRequest;
+        Chuck_Get_External_Float_Array_Request * getFloatArrayRequest;
+        Chuck_Set_External_Float_Array_Value_Request * setFloatArrayValueRequest;
+        Chuck_Get_External_Float_Array_Value_Request * getFloatArrayValueRequest;
+        Chuck_Set_External_Associative_Float_Array_Value_Request * setAssociativeFloatArrayValueRequest;
+        Chuck_Get_External_Associative_Float_Array_Value_Request * getAssociativeFloatArrayValueRequest;
         // shreds
         Chuck_VM_Shred * shred;
     };
@@ -572,6 +592,13 @@ public:
     t_CKBOOL get_external_int_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKINT) );
     t_CKBOOL set_external_associative_int_array_value( std::string name, std::string key, t_CKINT value );
     t_CKBOOL get_external_associative_int_array_value( std::string name, std::string key, void (* callback)(t_CKINT) );
+    
+    t_CKBOOL set_external_float_array( std::string name, t_CKFLOAT arrayValues[], t_CKUINT numValues );
+    t_CKBOOL get_external_float_array( std::string name, void (* callback)(t_CKFLOAT[], t_CKUINT));
+    t_CKBOOL set_external_float_array_value( std::string name, t_CKUINT index, t_CKFLOAT value );
+    t_CKBOOL get_external_float_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKFLOAT) );
+    t_CKBOOL set_external_associative_float_array_value( std::string name, std::string key, t_CKFLOAT value );
+    t_CKBOOL get_external_associative_float_array_value( std::string name, std::string key, void (* callback)(t_CKFLOAT) );
     
 public:
     // REFACTOR-2017: externally accessible variables.
