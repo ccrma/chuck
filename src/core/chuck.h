@@ -150,6 +150,13 @@ public:
     t_CKBOOL setExternalAssociativeIntArrayValue( const char * name, char * key, t_CKINT value );
     t_CKBOOL getExternalAssociativeIntArrayValue( const char * name, char * key, void (* callback)(t_CKINT) );
     
+    t_CKBOOL setExternalFloatArray( const char * name, t_CKFLOAT arrayValues[], t_CKUINT numValues );
+    t_CKBOOL getExternalFloatArray( const char * name, void (* callback)(t_CKFLOAT[], t_CKUINT));
+    t_CKBOOL setExternalFloatArrayValue( const char * name, t_CKUINT index, t_CKFLOAT value );
+    t_CKBOOL getExternalFloatArrayValue( const char * name, t_CKUINT index, void (* callback)(t_CKFLOAT) );
+    t_CKBOOL setExternalAssociativeFloatArrayValue( const char * name, char * key, t_CKFLOAT value );
+    t_CKBOOL getExternalAssociativeFloatArrayValue( const char * name, char * key, void (* callback)(t_CKFLOAT) );
+    
 public:
     // external callback functions
     t_CKBOOL setChoutCallback( void (* callback)(const char *) );
