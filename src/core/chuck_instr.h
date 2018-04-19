@@ -2677,7 +2677,7 @@ public:
     // (added 1.3.0.0 -- is_object)
     Chuck_Instr_Alloc_Word_External()
     { this->set( 0 ); m_stack_offset = 0; m_chuck_type = NULL;
-      m_should_execute_ctors = FALSE; }
+      m_should_execute_ctors = FALSE; m_is_array = FALSE; }
     
     virtual const char * params() const
     { static char buffer[256];
@@ -2687,6 +2687,7 @@ public:
     // external name and type
     std::string m_name;
     te_ExternalType m_type;
+    t_CKBOOL m_is_array;
     
     // for objects
     t_CKBOOL m_should_execute_ctors;

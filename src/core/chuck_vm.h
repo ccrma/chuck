@@ -382,7 +382,7 @@ public:
 
 
 
-// Forward references for external messages, storage
+// Forward references for external messages
 struct Chuck_Set_External_Int_Request;
 struct Chuck_Get_External_Int_Request;
 struct Chuck_Set_External_Float_Request;
@@ -391,11 +391,26 @@ struct Chuck_Signal_External_Event_Request;
 struct Chuck_Listen_For_External_Event_Request;
 struct Chuck_Set_External_String_Request;
 struct Chuck_Get_External_String_Request;
+struct Chuck_Set_External_Int_Array_Request;
+struct Chuck_Get_External_Int_Array_Request;
+struct Chuck_Set_External_Int_Array_Value_Request;
+struct Chuck_Get_External_Int_Array_Value_Request;
+struct Chuck_Set_External_Associative_Int_Array_Value_Request;
+struct Chuck_Get_External_Associative_Int_Array_Value_Request;
+struct Chuck_Set_External_Float_Array_Request;
+struct Chuck_Get_External_Float_Array_Request;
+struct Chuck_Set_External_Float_Array_Value_Request;
+struct Chuck_Get_External_Float_Array_Value_Request;
+struct Chuck_Set_External_Associative_Float_Array_Value_Request;
+struct Chuck_Get_External_Associative_Float_Array_Value_Request;
+
+// Forward references for external storage
 struct Chuck_External_Int_Container;
 struct Chuck_External_Float_Container;
 struct Chuck_External_String_Container;
 struct Chuck_External_Event_Container;
 struct Chuck_External_UGen_Container;
+struct Chuck_External_Array_Container;
 
 
 
@@ -406,14 +421,31 @@ struct Chuck_External_UGen_Container;
 //-----------------------------------------------------------------------------
 enum Chuck_External_Request_Type
 {
+    // primitives
     set_external_int_request,
     get_external_int_request,
     set_external_float_request,
     get_external_float_request,
     set_external_string_request,
     get_external_string_request,
+    // events
     signal_external_event_request,
     listen_for_external_event_request,
+    // int arrays
+    set_external_int_array_request,
+    get_external_int_array_request,
+    set_external_int_array_value_request,
+    get_external_int_array_value_request,
+    set_external_associative_int_array_value_request,
+    get_external_associative_int_array_value_request,
+    // float arrays
+    set_external_float_array_request,
+    get_external_float_array_request,
+    set_external_float_array_value_request,
+    get_external_float_array_value_request,
+    set_external_associative_float_array_value_request,
+    get_external_associative_float_array_value_request,
+    // shreds
     spork_shred_request
 };
 
@@ -421,21 +453,38 @@ enum Chuck_External_Request_Type
 
 
 //-----------------------------------------------------------------------------
-// name: strct External_Request
+// name: struct External_Request
 // desc: an external request (REFACTOR-2017)
 //-----------------------------------------------------------------------------
 struct Chuck_External_Request
 {
     Chuck_External_Request_Type type;
     union {
+        // primitives
         Chuck_Set_External_Int_Request * setIntRequest;
         Chuck_Get_External_Int_Request * getIntRequest;
         Chuck_Set_External_Float_Request * setFloatRequest;
         Chuck_Get_External_Float_Request * getFloatRequest;
         Chuck_Set_External_String_Request * setStringRequest;
         Chuck_Get_External_String_Request * getStringRequest;
+        // events
         Chuck_Signal_External_Event_Request * signalEventRequest;
         Chuck_Listen_For_External_Event_Request * listenForEventRequest;
+        // int arrays
+        Chuck_Set_External_Int_Array_Request * setIntArrayRequest;
+        Chuck_Get_External_Int_Array_Request * getIntArrayRequest;
+        Chuck_Set_External_Int_Array_Value_Request * setIntArrayValueRequest;
+        Chuck_Get_External_Int_Array_Value_Request * getIntArrayValueRequest;
+        Chuck_Set_External_Associative_Int_Array_Value_Request * setAssociativeIntArrayValueRequest;
+        Chuck_Get_External_Associative_Int_Array_Value_Request * getAssociativeIntArrayValueRequest;
+        // float arrays
+        Chuck_Set_External_Float_Array_Request * setFloatArrayRequest;
+        Chuck_Get_External_Float_Array_Request * getFloatArrayRequest;
+        Chuck_Set_External_Float_Array_Value_Request * setFloatArrayValueRequest;
+        Chuck_Get_External_Float_Array_Value_Request * getFloatArrayValueRequest;
+        Chuck_Set_External_Associative_Float_Array_Value_Request * setAssociativeFloatArrayValueRequest;
+        Chuck_Get_External_Associative_Float_Array_Value_Request * getAssociativeFloatArrayValueRequest;
+        // shreds
         Chuck_VM_Shred * shred;
     };
 
@@ -537,6 +586,20 @@ public:
     
     t_CKBOOL get_external_ugen_samples( std::string name, SAMPLE * buffer, int numFrames );
     
+    t_CKBOOL set_external_int_array( std::string name, t_CKINT arrayValues[], t_CKUINT numValues );
+    t_CKBOOL get_external_int_array( std::string name, void (* callback)(t_CKINT[], t_CKUINT));
+    t_CKBOOL set_external_int_array_value( std::string name, t_CKUINT index, t_CKINT value );
+    t_CKBOOL get_external_int_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKINT) );
+    t_CKBOOL set_external_associative_int_array_value( std::string name, std::string key, t_CKINT value );
+    t_CKBOOL get_external_associative_int_array_value( std::string name, std::string key, void (* callback)(t_CKINT) );
+    
+    t_CKBOOL set_external_float_array( std::string name, t_CKFLOAT arrayValues[], t_CKUINT numValues );
+    t_CKBOOL get_external_float_array( std::string name, void (* callback)(t_CKFLOAT[], t_CKUINT));
+    t_CKBOOL set_external_float_array_value( std::string name, t_CKUINT index, t_CKFLOAT value );
+    t_CKBOOL get_external_float_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKFLOAT) );
+    t_CKBOOL set_external_associative_float_array_value( std::string name, std::string key, t_CKFLOAT value );
+    t_CKBOOL get_external_associative_float_array_value( std::string name, std::string key, void (* callback)(t_CKFLOAT) );
+    
 public:
     // REFACTOR-2017: externally accessible variables.
     // these internal functions are to be used only by other
@@ -562,6 +625,10 @@ public:
     t_CKBOOL is_external_ugen_valid( std::string name );
     Chuck_UGen * get_external_ugen( std::string name );
     Chuck_UGen * * get_ptr_to_external_ugen( std::string name );
+    
+    t_CKBOOL init_external_array( std::string name, Chuck_Type * type, te_ExternalType arr_type );
+    Chuck_Object * get_external_array( std::string name );
+    Chuck_Object * * get_ptr_to_external_array( std::string name );
     
     t_CKBOOL should_call_external_ctor( std::string name, te_ExternalType type );
     void external_ctor_was_called( std::string name, te_ExternalType type );
@@ -642,6 +709,7 @@ private:
     std::map< std::string, Chuck_External_String_Container * > m_external_strings;
     std::map< std::string, Chuck_External_Event_Container * > m_external_events;
     std::map< std::string, Chuck_External_UGen_Container * > m_external_ugens;
+    std::map< std::string, Chuck_External_Array_Container * > m_external_arrays;
     
     XCircleBuffer< Chuck_External_Request > m_external_request_queue;
 };

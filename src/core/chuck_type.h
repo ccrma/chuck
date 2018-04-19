@@ -65,7 +65,9 @@ typedef enum {
 //-----------------------------------------------------------------------------
 typedef enum {
     te_externalInt, te_externalFloat, te_externalString, te_externalEvent,
-    te_externalUGen
+    te_externalUGen,
+    // symbol: not used for declarations, only for later lookups :/
+    te_externalArraySymbol
 } te_ExternalType;
 
 
