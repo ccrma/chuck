@@ -1283,6 +1283,194 @@ struct Chuck_Get_External_String_Request
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_Int_Array_Request
+// desc: container for messages to set external int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_Int_Array_Request
+{
+    std::string name;
+    std::vector< t_CKINT > arrayValues;
+    // constructor
+    Chuck_Set_External_Int_Array_Request() { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_Int_Array_Request
+// desc: container for messages to get external int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_Int_Array_Request
+{
+    std::string name;
+    void (* callback)(t_CKINT[], t_CKUINT);
+    // constructor
+    Chuck_Get_External_Int_Array_Request() : callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_Int_Array_Value_Request
+// desc: container for messages to set individual elements of int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_Int_Array_Value_Request
+{
+    std::string name;
+    t_CKUINT index;
+    t_CKINT value;
+    // constructor
+    Chuck_Set_External_Int_Array_Value_Request() : index(-1), value(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_Int_Array_Value_Request
+// desc: container for messages to get individual elements of int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_Int_Array_Value_Request
+{
+    std::string name;
+    t_CKUINT index;
+    void (* callback)(t_CKINT);
+    // constructor
+    Chuck_Get_External_Int_Array_Value_Request() : index(-1), callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_Associative_Int_Array_Value_Request
+// desc: container for messages to set elements of associative int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_Associative_Int_Array_Value_Request
+{
+    std::string name;
+    std::string key;
+    t_CKINT value;
+    // constructor
+    Chuck_Set_External_Associative_Int_Array_Value_Request() : value(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_Associative_Int_Array_Value_Request
+// desc: container for messages to get elements of associative int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_Associative_Int_Array_Value_Request
+{
+    std::string name;
+    std::string key;
+    void (* callback)(t_CKINT);
+    // constructor
+    Chuck_Get_External_Associative_Int_Array_Value_Request() : callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_Float_Array_Request
+// desc: container for messages to set external float arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_Float_Array_Request
+{
+    std::string name;
+    std::vector< t_CKFLOAT > arrayValues;
+    // constructor
+    Chuck_Set_External_Float_Array_Request() { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_Float_Array_Request
+// desc: container for messages to get external float arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_Float_Array_Request
+{
+    std::string name;
+    void (* callback)(t_CKFLOAT[], t_CKUINT);
+    // constructor
+    Chuck_Get_External_Float_Array_Request() : callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_Float_Array_Value_Request
+// desc: container for messages to set individual elements of float arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_Float_Array_Value_Request
+{
+    std::string name;
+    t_CKUINT index;
+    t_CKFLOAT value;
+    // constructor
+    Chuck_Set_External_Float_Array_Value_Request() : index(-1), value(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_Float_Array_Value_Request
+// desc: container for messages to get individual elements of float arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_Float_Array_Value_Request
+{
+    std::string name;
+    t_CKUINT index;
+    void (* callback)(t_CKFLOAT);
+    // constructor
+    Chuck_Get_External_Float_Array_Value_Request() : index(-1), callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_External_Associative_Float_Array_Value_Request
+// desc: container for messages to set elements of associative float arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_External_Associative_Float_Array_Value_Request
+{
+    std::string name;
+    std::string key;
+    t_CKFLOAT value;
+    // constructor
+    Chuck_Set_External_Associative_Float_Array_Value_Request() : value(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_External_Associative_Float_Array_Value_Request
+// desc: container for messages to get elements of associative float arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_External_Associative_Float_Array_Value_Request
+{
+    std::string name;
+    std::string key;
+    void (* callback)(t_CKFLOAT);
+    // constructor
+    Chuck_Get_External_Associative_Float_Array_Value_Request() : callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_External_Int_Container
 // desc: container for external ints
 //-----------------------------------------------------------------------------
@@ -1314,7 +1502,8 @@ struct Chuck_External_Float_Container
 // name: struct Chuck_External_String_Container
 // desc: container for external ints
 //-----------------------------------------------------------------------------
-struct Chuck_External_String_Container {
+struct Chuck_External_String_Container
+{
     Chuck_String * val;
     
     Chuck_External_String_Container() { val = NULL; }
@@ -1344,13 +1533,35 @@ struct Chuck_External_Event_Container
 // name: struct Chuck_External_UGen_Container
 // desc: container for external ugens
 //-----------------------------------------------------------------------------
-struct Chuck_External_UGen_Container {
+struct Chuck_External_UGen_Container
+{
     Chuck_UGen * val;
     Chuck_Type * type;
     t_CKBOOL ctor_needs_to_be_called;
     
     Chuck_External_UGen_Container() { val = NULL; type = NULL;
         ctor_needs_to_be_called = TRUE; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_External_Array_Container
+// desc: container for external arrays
+//-----------------------------------------------------------------------------
+struct Chuck_External_Array_Container
+{
+    Chuck_Object * array;
+    te_ExternalType array_type;
+    t_CKBOOL ctor_needs_to_be_called;
+    
+    Chuck_External_Array_Container( te_ExternalType arr_type )
+    {
+        array = NULL;
+        ctor_needs_to_be_called = FALSE;
+        array_type = arr_type;
+    }
 };
 
 
@@ -1896,6 +2107,348 @@ Chuck_UGen * * Chuck_VM::get_ptr_to_external_ugen( std::string name )
 
 
 //-----------------------------------------------------------------------------
+// name: set_external_int_array()
+// desc: tell the vm to set an entire int array
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_external_int_array( std::string name, t_CKINT arrayValues[], t_CKUINT numValues )
+{
+    Chuck_Set_External_Int_Array_Request * message =
+        new Chuck_Set_External_Int_Array_Request;
+    message->name = name;
+    message->arrayValues.resize( numValues );
+    for( int i = 0; i < numValues; i++ )
+    {
+        message->arrayValues[i] = arrayValues[i];
+    }
+    
+    Chuck_External_Request r;
+    r.type = set_external_int_array_request;
+    r.setIntArrayRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_int_array()
+// desc: tell the vm to get an entire int array
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_external_int_array( std::string name, void (* callback)(t_CKINT[], t_CKUINT))
+{
+    Chuck_Get_External_Int_Array_Request * message =
+        new Chuck_Get_External_Int_Array_Request;
+    message->name = name;
+    message->callback = callback;
+    
+    Chuck_External_Request r;
+    r.type = get_external_int_array_request;
+    r.getIntArrayRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_int_array_value()
+// desc: tell the vm to set one value of an int array by index
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_external_int_array_value( std::string name, t_CKUINT index, t_CKINT value )
+{
+    Chuck_Set_External_Int_Array_Value_Request * message =
+        new Chuck_Set_External_Int_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->value = value;
+    
+    Chuck_External_Request r;
+    r.type = set_external_int_array_value_request;
+    r.setIntArrayValueRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_int_array_value()
+// desc: tell the vm to get one value of an int array by index
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_external_int_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKINT) )
+{
+    Chuck_Get_External_Int_Array_Value_Request * message =
+        new Chuck_Get_External_Int_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->callback = callback;
+    
+    Chuck_External_Request r;
+    r.type = get_external_int_array_value_request;
+    r.getIntArrayValueRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_associative_int_array_value()
+// desc: tell the vm to set one value of an associative array by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_external_associative_int_array_value( std::string name, std::string key, t_CKINT value )
+{
+    Chuck_Set_External_Associative_Int_Array_Value_Request * message =
+        new Chuck_Set_External_Associative_Int_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->value = value;
+    
+    Chuck_External_Request r;
+    r.type = set_external_associative_int_array_value_request;
+    r.setAssociativeIntArrayValueRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_associative_int_array_value()
+// desc: tell the vm to get one value of an associative array by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_external_associative_int_array_value( std::string name, std::string key, void (* callback)(t_CKINT) )
+{
+    Chuck_Get_External_Associative_Int_Array_Value_Request * message =
+        new Chuck_Get_External_Associative_Int_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->callback = callback;
+    
+    Chuck_External_Request r;
+    r.type = get_external_associative_int_array_value_request;
+    r.getAssociativeIntArrayValueRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_float_array()
+// desc: tell the vm to set an entire float array
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_external_float_array( std::string name, t_CKFLOAT arrayValues[], t_CKUINT numValues )
+{
+    Chuck_Set_External_Float_Array_Request * message =
+        new Chuck_Set_External_Float_Array_Request;
+    message->name = name;
+    message->arrayValues.resize( numValues );
+    for( int i = 0; i < numValues; i++ )
+    {
+        message->arrayValues[i] = arrayValues[i];
+    }
+    
+    Chuck_External_Request r;
+    r.type = set_external_float_array_request;
+    r.setFloatArrayRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_float_array()
+// desc: tell the vm to get an entire float array
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_external_float_array( std::string name, void (* callback)(t_CKFLOAT[], t_CKUINT))
+{
+    Chuck_Get_External_Float_Array_Request * message =
+        new Chuck_Get_External_Float_Array_Request;
+    message->name = name;
+    message->callback = callback;
+    
+    Chuck_External_Request r;
+    r.type = get_external_float_array_request;
+    r.getFloatArrayRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_float_array_value()
+// desc: tell the vm to set one value of an float array by index
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_external_float_array_value( std::string name, t_CKUINT index, t_CKFLOAT value )
+{
+    Chuck_Set_External_Float_Array_Value_Request * message =
+        new Chuck_Set_External_Float_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->value = value;
+    
+    Chuck_External_Request r;
+    r.type = set_external_float_array_value_request;
+    r.setFloatArrayValueRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_float_array_value()
+// desc: tell the vm to get one value of an float array by index
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_external_float_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKFLOAT) )
+{
+    Chuck_Get_External_Float_Array_Value_Request * message =
+        new Chuck_Get_External_Float_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->callback = callback;
+    
+    Chuck_External_Request r;
+    r.type = get_external_float_array_value_request;
+    r.getFloatArrayValueRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_external_associative_float_array_value()
+// desc: tell the vm to set one value of an associative array by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::set_external_associative_float_array_value( std::string name, std::string key, t_CKFLOAT value )
+{
+    Chuck_Set_External_Associative_Float_Array_Value_Request * message =
+        new Chuck_Set_External_Associative_Float_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->value = value;
+    
+    Chuck_External_Request r;
+    r.type = set_external_associative_float_array_value_request;
+    r.setAssociativeFloatArrayValueRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_associative_float_array_value()
+// desc: tell the vm to get one value of an associative array by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_external_associative_float_array_value( std::string name, std::string key, void (* callback)(t_CKFLOAT) )
+{
+    Chuck_Get_External_Associative_Float_Array_Value_Request * message =
+        new Chuck_Get_External_Associative_Float_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->callback = callback;
+    
+    Chuck_External_Request r;
+    r.type = get_external_associative_float_array_value_request;
+    r.getAssociativeFloatArrayValueRequest = message;
+
+    m_external_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_external_array()
+// desc: tell the vm that an external string is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::init_external_array( std::string name, Chuck_Type * type, te_ExternalType arr_type )
+{
+    if( m_external_arrays.count( name ) == 0 )
+    {
+        // make container
+        m_external_arrays[name] = new Chuck_External_Array_Container( arr_type );
+        // do not init
+        m_external_arrays[name]->array = NULL;
+        // external variable type
+        m_external_arrays[name]->array_type = arr_type;
+        // note: Chuck_Type * is currently unused, but may be necessary later
+        // TODO: how to init if user sets it before any script makes it?
+        // TODO: how to keep reference to prevent from being deleted if
+        //  a script ends and takes the array with it?
+    }
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_external_array()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Object * Chuck_VM::get_external_array( std::string name )
+{
+    return m_external_arrays[name]->array;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_ptr_to_external_array()
+// desc: get ptr directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Object * * Chuck_VM::get_ptr_to_external_array( std::string name )
+{
+    return &( m_external_arrays[name]->array );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: should_call_external_ctor()
 // desc: ask the vm if an external needs to be constructed after init
 //-----------------------------------------------------------------------------
@@ -1917,6 +2470,11 @@ t_CKBOOL Chuck_VM::should_call_external_ctor( std::string name,
         case te_externalUGen:
             return m_external_ugens.count( name ) > 0 &&
                 m_external_ugens[name]->ctor_needs_to_be_called;
+            break;
+        case te_externalArraySymbol:
+            // this case is only used for array-as-symbol, not array-as-decl.
+            // if arrays need their ctors called, we need a rearchitecture!
+            return FALSE;
             break;
     }
 }
@@ -1949,6 +2507,9 @@ void Chuck_VM::external_ctor_was_called( std::string name,
             {
                 m_external_ugens[name]->ctor_needs_to_be_called = FALSE;
             }
+            break;
+        case te_externalArraySymbol:
+            // do nothing
             break;
     }
 }
@@ -2004,6 +2565,19 @@ void Chuck_VM::cleanup_external_variables()
         delete (it->second);
     }
     m_external_ugens.clear();
+    
+    // arrays: release arrays, delete containers, and clear map
+    for( std::map< std::string, Chuck_External_Array_Container * >::iterator it=
+         m_external_arrays.begin(); it!=m_external_arrays.end(); it++ )
+    {
+        // release. array initialization adds a reference,
+        // but the release instruction is prevented from being
+        // used on all external objects (including arrays)
+        SAFE_RELEASE( it->second->array );
+        delete (it->second);
+    }
+    m_external_arrays.clear();
+    
 }
 
 
@@ -2141,6 +2715,315 @@ void Chuck_VM::handle_external_queue_messages()
                 }
                 // clean up request storage
                 delete message.listenForEventRequest;
+                break;
+            case set_external_int_array_request:
+                {
+                    // replace an entire array, if it exists
+                    Chuck_Set_External_Int_Array_Request * request =
+                        message.setIntArrayRequest;
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet? is it an int array?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalInt )
+                        {
+                            // it exists! get existing array, new size
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            t_CKUINT newSize = request->arrayValues.size();
+                            
+                            // resize and copy in
+                            intArray->set_size( newSize );
+                            for( int i = 0; i < newSize; i++ )
+                            {
+                                intArray->set( i, request->arrayValues[i] );
+                            }
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                delete message.setIntArrayRequest;
+                break;
+            case get_external_int_array_request:
+                {
+                    // fetch an entire array, if it exists
+                    Chuck_Get_External_Int_Array_Request * request =
+                        message.getIntArrayRequest;
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalInt &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            // TODO: why is m_vector a vector of unsigned ints...??
+                            request->callback(
+                                (t_CKINT *) &(intArray->m_vector[0]),
+                                intArray->size()
+                            );
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                delete message.getIntArrayRequest;
+                break;
+            case set_external_int_array_value_request:
+                {
+                    // set a single value, if array exists and index in range
+                    Chuck_Set_External_Int_Array_Value_Request * request =
+                        message.setIntArrayValueRequest;
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet? is it an int array?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalInt )
+                        {
+                            // it exists! get existing array
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            // set! (if index within range)
+                            if( intArray->size() > request->index )
+                            {
+                                intArray->set( request->index, request->value );
+                            }
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                delete message.setIntArrayValueRequest;
+                break;
+            case get_external_int_array_value_request:
+                {
+                    // get a single value, if array exists and index in range
+                    Chuck_Get_External_Int_Array_Value_Request * request =
+                        message.getIntArrayValueRequest;
+                    // fetch an entire array, if it exists
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalInt &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            // TODO why is it unsigned int storage?
+                            t_CKUINT result = 0;
+                            intArray->get( request->index, &result );
+                            request->callback( result );
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                delete message.getIntArrayValueRequest;
+                break;
+            case set_external_associative_int_array_value_request:
+                {
+                    // set a single value by key, if array exists
+                    Chuck_Set_External_Associative_Int_Array_Value_Request * request =
+                        message.setAssociativeIntArrayValueRequest;
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet? is it an int array?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalInt )
+                        {
+                            // it exists! get existing array
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            // set!
+                            intArray->set( request->key, request->value );
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                delete message.setAssociativeIntArrayValueRequest;
+                break;
+            case get_external_associative_int_array_value_request:
+                {
+                    // get a single value by key, if array exists and key in map
+                    Chuck_Get_External_Associative_Int_Array_Value_Request * request =
+                        message.getAssociativeIntArrayValueRequest;
+                    // fetch an entire array, if it exists
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalInt &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            // TODO why is it unsigned int storage?
+                            t_CKUINT result = 0;
+                            intArray->get( request->key, &result );
+                            request->callback( result );
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                delete message.getAssociativeIntArrayValueRequest;
+                break;
+            case set_external_float_array_request:
+                {
+                    // replace an entire array, if it exists
+                    Chuck_Set_External_Float_Array_Request * request =
+                        message.setFloatArrayRequest;
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet? is it a float array?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalFloat )
+                        {
+                            // it exists! get existing array, new size
+                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            t_CKUINT newSize = request->arrayValues.size();
+                            
+                            // resize and copy in
+                            floatArray->set_size( newSize );
+                            for( int i = 0; i < newSize; i++ )
+                            {
+                                floatArray->set( i, request->arrayValues[i] );
+                            }
+                        }
+                    }
+                }
+        
+                // clean up request storage
+                delete message.setFloatArrayRequest;
+                break;
+            case get_external_float_array_request:
+                {
+                    // fetch an entire array, if it exists
+                    Chuck_Get_External_Float_Array_Request * request =
+                        message.getFloatArrayRequest;
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalFloat &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            request->callback(
+                                &(floatArray->m_vector[0]),
+                                floatArray->size()
+                            );
+                        }
+                    }
+                }
+        
+                // clean up request storage
+                delete message.getFloatArrayRequest;
+                break;
+            case set_external_float_array_value_request:
+                {
+                    // set a single value, if array exists and index in range
+                    Chuck_Set_External_Float_Array_Value_Request * request =
+                        message.setFloatArrayValueRequest;
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet? is it a float array?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalFloat )
+                        {
+                            // it exists! get existing array
+                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            // set! (if index within range)
+                            if( floatArray->size() > request->index )
+                            {
+                                floatArray->set( request->index, request->value );
+                            }
+                        }
+                    }
+                }
+        
+                // clean up request storage
+                delete message.setFloatArrayValueRequest;
+                break;
+            case get_external_float_array_value_request:
+                {
+                    // get a single value, if array exists and index in range
+                    Chuck_Get_External_Float_Array_Value_Request * request =
+                        message.getFloatArrayValueRequest;
+                    // fetch an entire array, if it exists
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalFloat &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            t_CKFLOAT result = 0;
+                            floatArray->get( request->index, &result );
+                            request->callback( result );
+                        }
+                    }
+                }
+        
+                // clean up request storage
+                delete message.getFloatArrayValueRequest;
+                break;
+            case set_external_associative_float_array_value_request:
+                {
+                    // set a single value by key, if array exists
+                    Chuck_Set_External_Associative_Float_Array_Value_Request * request =
+                        message.setAssociativeFloatArrayValueRequest;
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet? is it a float array?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalFloat )
+                        {
+                            // it exists! get existing array
+                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            // set!
+                            floatArray->set( request->key, request->value );
+                        }
+                    }
+                }
+        
+                // clean up request storage
+                delete message.setAssociativeFloatArrayValueRequest;
+                break;
+            case get_external_associative_float_array_value_request:
+                {
+                    // get a single value by key, if array exists and key in map
+                    Chuck_Get_External_Associative_Float_Array_Value_Request * request =
+                        message.getAssociativeFloatArrayValueRequest;
+                    // fetch an entire array, if it exists
+                    if( m_external_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_external_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_external_arrays[request->name]->array_type == te_externalFloat &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            t_CKFLOAT result = 0;
+                            floatArray->get( request->key, &result );
+                            request->callback( result );
+                        }
+                    }
+                }
+        
+                // clean up request storage
+                delete message.getAssociativeFloatArrayValueRequest;
                 break;
             }
         }

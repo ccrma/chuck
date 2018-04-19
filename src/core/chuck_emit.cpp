@@ -4037,6 +4037,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
     t_CKBOOL is_obj = FALSE;
     t_CKBOOL is_ref = FALSE;
     t_CKBOOL is_init = FALSE;
+    t_CKBOOL is_array = FALSE;
     t_CKBOOL needs_external_ctor = FALSE;
     
     t_CKTYPE t = type_engine_find_type( emit->env, decl->type->xid );
@@ -4094,13 +4095,21 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         is_ref = decl->type->ref;
         // not init
         is_init = FALSE;
+        // is array
+        is_array = FALSE;
 
-        // if this is an object
+        // if this is an object, do instantiation
         if( is_obj )
         {
-            // if array, then check to see if empty []
+            // if this is an array, ...
             if( list->var_decl->array )
             {
+                is_array = TRUE;
+                
+                // ... then check to see if empty []
+                // and only instantiate if NOT empty
+                // REFACTOR-2017 TODO: do we want to
+                //  avoid doing this if the array is external?
                 if( list->var_decl->array->exp_list )
                 {
                     // set
@@ -4113,7 +4122,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             else if( !is_ref )
             {
                 // REFACTOR-2017: don't emit instructions to instantiate
-                // external variables -- they are init/instantiated
+                // non-array external variables -- they are init/instantiated
                 // during emit (see below in this function)
                 if( !decl->is_external )
                 {
@@ -4144,6 +4153,8 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 return FALSE;
             }
         }*/
+
+        // done with object instantiation
 
         // put in the value
 
@@ -4197,6 +4208,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     instr->m_name = value->name;
                     instr->m_type = externalType;
                     instr->set_linepos( decl->linepos );
+                    instr->m_is_array = is_array;
                     
                     // extra fields for objects that need their ctors called
                     if( needs_external_ctor )
@@ -4875,6 +4887,10 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         else if( isa( v->type, emit->env->t_ugen ) )
         {
             external_type = te_externalUGen;
+        }
+        else if( isa( v->type, emit->env->t_array ) )
+        {
+            external_type = te_externalArraySymbol;
         }
         else
         {
