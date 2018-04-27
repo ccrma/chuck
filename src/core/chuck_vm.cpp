@@ -1751,7 +1751,7 @@ t_CKFLOAT * Chuck_VM::get_ptr_to_global_float( std::string name )
 
 //-----------------------------------------------------------------------------
 // name: get_global_string()
-// desc: get an global string by name
+// desc: get a global string by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::get_global_string( std::string name,
         void (* callback)(const char *) )
@@ -1775,7 +1775,7 @@ t_CKBOOL Chuck_VM::get_global_string( std::string name,
 
 //-----------------------------------------------------------------------------
 // name: set_global_string()
-// desc: set an global string by name
+// desc: set a global string by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::set_global_string( std::string name, std::string val )
 {
@@ -1798,7 +1798,7 @@ t_CKBOOL Chuck_VM::set_global_string( std::string name, std::string val )
 
 //-----------------------------------------------------------------------------
 // name: init_global_string()
-// desc: tell the vm that an global string is now available
+// desc: tell the vm that a global string is now available
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::init_global_string( std::string name )
 {
@@ -1947,7 +1947,7 @@ t_CKBOOL Chuck_VM::stop_listening_for_global_event( std::string name,
 
 //-----------------------------------------------------------------------------
 // name: init_global_event()
-// desc: tell the vm that an global event is now available
+// desc: tell the vm that a global event is now available
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::init_global_event( std::string name, Chuck_Type * type )
 {
@@ -2002,7 +2002,7 @@ Chuck_Event * * Chuck_VM::get_ptr_to_global_event( std::string name )
 
 //-----------------------------------------------------------------------------
 // name: init_global_ugen()
-// desc: tell the vm that an global ugen is now available
+// desc: tell the vm that a global ugen is now available
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::get_global_ugen_samples( std::string name,
     SAMPLE * buffer, int numFrames )
@@ -2026,7 +2026,7 @@ t_CKBOOL Chuck_VM::get_global_ugen_samples( std::string name,
 
 //-----------------------------------------------------------------------------
 // name: init_global_ugen()
-// desc: tell the vm that an global ugen is now available
+// desc: tell the vm that a global ugen is now available
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::init_global_ugen( std::string name, Chuck_Type * type )
 {
@@ -2058,7 +2058,7 @@ t_CKBOOL Chuck_VM::init_global_ugen( std::string name, Chuck_Type * type )
 
 //-----------------------------------------------------------------------------
 // name: is_global_ugen_init()
-// desc: has an global ugen been initialized during emit?
+// desc: has a global ugen been initialized during emit?
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::is_global_ugen_init( std::string name )
 {
@@ -2070,7 +2070,7 @@ t_CKBOOL Chuck_VM::is_global_ugen_init( std::string name )
 
 //-----------------------------------------------------------------------------
 // name: is_global_ugen_valid()
-// desc: has an global ugen been initialized during emit
+// desc: has a global ugen been initialized during emit
 //       and constructed during runtime?
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::is_global_ugen_valid( std::string name )
@@ -2400,7 +2400,7 @@ t_CKBOOL Chuck_VM::get_global_associative_float_array_value( std::string name, s
 
 //-----------------------------------------------------------------------------
 // name: init_global_array()
-// desc: tell the vm that an global string is now available
+// desc: tell the vm that a global string is now available
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::init_global_array( std::string name, Chuck_Type * type, te_GlobalType arr_type )
 {
@@ -2450,7 +2450,7 @@ Chuck_Object * * Chuck_VM::get_ptr_to_global_array( std::string name )
 
 //-----------------------------------------------------------------------------
 // name: should_call_global_ctor()
-// desc: ask the vm if an global needs to be constructed after init
+// desc: ask the vm if a global needs to be constructed after init
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::should_call_global_ctor( std::string name,
     te_GlobalType type )
@@ -2484,7 +2484,7 @@ t_CKBOOL Chuck_VM::should_call_global_ctor( std::string name,
 
 //-----------------------------------------------------------------------------
 // name: global_ctor_was_called()
-// desc: tell the vm that an global has been constructed after init
+// desc: tell the vm that a global has been constructed after init
 //-----------------------------------------------------------------------------
 void Chuck_VM::global_ctor_was_called( std::string name,
     te_GlobalType type )
