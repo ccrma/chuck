@@ -896,78 +896,78 @@ void ChucK::run( SAMPLE * input, SAMPLE * output, int numFrames )
 
 
 //-----------------------------------------------------------------------------
-// name: setExternalInt()
-// desc: send a message to set the value of an external int
+// name: setGlobalInt()
+// desc: send a message to set the value of a global int
 //-----------------------------------------------------------------------------
-t_CKBOOL ChucK::setExternalInt( const char * name, t_CKINT val )
+t_CKBOOL ChucK::setGlobalInt( const char * name, t_CKINT val )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return m_carrier->vm->set_external_int( std::string( name ), val );
+    return m_carrier->vm->set_global_int( std::string( name ), val );
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: getExternalInt()
-// desc: send a message to get the value of an external int via callback
+// name: getGlobalInt()
+// desc: send a message to get the value of a global int via callback
 //-----------------------------------------------------------------------------
-t_CKBOOL ChucK::getExternalInt( const char * name, void (* callback)(t_CKINT) )
+t_CKBOOL ChucK::getGlobalInt( const char * name, void (* callback)(t_CKINT) )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return m_carrier->vm->get_external_int( std::string( name ), callback );
+    return m_carrier->vm->get_global_int( std::string( name ), callback );
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: setExternalFloat()
-// desc: send a message to set the value of an external float
+// name: setGlobalFloat()
+// desc: send a message to set the value of a global float
 //-----------------------------------------------------------------------------
-t_CKBOOL ChucK::setExternalFloat( const char * name, t_CKFLOAT val )
+t_CKBOOL ChucK::setGlobalFloat( const char * name, t_CKFLOAT val )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return m_carrier->vm->set_external_float( std::string( name ), val );
+    return m_carrier->vm->set_global_float( std::string( name ), val );
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: getExternalFloat()
-// desc: send a message to get the value of an external float via callback
+// name: getGlobalFloat()
+// desc: send a message to get the value of a global float via callback
 //-----------------------------------------------------------------------------
-t_CKBOOL ChucK::getExternalFloat( const char * name, void (* callback)(t_CKFLOAT) )
+t_CKBOOL ChucK::getGlobalFloat( const char * name, void (* callback)(t_CKFLOAT) )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return m_carrier->vm->get_external_float( std::string( name ), callback );
+    return m_carrier->vm->get_global_float( std::string( name ), callback );
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: signalExternalEvent()
-// desc: send a message to signal an external event
+// name: signalGlobalEvent()
+// desc: send a message to signal a global event
 //-----------------------------------------------------------------------------
-t_CKBOOL ChucK::signalExternalEvent( const char * name )
+t_CKBOOL ChucK::signalGlobalEvent( const char * name )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return m_carrier->vm->signal_external_event( std::string( name ) );
+    return m_carrier->vm->signal_global_event( std::string( name ) );
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: broadcastExternalEvent()
-// desc: send a message to broadcast an external event
+// name: broadcastGlobalEvent()
+// desc: send a message to broadcast a global event
 //-----------------------------------------------------------------------------
-t_CKBOOL ChucK::broadcastExternalEvent( const char * name )
+t_CKBOOL ChucK::broadcastGlobalEvent( const char * name )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return m_carrier->vm->broadcast_external_event( std::string( name ) );
+    return m_carrier->vm->broadcast_global_event( std::string( name ) );
 }
 
 

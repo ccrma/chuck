@@ -381,30 +381,30 @@ public:
 
 
 
-// Forward references for external messages, storage
-struct Chuck_Set_External_Int_Request;
-struct Chuck_Get_External_Int_Request;
-struct Chuck_Set_External_Float_Request;
-struct Chuck_Get_External_Float_Request;
-struct Chuck_Signal_External_Event_Request;
-struct Chuck_External_Int_Container;
-struct Chuck_External_Float_Container;
-struct Chuck_External_Event_Container;
+// Forward references for global messages, storage
+struct Chuck_Set_Global_Int_Request;
+struct Chuck_Get_Global_Int_Request;
+struct Chuck_Set_Global_Float_Request;
+struct Chuck_Get_Global_Float_Request;
+struct Chuck_Signal_Global_Event_Request;
+struct Chuck_Global_Int_Container;
+struct Chuck_Global_Float_Container;
+struct Chuck_Global_Event_Container;
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: enum External_Request_Type
-// desc: what kind of external message request is this? (REFACTOR-2017)
+// name: enum Global_Request_Type
+// desc: what kind of global message request is this? (REFACTOR-2017)
 //-----------------------------------------------------------------------------
-enum Chuck_External_Request_Type
+enum Chuck_Global_Request_Type
 {
-    set_external_int_request,
-    get_external_int_request,
-    set_external_float_request,
-    get_external_float_request,
-    signal_external_event_request,
+    set_global_int_request,
+    get_global_int_request,
+    set_global_float_request,
+    get_global_float_request,
+    signal_global_event_request,
     spork_shred_request
 };
 
@@ -412,18 +412,18 @@ enum Chuck_External_Request_Type
 
 
 //-----------------------------------------------------------------------------
-// name: strct External_Request
-// desc: an external request (REFACTOR-2017)
+// name: strct Global_Request
+// desc: a global request (REFACTOR-2017)
 //-----------------------------------------------------------------------------
-struct Chuck_External_Request
+struct Chuck_Global_Request
 {
-    Chuck_External_Request_Type type;
+    Chuck_Global_Request_Type type;
     union {
-        Chuck_Set_External_Int_Request * setIntRequest;
-        Chuck_Get_External_Int_Request * getIntRequest;
-        Chuck_Set_External_Float_Request * setFloatRequest;
-        Chuck_Get_External_Float_Request * getFloatRequest;
-        Chuck_Signal_External_Event_Request * signalEventRequest;
+        Chuck_Set_Global_Int_Request * setIntRequest;
+        Chuck_Get_Global_Int_Request * getIntRequest;
+        Chuck_Set_Global_Float_Request * setFloatRequest;
+        Chuck_Get_Global_Float_Request * getFloatRequest;
+        Chuck_Signal_Global_Event_Request * signalEventRequest;
         Chuck_VM_Shred * shred;
     };
 
@@ -507,36 +507,36 @@ public: // get error
     { return m_last_error.c_str(); }
 
 public:
-    // REFACTOR-2017: externally accessible variables.
+    // REFACTOR-2017: externally accessible + global variables.
     // use these getters and setters from outside the audio thread
-    t_CKBOOL get_external_int( std::string name, void (* callback)(t_CKINT) );
-    t_CKBOOL set_external_int( std::string name, t_CKINT val );
+    t_CKBOOL get_global_int( std::string name, void (* callback)(t_CKINT) );
+    t_CKBOOL set_global_int( std::string name, t_CKINT val );
 
-    t_CKBOOL get_external_float( std::string name, void (* callback)(t_CKFLOAT) );
-    t_CKBOOL set_external_float( std::string name, t_CKFLOAT val );
+    t_CKBOOL get_global_float( std::string name, void (* callback)(t_CKFLOAT) );
+    t_CKBOOL set_global_float( std::string name, t_CKFLOAT val );
     
-    t_CKBOOL signal_external_event( std::string name );
-    t_CKBOOL broadcast_external_event( std::string name );
+    t_CKBOOL signal_global_event( std::string name );
+    t_CKBOOL broadcast_global_event( std::string name );
     
 public:
-    // REFACTOR-2017: externally accessible variables.
+    // REFACTOR-2017: externally accessible + global variables.
     // these internal functions are to be used only by other
     // chuck code in the audio thread.
-    t_CKBOOL init_external_int( std::string name );
-    t_CKINT get_external_int_value( std::string name );
-    t_CKINT * get_ptr_to_external_int( std::string name );
+    t_CKBOOL init_global_int( std::string name );
+    t_CKINT get_global_int_value( std::string name );
+    t_CKINT * get_ptr_to_global_int( std::string name );
     
-    t_CKBOOL init_external_float( std::string name );
-    t_CKFLOAT get_external_float_value( std::string name );
-    t_CKFLOAT * get_ptr_to_external_float( std::string name );
+    t_CKBOOL init_global_float( std::string name );
+    t_CKFLOAT get_global_float_value( std::string name );
+    t_CKFLOAT * get_ptr_to_global_float( std::string name );
     
-    t_CKBOOL init_external_event( std::string name, Chuck_Type * type );
-    Chuck_Event * get_external_event( std::string name );
-    Chuck_Event * * get_ptr_to_external_event( std::string name );
+    t_CKBOOL init_global_event( std::string name, Chuck_Type * type );
+    Chuck_Event * get_global_event( std::string name );
+    Chuck_Event * * get_ptr_to_global_event( std::string name );
 
 protected:
-    // REFACTOR-2017: external queue
-    void handle_external_queue_messages();
+    // REFACTOR-2017: global queue
+    void handle_global_queue_messages();
 
 public:
     // REFACTOR-2017: get associated, per-VM environment, chout, cherr
@@ -602,14 +602,14 @@ protected:
     std::list<CBufferSimple *> m_event_buffers;
 
 private:
-    // external variables
-    void cleanup_external_variables();
+    // global variables
+    void cleanup_global_variables();
 
-    std::map< std::string, Chuck_External_Int_Container * > m_external_ints;
-    std::map< std::string, Chuck_External_Float_Container * > m_external_floats;
-    std::map< std::string, Chuck_External_Event_Container * > m_external_events;
+    std::map< std::string, Chuck_Global_Int_Container * > m_global_ints;
+    std::map< std::string, Chuck_Global_Float_Container * > m_global_floats;
+    std::map< std::string, Chuck_Global_Event_Container * > m_global_events;
     
-    XCircleBuffer< Chuck_External_Request > m_external_request_queue;
+    XCircleBuffer< Chuck_Global_Request > m_global_request_queue;
 };
 
 

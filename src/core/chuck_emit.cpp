@@ -4010,27 +4010,27 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
     t_CKBOOL is_init = FALSE;
     
     t_CKTYPE t = type_engine_find_type( emit->env, decl->type->xid );
-    te_ExternalType externalType;
+    te_GlobalType globalType;
     
-    if( decl->is_external )
+    if( decl->is_global )
     {
         if( isa( t, emit->env->t_int ) )
         {
-            externalType = te_externalInt;
+            globalType = te_globalInt;
         }
         else if( isa( t, emit->env->t_float ) )
         {
-            externalType = te_externalFloat;
+            globalType = te_globalFloat;
         }
         else if( isa( t, emit->env->t_event ) )
         {
             // kind-of-event (te_Type for this would be te_user, which is not helpful)
-            externalType = te_externalEvent;
+            globalType = te_globalEvent;
         }
         else
         {
             // fail if type unsupported
-            EM_error2( decl->linepos, (std::string("unsupported type for external keyword: ") + t->name).c_str() );
+            EM_error2( decl->linepos, (std::string("unsupported type for global keyword: ") + t->name).c_str() );
             EM_error2( decl->linepos, "... (supported types: int, float, Event)" );
             return FALSE;
         }
@@ -4070,9 +4070,9 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             else if( !is_ref )
             {
                 // REFACTOR-2017: don't emit instructions to instantiate
-                // external variables -- they are init/instantiated
+                // global variables -- they are init/instantiated
                 // during emit (see below in this function)
-                if( !decl->is_external )
+                if( !decl->is_global )
                 {
                     // set
                     is_init = TRUE;
@@ -4135,7 +4135,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 // allocate a place on the local stack
                 // (added 1.3.0.0 -- is_obj for tracking objects ref count on stack)
                 local = emit->alloc_local( type->size, value->name,
-                    is_ref, is_obj, decl->is_external );
+                    is_ref, is_obj, decl->is_global );
                 if( !local )
                 {
                     EM_error2( decl->linepos,
@@ -4147,24 +4147,24 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 // put in the value
                 value->offset = local->offset;
 
-                // REFACTOR-2017: external declaration
-                if( decl->is_external )
+                // REFACTOR-2017: global declaration
+                if( decl->is_global )
                 {
-                    Chuck_Instr_Alloc_Word_External * instr = new Chuck_Instr_Alloc_Word_External();
+                    Chuck_Instr_Alloc_Word_Global * instr = new Chuck_Instr_Alloc_Word_Global();
                     instr->m_name = value->name;
-                    instr->m_type = externalType;
+                    instr->m_type = globalType;
                     instr->set_linepos( decl->linepos );
                     emit->append( instr );
                     
                     // if it's an event, we need to initialize it and check if the exact type matches
-                    if( externalType == te_externalEvent )
+                    if( globalType == te_globalEvent )
                     {
                         // init and construct it now!
-                        if( !emit->env->vm()->init_external_event( value->name, t ) )
+                        if( !emit->env->vm()->init_global_event( value->name, t ) )
                         {
                             // if the type doesn't exactly match (different kinds of Event), then fail.
                             EM_error2( decl->linepos,
-                                "(emit): external Event '%s' has different type '%s' than already existing external Event of the same name",
+                                "(emit): global Event '%s' has different type '%s' than already existing global Event of the same name",
                                 value->name.c_str(), t->name.c_str() );
                             return FALSE;
                         }
@@ -4240,9 +4240,9 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             else if( !is_ref )
             {
                 // REFACTOR-2017: don't add an Assign_Object instruction for
-                // external objects -- they should be instantiated during emit,
+                // global objects -- they should be instantiated during emit,
                 // not during runtime and therefore don't need an assign instr
-                if( !decl->is_external )
+                if( !decl->is_global )
                 {
                     // set
                     is_init = TRUE;
@@ -4786,28 +4786,28 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         return FALSE;
     }
     
-    // if external, find what type
+    // if global, find what type
     // (due to user classes, this info is only available during emit)
-    te_ExternalType external_type;
-    if( v->is_external )
+    te_GlobalType global_type;
+    if( v->is_global )
     {
         if( isa( v->type, emit->env->t_int ) )
         {
-            external_type = te_externalInt;
+            global_type = te_globalInt;
         }
         else if( isa( v->type, emit->env->t_float ) )
         {
-            external_type = te_externalFloat;
+            global_type = te_globalFloat;
         }
         else if( isa( v->type, emit->env->t_event ) )
         {
-            external_type = te_externalEvent;
+            global_type = te_globalEvent;
         }
         else
         {
             // internal error
             EM_error2( linepos,
-                "(emit): internal error: unknown external type '%s'...",
+                "(emit): internal error: unknown global type '%s'...",
                 v->type->name.c_str() );
             return FALSE;
         }
@@ -4847,9 +4847,9 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
     if( emit_var )
     {
         // emit as addr
-        if( v->is_external )
+        if( v->is_global )
         {
-            emit->append( new Chuck_Instr_Reg_Push_External_Addr( v->name, external_type ) );
+            emit->append( new Chuck_Instr_Reg_Push_Global_Addr( v->name, global_type ) );
         }
         else
         {
@@ -4861,9 +4861,9 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         // special case
         if( v->func_ref )
             emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)v->func_ref ) );
-        else if( v->is_external )
+        else if( v->is_global )
         {
-            emit->append( new Chuck_Instr_Reg_Push_External( v->name, external_type ) );
+            emit->append( new Chuck_Instr_Reg_Push_Global( v->name, global_type ) );
         }
         // check size
         // (added 1.3.1.0: iskindofint -- since in some 64-bit systems, sz_INT == sz_FLOAT)
@@ -4914,10 +4914,10 @@ void Chuck_Emitter::addref_on_scope()
         // check to see if it's an object
         if( local->is_obj )
         {
-            // REFACTOR-2017: Don't do if local is external
+            // REFACTOR-2017: Don't do if local is global
             // Note: I don't think addref_on_scope() is used anywhere,
             // but I am doing this to mirror pop_scope() below, which IS used
-            if( !local->is_external )
+            if( !local->is_global )
             {
                 // emit instruction to add reference
                 this->append( new Chuck_Instr_AddRef_Object2( local->offset ) );
@@ -4952,8 +4952,8 @@ void Chuck_Emitter::pop_scope( )
         // check to see if it's an object
         if( local->is_obj )
         {
-            // (REFACTOR-2017: don't release external objects)
-            if( !local->is_external )
+            // (REFACTOR-2017: don't release global objects)
+            if( !local->is_global )
             {
                 // emit instruction to release the object
                 this->append( new Chuck_Instr_Release_Object2( local->offset ) );

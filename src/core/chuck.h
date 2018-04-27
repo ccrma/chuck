@@ -130,16 +130,16 @@ public:
     Chuck_Compiler * compiler() { return m_carrier->compiler; }
 
 public:
-    // external variables - set and get
-    t_CKBOOL setExternalInt( const char * name, t_CKINT val );
-    t_CKBOOL getExternalInt( const char * name, void (* callback)(t_CKINT) );
-    t_CKBOOL setExternalFloat( const char * name, t_CKFLOAT val );
-    t_CKBOOL getExternalFloat( const char * name, void (* callback)(t_CKFLOAT) );
-    t_CKBOOL signalExternalEvent( const char * name );
-    t_CKBOOL broadcastExternalEvent( const char * name );
+    // global variables - set and get
+    t_CKBOOL setGlobalInt( const char * name, t_CKINT val );
+    t_CKBOOL getGlobalInt( const char * name, void (* callback)(t_CKINT) );
+    t_CKBOOL setGlobalFloat( const char * name, t_CKFLOAT val );
+    t_CKBOOL getGlobalFloat( const char * name, void (* callback)(t_CKFLOAT) );
+    t_CKBOOL signalGlobalEvent( const char * name );
+    t_CKBOOL broadcastGlobalEvent( const char * name );
     
 public:
-    // external callback functions
+    // global callback functions
     t_CKBOOL setChoutCallback( void (* callback)(const char *) );
     t_CKBOOL setCherrCallback( void (* callback)(const char *) );
     static t_CKBOOL setStdoutCallback( void (* callback)(const char *) );
