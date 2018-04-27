@@ -59,16 +59,16 @@ typedef enum {
 
 
 //-----------------------------------------------------------------------------
-// name: enum te_ExternalType
-// desc: ChucK types for external vars: int, float, (subclass of) Event
+// name: enum te_GlobalType
+// desc: ChucK types for global vars: int, float, (subclass of) Event
 //       (REFACTOR-2017)
 //-----------------------------------------------------------------------------
 typedef enum {
-    te_externalInt, te_externalFloat, te_externalString, te_externalEvent,
-    te_externalUGen,
+    te_globalInt, te_globalFloat, te_globalString, te_globalEvent,
+    te_globalUGen,
     // symbol: not used for declarations, only for later lookups :/
-    te_externalArraySymbol
-} te_ExternalType;
+    te_globalArraySymbol
+} te_GlobalType;
 
 
 
@@ -736,8 +736,8 @@ struct Chuck_Value : public Chuck_VM_Object
     t_CKBOOL is_context_global;
     // is decl checked
     t_CKBOOL is_decl_checked;
-    // is external (added REFACTOR-2017)
-    t_CKBOOL is_external;
+    // is global (added REFACTOR-2017)
+    t_CKBOOL is_global;
     // 0 = public, 1 = protected, 2 = private
     t_CKUINT access;
     // owner
@@ -764,7 +764,7 @@ struct Chuck_Value : public Chuck_VM_Object
       addr = a; is_member = FALSE;
       is_static = FALSE; is_context_global = FALSE;
       is_decl_checked = TRUE; // only set to false in certain cases
-      is_external = FALSE;
+      is_global = FALSE;
       func_ref = NULL; func_num_overloads = 0; }
 
     // destructor

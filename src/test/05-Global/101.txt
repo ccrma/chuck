@@ -1,0 +1,1 @@
+[101.ck]:line(9): global Event 'e' has different type 'myEvent' than already existing global Event of the same name

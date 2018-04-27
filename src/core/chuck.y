@@ -86,7 +86,8 @@ a_Program g_program = NULL;
 // 1.3.3.0: changed to 38 for char literal - spencer
 // 1.3.5.3: changed to 39 for vec literal
 // 1.3.6.0: changed to 40 for external keyword
-%expect 40
+// 1.4.0.0: changed to 41 for global keyword
+%expect 41
 
 %token <sval> ID STRING_LIT CHAR_LIT
 %token <ival> NUM
@@ -102,7 +103,7 @@ a_Program g_program = NULL;
   QUESTION EXCLAMATION S_OR S_AND S_XOR
   PLUSPLUS MINUSMINUS DOLLAR POUNDPAREN PERCENTPAREN ATPAREN
   SIMULT PATTERN CODE TRANSPORT HOST
-  TIME WHENEVER NEXT UNTIL EXTERNAL EVERY BEFORE
+  TIME WHENEVER NEXT UNTIL EXTERNAL GLOBAL EVERY BEFORE
   AFTER AT AT_SYM ATAT_SYM NEW SIZEOF TYPEOF
   SAME PLUS_CHUCK MINUS_CHUCK TIMES_CHUCK
   DIVIDE_CHUCK S_AND_CHUCK S_OR_CHUCK
@@ -386,6 +387,7 @@ decl_expression
         : conditional_expression            { $$ = $1; }
         | type_decl var_decl_list           { $$ = new_exp_decl( $1, $2, 0, EM_lineNum ); }
         | EXTERNAL type_decl var_decl_list  { $$ = new_exp_decl_external( $2, $3, 0, EM_lineNum ); }
+        | GLOBAL type_decl var_decl_list    { $$ = new_exp_decl_global( $2, $3, 0, EM_lineNum ); }
         | STATIC type_decl var_decl_list    { $$ = new_exp_decl( $2, $3, 1, EM_lineNum ); }
         | SAME var_decl_list                { $$ = new_exp_decl( NULL, $2, 0, EM_lineNum ); }
         | STATIC SAME var_decl_list         { $$ = new_exp_decl( NULL, $3, 1, EM_lineNum ); }

@@ -1,0 +1,1 @@
+[chuck](VM): NullPointerException: (map access) on line[3] in shred[id=1:./05-Global/82.ck]

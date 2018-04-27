@@ -422,14 +422,14 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: Chuck_External_Event_Listener
+// name: Chuck_Global_Event_Listener
 // desc: base Listener struct
 //-----------------------------------------------------------------------------
-struct Chuck_External_Event_Listener
+struct Chuck_Global_Event_Listener
 {
     void (* callback)(void);
     t_CKBOOL listen_forever;
-    Chuck_External_Event_Listener() : callback(NULL), listen_forever(FALSE) {};
+    Chuck_Global_Event_Listener() : callback(NULL), listen_forever(FALSE) {};
 };
 
 
@@ -446,9 +446,9 @@ public:
     void broadcast();
     void wait( Chuck_VM_Shred * shred, Chuck_VM * vm );
     t_CKBOOL remove( Chuck_VM_Shred * shred );
-    void signal_external();
-    void broadcast_external();
-    void external_listen( void (* cb)(void), t_CKBOOL listen_forever );
+    void signal_global();
+    void broadcast_global();
+    void global_listen( void (* cb)(void), t_CKBOOL listen_forever );
     t_CKBOOL remove_listen( void (* cb)(void) );
 
 public: // internal
@@ -461,7 +461,7 @@ public:
 protected:
     std::queue<Chuck_VM_Shred *> m_queue;
     XMutex m_queue_lock;
-    std::queue<Chuck_External_Event_Listener> m_external_queue;
+    std::queue<Chuck_Global_Event_Listener> m_global_queue;
 };
 
 

@@ -2246,13 +2246,13 @@ protected:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Reg_Push_External
-// desc: push a variable from external map to reg stack
+// name: struct Chuck_Instr_Reg_Push_Global
+// desc: push a variable from global map to reg stack
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Reg_Push_External : public Chuck_Instr_Unary_Op
+struct Chuck_Instr_Reg_Push_Global : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Reg_Push_External( std::string name, te_ExternalType type )
+    Chuck_Instr_Reg_Push_Global( std::string name, te_GlobalType type )
     { this->set( 0 ); m_name = name; m_type = type; }
 
 public:
@@ -2264,7 +2264,7 @@ public:
 
 public:
     std::string m_name;
-    te_ExternalType m_type;
+    te_GlobalType m_type;
 };
 
 
@@ -2296,13 +2296,13 @@ protected:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Reg_Push_External_Addr
-// desc: push addr from external storage to reg stack
+// name: struct Chuck_Instr_Reg_Push_Global_Addr
+// desc: push addr from global storage to reg stack
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Reg_Push_External_Addr : public Chuck_Instr_Unary_Op
+struct Chuck_Instr_Reg_Push_Global_Addr : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Reg_Push_External_Addr( std::string name, te_ExternalType type )
+    Chuck_Instr_Reg_Push_Global_Addr( std::string name, te_GlobalType type )
     { this->set( 0 ); m_name = name; m_type = type; }
 
 public:
@@ -2314,7 +2314,7 @@ public:
 
 protected:
     std::string m_name;
-    te_ExternalType m_type;
+    te_GlobalType m_type;
 };
 
 
@@ -2668,14 +2668,14 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Alloc_Word_External
-// desc: alloc in vm external maps
+// name: struct Chuck_Instr_Alloc_Word_Global
+// desc: alloc in vm global maps
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Alloc_Word_External : public Chuck_Instr_Unary_Op
+struct Chuck_Instr_Alloc_Word_Global : public Chuck_Instr_Unary_Op
 {
 public:
     // (added 1.3.0.0 -- is_object)
-    Chuck_Instr_Alloc_Word_External()
+    Chuck_Instr_Alloc_Word_Global()
     { this->set( 0 ); m_stack_offset = 0; m_chuck_type = NULL;
       m_should_execute_ctors = FALSE; m_is_array = FALSE; }
     
@@ -2684,9 +2684,9 @@ public:
       sprintf( buffer, "name='%s'", m_name.c_str() );
       return buffer; }
     
-    // external name and type
+    // global name and type
     std::string m_name;
-    te_ExternalType m_type;
+    te_GlobalType m_type;
     t_CKBOOL m_is_array;
     
     // for objects
