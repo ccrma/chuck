@@ -2276,39 +2276,39 @@ void Chuck_Instr_Reg_Push_Mem_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: push value from external maps to register stack
+// desc: push value from global maps to register stack
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Reg_Push_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+void Chuck_Instr_Reg_Push_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     
-    // get external map content
+    // get global map content
     switch( m_type ) {
-        case te_externalInt:
+        case te_globalInt:
         {
             // int pointer to registers
             t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-            t_CKUINT val = (t_CKUINT) vm->get_external_int_value( m_name );
+            t_CKUINT val = (t_CKUINT) vm->get_global_int_value( m_name );
             
-            // push external map content into int-reg stack
+            // push global map content into int-reg stack
             push_( reg_sp, val );
         }
             break;
-        case te_externalFloat:
+        case te_globalFloat:
         {
             // float pointer to registers
             t_CKFLOAT *& reg_sp = (t_CKFLOAT *&)shred->reg->sp;
-            t_CKFLOAT val = (t_CKFLOAT) vm->get_external_float_value( m_name );
+            t_CKFLOAT val = (t_CKFLOAT) vm->get_global_float_value( m_name );
             
-            // push external map content into float-reg stack
+            // push global map content into float-reg stack
             push_( reg_sp, val );
         }
             break;
-        case te_externalEvent:
+        case te_globalEvent:
         {
             t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-            t_CKUINT val = (t_CKUINT) vm->get_external_event( m_name );
+            t_CKUINT val = (t_CKUINT) vm->get_global_event( m_name );
             
-            // push external map content into event-reg stack
+            // push global map content into event-reg stack
             push_( reg_sp, val );
         }
             break;
@@ -2338,21 +2338,21 @@ void Chuck_Instr_Reg_Push_Mem_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 // name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Reg_Push_External_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+void Chuck_Instr_Reg_Push_Global_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
     
     // find addr
     t_CKUINT addr;
     switch( m_type ) {
-        case te_externalInt:
-            addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
+        case te_globalInt:
+            addr = (t_CKUINT) vm->get_ptr_to_global_int( m_name );
             break;
-        case te_externalFloat:
-            addr = (t_CKUINT) vm->get_ptr_to_external_float( m_name );
+        case te_globalFloat:
+            addr = (t_CKUINT) vm->get_ptr_to_global_float( m_name );
             break;
-        case te_externalEvent:
-            addr = (t_CKUINT) vm->get_ptr_to_external_event( m_name );
+        case te_globalEvent:
+            addr = (t_CKUINT) vm->get_ptr_to_global_event( m_name );
             break;
             
     }
@@ -3550,26 +3550,26 @@ void Chuck_Instr_Alloc_Member_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: alloc external
+// desc: alloc global
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Alloc_Word_External::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+void Chuck_Instr_Alloc_Word_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
     t_CKUINT addr = 0;
 
     // init in the correct vm map according to the type
     switch( m_type ) {
-        case te_externalInt:
-            vm->init_external_int( m_name );
-            addr = (t_CKUINT) vm->get_ptr_to_external_int( m_name );
+        case te_globalInt:
+            vm->init_global_int( m_name );
+            addr = (t_CKUINT) vm->get_ptr_to_global_int( m_name );
             break;
-        case te_externalFloat:
-            vm->init_external_float( m_name );
-            addr = (t_CKUINT) vm->get_ptr_to_external_float( m_name );
+        case te_globalFloat:
+            vm->init_global_float( m_name );
+            addr = (t_CKUINT) vm->get_ptr_to_global_float( m_name );
             break;
-        case te_externalEvent:
+        case te_globalEvent:
             // no need to init, it has already been initted during emit
-            addr = (t_CKUINT) vm->get_ptr_to_external_event( m_name );
+            addr = (t_CKUINT) vm->get_ptr_to_global_event( m_name );
             break;
     }
     

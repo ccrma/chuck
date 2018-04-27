@@ -152,7 +152,7 @@ Chuck_VM::Chuck_VM()
     m_output_ref = NULL;
     
     // REFACTOR-2017: TODO might want to dynamically grow queue?
-    m_external_request_queue.init( 16384 );
+    m_global_request_queue.init( 16384 );
 }
 
 
@@ -330,8 +330,8 @@ t_CKBOOL Chuck_VM::shutdown()
     // REFACTOR-2017: TODO: don't unlock all objects for all VMs? see relockdown below
     Chuck_VM_Object::unlock_all();
     
-    // REFACTOR-2017: clean up after my external variables
-    cleanup_external_variables();
+    // REFACTOR-2017: clean up after my global variables
+    cleanup_global_variables();
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing shreduler..." );
@@ -456,8 +456,8 @@ t_CKBOOL Chuck_VM::compute()
     Chuck_Event * event = NULL;
     t_CKBOOL iterate = TRUE;
     
-    // REFACTOR-2017: spork queued shreds, handle external messages
-    handle_external_queue_messages();
+    // REFACTOR-2017: spork queued shreds, handle global messages
+    handle_global_queue_messages();
 
     // iteration until no more shreds/events/messages
     while( iterate )
@@ -514,8 +514,8 @@ t_CKBOOL Chuck_VM::compute()
     }
 
     // continue executing if have shreds left or if don't-halt
-    // or if have shreds to add or externals to process
-    return ( m_num_shreds || !m_halt || m_external_request_queue.more() );
+    // or if have shreds to add or globals to process
+    return ( m_num_shreds || !m_halt || m_global_request_queue.more() );
 }
 
 
@@ -535,7 +535,7 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
     // zero output buffer
     memset( output, 0, N*m_num_dac_channels*sizeof(SAMPLE) );
 
-    // for now, check for external variables once per sample (below)
+    // for now, check for global variables once per sample (below)
     // TODO: once per buffer instead? (place here then)
 
     // loop it
@@ -974,11 +974,11 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
     else
     {
         // spork it later
-        Chuck_External_Request spork_request;
+        Chuck_Global_Request spork_request;
         spork_request.type = spork_shred_request;
         spork_request.shred = shred;
 
-        m_external_request_queue.put( spork_request );
+        m_global_request_queue.put( spork_request );
     }
 
     // track new shred
@@ -1151,119 +1151,119 @@ void Chuck_VM::release_dump( )
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Set_External_Int_Request
-// desc: container for messages to set external ints (REFACTOR-2017)
+// name: struct Chuck_Set_Global_Int_Request
+// desc: container for messages to set global ints (REFACTOR-2017)
 //-----------------------------------------------------------------------------
-struct Chuck_Set_External_Int_Request
+struct Chuck_Set_Global_Int_Request
 {
     std::string name;
     t_CKINT val;
     // constructor
-    Chuck_Set_External_Int_Request() : val(0) { }
+    Chuck_Set_Global_Int_Request() : val(0) { }
 };
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Get_External_Int_Request
-// desc: container for messages to get external ints (REFACTOR-2017)
+// name: struct Chuck_Get_Global_Int_Request
+// desc: container for messages to get global ints (REFACTOR-2017)
 //-----------------------------------------------------------------------------
-struct Chuck_Get_External_Int_Request
+struct Chuck_Get_Global_Int_Request
 {
     std::string name;
     void (* fp)(t_CKINT);
     // constructor
-    Chuck_Get_External_Int_Request() : fp(NULL) { }
+    Chuck_Get_Global_Int_Request() : fp(NULL) { }
 };
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Set_External_Float_Request
-// desc: container for messages to set external floats (REFACTOR-2017)
+// name: struct Chuck_Set_Global_Float_Request
+// desc: container for messages to set global floats (REFACTOR-2017)
 //-----------------------------------------------------------------------------
-struct Chuck_Set_External_Float_Request
+struct Chuck_Set_Global_Float_Request
 {
     std::string name;
     t_CKFLOAT val;
     // constructor
-    Chuck_Set_External_Float_Request() : val(0) { }
+    Chuck_Set_Global_Float_Request() : val(0) { }
 };
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Get_External_Float_Request
-// desc: container for messages to get external floats (REFACTOR-2017)
+// name: struct Chuck_Get_Global_Float_Request
+// desc: container for messages to get global floats (REFACTOR-2017)
 //-----------------------------------------------------------------------------
-struct Chuck_Get_External_Float_Request
+struct Chuck_Get_Global_Float_Request
 {
     std::string name;
     void (* fp)(t_CKFLOAT);
     // constructor
-    Chuck_Get_External_Float_Request() : fp(NULL) { }
+    Chuck_Get_Global_Float_Request() : fp(NULL) { }
 };
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Signal_External_Event_Request
-// desc: container for messages to signal external events (REFACTOR-2017)
+// name: struct Chuck_Signal_Global_Event_Request
+// desc: container for messages to signal global events (REFACTOR-2017)
 //-----------------------------------------------------------------------------
-struct Chuck_Signal_External_Event_Request
+struct Chuck_Signal_Global_Event_Request
 {
     std::string name;
     t_CKBOOL is_broadcast;
     // constructor
-    Chuck_Signal_External_Event_Request() : is_broadcast(TRUE) { }
+    Chuck_Signal_Global_Event_Request() : is_broadcast(TRUE) { }
 };
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_External_Int_Container
-// desc: container for external ints
+// name: struct Chuck_Global_Int_Container
+// desc: container for global ints
 //-----------------------------------------------------------------------------
-struct Chuck_External_Int_Container
+struct Chuck_Global_Int_Container
 {
     t_CKINT val;
     
-    Chuck_External_Int_Container() { val = 0; }
+    Chuck_Global_Int_Container() { val = 0; }
 };
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_External_Float_Container
-// desc: container for external floats
+// name: struct Chuck_Global_Float_Container
+// desc: container for global floats
 //-----------------------------------------------------------------------------
-struct Chuck_External_Float_Container
+struct Chuck_Global_Float_Container
 {
     t_CKFLOAT val;
     
-    Chuck_External_Float_Container() { val = 0; }
+    Chuck_Global_Float_Container() { val = 0; }
 };
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_External_Event_Container
-// desc: container for external events
+// name: struct Chuck_Global_Event_Container
+// desc: container for global events
 //-----------------------------------------------------------------------------
-struct Chuck_External_Event_Container
+struct Chuck_Global_Event_Container
 {
     Chuck_Event * val;
     Chuck_Type * type;
     t_CKBOOL ctor_needs_to_be_called;
     
-    Chuck_External_Event_Container() { val = NULL; type = NULL;
+    Chuck_Global_Event_Container() { val = NULL; type = NULL;
         ctor_needs_to_be_called = TRUE; }
 };
 
@@ -1271,22 +1271,22 @@ struct Chuck_External_Event_Container
 
 
 //-----------------------------------------------------------------------------
-// name: get_external_int()
-// desc: get an external int by name
+// name: get_global_int()
+// desc: get a global int by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::get_external_int( std::string name,
+t_CKBOOL Chuck_VM::get_global_int( std::string name,
                                      void (* callback)(t_CKINT) )
 {
-    Chuck_Get_External_Int_Request * get_int_message = 
-        new Chuck_Get_External_Int_Request;
+    Chuck_Get_Global_Int_Request * get_int_message =
+        new Chuck_Get_Global_Int_Request;
     get_int_message->name = name;
     get_int_message->fp = callback;
     
-    Chuck_External_Request r;
-    r.type = get_external_int_request;
+    Chuck_Global_Request r;
+    r.type = get_global_int_request;
     r.getIntRequest = get_int_message;
 
-    m_external_request_queue.put( r );
+    m_global_request_queue.put( r );
     
     return TRUE;
 }
@@ -1295,21 +1295,21 @@ t_CKBOOL Chuck_VM::get_external_int( std::string name,
 
 
 //-----------------------------------------------------------------------------
-// name: set_external_int()
-// desc: set an external int by name
+// name: set_global_int()
+// desc: set a global int by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::set_external_int( std::string name, t_CKINT val )
+t_CKBOOL Chuck_VM::set_global_int( std::string name, t_CKINT val )
 {
-    Chuck_Set_External_Int_Request * set_int_message =
-        new Chuck_Set_External_Int_Request;
+    Chuck_Set_Global_Int_Request * set_int_message =
+        new Chuck_Set_Global_Int_Request;
     set_int_message->name = name;
     set_int_message->val = val;
     
-    Chuck_External_Request r;
-    r.type = set_external_int_request;
+    Chuck_Global_Request r;
+    r.type = set_global_int_request;
     r.setIntRequest = set_int_message;
 
-    m_external_request_queue.put( r );
+    m_global_request_queue.put( r );
     
     return TRUE;
 }
@@ -1318,14 +1318,14 @@ t_CKBOOL Chuck_VM::set_external_int( std::string name, t_CKINT val )
 
 
 //-----------------------------------------------------------------------------
-// name: init_external_int()
-// desc: tell the vm that an external int is now available
+// name: init_global_int()
+// desc: tell the vm that a global int is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_external_int( std::string name )
+t_CKBOOL Chuck_VM::init_global_int( std::string name )
 {
-    if( m_external_ints.count( name ) == 0 )
+    if( m_global_ints.count( name ) == 0 )
     {
-        m_external_ints[name] = new Chuck_External_Int_Container;
+        m_global_ints[name] = new Chuck_Global_Int_Container;
     }
     
     return TRUE;
@@ -1335,49 +1335,49 @@ t_CKBOOL Chuck_VM::init_external_int( std::string name )
 
 
 //-----------------------------------------------------------------------------
-// name: get_external_int_value()
+// name: get_global_int_value()
 // desc: get a value directly from the vm (internal)
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_VM::get_external_int_value( std::string name )
+t_CKINT Chuck_VM::get_global_int_value( std::string name )
 {
     // ensure exists
-    init_external_int( name );
+    init_global_int( name );
     
-    return m_external_ints[name]->val;
+    return m_global_ints[name]->val;
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: get_ptr_to_external_int()
+// name: get_ptr_to_global_int()
 // desc: get a pointer directly from the vm (internal)
 //-----------------------------------------------------------------------------
-t_CKINT * Chuck_VM::get_ptr_to_external_int( std::string name )
+t_CKINT * Chuck_VM::get_ptr_to_global_int( std::string name )
 {
-    return &( m_external_ints[name]->val );
+    return &( m_global_ints[name]->val );
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: get_external_float()
-// desc: get an external float by name
+// name: get_global_float()
+// desc: get a global float by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::get_external_float( std::string name,
+t_CKBOOL Chuck_VM::get_global_float( std::string name,
                                        void (* callback)(t_CKFLOAT) )
 {
-    Chuck_Get_External_Float_Request * get_float_message =
-        new Chuck_Get_External_Float_Request;
+    Chuck_Get_Global_Float_Request * get_float_message =
+        new Chuck_Get_Global_Float_Request;
     get_float_message->name = name;
     get_float_message->fp = callback;
     
-    Chuck_External_Request r;
-    r.type = get_external_float_request;
+    Chuck_Global_Request r;
+    r.type = get_global_float_request;
     r.getFloatRequest = get_float_message;
 
-    m_external_request_queue.put( r );
+    m_global_request_queue.put( r );
     
     return TRUE;
 }
@@ -1386,21 +1386,21 @@ t_CKBOOL Chuck_VM::get_external_float( std::string name,
 
 
 //-----------------------------------------------------------------------------
-// name: set_external_float()
-// desc: set an external float by name
+// name: set_global_float()
+// desc: set a global float by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::set_external_float( std::string name, t_CKFLOAT val )
+t_CKBOOL Chuck_VM::set_global_float( std::string name, t_CKFLOAT val )
 {
-    Chuck_Set_External_Float_Request * set_float_message =
-        new Chuck_Set_External_Float_Request;
+    Chuck_Set_Global_Float_Request * set_float_message =
+        new Chuck_Set_Global_Float_Request;
     set_float_message->name = name;
     set_float_message->val = val;
     
-    Chuck_External_Request r;
-    r.type = set_external_float_request;
+    Chuck_Global_Request r;
+    r.type = set_global_float_request;
     r.setFloatRequest = set_float_message;
 
-    m_external_request_queue.put( r );
+    m_global_request_queue.put( r );
     
     return TRUE;
 }
@@ -1409,14 +1409,14 @@ t_CKBOOL Chuck_VM::set_external_float( std::string name, t_CKFLOAT val )
 
 
 //-----------------------------------------------------------------------------
-// name: init_external_float()
-// desc: tell the vm that an external float is now available
+// name: init_global_float()
+// desc: tell the vm that a global float is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_external_float( std::string name )
+t_CKBOOL Chuck_VM::init_global_float( std::string name )
 {
-    if( m_external_floats.count( name ) == 0 )
+    if( m_global_floats.count( name ) == 0 )
     {
-        m_external_floats[name] = new Chuck_External_Float_Container;
+        m_global_floats[name] = new Chuck_Global_Float_Container;
     }
     
     return TRUE;
@@ -1426,48 +1426,48 @@ t_CKBOOL Chuck_VM::init_external_float( std::string name )
 
 
 //-----------------------------------------------------------------------------
-// name: get_external_float_value()
+// name: get_global_float_value()
 // desc: get a value directly from the vm (internal)
 //-----------------------------------------------------------------------------
-t_CKFLOAT Chuck_VM::get_external_float_value( std::string name )
+t_CKFLOAT Chuck_VM::get_global_float_value( std::string name )
 {
     // ensure exists
-    init_external_float( name );
+    init_global_float( name );
     
-    return m_external_floats[name]->val;
+    return m_global_floats[name]->val;
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: get_ptr_to_external_float()
+// name: get_ptr_to_global_float()
 // desc: get a pointer directly to the vm (internal)
 //-----------------------------------------------------------------------------
-t_CKFLOAT * Chuck_VM::get_ptr_to_external_float( std::string name )
+t_CKFLOAT * Chuck_VM::get_ptr_to_global_float( std::string name )
 {
-    return &( m_external_floats[name]->val );
+    return &( m_global_floats[name]->val );
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: signal_external_event()
+// name: signal_global_event()
 // desc: signal() an Event by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::signal_external_event( std::string name )
+t_CKBOOL Chuck_VM::signal_global_event( std::string name )
 {
-    Chuck_Signal_External_Event_Request * signal_event_message =
-        new Chuck_Signal_External_Event_Request;
+    Chuck_Signal_Global_Event_Request * signal_event_message =
+        new Chuck_Signal_Global_Event_Request;
     signal_event_message->name = name;
     signal_event_message->is_broadcast = FALSE;
     
-    Chuck_External_Request r;
-    r.type = signal_external_event_request;
+    Chuck_Global_Request r;
+    r.type = signal_global_event_request;
     r.signalEventRequest = signal_event_message;
 
-    m_external_request_queue.put( r );
+    m_global_request_queue.put( r );
     
     return TRUE;
 }
@@ -1476,21 +1476,21 @@ t_CKBOOL Chuck_VM::signal_external_event( std::string name )
 
 
 //-----------------------------------------------------------------------------
-// name: broadcast_external_event()
+// name: broadcast_global_event()
 // desc: broadcast() an Event by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::broadcast_external_event( std::string name )
+t_CKBOOL Chuck_VM::broadcast_global_event( std::string name )
 {
-    Chuck_Signal_External_Event_Request * signal_event_message =
-        new Chuck_Signal_External_Event_Request;
+    Chuck_Signal_Global_Event_Request * signal_event_message =
+        new Chuck_Signal_Global_Event_Request;
     signal_event_message->name = name;
     signal_event_message->is_broadcast = TRUE;
     
-    Chuck_External_Request r;
-    r.type = signal_external_event_request;
+    Chuck_Global_Request r;
+    r.type = signal_global_event_request;
     r.signalEventRequest = signal_event_message;
 
-    m_external_request_queue.put( r );
+    m_global_request_queue.put( r );
     
     return TRUE;
 }
@@ -1499,26 +1499,26 @@ t_CKBOOL Chuck_VM::broadcast_external_event( std::string name )
 
 
 //-----------------------------------------------------------------------------
-// name: init_external_event()
-// desc: tell the vm that an external float is now available
+// name: init_global_event()
+// desc: tell the vm that a global float is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_external_event( std::string name, Chuck_Type * type )
+t_CKBOOL Chuck_VM::init_global_event( std::string name, Chuck_Type * type )
 {
     // if it hasn't been initted yet
-    if( m_external_events.count( name ) == 0 ) {
+    if( m_global_events.count( name ) == 0 ) {
         // create a new storage container
-        m_external_events[name] = new Chuck_External_Event_Container;
+        m_global_events[name] = new Chuck_Global_Event_Container;
         // create the chuck object
-        m_external_events[name]->val =
+        m_global_events[name]->val =
             (Chuck_Event *) instantiate_and_initialize_object( type, this );
         // add a reference to it so it won't be deleted until we're done
         // cleaning up the VM
-        m_external_events[name]->val->add_ref();
+        m_global_events[name]->val->add_ref();
         // store its type in the container, too (is it a user-defined class?)
-        m_external_events[name]->type = type;
+        m_global_events[name]->type = type;
     }
     // already exists. check if there's a type mismatch.
-    else if( type->name != m_external_events[name]->type->name )
+    else if( type->name != m_global_events[name]->type->name )
     {
         return FALSE;
     }
@@ -1530,74 +1530,74 @@ t_CKBOOL Chuck_VM::init_external_event( std::string name, Chuck_Type * type )
 
 
 //-----------------------------------------------------------------------------
-// name: get_external_event()
+// name: get_global_event()
 // desc: get a pointer directly from the vm (internal)
 //-----------------------------------------------------------------------------
-Chuck_Event * Chuck_VM::get_external_event( std::string name )
+Chuck_Event * Chuck_VM::get_global_event( std::string name )
 {
-    return m_external_events[name]->val;
+    return m_global_events[name]->val;
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: get_ptr_to_external_event()
+// name: get_ptr_to_global_event()
 // desc: get a pointer pointer directly from the vm (internal)
 //-----------------------------------------------------------------------------
-Chuck_Event * * Chuck_VM::get_ptr_to_external_event( std::string name )
+Chuck_Event * * Chuck_VM::get_ptr_to_global_event( std::string name )
 {
-    return &( m_external_events[name]->val );
+    return &( m_global_events[name]->val );
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: cleanup_external_variables()
+// name: cleanup_global_variables()
 // desc: set a pointer directly on the vm (internal)
 //-----------------------------------------------------------------------------
-void Chuck_VM::cleanup_external_variables()
+void Chuck_VM::cleanup_global_variables()
 {
     // ints: delete containers and clear map
-    for( std::map< std::string, Chuck_External_Int_Container * >::iterator it=
-         m_external_ints.begin(); it!=m_external_ints.end(); it++ )
+    for( std::map< std::string, Chuck_Global_Int_Container * >::iterator it=
+         m_global_ints.begin(); it!=m_global_ints.end(); it++ )
     {
         delete (it->second);
     }
-    m_external_ints.clear();
+    m_global_ints.clear();
     
     // floats: delete containers and clear map
-    for( std::map< std::string, Chuck_External_Float_Container * >::iterator it=
-         m_external_floats.begin(); it!=m_external_floats.end(); it++ )
+    for( std::map< std::string, Chuck_Global_Float_Container * >::iterator it=
+         m_global_floats.begin(); it!=m_global_floats.end(); it++ )
     {
         delete (it->second);
     }
-    m_external_floats.clear();
+    m_global_floats.clear();
     
     // events: release events, delete containers, and clear map
-    for( std::map< std::string, Chuck_External_Event_Container * >::iterator it=
-         m_external_events.begin(); it!=m_external_events.end(); it++ )
+    for( std::map< std::string, Chuck_Global_Event_Container * >::iterator it=
+         m_global_events.begin(); it!=m_global_events.end(); it++ )
     {
         SAFE_RELEASE( it->second->val );
         delete (it->second);
     }
-    m_external_events.clear();
+    m_global_events.clear();
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: handle_external_queue_messages()
+// name: handle_global_queue_messages()
 // desc: update vm with set, get, listen, spork, etc. messages
 //-----------------------------------------------------------------------------
-void Chuck_VM::handle_external_queue_messages()
+void Chuck_VM::handle_global_queue_messages()
 {
-    while( m_external_request_queue.more() )
+    while( m_global_request_queue.more() )
     {
-        Chuck_External_Request message;
-        if( m_external_request_queue.get( & message ) )
+        Chuck_Global_Request message;
+        if( m_global_request_queue.get( & message ) )
         {
             switch( message.type )
             {
@@ -1607,56 +1607,56 @@ void Chuck_VM::handle_external_queue_messages()
                 this->spork( message.shred );
                 break;
 
-            case set_external_int_request:
+            case set_global_int_request:
                 // ensure the container exists
-                init_external_int( message.setIntRequest->name );
+                init_global_int( message.setIntRequest->name );
                 // set int
-                m_external_ints[message.setIntRequest->name]->val = message.setIntRequest->val;
+                m_global_ints[message.setIntRequest->name]->val = message.setIntRequest->val;
                 // clean up request storage
                 delete message.setIntRequest;
                 break;
 
-            case get_external_int_request:
+            case get_global_int_request:
                 // ensure fp is not null
                 if( message.getIntRequest->fp != NULL )
                 {
                     // ensure the value exists
-                    init_external_int( message.getIntRequest->name );
+                    init_global_int( message.getIntRequest->name );
                     // call the callback with the value
-                    message.getIntRequest->fp( m_external_ints[message.getIntRequest->name]->val );
+                    message.getIntRequest->fp( m_global_ints[message.getIntRequest->name]->val );
                 }
                 // clean up request storage
                 delete message.getIntRequest;
                 break;
 
-            case set_external_float_request:
+            case set_global_float_request:
                 // ensure the container exists
-                init_external_float( message.setFloatRequest->name );
+                init_global_float( message.setFloatRequest->name );
                 // set float
-                m_external_floats[message.setFloatRequest->name]->val = message.setFloatRequest->val;
+                m_global_floats[message.setFloatRequest->name]->val = message.setFloatRequest->val;
                 // clean up request storage
                 delete message.setFloatRequest;
                 break;
 
-            case get_external_float_request:
+            case get_global_float_request:
                 // ensure fp is not null
                 if( message.getFloatRequest->fp != NULL )
                 {
                     // ensure value exists
-                    init_external_float( message.getFloatRequest->name );
+                    init_global_float( message.getFloatRequest->name );
                     // call callback with float
-                    message.getFloatRequest->fp( m_external_floats[message.getFloatRequest->name]->val );
+                    message.getFloatRequest->fp( m_global_floats[message.getFloatRequest->name]->val );
                 }
                 // clean up request storage
                 delete message.getFloatRequest;
                 break;
 
-            case signal_external_event_request:
+            case signal_global_event_request:
                 // ensure it exists and it doesn't need its ctor called
-                if( m_external_events.count( message.signalEventRequest->name ) > 0 )
+                if( m_global_events.count( message.signalEventRequest->name ) > 0 )
                 {
                     // get the event
-                    Chuck_Event * event = get_external_event( message.signalEventRequest->name );
+                    Chuck_Event * event = get_global_event( message.signalEventRequest->name );
                     // signal it, or broadcast it
                     if( message.signalEventRequest->is_broadcast )
                     {

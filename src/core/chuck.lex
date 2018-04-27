@@ -251,6 +251,7 @@ const                   { adjust(); return CONST; }
 spork                   { adjust(); return SPORK; }
 typeof                  { adjust(); return TYPEOF; }
 external                { adjust(); return EXTERNAL; }
+global                  { adjust(); return GLOBAL; }
 
 "=>"                    { adjust(); return CHUCK; }
 "=<"                    { adjust(); return UNCHUCK; }
