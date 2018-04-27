@@ -1,1 +1,0 @@
-[101.ck]:line(9): external Event 'e' has different type 'myEvent' than already existing external Event of the same name

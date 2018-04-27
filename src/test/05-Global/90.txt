@@ -1,0 +1,1 @@
+[chuck](VM): NullPointerException: on line[4] in shred[id=1:./05-Global/90.ck]

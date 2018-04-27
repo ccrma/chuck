@@ -229,16 +229,16 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
     // error-checking: was dac-replacement initted?
     if( emit->should_replace_dac )
     {
-        if( !emit->env->vm()->is_external_ugen_init( emit->dac_replacement ) )
+        if( !emit->env->vm()->is_global_ugen_init( emit->dac_replacement ) )
         {
             EM_error2( 0, "compiler error: dac replacement '%s' was never initialized...",
                 emit->dac_replacement.c_str() );
-            EM_error2( 0, " ... (hint: need to declare this variable as an external UGen)" );
+            EM_error2( 0, " ... (hint: need to declare this variable as a global UGen)" );
             ret = FALSE;
         }
     
         // (also need to make sure it was constructed; see runtime error in
-        // Chuck_Instr_Reg_Push_External)
+        // Chuck_Instr_Reg_Push_Global)
     }
 
     if( ret )
@@ -2904,13 +2904,13 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         }
         else if( exp->var == insert_symbol( "dac" ) )
         {
-            // should replace dac with external ugen?
+            // should replace dac with global ugen?
             if( emit->should_replace_dac )
             {
-                // push the external UGen on to the stack
-                Chuck_Instr_Reg_Push_External * instr =
-                    new Chuck_Instr_Reg_Push_External(
-                        emit->dac_replacement, te_externalUGen );
+                // push the global UGen on to the stack
+                Chuck_Instr_Reg_Push_Global * instr =
+                    new Chuck_Instr_Reg_Push_Global(
+                        emit->dac_replacement, te_globalUGen );
                 instr->set_linepos( exp->linepos );
                 emit->append( instr );
             }
@@ -4038,43 +4038,43 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
     t_CKBOOL is_ref = FALSE;
     t_CKBOOL is_init = FALSE;
     t_CKBOOL is_array = FALSE;
-    t_CKBOOL needs_external_ctor = FALSE;
+    t_CKBOOL needs_global_ctor = FALSE;
     
     t_CKTYPE t = type_engine_find_type( emit->env, decl->type->xid );
-    te_ExternalType externalType;
+    te_GlobalType globalType;
     
-    if( decl->is_external )
+    if( decl->is_global )
     {
         if( isa( t, emit->env->t_int ) )
         {
-            externalType = te_externalInt;
+            globalType = te_globalInt;
         }
         else if( isa( t, emit->env->t_float ) )
         {
-            externalType = te_externalFloat;
+            globalType = te_globalFloat;
         }
         else if( isa( t, emit->env->t_string ) )
         {
-            externalType = te_externalString;
+            globalType = te_globalString;
         }
         else if( isa( t, emit->env->t_event ) )
         {
             // kind-of-event (te_Type for this would be te_user, which is not helpful)
-            externalType = te_externalEvent;
+            globalType = te_globalEvent;
             // need to call ctors
-            needs_external_ctor = TRUE;
+            needs_global_ctor = TRUE;
         }
         else if( isa( t, emit->env->t_ugen ) )
         {
-            // kind-of-ugen (te_Type might not be te_ugen, so we store externalUGen in our own field)
-            externalType = te_externalUGen;
+            // kind-of-ugen (te_Type might not be te_ugen, so we store globalUGen in our own field)
+            globalType = te_globalUGen;
             // need to call ctors
-            needs_external_ctor = TRUE;
+            needs_global_ctor = TRUE;
         }
         else
         {
             // fail if type unsupported
-            EM_error2( decl->linepos, (std::string("unsupported type for external keyword: ") + t->name).c_str() );
+            EM_error2( decl->linepos, (std::string("unsupported type for global keyword: ") + t->name).c_str() );
             EM_error2( decl->linepos, "... (supported types: int, float, string, Event, UGen)" );
             return FALSE;
         }
@@ -4109,7 +4109,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 // ... then check to see if empty []
                 // and only instantiate if NOT empty
                 // REFACTOR-2017 TODO: do we want to
-                //  avoid doing this if the array is external?
+                //  avoid doing this if the array is global?
                 if( list->var_decl->array->exp_list )
                 {
                     // set
@@ -4122,9 +4122,9 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             else if( !is_ref )
             {
                 // REFACTOR-2017: don't emit instructions to instantiate
-                // non-array external variables -- they are init/instantiated
+                // non-array global variables -- they are init/instantiated
                 // during emit (see below in this function)
-                if( !decl->is_external )
+                if( !decl->is_global )
                 {
                     // set
                     is_init = TRUE;
@@ -4189,7 +4189,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 // allocate a place on the local stack
                 // (added 1.3.0.0 -- is_obj for tracking objects ref count on stack)
                 local = emit->alloc_local( type->size, value->name,
-                    is_ref, is_obj, decl->is_external );
+                    is_ref, is_obj, decl->is_global );
                 if( !local )
                 {
                     EM_error2( decl->linepos,
@@ -4201,17 +4201,17 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 // put in the value
                 value->offset = local->offset;
 
-                // REFACTOR-2017: external declaration
-                if( decl->is_external )
+                // REFACTOR-2017: global declaration
+                if( decl->is_global )
                 {
-                    Chuck_Instr_Alloc_Word_External * instr = new Chuck_Instr_Alloc_Word_External();
+                    Chuck_Instr_Alloc_Word_Global * instr = new Chuck_Instr_Alloc_Word_Global();
                     instr->m_name = value->name;
-                    instr->m_type = externalType;
+                    instr->m_type = globalType;
                     instr->set_linepos( decl->linepos );
                     instr->m_is_array = is_array;
                     
                     // extra fields for objects that need their ctors called
-                    if( needs_external_ctor )
+                    if( needs_global_ctor )
                     {
                         instr->m_chuck_type = type;
                         instr->m_stack_offset = local->offset;
@@ -4219,27 +4219,27 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     }
                     
                     // if it's an event, we need to initialize it and check if the exact type matches
-                    if( externalType == te_externalEvent )
+                    if( globalType == te_globalEvent )
                     {
                         // init and construct it now!
-                        if( !emit->env->vm()->init_external_event( value->name, t ) )
+                        if( !emit->env->vm()->init_global_event( value->name, t ) )
                         {
                             // if the type doesn't exactly match (different kinds of Event), then fail.
                             EM_error2( decl->linepos,
-                                "external Event '%s' has different type '%s' than already existing external Event of the same name",
+                                "global Event '%s' has different type '%s' than already existing global Event of the same name",
                                 value->name.c_str(), t->name.c_str() );
                             return FALSE;
                         }
                     }
                     // if it's a ugen, we need to initialize it and check if the exact type matches
-                    else if( externalType == te_externalUGen )
+                    else if( globalType == te_globalUGen )
                     {
                         // init and construct it now!
-                        if( !emit->env->vm()->init_external_ugen( value->name, t ) )
+                        if( !emit->env->vm()->init_global_ugen( value->name, t ) )
                         {
                             // if the type doesn't exactly match (different kinds of Event), then fail.
                             EM_error2( decl->linepos,
-                                "external UGen '%s' has different type '%s' than already existing external UGen of the same name",
+                                "global UGen '%s' has different type '%s' than already existing global UGen of the same name",
                                 value->name.c_str(), t->name.c_str() );
                             return FALSE;
                         }
@@ -4317,9 +4317,9 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             else if( !is_ref )
             {
                 // REFACTOR-2017: don't add an Assign_Object instruction for
-                // external objects -- they should be instantiated during emit,
+                // global objects -- they should be instantiated during emit,
                 // not during runtime and therefore don't need an assign instr
-                if( !decl->is_external )
+                if( !decl->is_global )
                 {
                     // set
                     is_init = TRUE;
@@ -4863,40 +4863,40 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         return FALSE;
     }
     
-    // if external, find what type
+    // if global, find what type
     // (due to user classes, this info is only available during emit)
-    te_ExternalType external_type;
-    if( v->is_external )
+    te_GlobalType global_type;
+    if( v->is_global )
     {
         if( isa( v->type, emit->env->t_int ) )
         {
-            external_type = te_externalInt;
+            global_type = te_globalInt;
         }
         else if( isa( v->type, emit->env->t_float ) )
         {
-            external_type = te_externalFloat;
+            global_type = te_globalFloat;
         }
         else if( isa( v->type, emit->env->t_string ) )
         {
-            external_type = te_externalString;
+            global_type = te_globalString;
         }
         else if( isa( v->type, emit->env->t_event ) )
         {
-            external_type = te_externalEvent;
+            global_type = te_globalEvent;
         }
         else if( isa( v->type, emit->env->t_ugen ) )
         {
-            external_type = te_externalUGen;
+            global_type = te_globalUGen;
         }
         else if( isa( v->type, emit->env->t_array ) )
         {
-            external_type = te_externalArraySymbol;
+            global_type = te_globalArraySymbol;
         }
         else
         {
             // internal error
             EM_error2( linepos,
-                "(emit): internal error: unknown external type '%s'...",
+                "(emit): internal error: unknown global type '%s'...",
                 v->type->name.c_str() );
             return FALSE;
         }
@@ -4936,9 +4936,9 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
     if( emit_var )
     {
         // emit as addr
-        if( v->is_external )
+        if( v->is_global )
         {
-            emit->append( new Chuck_Instr_Reg_Push_External_Addr( v->name, external_type ) );
+            emit->append( new Chuck_Instr_Reg_Push_Global_Addr( v->name, global_type ) );
         }
         else
         {
@@ -4950,10 +4950,10 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         // special case
         if( v->func_ref )
             emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)v->func_ref ) );
-        else if( v->is_external )
+        else if( v->is_global )
         {
-            Chuck_Instr_Reg_Push_External * instr =
-                new Chuck_Instr_Reg_Push_External( v->name, external_type );
+            Chuck_Instr_Reg_Push_Global * instr =
+                new Chuck_Instr_Reg_Push_Global( v->name, global_type );
             instr->set_linepos( linepos );
             emit->append( instr );
         }
@@ -5006,10 +5006,10 @@ void Chuck_Emitter::addref_on_scope()
         // check to see if it's an object
         if( local->is_obj )
         {
-            // REFACTOR-2017: Don't do if local is external
+            // REFACTOR-2017: Don't do if local is global
             // Note: I don't think addref_on_scope() is used anywhere,
             // but I am doing this to mirror pop_scope() below, which IS used
-            if( !local->is_external )
+            if( !local->is_global )
             {
                 // emit instruction to add reference
                 this->append( new Chuck_Instr_AddRef_Object2( local->offset ) );
@@ -5044,8 +5044,8 @@ void Chuck_Emitter::pop_scope( )
         // check to see if it's an object
         if( local->is_obj )
         {
-            // (REFACTOR-2017: don't release external objects)
-            if( !local->is_external )
+            // (REFACTOR-2017: don't release global objects)
+            if( !local->is_global )
             {
                 // emit instruction to release the object
                 this->append( new Chuck_Instr_Release_Object2( local->offset ) );

@@ -1,0 +1,3 @@
+3 :(int)
+0 :(int)
+[chuck](VM): ArrayOutofBounds: on line[5] in shred[id=1:./05-Global/80.ck], index=[2]

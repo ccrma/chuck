@@ -186,7 +186,7 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
     // add buffered
     func = make_new_mfun( "int", "buffered", ugen_buffered );
     func->add_arg( "int", "val" );
-    func->doc = "Set the ugen's buffered operation mode. If true, the ugen stores a buffer of its most recent samples, which can be fetched using external variables in the host language.";
+    func->doc = "Set the ugen's buffered operation mode. If true, the ugen stores a buffer of its most recent samples, which can be fetched using global variables in the host language.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "buffered", ugen_cget_buffered );
     func->doc = "Return the ugen's buffered operation mode.";
@@ -2739,14 +2739,14 @@ CK_DLL_MFUN( event_signal )
 {
     Chuck_Event * d = (Chuck_Event *)SELF;
     d->signal();
-    d->signal_external();
+    d->signal_global();
 }
 
 CK_DLL_MFUN( event_broadcast )
 {
     Chuck_Event * d = (Chuck_Event *)SELF;
     d->broadcast();
-    d->broadcast_external();
+    d->broadcast_global();
 }
 
 CK_DLL_MFUN( event_wait )
