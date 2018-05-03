@@ -38,6 +38,7 @@
 #include "chuck_errmsg.h"
 #include "ugen_xxx.h"
 #include "hidio_sdl.h"  // 1.4.0.0
+#include "midiio_rtmidi.h"  // 1.4.0.1
 
 
 #include <algorithm>
@@ -342,6 +343,8 @@ t_CKBOOL Chuck_VM::shutdown()
     EM_log( CK_LOG_SYSTEM, "unregistering VM from HID manager..." );
     // clean up this vm
     HidInManager::cleanup_buffer( this );
+    EM_log( CK_LOG_SYSTEM, "unregistering VM from MIDI manager..." );
+    MidiInManager::cleanup_buffer( this );
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing msg/reply/event buffers..." );
