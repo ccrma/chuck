@@ -599,7 +599,7 @@ void Chuck_Shell::continue_code( string & in )
 void Chuck_Shell::do_code( string & code, string & out, string command )
 {
     // open a temporary file
-#if defined(__PLATFORM_LINUX__) || defined(__MACOSX_CORE__)
+#if defined(__PLATFORM_LINUX__) || defined(__MACOSX_CORE__) || defined(__EMSCRIPTEN__)
     char tmp_dir[] = "/tmp";
     char * tmp_filepath = new char [32];
     strncpy( tmp_filepath, "/tmp/chuck_file.XXXXXX", 32 );

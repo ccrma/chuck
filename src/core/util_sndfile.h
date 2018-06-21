@@ -136,6 +136,24 @@
 #define TYPEOF_SF_COUNT_T off_t
 #endif
 
+#ifdef __EMSCRIPTEN__
+#define CPU_CLIPS_POSITIVE 1
+#ifdef __LITTLE_ENDIAN__
+#define CPU_IS_BIG_ENDIAN 0
+#define CPU_IS_LITTLE_ENDIAN 1
+#define HAVE_LRINTF 1
+#define HAVE_LRINT 1
+#else
+#define CPU_IS_BIG_ENDIAN 1
+#define CPU_IS_LITTLE_ENDIAN 0
+#endif
+#define HAVE_PREAD 1
+#define HAVE_PWRITE 1
+#define OS_IS_MACOSX 1
+#define OS_IS_WIN32 0
+#define TYPEOF_SF_COUNT_T off_t
+#endif
+
 #if     defined(__PLATFORM_WIN32__) //Dev Studio
 #define CPU_CLIPS_POSITIVE 0
 #define CPU_IS_BIG_ENDIAN 0

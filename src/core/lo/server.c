@@ -18,6 +18,12 @@
 #include "config.h"
 #endif
 
+// include config.h for emscripten
+#ifdef __EMSCRIPTEN__
+#include "config.h"
+#endif
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

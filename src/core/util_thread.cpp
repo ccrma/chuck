@@ -69,7 +69,7 @@ XThread::~XThread( )
 {
     if( thread != 0 )
     {
-#if defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__)
+#if defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__EMSCRIPTEN__)
         pthread_cancel(thread);
         pthread_join(thread, NULL);
 #elif defined(__PLATFORM_WIN32__)
@@ -89,7 +89,7 @@ bool XThread::start( THREAD_FUNCTION routine, void * ptr )
 {
     bool result = false;
     
-#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__EMSCRIPTEN__) )
     if( pthread_create( &thread, NULL, *routine, ptr ) == 0 )
         result = true;
 #elif defined(__PLATFORM_WIN32__)
@@ -111,7 +111,7 @@ bool XThread::wait( long milliseconds, bool cancel )
 {
     bool result = false;
     
-#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__EMSCRIPTEN__) )
     if(cancel) pthread_cancel(thread);
     pthread_join(thread, NULL);
 #elif defined(__PLATFORM_WIN32__)
@@ -138,7 +138,7 @@ bool XThread::wait( long milliseconds, bool cancel )
 //-----------------------------------------------------------------------------
 void XThread :: test( )
 {
-#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__EMSCRIPTEN__) )
     pthread_testcancel();
 #endif
 }
@@ -152,7 +152,7 @@ void XThread :: test( )
 //-----------------------------------------------------------------------------
 XMutex::XMutex( )
 {
-#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__EMSCRIPTEN__) )
     pthread_mutex_init(&mutex, NULL);
 #elif defined(__PLATFORM_WIN32__)
     InitializeCriticalSection(&mutex);
@@ -168,7 +168,7 @@ XMutex::XMutex( )
 //-----------------------------------------------------------------------------
 XMutex::~XMutex( )
 {
-#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__EMSCRIPTEN__) )
     pthread_mutex_destroy( &mutex );
 #elif defined(__PLATFORM_WIN32__)
     DeleteCriticalSection(&mutex);
@@ -184,7 +184,7 @@ XMutex::~XMutex( )
 //-----------------------------------------------------------------------------
 void XMutex::acquire( )
 {
-#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__EMSCRIPTEN__) )
     pthread_mutex_lock(&mutex);
 #elif defined(__PLATFORM_WIN32__)
     EnterCriticalSection(&mutex);
@@ -200,7 +200,7 @@ void XMutex::acquire( )
 //-----------------------------------------------------------------------------
 void XMutex::release( )
 {
-#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__EMSCRIPTEN__) )
     pthread_mutex_unlock(&mutex);
 #elif defined(__PLATFORM_WIN32__)
     LeaveCriticalSection(&mutex);
@@ -389,7 +389,7 @@ void XWriteThread::flush_data_buffer()
 // name: write_cb()
 // desc: thread function
 //-----------------------------------------------------------------------------
-#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__EMSCRIPTEN__) )
 void * XWriteThread::write_cb(void * _thiss)
 #elif defined(__PLATFORM_WIN32__)
 unsigned XWriteThread::write_cb(void * _thiss)

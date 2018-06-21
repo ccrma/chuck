@@ -7738,7 +7738,7 @@ const char * Keyboard_name( int k )
 
 #pragma mark Hid graveyard
 /***** empty functions for stuff that isn't yet cross platform *****/
-#ifndef __PLATFORM_MACOSX__
+#if !defined( __PLATFORM_MACOSX__ ) || defined(__EMSCRIPTEN__)
 /*** empty functions for Mac-only stuff ***/
 
 int Joystick_count_elements( int js, int type ) { return -1; }

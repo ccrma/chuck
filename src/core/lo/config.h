@@ -1,6 +1,6 @@
 
 
-#if defined(__MACOSX_CORE__) || defined(__PLATFORM_LINUX__)
+#if defined(__MACOSX_CORE__) || defined(__PLATFORM_LINUX__) || defined(__EMSCRIPTEN__)
 
 /* config.h.  Generated from config.h.in by configure.  */
 /* config.h.in.  Generated from configure.ac by autoheader.  */

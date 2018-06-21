@@ -373,6 +373,7 @@ char* CreatePathByExpandingTildePath(const char* path)
     
     assert(path != NULL);
     
+#ifndef __EMSCRIPTEN__ // sadness, not sure about GLOB_TILDE on emscripten so just fully disable
     if (glob(path, GLOB_TILDE, NULL, &globbuf) == 0) //success
     {
         v = globbuf.gl_pathv; //list of matched pathnames
@@ -384,6 +385,7 @@ char* CreatePathByExpandingTildePath(const char* path)
         
         globfree(&globbuf);
     }
+#endif
     
     return result;
 }

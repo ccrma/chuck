@@ -95,6 +95,9 @@ void io_addhistory( const char * addme )
 #ifdef __PLATFORM_MACOSX__
   #include <termios.h>
   static struct termios g_save;
+#elif defined(__EMSCRIPTEN__)
+  #include <termios.h>
+  static struct termios g_save;
 #else
   #include <termio.h>
   static struct termio g_save;
@@ -122,6 +125,9 @@ t_CKBOOL kb_initscr()
 #ifdef __PLATFORM_MACOSX__
     struct termios term;
     if( ioctl( 0, TIOCGETA, &term ) == -1 )
+#elif defined(__EMSCRIPTEN__)
+    struct termios term;
+    if( ioctl( 0, TCGETA, &term ) == -1 )
 #else
     struct termio term;
     if( ioctl( 0, TCGETA, &term ) == -1 )
@@ -144,6 +150,8 @@ t_CKBOOL kb_initscr()
 
 #ifdef __PLATFORM_MACOSX__
     ioctl( 0, TIOCSETA, &term );
+#elif defined(__EMSCRIPTEN__)
+    ioctl( 0, TCSETA, &term );
 #else
     ioctl( 0, TCSETA, &term );
 #endif
@@ -163,6 +171,8 @@ void kb_endwin()
 #ifndef __PLATFORM_WIN32__
 #ifdef __PLATFORM_MACOSX__
     ioctl( 0, TIOCSETA, &g_save );
+#elif defined(__EMSCRIPTEN__)
+    ioctl( 0, TCSETA, &g_save );
 #else
     ioctl( 0, TCSETA, &g_save );
 #endif

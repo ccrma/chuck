@@ -676,7 +676,12 @@ CK_DLL_SFUN( system_impl )
         EM_pushlog();
         EM_log( CK_LOG_SEVERE, "CMD: \"%s\"", cmd );
         EM_poplog();
+#ifdef __EMSCRIPTEN
+        CK_FPRINTF_STDERR( "[chuck]:error: VM not authorized to call Std.system( string ) on Web...\n" );
+        RETURN->v_int = 0;
+#else
         RETURN->v_int = system( cmd );
+#endif
     }
 }
 
