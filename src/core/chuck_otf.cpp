@@ -642,12 +642,17 @@ void * otf_cb( void * p )
     {
         // REFACTOR-2017: change g_sock to per-VM socket
         client = ck_accept( carrier->otf_socket );
+
+        // check for thread shutdown, potentially occured during ck_accept
+        if(!carrier->otf_thread) 
+            break;
+
         if( !client )
         {
             if( carrier->vm )
                 EM_log( CK_LOG_INFO, "[chuck]: socket error during accept()...\n" );
             usleep( 40000 );
-            ck_close( client );
+            // ck_close( client );  don't close NULL client
             continue;
         }
         msg.clear();
