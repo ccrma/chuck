@@ -154,6 +154,7 @@ Chuck_VM::Chuck_VM()
     
     // REFACTOR-2017: TODO might want to dynamically grow queue?
     m_global_request_queue.init( 16384 );
+    m_global_request_retry_queue.init( 16384 );
 }
 
 
@@ -1888,6 +1889,8 @@ t_CKBOOL Chuck_VM::broadcast_global_event( std::string name )
     Chuck_Global_Request r;
     r.type = signal_global_event_request;
     r.signalEventRequest = signal_event_message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -1913,6 +1916,8 @@ t_CKBOOL Chuck_VM::listen_for_global_event( std::string name,
     Chuck_Global_Request r;
     r.type = listen_for_global_event_request;
     r.listenForEventRequest = listen_event_message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -2127,6 +2132,8 @@ t_CKBOOL Chuck_VM::set_global_int_array( std::string name, t_CKINT arrayValues[]
     Chuck_Global_Request r;
     r.type = set_global_int_array_request;
     r.setIntArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -2150,6 +2157,8 @@ t_CKBOOL Chuck_VM::get_global_int_array( std::string name, void (* callback)(t_C
     Chuck_Global_Request r;
     r.type = get_global_int_array_request;
     r.getIntArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -2174,6 +2183,8 @@ t_CKBOOL Chuck_VM::set_global_int_array_value( std::string name, t_CKUINT index,
     Chuck_Global_Request r;
     r.type = set_global_int_array_value_request;
     r.setIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -2198,6 +2209,8 @@ t_CKBOOL Chuck_VM::get_global_int_array_value( std::string name, t_CKUINT index,
     Chuck_Global_Request r;
     r.type = get_global_int_array_value_request;
     r.getIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -2222,6 +2235,8 @@ t_CKBOOL Chuck_VM::set_global_associative_int_array_value( std::string name, std
     Chuck_Global_Request r;
     r.type = set_global_associative_int_array_value_request;
     r.setAssociativeIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -2246,6 +2261,8 @@ t_CKBOOL Chuck_VM::get_global_associative_int_array_value( std::string name, std
     Chuck_Global_Request r;
     r.type = get_global_associative_int_array_value_request;
     r.getAssociativeIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -2273,6 +2290,8 @@ t_CKBOOL Chuck_VM::set_global_float_array( std::string name, t_CKFLOAT arrayValu
     Chuck_Global_Request r;
     r.type = set_global_float_array_request;
     r.setFloatArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -2296,6 +2315,8 @@ t_CKBOOL Chuck_VM::get_global_float_array( std::string name, void (* callback)(t
     Chuck_Global_Request r;
     r.type = get_global_float_array_request;
     r.getFloatArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -2320,6 +2341,8 @@ t_CKBOOL Chuck_VM::set_global_float_array_value( std::string name, t_CKUINT inde
     Chuck_Global_Request r;
     r.type = set_global_float_array_value_request;
     r.setFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -2344,6 +2367,8 @@ t_CKBOOL Chuck_VM::get_global_float_array_value( std::string name, t_CKUINT inde
     Chuck_Global_Request r;
     r.type = get_global_float_array_value_request;
     r.getFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -2368,6 +2393,8 @@ t_CKBOOL Chuck_VM::set_global_associative_float_array_value( std::string name, s
     Chuck_Global_Request r;
     r.type = set_global_associative_float_array_value_request;
     r.setAssociativeFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -2392,6 +2419,8 @@ t_CKBOOL Chuck_VM::get_global_associative_float_array_value( std::string name, s
     Chuck_Global_Request r;
     r.type = get_global_associative_float_array_value_request;
     r.getAssociativeFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
 
     m_global_request_queue.put( r );
     
@@ -2591,8 +2620,12 @@ void Chuck_VM::cleanup_global_variables()
 //-----------------------------------------------------------------------------
 void Chuck_VM::handle_global_queue_messages()
 {
+    bool should_retry_this_request = false;
+
     while( m_global_request_queue.more() )
     {
+        should_retry_this_request = false;
+
         Chuck_Global_Request message;
         if( m_global_request_queue.get( & message ) )
         {
@@ -2689,8 +2722,24 @@ void Chuck_VM::handle_global_queue_messages()
                         event->signal_global();
                     }
                 }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+
                 // clean up request storage
-                delete message.signalEventRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.signalEventRequest;
+                }
                 break;
 
             case listen_for_global_event_request:
@@ -2714,9 +2763,24 @@ void Chuck_VM::handle_global_queue_messages()
                                 message.listenForEventRequest->listen_forever );
                         }
                     }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
                 }
                 // clean up request storage
-                delete message.listenForEventRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.listenForEventRequest;
+                }
                 break;
             case set_global_int_array_request:
                 {
@@ -2742,10 +2806,25 @@ void Chuck_VM::handle_global_queue_messages()
                             }
                         }
                     }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
                 }
                 
                 // clean up request storage
-                delete message.setIntArrayRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.setIntArrayRequest;
+                }
                 break;
             case get_global_int_array_request:
                 {
@@ -2768,10 +2847,25 @@ void Chuck_VM::handle_global_queue_messages()
                             );
                         }
                     }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
                 }
                 
                 // clean up request storage
-                delete message.getIntArrayRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.getIntArrayRequest;
+                }
                 break;
             case set_global_int_array_value_request:
                 {
@@ -2794,10 +2888,25 @@ void Chuck_VM::handle_global_queue_messages()
                             }
                         }
                     }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
                 }
                 
                 // clean up request storage
-                delete message.setIntArrayValueRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.setIntArrayValueRequest;
+                }
                 break;
             case get_global_int_array_value_request:
                 {
@@ -2820,10 +2929,25 @@ void Chuck_VM::handle_global_queue_messages()
                             request->callback( result );
                         }
                     }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
                 }
                 
                 // clean up request storage
-                delete message.getIntArrayValueRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.getIntArrayValueRequest;
+                }
                 break;
             case set_global_associative_int_array_value_request:
                 {
@@ -2843,10 +2967,25 @@ void Chuck_VM::handle_global_queue_messages()
                             intArray->set( request->key, request->value );
                         }
                     }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
                 }
                 
                 // clean up request storage
-                delete message.setAssociativeIntArrayValueRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.setAssociativeIntArrayValueRequest;
+                }
                 break;
             case get_global_associative_int_array_value_request:
                 {
@@ -2869,10 +3008,25 @@ void Chuck_VM::handle_global_queue_messages()
                             request->callback( result );
                         }
                     }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
                 }
                 
                 // clean up request storage
-                delete message.getAssociativeIntArrayValueRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.getAssociativeIntArrayValueRequest;
+                }
                 break;
             case set_global_float_array_request:
                 {
@@ -2898,10 +3052,25 @@ void Chuck_VM::handle_global_queue_messages()
                             }
                         }
                     }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
                 }
         
                 // clean up request storage
-                delete message.setFloatArrayRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.setFloatArrayRequest;
+                }
                 break;
             case get_global_float_array_request:
                 {
@@ -2923,10 +3092,25 @@ void Chuck_VM::handle_global_queue_messages()
                             );
                         }
                     }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
                 }
         
                 // clean up request storage
-                delete message.getFloatArrayRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.getFloatArrayRequest;
+                }
                 break;
             case set_global_float_array_value_request:
                 {
@@ -2949,10 +3133,25 @@ void Chuck_VM::handle_global_queue_messages()
                             }
                         }
                     }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
                 }
         
                 // clean up request storage
-                delete message.setFloatArrayValueRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.setFloatArrayValueRequest;
+                }
                 break;
             case get_global_float_array_value_request:
                 {
@@ -2974,10 +3173,25 @@ void Chuck_VM::handle_global_queue_messages()
                             request->callback( result );
                         }
                     }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
                 }
         
                 // clean up request storage
-                delete message.getFloatArrayValueRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.getFloatArrayValueRequest;
+                }
                 break;
             case set_global_associative_float_array_value_request:
                 {
@@ -2997,10 +3211,25 @@ void Chuck_VM::handle_global_queue_messages()
                             floatArray->set( request->key, request->value );
                         }
                     }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
                 }
         
                 // clean up request storage
-                delete message.setAssociativeFloatArrayValueRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.setAssociativeFloatArrayValueRequest;
+                }
                 break;
             case get_global_associative_float_array_value_request:
                 {
@@ -3022,12 +3251,53 @@ void Chuck_VM::handle_global_queue_messages()
                             request->callback( result );
                         }
                     }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
                 }
         
                 // clean up request storage
-                delete message.getAssociativeFloatArrayValueRequest;
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.getAssociativeFloatArrayValueRequest;
+                }
                 break;
             }
+        }
+        else
+        {
+            // get failed. problem?
+            break;
+        }
+    }
+    
+    // process retries
+    while( m_global_request_retry_queue.more() )
+    {
+        // get the request
+        Chuck_Global_Request message;
+        if( m_global_request_retry_queue.get( &message ) )
+        {
+            // make sure it should be retried
+            if( message.retries == 0 )
+            {
+                // trying to retry something that shouldn't be.
+                continue;
+            }
+
+            // decrement the number of retries
+            message.retries--;
+            // add it back to the queue for next time
+            m_global_request_queue.put( message );
         }
         else
         {
