@@ -459,6 +459,7 @@ enum Chuck_Global_Request_Type
 struct Chuck_Global_Request
 {
     Chuck_Global_Request_Type type;
+    t_CKUINT retries;
     union {
         // primitives
         Chuck_Set_Global_Int_Request * setIntRequest;
@@ -487,6 +488,11 @@ struct Chuck_Global_Request
         // shreds
         Chuck_VM_Shred * shred;
     };
+
+    Chuck_Global_Request()
+    {
+        retries = 0;
+    }
 
 };
 
@@ -712,6 +718,7 @@ private:
     std::map< std::string, Chuck_Global_Array_Container * > m_global_arrays;
     
     XCircleBuffer< Chuck_Global_Request > m_global_request_queue;
+    XCircleBuffer< Chuck_Global_Request > m_global_request_retry_queue;
 };
 
 
