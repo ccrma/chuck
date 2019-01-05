@@ -847,6 +847,10 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         m_shred_id = 0;
         m_num_shreds = 0;
     }
+    else if( msg->type == MSG_CLEARGLOBALS ) // added chunity
+    {
+        cleanup_global_variables();
+    }
     else if( msg->type == MSG_ADD )
     {
         t_CKUINT xid = 0;
