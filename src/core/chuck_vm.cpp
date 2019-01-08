@@ -1479,6 +1479,21 @@ struct Chuck_Get_Global_Associative_Float_Array_Value_Request
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Execute_Chuck_Msg_Request
+// desc: container for Chuck_Msg (but to be called from the globals callback
+//       rather than the Chuck_Msg callback)
+//-----------------------------------------------------------------------------
+struct Chuck_Execute_Chuck_Msg_Request
+{
+    Chuck_Msg * msg;
+    // constructor
+    Chuck_Execute_Chuck_Msg_Request() : msg(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Global_Int_Container
 // desc: container for global ints
 //-----------------------------------------------------------------------------
@@ -2435,6 +2450,29 @@ t_CKBOOL Chuck_VM::get_global_associative_float_array_value( std::string name, s
 
 
 //-----------------------------------------------------------------------------
+// name: execute_chuck_msg_with_globals()
+// desc: execute a Chuck_Msg in the globals callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::execute_chuck_msg_with_globals( Chuck_Msg * msg )
+{
+    Chuck_Execute_Chuck_Msg_Request * message =
+        new Chuck_Execute_Chuck_Msg_Request;
+    message->msg = msg;
+    
+    Chuck_Global_Request r;
+    r.type = execute_chuck_msg_request;
+    r.executeChuckMsgRequest = message;
+    r.retries = 0;
+
+    m_global_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: init_global_array()
 // desc: tell the vm that a global string is now available
 //-----------------------------------------------------------------------------
@@ -2635,6 +2673,15 @@ void Chuck_VM::handle_global_queue_messages()
         {
             switch( message.type )
             {
+            case execute_chuck_msg_request:
+                if( message.executeChuckMsgRequest->msg != NULL )
+                {
+                    // this will automatically delete msg if applicable
+                    process_msg( message.executeChuckMsgRequest->msg );
+                }
+                // clean up request storage
+                delete message.executeChuckMsgRequest;
+                break;
 
             case spork_shred_request:
                 // spork the shred!
@@ -3276,6 +3323,7 @@ void Chuck_VM::handle_global_queue_messages()
                 }
                 break;
             }
+        
         }
         else
         {

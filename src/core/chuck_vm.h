@@ -403,6 +403,7 @@ struct Chuck_Set_Global_Float_Array_Value_Request;
 struct Chuck_Get_Global_Float_Array_Value_Request;
 struct Chuck_Set_Global_Associative_Float_Array_Value_Request;
 struct Chuck_Get_Global_Associative_Float_Array_Value_Request;
+struct Chuck_Execute_Chuck_Msg_Request;
 
 // Forward references for global storage
 struct Chuck_Global_Int_Container;
@@ -446,7 +447,9 @@ enum Chuck_Global_Request_Type
     set_global_associative_float_array_value_request,
     get_global_associative_float_array_value_request,
     // shreds
-    spork_shred_request
+    spork_shred_request,
+    // chuck_msg
+    execute_chuck_msg_request
 };
 
 
@@ -487,6 +490,8 @@ struct Chuck_Global_Request
         Chuck_Get_Global_Associative_Float_Array_Value_Request * getAssociativeFloatArrayValueRequest;
         // shreds
         Chuck_VM_Shred * shred;
+        // chuck_msg
+        Chuck_Execute_Chuck_Msg_Request * executeChuckMsgRequest;
     };
 
     Chuck_Global_Request()
@@ -605,6 +610,10 @@ public:
     t_CKBOOL get_global_float_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKFLOAT) );
     t_CKBOOL set_global_associative_float_array_value( std::string name, std::string key, t_CKFLOAT value );
     t_CKBOOL get_global_associative_float_array_value( std::string name, std::string key, void (* callback)(t_CKFLOAT) );
+
+public:
+    // run Chuck_Msg in the globals order
+    t_CKBOOL execute_chuck_msg_with_globals( Chuck_Msg * msg );
     
 public:
     // REFACTOR-2017: externally accessible + global variables.
