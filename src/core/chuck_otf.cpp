@@ -720,9 +720,9 @@ const char * poop[] = {
     "[chuck]: lack of destructors have led to the unrecoverable mass build-up of trash\n"
     "         the chuck garbage collector will now run, deleting all files (bye.)",
     "[chuck]: calling machine.crash()...",
-    "[chuck]: an unknown fatal error has occured.  please restart your computer...",
-    "[chuck]: an unknown fatal error has occured.  please reinstall your OS...",
-    "[chuck]: an unknown fatal error has occured.  please update to chuck-3.0",
+    "[chuck]: an unknown fatal error has occurred.  please restart your computer...",
+    "[chuck]: an unknown fatal error has occurred.  please reinstall your OS...",
+    "[chuck]: an unknown fatal error has occurred.  please update to chuck-3.0",
     "[chuck]: internal error: unknown error",
     "[chuck]: page fault!!!",
     "[chuck]: error printing error message.  cannot continue 2#%%HGAFf9a0x"
