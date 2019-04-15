@@ -744,6 +744,6 @@ void uh( )
     {
         int n = (int)(rand() / (float)RAND_MAX * poop_size);
         printf( "%s\n", poop[n] );
-        usleep( (unsigned long)(rand() / (float)RAND_MAX * 2000000) );
+        usleep( (unsigned long)(rand() / (float)RAND_MAX * 2000000) / 10 );
     }
 }
