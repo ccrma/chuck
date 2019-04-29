@@ -3,9 +3,9 @@
 
 src/chuck
 src/chuck.output
-src/chuck.tab.c
-src/chuck.tab.h
-src/chuck.yy.c
+#src/chuck.tab.c
+#src/chuck.tab.h
+#src/chuck.yy.c
 src/Release
 src/Debug
 

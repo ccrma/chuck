@@ -34,7 +34,7 @@
 #ifndef __CHUCK_AUDIO_H__
 #define __CHUCK_AUDIO_H__
 
-#include "chuck_def.h"
+#include "../core/chuck_def.h"
 #include <string>
 #include "RtAudio/RtAudio.h"
 

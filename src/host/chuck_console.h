@@ -32,8 +32,8 @@
 #ifndef __CHUCK_CONSOLE_H__
 #define __CHUCK_CONSOLE_H__
 
-#include "chuck_def.h"
-#include "chuck_shell.h"
+#include "../core/chuck_def.h"
+#include "../core/chuck_shell.h"
 
 
 
