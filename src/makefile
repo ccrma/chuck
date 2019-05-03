@@ -6,7 +6,7 @@ CK_PLATFORM=
 
 ########################## DEFAULT MAKE TARGET #################################
 # default target: print usage message and quit
-current: 
+current:
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
 	@echo "   make osx, make cygwin, or make win32"
@@ -174,11 +174,11 @@ $(CXXOBJS_HOST): %.o: %.cpp
 	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
-clean: 
+clean:
 	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} $(OBJS) \
         $(patsubst %.o,%.d,$(OBJS))*~ $(COREDIR)/chuck.output \
         $(DIST_DIR){,.tgz,.zip} Release Debug
-	
+
 
 ############################### RUN TEST #######################################
 test:
@@ -198,7 +198,7 @@ src-dist:
 	mkdir $(DIST_DIR) $(DIST_DIR)/src $(DIST_DIR)/examples
 # copy src
 	git archive HEAD src | tar -x -C $(DIST_DIR)
-	rm -r $(DIST_DIR)/src/test 
+	rm -r $(DIST_DIR)/src/test
 # copy examples
 	git archive HEAD examples | tar -x -C $(DIST_DIR)
 # copy notes

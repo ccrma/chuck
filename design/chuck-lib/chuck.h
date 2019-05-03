@@ -36,9 +36,9 @@
 #ifndef __CHUCK_H__
 #define __CHUCK_H__
 
-#include "chuck_compile.h"
-#include "chuck_dl.h"
-#include "chuck_vm.h"
+#include "../../src/core/chuck_compile.h"
+#include "../../src/core/chuck_dl.h"
+#include "../../src/core/chuck_vm.h"
 #include <string>
 
 
@@ -73,8 +73,8 @@ public:
     bool setParam( const std::string & name, t_CKFLOAT value );
     bool setParam( const std::string & name, const std::string & value );
     // get params
-    t_ckINT getParamInt( const std::string & key ) const;
-    t_ckFLOAT getParamFloat( const std::string & key ) const;
+    t_CKkINT getParamInt( const std::string & key ) const;
+    t_CKFLOAT getParamFloat( const std::string & key ) const;
     std::string getParamString( const std::string & key ) const;
 
 public:

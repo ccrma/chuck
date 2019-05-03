@@ -2,7 +2,7 @@
 *.o
 
 src/chuck
-src/chuck.output
+src/core/chuck.output
 #src/chuck.tab.c
 #src/chuck.tab.h
 #src/chuck.yy.c
