@@ -12,3 +12,5 @@ src/Debug
 .DS_Store
 project.xcworkspace
 xcuserdata
+
+.vscode
