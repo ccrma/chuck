@@ -408,6 +408,7 @@ bool go( int argc, const char ** argv )
     t_CKBOOL auto_depend = FALSE;
     t_CKBOOL block = FALSE;
     // t_CKBOOL enable_shell = FALSE;
+    t_CKBOOL syntax_check_only = FALSE;
     t_CKBOOL no_vm = FALSE;
     t_CKBOOL load_hid = FALSE;
     t_CKBOOL enable_server = TRUE;
@@ -492,6 +493,8 @@ bool go( int argc, const char ** argv )
             // blocking removed, ge: 1.3.5.3
             // else if( !strcmp(argv[i], "--blocking") )
             //     block = TRUE;
+            else if( !strcmp(argv[i], "--syntax-check-only") )
+                syntax_check_only = TRUE;
             else if( !strcmp(argv[i], "--hid") )
                 load_hid = TRUE;
             else if( !strcmp(argv[i], "--shell") || !strcmp( argv[i], "-e" ) )
@@ -970,6 +973,9 @@ bool go( int argc, const char ** argv )
     // pop indent
     EM_poplog();
     
+    if( syntax_check_only )
+        return TRUE;
+
     // boost priority
     if( XThreadUtil::our_priority != 0x7fffffff )
     {
