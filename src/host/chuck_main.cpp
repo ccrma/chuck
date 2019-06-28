@@ -493,7 +493,7 @@ bool go( int argc, const char ** argv )
             // blocking removed, ge: 1.3.5.3
             // else if( !strcmp(argv[i], "--blocking") )
             //     block = TRUE;
-            else if( !strcmp(argv[i], "--syntax-check-only") ) {
+            else if( !strcmp(argv[i], "--syntax") ) {
                 syntax_check_only = TRUE;
                 g_enable_realtime_audio = FALSE;
             }
