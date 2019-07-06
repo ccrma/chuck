@@ -1464,8 +1464,11 @@ CK_DLL_CTRL( gen10_coeffs )
         // CK_FPRINTF_STDOUT( "weight %d = %f...\n", ii, v );
         d->coeffs[ii] = v;
     }
+    
+    // reset table - this allow not only to add but also to remove partials
+    for( i=0; i<genX_tableSize; i++ ) d->genX_table[i] = 0.;
 
-    j = genX_MAX_COEFFS;
+    j = size;
     while (j--) {
       if (d->coeffs[j] != 0) {
          for (i = 0; i < genX_tableSize; i++) {
