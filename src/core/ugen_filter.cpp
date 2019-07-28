@@ -1796,7 +1796,7 @@ CK_DLL_CTRL( RHPF_ctrl_set )
     t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
 
     // set
-    d->set_rlpf( freq, Q );
+    d->set_rhpf( freq, Q );
 }
 
 
