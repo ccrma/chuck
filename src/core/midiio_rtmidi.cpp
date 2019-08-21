@@ -163,7 +163,7 @@ t_CKBOOL MidiOut::open( t_CKUINT device_num )
     // close if already opened
     if( m_valid )
         this->close();
-    
+
     return m_valid = MidiOutManager::open( this, (t_CKINT)device_num );
 }
 
@@ -179,7 +179,7 @@ t_CKBOOL MidiOut::open( const std::string & name )
     // close if already opened
     if( m_valid )
         this->close();
-    
+
     return m_valid = MidiOutManager::open( this, name );
 }
 
@@ -288,7 +288,7 @@ t_CKUINT MidiOut::pitchbend( t_CKUINT channel, t_CKUINT bend_val )
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::allnotesoff( t_CKUINT channel )
 {
-    return this->send( (t_CKBYTE)(MIDI_CTRLCHANGE + channel), 
+    return this->send( (t_CKBYTE)(MIDI_CTRLCHANGE + channel),
                        (t_CKBYTE)(MIDI_ALLNOTESOFF), 0 );
 }
 
@@ -335,7 +335,7 @@ t_CKBOOL MidiIn::open( Chuck_VM * vm, t_CKUINT device_num )
     // close if already opened
     if( m_valid )
         this->close();
-    
+
     // open
     return m_valid = MidiInManager::open( this, vm, (t_CKINT)device_num );
 }
@@ -352,7 +352,7 @@ t_CKBOOL MidiIn::open( Chuck_VM * vm, const std::string & name )
     // close if already opened
     if( m_valid )
         this->close();
-    
+
     // open
     return m_valid = MidiInManager::open( this, vm, name );
 }
@@ -383,7 +383,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
         {
             m_event_buffers[vm] = vm->create_event_buffer();
         }
-        
+
         // allocate the buffer
         CBufferAdvance * cbuf = new CBufferAdvance;
         if( !cbuf->initialize( BUFFER_SIZE, sizeof(MidiMsg), m_event_buffers[vm] ) )
@@ -412,6 +412,8 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
             return FALSE;
         }
 
+        rtmin->ignoreTypes(false, false, false);
+
         // resize?
         if( device_num >= (t_CKINT)the_mins.capacity() )
         {
@@ -430,7 +432,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
     min->min = the_mins[device_num];
     // found
     min->m_buffer = the_bufs[device_num];
-    // get an index into your (you are min here) own buffer, 
+    // get an index into your (you are min here) own buffer,
     // and a free ticket to your own workshop
     min->m_read_index = min->m_buffer->join( (Chuck_Event *)min->SELF );
     min->m_device_num = (t_CKUINT)device_num;
@@ -445,11 +447,11 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
 t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, const std::string & name )
 {
     t_CKINT device_num = -1;
-    
-    try 
+
+    try
     {
         RtMidiIn * rtmin = new RtMidiIn;
-        
+
         t_CKINT count = rtmin->getPortCount();
         for(t_CKINT i = 0; i < count; i++)
         {
@@ -460,7 +462,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, const std::string & n
                 break;
             }
         }
-        
+
         if( device_num == -1 )
         {
             // search by substring
@@ -487,15 +489,15 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, const std::string & n
         }
         return FALSE;
     }
-    
+
     if(device_num == -1)
     {
         EM_error2( 0, "MidiOut: error locating MIDI port named %s", name.c_str() );
         return FALSE;
     }
-    
+
     t_CKBOOL result = open( min, vm, device_num );
-    
+
     return result;
 }
 
@@ -607,7 +609,7 @@ void probeMidiIn()
     t_CKUINT num = min->getPortCount();
     EM_error2b( 0, "------( chuck -- %i MIDI inputs )------", num );
     EM_reset_msg();
-    
+
     std::string s;
     for( t_CKUINT i = 0; i < num; i++ )
     {
@@ -615,7 +617,7 @@ void probeMidiIn()
         catch( RtMidiError & err )
         { err.printMessage(); return; }
         EM_error2b( 0, "    [%i] : \"%s\"", i, s.c_str() );
-        
+
         EM_reset_msg();
     }
 }
@@ -709,11 +711,11 @@ t_CKBOOL MidiOutManager::open( MidiOut * mout, t_CKINT device_num )
 t_CKBOOL MidiOutManager::open( MidiOut * mout, const std::string & name )
 {
     t_CKINT device_num = -1;
-    
-    try 
+
+    try
     {
         RtMidiOut * rtmout = new RtMidiOut;
-        
+
         t_CKINT count = rtmout->getPortCount();
         for(t_CKINT i = 0; i < count; i++)
         {
@@ -724,7 +726,7 @@ t_CKBOOL MidiOutManager::open( MidiOut * mout, const std::string & name )
                 break;
             }
         }
-        
+
         if( device_num == -1 )
         {
             // search by substring
@@ -751,15 +753,15 @@ t_CKBOOL MidiOutManager::open( MidiOut * mout, const std::string & name )
         }
         return FALSE;
     }
-    
+
     if(device_num == -1)
     {
         EM_error2( 0, "MidiOut: error locating MIDI port named %s", name.c_str() );
         return FALSE;
     }
-    
+
     t_CKBOOL result = open( mout, device_num );
-    
+
     return result;
 }
 
@@ -784,7 +786,7 @@ t_CKBOOL midirw_detach( )
         list.push_back( (*iter).second );
     for( t_CKUINT i = 0; i < list.size(); i++ )
         list[i]->close();
-    
+
     // TODO: release the MidiRW
     g_rw.clear();
 
@@ -816,7 +818,7 @@ t_CKBOOL MidiRW::close()
     if( !file ) return FALSE;
 
     t_CKBOOL value = fclose( file ) == 0;
-    
+
     // remove from hash
     std::map<MidiRW *, MidiRW *>::iterator iter;
     iter = g_rw.find( this );
@@ -833,13 +835,13 @@ t_CKBOOL MidiRW::read( MidiMsg * msg, t_CKTIME * time )
         return FALSE;
 
     // is it open? i don't know...
-    
+
     t_CKBOOL m, t;
-    
+
     // wouldn't it be cool if this worked?
     m = fread( msg, sizeof(MidiMsg), 1, file );
     t = fread( time, sizeof(t_CKTIME), 1, file );
-    
+
     return m && t;
 }
 
@@ -877,7 +879,7 @@ t_CKBOOL out_detach( )
         list.push_back( (*iter).second );
     for( t_CKUINT i = 0; i < list.size(); i++ )
         list[i]->close();
-    
+
     return TRUE;
 }
 
@@ -902,7 +904,7 @@ t_CKBOOL MidiMsgOut::close()
     if( !file ) return FALSE;
 
     t_CKBOOL value = fclose( file ) == 0;
-    
+
     // remove from hash
     std::map<MidiMsgOut *, MidiMsgOut *>::iterator iter;
     iter = g_out.find( this );
@@ -953,7 +955,7 @@ t_CKBOOL MidiMsgIn::close()
     if( !file ) return FALSE;
 
     t_CKBOOL value = fclose( file ) == 0;
-    
+
     file = NULL;
 
     return value;
@@ -965,13 +967,13 @@ t_CKBOOL MidiMsgIn::read( MidiMsg * msg, t_CKTIME * time )
         return FALSE;
 
     // is it open? i don't know...
-    
+
     t_CKBOOL m, t;
-    
+
     // wouldn't it be cool if this worked?
     m = fread( msg, sizeof(MidiMsg), 1, file );
     t = fread( time, sizeof(t_CKTIME), 1, file );
-    
+
     return m && t;
 }
 
@@ -979,7 +981,7 @@ t_CKBOOL MidiMsgIn::read( MidiMsg * msg, t_CKTIME * time )
 
 MidiOut::MidiOut()
 {
-    
+
 }
 
 MidiOut::~MidiOut()
@@ -993,12 +995,12 @@ t_CKBOOL MidiOut::open( t_CKUINT device_num )
 
 MidiIn::MidiIn()
 {
-    
+
 }
 
 MidiIn::~MidiIn()
 {
-    
+
 }
 
 t_CKBOOL MidiIn::open( t_CKUINT device_num )
