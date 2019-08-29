@@ -365,28 +365,28 @@ done:
 
 #include <glob.h>
 
-char* CreatePathByExpandingTildePath(const char* path)
-{
-    glob_t globbuf;
-    char **v;
-    char *expandedPath = NULL, *result = NULL;
-    
-    assert(path != NULL);
-    
-    if (glob(path, GLOB_TILDE, NULL, &globbuf) == 0) //success
-    {
-        v = globbuf.gl_pathv; //list of matched pathnames
-        expandedPath = v[0]; //number of matched pathnames, gl_pathc == 1
-        
-        result = (char*)calloc(1, strlen(expandedPath) + 1); //the extra char is for the null-termination
-        if(result)
-            strncpy(result, expandedPath, strlen(expandedPath) + 1); //copy the null-termination as well
-        
-        globfree(&globbuf);
-    }
-    
-    return result;
-}
+//char* CreatePathByExpandingTildePath(const char* path)
+//{
+//    glob_t globbuf;
+//    char **v;
+//    char *expandedPath = NULL, *result = NULL;
+//
+//    assert(path != NULL);
+//
+//    if (glob(path, GLOB_TILDE, NULL, &globbuf) == 0) //success
+//    {
+//        v = globbuf.gl_pathv; //list of matched pathnames
+//        expandedPath = v[0]; //number of matched pathnames, gl_pathc == 1
+//
+//        result = (char*)calloc(1, strlen(expandedPath) + 1); //the extra char is for the null-termination
+//        if(result)
+//            strncpy(result, expandedPath, strlen(expandedPath) + 1); //copy the null-termination as well
+//
+//        globfree(&globbuf);
+//    }
+//
+//    return result;
+//}
 
 #endif // __PLATFORM_WIN32__
 
@@ -430,8 +430,8 @@ std::string get_full_path( const std::string & fp )
 
 std::string expand_filepath( std::string & fp )
 {
-#if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__)
-    // no expansion in Windows systems
+#if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__) || defined(__EMSCRIPTEN__)
+    // no expansion in Windows systems or Emscripten
     return fp;
 #else
     

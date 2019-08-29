@@ -32,7 +32,7 @@
 #include "chuck_compile.h"
 #include "chuck_lang.h"
 #include "chuck_errmsg.h"
-#include "chuck_otf.h"
+//#include "chuck_otf.h"
 
 #include "ugen_osc.h"
 #include "ugen_xxx.h"
@@ -40,12 +40,12 @@
 #include "ugen_stk.h"
 #include "uana_xform.h"
 #include "uana_extract.h"
-#include "ulib_machine.h"
+//#include "ulib_machine.h"
 #include "ulib_math.h"
 #include "ulib_std.h"
-#include "ulib_opsc.h"
+//#include "ulib_opsc.h"
 #include "ulib_regex.h"
-#include "chuck_io.h"
+//#include "chuck_io.h"
 
 #if defined(__PLATFORM_WIN32__)
 #include "dirent_win32.h"
@@ -650,22 +650,22 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     
     // load
     EM_log( CK_LOG_SEVERE, "class 'machine'..." );
-    if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
-    machine_init( compiler, otf_process_msg );
+//    if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
+//    machine_init( compiler, otf_process_msg );
     EM_log( CK_LOG_SEVERE, "class 'std'..." );
     if( !load_module( compiler, env, libstd_query, "Std", "global" ) ) goto error;
     EM_log( CK_LOG_SEVERE, "class 'math'..." );
     if( !load_module( compiler, env, libmath_query, "Math", "global" ) ) goto error;
 
-    EM_log( CK_LOG_SEVERE, "class 'opsc'..." );
-    if( !load_module( compiler, env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
+//    EM_log( CK_LOG_SEVERE, "class 'opsc'..." );
+//    if( !load_module( compiler, env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
     EM_log( CK_LOG_SEVERE, "class 'RegEx'..." );
     if( !load_module( compiler, env, regex_query, "RegEx", "global" ) ) goto error;
     // if( !load_module( compiler, env, net_query, "net", "global" ) ) goto error;
     
-    if( !init_class_HID( env ) ) goto error;
-    if( !init_class_serialio( env ) ) goto error;
-        
+//    if( !init_class_HID( env ) ) goto error;
+//    if( !init_class_serialio( env ) ) goto error;
+    
     // clear context
     type_engine_unload_context( env );
     

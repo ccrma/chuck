@@ -36,10 +36,10 @@
 //-----------------------------------------------------------------------------
 #include "chuck.h"
 #include "chuck_errmsg.h"
-#include "chuck_io.h"
-#include "chuck_otf.h"
-#include "ulib_machine.h"
-#include "util_network.h"
+//#include "chuck_io.h"
+//#include "chuck_otf.h"
+//#include "ulib_machine.h"
+//#include "util_network.h"
 #include "util_string.h"
 #include "ugen_stk.h"
 
@@ -100,14 +100,14 @@ const char * ChucK::version()
 
 
 
-//-----------------------------------------------------------------------------
-// name: intSize()
-// desc: get chuck int size (in bits)
-//-----------------------------------------------------------------------------
-t_CKUINT ChucK::intSize()
-{
-    return machine_intsize();
-}
+////-----------------------------------------------------------------------------
+//// name: intSize()
+//// desc: get chuck int size (in bits)
+////-----------------------------------------------------------------------------
+//t_CKUINT ChucK::intSize()
+//{
+//    return machine_intsize();
+//}
 
 
 
@@ -311,7 +311,7 @@ t_CKINT ChucK::getParamInt( const std::string & key )
     t_CKINT result = 0;
     if( m_params.count( key ) > 0 && ck_param_types[key] == ck_param_int )
     {
-        istringstream s( m_params[key] );
+        std::istringstream s( m_params[key] );
         s >> result;
     }
     return result;
@@ -329,7 +329,7 @@ t_CKFLOAT ChucK::getParamFloat( const std::string & key )
     t_CKFLOAT result = 0;
     if( m_params.count( key ) > 0 && ck_param_types[key] == ck_param_float )
     {
-        istringstream s( m_params[key] );
+        std::istringstream s( m_params[key] );
         s >> result;
     }
     return result;
@@ -456,8 +456,8 @@ bool ChucK::initCompiler()
     // get compiler params
     t_CKBOOL dump = getParamInt( CHUCK_PARAM_DUMP_INSTRUCTIONS ) != 0;
     t_CKBOOL auto_depend = getParamInt( CHUCK_PARAM_AUTO_DEPEND ) != 0;
-    string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
-    string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
+    std::string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
+    std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
     t_CKUINT deprecate = getParamInt( CHUCK_PARAM_DEPRECATE_LEVEL );
     
     // list of search pathes (added 1.3.0.0)
@@ -604,6 +604,7 @@ bool ChucK::initChugins()
 //-----------------------------------------------------------------------------
 bool ChucK::initOTF()
 {
+#ifndef __DISABLE_OTF_SERVER__
     // server
     if( getParamInt( CHUCK_PARAM_OTF_ENABLE ) != 0 )
     {
@@ -638,7 +639,7 @@ bool ChucK::initOTF()
         // log
         EM_log( CK_LOG_SYSTEM, "OTF server/listener: OFF" );
     }
-    
+#endif
     return true;
 }
 
@@ -671,6 +672,7 @@ bool ChucK::shutdown()
     stk_detach( m_carrier );
     
     // cancel otf thread
+#ifndef __DISABLE_OTF_SERVER__
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
     if( m_carrier->otf_thread ) pthread_cancel( m_carrier->otf_thread );
 #else
@@ -684,6 +686,8 @@ bool ChucK::shutdown()
     m_carrier->otf_port = 0;
     m_carrier->otf_thread = 0;
     
+#endif
+
     // TODO: a different way to unlock?
     // unlock all objects to delete chout, cherr
     Chuck_VM_Object::unlock_all();
@@ -720,8 +724,8 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
         return false;
     }
     
-    string filename;
-    vector<string> args;
+    std::string filename;
+    std::vector<std::string> args;
     Chuck_VM_Code * code = NULL;
     Chuck_VM_Shred * shred = NULL;
     
@@ -731,7 +735,7 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
     EM_pushlog();
     
     // append
-    string theThing = path + ":" + argsTogether;
+    std::string theThing = path + ":" + argsTogether;
     
     // parse out command line arguments
     if( !extract_args( theThing, filename, args ) )
@@ -794,7 +798,7 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
         return false;
     }
     
-    vector<string> args;
+    std::vector<std::string> args;
     Chuck_VM_Code * vm_code = NULL;
     Chuck_VM_Shred * shred = NULL;
     
@@ -804,8 +808,8 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
     EM_pushlog();
     
     // falsify filename / path for various logs
-    string theThing = "compiled.code:" + argsTogether;
-    string fakefakeFilename = "<result file name goes here>";
+    std::string theThing = "compiled.code:" + argsTogether;
+    std::string fakefakeFilename = "<result file name goes here>";
     
     // parse out command line arguments
     if( !extract_args( theThing, fakefakeFilename, args ) )
@@ -1319,7 +1323,7 @@ void ChucK::globalCleanup()
     #endif // __ALTER_HID__
     
     // shutdown serial
-    Chuck_IO_Serial::shutdown();
+//    Chuck_IO_Serial::shutdown();
 
     #ifndef __DISABLE_KBHIT__
     // shutdown kb loop
@@ -1364,5 +1368,5 @@ t_CKINT ChucK::getLogLevel()
 //-----------------------------------------------------------------------------
 void ChucK::poop()
 {
-    ::uh();
+//    ::uh();
 }

@@ -73,7 +73,7 @@ struct Chuck_VM_Func;
 struct Chuck_VM_FTable;
 struct Chuck_Msg;
 // hack: spencer?
-struct Chuck_IO_Serial;
+//struct Chuck_IO_Serial;
 
 class CBufferSimple;
 //XXXclass BBQ;
@@ -182,8 +182,8 @@ public:
     // HACK - spencer (added 1.3.2.0)
     // add/remove SerialIO devices to close on shred exit
     // REFACTOR-2017: TODO -- remove
-    t_CKVOID add_serialio( Chuck_IO_Serial * serial );
-    t_CKVOID remove_serialio( Chuck_IO_Serial * serial );
+//    t_CKVOID add_serialio( Chuck_IO_Serial * serial );
+//    t_CKVOID remove_serialio( Chuck_IO_Serial * serial );
     
 //-----------------------------------------------------------------------------
 // data
@@ -251,7 +251,7 @@ public: // ge: 1.3.5.3
     std::vector<t_CKUINT *> m_loopCounters;
     
 private:
-    std::list<Chuck_IO_Serial *> * m_serials;
+//    std::list<Chuck_IO_Serial *> * m_serials;
 };
 
 

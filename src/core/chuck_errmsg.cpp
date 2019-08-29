@@ -38,7 +38,7 @@
 #include <iostream>
 #include "chuck_utils.h"
 #include "chuck_errmsg.h"
-#include "util_thread.h"
+//#include "util_thread.h"
 
 
 // global
@@ -57,7 +57,7 @@ static size_t g_lasterrorIndex = strlen(g_lasterror);
 // log globals
 t_CKINT g_loglevel = CK_LOG_CORE;
 t_CKINT g_logstack = 0;
-XMutex g_logmutex;
+//XMutex g_logmutex;
 
 // more local globals
 static const size_t g_buffer2_size = 1024;
@@ -574,7 +574,7 @@ void EM_log( t_CKINT level, const char * message, ... )
     // check level
     if( level > g_loglevel ) return;
 
-    g_logmutex.acquire();
+//    g_logmutex.acquire();
     CK_FPRINTF_STDERR( "[chuck]:" );
     CK_FPRINTF_STDERR( "(%i:%s): ", level, g_str[level] );
 
@@ -588,7 +588,7 @@ void EM_log( t_CKINT level, const char * message, ... )
 
     CK_FPRINTF_STDERR( "\n" );
     CK_FFLUSH_STDERR();
-    g_logmutex.release();
+//    g_logmutex.release();
 }
 
 
