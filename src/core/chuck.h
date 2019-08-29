@@ -40,13 +40,13 @@
 #include "chuck_compile.h"
 #include "chuck_dl.h"
 #include "chuck_vm.h"
-#include "chuck_shell.h"
+//#include "chuck_shell.h"
 #include "chuck_carrier.h"
-#include "ulib_machine.h"
+//#include "ulib_machine.h"
 #include "util_math.h"
 #include "util_string.h"
-#include "hidio_sdl.h"
-#include "midiio_rtmidi.h"
+//#include "hidio_sdl.h"
+//#include "midiio_rtmidi.h"
 #include <string>
 #include <map>
 
@@ -181,7 +181,7 @@ public: // static functions
     // chuck version
     static const char * version();
     // chuck int size (in bits)
-    static t_CKUINT intSize();
+//    static t_CKUINT intSize();
     // number of ChucK's
     static t_CKUINT numVMs() { return o_numVMs; };
     // --poop compatibilty

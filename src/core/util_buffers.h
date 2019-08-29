@@ -36,7 +36,7 @@
 #define __UTIL_BUFFERS_H__
 
 #include "chuck_oo.h"
-#include "util_thread.h"
+//#include "util_thread.h"
 #include <vector>
 #include <queue>
 #include <iostream>
@@ -98,7 +98,7 @@ protected:
     SINT__   m_max_elem;
 
     // TODO: necessary?
-    XMutex m_mutex;
+//    XMutex m_mutex;
     
     CBufferSimple * m_event_buffer;
 };
