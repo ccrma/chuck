@@ -49,7 +49,7 @@ extern "C" {
     bool getGlobalAssociativeFloatArrayValue( unsigned int chuckID, const char * name, char * key, void (* callback)(t_CKFLOAT) );
     
     
-    bool EMSCRIPTEN_KEEPALIVE initChuckInstance( unsigned int chuckID, unsigned int sampleRate );
+    bool EMSCRIPTEN_KEEPALIVE initChuckInstance( unsigned int chuckID, unsigned int sampleRate, unsigned int inChannels, unsigned int outChannels );
     bool clearChuckInstance( unsigned int chuckID );
     bool clearGlobals( unsigned int chuckID );
     bool cleanupChuckInstance( unsigned int chuckID );
