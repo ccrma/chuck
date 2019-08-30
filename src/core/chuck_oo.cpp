@@ -3024,13 +3024,13 @@ t_CKBOOL Chuck_IO_File::readString( std::string & str )
  
  THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::read_thread ) ( void *data )
  {
-  (ATODO: test this)
+ // (ATODO: test this)
  cerr << "In thread" << endl;
  async_args *args = (async_args *)data;
  Chuck_String *ret = (Chuck_String *)(args->RETURN);
  ret = args->fileio_obj->read( args->intArg );
  cerr << "Called FileIO.read(int)" << endl;
- args->fileio_obj->m_asyncEvent->broadcast();  wake up
+ args->fileio_obj->m_asyncEvent->broadcast(); // wake up
  cerr << "Broadcasted on event" << endl;
  cerr << "Sleeping" << endl;
  sleep(5);
@@ -3043,18 +3043,18 @@ t_CKBOOL Chuck_IO_File::readString( std::string & str )
  
  THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::readLine_thread ) ( void *data )
  {
-  not yet implemented
+ // not yet implemented
  return NULL;
  }
  
  THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::readInt_thread ) ( void *data )
  {
-  (ATODO: test this)
+ // (ATODO: test this)
  async_args *args = (async_args *)data;
  Chuck_DL_Return *ret = (Chuck_DL_Return *)(args->RETURN);
  ret->v_int = args->fileio_obj->readInt( args->intArg );
  cerr << "Called readInt, set ret->v_int to " << ret->v_int << endl;
- args->fileio_obj->m_asyncEvent->broadcast();  wake up
+ args->fileio_obj->m_asyncEvent->broadcast(); // wake up
  cerr << "Called broadcast" << endl;
  delete args;
  
@@ -3063,7 +3063,7 @@ t_CKBOOL Chuck_IO_File::readString( std::string & str )
  
  THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::readFloat_thread ) ( void *data )
  {
-  not yet implemented
+ // not yet implemented
  return NULL;
  }
  */

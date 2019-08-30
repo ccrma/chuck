@@ -5401,7 +5401,7 @@ public: // SWAP formerly protected
 
 #ifndef __DISABLE_WVOUT__
 #include <stdio.h>
-//#include "util_thread.h"
+#include "util_thread.h"
 
 #define BUFFER_SIZE 1024  // sample frames
 
