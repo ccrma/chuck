@@ -121,7 +121,9 @@ void CBufferAdvance::cleanup()
 UINT__ CBufferAdvance::join( Chuck_Event * event )
 {
     // TODO: necessary?
-//    m_mutex.acquire();
+    #ifndef __DISABLE_THREADS__
+    m_mutex.acquire();
+    #endif
 
     // index of new pointer that will be pushed back
     UINT__ read_offset_index;
@@ -143,7 +145,9 @@ UINT__ CBufferAdvance::join( Chuck_Event * event )
     }
 
     // TODO: necessary?
-//    m_mutex.release();
+    #ifndef __DISABLE_THREADS__
+    m_mutex.release();
+    #endif
 
     // return index
     return read_offset_index;
@@ -161,7 +165,9 @@ void CBufferAdvance::resign( UINT__ read_offset_index )
         return;
 
     // TODO: necessary?
-//    m_mutex.acquire();
+    #ifndef __DISABLE_THREADS__
+    m_mutex.acquire();
+    #endif
 
     // add this index to free queue
     m_free.push( read_offset_index );
@@ -171,7 +177,9 @@ void CBufferAdvance::resign( UINT__ read_offset_index )
     m_read_offsets[read_offset_index].event = NULL;
 
     // TODO: necessary?
-//    m_mutex.release();
+    #ifndef __DISABLE_THREADS__
+    m_mutex.release();
+    #endif
 }
 
 
@@ -208,7 +216,9 @@ void CBufferAdvance::put( void * data, UINT__ num_elem )
     BYTE__ * d = (BYTE__ *)data;
 
     // TODO: necessary?
-//    m_mutex.acquire();
+    #ifndef __DISABLE_THREADS__
+    m_mutex.acquire();
+    #endif
 
     // copy
     for( i = 0; i < num_elem; i++ )
@@ -240,7 +250,9 @@ void CBufferAdvance::put( void * data, UINT__ num_elem )
     }
 
     // TODO: necessary?
-//    m_mutex.release();
+    #ifndef __DISABLE_THREADS__
+    m_mutex.release();
+    #endif
 }
 
 
@@ -308,17 +320,23 @@ UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_ind
     BYTE__ * d = (BYTE__ *)data;
 
     // TODO: necessary?
-//    m_mutex.acquire();
+    #ifndef __DISABLE_THREADS__
+    m_mutex.acquire();
+    #endif
 
     // make sure index is valid
     if( read_offset_index >= m_read_offsets.size() )
     {
-//        m_mutex.release();
+        #ifndef __DISABLE_THREADS__
+        m_mutex.release();
+        #endif
         return 0;
     }
     if( m_read_offsets[read_offset_index].read_offset < 0 )
     {
-//        m_mutex.release();
+        #ifndef __DISABLE_THREADS__
+        m_mutex.release();
+        #endif
         return 0;
     }
 
@@ -327,7 +345,9 @@ UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_ind
     // read catch up with write
     if( m_read_offset == m_write_offset )
     {
-//        m_mutex.release();
+        #ifndef __DISABLE_THREADS__
+        m_mutex.release();
+        #endif
         return 0;
     }
 
@@ -357,7 +377,9 @@ UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_ind
     m_read_offsets[read_offset_index].read_offset = m_read_offset;
 
     // TODO: necessary?
-//    m_mutex.release();
+    #ifndef __DISABLE_THREADS__
+    m_mutex.release();
+    #endif
 
     // return number of elems
     return i;

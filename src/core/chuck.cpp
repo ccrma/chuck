@@ -36,10 +36,20 @@
 //-----------------------------------------------------------------------------
 #include "chuck.h"
 #include "chuck_errmsg.h"
-//#include "chuck_io.h"
-//#include "chuck_otf.h"
-//#include "ulib_machine.h"
-//#include "util_network.h"
+
+#ifndef __DISABLE_SERIAL__
+#include "chuck_io.h"
+#endif
+
+#ifndef __DISABLE_OTF_SERVER__
+#include "chuck_otf.h"
+#include "ulib_machine.h"
+#endif
+
+#ifndef __DISABLE_NETWORK__
+#include "util_network.h"
+#endif
+
 #include "util_string.h"
 #include "ugen_stk.h"
 
@@ -100,14 +110,16 @@ const char * ChucK::version()
 
 
 
-////-----------------------------------------------------------------------------
-//// name: intSize()
-//// desc: get chuck int size (in bits)
-////-----------------------------------------------------------------------------
-//t_CKUINT ChucK::intSize()
-//{
-//    return machine_intsize();
-//}
+#ifndef __DISABLE_OTF_SERVER__
+//-----------------------------------------------------------------------------
+// name: intSize()
+// desc: get chuck int size (in bits)
+//-----------------------------------------------------------------------------
+t_CKUINT ChucK::intSize()
+{
+    return machine_intsize();
+}
+#endif
 
 
 
@@ -1322,8 +1334,10 @@ void ChucK::globalCleanup()
     HidInManager::cleanup();
     #endif // __ALTER_HID__
     
+    #ifndef __DISABLE_SERIAL__
     // shutdown serial
-//    Chuck_IO_Serial::shutdown();
+    Chuck_IO_Serial::shutdown();
+    #endif
 
     #ifndef __DISABLE_KBHIT__
     // shutdown kb loop
@@ -1368,5 +1382,7 @@ t_CKINT ChucK::getLogLevel()
 //-----------------------------------------------------------------------------
 void ChucK::poop()
 {
-//    ::uh();
+    #ifndef __DISABLE_OTF_SERVER__
+    ::uh();
+    #endif
 }

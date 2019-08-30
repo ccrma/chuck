@@ -41,11 +41,13 @@
 #include <sys/stat.h>
 #include <limits.h>
 
-//#if defined(__CK_SNDFILE_NATIVE__)
-//#include <sndfile.h>
-//#else
-//#include "util_sndfile.h"
-//#endif
+#ifndef __DISABLE_SNDBUF__
+#if defined(__CK_SNDFILE_NATIVE__)
+#include <sndfile.h>
+#else
+#include "util_sndfile.h"
+#endif
+#endif
 
 #include "ugen_xxx.h"
 #include "chuck_type.h"

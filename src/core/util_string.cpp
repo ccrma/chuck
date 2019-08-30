@@ -361,34 +361,35 @@ done:
 
 /* from http://developer.apple.com/library/mac/#qa/qa1549/_index.html */
 
-#ifndef __PLATFORM_WIN32__
+#if !defined(__PLATFORM_WIN32__) && !defined(__EMSCRIPTEN__)
 
 #include <glob.h>
 
-//char* CreatePathByExpandingTildePath(const char* path)
-//{
-//    glob_t globbuf;
-//    char **v;
-//    char *expandedPath = NULL, *result = NULL;
-//
-//    assert(path != NULL);
-//
-//    if (glob(path, GLOB_TILDE, NULL, &globbuf) == 0) //success
-//    {
-//        v = globbuf.gl_pathv; //list of matched pathnames
-//        expandedPath = v[0]; //number of matched pathnames, gl_pathc == 1
-//
-//        result = (char*)calloc(1, strlen(expandedPath) + 1); //the extra char is for the null-termination
-//        if(result)
-//            strncpy(result, expandedPath, strlen(expandedPath) + 1); //copy the null-termination as well
-//
-//        globfree(&globbuf);
-//    }
-//
-//    return result;
-//}
 
-#endif // __PLATFORM_WIN32__
+char* CreatePathByExpandingTildePath(const char* path)
+{
+    glob_t globbuf;
+    char **v;
+    char *expandedPath = NULL, *result = NULL;
+
+    assert(path != NULL);
+
+    if (glob(path, GLOB_TILDE, NULL, &globbuf) == 0) //success
+    {
+        v = globbuf.gl_pathv; //list of matched pathnames
+        expandedPath = v[0]; //number of matched pathnames, gl_pathc == 1
+
+        result = (char*)calloc(1, strlen(expandedPath) + 1); //the extra char is for the null-termination
+        if(result)
+            strncpy(result, expandedPath, strlen(expandedPath) + 1); //copy the null-termination as well
+
+        globfree(&globbuf);
+    }
+
+    return result;
+}
+
+#endif // __PLATFORM_WIN32__ && __EMSCRIPTEN__
 
 
 // get full path to file
