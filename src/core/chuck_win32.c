@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.4.  */
+/* A Bison parser, made by GNU Bison 3.1.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0.4"
+#define YYBISON_VERSION "3.1"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -119,7 +119,7 @@ void yyerror( char *s )
 a_Program g_program = NULL;
 
 
-#line 122 "chuck.tab.c" /* yacc.c:339  */
+#line 123 "chuck.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -271,7 +271,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 59 "chuck.y" /* yacc.c:355  */
+#line 60 "chuck.y" /* yacc.c:355  */
 
     int pos;
     int ival;
@@ -297,7 +297,7 @@ union YYSTYPE
     a_Polar polar_exp;
     a_Vec vec_exp; // ge: added 1.3.5.3
 
-#line 300 "chuck.tab.c" /* yacc.c:355  */
+#line 301 "chuck.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -314,7 +314,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 317 "chuck.tab.c" /* yacc.c:358  */
+#line 318 "chuck.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -335,13 +335,13 @@ typedef signed char yytype_int8;
 #ifdef YYTYPE_UINT16
 typedef YYTYPE_UINT16 yytype_uint16;
 #else
-typedef unsigned short int yytype_uint16;
+typedef unsigned short yytype_uint16;
 #endif
 
 #ifdef YYTYPE_INT16
 typedef YYTYPE_INT16 yytype_int16;
 #else
-typedef short int yytype_int16;
+typedef short yytype_int16;
 #endif
 
 #ifndef YYSIZE_T
@@ -353,7 +353,7 @@ typedef short int yytype_int16;
 #  include <stddef.h> /* INFRINGES ON USER NAME SPACE */
 #  define YYSIZE_T size_t
 # else
-#  define YYSIZE_T unsigned int
+#  define YYSIZE_T unsigned
 # endif
 #endif
 
@@ -405,7 +405,7 @@ typedef short int yytype_int16;
 # define YYUSE(E) /* empty */
 #endif
 
-#if defined __GNUC__ && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
+#if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
 # define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN \
     _Pragma ("GCC diagnostic push") \
@@ -573,7 +573,7 @@ union yyalloc
 #define YYMAXUTOK   366
 
 #define YYTRANSLATE(YYX)                                                \
-  ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
+  ((unsigned) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
 
 /* YYTRANSLATE[TOKEN-NUM] -- Symbol number corresponding to TOKEN-NUM
    as returned by yylex, without out-of-bounds checking.  */
@@ -622,25 +622,25 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   183,   183,   184,   188,   189,   190,   194,   196,   198,
-     200,   205,   206,   207,   208,   212,   213,   217,   218,   223,
-     224,   225,   229,   233,   234,   238,   239,   243,   245,   247,
-     249,   254,   255,   256,   260,   261,   262,   263,   267,   268,
-     269,   273,   274,   278,   279,   288,   289,   294,   295,   299,
-     300,   304,   305,   309,   310,   311,   312,   314,   318,   319,
-     320,   321,   325,   327,   332,   334,   336,   338,   340,   342,
-     344,   349,   350,   354,   355,   359,   360,   364,   365,   370,
-     371,   376,   377,   382,   383,   387,   388,   389,   390,   391,
-     392,   393,   397,   398,   402,   403,   404,   408,   413,   418,
-     423,   424,   425,   426,   427,   428,   429,   430,   431,   432,
-     433,   434,   435,   436,   440,   441,   445,   446,   451,   452,
-     457,   458,   463,   464,   469,   470,   475,   476,   481,   482,
-     484,   489,   490,   492,   494,   496,   501,   502,   504,   509,
-     510,   512,   517,   518,   520,   522,   527,   528,   533,   534,
-     539,   540,   542,   544,   546,   548,   550,   552,   559,   560,
-     561,   562,   563,   564,   569,   570,   575,   576,   578,   580,
-     582,   584,   586,   592,   593,   594,   595,   596,   597,   598,
-     599,   600,   601,   602,   603
+       0,   184,   184,   185,   189,   190,   191,   195,   197,   199,
+     201,   206,   207,   208,   209,   213,   214,   218,   219,   224,
+     225,   226,   230,   234,   235,   239,   240,   244,   246,   248,
+     250,   255,   256,   257,   261,   262,   263,   264,   268,   269,
+     270,   274,   275,   279,   280,   289,   290,   295,   296,   300,
+     301,   305,   306,   310,   311,   312,   313,   315,   319,   320,
+     321,   322,   326,   328,   333,   335,   337,   339,   341,   343,
+     345,   350,   351,   355,   356,   360,   361,   365,   366,   371,
+     372,   377,   378,   383,   384,   388,   389,   390,   391,   392,
+     393,   394,   398,   399,   403,   404,   405,   409,   414,   419,
+     424,   425,   426,   427,   428,   429,   430,   431,   432,   433,
+     434,   435,   436,   437,   441,   442,   446,   447,   452,   453,
+     458,   459,   464,   465,   470,   471,   476,   477,   482,   483,
+     485,   490,   491,   493,   495,   497,   502,   503,   505,   510,
+     511,   513,   518,   519,   521,   523,   528,   529,   534,   535,
+     540,   541,   543,   545,   547,   549,   551,   553,   560,   561,
+     562,   563,   564,   565,   570,   571,   576,   577,   579,   581,
+     583,   585,   587,   593,   594,   595,   596,   597,   598,   599,
+     600,   601,   602,   603,   604
 };
 #endif
 
@@ -1281,7 +1281,7 @@ do {                                                            \
 static void
 yy_reduce_print (yytype_int16 *yyssp, YYSTYPE *yyvsp, int yyrule)
 {
-  unsigned long int yylno = yyrline[yyrule];
+  unsigned long yylno = yyrline[yyrule];
   int yynrhs = yyr2[yyrule];
   int yyi;
   YYFPRINTF (stderr, "Reducing stack by rule %d (line %lu):\n",
@@ -1507,6 +1507,7 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
       case N:                               \
         yyformat = S;                       \
       break
+    default: /* Avoid compiler warnings. */
       YYCASE_(0, YY_("syntax error"));
       YYCASE_(1, YY_("syntax error, unexpected %s"));
       YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
@@ -1712,7 +1713,7 @@ yyparse (void)
       yyvsp = yyvs + yysize - 1;
 
       YYDPRINTF ((stderr, "Stack size increased to %lu\n",
-                  (unsigned long int) yystacksize));
+                  (unsigned long) yystacksize));
 
       if (yyss + yystacksize - 1 <= yyssp)
         YYABORT;
@@ -1823,1099 +1824,1099 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 183 "chuck.y" /* yacc.c:1646  */
+#line 184 "chuck.y" /* yacc.c:1651  */
     { (yyval.program) = g_program = new_program( (yyvsp[0].program_section), EM_lineNum ); }
-#line 1828 "chuck.tab.c" /* yacc.c:1646  */
+#line 1830 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 3:
-#line 184 "chuck.y" /* yacc.c:1646  */
+#line 185 "chuck.y" /* yacc.c:1651  */
     { (yyval.program) = g_program = prepend_program( (yyvsp[-1].program_section), (yyvsp[0].program), EM_lineNum ); }
-#line 1834 "chuck.tab.c" /* yacc.c:1646  */
+#line 1836 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 4:
-#line 188 "chuck.y" /* yacc.c:1646  */
+#line 189 "chuck.y" /* yacc.c:1651  */
     { (yyval.program_section) = new_section_stmt( (yyvsp[0].stmt_list), EM_lineNum ); }
-#line 1840 "chuck.tab.c" /* yacc.c:1646  */
+#line 1842 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 5:
-#line 189 "chuck.y" /* yacc.c:1646  */
+#line 190 "chuck.y" /* yacc.c:1651  */
     { (yyval.program_section) = new_section_func_def( (yyvsp[0].func_def), EM_lineNum ); }
-#line 1846 "chuck.tab.c" /* yacc.c:1646  */
+#line 1848 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 6:
-#line 190 "chuck.y" /* yacc.c:1646  */
+#line 191 "chuck.y" /* yacc.c:1651  */
     { (yyval.program_section) = new_section_class_def( (yyvsp[0].class_def), EM_lineNum ); }
-#line 1852 "chuck.tab.c" /* yacc.c:1646  */
+#line 1854 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 7:
-#line 195 "chuck.y" /* yacc.c:1646  */
+#line 196 "chuck.y" /* yacc.c:1651  */
     { (yyval.class_def) = new_class_def( (yyvsp[-5].ival), (yyvsp[-3].id_list), NULL, (yyvsp[-1].class_body), EM_lineNum ); }
-#line 1858 "chuck.tab.c" /* yacc.c:1646  */
+#line 1860 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 8:
-#line 197 "chuck.y" /* yacc.c:1646  */
+#line 198 "chuck.y" /* yacc.c:1651  */
     { (yyval.class_def) = new_class_def( (yyvsp[-6].ival), (yyvsp[-4].id_list), (yyvsp[-3].class_ext), (yyvsp[-1].class_body), EM_lineNum ); }
-#line 1864 "chuck.tab.c" /* yacc.c:1646  */
+#line 1866 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 9:
-#line 199 "chuck.y" /* yacc.c:1646  */
+#line 200 "chuck.y" /* yacc.c:1651  */
     { (yyval.class_def) = new_iface_def( (yyvsp[-5].ival), (yyvsp[-3].id_list), NULL, (yyvsp[-1].class_body), EM_lineNum ); }
-#line 1870 "chuck.tab.c" /* yacc.c:1646  */
+#line 1872 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 10:
-#line 201 "chuck.y" /* yacc.c:1646  */
+#line 202 "chuck.y" /* yacc.c:1651  */
     { (yyval.class_def) = new_iface_def( (yyvsp[-6].ival), (yyvsp[-4].id_list), (yyvsp[-3].class_ext), (yyvsp[-1].class_body), EM_lineNum ); }
-#line 1876 "chuck.tab.c" /* yacc.c:1646  */
+#line 1878 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 11:
-#line 205 "chuck.y" /* yacc.c:1646  */
+#line 206 "chuck.y" /* yacc.c:1651  */
     { (yyval.class_ext) = new_class_ext( NULL, (yyvsp[0].id_list), EM_lineNum ); }
-#line 1882 "chuck.tab.c" /* yacc.c:1646  */
+#line 1884 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 12:
-#line 206 "chuck.y" /* yacc.c:1646  */
+#line 207 "chuck.y" /* yacc.c:1651  */
     { (yyval.class_ext) = new_class_ext( (yyvsp[0].id_list), (yyvsp[-2].id_list), EM_lineNum ); }
-#line 1888 "chuck.tab.c" /* yacc.c:1646  */
+#line 1890 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 13:
-#line 207 "chuck.y" /* yacc.c:1646  */
+#line 208 "chuck.y" /* yacc.c:1651  */
     { (yyval.class_ext) = new_class_ext( (yyvsp[0].id_list), NULL, EM_lineNum ); }
-#line 1894 "chuck.tab.c" /* yacc.c:1646  */
+#line 1896 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 14:
-#line 208 "chuck.y" /* yacc.c:1646  */
+#line 209 "chuck.y" /* yacc.c:1651  */
     { (yyval.class_ext) = new_class_ext( (yyvsp[-2].id_list), (yyvsp[0].id_list), EM_lineNum ); }
-#line 1900 "chuck.tab.c" /* yacc.c:1646  */
+#line 1902 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 15:
-#line 212 "chuck.y" /* yacc.c:1646  */
+#line 213 "chuck.y" /* yacc.c:1651  */
     { (yyval.class_body) = (yyvsp[0].class_body); }
-#line 1906 "chuck.tab.c" /* yacc.c:1646  */
+#line 1908 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 16:
-#line 213 "chuck.y" /* yacc.c:1646  */
+#line 214 "chuck.y" /* yacc.c:1651  */
     { (yyval.class_body) = NULL; }
-#line 1912 "chuck.tab.c" /* yacc.c:1646  */
+#line 1914 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 17:
-#line 217 "chuck.y" /* yacc.c:1646  */
+#line 218 "chuck.y" /* yacc.c:1651  */
     { (yyval.class_body) = new_class_body( (yyvsp[0].program_section), EM_lineNum ); }
-#line 1918 "chuck.tab.c" /* yacc.c:1646  */
+#line 1920 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 18:
-#line 218 "chuck.y" /* yacc.c:1646  */
+#line 219 "chuck.y" /* yacc.c:1651  */
     { (yyval.class_body) = prepend_class_body( (yyvsp[-1].program_section), (yyvsp[0].class_body), EM_lineNum ); }
-#line 1924 "chuck.tab.c" /* yacc.c:1646  */
+#line 1926 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 19:
-#line 223 "chuck.y" /* yacc.c:1646  */
+#line 224 "chuck.y" /* yacc.c:1651  */
     { (yyval.program_section) = new_section_stmt( (yyvsp[0].stmt_list), EM_lineNum ); }
-#line 1930 "chuck.tab.c" /* yacc.c:1646  */
+#line 1932 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 20:
-#line 224 "chuck.y" /* yacc.c:1646  */
+#line 225 "chuck.y" /* yacc.c:1651  */
     { (yyval.program_section) = new_section_func_def( (yyvsp[0].func_def), EM_lineNum ); }
-#line 1936 "chuck.tab.c" /* yacc.c:1646  */
+#line 1938 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 21:
-#line 225 "chuck.y" /* yacc.c:1646  */
+#line 226 "chuck.y" /* yacc.c:1651  */
     { (yyval.program_section) = new_section_class_def( (yyvsp[0].class_def), EM_lineNum ); }
-#line 1942 "chuck.tab.c" /* yacc.c:1646  */
+#line 1944 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 22:
-#line 229 "chuck.y" /* yacc.c:1646  */
+#line 230 "chuck.y" /* yacc.c:1651  */
     { (yyval.class_ext) = new_class_ext( NULL, (yyvsp[0].id_list), EM_lineNum ); }
-#line 1948 "chuck.tab.c" /* yacc.c:1646  */
+#line 1950 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 23:
-#line 233 "chuck.y" /* yacc.c:1646  */
+#line 234 "chuck.y" /* yacc.c:1651  */
     { (yyval.id_list) = new_id_list( (yyvsp[0].sval), EM_lineNum ); }
-#line 1954 "chuck.tab.c" /* yacc.c:1646  */
+#line 1956 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 24:
-#line 234 "chuck.y" /* yacc.c:1646  */
+#line 235 "chuck.y" /* yacc.c:1651  */
     { (yyval.id_list) = prepend_id_list( (yyvsp[-2].sval), (yyvsp[0].id_list), EM_lineNum ); }
-#line 1960 "chuck.tab.c" /* yacc.c:1646  */
+#line 1962 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 25:
-#line 238 "chuck.y" /* yacc.c:1646  */
+#line 239 "chuck.y" /* yacc.c:1651  */
     { (yyval.id_list) = new_id_list( (yyvsp[0].sval), EM_lineNum ); }
-#line 1966 "chuck.tab.c" /* yacc.c:1646  */
+#line 1968 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 26:
-#line 239 "chuck.y" /* yacc.c:1646  */
+#line 240 "chuck.y" /* yacc.c:1651  */
     { (yyval.id_list) = prepend_id_list( (yyvsp[-2].sval), (yyvsp[0].id_list), EM_lineNum ); }
-#line 1972 "chuck.tab.c" /* yacc.c:1646  */
+#line 1974 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 27:
-#line 244 "chuck.y" /* yacc.c:1646  */
+#line 245 "chuck.y" /* yacc.c:1651  */
     { (yyval.func_def) = new_func_def( (yyvsp[-7].ival), (yyvsp[-6].ival), (yyvsp[-5].type_decl), (yyvsp[-4].sval), (yyvsp[-2].arg_list), (yyvsp[0].stmt), EM_lineNum ); }
-#line 1978 "chuck.tab.c" /* yacc.c:1646  */
+#line 1980 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 28:
-#line 246 "chuck.y" /* yacc.c:1646  */
+#line 247 "chuck.y" /* yacc.c:1651  */
     { (yyval.func_def) = new_func_def( (yyvsp[-6].ival), (yyvsp[-5].ival), (yyvsp[-4].type_decl), (yyvsp[-3].sval), NULL, (yyvsp[0].stmt), EM_lineNum ); }
-#line 1984 "chuck.tab.c" /* yacc.c:1646  */
+#line 1986 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 29:
-#line 248 "chuck.y" /* yacc.c:1646  */
+#line 249 "chuck.y" /* yacc.c:1651  */
     { (yyval.func_def) = new_func_def( (yyvsp[-7].ival), (yyvsp[-6].ival), (yyvsp[-5].type_decl), (yyvsp[-4].sval), (yyvsp[-2].arg_list), NULL, EM_lineNum ); }
-#line 1990 "chuck.tab.c" /* yacc.c:1646  */
+#line 1992 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 30:
-#line 250 "chuck.y" /* yacc.c:1646  */
+#line 251 "chuck.y" /* yacc.c:1651  */
     { (yyval.func_def) = new_func_def( (yyvsp[-6].ival), (yyvsp[-5].ival), (yyvsp[-4].type_decl), (yyvsp[-3].sval), NULL, NULL, EM_lineNum ); }
-#line 1996 "chuck.tab.c" /* yacc.c:1646  */
+#line 1998 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 31:
-#line 254 "chuck.y" /* yacc.c:1646  */
+#line 255 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_key_public; }
-#line 2002 "chuck.tab.c" /* yacc.c:1646  */
+#line 2004 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 32:
-#line 255 "chuck.y" /* yacc.c:1646  */
+#line 256 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_key_private; }
-#line 2008 "chuck.tab.c" /* yacc.c:1646  */
+#line 2010 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 33:
-#line 256 "chuck.y" /* yacc.c:1646  */
+#line 257 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_key_private; }
-#line 2014 "chuck.tab.c" /* yacc.c:1646  */
+#line 2016 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 34:
-#line 260 "chuck.y" /* yacc.c:1646  */
+#line 261 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_key_func; }
-#line 2020 "chuck.tab.c" /* yacc.c:1646  */
+#line 2022 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 35:
-#line 261 "chuck.y" /* yacc.c:1646  */
+#line 262 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_key_public; }
-#line 2026 "chuck.tab.c" /* yacc.c:1646  */
+#line 2028 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 36:
-#line 262 "chuck.y" /* yacc.c:1646  */
+#line 263 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_key_protected; }
-#line 2032 "chuck.tab.c" /* yacc.c:1646  */
+#line 2034 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 37:
-#line 263 "chuck.y" /* yacc.c:1646  */
+#line 264 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_key_private; }
-#line 2038 "chuck.tab.c" /* yacc.c:1646  */
+#line 2040 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 38:
-#line 267 "chuck.y" /* yacc.c:1646  */
+#line 268 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_key_static; }
-#line 2044 "chuck.tab.c" /* yacc.c:1646  */
+#line 2046 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 39:
-#line 268 "chuck.y" /* yacc.c:1646  */
+#line 269 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_key_abstract; }
-#line 2050 "chuck.tab.c" /* yacc.c:1646  */
+#line 2052 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 40:
-#line 269 "chuck.y" /* yacc.c:1646  */
+#line 270 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_key_instance; }
-#line 2056 "chuck.tab.c" /* yacc.c:1646  */
+#line 2058 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 41:
-#line 273 "chuck.y" /* yacc.c:1646  */
+#line 274 "chuck.y" /* yacc.c:1651  */
     { (yyval.type_decl) = new_type_decl( new_id_list( (yyvsp[0].sval), EM_lineNum ), 0, EM_lineNum ); }
-#line 2062 "chuck.tab.c" /* yacc.c:1646  */
+#line 2064 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 42:
-#line 274 "chuck.y" /* yacc.c:1646  */
+#line 275 "chuck.y" /* yacc.c:1651  */
     { (yyval.type_decl) = new_type_decl( new_id_list( (yyvsp[-1].sval), EM_lineNum ), 1, EM_lineNum ); }
-#line 2068 "chuck.tab.c" /* yacc.c:1646  */
+#line 2070 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 43:
-#line 278 "chuck.y" /* yacc.c:1646  */
+#line 279 "chuck.y" /* yacc.c:1651  */
     { (yyval.type_decl) = new_type_decl( (yyvsp[-1].id_list), 0, EM_lineNum ); }
-#line 2074 "chuck.tab.c" /* yacc.c:1646  */
+#line 2076 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 44:
-#line 279 "chuck.y" /* yacc.c:1646  */
+#line 280 "chuck.y" /* yacc.c:1651  */
     { (yyval.type_decl) = new_type_decl( (yyvsp[-2].id_list), 1, EM_lineNum ); }
-#line 2080 "chuck.tab.c" /* yacc.c:1646  */
+#line 2082 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 45:
-#line 288 "chuck.y" /* yacc.c:1646  */
+#line 289 "chuck.y" /* yacc.c:1651  */
     { (yyval.type_decl) = (yyvsp[0].type_decl); }
-#line 2086 "chuck.tab.c" /* yacc.c:1646  */
+#line 2088 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 46:
-#line 289 "chuck.y" /* yacc.c:1646  */
+#line 290 "chuck.y" /* yacc.c:1651  */
     { (yyval.type_decl) = (yyvsp[0].type_decl); }
-#line 2092 "chuck.tab.c" /* yacc.c:1646  */
+#line 2094 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 47:
-#line 294 "chuck.y" /* yacc.c:1646  */
+#line 295 "chuck.y" /* yacc.c:1651  */
     { (yyval.type_decl) = (yyvsp[0].type_decl); }
-#line 2098 "chuck.tab.c" /* yacc.c:1646  */
+#line 2100 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 48:
-#line 295 "chuck.y" /* yacc.c:1646  */
+#line 296 "chuck.y" /* yacc.c:1651  */
     { (yyval.type_decl) = add_type_decl_array( (yyvsp[-1].type_decl), (yyvsp[0].array_sub), EM_lineNum ); }
-#line 2104 "chuck.tab.c" /* yacc.c:1646  */
+#line 2106 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 49:
-#line 299 "chuck.y" /* yacc.c:1646  */
+#line 300 "chuck.y" /* yacc.c:1651  */
     { (yyval.arg_list) = new_arg_list( (yyvsp[-1].type_decl), (yyvsp[0].var_decl), EM_lineNum ); }
-#line 2110 "chuck.tab.c" /* yacc.c:1646  */
+#line 2112 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 50:
-#line 300 "chuck.y" /* yacc.c:1646  */
+#line 301 "chuck.y" /* yacc.c:1651  */
     { (yyval.arg_list) = prepend_arg_list( (yyvsp[-3].type_decl), (yyvsp[-2].var_decl), (yyvsp[0].arg_list), EM_lineNum ); }
-#line 2116 "chuck.tab.c" /* yacc.c:1646  */
+#line 2118 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 51:
-#line 304 "chuck.y" /* yacc.c:1646  */
+#line 305 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt_list) = new_stmt_list( (yyvsp[0].stmt), EM_lineNum ); }
-#line 2122 "chuck.tab.c" /* yacc.c:1646  */
+#line 2124 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 52:
-#line 305 "chuck.y" /* yacc.c:1646  */
+#line 306 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt_list) = prepend_stmt_list( (yyvsp[-1].stmt), (yyvsp[0].stmt_list), EM_lineNum ); }
-#line 2128 "chuck.tab.c" /* yacc.c:1646  */
+#line 2130 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 53:
-#line 309 "chuck.y" /* yacc.c:1646  */
+#line 310 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = (yyvsp[0].stmt); }
-#line 2134 "chuck.tab.c" /* yacc.c:1646  */
+#line 2136 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 54:
-#line 310 "chuck.y" /* yacc.c:1646  */
+#line 311 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = (yyvsp[0].stmt); }
-#line 2140 "chuck.tab.c" /* yacc.c:1646  */
+#line 2142 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 55:
-#line 311 "chuck.y" /* yacc.c:1646  */
+#line 312 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = (yyvsp[0].stmt); }
-#line 2146 "chuck.tab.c" /* yacc.c:1646  */
+#line 2148 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 56:
-#line 312 "chuck.y" /* yacc.c:1646  */
+#line 313 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = (yyvsp[0].stmt); }
-#line 2152 "chuck.tab.c" /* yacc.c:1646  */
+#line 2154 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 57:
-#line 314 "chuck.y" /* yacc.c:1646  */
+#line 315 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = (yyvsp[0].stmt); }
-#line 2158 "chuck.tab.c" /* yacc.c:1646  */
+#line 2160 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 58:
-#line 318 "chuck.y" /* yacc.c:1646  */
+#line 319 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_return( NULL, EM_lineNum ); }
-#line 2164 "chuck.tab.c" /* yacc.c:1646  */
+#line 2166 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 59:
-#line 319 "chuck.y" /* yacc.c:1646  */
+#line 320 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_return( (yyvsp[-1].exp), EM_lineNum ); }
-#line 2170 "chuck.tab.c" /* yacc.c:1646  */
+#line 2172 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 60:
-#line 320 "chuck.y" /* yacc.c:1646  */
+#line 321 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_break( EM_lineNum ); }
-#line 2176 "chuck.tab.c" /* yacc.c:1646  */
+#line 2178 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 61:
-#line 321 "chuck.y" /* yacc.c:1646  */
+#line 322 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_continue( EM_lineNum ); }
-#line 2182 "chuck.tab.c" /* yacc.c:1646  */
+#line 2184 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 62:
-#line 326 "chuck.y" /* yacc.c:1646  */
+#line 327 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_if( (yyvsp[-2].exp), (yyvsp[0].stmt), NULL, EM_lineNum ); }
-#line 2188 "chuck.tab.c" /* yacc.c:1646  */
+#line 2190 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 63:
-#line 328 "chuck.y" /* yacc.c:1646  */
+#line 329 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_if( (yyvsp[-4].exp), (yyvsp[-2].stmt), (yyvsp[0].stmt), EM_lineNum ); }
-#line 2194 "chuck.tab.c" /* yacc.c:1646  */
+#line 2196 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 64:
-#line 333 "chuck.y" /* yacc.c:1646  */
+#line 334 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_while( (yyvsp[-2].exp), (yyvsp[0].stmt), EM_lineNum ); }
-#line 2200 "chuck.tab.c" /* yacc.c:1646  */
+#line 2202 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 65:
-#line 335 "chuck.y" /* yacc.c:1646  */
+#line 336 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_do_while( (yyvsp[-2].exp), (yyvsp[-5].stmt), EM_lineNum ); }
-#line 2206 "chuck.tab.c" /* yacc.c:1646  */
+#line 2208 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 66:
-#line 337 "chuck.y" /* yacc.c:1646  */
+#line 338 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_for( (yyvsp[-3].stmt), (yyvsp[-2].stmt), NULL, (yyvsp[0].stmt), EM_lineNum ); }
-#line 2212 "chuck.tab.c" /* yacc.c:1646  */
+#line 2214 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 67:
-#line 339 "chuck.y" /* yacc.c:1646  */
+#line 340 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_for( (yyvsp[-4].stmt), (yyvsp[-3].stmt), (yyvsp[-2].exp), (yyvsp[0].stmt), EM_lineNum ); }
-#line 2218 "chuck.tab.c" /* yacc.c:1646  */
+#line 2220 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 68:
-#line 341 "chuck.y" /* yacc.c:1646  */
+#line 342 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_until( (yyvsp[-2].exp), (yyvsp[0].stmt), EM_lineNum ); }
-#line 2224 "chuck.tab.c" /* yacc.c:1646  */
+#line 2226 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 69:
-#line 343 "chuck.y" /* yacc.c:1646  */
+#line 344 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_do_until( (yyvsp[-2].exp), (yyvsp[-5].stmt), EM_lineNum ); }
-#line 2230 "chuck.tab.c" /* yacc.c:1646  */
+#line 2232 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 70:
-#line 345 "chuck.y" /* yacc.c:1646  */
+#line 346 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_loop( (yyvsp[-2].exp), (yyvsp[0].stmt), EM_lineNum ); }
-#line 2236 "chuck.tab.c" /* yacc.c:1646  */
+#line 2238 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 71:
-#line 349 "chuck.y" /* yacc.c:1646  */
+#line 350 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_code( NULL, EM_lineNum ); }
-#line 2242 "chuck.tab.c" /* yacc.c:1646  */
+#line 2244 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 72:
-#line 350 "chuck.y" /* yacc.c:1646  */
+#line 351 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_code( (yyvsp[-1].stmt_list), EM_lineNum ); }
-#line 2248 "chuck.tab.c" /* yacc.c:1646  */
+#line 2250 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 73:
-#line 354 "chuck.y" /* yacc.c:1646  */
+#line 355 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = NULL; }
-#line 2254 "chuck.tab.c" /* yacc.c:1646  */
+#line 2256 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 74:
-#line 355 "chuck.y" /* yacc.c:1646  */
+#line 356 "chuck.y" /* yacc.c:1651  */
     { (yyval.stmt) = new_stmt_from_expression( (yyvsp[-1].exp), EM_lineNum ); }
-#line 2260 "chuck.tab.c" /* yacc.c:1646  */
+#line 2262 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 75:
-#line 359 "chuck.y" /* yacc.c:1646  */
+#line 360 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2266 "chuck.tab.c" /* yacc.c:1646  */
+#line 2268 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 76:
-#line 360 "chuck.y" /* yacc.c:1646  */
+#line 361 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = prepend_expression( (yyvsp[-2].exp), (yyvsp[0].exp), EM_lineNum ); }
-#line 2272 "chuck.tab.c" /* yacc.c:1646  */
+#line 2274 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 77:
-#line 364 "chuck.y" /* yacc.c:1646  */
+#line 365 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2278 "chuck.tab.c" /* yacc.c:1646  */
+#line 2280 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 78:
-#line 366 "chuck.y" /* yacc.c:1646  */
+#line 367 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), (yyvsp[-1].ival), (yyvsp[0].exp), EM_lineNum ); }
-#line 2284 "chuck.tab.c" /* yacc.c:1646  */
+#line 2286 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 79:
-#line 370 "chuck.y" /* yacc.c:1646  */
+#line 371 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2290 "chuck.tab.c" /* yacc.c:1646  */
+#line 2292 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 80:
-#line 372 "chuck.y" /* yacc.c:1646  */
+#line 373 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), (yyvsp[-1].ival), (yyvsp[0].exp), EM_lineNum ); }
-#line 2296 "chuck.tab.c" /* yacc.c:1646  */
+#line 2298 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 81:
-#line 376 "chuck.y" /* yacc.c:1646  */
+#line 377 "chuck.y" /* yacc.c:1651  */
     { (yyval.array_sub) = new_array_sub( (yyvsp[-1].exp), EM_lineNum ); }
-#line 2302 "chuck.tab.c" /* yacc.c:1646  */
+#line 2304 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 82:
-#line 378 "chuck.y" /* yacc.c:1646  */
+#line 379 "chuck.y" /* yacc.c:1651  */
     { (yyval.array_sub) = prepend_array_sub( (yyvsp[0].array_sub), (yyvsp[-2].exp), EM_lineNum ); }
-#line 2308 "chuck.tab.c" /* yacc.c:1646  */
+#line 2310 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 83:
-#line 382 "chuck.y" /* yacc.c:1646  */
+#line 383 "chuck.y" /* yacc.c:1651  */
     { (yyval.array_sub) = new_array_sub( NULL, EM_lineNum ); }
-#line 2314 "chuck.tab.c" /* yacc.c:1646  */
+#line 2316 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 84:
-#line 383 "chuck.y" /* yacc.c:1646  */
+#line 384 "chuck.y" /* yacc.c:1651  */
     { (yyval.array_sub) = prepend_array_sub( (yyvsp[-2].array_sub), NULL, EM_lineNum ); }
-#line 2320 "chuck.tab.c" /* yacc.c:1646  */
+#line 2322 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 85:
-#line 387 "chuck.y" /* yacc.c:1646  */
+#line 388 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2326 "chuck.tab.c" /* yacc.c:1646  */
+#line 2328 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 86:
-#line 388 "chuck.y" /* yacc.c:1646  */
+#line 389 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_decl( (yyvsp[-1].type_decl), (yyvsp[0].var_decl_list), 0, EM_lineNum ); }
-#line 2332 "chuck.tab.c" /* yacc.c:1646  */
+#line 2334 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 87:
-#line 389 "chuck.y" /* yacc.c:1646  */
+#line 390 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_decl_external( (yyvsp[-1].type_decl), (yyvsp[0].var_decl_list), 0, EM_lineNum ); }
-#line 2338 "chuck.tab.c" /* yacc.c:1646  */
+#line 2340 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 88:
-#line 390 "chuck.y" /* yacc.c:1646  */
+#line 391 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_decl_global( (yyvsp[-1].type_decl), (yyvsp[0].var_decl_list), 0, EM_lineNum ); }
-#line 2344 "chuck.tab.c" /* yacc.c:1646  */
+#line 2346 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 89:
-#line 391 "chuck.y" /* yacc.c:1646  */
+#line 392 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_decl( (yyvsp[-1].type_decl), (yyvsp[0].var_decl_list), 1, EM_lineNum ); }
-#line 2350 "chuck.tab.c" /* yacc.c:1646  */
+#line 2352 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 90:
-#line 392 "chuck.y" /* yacc.c:1646  */
+#line 393 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_decl( NULL, (yyvsp[0].var_decl_list), 0, EM_lineNum ); }
-#line 2356 "chuck.tab.c" /* yacc.c:1646  */
+#line 2358 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 91:
-#line 393 "chuck.y" /* yacc.c:1646  */
+#line 394 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_decl( NULL, (yyvsp[0].var_decl_list), 1, EM_lineNum ); }
-#line 2362 "chuck.tab.c" /* yacc.c:1646  */
+#line 2364 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 92:
-#line 397 "chuck.y" /* yacc.c:1646  */
+#line 398 "chuck.y" /* yacc.c:1651  */
     { (yyval.var_decl_list) = new_var_decl_list( (yyvsp[0].var_decl), EM_lineNum ); }
-#line 2368 "chuck.tab.c" /* yacc.c:1646  */
+#line 2370 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 93:
-#line 398 "chuck.y" /* yacc.c:1646  */
+#line 399 "chuck.y" /* yacc.c:1651  */
     { (yyval.var_decl_list) = prepend_var_decl_list( (yyvsp[-2].var_decl), (yyvsp[0].var_decl_list), EM_lineNum ); }
-#line 2374 "chuck.tab.c" /* yacc.c:1646  */
+#line 2376 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 94:
-#line 402 "chuck.y" /* yacc.c:1646  */
+#line 403 "chuck.y" /* yacc.c:1651  */
     { (yyval.var_decl) = new_var_decl( (yyvsp[0].sval), NULL, EM_lineNum ); }
-#line 2380 "chuck.tab.c" /* yacc.c:1646  */
+#line 2382 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 95:
-#line 403 "chuck.y" /* yacc.c:1646  */
+#line 404 "chuck.y" /* yacc.c:1651  */
     { (yyval.var_decl) = new_var_decl( (yyvsp[-1].sval), (yyvsp[0].array_sub), EM_lineNum ); }
-#line 2386 "chuck.tab.c" /* yacc.c:1646  */
+#line 2388 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 96:
-#line 404 "chuck.y" /* yacc.c:1646  */
+#line 405 "chuck.y" /* yacc.c:1651  */
     { (yyval.var_decl) = new_var_decl( (yyvsp[-1].sval), (yyvsp[0].array_sub), EM_lineNum ); }
-#line 2392 "chuck.tab.c" /* yacc.c:1646  */
+#line 2394 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 97:
-#line 409 "chuck.y" /* yacc.c:1646  */
+#line 410 "chuck.y" /* yacc.c:1651  */
     { (yyval.complex_exp) = new_complex( (yyvsp[-1].exp), EM_lineNum ); }
-#line 2398 "chuck.tab.c" /* yacc.c:1646  */
+#line 2400 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 98:
-#line 414 "chuck.y" /* yacc.c:1646  */
+#line 415 "chuck.y" /* yacc.c:1651  */
     { (yyval.polar_exp) = new_polar( (yyvsp[-1].exp), EM_lineNum ); }
-#line 2404 "chuck.tab.c" /* yacc.c:1646  */
+#line 2406 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 99:
-#line 419 "chuck.y" /* yacc.c:1646  */
+#line 420 "chuck.y" /* yacc.c:1651  */
     { (yyval.vec_exp) = new_vec( (yyvsp[-1].exp), EM_lineNum ); }
-#line 2410 "chuck.tab.c" /* yacc.c:1646  */
+#line 2412 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 100:
-#line 423 "chuck.y" /* yacc.c:1646  */
+#line 424 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_chuck; }
-#line 2416 "chuck.tab.c" /* yacc.c:1646  */
+#line 2418 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 101:
-#line 424 "chuck.y" /* yacc.c:1646  */
+#line 425 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_at_chuck; }
-#line 2422 "chuck.tab.c" /* yacc.c:1646  */
+#line 2424 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 102:
-#line 425 "chuck.y" /* yacc.c:1646  */
+#line 426 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_plus_chuck; }
-#line 2428 "chuck.tab.c" /* yacc.c:1646  */
+#line 2430 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 103:
-#line 426 "chuck.y" /* yacc.c:1646  */
+#line 427 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_minus_chuck; }
-#line 2434 "chuck.tab.c" /* yacc.c:1646  */
+#line 2436 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 104:
-#line 427 "chuck.y" /* yacc.c:1646  */
+#line 428 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_times_chuck; }
-#line 2440 "chuck.tab.c" /* yacc.c:1646  */
+#line 2442 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 105:
-#line 428 "chuck.y" /* yacc.c:1646  */
+#line 429 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_divide_chuck; }
-#line 2446 "chuck.tab.c" /* yacc.c:1646  */
+#line 2448 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 106:
-#line 429 "chuck.y" /* yacc.c:1646  */
+#line 430 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_shift_right_chuck; }
-#line 2452 "chuck.tab.c" /* yacc.c:1646  */
+#line 2454 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 107:
-#line 430 "chuck.y" /* yacc.c:1646  */
+#line 431 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_shift_left_chuck; }
-#line 2458 "chuck.tab.c" /* yacc.c:1646  */
+#line 2460 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 108:
-#line 431 "chuck.y" /* yacc.c:1646  */
+#line 432 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_percent_chuck; }
-#line 2464 "chuck.tab.c" /* yacc.c:1646  */
+#line 2466 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 109:
-#line 432 "chuck.y" /* yacc.c:1646  */
+#line 433 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_unchuck; }
-#line 2470 "chuck.tab.c" /* yacc.c:1646  */
+#line 2472 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 110:
-#line 433 "chuck.y" /* yacc.c:1646  */
+#line 434 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_upchuck; }
-#line 2476 "chuck.tab.c" /* yacc.c:1646  */
+#line 2478 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 111:
-#line 434 "chuck.y" /* yacc.c:1646  */
+#line 435 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_s_and_chuck; }
-#line 2482 "chuck.tab.c" /* yacc.c:1646  */
+#line 2484 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 112:
-#line 435 "chuck.y" /* yacc.c:1646  */
+#line 436 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_s_or_chuck; }
-#line 2488 "chuck.tab.c" /* yacc.c:1646  */
+#line 2490 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 113:
-#line 436 "chuck.y" /* yacc.c:1646  */
+#line 437 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_s_xor_chuck; }
-#line 2494 "chuck.tab.c" /* yacc.c:1646  */
+#line 2496 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 114:
-#line 440 "chuck.y" /* yacc.c:1646  */
+#line 441 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_arrow_left; }
-#line 2500 "chuck.tab.c" /* yacc.c:1646  */
+#line 2502 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 115:
-#line 441 "chuck.y" /* yacc.c:1646  */
+#line 442 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_arrow_right; }
-#line 2506 "chuck.tab.c" /* yacc.c:1646  */
+#line 2508 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 116:
-#line 445 "chuck.y" /* yacc.c:1646  */
+#line 446 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2512 "chuck.tab.c" /* yacc.c:1646  */
+#line 2514 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 117:
-#line 447 "chuck.y" /* yacc.c:1646  */
+#line 448 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_if( (yyvsp[-4].exp), (yyvsp[-2].exp), (yyvsp[0].exp), EM_lineNum ); }
-#line 2518 "chuck.tab.c" /* yacc.c:1646  */
+#line 2520 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 118:
-#line 451 "chuck.y" /* yacc.c:1646  */
+#line 452 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2524 "chuck.tab.c" /* yacc.c:1646  */
+#line 2526 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 119:
-#line 453 "chuck.y" /* yacc.c:1646  */
+#line 454 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_or, (yyvsp[0].exp), EM_lineNum ); }
-#line 2530 "chuck.tab.c" /* yacc.c:1646  */
+#line 2532 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 120:
-#line 457 "chuck.y" /* yacc.c:1646  */
+#line 458 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2536 "chuck.tab.c" /* yacc.c:1646  */
+#line 2538 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 121:
-#line 459 "chuck.y" /* yacc.c:1646  */
+#line 460 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_and, (yyvsp[0].exp), EM_lineNum ); }
-#line 2542 "chuck.tab.c" /* yacc.c:1646  */
+#line 2544 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 122:
-#line 463 "chuck.y" /* yacc.c:1646  */
+#line 464 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2548 "chuck.tab.c" /* yacc.c:1646  */
+#line 2550 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 123:
-#line 465 "chuck.y" /* yacc.c:1646  */
+#line 466 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_s_or, (yyvsp[0].exp), EM_lineNum ); }
-#line 2554 "chuck.tab.c" /* yacc.c:1646  */
+#line 2556 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 124:
-#line 469 "chuck.y" /* yacc.c:1646  */
+#line 470 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2560 "chuck.tab.c" /* yacc.c:1646  */
+#line 2562 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 125:
-#line 471 "chuck.y" /* yacc.c:1646  */
+#line 472 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_s_xor, (yyvsp[0].exp), EM_lineNum ); }
-#line 2566 "chuck.tab.c" /* yacc.c:1646  */
+#line 2568 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 126:
-#line 475 "chuck.y" /* yacc.c:1646  */
+#line 476 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2572 "chuck.tab.c" /* yacc.c:1646  */
+#line 2574 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 127:
-#line 477 "chuck.y" /* yacc.c:1646  */
+#line 478 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_s_and, (yyvsp[0].exp), EM_lineNum ); }
-#line 2578 "chuck.tab.c" /* yacc.c:1646  */
+#line 2580 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 128:
-#line 481 "chuck.y" /* yacc.c:1646  */
+#line 482 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2584 "chuck.tab.c" /* yacc.c:1646  */
+#line 2586 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 129:
-#line 483 "chuck.y" /* yacc.c:1646  */
+#line 484 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_eq, (yyvsp[0].exp), EM_lineNum ); }
-#line 2590 "chuck.tab.c" /* yacc.c:1646  */
+#line 2592 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 130:
-#line 485 "chuck.y" /* yacc.c:1646  */
+#line 486 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_neq, (yyvsp[0].exp), EM_lineNum ); }
-#line 2596 "chuck.tab.c" /* yacc.c:1646  */
+#line 2598 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 131:
-#line 489 "chuck.y" /* yacc.c:1646  */
+#line 490 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2602 "chuck.tab.c" /* yacc.c:1646  */
+#line 2604 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 132:
-#line 491 "chuck.y" /* yacc.c:1646  */
+#line 492 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_lt, (yyvsp[0].exp), EM_lineNum ); }
-#line 2608 "chuck.tab.c" /* yacc.c:1646  */
+#line 2610 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 133:
-#line 493 "chuck.y" /* yacc.c:1646  */
+#line 494 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_gt, (yyvsp[0].exp), EM_lineNum ); }
-#line 2614 "chuck.tab.c" /* yacc.c:1646  */
+#line 2616 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 134:
-#line 495 "chuck.y" /* yacc.c:1646  */
+#line 496 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_le, (yyvsp[0].exp), EM_lineNum ); }
-#line 2620 "chuck.tab.c" /* yacc.c:1646  */
+#line 2622 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 135:
-#line 497 "chuck.y" /* yacc.c:1646  */
+#line 498 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_ge, (yyvsp[0].exp), EM_lineNum ); }
-#line 2626 "chuck.tab.c" /* yacc.c:1646  */
+#line 2628 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 136:
-#line 501 "chuck.y" /* yacc.c:1646  */
+#line 502 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2632 "chuck.tab.c" /* yacc.c:1646  */
+#line 2634 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 137:
-#line 503 "chuck.y" /* yacc.c:1646  */
+#line 504 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_shift_left, (yyvsp[0].exp), EM_lineNum ); }
-#line 2638 "chuck.tab.c" /* yacc.c:1646  */
+#line 2640 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 138:
-#line 505 "chuck.y" /* yacc.c:1646  */
+#line 506 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_shift_right, (yyvsp[0].exp), EM_lineNum ); }
-#line 2644 "chuck.tab.c" /* yacc.c:1646  */
+#line 2646 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 139:
-#line 509 "chuck.y" /* yacc.c:1646  */
+#line 510 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2650 "chuck.tab.c" /* yacc.c:1646  */
+#line 2652 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 140:
-#line 511 "chuck.y" /* yacc.c:1646  */
+#line 512 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_plus, (yyvsp[0].exp), EM_lineNum ); }
-#line 2656 "chuck.tab.c" /* yacc.c:1646  */
+#line 2658 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 141:
-#line 513 "chuck.y" /* yacc.c:1646  */
+#line 514 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_minus, (yyvsp[0].exp), EM_lineNum ); }
-#line 2662 "chuck.tab.c" /* yacc.c:1646  */
+#line 2664 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 142:
-#line 517 "chuck.y" /* yacc.c:1646  */
+#line 518 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2668 "chuck.tab.c" /* yacc.c:1646  */
+#line 2670 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 143:
-#line 519 "chuck.y" /* yacc.c:1646  */
+#line 520 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_times, (yyvsp[0].exp), EM_lineNum ); }
-#line 2674 "chuck.tab.c" /* yacc.c:1646  */
+#line 2676 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 144:
-#line 521 "chuck.y" /* yacc.c:1646  */
+#line 522 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_divide, (yyvsp[0].exp), EM_lineNum ); }
-#line 2680 "chuck.tab.c" /* yacc.c:1646  */
+#line 2682 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 145:
-#line 523 "chuck.y" /* yacc.c:1646  */
+#line 524 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_percent, (yyvsp[0].exp), EM_lineNum ); }
-#line 2686 "chuck.tab.c" /* yacc.c:1646  */
+#line 2688 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 146:
-#line 527 "chuck.y" /* yacc.c:1646  */
+#line 528 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2692 "chuck.tab.c" /* yacc.c:1646  */
+#line 2694 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 147:
-#line 529 "chuck.y" /* yacc.c:1646  */
+#line 530 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_binary( (yyvsp[-2].exp), ae_op_tilda, (yyvsp[0].exp), EM_lineNum ); }
-#line 2698 "chuck.tab.c" /* yacc.c:1646  */
+#line 2700 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 148:
-#line 533 "chuck.y" /* yacc.c:1646  */
+#line 534 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2704 "chuck.tab.c" /* yacc.c:1646  */
+#line 2706 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 149:
-#line 535 "chuck.y" /* yacc.c:1646  */
+#line 536 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_cast( (yyvsp[0].type_decl), (yyvsp[-2].exp), EM_lineNum ); }
-#line 2710 "chuck.tab.c" /* yacc.c:1646  */
+#line 2712 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 150:
-#line 539 "chuck.y" /* yacc.c:1646  */
+#line 540 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2716 "chuck.tab.c" /* yacc.c:1646  */
+#line 2718 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 151:
-#line 541 "chuck.y" /* yacc.c:1646  */
+#line 542 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_unary( ae_op_plusplus, (yyvsp[0].exp), EM_lineNum ); }
-#line 2722 "chuck.tab.c" /* yacc.c:1646  */
+#line 2724 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 152:
-#line 543 "chuck.y" /* yacc.c:1646  */
+#line 544 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_unary( ae_op_minusminus, (yyvsp[0].exp), EM_lineNum ); }
-#line 2728 "chuck.tab.c" /* yacc.c:1646  */
+#line 2730 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 153:
-#line 545 "chuck.y" /* yacc.c:1646  */
+#line 546 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_unary( (yyvsp[-1].ival), (yyvsp[0].exp), EM_lineNum ); }
-#line 2734 "chuck.tab.c" /* yacc.c:1646  */
+#line 2736 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 154:
-#line 547 "chuck.y" /* yacc.c:1646  */
+#line 548 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_unary( ae_op_typeof, (yyvsp[0].exp), EM_lineNum ); }
-#line 2740 "chuck.tab.c" /* yacc.c:1646  */
+#line 2742 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 155:
-#line 549 "chuck.y" /* yacc.c:1646  */
+#line 550 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_unary( ae_op_sizeof, (yyvsp[0].exp), EM_lineNum ); }
-#line 2746 "chuck.tab.c" /* yacc.c:1646  */
+#line 2748 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 156:
-#line 551 "chuck.y" /* yacc.c:1646  */
+#line 552 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_unary2( ae_op_new, (yyvsp[0].type_decl), NULL, EM_lineNum ); }
-#line 2752 "chuck.tab.c" /* yacc.c:1646  */
+#line 2754 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 157:
-#line 553 "chuck.y" /* yacc.c:1646  */
+#line 554 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_unary2( ae_op_new, (yyvsp[-1].type_decl), (yyvsp[0].array_sub), EM_lineNum ); }
-#line 2758 "chuck.tab.c" /* yacc.c:1646  */
+#line 2760 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 158:
-#line 559 "chuck.y" /* yacc.c:1646  */
+#line 560 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_plus; }
-#line 2764 "chuck.tab.c" /* yacc.c:1646  */
+#line 2766 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 159:
-#line 560 "chuck.y" /* yacc.c:1646  */
+#line 561 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_minus; }
-#line 2770 "chuck.tab.c" /* yacc.c:1646  */
+#line 2772 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 160:
-#line 561 "chuck.y" /* yacc.c:1646  */
+#line 562 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_tilda; }
-#line 2776 "chuck.tab.c" /* yacc.c:1646  */
+#line 2778 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 161:
-#line 562 "chuck.y" /* yacc.c:1646  */
+#line 563 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_exclamation; }
-#line 2782 "chuck.tab.c" /* yacc.c:1646  */
+#line 2784 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 162:
-#line 563 "chuck.y" /* yacc.c:1646  */
+#line 564 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_times; }
-#line 2788 "chuck.tab.c" /* yacc.c:1646  */
+#line 2790 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 163:
-#line 564 "chuck.y" /* yacc.c:1646  */
+#line 565 "chuck.y" /* yacc.c:1651  */
     { (yyval.ival) = ae_op_spork; }
-#line 2794 "chuck.tab.c" /* yacc.c:1646  */
+#line 2796 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 165:
-#line 571 "chuck.y" /* yacc.c:1646  */
+#line 572 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_dur( (yyvsp[-2].exp), (yyvsp[0].exp), EM_lineNum ); }
-#line 2800 "chuck.tab.c" /* yacc.c:1646  */
+#line 2802 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 166:
-#line 575 "chuck.y" /* yacc.c:1646  */
+#line 576 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[0].exp); }
-#line 2806 "chuck.tab.c" /* yacc.c:1646  */
+#line 2808 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 167:
-#line 577 "chuck.y" /* yacc.c:1646  */
+#line 578 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_array( (yyvsp[-1].exp), (yyvsp[0].array_sub), EM_lineNum ); }
-#line 2812 "chuck.tab.c" /* yacc.c:1646  */
+#line 2814 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 168:
-#line 579 "chuck.y" /* yacc.c:1646  */
+#line 580 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_func_call( (yyvsp[-2].exp), NULL, EM_lineNum ); }
-#line 2818 "chuck.tab.c" /* yacc.c:1646  */
+#line 2820 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 169:
-#line 581 "chuck.y" /* yacc.c:1646  */
+#line 582 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_func_call( (yyvsp[-3].exp), (yyvsp[-1].exp), EM_lineNum ); }
-#line 2824 "chuck.tab.c" /* yacc.c:1646  */
+#line 2826 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 170:
-#line 583 "chuck.y" /* yacc.c:1646  */
+#line 584 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_member_dot( (yyvsp[-2].exp), (yyvsp[0].sval), EM_lineNum ); }
-#line 2830 "chuck.tab.c" /* yacc.c:1646  */
+#line 2832 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 171:
-#line 585 "chuck.y" /* yacc.c:1646  */
+#line 586 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_postfix( (yyvsp[-1].exp), ae_op_plusplus, EM_lineNum ); }
-#line 2836 "chuck.tab.c" /* yacc.c:1646  */
+#line 2838 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 172:
-#line 587 "chuck.y" /* yacc.c:1646  */
+#line 588 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_postfix( (yyvsp[-1].exp), ae_op_minusminus, EM_lineNum ); }
-#line 2842 "chuck.tab.c" /* yacc.c:1646  */
+#line 2844 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 173:
-#line 592 "chuck.y" /* yacc.c:1646  */
+#line 593 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_id( (yyvsp[0].sval), EM_lineNum ); }
-#line 2848 "chuck.tab.c" /* yacc.c:1646  */
+#line 2850 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 174:
-#line 593 "chuck.y" /* yacc.c:1646  */
+#line 594 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_int( (yyvsp[0].ival), EM_lineNum ); }
-#line 2854 "chuck.tab.c" /* yacc.c:1646  */
+#line 2856 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 175:
-#line 594 "chuck.y" /* yacc.c:1646  */
+#line 595 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_float( (yyvsp[0].fval), EM_lineNum ); }
-#line 2860 "chuck.tab.c" /* yacc.c:1646  */
+#line 2862 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 176:
-#line 595 "chuck.y" /* yacc.c:1646  */
+#line 596 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_str( (yyvsp[0].sval), EM_lineNum ); }
-#line 2866 "chuck.tab.c" /* yacc.c:1646  */
+#line 2868 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 177:
-#line 596 "chuck.y" /* yacc.c:1646  */
+#line 597 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_char( (yyvsp[0].sval), EM_lineNum ); }
-#line 2872 "chuck.tab.c" /* yacc.c:1646  */
+#line 2874 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 178:
-#line 597 "chuck.y" /* yacc.c:1646  */
+#line 598 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_array_lit( (yyvsp[0].array_sub), EM_lineNum ); }
-#line 2878 "chuck.tab.c" /* yacc.c:1646  */
+#line 2880 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 179:
-#line 598 "chuck.y" /* yacc.c:1646  */
+#line 599 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_complex( (yyvsp[0].complex_exp), EM_lineNum ); }
-#line 2884 "chuck.tab.c" /* yacc.c:1646  */
+#line 2886 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 180:
-#line 599 "chuck.y" /* yacc.c:1646  */
+#line 600 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_polar( (yyvsp[0].polar_exp), EM_lineNum ); }
-#line 2890 "chuck.tab.c" /* yacc.c:1646  */
+#line 2892 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 181:
-#line 600 "chuck.y" /* yacc.c:1646  */
+#line 601 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_vec( (yyvsp[0].vec_exp), EM_lineNum ); }
-#line 2896 "chuck.tab.c" /* yacc.c:1646  */
+#line 2898 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 182:
-#line 601 "chuck.y" /* yacc.c:1646  */
+#line 602 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_hack( (yyvsp[-1].exp), EM_lineNum ); }
-#line 2902 "chuck.tab.c" /* yacc.c:1646  */
+#line 2904 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 183:
-#line 602 "chuck.y" /* yacc.c:1646  */
+#line 603 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = (yyvsp[-1].exp); }
-#line 2908 "chuck.tab.c" /* yacc.c:1646  */
+#line 2910 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
   case 184:
-#line 603 "chuck.y" /* yacc.c:1646  */
+#line 604 "chuck.y" /* yacc.c:1651  */
     { (yyval.exp) = new_exp_from_nil( EM_lineNum ); }
-#line 2914 "chuck.tab.c" /* yacc.c:1646  */
+#line 2916 "chuck.tab.c" /* yacc.c:1651  */
     break;
 
 
-#line 2918 "chuck.tab.c" /* yacc.c:1646  */
+#line 2920 "chuck.tab.c" /* yacc.c:1651  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -3792,6 +3793,7 @@ char *yytext;
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "chuck_utils.h"
 #include "chuck_absyn.h"
 #include "chuck_errmsg.h"
@@ -3913,8 +3915,8 @@ long htol( c_str str )
 
 // .*\-\->                 { adjust(); continue; }
 
-#line 771 "core/chuck.yy.c"
 #line 772 "core/chuck.yy.c"
+#line 773 "core/chuck.yy.c"
 
 #define INITIAL 0
 
@@ -4123,10 +4125,10 @@ YY_DECL
 		}
 
 	{
-#line 172 "core/chuck.lex"
+#line 173 "core/chuck.lex"
 
 
-#line 984 "core/chuck.yy.c"
+#line 985 "core/chuck.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -4185,535 +4187,535 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 174 "core/chuck.lex"
+#line 175 "core/chuck.lex"
 { char c; adjust(); comment_hack; continue; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 175 "core/chuck.lex"
+#line 176 "core/chuck.lex"
 { char c; adjust(); comment_hack; continue; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 176 "core/chuck.lex"
+#line 177 "core/chuck.lex"
 { char c, c1; adjust(); block_comment_hack; continue; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 177 "core/chuck.lex"
+#line 178 "core/chuck.lex"
 { adjust(); continue; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 178 "core/chuck.lex"
+#line 179 "core/chuck.lex"
 { adjust(); continue; }
 	YY_BREAK
 case 6:
 /* rule 6 can match eol */
 YY_RULE_SETUP
-#line 179 "core/chuck.lex"
+#line 180 "core/chuck.lex"
 { adjust(); EM_newline(); continue; }
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 180 "core/chuck.lex"
+#line 181 "core/chuck.lex"
 { adjust(); EM_newline(); continue; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 182 "core/chuck.lex"
+#line 183 "core/chuck.lex"
 { adjust(); return PLUSPLUS; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 183 "core/chuck.lex"
+#line 184 "core/chuck.lex"
 { adjust(); return MINUSMINUS; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 184 "core/chuck.lex"
+#line 185 "core/chuck.lex"
 { adjust(); return POUNDPAREN; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 185 "core/chuck.lex"
+#line 186 "core/chuck.lex"
 { adjust(); return PERCENTPAREN; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 186 "core/chuck.lex"
+#line 187 "core/chuck.lex"
 { adjust(); return ATPAREN; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 188 "core/chuck.lex"
+#line 189 "core/chuck.lex"
 { adjust(); return COMMA; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 189 "core/chuck.lex"
+#line 190 "core/chuck.lex"
 { adjust(); return COLON; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 190 "core/chuck.lex"
+#line 191 "core/chuck.lex"
 { adjust(); return DOT; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 191 "core/chuck.lex"
+#line 192 "core/chuck.lex"
 { adjust(); return PLUS; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 192 "core/chuck.lex"
+#line 193 "core/chuck.lex"
 { adjust(); return MINUS; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 193 "core/chuck.lex"
+#line 194 "core/chuck.lex"
 { adjust(); return TIMES; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 194 "core/chuck.lex"
+#line 195 "core/chuck.lex"
 { adjust(); return DIVIDE; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 195 "core/chuck.lex"
+#line 196 "core/chuck.lex"
 { adjust(); return PERCENT; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 196 "core/chuck.lex"
+#line 197 "core/chuck.lex"
 { adjust(); return POUND; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 197 "core/chuck.lex"
+#line 198 "core/chuck.lex"
 { adjust(); return DOLLAR; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 199 "core/chuck.lex"
+#line 200 "core/chuck.lex"
 { adjust(); return COLONCOLON; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 200 "core/chuck.lex"
+#line 201 "core/chuck.lex"
 { adjust(); return EQ; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 201 "core/chuck.lex"
+#line 202 "core/chuck.lex"
 { adjust(); return NEQ; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 202 "core/chuck.lex"
+#line 203 "core/chuck.lex"
 { adjust(); return LT; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 203 "core/chuck.lex"
+#line 204 "core/chuck.lex"
 { adjust(); return GT; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 204 "core/chuck.lex"
+#line 205 "core/chuck.lex"
 { adjust(); return LE; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 205 "core/chuck.lex"
+#line 206 "core/chuck.lex"
 { adjust(); return GE; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 206 "core/chuck.lex"
+#line 207 "core/chuck.lex"
 { adjust(); return AND; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 207 "core/chuck.lex"
+#line 208 "core/chuck.lex"
 { adjust(); return OR; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 208 "core/chuck.lex"
+#line 209 "core/chuck.lex"
 { adjust(); return S_AND; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 209 "core/chuck.lex"
+#line 210 "core/chuck.lex"
 { adjust(); return S_OR; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 210 "core/chuck.lex"
+#line 211 "core/chuck.lex"
 { adjust(); return S_XOR; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 211 "core/chuck.lex"
+#line 212 "core/chuck.lex"
 { adjust(); return SHIFT_RIGHT; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 212 "core/chuck.lex"
+#line 213 "core/chuck.lex"
 { adjust(); return SHIFT_LEFT; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 213 "core/chuck.lex"
+#line 214 "core/chuck.lex"
 { adjust(); return ASSIGN; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 214 "core/chuck.lex"
+#line 215 "core/chuck.lex"
 { adjust(); return LPAREN; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 215 "core/chuck.lex"
+#line 216 "core/chuck.lex"
 { adjust(); return RPAREN; }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 216 "core/chuck.lex"
+#line 217 "core/chuck.lex"
 { adjust(); return LBRACK; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 217 "core/chuck.lex"
+#line 218 "core/chuck.lex"
 { adjust(); return RBRACK; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 218 "core/chuck.lex"
+#line 219 "core/chuck.lex"
 { adjust(); return LBRACE; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 219 "core/chuck.lex"
+#line 220 "core/chuck.lex"
 { adjust(); return RBRACE; }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 220 "core/chuck.lex"
+#line 221 "core/chuck.lex"
 { adjust(); return SEMICOLON; }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 221 "core/chuck.lex"
+#line 222 "core/chuck.lex"
 { adjust(); return QUESTION; }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 222 "core/chuck.lex"
+#line 223 "core/chuck.lex"
 { adjust(); return EXCLAMATION; }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 223 "core/chuck.lex"
+#line 224 "core/chuck.lex"
 { adjust(); return TILDA; }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 224 "core/chuck.lex"
+#line 225 "core/chuck.lex"
 { adjust(); return FOR; }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 225 "core/chuck.lex"
+#line 226 "core/chuck.lex"
 { adjust(); return WHILE; }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 226 "core/chuck.lex"
+#line 227 "core/chuck.lex"
 { adjust(); return UNTIL; }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 227 "core/chuck.lex"
+#line 228 "core/chuck.lex"
 { adjust(); return LOOP; }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 228 "core/chuck.lex"
+#line 229 "core/chuck.lex"
 { adjust(); return CONTINUE; }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 229 "core/chuck.lex"
+#line 230 "core/chuck.lex"
 { adjust(); return BREAK; }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 230 "core/chuck.lex"
+#line 231 "core/chuck.lex"
 { adjust(); return IF; }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 231 "core/chuck.lex"
+#line 232 "core/chuck.lex"
 { adjust(); return ELSE; }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 232 "core/chuck.lex"
+#line 233 "core/chuck.lex"
 { adjust(); return DO; }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 233 "core/chuck.lex"
+#line 234 "core/chuck.lex"
 { adjust(); return L_HACK; }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 234 "core/chuck.lex"
+#line 235 "core/chuck.lex"
 { adjust(); return R_HACK; }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 236 "core/chuck.lex"
+#line 237 "core/chuck.lex"
 { adjust(); return RETURN; }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 238 "core/chuck.lex"
+#line 239 "core/chuck.lex"
 { adjust(); return FUNCTION; }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 239 "core/chuck.lex"
+#line 240 "core/chuck.lex"
 { adjust(); return FUNCTION; }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 240 "core/chuck.lex"
+#line 241 "core/chuck.lex"
 { adjust(); return NEW; }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 241 "core/chuck.lex"
+#line 242 "core/chuck.lex"
 { adjust(); return CLASS; }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 242 "core/chuck.lex"
+#line 243 "core/chuck.lex"
 { adjust(); return INTERFACE; }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 243 "core/chuck.lex"
+#line 244 "core/chuck.lex"
 { adjust(); return EXTENDS; }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 244 "core/chuck.lex"
+#line 245 "core/chuck.lex"
 { adjust(); return IMPLEMENTS; }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 245 "core/chuck.lex"
+#line 246 "core/chuck.lex"
 { adjust(); return PUBLIC; }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 246 "core/chuck.lex"
+#line 247 "core/chuck.lex"
 { adjust(); return PROTECTED; }
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 247 "core/chuck.lex"
+#line 248 "core/chuck.lex"
 { adjust(); return PRIVATE; }
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 248 "core/chuck.lex"
+#line 249 "core/chuck.lex"
 { adjust(); return STATIC; }
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 249 "core/chuck.lex"
+#line 250 "core/chuck.lex"
 { adjust(); return ABSTRACT; }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 250 "core/chuck.lex"
+#line 251 "core/chuck.lex"
 { adjust(); return CONST; }
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 251 "core/chuck.lex"
+#line 252 "core/chuck.lex"
 { adjust(); return SPORK; }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 252 "core/chuck.lex"
+#line 253 "core/chuck.lex"
 { adjust(); return TYPEOF; }
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 253 "core/chuck.lex"
+#line 254 "core/chuck.lex"
 { adjust(); return EXTERNAL; }
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 254 "core/chuck.lex"
+#line 255 "core/chuck.lex"
 { adjust(); return GLOBAL; }
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 256 "core/chuck.lex"
+#line 257 "core/chuck.lex"
 { adjust(); return CHUCK; }
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 257 "core/chuck.lex"
+#line 258 "core/chuck.lex"
 { adjust(); return UNCHUCK; }
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 258 "core/chuck.lex"
+#line 259 "core/chuck.lex"
 { adjust(); return UNCHUCK; }
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 259 "core/chuck.lex"
+#line 260 "core/chuck.lex"
 { adjust(); return UPCHUCK; }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 260 "core/chuck.lex"
+#line 261 "core/chuck.lex"
 { adjust(); return AT_CHUCK; }
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 261 "core/chuck.lex"
+#line 262 "core/chuck.lex"
 { adjust(); return PLUS_CHUCK; }
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
-#line 262 "core/chuck.lex"
+#line 263 "core/chuck.lex"
 { adjust(); return MINUS_CHUCK; }
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 263 "core/chuck.lex"
+#line 264 "core/chuck.lex"
 { adjust(); return TIMES_CHUCK; }
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 264 "core/chuck.lex"
+#line 265 "core/chuck.lex"
 { adjust(); return DIVIDE_CHUCK; }
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 265 "core/chuck.lex"
+#line 266 "core/chuck.lex"
 { adjust(); return S_AND_CHUCK; }
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 266 "core/chuck.lex"
+#line 267 "core/chuck.lex"
 { adjust(); return S_OR_CHUCK; }
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 267 "core/chuck.lex"
+#line 268 "core/chuck.lex"
 { adjust(); return S_XOR_CHUCK; }
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 268 "core/chuck.lex"
+#line 269 "core/chuck.lex"
 { adjust(); return SHIFT_RIGHT_CHUCK; }
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 269 "core/chuck.lex"
+#line 270 "core/chuck.lex"
 { adjust(); return SHIFT_LEFT_CHUCK; }
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 270 "core/chuck.lex"
+#line 271 "core/chuck.lex"
 { adjust(); return PERCENT_CHUCK; }
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 271 "core/chuck.lex"
+#line 272 "core/chuck.lex"
 { adjust(); return AT_SYM; }
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 272 "core/chuck.lex"
+#line 273 "core/chuck.lex"
 { adjust(); return ATAT_SYM; }
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 273 "core/chuck.lex"
+#line 274 "core/chuck.lex"
 { adjust(); return ARROW_RIGHT; }
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 274 "core/chuck.lex"
+#line 275 "core/chuck.lex"
 { adjust(); return ARROW_LEFT; }
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 276 "core/chuck.lex"
+#line 277 "core/chuck.lex"
 { adjust(); yylval.ival=htol(yytext); return NUM; }
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
-#line 277 "core/chuck.lex"
+#line 278 "core/chuck.lex"
 { adjust(); yylval.ival=atoi(yytext); return NUM; }
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 278 "core/chuck.lex"
+#line 279 "core/chuck.lex"
 { adjust(); yylval.ival=atoi(yytext); return NUM; }
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
-#line 279 "core/chuck.lex"
+#line 280 "core/chuck.lex"
 { adjust(); yylval.fval=atof(yytext); return FLOAT; }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 280 "core/chuck.lex"
+#line 281 "core/chuck.lex"
 { adjust(); yylval.sval=alloc_str(yytext); return ID; }
 	YY_BREAK
 case 101:
 /* rule 101 can match eol */
 YY_RULE_SETUP
-#line 281 "core/chuck.lex"
+#line 282 "core/chuck.lex"
 { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return STRING_LIT; }
 	YY_BREAK
 case 102:
 /* rule 102 can match eol */
 YY_RULE_SETUP
-#line 282 "core/chuck.lex"
+#line 283 "core/chuck.lex"
 { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return STRING_LIT; }
 	YY_BREAK
 case 103:
 /* rule 103 can match eol */
 YY_RULE_SETUP
-#line 283 "core/chuck.lex"
+#line 284 "core/chuck.lex"
 { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return CHAR_LIT; }
 	YY_BREAK
 case 104:
 YY_RULE_SETUP
-#line 285 "core/chuck.lex"
+#line 286 "core/chuck.lex"
 { adjust(); EM_error( EM_tokPos, "illegal token" ); }
 	YY_BREAK
 case 105:
 YY_RULE_SETUP
-#line 287 "core/chuck.lex"
+#line 288 "core/chuck.lex"
 ECHO;
 	YY_BREAK
-#line 1571 "core/chuck.yy.c"
+#line 1572 "core/chuck.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -5718,7 +5720,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 287 "core/chuck.lex"
+#line 288 "core/chuck.lex"
 
 
 /*

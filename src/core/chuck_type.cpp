@@ -186,7 +186,9 @@ Chuck_Env::Chuck_Env( )
     t_uanablob = new Chuck_Type( this, te_uanablob, "UAnaBlob", t_object, sizeof(void *) );
     t_shred = new Chuck_Type( this, te_shred, "Shred", t_object, sizeof(void *) );
     t_io = new Chuck_Type( this, te_io, "IO", t_event, sizeof(void *) );
-//    t_fileio = new Chuck_Type( this, te_fileio, "FileIO", t_io, sizeof(void *) );
+    #ifndef __DISABLE_FILEIO__
+    t_fileio = new Chuck_Type( this, te_fileio, "FileIO", t_io, sizeof(void *) );
+    #endif
     t_chout = new Chuck_Type( this, te_chout, "StdOut", t_io, sizeof(void *) );
     t_cherr = new Chuck_Type( this, te_cherr, "StdErr", t_io, sizeof(void *) );
     t_thread = new Chuck_Type( this, te_thread, "Thread", t_object, sizeof(void *) );
@@ -217,7 +219,9 @@ Chuck_Env::~Chuck_Env()
     SAFE_RELEASE( t_class->info );
     SAFE_RELEASE( t_thread->info );
     SAFE_RELEASE( t_io->info );
-//    SAFE_RELEASE( t_fileio->info );
+    #ifndef __DISABLE_FILEIO__
+    SAFE_RELEASE( t_fileio->info );
+    #endif
     SAFE_RELEASE( t_chout->info );  // added 1.3.0.0
     SAFE_RELEASE( t_cherr->info );  // added 1.3.0.0
     SAFE_RELEASE( t_vec3->info );  // added 1.3.5.3
@@ -236,7 +240,9 @@ Chuck_Env::~Chuck_Env()
     SAFE_DELETE( t_class );
     SAFE_DELETE( t_thread );
     SAFE_DELETE( t_io );
-//    SAFE_DELETE( t_fileio );
+    #ifndef __DISABLE_FILEIO__
+    SAFE_DELETE( t_fileio );
+    #endif
     SAFE_DELETE( t_chout );  // added 1.3.0.0
     SAFE_DELETE( t_cherr );  // added 1.3.0.0
     SAFE_DELETE( t_vec3 );  // added 1.3.5.3
@@ -293,7 +299,9 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     env->global()->type.add( env->t_array->name, env->t_array );        env->t_array->lock();
     env->global()->type.add( env->t_event->name, env->t_event );        env->t_event->lock();
     env->global()->type.add( env->t_io->name, env->t_io );              env->t_io->lock();
-//    env->global()->type.add( env->t_fileio->name, env->t_fileio );      env->t_fileio->lock();
+    #ifndef __DISABLE_FILEIO__
+    env->global()->type.add( env->t_fileio->name, env->t_fileio );      env->t_fileio->lock();
+    #endif
     env->global()->type.add( env->t_chout->name, env->t_chout );        env->t_chout->lock();
     env->global()->type.add( env->t_cherr->name, env->t_cherr );        env->t_cherr->lock();
 
@@ -320,7 +328,9 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     init_class_shred( env, env->t_shred );
     init_class_event( env, env->t_event );
     init_class_io( env, env->t_io );
-//    init_class_fileio( env, env->t_fileio );
+    #ifndef __DISABLE_FILEIO__
+    init_class_fileio( env, env->t_fileio );
+    #endif
     init_class_chout( env, env->t_chout ); // 1.3.0.0
     init_class_cherr( env, env->t_cherr ); // 1.3.0.0
     init_class_vec3( env, env->t_vec3 ); // 1.3.5.3

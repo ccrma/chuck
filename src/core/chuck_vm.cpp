@@ -34,10 +34,18 @@
 #include "chuck_lang.h"
 #include "chuck_type.h"
 #include "chuck_dl.h"
-//#include "chuck_io.h"
+
+#ifndef __DISABLE_SERIAL__
+#include "chuck_io.h"
+#endif
+
 #include "chuck_errmsg.h"
 #include "ugen_xxx.h"
-//#include "hidio_sdl.h"  // 1.4.0.0
+
+#ifndef __DISABLE_HID__
+#include "hidio_sdl.h"  // 1.4.0.0
+#endif
+
 #ifndef __DISABLE_MIDI__
 #include "midiio_rtmidi.h"  // 1.4.0.1
 #endif
@@ -341,14 +349,17 @@ t_CKBOOL Chuck_VM::shutdown()
     // free the shreduler
     SAFE_DELETE( m_shreduler );
     
+    #ifndef __DISABLE_HID__
     // log
     EM_log( CK_LOG_SYSTEM, "unregistering VM from HID manager..." );
     // clean up this vm
-//    HidInManager::cleanup_buffer( this );
+    HidInManager::cleanup_buffer( this );
+    #endif
+    
+    #ifndef __DISABLE_MIDI__
     EM_log( CK_LOG_SYSTEM, "unregistering VM from MIDI manager..." );
-#ifndef __DISABLE_MIDI__
     MidiInManager::cleanup_buffer( this );
-#endif
+    #endif
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing msg/reply/event buffers..." );
@@ -3559,7 +3570,9 @@ Chuck_VM_Shred::Chuck_VM_Shred()
     vm_ref = NULL;
     event = NULL;
     xid = 0;
-//    m_serials = NULL;
+    #ifndef __DISABLE_SERIAL__
+    m_serials = NULL;
+    #endif
 
     // set
     CK_TRACK( stat = NULL );
@@ -3692,18 +3705,20 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     // clear it
     code_orig = code = NULL;
 
+    #ifndef __DISABLE_SERIAL__
     // HACK (added 1.3.2.0): close serial devices
-//    if(m_serials != NULL)
-//    {
-//        for(list<Chuck_IO_Serial *>::iterator i = m_serials->begin(); i != m_serials->end(); i++)
-//        {
-//            (*i)->release();
-//            (*i)->close();
-//        }
-//
-//        m_serials->clear();
-//        SAFE_DELETE(m_serials);
-//    }
+    if(m_serials != NULL)
+    {
+        for(list<Chuck_IO_Serial *>::iterator i = m_serials->begin(); i != m_serials->end(); i++)
+        {
+            (*i)->release();
+            (*i)->close();
+        }
+
+        m_serials->clear();
+        SAFE_DELETE(m_serials);
+    }
+    #endif
     
     // 1.3.5.3 pop all loop counters
     while( this->popLoopCounter() );
@@ -3835,31 +3850,33 @@ CK_VM_DEBUG(CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
 
 
 
-////-----------------------------------------------------------------------------
-//// name: add_serialio()
-//// desc: ...
-////-----------------------------------------------------------------------------
-//t_CKVOID Chuck_VM_Shred::add_serialio( Chuck_IO_Serial * serial )
-//{
-//    if(m_serials == NULL)
-//        m_serials = new list<Chuck_IO_Serial *>;
-//    serial->add_ref();
-//    m_serials->push_back( serial );
-//}
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: add_serialio()
-//// desc: ...
-////-----------------------------------------------------------------------------
-//t_CKVOID Chuck_VM_Shred::remove_serialio( Chuck_IO_Serial * serial )
-//{
-//    if(m_serials == NULL)
-//        return;
-//    m_serials->remove( serial );
-//    serial->release();
-//}
+#ifndef __DISABLE_SERIAL__
+//-----------------------------------------------------------------------------
+// name: add_serialio()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKVOID Chuck_VM_Shred::add_serialio( Chuck_IO_Serial * serial )
+{
+    if(m_serials == NULL)
+        m_serials = new list<Chuck_IO_Serial *>;
+    serial->add_ref();
+    m_serials->push_back( serial );
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: add_serialio()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKVOID Chuck_VM_Shred::remove_serialio( Chuck_IO_Serial * serial )
+{
+    if(m_serials == NULL)
+        return;
+    m_serials->remove( serial );
+    serial->release();
+}
+#endif
 
 
 
