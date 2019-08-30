@@ -1,5 +1,5 @@
 //
-//  Plugin_ChucK.cpp
+//  chuck_emscripten.cpp
 //  AudioPluginDemo
 //
 //  Created by Jack Atherton on 4/19/17.
@@ -7,7 +7,7 @@
 //
 
 
-#include "Plugin_ChucK.h"
+#include "chuck_emscripten.h"
 
 #include <iostream>
 #include <map>
@@ -420,7 +420,7 @@ extern "C"
     
     
     
-    bool EMSCRIPTEN_KEEPALIVE initChuckInstance( unsigned int chuckID, unsigned int sampleRate )
+    bool EMSCRIPTEN_KEEPALIVE initChuckInstance( unsigned int chuckID, unsigned int sampleRate, unsigned int inChannels, unsigned int outChannels )
     {
         if( chuck_instances.count( chuckID ) == 0 )
         {
@@ -430,8 +430,8 @@ extern "C"
             // set params: sample rate, 2 in channels, 2 out channels,
             // don't halt the vm, and use our data directory
             chuck->setParam( CHUCK_PARAM_SAMPLE_RATE, (t_CKINT) sampleRate );
-            chuck->setParam( CHUCK_PARAM_INPUT_CHANNELS, (t_CKINT) 2 );
-            chuck->setParam( CHUCK_PARAM_OUTPUT_CHANNELS, (t_CKINT) 2 );
+            chuck->setParam( CHUCK_PARAM_INPUT_CHANNELS, (t_CKINT) inChannels );
+            chuck->setParam( CHUCK_PARAM_OUTPUT_CHANNELS, (t_CKINT) outChannels );
             chuck->setParam( CHUCK_PARAM_VM_HALT, (t_CKINT) 0 );
             chuck->setParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, (t_CKINT) 0 );
             // directory for compiled.code
