@@ -687,11 +687,14 @@ public:
     // for shreduler, ge: 1.3.5.3
     const SAMPLE * input_ref() { return m_input_ref; }
     SAMPLE * output_ref() { return m_output_ref; }
+    // for shreduler, jack: planar audio buffers
+    t_CKUINT buffer_length() { return m_current_buffer_frames; }
 
 protected:
     // for shreduler, ge: 1.3.5.3
     const SAMPLE * m_input_ref;
     SAMPLE * m_output_ref;
+    t_CKUINT m_current_buffer_frames;
 
 protected:
     Chuck_VM_Shred * spork( Chuck_VM_Shred * shred );

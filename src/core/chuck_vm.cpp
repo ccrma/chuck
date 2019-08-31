@@ -160,6 +160,7 @@ Chuck_VM::Chuck_VM()
     m_init = FALSE;
     m_input_ref = NULL;
     m_output_ref = NULL;
+    m_current_buffer_frames = 0;
     
     // REFACTOR-2017: TODO might want to dynamically grow queue?
     m_global_request_queue.init( 16384 );
@@ -555,7 +556,7 @@ t_CKBOOL Chuck_VM::compute()
 t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 {
     // copy
-    m_input_ref = input; m_output_ref = output;
+    m_input_ref = input; m_output_ref = output; m_current_buffer_frames = N;
     // frame count
     t_CKINT frame = 0;
 
@@ -4143,9 +4144,16 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
 {
     t_CKINT i, j, numFrames;
     SAMPLE gain[256], sum;
+
+    #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+    const SAMPLE * input = vm_ref->input_ref() + offset;
+    SAMPLE * output = vm_ref->output_ref() + offset;
+    t_CKUINT buffer_length = vm_ref->buffer_length();
+    #else
     // get audio data from VM
     const SAMPLE * input = vm_ref->input_ref() + (offset*m_num_adc_channels);
     SAMPLE * output = vm_ref->output_ref() + (offset*m_num_dac_channels);
+    #endif
     
     // compute number of frames to compute; update
     numFrames = ck_min( m_max_block_size, numLeft );
@@ -4178,13 +4186,26 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
         // loop over channels
         for( j = 0; j < m_num_adc_channels; j++ )
         {
+            #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+            // current frame = offset + i
+            // current channel = j
+            // sample = buffer size * j + offset + i
+            // the "+offset" is taken care of in initialization
+            // the "+i" is taken care of by incrementing input below
+            m_adc->m_multi_chan[j]->m_current_v[i] = input[buffer_length * j] * gain[j] * m_adc->m_gain;
+            #else
             m_adc->m_multi_chan[j]->m_current_v[i] = input[j] * gain[j] * m_adc->m_gain;
+            #endif
             sum += m_adc->m_multi_chan[j]->m_current_v[i];
         }
         m_adc->m_current_v[i] = sum / m_num_adc_channels;
         
         // advance pointer
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        input++;
+        #else
         input += m_num_adc_channels;
+        #endif
     }
     
     // ???
@@ -4208,10 +4229,25 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
     for( i = 0; i < numFrames; i++ )
     {
         for( j = 0; j < m_num_dac_channels; j++ )
+        {
+            #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+            // current frame = offset + i
+            // current channel = j
+            // sample = buffer size * j + offset + i
+            // "+offset" taken care of in initialization
+            // "+i" taken care of by incrementing below
+            output[buffer_length * j] = m_dac->m_multi_chan[j]->m_current_v[i];
+            #else
             output[j] = m_dac->m_multi_chan[j]->m_current_v[i];
+            #endif
+        }
         
         // advance pointer
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        output++;
+        #else
         output += m_num_dac_channels;
+        #endif
     }
 }
 
@@ -4231,15 +4267,29 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
     SAMPLE sum = 0.0f;
     t_CKUINT i;
     // input and output
+    #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+    const SAMPLE * input = vm_ref->input_ref() + N;
+    SAMPLE * output = vm_ref->output_ref() + N;
+    t_CKUINT buffer_length = vm_ref->buffer_length();
+    #else
     const SAMPLE * input = vm_ref->input_ref() + (N*m_num_adc_channels);
     SAMPLE * output = vm_ref->output_ref() + (N*m_num_dac_channels);
+    #endif
 
     // INPUT: loop over channels
     for( i = 0; i < m_num_adc_channels; i++ )
     {
         // ge: switched order of lines 1.3.5.3
         m_adc->m_multi_chan[i]->m_last = m_adc->m_multi_chan[i]->m_current;
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        // current frame = N
+        // current channel = i
+        // sample = buffer size * i + N
+        // the +N is taken care of by initialization
+        m_adc->m_multi_chan[i]->m_current = input[buffer_length * i] * m_adc->m_multi_chan[i]->m_gain * m_adc->m_gain;
+        #else
         m_adc->m_multi_chan[i]->m_current = input[i] * m_adc->m_multi_chan[i]->m_gain * m_adc->m_gain;
+        #endif
         m_adc->m_multi_chan[i]->m_time = this->now_system;
         sum += m_adc->m_multi_chan[i]->m_current;
     }
@@ -4250,7 +4300,17 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
     m_dac->system_tick( this->now_system );
     // OUTPUT
     for( i = 0; i < m_num_dac_channels; i++ )
+    {
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        // current frame = N
+        // current channel = i
+        // sample = buffer size * i + N
+        // the +N is taken care of by initialization
+        output[buffer_length * i] = m_dac->m_multi_chan[i]->m_current; // * .5f;
+        #else
         output[i] = m_dac->m_multi_chan[i]->m_current; // * .5f;
+        #endif
+    }
 
     // suck samples
     m_bunghole->system_tick( this->now_system );
