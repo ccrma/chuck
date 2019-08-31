@@ -28,7 +28,7 @@ endif
 
 ############################## MAKE EMSCRIPTEN #################################
 EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
-    host_web/chuck_emscripten_main.cpp core/chuck.cpp core/chuck_absyn.cpp \
+    core/chuck.cpp core/chuck_absyn.cpp \
     core/chuck_carrier.cpp core/chuck_compile.cpp core/chuck_dl.cpp \
     core/chuck_emit.cpp core/chuck_errmsg.cpp core/chuck_frame.cpp \
     core/chuck_instr.cpp core/chuck_lang.cpp core/chuck_oo.cpp \
@@ -54,7 +54,8 @@ host_web/chuckscript.js: $(EMSCRIPTENSRCS)
         -D__DISABLE_FILEIO__ \
         $(EMSCRIPTENSRCS) -o host_web/chuckscript.js \
         -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue"]' \
-        -s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"'
+        -s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"' \
+        -s EXPORT_ES6=1 -s WASM=0
 
 
 
