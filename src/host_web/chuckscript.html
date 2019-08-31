@@ -121,13 +121,16 @@
   <body onresize="chuckEditor.resize();">
 <div>
     <div id="program">// Hi there, take a look at this example! 
+global Event mouseClicked;
+global int mouseX, mouseY;
 SinOsc foo => dac;
 while( true )
 {
-    Math.random2f( 30, 1000 ) => foo.freq;
+    300 + 0.3 * mouseX => foo.freq;
     <<< foo.freq() >>>;
-    200::ms => now;
-}</div>
+    mouseClicked => now;
+}
+</div>
 </div>
 <div><button id="compileButton" disabled="disabled">Compile and Run</button></div>
 <div>

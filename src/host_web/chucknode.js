@@ -108,8 +108,104 @@ ChucK().then( function( Module )
         {
             switch( event.data.type )
             {
+            // ================== Run / Compile ================== //
                 case 'runChuckCode':
                     runChuckCode( this.myID, event.data.code );
+                    break;
+                case 'runChuckCodeWithReplacementDac':
+                    runChuckCodeWithReplacementDac( this.myID, event.data.code, event.data.dac_name );
+                    break;
+                case 'runChuckFile':
+                    runChuckFile( this.myID, event.data.filename );
+                    break;
+                case 'runChuckFileWithReplacementDac':
+                    runChuckFileWithReplacementDac( this.myID, event.data.filename, event.data.dac_name );
+                    break;
+                case 'runChuckFileWithArgs':
+                    runChuckFileWithArgs( this.myID, event.data.filename, event.data.colon_separated_args );
+                    break;
+                case 'runChuckFileWithArgsWithReplacementDac':
+                    runChuckFileWithArgsWithReplacementDac( this.myID, event.data.filename, event.data.colon_separated_args, event.data.dac_name );
+                    break;
+            // ================== Int, Float, String ============= //
+                case 'setChuckInt':
+                    setChuckInt( this.myID, event.data.variable, event.data.value );
+                    break;
+                case 'getChuckInt':
+                    //TODO
+                    break;
+                case 'setChuckFloat':
+                    setChuckFloat( this.myID, event.data.variable, event.data.value );
+                    break;
+                case 'getChuckFloat':
+                    //TODO
+                    break;
+                case 'setChuckString':
+                    setChuckString( this.myID, event.data.variable, event.data.value );
+                    break;
+                case 'getChuckString':
+                    //TODO
+                    break;
+            // ================== Event =================== //
+                case 'signalChuckEvent':
+                    signalChuckEvent( this.myID, event.data.variable );
+                    break;
+                case 'broadcastChuckEvent':
+                    broadcastChuckEvent( this.myID, event.data.variable );
+                    break;
+                case 'listenForChuckEventOnce':
+                    //TODO
+                    break;
+                case 'startListeningForChuckEvent':
+                    //TODO
+                    break;
+                case 'stopListeningForChuckEvent':
+                    //TODO
+                    break;
+            // ================== Int[] =================== //
+                case 'setGlobalIntArray':
+                    //TODO (requires heap ptr manipulation)
+                    break;
+                case 'getGlobalIntArray':
+                    //TODO (requires heap ptr manipulation)
+                    break;
+                case 'setGlobalIntArrayValue':
+                    setGlobalIntArrayValue( this.myID, event.data.variable, event.data.index, event.data.value );
+                    break;
+                case 'getGlobalIntArrayValue':
+                    // TODO
+                    break;
+                case 'setGlobalAssociativeIntArrayValue':
+                    setGlobalAssociativeIntArrayValue( this.myID, event.data.variable, event.data.key, event.data.value );
+                    break;
+                case 'getGlobalAssociativeIntArrayValue':
+                    // TODO
+                    break;
+            // ================== Float[] =================== //
+                case 'setGlobalFloatArray':
+                    //TODO (requires heap ptr manipulation)
+                    break;
+                case 'getGlobalFloatArray':
+                    //TODO (requires heap ptr manipulation)
+                    break;
+                case 'setGlobalFloatArrayValue':
+                    setGlobalFloatArrayValue( this.myID, event.data.variable, event.data.index, event.data.value );
+                    break;
+                case 'getGlobalFloatArrayValue':
+                    // TODO
+                    break;
+                case 'setGlobalAssociativeFloatArrayValue':
+                    setGlobalAssociativeFloatArrayValue( this.myID, event.data.variable, event.data.key, event.data.value );
+                    break;
+                case 'getGlobalAssociativeFloatArrayValue':
+                    // TODO
+                    break;
+            // ================= Clear ====================== //
+                case 'clearChuckInstance':
+                    clearChuckInstance( this.myID );
+                    break;
+                case 'clearGlobals':
+                    clearGlobals( this.myID );
                     break;
                 default:
                     break;
