@@ -30,6 +30,11 @@ ChucK().then( function( Module ) {
             
             // do this in response to an incoming message
             this.port.onmessage = this.handle_message.bind(this);
+            
+            // override which port the Module uses for print statements
+            // (if there's multiple chuck nodes, the latest one will just 
+            //  redefine it. hacky but fine?)
+            Module['any_port'] = this.port;
         
         }
         
@@ -37,7 +42,6 @@ ChucK().then( function( Module ) {
         {
             console.log( event.data.code );
             run_chuck_code( this.myID, event.data.code );
-
         }
 
         process(inputs, outputs, parameters) {
