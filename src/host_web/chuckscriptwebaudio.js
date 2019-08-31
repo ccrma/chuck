@@ -70,4 +70,20 @@ compileButton.addEventListener( "click", async function()
     // send message to compile code 
     chuckNode.port.postMessage( { type: "runChuckCode", code: chuckEditor.getValue() } );
     
+    
+    if( window.Event ) { document.captureEvents( Event.MOUSEMOVE ); }
+    document.onmousemove = function( e )
+    {
+        var x = (window.Event) ? e.pageX : event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
+	    var y = (window.Event) ? e.pageY : event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
+	    chuckNode.port.postMessage( { type: "setChuckInt", variable: "mouseX", value: x } );
+	    chuckNode.port.postMessage( { type: "setChuckInt", variable: "mouseY", value: y } );    
+    }
+    
+    document.onclick = function( e )
+    {
+        chuckNode.port.postMessage( { type: "broadcastChuckEvent", variable: "mouseClicked" } );
+    }
+    
+    
 });
