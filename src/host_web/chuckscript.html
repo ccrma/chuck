@@ -118,7 +118,7 @@
       }
     </style>
   </head>
-  <body>
+  <body onresize="chuckEditor.resize();">
 <div>
     <div id="program">// Hi there, take a look at this example! 
 SinOsc foo => dac;
@@ -141,12 +141,16 @@ while( true )
         chuckEditor.setOptions({
             fontSize: "14px",
             fontFamily: "Monaco",
+            cursorStyle: "ace",
+            useSoftTabs: true,
+            showFoldWidgets: true,
+            foldStyle: "markbeginend",
             maxLines: 23,
             minLines: 23
         }); 
         chuckEditor.container.style.lineHeight = 1.25;
         chuckEditor.renderer.updateFontSize();
-//         document.getElementById('program').style.fontSize='16px';
+        chuckEditor.session.setUseWrapMode(true);
     </script>
     <script type="text/javascript" src="chuckscriptwebaudio.js"></script>
   </body>
