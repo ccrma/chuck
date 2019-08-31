@@ -1,8 +1,9 @@
 import ChucK from './chuckscript.js';
 import { RENDER_QUANTUM_FRAMES, MAX_CHANNEL_COUNT, HeapAudioBuffer } from './wasm-audio-helper.js';
+var currentChuckID = 1;
 
 ChucK().then( function( Module ) {
-    var init_chuck = Module.cwrap( 'initChuckInstance', 'number', ['number', 'number', 'number', 'number', 'number'] );
+    var init_chuck = Module.cwrap( 'initChuckInstance', 'number', ['number', 'number', 'number', 'number'] );
     var run_chuck_code = Module.cwrap( 'runChuckCode', 'number', ['number', 'string'] );
     var setLogLevel = Module.cwrap( 'setLogLevel', 'number', ['number'] );
 
@@ -10,6 +11,9 @@ ChucK().then( function( Module ) {
     {
         constructor( options ) {
             super();
+            
+            this.myID = currentChuckID;
+            currentChuckID++;
         
             // Allocate the buffer for the heap access. Start with stereo, but it can
             // be expanded up to 32 channels.
@@ -18,12 +22,11 @@ ChucK().then( function( Module ) {
             this._heapOutputBuffer = new HeapAudioBuffer(Module, RENDER_QUANTUM_FRAMES,
                                                          options.numberOfOutputs, MAX_CHANNEL_COUNT);
             
-            // TODO: is buffer size ever not 128?
             this.srate = options.processorOptions.srate;
             this.inChannels = options.numberOfInputs;
             this.outChannels = options.numberOfOutputs;
-            init_chuck( 1, this.srate, 128, this.inChannels, this.outChannels );
-            setLogLevel( 10 );
+            init_chuck( this.myID, this.srate, this.inChannels, this.outChannels );
+            // setLogLevel( 10 );
             
             // do this in response to an incoming message
             this.port.onmessage = this.handle_message.bind(this);
@@ -33,46 +36,48 @@ ChucK().then( function( Module ) {
         handle_message( event )
         {
             console.log( event.data.code );
-            run_chuck_code( 1, event.data.code );
+            run_chuck_code( this.myID, event.data.code );
 
         }
 
         process(inputs, outputs, parameters) {
-            // Use the 1st input and output only to make the example simpler. |input|
-            // and |output| here have the similar structure with the AudioBuffer
-            // interface. (i.e. An array of Float32Array)
-            let input = inputs[0];
-            let output = outputs[0];
-
-            // For this given render quantum, the channel count of the node is fixed
-            // and identical for the input and the output.
-            let channelCount = input.length;
-
+            // structure for two-channel audio appears to be [[Float32Array],[Float32Array]]
+            // i.e. each channel is surrounded by an extraneous array            
+            
             // Prepare HeapAudioBuffer for the channel count change in the current
             // render quantum.
-            this._heapInputBuffer.adaptChannel(channelCount);
-            this._heapOutputBuffer.adaptChannel(channelCount);
+            this._heapInputBuffer.adaptChannel( inputs.length );
+            this._heapOutputBuffer.adaptChannel( outputs.length );
     
             // Copy-in, process and copy-out.
-            for (let channel = 0; channel < channelCount; ++channel) {
-                this._heapInputBuffer.getChannelData(channel).set(input[channel]);
+            for (let channel = 0; channel < inputs.length; channel++) 
+            {
+                // ignore empty arrays (which signals we have no input)
+                // (arguably if there is no input, the input array should be
+                //  an array of 0's but who am I to judge)
+                if( inputs[channel][0].length > 0 )
+                {
+                    this._heapInputBuffer.getChannelData(channel).set(inputs[channel][0]);
+                }
             }
         
-            // TODO: for multichannel, WebAudio uses planar buffers and ChucK uses interleaved
-            // (why would you ever use planar for anything? I've never heard of it being used before.)
+            // for multichannel, WebAudio uses planar buffers.
+            // this version of ChucK has been specially compiled to do the same
+            // (ordinarily, ChucK uses interleaved buffers since it processes
+            //  sample by sample)
             Module._chuckManualAudioCallback( 
-                1,  // chuck ID
+                this.myID,  // chuck ID
                 this._heapInputBuffer.getHeapAddress(),
                 this._heapOutputBuffer.getHeapAddress(),
-                128, // frame size
+                outputs[0][0].length, // frame size (probably 128)
                 this.inChannels,  // in channels
                 this.outChannels  // out channels
             );
                                      
-            for (let channel = 0; channel < channelCount; ++channel) {
-                output[channel].set(this._heapOutputBuffer.getChannelData(channel));
-            } 
-
+            for (let channel = 0; channel < outputs.length; channel++) {
+                outputs[channel][0].set(this._heapOutputBuffer.getChannelData(channel));
+            }
+            
             return true;
         }
 
