@@ -21,7 +21,6 @@ var printToConsole = (function() {
 
 
 var compileButton = document.getElementById( "compileButton" );
-var programField = document.getElementById( "program" );
 compileButton.disabled = false;
 compileButton.addEventListener( "click", async function() 
 {
@@ -69,6 +68,6 @@ compileButton.addEventListener( "click", async function()
     }
 
     // send message to compile code 
-    chuckNode.port.postMessage( { type: "compile code", code: programField.value } );
+    chuckNode.port.postMessage( { type: "runChuckCode", code: chuckEditor.getValue() } );
     
 });

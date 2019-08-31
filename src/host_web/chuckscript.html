@@ -86,7 +86,7 @@
 
       #output {
         width: 100%;
-        height: 200px;
+        height: 300px;
         margin: 0 auto;
         margin-top: 10px;
         border-left: 0px;
@@ -98,6 +98,7 @@
         color: white;
         font-family: 'Lucida Console', Monaco, monospace;
         outline: none;
+        resize: none;
       }
       
       #program {
@@ -119,20 +120,34 @@
   </head>
   <body>
 <div>
-    <textarea id="program" rows="16" >
+    <div id="program">// Hi there, take a look at this example! 
 SinOsc foo => dac;
 while( true )
 {
     Math.random2f( 30, 1000 ) => foo.freq;
+    <<< foo.freq() >>>;
     200::ms => now;
-}</textarea>
+}</div>
 </div>
 <div><button id="compileButton" disabled="disabled">Compile and Run</button></div>
 <div>
-    <textarea id="output" rows="8" cols="50"></textarea>
+    <textarea id="output"></textarea>
 </div>
-<!--     <script type="text/javascript" src="chuckscript.js"></script> -->
-<!--     <script type="text/javascript" src="chuckscriptwrapper.js"></script> -->
+    <script src="./ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+        var chuckEditor = ace.edit("program");
+        chuckEditor.setTheme("ace/theme/chuck");
+        chuckEditor.session.setMode("ace/mode/chuck");
+        chuckEditor.setOptions({
+            fontSize: "14px",
+            fontFamily: "Monaco",
+            maxLines: 23,
+            minLines: 23
+        }); 
+        chuckEditor.container.style.lineHeight = 1.25;
+        chuckEditor.renderer.updateFontSize();
+//         document.getElementById('program').style.fontSize='16px';
+    </script>
     <script type="text/javascript" src="chuckscriptwebaudio.js"></script>
   </body>
 </html>
