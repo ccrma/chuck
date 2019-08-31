@@ -131,52 +131,6 @@ while( true )
 <div>
     <textarea id="output" rows="8" cols="50"></textarea>
 </div>
-    <script type='text/javascript'>
-
-      var Module = {
-        preRun: [],
-        postRun: [],
-        print: (function() {
-          var element = document.getElementById('output');
-          if (element) element.value = ''; // clear browser cache
-          return function(text) {
-            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-            // These replacements are necessary if you render to raw HTML
-            //text = text.replace(/&/g, "&amp;");
-            //text = text.replace(/</g, "&lt;");
-            //text = text.replace(/>/g, "&gt;");
-            //text = text.replace('\n', '<br>', 'g');
-            console.log(text);
-            if (element) {
-              element.value += text + "\n";
-              element.scrollTop = element.scrollHeight; // focus on bottom
-            }
-          };
-        })(),
-        // original
-        /*printErr: function(text) {
-          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-          console.error(text);
-        },*/
-        printErr: (function() {
-          var element = document.getElementById('output');
-          if (element) element.value = ''; // clear browser cache
-          return function(text) {
-            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-            // These replacements are necessary if you render to raw HTML
-            //text = text.replace(/&/g, "&amp;");
-            //text = text.replace(/</g, "&lt;");
-            //text = text.replace(/>/g, "&gt;");
-            //text = text.replace('\n', '<br>', 'g');
-            console.error(text);
-            if (element) {
-              element.value += text + "\n";
-              element.scrollTop = element.scrollHeight; // focus on bottom
-            }
-          };
-        })()
-      };
-    </script>
 <!--     <script type="text/javascript" src="chuckscript.js"></script> -->
 <!--     <script type="text/javascript" src="chuckscriptwrapper.js"></script> -->
     <script type="text/javascript" src="chuckscriptwebaudio.js"></script>
