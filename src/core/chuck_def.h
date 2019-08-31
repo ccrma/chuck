@@ -39,6 +39,7 @@
 
 
 // types
+#ifndef __EMSCRIPTEN__
 #define t_CKTIME                    double
 #define t_CKDUR                     double
 #define t_CKFLOAT                   double
@@ -48,7 +49,23 @@
 #define t_CKINT                     long long // REFACTOR-2017
 #else
 #define t_CKINT                     long
+#define CK_FLT_MAX                  DBL_MAX
+#define CK_FLT_MIN                  DBL_MIN
+#define CK_INT_MAX                  LONG_MAX
 #endif
+
+#else
+#define t_CKTIME                    float
+#define t_CKDUR                     float
+#define t_CKFLOAT                   float
+#define t_CKDOUBLE                  float
+#define t_CKSINGLE                  float
+#define t_CKINT                     int // REFACTOR-2017
+#define CK_FLT_MAX                  FLT_MAX
+#define CK_FLT_MIN                  FLT_MIN
+#define CK_INT_MAX                  INT_MAX
+#endif
+
 #define t_CKUINT                    unsigned t_CKINT
 #define t_CKBOOL                    unsigned t_CKINT
 #define t_CKBYTE                    unsigned char

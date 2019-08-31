@@ -39,7 +39,7 @@ extern "C"
     
     
     
-    bool runChuckCodeWithReplacementDac(
+    bool EMSCRIPTEN_KEEPALIVE runChuckCodeWithReplacementDac(
         unsigned int chuckID, const char * code, const char * replacement_dac )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
@@ -60,7 +60,7 @@ extern "C"
     
     
     
-    bool runChuckFile( unsigned int chuckID,
+    bool EMSCRIPTEN_KEEPALIVE runChuckFile( unsigned int chuckID,
         const char * filename )
     {
         // run with empty args
@@ -69,7 +69,7 @@ extern "C"
     
     
     
-    bool runChuckFileWithArgs( unsigned int chuckID,
+    bool EMSCRIPTEN_KEEPALIVE runChuckFileWithArgs( unsigned int chuckID,
         const char * filename, const char * args )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
@@ -86,7 +86,7 @@ extern "C"
     
     
     
-    bool runChuckFileWithReplacementDac(
+    bool EMSCRIPTEN_KEEPALIVE runChuckFileWithReplacementDac(
         unsigned int chuckID, const char * filename,
         const char * replacement_dac )
     {
@@ -98,7 +98,7 @@ extern "C"
     
     
     
-    bool runChuckFileWithArgsWithReplacementDac(
+    bool EMSCRIPTEN_KEEPALIVE runChuckFileWithArgsWithReplacementDac(
         unsigned int chuckID, const char * filename, const char * args,
         const char * replacement_dac )
     {
@@ -121,7 +121,7 @@ extern "C"
     
     
     
-    bool setChuckInt( unsigned int chuckID, const char * name, t_CKINT val )
+    bool EMSCRIPTEN_KEEPALIVE setChuckInt( unsigned int chuckID, const char * name, t_CKINT val )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
@@ -130,7 +130,7 @@ extern "C"
     
     
     
-    bool getChuckInt( unsigned int chuckID, const char * name, void (* callback)(t_CKINT) )
+    bool EMSCRIPTEN_KEEPALIVE getChuckInt( unsigned int chuckID, const char * name, void (* callback)(t_CKINT) )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
@@ -139,7 +139,7 @@ extern "C"
     
     
     
-    bool setChuckFloat( unsigned int chuckID, const char * name, t_CKFLOAT val )
+    bool EMSCRIPTEN_KEEPALIVE setChuckFloat( unsigned int chuckID, const char * name, t_CKFLOAT val )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
@@ -148,7 +148,7 @@ extern "C"
     
     
     
-    bool getChuckFloat( unsigned int chuckID, const char * name, void (* callback)(t_CKFLOAT) )
+    bool EMSCRIPTEN_KEEPALIVE getChuckFloat( unsigned int chuckID, const char * name, void (* callback)(t_CKFLOAT) )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
@@ -157,7 +157,7 @@ extern "C"
     
     
     
-    bool setChuckString( unsigned int chuckID, const char * name, const char * val )
+    bool EMSCRIPTEN_KEEPALIVE setChuckString( unsigned int chuckID, const char * name, const char * val )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
@@ -166,7 +166,7 @@ extern "C"
     
     
     
-    bool getChuckString( unsigned int chuckID, const char * name, void (* callback)(const char *) )
+    bool EMSCRIPTEN_KEEPALIVE getChuckString( unsigned int chuckID, const char * name, void (* callback)(const char *) )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
@@ -175,7 +175,7 @@ extern "C"
     
     
     
-    bool signalChuckEvent( unsigned int chuckID, const char * name )
+    bool EMSCRIPTEN_KEEPALIVE signalChuckEvent( unsigned int chuckID, const char * name )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
@@ -184,7 +184,7 @@ extern "C"
     
     
     
-    bool broadcastChuckEvent( unsigned int chuckID, const char * name )
+    bool EMSCRIPTEN_KEEPALIVE broadcastChuckEvent( unsigned int chuckID, const char * name )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
@@ -193,7 +193,7 @@ extern "C"
     
     
     
-    bool listenForChuckEventOnce( unsigned int chuckID, const char * name, void (* callback)(void) )
+    bool EMSCRIPTEN_KEEPALIVE listenForChuckEventOnce( unsigned int chuckID, const char * name, void (* callback)(void) )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
@@ -203,7 +203,7 @@ extern "C"
     
     
     
-    bool startListeningForChuckEvent( unsigned int chuckID, const char * name, void (* callback)(void) )
+    bool EMSCRIPTEN_KEEPALIVE startListeningForChuckEvent( unsigned int chuckID, const char * name, void (* callback)(void) )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
@@ -213,7 +213,7 @@ extern "C"
     
     
     
-    bool stopListeningForChuckEvent( unsigned int chuckID, const char * name, void (* callback)(void) )
+    bool EMSCRIPTEN_KEEPALIVE stopListeningForChuckEvent( unsigned int chuckID, const char * name, void (* callback)(void) )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
@@ -222,7 +222,7 @@ extern "C"
     }
     
     
-    bool getGlobalUGenSamples( unsigned int chuckID,
+    bool EMSCRIPTEN_KEEPALIVE getGlobalUGenSamples( unsigned int chuckID,
         const char * name, SAMPLE * buffer, int numSamples )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
@@ -241,7 +241,7 @@ extern "C"
     
     
     // int array methods
-    bool setGlobalIntArray( unsigned int chuckID,
+    bool EMSCRIPTEN_KEEPALIVE setGlobalIntArray( unsigned int chuckID,
         const char * name, t_CKINT arrayValues[], unsigned int numValues )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
@@ -252,7 +252,7 @@ extern "C"
     
     
     
-    bool getGlobalIntArray( unsigned int chuckID,
+    bool EMSCRIPTEN_KEEPALIVE getGlobalIntArray( unsigned int chuckID,
         const char * name, void (* callback)(t_CKINT[], t_CKUINT))
     {
        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
@@ -263,7 +263,7 @@ extern "C"
     
     
     
-    bool setGlobalIntArrayValue( unsigned int chuckID,
+    bool EMSCRIPTEN_KEEPALIVE setGlobalIntArrayValue( unsigned int chuckID,
         const char * name, unsigned int index, t_CKINT value )
     {
        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
@@ -274,7 +274,7 @@ extern "C"
     
     
     
-    bool getGlobalIntArrayValue( unsigned int chuckID,
+    bool EMSCRIPTEN_KEEPALIVE getGlobalIntArrayValue( unsigned int chuckID,
         const char * name, unsigned int index, void (* callback)(t_CKINT) )
     {
        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
@@ -285,7 +285,7 @@ extern "C"
     
     
     
-    bool setGlobalAssociativeIntArrayValue(
+    bool EMSCRIPTEN_KEEPALIVE setGlobalAssociativeIntArrayValue(
         unsigned int chuckID, const char * name, char * key, t_CKINT value )
     {
        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
@@ -296,7 +296,7 @@ extern "C"
     
     
     
-    bool getGlobalAssociativeIntArrayValue(
+    bool EMSCRIPTEN_KEEPALIVE getGlobalAssociativeIntArrayValue(
         unsigned int chuckID, const char * name, char * key,
         void (* callback)(t_CKINT) )
     {
@@ -309,7 +309,7 @@ extern "C"
     
     
     // float array methods
-    bool setGlobalFloatArray( unsigned int chuckID,
+    bool EMSCRIPTEN_KEEPALIVE setGlobalFloatArray( unsigned int chuckID,
         const char * name, t_CKFLOAT arrayValues[], unsigned int numValues )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
@@ -320,7 +320,7 @@ extern "C"
     
     
     
-    bool getGlobalFloatArray( unsigned int chuckID,
+    bool EMSCRIPTEN_KEEPALIVE getGlobalFloatArray( unsigned int chuckID,
         const char * name, void (* callback)(t_CKFLOAT[], t_CKUINT))
     {
        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
@@ -331,7 +331,7 @@ extern "C"
     
     
     
-    bool setGlobalFloatArrayValue( unsigned int chuckID,
+    bool EMSCRIPTEN_KEEPALIVE setGlobalFloatArrayValue( unsigned int chuckID,
         const char * name, unsigned int index, t_CKFLOAT value )
     {
        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
@@ -342,7 +342,7 @@ extern "C"
     
     
     
-    bool getGlobalFloatArrayValue( unsigned int chuckID,
+    bool EMSCRIPTEN_KEEPALIVE getGlobalFloatArrayValue( unsigned int chuckID,
         const char * name, unsigned int index, void (* callback)(t_CKFLOAT) )
     {
        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
@@ -353,7 +353,7 @@ extern "C"
     
     
     
-    bool setGlobalAssociativeFloatArrayValue(
+    bool EMSCRIPTEN_KEEPALIVE setGlobalAssociativeFloatArrayValue(
         unsigned int chuckID, const char * name, char * key, t_CKFLOAT value )
     {
        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
@@ -364,7 +364,7 @@ extern "C"
     
     
     
-    bool getGlobalAssociativeFloatArrayValue(
+    bool EMSCRIPTEN_KEEPALIVE getGlobalAssociativeFloatArrayValue(
         unsigned int chuckID, const char * name, char * key,
         void (* callback)(t_CKFLOAT) )
     {
@@ -376,35 +376,35 @@ extern "C"
     
     
     
-    bool setChoutCallback( unsigned int chuckID, void (* callback)(const char *) )
+    bool EMSCRIPTEN_KEEPALIVE setChoutCallback( unsigned int chuckID, void (* callback)(const char *) )
     {
         return chuck_instances[chuckID]->setChoutCallback( callback );
     }
 
 
 
-    bool setCherrCallback( unsigned int chuckID, void (* callback)(const char *) )
+    bool EMSCRIPTEN_KEEPALIVE setCherrCallback( unsigned int chuckID, void (* callback)(const char *) )
     {
         return chuck_instances[chuckID]->setCherrCallback( callback );
     }
     
     
     
-    bool setStdoutCallback( void (* callback)(const char *) )
+    bool EMSCRIPTEN_KEEPALIVE setStdoutCallback( void (* callback)(const char *) )
     {
         return ChucK::setStdoutCallback( callback );
     }
 
 
 
-    bool setStderrCallback( void (* callback)(const char *) )
+    bool EMSCRIPTEN_KEEPALIVE setStderrCallback( void (* callback)(const char *) )
     {
         return ChucK::setStderrCallback( callback );
     }
     
     
     
-    bool setDataDir( const char * dir )
+    bool EMSCRIPTEN_KEEPALIVE setDataDir( const char * dir )
     {
         chuck_global_data_dir = std::string( dir );
         return true;
@@ -412,7 +412,7 @@ extern "C"
     
     
     
-    bool setLogLevel( unsigned int level )
+    bool EMSCRIPTEN_KEEPALIVE setLogLevel( unsigned int level )
     {
         EM_setlog( level );
         return true;
@@ -454,7 +454,7 @@ extern "C"
 
 
 
-    bool clearChuckInstance( unsigned int chuckID )
+    bool EMSCRIPTEN_KEEPALIVE clearChuckInstance( unsigned int chuckID )
     {
         if( chuck_instances.count( chuckID ) > 0 )
         {
@@ -479,7 +479,7 @@ extern "C"
 
 
 
-    bool clearGlobals( unsigned int chuckID )
+    bool EMSCRIPTEN_KEEPALIVE clearGlobals( unsigned int chuckID )
     {
         if( chuck_instances.count( chuckID ) > 0 )
         {
@@ -503,7 +503,7 @@ extern "C"
     }
 
 
-    bool cleanupChuckInstance( unsigned int chuckID )
+    bool EMSCRIPTEN_KEEPALIVE cleanupChuckInstance( unsigned int chuckID )
     {
         if( chuck_instances.count( chuckID ) > 0 )
         {
@@ -544,7 +544,7 @@ extern "C"
 
 
     // on launch, reset all ids (necessary when relaunching a lot in unity editor)
-    void cleanRegisteredChucks() {
+    void EMSCRIPTEN_KEEPALIVE cleanRegisteredChucks() {
         // delete chucks
         for( std::map< unsigned int, ChucK * >::iterator it =
              chuck_instances.begin(); it != chuck_instances.end(); it++ )
