@@ -3,27 +3,12 @@ var audioContext = undefined;
 var theChuck = undefined;
 var theChuckReady = defer();
 
-var printToConsole = (function() {
-    var element = document.getElementById('output');
-    if (element) element.value = ''; // clear browser cache
-    return function(text) {
-        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-        // These replacements are necessary if you render to raw HTML
-        //text = text.replace(/&/g, "&amp;");
-        //text = text.replace(/</g, "&lt;");
-        //text = text.replace(/>/g, "&gt;");
-        //text = text.replace('\n', '<br>', 'g');
-        if (element) {
-            element.value += text + "\n";
-            element.scrollTop = element.scrollHeight; // focus on bottom
-        }
-    };
-})();
+var chuckPrint = function( text )
+{
+    // override me!
+}
 
-
-var compileButton = document.getElementById( "compileButton" );
-compileButton.disabled = false;
-compileButton.addEventListener( "click", async function() 
+var startChuck = async function() 
 {
     if( audioContext === undefined )
     {
@@ -72,7 +57,7 @@ compileButton.addEventListener( "click", async function()
                 switch( event.data.type ) 
                 {
                     case "console print":
-                        printToConsole( event.data.message );
+                        chuckPrint( event.data.message );
                         break;
                     case "eventCallback":
                         if( event.data.callback in self.eventCallbacks )
@@ -336,11 +321,7 @@ compileButton.addEventListener( "click", async function()
             
         })( theChuck );
         
-        theChuck.connect( audioContext.destination );    
+        theChuck.connect( audioContext.destination );
+        theChuckReady.resolve();
     }
-
-    // send message to compile code 
-    theChuck.runChuckCode( chuckEditor.getValue() );
-    
-    theChuckReady.resolve();
-});
+};
