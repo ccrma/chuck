@@ -132,11 +132,12 @@ mouseClicked => now;
             compileButton.addEventListener( "click", function() 
             {
                 // send message to compile code 
-                // TODO: first one doesn't execute? :(
-                console.log( chuckEditor.getValue() );
                 theChuck.runChuckCode( chuckEditor.getValue() );
             });
-        
+        });
+    </script>
+    <script>    
+        theChuckReady.then( function() {
             if( window.Event ) { 
                 document.captureEvents( Event.MOUSEMOVE );
             }
