@@ -44,13 +44,9 @@ var startChuck = async function()
         (function( self )
         {
             self.eventCallbacks = {};
-            self.intCallbacks = {};
-            self.floatCallbacks = {};
-            self.stringCallbacks = {};
+            self.deferredPromises = {};
             self.eventCallbackCounter = 0;
-            self.intCallbackCounter = 0;
-            self.floatCallbackCounter = 0;
-            self.stringCallbackCounter = 0;
+            self.deferredPromiseCounter = 0;
             // respond to messages
             self.port.onmessage = function( event )
             {
@@ -66,21 +62,12 @@ var startChuck = async function()
                         }
                         break;
                     case "intCallback":
-                        if( event.data.callback in self.intCallbacks )
-                        {
-                            self.intCallbacks[event.data.callback](event.data.result);
-                        }
-                        break;
                     case "floatCallback":
-                        if( event.data.callback in self.floatCallbacks )
-                        {
-                            self.floatCallbacks[event.data.callback](event.data.result);
-                        }
-                        break;
                     case "stringCallback":
-                        if( event.data.callback in self.stringCallbacks )
+                        if( event.data.callback in self.deferredPromises )
                         {
-                            self.stringCallbacks[event.data.callback](event.data.result);
+                            self.deferredPromises[event.data.callback].resolve(event.data.result);
+                            delete self.deferredPromises[event.data.callback];
                         }
                         break;
                     default:
@@ -138,15 +125,16 @@ var startChuck = async function()
                     value: value
                 } );
             }
-            self.getInt = function( variable, callback )
+            self.getInt = function( variable )
             {
-                var callbackID = self.intCallbackCounter++;
-                self.intCallbacks[callbackID] = callback;
+                var callbackID = self.deferredPromiseCounter++;
+                self.deferredPromises[callbackID] = defer();
                 self.port.postMessage( {
                     type: 'getChuckInt',
                     variable: variable,
                     callback: callbackID
                 } );
+                return self.deferredPromises[callbackID];
             }
             self.setFloat = function( variable, value )
             {
@@ -156,15 +144,16 @@ var startChuck = async function()
                     value: value
                 } );
             }
-            self.getFloat = function( variable, callback )
+            self.getFloat = function( variable )
             {
-                var callbackID = self.floatCallbackCounter++;
-                self.floatCallbacks[callbackID] = callback;
+                var callbackID = self.deferredPromiseCounter++;
+                self.deferredPromises[callbackID] = defer();
                 self.port.postMessage( {
                     type: 'getChuckFloat',
                     variable: variable,
                     callback: callbackID
                 } );
+                return self.deferredPromises[callbackID];
             }
             self.setString = function( variable, value )
             {
@@ -174,15 +163,16 @@ var startChuck = async function()
                     value: value
                 } );
             }
-            self.getString = function( variable, callback )
+            self.getString = function( variable )
             {
-                var callbackID = self.stringCallbackCounter++;
-                self.stringCallbacks[callbackID] = callback;
+                var callbackID = self.deferredPromiseCounter++;
+                self.deferredPromises[callbackID] = defer();
                 self.port.postMessage( {
                     type: 'getChuckString',
                     variable: variable,
                     callback: callbackID
                 } );
+                return self.deferredPromises[callbackID];
             }
             // ================== Event =================== //
             self.signalEvent = function( variable )
@@ -235,16 +225,17 @@ var startChuck = async function()
                     value: value
                 } );
             }
-            self.getIntArrayValue = function( variable, index, callback )
+            self.getIntArrayValue = function( variable, index )
             {
-                var callbackID = self.intCallbackCounter++;
-                self.intCallbacks[callbackID] = callback;
+                var callbackID = self.deferredPromiseCounter++;
+                self.deferredPromises[callbackID] = defer();
                 self.port.postMessage( {
                     type: 'getGlobalIntArrayValue',
                     variable: variable,
                     index: index,
                     callback: callbackID
                 } );
+                return self.deferredPromises[callbackID];
             }
             self.setAssociativeIntArrayValue = function( variable, key, value )
             {
@@ -255,16 +246,17 @@ var startChuck = async function()
                     value: value
                 } );
             }
-            self.getAssociativeIntArrayValue = function( variable, key, callback )
+            self.getAssociativeIntArrayValue = function( variable, key )
             {
-                var callbackID = self.intCallbackCounter++;
-                self.intCallbacks[callbackID] = callback;
+                var callbackID = self.deferredPromiseCounter++;
+                self.deferredPromises[callbackID] = defer();
                 self.port.postMessage( {
                     type: 'getGlobalAssociativeIntArrayValue',
                     variable: variable,
                     key: key,
                     callback: callbackID
                 } );
+                return self.deferredPromises[callbackID];
             }
             // ================== Float[] =================== //
             self.setFloatArray = undefined;
@@ -278,16 +270,17 @@ var startChuck = async function()
                     value: value
                 } );
             }
-            self.getFloatArrayValue = function( variable, index, callback )
+            self.getFloatArrayValue = function( variable, index )
             {
-                var callbackID = self.floatCallbackCounter++;
-                self.floatCallbacks[callbackID] = callback;
+                var callbackID = self.deferredPromiseCounter++;
+                self.deferredPromises[callbackID] = defer();
                 self.port.postMessage( {
                     type: 'getGlobalFloatArrayValue',
                     variable: variable,
                     index: index,
                     callback: callbackID
                 } );
+                return self.deferredPromises[callbackID];
             }
             self.setAssociativeFloatArrayValue = function( variable, key, value )
             {
@@ -298,16 +291,17 @@ var startChuck = async function()
                     value: value
                 } );
             }
-            self.getAssociativeFloatArrayValue = function( variable, key, callback )
+            self.getAssociativeFloatArrayValue = function( variable, key )
             {
-                var callbackID = self.floatCallbackCounter++;
-                self.floatCallbacks[callbackID] = callback;
+                var callbackID = self.deferredPromiseCounter++;
+                self.deferredPromises[callbackID] = defer();
                 self.port.postMessage( {
                     type: 'getGlobalAssociativeFloatArrayValue',
                     variable: variable,
                     key: key,
                     callback: callbackID
                 } );
+                return self.deferredPromises[callbackID];
             }
             // ================= Clear ====================== //
             self.clearChuckInstance = function()
