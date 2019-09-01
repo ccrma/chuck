@@ -53,10 +53,11 @@ host_web/chuckscript.js: $(EMSCRIPTENSRCS)
         -D__DISABLE_NETWORK__ -D__DISABLE_SHELL__ -D__DISABLE_WVOUT__ \
         -D__DISABLE_FILEIO__ -D__CHUCK_USE_PLANAR_BUFFERS__ \
         $(EMSCRIPTENSRCS) -o host_web/chuckscript.js \
-        -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue"]' \
+        -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction"]' \
         --pre-js host_web/webaudio_prejs.js \
         -s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"' \
-        -s EXPORT_ES6=1 -s BINARYEN_ASYNC_COMPILATION=0 -s SINGLE_FILE=1
+        -s EXPORT_ES6=1 -s BINARYEN_ASYNC_COMPILATION=0 -s SINGLE_FILE=1 \
+        -s RESERVED_FUNCTION_POINTERS=50
 
 
 

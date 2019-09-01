@@ -45,9 +45,9 @@ ChucK().then( function( Module )
     // global Events
     var signalChuckEvent = Module.cwrap( 'signalChuckEvent', 'number', ['number', 'string'] );
     var broadcastChuckEvent = Module.cwrap( 'broadcastChuckEvent', 'number', ['number', 'string'] );
-    // listenForChuckEventOnce = 
-    // startListeningForChuckEvent = 
-    // stopListeningForChuckEvent = 
+    var listenForChuckEventOnce = Module.cwrap( 'listenForChuckEventOnce', 'number', ['number', 'string', 'number'] );
+    var startListeningForChuckEvent = Module.cwrap( 'startListeningForChuckEvent', 'number', ['number', 'string', 'number']);
+    var stopListeningForChuckEvent = Module.cwrap( 'stopListeningForChuckEvent', 'number', ['number', 'string', 'number']);
 
     // note: array is SAMPLE == Float32
     // NOTE ALSO anything using arrays cannot use cwrap; use in similar manner to Module._chuckManualAudioCallback
@@ -101,6 +101,8 @@ ChucK().then( function( Module )
             // (if there's multiple chuck nodes, the latest one will just 
             //  redefine it. hacky but fine?)
             Module['any_port'] = this.port;
+            
+            this.myPointers = {}
         
         }
         
@@ -154,13 +156,32 @@ ChucK().then( function( Module )
                     broadcastChuckEvent( this.myID, event.data.variable );
                     break;
                 case 'listenForChuckEventOnce':
-                    //TODO
+                    (function( thePort, theCallback, theVariable, theID ) 
+                    {
+                        var pointer = Module.addFunction( (function(thePort, theCallback)
+                        {   
+                            return function()
+                            {
+                                thePort.postMessage( { type: "eventCallback", callback: theCallback } );
+                                Module.removeFunction( pointer );
+                            }
+                        })(thePort, theCallback) );
+                        listenForChuckEventOnce( theID, theVariable, pointer );
+                    })(this.port, event.data.callback, event.data.variable, this.myID);
                     break;
                 case 'startListeningForChuckEvent':
-                    //TODO
+                    this.myPointers[event.data.callback] = Module.addFunction( (function(thePort, theCallback)
+                    {
+                        return function() 
+                        {
+                            thePort.postMessage( { type: "eventCallback", callback: theCallback } );
+                        }
+                    })(this.port, event.data.callback) );
+                    startListeningForChuckEvent( this.myID, event.data.variable, this.myPointers[event.data.callback] );
                     break;
                 case 'stopListeningForChuckEvent':
-                    //TODO
+                    stopListeningForChuckEvent( this.myID, event.data.variable, this.myPointers[event.data.callback] );
+                    Module.removeFunction( this.myPointers[event.data.callback] );
                     break;
             // ================== Int[] =================== //
                 case 'setGlobalIntArray':
