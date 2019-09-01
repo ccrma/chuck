@@ -53,6 +53,8 @@ compileButton.addEventListener( "click", async function()
         } );
         chuckNode.connect( audioContext.destination );
         
+        chuckNode.callbacks = {};
+        
         // respond to messages
         chuckNode.port.onmessage = function( event )
         {
@@ -60,6 +62,12 @@ compileButton.addEventListener( "click", async function()
             {
                 case "console print":
                     printToConsole( event.data.message );
+                    break;
+                case "eventCallback":
+                    if( event.data.callback in chuckNode.callbacks )
+                    {
+                        chuckNode.callbacks[event.data.callback]();
+                    }
                     break;
                 default:
                     break;
@@ -84,6 +92,21 @@ compileButton.addEventListener( "click", async function()
     {
         chuckNode.port.postMessage( { type: "broadcastChuckEvent", variable: "mouseClicked" } );
     }
+    
+    var secretx = 0;
+    var incrementAndPrint = function() 
+    {
+        secretx++;
+        console.log( "secret x is ", secretx );
+        if( secretx > 5 )
+        {
+//             chuckNode.port.postMessage( { type: "stopListeningForChuckEvent", callback: "incrementAndPrint", variable: "metro" } );
+        }
+    }
+    
+    chuckNode.callbacks["incrementAndPrint"] = incrementAndPrint;
+//     chuckNode.port.postMessage( { type: "startListeningForChuckEvent", callback: "incrementAndPrint", variable: "metro" } ); 
+    chuckNode.port.postMessage( { type: "listenForChuckEventOnce", callback: "incrementAndPrint", variable: "metro" } );
     
     
 });

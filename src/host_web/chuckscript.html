@@ -121,7 +121,7 @@
   <body onresize="chuckEditor.resize();">
 <div>
     <div id="program">// Hi there, take a look at this example! 
-global Event mouseClicked;
+/*global Event mouseClicked;
 global int mouseX, mouseY;
 SinOsc foo => dac;
 while( true )
@@ -129,6 +129,12 @@ while( true )
     300 + 0.3 * mouseX => foo.freq;
     <<< foo.freq() >>>;
     mouseClicked => now;
+}*/
+global Event metro;
+while( true )
+{ 
+    1::second => now;
+    metro.broadcast();
 }
 </div>
 </div>
