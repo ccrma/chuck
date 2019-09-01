@@ -2526,6 +2526,88 @@ Chuck_Object * Chuck_VM::get_global_array( std::string name )
 
 
 //-----------------------------------------------------------------------------
+// name: _get_global_int_array_value()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_VM::_get_global_int_array_value( std::string name, t_CKUINT index )
+{
+    t_CKUINT result = 0;
+    Chuck_Object * array = m_global_arrays[name]->array;
+    if( array != NULL &&
+        m_global_arrays[name]->array_type == te_globalInt )
+    {
+        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+        // TODO why is it unsigned int storage?
+        intArray->get( index, &result );
+    }
+    return result;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: _get_global_associative_int_array_value()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_VM::_get_global_associative_int_array_value( std::string name, std::string key )
+{
+    t_CKUINT result = 0;
+    Chuck_Object * array = m_global_arrays[name]->array;
+    if( array != NULL &&
+        m_global_arrays[name]->array_type == te_globalInt )
+    {
+        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+        // TODO why is it unsigned int storage?
+        intArray->get( key, &result );
+    }
+    return result;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: _get_global_float_array_value()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKFLOAT Chuck_VM::_get_global_float_array_value( std::string name, t_CKUINT index )
+{
+    t_CKFLOAT result = 0;
+    Chuck_Object * array = m_global_arrays[name]->array;
+    if( array != NULL &&
+        m_global_arrays[name]->array_type == te_globalFloat )
+    {
+        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+        floatArray->get( index, &result );
+    }
+    return result;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: _get_global_associative_float_array_value()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKFLOAT Chuck_VM::_get_global_associative_float_array_value( std::string name, std::string key )
+{
+    t_CKFLOAT result = 0;
+    Chuck_Object * array = m_global_arrays[name]->array;
+    if( array != NULL &&
+        m_global_arrays[name]->array_type == te_globalFloat )
+    {
+        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+        floatArray->get( key, &result );
+    }
+    return result;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: get_ptr_to_global_array()
 // desc: get ptr directly from the vm (internal)
 //-----------------------------------------------------------------------------

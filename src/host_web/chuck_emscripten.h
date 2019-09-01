@@ -15,13 +15,15 @@ extern "C" {
     bool EMSCRIPTEN_KEEPALIVE runChuckFileWithArgsWithReplacementDac( unsigned int chuckID, const char * filename, const char * args, const char * replacement_dac );
     
     bool EMSCRIPTEN_KEEPALIVE setChuckInt( unsigned int chuckID, const char * name, t_CKINT val );
-    // TODO: how to do callbacks?
-    bool EMSCRIPTEN_KEEPALIVE getChuckInt( unsigned int chuckID, const char * name, void (* callback)(t_CKINT) );
+    // NOTE: we don't use callbacks in JavaScript compilation because JS is non-preemptive,
+    // so we don't have to worry about our code getting interrupted
+    t_CKINT EMSCRIPTEN_KEEPALIVE getChuckInt( unsigned int chuckID, const char * name );
     
     bool EMSCRIPTEN_KEEPALIVE setChuckFloat( unsigned int chuckID, const char * name, t_CKFLOAT val );
-    bool EMSCRIPTEN_KEEPALIVE getChuckFloat( unsigned int chuckID, const char * name, void (* callback)(t_CKFLOAT) );
+    t_CKFLOAT EMSCRIPTEN_KEEPALIVE getChuckFloat( unsigned int chuckID, const char * name );
     
     bool EMSCRIPTEN_KEEPALIVE setChuckString( unsigned int chuckID, const char * name, const char * val );
+    // TODO: still necessary to use callback for string, so we don't have to worry about garbage collection?
     bool EMSCRIPTEN_KEEPALIVE getChuckString( unsigned int chuckID, const char * name, void (* callback)(const char *) );
     
     bool EMSCRIPTEN_KEEPALIVE signalChuckEvent( unsigned int chuckID, const char * name );
@@ -34,20 +36,22 @@ extern "C" {
     
     // int array methods
     bool EMSCRIPTEN_KEEPALIVE setGlobalIntArray( unsigned int chuckID, const char * name, t_CKINT arrayValues[], unsigned int numValues );
+    // TODO: still necessary to use callback for arrays, so we don't have to worry about garbage collection?
     bool EMSCRIPTEN_KEEPALIVE getGlobalIntArray( unsigned int chuckID, const char * name, void (* callback)(t_CKINT[], t_CKUINT));
     bool EMSCRIPTEN_KEEPALIVE setGlobalIntArrayValue( unsigned int chuckID, const char * name, unsigned int index, t_CKINT value );
-    bool EMSCRIPTEN_KEEPALIVE getGlobalIntArrayValue( unsigned int chuckID, const char * name, unsigned int index, void (* callback)(t_CKINT) );
+    t_CKINT EMSCRIPTEN_KEEPALIVE getGlobalIntArrayValue( unsigned int chuckID, const char * name, unsigned int index );
     bool EMSCRIPTEN_KEEPALIVE setGlobalAssociativeIntArrayValue( unsigned int chuckID, const char * name, char * key, t_CKINT value );
-    bool EMSCRIPTEN_KEEPALIVE getGlobalAssociativeIntArrayValue( unsigned int chuckID, const char * name, char * key, void (* callback)(t_CKINT) );
+    t_CKINT EMSCRIPTEN_KEEPALIVE getGlobalAssociativeIntArrayValue( unsigned int chuckID, const char * name, char * key );
     // TODO: set entire dict, add to dict in batch; get entire dict
     
     // float array methods
     bool EMSCRIPTEN_KEEPALIVE setGlobalFloatArray( unsigned int chuckID, const char * name, t_CKFLOAT arrayValues[], unsigned int numValues );
+    // TODO: still necessary to use callback for arrays, so we don't have to worry about garbage collection?
     bool EMSCRIPTEN_KEEPALIVE getGlobalFloatArray( unsigned int chuckID, const char * name, void (* callback)(t_CKFLOAT[], t_CKUINT));
     bool EMSCRIPTEN_KEEPALIVE setGlobalFloatArrayValue( unsigned int chuckID, const char * name, unsigned int index, t_CKFLOAT value );
-    bool EMSCRIPTEN_KEEPALIVE getGlobalFloatArrayValue( unsigned int chuckID, const char * name, unsigned int index, void (* callback)(t_CKFLOAT) );
+    t_CKFLOAT EMSCRIPTEN_KEEPALIVE getGlobalFloatArrayValue( unsigned int chuckID, const char * name, unsigned int index );
     bool EMSCRIPTEN_KEEPALIVE setGlobalAssociativeFloatArrayValue( unsigned int chuckID, const char * name, char * key, t_CKFLOAT value );
-    bool EMSCRIPTEN_KEEPALIVE getGlobalAssociativeFloatArrayValue( unsigned int chuckID, const char * name, char * key, void (* callback)(t_CKFLOAT) );
+    t_CKFLOAT EMSCRIPTEN_KEEPALIVE getGlobalAssociativeFloatArrayValue( unsigned int chuckID, const char * name, char * key );
     
     
     bool EMSCRIPTEN_KEEPALIVE initChuckInstance( unsigned int chuckID, unsigned int sampleRate, unsigned int inChannels, unsigned int outChannels );

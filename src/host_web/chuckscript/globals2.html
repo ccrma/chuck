@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Emscripten-Generated Code</title>
+    <style>
+      body {
+        font-family: arial;
+        margin: 0;
+        padding: none;
+      }
+
+      #output {
+        width: 100%;
+        height: 300px;
+        margin: 0 auto;
+        margin-top: 10px;
+        border-left: 0px;
+        border-right: 0px;
+        padding-left: 0px;
+        padding-right: 0px;
+        display: block;
+        background-color: black;
+        color: white;
+        font-family: 'Lucida Console', Monaco, monospace;
+        outline: none;
+        resize: none;
+      }
+    </style>
+  </head>
+  <body onresize="chuckEditor.resize();">
+<div>
+    <div id="program">// Globals 2: getting global ints and floats and responding to global Events
+global Event metro;
+global int ticks;
+global float timeInSeconds;
+fun void RideTheMetro()
+{
+    while( true )
+    { 
+        0.348::second => now;
+        ticks++;
+        now / second => timeInSeconds;
+        metro.broadcast();
+    }
+}
+spork ~ RideTheMetro();
+
+while( true )
+{
+    1::second => now;
+} 
+
+</div>
+</div>
+<div><button id="compileButton" disabled="disabled">Compile and Run</button></div>
+<div>
+    <textarea id="output"></textarea>
+</div>
+    <script src="./js/ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+        var chuckEditor = ace.edit("program");
+        chuckEditor.setTheme("ace/theme/chuck");
+        chuckEditor.session.setMode("ace/mode/chuck");
+        chuckEditor.setOptions({
+            fontSize: "14px",
+            fontFamily: "Monaco",
+            cursorStyle: "ace",
+            useSoftTabs: true,
+            showFoldWidgets: true,
+            foldStyle: "markbeginend",
+            maxLines: 23,
+            minLines: 23
+        }); 
+        chuckEditor.container.style.lineHeight = 1.25;
+        chuckEditor.renderer.updateFontSize();
+        chuckEditor.session.setUseWrapMode(true);
+    </script>
+    <script type="text/javascript" src="./js/defer.js"></script>
+    <!--  TODO: things fail if this script is not in the same directory as the HTML    -->
+    <script type="text/javascript" src="./chuckscriptwebaudio.js"></script>
+    <script>
+        theChuckReady.then( function() {
+            var listenToMetro = function() 
+            {
+                theChuck.getInt( "ticks", function( result ) {
+                    printToConsole( "[javascript] number of metro ticks is ", result );
+                });
+                theChuck.getFloat( "timeInSeconds", function( result ) {
+                    printToConsole( "[javascript] timeInSeconds is ", result );
+                }); 
+            }
+    
+            theChuck.startListeningForEvent( "metro", listenToMetro );
+        });
+    </script>
+  </body>
+</html>
+
+
