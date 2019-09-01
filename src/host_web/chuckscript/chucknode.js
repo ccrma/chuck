@@ -36,11 +36,11 @@ ChucK().then( function( Module )
 
     // set/get global int, float, string
     var setChuckInt = Module.cwrap( 'setChuckInt', 'number', ['number', 'string', 'number'] );
-    // getChuckInt = 
+    var getChuckInt = Module.cwrap( 'getChuckInt', 'number', ['number', 'string'] );
     var setChuckFloat = Module.cwrap( 'setChuckFloat', 'number', ['number', 'string', 'number'] );
-    // getChuckFloat = 
-    var setChuckString = Module.cwrap( 'setChuckFloat', 'number', ['number', 'string', 'string'] );
-    // getChuckString = 
+    var getChuckFloat = Module.cwrap( 'getChuckFloat', 'number', ['number', 'string'] );
+    var setChuckString = Module.cwrap( 'setChuckString', 'number', ['number', 'string', 'string'] );
+    var getChuckString = Module.cwrap( 'getChuckString', 'number', ['number', 'string', 'number'] );
 
     // global Events
     var signalChuckEvent = Module.cwrap( 'signalChuckEvent', 'number', ['number', 'string'] );
@@ -51,27 +51,30 @@ ChucK().then( function( Module )
 
     // note: array is SAMPLE == Float32
     // NOTE ALSO anything using arrays cannot use cwrap; use in similar manner to Module._chuckManualAudioCallback
+    // TODO
     // getGlobalUGenSamples = Module.cwrap( 'getGlobalUGenSamples', 'number', ['number', 'string', 'array', 'number'] );
 
     // set/get global int arrays
     // note: array is t_CKINT == Int32
     // NOTE ALSO anything using arrays cannot use cwrap
-    var setGlobalIntArray = Module.cwrap( 'setGlobalIntArray', 'number', ['number', 'string', 'array', 'number'] );
+    // TODO
+    // setGlobalIntArray = Module.cwrap( 'setGlobalIntArray', 'number', ['number', 'string', 'array', 'number'] );
     // getGlobalIntArray = 
     var setGlobalIntArrayValue = Module.cwrap( 'setGlobalIntArrayValue', 'number', ['number', 'string', 'number', 'number'] );
-    // getGlobalIntArrayValue = 
+    var getGlobalIntArrayValue = Module.cwrap( 'getGlobalIntArrayValue', 'number', ['number', 'string', 'number'] );
     var setGlobalAssociativeIntArrayValue = Module.cwrap( 'setGlobalAssociativeIntArrayValue', 'number', ['number', 'string', 'string', 'number'] );
-    // getGlobalAssociativeIntArrayValue = 
+    var getGlobalAssociativeIntArrayValue = Module.cwrap( 'getGlobalAssociativeIntArrayValue', 'number', ['number', 'string', 'string'] );
 
     // set/get global float arrays
     // note: array is t_CKFLOAT == Float32
     // NOTE ALSO anything using arrays cannot use cwrap
-    var setGlobalFloatArray = Module.cwrap( 'setGlobalFloatArray', 'number', ['number', 'string', 'array', 'number'] );
+    // TODO
+    // setGlobalFloatArray = Module.cwrap( 'setGlobalFloatArray', 'number', ['number', 'string', 'array', 'number'] );
     // getGlobalFloatArray = 
     var setGlobalFloatArrayValue = Module.cwrap( 'setGlobalFloatArrayValue', 'number', ['number', 'string', 'number', 'number'] );
-    // getGlobalFloatArrayValue = 
+    var getGlobalFloatArrayValue = Module.cwrap( 'getGlobalFloatArrayValue', 'number', ['number', 'string', 'number'] );
     var setGlobalAssociativeFloatArrayValue = Module.cwrap( 'setGlobalAssociativeFloatArrayValue', 'number', ['number', 'string', 'string', 'number'] );
-    // getGlobalAssociativeFloatArrayValue = 
+    var getGlobalAssociativeFloatArrayValue = Module.cwrap( 'getGlobalAssociativeFloatArrayValue', 'number', ['number', 'string', 'string'] );
 
     class ChuckNode extends AudioWorkletProcessor
     {
@@ -134,19 +137,36 @@ ChucK().then( function( Module )
                     setChuckInt( this.myID, event.data.variable, event.data.value );
                     break;
                 case 'getChuckInt':
-                    //TODO
+                    var result = getChuckInt( this.myID, event.data.variable );
+                    this.port.postMessage( { type: "intCallback", callback: event.data.callback, result: result } );
                     break;
                 case 'setChuckFloat':
                     setChuckFloat( this.myID, event.data.variable, event.data.value );
                     break;
                 case 'getChuckFloat':
-                    //TODO
+                    var result = getChuckFloat( this.myID, event.data.variable );
+                    this.port.postMessage( { type: "floatCallback", callback: event.data.callback, result: result } );
                     break;
                 case 'setChuckString':
                     setChuckString( this.myID, event.data.variable, event.data.value );
                     break;
                 case 'getChuckString':
-                    //TODO
+                    (function( thePort, theCallback, theVariable, theID ) 
+                    {
+                        var pointer = Module.addFunction( (function(thePort, theCallback)
+                        {   
+                            return function( string_ptr )
+                            {
+                                thePort.postMessage( { 
+                                    type: "stringCallback", 
+                                    callback: theCallback, 
+                                    result: Module.Pointer_stringify( string_ptr )
+                                } );
+                                Module.removeFunction( pointer );
+                            }
+                        })(thePort, theCallback) );
+                        getChuckString( theID, theVariable, pointer );
+                    })(this.port, event.data.callback, event.data.variable, this.myID);
                     break;
             // ================== Event =================== //
                 case 'signalChuckEvent':
@@ -194,13 +214,15 @@ ChucK().then( function( Module )
                     setGlobalIntArrayValue( this.myID, event.data.variable, event.data.index, event.data.value );
                     break;
                 case 'getGlobalIntArrayValue':
-                    // TODO
+                    var result = getGlobalIntArrayValue( this.myID, event.data.variable, event.data.index );
+                    this.port.postMessage( { type: "intCallback", callback: event.data.callback, result: result } );
                     break;
                 case 'setGlobalAssociativeIntArrayValue':
                     setGlobalAssociativeIntArrayValue( this.myID, event.data.variable, event.data.key, event.data.value );
                     break;
                 case 'getGlobalAssociativeIntArrayValue':
-                    // TODO
+                    var result = getGlobalAssociativeIntArrayValue( this.myID, event.data.variable, event.data.key );
+                    this.port.postMessage( { type: "intCallback", callback: event.data.callback, result: result } );
                     break;
             // ================== Float[] =================== //
                 case 'setGlobalFloatArray':
@@ -213,13 +235,15 @@ ChucK().then( function( Module )
                     setGlobalFloatArrayValue( this.myID, event.data.variable, event.data.index, event.data.value );
                     break;
                 case 'getGlobalFloatArrayValue':
-                    // TODO
+                    var result = getGlobalFloatArrayValue( this.myID, event.data.variable, event.data.index );
+                    this.port.postMessage( { type: "floatCallback", callback: event.data.callback, result: result } );
                     break;
                 case 'setGlobalAssociativeFloatArrayValue':
                     setGlobalAssociativeFloatArrayValue( this.myID, event.data.variable, event.data.key, event.data.value );
                     break;
                 case 'getGlobalAssociativeFloatArrayValue':
-                    // TODO
+                    var result = getGlobalAssociativeFloatArrayValue( this.myID, event.data.variable, event.data.key );
+                    this.port.postMessage( { type: "floatCallback", callback: event.data.callback, result: result } );
                     break;
             // ================= Clear ====================== //
                 case 'clearChuckInstance':

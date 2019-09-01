@@ -649,6 +649,10 @@ public:
     
     t_CKBOOL init_global_array( std::string name, Chuck_Type * type, te_GlobalType arr_type );
     Chuck_Object * get_global_array( std::string name );
+    t_CKINT _get_global_int_array_value( std::string name, t_CKUINT index );
+    t_CKINT _get_global_associative_int_array_value( std::string name, std::string key );
+    t_CKFLOAT _get_global_float_array_value( std::string name, t_CKUINT index );
+    t_CKFLOAT _get_global_associative_float_array_value( std::string name, std::string key );
     Chuck_Object * * get_ptr_to_global_array( std::string name );
     
     t_CKBOOL should_call_global_ctor( std::string name, te_GlobalType type );

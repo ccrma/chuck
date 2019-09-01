@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Emscripten-Generated Code</title>
+    <style>
+      body {
+        font-family: arial;
+        margin: 0;
+        padding: none;
+      }
+
+      #output {
+        width: 100%;
+        height: 300px;
+        margin: 0 auto;
+        margin-top: 10px;
+        border-left: 0px;
+        border-right: 0px;
+        padding-left: 0px;
+        padding-right: 0px;
+        display: block;
+        background-color: black;
+        color: white;
+        font-family: 'Lucida Console', Monaco, monospace;
+        outline: none;
+        resize: none;
+      }
+    </style>
+  </head>
+  <body onresize="chuckEditor.resize();">
+<div>
+    <div id="program">// Hi there, take a look at this example!
+global int mouseX;
+global Event mouseClicked;
+SinOsc foo => dac;
+300 => float currentBaseFrequency;
+
+// The sine wave's frequency is mapped to 
+// the x position of the mouse...
+fun void RespondToMouseMovement()
+{
+    while( true )
+    {
+        currentBaseFrequency + 0.3 * mouseX => foo.freq;
+        10::ms => now;
+    }
+}
+spork ~ RespondToMouseMovement();
+
+//... plus some randomness!
+fun void UpdateBaseFrequency()
+{
+    while( true )
+    {
+        Math.random2f( 300, 600 ) => currentBaseFrequency;
+        200::ms => now;
+    }
+}
+spork ~ UpdateBaseFrequency();
+
+// It will stop playing when you click the mouse.
+mouseClicked => now;
+</div>
+</div>
+<div><button id="compileButton" disabled="disabled">Compile and Run</button></div>
+<div>
+    <textarea id="output"></textarea>
+</div>
+    <script src="./js/ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+        var chuckEditor = ace.edit("program");
+        chuckEditor.setTheme("ace/theme/chuck");
+        chuckEditor.session.setMode("ace/mode/chuck");
+        chuckEditor.setOptions({
+            fontSize: "14px",
+            fontFamily: "Monaco",
+            cursorStyle: "ace",
+            useSoftTabs: true,
+            showFoldWidgets: true,
+            foldStyle: "markbeginend",
+            maxLines: 23,
+            minLines: 23
+        }); 
+        chuckEditor.container.style.lineHeight = 1.25;
+        chuckEditor.renderer.updateFontSize();
+        chuckEditor.session.setUseWrapMode(true);
+    </script>
+    <script type="text/javascript" src="./js/defer.js"></script>
+    <!--  TODO: things fail if this script is not in the same directory as the HTML    -->
+    <script type="text/javascript" src="./chuckscriptwebaudio.js"></script>
+    <script>
+        theChuckReady.then( function() {
+            if( window.Event ) { 
+                document.captureEvents( Event.MOUSEMOVE );
+            }
+            document.onmousemove = function( e )
+            {
+                var x = (window.Event) ? e.pageX : event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
+                var y = (window.Event) ? e.pageY : event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
+                theChuck.setInt( "mouseX", x );
+            }
+            document.onclick = function( e )
+            {
+                theChuck.broadcastEvent( "mouseClicked" );
+            }
+        });
+    </script>
+  </body>
+</html>
+
+

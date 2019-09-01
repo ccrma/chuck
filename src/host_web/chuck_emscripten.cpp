@@ -130,11 +130,11 @@ extern "C"
     
     
     
-    bool EMSCRIPTEN_KEEPALIVE getChuckInt( unsigned int chuckID, const char * name, void (* callback)(t_CKINT) )
+    t_CKINT EMSCRIPTEN_KEEPALIVE getChuckInt( unsigned int chuckID, const char * name )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
-        return chuck_instances[chuckID]->getGlobalInt( name, callback );
+        return chuck_instances[chuckID]->vm()->get_global_int_value( std::string( name ) );
     }
     
     
@@ -148,11 +148,11 @@ extern "C"
     
     
     
-    bool EMSCRIPTEN_KEEPALIVE getChuckFloat( unsigned int chuckID, const char * name, void (* callback)(t_CKFLOAT) )
+    t_CKFLOAT EMSCRIPTEN_KEEPALIVE getChuckFloat( unsigned int chuckID, const char * name )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
-        return chuck_instances[chuckID]->getGlobalFloat( name, callback );
+        return chuck_instances[chuckID]->vm()->get_global_float_value( std::string( name ) );
     }
     
     
@@ -255,7 +255,7 @@ extern "C"
     bool EMSCRIPTEN_KEEPALIVE getGlobalIntArray( unsigned int chuckID,
         const char * name, void (* callback)(t_CKINT[], t_CKUINT))
     {
-       if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
         return chuck_instances[chuckID]->getGlobalIntArray(
             name, callback );
@@ -266,7 +266,7 @@ extern "C"
     bool EMSCRIPTEN_KEEPALIVE setGlobalIntArrayValue( unsigned int chuckID,
         const char * name, unsigned int index, t_CKINT value )
     {
-       if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
         return chuck_instances[chuckID]->setGlobalIntArrayValue(
             name, index, value );
@@ -274,13 +274,14 @@ extern "C"
     
     
     
-    bool EMSCRIPTEN_KEEPALIVE getGlobalIntArrayValue( unsigned int chuckID,
-        const char * name, unsigned int index, void (* callback)(t_CKINT) )
+    t_CKINT EMSCRIPTEN_KEEPALIVE getGlobalIntArrayValue( unsigned int chuckID,
+        const char * name, unsigned int index )
     {
-       if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->getGlobalIntArrayValue(
-            name, index, callback );
+        
+        return chuck_instances[chuckID]->vm()->_get_global_int_array_value(
+            std::string( name ), index );
     }
     
     
@@ -288,7 +289,7 @@ extern "C"
     bool EMSCRIPTEN_KEEPALIVE setGlobalAssociativeIntArrayValue(
         unsigned int chuckID, const char * name, char * key, t_CKINT value )
     {
-       if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
         return chuck_instances[chuckID]->setGlobalAssociativeIntArrayValue(
             name, key, value );
@@ -296,14 +297,13 @@ extern "C"
     
     
     
-    bool EMSCRIPTEN_KEEPALIVE getGlobalAssociativeIntArrayValue(
-        unsigned int chuckID, const char * name, char * key,
-        void (* callback)(t_CKINT) )
+    t_CKINT EMSCRIPTEN_KEEPALIVE getGlobalAssociativeIntArrayValue(
+        unsigned int chuckID, const char * name, char * key )
     {
-       if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->getGlobalAssociativeIntArrayValue(
-            name, key, callback );
+        return chuck_instances[chuckID]->vm()->_get_global_associative_int_array_value(
+            std::string( name ), std::string( key ) );
     }
     
     
@@ -323,7 +323,7 @@ extern "C"
     bool EMSCRIPTEN_KEEPALIVE getGlobalFloatArray( unsigned int chuckID,
         const char * name, void (* callback)(t_CKFLOAT[], t_CKUINT))
     {
-       if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
         return chuck_instances[chuckID]->getGlobalFloatArray(
             name, callback );
@@ -334,7 +334,7 @@ extern "C"
     bool EMSCRIPTEN_KEEPALIVE setGlobalFloatArrayValue( unsigned int chuckID,
         const char * name, unsigned int index, t_CKFLOAT value )
     {
-       if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
         return chuck_instances[chuckID]->setGlobalFloatArrayValue(
             name, index, value );
@@ -342,13 +342,13 @@ extern "C"
     
     
     
-    bool EMSCRIPTEN_KEEPALIVE getGlobalFloatArrayValue( unsigned int chuckID,
-        const char * name, unsigned int index, void (* callback)(t_CKFLOAT) )
+    t_CKFLOAT EMSCRIPTEN_KEEPALIVE getGlobalFloatArrayValue( unsigned int chuckID,
+        const char * name, unsigned int index )
     {
-       if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->getGlobalFloatArrayValue(
-            name, index, callback );
+        return chuck_instances[chuckID]->vm()->_get_global_float_array_value(
+            std::string( name ), index );
     }
     
     
@@ -356,7 +356,7 @@ extern "C"
     bool EMSCRIPTEN_KEEPALIVE setGlobalAssociativeFloatArrayValue(
         unsigned int chuckID, const char * name, char * key, t_CKFLOAT value )
     {
-       if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
         return chuck_instances[chuckID]->setGlobalAssociativeFloatArrayValue(
             name, key, value );
@@ -364,14 +364,13 @@ extern "C"
     
     
     
-    bool EMSCRIPTEN_KEEPALIVE getGlobalAssociativeFloatArrayValue(
-        unsigned int chuckID, const char * name, char * key,
-        void (* callback)(t_CKFLOAT) )
+    t_CKFLOAT EMSCRIPTEN_KEEPALIVE getGlobalAssociativeFloatArrayValue(
+        unsigned int chuckID, const char * name, char * key )
     {
-       if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->getGlobalAssociativeFloatArrayValue(
-            name, key, callback );
+        return chuck_instances[chuckID]->vm()->_get_global_associative_float_array_value(
+            std::string( name) , std::string( key ) );
     }
     
     
