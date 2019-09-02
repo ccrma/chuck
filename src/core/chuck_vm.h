@@ -550,6 +550,8 @@ public: // shreds
     Chuck_VM_Shreduler * shreduler() const;
     // the next spork ID
     t_CKUINT next_id( );
+    // the last used spork ID
+    t_CKUINT last_id( );
 
 public: // audio
     t_CKUINT srate() const;

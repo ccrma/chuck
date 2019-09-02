@@ -7,12 +7,16 @@
 
 extern "C" {
 
-    bool EMSCRIPTEN_KEEPALIVE runChuckCode( unsigned int chuckID, const char * code );
-    bool EMSCRIPTEN_KEEPALIVE runChuckCodeWithReplacementDac( unsigned int chuckID, const char * code, const char * replacement_dac );
-    bool EMSCRIPTEN_KEEPALIVE runChuckFile( unsigned int chuckID, const char * filename );
-    bool EMSCRIPTEN_KEEPALIVE runChuckFileWithReplacementDac( unsigned int chuckID, const char * filename, const char * replacement_dac );
-    bool EMSCRIPTEN_KEEPALIVE runChuckFileWithArgs( unsigned int chuckID, const char * filename, const char * args );
-    bool EMSCRIPTEN_KEEPALIVE runChuckFileWithArgsWithReplacementDac( unsigned int chuckID, const char * filename, const char * args, const char * replacement_dac );
+    // these functions return the new shred id, or -1 on failure
+    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckCode( unsigned int chuckID, const char * code );
+    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckCodeWithReplacementDac( unsigned int chuckID, const char * code, const char * replacement_dac );
+    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckFile( unsigned int chuckID, const char * filename );
+    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckFileWithReplacementDac( unsigned int chuckID, const char * filename, const char * replacement_dac );
+    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckFileWithArgs( unsigned int chuckID, const char * filename, const char * args );
+    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckFileWithArgsWithReplacementDac( unsigned int chuckID, const char * filename, const char * args, const char * replacement_dac );
+    
+    bool EMSCRIPTEN_KEEPALIVE isShredActive( unsigned int chuckID, unsigned int shredID );
+    bool EMSCRIPTEN_KEEPALIVE removeShred( unsigned int chuckID, unsigned int shredID );
     
     bool EMSCRIPTEN_KEEPALIVE setChuckInt( unsigned int chuckID, const char * name, t_CKINT val );
     // NOTE: we don't use callbacks in JavaScript compilation because JS is non-preemptive,

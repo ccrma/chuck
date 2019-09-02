@@ -109,7 +109,7 @@ mouseClicked => now;
     
         theChuckReady.then( function() {
             compileButton.disabled = false;
-            replaceButton.disabled = false;
+            // replaceButton.disabled = false;
             removeButton.disabled = false;
             
             chuckPrint = (function() {
@@ -133,6 +133,12 @@ mouseClicked => now;
             {
                 // send message to compile code 
                 theChuck.runChuckCode( chuckEditor.getValue() );
+            });
+            
+            removeButton.addEventListener( "click", function()
+            {
+                // send message to remove most recent shred
+                theChuck.removeLastShred();
             });
         });
     </script>

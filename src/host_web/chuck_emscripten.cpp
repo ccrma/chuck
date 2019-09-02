@@ -24,43 +24,59 @@ extern "C"
 
 
     // C# "string" corresponds to passing char *
-    bool EMSCRIPTEN_KEEPALIVE runChuckCode( unsigned int chuckID, const char * code )
+    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckCode( unsigned int chuckID, const char * code )
     {
-        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return -1; }
 
         // don't want to replace dac
         // (a safeguard in case compiler got interrupted while replacing dac)
         chuck_instances[chuckID]->compiler()->setReplaceDac( FALSE, "" );
 
         // compile it!
-        return chuck_instances[chuckID]->compileCode(
-            std::string( code ), std::string("") );
+        if( chuck_instances[chuckID]->compileCode(
+            std::string( code ), std::string("") ) )
+        {
+            // id is a UINT so will never be -1 (unless you spork something
+            // every sample for 26 hours)
+            return chuck_instances[chuckID]->vm()->last_id();
+            
+        }
+        // failure to compile
+        return -1;
     }
     
     
     
-    bool EMSCRIPTEN_KEEPALIVE runChuckCodeWithReplacementDac(
+    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckCodeWithReplacementDac(
         unsigned int chuckID, const char * code, const char * replacement_dac )
     {
-        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return -1; }
 
         // replace dac
         chuck_instances[chuckID]->compiler()->setReplaceDac( TRUE,
             std::string( replacement_dac ) );
         
         // compile it!
-        bool ret = chuck_instances[chuckID]->compileCode(
+        bool result = chuck_instances[chuckID]->compileCode(
             std::string( code ), std::string("") );
         
         // don't replace dac for future compilations
         chuck_instances[chuckID]->compiler()->setReplaceDac( FALSE, "" );
         
-        return ret;
+        if( result )
+        {
+            // id is a UINT so will never be -1 (unless you spork something
+            // every sample for 26 hours)
+            return chuck_instances[chuckID]->vm()->last_id();
+            
+        }
+        // failure to compile
+        return -1;
     }
     
     
     
-    bool EMSCRIPTEN_KEEPALIVE runChuckFile( unsigned int chuckID,
+    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckFile( unsigned int chuckID,
         const char * filename )
     {
         // run with empty args
@@ -69,24 +85,31 @@ extern "C"
     
     
     
-    bool EMSCRIPTEN_KEEPALIVE runChuckFileWithArgs( unsigned int chuckID,
+    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckFileWithArgs( unsigned int chuckID,
         const char * filename, const char * args )
     {
-        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return -1; }
 
         // don't want to replace dac
         // (a safeguard in case compiler got interrupted while replacing dac)
         chuck_instances[chuckID]->compiler()->setReplaceDac( FALSE, "" );
 
         // compile it!
-        return chuck_instances[chuckID]->compileFile(
-            std::string( filename ), std::string( args )
-        );
+        if( chuck_instances[chuckID]->compileFile(
+            std::string( filename ), std::string( args ) ) )
+        {
+            // id is a UINT so will never be -1 (unless you spork something
+            // every sample for 26 hours)
+            return chuck_instances[chuckID]->vm()->last_id();
+            
+        }
+        // failure to compile
+        return -1;
     }
     
     
     
-    bool EMSCRIPTEN_KEEPALIVE runChuckFileWithReplacementDac(
+    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckFileWithReplacementDac(
         unsigned int chuckID, const char * filename,
         const char * replacement_dac )
     {
@@ -98,25 +121,66 @@ extern "C"
     
     
     
-    bool EMSCRIPTEN_KEEPALIVE runChuckFileWithArgsWithReplacementDac(
+    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckFileWithArgsWithReplacementDac(
         unsigned int chuckID, const char * filename, const char * args,
         const char * replacement_dac )
     {
-        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ) { return -1; }
 
         // replace dac
         chuck_instances[chuckID]->compiler()->setReplaceDac( TRUE,
             std::string( replacement_dac ) );
         
         // compile it!
-        bool ret = chuck_instances[chuckID]->compileFile(
+        bool result = chuck_instances[chuckID]->compileFile(
             std::string( filename ), std::string( args )
         );
         
         // don't replace dac for future compilations
         chuck_instances[chuckID]->compiler()->setReplaceDac( FALSE, "" );
         
-        return ret;
+        if( result )
+        {
+            // id is a UINT so will never be -1 (unless you spork something
+            // every sample for 26 hours)
+            return chuck_instances[chuckID]->vm()->last_id();
+            
+        }
+        // failure to compile
+        return -1;
+    }
+    
+    
+    
+    bool EMSCRIPTEN_KEEPALIVE isShredActive( unsigned int chuckID, unsigned int shredID )
+    {
+        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        
+        Chuck_VM_Shred * shred = chuck_instances[chuckID]->vm()->shreduler()->lookup( shredID );
+        return ( shred != NULL );
+    }
+    
+    
+    
+    bool EMSCRIPTEN_KEEPALIVE removeShred( unsigned int chuckID, unsigned int shredID )
+    {
+        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        
+        // the chuck to clear
+        ChucK * chuck = chuck_instances[chuckID];
+    
+        // create a msg asking to remove the shred
+        Chuck_Msg * msg = new Chuck_Msg;
+        msg->type = MSG_REMOVE;
+        msg->param = shredID;
+    
+        // null reply so that VM will delete for us when it's done
+        msg->reply = ( ck_msg_func )NULL;
+    
+        // tell the VM to clear
+        chuck->vm()->execute_chuck_msg_with_globals( msg );
+    
+        return true;
     }
     
     

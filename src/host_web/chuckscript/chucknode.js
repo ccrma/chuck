@@ -26,6 +26,8 @@ ChucK().then( function( Module )
     var runChuckFileWithReplacementDac = Module.cwrap( 'runChuckFileWithReplacementDac', 'number', ['number', 'string', 'string'] );
     var runChuckFileWithArgs = Module.cwrap( 'runChuckFileWithArgs', 'number', ['number', 'string', 'string'] );
     var runChuckFileWithArgsWithReplacementDac = Module.cwrap( 'runChuckFileWithArgsWithReplacementDac', 'number', ['number', 'string', 'string', 'string'] );
+    var isShredActive = Module.cwrap( 'isShredActive', 'number', ['number', 'number'] );
+    var removeShred = Module.cwrap( 'removeShred', 'number', ['number', 'number'] );
 
     // don't care about these because emscripten has another mechanism
     // for rerouting print statements
@@ -106,7 +108,23 @@ ChucK().then( function( Module )
             Module['any_port'] = this.port;
             
             this.myPointers = {}
+            
+            this.myActiveShreds = [];
+        }
         
+        handleNewShredID( newShredID, code, filename )
+        {
+            if( newShredID >= 0 )
+            {
+                this.myActiveShreds.push( newShredID );
+                // TODO: tell the host that we have a new shred id
+                // for rendering purposes and in case they want to remove
+                // a specific shred themselves
+            }
+            else
+            {
+                // compilation failed
+            }
         }
         
         handle_message( event )
@@ -115,22 +133,51 @@ ChucK().then( function( Module )
             {
             // ================== Run / Compile ================== //
                 case 'runChuckCode':
-                    runChuckCode( this.myID, event.data.code );
+                    var shredID = runChuckCode( this.myID, event.data.code );
+                    this.handleNewShredID( shredID, event.data.code, undefined );
                     break;
                 case 'runChuckCodeWithReplacementDac':
-                    runChuckCodeWithReplacementDac( this.myID, event.data.code, event.data.dac_name );
+                    var shredID = runChuckCodeWithReplacementDac( this.myID, event.data.code, event.data.dac_name );
+                    this.handleNewShredID( shredID, event.data.code, undefined );
                     break;
                 case 'runChuckFile':
-                    runChuckFile( this.myID, event.data.filename );
+                    var shredID = runChuckFile( this.myID, event.data.filename );
+                    this.handleNewShredID( shredID, undefined, event.data.filename );
                     break;
                 case 'runChuckFileWithReplacementDac':
-                    runChuckFileWithReplacementDac( this.myID, event.data.filename, event.data.dac_name );
+                    var shredID = runChuckFileWithReplacementDac( this.myID, event.data.filename, event.data.dac_name );
+                    this.handleNewShredID( shredID, undefined, event.data.filename );
                     break;
                 case 'runChuckFileWithArgs':
-                    runChuckFileWithArgs( this.myID, event.data.filename, event.data.colon_separated_args );
+                    var shredID = runChuckFileWithArgs( this.myID, event.data.filename, event.data.colon_separated_args );
+                    this.handleNewShredID( shredID, undefined, event.data.filename );
                     break;
                 case 'runChuckFileWithArgsWithReplacementDac':
-                    runChuckFileWithArgsWithReplacementDac( this.myID, event.data.filename, event.data.colon_separated_args, event.data.dac_name );
+                    var shredID = runChuckFileWithArgsWithReplacementDac( this.myID, event.data.filename, event.data.colon_separated_args, event.data.dac_name );
+                    this.handleNewShredID( shredID, undefined, event.data.filename );
+                    break;
+                case 'removeLastShred':
+                    // find the most recent shred that is still active,
+                    // and forget about all the more recently shredded ones
+                    // that are no longer active
+                    var shredID = this.myActiveShreds.pop();
+                    while( shredID && !isShredActive( this.myID, shredID ) )
+                    {
+                        shredID = this.myActiveShreds.pop();
+                    }
+                    // if we found a shred, remove it, otherwise,
+                    // there are no shreds left to remove
+                    if( shredID )
+                    {
+                        removeShred( this.myID, shredID );
+                    }
+                    else
+                    {
+                        this.port.postMessage( { 
+                            type: "console print", 
+                            message: "[chuck](VM): no shreds to remove..." 
+                        } );
+                    }
                     break;
             // ================== Int, Float, String ============= //
                 case 'setChuckInt':
@@ -245,7 +292,7 @@ ChucK().then( function( Module )
                     var result = getGlobalAssociativeFloatArrayValue( this.myID, event.data.variable, event.data.key );
                     this.port.postMessage( { type: "floatCallback", callback: event.data.callback, result: result } );
                     break;
-            // ================= Clear ====================== //
+            // ==================== VM Functions ====================== //
                 case 'clearChuckInstance':
                     clearChuckInstance( this.myID );
                     break;

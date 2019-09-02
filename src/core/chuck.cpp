@@ -778,8 +778,14 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
     // spork it
     while( count-- )
     {
+        #ifndef __EMSCRIPTEN__
         // spork (for now, spork_immediate arg is always false)
         shred = m_carrier->vm->spork( code, NULL, FALSE );
+        #else
+        // spork (in emscripten, need to spork immediately so can get shred id)
+        shred = m_carrier->vm->spork( code, NULL, TRUE );
+        #endif
+        
         // add args
         shred->args = args;
     }
@@ -854,8 +860,13 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
     // spork it
     while( count-- )
     {
+        #ifndef __EMSCRIPTEN__
         // spork (for now, spork_immediate arg is always false)
         shred = m_carrier->vm->spork( vm_code, NULL, FALSE );
+        #else
+        // spork (in emscripten, need to spork immediately so can get shred id)
+        shred = m_carrier->vm->spork( vm_code, NULL, TRUE );
+        #endif
         // add args
         shred->args = args;
     }
