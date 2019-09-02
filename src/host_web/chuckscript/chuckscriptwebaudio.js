@@ -116,9 +116,50 @@ var startChuck = async function()
                     dac_name: dac_name
                 } );
             }
-            self.removeLastShred = function()
+            self.replaceChuckCode = function( code )
             {
-                self.port.postMessage( { type: "removeLastShred" } );
+                self.port.postMessage( { type: "replaceChuckCode", code: code } ); 
+            }
+            self.replaceChuckCodeWithReplacementDac = function( code, dac_name )
+            {
+                self.port.postMessage( { 
+                    type: "replaceChuckCodeWithReplacementDac", 
+                    code: code,
+                    dac_name: dac_name
+                } ); 
+            }
+            self.replaceChuckFile = function( filename )
+            {
+                self.port.postMessage( { type: "replaceChuckFile", filename: filename } ); 
+            }
+            self.replaceChuckFileWithReplacementDac = function( filename, dac_name )
+            {
+                self.port.postMessage( { 
+                    type: "replaceChuckFileWithReplacementDac", 
+                    filename: filename,
+                    dac_name: dac_name
+                } ); 
+            }
+            self.replaceChuckFileWithArgs = function( filename, colon_separated_args )
+            {
+                self.port.postMessage( { 
+                    type: "replaceChuckFileWithArgs", 
+                    filename: filename,
+                    colon_separated_args: colon_separated_args
+                } );
+            }
+            self.replaceChuckFileWithArgsWithReplacementDac = function( filename, colon_separated_args, dac_name )
+            {
+                self.port.postMessage( { 
+                    type: "replaceChuckFileWithArgs", 
+                    filename: filename,
+                    colon_separated_args: colon_separated_args,
+                    dac_name: dac_name
+                } );
+            }
+            self.removeLastCode = function()
+            {
+                self.port.postMessage( { type: "removeLastCode" } );
             }
             // ================== Int, Float, String ============= //
             self.setInt = function( variable, value )
