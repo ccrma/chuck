@@ -26,6 +26,15 @@ ChucK().then( function( Module )
     var runChuckFileWithReplacementDac = Module.cwrap( 'runChuckFileWithReplacementDac', 'number', ['number', 'string', 'string'] );
     var runChuckFileWithArgs = Module.cwrap( 'runChuckFileWithArgs', 'number', ['number', 'string', 'string'] );
     var runChuckFileWithArgsWithReplacementDac = Module.cwrap( 'runChuckFileWithArgsWithReplacementDac', 'number', ['number', 'string', 'string', 'string'] );
+    
+    var replaceChuckCode = Module.cwrap( 'replaceChuckCode', 'number', ['number', 'number', 'string'] );
+    var replaceChuckCodeWithReplacementDac = Module.cwrap( 'replaceChuckCodeWithReplacementDac', 'number', ['number', 'number', 'string', 'string'] );
+    var replaceChuckFile = Module.cwrap( 'replaceChuckFile', 'number', ['number', 'number', 'string'] );
+    var replaceChuckFileWithReplacementDac = Module.cwrap( 'replaceChuckFileWithReplacementDac', 'number', ['number', 'number', 'string', 'string'] );
+    var replaceChuckFileWithArgs = Module.cwrap( 'replaceChuckFileWithArgs', 'number', ['number', 'number', 'string', 'string'] );
+    var replaceChuckFileWithArgsWithReplacementDac = Module.cwrap( 'replaceChuckFileWithArgsWithReplacementDac', 'number', ['number', 'number', 'string', 'string', 'string'] );
+    
+    
     var isShredActive = Module.cwrap( 'isShredActive', 'number', ['number', 'number'] );
     var removeShred = Module.cwrap( 'removeShred', 'number', ['number', 'number'] );
 
@@ -127,6 +136,32 @@ ChucK().then( function( Module )
             }
         }
         
+        findMostRecentActiveShred()
+        {
+            // find the most recent shred that is still active,
+            // and forget about all the more recently shredded ones
+            // that are no longer active
+            var shredID = this.myActiveShreds.pop();
+            while( shredID && !isShredActive( this.myID, shredID ) )
+            {
+                shredID = this.myActiveShreds.pop();
+            }
+            return shredID;
+        }
+        
+        findShredToReplace()
+        {
+            var shredToReplace = this.findMostRecentActiveShred();
+            if( !shredToReplace )
+            {
+                this.port.postMessage( { 
+                    type: "console print", 
+                    message: "[chuck](VM): no shreds to replace..." 
+                } );
+            }
+            return shredToReplace;
+        }
+        
         handle_message( event )
         {
             switch( event.data.type )
@@ -156,15 +191,56 @@ ChucK().then( function( Module )
                     var shredID = runChuckFileWithArgsWithReplacementDac( this.myID, event.data.filename, event.data.colon_separated_args, event.data.dac_name );
                     this.handleNewShredID( shredID, undefined, event.data.filename );
                     break;
-                case 'removeLastShred':
-                    // find the most recent shred that is still active,
-                    // and forget about all the more recently shredded ones
-                    // that are no longer active
-                    var shredID = this.myActiveShreds.pop();
-                    while( shredID && !isShredActive( this.myID, shredID ) )
+                case 'replaceChuckCode':
+                    var shredToReplace = this.findShredToReplace();
+                    if( shredToReplace )
                     {
-                        shredID = this.myActiveShreds.pop();
+                        var shredID = replaceChuckCode( this.myID, shredToReplace, event.data.code );
+                        this.handleNewShredID( shredID, event.data.code, undefined );
                     }
+                    break;
+                case 'replaceChuckCodeWithReplacementDac':
+                    var shredToReplace = this.findShredToReplace();
+                    if( shredToReplace )
+                    {
+                        var shredID = replaceChuckCodeWithReplacementDac( this.myID, shredToReplace, event.data.code, event.data.dac_name );
+                        this.handleNewShredID( shredID, event.data.code, undefined );    
+                    }                    
+                    break;
+                case 'replaceChuckFile':
+                    var shredToReplace = this.findShredToReplace();
+                    if( shredToReplace )
+                    {
+                        var shredID = replaceChuckFile( this.myID, shredToReplace, event.data.filename );
+                        this.handleNewShredID( shredID, undefined, event.data.filename );    
+                    }
+                    break;
+                case 'replaceChuckFileWithReplacementDac':
+                    var shredToReplace = this.findShredToReplace();
+                    if( shredToReplace )
+                    {
+                        var shredID = replaceChuckFileWithReplacementDac( this.myID, shredToReplace, event.data.filename, event.data.dac_name );
+                        this.handleNewShredID( shredID, undefined, event.data.filename );   
+                    }
+                    break;
+                case 'replaceChuckFileWithArgs':
+                    var shredToReplace = this.findShredToReplace();
+                    if( shredToReplace )
+                    {
+                        var shredID = replaceChuckFileWithArgs( this.myID, shredToReplace, event.data.filename, event.data.colon_separated_args );
+                        this.handleNewShredID( shredID, undefined, event.data.filename );    
+                    }   
+                    break;
+                case 'replaceChuckFileWithArgsWithReplacementDac':
+                    var shredToReplace = this.findShredToReplace();
+                    if( shredToReplace )
+                    {
+                        var shredID = replaceChuckFileWithArgsWithReplacementDac( this.myID, shredToReplace, event.data.filename, event.data.colon_separated_args, event.data.dac_name );
+                        this.handleNewShredID( shredID, undefined, event.data.filename );    
+                    }                    
+                    break;
+                case 'removeLastCode':
+                    var shredID = this.findMostRecentActiveShred();
                     // if we found a shred, remove it, otherwise,
                     // there are no shreds left to remove
                     if( shredID )
@@ -298,6 +374,10 @@ ChucK().then( function( Module )
                     break;
                 case 'clearGlobals':
                     clearGlobals( this.myID );
+                    this.port.postMessage( { 
+                        type: "console print", 
+                        message: "[chuck](VM): resetting all global variables" 
+                    } );
                     break;
                 default:
                     break;

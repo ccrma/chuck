@@ -24,7 +24,7 @@ extern "C"
 
 
     // C# "string" corresponds to passing char *
-    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckCode( unsigned int chuckID, const char * code )
+    t_CKUINT EMSCRIPTEN_KEEPALIVE runChuckCode( unsigned int chuckID, const char * code )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return -1; }
 
@@ -36,18 +36,17 @@ extern "C"
         if( chuck_instances[chuckID]->compileCode(
             std::string( code ), std::string("") ) )
         {
-            // id is a UINT so will never be -1 (unless you spork something
-            // every sample for 26 hours)
+            // last shred shredded
             return chuck_instances[chuckID]->vm()->last_id();
             
         }
         // failure to compile
-        return -1;
+        return 0;
     }
     
     
     
-    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckCodeWithReplacementDac(
+    t_CKUINT EMSCRIPTEN_KEEPALIVE runChuckCodeWithReplacementDac(
         unsigned int chuckID, const char * code, const char * replacement_dac )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return -1; }
@@ -65,18 +64,16 @@ extern "C"
         
         if( result )
         {
-            // id is a UINT so will never be -1 (unless you spork something
-            // every sample for 26 hours)
+            // last shred shredded
             return chuck_instances[chuckID]->vm()->last_id();
-            
         }
         // failure to compile
-        return -1;
+        return 0;
     }
     
     
     
-    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckFile( unsigned int chuckID,
+    t_CKUINT EMSCRIPTEN_KEEPALIVE runChuckFile( unsigned int chuckID,
         const char * filename )
     {
         // run with empty args
@@ -85,7 +82,7 @@ extern "C"
     
     
     
-    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckFileWithArgs( unsigned int chuckID,
+    t_CKUINT EMSCRIPTEN_KEEPALIVE runChuckFileWithArgs( unsigned int chuckID,
         const char * filename, const char * args )
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return -1; }
@@ -98,18 +95,17 @@ extern "C"
         if( chuck_instances[chuckID]->compileFile(
             std::string( filename ), std::string( args ) ) )
         {
-            // id is a UINT so will never be -1 (unless you spork something
-            // every sample for 26 hours)
+            // last shred shredded
             return chuck_instances[chuckID]->vm()->last_id();
             
         }
         // failure to compile
-        return -1;
+        return 0;
     }
     
     
     
-    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckFileWithReplacementDac(
+    t_CKUINT EMSCRIPTEN_KEEPALIVE runChuckFileWithReplacementDac(
         unsigned int chuckID, const char * filename,
         const char * replacement_dac )
     {
@@ -121,7 +117,7 @@ extern "C"
     
     
     
-    t_CKINT EMSCRIPTEN_KEEPALIVE runChuckFileWithArgsWithReplacementDac(
+    t_CKUINT EMSCRIPTEN_KEEPALIVE runChuckFileWithArgsWithReplacementDac(
         unsigned int chuckID, const char * filename, const char * args,
         const char * replacement_dac )
     {
@@ -141,13 +137,173 @@ extern "C"
         
         if( result )
         {
-            // id is a UINT so will never be -1 (unless you spork something
-            // every sample for 26 hours)
+            // last shred shredded
             return chuck_instances[chuckID]->vm()->last_id();
             
         }
         // failure to compile
-        return -1;
+        return 0;
+    }
+    
+
+
+    t_CKUINT replaceCode( ChucK * chuck, t_CKUINT shredID,
+        std::vector<std::string> * args )
+    {
+        Chuck_Msg * msg = new Chuck_Msg;
+        msg->type = MSG_REPLACE;
+        msg->code = chuck->compiler()->output();
+        msg->param = shredID;
+        // null reply so that VM will delete for us when it's done
+        msg->reply = ( ck_msg_func )NULL;
+        msg->args = args;
+        
+        // call the process_msg directly: we need to know the shred ID
+        // and it's JS so we won't be pre-empted
+        // also: return value is the shred ID!
+        return chuck->vm()->process_msg( msg );
+    }
+
+    
+    
+    t_CKUINT EMSCRIPTEN_KEEPALIVE replaceChuckCode( unsigned int chuckID, unsigned int shredID, const char * code )
+    {
+        if( chuck_instances.count( chuckID ) == 0 ) { return -1; }
+
+        // don't want to replace dac
+        // (a safeguard in case compiler got interrupted while replacing dac)
+        chuck_instances[chuckID]->compiler()->setReplaceDac( FALSE, "" );
+
+        // compile it! and spork 0 times. (ONLY compile)
+        if( chuck_instances[chuckID]->compileCode(
+            std::string( code ), std::string(""), 0 ) )
+        {
+            // replace code
+            return replaceCode( chuck_instances[chuckID], shredID, NULL );
+        }
+        // failure to compile
+        return 0;
+    }
+    
+    
+    
+    t_CKUINT EMSCRIPTEN_KEEPALIVE replaceChuckCodeWithReplacementDac( unsigned int chuckID, unsigned int shredID, const char * code, const char * replacement_dac )
+    {
+        if( chuck_instances.count( chuckID ) == 0 ) { return -1; }
+
+        // replace dac
+        chuck_instances[chuckID]->compiler()->setReplaceDac( TRUE,
+            std::string( replacement_dac ) );
+        
+        // compile it! and spork 0 times. (ONLY compile)
+        bool result = chuck_instances[chuckID]->compileCode(
+            std::string( code ), std::string(""), 0 );
+        
+        // don't replace dac for future compilations
+        chuck_instances[chuckID]->compiler()->setReplaceDac( FALSE, "" );
+        
+        if( result )
+        {
+            // replace code
+            return replaceCode( chuck_instances[chuckID], shredID, NULL );
+        }
+        // failure to compile
+        return 0;
+    }
+    
+    
+    
+    t_CKUINT EMSCRIPTEN_KEEPALIVE replaceChuckFile( unsigned int chuckID, unsigned int shredID, const char * filename )
+    {
+        // replace with empty args
+        return replaceChuckFileWithArgs( chuckID, shredID, filename, "" );
+    }
+    
+    
+    
+    t_CKUINT EMSCRIPTEN_KEEPALIVE replaceChuckFileWithReplacementDac( unsigned int chuckID, unsigned int shredID, const char * filename, const char * replacement_dac )
+    {
+        // replace with empty args
+        return replaceChuckFileWithArgsWithReplacementDac( chuckID, shredID,
+            filename, "", replacement_dac );
+    }
+    
+    
+    
+    t_CKUINT EMSCRIPTEN_KEEPALIVE replaceChuckFileWithArgs( unsigned int chuckID, unsigned int shredID, const char * filename, const char * args )
+    {
+        if( chuck_instances.count( chuckID ) == 0 ) { return -1; }
+
+        // don't want to replace dac
+        // (a safeguard in case compiler got interrupted while replacing dac)
+        chuck_instances[chuckID]->compiler()->setReplaceDac( FALSE, "" );
+        
+        std::string filenameS( filename );
+        std::string argsS( args );
+
+        // compile it! and spork 0 times. (ONLY compile)
+        if( chuck_instances[chuckID]->compileFile( filenameS, argsS, 0 ) )
+        {
+            // find args
+            std::string found_filename;
+            std::vector<std::string> found_args;
+            std::string together = filenameS + ":" + argsS;
+            // parse out command line arguments
+            if( !extract_args( together, found_filename, found_args ) )
+            {
+                // error
+                CK_FPRINTF_STDERR( "[chuck]: malformed filename with argument list...\n" );
+                CK_FPRINTF_STDERR( "    -->  '%s'", together.c_str() );
+                return 0;
+            }
+            
+            // replace code
+            return replaceCode( chuck_instances[chuckID], shredID, & found_args );
+        }
+        // failure to compile
+        return 0;
+    }
+    
+    
+    
+    t_CKUINT EMSCRIPTEN_KEEPALIVE replaceChuckFileWithArgsWithReplacementDac( unsigned int chuckID, unsigned int shredID, const char * filename, const char * args, const char * replacement_dac )
+    {
+        if( chuck_instances.count( chuckID ) == 0 ) { return -1; }
+
+        // replace dac
+        chuck_instances[chuckID]->compiler()->setReplaceDac( TRUE,
+            std::string( replacement_dac ) );
+        
+        std::string filenameS( filename );
+        std::string argsS( args );
+        
+        // compile it! and spork 0 times. (ONLY compile)
+        bool result = chuck_instances[chuckID]->compileFile( filenameS, argsS, 0 );
+        
+        // don't replace dac for future compilations
+        chuck_instances[chuckID]->compiler()->setReplaceDac( FALSE, "" );
+        
+        if( result )
+        {
+            // find args
+            std::string found_filename;
+            std::vector<std::string> found_args;
+            std::string together = filenameS + ":" + argsS;
+            // parse out command line arguments
+            if( !extract_args( together, found_filename, found_args ) )
+            {
+                // error
+                CK_FPRINTF_STDERR( "[chuck]: malformed filename with argument list...\n" );
+                CK_FPRINTF_STDERR( "    -->  '%s'", together.c_str() );
+                return 0;
+            }
+            
+            // replace code
+            return replaceCode( chuck_instances[chuckID], shredID, & found_args );
+            
+        }
+        // failure to compile
+        return 0;
     }
     
     
