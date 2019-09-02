@@ -279,6 +279,9 @@ ChucK().then( function( Module )
                         } );
                     }
                     break;
+                case 'removeShred':
+                    removeShred( this.myID, event.data.shred );
+                    break;
             // ================== Int, Float, String ============= //
                 case 'setChuckInt':
                     setChuckInt( this.myID, event.data.variable, event.data.value );

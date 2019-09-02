@@ -228,6 +228,13 @@ var startChuck = async function()
             {
                 self.port.postMessage( { type: "removeLastCode" } );
             }
+            self.removeShred = function( shred )
+            {
+                self.port.postMessage( {
+                    type: "removeShred",
+                    shred: shred
+                } );
+            }
             // ================== Int, Float, String ============= //
             self.setInt = function( variable, value )
             {
