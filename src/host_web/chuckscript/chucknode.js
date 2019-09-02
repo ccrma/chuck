@@ -121,19 +121,43 @@ ChucK().then( function( Module )
             this.myActiveShreds = [];
         }
         
-        handleNewShredID( newShredID, code, filename )
+        handleNewShredID( newShredID, shredCallback )
         {
-            if( newShredID >= 0 )
+            if( newShredID > 0 )
             {
+                // keep track for myself
                 this.myActiveShreds.push( newShredID );
-                // TODO: tell the host that we have a new shred id
-                // for rendering purposes and in case they want to remove
-                // a specific shred themselves
             }
             else
             {
                 // compilation failed
             }
+            // tell the host
+            this.port.postMessage( { 
+                type: "newShredCallback", 
+                callback: shredCallback,
+                shred: newShredID
+            } );
+        }
+        
+        handleReplacedShredID( oldShredID, newShredID, shredCallback )
+        {
+            if( newShredID > 0 )
+            {
+                // keep track for myself
+                this.myActiveShreds.push( newShredID );
+            }
+            else
+            {
+                // compilation failed --> we did not actually remove oldShredID
+                this.myActiveShreds.push( oldShredID );
+            }
+            // tell the host
+            this.port.postMessage( { 
+                type: "newShredCallback", 
+                callback: shredCallback,
+                shred: newShredID
+            } );
         }
         
         findMostRecentActiveShred()
@@ -169,34 +193,34 @@ ChucK().then( function( Module )
             // ================== Run / Compile ================== //
                 case 'runChuckCode':
                     var shredID = runChuckCode( this.myID, event.data.code );
-                    this.handleNewShredID( shredID, event.data.code, undefined );
+                    this.handleNewShredID( shredID, event.data.callback );
                     break;
                 case 'runChuckCodeWithReplacementDac':
                     var shredID = runChuckCodeWithReplacementDac( this.myID, event.data.code, event.data.dac_name );
-                    this.handleNewShredID( shredID, event.data.code, undefined );
+                    this.handleNewShredID( shredID, event.data.callback );
                     break;
                 case 'runChuckFile':
                     var shredID = runChuckFile( this.myID, event.data.filename );
-                    this.handleNewShredID( shredID, undefined, event.data.filename );
+                    this.handleNewShredID( shredID, event.data.callback );
                     break;
                 case 'runChuckFileWithReplacementDac':
                     var shredID = runChuckFileWithReplacementDac( this.myID, event.data.filename, event.data.dac_name );
-                    this.handleNewShredID( shredID, undefined, event.data.filename );
+                    this.handleNewShredID( shredID, event.data.callback );
                     break;
                 case 'runChuckFileWithArgs':
                     var shredID = runChuckFileWithArgs( this.myID, event.data.filename, event.data.colon_separated_args );
-                    this.handleNewShredID( shredID, undefined, event.data.filename );
+                    this.handleNewShredID( shredID, event.data.callback );
                     break;
                 case 'runChuckFileWithArgsWithReplacementDac':
                     var shredID = runChuckFileWithArgsWithReplacementDac( this.myID, event.data.filename, event.data.colon_separated_args, event.data.dac_name );
-                    this.handleNewShredID( shredID, undefined, event.data.filename );
+                    this.handleNewShredID( shredID, event.data.callback );
                     break;
                 case 'replaceChuckCode':
                     var shredToReplace = this.findShredToReplace();
                     if( shredToReplace )
                     {
                         var shredID = replaceChuckCode( this.myID, shredToReplace, event.data.code );
-                        this.handleNewShredID( shredID, event.data.code, undefined );
+                        this.handleReplacedShredID( shredToReplace, shredID, event.data.callback );
                     }
                     break;
                 case 'replaceChuckCodeWithReplacementDac':
@@ -204,7 +228,7 @@ ChucK().then( function( Module )
                     if( shredToReplace )
                     {
                         var shredID = replaceChuckCodeWithReplacementDac( this.myID, shredToReplace, event.data.code, event.data.dac_name );
-                        this.handleNewShredID( shredID, event.data.code, undefined );    
+                        this.handleReplacedShredID( shredToReplace, shredID, event.data.callback );
                     }                    
                     break;
                 case 'replaceChuckFile':
@@ -212,7 +236,7 @@ ChucK().then( function( Module )
                     if( shredToReplace )
                     {
                         var shredID = replaceChuckFile( this.myID, shredToReplace, event.data.filename );
-                        this.handleNewShredID( shredID, undefined, event.data.filename );    
+                        this.handleReplacedShredID( shredToReplace, shredID, event.data.callback );
                     }
                     break;
                 case 'replaceChuckFileWithReplacementDac':
@@ -220,7 +244,7 @@ ChucK().then( function( Module )
                     if( shredToReplace )
                     {
                         var shredID = replaceChuckFileWithReplacementDac( this.myID, shredToReplace, event.data.filename, event.data.dac_name );
-                        this.handleNewShredID( shredID, undefined, event.data.filename );   
+                        this.handleReplacedShredID( shredToReplace, shredID, event.data.callback );
                     }
                     break;
                 case 'replaceChuckFileWithArgs':
@@ -228,7 +252,7 @@ ChucK().then( function( Module )
                     if( shredToReplace )
                     {
                         var shredID = replaceChuckFileWithArgs( this.myID, shredToReplace, event.data.filename, event.data.colon_separated_args );
-                        this.handleNewShredID( shredID, undefined, event.data.filename );    
+                        this.handleReplacedShredID( shredToReplace, shredID, event.data.callback );
                     }   
                     break;
                 case 'replaceChuckFileWithArgsWithReplacementDac':
@@ -236,7 +260,7 @@ ChucK().then( function( Module )
                     if( shredToReplace )
                     {
                         var shredID = replaceChuckFileWithArgsWithReplacementDac( this.myID, shredToReplace, event.data.filename, event.data.colon_separated_args, event.data.dac_name );
-                        this.handleNewShredID( shredID, undefined, event.data.filename );    
+                        this.handleReplacedShredID( shredToReplace, shredID, event.data.callback );
                     }                    
                     break;
                 case 'removeLastCode':

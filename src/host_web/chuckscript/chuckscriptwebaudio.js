@@ -70,92 +70,159 @@ var startChuck = async function()
                             delete self.deferredPromises[event.data.callback];
                         }
                         break;
+                    case "newShredCallback":
+                        if( event.data.callback in self.deferredPromises )
+                        {
+                            if( event.data.shred > 0 )
+                            {
+                                self.deferredPromises[event.data.callback].resolve(event.data.shred);
+                            }
+                            else
+                            {
+                                self.deferredPromises[event.data.callback].reject("Running code failed");
+                            }
+                        }
+                        break;
                     default:
                         break;
                 }
             }
+            self.nextDeferID = function()
+            {
+                var callbackID = self.deferredPromiseCounter++;
+                self.deferredPromises[callbackID] = defer();
+                return callbackID;
+            }
             // ================== Run / Compile ================== //
             self.runChuckCode = function( code )
             {
-                self.port.postMessage( { type: "runChuckCode", code: code } ); 
+                var callbackID = self.nextDeferID();
+                self.port.postMessage( { 
+                    type: "runChuckCode", 
+                    code: code,
+                    callback: callbackID
+                } );
+                return self.deferredPromises[callbackID];
             }
             self.runChuckCodeWithReplacementDac = function( code, dac_name )
             {
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
                     type: "runChuckCodeWithReplacementDac", 
                     code: code,
-                    dac_name: dac_name
-                } ); 
+                    dac_name: dac_name,
+                    callback: callbackID
+                } );
+                return self.deferredPromises[callbackID];
             }
             self.runChuckFile = function( filename )
             {
-                self.port.postMessage( { type: "runChuckFile", filename: filename } ); 
+                var callbackID = self.nextDeferID();
+                self.port.postMessage( {
+                    type: "runChuckFile",
+                    filename: filename,
+                    callback: callbackID
+                } );
+                return self.deferredPromises[callbackID];
             }
             self.runChuckFileWithReplacementDac = function( filename, dac_name )
             {
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
                     type: "runChuckFileWithReplacementDac", 
                     filename: filename,
-                    dac_name: dac_name
-                } ); 
+                    dac_name: dac_name,
+                    callback: callbackID
+                } );
+                return self.deferredPromises[callbackID];
             }
             self.runChuckFileWithArgs = function( filename, colon_separated_args )
             {
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
                     type: "runChuckFileWithArgs", 
                     filename: filename,
-                    colon_separated_args: colon_separated_args
+                    colon_separated_args: colon_separated_args,
+                    callback: callbackID
                 } );
+                return self.deferredPromises[callbackID];
             }
             self.runChuckFileWithArgsWithReplacementDac = function( filename, colon_separated_args, dac_name )
             {
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
                     type: "runChuckFileWithArgs", 
                     filename: filename,
                     colon_separated_args: colon_separated_args,
-                    dac_name: dac_name
+                    dac_name: dac_name,
+                    callback: callbackID
                 } );
+                return self.deferredPromises[callbackID];
             }
             self.replaceChuckCode = function( code )
             {
-                self.port.postMessage( { type: "replaceChuckCode", code: code } ); 
+                var callbackID = self.nextDeferID();
+                self.port.postMessage( {
+                    type: "replaceChuckCode",
+                    code: code,
+                    callback: callbackID
+                } );
+                return self.deferredPromises[callbackID];
             }
             self.replaceChuckCodeWithReplacementDac = function( code, dac_name )
             {
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
                     type: "replaceChuckCodeWithReplacementDac", 
                     code: code,
-                    dac_name: dac_name
-                } ); 
+                    dac_name: dac_name,
+                    callback: callbackID
+                } );
+                return self.deferredPromises[callbackID];
             }
             self.replaceChuckFile = function( filename )
             {
-                self.port.postMessage( { type: "replaceChuckFile", filename: filename } ); 
+                var callbackID = self.nextDeferID();
+                self.port.postMessage( {
+                    type: "replaceChuckFile",
+                    filename: filename,
+                    callback: callbackID
+                } );
+                return self.deferredPromises[callbackID];
             }
             self.replaceChuckFileWithReplacementDac = function( filename, dac_name )
             {
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
                     type: "replaceChuckFileWithReplacementDac", 
                     filename: filename,
-                    dac_name: dac_name
-                } ); 
+                    dac_name: dac_name,
+                    callback: callbackID
+                } );
+                return self.deferredPromises[callbackID];
             }
             self.replaceChuckFileWithArgs = function( filename, colon_separated_args )
             {
-                self.port.postMessage( { 
-                    type: "replaceChuckFileWithArgs", 
-                    filename: filename,
-                    colon_separated_args: colon_separated_args
-                } );
-            }
-            self.replaceChuckFileWithArgsWithReplacementDac = function( filename, colon_separated_args, dac_name )
-            {
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
                     type: "replaceChuckFileWithArgs", 
                     filename: filename,
                     colon_separated_args: colon_separated_args,
-                    dac_name: dac_name
+                    callback: callbackID
                 } );
+                return self.deferredPromises[callbackID];
+            }
+            self.replaceChuckFileWithArgsWithReplacementDac = function( filename, colon_separated_args, dac_name )
+            {
+                var callbackID = self.nextDeferID();
+                self.port.postMessage( { 
+                    type: "replaceChuckFileWithArgs", 
+                    filename: filename,
+                    colon_separated_args: colon_separated_args,
+                    dac_name: dac_name,
+                    callback: callbackID
+                } );
+                return self.deferredPromises[callbackID];
             }
             self.removeLastCode = function()
             {
@@ -172,8 +239,7 @@ var startChuck = async function()
             }
             self.getInt = function( variable )
             {
-                var callbackID = self.deferredPromiseCounter++;
-                self.deferredPromises[callbackID] = defer();
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( {
                     type: 'getChuckInt',
                     variable: variable,
@@ -191,8 +257,7 @@ var startChuck = async function()
             }
             self.getFloat = function( variable )
             {
-                var callbackID = self.deferredPromiseCounter++;
-                self.deferredPromises[callbackID] = defer();
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( {
                     type: 'getChuckFloat',
                     variable: variable,
@@ -210,8 +275,7 @@ var startChuck = async function()
             }
             self.getString = function( variable )
             {
-                var callbackID = self.deferredPromiseCounter++;
-                self.deferredPromises[callbackID] = defer();
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( {
                     type: 'getChuckString',
                     variable: variable,
@@ -272,8 +336,7 @@ var startChuck = async function()
             }
             self.getIntArrayValue = function( variable, index )
             {
-                var callbackID = self.deferredPromiseCounter++;
-                self.deferredPromises[callbackID] = defer();
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( {
                     type: 'getGlobalIntArrayValue',
                     variable: variable,
@@ -293,8 +356,7 @@ var startChuck = async function()
             }
             self.getAssociativeIntArrayValue = function( variable, key )
             {
-                var callbackID = self.deferredPromiseCounter++;
-                self.deferredPromises[callbackID] = defer();
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( {
                     type: 'getGlobalAssociativeIntArrayValue',
                     variable: variable,
@@ -317,8 +379,7 @@ var startChuck = async function()
             }
             self.getFloatArrayValue = function( variable, index )
             {
-                var callbackID = self.deferredPromiseCounter++;
-                self.deferredPromises[callbackID] = defer();
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( {
                     type: 'getGlobalFloatArrayValue',
                     variable: variable,
@@ -338,8 +399,7 @@ var startChuck = async function()
             }
             self.getAssociativeFloatArrayValue = function( variable, key )
             {
-                var callbackID = self.deferredPromiseCounter++;
-                self.deferredPromises[callbackID] = defer();
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( {
                     type: 'getGlobalAssociativeFloatArrayValue',
                     variable: variable,
