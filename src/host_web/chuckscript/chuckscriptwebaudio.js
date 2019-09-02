@@ -116,6 +116,10 @@ var startChuck = async function()
                     dac_name: dac_name
                 } );
             }
+            self.removeLastShred = function()
+            {
+                self.port.postMessage( { type: "removeLastShred" } );
+            }
             // ================== Int, Float, String ============= //
             self.setInt = function( variable, value )
             {
