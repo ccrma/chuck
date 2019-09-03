@@ -10,7 +10,7 @@
 <div>
     <div id="program">// SndBuf 2: pre-compiled-in files
 SndBuf buf => dac;
-"/aah5.wav" => buf.read;
+me.dir() + "aah5.wav" => buf.read;
 buf.length() => now;
 </div>
 </div>

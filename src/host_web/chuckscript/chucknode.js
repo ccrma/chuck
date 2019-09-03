@@ -84,6 +84,11 @@ ChucK().then( function( Module )
     var setGlobalAssociativeFloatArrayValue = Module.cwrap( 'setGlobalAssociativeFloatArrayValue', 'number', ['number', 'string', 'string', 'number'] );
     var getGlobalAssociativeFloatArrayValue = Module.cwrap( 'getGlobalAssociativeFloatArrayValue', 'number', ['number', 'string', 'string'] );
 
+
+
+    // set data dir to "/" for embedded files
+    setDataDir( "/" );
+
     class ChuckNode extends AudioWorkletProcessor
     {
         constructor( options ) {
