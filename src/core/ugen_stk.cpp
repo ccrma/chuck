@@ -17894,34 +17894,50 @@ struct mathdr {
 #ifndef __DISABLE_WVOUT__
 size_t WvOut::fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream)
 {
+    #ifndef __DISABLE_THREADS__
     if(asyncIO)
         return asyncWriteThread->fwrite(ptr, size, nitems, stream);
     else
         return ::fwrite(ptr, size, nitems, stream);
+    #else
+    return ::fwrite(ptr, size, nitems, stream);
+    #endif
 }
 
 int WvOut::fseek(FILE *stream, long offset, int whence)
 {
+    #ifndef __DISABLE_THREADS__
     if(asyncIO)
         return asyncWriteThread->fseek(stream, offset, whence);
     else
         return ::fseek(stream, offset, whence);
+    #else
+    return ::fseek(stream, offset, whence);
+    #endif
 }
 
 int WvOut::fflush(FILE *stream)
 {
+    #ifndef __DISABLE_THREADS__
     if(asyncIO)
         return asyncWriteThread->fflush(stream);
     else
         return ::fflush(stream);
+    #else
+    return ::fflush(stream);
+    #endif
 }
 
 int WvOut::fclose(FILE *stream)
 {
+    #ifndef __DISABLE_THREADS__
     if(asyncIO)
         return asyncWriteThread->fclose(stream);
     else
         return ::fclose(stream);
+    #else
+    return ::fclose(stream);
+    #endif
 }
 
 size_t WvOut::fread(void *ptr, size_t size, size_t nitems, FILE *stream)
@@ -26145,6 +26161,7 @@ CK_DLL_CTOR( WvOut_ctor )
     // check
     if( carrier != NULL )
     {
+        #ifndef __DISABLE_THREADS__
         // REFACTOR-2017 TODO Ge: Fix wvout realtime audio [DONE]
         // check if need to create per-VM write thread
         if( carrier->stk_writeThread == NULL )
@@ -26156,6 +26173,7 @@ CK_DLL_CTOR( WvOut_ctor )
         // REFACTOR-2017: set async mode, if on realtime audio thread...
         yo->asyncIO = carrier->hintIsRealtimeAudio();
         yo->asyncWriteThread = carrier->stk_writeThread;
+        #endif
     }
 
     // set offset data
@@ -27203,12 +27221,14 @@ t_CKBOOL stk_detach( Chuck_Carrier * carrier )
         carrier->stk_wvOutMap.clear();
         
         // deal with per-VM stk write thread
+        #ifndef __DISABLE_THREADS__
         if( carrier->stk_writeThread )
         {
             carrier->stk_writeThread->shutdown(); // deletes itself
             carrier->stk_writeThread = NULL;
         }
-        #endif //_DISABLE_WVOUT__
+        #endif //__DISABLE_THREADS__
+        #endif //__DISABLE_WVOUT__
     }
     
     return TRUE;
