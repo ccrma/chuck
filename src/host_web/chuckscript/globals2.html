@@ -101,7 +101,8 @@ while( true )
             }
             
             // compile it for this test without waiting for the user to click button
-            theChuck.runChuckCode( chuckEditor.getValue() ).then( function( shred )
+            // just to make sure the global Event exists
+            theChuck.runChuckCode( "global Event metro;" ).then( function( shred )
             {
                 // so we can do this after
                 theChuck.startListeningForEvent( "metro", listenToMetro );
