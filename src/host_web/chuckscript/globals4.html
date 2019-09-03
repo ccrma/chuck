@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>ChucK + JS => ChucKScript</title>
+    <link rel="stylesheet" href="./css/editor.css">
+  </head>
+  <body onresize="chuckEditor.resize();">
+<div>
+    <div id="program">// Globals 4: setting and getting ints, floats, strings; listen for event once
+1 => global int globalInt;
+2 => global float globalFloat;
+"3" => global string globalString;
+global Event windsOfChange;
+
+<<< globalInt, globalFloat, globalString >>>;
+windsOfChange.signal();
+0.5::second => now;
+<<< globalInt, globalFloat, globalString >>>;
+windsOfChange.signal();
+</div>
+</div>
+<div>
+    <button id="startChuck">Start ChucK</button>
+    <button id="compileButton" disabled="disabled">Compile and Run</button>
+    <button id="replaceButton" disabled="disabled">Replace</button>
+    <button id="removeButton" disabled="disabled">Remove</button>
+    <button id="clearButton" disabled="disabled">Clear VM and Globals</button>
+</div>
+<div>
+    <textarea id="output"></textarea>
+</div>
+    <script src="./js/ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" src="./js/editor.js"></script>
+    <script type="text/javascript" src="./js/defer.js"></script>
+    <!--  TODO: things fail if this script is not in the same directory as the HTML    -->
+    <script type="text/javascript" src="./chuckscriptwebaudio.js"></script>
+    <script type="text/javascript" src="./js/host.js"></script>
+    <script>
+        theChuckReady.then( function() {
+            // compile it for this test without waiting for the user to click button
+            // just to make sure the global Event exists
+            theChuck.runCode( "global Event windsOfChange;" ).then( function( shred )
+            {
+                // so we can do this after
+                theChuck.listenForEventOnce( "windsOfChange", function()
+                {
+                    theChuck.setInt( "globalInt", 53 );
+                    theChuck.setFloat( "globalFloat", 5.3 );
+                    theChuck.setString( "globalString", "053" );
+
+                    theChuck.listenForEventOnce( "windsOfChange", function() 
+                    {
+                        theChuck.getInt( "globalInt" ).then( function( result )
+                        {
+                            chuckPrint( "the gotten global int is ", result );
+                        });
+                        theChuck.getFloat( "globalFloat" ).then( function( result )
+                        {
+                            chuckPrint( "the gotten global float is ", result );
+                        });
+                        theChuck.getString( "globalInt" ).then( function( result )
+                        {
+                            chuckPrint( "the gotten global string is ", result );
+                        });
+                    } );
+                } );
+            });
+        });
+    </script>
+  </body>
+</html>
+
+
