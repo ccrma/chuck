@@ -66,7 +66,7 @@ ChucK().then( function( Module )
     // getGlobalUGenSamples = Module.cwrap( 'getGlobalUGenSamples', 'number', ['number', 'string', 'array', 'number'] );
 
     // set/get global int arrays
-    // note: anything using arrays cannot use cwrap (or I don't understand how to do it correctly).
+    // note: anything using arrays cannot use cwrap (since 'array' is an Int64Array)
     //  called manually with heap manipulation below
     //  setGlobalIntArray = Module.cwrap( 'setGlobalIntArray', 'number', ['number', 'string', 'array', 'number'] );
     var getGlobalIntArray = Module.cwrap( 'getGlobalIntArray', 'number', ['number', 'string', 'number'] );
