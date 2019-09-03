@@ -156,9 +156,31 @@ ChucK().then( function( Module )
             }
             // tell the host
             this.port.postMessage( { 
-                type: "newShredCallback", 
+                type: "replacedShredCallback", 
                 callback: shredCallback,
-                shred: newShredID
+                newShred: newShredID,
+                oldShred: oldShredID
+            } );
+        }
+        
+        handleRemoveShred( shredID, callback )
+        {
+            if( removeShred( this.myID, shredID ) )
+            {
+                this.handleRemovedShredID( shredID, callback );
+            }
+            else
+            {
+                this.handleRemovedShredID( 0, callback );
+            }
+        }
+        
+        handleRemovedShredID( shredID, shredCallback )
+        {
+            this.port.postMessage( { 
+                type: "removedShredCallback", 
+                callback: shredCallback,
+                shred: shredID
             } );
         }
         
@@ -271,7 +293,7 @@ ChucK().then( function( Module )
                     // there are no shreds left to remove
                     if( shredID )
                     {
-                        removeShred( this.myID, shredID );
+                        this.handleRemoveShred( shredID, event.data.callback );
                     }
                     else
                     {
@@ -282,7 +304,7 @@ ChucK().then( function( Module )
                     }
                     break;
                 case 'removeShred':
-                    removeShred( this.myID, event.data.shred );
+                    this.handleRemoveShred( event.data.shred, event.data.callback );
                     break;
             // ================== Int, Float, String ============= //
                 case 'setChuckInt':

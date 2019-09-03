@@ -4,8 +4,9 @@ body {
     padding: none;
 }
 
-    #output {
-    width: 100%;
+#output {
+    width: 59%;
+    float: left;
     height: 300px;
     margin: 0 auto;
     margin-top: 10px;
@@ -19,4 +20,29 @@ body {
     font-family: 'Lucida Console', Monaco, monospace;
     outline: none;
     resize: none;
+}
+
+#shreds {
+    margin-top: 10px;
+    width: 40%;
+    float: right;
+    height: 300px;
+    overflow: auto;
+}
+
+#shredstable {
+    width: 90%;
+    border-style: hidden;
+    border-collapse: collapse;
+}
+
+th, td {
+  text-align:left;
+  border: 1px solid #dddddd;
+  padding: 3px 5px;
+}
+
+
+.clearfix {
+    clear: both;
 }
