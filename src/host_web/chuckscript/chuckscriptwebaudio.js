@@ -318,11 +318,10 @@ var startChuck = async function()
                     variable: variable,
                     callback: callbackID
                 } );
+                return callbackID
             }
-            self.stopListeningForEvent = function( variable, callback )
+            self.stopListeningForEvent = function( variable, callbackID )
             {
-                var callbackID = self.eventCallbackCounter++;
-                self.eventCallbacks[callbackID] = callback;
                 self.port.postMessage( { 
                     type: 'stopListeningForChuckEvent',
                     variable: variable,
