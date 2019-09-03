@@ -40,17 +40,18 @@ EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
     core/ulib_math.cpp core/ulib_regex.cpp core/ulib_std.cpp \
     core/util_buffers.cpp core/util_math.c core/util_raw.c \
     core/util_string.cpp core/util_xforms.c core/chuck_win32.c \
+    core/util_sndfile.c
 
 
 .PHONY: emscripten
 emscripten: host_web/chuckscript/chuckscript.js
 
 host_web/chuckscript/chuckscript.js: $(EMSCRIPTENSRCS)
-	emcc -Icore -D__DISABLE_MIDI__ -D__DISABLE_WATCHDOG__ -D__DISABLE_RAW__ \
+	emcc -Icore -D__DISABLE_MIDI__ -D__DISABLE_WATCHDOG__ \
         -D__DISABLE_KBHIT__ -D__DISABLE_PROMPTER__ -D__DISABLE_RTAUDIO__ \
         -D__DISABLE_OTF_SERVER__ -D__ALTER_HID__ -D__DISABLE_HID__ \
-        -D__DISABLE_SNDBUF__ -D__DISABLE_SERIAL__ -D__DISABLE_THREADS__ \
-        -D__DISABLE_NETWORK__ -D__DISABLE_SHELL__ -D__DISABLE_WVOUT__ \
+        -D__DISABLE_SERIAL__ -D__DISABLE_THREADS__ \
+        -D__DISABLE_NETWORK__ -D__DISABLE_SHELL__ \
         -D__DISABLE_FILEIO__ -D__CHUCK_USE_PLANAR_BUFFERS__ \
 	-Wformat=0 \
         $(EMSCRIPTENSRCS) -o host_web/chuckscript/chuckscript.js \
@@ -58,7 +59,7 @@ host_web/chuckscript/chuckscript.js: $(EMSCRIPTENSRCS)
         --pre-js host_web/webaudio_prejs.js \
         -s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"' \
         -s EXPORT_ES6=1 -s BINARYEN_ASYNC_COMPILATION=0 -s SINGLE_FILE=1 \
-        -s RESERVED_FUNCTION_POINTERS=50
+        -s RESERVED_FUNCTION_POINTERS=50 --embed-file host_web/streamingAssets@/
 
 
 
