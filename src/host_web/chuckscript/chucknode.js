@@ -314,7 +314,7 @@ ChucK().then( function( Module )
                                 } );
                                 Module.removeFunction( pointer );
                             }
-                        })(thePort, theCallback) );
+                        })(thePort, theCallback), 'vi' );
                         getChuckString( theID, theVariable, pointer );
                     })(this.port, event.data.callback, event.data.variable, this.myID);
                     break;
