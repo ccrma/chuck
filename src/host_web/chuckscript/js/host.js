@@ -3,6 +3,34 @@ var compileButton = document.getElementById( "compileButton" );
 var replaceButton = document.getElementById( "replaceButton" );
 var removeButton = document.getElementById( "removeButton" );
 var clearButton = document.getElementById( "clearButton" );
+// use named functions instead of anonymous ones
+// so they can be replaced later if desired
+var chuckCompileButton = function() 
+{
+    // send message to compile code 
+    theChuck.runCode( chuckEditor.getValue() );
+}
+
+var chuckReplaceButton = function()
+{
+    // send message to replace last shred with this code
+    theChuck.replaceCode( chuckEditor.getValue() );
+}
+
+var chuckRemoveButton = function()
+{
+    // send message to remove most recent shred
+    theChuck.removeLastCode();
+}
+
+var chuckClearButton = function()
+{
+    // send message to clear vm
+    theChuck.clearChuckInstance();
+    // send message to clear globals
+    theChuck.clearGlobals();
+}
+
 startButton.addEventListener( "click", function() {
     startButton.disabled = true;
     startChuck();
@@ -31,29 +59,8 @@ theChuckReady.then( function() {
         };
     })();
     
-    compileButton.addEventListener( "click", function chuckCompileButton() 
-    {
-        // send message to compile code 
-        theChuck.runCode( chuckEditor.getValue() );
-    });
-    
-    replaceButton.addEventListener( "click", function chuckReplaceButton()
-    {
-        // send message to replace last shred with this code
-        theChuck.replaceCode( chuckEditor.getValue() );
-    });
-    
-    removeButton.addEventListener( "click", function chuckRemoveButton()
-    {
-        // send message to remove most recent shred
-        theChuck.removeLastCode();
-    });
-    
-    clearButton.addEventListener( "click", function chuckClearButton()
-    {
-        // send message to clear vm
-        theChuck.clearChuckInstance();
-        // send message to clear globals
-        theChuck.clearGlobals();
-    });
+    compileButton.addEventListener( "click", chuckCompileButton );
+    replaceButton.addEventListener( "click", chuckReplaceButton );
+    removeButton.addEventListener( "click", chuckRemoveButton );
+    clearButton.addEventListener( "click", chuckClearButton );
 });
