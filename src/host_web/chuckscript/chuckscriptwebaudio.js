@@ -85,6 +85,35 @@ var startChuck = async function()
                             }
                         }
                         break;
+                    case "replacedShredCallback":
+                        if( event.data.callback in self.deferredPromises )
+                        {
+                            if( event.data.newShred > 0 )
+                            {
+                                self.deferredPromises[event.data.callback].resolve({
+                                    newShred: event.data.newShred,
+                                    oldShred: event.data.oldShred
+                                });
+                            }
+                            else
+                            {
+                                self.deferredPromises[event.data.callback].reject("Replacing code failed");
+                            }
+                        }
+                        break;
+                    case "removedShredCallback":
+                        if( event.data.callback in self.deferredPromises )
+                        {
+                            if( event.data.shred > 0 )
+                            {
+                                self.deferredPromises[event.data.callback].resolve(event.data.shred);
+                            }
+                            else
+                            {
+                                self.deferredPromises[event.data.callback].reject("Removing code failed");
+                            }
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -228,14 +257,22 @@ var startChuck = async function()
             }
             self.removeLastCode = function()
             {
-                self.port.postMessage( { type: "removeLastCode" } );
+                var callbackID = self.nextDeferID();
+                self.port.postMessage( {
+                    type: "removeLastCode",
+                    callback: callbackID
+                } );
+                return self.deferredPromises[callbackID];
             }
             self.removeShred = function( shred )
             {
+                var callbackID = self.nextDeferID();
                 self.port.postMessage( {
                     type: "removeShred",
-                    shred: shred
+                    shred: shred,
+                    callback: callbackID
                 } );
+                return self.deferredPromises[callbackID];
             }
             // ================== Int, Float, String ============= //
             self.setInt = function( variable, value )

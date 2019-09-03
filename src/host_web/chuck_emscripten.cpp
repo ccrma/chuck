@@ -320,7 +320,11 @@ extern "C"
     
     bool EMSCRIPTEN_KEEPALIVE removeShred( unsigned int chuckID, unsigned int shredID )
     {
-        if( chuck_instances.count( chuckID ) == 0 ) { return false; }
+        if( chuck_instances.count( chuckID ) == 0 ||
+            !isShredActive( chuckID, shredID ) )
+        {
+            return false;
+        }
         
         // the chuck to clear
         ChucK * chuck = chuck_instances[chuckID];
