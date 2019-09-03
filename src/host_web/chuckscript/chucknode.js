@@ -310,7 +310,7 @@ ChucK().then( function( Module )
                                 thePort.postMessage( { 
                                     type: "stringCallback", 
                                     callback: theCallback, 
-                                    result: Module.Pointer_stringify( string_ptr )
+                                    result: Module.UTF8ToString( string_ptr )
                                 } );
                                 Module.removeFunction( pointer );
                             }
