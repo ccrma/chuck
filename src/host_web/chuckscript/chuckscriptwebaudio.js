@@ -94,7 +94,7 @@ var startChuck = async function()
                 return callbackID;
             }
             // ================== Run / Compile ================== //
-            self.runChuckCode = function( code )
+            self.runCode = function( code )
             {
                 var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
@@ -104,7 +104,7 @@ var startChuck = async function()
                 } );
                 return self.deferredPromises[callbackID];
             }
-            self.runChuckCodeWithReplacementDac = function( code, dac_name )
+            self.runCodeWithReplacementDac = function( code, dac_name )
             {
                 var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
@@ -115,7 +115,7 @@ var startChuck = async function()
                 } );
                 return self.deferredPromises[callbackID];
             }
-            self.runChuckFile = function( filename )
+            self.runFile = function( filename )
             {
                 var callbackID = self.nextDeferID();
                 self.port.postMessage( {
@@ -125,7 +125,7 @@ var startChuck = async function()
                 } );
                 return self.deferredPromises[callbackID];
             }
-            self.runChuckFileWithReplacementDac = function( filename, dac_name )
+            self.runFileWithReplacementDac = function( filename, dac_name )
             {
                 var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
@@ -136,7 +136,7 @@ var startChuck = async function()
                 } );
                 return self.deferredPromises[callbackID];
             }
-            self.runChuckFileWithArgs = function( filename, colon_separated_args )
+            self.runFileWithArgs = function( filename, colon_separated_args )
             {
                 var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
@@ -147,7 +147,7 @@ var startChuck = async function()
                 } );
                 return self.deferredPromises[callbackID];
             }
-            self.runChuckFileWithArgsWithReplacementDac = function( filename, colon_separated_args, dac_name )
+            self.runFileWithArgsWithReplacementDac = function( filename, colon_separated_args, dac_name )
             {
                 var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
@@ -159,7 +159,7 @@ var startChuck = async function()
                 } );
                 return self.deferredPromises[callbackID];
             }
-            self.replaceChuckCode = function( code )
+            self.replaceCode = function( code )
             {
                 var callbackID = self.nextDeferID();
                 self.port.postMessage( {
@@ -169,7 +169,7 @@ var startChuck = async function()
                 } );
                 return self.deferredPromises[callbackID];
             }
-            self.replaceChuckCodeWithReplacementDac = function( code, dac_name )
+            self.replaceCodeWithReplacementDac = function( code, dac_name )
             {
                 var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
@@ -180,7 +180,7 @@ var startChuck = async function()
                 } );
                 return self.deferredPromises[callbackID];
             }
-            self.replaceChuckFile = function( filename )
+            self.replaceFile = function( filename )
             {
                 var callbackID = self.nextDeferID();
                 self.port.postMessage( {
@@ -190,7 +190,7 @@ var startChuck = async function()
                 } );
                 return self.deferredPromises[callbackID];
             }
-            self.replaceChuckFileWithReplacementDac = function( filename, dac_name )
+            self.replaceFileWithReplacementDac = function( filename, dac_name )
             {
                 var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
@@ -201,7 +201,7 @@ var startChuck = async function()
                 } );
                 return self.deferredPromises[callbackID];
             }
-            self.replaceChuckFileWithArgs = function( filename, colon_separated_args )
+            self.replaceFileWithArgs = function( filename, colon_separated_args )
             {
                 var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
@@ -212,7 +212,7 @@ var startChuck = async function()
                 } );
                 return self.deferredPromises[callbackID];
             }
-            self.replaceChuckFileWithArgsWithReplacementDac = function( filename, colon_separated_args, dac_name )
+            self.replaceFileWithArgsWithReplacementDac = function( filename, colon_separated_args, dac_name )
             {
                 var callbackID = self.nextDeferID();
                 self.port.postMessage( { 
