@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>ChucK + JS => ChucKScript</title>
+    <link rel="stylesheet" href="./css/editor.css">
+  </head>
+  <body onresize="chuckEditor.resize();">
+<div>
+    <div id="program">// Globals 5: remove shred
+// This test is automated, but should approximate this code:
+SinOsc foo => dac;
+2::second => now;
+</div>
+</div>
+<div>
+    <button id="startChuck">Start ChucK</button>
+    <button id="compileButton" disabled="disabled">Compile and Run</button>
+    <button id="replaceButton" disabled="disabled">Replace</button>
+    <button id="removeButton" disabled="disabled">Remove</button>
+    <button id="clearButton" disabled="disabled">Clear VM and Globals</button>
+</div>
+<div>
+    <textarea id="output"></textarea>
+</div>
+    <script src="./js/ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" src="./js/editor.js"></script>
+    <script type="text/javascript" src="./js/defer.js"></script>
+    <!--  TODO: things fail if this script is not in the same directory as the HTML    -->
+    <script type="text/javascript" src="./chuckscriptwebaudio.js"></script>
+    <script type="text/javascript" src="./js/host.js"></script>
+    <script>
+        theChuckReady.then( function() 
+        {
+            // compile and then exit 2 seconds later
+            theChuck.runCode( "SinOsc foo => dac; 1::week => now;" ).then( function( shred )
+            {
+                setTimeout( function() {
+                    theChuck.removeShred( shred );
+                }, 2000 );
+            });
+        });
+    </script>
+  </body>
+</html>
+
+
