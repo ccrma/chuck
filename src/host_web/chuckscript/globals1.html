@@ -49,6 +49,7 @@ while( true )
     <button id="compileButton" disabled="disabled">Compile and Run</button>
     <button id="replaceButton" disabled="disabled">Replace</button>
     <button id="removeButton" disabled="disabled">Remove</button>
+    <button id="clearButton" disabled="disabled">Clear VM and Globals</button>
 </div>
 <div>
     <textarea id="output"></textarea>
@@ -75,45 +76,7 @@ while( true )
     <script type="text/javascript" src="./js/defer.js"></script>
     <!--  TODO: things fail if this script is not in the same directory as the HTML    -->
     <script type="text/javascript" src="./chuckscriptwebaudio.js"></script>
-    <script>
-        var startButton = document.getElementById( "startChuck" );
-        var compileButton = document.getElementById( "compileButton" );
-        var replaceButton = document.getElementById( "replaceButton" );
-        var removeButton = document.getElementById( "removeButton" );
-        startButton.addEventListener( "click", function() {
-            startButton.disabled = true;
-            startChuck();
-         });
-    
-        theChuckReady.then( function() {
-            compileButton.disabled = false;
-            replaceButton.disabled = false;
-            removeButton.disabled = false;
-            
-            chuckPrint = (function() {
-                var element = document.getElementById('output');
-                if (element) element.value = ''; // clear browser cache
-                return function(text) {
-                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-                    // These replacements are necessary if you render to raw HTML
-                    //text = text.replace(/&/g, "&amp;");
-                    //text = text.replace(/</g, "&lt;");
-                    //text = text.replace(/>/g, "&gt;");
-                    //text = text.replace('\n', '<br>', 'g');
-                    if (element) {
-                        element.value += text + "\n";
-                        element.scrollTop = element.scrollHeight; // focus on bottom
-                    }
-                };
-            })();
-            
-            compileButton.addEventListener( "click", function() 
-            {
-                // send message to compile code 
-                theChuck.runChuckCode( chuckEditor.getValue() );
-            });
-        });
-    </script>
+    <script type="text/javascript" src="./js/host.js"></script>
     <script>
         theChuckReady.then( function() {
             if( window.Event ) { document.captureEvents( Event.MOUSEMOVE ); }
