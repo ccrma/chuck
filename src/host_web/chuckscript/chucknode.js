@@ -66,22 +66,19 @@ ChucK().then( function( Module )
     // getGlobalUGenSamples = Module.cwrap( 'getGlobalUGenSamples', 'number', ['number', 'string', 'array', 'number'] );
 
     // set/get global int arrays
-    // note: array is t_CKINT == Int32
-    // NOTE ALSO anything using arrays cannot use cwrap
-    // TODO
-    // setGlobalIntArray = Module.cwrap( 'setGlobalIntArray', 'number', ['number', 'string', 'array', 'number'] );
-    // getGlobalIntArray = 
+    // note: anything using arrays cannot use cwrap (or I don't understand how to do it correctly).
+    //  called manually with heap manipulation below
+    //  setGlobalIntArray = Module.cwrap( 'setGlobalIntArray', 'number', ['number', 'string', 'array', 'number'] );
+    var getGlobalIntArray = Module.cwrap( 'getGlobalIntArray', 'number', ['number', 'string', 'number'] );
     var setGlobalIntArrayValue = Module.cwrap( 'setGlobalIntArrayValue', 'number', ['number', 'string', 'number', 'number'] );
     var getGlobalIntArrayValue = Module.cwrap( 'getGlobalIntArrayValue', 'number', ['number', 'string', 'number'] );
     var setGlobalAssociativeIntArrayValue = Module.cwrap( 'setGlobalAssociativeIntArrayValue', 'number', ['number', 'string', 'string', 'number'] );
     var getGlobalAssociativeIntArrayValue = Module.cwrap( 'getGlobalAssociativeIntArrayValue', 'number', ['number', 'string', 'string'] );
 
     // set/get global float arrays
-    // note: array is t_CKFLOAT == Float32
-    // NOTE ALSO anything using arrays cannot use cwrap
-    // TODO
-    // setGlobalFloatArray = Module.cwrap( 'setGlobalFloatArray', 'number', ['number', 'string', 'array', 'number'] );
-    // getGlobalFloatArray = 
+    // note: anything using arrays cannot use cwrap. called manually with heap manipulation below
+    //  setGlobalFloatArray = Module.cwrap( 'setGlobalFloatArray', 'number', ['number', 'string', 'array', 'number'] );
+    var getGlobalFloatArray = Module.cwrap( 'getGlobalFloatArray', 'number', ['number', 'string', 'number'] );
     var setGlobalFloatArrayValue = Module.cwrap( 'setGlobalFloatArrayValue', 'number', ['number', 'string', 'number', 'number'] );
     var getGlobalFloatArrayValue = Module.cwrap( 'getGlobalFloatArrayValue', 'number', ['number', 'string', 'number'] );
     var setGlobalAssociativeFloatArrayValue = Module.cwrap( 'setGlobalAssociativeFloatArrayValue', 'number', ['number', 'string', 'string', 'number'] );
@@ -355,10 +352,47 @@ ChucK().then( function( Module )
                     break;
             // ================== Int[] =================== //
                 case 'setGlobalIntArray':
-                    //TODO (requires heap ptr manipulation)
+                    // convert to Int32Array
+                    var values = new Int32Array( event.data.values );
+                    // put onto heap
+                    var valuesPtr = Module._malloc( values.length * values.BYTES_PER_ELEMENT );
+                    var heapview = Module.HEAP32.subarray( (valuesPtr >> 2), (valuesPtr >> 2) + values.length );
+                    heapview.set( values );
+                    
+                    // put variable name on heap as well
+                    var stringBytes = event.data.variable.length << 2 + 1;
+                    var stringPtr = Module._malloc( stringBytes );
+                    Module.stringToUTF8( event.data.variable, stringPtr, stringBytes );
+                    
+                    // call
+                    Module._setGlobalIntArray( this.myID, stringPtr, valuesPtr, values.length );
+                    
+                    // free
+                    Module._free( valuesPtr );
+                    Module._free( stringPtr );
                     break;
                 case 'getGlobalIntArray':
-                    //TODO (requires heap ptr manipulation)
+                    (function( thePort, theCallback, theVariable, theID ) 
+                    {
+                        var pointer = Module.addFunction( (function(thePort, theCallback)
+                        {   
+                            return function( int32_ptr, len )
+                            {
+                                var result = new Int32Array(
+                                    Module.HEAPU8.buffer,
+                                    int32_ptr,
+                                    len
+                                );
+                                thePort.postMessage( { 
+                                    type: "intArrayCallback", 
+                                    callback: theCallback, 
+                                    result: result
+                                } );
+                                Module.removeFunction( pointer );
+                            }
+                        })(thePort, theCallback), 'vii' );
+                        getGlobalIntArray( theID, theVariable, pointer );
+                    })(this.port, event.data.callback, event.data.variable, this.myID);
                     break;
                 case 'setGlobalIntArrayValue':
                     setGlobalIntArrayValue( this.myID, event.data.variable, event.data.index, event.data.value );
@@ -376,10 +410,47 @@ ChucK().then( function( Module )
                     break;
             // ================== Float[] =================== //
                 case 'setGlobalFloatArray':
-                    //TODO (requires heap ptr manipulation)
+                    // convert to Float32Array
+                    var values = new Float32Array( event.data.values );
+                    // put onto heap
+                    var valuesPtr = Module._malloc( values.length * values.BYTES_PER_ELEMENT );
+                    var heapview = Module.HEAPF32.subarray( (valuesPtr >> 2), (valuesPtr >> 2) + values.length );
+                    heapview.set( values );
+                    
+                    // put variable name on heap as well
+                    var stringBytes = event.data.variable.length << 2 + 1;
+                    var stringPtr = Module._malloc( stringBytes );
+                    Module.stringToUTF8( event.data.variable, stringPtr, stringBytes );
+                    
+                    // call
+                    Module._setGlobalFloatArray( this.myID, stringPtr, valuesPtr, values.length );
+                    
+                    // free
+                    Module._free( valuesPtr );
+                    Module._free( stringPtr );
                     break;
                 case 'getGlobalFloatArray':
-                    //TODO (requires heap ptr manipulation)
+                    (function( thePort, theCallback, theVariable, theID ) 
+                    {
+                        var pointer = Module.addFunction( (function(thePort, theCallback)
+                        {   
+                            return function( float32_ptr, len )
+                            {
+                                var result = new Float32Array(
+                                    Module.HEAPU8.buffer,
+                                    float32_ptr,
+                                    len
+                                );
+                                thePort.postMessage( { 
+                                    type: "floatArrayCallback", 
+                                    callback: theCallback, 
+                                    result: result
+                                } );
+                                Module.removeFunction( pointer );
+                            }
+                        })(thePort, theCallback), 'vii' );
+                        getGlobalFloatArray( theID, theVariable, pointer );
+                    })(this.port, event.data.callback, event.data.variable, this.myID);
                     break;
                 case 'setGlobalFloatArrayValue':
                     setGlobalFloatArrayValue( this.myID, event.data.variable, event.data.index, event.data.value );

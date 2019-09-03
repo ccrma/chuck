@@ -64,6 +64,8 @@ var startChuck = async function()
                     case "intCallback":
                     case "floatCallback":
                     case "stringCallback":
+                    case "intArrayCallback":
+                    case "floatArrayCallback":
                         if( event.data.callback in self.deferredPromises )
                         {
                             self.deferredPromises[event.data.callback].resolve(event.data.result);
@@ -329,8 +331,24 @@ var startChuck = async function()
                 } );
             }
             // ================== Int[] =================== //
-            self.setIntArray = undefined;
-            self.getIntArray = undefined;
+            self.setIntArray = function( variable, values )
+            {
+                self.port.postMessage( {
+                    type: 'setGlobalIntArray',
+                    variable: variable,
+                    values: values
+                } );
+            }
+            self.getIntArray = function( variable )
+            {
+                var callbackID = self.nextDeferID();
+                self.port.postMessage( {
+                    type: 'getGlobalIntArray',
+                    variable: variable,
+                    callback: callbackID
+                } );
+                return self.deferredPromises[callbackID];
+            }
             self.setIntArrayValue = function( variable, index, value )
             {
                 self.port.postMessage( {
@@ -372,8 +390,24 @@ var startChuck = async function()
                 return self.deferredPromises[callbackID];
             }
             // ================== Float[] =================== //
-            self.setFloatArray = undefined;
-            self.getFloatArray = undefined;
+            self.setFloatArray = function( variable, values )
+            {
+                self.port.postMessage( {
+                    type: 'setGlobalFloatArray',
+                    variable: variable,
+                    values: values
+                } );
+            }
+            self.getFloatArray = function( variable )
+            {
+                var callbackID = self.nextDeferID();
+                self.port.postMessage( {
+                    type: 'getGlobalFloatArray',
+                    variable: variable,
+                    callback: callbackID
+                } );
+                return self.deferredPromises[callbackID];
+            };
             self.setFloatArrayValue = function( variable, index, value )
             {
                 self.port.postMessage( {
