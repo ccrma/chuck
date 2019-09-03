@@ -31,25 +31,25 @@ theChuckReady.then( function() {
         };
     })();
     
-    compileButton.addEventListener( "click", function() 
+    compileButton.addEventListener( "click", function chuckCompileButton() 
     {
         // send message to compile code 
-        theChuck.runChuckCode( chuckEditor.getValue() );
+        theChuck.runCode( chuckEditor.getValue() );
     });
     
-    replaceButton.addEventListener( "click", function()
+    replaceButton.addEventListener( "click", function chuckReplaceButton()
     {
         // send message to replace last shred with this code
-        theChuck.replaceChuckCode( chuckEditor.getValue() );
+        theChuck.replaceCode( chuckEditor.getValue() );
     });
     
-    removeButton.addEventListener( "click", function()
+    removeButton.addEventListener( "click", function chuckRemoveButton()
     {
         // send message to remove most recent shred
         theChuck.removeLastCode();
     });
     
-    clearButton.addEventListener( "click", function()
+    clearButton.addEventListener( "click", function chuckClearButton()
     {
         // send message to clear vm
         theChuck.clearChuckInstance();
