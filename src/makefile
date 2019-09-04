@@ -59,7 +59,7 @@ host_web/chuckscript/js/chuckscript.js: $(EMSCRIPTENSRCS)
         --pre-js host_web/webaudio_prejs.js \
         -s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"' \
         -s ALLOW_MEMORY_GROWTH=1 \
-        -s RESERVED_FUNCTION_POINTERS=50 --preload-file host_web/streamingAssets@/
+        -s RESERVED_FUNCTION_POINTERS=50 --embed-file host_web/streamingAssets@/
 
 
 
