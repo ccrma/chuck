@@ -608,10 +608,12 @@ public:
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
     
+    #ifndef __DISABLE_THREADS__
     // writing -- async
     static THREAD_RETURN ( THREAD_TYPE writeStr_thread ) ( void *data );
     static THREAD_RETURN ( THREAD_TYPE writeInt_thread ) ( void *data );
     static THREAD_RETURN ( THREAD_TYPE writeFloat_thread ) ( void *data );
+    #endif
     
 public:
     // constants

@@ -54,8 +54,13 @@ t_CKBOOL Chuck_VM_Object::our_locks_in_effect = TRUE;
 const t_CKINT Chuck_IO::INT32 = 0x1;
 const t_CKINT Chuck_IO::INT16 = 0x2;
 const t_CKINT Chuck_IO::INT8 = 0x4;
+#ifndef __DISABLE__THREADS
 const t_CKINT Chuck_IO::MODE_SYNC = 0;
 const t_CKINT Chuck_IO::MODE_ASYNC = 1;
+#else
+const t_CKINT Chuck_IO::MODE_SYNC = 1;
+const t_CKINT Chuck_IO::MODE_ASYNC = 0;
+#endif
 #ifndef __DISABLE_FILEIO__
 const t_CKINT Chuck_IO_File::FLAG_READ_WRITE = 0x8;
 const t_CKINT Chuck_IO_File::FLAG_READONLY = 0x10;
@@ -2360,7 +2365,9 @@ Chuck_IO_File::Chuck_IO_File( Chuck_VM * vm )
     m_dir_start = 0;
     m_asyncEvent = new Chuck_Event;
     initialize_object( m_asyncEvent, vm->env()->t_event );
+    #ifndef __DISABLE_THREADS__
     m_thread = new XThread;
+    #endif
 }
 
 
@@ -2375,7 +2382,9 @@ Chuck_IO_File::~Chuck_IO_File()
     // clean up
     this->close();
     delete m_asyncEvent;
+    #ifndef __DISABLE_THREADS__
     delete m_thread;
+    #endif
 }
 
 
@@ -3245,6 +3254,7 @@ void Chuck_IO_File::write( t_CKFLOAT val )
 
 
 
+#ifndef __DISABLE_THREADS__
 // static helper functions for writing asynchronously
 THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeStr_thread ) ( void *data )
 {
@@ -3279,6 +3289,7 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
 
     return (THREAD_RETURN)0;
 }
+#endif // __DISABLE_THREADS__
 #endif // __DISABLE_FILEIO__
 
 
