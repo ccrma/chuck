@@ -4,6 +4,11 @@ var replaceButton = document.getElementById( "replaceButton" );
 var removeButton = document.getElementById( "removeButton" );
 var clearButton = document.getElementById( "clearButton" );
 var micButton = document.getElementById( "micButton" );
+var fileFormButton = document.getElementById( "fileFormButton" );
+var fileForm = document.getElementById( "fileForm" );
+var uploadButton = document.getElementById( "fileButton" );
+var uploadFilename = document.getElementById( "uploadFilename" );
+var uploadFile = document.getElementById( "uploadFile" );
 var shredsTable = document.getElementById( "shredstable" );
 var shredsToRows = {}
 
@@ -59,7 +64,27 @@ var chuckMicButton = function()
 startButton.addEventListener( "click", function() {
     startButton.disabled = true;
     startChuck();
- });
+});
+
+(function() {
+    var showingFileForm = false;
+    fileFormButton.addEventListener( "click", function()
+    {
+        if( showingFileForm )
+        {
+            // hide file form
+            fileFormButton.innerHTML = "Show File Uploader";
+            fileForm.classList.add( "hidden" );
+        }
+        else
+        {
+            // show file form
+            fileFormButton.innerHTML = "Hide File Uploader";
+            fileForm.classList.remove( "hidden" );
+        }
+        showingFileForm = !showingFileForm;
+    });
+})();
 
 theChuckReady.then( function() {
     compileButton.disabled = false;
@@ -67,6 +92,7 @@ theChuckReady.then( function() {
     removeButton.disabled = false;
     clearButton.disabled = false;
     micButton.disabled = false;
+    uploadButton.disabled = false;
     
     chuckPrint = (function() {
         var element = document.getElementById('output');
@@ -90,6 +116,25 @@ theChuckReady.then( function() {
     removeButton.addEventListener( "click", chuckRemoveButton );
     clearButton.addEventListener( "click", chuckClearButton );
     micButton.addEventListener( "click", chuckMicButton );
+    uploadButton.addEventListener( "click", function() 
+    {
+        if (uploadFile.files.length == 0)
+        {
+            return;
+        }
+        var file = uploadFile.files[0];
+
+        var fr = new FileReader();
+        fr.onload = function () {
+            var data = new Uint8Array(fr.result);
+
+            theChuck.createFile( '', uploadFilename.value, data );
+
+            uploadFile.value = '';
+            uploadFilename.value = '';
+        };
+        fr.readAsArrayBuffer(file);
+    });
 });
 
 

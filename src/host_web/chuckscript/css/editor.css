@@ -46,3 +46,12 @@ th, td {
 .clearfix {
     clear: both;
 }
+
+
+#fileForm {
+    margin: 5px 15px;
+}
+
+.hidden {
+    display: none;
+}

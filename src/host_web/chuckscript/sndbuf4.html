@@ -8,27 +8,13 @@
   </head>
   <body onresize="chuckEditor.resize();">
 <div>
-    <div id="program">// Globals 2: getting global ints and floats and responding to global Events
-global Event metro;
-global int ticks;
-global float timeInSeconds;
-fun void RideTheMetro()
-{
-    while( true )
-    { 
-        0.348::second => now;
-        ticks++;
-        now / second => timeInSeconds;
-        metro.broadcast();
-    }
-}
-spork ~ RideTheMetro();
-
-while( true )
-{
-    1::second => now;
-} 
-
+    <div id="program">// SndBuf 4: user-uploaded files
+// Enable the file uploader, upload a file to the 
+// in-browser filesystem (disappears when the page
+// is reloaded), and go!
+SndBuf buf => dac;
+me.dir() + "myAudioFile.wav" => buf.read;
+buf.length() => now;
 </div>
 </div>
 <div>
@@ -65,26 +51,7 @@ while( true )
     <script type="text/javascript" src="./chuckscriptwebaudio.js"></script>
     <script type="text/javascript" src="./js/host.js"></script>
     <script>
-        theChuckReady.then( function() 
-        {
-            var listenToMetro = function() 
-            {
-                theChuck.getInt( "ticks" ).then( function( result ) {
-                    chuckPrint( "[javascript] number of metro ticks is ", result );
-                });
-                theChuck.getFloat( "timeInSeconds" ).then( function( result ) {
-                    chuckPrint( "[javascript] timeInSeconds is ", result );
-                }); 
-            }
-            
-            // compile it for this test without waiting for the user to click button
-            // just to make sure the global Event exists
-            theChuck.runCode( "global Event metro;" ).then( function( shred )
-            {
-                // so we can do this after
-                theChuck.startListeningForEvent( "metro", listenToMetro );
-            });
-        });
+        uploadFilename.value = "myAudioFile.wav";
     </script>
   </body>
 </html>
