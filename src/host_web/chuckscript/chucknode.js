@@ -306,6 +306,13 @@ ChucK().then( function( Module )
                 case 'removeShred':
                     this.handleRemoveShred( event.data.shred, event.data.callback );
                     break;
+                case 'isShredActive':
+                    this.port.postMessage({
+                        type: "intCallback",
+                        callback: event.data.callback,
+                        result: isShredActive( this.myID, event.data.shred )
+                    });
+                    break;
             // ================== Int, Float, String ============= //
                 case 'setChuckInt':
                     setChuckInt( this.myID, event.data.variable, event.data.value );
