@@ -529,9 +529,8 @@ ChucK().then( function( Module )
 
             let input = inputs[0];
             let output = outputs[0];
-            // don't think this will ever do anything but who knows
+            // recompute subarray views just in case memory has grown recently
             this._heapInputBuffer.adaptChannel( input.length );
-            this._heapOutputBuffer.adaptChannel( output.length );
     
             // copy input
             for (let channel = 0; channel < input.length; channel++)
@@ -556,6 +555,10 @@ ChucK().then( function( Module )
                 this.inChannels,  // in channels
                 this.outChannels  // out channels
             );
+            
+            // recompute subarray views just in case memory grew while we
+            // were calling chuck audio callback
+            this._heapOutputBuffer.adaptChannel( output.length );
             
             // copy output
             for (let channel = 0; channel < output.length; channel++) 
