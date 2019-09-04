@@ -3,6 +3,7 @@ var compileButton = document.getElementById( "compileButton" );
 var replaceButton = document.getElementById( "replaceButton" );
 var removeButton = document.getElementById( "removeButton" );
 var clearButton = document.getElementById( "clearButton" );
+var micButton = document.getElementById( "micButton" );
 var shredsTable = document.getElementById( "shredstable" );
 var shredsToRows = {}
 
@@ -44,6 +45,17 @@ var chuckClearButton = function()
     theChuck.clearGlobals();
 }
 
+var chuckMicButton = function()
+{
+    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+        .then( function( stream )
+    {
+        micButton.disabled = true;
+        const source = audioContext.createMediaStreamSource( stream );
+        source.connect( theChuck );
+    });
+}
+
 startButton.addEventListener( "click", function() {
     startButton.disabled = true;
     startChuck();
@@ -54,6 +66,7 @@ theChuckReady.then( function() {
     replaceButton.disabled = false;
     removeButton.disabled = false;
     clearButton.disabled = false;
+    micButton.disabled = false;
     
     chuckPrint = (function() {
         var element = document.getElementById('output');
@@ -76,6 +89,7 @@ theChuckReady.then( function() {
     replaceButton.addEventListener( "click", chuckReplaceButton );
     removeButton.addEventListener( "click", chuckRemoveButton );
     clearButton.addEventListener( "click", chuckClearButton );
+    micButton.addEventListener( "click", chuckMicButton );
 });
 
 
