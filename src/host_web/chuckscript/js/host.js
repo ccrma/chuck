@@ -215,3 +215,11 @@ function removeShredRow( theShred )
     shredsToRows[ theShred ].parentNode.removeChild( shredsToRows[ theShred ] );
     delete shredsToRows[ theShred ];
 }
+
+ChucK().then( function( Module )
+{
+    startButton.disabled = false;
+    theChuckModule = Module;
+    
+    // other setup here
+});

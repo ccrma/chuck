@@ -2,6 +2,7 @@ var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext = undefined;
 var theChuck = undefined;
 var theChuckReady = defer();
+var theChuckModule = undefined;
 
 var chuckPrint = function( text )
 {
@@ -36,7 +37,8 @@ var startChuck = async function( whereIsChuck )
             numberOfOutputs: outChannels,
             outputChannelCount: outputChannelCount,
             processorOptions: {
-                srate: audioContext.sampleRate
+                srate: audioContext.sampleRate,
+                Module: theChuckModule
             }
         } );
         
