@@ -4,16 +4,13 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>ChucK + JS => ChucKScript</title>
-    <link rel="stylesheet" href="./css/editor.css">
+    <link rel="stylesheet" href="../../css/editor.css">
   </head>
   <body onresize="chuckEditor.resize();">
 <div>
-    <div id="program">// SndBuf 4: user-uploaded files
-// Enable the file uploader, upload a file to the 
-// in-browser filesystem (disappears when the page
-// is reloaded), and go!
+    <div id="program">// SndBuf 1: special files
 SndBuf buf => dac;
-me.dir() + "myAudioFile.wav" => buf.read;
+"special:dope" => buf.read;
 buf.length() => now;
 </div>
 </div>
@@ -44,14 +41,14 @@ buf.length() => now;
     </div>
     <div class="clearfix"></div>
 </div>
-    <script src="./js/ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script type="text/javascript" src="./js/editor.js"></script>
-    <script type="text/javascript" src="./js/defer.js"></script>
-    <!--  TODO: things fail if this script is not in the same directory as the HTML    -->
-    <script type="text/javascript" src="./chuckscriptwebaudio.js"></script>
-    <script type="text/javascript" src="./js/host.js"></script>
+    <script type="text/javascript" src="../../js/ace-min-noconflict/ace.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../js/editor.js"></script>
+    <script type="text/javascript" src="../../js/defer.js"></script>
+    <script type="text/javascript" src="../../js/chuckscriptwebaudio.js"></script>
+    <script type="text/javascript" src="../../js/host.js"></script>
     <script>
-        uploadFilename.value = "myAudioFile.wav";
+        // override
+        whereIsChuck = "../../js";
     </script>
   </body>
 </html>

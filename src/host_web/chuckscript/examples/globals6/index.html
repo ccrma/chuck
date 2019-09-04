@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>ChucK + JS => ChucKScript</title>
-    <link rel="stylesheet" href="./css/editor.css">
+    <link rel="stylesheet" href="../../css/editor.css">
   </head>
   <body onresize="chuckEditor.resize();">
 <div>
@@ -72,13 +72,15 @@ while( true )
     </div>
     <div class="clearfix"></div>
 </div>
-    <script src="./js/ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script type="text/javascript" src="./js/editor.js"></script>
-    <script type="text/javascript" src="./js/defer.js"></script>
-    <!--  TODO: things fail if this script is not in the same directory as the HTML    -->
-    <script type="text/javascript" src="./chuckscriptwebaudio.js"></script>
-    <script type="text/javascript" src="./js/host.js"></script>
+    <script type="text/javascript" src="../../js/ace-min-noconflict/ace.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../js/editor.js"></script>
+    <script type="text/javascript" src="../../js/defer.js"></script>
+    <script type="text/javascript" src="../../js/chuckscriptwebaudio.js"></script>
+    <script type="text/javascript" src="../../js/host.js"></script>
     <script>
+        // override
+        whereIsChuck = "../../js";
+        
         theChuckReady.then( function() 
         {
             // compile it for this test without waiting for the user to click button

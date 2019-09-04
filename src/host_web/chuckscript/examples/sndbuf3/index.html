@@ -4,14 +4,26 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>ChucK + JS => ChucKScript</title>
-    <link rel="stylesheet" href="./css/editor.css">
+    <link rel="stylesheet" href="../../css/editor.css">
   </head>
   <body onresize="chuckEditor.resize();">
 <div>
-    <div id="program">// Mic 1: microphone input
-adc => Delay d => dac;
-3::second => d.max => d.delay;
-while( true ) { 1::second => now; }
+    <div id="program">// SndBuf 3: recording with WvOut then playing again
+SinOsc s => dac => WvOut w => blackhole;
+w.wavFilename( "newRecording.wav" );
+repeat( 100 )
+{
+    s.freq() * 1.01 => s.freq;
+    10::ms => now;
+}
+s =< dac;
+w.closeFile();
+
+SndBuf buf => dac;
+"newRecording.wav" => buf.read;
+-1 => buf.rate;
+1 => buf.loop;
+buf.length() => now;
 </div>
 </div>
 <div>
@@ -41,12 +53,15 @@ while( true ) { 1::second => now; }
     </div>
     <div class="clearfix"></div>
 </div>
-    <script src="./js/ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script type="text/javascript" src="./js/editor.js"></script>
-    <script type="text/javascript" src="./js/defer.js"></script>
-    <!--  TODO: things fail if this script is not in the same directory as the HTML    -->
-    <script type="text/javascript" src="./chuckscriptwebaudio.js"></script>
-    <script type="text/javascript" src="./js/host.js"></script>
+    <script type="text/javascript" src="../../js/ace-min-noconflict/ace.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../js/editor.js"></script>
+    <script type="text/javascript" src="../../js/defer.js"></script>
+    <script type="text/javascript" src="../../js/chuckscriptwebaudio.js"></script>
+    <script type="text/javascript" src="../../js/host.js"></script>
+    <script>
+        // override
+        whereIsChuck = "../../js";
+    </script>
   </body>
 </html>
 

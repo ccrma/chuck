@@ -11,6 +11,7 @@ var uploadFilename = document.getElementById( "uploadFilename" );
 var uploadFile = document.getElementById( "uploadFile" );
 var shredsTable = document.getElementById( "shredstable" );
 var shredsToRows = {}
+var whereIsChuck = "./js";
 
 // use named functions instead of anonymous ones
 // so they can be replaced later if desired
@@ -63,7 +64,7 @@ var chuckMicButton = function()
 
 startButton.addEventListener( "click", function() {
     startButton.disabled = true;
-    startChuck();
+    startChuck( whereIsChuck );
 });
 
 (function() {
