@@ -91,7 +91,7 @@ function addShredRow( theShred )
     
     cell0.innerHTML = "" + theShred;
     cell1.innerHTML = chuckEditor.getValue().substring(0, 30) + "...";
-    (function( cell )
+    (function( cell, myShred )
     {
         var getTime = function() { return Math.floor( Date.now() / 1000 ); }
         var formatTime = function(i) {
@@ -101,20 +101,35 @@ function addShredRow( theShred )
         }
         
         var startTime = getTime();
+        var removed = false;
         function updateTime()
         {
             var now = getTime();
             var elapsed = now - startTime;
             var m = Math.floor( elapsed / 60 );
             var s = Math.floor( elapsed % 60 );
-            if( document.contains( cell ) )
+            
+            // piggyback off time keeper to remove row
+            // if it stops running
+            theChuck.isShredActive( myShred ).then( function( result )
+            {
+                if( !result && !removed )
+                {
+                    removed = true;
+                    removeShredRow( myShred );
+                    return;
+                }
+            });
+            
+            // only keep updating time if row still exists
+            if( !removed && document.contains( cell ) )
             {
                 cell.innerHTML = formatTime(m) + ":" + formatTime(s);
                 setTimeout( updateTime, 1000 );
             }
         }
         updateTime();
-    })(cell2);
+    })( cell2, theShred );
     var removeButton = document.createElement("BUTTON");
     removeButton.innerHTML = "Remove"
     cell3.appendChild( removeButton );
@@ -132,7 +147,7 @@ function addShredRow( theShred )
 }
 
 function removeShredRow( theShred )
-{    
+{
     shredsToRows[ theShred ].parentNode.removeChild( shredsToRows[ theShred ] );
     delete shredsToRows[ theShred ];
 }

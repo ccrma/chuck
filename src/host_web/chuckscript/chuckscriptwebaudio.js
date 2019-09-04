@@ -274,6 +274,16 @@ var startChuck = async function()
                 } );
                 return self.deferredPromises[callbackID];
             }
+            self.isShredActive = function( shred )
+            {
+                var callbackID = self.nextDeferID();
+                self.port.postMessage( {
+                    type: "isShredActive",
+                    shred: shred,
+                    callback: callbackID
+                } );
+                return self.deferredPromises[callbackID];
+            }
             // ================== Int, Float, String ============= //
             self.setInt = function( variable, value )
             {
