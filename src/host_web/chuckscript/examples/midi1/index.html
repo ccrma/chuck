@@ -14,57 +14,76 @@
   <body onresize="chuckEditor.resize();">
 <div>
     <div id="program">// MIDI 1: Note on / off events
-global Event noteOn, noteOff;
-global int whichNote;
-global int velocity;
+global Event midiMessage;
+global int midiCommand;
+global int midiNote;
+global int midiVelocity;
 
 TriOsc t => ADSR adsr => dac;
 adsr.set( 0.1::second, 0.3::second, 0.5, 0.7::second );
 false => int alreadyOn;
 0 => int mostRecentOn;
 
-fun void RespondToNoteOn()
+fun void RespondToMidi()
 {
     while( true )
     {
-        noteOn => now;
-        <<< "on:", whichNote, velocity >>>;
-        whichNote => Std.mtof => float newFreq;
-        velocity * 1.0 / 127.0 => float newGain;
-        
-        if( !alreadyOn )
+        midiMessage => now;
+        if( midiCommand >= 144 && midiCommand < 160 )
         {
-            adsr.keyOn(1);
-            newFreq => t.freq;
-            newGain => adsr.gain;
-            whichNote => mostRecentOn;
-            true => alreadyOn;
+            if( midiVelocity > 0 )
+            {
+                NoteOn( midiNote, midiVelocity );
+            }
+            else
+            {
+                NoteOff( midiNote );
+            }
+        }
+        else if( midiCommand >= 128 && midiCommand < 144 )
+        {
+            NoteOff( midiNote );
         }
         else
         {
-            spork ~ SlideFreq( newFreq, 0.05::second );
-            spork ~ SlideGain( newGain, 0.05::second );
+            <<< "unknown midi command:", midiCommand, midiNote, midiVelocity >>>;
         }
     }
 }
-spork ~ RespondToNoteOn();
+spork ~ RespondToMidi();
 
-fun void RespondToNoteOff()
+fun void NoteOn( int note, int velocity )
 {
-    while( true )
+    <<< "on:", note, velocity >>>;
+    note => Std.mtof => float newFreq;
+    velocity * 1.0 / 127.0 => float newGain;
+    
+    if( !alreadyOn )
     {
-        noteOff => now;
-        <<< "off:", whichNote, velocity >>>;
-        
-        if( whichNote == mostRecentOn )
-        {
-            adsr.keyOff(1);
-            false => alreadyOn;
-            0 => mostRecentOn;
-        }
+        adsr.keyOn(1);
+        newFreq => t.freq;
+        newGain => adsr.gain;
+        note => mostRecentOn;
+        true => alreadyOn;
+    }
+    else
+    {
+        spork ~ SlideFreq( newFreq, 0.05::second );
+        spork ~ SlideGain( newGain, 0.05::second );
     }
 }
-spork ~ RespondToNoteOff();
+
+fun void NoteOff( int note )
+{
+    <<< "off:", note >>>;   
+    if( note == mostRecentOn )
+    {
+        adsr.keyOff(1);
+        false => alreadyOn;
+        0 => mostRecentOn;
+    }
+}
+
 
 fun void SlideFreq( float newFreq, dur slideTime )
 {
@@ -154,18 +173,13 @@ while( true )
         function connectToDevice(device) 
         {
             chuckPrint( 'Connecting to device:', device.name, "(" + device.manufacturer + ")" );
-            device.onmidimessage = function(m) {
+            device.onmidimessage = function(m) 
+            {
                 const [command, key, velocity] = m.data;
-                theChuck.setInt( "whichNote", key );
-                theChuck.setInt( "velocity", velocity );
-                if( command === 145 )
-                {
-                    theChuck.broadcastEvent( "noteOn" );                    
-                } 
-                else if( command === 129 )
-                {
-                    theChuck.broadcastEvent( "noteOff" );
-                }
+                theChuck.setInt( "midiCommand", command );
+                theChuck.setInt( "midiNote", key );
+                theChuck.setInt( "midiVelocity", velocity );
+                theChuck.broadcastEvent( "midiMessage" ); 
             }
         }
 

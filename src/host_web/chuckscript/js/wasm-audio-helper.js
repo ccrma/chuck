@@ -86,6 +86,17 @@ class HeapAudioBuffer {
     if (newChannelCount < this._maxChannelCount) {
       this._channelCount = newChannelCount;
     }
+    // reform subArrays just in case memory has grown since we last did this
+    const channelByteSize = this._length * BYTES_PER_SAMPLE;
+    for (let i = 0; i < this._channelCount; ++i) 
+    {
+      let startByteOffset = this._dataPtr + i * channelByteSize;
+      let endByteOffset = startByteOffset + channelByteSize;
+      // Get the actual array index by dividing the byte offset by 2 bytes.
+      this._channelData[i] =
+          this._module.HEAPF32.subarray(startByteOffset >> BYTES_PER_UNIT,
+                                        endByteOffset >> BYTES_PER_UNIT);
+    }
   }
 
   /**
@@ -128,35 +139,8 @@ class HeapAudioBuffer {
     if (channelIndex >= this._channelCount) {
       return null;
     }
-    
-    // when the heap can expand, this._channelData[channelIndex] becomes unusable
-    // --> get view into it EVERY time
-    const channelByteSize = this._length * BYTES_PER_SAMPLE;
-    if( typeof channelIndex === 'undefined' )
-    {
-        for (let i = 0; i < this._channelCount; ++i) {
-          let startByteOffset = this._dataPtr + i * channelByteSize;
-          let endByteOffset = startByteOffset + channelByteSize;
-          // Get the actual array index by dividing the byte offset by 2 bytes.
-          this._channelData[i] =
-              this._module.HEAPF32.subarray(startByteOffset >> BYTES_PER_UNIT,
-                                            endByteOffset >> BYTES_PER_UNIT);
-        }
-        return this._channelData;
-    }
-    else
-    {
-        let startByteOffset = this._dataPtr + channelIndex * channelByteSize;
-        let endByteOffset = startByteOffset + channelByteSize;
-        // Get the actual array index by dividing the byte offset by 2 bytes.
-        this._channelData[channelIndex] =
-            this._module.HEAPF32.subarray(startByteOffset >> BYTES_PER_UNIT,
-                                          endByteOffset >> BYTES_PER_UNIT);
-        return this._channelData[channelIndex]
-    }
-    // original:
-//     return typeof channelIndex === 'undefined'
-//         ? this._channelData : this._channelData[channelIndex];
+    return typeof channelIndex === 'undefined'
+        ? this._channelData : this._channelData[channelIndex];
   }
 
   /**

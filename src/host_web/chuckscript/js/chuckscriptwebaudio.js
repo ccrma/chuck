@@ -14,28 +14,17 @@ var startChuck = async function( whereIsChuck )
     if( audioContext === undefined )
     {
         audioContext = new AudioContext();
-        var inChannels = 2; // TODO: 1? 0?
-        var outChannels = 2; // TODO: 2?
-        // TODO: what is "outputChannelCount"? 
-        // TODO: how to get stereo audio? Even if I only fill the first channel of audio,
-        // it still fills both speakers equally.
-        // (I can tell by printing out the outputs object that ChucK is filling
-        //  the different channels correctly.)
-        // one channel used per output
-        // note: if this is [2,2] then it mixes down both channels to fill the
-        // left channel. so, I think [1,1] is correct. but I am still left
-        // wondering how to avoid this node getting mixed to mono before
-        // being played.
-        var outputChannelCount = (new Array( outChannels )).fill( 1 );
+
+        // important: "number of inputs / outputs" is like an aggregate source
+        // most of the time, you only want one input source and one output
+        // source, but each one has multiple channels
+        var numInOutChannels = 2;
         
-        
-        // TODO: for some reason, this fails if the HTML file is not in the same directory
-        // as this file.
         await audioContext.audioWorklet.addModule( whereIsChuck + '/chucknode.js');
         theChuck = new AudioWorkletNode( audioContext, 'chuck-node', { 
-            numberOfInputs: inChannels,
-            numberOfOutputs: outChannels,
-            outputChannelCount: outputChannelCount,
+            numberOfInputs: 1,
+            numberOfOutputs: 1,
+            outputChannelCount: [numInOutChannels],
             processorOptions: {
                 srate: audioContext.sampleRate,
                 Module: theChuckModule

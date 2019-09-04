@@ -159,18 +159,20 @@ var initGlobals = function( Module )
     setGlobalAssociativeFloatArrayValue = Module.cwrap( 'setGlobalAssociativeFloatArrayValue', 'number', ['number', 'string', 'string', 'number'] );
     getGlobalAssociativeFloatArrayValue = Module.cwrap( 'getGlobalAssociativeFloatArrayValue', 'number', ['number', 'string', 'string'] );
 
-
-
     // set data dir to "/" for embedded files
     setDataDir( "/" );
 }
-
 
 
 class ChuckNode extends AudioWorkletProcessor
 {
     constructor( options ) {
         super();
+            
+        this.srate = options.processorOptions.srate;
+        this.inChannels = options.outputChannelCount[0];
+        this.outChannels = options.outputChannelCount[0];
+        
         
         this.myID = currentChuckID;
         currentChuckID++;
@@ -178,13 +180,10 @@ class ChuckNode extends AudioWorkletProcessor
         // Allocate the buffer for the heap access. Start with stereo, but it can
         // be expanded up to 32 channels.
         this._heapInputBuffer = new HeapAudioBuffer(Module, RENDER_QUANTUM_FRAMES,
-                                                    options.numberOfInputs, MAX_CHANNEL_COUNT);
+                                                    this.inChannels, MAX_CHANNEL_COUNT);
         this._heapOutputBuffer = new HeapAudioBuffer(Module, RENDER_QUANTUM_FRAMES,
-                                                     options.numberOfOutputs, MAX_CHANNEL_COUNT);
+                                                     this.outChannels, MAX_CHANNEL_COUNT);
         
-        this.srate = options.processorOptions.srate;
-        this.inChannels = options.numberOfInputs;
-        this.outChannels = options.numberOfOutputs;
         initChuckInstance( this.myID, this.srate, this.inChannels, this.outChannels );
         // setLogLevel( 10 );
         
@@ -605,45 +604,52 @@ class ChuckNode extends AudioWorkletProcessor
         
     }
 
-    process(inputs, outputs, parameters) {
-        // structure for two-channel audio appears to be [[Float32Array],[Float32Array]]
-        // i.e. each channel is surrounded by an extraneous array            
-        
-        // Prepare HeapAudioBuffer for the channel count change in the current
-        // render quantum.
-        this._heapInputBuffer.adaptChannel( inputs.length );
-        this._heapOutputBuffer.adaptChannel( outputs.length );
+        process(inputs, outputs, parameters) {
+            // structure for two-channel audio is [[Float32Array,Float32Array]]
+            // since it's ONE output (outer array) with TWO channels (inner array of arrays)
+            
 
-        // Copy-in, process and copy-out.
-        for (let channel = 0; channel < inputs.length; channel++) 
-        {
-            // ignore empty arrays (which signals we have no input)
-            // (arguably if there is no input, the input array should be
-            //  an array of 0's but who am I to judge)
-            if( inputs[channel][0].length > 0 )
-            {
-                this._heapInputBuffer.getChannelData(channel).set(inputs[channel][0]);
-            }
-        }
+            let input = inputs[0];
+            let output = outputs[0];
+            // recompute subarray views just in case memory has grown recently
+            this._heapInputBuffer.adaptChannel( input.length );
     
-        // for multichannel, WebAudio uses planar buffers.
-        // this version of ChucK has been specially compiled to do the same
-        // (ordinarily, ChucK uses interleaved buffers since it processes
-        //  sample by sample)
-        this.Module._chuckManualAudioCallback( 
-            this.myID,  // chuck ID
-            this._heapInputBuffer.getHeapAddress(),
-            this._heapOutputBuffer.getHeapAddress(),
-            outputs[0][0].length, // frame size (probably 128)
-            this.inChannels,  // in channels
-            this.outChannels  // out channels
-        );
-                                 
-        for (let channel = 0; channel < outputs.length; channel++) {
-            outputs[channel][0].set(this._heapOutputBuffer.getChannelData(channel));
+            // copy input
+            for (let channel = 0; channel < input.length; channel++)
+            {
+                // ... but only if they actually gave us something
+                if( input[channel].length > 0 )
+                {
+                    this._heapInputBuffer.getChannelData(channel).set(input[channel]);
+                }
+            }
+            
+            // process
+            // for multichannel, WebAudio uses planar buffers.
+            // this version of ChucK has been specially compiled to do the same
+            // (ordinarily, ChucK uses interleaved buffers since it processes
+            //  sample by sample)
+            Module._chuckManualAudioCallback( 
+                this.myID,        // chuck ID
+                this._heapInputBuffer.getHeapAddress(),
+                this._heapOutputBuffer.getHeapAddress(),
+                output[0].length, // frame size (probably 128)
+                this.inChannels,  // in channels
+                this.outChannels  // out channels
+            );
+            
+            // recompute subarray views just in case memory grew while we
+            // were calling chuck audio callback
+            this._heapOutputBuffer.adaptChannel( output.length );
+            
+            // copy output
+            for (let channel = 0; channel < output.length; channel++) 
+            {
+                output[channel].set(this._heapOutputBuffer.getChannelData(channel));
+            }
+            
+            return true;
         }
-        
-        return true;
     }
 
 }
