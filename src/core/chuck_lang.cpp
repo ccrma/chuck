@@ -3158,6 +3158,7 @@ CK_DLL_MFUN( fileio_writestring )
     std::string val = GET_NEXT_STRING(ARGS)->str();
     
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    #ifndef __DISABLE_THREADS__
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -3183,6 +3184,9 @@ CK_DLL_MFUN( fileio_writestring )
     } else {
         f->write(val);
     }
+    #else
+    f->write( val );
+    #endif
 }
 
 CK_DLL_MFUN( fileio_writeint )
@@ -3190,6 +3194,7 @@ CK_DLL_MFUN( fileio_writeint )
     t_CKINT val = GET_NEXT_INT(ARGS);
     
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    #ifndef __DISABLE_THREADS__
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -3215,6 +3220,9 @@ CK_DLL_MFUN( fileio_writeint )
     } else {
         f->write(val);
     }
+    #else
+    f->write( val );
+    #endif
 }
 
 CK_DLL_MFUN( fileio_writeintflags )
@@ -3223,6 +3231,7 @@ CK_DLL_MFUN( fileio_writeintflags )
     t_CKINT flags = GET_NEXT_INT(ARGS);
     
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    #ifndef __DISABLE_THREADS__
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // TODO: pass flags in args
@@ -3249,6 +3258,9 @@ CK_DLL_MFUN( fileio_writeintflags )
     } else {
         f->write(val, flags);
     }
+    #else
+    f->write( val, flags );
+    #endif
 }
 
 CK_DLL_MFUN( fileio_writefloat )
@@ -3256,6 +3268,7 @@ CK_DLL_MFUN( fileio_writefloat )
     t_CKFLOAT val = GET_NEXT_FLOAT(ARGS);
     
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    #ifndef __DISABLE_THREADS__
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -3281,6 +3294,9 @@ CK_DLL_MFUN( fileio_writefloat )
     } else {
         f->write(val);
     }
+    #else
+    f->write( val );
+    #endif
 }
 #endif
 
