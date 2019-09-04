@@ -125,6 +125,10 @@ function addShredRow( theShred )
             
             // piggyback off time keeper to remove row
             // if it stops running
+            if( !( myShred in shredsToRows ) )
+            {
+                removed = true;
+            }
             theChuck.isShredActive( myShred ).then( function( result )
             {
                 if( !result && !removed )
