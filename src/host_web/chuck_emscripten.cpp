@@ -21,6 +21,16 @@ extern "C"
     std::map< unsigned int, ChucK * > chuck_instances;
     std::string chuck_global_data_dir;
 
+    void dummyFunction()
+    {
+        
+    }
+    
+    void EMSCRIPTEN_KEEPALIVE dummyCall()
+    {
+        // call dummy function so Browser is included
+        emscripten_async_call( (em_arg_callback_func) dummyFunction, NULL, 1000 );
+    }
 
 
     // C# "string" corresponds to passing char *
@@ -645,6 +655,8 @@ extern "C"
     
     bool EMSCRIPTEN_KEEPALIVE initChuckInstance( unsigned int chuckID, unsigned int sampleRate, unsigned int inChannels, unsigned int outChannels )
     {
+        
+        // proceed as normal
         if( chuck_instances.count( chuckID ) == 0 )
         {
             // if we aren't tracking a chuck vm on this ID, create a new one

@@ -2,6 +2,12 @@ import ChucK from './chuckscript.js';
 import { RENDER_QUANTUM_FRAMES, MAX_CHANNEL_COUNT, HeapAudioBuffer } from './wasm-audio-helper.js';
 var currentChuckID = 1;
 
+// ChucK.preRun = [function() 
+// {
+//     console.log( "pre run pre fun!" );
+//     FS.createPreloadedFile( "/", "aah.wav", "./aah.wav", true, true );
+// }];
+
 ChucK().then( function( Module ) 
 {
     // metaproperties (e.g. setDataDir must be called before init_chuck
@@ -88,6 +94,15 @@ ChucK().then( function( Module )
 
     // set data dir to "/" for embedded files
     setDataDir( "/" );
+
+    // mount file system
+    // TODO: try WORKERFS
+    // Not sure this is necessary; the docs say that MEMFS is already mounted at / at init
+    // Module.FS.mount( Module.MEMFS, {}, '/' );
+//     var newFile = Module.FS.open( '/aah.wav', 'w' );
+    //Module.FS.writeFile( '/aah.wav', data ); //data is string or ArrayBufferView
+    
+//     Module.FS.close( newFile );
 
     class ChuckNode extends AudioWorkletProcessor
     {
@@ -214,6 +229,11 @@ ChucK().then( function( Module )
         {
             switch( event.data.type )
             {
+            // ================== Filesystem ===================== //
+                case 'loadFile':
+                    Module.FS_createDataFile( '/' + event.data.directory, 
+                        event.data.filename, event.data.data, true, true, true );
+                    break;
             // ================== Run / Compile ================== //
                 case 'runChuckCode':
                     var shredID = runChuckCode( this.myID, event.data.code );

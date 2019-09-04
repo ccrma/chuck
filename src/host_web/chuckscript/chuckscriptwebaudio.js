@@ -124,6 +124,16 @@ var startChuck = async function()
                 self.deferredPromises[callbackID] = defer();
                 return callbackID;
             }
+            // ================== Filesystem ===================== //
+            self.createFile = function( directory, filename, data )
+            {
+                self.port.postMessage( {
+                    type: 'loadFile',
+                    directory: directory,
+                    filename: filename,
+                    data: data
+                } );
+            }
             // ================== Run / Compile ================== //
             self.runCode = function( code )
             {

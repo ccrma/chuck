@@ -28,6 +28,12 @@ windsOfChange.signal();
     <button id="removeButton" disabled="disabled">Remove</button>
     <button id="clearButton" disabled="disabled">Clear VM and Globals</button>
     <button id="micButton" disabled="disabled">Enable Microphone</button>
+    <button id="fileFormButton">Show File Uploader</button>
+</div>
+<div id="fileForm" class="hidden">
+    File name to use in ChucK: <input type="text" id="uploadFilename">
+    <input type="file" id="uploadFile" name="uploadFile">
+    <button id="fileButton" disabled="disabled">Upload File to Virtual File System</button>
 </div>
 <div>
     <textarea id="output"></textarea>

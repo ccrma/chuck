@@ -17,3 +17,8 @@ Module['printErr'] = function( text )
         Module['any_port'].postMessage( { type: "console print", message: text } );
     }
 }
+
+// Module['preRun'].push( function() {
+//     console.log( "pre run pre fun!" );
+//     FS.createPreloadedFile( "/", "aah.wav", "./aah.wav", true, true );
+// });
