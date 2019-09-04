@@ -8,7 +8,7 @@ var chuckPrint = function( text )
     // override me!
 }
 
-var startChuck = async function() 
+var startChuck = async function( whereIsChuck ) 
 {
     if( audioContext === undefined )
     {
@@ -30,7 +30,7 @@ var startChuck = async function()
         
         // TODO: for some reason, this fails if the HTML file is not in the same directory
         // as this file.
-        await audioContext.audioWorklet.addModule('./chucknode.js');
+        await audioContext.audioWorklet.addModule( whereIsChuck + '/chucknode.js');
         theChuck = new AudioWorkletNode( audioContext, 'chuck-node', { 
             numberOfInputs: inChannels,
             numberOfOutputs: outChannels,

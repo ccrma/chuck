@@ -74,10 +74,9 @@ mouseClicked => now;
     <script src="./js/ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" src="./js/editor.js"></script>
     <script type="text/javascript" src="./js/defer.js"></script>
-    <!--  TODO: things fail if this script is not in the same directory as the HTML    -->
-    <script type="text/javascript" src="./chuckscriptwebaudio.js"></script>
+    <script type="text/javascript" src="./js/chuckscriptwebaudio.js"></script>
     <script type="text/javascript" src="./js/host.js"></script>
-    <script>    
+    <script>
         theChuckReady.then( function() {
             if( window.Event ) { 
                 document.captureEvents( Event.MOUSEMOVE );

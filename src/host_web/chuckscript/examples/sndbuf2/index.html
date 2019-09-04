@@ -4,18 +4,14 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>ChucK + JS => ChucKScript</title>
-    <link rel="stylesheet" href="./css/editor.css">
+    <link rel="stylesheet" href="../../css/editor.css">
   </head>
   <body onresize="chuckEditor.resize();">
 <div>
-    <div id="program">// Globals 3: secret replacement dac
-// This dac is secretly an LPF
-SawOsc s => dac;
-while( true )
-{
-    Math.random2f( 30, 1000 ) => s.freq;
-    130::ms => now;
-}
+    <div id="program">// SndBuf 2: pre-compiled-in files
+SndBuf buf => dac;
+me.dir() + "aah5.wav" => buf.read;
+buf.length() => now;
 </div>
 </div>
 <div>
@@ -45,24 +41,14 @@ while( true )
     </div>
     <div class="clearfix"></div>
 </div>
-    <script src="./js/ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script type="text/javascript" src="./js/editor.js"></script>
-    <script type="text/javascript" src="./js/defer.js"></script>
-    <!--  TODO: things fail if this script is not in the same directory as the HTML    -->
-    <script type="text/javascript" src="./chuckscriptwebaudio.js"></script>
-    <script type="text/javascript" src="./js/host.js"></script>
+    <script type="text/javascript" src="../../js/ace-min-noconflict/ace.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../js/editor.js"></script>
+    <script type="text/javascript" src="../../js/defer.js"></script>
+    <script type="text/javascript" src="../../js/chuckscriptwebaudio.js"></script>
+    <script type="text/javascript" src="../../js/host.js"></script>
     <script>
-        theChuckReady.then( function() {
-            theChuck.runCode( "global LPF secretDac => dac; secretDac.freq( 700 );")
-            compileButton.removeEventListener( "click", chuckCompileButton );
-            compileButton.addEventListener( "click", function() {
-                theChuck.runCodeWithReplacementDac( chuckEditor.getValue(), "secretDac" );
-            });
-            replaceButton.removeEventListener( "click", chuckReplaceButton );
-            replaceButton.addEventListener( "click", function() {
-                theChuck.replaceCodeWithReplacementDac( chuckEditor.getValue(), "secretDac" );
-            });
-        });
+        // override
+        whereIsChuck = "../../js";
     </script>
   </body>
 </html>
