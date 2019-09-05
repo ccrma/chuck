@@ -57,7 +57,7 @@ host_web/chuckscript/js/chuckscript.js: $(EMSCRIPTENSRCS)
         $(EMSCRIPTENSRCS) -o host_web/chuckscript/js/chuckscript.js \
         -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8"]' \
         -s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"' \
-        -s EXPORT_ES6=1 -s BINARYEN_ASYNC_COMPILATION=0 -s SINGLE_FILE=1 \
+        -s EXPORT_ES6=1 -s SINGLE_FILE=1 \
         -s ALLOW_MEMORY_GROWTH=1 \
         -s RESERVED_FUNCTION_POINTERS=50 -s FORCE_FILESYSTEM=1
 
