@@ -12,6 +12,13 @@ var uploadFile = document.getElementById( "uploadFile" );
 var shredsTable = document.getElementById( "shredstable" );
 var shredsToRows = {}
 var whereIsChuck = "./js";
+var serverFilesToPreload = serverFilesToPreload || [];
+
+// preload files
+preloadFilenames( serverFilesToPreload ).then( function()
+{
+    startButton.disabled = false;
+});
 
 // use named functions instead of anonymous ones
 // so they can be replaced later if desired
@@ -62,9 +69,46 @@ var chuckMicButton = function()
     });
 }
 
+var chuckUploadButton = function()
+{
+    if (uploadFile.files.length == 0)
+    {
+        return;
+    }
+    var file = uploadFile.files[0];
+
+    var fr = new FileReader();
+    fr.onload = function () {
+        var data = new Uint8Array(fr.result);
+
+        theChuck.createFile( '', uploadFilename.value, data );
+
+        uploadFile.value = '';
+        uploadFilename.value = '';
+    };
+    fr.readAsArrayBuffer(file);
+}
+
 startButton.addEventListener( "click", function() {
     startButton.disabled = true;
     startChuck( whereIsChuck );
+});
+
+compileButton.addEventListener( "click", chuckCompileButton );
+replaceButton.addEventListener( "click", chuckReplaceButton );
+removeButton.addEventListener( "click", chuckRemoveButton );
+clearButton.addEventListener( "click", chuckClearButton );
+micButton.addEventListener( "click", chuckMicButton );
+uploadButton.addEventListener( "click", chuckUploadButton );
+
+theChuckInit.then( function() 
+{
+    compileButton.disabled = false;
+    replaceButton.disabled = false;
+    removeButton.disabled = false;
+    clearButton.disabled = false;
+    micButton.disabled = false;
+    uploadButton.disabled = false;
 });
 
 (function() {
@@ -87,57 +131,22 @@ startButton.addEventListener( "click", function() {
     });
 })();
 
-theChuckReady.then( function() {
-    compileButton.disabled = false;
-    replaceButton.disabled = false;
-    removeButton.disabled = false;
-    clearButton.disabled = false;
-    micButton.disabled = false;
-    uploadButton.disabled = false;
-    
-    chuckPrint = (function() {
-        var element = document.getElementById('output');
-        if (element) element.value = ''; // clear browser cache
-        return function(text) {
-            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-            // These replacements are necessary if you render to raw HTML
-            //text = text.replace(/&/g, "&amp;");
-            //text = text.replace(/</g, "&lt;");
-            //text = text.replace(/>/g, "&gt;");
-            //text = text.replace('\n', '<br>', 'g');
-            if (element) {
-                element.value += text + "\n";
-                element.scrollTop = element.scrollHeight; // focus on bottom
-            }
-        };
-    })();
-    
-    compileButton.addEventListener( "click", chuckCompileButton );
-    replaceButton.addEventListener( "click", chuckReplaceButton );
-    removeButton.addEventListener( "click", chuckRemoveButton );
-    clearButton.addEventListener( "click", chuckClearButton );
-    micButton.addEventListener( "click", chuckMicButton );
-    uploadButton.addEventListener( "click", function() 
-    {
-        if (uploadFile.files.length == 0)
-        {
-            return;
+chuckPrint = (function() {
+    var element = document.getElementById('output');
+    if (element) element.value = ''; // clear browser cache
+    return function(text) {
+        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+        // These replacements are necessary if you render to raw HTML
+        //text = text.replace(/&/g, "&amp;");
+        //text = text.replace(/</g, "&lt;");
+        //text = text.replace(/>/g, "&gt;");
+        //text = text.replace('\n', '<br>', 'g');
+        if (element) {
+            element.value += text + "\n";
+            element.scrollTop = element.scrollHeight; // focus on bottom
         }
-        var file = uploadFile.files[0];
-
-        var fr = new FileReader();
-        fr.onload = function () {
-            var data = new Uint8Array(fr.result);
-
-            theChuck.createFile( '', uploadFilename.value, data );
-
-            uploadFile.value = '';
-            uploadFilename.value = '';
-        };
-        fr.readAsArrayBuffer(file);
-    });
-});
-
+    };
+})();
 
 function addShredRow( theShred )
 {

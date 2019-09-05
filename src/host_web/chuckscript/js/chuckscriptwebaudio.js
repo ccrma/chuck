@@ -2,10 +2,75 @@ var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext = undefined;
 var theChuck = undefined;
 var theChuckReady = defer();
+var theChuckInit = defer();
+var filesToPreload = [];
 
 var chuckPrint = function( text )
 {
     // override me!
+}
+
+
+// START taken from emscripten source
+var readAsync = function( url, onload, onerror )
+{
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'arraybuffer';
+    xhr.onload = function xhr_onload() 
+    {
+        if (xhr.status == 200 || (xhr.status == 0 && xhr.response)) // file URLs can return 0
+        { 
+            onload(xhr.response);
+            return;
+        }
+        onerror();
+    };
+    xhr.onerror = onerror;
+    xhr.send(null);
+};
+
+var asyncLoadFile = function( url, onload, onerror ) 
+{
+    readAsync(url, function(arrayBuffer) {
+        onload(new Uint8Array(arrayBuffer));
+    }, function(event) {
+        if (onerror) {
+            onerror();
+        } else {
+            throw 'Loading data file "' + url + '" failed.';
+        }
+    });
+}
+// END taken from emscripten source
+
+var preloadFilenames = async function( filenamesToPreload )
+{
+    var promises = [];
+    for( var i = 0; i < filenamesToPreload.length; i++ )
+    {
+        (function( filenameToPreload )
+        {
+            promises.push( new Promise( function( resolve, reject )
+            {
+                asyncLoadFile( filenameToPreload.serverFilename, function( byteArray )
+                {
+                    filesToPreload.push({
+                        filename: filenameToPreload.virtualFilename,
+                        data: byteArray
+                    });
+                    resolve();
+                }, function()
+                {
+                    console.error( "Error fetching file:", filenameToPreload.serverFilename );
+                    //reject( e );
+                    resolve();
+                });
+            }) );
+        })( filenamesToPreload[i] );
+        
+    }
+    await Promise.all( promises );
 }
 
 var startChuck = async function( whereIsChuck ) 
@@ -29,6 +94,10 @@ var startChuck = async function( whereIsChuck )
             }
         } );
         
+        theChuck.port.postMessage( {
+            type: 'init',
+            preloadedFiles: filesToPreload
+        } );
         
         (function( self )
         {
@@ -41,6 +110,9 @@ var startChuck = async function( whereIsChuck )
             {
                 switch( event.data.type ) 
                 {
+                    case "initCallback":
+                        theChuckInit.resolve();
+                        break;
                     case "console print":
                         chuckPrint( event.data.message );
                         break;
