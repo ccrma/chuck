@@ -185,7 +185,9 @@ class ChuckNode extends AudioWorkletProcessor
                         }
                     })( this ),
                 // don't try to decode audio files; I'm really truly trying to copy the binaries only I promise
-                noAudioDecoding: true 
+                noAudioDecoding: true,
+                // don't try to decode images either, just so it will stop printing warnings it can't do it
+                noImageDecoding: true
             };
     
             PreModule[ "preRun" ] = [
