@@ -47,7 +47,8 @@ EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
 emscripten: host_web/chuckscript/js/chuckscript.js
 
 host_web/chuckscript/js/chuckscript.js: $(EMSCRIPTENSRCS)
-	emcc -Icore -D__DISABLE_MIDI__ -D__DISABLE_WATCHDOG__ \
+	emcc -O3 -s DISABLE_EXCEPTION_CATCHING=0 \
+        -Icore -D__DISABLE_MIDI__ -D__DISABLE_WATCHDOG__ \
         -D__DISABLE_KBHIT__ -D__DISABLE_PROMPTER__ -D__DISABLE_RTAUDIO__ \
         -D__DISABLE_OTF_SERVER__ -D__ALTER_HID__ -D__DISABLE_HID__ \
         -D__DISABLE_SERIAL__ -D__DISABLE_THREADS__ \
