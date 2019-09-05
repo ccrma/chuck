@@ -160,14 +160,16 @@ class ChuckNode extends AudioWorkletProcessor
         this.myActiveShreds = [];
         this.haveInit = false;
 
-        this.init( options.processorOptions.preloadedFiles );
+        this.init( options.processorOptions.preloadedFiles, 
+                   options.processorOptions.wasm );
     }
     
-    init( preloadedFiles )
+    init( preloadedFiles, wasm )
     {
         if( !globalInit )
         {
             var PreModule = {
+                wasmBinary: wasm,
                 print: (function( self ) 
                     {
                         return function( text )

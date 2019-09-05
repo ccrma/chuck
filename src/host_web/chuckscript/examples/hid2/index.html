@@ -130,12 +130,13 @@ fun void set( int base, float v0, float v1, float v2 )
     <script type="text/javascript" src="../../js/ace-min-noconflict/ace.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../js/editor.js"></script>
     <script type="text/javascript" src="../../js/defer.js"></script>
+    <script>
+        // override
+        var whereIsChuck = "../../js";
+    </script>
     <script type="text/javascript" src="../../js/chuckscriptwebaudio.js"></script>
     <script type="text/javascript" src="../../js/host.js"></script>
     <script>
-        // override
-        whereIsChuck = "../../js";
-        
         theChuckReady.then( function() 
         {
             var prevX, prevY;

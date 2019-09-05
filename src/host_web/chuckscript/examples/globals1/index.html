@@ -51,26 +51,27 @@ while( true )
     <script type="text/javascript" src="../../js/ace-min-noconflict/ace.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../js/editor.js"></script>
     <script type="text/javascript" src="../../js/defer.js"></script>
+    <script>
+        // override
+        var whereIsChuck = "../../js";
+    </script>
     <script type="text/javascript" src="../../js/chuckscriptwebaudio.js"></script>
     <script type="text/javascript" src="../../js/host.js"></script>
     <script>
-        // override
-        whereIsChuck = "../../js";
-        
-        theChuckReady.then( function() {
-            if( window.Event ) { document.captureEvents( Event.MOUSEMOVE ); }
-            document.onmousemove = function( e )
+        // once the chuck is initialized, start sending stuff to it!
+        theChuckReady.then( function() 
+        {
+            window.addEventListener( "mousemove", function( e )
             {
                 var x = (window.Event) ? e.pageX : event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
                 var y = (window.Event) ? e.pageY : event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
                 theChuck.setInt( "mouseX", x );
                 theChuck.setFloat( "mouseY", y );
-            }
-    
-            document.onclick = function( e )
+            });
+            window.addEventListener( "mousedown", function( e )
             {
                 theChuck.broadcastEvent( "mouseClicked" );
-            }
+            });
         });
     </script>
   </body>

@@ -44,8 +44,10 @@ buf.length() => now;
     <script type="text/javascript" src="../../js/ace-min-noconflict/ace.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../js/editor.js"></script>
     <script type="text/javascript" src="../../js/defer.js"></script>
-    <script type="text/javascript" src="../../js/chuckscriptwebaudio.js"></script>
     <script>
+        // override
+        var whereIsChuck = "../../js";
+        
         var serverFilesToPreload = [
             {
                 serverFilename: '../../wav/aah.wav',
@@ -53,11 +55,8 @@ buf.length() => now;
             }
         ];
     </script>
+    <script type="text/javascript" src="../../js/chuckscriptwebaudio.js"></script>
     <script type="text/javascript" src="../../js/host.js"></script>
-    <script>
-        // override
-        whereIsChuck = "../../js";
-    </script>
   </body>
 </html>
 
