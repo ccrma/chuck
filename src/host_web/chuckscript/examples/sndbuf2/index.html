@@ -8,9 +8,9 @@
   </head>
   <body onresize="chuckEditor.resize();">
 <div>
-    <div id="program">// SndBuf 2: pre-compiled-in files
+    <div id="program">// SndBuf 2: files fetched on page load
 SndBuf buf => dac;
-me.dir() + "aah5.wav" => buf.read;
+me.dir() + "aah.wav" => buf.read;
 buf.length() => now;
 </div>
 </div>
@@ -45,6 +45,14 @@ buf.length() => now;
     <script type="text/javascript" src="../../js/editor.js"></script>
     <script type="text/javascript" src="../../js/defer.js"></script>
     <script type="text/javascript" src="../../js/chuckscriptwebaudio.js"></script>
+    <script>
+        var serverFilesToPreload = [
+            {
+                serverFilename: '../../wav/aah.wav',
+                virtualFilename: 'aah.wav'
+            }
+        ];
+    </script>
     <script type="text/javascript" src="../../js/host.js"></script>
     <script>
         // override
