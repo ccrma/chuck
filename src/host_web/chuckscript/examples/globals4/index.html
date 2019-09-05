@@ -51,12 +51,13 @@ windsOfChange.signal();
     <script type="text/javascript" src="../../js/ace-min-noconflict/ace.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../js/editor.js"></script>
     <script type="text/javascript" src="../../js/defer.js"></script>
+    <script>
+        // override
+        var whereIsChuck = "../../js";
+    </script>
     <script type="text/javascript" src="../../js/chuckscriptwebaudio.js"></script>
     <script type="text/javascript" src="../../js/host.js"></script>
     <script>
-        // override
-        whereIsChuck = "../../js";
-        
         theChuckReady.then( function() {
             // compile it for this test without waiting for the user to click button
             // just to make sure the global Event exists

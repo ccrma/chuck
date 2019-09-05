@@ -1,9 +1,10 @@
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext = undefined;
 var theChuck = undefined;
+var theChuckAlmostReady = defer();
 var theChuckReady = defer();
-var theChuckInit = defer();
 var filesToPreload = [];
+var whereIsChuck = whereIsChuck || "./js";
 
 var chuckPrint = function( text )
 {
@@ -44,6 +45,11 @@ var asyncLoadFile = function( url, onload, onerror )
 }
 // END taken from emscripten source
 
+var loadWasm = new Promise( function( resolve, reject )
+{
+    asyncLoadFile( whereIsChuck + '/chuckscript.wasm', resolve, reject ); 
+});
+
 var preloadFilenames = async function( filenamesToPreload )
 {
     var promises = [];
@@ -73,7 +79,7 @@ var preloadFilenames = async function( filenamesToPreload )
     await Promise.all( promises );
 }
 
-var startChuck = async function( whereIsChuck ) 
+var startChuck = async function() 
 {
     if( audioContext === undefined )
     {
@@ -84,6 +90,7 @@ var startChuck = async function( whereIsChuck )
         // source, but each one has multiple channels
         var numInOutChannels = 2;
         
+        var theWasm = await loadWasm;
         await audioContext.audioWorklet.addModule( whereIsChuck + '/chucknode.js');
         theChuck = new AudioWorkletNode( audioContext, 'chuck-node', { 
             numberOfInputs: 1,
@@ -91,7 +98,8 @@ var startChuck = async function( whereIsChuck )
             outputChannelCount: [numInOutChannels],
             processorOptions: {
                 srate: audioContext.sampleRate,
-                preloadedFiles: filesToPreload
+                preloadedFiles: filesToPreload,
+                wasm: theWasm
             }
         } );
         
@@ -107,7 +115,7 @@ var startChuck = async function( whereIsChuck )
                 switch( event.data.type ) 
                 {
                     case "initCallback":
-                        theChuckInit.resolve();
+                        theChuckReady.resolve();
                         break;
                     case "console print":
                         chuckPrint( event.data.message );
@@ -575,6 +583,6 @@ var startChuck = async function( whereIsChuck )
         })( theChuck );
         
         theChuck.connect( audioContext.destination );
-        theChuckReady.resolve();
+        theChuckAlmostReady.resolve();
     }
 };

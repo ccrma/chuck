@@ -11,7 +11,6 @@ var uploadFilename = document.getElementById( "uploadFilename" );
 var uploadFile = document.getElementById( "uploadFile" );
 var shredsTable = document.getElementById( "shredstable" );
 var shredsToRows = {}
-var whereIsChuck = "./js";
 var serverFilesToPreload = serverFilesToPreload || [];
 
 // preload files
@@ -91,7 +90,7 @@ var chuckUploadButton = function()
 
 startButton.addEventListener( "click", function() {
     startButton.disabled = true;
-    startChuck( whereIsChuck );
+    startChuck();
 });
 
 compileButton.addEventListener( "click", chuckCompileButton );
@@ -101,7 +100,7 @@ clearButton.addEventListener( "click", chuckClearButton );
 micButton.addEventListener( "click", chuckMicButton );
 uploadButton.addEventListener( "click", chuckUploadButton );
 
-theChuckInit.then( function() 
+theChuckReady.then( function() 
 {
     compileButton.disabled = false;
     replaceButton.disabled = false;

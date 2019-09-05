@@ -74,8 +74,12 @@ mouseClicked => now;
     <script src="./js/ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" src="./js/editor.js"></script>
     <script type="text/javascript" src="./js/defer.js"></script>
-    <script type="text/javascript" src="./js/chuckscriptwebaudio.js"></script>
     <script>
+        // no need to override this, but this is how you would do it:
+        // the path from the HTML file to chuckscript.[js,wasm]
+        var whereIsChuck = "./js";
+        
+        // files we want to load into our virtual filesystem
         var serverFilesToPreload = [
             {
                 serverFilename: './wav/aah.wav',
@@ -83,6 +87,7 @@ mouseClicked => now;
             }
         ];
     </script>
+    <script type="text/javascript" src="./js/chuckscriptwebaudio.js"></script>
     <script type="text/javascript" src="./js/host.js"></script>
     <script>
         theChuckReady.then( function() {
