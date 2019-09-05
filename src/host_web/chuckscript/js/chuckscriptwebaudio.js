@@ -90,13 +90,9 @@ var startChuck = async function( whereIsChuck )
             numberOfOutputs: 1,
             outputChannelCount: [numInOutChannels],
             processorOptions: {
-                srate: audioContext.sampleRate
+                srate: audioContext.sampleRate,
+                preloadedFiles: filesToPreload
             }
-        } );
-        
-        theChuck.port.postMessage( {
-            type: 'init',
-            preloadedFiles: filesToPreload
         } );
         
         (function( self )

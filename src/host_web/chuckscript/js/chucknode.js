@@ -159,6 +159,8 @@ class ChuckNode extends AudioWorkletProcessor
         this.myPointers = {}
         this.myActiveShreds = [];
         this.haveInit = false;
+
+        this.init( options.processorOptions.preloadedFiles );
     }
     
     init( preloadedFiles )
@@ -319,10 +321,6 @@ class ChuckNode extends AudioWorkletProcessor
     {
         switch( event.data.type )
         {
-        // ==================    Init    ===================== //
-            case 'init':
-                this.init( event.data.preloadedFiles );
-                break;
         // ================== Filesystem ===================== //
             case 'loadFile':
                 this.Module.FS_createDataFile( '/' + event.data.directory, 
