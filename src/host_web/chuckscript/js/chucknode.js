@@ -1,8 +1,8 @@
 import ChucK from './chuckscript.js';
 import { RENDER_QUANTUM_FRAMES, MAX_CHANNEL_COUNT, HeapAudioBuffer } from './wasm-audio-helper.js';
-var currentChuckID = 1;
 var globalInit = false;
 var globalPromise = undefined;
+var chucks = {};
 
 var setDataDir, setLogLevel, initChuckInstance,
 
@@ -149,9 +149,9 @@ class ChuckNode extends AudioWorkletProcessor
         this.inChannels = options.outputChannelCount[0];
         this.outChannels = options.outputChannelCount[0];
         
+        this.myID = options.processorOptions.chuckID;
         
-        this.myID = currentChuckID;
-        currentChuckID++;
+        chucks[this.myID] = this;
         
         // do this in response to an incoming message
         this.port.onmessage = this.handle_message.bind(this);
@@ -682,5 +682,92 @@ class ChuckNode extends AudioWorkletProcessor
 
 }
 
+class ChuckSubNode extends AudioWorkletProcessor
+{
+    constructor( options ) 
+    {
+        super();
+        
+        this.inChannels = 0;
+        // SHOULD BE 1
+        this.outChannels = options.outputChannelCount[0];
+        
+        
+        this.myID = options.processorOptions.chuckID;
+        this.myDac = options.processorOptions.dac;
+        
+        // do this in response to an incoming message
+        this.port.onmessage = this.handle_message.bind(this);
+        
+        console.assert( globalInit && this.myID in chucks, "ChuckSubNode can't find its ChuckNode with ID " + this.myID );
+        this.myChuck = chucks[ this.myID ];
+
+        this.haveInit = false;
+        this.init();
+    }
+    
+    init()
+    {
+        globalPromise.then( (function( self )
+        {
+            return function( Module ) 
+            {
+                self.Module = Module;
+
+                // Allocate the buffer for the heap access. Start with however many channels we have
+                // (should be 1)
+                self._heapOutputBuffer = new HeapAudioBuffer(Module, RENDER_QUANTUM_FRAMES,
+                    self.outChannels, MAX_CHANNEL_COUNT);
+                
+                var stringBytes = self.myDac.length << 2 + 1;
+                self.myDacCString = self.Module._malloc( stringBytes );
+                self.Module.stringToUTF8( self.myDac, self.myDacCString, stringBytes );
+
+                self.haveInit = true;
+                
+                self.port.postMessage( { type: 'initCallback' } );
+            }
+        })( this ) );   
+    }
+
+    handle_message( event )
+    {
+        switch( event.data.type )
+        {
+            default:
+                break;
+        }
+        
+    }
+
+    process( inputs, outputs, parameters ) 
+    {
+        if( !this.haveInit ) { return true; }
+
+        let output = outputs[0];
+        
+        // fetch
+        this.Module._getGlobalUGenSamples(
+            this.myID,
+            this.myDacCString,
+            this._heapOutputBuffer.getHeapAddress(),
+            output[0].length // frame size (probably 128)
+        );
+        
+        // recompute subarray views just in case memory grew recently
+        this._heapOutputBuffer.adaptChannel( output.length );
+        
+        // copy output
+        for (let channel = 0; channel < output.length; channel++) 
+        {
+            output[channel].set(this._heapOutputBuffer.getChannelData(channel));
+        }
+        
+        return true;
+    }
+
+}
+
 registerProcessor( 'chuck-node', ChuckNode );
+registerProcessor( 'chuck-sub-node', ChuckSubNode );
 
