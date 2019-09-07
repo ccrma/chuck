@@ -220,6 +220,9 @@ function addShredRow( theShred )
 
 function removeShredRow( theShred )
 {
-    shredsToRows[ theShred ].parentNode.removeChild( shredsToRows[ theShred ] );
-    delete shredsToRows[ theShred ];
+    if( theShred in shredsToRows )
+    {
+        shredsToRows[ theShred ].parentNode.removeChild( shredsToRows[ theShred ] );
+        delete shredsToRows[ theShred ];
+    }
 }
