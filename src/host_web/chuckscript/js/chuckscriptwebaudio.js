@@ -6,7 +6,6 @@ var theChuckReady = defer();
 var filesToPreload = [];
 var whereIsChuck = whereIsChuck || "./js";
 var currentChuckID = 1;
-var chucks = {};
 
 var chuckPrint = function( text )
 {
@@ -118,7 +117,7 @@ var createAChuck = async function( chuckID )
         }
     } );
     
-    chucks[ chuckID ] = aChuck;
+    aChuck.chuckID = chuckID;
     
     (function( self )
     {
@@ -605,23 +604,22 @@ var createAChuck = async function( chuckID )
     return aChuck;
 }
 
-var createASubChuck = function( chuckID, dacName, initPromise )
+var createASubChuck = function( chuck, dacName, initPromise )
 {
-    console.assert( chuckID in chucks, "ChuckSubNode can't find its ChuckNode with ID " + chuckID );
     var aSubChuck = new AudioWorkletNode( audioContext, 'chuck-sub-node',
     { 
         numberOfInputs: 1,
         numberOfOutputs: 1,
         outputChannelCount: [1],
         processorOptions: {
-            chuckID: chuckID,
+            chuckID: chuck.chuckID,
             dac: dacName
         }
     } );
     
     (function( self )
     {
-        self.myChuck = chucks[ chuckID ];
+        self.myChuck = chuck;
         self.dac = dacName;
         self.amReady = initPromise;
         
