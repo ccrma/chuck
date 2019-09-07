@@ -56,20 +56,23 @@ while( true )
     <script type="text/javascript" src="../../js/chuckscriptwebaudio.js"></script>
     <script type="text/javascript" src="../../js/host.js"></script>
     <script>
-        theChuckReady.then( async function() {
+        theChuckReady.then( async function() 
+        {
             // remove compile handlers
             compileButton.removeEventListener( "click", chuckCompileButton );
             replaceButton.removeEventListener( "click", chuckReplaceButton );
-            
-            // create the secret dac
-            await theChuck.runCode( "global LPF secretDac => blackhole; secretDac.freq( 700 );" );
-            
+            compileButton.disabled = replaceButton.disabled = true;
+                        
+            // create the secret dac.
+            // IMPORTANT: set buffered to true so we can fetch its samples.
+            await theChuck.runCode( "global LPF secretDac => blackhole; true => secretDac.buffered; secretDac.freq( 700 );" );
+
             // create a subinstance based on the secret dac
-            theSubChuckReady = defer();
-            theSubChuck = createASubChuck( 1, "secretDac", theSubChuckReady );
+            var theSubChuckReady = defer();
+            var theSubChuck = createASubChuck( theChuck, "secretDac", theSubChuckReady );
             theSubChuck.connect( audioContext.destination );
             await theSubChuckReady;
-        
+                    
             // reenable buttons, but with theSubChuck instead of theChuck
             compileButton.addEventListener( "click", function() {
                 theSubChuck.runCode( chuckEditor.getValue() );
@@ -78,6 +81,8 @@ while( true )
             replaceButton.addEventListener( "click", function() {
                 theSubChuck.replaceCode( chuckEditor.getValue() );
             });
+            compileButton.disabled = replaceButton.disabled = false;
+            
         });
     </script>
   </body>
