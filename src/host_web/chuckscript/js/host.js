@@ -14,10 +14,7 @@ var shredsToRows = {}
 var serverFilesToPreload = serverFilesToPreload || [];
 
 // preload files
-preloadFilenames( serverFilesToPreload ).then( function()
-{
-    startButton.disabled = false;
-});
+var preloadedFilesReady = preloadFilenames( serverFilesToPreload );
 
 // use named functions instead of anonymous ones
 // so they can be replaced later if desired
@@ -88,10 +85,12 @@ var chuckUploadButton = function()
     fr.readAsArrayBuffer(file);
 }
 
-startButton.addEventListener( "click", function() {
-    startButton.disabled = true;
-    startChuck();
+startButton.addEventListener( "click", async function() {
+    await preloadedFilesReady;
+    await startChuck();
 });
+// don't actually disable startButton
+startButton.disabled = false;
 
 compileButton.addEventListener( "click", chuckCompileButton );
 replaceButton.addEventListener( "click", chuckReplaceButton );
