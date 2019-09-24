@@ -55,10 +55,10 @@
 #endif
 
 #else
-#define t_CKTIME                    float
-#define t_CKDUR                     float
-#define t_CKFLOAT                   float
-#define t_CKDOUBLE                  float
+#define t_CKTIME                    double
+#define t_CKDUR                     double
+#define t_CKFLOAT                   double
+#define t_CKDOUBLE                  double
 #define t_CKSINGLE                  float
 #define t_CKINT                     int // REFACTOR-2017
 #define CK_FLT_MAX                  FLT_MAX

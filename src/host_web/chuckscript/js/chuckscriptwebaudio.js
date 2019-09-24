@@ -84,7 +84,9 @@ var theWasm;
 var startAudioContext = async function()
 {
     theWasm = await loadWasm;
-    audioContext = new AudioContext();
+    audioContext = new AudioContext({
+        //sampleRate: 48000
+    });
     await audioContext.audioWorklet.addModule( whereIsChuck + '/chucknode.js');
 }
 
@@ -131,6 +133,12 @@ var createAChuck = function( chuckID, initPromise )
         self.eventCallbackCounter = 0;
         self.deferredPromiseCounter = 0;
         self.amReady = initPromise;
+        
+        self.onprocessorerror = function( e )
+        {
+            console.log( e );
+        }
+        
         // respond to messages
         self.port.onmessage = function( event )
         {
