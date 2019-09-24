@@ -560,11 +560,11 @@ class ChuckNode extends AudioWorkletProcessor
                 break;
         // ================== Float[] =================== //
             case 'setGlobalFloatArray':
-                // convert to Float32Array
-                var values = new Float32Array( event.data.values );
+                // convert to Float64Array
+                var values = new Float64Array( event.data.values );
                 // put onto heap
                 var valuesPtr = this.Module._malloc( values.length * values.BYTES_PER_ELEMENT );
-                var heapview = this.Module.HEAPF32.subarray( (valuesPtr >> 2), (valuesPtr >> 2) + values.length );
+                var heapview = this.Module.HEAPF64.subarray( (valuesPtr >> 3), (valuesPtr >> 3) + values.length );
                 heapview.set( values );
                 
                 // put variable name on heap as well
@@ -584,11 +584,11 @@ class ChuckNode extends AudioWorkletProcessor
                 {
                     var pointer = Module.addFunction( (function(thePort, theCallback)
                     {   
-                        return function( float32_ptr, len )
+                        return function( float64_ptr, len )
                         {
-                            var result = new Float32Array(
+                            var result = new Float64Array(
                                 Module.HEAPU8.buffer,
-                                float32_ptr,
+                                float64_ptr,
                                 len
                             );
                             thePort.postMessage( { 
