@@ -86,6 +86,7 @@ var chuckUploadButton = function()
 }
 
 startButton.addEventListener( "click", async function() {
+    startButton.disabled = true;
     await preloadedFilesReady;
     await startChuck();
 });
