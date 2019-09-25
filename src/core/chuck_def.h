@@ -61,8 +61,8 @@
 #define t_CKDOUBLE                  double
 #define t_CKSINGLE                  float
 #define t_CKINT                     int // REFACTOR-2017
-#define CK_FLT_MAX                  FLT_MAX
-#define CK_FLT_MIN                  FLT_MIN
+#define CK_FLT_MAX                  DBL_MAX
+#define CK_FLT_MIN                  DBL_MIN
 #define CK_INT_MAX                  INT_MAX
 #endif
 
