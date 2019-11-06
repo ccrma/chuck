@@ -41,6 +41,7 @@
 #include "chuck_vm.h"
 #include "chuck_compile.h"
 #include "chuck_lang.h"
+#include "chuck_io.h"
 #include "chuck_carrier.h"
 #include <stdlib.h>
 #include <string.h>

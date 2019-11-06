@@ -36,6 +36,7 @@
 #include "chuck_vm.h"
 #include "chuck_errmsg.h"
 #include "chuck_lang.h"
+#include "chuck_io.h"
 #include "util_string.h"
 #include "ugen_xxx.h"
 
