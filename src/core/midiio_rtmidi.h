@@ -168,6 +168,12 @@ void probeMidiIn();
 void probeMidiOut();
 
 
+
+
+//-----------------------------------------------------------------------------
+// name: class MidiInManager
+// desc: singleton manager
+//-----------------------------------------------------------------------------
 class MidiInManager
 {
 public:
@@ -190,6 +196,12 @@ public:
 };
 
 
+
+
+//-----------------------------------------------------------------------------
+// name: class MidiOutManager
+// desc: singleton manager
+//-----------------------------------------------------------------------------
 class MidiOutManager
 {
 public:
@@ -203,6 +215,8 @@ protected:
 
     static std::vector<RtMidiOut *> the_mouts;
 };
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -231,6 +245,8 @@ protected:
 t_CKBOOL midirw_detach( );
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: class MidiMsgOut
 // desc: reads midi messages from file
@@ -251,6 +267,8 @@ public:
 protected:
     FILE * file;
 };
+
+
 
 
 //-----------------------------------------------------------------------------
