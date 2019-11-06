@@ -81,8 +81,10 @@ t_CKBOOL ChuckAudio::m_init = FALSE;
 t_CKBOOL ChuckAudio::m_start = FALSE;
 t_CKBOOL ChuckAudio::m_go = FALSE;
 t_CKBOOL ChuckAudio::m_silent = FALSE;
+t_CKBOOL ChuckAudio::m_expand_in_mono2stereo= FALSE;
 t_CKUINT ChuckAudio::m_num_channels_out = NUM_CHANNELS_DEFAULT;
 t_CKUINT ChuckAudio::m_num_channels_in = NUM_CHANNELS_DEFAULT;
+t_CKUINT ChuckAudio::m_num_channels_max = NUM_CHANNELS_DEFAULT;
 t_CKUINT ChuckAudio::m_sample_rate = SAMPLE_RATE_DEFAULT;
 t_CKUINT ChuckAudio::m_buffer_size = BUFFER_SIZE_DEFAULT;
 t_CKUINT ChuckAudio::m_num_buffers = NUM_BUFFERS_DEFAULT;
@@ -465,8 +467,6 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
     // remember user data to pass to callback
     m_cb_user_data = data;
 
-    // # of channels
-    t_CKUINT num_channels = 0;
     // variable to pass by reference into RtAudio
     unsigned int bufsize = m_buffer_size;
 
@@ -604,8 +604,10 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
     // convert 1-based ordinal to 0-based ordinal
     if( m_num_channels_in > 0 )
     {
+        // if we are requesting the default input device
         if( m_adc_n == 0 )
         {
+            // get default input device
             m_adc_n = m_rtaudio->getDefaultInputDevice();
             
             // ensure correct channel count if default device is requested
@@ -617,13 +619,63 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
                 // find first device with at least the requested channel count
                 m_adc_n = -1;
                 int num_devices = m_rtaudio->getDeviceCount();
-                for(int i = 0; i < num_devices; i++)
+                for( int i = 0; i < num_devices; i++ )
                 {
                     device_info = m_rtaudio->getDeviceInfo(i);
-                    if(device_info.inputChannels >= m_num_channels_in)
+                    if( device_info.inputChannels >= m_num_channels_in )
                     {
-                        m_adc_n = i;
-                        break;
+                        // added 1.4.0.1 -- check if the sample rate is supported
+                        // this is to catch the case where the default device has
+                        // insufficient channels (e.g., 1 on MacOS), finds secondary device
+                        // (e.g., ZoomAudioDevice on MacOS) that has enough channels
+                        // but does not support the desired sample rate
+                        bool isMatch = false;
+                        for( long j = 0; j < device_info.sampleRates.size(); j++ )
+                        {
+                            if( device_info.sampleRates[j] == m_sample_rate )
+                            {
+                                // flag
+                                isMatch = true;
+                                // break out sample rate loop
+                                break;
+                            }
+                        }
+                        
+                        // match? (does this separately to break out of outer loop)
+                        if( isMatch )
+                        {
+                            // new input device
+                            m_adc_n = i;
+                            // log
+                            EM_log( CK_LOG_INFO, "found alternate input device: %d...", i );
+                            // break out of device loop
+                            break;
+                        }
+                    }
+                }
+                
+                // added 1.4.0.1 (ge) -- special case if no other matching device found...
+                // for systems that have default mono audio device e.g., some MacOS systems
+                if( m_adc_n == -1 )
+                {
+                    // get default input device
+                    m_adc_n = m_rtaudio->getDefaultInputDevice();
+                    // get device info
+                    device_info = m_rtaudio->getDeviceInfo(m_adc_n);
+
+                    // special case
+                    if( m_num_channels_in == 2 && device_info.inputChannels == 1 )
+                    {
+                        // flag this for expansion in the callback
+                        m_expand_in_mono2stereo = TRUE;
+                        // log
+                        EM_log( CK_LOG_INFO, "no matching stereo input device found..." );
+                        EM_log( CK_LOG_INFO, "simulating stereo input from mono audio device..." );
+                    }
+                    else
+                    {
+                        // okay, let's not impose any further; fall through to subseqent logic
+                        m_adc_n = -1;
                     }
                 }
 
@@ -641,6 +693,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
         }
         else
         {
+            // offset to 0-index device number
             m_adc_n -= 1;
         }
     }
@@ -658,7 +711,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
         
         RtAudio::StreamParameters input_parameters;
         input_parameters.deviceId = m_adc_n;
-        input_parameters.nChannels = m_num_channels_in;
+        input_parameters.nChannels = m_expand_in_mono2stereo ? 1 : m_num_channels_in;
         input_parameters.firstChannel = 0;
         
         RtAudio::StreamOptions stream_options;
@@ -693,17 +746,17 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
     EM_poplog();
 
     // greater of dac/adc channels
-    num_channels = num_dac_channels > num_adc_channels ?
-                   num_dac_channels : num_adc_channels;
+    m_num_channels_max = num_dac_channels > num_adc_channels ?
+                         num_dac_channels : num_adc_channels;
     // log
     EM_log( CK_LOG_SEVERE, "allocating buffers for %d x %d samples...",
-            m_buffer_size, num_channels );
+            m_buffer_size, m_num_channels_max );
 
     // allocate buffers
-    m_buffer_in = new SAMPLE[m_buffer_size * num_channels];
-    m_buffer_out = new SAMPLE[m_buffer_size * num_channels];
-    memset( m_buffer_in, 0, m_buffer_size * sizeof(SAMPLE) * num_channels );
-    memset( m_buffer_out, 0, m_buffer_size * sizeof(SAMPLE) * num_channels );
+    m_buffer_in = new SAMPLE[m_buffer_size * m_num_channels_max];
+    m_buffer_out = new SAMPLE[m_buffer_size * m_num_channels_max];
+    memset( m_buffer_in, 0, m_buffer_size * sizeof(SAMPLE) * m_num_channels_max );
+    memset( m_buffer_out, 0, m_buffer_size * sizeof(SAMPLE) * m_num_channels_max );
 
     return m_init = TRUE;
 }
@@ -761,7 +814,19 @@ int ChuckAudio::cb( void * output_buffer, void * input_buffer, unsigned int buff
     // copy input to local buffer
     if( m_num_channels_in )
     {
-        memcpy( m_buffer_in, input_buffer, len );
+        // added 1.4.0.1 (ge) -- special case in=1; out=2
+        if( m_expand_in_mono2stereo )
+        {
+            for( int i = 0; i < buffer_size; i++ )
+            {
+                // copy mono sample into stereo buffer
+                m_buffer_in[i*2] = m_buffer_in[i*2+1] = ((SAMPLE *)input_buffer)[i];
+            }
+        }
+        else
+        {
+            memcpy( m_buffer_in, input_buffer, len );
+        }
         // copy to extern
         if( m_extern_in ) memcpy( m_extern_in, input_buffer, len );
     }
