@@ -46,7 +46,7 @@
 //-----------------------------------------------------------------------------
 // global variables
 //-----------------------------------------------------------------------------
-#define BUFFER_SIZE 8192
+#define MIDI_BUFFER_SIZE 8192
 
 std::vector<RtMidiIn *> MidiInManager::the_mins;
 std::vector<CBufferAdvance *> MidiInManager::the_bufs;
@@ -386,7 +386,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
         
         // allocate the buffer
         CBufferAdvance * cbuf = new CBufferAdvance;
-        if( !cbuf->initialize( BUFFER_SIZE, sizeof(MidiMsg), m_event_buffers[vm] ) )
+        if( !cbuf->initialize( MIDI_BUFFER_SIZE, sizeof(MidiMsg), m_event_buffers[vm] ) )
         {
             if( !min->m_suppress_output )
                 EM_error2( 0, "MidiIn: couldn't allocate CBuffer for port %i...", device_num );
@@ -1009,7 +1009,7 @@ t_CKBOOL MidiIn::open( t_CKUINT device_num )
 #endif // __DISABLE_MIDI__
 
 //-----------------------------------------------------------------------------
-// name: y-score-reader.cpp
+// name: adapted from y-score-reader.cpp
 // desc: reads song scores
 //
 // authors: Ge Wang (ge@ccrma.stanford.edu)
