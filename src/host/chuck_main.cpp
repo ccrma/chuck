@@ -886,7 +886,7 @@ bool go( int argc, const char ** argv )
         // TODO: refactor initialize() to take in the dac and adc nums
         ChuckAudio::m_adc_n = adc;
         ChuckAudio::m_dac_n = dac;
-        t_CKBOOL retval = ChuckAudio::initialize( adc_chans, dac_chans,
+        t_CKBOOL retval = ChuckAudio::initialize( dac_chans, adc_chans,
             srate, buffer_size, num_buffers, cb, (void *)the_chuck, force_srate );
         // check
         if( !retval )
