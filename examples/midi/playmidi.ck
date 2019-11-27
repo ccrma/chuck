@@ -28,11 +28,14 @@ if( !min.open(filename) )
 }
 
 // print out 
+cherr <= "----------" <= IO.newline();
 cherr <= "MIDI file: " <= IO.newline()
       <= " |- " <= filename <= IO.newline()
       <= " |- contains " <= min.numTracks() <= " tracks" <= IO.newline();
 // print
+cherr <= "----------" <= IO.newline();
 cherr <= "playing..." <= IO.newline();
+cherr <= "----------" <= IO.newline();
 
 // flag
 int done;
@@ -74,7 +77,7 @@ fun void doTrack( int track, float speed )
         if( msg.when > 0::second )
             msg.when * speed => now; // speed of 1 is nominal
         
-        // catch NOTEON messages
+        // catch NOTEON messages (lower nibble == 0x90)
         if( (msg.data1 & 0xF0) == 0x90 && msg.data2 > 0 && msg.data3 > 0 )
         {
             // get the pitch and convert to frequencey; set
@@ -83,6 +86,16 @@ fun void doTrack( int track, float speed )
             msg.data3/127.0 => s[v].noteOn;
             // cycle the voices
             (v+1)%s.size() => v;
+
+            // log
+            cherr <= "NOTE ON track:" <= track <= " pitch:" <= msg.data2 <=" velocity:" <= msg.data3 <= IO.newline(); 
+        }
+        // other messages
+        else
+        {
+            // log
+            // cherr <= "----EVENT (unhandled) track:" <= track <= " type:" <= (msg.data1&0xF0)
+            //      <= " data2:" <= msg.data2 <= " data3:" <= msg.data3 <= IO.newline(); 
         }
     }
     
