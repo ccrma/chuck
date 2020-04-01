@@ -67,7 +67,7 @@ XThread::XThread( )
 //-----------------------------------------------------------------------------
 XThread::~XThread( )
 {
-    if( thread != 0 )
+    if( thread != 0 && thread != pthread_self() )
     {
 #if defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__)
         pthread_cancel(thread);
