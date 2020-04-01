@@ -48,7 +48,7 @@
 // major version must be the same between chuck:chugin
 #define CK_DLL_VERSION_MAJOR (0x0007)
 // minor version of chugin must be less than or equal to chuck's
-#define CK_DLL_VERSION_MINOR (0x0000)
+#define CK_DLL_VERSION_MINOR (0x0001)
 #define CK_DLL_VERSION_MAKE(maj,min) ((t_CKUINT)(((maj) << 16) | (min)))
 #define CK_DLL_VERSION_GETMAJOR(v) (((v) >> 16) & 0xFFFF)
 #define CK_DLL_VERSION_GETMINOR(v) ((v) & 0xFFFF)
@@ -73,6 +73,7 @@ struct Chuck_DLL;
 struct Chuck_UGen;
 struct Chuck_UAna;
 struct Chuck_UAnaBlobProxy;
+struct Chuck_DL_MainThreadHook;
 namespace Chuck_DL_Api { struct Api; }
 
 
@@ -306,7 +307,9 @@ typedef void (CK_DLL_CALL * f_add_ugen_ctrl)( Chuck_DL_Query * query, f_ctrl ctr
                                               const char * type, const char * name );
 // end class/namespace - must correspondent with begin_class.  returns false on error
 typedef t_CKBOOL (CK_DLL_CALL * f_end_class)( Chuck_DL_Query * query );
-    
+// create main thread hook- used for executing a "hook" function in the main thread of a primary chuck instance
+typedef Chuck_DL_MainThreadHook * (CK_DLL_CALL * f_create_main_thread_hook)( Chuck_DL_Query * query, f_mainthreadhook hook, f_mainthreadquit quit, void * bindle );
+
 // documentation
 // set current class documentation
 typedef t_CKBOOL (CK_DLL_CALL * f_doc_class)( Chuck_DL_Query * query, const char * doc );
@@ -334,6 +337,7 @@ public:
     Chuck_Compiler * compiler() const { return m_carrier->compiler; }
     Chuck_VM * vm() const { return m_carrier->vm; }
     Chuck_Env * env() const { return m_carrier->env; }
+    Chuck_Carrier * carrier() const { return m_carrier; }
 
 public:
     // function pointers - to be called from client module
@@ -375,6 +379,9 @@ public:
     f_doc_var doc_var;
     f_add_example add_ex;
 
+    // re-added 1.4.0.1
+    f_create_main_thread_hook create_main_thread_hook;
+    
     // NOTE: everything below std::anything cannot be reliably accessed
     // by offset between dynamic modules, since std::anything could be variable
     // size -- put everything need to be accessed across modules above here!
@@ -629,6 +636,20 @@ protected:
 };
 
 
+struct Chuck_DL_MainThreadHook
+{
+public:
+    Chuck_DL_MainThreadHook(f_mainthreadhook hook, f_mainthreadquit quit,
+                            void * bindle, Chuck_Carrier * carrier);
+    t_CKBOOL (* const activate)(Chuck_DL_MainThreadHook *);
+    t_CKBOOL (* const deactivate)(Chuck_DL_MainThreadHook *);
+    
+    Chuck_Carrier * const m_carrier;
+    f_mainthreadhook const m_hook;
+    f_mainthreadquit const m_quit;
+    void * const m_bindle;
+    t_CKBOOL m_active;
+};
 
 
 /* API to ChucK's innards */
