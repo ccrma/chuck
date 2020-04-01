@@ -101,6 +101,13 @@ You can get the shred id:
     <<< me.id(); >>>;
 \end{verbatim}
 
+You can get the arguments passed to the shred like:
+\begin{verbatim}
+    me.args() => int count;
+    for (0 => int i; i < count; i++)
+        <<<"argument #"+i+": "+me.arg(i)>>>;
+\end{verbatim}
+
 These functions are common to all shreds, but yield() and exit() are commonly used with the current shred.
  
 \section{using Machine.add()}
