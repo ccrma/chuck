@@ -130,12 +130,12 @@ typedef struct Chuck_VM_Code * t_CKVMCODE;
 // functions
 //------------------------------------------------------------------------------
 a_Program new_program( a_Section section, int pos );
-a_Program prepend_program( a_Section section, a_Program program, int pos );
+a_Program append_program( a_Program program, a_Section section, int pos );
 a_Section new_section_stmt( a_Stmt_List stmt_list, int pos );
 a_Section new_section_func_def( a_Func_Def func_def, int pos );
 a_Section new_section_class_def( a_Class_Def class_def, int pos );
 a_Stmt_List new_stmt_list( a_Stmt stmt, int pos );
-a_Stmt_List prepend_stmt_list( a_Stmt stmt, a_Stmt_List stmt_list, int pos );
+a_Stmt_List append_stmt_list( a_Stmt_List stmt_list, a_Stmt stmt, int pos );
 a_Stmt new_stmt_from_expression( a_Exp exp, int pos );
 a_Stmt new_stmt_from_code( a_Stmt_List code, int pos );
 a_Stmt new_stmt_from_while( a_Exp cond, a_Stmt body, int pos );
@@ -151,7 +151,7 @@ a_Stmt new_stmt_from_continue( int pos );
 a_Stmt new_stmt_from_return( a_Exp exp, int pos );
 a_Stmt new_stmt_from_label( c_str xid, int pos );
 a_Stmt new_stmt_from_case( a_Exp exp, int pos );
-a_Exp prepend_expression( a_Exp exp, a_Exp list, int pos );
+a_Exp append_expression( a_Exp list, a_Exp exp, int pos );
 a_Exp new_exp_from_binary( a_Exp lhs, ae_Operator oper, a_Exp rhs, int pos );
 a_Exp new_exp_from_unary( ae_Operator oper, a_Exp exp, int pos );
 a_Exp new_exp_from_unary2( ae_Operator oper, a_Type_Decl type, a_Array_Sub array, int pos );
