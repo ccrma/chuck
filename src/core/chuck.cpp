@@ -128,6 +128,8 @@ ChucK::ChucK()
     initDefaultParams();
     // did user init?
     m_init = FALSE;
+    // zero out the hook
+    m_hook = NULL; // m_hook = nullptr
     
     // global init, if needed
     if( !o_isGlobalInit ) globalInit();
@@ -1129,9 +1131,11 @@ void ChucK::poop()
 
 
 
+
 //-----------------------------------------------------------------------------
 // name: setMainThreadHook()
-// desc:
+// desc: set a function pointer to call from the main thread loop
+//       e.g., for graphics, MAUI, potentially from a chug-in
 //-----------------------------------------------------------------------------
 bool ChucK::setMainThreadHook(Chuck_DL_MainThreadHook * hook)
 {
@@ -1139,9 +1143,12 @@ bool ChucK::setMainThreadHook(Chuck_DL_MainThreadHook * hook)
     return true;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: getMainThreadHook()
-// desc:
+// desc: get pointer to current function to be called from main loop
 //-----------------------------------------------------------------------------
 Chuck_DL_MainThreadHook * ChucK::getMainThreadHook()
 {
