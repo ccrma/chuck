@@ -1126,3 +1126,24 @@ void ChucK::poop()
 {
     ::uh();
 }
+
+
+
+//-----------------------------------------------------------------------------
+// name: setMainThreadHook()
+// desc:
+//-----------------------------------------------------------------------------
+bool ChucK::setMainThreadHook(Chuck_DL_MainThreadHook * hook)
+{
+    m_hook = hook;
+    return true;
+}
+
+//-----------------------------------------------------------------------------
+// name: getMainThreadHook()
+// desc:
+//-----------------------------------------------------------------------------
+Chuck_DL_MainThreadHook * ChucK::getMainThreadHook()
+{
+    return m_hook;
+}

@@ -1037,7 +1037,11 @@ bool go( int argc, const char ** argv )
         // real-time audio
         if( g_enable_realtime_audio )
         {
-            usleep( 10000 );
+            Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();
+            if (hook)
+                hook->m_hook(hook->m_bindle);
+            else
+                usleep( 10000 );
         }
         else // silent mode
         {
@@ -1046,6 +1050,10 @@ bool go( int argc, const char ** argv )
         }
     }
     
+    Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();
+    if (hook)
+        hook->m_quit(hook->m_bindle);
+
     return TRUE;
 }
 
