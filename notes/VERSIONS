@@ -18,7 +18,12 @@
   - (added) by Nathan Tindall -- Q and freq bounding for filters (LPF,
     HPF, BPF, BRF) to avoid LOUD FILTER EXPLOSIONS; now negative values
     will throw an exception on the offending shred.
-  - (internal) refactored code to move I/O-related code out of
+  - (restored, macOS) MAUI Chugin now (re)supported, post 1.4.0.0
+  - (added; developer) ChucK.h API to set a main thread hook (e.g., for 
+    graphical functionalitie from Chugins)
+  - (updated, developer) Chugin API now support main thread callback
+    for graphical-/GUI purposes
+  - (developer) refactored code to move I/O-related code out of
     chuck_lang and into chuck_io.
 
 1.4.0.0
