@@ -361,7 +361,7 @@ done:
 
 /* from http://developer.apple.com/library/mac/#qa/qa1549/_index.html */
 
-#if !defined(__PLATFORM_WIN32__) && !defined(__EMSCRIPTEN__)
+#if !defined(__PLATFORM_WIN32__) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
 
 #include <glob.h>
 
