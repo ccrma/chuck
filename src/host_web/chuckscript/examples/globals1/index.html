@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>ChucK + JS => ChucKScript</title>
+    <link rel="stylesheet" href="../../css/editor.css">
+  </head>
+  <body onresize="chuckEditor.resize();">
+<div>
+    <div id="program">// Globals 1: setting ints, floats, and broadcasting Events
+global Event mouseClicked;
+global int mouseX;
+global float mouseY;
+SinOsc foo => dac;
+while( true )
+{
+    300 + 0.3 * mouseX => foo.freq;
+    <<< foo.freq(), mouseX, mouseY >>>;
+    mouseClicked => now;
+}
+</div>
+</div>
+<div>
+    <button id="startChuck">Start ChucK</button>
+    <button id="compileButton" disabled="disabled">Compile and Run</button>
+    <button id="replaceButton" disabled="disabled">Replace</button>
+    <button id="removeButton" disabled="disabled">Remove</button>
+    <button id="clearButton" disabled="disabled">Clear VM and Globals</button>
+    <button id="micButton" disabled="disabled">Enable Microphone</button>
+    <button id="fileFormButton">Show File Uploader</button>
+</div>
+<div id="fileForm" class="hidden">
+    File name to use in ChucK: <input type="text" id="uploadFilename">
+    <input type="file" id="uploadFile" name="uploadFile">
+    <button id="fileButton" disabled="disabled">Upload File to Virtual File System</button>
+</div>
+<div>
+    <textarea id="output"></textarea>
+    <div id="shreds">
+        <table id="shredstable">
+            <col width="60px">
+            <col width="1*">
+            <col width="50px">
+            <col width="60px">
+            <tr><th>shred</th><th>code</th><th>time</th><th>remove</th>
+        </table>
+    </div>
+    <div class="clearfix"></div>
+</div>
+    <script type="text/javascript" src="../../js/ace-min-noconflict/ace.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../js/editor.js"></script>
+    <script type="text/javascript" src="../../js/defer.js"></script>
+    <script type="text/javascript" src="../../js/chuckscriptwebaudio.js"></script>
+    <script type="text/javascript" src="../../js/host.js"></script>
+    <script>
+        // override
+        whereIsChuck = "../../js";
+        
+        theChuckReady.then( function() {
+            if( window.Event ) { document.captureEvents( Event.MOUSEMOVE ); }
+            document.onmousemove = function( e )
+            {
+                var x = (window.Event) ? e.pageX : event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
+                var y = (window.Event) ? e.pageY : event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
+                theChuck.setInt( "mouseX", x );
+                theChuck.setFloat( "mouseY", y );
+            }
+    
+            document.onclick = function( e )
+            {
+                theChuck.broadcastEvent( "mouseClicked" );
+            }
+        });
+    </script>
+  </body>
+</html>
+
+

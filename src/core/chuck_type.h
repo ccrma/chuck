@@ -533,7 +533,9 @@ public:
     Chuck_Type * t_uanablob;
     Chuck_Type * t_shred;
     Chuck_Type * t_io;
-//    Chuck_Type * t_fileio;
+    #ifndef __DISABLE_FILEIO__
+    Chuck_Type * t_fileio;
+    #endif
     Chuck_Type * t_chout;
     Chuck_Type * t_cherr;
     Chuck_Type * t_thread;

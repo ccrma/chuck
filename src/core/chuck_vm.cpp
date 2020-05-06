@@ -34,10 +34,18 @@
 #include "chuck_lang.h"
 #include "chuck_type.h"
 #include "chuck_dl.h"
-//#include "chuck_io.h"
+
+#ifndef __DISABLE_SERIAL__
+#include "chuck_io.h"
+#endif
+
 #include "chuck_errmsg.h"
 #include "ugen_xxx.h"
-//#include "hidio_sdl.h"  // 1.4.0.0
+
+#ifndef __DISABLE_HID__
+#include "hidio_sdl.h"  // 1.4.0.0
+#endif
+
 #ifndef __DISABLE_MIDI__
 #include "midiio_rtmidi.h"  // 1.4.0.1
 #endif
@@ -152,6 +160,7 @@ Chuck_VM::Chuck_VM()
     m_init = FALSE;
     m_input_ref = NULL;
     m_output_ref = NULL;
+    m_current_buffer_frames = 0;
     
     // REFACTOR-2017: TODO might want to dynamically grow queue?
     m_global_request_queue.init( 16384 );
@@ -341,14 +350,17 @@ t_CKBOOL Chuck_VM::shutdown()
     // free the shreduler
     SAFE_DELETE( m_shreduler );
     
+    #ifndef __DISABLE_HID__
     // log
     EM_log( CK_LOG_SYSTEM, "unregistering VM from HID manager..." );
     // clean up this vm
-//    HidInManager::cleanup_buffer( this );
+    HidInManager::cleanup_buffer( this );
+    #endif
+    
+    #ifndef __DISABLE_MIDI__
     EM_log( CK_LOG_SYSTEM, "unregistering VM from MIDI manager..." );
-#ifndef __DISABLE_MIDI__
     MidiInManager::cleanup_buffer( this );
-#endif
+    #endif
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing msg/reply/event buffers..." );
@@ -544,7 +556,7 @@ t_CKBOOL Chuck_VM::compute()
 t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 {
     // copy
-    m_input_ref = input; m_output_ref = output;
+    m_input_ref = input; m_output_ref = output; m_current_buffer_frames = N;
     // frame count
     t_CKINT frame = 0;
 
@@ -932,11 +944,23 @@ done:
 
 //-----------------------------------------------------------------------------
 // name: next_id()
-// desc: ...
+// desc: first increments the shred id, then returns it
 //-----------------------------------------------------------------------------
 t_CKUINT Chuck_VM::next_id( )
 {
     return ++m_shred_id;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: last_id()
+// desc: returns the last used shred id
+//-----------------------------------------------------------------------------
+t_CKUINT Chuck_VM::last_id( )
+{
+    return m_shred_id;
 }
 
 
@@ -2514,6 +2538,88 @@ Chuck_Object * Chuck_VM::get_global_array( std::string name )
 
 
 //-----------------------------------------------------------------------------
+// name: _get_global_int_array_value()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_VM::_get_global_int_array_value( std::string name, t_CKUINT index )
+{
+    t_CKUINT result = 0;
+    Chuck_Object * array = m_global_arrays[name]->array;
+    if( array != NULL &&
+        m_global_arrays[name]->array_type == te_globalInt )
+    {
+        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+        // TODO why is it unsigned int storage?
+        intArray->get( index, &result );
+    }
+    return result;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: _get_global_associative_int_array_value()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_VM::_get_global_associative_int_array_value( std::string name, std::string key )
+{
+    t_CKUINT result = 0;
+    Chuck_Object * array = m_global_arrays[name]->array;
+    if( array != NULL &&
+        m_global_arrays[name]->array_type == te_globalInt )
+    {
+        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+        // TODO why is it unsigned int storage?
+        intArray->get( key, &result );
+    }
+    return result;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: _get_global_float_array_value()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKFLOAT Chuck_VM::_get_global_float_array_value( std::string name, t_CKUINT index )
+{
+    t_CKFLOAT result = 0;
+    Chuck_Object * array = m_global_arrays[name]->array;
+    if( array != NULL &&
+        m_global_arrays[name]->array_type == te_globalFloat )
+    {
+        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+        floatArray->get( index, &result );
+    }
+    return result;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: _get_global_associative_float_array_value()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKFLOAT Chuck_VM::_get_global_associative_float_array_value( std::string name, std::string key )
+{
+    t_CKFLOAT result = 0;
+    Chuck_Object * array = m_global_arrays[name]->array;
+    if( array != NULL &&
+        m_global_arrays[name]->array_type == te_globalFloat )
+    {
+        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+        floatArray->get( key, &result );
+    }
+    return result;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: get_ptr_to_global_array()
 // desc: get ptr directly from the vm (internal)
 //-----------------------------------------------------------------------------
@@ -3559,7 +3665,9 @@ Chuck_VM_Shred::Chuck_VM_Shred()
     vm_ref = NULL;
     event = NULL;
     xid = 0;
-//    m_serials = NULL;
+    #ifndef __DISABLE_SERIAL__
+    m_serials = NULL;
+    #endif
 
     // set
     CK_TRACK( stat = NULL );
@@ -3692,18 +3800,20 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     // clear it
     code_orig = code = NULL;
 
+    #ifndef __DISABLE_SERIAL__
     // HACK (added 1.3.2.0): close serial devices
-//    if(m_serials != NULL)
-//    {
-//        for(list<Chuck_IO_Serial *>::iterator i = m_serials->begin(); i != m_serials->end(); i++)
-//        {
-//            (*i)->release();
-//            (*i)->close();
-//        }
-//
-//        m_serials->clear();
-//        SAFE_DELETE(m_serials);
-//    }
+    if(m_serials != NULL)
+    {
+        for(list<Chuck_IO_Serial *>::iterator i = m_serials->begin(); i != m_serials->end(); i++)
+        {
+            (*i)->release();
+            (*i)->close();
+        }
+
+        m_serials->clear();
+        SAFE_DELETE(m_serials);
+    }
+    #endif
     
     // 1.3.5.3 pop all loop counters
     while( this->popLoopCounter() );
@@ -3835,31 +3945,33 @@ CK_VM_DEBUG(CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
 
 
 
-////-----------------------------------------------------------------------------
-//// name: add_serialio()
-//// desc: ...
-////-----------------------------------------------------------------------------
-//t_CKVOID Chuck_VM_Shred::add_serialio( Chuck_IO_Serial * serial )
-//{
-//    if(m_serials == NULL)
-//        m_serials = new list<Chuck_IO_Serial *>;
-//    serial->add_ref();
-//    m_serials->push_back( serial );
-//}
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: add_serialio()
-//// desc: ...
-////-----------------------------------------------------------------------------
-//t_CKVOID Chuck_VM_Shred::remove_serialio( Chuck_IO_Serial * serial )
-//{
-//    if(m_serials == NULL)
-//        return;
-//    m_serials->remove( serial );
-//    serial->release();
-//}
+#ifndef __DISABLE_SERIAL__
+//-----------------------------------------------------------------------------
+// name: add_serialio()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKVOID Chuck_VM_Shred::add_serialio( Chuck_IO_Serial * serial )
+{
+    if(m_serials == NULL)
+        m_serials = new list<Chuck_IO_Serial *>;
+    serial->add_ref();
+    m_serials->push_back( serial );
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: add_serialio()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKVOID Chuck_VM_Shred::remove_serialio( Chuck_IO_Serial * serial )
+{
+    if(m_serials == NULL)
+        return;
+    m_serials->remove( serial );
+    serial->release();
+}
+#endif
 
 
 
@@ -4126,9 +4238,16 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
 {
     t_CKINT i, j, numFrames;
     SAMPLE gain[256], sum;
+
+    #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+    const SAMPLE * input = vm_ref->input_ref() + offset;
+    SAMPLE * output = vm_ref->output_ref() + offset;
+    t_CKUINT buffer_length = vm_ref->buffer_length();
+    #else
     // get audio data from VM
     const SAMPLE * input = vm_ref->input_ref() + (offset*m_num_adc_channels);
     SAMPLE * output = vm_ref->output_ref() + (offset*m_num_dac_channels);
+    #endif
     
     // compute number of frames to compute; update
     numFrames = ck_min( m_max_block_size, numLeft );
@@ -4161,13 +4280,26 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
         // loop over channels
         for( j = 0; j < m_num_adc_channels; j++ )
         {
+            #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+            // current frame = offset + i
+            // current channel = j
+            // sample = buffer size * j + offset + i
+            // the "+offset" is taken care of in initialization
+            // the "+i" is taken care of by incrementing input below
+            m_adc->m_multi_chan[j]->m_current_v[i] = input[buffer_length * j] * gain[j] * m_adc->m_gain;
+            #else
             m_adc->m_multi_chan[j]->m_current_v[i] = input[j] * gain[j] * m_adc->m_gain;
+            #endif
             sum += m_adc->m_multi_chan[j]->m_current_v[i];
         }
         m_adc->m_current_v[i] = sum / m_num_adc_channels;
         
         // advance pointer
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        input++;
+        #else
         input += m_num_adc_channels;
+        #endif
     }
     
     // ???
@@ -4191,10 +4323,25 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
     for( i = 0; i < numFrames; i++ )
     {
         for( j = 0; j < m_num_dac_channels; j++ )
+        {
+            #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+            // current frame = offset + i
+            // current channel = j
+            // sample = buffer size * j + offset + i
+            // "+offset" taken care of in initialization
+            // "+i" taken care of by incrementing below
+            output[buffer_length * j] = m_dac->m_multi_chan[j]->m_current_v[i];
+            #else
             output[j] = m_dac->m_multi_chan[j]->m_current_v[i];
+            #endif
+        }
         
         // advance pointer
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        output++;
+        #else
         output += m_num_dac_channels;
+        #endif
     }
 }
 
@@ -4214,15 +4361,29 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
     SAMPLE sum = 0.0f;
     t_CKUINT i;
     // input and output
+    #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+    const SAMPLE * input = vm_ref->input_ref() + N;
+    SAMPLE * output = vm_ref->output_ref() + N;
+    t_CKUINT buffer_length = vm_ref->buffer_length();
+    #else
     const SAMPLE * input = vm_ref->input_ref() + (N*m_num_adc_channels);
     SAMPLE * output = vm_ref->output_ref() + (N*m_num_dac_channels);
+    #endif
 
     // INPUT: loop over channels
     for( i = 0; i < m_num_adc_channels; i++ )
     {
         // ge: switched order of lines 1.3.5.3
         m_adc->m_multi_chan[i]->m_last = m_adc->m_multi_chan[i]->m_current;
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        // current frame = N
+        // current channel = i
+        // sample = buffer size * i + N
+        // the +N is taken care of by initialization
+        m_adc->m_multi_chan[i]->m_current = input[buffer_length * i] * m_adc->m_multi_chan[i]->m_gain * m_adc->m_gain;
+        #else
         m_adc->m_multi_chan[i]->m_current = input[i] * m_adc->m_multi_chan[i]->m_gain * m_adc->m_gain;
+        #endif
         m_adc->m_multi_chan[i]->m_time = this->now_system;
         sum += m_adc->m_multi_chan[i]->m_current;
     }
@@ -4233,7 +4394,17 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
     m_dac->system_tick( this->now_system );
     // OUTPUT
     for( i = 0; i < m_num_dac_channels; i++ )
+    {
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        // current frame = N
+        // current channel = i
+        // sample = buffer size * i + N
+        // the +N is taken care of by initialization
+        output[buffer_length * i] = m_dac->m_multi_chan[i]->m_current; // * .5f;
+        #else
         output[i] = m_dac->m_multi_chan[i]->m_current; // * .5f;
+        #endif
+    }
 
     // suck samples
     m_bunghole->system_tick( this->now_system );

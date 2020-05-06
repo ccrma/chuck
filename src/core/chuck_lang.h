@@ -63,7 +63,9 @@ t_CKBOOL init_class_Midi( Chuck_Env * env );
 t_CKBOOL init_class_MidiRW( Chuck_Env * env );
 t_CKBOOL init_class_HID( Chuck_Env * env );
 t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type );
-//t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type );
+#ifndef __DISABLE_FILEIO__
+t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type );
+#endif
 // added 1.3.0.0 -- moved to be full-fledged class
 t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type );
 // added 1.3.0.0 -- moved to be full-fledged class
@@ -214,34 +216,36 @@ CK_DLL_SFUN( io_newline );
 CK_DLL_SFUN( io_openfile );
 
 
-////-----------------------------------------------------------------------------
-//// fileio API
-////-----------------------------------------------------------------------------
-//CK_DLL_CTOR( fileio_ctor );
-//CK_DLL_DTOR( fileio_dtor );
-//CK_DLL_MFUN( fileio_open );
-//CK_DLL_MFUN( fileio_openflags );
-//CK_DLL_MFUN( fileio_good );
-//CK_DLL_MFUN( fileio_close );
-//CK_DLL_MFUN( fileio_flush );
-//CK_DLL_MFUN( fileio_getmode );
-//CK_DLL_MFUN( fileio_setmode );
-//CK_DLL_MFUN( fileio_size );
-//CK_DLL_MFUN( fileio_seek );
-//CK_DLL_MFUN( fileio_tell );
-//CK_DLL_MFUN( fileio_isdir );
-//CK_DLL_MFUN( fileio_dirlist );
-//CK_DLL_MFUN( fileio_read );
-//CK_DLL_MFUN( fileio_readline );
-//CK_DLL_MFUN( fileio_readint );
-//CK_DLL_MFUN( fileio_readintflags );
-//CK_DLL_MFUN( fileio_readfloat );
-//CK_DLL_MFUN( fileio_eof );
-//CK_DLL_MFUN( fileio_more );
-//CK_DLL_MFUN( fileio_writestring );
-//CK_DLL_MFUN( fileio_writeint );
-//CK_DLL_MFUN( fileio_writeintflags );
-//CK_DLL_MFUN( fileio_writefloat );
+#ifndef __DISABLE_FILEIO__
+//-----------------------------------------------------------------------------
+// fileio API
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( fileio_ctor );
+CK_DLL_DTOR( fileio_dtor );
+CK_DLL_MFUN( fileio_open );
+CK_DLL_MFUN( fileio_openflags );
+CK_DLL_MFUN( fileio_good );
+CK_DLL_MFUN( fileio_close );
+CK_DLL_MFUN( fileio_flush );
+CK_DLL_MFUN( fileio_getmode );
+CK_DLL_MFUN( fileio_setmode );
+CK_DLL_MFUN( fileio_size );
+CK_DLL_MFUN( fileio_seek );
+CK_DLL_MFUN( fileio_tell );
+CK_DLL_MFUN( fileio_isdir );
+CK_DLL_MFUN( fileio_dirlist );
+CK_DLL_MFUN( fileio_read );
+CK_DLL_MFUN( fileio_readline );
+CK_DLL_MFUN( fileio_readint );
+CK_DLL_MFUN( fileio_readintflags );
+CK_DLL_MFUN( fileio_readfloat );
+CK_DLL_MFUN( fileio_eof );
+CK_DLL_MFUN( fileio_more );
+CK_DLL_MFUN( fileio_writestring );
+CK_DLL_MFUN( fileio_writeint );
+CK_DLL_MFUN( fileio_writeintflags );
+CK_DLL_MFUN( fileio_writefloat );
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -428,54 +432,56 @@ CK_DLL_MFUN( MidiOut_printerr );
 CK_DLL_MFUN( MidiOut_send );
 
 
-////-----------------------------------------------------------------------------
-//// HidMsg API
-////-----------------------------------------------------------------------------
-//CK_DLL_MFUN( HidMsg_is_axis_motion );
-//CK_DLL_MFUN( HidMsg_is_button_down );
-//CK_DLL_MFUN( HidMsg_is_button_up );
-//CK_DLL_MFUN( HidMsg_is_mouse_motion );
-//CK_DLL_MFUN( HidMsg_is_hat_motion );
-//CK_DLL_MFUN( HidMsg_is_wheel_motion );
-//
-////-----------------------------------------------------------------------------
-//// HidIn API
-////-----------------------------------------------------------------------------
-//CK_DLL_CTOR( HidIn_ctor );
-//CK_DLL_DTOR( HidIn_dtor );
-//CK_DLL_MFUN( HidIn_open );
-//CK_DLL_MFUN( HidIn_open_named );
-//CK_DLL_MFUN( HidIn_open_named_i ); // added 1.3.0.0
-//CK_DLL_MFUN( HidIn_open_joystick );
-//CK_DLL_MFUN( HidIn_open_mouse );
-//CK_DLL_MFUN( HidIn_open_keyboard );
-//CK_DLL_MFUN( HidIn_open_tiltsensor );
-//CK_DLL_MFUN( HidIn_good );
-//CK_DLL_MFUN( HidIn_num );
-//CK_DLL_MFUN( HidIn_name );
-//CK_DLL_MFUN( HidIn_printerr );
-//CK_DLL_MFUN( HidIn_recv );
-//CK_DLL_MFUN( HidIn_read );
-//CK_DLL_MFUN( HidIn_send );
-//CK_DLL_MFUN( HidIn_can_wait );
-//CK_DLL_SFUN( HidIn_read_tilt_sensor );
-//CK_DLL_SFUN( HidIn_ctrl_tiltPollRate );
-//CK_DLL_SFUN( HidIn_cget_tiltPollRate );
-//CK_DLL_SFUN( HidIn_start_cursor_track );
-//CK_DLL_SFUN( HidIn_stop_cursor_track );
-//
-//
-////-----------------------------------------------------------------------------
-//// HidOut API
-////-----------------------------------------------------------------------------
-//CK_DLL_CTOR( HidOut_ctor );
-//CK_DLL_DTOR( HidOut_dtor );
-//CK_DLL_MFUN( HidOut_open );
-//CK_DLL_MFUN( HidOut_good );
-//CK_DLL_MFUN( HidOut_num );
-//CK_DLL_MFUN( HidOut_name );
-//CK_DLL_MFUN( HidOut_printerr );
-//CK_DLL_MFUN( HidOut_send );
+#ifndef __DISABLE_HID__
+//-----------------------------------------------------------------------------
+// HidMsg API
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( HidMsg_is_axis_motion );
+CK_DLL_MFUN( HidMsg_is_button_down );
+CK_DLL_MFUN( HidMsg_is_button_up );
+CK_DLL_MFUN( HidMsg_is_mouse_motion );
+CK_DLL_MFUN( HidMsg_is_hat_motion );
+CK_DLL_MFUN( HidMsg_is_wheel_motion );
+
+//-----------------------------------------------------------------------------
+// HidIn API
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( HidIn_ctor );
+CK_DLL_DTOR( HidIn_dtor );
+CK_DLL_MFUN( HidIn_open );
+CK_DLL_MFUN( HidIn_open_named );
+CK_DLL_MFUN( HidIn_open_named_i ); // added 1.3.0.0
+CK_DLL_MFUN( HidIn_open_joystick );
+CK_DLL_MFUN( HidIn_open_mouse );
+CK_DLL_MFUN( HidIn_open_keyboard );
+CK_DLL_MFUN( HidIn_open_tiltsensor );
+CK_DLL_MFUN( HidIn_good );
+CK_DLL_MFUN( HidIn_num );
+CK_DLL_MFUN( HidIn_name );
+CK_DLL_MFUN( HidIn_printerr );
+CK_DLL_MFUN( HidIn_recv );
+CK_DLL_MFUN( HidIn_read );
+CK_DLL_MFUN( HidIn_send );
+CK_DLL_MFUN( HidIn_can_wait );
+CK_DLL_SFUN( HidIn_read_tilt_sensor );
+CK_DLL_SFUN( HidIn_ctrl_tiltPollRate );
+CK_DLL_SFUN( HidIn_cget_tiltPollRate );
+CK_DLL_SFUN( HidIn_start_cursor_track );
+CK_DLL_SFUN( HidIn_stop_cursor_track );
+
+
+//-----------------------------------------------------------------------------
+// HidOut API
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( HidOut_ctor );
+CK_DLL_DTOR( HidOut_dtor );
+CK_DLL_MFUN( HidOut_open );
+CK_DLL_MFUN( HidOut_good );
+CK_DLL_MFUN( HidOut_num );
+CK_DLL_MFUN( HidOut_name );
+CK_DLL_MFUN( HidOut_printerr );
+CK_DLL_MFUN( HidOut_send );
+#endif
 
 
 

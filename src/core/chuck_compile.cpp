@@ -32,7 +32,9 @@
 #include "chuck_compile.h"
 #include "chuck_lang.h"
 #include "chuck_errmsg.h"
-//#include "chuck_otf.h"
+#ifndef  __DISABLE_OTF_SERVER__
+#include "chuck_otf.h"
+#endif
 
 #include "ugen_osc.h"
 #include "ugen_xxx.h"
@@ -40,12 +42,23 @@
 #include "ugen_stk.h"
 #include "uana_xform.h"
 #include "uana_extract.h"
-//#include "ulib_machine.h"
+
+#ifndef __DISABLE_OTF_SERVER__
+#include "ulib_machine.h"
+#endif
+
 #include "ulib_math.h"
 #include "ulib_std.h"
-//#include "ulib_opsc.h"
+
+#ifndef __DISABLE_NETWORK__
+#include "ulib_opsc.h"
+#endif
+
 #include "ulib_regex.h"
-//#include "chuck_io.h"
+
+#ifndef __DISABLE_SERIAL__
+#include "chuck_io.h"
+#endif
 
 #if defined(__PLATFORM_WIN32__)
 #include "dirent_win32.h"
@@ -649,22 +662,35 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     load_module( compiler, env, extract_query, "extract", "global" );
     
     // load
+    #ifndef __DISABLE_OTF_SERVER__
     EM_log( CK_LOG_SEVERE, "class 'machine'..." );
-//    if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
-//    machine_init( compiler, otf_process_msg );
+    if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
+    machine_init( compiler, otf_process_msg );
+    #endif
+    
     EM_log( CK_LOG_SEVERE, "class 'std'..." );
     if( !load_module( compiler, env, libstd_query, "Std", "global" ) ) goto error;
     EM_log( CK_LOG_SEVERE, "class 'math'..." );
     if( !load_module( compiler, env, libmath_query, "Math", "global" ) ) goto error;
 
-//    EM_log( CK_LOG_SEVERE, "class 'opsc'..." );
-//    if( !load_module( compiler, env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
+    #ifndef __DISABLE_NETWORK__
+    EM_log( CK_LOG_SEVERE, "class 'opsc'..." );
+    if( !load_module( compiler, env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
+    #endif
+    
     EM_log( CK_LOG_SEVERE, "class 'RegEx'..." );
     if( !load_module( compiler, env, regex_query, "RegEx", "global" ) ) goto error;
+    
+    // Deprecated:
     // if( !load_module( compiler, env, net_query, "net", "global" ) ) goto error;
     
-//    if( !init_class_HID( env ) ) goto error;
-//    if( !init_class_serialio( env ) ) goto error;
+    #ifndef __DISABLE_HID__
+    if( !init_class_HID( env ) ) goto error;
+    #endif
+  
+    #ifndef __DISABLE_SERIAL__
+    if( !init_class_serialio( env ) ) goto error;
+    #endif
     
     // clear context
     type_engine_unload_context( env );

@@ -40,13 +40,27 @@
 #include "chuck_compile.h"
 #include "chuck_dl.h"
 #include "chuck_vm.h"
-//#include "chuck_shell.h"
+
+#ifndef __DISABLE_SHELL__
+#include "chuck_shell.h"
+#endif
+
 #include "chuck_carrier.h"
-//#include "ulib_machine.h"
+#ifndef __DISABLE_OTF_SERVER
+#include "ulib_machine.h"
+#endif
+
 #include "util_math.h"
 #include "util_string.h"
+
+#ifndef __DISABLE_HID__
 #include "hidio_sdl.h"
-//#include "midiio_rtmidi.h"
+#endif
+
+#ifndef __DISABLE_MIDI__
+#include "midiio_rtmidi.h"
+#endif
+
 #include <string>
 #include <map>
 
@@ -180,8 +194,12 @@ protected:
 public: // static functions
     // chuck version
     static const char * version();
+    #ifndef __DISABLE_OTF_SERVER__
     // chuck int size (in bits)
-//    static t_CKUINT intSize();
+    // (this depends on machine, which depends on OTF, so
+    //  disable it if we don't have OTF)
+    static t_CKUINT intSize();
+    #endif
     // number of ChucK's
     static t_CKUINT numVMs() { return o_numVMs; };
     // --poop compatibilty

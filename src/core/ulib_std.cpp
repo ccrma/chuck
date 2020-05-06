@@ -34,10 +34,14 @@
 #include <time.h>
 #include <math.h>
 #include "util_buffers.h"
+#ifndef __DISABLE_PROMPTER__
 #include "util_console.h"
+#endif
 #include "util_math.h"
 #include "util_string.h"
-//#include "util_thread.h"
+#ifndef __DISABLE_THREADS__
+#include "util_thread.h"
+#endif
 #include "chuck.h"
 #include "chuck_type.h"
 #include "chuck_compile.h"
@@ -61,7 +65,9 @@ int setenv( const char *n, const char *v, int i )
 // for ConsoleInput and StringTokenizer
 #include <sstream>
 #include <iostream>
-//#include "util_thread.h"
+#ifndef __DISABLE_THREADS__
+#include "util_thread.h"
+#endif
 using namespace std;
 
 

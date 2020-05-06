@@ -3902,7 +3902,9 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
         // check type TODO: make this faster
         if( type->allocator )
             object = type->allocator( vm, shred, Chuck_DL_Api::Api::instance() );
-//        else if( isa( type, vm->env()->t_fileio ) ) object = new Chuck_IO_File( vm );
+        #ifndef __DISABLE_FILEIO__
+        else if( isa( type, vm->env()->t_fileio ) ) object = new Chuck_IO_File( vm );
+        #endif
         else if( isa( type, vm->env()->t_event ) ) object = new Chuck_Event;
         else if( isa( type, vm->env()->t_string ) ) object = new Chuck_String;
         // TODO: is this ok?

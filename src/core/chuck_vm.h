@@ -72,8 +72,10 @@ struct Chuck_VM;
 struct Chuck_VM_Func;
 struct Chuck_VM_FTable;
 struct Chuck_Msg;
+#ifndef __DISABLE_SERIAL__
 // hack: spencer?
-//struct Chuck_IO_Serial;
+struct Chuck_IO_Serial;
+#endif
 
 class CBufferSimple;
 //XXXclass BBQ;
@@ -179,11 +181,13 @@ public:
     // add parent object reference (added 1.3.1.2)
     t_CKVOID add_parent_ref( Chuck_Object * obj );
     
+    #ifndef __DISABLE_SERIAL__
     // HACK - spencer (added 1.3.2.0)
     // add/remove SerialIO devices to close on shred exit
     // REFACTOR-2017: TODO -- remove
-//    t_CKVOID add_serialio( Chuck_IO_Serial * serial );
-//    t_CKVOID remove_serialio( Chuck_IO_Serial * serial );
+    t_CKVOID add_serialio( Chuck_IO_Serial * serial );
+    t_CKVOID remove_serialio( Chuck_IO_Serial * serial );
+    #endif
     
 //-----------------------------------------------------------------------------
 // data
@@ -250,8 +254,10 @@ public: // ge: 1.3.5.3
     // loop counter pointer stack
     std::vector<t_CKUINT *> m_loopCounters;
     
+#ifndef __DISABLE_SERIAL__
 private:
-//    std::list<Chuck_IO_Serial *> * m_serials;
+    std::list<Chuck_IO_Serial *> * m_serials;
+#endif
 };
 
 
@@ -544,6 +550,8 @@ public: // shreds
     Chuck_VM_Shreduler * shreduler() const;
     // the next spork ID
     t_CKUINT next_id( );
+    // the last used spork ID
+    t_CKUINT last_id( );
 
 public: // audio
     t_CKUINT srate() const;
@@ -643,6 +651,10 @@ public:
     
     t_CKBOOL init_global_array( std::string name, Chuck_Type * type, te_GlobalType arr_type );
     Chuck_Object * get_global_array( std::string name );
+    t_CKINT _get_global_int_array_value( std::string name, t_CKUINT index );
+    t_CKINT _get_global_associative_int_array_value( std::string name, std::string key );
+    t_CKFLOAT _get_global_float_array_value( std::string name, t_CKUINT index );
+    t_CKFLOAT _get_global_associative_float_array_value( std::string name, std::string key );
     Chuck_Object * * get_ptr_to_global_array( std::string name );
     
     t_CKBOOL should_call_global_ctor( std::string name, te_GlobalType type );
@@ -681,11 +693,14 @@ public:
     // for shreduler, ge: 1.3.5.3
     const SAMPLE * input_ref() { return m_input_ref; }
     SAMPLE * output_ref() { return m_output_ref; }
+    // for shreduler, jack: planar audio buffers
+    t_CKUINT buffer_length() { return m_current_buffer_frames; }
 
 protected:
     // for shreduler, ge: 1.3.5.3
     const SAMPLE * m_input_ref;
     SAMPLE * m_output_ref;
+    t_CKUINT m_current_buffer_frames;
 
 protected:
     Chuck_VM_Shred * spork( Chuck_VM_Shred * shred );

@@ -443,31 +443,33 @@ CK_DLL_CTRL( WvIn_ctrl_path );
 CK_DLL_CGET( WvIn_cget_rate );
 CK_DLL_CGET( WvIn_cget_path );
 
+#ifndef __DISABLE_WVOUT__
 // WvOut
-//CK_DLL_CTOR( WvOut_ctor );
-//CK_DLL_DTOR( WvOut_dtor );
-//CK_DLL_TICK( WvOut_tick );
-//CK_DLL_TICKF( WvOut2_tickf );
-//CK_DLL_PMSG( WvOut_pmsg );
-//CK_DLL_CTRL( WvOut_ctrl_filename );
-//CK_DLL_CTRL( WvOut_ctrl_matFilename );
-//CK_DLL_CTRL( WvOut2_ctrl_matFilename );
-//CK_DLL_CTRL( WvOut_ctrl_sndFilename );
-//CK_DLL_CTRL( WvOut2_ctrl_sndFilename );
-//CK_DLL_CTRL( WvOut_ctrl_wavFilename );
-//CK_DLL_CTRL( WvOut2_ctrl_wavFilename );
-//CK_DLL_CTRL( WvOut_ctrl_rawFilename );
-//CK_DLL_CTRL( WvOut2_ctrl_rawFilename );
-//CK_DLL_CTRL( WvOut_ctrl_aifFilename );
-//CK_DLL_CTRL( WvOut2_ctrl_aifFilename );
-//CK_DLL_CTRL( WvOut_ctrl_closeFile );
-//CK_DLL_CTRL( WvOut_ctrl_record );
-//CK_DLL_CTRL( WvOut_ctrl_autoPrefix );
-//CK_DLL_CGET( WvOut_cget_filename );
-//CK_DLL_CGET( WvOut_cget_record );
-//CK_DLL_CGET( WvOut_cget_autoPrefix );
-//CK_DLL_CTRL( WvOut_ctrl_fileGain );
-//CK_DLL_CGET( WvOut_cget_fileGain );
+CK_DLL_CTOR( WvOut_ctor );
+CK_DLL_DTOR( WvOut_dtor );
+CK_DLL_TICK( WvOut_tick );
+CK_DLL_TICKF( WvOut2_tickf );
+CK_DLL_PMSG( WvOut_pmsg );
+CK_DLL_CTRL( WvOut_ctrl_filename );
+CK_DLL_CTRL( WvOut_ctrl_matFilename );
+CK_DLL_CTRL( WvOut2_ctrl_matFilename );
+CK_DLL_CTRL( WvOut_ctrl_sndFilename );
+CK_DLL_CTRL( WvOut2_ctrl_sndFilename );
+CK_DLL_CTRL( WvOut_ctrl_wavFilename );
+CK_DLL_CTRL( WvOut2_ctrl_wavFilename );
+CK_DLL_CTRL( WvOut_ctrl_rawFilename );
+CK_DLL_CTRL( WvOut2_ctrl_rawFilename );
+CK_DLL_CTRL( WvOut_ctrl_aifFilename );
+CK_DLL_CTRL( WvOut2_ctrl_aifFilename );
+CK_DLL_CTRL( WvOut_ctrl_closeFile );
+CK_DLL_CTRL( WvOut_ctrl_record );
+CK_DLL_CTRL( WvOut_ctrl_autoPrefix );
+CK_DLL_CGET( WvOut_cget_filename );
+CK_DLL_CGET( WvOut_cget_record );
+CK_DLL_CGET( WvOut_cget_autoPrefix );
+CK_DLL_CTRL( WvOut_ctrl_fileGain );
+CK_DLL_CGET( WvOut_cget_fileGain );
+#endif
 
 
 // FM
@@ -4375,125 +4377,127 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // end the class import
     type_engine_import_class_end( env );
 
-
+    
+    #ifndef __DISABLE_WVOUT__
     //------------------------------------------------------------------------
     // begin WvOut ugen
     //------------------------------------------------------------------------
-// 
-//    doc = "This class provides output support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\n\
-//\n\
-//WvOut writes samples to an audio file. It supports multi-channel data in interleaved format.  It is important to distinguish the `tick()` methods, which output single samples to all channels in a sample frame, from the `tickFrame()` method, which takes a pointer to multi-channel sample frame data.\n\
-//\n\
-//WvOut currently supports WAV, AIFF, AIFC, SND (AU), MAT-file (Matlab), and STK RAW file formats.  Signed integer (8-, 16-, and 32-bit) and floating- point (32- and 64-bit) data types are supported.  STK RAW files use 16-bit integers by definition.  MAT-files will always be written as 64-bit floats.  If a data type specification does not match the specified file type, the data type will automatically be modified.  Uncompressed data types are not supported.\n\
-//\n\
-//Currently, WvOut is non-interpolating and the output rate is always `Stk::sampleRate()`.\n\
-//\n\
-//by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-//    
-//    if( !type_engine_import_ugen_begin( env, "WvOut", "UGen", env->global(), 
-//                        WvOut_ctor, WvOut_dtor,
-//                        WvOut_tick, WvOut_pmsg, doc.c_str() ) ) return FALSE;
-//    
-//    //member variable
-//    WvOut_offset_data = type_engine_import_mvar ( env, "int", "@WvOut_data", FALSE );
-//    if( WvOut_offset_data == CK_INVALID_OFFSET ) goto error;
-//    
-//    func = make_new_mfun( "string", "matFilename", WvOut_ctrl_matFilename ); //!open matlab file for writing
-//    func->add_arg( "string", "value" );
-//    func->doc = "Open MatLab file for writing.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    func = make_new_mfun( "string", "sndFilename", WvOut_ctrl_sndFilename ); //!open snd file for writing
-//    func->add_arg( "string", "value" );
-//    func->doc = "Open SND file for writing.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    func = make_new_mfun( "string", "wavFilename", WvOut_ctrl_wavFilename ); //!open WAVE file for writing
-//    func->add_arg( "string", "value" );
-//    func->doc = "Open WAVE file for writing.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    func = make_new_mfun( "string", "rawFilename", WvOut_ctrl_rawFilename ); //!open raw file for writing
-//    func->add_arg( "string", "value" );
-//    func->doc = "Open a raw file for writing.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    func = make_new_mfun( "string", "aifFilename", WvOut_ctrl_aifFilename ); //!open AIFF file for writing
-//    func->add_arg( "string", "value" );
-//    func->doc = "Open an AIFF file for writing.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    func = make_new_mfun( "string", "filename", WvOut_cget_filename ); //!get filename
-//    func->doc = "Get filename.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    func = make_new_mfun( "int", "record", WvOut_ctrl_record ); // !start/stop output
-//    func->add_arg( "int", "value" );
-//    func->doc = "Start/stop output.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    func = make_new_mfun( "int", "record", WvOut_cget_record ); // !start/stop output
-//    func->doc = "Start/stop output.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    func = make_new_mfun( "string", "closeFile", WvOut_ctrl_closeFile ); //! close file properly
-//    func->add_arg( "string", "value" );
-//    func->doc = "Close the file properly.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    func = make_new_mfun( "string", "closeFile", WvOut_ctrl_closeFile ); //! close file properly
-//    func->doc = "Close the file properly.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    func = make_new_mfun( "string", "autoPrefix", WvOut_ctrl_autoPrefix ); //! set/get auto prefix string
-//    func->add_arg( "string", "value" );
-//    func->doc = "Set auto prefix string.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    func = make_new_mfun( "string", "autoPrefix", WvOut_cget_autoPrefix ); //! set/get auto prefix string
-//    func->doc = "Get auto prefix string.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//    
-//    func = make_new_mfun( "float", "fileGain", WvOut_ctrl_fileGain ); //! set/get auto prefix string
-//    func->add_arg( "float", "value" );
-//    func->doc = "Set file gain.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//    
-//    func = make_new_mfun( "float", "fileGain", WvOut_cget_fileGain ); //! set/get auto prefix string
-//    func->doc = "Get file gain.";
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//    
-//    // end the class import
-//    type_engine_import_class_end( env );
-//    
-//    
-//    if( !type_engine_import_ugen_begin( env, "WvOut2", "WvOut", env->global(), 
-//                                        NULL, NULL,
-//                                        NULL, WvOut2_tickf, WvOut_pmsg, 2, 2 ) ) return FALSE;
-//
-//    func = make_new_mfun( "string", "matFilename", WvOut2_ctrl_matFilename ); //!open matlab file for writing
-//    func->add_arg( "string", "value" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//    
-//    func = make_new_mfun( "string", "sndFilename", WvOut2_ctrl_sndFilename ); //!open snd file for writing
-//    func->add_arg( "string", "value" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//    
-//    func = make_new_mfun( "string", "wavFilename", WvOut2_ctrl_wavFilename ); //!open WAVE file for writing
-//    func->add_arg( "string", "value" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//    
-//    func = make_new_mfun( "string", "rawFilename", WvOut2_ctrl_rawFilename ); //!open raw file for writing
-//    func->add_arg( "string", "value" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//    
-//    func = make_new_mfun( "string", "aifFilename", WvOut2_ctrl_aifFilename ); //!open AIFF file for writing
-//    func->add_arg( "string", "value" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//    
-//    // end the class import
-//    type_engine_import_class_end( env );
+ 
+    doc = "This class provides output support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\n\
+\n\
+WvOut writes samples to an audio file. It supports multi-channel data in interleaved format.  It is important to distinguish the `tick()` methods, which output single samples to all channels in a sample frame, from the `tickFrame()` method, which takes a pointer to multi-channel sample frame data.\n\
+\n\
+WvOut currently supports WAV, AIFF, AIFC, SND (AU), MAT-file (Matlab), and STK RAW file formats.  Signed integer (8-, 16-, and 32-bit) and floating- point (32- and 64-bit) data types are supported.  STK RAW files use 16-bit integers by definition.  MAT-files will always be written as 64-bit floats.  If a data type specification does not match the specified file type, the data type will automatically be modified.  Uncompressed data types are not supported.\n\
+\n\
+Currently, WvOut is non-interpolating and the output rate is always `Stk::sampleRate()`.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
+    if( !type_engine_import_ugen_begin( env, "WvOut", "UGen", env->global(),
+                        WvOut_ctor, WvOut_dtor,
+                        WvOut_tick, WvOut_pmsg, doc.c_str() ) ) return FALSE;
+    
+    //member variable
+    WvOut_offset_data = type_engine_import_mvar ( env, "int", "@WvOut_data", FALSE );
+    if( WvOut_offset_data == CK_INVALID_OFFSET ) goto error;
+    
+    func = make_new_mfun( "string", "matFilename", WvOut_ctrl_matFilename ); //!open matlab file for writing
+    func->add_arg( "string", "value" );
+    func->doc = "Open MatLab file for writing.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "sndFilename", WvOut_ctrl_sndFilename ); //!open snd file for writing
+    func->add_arg( "string", "value" );
+    func->doc = "Open SND file for writing.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "wavFilename", WvOut_ctrl_wavFilename ); //!open WAVE file for writing
+    func->add_arg( "string", "value" );
+    func->doc = "Open WAVE file for writing.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "rawFilename", WvOut_ctrl_rawFilename ); //!open raw file for writing
+    func->add_arg( "string", "value" );
+    func->doc = "Open a raw file for writing.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "aifFilename", WvOut_ctrl_aifFilename ); //!open AIFF file for writing
+    func->add_arg( "string", "value" );
+    func->doc = "Open an AIFF file for writing.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "filename", WvOut_cget_filename ); //!get filename
+    func->doc = "Get filename.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "int", "record", WvOut_ctrl_record ); // !start/stop output
+    func->add_arg( "int", "value" );
+    func->doc = "Start/stop output.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "int", "record", WvOut_cget_record ); // !start/stop output
+    func->doc = "Start/stop output.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "closeFile", WvOut_ctrl_closeFile ); //! close file properly
+    func->add_arg( "string", "value" );
+    func->doc = "Close the file properly.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "closeFile", WvOut_ctrl_closeFile ); //! close file properly
+    func->doc = "Close the file properly.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "autoPrefix", WvOut_ctrl_autoPrefix ); //! set/get auto prefix string
+    func->add_arg( "string", "value" );
+    func->doc = "Set auto prefix string.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "autoPrefix", WvOut_cget_autoPrefix ); //! set/get auto prefix string
+    func->doc = "Get auto prefix string.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    func = make_new_mfun( "float", "fileGain", WvOut_ctrl_fileGain ); //! set/get auto prefix string
+    func->add_arg( "float", "value" );
+    func->doc = "Set file gain.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    func = make_new_mfun( "float", "fileGain", WvOut_cget_fileGain ); //! set/get auto prefix string
+    func->doc = "Get file gain.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // end the class import
+    type_engine_import_class_end( env );
+    
+    
+    if( !type_engine_import_ugen_begin( env, "WvOut2", "WvOut", env->global(),
+                                        NULL, NULL,
+                                        NULL, WvOut2_tickf, WvOut_pmsg, 2, 2 ) ) return FALSE;
+
+    func = make_new_mfun( "string", "matFilename", WvOut2_ctrl_matFilename ); //!open matlab file for writing
+    func->add_arg( "string", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    func = make_new_mfun( "string", "sndFilename", WvOut2_ctrl_sndFilename ); //!open snd file for writing
+    func->add_arg( "string", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    func = make_new_mfun( "string", "wavFilename", WvOut2_ctrl_wavFilename ); //!open WAVE file for writing
+    func->add_arg( "string", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    func = make_new_mfun( "string", "rawFilename", WvOut2_ctrl_rawFilename ); //!open raw file for writing
+    func->add_arg( "string", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    func = make_new_mfun( "string", "aifFilename", WvOut2_ctrl_aifFilename ); //!open AIFF file for writing
+    func->add_arg( "string", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // end the class import
+    type_engine_import_class_end( env );
+    #endif //__DISABLE_WVOUT__
+
 
     //------------------------------------------------------------------------
     // begin BLT (BandLtd)
@@ -17820,11 +17824,13 @@ MY_FLOAT *WvIn :: tickFrame(MY_FLOAT *frameVector, unsigned int frames)
 /***************************************************/
 
 
-//const WvOut::FILE_TYPE WvOut :: WVOUT_RAW = 1;
-//const WvOut::FILE_TYPE WvOut :: WVOUT_WAV = 2;
-//const WvOut::FILE_TYPE WvOut :: WVOUT_SND = 3;
-//const WvOut::FILE_TYPE WvOut :: WVOUT_AIF = 4;
-//const WvOut::FILE_TYPE WvOut :: WVOUT_MAT = 5;
+#ifndef __DISABLE_WVOUT__
+const WvOut::FILE_TYPE WvOut :: WVOUT_RAW = 1;
+const WvOut::FILE_TYPE WvOut :: WVOUT_WAV = 2;
+const WvOut::FILE_TYPE WvOut :: WVOUT_SND = 3;
+const WvOut::FILE_TYPE WvOut :: WVOUT_AIF = 4;
+const WvOut::FILE_TYPE WvOut :: WVOUT_MAT = 5;
+#endif
 
 // WAV header structure. See ftp://ftp.isi.edu/in-notes/rfc2361.txt
 // for information regarding format codes.
@@ -17884,751 +17890,771 @@ struct mathdr {
   // There's more, but it's of variable length
 };
 
-//size_t WvOut::fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream)
-//{
-//    if(asyncIO)
-//        return asyncWriteThread->fwrite(ptr, size, nitems, stream);
-//    else
-//        return ::fwrite(ptr, size, nitems, stream);
-//}
-//
-//int WvOut::fseek(FILE *stream, long offset, int whence)
-//{
-//    if(asyncIO)
-//        return asyncWriteThread->fseek(stream, offset, whence);
-//    else
-//        return ::fseek(stream, offset, whence);
-//}
-//
-//int WvOut::fflush(FILE *stream)
-//{
-//    if(asyncIO)
-//        return asyncWriteThread->fflush(stream);
-//    else
-//        return ::fflush(stream);
-//}
-//
-//int WvOut::fclose(FILE *stream)
-//{
-//    if(asyncIO)
-//        return asyncWriteThread->fclose(stream);
-//    else
-//        return ::fclose(stream);
-//}
-//
-//size_t WvOut::fread(void *ptr, size_t size, size_t nitems, FILE *stream)
-//{
-//    // can't read asynchronously (yet)
-//    assert(0);
-//    return 0;
-//}
-//
-//WvOut :: WvOut()
-//{
-//  init();
-//}
-//
-//WvOut::WvOut( const char *fileName, unsigned int nChannels, FILE_TYPE type, Stk::STK_FORMAT format )
-//{
-//  init();
-//  openFile( fileName, nChannels, type, format );
-//}
-//
-//WvOut :: ~WvOut()
-//{
-//  closeFile();
-//
-//  if (data)
-//    delete [] data;
-//}
-//
-//void WvOut :: init()
-//{
-//  fd = 0;
-//  data = 0;
-//  fileType = 0;
-//  dataType = 0;
-//  channels = 0;
-//  counter = 0;
-//  totalCount = 0;
-//  //m_filename[0] = '\0';
-//  start = TRUE;
-//  flush = 0;
-//  fileGain = 1;
-//
-//  // spencer: added as flag for off-thread write
-//  asyncIO = FALSE;
-//  asyncWriteThread = NULL;
-//}
-//
-//void WvOut :: closeFile( void )
-//{
-//  if( fd ) {
-//    // If there's an existing file, close it first.
-//    writeData( counter );
-//
-//    if ( fileType == WVOUT_RAW )
-//      fclose( fd );
-//    else if ( fileType == WVOUT_WAV )
-//      closeWavFile();
-//    else if ( fileType == WVOUT_SND )
-//      closeSndFile();
-//    else if ( fileType == WVOUT_AIF )
-//      closeAifFile();
-//    else if ( fileType == WVOUT_MAT )
-//      closeMatFile();
-//    fd = 0;
-//
-//    // printf("%f Seconds Computed\n\n", getTime() );
-//    totalCount = 0;
-//  }
-//
-//  str_filename.set( "" );
-//  //m_filename[0] = '\0';
-//}
-//
-//void WvOut :: openFile( const char *fileName, unsigned int nChannels, WvOut::FILE_TYPE type, Stk::STK_FORMAT format )
-//{
-//  closeFile();
-//  str_filename.set( fileName );
-//  //strncpy( m_filename, fileName, 255);
-//  //if ( strlen( fileName ) > 255 )
-//  //  m_filename[255] = '\0';
-//
-//  if ( nChannels < 1 ) {
-//    sprintf(msg, "[chuck](via WvOut): the channels argument must be greater than zero!");
-//    handleError( msg, StkError::FUNCTION_ARGUMENT );
-//  }
-//
-//  unsigned int lastChannels = channels;
-//  channels = nChannels;
-//  fileType = type;
-//
-//  if ( format != STK_SINT8 && format != STK_SINT16 &&
-//       format != STK_SINT32 && format != MY_FLOAT32 &&
-//       format != MY_FLOAT64 ) {
-//    sprintf( msg, "[chuck](via WvOut): Unknown data type specified (%ld).", format );
-//    handleError(msg, StkError::FUNCTION_ARGUMENT);
-//  }
-//  dataType = format;
-//
-//  bool result = false;
-//  if ( fileType == WVOUT_RAW ) {
-//    if ( channels != 1 ) {
-//      sprintf(msg, "[chuck](via WvOut): STK RAW files are, by definition, always monaural (channels = %d not supported)!", nChannels);
-//      handleError( msg, StkError::FUNCTION_ARGUMENT );
-//    }
-//    result = setRawFile( fileName );
-//  }
-//  else if ( fileType == WVOUT_WAV )
-//    result = setWavFile( fileName );
-//  else if ( fileType == WVOUT_SND )
-//    result = setSndFile( fileName );
-//  else if ( fileType == WVOUT_AIF )
-//    result = setAifFile( fileName );
-//  else if ( fileType == WVOUT_MAT )
-//    result = setMatFile( fileName );
-//  else {
-//    sprintf(msg, "[chuck](via WvOut): Unknown file type specified (%ld).", fileType);
-//    handleError(msg, StkError::FUNCTION_ARGUMENT);
-//  }
-//
-//  if ( result == false )
-//  {
-//    //closeFile();
-//    handleError(msg, StkError::FILE_ERROR);
-//    // handleError( msg, StkError::WARNING );
-//    // return;
-//  }
-//
-//  // Allocate new memory if necessary.
-//  if ( lastChannels < channels ) {
-//    if ( data ) delete [] data;
-//    data = (MY_FLOAT *) new MY_FLOAT[BUFFER_SIZE*channels];
-//  }
-//  counter = 0;
-//}
-//
-//bool WvOut :: setRawFile( const char *fileName )
-//{
-//  char name[128];
-//  strncpy(name, fileName, 128);
-//  if ( strstr(name, ".raw") == NULL) strcat(name, ".raw");
-//  fd = fopen(name, "wb");
-//  if ( !fd ) {
-//    sprintf(msg, "[chuck](via WvOut): Could not create RAW file: %s", name);
-//    return false;
-//  }
-//
-//  if ( dataType != STK_SINT16 ) {
-//    dataType = STK_SINT16;
-//    sprintf(msg, "[chuck](via WvOut): Using 16-bit signed integer data format for file %s.", name);
-//    handleError(msg, StkError::WARNING);
-//  }
-//
-//  byteswap = false;
-//  if( little_endian )
-//    byteswap = true;
-//
-//  // printf("\nCreating RAW file: %s\n", name);
-//  return true;
-//}
-//
-//bool WvOut :: setWavFile( const char *fileName )
-//{
-//  char name[128];
-//  strncpy(name, fileName, 128);
-//  if( strstr(name, ".wav") == NULL ) strcat(name, ".wav");
-//  fd = fopen( name, "wb" );
-//  if( !fd ) {
-//    sprintf(msg, "[chuck](via WvOut): Could not create WAV file: %s", name);
-//    return false;
-//  }
-//
-//  struct wavhdr hdr = {"RIF", 44, "WAV", "fmt", 16, 1, 1,
-//                        (SINT32) Stk::sampleRate(), 0, 2, 16, "dat", 0};
-//  hdr.riff[3] = 'F';
-//  hdr.wave[3] = 'E';
-//  hdr.fmt[3]  = ' ';
-//  hdr.data[3] = 'a';
-//  hdr.num_chans = (SINT16) channels;
-//  if ( dataType == STK_SINT8 )
-//    hdr.bits_per_samp = 8;
-//  else if ( dataType == STK_SINT16 )
-//    hdr.bits_per_samp = 16;
-//  else if ( dataType == STK_SINT32 )
-//    hdr.bits_per_samp = 32;
-//  else if ( dataType == MY_FLOAT32 ) {
-//    hdr.format_tag = 3;
-//    hdr.bits_per_samp = 32;
-//  }
-//  else if ( dataType == MY_FLOAT64 ) {
-//    hdr.format_tag = 3;
-//    hdr.bits_per_samp = 64;
-//  }
-//  hdr.bytes_per_samp = (SINT16) (channels * hdr.bits_per_samp / 8);
-//  hdr.bytes_per_sec = (SINT32) (hdr.sample_rate * hdr.bytes_per_samp);
-//
-//  byteswap = false;
-//  if( !little_endian )
-//  {
-//    byteswap = true;
-//    swap32((unsigned char *)&hdr.file_size);
-//    swap32((unsigned char *)&hdr.chunk_size);
-//    swap16((unsigned char *)&hdr.format_tag);
-//    swap16((unsigned char *)&hdr.num_chans);
-//    swap32((unsigned char *)&hdr.sample_rate);
-//    swap32((unsigned char *)&hdr.bytes_per_sec);
-//    swap16((unsigned char *)&hdr.bytes_per_samp);
-//    swap16((unsigned char *)&hdr.bits_per_samp);
-//  }
-//
-//  if ( fwrite(&hdr, 4, 11, fd) != 11 ) {
-//    sprintf(msg, "[chuck](via WvOut): Could not write WAV header for file %s", name);
-//    return false;
-//  }
-//
-//  // printf("\nCreating WAV file: %s\n", name);
-//  return true;
-//}
-//
-//void WvOut :: closeWavFile( void )
-//{
-//  int bytes_per_sample = 1;
-//  if ( dataType == STK_SINT16 )
-//    bytes_per_sample = 2;
-//  else if ( dataType == STK_SINT32 || dataType == MY_FLOAT32 )
-//    bytes_per_sample = 4;
-//  else if ( dataType == MY_FLOAT64 )
-//    bytes_per_sample = 8;
-//
-//  SINT32 bytes = totalCount * channels * bytes_per_sample;
-//if( !little_endian )
-//  swap32((unsigned char *)&bytes);
-//
-//  fseek(fd, 40, SEEK_SET); // jump to data length
-//  fwrite(&bytes, 4, 1, fd);
-//
-//  bytes = totalCount * channels * bytes_per_sample + 44;
-//if( !little_endian )
-//  swap32((unsigned char *)&bytes);
-//
-//  fseek(fd, 4, SEEK_SET); // jump to file size
-//  fwrite(&bytes, 4, 1, fd);
-//  fclose( fd );
-//}
-//
-//bool WvOut :: setSndFile( const char *fileName )
-//{
-//  char name[128];
-//  strncpy(name, fileName, 128);
-//  if ( strstr(name, ".snd") == NULL) strcat(name, ".snd");
-//  fd = fopen(name, "wb");
-//  if ( !fd ) {
-//    sprintf(msg, "[chuck](via WvOut): Could not create SND file: %s", name);
-//    return false;
-//  }
-//
-//  struct sndhdr hdr = {".sn", 40, 0, 3, (SINT32) Stk::sampleRate(), 1, "Created by STK"};
-//  hdr.pref[3] = 'd';
-//  hdr.num_channels = channels;
-//  if ( dataType == STK_SINT8 )
-//    hdr.format = 2;
-//  else if ( dataType == STK_SINT16 )
-//    hdr.format = 3;
-//  else if ( dataType == STK_SINT32 )
-//    hdr.format = 5;
-//  else if ( dataType == MY_FLOAT32 )
-//    hdr.format = 6;
-//  else if ( dataType == MY_FLOAT64 )
-//    hdr.format = 7;
-//
-//  byteswap = false;
-//if( little_endian )
-//{
-//  byteswap = true;
-//  swap32 ((unsigned char *)&hdr.hdr_length);
-//  swap32 ((unsigned char *)&hdr.format);
-//  swap32 ((unsigned char *)&hdr.sample_rate);
-//  swap32 ((unsigned char *)&hdr.num_channels);
-//}
-//
-//  if ( fwrite(&hdr, 4, 10, fd) != 10 ) {
-//    sprintf(msg, "[chuck](via WvOut): Could not write SND header for file %s", name);
-//    return false;
-//  }
-//
-//  // printf("\nCreating SND file: %s\n", name);
-//  return true;
-//}
-//
-//void WvOut :: closeSndFile( void )
-//{
-//  int bytes_per_sample = 1;
-//  if ( dataType == STK_SINT16 )
-//    bytes_per_sample = 2;
-//  else if ( dataType == STK_SINT32 )
-//    bytes_per_sample = 4;
-//  else if ( dataType == MY_FLOAT32 )
-//    bytes_per_sample = 4;
-//  else if ( dataType == MY_FLOAT64 )
-//    bytes_per_sample = 8;
-//
-//  SINT32 bytes = totalCount * bytes_per_sample * channels;
-//if( little_endian )
-//  swap32 ((unsigned char *)&bytes);
-//
-//  fseek(fd, 8, SEEK_SET); // jump to data size
-//  fwrite(&bytes, 4, 1, fd);
-//  fclose(fd);
-//}
-//
-//bool WvOut :: setAifFile( const char *fileName )
-//{
-//  char name[128];
-//  strncpy(name, fileName, 128);
-//  if ( strstr(name, ".aif") == NULL) strcat(name, ".aif");
-//  fd = fopen(name, "wb");
-//  if ( !fd ) {
-//    sprintf(msg, "[chuck](via WvOut): Could not create AIF file: %s", name);
-//    return false;
-//  }
-//
-//  // Common parts of AIFF/AIFC header.
-//  struct aifhdr hdr = {"FOR", 46, "AIF", "COM", 18, 0, 0, 16, "0"};
-//  struct aifssnd ssnd = {"SSN", 8, 0, 0};
-//  hdr.form[3] = 'M';
-//  hdr.aiff[3] = 'F';
-//  hdr.comm[3] = 'M';
-//  ssnd.ssnd[3] = 'D';
-//  hdr.num_chans = channels;
-//  if ( dataType == STK_SINT8 )
-//    hdr.sample_size = 8;
-//  else if ( dataType == STK_SINT16 )
-//    hdr.sample_size = 16;
-//  else if ( dataType == STK_SINT32 )
-//    hdr.sample_size = 32;
-//  else if ( dataType == MY_FLOAT32 ) {
-//    hdr.aiff[3] = 'C';
-//    hdr.sample_size = 32;
-//    hdr.comm_size = 24;
-//  }
-//  else if ( dataType == MY_FLOAT64 ) {
-//    hdr.aiff[3] = 'C';
-//    hdr.sample_size = 64;
-//    hdr.comm_size = 24;
-//  }
-//
-//  // For AIFF files, the sample rate is stored in a 10-byte,
-//  // IEEE Standard 754 floating point number, so we need to
-//  // convert to that.
-//  SINT16 i;
-//  unsigned long exp;
-//  unsigned long rate = (unsigned long) Stk::sampleRate();
-//  memset(hdr.srate, 0, 10);
-//  exp = rate;
-//  for (i=0; i<32; i++) {
-//    exp >>= 1;
-//    if (!exp) break;
-//  }
-//  i += 16383;
-//if( little_endian )
-//  swap16((unsigned char *)&i);
-//
-//  *(SINT16 *)(hdr.srate) = (SINT16) i;
-//
-//  for (i=32; i; i--) {
-//    if (rate & 0x80000000) break;
-//    rate <<= 1;
-//  }
-//
-//if( little_endian )
-//  swap32((unsigned char *)&rate);
-//
-//  *(unsigned long *)(hdr.srate+2) = (unsigned long) rate;
-//
-//  byteswap = false;
-//if( little_endian )
-//{
-//  byteswap = true;
-//  swap32((unsigned char *)&hdr.form_size);
-//  swap32((unsigned char *)&hdr.comm_size);
-//  swap16((unsigned char *)&hdr.num_chans);
-//  swap16((unsigned char *)&hdr.sample_size);
-//  swap32((unsigned char *)&ssnd.ssnd_size);
-//  swap32((unsigned char *)&ssnd.offset);
-//  swap32((unsigned char *)&ssnd.block_size);
-//}
-//
-//  // The structure boundaries don't allow a single write of 54 bytes.
-//  if ( fwrite(&hdr, 4, 5, fd) != 5 ) goto error;
-//  if ( fwrite(&hdr.num_chans, 2, 1, fd) != 1 ) goto error;
-//  if ( fwrite(&hdr.sample_frames, 4, 1, fd) != 1 ) goto error;
-//  if ( fwrite(&hdr.sample_size, 2, 1, fd) != 1 ) goto error;
-//  if ( fwrite(&hdr.srate, 10, 1, fd) != 1 ) goto error;
-//
-//  if ( dataType == MY_FLOAT32 ) {
-//    char type[4] = {'f','l','3','2'};
-//    char zeroes[2] = { 0, 0 };
-//    if ( fwrite(&type, 4, 1, fd) != 1 ) goto error;
-//    if ( fwrite(&zeroes, 2, 1, fd) != 1 ) goto error;
-//  }
-//  else if ( dataType == MY_FLOAT64 ) {
-//    char type[4] = {'f','l','6','4'};
-//    char zeroes[2] = { 0, 0 };
-//    if ( fwrite(&type, 4, 1, fd) != 1 ) goto error;
-//    if ( fwrite(&zeroes, 2, 1, fd) != 1 ) goto error;
-//  }
-//
-//  if ( fwrite(&ssnd, 4, 4, fd) != 4 ) goto error;
-//
-//  // printf("\nCreating AIF file: %s\n", name);
-//  return true;
-//
-// error:
-//  sprintf(msg, "[chuck](via WvOut): Could not write AIF header for file %s", name);
-//  return false;
-//}
-//
-//void WvOut :: closeAifFile( void )
-//{
-//  unsigned long frames = (unsigned long) totalCount;
-//if( little_endian )
-//  swap32((unsigned char *)&frames);
-//
-//  fseek(fd, 22, SEEK_SET); // jump to "COMM" sample_frames
-//  fwrite(&frames, 4, 1, fd);
-//
-//  int bytes_per_sample = 1;
-//  if ( dataType == STK_SINT16 )
-//    bytes_per_sample = 2;
-//  else if ( dataType == STK_SINT32 || dataType == MY_FLOAT32 )
-//    bytes_per_sample = 4;
-//  else if ( dataType == MY_FLOAT64 )
-//    bytes_per_sample = 8;
-//
-//  unsigned long bytes = totalCount * bytes_per_sample * channels + 46;
-//  if ( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 ) bytes += 6;
-//if( little_endian )
-//  swap32((unsigned char *)&bytes);
-//
-//  fseek(fd, 4, SEEK_SET); // jump to file size
-//  fwrite(&bytes, 4, 1, fd);
-//
-//  bytes = totalCount * bytes_per_sample * channels + 8;
-//  if ( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 ) bytes += 6;
-//if( little_endian )
-//  swap32((unsigned char *)&bytes);
-//
-//  if ( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 )
-//    fseek(fd, 48, SEEK_SET); // jump to "SSND" chunk size
-//  else
-//    fseek(fd, 42, SEEK_SET); // jump to "SSND" chunk size
-//  fwrite(&bytes, 4, 1, fd);
-//
-//  fclose( fd );
-//}
-//
-//bool WvOut :: setMatFile( const char *fileName )
-//{
-//  char name[128];
-//  strncpy(name, fileName, 128);
-//  if ( strstr(name, ".mat") == NULL) strcat(name, ".mat");
-//  fd = fopen(name, "w+b");
-//  if ( !fd ) {
-//    sprintf(msg, "[chuck](via WvOut): Could not create MAT file: %s", name);
-//    return false;
-//  }
-//
-//  if ( dataType != MY_FLOAT64 ) {
-//    dataType = MY_FLOAT64;
-//    sprintf(msg, "[chuck](via WvOut): Using 64-bit floating-point data format for file %s", name);
-//    handleError(msg, StkError::WARNING);
-//  }
-//
-//  struct mathdr hdr;
-//  strcpy(hdr.heading,"MATLAB 5.0 MAT-file, Generated using the Synthesis ToolKit in C++ (STK). By Perry R. Cook and Gary P. Scavone, 1995-2002.");
-//
-//  int i;
-//  for (i=strlen(hdr.heading);i<124;i++) hdr.heading[i] = ' ';
-//
-//  // Header Flag Fields
-//  hdr.hff[0] = (SINT16) 0x0100;   // Version field
-//  hdr.hff[1] = (SINT16) 'M';      // Endian indicator field ("MI")
-//  hdr.hff[1] <<= 8;
-//  hdr.hff[1] += 'I';
-//
-//  hdr.adf[0] = (SINT32) 14;       // Matlab array data type value
-//  hdr.adf[1] = (SINT32) 0;        // Size of file after this point to end (in bytes)
-//                                 // Don't know size yet.
-//
-//  // Numeric Array Subelements (4):
-//  // 1. Array Flags
-//  hdr.adf[2] = (SINT32) 6;        // Matlab 32-bit unsigned integer data type value
-//  hdr.adf[3] = (SINT32) 8;        // 8 bytes of data to follow
-//  hdr.adf[4] = (SINT32) 6;        // Double-precision array, no array flags set
-//  hdr.adf[5] = (SINT32) 0;        // 4 bytes undefined
-//  // 2. Array Dimensions
-//  hdr.adf[6] = (SINT32) 5;        // Matlab 32-bit signed integer data type value
-//  hdr.adf[7] = (SINT32) 8;        // 8 bytes of data to follow (2D array)
-//  hdr.adf[8] = (SINT32) channels; // This is the number of rows
-//  hdr.adf[9] = (SINT32) 0;        // This is the number of columns
-//
-//  // 3. Array Name
-//  // We'll use fileName for the matlab array name (as well as the file name).
-//  // If fileName is 4 characters or less, we have to use a compressed data element
-//  // format for the array name data element.  Otherwise, the array name must
-//  // be formatted in 8-byte increments (up to 31 characters + NULL).
-//  SINT32 namelength = (SINT32) strlen(fileName);
-//  if (strstr(fileName, ".mat")) namelength -= 4;
-//  if (namelength > 31) namelength = 31; // Truncate name to 31 characters.
-//  char arrayName[64];
-//  strncpy(arrayName, fileName, namelength);
-//  arrayName[namelength] = '\0';
-//  if (namelength > 4) {
-//    hdr.adf[10] = (SINT32) 1;        // Matlab 8-bit signed integer data type value
-//  }
-//  else { // Compressed data element format
-//    hdr.adf[10] = namelength;
-//    hdr.adf[10] <<= 16;
-//    hdr.adf[10] += 1;
-//  }
-//  SINT32 headsize = 40;        // Number of bytes in data element so far.
-//
-//  // Write the fixed portion of the header
-//  if ( fwrite(&hdr, 172, 1, fd) != 1 ) goto error;
-//
-//  // Write MATLAB array name
-//  SINT32 tmp;
-//  if (namelength > 4) {
-//    if ( fwrite(&namelength, 4, 1, fd) != 1) goto error;
-//    if ( fwrite(arrayName, namelength, 1, fd) != 1 ) goto error;
-//    tmp = (SINT32) ceil((float)namelength / 8);
-//    if ( fseek(fd, tmp*8-namelength, SEEK_CUR) == -1 ) goto error;
-//    headsize += tmp * 8;
-//  }
-//  else { // Compressed data element format
-//    if ( fwrite(arrayName, namelength, 1, fd) != 1 ) goto error;
-//    tmp = 4 - namelength;
-//    if ( fseek(fd, tmp, SEEK_CUR) == -1 ) goto error;
-//  }
-//
-//  // Finish writing known header information
-//  tmp = 9;        // Matlab IEEE 754 double data type
-//  if ( fwrite(&tmp, 4, 1, fd) != 1 ) goto error;
-//  tmp = 0;        // Size of real part subelement in bytes (8 per sample)
-//  if ( fwrite(&tmp, 4, 1, fd) != 1 ) goto error;
-//  headsize += 8;  // Total number of bytes in data element so far
-//
-//  if ( fseek(fd, 132, SEEK_SET) == -1 ) goto error;
-//  if ( fwrite(&headsize, 4, 1, fd) != 1 ) goto error; // Write header size ... will update at end
-//  if ( fseek(fd, 0, SEEK_END) == -1 ) goto error;
-//
-//  byteswap = false;
-//  CK_FPRINTF_STDERR( "[chuck]:(via STK): creating MAT-file (%s) containing MATLAB array: %s\n", name, arrayName);
-//  return true;
-//
-// error:
-//  sprintf(msg, "[chuck](via WvOut): Could not write MAT-file header for file %s", name);
-//  return false;
-//}
-//
-//void WvOut :: closeMatFile( void )
-//{
-//  fseek(fd, 164, SEEK_SET); // jump to number of columns
-//  fwrite(&totalCount, 4, 1, fd);
-//
-//  SINT32 headsize, temp;
-//  fseek(fd, 132, SEEK_SET);  // jump to header size
-//  fread(&headsize, 4, 1, fd);
-//  temp = headsize;
-//  headsize += (SINT32) (totalCount * 8 * channels);
-//  fseek(fd, 132, SEEK_SET);
-//  // Write file size (minus some header info)
-//  fwrite(&headsize, 4, 1, fd);
-//
-//  fseek(fd, temp+132, SEEK_SET); // jumpt to data size (in bytes)
-//  temp = totalCount * 8 * channels;
-//  fwrite(&temp, 4, 1, fd);
-//
-//  fclose(fd);
-//}
-//
-//unsigned long WvOut :: getFrames( void ) const
-//{
-//  return totalCount;
-//}
-//
-//MY_FLOAT WvOut :: getTime( void ) const
-//{
-//  return (MY_FLOAT) totalCount / Stk::sampleRate();
-//}
-//
-//void WvOut :: writeData( unsigned long frames )
-//{
-//  // make sure we have file descriptor
-//  if( !fd ) return;
-//
-//  if ( dataType == STK_SINT8 ) {
-//    if ( fileType == WVOUT_WAV ) { // 8-bit WAV data is unsigned!
-//      for ( unsigned long k=0; k<frames*channels; k++ ) {
-//        float float_sample = data[k] * 127.0 + 128.0;
-//        if(float_sample < 0) float_sample = 0;
-//        if(float_sample > 255) float_sample = 255;
-//        unsigned char sample = (unsigned char) float_sample;
-//
-//        if ( fwrite(&sample, 1, 1, fd) != 1 ) goto error;
-//      }
-//    }
-//    else {
-//      for ( unsigned long k=0; k<frames*channels; k++ ) {
-//        float float_sample = data[k] * 127.0;
-//        if(float_sample < -128) float_sample = -128;
-//        if(float_sample > 127) float_sample = 127;
-//        signed char sample = (signed char) float_sample;
-//
-//        if ( fwrite(&sample, 1, 1, fd) != 1 ) goto error;
-//      }
-//    }
-//  }
-//  else if ( dataType == STK_SINT16 ) {
-//    for ( unsigned long k=0; k<frames*channels; k++ ) {
-//      float float_sample = data[k] * 32767.0;
-//      if(float_sample < -32767) float_sample = -32767;
-//      if(float_sample > 32767) float_sample = 32767;
-//      SINT16 sample = (SINT16) float_sample;
-//
-//      if ( byteswap ) swap16( (unsigned char *)&sample );
-//      if ( fwrite(&sample, 2, 1, fd) != 1 ) goto error;
-//    }
-//  }
-//  else if ( dataType == STK_SINT32 ) {
-//    for ( unsigned long k=0; k<frames*channels; k++ ) {
-//      float float_sample = data[k] * 32767.0;
-//      if(float_sample < -2147483647) float_sample = (float)-2147483647;
-//      if(float_sample > 2147483647) float_sample = (float)2147483647;
-//      SINT32 sample = (SINT32) float_sample;
-//
-//      if ( byteswap ) swap32( (unsigned char *)&sample );
-//      if ( fwrite(&sample, 4, 1, fd) != 1 ) goto error;
-//    }
-//  }
-//  else if ( dataType == MY_FLOAT32 ) {
-//    FLOAT32 sample;
-//    for ( unsigned long k=0; k<frames*channels; k++ ) {
-//      sample = (FLOAT32) (data[k]);
-//
-//      if ( byteswap ) swap32( (unsigned char *)&sample );
-//      if ( fwrite(&sample, 4, 1, fd) != 1 ) goto error;
-//    }
-//  }
-//  else if ( dataType == MY_FLOAT64 ) {
-//    FLOAT64 sample;
-//    for ( unsigned long k=0; k<frames*channels; k++ ) {
-//      sample = (FLOAT64) (data[k]);
-//
-//      if ( byteswap ) swap64( (unsigned char *)&sample );
-//      if ( fwrite(&sample, 8, 1, fd) != 1 ) goto error;
-//    }
-//  }
-//
-//  flush += frames;
-//  if( flush >= 8192 )
-//  {
-//      flush = 0;
-//      fflush( fd );
-//  }
-//
-//  return;
-//
-// error:
-//  sprintf(msg, "[chuck](via WvOut): Error writing data to file.");
-//  handleError(msg, StkError::FILE_ERROR);
-//}
-//
-//void WvOut :: tick(const MY_FLOAT sample)
-//{
-//  if ( !fd ) return;
-//
-//  for ( unsigned int j=0; j<channels; j++ )
-//    data[counter*channels+j] = sample;
-//
-//  counter++;
-//  totalCount++;
-//
-//  if ( counter == BUFFER_SIZE ) {
-//    writeData( BUFFER_SIZE );
-//    counter = 0;
-//  }
-//}
-//
-//void WvOut :: tick(const MY_FLOAT *vec, unsigned int vectorSize)
-//{
-//  if ( !fd ) return;
-//
-//  for (unsigned int i=0; i<vectorSize; i++)
-//    tick( vec[i] );
-//}
-//
-//void WvOut :: tickFrame(const MY_FLOAT *frameVector, unsigned int frames)
-//{
-//  if ( !fd ) return;
-//
-//  unsigned int j;
-//  for ( unsigned int i=0; i<frames; i++ ) {
-//    for ( j=0; j<channels; j++ ) {
-//      data[counter*channels+j] = frameVector[i*channels+j];
-//    }
-//    counter++;
-//    totalCount++;
-//
-//    if ( counter == BUFFER_SIZE ) {
-//      writeData( BUFFER_SIZE );
-//      counter = 0;
-//    }
-//  }
-//}
-//
+
+#ifndef __DISABLE_WVOUT__
+size_t WvOut::fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream)
+{
+    #ifndef __DISABLE_THREADS__
+    if(asyncIO)
+        return asyncWriteThread->fwrite(ptr, size, nitems, stream);
+    else
+        return ::fwrite(ptr, size, nitems, stream);
+    #else
+    return ::fwrite(ptr, size, nitems, stream);
+    #endif
+}
+
+int WvOut::fseek(FILE *stream, long offset, int whence)
+{
+    #ifndef __DISABLE_THREADS__
+    if(asyncIO)
+        return asyncWriteThread->fseek(stream, offset, whence);
+    else
+        return ::fseek(stream, offset, whence);
+    #else
+    return ::fseek(stream, offset, whence);
+    #endif
+}
+
+int WvOut::fflush(FILE *stream)
+{
+    #ifndef __DISABLE_THREADS__
+    if(asyncIO)
+        return asyncWriteThread->fflush(stream);
+    else
+        return ::fflush(stream);
+    #else
+    return ::fflush(stream);
+    #endif
+}
+
+int WvOut::fclose(FILE *stream)
+{
+    #ifndef __DISABLE_THREADS__
+    if(asyncIO)
+        return asyncWriteThread->fclose(stream);
+    else
+        return ::fclose(stream);
+    #else
+    return ::fclose(stream);
+    #endif
+}
+
+size_t WvOut::fread(void *ptr, size_t size, size_t nitems, FILE *stream)
+{
+    // can't read asynchronously (yet)
+    assert(0);
+    return 0;
+}
+
+WvOut :: WvOut()
+{
+  init();
+}
+
+WvOut::WvOut( const char *fileName, unsigned int nChannels, FILE_TYPE type, Stk::STK_FORMAT format )
+{
+  init();
+  openFile( fileName, nChannels, type, format );
+}
+
+WvOut :: ~WvOut()
+{
+  closeFile();
+
+  if (data)
+    delete [] data;
+}
+
+void WvOut :: init()
+{
+  fd = 0;
+  data = 0;
+  fileType = 0;
+  dataType = 0;
+  channels = 0;
+  counter = 0;
+  totalCount = 0;
+  //m_filename[0] = '\0';
+  start = TRUE;
+  flush = 0;
+  fileGain = 1;
+
+  // spencer: added as flag for off-thread write
+  asyncIO = FALSE;
+  asyncWriteThread = NULL;
+}
+
+void WvOut :: closeFile( void )
+{
+  if( fd ) {
+    // If there's an existing file, close it first.
+    writeData( counter );
+
+    if ( fileType == WVOUT_RAW )
+      fclose( fd );
+    else if ( fileType == WVOUT_WAV )
+      closeWavFile();
+    else if ( fileType == WVOUT_SND )
+      closeSndFile();
+    else if ( fileType == WVOUT_AIF )
+      closeAifFile();
+    else if ( fileType == WVOUT_MAT )
+      closeMatFile();
+    fd = 0;
+
+    // printf("%f Seconds Computed\n\n", getTime() );
+    totalCount = 0;
+  }
+
+  str_filename.set( "" );
+  //m_filename[0] = '\0';
+}
+
+void WvOut :: openFile( const char *fileName, unsigned int nChannels, WvOut::FILE_TYPE type, Stk::STK_FORMAT format )
+{
+  closeFile();
+  str_filename.set( fileName );
+  //strncpy( m_filename, fileName, 255);
+  //if ( strlen( fileName ) > 255 )
+  //  m_filename[255] = '\0';
+
+  if ( nChannels < 1 ) {
+    sprintf(msg, "[chuck](via WvOut): the channels argument must be greater than zero!");
+    handleError( msg, StkError::FUNCTION_ARGUMENT );
+  }
+
+  unsigned int lastChannels = channels;
+  channels = nChannels;
+  fileType = type;
+
+  if ( format != STK_SINT8 && format != STK_SINT16 &&
+       format != STK_SINT32 && format != MY_FLOAT32 &&
+       format != MY_FLOAT64 ) {
+    sprintf( msg, "[chuck](via WvOut): Unknown data type specified (%ld).", format );
+    handleError(msg, StkError::FUNCTION_ARGUMENT);
+  }
+  dataType = format;
+
+  bool result = false;
+  if ( fileType == WVOUT_RAW ) {
+    if ( channels != 1 ) {
+      sprintf(msg, "[chuck](via WvOut): STK RAW files are, by definition, always monaural (channels = %d not supported)!", nChannels);
+      handleError( msg, StkError::FUNCTION_ARGUMENT );
+    }
+    result = setRawFile( fileName );
+  }
+  else if ( fileType == WVOUT_WAV )
+    result = setWavFile( fileName );
+  else if ( fileType == WVOUT_SND )
+    result = setSndFile( fileName );
+  else if ( fileType == WVOUT_AIF )
+    result = setAifFile( fileName );
+  else if ( fileType == WVOUT_MAT )
+    result = setMatFile( fileName );
+  else {
+    sprintf(msg, "[chuck](via WvOut): Unknown file type specified (%ld).", fileType);
+    handleError(msg, StkError::FUNCTION_ARGUMENT);
+  }
+
+  if ( result == false )
+  {
+    //closeFile();
+    handleError(msg, StkError::FILE_ERROR);
+    // handleError( msg, StkError::WARNING );
+    // return;
+  }
+
+  // Allocate new memory if necessary.
+  if ( lastChannels < channels ) {
+    if ( data ) delete [] data;
+    data = (MY_FLOAT *) new MY_FLOAT[BUFFER_SIZE*channels];
+  }
+  counter = 0;
+}
+
+bool WvOut :: setRawFile( const char *fileName )
+{
+  char name[128];
+  strncpy(name, fileName, 128);
+  if ( strstr(name, ".raw") == NULL) strcat(name, ".raw");
+  fd = fopen(name, "wb");
+  if ( !fd ) {
+    sprintf(msg, "[chuck](via WvOut): Could not create RAW file: %s", name);
+    return false;
+  }
+
+  if ( dataType != STK_SINT16 ) {
+    dataType = STK_SINT16;
+    sprintf(msg, "[chuck](via WvOut): Using 16-bit signed integer data format for file %s.", name);
+    handleError(msg, StkError::WARNING);
+  }
+
+  byteswap = false;
+  if( little_endian )
+    byteswap = true;
+
+  // printf("\nCreating RAW file: %s\n", name);
+  return true;
+}
+
+bool WvOut :: setWavFile( const char *fileName )
+{
+  char name[128];
+  strncpy(name, fileName, 128);
+  if( strstr(name, ".wav") == NULL ) strcat(name, ".wav");
+  fd = fopen( name, "wb" );
+  if( !fd ) {
+    sprintf(msg, "[chuck](via WvOut): Could not create WAV file: %s", name);
+    return false;
+  }
+
+  struct wavhdr hdr = {"RIF", 44, "WAV", "fmt", 16, 1, 1,
+                        (SINT32) Stk::sampleRate(), 0, 2, 16, "dat", 0};
+  hdr.riff[3] = 'F';
+  hdr.wave[3] = 'E';
+  hdr.fmt[3]  = ' ';
+  hdr.data[3] = 'a';
+  hdr.num_chans = (SINT16) channels;
+  if ( dataType == STK_SINT8 )
+    hdr.bits_per_samp = 8;
+  else if ( dataType == STK_SINT16 )
+    hdr.bits_per_samp = 16;
+  else if ( dataType == STK_SINT32 )
+    hdr.bits_per_samp = 32;
+  else if ( dataType == MY_FLOAT32 ) {
+    hdr.format_tag = 3;
+    hdr.bits_per_samp = 32;
+  }
+  else if ( dataType == MY_FLOAT64 ) {
+    hdr.format_tag = 3;
+    hdr.bits_per_samp = 64;
+  }
+  hdr.bytes_per_samp = (SINT16) (channels * hdr.bits_per_samp / 8);
+  hdr.bytes_per_sec = (SINT32) (hdr.sample_rate * hdr.bytes_per_samp);
+
+  byteswap = false;
+  if( !little_endian )
+  {
+    byteswap = true;
+    swap32((unsigned char *)&hdr.file_size);
+    swap32((unsigned char *)&hdr.chunk_size);
+    swap16((unsigned char *)&hdr.format_tag);
+    swap16((unsigned char *)&hdr.num_chans);
+    swap32((unsigned char *)&hdr.sample_rate);
+    swap32((unsigned char *)&hdr.bytes_per_sec);
+    swap16((unsigned char *)&hdr.bytes_per_samp);
+    swap16((unsigned char *)&hdr.bits_per_samp);
+  }
+
+  if ( fwrite(&hdr, 4, 11, fd) != 11 ) {
+    sprintf(msg, "[chuck](via WvOut): Could not write WAV header for file %s", name);
+    return false;
+  }
+
+  // printf("\nCreating WAV file: %s\n", name);
+  return true;
+}
+
+void WvOut :: closeWavFile( void )
+{
+  int bytes_per_sample = 1;
+  if ( dataType == STK_SINT16 )
+    bytes_per_sample = 2;
+  else if ( dataType == STK_SINT32 || dataType == MY_FLOAT32 )
+    bytes_per_sample = 4;
+  else if ( dataType == MY_FLOAT64 )
+    bytes_per_sample = 8;
+
+  SINT32 bytes = totalCount * channels * bytes_per_sample;
+if( !little_endian )
+  swap32((unsigned char *)&bytes);
+
+  fseek(fd, 40, SEEK_SET); // jump to data length
+  fwrite(&bytes, 4, 1, fd);
+
+  bytes = totalCount * channels * bytes_per_sample + 44;
+if( !little_endian )
+  swap32((unsigned char *)&bytes);
+
+  fseek(fd, 4, SEEK_SET); // jump to file size
+  fwrite(&bytes, 4, 1, fd);
+  fclose( fd );
+}
+
+bool WvOut :: setSndFile( const char *fileName )
+{
+  char name[128];
+  strncpy(name, fileName, 128);
+  if ( strstr(name, ".snd") == NULL) strcat(name, ".snd");
+  fd = fopen(name, "wb");
+  if ( !fd ) {
+    sprintf(msg, "[chuck](via WvOut): Could not create SND file: %s", name);
+    return false;
+  }
+
+  struct sndhdr hdr = {".sn", 40, 0, 3, (SINT32) Stk::sampleRate(), 1, "Created by STK"};
+  hdr.pref[3] = 'd';
+  hdr.num_channels = channels;
+  if ( dataType == STK_SINT8 )
+    hdr.format = 2;
+  else if ( dataType == STK_SINT16 )
+    hdr.format = 3;
+  else if ( dataType == STK_SINT32 )
+    hdr.format = 5;
+  else if ( dataType == MY_FLOAT32 )
+    hdr.format = 6;
+  else if ( dataType == MY_FLOAT64 )
+    hdr.format = 7;
+
+  byteswap = false;
+if( little_endian )
+{
+  byteswap = true;
+  swap32 ((unsigned char *)&hdr.hdr_length);
+  swap32 ((unsigned char *)&hdr.format);
+  swap32 ((unsigned char *)&hdr.sample_rate);
+  swap32 ((unsigned char *)&hdr.num_channels);
+}
+
+  if ( fwrite(&hdr, 4, 10, fd) != 10 ) {
+    sprintf(msg, "[chuck](via WvOut): Could not write SND header for file %s", name);
+    return false;
+  }
+
+  // printf("\nCreating SND file: %s\n", name);
+  return true;
+}
+
+void WvOut :: closeSndFile( void )
+{
+  int bytes_per_sample = 1;
+  if ( dataType == STK_SINT16 )
+    bytes_per_sample = 2;
+  else if ( dataType == STK_SINT32 )
+    bytes_per_sample = 4;
+  else if ( dataType == MY_FLOAT32 )
+    bytes_per_sample = 4;
+  else if ( dataType == MY_FLOAT64 )
+    bytes_per_sample = 8;
+
+  SINT32 bytes = totalCount * bytes_per_sample * channels;
+if( little_endian )
+  swap32 ((unsigned char *)&bytes);
+
+  fseek(fd, 8, SEEK_SET); // jump to data size
+  fwrite(&bytes, 4, 1, fd);
+  fclose(fd);
+}
+
+bool WvOut :: setAifFile( const char *fileName )
+{
+  char name[128];
+  strncpy(name, fileName, 128);
+  if ( strstr(name, ".aif") == NULL) strcat(name, ".aif");
+  fd = fopen(name, "wb");
+  if ( !fd ) {
+    sprintf(msg, "[chuck](via WvOut): Could not create AIF file: %s", name);
+    return false;
+  }
+
+  // Common parts of AIFF/AIFC header.
+  struct aifhdr hdr = {"FOR", 46, "AIF", "COM", 18, 0, 0, 16, "0"};
+  struct aifssnd ssnd = {"SSN", 8, 0, 0};
+  hdr.form[3] = 'M';
+  hdr.aiff[3] = 'F';
+  hdr.comm[3] = 'M';
+  ssnd.ssnd[3] = 'D';
+  hdr.num_chans = channels;
+  if ( dataType == STK_SINT8 )
+    hdr.sample_size = 8;
+  else if ( dataType == STK_SINT16 )
+    hdr.sample_size = 16;
+  else if ( dataType == STK_SINT32 )
+    hdr.sample_size = 32;
+  else if ( dataType == MY_FLOAT32 ) {
+    hdr.aiff[3] = 'C';
+    hdr.sample_size = 32;
+    hdr.comm_size = 24;
+  }
+  else if ( dataType == MY_FLOAT64 ) {
+    hdr.aiff[3] = 'C';
+    hdr.sample_size = 64;
+    hdr.comm_size = 24;
+  }
+
+  // For AIFF files, the sample rate is stored in a 10-byte,
+  // IEEE Standard 754 floating point number, so we need to
+  // convert to that.
+  SINT16 i;
+  unsigned long exp;
+  unsigned long rate = (unsigned long) Stk::sampleRate();
+  memset(hdr.srate, 0, 10);
+  exp = rate;
+  for (i=0; i<32; i++) {
+    exp >>= 1;
+    if (!exp) break;
+  }
+  i += 16383;
+if( little_endian )
+  swap16((unsigned char *)&i);
+
+  *(SINT16 *)(hdr.srate) = (SINT16) i;
+
+  for (i=32; i; i--) {
+    if (rate & 0x80000000) break;
+    rate <<= 1;
+  }
+
+if( little_endian )
+  swap32((unsigned char *)&rate);
+
+  *(unsigned long *)(hdr.srate+2) = (unsigned long) rate;
+
+  byteswap = false;
+if( little_endian )
+{
+  byteswap = true;
+  swap32((unsigned char *)&hdr.form_size);
+  swap32((unsigned char *)&hdr.comm_size);
+  swap16((unsigned char *)&hdr.num_chans);
+  swap16((unsigned char *)&hdr.sample_size);
+  swap32((unsigned char *)&ssnd.ssnd_size);
+  swap32((unsigned char *)&ssnd.offset);
+  swap32((unsigned char *)&ssnd.block_size);
+}
+
+  // The structure boundaries don't allow a single write of 54 bytes.
+  if ( fwrite(&hdr, 4, 5, fd) != 5 ) goto error;
+  if ( fwrite(&hdr.num_chans, 2, 1, fd) != 1 ) goto error;
+  if ( fwrite(&hdr.sample_frames, 4, 1, fd) != 1 ) goto error;
+  if ( fwrite(&hdr.sample_size, 2, 1, fd) != 1 ) goto error;
+  if ( fwrite(&hdr.srate, 10, 1, fd) != 1 ) goto error;
+
+  if ( dataType == MY_FLOAT32 ) {
+    char type[4] = {'f','l','3','2'};
+    char zeroes[2] = { 0, 0 };
+    if ( fwrite(&type, 4, 1, fd) != 1 ) goto error;
+    if ( fwrite(&zeroes, 2, 1, fd) != 1 ) goto error;
+  }
+  else if ( dataType == MY_FLOAT64 ) {
+    char type[4] = {'f','l','6','4'};
+    char zeroes[2] = { 0, 0 };
+    if ( fwrite(&type, 4, 1, fd) != 1 ) goto error;
+    if ( fwrite(&zeroes, 2, 1, fd) != 1 ) goto error;
+  }
+
+  if ( fwrite(&ssnd, 4, 4, fd) != 4 ) goto error;
+
+  // printf("\nCreating AIF file: %s\n", name);
+  return true;
+
+ error:
+  sprintf(msg, "[chuck](via WvOut): Could not write AIF header for file %s", name);
+  return false;
+}
+
+void WvOut :: closeAifFile( void )
+{
+  unsigned long frames = (unsigned long) totalCount;
+if( little_endian )
+  swap32((unsigned char *)&frames);
+
+  fseek(fd, 22, SEEK_SET); // jump to "COMM" sample_frames
+  fwrite(&frames, 4, 1, fd);
+
+  int bytes_per_sample = 1;
+  if ( dataType == STK_SINT16 )
+    bytes_per_sample = 2;
+  else if ( dataType == STK_SINT32 || dataType == MY_FLOAT32 )
+    bytes_per_sample = 4;
+  else if ( dataType == MY_FLOAT64 )
+    bytes_per_sample = 8;
+
+  unsigned long bytes = totalCount * bytes_per_sample * channels + 46;
+  if ( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 ) bytes += 6;
+if( little_endian )
+  swap32((unsigned char *)&bytes);
+
+  fseek(fd, 4, SEEK_SET); // jump to file size
+  fwrite(&bytes, 4, 1, fd);
+
+  bytes = totalCount * bytes_per_sample * channels + 8;
+  if ( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 ) bytes += 6;
+if( little_endian )
+  swap32((unsigned char *)&bytes);
+
+  if ( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 )
+    fseek(fd, 48, SEEK_SET); // jump to "SSND" chunk size
+  else
+    fseek(fd, 42, SEEK_SET); // jump to "SSND" chunk size
+  fwrite(&bytes, 4, 1, fd);
+
+  fclose( fd );
+}
+
+bool WvOut :: setMatFile( const char *fileName )
+{
+  char name[128];
+  strncpy(name, fileName, 128);
+  if ( strstr(name, ".mat") == NULL) strcat(name, ".mat");
+  fd = fopen(name, "w+b");
+  if ( !fd ) {
+    sprintf(msg, "[chuck](via WvOut): Could not create MAT file: %s", name);
+    return false;
+  }
+
+  if ( dataType != MY_FLOAT64 ) {
+    dataType = MY_FLOAT64;
+    sprintf(msg, "[chuck](via WvOut): Using 64-bit floating-point data format for file %s", name);
+    handleError(msg, StkError::WARNING);
+  }
+
+  struct mathdr hdr;
+  strcpy(hdr.heading,"MATLAB 5.0 MAT-file, Generated using the Synthesis ToolKit in C++ (STK). By Perry R. Cook and Gary P. Scavone, 1995-2002.");
+
+  int i;
+  for (i=strlen(hdr.heading);i<124;i++) hdr.heading[i] = ' ';
+
+  // Header Flag Fields
+  hdr.hff[0] = (SINT16) 0x0100;   // Version field
+  hdr.hff[1] = (SINT16) 'M';      // Endian indicator field ("MI")
+  hdr.hff[1] <<= 8;
+  hdr.hff[1] += 'I';
+
+  hdr.adf[0] = (SINT32) 14;       // Matlab array data type value
+  hdr.adf[1] = (SINT32) 0;        // Size of file after this point to end (in bytes)
+                                 // Don't know size yet.
+
+  // Numeric Array Subelements (4):
+  // 1. Array Flags
+  hdr.adf[2] = (SINT32) 6;        // Matlab 32-bit unsigned integer data type value
+  hdr.adf[3] = (SINT32) 8;        // 8 bytes of data to follow
+  hdr.adf[4] = (SINT32) 6;        // Double-precision array, no array flags set
+  hdr.adf[5] = (SINT32) 0;        // 4 bytes undefined
+  // 2. Array Dimensions
+  hdr.adf[6] = (SINT32) 5;        // Matlab 32-bit signed integer data type value
+  hdr.adf[7] = (SINT32) 8;        // 8 bytes of data to follow (2D array)
+  hdr.adf[8] = (SINT32) channels; // This is the number of rows
+  hdr.adf[9] = (SINT32) 0;        // This is the number of columns
+
+  // 3. Array Name
+  // We'll use fileName for the matlab array name (as well as the file name).
+  // If fileName is 4 characters or less, we have to use a compressed data element
+  // format for the array name data element.  Otherwise, the array name must
+  // be formatted in 8-byte increments (up to 31 characters + NULL).
+  SINT32 namelength = (SINT32) strlen(fileName);
+  if (strstr(fileName, ".mat")) namelength -= 4;
+  if (namelength > 31) namelength = 31; // Truncate name to 31 characters.
+  char arrayName[64];
+  strncpy(arrayName, fileName, namelength);
+  arrayName[namelength] = '\0';
+  if (namelength > 4) {
+    hdr.adf[10] = (SINT32) 1;        // Matlab 8-bit signed integer data type value
+  }
+  else { // Compressed data element format
+    hdr.adf[10] = namelength;
+    hdr.adf[10] <<= 16;
+    hdr.adf[10] += 1;
+  }
+  SINT32 headsize = 40;        // Number of bytes in data element so far.
+
+  // Write the fixed portion of the header
+  if ( fwrite(&hdr, 172, 1, fd) != 1 ) goto error;
+
+  // Write MATLAB array name
+  SINT32 tmp;
+  if (namelength > 4) {
+    if ( fwrite(&namelength, 4, 1, fd) != 1) goto error;
+    if ( fwrite(arrayName, namelength, 1, fd) != 1 ) goto error;
+    tmp = (SINT32) ceil((float)namelength / 8);
+    if ( fseek(fd, tmp*8-namelength, SEEK_CUR) == -1 ) goto error;
+    headsize += tmp * 8;
+  }
+  else { // Compressed data element format
+    if ( fwrite(arrayName, namelength, 1, fd) != 1 ) goto error;
+    tmp = 4 - namelength;
+    if ( fseek(fd, tmp, SEEK_CUR) == -1 ) goto error;
+  }
+
+  // Finish writing known header information
+  tmp = 9;        // Matlab IEEE 754 double data type
+  if ( fwrite(&tmp, 4, 1, fd) != 1 ) goto error;
+  tmp = 0;        // Size of real part subelement in bytes (8 per sample)
+  if ( fwrite(&tmp, 4, 1, fd) != 1 ) goto error;
+  headsize += 8;  // Total number of bytes in data element so far
+
+  if ( fseek(fd, 132, SEEK_SET) == -1 ) goto error;
+  if ( fwrite(&headsize, 4, 1, fd) != 1 ) goto error; // Write header size ... will update at end
+  if ( fseek(fd, 0, SEEK_END) == -1 ) goto error;
+
+  byteswap = false;
+  CK_FPRINTF_STDERR( "[chuck]:(via STK): creating MAT-file (%s) containing MATLAB array: %s\n", name, arrayName);
+  return true;
+
+ error:
+  sprintf(msg, "[chuck](via WvOut): Could not write MAT-file header for file %s", name);
+  return false;
+}
+
+void WvOut :: closeMatFile( void )
+{
+  fseek(fd, 164, SEEK_SET); // jump to number of columns
+  fwrite(&totalCount, 4, 1, fd);
+
+  SINT32 headsize, temp;
+  fseek(fd, 132, SEEK_SET);  // jump to header size
+  fread(&headsize, 4, 1, fd);
+  temp = headsize;
+  headsize += (SINT32) (totalCount * 8 * channels);
+  fseek(fd, 132, SEEK_SET);
+  // Write file size (minus some header info)
+  fwrite(&headsize, 4, 1, fd);
+
+  fseek(fd, temp+132, SEEK_SET); // jumpt to data size (in bytes)
+  temp = totalCount * 8 * channels;
+  fwrite(&temp, 4, 1, fd);
+
+  fclose(fd);
+}
+
+unsigned long WvOut :: getFrames( void ) const
+{
+  return totalCount;
+}
+
+MY_FLOAT WvOut :: getTime( void ) const
+{
+  return (MY_FLOAT) totalCount / Stk::sampleRate();
+}
+
+void WvOut :: writeData( unsigned long frames )
+{
+  // make sure we have file descriptor
+  if( !fd ) return;
+
+  if ( dataType == STK_SINT8 ) {
+    if ( fileType == WVOUT_WAV ) { // 8-bit WAV data is unsigned!
+      for ( unsigned long k=0; k<frames*channels; k++ ) {
+        float float_sample = data[k] * 127.0 + 128.0;
+        if(float_sample < 0) float_sample = 0;
+        if(float_sample > 255) float_sample = 255;
+        unsigned char sample = (unsigned char) float_sample;
+
+        if ( fwrite(&sample, 1, 1, fd) != 1 ) goto error;
+      }
+    }
+    else {
+      for ( unsigned long k=0; k<frames*channels; k++ ) {
+        float float_sample = data[k] * 127.0;
+        if(float_sample < -128) float_sample = -128;
+        if(float_sample > 127) float_sample = 127;
+        signed char sample = (signed char) float_sample;
+
+        if ( fwrite(&sample, 1, 1, fd) != 1 ) goto error;
+      }
+    }
+  }
+  else if ( dataType == STK_SINT16 ) {
+    for ( unsigned long k=0; k<frames*channels; k++ ) {
+      float float_sample = data[k] * 32767.0;
+      if(float_sample < -32767) float_sample = -32767;
+      if(float_sample > 32767) float_sample = 32767;
+      SINT16 sample = (SINT16) float_sample;
+
+      if ( byteswap ) swap16( (unsigned char *)&sample );
+      if ( fwrite(&sample, 2, 1, fd) != 1 ) goto error;
+    }
+  }
+  else if ( dataType == STK_SINT32 ) {
+    for ( unsigned long k=0; k<frames*channels; k++ ) {
+      float float_sample = data[k] * 32767.0;
+      if(float_sample < -2147483647) float_sample = (float)-2147483647;
+      if(float_sample > 2147483647) float_sample = (float)2147483647;
+      SINT32 sample = (SINT32) float_sample;
+
+      if ( byteswap ) swap32( (unsigned char *)&sample );
+      if ( fwrite(&sample, 4, 1, fd) != 1 ) goto error;
+    }
+  }
+  else if ( dataType == MY_FLOAT32 ) {
+    FLOAT32 sample;
+    for ( unsigned long k=0; k<frames*channels; k++ ) {
+      sample = (FLOAT32) (data[k]);
+
+      if ( byteswap ) swap32( (unsigned char *)&sample );
+      if ( fwrite(&sample, 4, 1, fd) != 1 ) goto error;
+    }
+  }
+  else if ( dataType == MY_FLOAT64 ) {
+    FLOAT64 sample;
+    for ( unsigned long k=0; k<frames*channels; k++ ) {
+      sample = (FLOAT64) (data[k]);
+
+      if ( byteswap ) swap64( (unsigned char *)&sample );
+      if ( fwrite(&sample, 8, 1, fd) != 1 ) goto error;
+    }
+  }
+
+  flush += frames;
+  if( flush >= 8192 )
+  {
+      flush = 0;
+      fflush( fd );
+  }
+
+  return;
+
+ error:
+  sprintf(msg, "[chuck](via WvOut): Error writing data to file.");
+  handleError(msg, StkError::FILE_ERROR);
+}
+
+void WvOut :: tick(const MY_FLOAT sample)
+{
+  if ( !fd ) return;
+
+  for ( unsigned int j=0; j<channels; j++ )
+    data[counter*channels+j] = sample;
+
+  counter++;
+  totalCount++;
+
+  if ( counter == BUFFER_SIZE ) {
+    writeData( BUFFER_SIZE );
+    counter = 0;
+  }
+}
+
+void WvOut :: tick(const MY_FLOAT *vec, unsigned int vectorSize)
+{
+  if ( !fd ) return;
+
+  for (unsigned int i=0; i<vectorSize; i++)
+    tick( vec[i] );
+}
+
+void WvOut :: tickFrame(const MY_FLOAT *frameVector, unsigned int frames)
+{
+  if ( !fd ) return;
+
+  unsigned int j;
+  for ( unsigned int i=0; i<frames; i++ ) {
+    for ( j=0; j<channels; j++ ) {
+      data[counter*channels+j] = frameVector[i*channels+j];
+    }
+    counter++;
+    totalCount++;
+
+    if ( counter == BUFFER_SIZE ) {
+      writeData( BUFFER_SIZE );
+      counter = 0;
+    }
+  }
+}
+#endif //__DISABLE_WVOUT__
+
+
 
 
 /**********************************************************************/
@@ -26118,658 +26144,663 @@ Chuck_Carrier * getCarrier( Chuck_VM * vm, const std::string & where = "" )
 
 
 
-//// WvOut
-////-----------------------------------------------------------------------------
-//// name: WvOut_ctor()
-//// desc: CTOR function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTOR( WvOut_ctor )
-//{
-//    WvOut * yo = new WvOut;
-//    yo->autoPrefix.set( "chuck-session" );
-//    // default write mode is synchronous
-//    yo->asyncIO = FALSE;
-//    // get the carrier
-//    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctor" );
-//    // check
-//    if( carrier != NULL )
-//    {
-//        // REFACTOR-2017 TODO Ge: Fix wvout realtime audio [DONE]
-//        // check if need to create per-VM write thread
-//        if( carrier->stk_writeThread == NULL )
-//        {
-//            // create new write thread, one per VM
-//            carrier->stk_writeThread = new XWriteThread( 2<<20, 32 );
-//        }
-//        
-//        // REFACTOR-2017: set async mode, if on realtime audio thread...
-//        yo->asyncIO = carrier->hintIsRealtimeAudio();
-//        yo->asyncWriteThread = carrier->stk_writeThread;
-//    }
-//
-//    // set offset data
-//    OBJ_MEMBER_UINT(SELF, WvOut_offset_data) = (t_CKUINT)yo;
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_dtor()
-//// desc: DTOR function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_DTOR( WvOut_dtor )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    w->closeFile();
-//    
-//    // REFACTOR-2017: get the carrier
-//    Chuck_Carrier * carrier = getCarrier( ((Chuck_UGen *)(SELF))->vm, "WvOut dtor" );
-//    // check
-//    if( carrier != NULL )
-//    {
-//        std::map<WvOut *, WvOut *>::iterator iter;
-//        iter = carrier->stk_wvOutMap.find( w );
-//        if(iter != carrier->stk_wvOutMap.end())
-//            carrier->stk_wvOutMap.erase( iter );
-//    }
-//
-//    delete (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    OBJ_MEMBER_UINT(SELF, WvOut_offset_data) = 0;
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_tick()
-//// desc: TICK function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_TICK( WvOut_tick )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    // added 1.3.0.0: apply fileGain
-//    if( w->start ) w->tick( w->fileGain * in );
-//    *out = in; // pass samples downstream
-//    return TRUE;
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_tick()
-//// desc: TICK function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_TICKF( WvOut2_tickf )
-//{
-//    // assumption: stereo (2-channel) operation
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    MY_FLOAT frame[2];
-//    for(int i = 0; i < nframes; i++)
-//    {
-//        frame[0] = in[i*2] * w->fileGain;
-//        frame[1] = in[i*2+1] * w->fileGain;
-//        
-//        if( w->start ) w->tickFrame( frame, 1 );
-//        
-//        out[i*2] = in[i*2]; // pass samples downstream
-//        out[i*2+1] = in[i*2+1]; // pass samples downstream
-//    }
-//    return TRUE;
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_pmsg()
-//// desc: PMSG function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_PMSG( WvOut_pmsg )
-//{
-//    return TRUE;
-//}
-//
-//
-//
-//
-//// XXX chuck got mono, so we have one channel. fix later.
-////-----------------------------------------------------------------------------
-//// name: WvOut_ctrl_matFilename()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut_ctrl_matFilename )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-//    char buffer[1024];
-//    
-//    // REFACTOR-2017: get the carrier
-//    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl matFilename" );
-//
-//    // special
-//    if( strstr( filename, "special:auto" ) )
-//    {
-//        time_t t; time(&t);
-//        strcpy( buffer, w->autoPrefix.str().c_str() );
-//        strcat( buffer, "(" );
-//        strncat( buffer, ctime(&t), 24 );
-//        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-//        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-//        strcat( buffer, ").mat" );
-//        filename = buffer;
-//    }
-//    try { w->openFile( filename, 1, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
-//    catch( StkError & e ) { goto done; }
-//
-//    // check
-//    if( carrier != NULL )
-//    {
-//        // insert into map
-//        carrier->stk_wvOutMap[w] = w;
-//    }
-//    
-//done:
-//    RETURN->v_string = &(w->str_filename);
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut2_ctrl_matFilename()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut2_ctrl_matFilename )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-//    char buffer[1024];
-//    
-//    // REFACTOR-2017: get the carrier
-//    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl matFilename" );
-//
-//    // special
-//    if( strstr( filename, "special:auto" ) )
-//    {
-//        time_t t; time(&t);
-//        strcpy( buffer, w->autoPrefix.str().c_str() );
-//        strcat( buffer, "(" );
-//        strncat( buffer, ctime(&t), 24 );
-//        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-//        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-//        strcat( buffer, ").mat" );
-//        filename = buffer;
-//    }
-//    try { w->openFile( filename, 2, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
-//    catch( StkError & e ) { goto done; }
-//
-//    // check
-//    if( carrier != NULL )
-//    {
-//        // insert into map
-//        carrier->stk_wvOutMap[w] = w;
-//    }
-//    
-//done:
-//    RETURN->v_string = &(w->str_filename);
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_ctrl_sndFilename()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut_ctrl_sndFilename )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-//    char buffer[1024];
-//    
-//    // REFACTOR-2017: get the carrier
-//    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl sndFilename" );
-//
-//    // special
-//    if( strstr( filename, "special:auto" ) )
-//    {
-//        time_t t; time(&t);
-//        strcpy( buffer, w->autoPrefix.str().c_str() );
-//        strcat( buffer, "(" );
-//        strncat( buffer, ctime(&t), 24 );
-//        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-//        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-//        strcat( buffer, ").snd" );
-//        filename = buffer;
-//    }
-//    try { w->openFile( filename, 1, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
-//    catch( StkError & e ) { goto done; }
-//
-//    // check
-//    if( carrier != NULL )
-//    {
-//        // insert into map
-//        carrier->stk_wvOutMap[w] = w;
-//    }
-//    
-//done:
-//    RETURN->v_string = &(w->str_filename);
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut2_ctrl_sndFilename()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut2_ctrl_sndFilename )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-//    char buffer[1024];
-//    
-//    // REFACTOR-2017: get the carrier
-//    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl sndFilename" );
-//
-//    // special
-//    if( strstr( filename, "special:auto" ) )
-//    {
-//        time_t t; time(&t);
-//        strcpy( buffer, w->autoPrefix.str().c_str() );
-//        strcat( buffer, "(" );
-//        strncat( buffer, ctime(&t), 24 );
-//        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-//        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-//        strcat( buffer, ").snd" );
-//        filename = buffer;
-//    }
-//    try { w->openFile( filename, 2, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
-//    catch( StkError & e ) { goto done; }
-//
-//    // check
-//    if( carrier != NULL )
-//    {
-//        // insert into map
-//        carrier->stk_wvOutMap[w] = w;
-//    }
-//    
-//done:
-//    RETURN->v_string = &(w->str_filename);
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_ctrl_wavFilename()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut_ctrl_wavFilename )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-//    char buffer[1024];
-//    
-//    // REFACTOR-2017: get the carrier
-//    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl wavFilename" );
-//
-//    // special
-//    if( strstr( filename, "special:auto" ) )
-//    {
-//        time_t t; time(&t);
-//        strcpy( buffer, w->autoPrefix.str().c_str() );
-//        strcat( buffer, "(" );
-//        strncat( buffer, ctime(&t), 24 );
-//        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-//        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-//        strcat( buffer, ").wav" );
-//        filename = buffer;
-//    }
-//    try { w->openFile( filename, 1, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
-//    catch( StkError & e )
-//    {
-//        // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-//        goto done;
-//    }
-//
-//    // check
-//    if( carrier != NULL )
-//    {
-//        // insert into map
-//        carrier->stk_wvOutMap[w] = w;
-//    }
-//    
-//done:
-//    RETURN->v_string = &(w->str_filename);
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut2_ctrl_wavFilename()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut2_ctrl_wavFilename )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-//    char buffer[1024];
-//    
-//    // REFACTOR-2017: get the carrier
-//    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl wavFilename" );
-//
-//    // special
-//    if( strstr( filename, "special:auto" ) )
-//    {
-//        time_t t; time(&t);
-//        strcpy( buffer, w->autoPrefix.str().c_str() );
-//        strcat( buffer, "(" );
-//        strncat( buffer, ctime(&t), 24 );
-//        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-//        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-//        strcat( buffer, ").wav" );
-//        filename = buffer;
-//    }
-//    try { w->openFile( filename, 2, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
-//    catch( StkError & e )
-//    {
-//        // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-//        goto done;
-//    }
-//
-//    // check
-//    if( carrier != NULL )
-//    {
-//        // insert into map
-//        carrier->stk_wvOutMap[w] = w;
-//    }
-//    
-//done:
-//    RETURN->v_string = &(w->str_filename);
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_ctrl_rawFilename()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut_ctrl_rawFilename )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-//    char buffer[1024];
-//    
-//    // REFACTOR-2017: get the carrier
-//    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl rawFilename" );
-//
-//    // special
-//    if( strstr( filename, "special:auto" ) )
-//    {
-//        time_t t; time(&t);
-//        strcpy( buffer, w->autoPrefix.str().c_str() );
-//        strcat( buffer, "(" );
-//        strncat( buffer, ctime(&t), 24 );
-//        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-//        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-//        strcat( buffer, ").raw" );
-//        filename = buffer;
-//    }
-//    try { w->openFile( filename, 1, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
-//    catch( StkError & e ) { goto done; }
-//
-//    // check
-//    if( carrier != NULL )
-//    {
-//        // insert into map
-//        carrier->stk_wvOutMap[w] = w;
-//    }
-//    
-//done:
-//    RETURN->v_string = &(w->str_filename);
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut2_ctrl_rawFilename()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut2_ctrl_rawFilename )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-//    char buffer[1024];
-//    
-//    // REFACTOR-2017: get the carrier
-//    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl rawFilename" );
-//
-//    // special
-//    if( strstr( filename, "special:auto" ) )
-//    {
-//        time_t t; time(&t);
-//        strcpy( buffer, w->autoPrefix.str().c_str() );
-//        strcat( buffer, "(" );
-//        strncat( buffer, ctime(&t), 24 );
-//        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-//        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-//        strcat( buffer, ").raw" );
-//        filename = buffer;
-//    }
-//    try { w->openFile( filename, 2, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
-//    catch( StkError & e ) { goto done; }
-//
-//    // check
-//    if( carrier != NULL )
-//    {
-//        // insert into map
-//        carrier->stk_wvOutMap[w] = w;
-//    }
-//    
-//done:
-//    RETURN->v_string = &(w->str_filename);
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_ctrl_aifFilename()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut_ctrl_aifFilename )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-//    char buffer[1024];
-//    
-//    // REFACTOR-2017: get the carrier
-//    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl aifFilename" );
-//
-//    // special
-//    if( strstr( filename, "special:auto" ) )
-//    {
-//        time_t t; time(&t);
-//        strcpy( buffer, w->autoPrefix.str().c_str() );
-//        strcat( buffer, "(" );
-//        strncat( buffer, ctime(&t), 24 );
-//        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-//        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-//        strcat( buffer, ").aiff" );
-//        filename = buffer;
-//    }
-//    try { w->openFile( filename, 1, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
-//    catch( StkError & e ) { goto done; }
-//
-//    // check
-//    if( carrier != NULL )
-//    {
-//        // insert into map
-//        carrier->stk_wvOutMap[w] = w;
-//    }
-//    
-//done:
-//    RETURN->v_string = &(w->str_filename);
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut2_ctrl_aifFilename()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut2_ctrl_aifFilename )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-//    char buffer[1024];
-//    
-//    // REFACTOR-2017: get the carrier
-//    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl aifFilename" );
-//
-//    // special
-//    if( strstr( filename, "special:auto" ) )
-//    {
-//        time_t t; time(&t);
-//        strcpy( buffer, w->autoPrefix.str().c_str() );
-//        strcat( buffer, "(" );
-//        strncat( buffer, ctime(&t), 24 );
-//        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-//        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-//        strcat( buffer, ").aiff" );
-//        filename = buffer;
-//    }
-//    try { w->openFile( filename, 2, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
-//    catch( StkError & e ) { goto done; }
-//
-//    // check
-//    if( carrier != NULL )
-//    {
-//        // insert into map
-//        carrier->stk_wvOutMap[w] = w;
-//    }
-//    
-//done:
-//    RETURN->v_string = &(w->str_filename);
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_cget_filename()
-//// desc: CGET function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CGET( WvOut_cget_filename )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    RETURN->v_string = &(w->str_filename);
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_ctrl_closeFile()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut_ctrl_closeFile )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    w->closeFile();
-//    
-//    // REFACTOR-2017: get the carrier
-//    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl closeFile" );
-//    // check
-//    if( carrier != NULL )
-//    {
-//        // remove from map
-//        std::map<WvOut *, WvOut *>::iterator iter;
-//        iter = carrier->stk_wvOutMap.find( w );
-//        if(iter != carrier->stk_wvOutMap.end())
-//            carrier->stk_wvOutMap.erase( iter );
-//    }
-//    
-//}
-//
-//
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_ctrl_record()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut_ctrl_record )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    t_CKINT i = GET_NEXT_INT(ARGS);
-//    w->start = i ? 1 : 0;
-//    RETURN->v_int = (t_CKINT) w->start;
-//}
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_cget_record()
-//// desc: CGET function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CGET( WvOut_cget_record )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    RETURN->v_int = (t_CKINT) w->start;
-//}
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_ctrl_autoPrefix()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut_ctrl_autoPrefix )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    w->autoPrefix.set( GET_NEXT_STRING(ARGS)->str().c_str() );
-//    RETURN->v_string = &w->autoPrefix;
-//}
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_cget_autoPrefix()
-//// desc: CGET function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CGET( WvOut_cget_autoPrefix )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    RETURN->v_string = &w->autoPrefix;
-//}
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_ctrl_fileGain()
-//// desc: CTRL function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CTRL( WvOut_ctrl_fileGain )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    w->fileGain = GET_NEXT_FLOAT(ARGS);
-//    RETURN->v_float = w->fileGain;
-//}
-//
-//
-////-----------------------------------------------------------------------------
-//// name: WvOut_cget_fileGain()
-//// desc: CGET function ...
-////-----------------------------------------------------------------------------
-//CK_DLL_CGET( WvOut_cget_fileGain )
-//{
-//    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-//    RETURN->v_float = w->fileGain;
-//}
+#ifndef __DISABLE_WVOUT__
+// WvOut
+//-----------------------------------------------------------------------------
+// name: WvOut_ctor()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( WvOut_ctor )
+{
+    WvOut * yo = new WvOut;
+    yo->autoPrefix.set( "chuck-session" );
+    // default write mode is synchronous
+    yo->asyncIO = FALSE;
+    // get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctor" );
+    // check
+    if( carrier != NULL )
+    {
+        #ifndef __DISABLE_THREADS__
+        // REFACTOR-2017 TODO Ge: Fix wvout realtime audio [DONE]
+        // check if need to create per-VM write thread
+        if( carrier->stk_writeThread == NULL )
+        {
+            // create new write thread, one per VM
+            carrier->stk_writeThread = new XWriteThread( 2<<20, 32 );
+        }
+        
+        // REFACTOR-2017: set async mode, if on realtime audio thread...
+        yo->asyncIO = carrier->hintIsRealtimeAudio();
+        yo->asyncWriteThread = carrier->stk_writeThread;
+        #endif
+    }
+
+    // set offset data
+    OBJ_MEMBER_UINT(SELF, WvOut_offset_data) = (t_CKUINT)yo;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_dtor()
+// desc: DTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_DTOR( WvOut_dtor )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    w->closeFile();
+    
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( ((Chuck_UGen *)(SELF))->vm, "WvOut dtor" );
+    // check
+    if( carrier != NULL )
+    {
+        std::map<WvOut *, WvOut *>::iterator iter;
+        iter = carrier->stk_wvOutMap.find( w );
+        if(iter != carrier->stk_wvOutMap.end())
+            carrier->stk_wvOutMap.erase( iter );
+    }
+
+    delete (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    OBJ_MEMBER_UINT(SELF, WvOut_offset_data) = 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_tick()
+// desc: TICK function ...
+//-----------------------------------------------------------------------------
+CK_DLL_TICK( WvOut_tick )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    // added 1.3.0.0: apply fileGain
+    if( w->start ) w->tick( w->fileGain * in );
+    *out = in; // pass samples downstream
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_tick()
+// desc: TICK function ...
+//-----------------------------------------------------------------------------
+CK_DLL_TICKF( WvOut2_tickf )
+{
+    // assumption: stereo (2-channel) operation
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    MY_FLOAT frame[2];
+    for(int i = 0; i < nframes; i++)
+    {
+        frame[0] = in[i*2] * w->fileGain;
+        frame[1] = in[i*2+1] * w->fileGain;
+        
+        if( w->start ) w->tickFrame( frame, 1 );
+        
+        out[i*2] = in[i*2]; // pass samples downstream
+        out[i*2+1] = in[i*2+1]; // pass samples downstream
+    }
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_pmsg()
+// desc: PMSG function ...
+//-----------------------------------------------------------------------------
+CK_DLL_PMSG( WvOut_pmsg )
+{
+    return TRUE;
+}
+
+
+
+
+// XXX chuck got mono, so we have one channel. fix later.
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_matFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_matFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
+    char buffer[1024];
+    
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl matFilename" );
+
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str().c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
+        strcat( buffer, ").mat" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 1, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
+    catch( StkError & e ) { goto done; }
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut2_ctrl_matFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut2_ctrl_matFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
+    char buffer[1024];
+    
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl matFilename" );
+
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str().c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
+        strcat( buffer, ").mat" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 2, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
+    catch( StkError & e ) { goto done; }
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_sndFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_sndFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
+    char buffer[1024];
+    
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl sndFilename" );
+
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str().c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
+        strcat( buffer, ").snd" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 1, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
+    catch( StkError & e ) { goto done; }
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut2_ctrl_sndFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut2_ctrl_sndFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
+    char buffer[1024];
+    
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl sndFilename" );
+
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str().c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
+        strcat( buffer, ").snd" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 2, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
+    catch( StkError & e ) { goto done; }
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_wavFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_wavFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
+    char buffer[1024];
+    
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl wavFilename" );
+
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str().c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
+        strcat( buffer, ").wav" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 1, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
+    catch( StkError & e )
+    {
+        // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+        goto done;
+    }
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut2_ctrl_wavFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut2_ctrl_wavFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
+    char buffer[1024];
+    
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl wavFilename" );
+
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str().c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
+        strcat( buffer, ").wav" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 2, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
+    catch( StkError & e )
+    {
+        // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+        goto done;
+    }
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_rawFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_rawFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
+    char buffer[1024];
+    
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl rawFilename" );
+
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str().c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
+        strcat( buffer, ").raw" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 1, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
+    catch( StkError & e ) { goto done; }
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut2_ctrl_rawFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut2_ctrl_rawFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
+    char buffer[1024];
+    
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl rawFilename" );
+
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str().c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
+        strcat( buffer, ").raw" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 2, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
+    catch( StkError & e ) { goto done; }
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_aifFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_aifFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
+    char buffer[1024];
+    
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl aifFilename" );
+
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str().c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
+        strcat( buffer, ").aiff" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 1, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
+    catch( StkError & e ) { goto done; }
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut2_ctrl_aifFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut2_ctrl_aifFilename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
+    char buffer[1024];
+    
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl aifFilename" );
+
+    // special
+    if( strstr( filename, "special:auto" ) )
+    {
+        time_t t; time(&t);
+        strcpy( buffer, w->autoPrefix.str().c_str() );
+        strcat( buffer, "(" );
+        strncat( buffer, ctime(&t), 24 );
+        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
+        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
+        strcat( buffer, ").aiff" );
+        filename = buffer;
+    }
+    try { w->openFile( filename, 2, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
+    catch( StkError & e ) { goto done; }
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
+    
+done:
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_cget_filename()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( WvOut_cget_filename )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    RETURN->v_string = &(w->str_filename);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_closeFile()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_closeFile )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    w->closeFile();
+    
+    // REFACTOR-2017: get the carrier
+    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl closeFile" );
+    // check
+    if( carrier != NULL )
+    {
+        // remove from map
+        std::map<WvOut *, WvOut *>::iterator iter;
+        iter = carrier->stk_wvOutMap.find( w );
+        if(iter != carrier->stk_wvOutMap.end())
+            carrier->stk_wvOutMap.erase( iter );
+    }
+    
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_record()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_record )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    t_CKINT i = GET_NEXT_INT(ARGS);
+    w->start = i ? 1 : 0;
+    RETURN->v_int = (t_CKINT) w->start;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_cget_record()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( WvOut_cget_record )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    RETURN->v_int = (t_CKINT) w->start;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_autoPrefix()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_autoPrefix )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    w->autoPrefix.set( GET_NEXT_STRING(ARGS)->str().c_str() );
+    RETURN->v_string = &w->autoPrefix;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_cget_autoPrefix()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( WvOut_cget_autoPrefix )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    RETURN->v_string = &w->autoPrefix;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_fileGain()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_fileGain )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    w->fileGain = GET_NEXT_FLOAT(ARGS);
+    RETURN->v_float = w->fileGain;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_cget_fileGain()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( WvOut_cget_fileGain )
+{
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    RETURN->v_float = w->fileGain;
+}
+#endif //__DISABLE_WVOUT__
+
 
 
 //-----------------------------------------------------------------------------
@@ -27178,22 +27209,26 @@ t_CKBOOL stk_detach( Chuck_Carrier * carrier )
     // check
     if( carrier != NULL )
     {
-//        // close files
-//        std::map<WvOut *, WvOut *>::iterator iter;
-//        for( iter = carrier->stk_wvOutMap.begin();
-//             iter != carrier->stk_wvOutMap.end(); iter++ ) {
-//            (*iter).second->closeFile();
-//        }
-//
-//        // TODO: release the WvOut
-//        carrier->stk_wvOutMap.clear();
-//        
-//        // deal with per-VM stk write thread
-//        if( carrier->stk_writeThread )
-//        {
-//            carrier->stk_writeThread->shutdown(); // deletes itself
-//            carrier->stk_writeThread = NULL;
-//        }
+        #ifndef __DISABLE_WVOUT__
+        // close files
+        std::map<WvOut *, WvOut *>::iterator iter;
+        for( iter = carrier->stk_wvOutMap.begin();
+             iter != carrier->stk_wvOutMap.end(); iter++ ) {
+            (*iter).second->closeFile();
+        }
+
+        // TODO: release the WvOut
+        carrier->stk_wvOutMap.clear();
+        
+        // deal with per-VM stk write thread
+        #ifndef __DISABLE_THREADS__
+        if( carrier->stk_writeThread )
+        {
+            carrier->stk_writeThread->shutdown(); // deletes itself
+            carrier->stk_writeThread = NULL;
+        }
+        #endif //__DISABLE_THREADS__
+        #endif //__DISABLE_WVOUT__
     }
     
     return TRUE;

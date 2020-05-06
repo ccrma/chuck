@@ -38,9 +38,16 @@
 #include "chuck_vm.h"
 #include "chuck_errmsg.h"
 #include "chuck_ugen.h"
-//#include "hidio_sdl.h"
+
+#ifndef __DISABLE_HID__
+#include "hidio_sdl.h"
+#endif
+
 #include "util_string.h"
-//#include "util_serial.h"
+
+#ifndef __DISABLE_SERIAL__
+#include "util_serial.h"
+#endif
 
 #ifndef __DISABLE_MIDI__
 #include "midiio_rtmidi.h"
@@ -839,164 +846,166 @@ error:
 
 
 
+#ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // name: init_class_fileio()
 // desc: ...
 //-----------------------------------------------------------------------------
-//t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
-//{
-//    // init as base class
-//    Chuck_DL_Func * func = NULL;
-//
-//    // log
-//    EM_log( CK_LOG_SEVERE, "class 'fileio'" );
-//
-//    // init as base class
-//    // TODO: ctor/dtor?
-//    // TODO: replace dummy with pure function
-//    if( !type_engine_import_class_begin( env, type, env->global(), fileio_ctor, fileio_dtor ) )
-//        return FALSE;
-//
-//    // add open(string)
-//    func = make_new_mfun( "int", "open", fileio_open );
-//    func->add_arg( "string", "path" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add open(string, flags)
-//    func = make_new_mfun( "int", "open", fileio_openflags );
-//    func->add_arg( "string", "path" );
-//    func->add_arg( "int", "flags" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add good()
-//    func = make_new_mfun( "int", "good", fileio_good );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add close()
-//    func = make_new_mfun( "void", "close", fileio_close );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add flush()
-//    func = make_new_mfun( "void", "flush", fileio_flush );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add mode()
-//    func = make_new_mfun( "int", "mode", fileio_getmode );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add mode(int)
-//    func = make_new_mfun( "int", "mode", fileio_setmode );
-//    func->add_arg( "int", "flag" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add size()
-//    func = make_new_mfun( "int", "size", fileio_size );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add seek(int)
-//    func = make_new_mfun( "void", "seek", fileio_seek );
-//    func->add_arg( "int", "pos" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add tell()
-//    func = make_new_mfun( "int", "tell", fileio_tell );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add isDir()
-//    func = make_new_mfun( "int", "isDir", fileio_isdir );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add dirList()
-//    func = make_new_mfun( "string[]", "dirList", fileio_dirlist );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add read()
-//    // func = make_new_mfun( "string", "read", fileio_read );
-//    // func->add_arg( "int", "length" );
-//    // if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add readLine()
-//    func = make_new_mfun( "string", "readLine", fileio_readline );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add readInt()
-//    // func = make_new_mfun( "int", "readInt", fileio_readint );
-//    // if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add readInt(int)
-//    func = make_new_mfun( "int", "readInt", fileio_readintflags );
-//    func->add_arg( "int", "flags" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add readFloat()
-//    // func = make_new_mfun( "float", "readFloat", fileio_readfloat );
-//    // if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add eof()
-//    func = make_new_mfun( "int", "eof", fileio_eof );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add more()
-//    func = make_new_mfun( "int", "more", fileio_more );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add write(string)
-//    func = make_new_mfun( "void", "write", fileio_writestring );
-//    func->add_arg( "string", "val" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add write(int)
-//    func = make_new_mfun( "void", "write", fileio_writeint );
-//    func->add_arg( "int", "val" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add write(int,flags)
-//    func = make_new_mfun( "void", "write", fileio_writeintflags );
-//    func->add_arg( "int", "val" );
-//    func->add_arg( "int", "flags" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add write(float)
-//    func = make_new_mfun( "void", "write", fileio_writefloat );
-//    func->add_arg( "float", "val" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add FLAG_READ_WRITE
-//    if( !type_engine_import_svar( env, "int", "READ_WRITE",
-//                                  TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_READ_WRITE ) ) goto error;
-//
-//    // add FLAG_READONLY
-//    if( !type_engine_import_svar( env, "int", "READ",
-//                                  TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_READONLY ) ) goto error;
-//
-//    // add FLAG_WRITEONLY
-//    if( !type_engine_import_svar( env, "int", "WRITE",
-//                                  TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_WRITEONLY ) ) goto error;
-//
-//    // add FLAG_APPEND
-//    if( !type_engine_import_svar( env, "int", "APPEND",
-//                                  TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_APPEND ) ) goto error;
-//
-//    // add TYPE_ASCII
-//    if( !type_engine_import_svar( env, "int", "ASCII",
-//                                  TRUE, (t_CKUINT)&Chuck_IO_File::TYPE_ASCII ) ) goto error;
-//
-//    // add TYPE_BINARY
-//    if( !type_engine_import_svar( env, "int", "BINARY",
-//                                  TRUE, (t_CKUINT)&Chuck_IO_File::TYPE_BINARY ) ) goto error;
-//
-//    // end the class import
-//    type_engine_import_class_end( env );
-//
-//    return TRUE;
-//
-//error:
-//
-//    // end the class import
-//    type_engine_import_class_end( env );
-//
-//    return FALSE;
-//}
+t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
+{
+    // init as base class
+    Chuck_DL_Func * func = NULL;
+
+    // log
+    EM_log( CK_LOG_SEVERE, "class 'fileio'" );
+
+    // init as base class
+    // TODO: ctor/dtor?
+    // TODO: replace dummy with pure function
+    if( !type_engine_import_class_begin( env, type, env->global(), fileio_ctor, fileio_dtor ) )
+        return FALSE;
+
+    // add open(string)
+    func = make_new_mfun( "int", "open", fileio_open );
+    func->add_arg( "string", "path" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add open(string, flags)
+    func = make_new_mfun( "int", "open", fileio_openflags );
+    func->add_arg( "string", "path" );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add good()
+    func = make_new_mfun( "int", "good", fileio_good );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add close()
+    func = make_new_mfun( "void", "close", fileio_close );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add flush()
+    func = make_new_mfun( "void", "flush", fileio_flush );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add mode()
+    func = make_new_mfun( "int", "mode", fileio_getmode );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add mode(int)
+    func = make_new_mfun( "int", "mode", fileio_setmode );
+    func->add_arg( "int", "flag" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add size()
+    func = make_new_mfun( "int", "size", fileio_size );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add seek(int)
+    func = make_new_mfun( "void", "seek", fileio_seek );
+    func->add_arg( "int", "pos" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add tell()
+    func = make_new_mfun( "int", "tell", fileio_tell );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add isDir()
+    func = make_new_mfun( "int", "isDir", fileio_isdir );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add dirList()
+    func = make_new_mfun( "string[]", "dirList", fileio_dirlist );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add read()
+    // func = make_new_mfun( "string", "read", fileio_read );
+    // func->add_arg( "int", "length" );
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readLine()
+    func = make_new_mfun( "string", "readLine", fileio_readline );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readInt()
+    // func = make_new_mfun( "int", "readInt", fileio_readint );
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readInt(int)
+    func = make_new_mfun( "int", "readInt", fileio_readintflags );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readFloat()
+    // func = make_new_mfun( "float", "readFloat", fileio_readfloat );
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add eof()
+    func = make_new_mfun( "int", "eof", fileio_eof );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add more()
+    func = make_new_mfun( "int", "more", fileio_more );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add write(string)
+    func = make_new_mfun( "void", "write", fileio_writestring );
+    func->add_arg( "string", "val" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add write(int)
+    func = make_new_mfun( "void", "write", fileio_writeint );
+    func->add_arg( "int", "val" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add write(int,flags)
+    func = make_new_mfun( "void", "write", fileio_writeintflags );
+    func->add_arg( "int", "val" );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add write(float)
+    func = make_new_mfun( "void", "write", fileio_writefloat );
+    func->add_arg( "float", "val" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add FLAG_READ_WRITE
+    if( !type_engine_import_svar( env, "int", "READ_WRITE",
+                                  TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_READ_WRITE ) ) goto error;
+
+    // add FLAG_READONLY
+    if( !type_engine_import_svar( env, "int", "READ",
+                                  TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_READONLY ) ) goto error;
+
+    // add FLAG_WRITEONLY
+    if( !type_engine_import_svar( env, "int", "WRITE",
+                                  TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_WRITEONLY ) ) goto error;
+
+    // add FLAG_APPEND
+    if( !type_engine_import_svar( env, "int", "APPEND",
+                                  TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_APPEND ) ) goto error;
+
+    // add TYPE_ASCII
+    if( !type_engine_import_svar( env, "int", "ASCII",
+                                  TRUE, (t_CKUINT)&Chuck_IO_File::TYPE_ASCII ) ) goto error;
+
+    // add TYPE_BINARY
+    if( !type_engine_import_svar( env, "int", "BINARY",
+                                  TRUE, (t_CKUINT)&Chuck_IO_File::TYPE_BINARY ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    return TRUE;
+
+error:
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    return FALSE;
+}
+#endif
 
 
 
@@ -1633,442 +1642,443 @@ error:
 
 
 
-//// static
-//static t_CKUINT HidIn_offset_data = 0;
-//
-//static t_CKUINT HidMsg_offset_device_type = 0;
-//static t_CKUINT HidMsg_offset_device_num = 0;
-//static t_CKUINT HidMsg_offset_type = 0;
-//static t_CKUINT HidMsg_offset_which = 0;
-//static t_CKUINT HidMsg_offset_idata = 0;
-//static t_CKUINT HidMsg_offset_fdata = 0;
-//static t_CKUINT HidMsg_offset_when = 0;
-//static t_CKUINT HidMsg_offset_deltax = 0;
-//static t_CKUINT HidMsg_offset_deltay = 0;
-//static t_CKUINT HidMsg_offset_axis_position = 0; // deprecated
-//static t_CKUINT HidMsg_offset_axis_position2 = 0;
-//static t_CKUINT HidMsg_offset_scaled_axis_position = 0; // deprecated
-//static t_CKUINT HidMsg_offset_hat_position = 0;
-//static t_CKUINT HidMsg_offset_cursorx = 0;
-//static t_CKUINT HidMsg_offset_cursory = 0;
-//static t_CKUINT HidMsg_offset_scaledcursorx = 0;
-//static t_CKUINT HidMsg_offset_scaledcursory = 0;
-//static t_CKUINT HidMsg_offset_x = 0;
-//static t_CKUINT HidMsg_offset_y = 0;
-//static t_CKUINT HidMsg_offset_z = 0;
-//static t_CKUINT HidMsg_offset_touchx = 0; // added 1.3.0.0
-//static t_CKUINT HidMsg_offset_touchy = 0; // added 1.3.0.0
-//static t_CKUINT HidMsg_offset_touchsize = 0; // added 1.3.0.0
-//static t_CKUINT HidMsg_offset_ascii = 0;
-//static t_CKUINT HidMsg_offset_key = 0;
-//
-//static t_CKUINT HidOut_offset_data = 0;
+#ifndef __DISABLE_HID__
+// static
+static t_CKUINT HidIn_offset_data = 0;
 
-////-----------------------------------------------------------------------------
-//// name: init_class_HID()
-//// desc: ...
-////-----------------------------------------------------------------------------
-//t_CKBOOL init_class_HID( Chuck_Env * env )
-//{
-//    Chuck_DL_Func * func = NULL;
-//
-//    // init base class
-//    if( !type_engine_import_class_begin( env, "HidMsg", "Object",
-//                                         env->global(), NULL, NULL ) )
-//        return FALSE;
-//
-//    // add member variable
-//    HidMsg_offset_device_type = type_engine_import_mvar( env, "int", "deviceType", FALSE );
-//    if( HidMsg_offset_device_type == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_device_num = type_engine_import_mvar( env, "int", "deviceNum", FALSE );
-//    if( HidMsg_offset_device_num == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_type = type_engine_import_mvar( env, "int", "type", FALSE );
-//    if( HidMsg_offset_type == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_which = type_engine_import_mvar( env, "int", "which", FALSE );
-//    if( HidMsg_offset_which == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_idata = type_engine_import_mvar( env, "int", "idata", FALSE );
-//    if( HidMsg_offset_idata == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_fdata = type_engine_import_mvar( env, "float", "fdata", FALSE );
-//    if( HidMsg_offset_fdata == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_when = type_engine_import_mvar( env, "time", "when", FALSE );
-//    if( HidMsg_offset_when == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_deltax = type_engine_import_mvar( env, "int", "deltaX", FALSE );
-//    if( HidMsg_offset_deltax == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_deltay = type_engine_import_mvar( env, "int", "deltaY", FALSE );
-//    if( HidMsg_offset_deltay == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_cursorx = type_engine_import_mvar( env, "int", "cursorX", FALSE );
-//    if( HidMsg_offset_cursorx == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_cursory = type_engine_import_mvar( env, "int", "cursorY", FALSE );
-//    if( HidMsg_offset_cursory == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_scaledcursorx = type_engine_import_mvar( env, "float", "scaledCursorX", FALSE );
-//    if( HidMsg_offset_scaledcursorx == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_scaledcursory = type_engine_import_mvar( env, "float", "scaledCursorY", FALSE );
-//    if( HidMsg_offset_scaledcursory == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_x = type_engine_import_mvar( env, "int", "x", FALSE );
-//    if( HidMsg_offset_x == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_y = type_engine_import_mvar( env, "int", "y", FALSE );
-//    if( HidMsg_offset_y == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_z = type_engine_import_mvar( env, "int", "z", FALSE );
-//    if( HidMsg_offset_z == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable (added 1.3.0.0)
-//    HidMsg_offset_touchx = type_engine_import_mvar( env, "float", "touchX", FALSE );
-//    if( HidMsg_offset_touchx == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable (added 1.3.0.0)
-//    HidMsg_offset_touchy = type_engine_import_mvar( env, "float", "touchY", FALSE );
-//    if( HidMsg_offset_touchy == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable (added 1.3.0.0)
-//    HidMsg_offset_touchsize = type_engine_import_mvar( env, "float", "touchSize", FALSE );
-//    if( HidMsg_offset_touchsize == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_axis_position = type_engine_import_mvar( env, "int", "axis_position", FALSE );
-//    if( HidMsg_offset_axis_position == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_axis_position2 = type_engine_import_mvar( env, "float", "axisPosition", FALSE );
-//    if( HidMsg_offset_axis_position2 == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_hat_position = type_engine_import_mvar( env, "int", "hatPosition", FALSE );
-//    if( HidMsg_offset_hat_position == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_ascii = type_engine_import_mvar( env, "int", "ascii", FALSE );
-//    if( HidMsg_offset_ascii == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_key = type_engine_import_mvar( env, "int", "key", FALSE );
-//    if( HidMsg_offset_key == CK_INVALID_OFFSET ) goto error;
-//
-//    // add member variable
-//    HidMsg_offset_scaled_axis_position = type_engine_import_mvar( env, "float", "scaled_axis_position", FALSE );
-//    if( HidMsg_offset_scaled_axis_position == CK_INVALID_OFFSET ) goto error;
-//
-//    // add is_axis_motion()
-//    func = make_new_mfun( "int", "is_axis_motion", HidMsg_is_axis_motion ); // deprecated
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add isAxisMotion()
-//    func = make_new_mfun( "int", "isAxisMotion", HidMsg_is_axis_motion );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add is_button_down()
-//    func = make_new_mfun( "int", "is_button_down", HidMsg_is_button_down ); // deprecated
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add isButtonDown()
-//    func = make_new_mfun( "int", "isButtonDown", HidMsg_is_button_down );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add is_button_up()
-//    func = make_new_mfun( "int", "is_button_up", HidMsg_is_button_up ); // deprecated
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add isButtonUp()
-//    func = make_new_mfun( "int", "isButtonUp", HidMsg_is_button_up );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add is_mouse_motion()
-//    func = make_new_mfun( "int", "is_mouse_motion", HidMsg_is_mouse_motion ); // deprecated
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add isMouseMotion()
-//    func = make_new_mfun( "int", "isMouseMotion", HidMsg_is_mouse_motion );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add is_hat_motion()
-//    func = make_new_mfun( "int", "is_hat_motion", HidMsg_is_hat_motion ); // deprecated
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add isHatMotion()
-//    func = make_new_mfun( "int", "isHatMotion", HidMsg_is_hat_motion );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add isWheelMotion()
-//    func = make_new_mfun( "int", "isWheelMotion", HidMsg_is_wheel_motion );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // end the class import
-//    type_engine_import_class_end( env );
-//
-//
-//    // register deprecate
-//    type_engine_register_deprecate( env, "HidIn", "Hid" );
-//
-//    // init base class Hid (copy of HidIn + constants)
-//    if( !type_engine_import_class_begin( env, "Hid", "Event",
-//                                         env->global(), HidIn_ctor, HidIn_dtor ) )
-//        return FALSE;
-//
-//    // add open()
-//    func = make_new_mfun( "int", "open", HidIn_open );
-//    func->add_arg( "int", "type" );
-//    func->add_arg( "int", "num" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add open()
-//    func = make_new_mfun( "int", "open", HidIn_open_named );
-//    func->add_arg( "string", "name" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add openJoystick()
-//    func = make_new_mfun( "int", "openJoystick", HidIn_open_joystick );
-//    func->add_arg( "int", "num" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add openMouse()
-//    func = make_new_mfun( "int", "openMouse", HidIn_open_mouse );
-//    func->add_arg( "int", "num" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add openKeyboard()
-//    func = make_new_mfun( "int", "openKeyboard", HidIn_open_keyboard );
-//    func->add_arg( "int", "num" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add openTiltSensor()
-//    func = make_new_mfun( "int", "openTiltSensor", HidIn_open_tiltsensor );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add good()
-//    func = make_new_mfun( "int", "good", HidIn_good );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add num()
-//    func = make_new_mfun( "int", "num", HidIn_num );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add name()
-//    func = make_new_mfun( "string", "name", HidIn_name );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add printerr()
-//    func = make_new_mfun( "void", "printerr", HidIn_printerr );
-//    func->add_arg( "int", "print_or_not" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add recv()
-//    func = make_new_mfun( "int", "recv", HidIn_recv );
-//    func->add_arg( "HidMsg", "msg" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add read()
-//    func = make_new_mfun( "int", "read", HidIn_read );
-//    func->add_arg( "int", "type" );
-//    func->add_arg( "int", "which" );
-//    func->add_arg( "HidMsg", "msg" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add send()
-//    func = make_new_mfun( "int", "send", HidIn_send );
-//    func->add_arg( "HidMsg", "msg" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add can_wait()
-//    func = make_new_mfun( "int", "can_wait", HidIn_can_wait );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add readTiltSensor()
-//    func = make_new_sfun( "int[]", "readTiltSensor", HidIn_read_tilt_sensor );
-//    if( !type_engine_import_sfun( env, func ) ) goto error;
-//
-//    // add globalTiltPollRate()
-//    func = make_new_sfun( "dur", "globalTiltPollRate", HidIn_ctrl_tiltPollRate );
-//    func->add_arg( "dur", "d" );
-//    if( !type_engine_import_sfun( env, func ) ) goto error;
-//
-//    // add globalTiltPollRate()
-//    func = make_new_sfun( "dur", "globalTiltPollRate", HidIn_cget_tiltPollRate );
-//    if( !type_engine_import_sfun( env, func ) ) goto error;
-//
-//    // add startCursorTrack()
-//    func = make_new_sfun( "int", "startCursorTrack", HidIn_start_cursor_track );
-//    if( !type_engine_import_sfun( env, func ) ) goto error;
-//
-//    // add stopCursorTrack()
-//    func = make_new_sfun( "int", "stopCursorTrack", HidIn_stop_cursor_track );
-//    if( !type_engine_import_sfun( env, func ) ) goto error;
-//
-//    // add member variable
-//    HidIn_offset_data = type_engine_import_mvar( env, "int", "@Hid_data", FALSE );
-//    if( HidIn_offset_data == CK_INVALID_OFFSET ) goto error;
-//
-//    // add static member variable joystick
-//    if( type_engine_import_svar( env, "int", "JOYSTICK", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_DEV_JOYSTICK ) == FALSE )
-//        goto error;
-//
-//    // add static member variable keyboard
-//    if( type_engine_import_svar( env, "int", "KEYBOARD", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_DEV_KEYBOARD ) == FALSE )
-//        goto error;
-//
-//    // add static member variable mouse
-//    if( type_engine_import_svar( env, "int", "MOUSE", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_DEV_MOUSE ) == FALSE )
-//        goto error;
-//
-//    // add static member variable wii_remote
-//    if( type_engine_import_svar( env, "int", "WII_REMOTE", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_DEV_WIIREMOTE ) == FALSE )
-//        goto error;
-//
-//    // add static member variable wii_remote
-//    if( type_engine_import_svar( env, "int", "TILT_SENSOR", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_DEV_TILTSENSOR ) == FALSE )
-//        goto error;
-//
-//    // add static member variable tablet
-//    if( type_engine_import_svar( env, "int", "TABLET", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_DEV_TABLET ) == FALSE )
-//        goto error;
-//
-//    // add static member variable axisMotion
-//    if( type_engine_import_svar( env, "int", "AXIS_MOTION", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_JOYSTICK_AXIS ) == FALSE )
-//        goto error;
-//
-//    // add static member variable buttonDown
-//    if( type_engine_import_svar( env, "int", "BUTTON_DOWN", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_BUTTON_DOWN ) == FALSE )
-//        goto error;
-//
-//    // add static member variable buttonUp
-//    if( type_engine_import_svar( env, "int", "BUTTON_UP", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_BUTTON_UP ) == FALSE )
-//        goto error;
-//
-//    // add static member variable joystickHat
-//    if( type_engine_import_svar( env, "int", "JOYSTICK_HAT", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_JOYSTICK_HAT ) == FALSE )
-//        goto error;
-//
-//    // add static member variable JOYSTICK_BALL
-//    if( type_engine_import_svar( env, "int", "JOYSTICK_BALL", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_JOYSTICK_BALL ) == FALSE )
-//        goto error;
-//
-//    // add static member variable mouseMotion
-//    if( type_engine_import_svar( env, "int", "MOUSE_MOTION", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_MOUSE_MOTION ) == FALSE )
-//        goto error;
-//
-//    // add static member variable mouseWheel
-//    if( type_engine_import_svar( env, "int", "MOUSE_WHEEL", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_MOUSE_WHEEL ) == FALSE )
-//        goto error;
-//
-//    // add static member variable DEVICE_CONNECTED
-//    if( type_engine_import_svar( env, "int", "DEVICE_CONNECTED", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_DEVICE_CONNECTED ) == FALSE )
-//        goto error;
-//
-//    // add static member variable DEVICE_DISCONNECTED
-//    if( type_engine_import_svar( env, "int", "DEVICE_DISCONNECTED", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_DEVICE_DISCONNECTED ) == FALSE )
-//        goto error;
-//
-//    // add static member variable ACCELEROMETER
-//    if( type_engine_import_svar( env, "int", "ACCELEROMETER", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_ACCELEROMETER ) == FALSE )
-//        goto error;
-//
-//    // add static member variable LED
-//    if( type_engine_import_svar( env, "int", "LED", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_LED ) == FALSE )
-//        goto error;
-//
-//    // add static member variable LED
-//    if( type_engine_import_svar( env, "int", "FORCE_FEEDBACK", TRUE,
-//                                 ( t_CKUINT ) &CK_HID_FORCE_FEEDBACK ) == FALSE )
-//        goto error;
-//
-//    // end the class import
-//    type_engine_import_class_end( env );
-//
-//    /*
-//    // init base class
-//    if( !type_engine_import_class_begin( env, "HidOut", "Object",
-//                                         env->global(), HidOut_ctor ) )
-//        return FALSE;
-//
-//    // add open()
-//    func = make_new_mfun( "int", "open", HidOut_open );
-//    func->add_arg( "int", "port" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add good()
-//    func = make_new_mfun( "int", "good", HidOut_good );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add num()
-//    func = make_new_mfun( "int", "num", HidOut_num );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add name()
-//    func = make_new_mfun( "string", "name", HidOut_name );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add printerr()
-//    func = make_new_mfun( "void", "printerr", HidOut_printerr );
-//    func->add_arg( "int", "print_or_not" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add send()
-//    func = make_new_mfun( "int", "send", HidOut_send );
-//    func->add_arg( "HidMsg", "msg" );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add member variable
-//    HidOut_offset_data = type_engine_import_mvar( env, "int", "@HidOut_data", FALSE );
-//    if( HidOut_offset_data == CK_INVALID_OFFSET ) goto error;
-//
-//    // end the class import
-//    type_engine_import_class_end( env );
-//    */
-//    return TRUE;
-//
-//error:
-//
-//    // end the class import
-//    type_engine_import_class_end( env );
-//
-//    return FALSE;
-//}
+static t_CKUINT HidMsg_offset_device_type = 0;
+static t_CKUINT HidMsg_offset_device_num = 0;
+static t_CKUINT HidMsg_offset_type = 0;
+static t_CKUINT HidMsg_offset_which = 0;
+static t_CKUINT HidMsg_offset_idata = 0;
+static t_CKUINT HidMsg_offset_fdata = 0;
+static t_CKUINT HidMsg_offset_when = 0;
+static t_CKUINT HidMsg_offset_deltax = 0;
+static t_CKUINT HidMsg_offset_deltay = 0;
+static t_CKUINT HidMsg_offset_axis_position = 0; // deprecated
+static t_CKUINT HidMsg_offset_axis_position2 = 0;
+static t_CKUINT HidMsg_offset_scaled_axis_position = 0; // deprecated
+static t_CKUINT HidMsg_offset_hat_position = 0;
+static t_CKUINT HidMsg_offset_cursorx = 0;
+static t_CKUINT HidMsg_offset_cursory = 0;
+static t_CKUINT HidMsg_offset_scaledcursorx = 0;
+static t_CKUINT HidMsg_offset_scaledcursory = 0;
+static t_CKUINT HidMsg_offset_x = 0;
+static t_CKUINT HidMsg_offset_y = 0;
+static t_CKUINT HidMsg_offset_z = 0;
+static t_CKUINT HidMsg_offset_touchx = 0; // added 1.3.0.0
+static t_CKUINT HidMsg_offset_touchy = 0; // added 1.3.0.0
+static t_CKUINT HidMsg_offset_touchsize = 0; // added 1.3.0.0
+static t_CKUINT HidMsg_offset_ascii = 0;
+static t_CKUINT HidMsg_offset_key = 0;
 
+static t_CKUINT HidOut_offset_data = 0;
+
+//-----------------------------------------------------------------------------
+// name: init_class_HID()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL init_class_HID( Chuck_Env * env )
+{
+    Chuck_DL_Func * func = NULL;
+
+    // init base class
+    if( !type_engine_import_class_begin( env, "HidMsg", "Object",
+                                         env->global(), NULL, NULL ) )
+        return FALSE;
+
+    // add member variable
+    HidMsg_offset_device_type = type_engine_import_mvar( env, "int", "deviceType", FALSE );
+    if( HidMsg_offset_device_type == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_device_num = type_engine_import_mvar( env, "int", "deviceNum", FALSE );
+    if( HidMsg_offset_device_num == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_type = type_engine_import_mvar( env, "int", "type", FALSE );
+    if( HidMsg_offset_type == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_which = type_engine_import_mvar( env, "int", "which", FALSE );
+    if( HidMsg_offset_which == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_idata = type_engine_import_mvar( env, "int", "idata", FALSE );
+    if( HidMsg_offset_idata == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_fdata = type_engine_import_mvar( env, "float", "fdata", FALSE );
+    if( HidMsg_offset_fdata == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_when = type_engine_import_mvar( env, "time", "when", FALSE );
+    if( HidMsg_offset_when == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_deltax = type_engine_import_mvar( env, "int", "deltaX", FALSE );
+    if( HidMsg_offset_deltax == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_deltay = type_engine_import_mvar( env, "int", "deltaY", FALSE );
+    if( HidMsg_offset_deltay == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_cursorx = type_engine_import_mvar( env, "int", "cursorX", FALSE );
+    if( HidMsg_offset_cursorx == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_cursory = type_engine_import_mvar( env, "int", "cursorY", FALSE );
+    if( HidMsg_offset_cursory == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_scaledcursorx = type_engine_import_mvar( env, "float", "scaledCursorX", FALSE );
+    if( HidMsg_offset_scaledcursorx == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_scaledcursory = type_engine_import_mvar( env, "float", "scaledCursorY", FALSE );
+    if( HidMsg_offset_scaledcursory == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_x = type_engine_import_mvar( env, "int", "x", FALSE );
+    if( HidMsg_offset_x == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_y = type_engine_import_mvar( env, "int", "y", FALSE );
+    if( HidMsg_offset_y == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_z = type_engine_import_mvar( env, "int", "z", FALSE );
+    if( HidMsg_offset_z == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable (added 1.3.0.0)
+    HidMsg_offset_touchx = type_engine_import_mvar( env, "float", "touchX", FALSE );
+    if( HidMsg_offset_touchx == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable (added 1.3.0.0)
+    HidMsg_offset_touchy = type_engine_import_mvar( env, "float", "touchY", FALSE );
+    if( HidMsg_offset_touchy == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable (added 1.3.0.0)
+    HidMsg_offset_touchsize = type_engine_import_mvar( env, "float", "touchSize", FALSE );
+    if( HidMsg_offset_touchsize == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_axis_position = type_engine_import_mvar( env, "int", "axis_position", FALSE );
+    if( HidMsg_offset_axis_position == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_axis_position2 = type_engine_import_mvar( env, "float", "axisPosition", FALSE );
+    if( HidMsg_offset_axis_position2 == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_hat_position = type_engine_import_mvar( env, "int", "hatPosition", FALSE );
+    if( HidMsg_offset_hat_position == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_ascii = type_engine_import_mvar( env, "int", "ascii", FALSE );
+    if( HidMsg_offset_ascii == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_key = type_engine_import_mvar( env, "int", "key", FALSE );
+    if( HidMsg_offset_key == CK_INVALID_OFFSET ) goto error;
+
+    // add member variable
+    HidMsg_offset_scaled_axis_position = type_engine_import_mvar( env, "float", "scaled_axis_position", FALSE );
+    if( HidMsg_offset_scaled_axis_position == CK_INVALID_OFFSET ) goto error;
+
+    // add is_axis_motion()
+    func = make_new_mfun( "int", "is_axis_motion", HidMsg_is_axis_motion ); // deprecated
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add isAxisMotion()
+    func = make_new_mfun( "int", "isAxisMotion", HidMsg_is_axis_motion );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add is_button_down()
+    func = make_new_mfun( "int", "is_button_down", HidMsg_is_button_down ); // deprecated
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add isButtonDown()
+    func = make_new_mfun( "int", "isButtonDown", HidMsg_is_button_down );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add is_button_up()
+    func = make_new_mfun( "int", "is_button_up", HidMsg_is_button_up ); // deprecated
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add isButtonUp()
+    func = make_new_mfun( "int", "isButtonUp", HidMsg_is_button_up );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add is_mouse_motion()
+    func = make_new_mfun( "int", "is_mouse_motion", HidMsg_is_mouse_motion ); // deprecated
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add isMouseMotion()
+    func = make_new_mfun( "int", "isMouseMotion", HidMsg_is_mouse_motion );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add is_hat_motion()
+    func = make_new_mfun( "int", "is_hat_motion", HidMsg_is_hat_motion ); // deprecated
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add isHatMotion()
+    func = make_new_mfun( "int", "isHatMotion", HidMsg_is_hat_motion );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add isWheelMotion()
+    func = make_new_mfun( "int", "isWheelMotion", HidMsg_is_wheel_motion );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+
+    // register deprecate
+    type_engine_register_deprecate( env, "HidIn", "Hid" );
+
+    // init base class Hid (copy of HidIn + constants)
+    if( !type_engine_import_class_begin( env, "Hid", "Event",
+                                         env->global(), HidIn_ctor, HidIn_dtor ) )
+        return FALSE;
+
+    // add open()
+    func = make_new_mfun( "int", "open", HidIn_open );
+    func->add_arg( "int", "type" );
+    func->add_arg( "int", "num" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add open()
+    func = make_new_mfun( "int", "open", HidIn_open_named );
+    func->add_arg( "string", "name" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add openJoystick()
+    func = make_new_mfun( "int", "openJoystick", HidIn_open_joystick );
+    func->add_arg( "int", "num" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add openMouse()
+    func = make_new_mfun( "int", "openMouse", HidIn_open_mouse );
+    func->add_arg( "int", "num" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add openKeyboard()
+    func = make_new_mfun( "int", "openKeyboard", HidIn_open_keyboard );
+    func->add_arg( "int", "num" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add openTiltSensor()
+    func = make_new_mfun( "int", "openTiltSensor", HidIn_open_tiltsensor );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add good()
+    func = make_new_mfun( "int", "good", HidIn_good );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add num()
+    func = make_new_mfun( "int", "num", HidIn_num );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add name()
+    func = make_new_mfun( "string", "name", HidIn_name );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add printerr()
+    func = make_new_mfun( "void", "printerr", HidIn_printerr );
+    func->add_arg( "int", "print_or_not" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add recv()
+    func = make_new_mfun( "int", "recv", HidIn_recv );
+    func->add_arg( "HidMsg", "msg" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add read()
+    func = make_new_mfun( "int", "read", HidIn_read );
+    func->add_arg( "int", "type" );
+    func->add_arg( "int", "which" );
+    func->add_arg( "HidMsg", "msg" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add send()
+    func = make_new_mfun( "int", "send", HidIn_send );
+    func->add_arg( "HidMsg", "msg" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add can_wait()
+    func = make_new_mfun( "int", "can_wait", HidIn_can_wait );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readTiltSensor()
+    func = make_new_sfun( "int[]", "readTiltSensor", HidIn_read_tilt_sensor );
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add globalTiltPollRate()
+    func = make_new_sfun( "dur", "globalTiltPollRate", HidIn_ctrl_tiltPollRate );
+    func->add_arg( "dur", "d" );
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add globalTiltPollRate()
+    func = make_new_sfun( "dur", "globalTiltPollRate", HidIn_cget_tiltPollRate );
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add startCursorTrack()
+    func = make_new_sfun( "int", "startCursorTrack", HidIn_start_cursor_track );
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add stopCursorTrack()
+    func = make_new_sfun( "int", "stopCursorTrack", HidIn_stop_cursor_track );
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add member variable
+    HidIn_offset_data = type_engine_import_mvar( env, "int", "@Hid_data", FALSE );
+    if( HidIn_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // add static member variable joystick
+    if( type_engine_import_svar( env, "int", "JOYSTICK", TRUE,
+                                 ( t_CKUINT ) &CK_HID_DEV_JOYSTICK ) == FALSE )
+        goto error;
+
+    // add static member variable keyboard
+    if( type_engine_import_svar( env, "int", "KEYBOARD", TRUE,
+                                 ( t_CKUINT ) &CK_HID_DEV_KEYBOARD ) == FALSE )
+        goto error;
+
+    // add static member variable mouse
+    if( type_engine_import_svar( env, "int", "MOUSE", TRUE,
+                                 ( t_CKUINT ) &CK_HID_DEV_MOUSE ) == FALSE )
+        goto error;
+
+    // add static member variable wii_remote
+    if( type_engine_import_svar( env, "int", "WII_REMOTE", TRUE,
+                                 ( t_CKUINT ) &CK_HID_DEV_WIIREMOTE ) == FALSE )
+        goto error;
+
+    // add static member variable wii_remote
+    if( type_engine_import_svar( env, "int", "TILT_SENSOR", TRUE,
+                                 ( t_CKUINT ) &CK_HID_DEV_TILTSENSOR ) == FALSE )
+        goto error;
+
+    // add static member variable tablet
+    if( type_engine_import_svar( env, "int", "TABLET", TRUE,
+                                 ( t_CKUINT ) &CK_HID_DEV_TABLET ) == FALSE )
+        goto error;
+
+    // add static member variable axisMotion
+    if( type_engine_import_svar( env, "int", "AXIS_MOTION", TRUE,
+                                 ( t_CKUINT ) &CK_HID_JOYSTICK_AXIS ) == FALSE )
+        goto error;
+
+    // add static member variable buttonDown
+    if( type_engine_import_svar( env, "int", "BUTTON_DOWN", TRUE,
+                                 ( t_CKUINT ) &CK_HID_BUTTON_DOWN ) == FALSE )
+        goto error;
+
+    // add static member variable buttonUp
+    if( type_engine_import_svar( env, "int", "BUTTON_UP", TRUE,
+                                 ( t_CKUINT ) &CK_HID_BUTTON_UP ) == FALSE )
+        goto error;
+
+    // add static member variable joystickHat
+    if( type_engine_import_svar( env, "int", "JOYSTICK_HAT", TRUE,
+                                 ( t_CKUINT ) &CK_HID_JOYSTICK_HAT ) == FALSE )
+        goto error;
+
+    // add static member variable JOYSTICK_BALL
+    if( type_engine_import_svar( env, "int", "JOYSTICK_BALL", TRUE,
+                                 ( t_CKUINT ) &CK_HID_JOYSTICK_BALL ) == FALSE )
+        goto error;
+
+    // add static member variable mouseMotion
+    if( type_engine_import_svar( env, "int", "MOUSE_MOTION", TRUE,
+                                 ( t_CKUINT ) &CK_HID_MOUSE_MOTION ) == FALSE )
+        goto error;
+
+    // add static member variable mouseWheel
+    if( type_engine_import_svar( env, "int", "MOUSE_WHEEL", TRUE,
+                                 ( t_CKUINT ) &CK_HID_MOUSE_WHEEL ) == FALSE )
+        goto error;
+
+    // add static member variable DEVICE_CONNECTED
+    if( type_engine_import_svar( env, "int", "DEVICE_CONNECTED", TRUE,
+                                 ( t_CKUINT ) &CK_HID_DEVICE_CONNECTED ) == FALSE )
+        goto error;
+
+    // add static member variable DEVICE_DISCONNECTED
+    if( type_engine_import_svar( env, "int", "DEVICE_DISCONNECTED", TRUE,
+                                 ( t_CKUINT ) &CK_HID_DEVICE_DISCONNECTED ) == FALSE )
+        goto error;
+
+    // add static member variable ACCELEROMETER
+    if( type_engine_import_svar( env, "int", "ACCELEROMETER", TRUE,
+                                 ( t_CKUINT ) &CK_HID_ACCELEROMETER ) == FALSE )
+        goto error;
+
+    // add static member variable LED
+    if( type_engine_import_svar( env, "int", "LED", TRUE,
+                                 ( t_CKUINT ) &CK_HID_LED ) == FALSE )
+        goto error;
+
+    // add static member variable LED
+    if( type_engine_import_svar( env, "int", "FORCE_FEEDBACK", TRUE,
+                                 ( t_CKUINT ) &CK_HID_FORCE_FEEDBACK ) == FALSE )
+        goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    /*
+    // init base class
+    if( !type_engine_import_class_begin( env, "HidOut", "Object",
+                                         env->global(), HidOut_ctor ) )
+        return FALSE;
+
+    // add open()
+    func = make_new_mfun( "int", "open", HidOut_open );
+    func->add_arg( "int", "port" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add good()
+    func = make_new_mfun( "int", "good", HidOut_good );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add num()
+    func = make_new_mfun( "int", "num", HidOut_num );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add name()
+    func = make_new_mfun( "string", "name", HidOut_name );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add printerr()
+    func = make_new_mfun( "void", "printerr", HidOut_printerr );
+    func->add_arg( "int", "print_or_not" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add send()
+    func = make_new_mfun( "int", "send", HidOut_send );
+    func->add_arg( "HidMsg", "msg" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add member variable
+    HidOut_offset_data = type_engine_import_mvar( env, "int", "@HidOut_data", FALSE );
+    if( HidOut_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+    */
+    return TRUE;
+
+error:
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    return FALSE;
+}
+#endif
 
 
 
@@ -2962,313 +2972,335 @@ CK_DLL_SFUN( io_newline )
 }
 
 
+
+
+#ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // FileIO API
 //-----------------------------------------------------------------------------
-//CK_DLL_CTOR( fileio_ctor )
-//{ } 
-//
-//CK_DLL_DTOR( fileio_dtor )
-//{ }
-//
-//CK_DLL_MFUN( fileio_open )
-//{
-//    std::string filename = GET_NEXT_STRING(ARGS)->str();
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    t_CKINT default_flags =
-//        Chuck_IO_File::FLAG_READ_WRITE | Chuck_IO_File::TYPE_ASCII;
-//
-//    RETURN->v_int = f->open(filename, default_flags);
-//}
-//
-//CK_DLL_MFUN( fileio_openflags )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    std::string filename = GET_NEXT_STRING(ARGS)->str();
-//    t_CKINT flags = GET_NEXT_INT(ARGS);
-//
-//    RETURN->v_int = f->open(filename, flags);
-//}
-//
-//CK_DLL_MFUN( fileio_close )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    f->close();
-//}
-//
-//CK_DLL_MFUN( fileio_good )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    RETURN->v_int = f->good();
-//}
-//
-//CK_DLL_MFUN( fileio_flush )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    f->flush();
-//}
-//
-//CK_DLL_MFUN( fileio_getmode )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    RETURN->v_int = f->mode();
-//}
-//
-//CK_DLL_MFUN( fileio_setmode )
-//{
-//    t_CKINT flag = GET_NEXT_INT(ARGS);
-//    
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    f->mode( flag );
-//    RETURN->v_int = 0;
-//}
-//
-//CK_DLL_MFUN( fileio_size )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    RETURN->v_int = f->size();
-//}
-//
-//CK_DLL_MFUN( fileio_seek )
-//{
-//    t_CKINT pos = GET_NEXT_INT(ARGS);
-//    
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    f->seek(pos);
-//}
-//
-//CK_DLL_MFUN( fileio_tell )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    RETURN->v_int = f->tell();
-//}
-//
-//CK_DLL_MFUN( fileio_isdir )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    RETURN->v_int = f->isDir();
-//}
-//
-//CK_DLL_MFUN( fileio_dirlist )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    Chuck_Array4 * a = f->dirList();
-//    RETURN->v_object = a;
-//}
-//
-///*
-//CK_DLL_MFUN( fileio_read )
-//{
-//    t_CKINT len = GET_NEXT_INT(ARGS);
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    
-//    Chuck_String * s = f->read( len );
-//    RETURN->v_object = s;
-//}
-//*/
-//
-//CK_DLL_MFUN( fileio_readline )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    Chuck_String * ret = f->readLine();
-//    RETURN->v_object = ret;
-//}
-//
-//CK_DLL_MFUN( fileio_readint )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    t_CKINT defaultflags = Chuck_IO::INT32;
-//    
-//    /* (ATODO: doesn't look like asynchronous reading will work)
-//     if (f->mode() == Chuck_IO::MODE_ASYNC)
-//     {
-//     // set up arguments
-//     Chuck_IO::async_args *args = new Chuck_IO::async_args;
-//     args->RETURN = (void *)RETURN;
-//     args->fileio_obj = f;
-//     args->intArg = defaultflags;
-//     // set shred to wait for I/O completion
-//     f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
-//     // start thread
-//     bool ret = f->m_thread->start( f->readInt_thread, (void *)args );
-//     if (!ret) {
-//     cerr << "m_thread->start failed; recreating m_thread" << endl;
-//     delete f->m_thread;
-//     f->m_thread = new XThread;
-//     ret = f->m_thread->start( f->readInt_thread, (void *)args );
-//     if (!ret) {
-//     EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
-//     }
-//     }
-//     } else {*/
-//    t_CKINT ret = f->readInt( defaultflags );
-//    RETURN->v_int = ret;
-//    //}
-//    // ATODO: Debug
-//    //sleep(1);
-//    //cerr << "fileio_readint exiting" << endl;
-//}
-//
-//CK_DLL_MFUN( fileio_readintflags )
-//{    
-//    t_CKINT flags = GET_NEXT_INT(ARGS);
-//    
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    t_CKINT ret = f->readInt( flags );
-//    
-//    RETURN->v_int = ret;
-//}
-//
-//CK_DLL_MFUN( fileio_readfloat )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    t_CKFLOAT ret = f->readFloat();
-//    RETURN->v_float = ret;
-//}
-//
-//CK_DLL_MFUN( fileio_eof )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    t_CKBOOL ret = f->eof();
-//    RETURN->v_int = ret;
-//}
-//
-//CK_DLL_MFUN( fileio_more )
-//{
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    t_CKBOOL ret = !f->eof();
-//    RETURN->v_int = ret;
-//}
-//
-//CK_DLL_MFUN( fileio_writestring )
-//{
-//    std::string val = GET_NEXT_STRING(ARGS)->str();
-//    
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    if (f->mode() == Chuck_IO::MODE_ASYNC)
-//    {
-//        // set up arguments
-//        Chuck_IO::async_args *args = new Chuck_IO::async_args;
-//        args->RETURN = (void *)RETURN;
-//        args->fileio_obj = f;
-//        args->stringArg = std::string(val);
-//        // set shred to wait for I/O completion
-//        assert( SHRED != NULL );
-//        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
-//        // start thread
-//        bool ret = f->m_thread->start( f->writeStr_thread, (void *)args );
-//        if (!ret) {
-//            // for some reason, the XThread object needs to be
-//            // deleted and reconstructed every time after call #375
-//            delete f->m_thread;
-//            f->m_thread = new XThread;
-//            ret = f->m_thread->start( f->writeStr_thread, (void *)args );
-//            if (!ret) {
-//                EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
-//            }
-//        }
-//    } else {
-//        f->write(val);
-//    }
-//}
-//
-//CK_DLL_MFUN( fileio_writeint )
-//{
-//    t_CKINT val = GET_NEXT_INT(ARGS);
-//    
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    if (f->mode() == Chuck_IO::MODE_ASYNC)
-//    {
-//        // set up arguments
-//        Chuck_IO::async_args *args = new Chuck_IO::async_args;
-//        args->RETURN = (void *)RETURN;
-//        args->fileio_obj = f;
-//        args->intArg = val;
-//        // set shred to wait for I/O completion
-//        assert( SHRED != NULL );
-//        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
-//        // start thread
-//        bool ret = f->m_thread->start( f->writeInt_thread, (void *)args );
-//        if (!ret) {
-//            // for some reason, the XThread object needs to be
-//            // deleted and reconstructed every time after call #375
-//            delete f->m_thread;
-//            f->m_thread = new XThread;
-//            ret = f->m_thread->start( f->writeInt_thread, (void *)args );
-//            if (!ret) {
-//                EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
-//            }
-//        }
-//    } else {
-//        f->write(val);
-//    }
-//}
-//
-//CK_DLL_MFUN( fileio_writeintflags )
-//{
-//    t_CKINT val = GET_NEXT_INT(ARGS);
-//    t_CKINT flags = GET_NEXT_INT(ARGS);
-//    
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    if (f->mode() == Chuck_IO::MODE_ASYNC)
-//    {
-//        // TODO: pass flags in args
-//        // set up arguments
-//        Chuck_IO::async_args *args = new Chuck_IO::async_args;
-//        args->RETURN = (void *)RETURN;
-//        args->fileio_obj = f;
-//        args->intArg = val;
-//        // set shred to wait for I/O completion
-//        assert( SHRED != NULL );
-//        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
-//        // start thread
-//        bool ret = f->m_thread->start( f->writeInt_thread, (void *)args );
-//        if (!ret) {
-//            // for some reason, the XThread object needs to be
-//            // deleted and reconstructed every time after call #375
-//            delete f->m_thread;
-//            f->m_thread = new XThread;
-//            ret = f->m_thread->start( f->writeInt_thread, (void *)args );
-//            if (!ret) {
-//                EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
-//            }
-//        }
-//    } else {
-//        f->write(val, flags);
-//    }
-//}
-//
-//CK_DLL_MFUN( fileio_writefloat )
-//{
-//    t_CKFLOAT val = GET_NEXT_FLOAT(ARGS);
-//    
-//    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-//    if (f->mode() == Chuck_IO::MODE_ASYNC)
-//    {
-//        // set up arguments
-//        Chuck_IO::async_args *args = new Chuck_IO::async_args;
-//        args->RETURN = (void *)RETURN;
-//        args->fileio_obj = f;
-//        args->floatArg = val;
-//        // set shred to wait for I/O completion
-//        assert( SHRED != NULL );
-//        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
-//        // start thread
-//        bool ret = f->m_thread->start( f->writeFloat_thread, (void *)args );
-//        if (!ret) {
-//            // for some reason, the XThread object needs to be
-//            // deleted and reconstructed every time after call #375
-//            delete f->m_thread;
-//            f->m_thread = new XThread;
-//            ret = f->m_thread->start( f->writeFloat_thread, (void *)args );
-//            if (!ret) {
-//                EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
-//            }
-//        }
-//    } else {
-//        f->write(val);
-//    }
-//}
+CK_DLL_CTOR( fileio_ctor )
+{ }
+
+CK_DLL_DTOR( fileio_dtor )
+{ }
+
+CK_DLL_MFUN( fileio_open )
+{
+    std::string filename = GET_NEXT_STRING(ARGS)->str();
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    t_CKINT default_flags =
+        Chuck_IO_File::FLAG_READ_WRITE | Chuck_IO_File::TYPE_ASCII;
+
+    RETURN->v_int = f->open(filename, default_flags);
+}
+
+CK_DLL_MFUN( fileio_openflags )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    std::string filename = GET_NEXT_STRING(ARGS)->str();
+    t_CKINT flags = GET_NEXT_INT(ARGS);
+
+    RETURN->v_int = f->open(filename, flags);
+}
+
+CK_DLL_MFUN( fileio_close )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    f->close();
+}
+
+CK_DLL_MFUN( fileio_good )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    RETURN->v_int = f->good();
+}
+
+CK_DLL_MFUN( fileio_flush )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    f->flush();
+}
+
+CK_DLL_MFUN( fileio_getmode )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    RETURN->v_int = f->mode();
+}
+
+CK_DLL_MFUN( fileio_setmode )
+{
+    t_CKINT flag = GET_NEXT_INT(ARGS);
+    
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    f->mode( flag );
+    RETURN->v_int = 0;
+}
+
+CK_DLL_MFUN( fileio_size )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    RETURN->v_int = f->size();
+}
+
+CK_DLL_MFUN( fileio_seek )
+{
+    t_CKINT pos = GET_NEXT_INT(ARGS);
+    
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    f->seek(pos);
+}
+
+CK_DLL_MFUN( fileio_tell )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    RETURN->v_int = f->tell();
+}
+
+CK_DLL_MFUN( fileio_isdir )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    RETURN->v_int = f->isDir();
+}
+
+CK_DLL_MFUN( fileio_dirlist )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    Chuck_Array4 * a = f->dirList();
+    RETURN->v_object = a;
+}
+
+/*
+CK_DLL_MFUN( fileio_read )
+{
+    t_CKINT len = GET_NEXT_INT(ARGS);
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+ 
+    Chuck_String * s = f->read( len );
+    RETURN->v_object = s;
+}
+*/
+
+CK_DLL_MFUN( fileio_readline )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    Chuck_String * ret = f->readLine();
+    RETURN->v_object = ret;
+}
+
+CK_DLL_MFUN( fileio_readint )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    t_CKINT defaultflags = Chuck_IO::INT32;
+    
+    /* (ATODO: doesn't look like asynchronous reading will work)
+     if (f->mode() == Chuck_IO::MODE_ASYNC)
+     {
+     // set up arguments
+     Chuck_IO::async_args *args = new Chuck_IO::async_args;
+     args->RETURN = (void *)RETURN;
+     args->fileio_obj = f;
+     args->intArg = defaultflags;
+     // set shred to wait for I/O completion
+     f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
+     // start thread
+     bool ret = f->m_thread->start( f->readInt_thread, (void *)args );
+     if (!ret) {
+     cerr << "m_thread->start failed; recreating m_thread" << endl;
+     delete f->m_thread;
+     f->m_thread = new XThread;
+     ret = f->m_thread->start( f->readInt_thread, (void *)args );
+     if (!ret) {
+     EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
+     }
+     }
+     } else {*/
+    t_CKINT ret = f->readInt( defaultflags );
+    RETURN->v_int = ret;
+    //}
+    // ATODO: Debug
+    //sleep(1);
+    //cerr << "fileio_readint exiting" << endl;
+}
+
+CK_DLL_MFUN( fileio_readintflags )
+{
+    t_CKINT flags = GET_NEXT_INT(ARGS);
+    
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    t_CKINT ret = f->readInt( flags );
+    
+    RETURN->v_int = ret;
+}
+
+CK_DLL_MFUN( fileio_readfloat )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    t_CKFLOAT ret = f->readFloat();
+    RETURN->v_float = ret;
+}
+
+CK_DLL_MFUN( fileio_eof )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    t_CKBOOL ret = f->eof();
+    RETURN->v_int = ret;
+}
+
+CK_DLL_MFUN( fileio_more )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    t_CKBOOL ret = !f->eof();
+    RETURN->v_int = ret;
+}
+
+CK_DLL_MFUN( fileio_writestring )
+{
+    std::string val = GET_NEXT_STRING(ARGS)->str();
+    
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    #ifndef __DISABLE_THREADS__
+    if (f->mode() == Chuck_IO::MODE_ASYNC)
+    {
+        // set up arguments
+        Chuck_IO::async_args *args = new Chuck_IO::async_args;
+        args->RETURN = (void *)RETURN;
+        args->fileio_obj = f;
+        args->stringArg = std::string(val);
+        // set shred to wait for I/O completion
+        assert( SHRED != NULL );
+        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
+        // start thread
+        bool ret = f->m_thread->start( f->writeStr_thread, (void *)args );
+        if (!ret) {
+            // for some reason, the XThread object needs to be
+            // deleted and reconstructed every time after call #375
+            delete f->m_thread;
+            f->m_thread = new XThread;
+            ret = f->m_thread->start( f->writeStr_thread, (void *)args );
+            if (!ret) {
+                EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
+            }
+        }
+    } else {
+        f->write(val);
+    }
+    #else
+    f->write( val );
+    #endif
+}
+
+CK_DLL_MFUN( fileio_writeint )
+{
+    t_CKINT val = GET_NEXT_INT(ARGS);
+    
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    #ifndef __DISABLE_THREADS__
+    if (f->mode() == Chuck_IO::MODE_ASYNC)
+    {
+        // set up arguments
+        Chuck_IO::async_args *args = new Chuck_IO::async_args;
+        args->RETURN = (void *)RETURN;
+        args->fileio_obj = f;
+        args->intArg = val;
+        // set shred to wait for I/O completion
+        assert( SHRED != NULL );
+        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
+        // start thread
+        bool ret = f->m_thread->start( f->writeInt_thread, (void *)args );
+        if (!ret) {
+            // for some reason, the XThread object needs to be
+            // deleted and reconstructed every time after call #375
+            delete f->m_thread;
+            f->m_thread = new XThread;
+            ret = f->m_thread->start( f->writeInt_thread, (void *)args );
+            if (!ret) {
+                EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
+            }
+        }
+    } else {
+        f->write(val);
+    }
+    #else
+    f->write( val );
+    #endif
+}
+
+CK_DLL_MFUN( fileio_writeintflags )
+{
+    t_CKINT val = GET_NEXT_INT(ARGS);
+    t_CKINT flags = GET_NEXT_INT(ARGS);
+    
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    #ifndef __DISABLE_THREADS__
+    if (f->mode() == Chuck_IO::MODE_ASYNC)
+    {
+        // TODO: pass flags in args
+        // set up arguments
+        Chuck_IO::async_args *args = new Chuck_IO::async_args;
+        args->RETURN = (void *)RETURN;
+        args->fileio_obj = f;
+        args->intArg = val;
+        // set shred to wait for I/O completion
+        assert( SHRED != NULL );
+        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
+        // start thread
+        bool ret = f->m_thread->start( f->writeInt_thread, (void *)args );
+        if (!ret) {
+            // for some reason, the XThread object needs to be
+            // deleted and reconstructed every time after call #375
+            delete f->m_thread;
+            f->m_thread = new XThread;
+            ret = f->m_thread->start( f->writeInt_thread, (void *)args );
+            if (!ret) {
+                EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
+            }
+        }
+    } else {
+        f->write(val, flags);
+    }
+    #else
+    f->write( val, flags );
+    #endif
+}
+
+CK_DLL_MFUN( fileio_writefloat )
+{
+    t_CKFLOAT val = GET_NEXT_FLOAT(ARGS);
+    
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    #ifndef __DISABLE_THREADS__
+    if (f->mode() == Chuck_IO::MODE_ASYNC)
+    {
+        // set up arguments
+        Chuck_IO::async_args *args = new Chuck_IO::async_args;
+        args->RETURN = (void *)RETURN;
+        args->fileio_obj = f;
+        args->floatArg = val;
+        // set shred to wait for I/O completion
+        assert( SHRED != NULL );
+        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
+        // start thread
+        bool ret = f->m_thread->start( f->writeFloat_thread, (void *)args );
+        if (!ret) {
+            // for some reason, the XThread object needs to be
+            // deleted and reconstructed every time after call #375
+            delete f->m_thread;
+            f->m_thread = new XThread;
+            ret = f->m_thread->start( f->writeFloat_thread, (void *)args );
+            if (!ret) {
+                EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
+            }
+        }
+    } else {
+        f->write(val);
+    }
+    #else
+    f->write( val );
+    #endif
+}
+#endif
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -4336,403 +4368,409 @@ CK_DLL_MFUN( MidiOut_send )
 #endif // __DISABLE_MIDI__
 
 
-////-----------------------------------------------------------------------------
-//// HidMsg API
-////-----------------------------------------------------------------------------
-//CK_DLL_MFUN( HidMsg_is_axis_motion )
-//{
-//    RETURN->v_int = ( ( t_CKINT ) OBJ_MEMBER_INT( SELF, HidMsg_offset_type ) ==
-//                      CK_HID_JOYSTICK_AXIS ? 1 : 0 );
-//}
-//
-//CK_DLL_MFUN( HidMsg_is_button_down )
-//{
-//    RETURN->v_int = ( ( t_CKINT ) OBJ_MEMBER_INT( SELF, HidMsg_offset_type ) ==
-//                      CK_HID_BUTTON_DOWN ? 1 : 0 );
-//}
-//
-//CK_DLL_MFUN( HidMsg_is_button_up )
-//{
-//    RETURN->v_int = ( ( t_CKINT ) OBJ_MEMBER_INT( SELF, HidMsg_offset_type ) ==
-//                      CK_HID_BUTTON_UP ? 1 : 0 );
-//}
-//
-//CK_DLL_MFUN( HidMsg_is_mouse_motion )
-//{
-//    RETURN->v_int = ( ( t_CKINT ) OBJ_MEMBER_INT( SELF, HidMsg_offset_type ) ==
-//                      CK_HID_MOUSE_MOTION ? 1 : 0 );
-//}
-//
-//CK_DLL_MFUN( HidMsg_is_hat_motion )
-//{
-//    RETURN->v_int = ( ( t_CKINT ) OBJ_MEMBER_INT( SELF, HidMsg_offset_type ) ==
-//                      CK_HID_JOYSTICK_HAT ? 1 : 0 );
-//}
-//
-//CK_DLL_MFUN( HidMsg_is_wheel_motion )
-//{
-//    RETURN->v_int = ( ( t_CKINT ) OBJ_MEMBER_INT( SELF, HidMsg_offset_type ) ==
-//                      CK_HID_MOUSE_WHEEL ? 1 : 0 );
-//}
-//
-////-----------------------------------------------------------------------------
-//// HidIn API
-////-----------------------------------------------------------------------------
-//CK_DLL_CTOR( HidIn_ctor )
-//{
-//    HidIn * min = new HidIn;
-//    min->SELF = SELF;
-//    OBJ_MEMBER_INT(SELF, HidIn_offset_data) = (t_CKINT)min;
-//}
-//
-//CK_DLL_DTOR( HidIn_dtor )
-//{
-//    delete (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    OBJ_MEMBER_INT(SELF, HidIn_offset_data) = 0;
-//}
-//
-//CK_DLL_MFUN( HidIn_open )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    t_CKINT type = GET_NEXT_INT(ARGS);
-//    t_CKINT num = GET_NEXT_INT(ARGS);
-//    // CK_FPRINTF_STDERR( "HidIn_open %li %li\n", type, num );
-//    RETURN->v_int = min->open( SHRED->vm_ref, type, num );
-//}
-//
-//CK_DLL_MFUN( HidIn_open_named )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    Chuck_String * name = GET_NEXT_STRING(ARGS);
-//    std::string s = name->str();
-//    RETURN->v_int = min->open( SHRED->vm_ref, s );
-//}
-//
-//CK_DLL_MFUN( HidIn_open_joystick )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    t_CKINT num = GET_NEXT_INT(ARGS);
-//    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_JOYSTICK, num );
-//}
-//
-//CK_DLL_MFUN( HidIn_open_mouse )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    t_CKINT num = GET_NEXT_INT(ARGS);
-//    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_MOUSE, num );
-//}
-//
-//CK_DLL_MFUN( HidIn_open_keyboard )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    t_CKINT num = GET_NEXT_INT(ARGS);
-//    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_KEYBOARD, num );
-//}
-//
-//CK_DLL_MFUN( HidIn_open_tiltsensor )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_TILTSENSOR, 0 );
-//}
-//
-//CK_DLL_MFUN( HidIn_good )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    RETURN->v_int = (t_CKINT)min->good();
-//}
-//
-//CK_DLL_MFUN( HidIn_num )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    RETURN->v_int = min->num();
-//}
-//
-//CK_DLL_MFUN( HidIn_printerr )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    t_CKINT print_or_not = GET_CK_INT(ARGS);
-//    min->set_suppress( !print_or_not );
-//}
-//
-//CK_DLL_MFUN( HidIn_name )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    // TODO: memory leak, please fix, Thanks.
-//    // Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
-//    // only if valid
-//    // if( min->good() )
-//    //     a->str = min->phin->getPortName( min->num() );
-//    // TODO: is null problem?
-//    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
-//    RETURN->v_string->set( min->name() );
-//}
-//
-//CK_DLL_MFUN( HidIn_recv )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
-//    HidMsg the_msg;
-//    RETURN->v_int = min->recv( &the_msg );
-//    if( RETURN->v_int )
-//    {
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_device_type) = the_msg.device_type;
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_device_num) = the_msg.device_num;
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_type) = the_msg.type;
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_which) = the_msg.eid;
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_idata) = the_msg.idata[0];
-//        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_fdata) = the_msg.fdata[0];
-//
-//        // mouse motion specific member variables
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_deltax) = the_msg.idata[0];
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_deltay) = the_msg.idata[1];
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_cursorx) = the_msg.idata[2];
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_cursory) = the_msg.idata[3];
-//        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaledcursorx) = the_msg.fdata[0];
-//        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaledcursory) = the_msg.fdata[1];
-//
-//        // axis motion specific member variables
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_axis_position) = the_msg.idata[0];
-//        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaled_axis_position) = the_msg.fdata[0];
-//        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_axis_position2) = the_msg.fdata[0];
-//
-//        // hat motion specific variables
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_hat_position) = the_msg.idata[0];
-//
-//        // keyboard specific variables
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_key) = the_msg.idata[1];
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_ascii) = the_msg.idata[2];
-//
-//        // accelerometer (tilt sensor, wii remote) specific members
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_x) = the_msg.idata[0];
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_y) = the_msg.idata[1];
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_z) = the_msg.idata[2];
-//
-//        // multitouch stuff - added 1.3.0.0
-//        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchx) = the_msg.fdata[0];
-//        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchy) = the_msg.fdata[1];
-//        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchsize) = the_msg.fdata[2];
-//    }
-//}
-//
-//CK_DLL_MFUN( HidIn_read )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    t_CKINT type = GET_NEXT_INT(ARGS);
-//    t_CKINT num = GET_NEXT_INT(ARGS);
-//    Chuck_Object * fake_msg = GET_NEXT_OBJECT(ARGS);
-//
-//    HidMsg the_msg;
-//
-//    RETURN->v_int = min->read( type, num, &the_msg );
-//
-//    if( RETURN->v_int )
-//    {
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_device_type) = the_msg.device_type;
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_device_num) = the_msg.device_num;
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_type) = the_msg.type;
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_which) = the_msg.eid;
-//
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_idata) = the_msg.idata[0];
-//        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_fdata) = the_msg.fdata[0];
-//
-//        // mouse motion specific member members
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_deltax) = the_msg.idata[0];
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_deltay) = the_msg.idata[1];
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_cursorx) = the_msg.idata[2];
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_cursory) = the_msg.idata[3];
-//        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaledcursorx) = the_msg.fdata[0];
-//        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaledcursory) = the_msg.fdata[1];
-//
-//        // joystick axis specific member members
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_axis_position) = the_msg.idata[0];
-//        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaled_axis_position) = the_msg.fdata[0];
-//        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_axis_position2) = the_msg.fdata[0];
-//
-//        // joystick hat specific member members
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_hat_position) = the_msg.idata[0];
-//
-//        // keyboard specific members
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_key) = the_msg.idata[1];
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_ascii) = the_msg.idata[2];
-//
-//        // accelerometer (tilt sensor, wii remote) specific members
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_x) = the_msg.idata[0];
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_y) = the_msg.idata[1];
-//        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_z) = the_msg.idata[2];
-//    }
-//}
-//
-//CK_DLL_MFUN( HidIn_send )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    Chuck_Object * fake_msg = GET_NEXT_OBJECT(ARGS);
-//
-//    HidMsg the_msg;
-//    the_msg.device_type = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_device_type );
-//    the_msg.device_num = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_device_num );
-//    the_msg.type = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_type );
-//    the_msg.eid = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_which );
-//    the_msg.idata[0] = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_idata );
-//
-//    RETURN->v_int = min->send( &the_msg );
-//}
-//
-//CK_DLL_MFUN( HidIn_can_wait )
-//{
-//    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
-//    RETURN->v_int = min->empty();
-//}
-//
-//CK_DLL_SFUN( HidIn_read_tilt_sensor )
-//{
-//    static HidIn * hi;
-//    static t_CKBOOL hi_good = TRUE;
-//
-//    Chuck_Array4 * array = new Chuck_Array4( FALSE, 3 );
-//    array->set( 0, 0 );
-//    array->set( 1, 0 );
-//    array->set( 2, 0 );
-//
-//    // TODO: reference count?
-//    array->add_ref();
-//    RETURN->v_object = array;
-//
-//    if( hi_good == FALSE )
-//        return;
-//
-//    if( !hi )
-//    {
-//        hi = new HidIn;
-//        if( !hi->open( SHRED->vm_ref, CK_HID_DEV_TILTSENSOR, 0 ) )
-//        {
-//            hi_good = FALSE;
-//            return;
-//        }
-//    }
-//
-//    HidMsg msg;
-//
-//    if( !hi->read( CK_HID_ACCELEROMETER, 0, &msg ) )
-//    {
-//        return;
-//    }
-//
-//    array->set( 0, msg.idata[0] );
-//    array->set( 1, msg.idata[1] );
-//    array->set( 2, msg.idata[2] );
-//}
-//
-//CK_DLL_SFUN( HidIn_ctrl_tiltPollRate )
-//{
-//    // get srate
-//    if( !SHRED || !SHRED->vm_ref )
-//    {
-//        // problem
-//        CK_FPRINTF_STDERR( "[chuck](via HID): can't set tiltPollRate on NULL shred/VM...\n" );
-//        RETURN->v_dur = 0;
-//        return;
-//    }
-//    t_CKFLOAT srate = SHRED->vm_ref->srate();
-//
-//    // get arg
-//    t_CKDUR v = GET_NEXT_DUR( ARGS );
-//
-//    // get in microseconds
-//    t_CKINT usec = (t_CKINT)( v / srate * 1000000 );
-//
-//    // make sure it's nonnegative
-//    if( usec < 0 ) usec = 0;
-//
-//    // go
-//    RETURN->v_dur = TiltSensor_setPollRate( usec ) * srate / 1000000;
-//}
-//
-//CK_DLL_SFUN( HidIn_cget_tiltPollRate )
-//{
-//    // get srate
-//    if( !SHRED || !SHRED->vm_ref )
-//    {
-//        // problem
-//        CK_FPRINTF_STDERR( "[chuck](via HID): can't get tiltPollRate on NULL shred/VM...\n" );
-//        RETURN->v_dur = 0;
-//        return;
-//    }
-//    t_CKFLOAT srate = SHRED->vm_ref->srate();
-//
-//    RETURN->v_dur = TiltSensor_getPollRate() * srate / 1000000;
-//}
-//
-//CK_DLL_SFUN( HidIn_start_cursor_track )
-//{
-//    RETURN->v_int = !Mouse_start_cursor_track();
-//}
-//
-//CK_DLL_SFUN( HidIn_stop_cursor_track )
-//{
-//    RETURN->v_int = !Mouse_stop_cursor_track();
-//}
-//
-////-----------------------------------------------------------------------------
-//// HidOut API
-////-----------------------------------------------------------------------------
-//CK_DLL_CTOR( HidOut_ctor )
-//{
-//    OBJ_MEMBER_INT(SELF, HidOut_offset_data) = (t_CKUINT)new HidOut;
-//}
-//
-//CK_DLL_DTOR( HidOut_dtor )
-//{
-//    delete (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
-//    OBJ_MEMBER_INT(SELF, HidOut_offset_data) = 0;
-//}
-//
-//CK_DLL_MFUN( HidOut_open )
-//{
-//    HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
-//    t_CKINT num = GET_CK_INT(ARGS);
-//    RETURN->v_int = mout->open( num );
-//}
-//
-//CK_DLL_MFUN( HidOut_good )
-//{
-//    HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
-//    RETURN->v_int = (t_CKINT)mout->good();
-//}
-//
-//CK_DLL_MFUN( HidOut_num )
-//{
-//    HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
-//    RETURN->v_int = mout->num();
-//}
-//
-//CK_DLL_MFUN( HidOut_name )
-//{
-//    // HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
-//    // TODO: memory leak, please fix, Thanks.
-//    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
-//    // only if valid
-//    // if( mout->good() )
-//    //     a->str = mout->mout->getPortName( mout->num() );
-//    RETURN->v_string = a;
-//}
-//
-//CK_DLL_MFUN( HidOut_printerr )
-//{
-//    HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
-//    t_CKINT print_or_not = GET_CK_INT(ARGS);
-//    mout->set_suppress( !print_or_not );
-//}
-//
-//CK_DLL_MFUN( HidOut_send )
-//{
-//    HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
-//    // Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
-//    HidMsg the_msg;
-//    // the_msg.data[0] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data1);
-//    // the_msg.data[1] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data2);
-//    // the_msg.data[2] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data3);
-//    RETURN->v_int = mout->send( &the_msg );
-//}
+
+
+#ifndef __DISABLE_HID__
+//-----------------------------------------------------------------------------
+// HidMsg API
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( HidMsg_is_axis_motion )
+{
+    RETURN->v_int = ( ( t_CKINT ) OBJ_MEMBER_INT( SELF, HidMsg_offset_type ) ==
+                      CK_HID_JOYSTICK_AXIS ? 1 : 0 );
+}
+
+CK_DLL_MFUN( HidMsg_is_button_down )
+{
+    RETURN->v_int = ( ( t_CKINT ) OBJ_MEMBER_INT( SELF, HidMsg_offset_type ) ==
+                      CK_HID_BUTTON_DOWN ? 1 : 0 );
+}
+
+CK_DLL_MFUN( HidMsg_is_button_up )
+{
+    RETURN->v_int = ( ( t_CKINT ) OBJ_MEMBER_INT( SELF, HidMsg_offset_type ) ==
+                      CK_HID_BUTTON_UP ? 1 : 0 );
+}
+
+CK_DLL_MFUN( HidMsg_is_mouse_motion )
+{
+    RETURN->v_int = ( ( t_CKINT ) OBJ_MEMBER_INT( SELF, HidMsg_offset_type ) ==
+                      CK_HID_MOUSE_MOTION ? 1 : 0 );
+}
+
+CK_DLL_MFUN( HidMsg_is_hat_motion )
+{
+    RETURN->v_int = ( ( t_CKINT ) OBJ_MEMBER_INT( SELF, HidMsg_offset_type ) ==
+                      CK_HID_JOYSTICK_HAT ? 1 : 0 );
+}
+
+CK_DLL_MFUN( HidMsg_is_wheel_motion )
+{
+    RETURN->v_int = ( ( t_CKINT ) OBJ_MEMBER_INT( SELF, HidMsg_offset_type ) ==
+                      CK_HID_MOUSE_WHEEL ? 1 : 0 );
+}
+
+//-----------------------------------------------------------------------------
+// HidIn API
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( HidIn_ctor )
+{
+    HidIn * min = new HidIn;
+    min->SELF = SELF;
+    OBJ_MEMBER_INT(SELF, HidIn_offset_data) = (t_CKINT)min;
+}
+
+CK_DLL_DTOR( HidIn_dtor )
+{
+    delete (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    OBJ_MEMBER_INT(SELF, HidIn_offset_data) = 0;
+}
+
+CK_DLL_MFUN( HidIn_open )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    t_CKINT type = GET_NEXT_INT(ARGS);
+    t_CKINT num = GET_NEXT_INT(ARGS);
+    // CK_FPRINTF_STDERR( "HidIn_open %li %li\n", type, num );
+    RETURN->v_int = min->open( SHRED->vm_ref, type, num );
+}
+
+CK_DLL_MFUN( HidIn_open_named )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    Chuck_String * name = GET_NEXT_STRING(ARGS);
+    std::string s = name->str();
+    RETURN->v_int = min->open( SHRED->vm_ref, s );
+}
+
+CK_DLL_MFUN( HidIn_open_joystick )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    t_CKINT num = GET_NEXT_INT(ARGS);
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_JOYSTICK, num );
+}
+
+CK_DLL_MFUN( HidIn_open_mouse )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    t_CKINT num = GET_NEXT_INT(ARGS);
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_MOUSE, num );
+}
+
+CK_DLL_MFUN( HidIn_open_keyboard )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    t_CKINT num = GET_NEXT_INT(ARGS);
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_KEYBOARD, num );
+}
+
+CK_DLL_MFUN( HidIn_open_tiltsensor )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_TILTSENSOR, 0 );
+}
+
+CK_DLL_MFUN( HidIn_good )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    RETURN->v_int = (t_CKINT)min->good();
+}
+
+CK_DLL_MFUN( HidIn_num )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    RETURN->v_int = min->num();
+}
+
+CK_DLL_MFUN( HidIn_printerr )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    t_CKINT print_or_not = GET_CK_INT(ARGS);
+    min->set_suppress( !print_or_not );
+}
+
+CK_DLL_MFUN( HidIn_name )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    // TODO: memory leak, please fix, Thanks.
+    // Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    // only if valid
+    // if( min->good() )
+    //     a->str = min->phin->getPortName( min->num() );
+    // TODO: is null problem?
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    RETURN->v_string->set( min->name() );
+}
+
+CK_DLL_MFUN( HidIn_recv )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
+    HidMsg the_msg;
+    RETURN->v_int = min->recv( &the_msg );
+    if( RETURN->v_int )
+    {
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_device_type) = the_msg.device_type;
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_device_num) = the_msg.device_num;
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_type) = the_msg.type;
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_which) = the_msg.eid;
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_idata) = the_msg.idata[0];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_fdata) = the_msg.fdata[0];
+
+        // mouse motion specific member variables
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_deltax) = the_msg.idata[0];
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_deltay) = the_msg.idata[1];
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_cursorx) = the_msg.idata[2];
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_cursory) = the_msg.idata[3];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaledcursorx) = the_msg.fdata[0];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaledcursory) = the_msg.fdata[1];
+
+        // axis motion specific member variables
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_axis_position) = the_msg.idata[0];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaled_axis_position) = the_msg.fdata[0];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_axis_position2) = the_msg.fdata[0];
+
+        // hat motion specific variables
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_hat_position) = the_msg.idata[0];
+
+        // keyboard specific variables
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_key) = the_msg.idata[1];
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_ascii) = the_msg.idata[2];
+
+        // accelerometer (tilt sensor, wii remote) specific members
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_x) = the_msg.idata[0];
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_y) = the_msg.idata[1];
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_z) = the_msg.idata[2];
+
+        // multitouch stuff - added 1.3.0.0
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchx) = the_msg.fdata[0];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchy) = the_msg.fdata[1];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchsize) = the_msg.fdata[2];
+    }
+}
+
+CK_DLL_MFUN( HidIn_read )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    t_CKINT type = GET_NEXT_INT(ARGS);
+    t_CKINT num = GET_NEXT_INT(ARGS);
+    Chuck_Object * fake_msg = GET_NEXT_OBJECT(ARGS);
+
+    HidMsg the_msg;
+
+    RETURN->v_int = min->read( type, num, &the_msg );
+
+    if( RETURN->v_int )
+    {
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_device_type) = the_msg.device_type;
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_device_num) = the_msg.device_num;
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_type) = the_msg.type;
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_which) = the_msg.eid;
+
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_idata) = the_msg.idata[0];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_fdata) = the_msg.fdata[0];
+
+        // mouse motion specific member members
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_deltax) = the_msg.idata[0];
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_deltay) = the_msg.idata[1];
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_cursorx) = the_msg.idata[2];
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_cursory) = the_msg.idata[3];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaledcursorx) = the_msg.fdata[0];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaledcursory) = the_msg.fdata[1];
+
+        // joystick axis specific member members
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_axis_position) = the_msg.idata[0];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaled_axis_position) = the_msg.fdata[0];
+        OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_axis_position2) = the_msg.fdata[0];
+
+        // joystick hat specific member members
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_hat_position) = the_msg.idata[0];
+
+        // keyboard specific members
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_key) = the_msg.idata[1];
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_ascii) = the_msg.idata[2];
+
+        // accelerometer (tilt sensor, wii remote) specific members
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_x) = the_msg.idata[0];
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_y) = the_msg.idata[1];
+        OBJ_MEMBER_INT(fake_msg, HidMsg_offset_z) = the_msg.idata[2];
+    }
+}
+
+CK_DLL_MFUN( HidIn_send )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    Chuck_Object * fake_msg = GET_NEXT_OBJECT(ARGS);
+
+    HidMsg the_msg;
+    the_msg.device_type = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_device_type );
+    the_msg.device_num = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_device_num );
+    the_msg.type = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_type );
+    the_msg.eid = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_which );
+    the_msg.idata[0] = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_idata );
+
+    RETURN->v_int = min->send( &the_msg );
+}
+
+CK_DLL_MFUN( HidIn_can_wait )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    RETURN->v_int = min->empty();
+}
+
+CK_DLL_SFUN( HidIn_read_tilt_sensor )
+{
+    static HidIn * hi;
+    static t_CKBOOL hi_good = TRUE;
+
+    Chuck_Array4 * array = new Chuck_Array4( FALSE, 3 );
+    array->set( 0, 0 );
+    array->set( 1, 0 );
+    array->set( 2, 0 );
+
+    // TODO: reference count?
+    array->add_ref();
+    RETURN->v_object = array;
+
+    if( hi_good == FALSE )
+        return;
+
+    if( !hi )
+    {
+        hi = new HidIn;
+        if( !hi->open( SHRED->vm_ref, CK_HID_DEV_TILTSENSOR, 0 ) )
+        {
+            hi_good = FALSE;
+            return;
+        }
+    }
+
+    HidMsg msg;
+
+    if( !hi->read( CK_HID_ACCELEROMETER, 0, &msg ) )
+    {
+        return;
+    }
+
+    array->set( 0, msg.idata[0] );
+    array->set( 1, msg.idata[1] );
+    array->set( 2, msg.idata[2] );
+}
+
+CK_DLL_SFUN( HidIn_ctrl_tiltPollRate )
+{
+    // get srate
+    if( !SHRED || !SHRED->vm_ref )
+    {
+        // problem
+        CK_FPRINTF_STDERR( "[chuck](via HID): can't set tiltPollRate on NULL shred/VM...\n" );
+        RETURN->v_dur = 0;
+        return;
+    }
+    t_CKFLOAT srate = SHRED->vm_ref->srate();
+
+    // get arg
+    t_CKDUR v = GET_NEXT_DUR( ARGS );
+
+    // get in microseconds
+    t_CKINT usec = (t_CKINT)( v / srate * 1000000 );
+
+    // make sure it's nonnegative
+    if( usec < 0 ) usec = 0;
+
+    // go
+    RETURN->v_dur = TiltSensor_setPollRate( usec ) * srate / 1000000;
+}
+
+CK_DLL_SFUN( HidIn_cget_tiltPollRate )
+{
+    // get srate
+    if( !SHRED || !SHRED->vm_ref )
+    {
+        // problem
+        CK_FPRINTF_STDERR( "[chuck](via HID): can't get tiltPollRate on NULL shred/VM...\n" );
+        RETURN->v_dur = 0;
+        return;
+    }
+    t_CKFLOAT srate = SHRED->vm_ref->srate();
+
+    RETURN->v_dur = TiltSensor_getPollRate() * srate / 1000000;
+}
+
+CK_DLL_SFUN( HidIn_start_cursor_track )
+{
+    RETURN->v_int = !Mouse_start_cursor_track();
+}
+
+CK_DLL_SFUN( HidIn_stop_cursor_track )
+{
+    RETURN->v_int = !Mouse_stop_cursor_track();
+}
+
+//-----------------------------------------------------------------------------
+// HidOut API
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( HidOut_ctor )
+{
+    OBJ_MEMBER_INT(SELF, HidOut_offset_data) = (t_CKUINT)new HidOut;
+}
+
+CK_DLL_DTOR( HidOut_dtor )
+{
+    delete (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
+    OBJ_MEMBER_INT(SELF, HidOut_offset_data) = 0;
+}
+
+CK_DLL_MFUN( HidOut_open )
+{
+    HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
+    t_CKINT num = GET_CK_INT(ARGS);
+    RETURN->v_int = mout->open( num );
+}
+
+CK_DLL_MFUN( HidOut_good )
+{
+    HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
+    RETURN->v_int = (t_CKINT)mout->good();
+}
+
+CK_DLL_MFUN( HidOut_num )
+{
+    HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
+    RETURN->v_int = mout->num();
+}
+
+CK_DLL_MFUN( HidOut_name )
+{
+    // HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
+    // TODO: memory leak, please fix, Thanks.
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    // only if valid
+    // if( mout->good() )
+    //     a->str = mout->mout->getPortName( mout->num() );
+    RETURN->v_string = a;
+}
+
+CK_DLL_MFUN( HidOut_printerr )
+{
+    HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
+    t_CKINT print_or_not = GET_CK_INT(ARGS);
+    mout->set_suppress( !print_or_not );
+}
+
+CK_DLL_MFUN( HidOut_send )
+{
+    HidOut * mout = (HidOut *)OBJ_MEMBER_INT(SELF, HidOut_offset_data);
+    // Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
+    HidMsg the_msg;
+    // the_msg.data[0] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data1);
+    // the_msg.data[1] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data2);
+    // the_msg.data[2] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data3);
+    RETURN->v_int = mout->send( &the_msg );
+}
+#endif //__DISABLE_HID__
+
+
 
 
 //-----------------------------------------------------------------------------

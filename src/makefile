@@ -9,7 +9,7 @@ CK_PLATFORM=
 current: 
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
-	@echo "   make osx, make cygwin, or make win32"
+	@echo "   make osx, make cygwin, make win32, or make emscripten"
 
 
 ############################## MAKE INSTALL ####################################
@@ -24,6 +24,44 @@ ifeq ($(MAKECMDGOALS),)
 MAKECMDGOALS:=$(.DEFAULT_GOAL)
 endif
 endif
+
+
+############################## MAKE EMSCRIPTEN #################################
+EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
+    core/chuck.cpp core/chuck_absyn.cpp \
+    core/chuck_carrier.cpp core/chuck_compile.cpp core/chuck_dl.cpp \
+    core/chuck_emit.cpp core/chuck_errmsg.cpp core/chuck_frame.cpp \
+    core/chuck_instr.cpp core/chuck_lang.cpp core/chuck_oo.cpp \
+    core/chuck_parse.cpp core/chuck_scan.cpp core/chuck_stats.cpp \
+    core/chuck_symbol.cpp core/chuck_table.cpp core/chuck_type.cpp \
+    core/chuck_ugen.cpp core/chuck_utils.cpp core/chuck_vm.cpp \
+    core/uana_extract.cpp core/uana_xform.cpp core/ugen_filter.cpp \
+    core/ugen_osc.cpp core/ugen_stk.cpp core/ugen_xxx.cpp \
+    core/ulib_math.cpp core/ulib_regex.cpp core/ulib_std.cpp \
+    core/util_buffers.cpp core/util_math.c core/util_raw.c \
+    core/util_string.cpp core/util_xforms.c core/chuck_win32.c \
+    core/util_sndfile.c
+
+
+.PHONY: emscripten
+emscripten: host_web/chuckscript/js/chuckscript.js
+
+host_web/chuckscript/js/chuckscript.js: $(EMSCRIPTENSRCS)
+	emcc -Icore -D__DISABLE_MIDI__ -D__DISABLE_WATCHDOG__ \
+        -D__DISABLE_KBHIT__ -D__DISABLE_PROMPTER__ -D__DISABLE_RTAUDIO__ \
+        -D__DISABLE_OTF_SERVER__ -D__ALTER_HID__ -D__DISABLE_HID__ \
+        -D__DISABLE_SERIAL__ -D__DISABLE_THREADS__ \
+        -D__DISABLE_NETWORK__ -D__DISABLE_SHELL__ \
+        -D__CHUCK_USE_PLANAR_BUFFERS__ \
+	-Wformat=0 \
+        $(EMSCRIPTENSRCS) -o host_web/chuckscript/js/chuckscript.js \
+        -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8"]' \
+        --pre-js host_web/webaudio_prejs.js \
+        -s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"' \
+        -s EXPORT_ES6=1 -s BINARYEN_ASYNC_COMPILATION=0 -s SINGLE_FILE=1 \
+        -s ALLOW_MEMORY_GROWTH=1 \
+        -s RESERVED_FUNCTION_POINTERS=50 --embed-file host_web/streamingAssets@/
+
 
 
 ############################## MAKE INSTALL ####################################

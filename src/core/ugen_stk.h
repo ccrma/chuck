@@ -5398,131 +5398,136 @@ public: // SWAP formerly protected
 #if !defined(__WVOUT_H)
 #define __WVOUT_H
 
-//#include <stdio.h>
-////#include "util_thread.h"
-//
-//#define BUFFER_SIZE 1024  // sample frames
-//
-//class WvOut : public Stk
-//{
-// public:
-//
-//  typedef unsigned long FILE_TYPE;
-//
-//  static const FILE_TYPE WVOUT_RAW; /*!< STK RAW file type. */
-//  static const FILE_TYPE WVOUT_WAV; /*!< WAV file type. */
-//  static const FILE_TYPE WVOUT_SND; /*!< SND (AU) file type. */
-//  static const FILE_TYPE WVOUT_AIF; /*!< AIFF file type. */
-//  static const FILE_TYPE WVOUT_MAT; /*!< Matlab MAT-file type. */
-//
-//    // chuck: override stdio fwrite/etc. functions
-//    size_t fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream);
-//    int fseek(FILE *stream, long offset, int whence);
-//    int fflush(FILE *stream);
-//    int fclose(FILE *stream);
-//    size_t fread(void *ptr, size_t size, size_t nitems, FILE *stream);
-//    
-//  //! Default constructor.
-//  WvOut();
-//
-//  //! Overloaded constructor used to specify a file name, type, and data format with this object.
-//  /*!
-//    An StkError is thrown for invalid argument values or if an error occurs when initializing the output file.
-//  */
-//  WvOut( const char *fileName, unsigned int nChannels = 1, FILE_TYPE type = WVOUT_WAV, Stk::STK_FORMAT format = STK_SINT16 );
-//
-//  //! Class destructor.
-//  virtual ~WvOut();
-//
-//  //! Create a file of the specified type and name and output samples to it in the given data format.
-//  /*!
-//    An StkError is thrown for invalid argument values or if an error occurs when initializing the output file.
-//  */
-//  void openFile( const char *fileName, unsigned int nChannels = 1,  \
-//         WvOut::FILE_TYPE type = WVOUT_WAV, Stk::STK_FORMAT = STK_SINT16 );
-//  //! If a file is open, write out samples in the queue and then close it.
-//  void closeFile( void );
-//
-//  //! Return the number of sample frames output.
-//  unsigned long getFrames( void ) const;
-//
-//  //! Return the number of seconds of data output.
-//  MY_FLOAT getTime( void ) const;
-//
-//  //! Output a single sample to all channels in a sample frame.
-//  /*!
-//    An StkError is thrown if a file write error occurs.
-//  */
-//  virtual void tick(const MY_FLOAT sample);
-//
-//  //! Output each sample in \e vector to all channels in \e vectorSize sample frames.
-//  /*!
-//    An StkError is thrown if a file write error occurs.
-//  */
-//  virtual void tick(const MY_FLOAT *vector, unsigned int vectorSize);
-//
-//  //! Output the \e frameVector of sample frames of the given length.
-//  /*!
-//    An StkError is thrown if a file write error occurs.
-//  */
-//  virtual void tickFrame(const MY_FLOAT *frameVector, unsigned int frames = 1);
-//
-// public: // SWAP formerly protected
-//
-//  // Initialize class variables.
-//  void init( void );
-//
-//  // Write data to output file;
-//  virtual void writeData( unsigned long frames );
-//
-//  // Write STK RAW file header.
-//  bool setRawFile( const char *fileName );
-//
-//  // Write WAV file header.
-//  bool setWavFile( const char *fileName );
-//
-//  // Close WAV file, updating the header.
-//  void closeWavFile( void );
-//
-//  // Write SND (AU) file header.
-//  bool setSndFile( const char *fileName );
-//
-//  // Close SND file, updating the header.
-//  void closeSndFile( void );
-//
-//  // Write AIFF file header.
-//  bool setAifFile( const char *fileName );
-//
-//  // Close AIFF file, updating the header.
-//  void closeAifFile( void );
-//
-//  // Write MAT-file header.
-//  bool setMatFile( const char *fileName );
-//
-//  // Close MAT-file, updating the header.
-//  void closeMatFile( void );
-//
-//  char msg[256];
-//  FILE *fd;
-//  MY_FLOAT *data;
-//  FILE_TYPE fileType;
-//  STK_FORMAT dataType;
-//  bool byteswap;
-//  unsigned int channels;
-//  unsigned long counter;
-//  unsigned long totalCount;
-//  // char m_filename[1024];
-//  Chuck_String str_filename;
-//  t_CKUINT start;
-//  // char autoPrefix[1024];
-//  Chuck_String autoPrefix;
-//  t_CKUINT flush;
-//  t_CKFLOAT fileGain;
-//    
-//  // spencer: for data asynch write
-//  t_CKBOOL asyncIO;
-//  XWriteThread * asyncWriteThread;
-//};
+
+#ifndef __DISABLE_WVOUT__
+#include <stdio.h>
+#ifndef __DISABLE_THREADS__
+#include "util_thread.h"
+#endif
+
+#define BUFFER_SIZE 1024  // sample frames
+
+class WvOut : public Stk
+{
+ public:
+
+  typedef unsigned long FILE_TYPE;
+
+  static const FILE_TYPE WVOUT_RAW; /*!< STK RAW file type. */
+  static const FILE_TYPE WVOUT_WAV; /*!< WAV file type. */
+  static const FILE_TYPE WVOUT_SND; /*!< SND (AU) file type. */
+  static const FILE_TYPE WVOUT_AIF; /*!< AIFF file type. */
+  static const FILE_TYPE WVOUT_MAT; /*!< Matlab MAT-file type. */
+
+    // chuck: override stdio fwrite/etc. functions
+    size_t fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream);
+    int fseek(FILE *stream, long offset, int whence);
+    int fflush(FILE *stream);
+    int fclose(FILE *stream);
+    size_t fread(void *ptr, size_t size, size_t nitems, FILE *stream);
+    
+  //! Default constructor.
+  WvOut();
+
+  //! Overloaded constructor used to specify a file name, type, and data format with this object.
+  /*!
+    An StkError is thrown for invalid argument values or if an error occurs when initializing the output file.
+  */
+  WvOut( const char *fileName, unsigned int nChannels = 1, FILE_TYPE type = WVOUT_WAV, Stk::STK_FORMAT format = STK_SINT16 );
+
+  //! Class destructor.
+  virtual ~WvOut();
+
+  //! Create a file of the specified type and name and output samples to it in the given data format.
+  /*!
+    An StkError is thrown for invalid argument values or if an error occurs when initializing the output file.
+  */
+  void openFile( const char *fileName, unsigned int nChannels = 1,  \
+         WvOut::FILE_TYPE type = WVOUT_WAV, Stk::STK_FORMAT = STK_SINT16 );
+  //! If a file is open, write out samples in the queue and then close it.
+  void closeFile( void );
+
+  //! Return the number of sample frames output.
+  unsigned long getFrames( void ) const;
+
+  //! Return the number of seconds of data output.
+  MY_FLOAT getTime( void ) const;
+
+  //! Output a single sample to all channels in a sample frame.
+  /*!
+    An StkError is thrown if a file write error occurs.
+  */
+  virtual void tick(const MY_FLOAT sample);
+
+  //! Output each sample in \e vector to all channels in \e vectorSize sample frames.
+  /*!
+    An StkError is thrown if a file write error occurs.
+  */
+  virtual void tick(const MY_FLOAT *vector, unsigned int vectorSize);
+
+  //! Output the \e frameVector of sample frames of the given length.
+  /*!
+    An StkError is thrown if a file write error occurs.
+  */
+  virtual void tickFrame(const MY_FLOAT *frameVector, unsigned int frames = 1);
+
+ public: // SWAP formerly protected
+
+  // Initialize class variables.
+  void init( void );
+
+  // Write data to output file;
+  virtual void writeData( unsigned long frames );
+
+  // Write STK RAW file header.
+  bool setRawFile( const char *fileName );
+
+  // Write WAV file header.
+  bool setWavFile( const char *fileName );
+
+  // Close WAV file, updating the header.
+  void closeWavFile( void );
+
+  // Write SND (AU) file header.
+  bool setSndFile( const char *fileName );
+
+  // Close SND file, updating the header.
+  void closeSndFile( void );
+
+  // Write AIFF file header.
+  bool setAifFile( const char *fileName );
+
+  // Close AIFF file, updating the header.
+  void closeAifFile( void );
+
+  // Write MAT-file header.
+  bool setMatFile( const char *fileName );
+
+  // Close MAT-file, updating the header.
+  void closeMatFile( void );
+
+  char msg[256];
+  FILE *fd;
+  MY_FLOAT *data;
+  FILE_TYPE fileType;
+  STK_FORMAT dataType;
+  bool byteswap;
+  unsigned int channels;
+  unsigned long counter;
+  unsigned long totalCount;
+  // char m_filename[1024];
+  Chuck_String str_filename;
+  t_CKUINT start;
+  // char autoPrefix[1024];
+  Chuck_String autoPrefix;
+  t_CKUINT flush;
+  t_CKFLOAT fileGain;
+    
+  // spencer: for data asynch write
+  t_CKBOOL asyncIO;
+  XWriteThread * asyncWriteThread;
+};
+#endif // __DISABLED_WVOUT__
 
 #endif // defined(__WVOUT_H)
 
