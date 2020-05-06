@@ -7223,7 +7223,7 @@ void Joystick_init()
         return;
     }
     
-    while( dir_entity = readdir( dir_handle ) )
+    while( ( dir_entity = readdir( dir_handle ) ) )
     {
         if( sscanf( dir_entity->d_name, CK_HID_JOYSTICKFILE, &js_num ) )
         {
@@ -7427,7 +7427,7 @@ void Mouse_init()
         return;
     }
     
-    while( dir_entity = readdir( dir_handle ) )
+    while( ( dir_entity = readdir( dir_handle ) ) )
     {
         if( sscanf( dir_entity->d_name, CK_HID_EVDEVFILE, &m_num ) )
         {
@@ -7640,7 +7640,7 @@ void Keyboard_init()
         return;
     }
     
-    while( dir_entity = readdir( dir_handle ) )
+    while( ( dir_entity = readdir( dir_handle ) ) )
     {
         if( sscanf( dir_entity->d_name, CK_HID_EVDEVFILE, &m_num ) )
         {

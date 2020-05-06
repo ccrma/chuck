@@ -34,7 +34,7 @@
 #include <time.h>
 #include <math.h>
 #include "util_buffers.h"
-//#include "util_console.h"
+#include "util_console.h"
 #include "util_math.h"
 #include "util_string.h"
 //#include "util_thread.h"
@@ -1164,7 +1164,9 @@ void le_cleanup()
     if( g_le_thread )
     {
         // cancel thread
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+#if defined(__ANDROID__)
+        // lol just don't stop the thread...
+#elif !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
         pthread_cancel( g_le_thread );
 #else
         CloseHandle( g_le_thread );

@@ -69,7 +69,9 @@ XThread::~XThread( )
 {
     if( thread != 0 )
     {
-#if defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__)
+#if defined(__ANDROID__)
+        // sad... don't cancel the thread
+#elif defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__)
         pthread_cancel(thread);
         pthread_join(thread, NULL);
 #elif defined(__PLATFORM_WIN32__)
@@ -110,8 +112,9 @@ bool XThread::start( THREAD_FUNCTION routine, void * ptr )
 bool XThread::wait( long milliseconds, bool cancel )
 {
     bool result = false;
-    
-#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+#if defined(__ANDROID__)
+    // do nothing (return false below)
+#elif ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
     if(cancel) pthread_cancel(thread);
     pthread_join(thread, NULL);
 #elif defined(__PLATFORM_WIN32__)
@@ -138,7 +141,7 @@ bool XThread::wait( long milliseconds, bool cancel )
 //-----------------------------------------------------------------------------
 void XThread :: test( )
 {
-#if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+#if ( defined(__PLATFORM_MACOSX__) || ( defined(__PLATFORM_LINUX__) && !defined(__ANDROID__) ) || defined(__WINDOWS_PTHREAD__) )
     pthread_testcancel();
 #endif
 }

@@ -45,7 +45,7 @@
 //#include "ulib_machine.h"
 #include "util_math.h"
 #include "util_string.h"
-//#include "hidio_sdl.h"
+#include "hidio_sdl.h"
 //#include "midiio_rtmidi.h"
 #include <string>
 #include <map>

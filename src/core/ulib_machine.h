@@ -33,7 +33,7 @@
 #define __ULIB_MACHINE_H__
 
 #include "chuck_dl.h"
-//#include "chuck_otf.h"
+#include "chuck_otf.h"
 
 // forward reference
 struct Chuck_VM;

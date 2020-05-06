@@ -350,7 +350,7 @@ struct Chuck_Context : public Chuck_VM_Object
     t_CKBOOL has_error;
 
     // progress
-    enum { P_NONE = 0, P_CLASSES_ONLY, P_ALL };
+    enum { P_NONE = 0, P_CLASSES_ONLY, P_ALL_ };
     // progress in scan / type check / emit
     t_CKUINT progress;
 

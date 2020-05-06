@@ -430,8 +430,8 @@ std::string get_full_path( const std::string & fp )
 
 std::string expand_filepath( std::string & fp )
 {
-#if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__) || defined(__EMSCRIPTEN__)
-    // no expansion in Windows systems or Emscripten
+#if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__) || defined(__EMSCRIPTEN__) || defined(__ANDROID__)
+    // no expansion in Windows systems or Emscripten or Android
     return fp;
 #else
     
