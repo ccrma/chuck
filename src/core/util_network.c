@@ -189,7 +189,7 @@ t_CKBOOL ck_connect( ck_socket sock, const char * hostname, int port )
     }
     else
     {
-#ifdef __PLATFORM_WIN32__
+#if defined(__PLATFORM_WIN32__) || defined(__ANDROID__)
         memcpy( (char *)&sock->sock_in.sin_addr, host->h_addr, host->h_length );
 #else
         bcopy( host->h_addr, (char *)&sock->sock_in.sin_addr, host->h_length );

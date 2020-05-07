@@ -1084,7 +1084,7 @@ static void dispatch_method(lo_server s, const char *path,
 
 		    tmp = malloc(strlen(it->path + len) + 1);
 		    strcpy(tmp, it->path + len);
-#ifdef WIN32
+#if defined(WIN32) || defined(__ANDROID__)
             sec = strchr(tmp,'/');
 #else
 		    sec = index(tmp, '/');
