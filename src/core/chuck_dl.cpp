@@ -1033,7 +1033,7 @@ t_CKBOOL ck_mthook_activate(Chuck_DL_MainThreadHook *hook)
 
 t_CKBOOL ck_mthook_deactivate(Chuck_DL_MainThreadHook *hook)
 {
-    hook->m_carrier->chuck->setMainThreadHook(nullptr);
+    hook->m_carrier->chuck->setMainThreadHook(NULL);
     hook->m_active = false;
     return hook->m_active;
 }
