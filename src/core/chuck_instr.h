@@ -3121,6 +3121,70 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Event_Select_Timeout
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Event_Select_Timeout : public Chuck_Instr
+{
+public:
+    Chuck_Instr_Event_Select_Timeout(t_CKUINT num_events, t_CKUINT num_timeouts)
+    {
+        m_num_events = num_events;
+        m_num_timeouts = num_timeouts;
+        m_body_addrs.resize(m_num_events + m_num_timeouts);
+        m_time_exp_linepos.resize(m_num_timeouts);
+    }
+
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+
+    virtual const char * params() const
+    {
+        static char buffer[256];
+        static size_t remaining, written;
+        static char * nxt;
+
+        remaining = 256;
+        written =
+            snprintf( buffer, remaining, "timeouts=%lu events=%lu", m_num_timeouts, m_num_events );
+        if( written < 0 || written > remaining )
+            return buffer;
+
+        nxt = buffer + written;
+        remaining -= written;
+
+        for( size_t i = 0; i < m_body_addrs.size(); i++ )
+        {
+            written = snprintf( nxt, remaining, " body%lu=%lu", i, m_body_addrs[i] );
+            if( written < 0 || written > remaining )
+                return buffer;
+            nxt += written;
+            remaining -= written;
+        }
+
+        return buffer;
+    }
+
+    void set_time_exp_linepos( const size_t idx, const t_CKUINT linepos )
+    {
+        m_time_exp_linepos.at(idx) = linepos;
+    }
+
+    void set_body_addr( const size_t idx, const t_CKUINT addr )
+    {
+        m_body_addrs.at(idx) = addr;
+    }
+
+protected:
+    t_CKUINT m_num_events;
+    t_CKUINT m_num_timeouts;
+    std::vector<t_CKUINT> m_body_addrs;
+    std::vector<t_CKUINT> m_time_exp_linepos;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Array_Init
 // desc: for [ ... ] values
 //-----------------------------------------------------------------------------

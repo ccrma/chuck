@@ -46,6 +46,7 @@ LD=g++
 
 ############################# COMPILER FLAGS ###################################
 CFLAGS+=-I. -I$(COREDIR) -I$(COREDIR)/lo
+CPPFLAGS+=-std=c++14
 
 ifneq ($(CHUCK_STAT),)
 CFLAGS+= -D__CHUCK_STAT_TRACK__
@@ -171,7 +172,7 @@ $(COBJS_HOST): %.o: %.c
 	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
 $(CXXOBJS_HOST): %.o: %.cpp
-	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
+	$(CXX) $(CFLAGS) $(CPPFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
 clean: 

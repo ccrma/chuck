@@ -154,12 +154,22 @@ public:
 
 
 
+struct Chuck_Waiting_Event
+{
+    Chuck_Event *event;
+    t_CKUINT ret_sp;
+};
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: struct Chuck_VM_Shred
 // desc: ...
 //-----------------------------------------------------------------------------
 struct Chuck_VM_Shred : Chuck_Object
 {
+protected:
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -216,16 +226,24 @@ public: // machine components
 
 public:
     t_CKTIME wake_time;
+    t_CKBOOL goto_timeout_on_wake;
+    t_CKUINT timeout_pc;
     t_CKUINT next_pc;
     t_CKBOOL is_done;
     t_CKBOOL is_running;
     t_CKBOOL is_abort;
     t_CKBOOL is_dumped;
-    Chuck_Event * event;  // event shred is waiting on
     std::map<Chuck_UGen *, Chuck_UGen *> m_ugen_map;
     // references kept by the shred itself (e.g., when sporking member functions)
     // to be released when shred is done -- added 1.3.1.2
     std::vector<Chuck_Object *> m_parent_objects;
+
+    void add_waiting_event(Chuck_Event * event, t_CKUINT ret_sp);
+    t_CKBOOL has_waiting_events();
+    void clear_waiting_events();
+    void handle_timeout();
+    void goto_event_handler(Chuck_Event * event);
+    void goto_timeout_handler();
 
 public: // id
     t_CKUINT xid;
@@ -251,6 +269,7 @@ public: // ge: 1.3.5.3
     
 private:
     std::list<Chuck_IO_Serial *> * m_serials;
+    std::map<Chuck_Event *, t_CKUINT> m_waiting_events;
 };
 
 

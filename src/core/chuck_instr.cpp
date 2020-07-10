@@ -4763,6 +4763,9 @@ void Chuck_Instr_Event_Wait::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // check for null
     if( !event ) goto null_pointer;
 
+    // this isn't an event select; we should be the only one
+    assert( !shred->has_waiting_events() );
+
     // wait
     event->wait( shred, vm );
 
@@ -4779,6 +4782,86 @@ done:
     // do something!
     shred->is_running = FALSE;
     shred->is_done = TRUE;
+}
+
+
+
+void Chuck_Instr_Event_Select_Timeout::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    assert( !shred->has_waiting_events() );
+
+    t_CKUINT *& event_sp = (t_CKUINT *&)shred->reg->sp;
+    Chuck_Event * event;
+    size_t i;
+    t_CKBOOL has_timeout = m_num_timeouts > 0;
+
+    if( has_timeout )
+    {
+        t_CKFLOAT *& timeout_sp = (t_CKFLOAT *&)shred->reg->sp;
+        t_CKFLOAT t, last_negative_t, wake_time = -1;
+        t_CKUINT last_negative_linepos;
+
+        // Find the earliest deadline, set that as shred wake time,
+        // and set the timeout handler.
+        // If there is one time >= now, choose that; don't error if there
+        // is another time < now. If there is only a time < now, raise error.
+        for ( i = 0; i < m_num_timeouts; i++ )
+        {
+            pop_( timeout_sp, 1 );
+            t = (t_CKFLOAT)(*timeout_sp);
+            if( t >= shred->now )
+            {
+                if( wake_time < 0 || t < wake_time )
+                {
+                    wake_time = t;
+                    shred->timeout_pc = m_body_addrs[i];
+                }
+            }
+            else
+            {
+                last_negative_t = t;
+                last_negative_linepos = m_time_exp_linepos[i];
+            }
+        }
+
+        if( wake_time < 0 )
+        {
+            CK_FPRINTF_STDERR( 
+                "[chuck](VM): DestTimeNegativeException: '%.6f' on line[%lu] in shred[id=%lu:%s]\n",
+                last_negative_t, last_negative_linepos, shred->xid, shred->name.c_str() );
+
+            shred->is_running = FALSE;
+            shred->is_done = TRUE;
+
+            return;
+        }
+        else if( wake_time == shred->now )
+        {
+            shred->next_pc = shred->timeout_pc;
+
+            // If there are any events we shouldn't wait on them, as we have
+            // an immediate "timeout". Should we print a warning for this?
+            return;
+        }
+        else
+        {
+            assert( wake_time > shred->now );
+            shred->goto_timeout_on_wake = TRUE;
+            vm->shreduler()->shredule( shred, wake_time );
+            shred->is_running = FALSE;
+        }
+
+    }
+
+    // wait on all the events; set handler for each
+    for( i = 0; i < m_num_events; i++ )
+    {
+        pop_( event_sp, 1 );
+        event = (Chuck_Event *)(*event_sp);
+        event->wait( shred, vm, m_body_addrs[i + m_num_timeouts], has_timeout );
+    }
+
+
 }
 
 

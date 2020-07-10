@@ -19,6 +19,7 @@ CXX=g++
 LD=g++
 
 CFLAGS+=-I. -Ilo
+CPPFLAGS+=-std=c++14
 
 ifneq ($(CHUCK_STAT),)
 CFLAGS+= -D__CHUCK_STAT_TRACK__
@@ -132,7 +133,7 @@ chuck_win32.h: chuck.tab.h
 	cat chuck.tab.h > $@
 
 $(CXXOBJS): %.o: %.cpp
-	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
+	$(CXX) $(CFLAGS) $(CPPFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
 $(COBJS): %.o: %.c

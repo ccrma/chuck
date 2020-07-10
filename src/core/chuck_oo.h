@@ -59,6 +59,7 @@ struct Chuck_Func;
 struct Chuck_Namespace;
 struct Chuck_Context;
 struct Chuck_Env;
+struct Chuck_Event;
 struct Chuck_VM_Code;
 struct Chuck_VM_Shred;
 struct Chuck_VM;
@@ -66,6 +67,8 @@ struct Chuck_IO_File;
 class  CBufferSimple; // added 1.3.0.0
 
 
+
+typedef std::vector<Chuck_Event> Chuck_Event_List;
 
 
 //-----------------------------------------------------------------------------
@@ -430,7 +433,8 @@ struct Chuck_Event : Chuck_Object
 public:
     void signal();
     void broadcast();
-    void wait( Chuck_VM_Shred * shred, Chuck_VM * vm );
+    t_CKBOOL wait( Chuck_VM_Shred * shred, Chuck_VM * vm );
+    t_CKBOOL wait( Chuck_VM_Shred * shred, Chuck_VM * vm, t_CKUINT handler_sp, t_CKBOOL has_timeout );
     t_CKBOOL remove( Chuck_VM_Shred * shred );
 
 public: // internal

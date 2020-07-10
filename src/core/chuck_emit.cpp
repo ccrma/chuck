@@ -36,6 +36,7 @@
 #include "chuck_instr.h"
 #include <sstream>
 #include <iostream>
+#include <limits>
 
 using namespace std;
 
@@ -54,6 +55,7 @@ t_CKBOOL emit_engine_emit_do_while( Chuck_Emitter * emit, a_Stmt_While stmt );
 t_CKBOOL emit_engine_emit_until( Chuck_Emitter * emit, a_Stmt_Until stmt );
 t_CKBOOL emit_engine_emit_do_until( Chuck_Emitter * emit, a_Stmt_Until stmt );
 t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt );
+t_CKBOOL emit_engine_emit_select( Chuck_Emitter * emit, a_Stmt_Select stmt );
 t_CKBOOL emit_engine_emit_break( Chuck_Emitter * emit, a_Stmt_Break br );
 t_CKBOOL emit_engine_emit_continue( Chuck_Emitter * emit, a_Stmt_Continue cont );
 t_CKBOOL emit_engine_emit_return( Chuck_Emitter * emit, a_Stmt_Return stmt );
@@ -436,6 +438,10 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
 
         case ae_stmt_loop:  // loop statement
             ret = emit_engine_emit_loop( emit, &stmt->stmt_loop );
+            break;
+
+        case ae_stmt_select:  // select statement
+            ret = emit_engine_emit_select( emit, &stmt->stmt_select );
             break;
 
         case ae_stmt_switch:  // switch statement
@@ -1223,6 +1229,152 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
     emit->code->stack_cont.pop_back();
     // pop break stack
     emit->code->stack_break.pop_back();
+
+    return ret;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: emit_engine_emit_select()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL emit_engine_emit_select( Chuck_Emitter * emit, a_Stmt_Select stmt )
+{
+    t_CKBOOL ret = TRUE;
+
+    // push the stack, allowing for new local variables
+    emit->push_scope();
+
+    // mark the stack of break
+    emit->code->stack_break.push_back( NULL );
+
+    deque<a_Exp> exps;
+    deque<a_Stmt> bodies;
+    t_CKUINT num_events = 0, num_timeouts = 0;
+    Chuck_Instr * instr;
+
+    a_Case_List cur = stmt->cases;
+    while( cur != NULL )
+    {
+        t_CKTYPE item_type = cur->item->exp->type;
+
+        if( isa( item_type, emit->env->t_event ) )
+        {
+            exps.push_back( cur->item->exp ); 
+            bodies.push_back( cur->item->stmt ); 
+
+            num_events++;
+            if( num_events == numeric_limits<decltype(num_events)>::max() )
+            {
+                EM_error2( cur->item->linepos,
+                    "(emit): internal error: maximum select event cases reached: %lu",
+                    num_events );
+                return FALSE;
+            }
+        }
+        else if( isa( item_type, emit->env->t_dur ) ||
+                 isa( item_type, emit->env->t_time ) )
+        {
+            exps.push_front( cur->item->exp );
+            bodies.push_front( cur->item->stmt );
+
+            num_timeouts++;
+            if( num_timeouts == numeric_limits<decltype(num_timeouts)>::max() )
+            {
+                EM_error2( cur->item->linepos,
+                    "(emit): internal error: maximum select time advance cases reached: %lu",
+                    num_timeouts );
+                return FALSE;
+            }
+        }
+        else
+        {
+            EM_error2( cur->item->linepos,
+                "(emit): internal error: unhandled type '%s' in select case condition",
+                cur->item->exp->type->name.c_str() );
+            return FALSE;
+        }
+
+        cur = cur->next;
+    }
+
+    auto select_op = new Chuck_Instr_Event_Select_Timeout( num_events, num_timeouts );
+
+    // push all the case expressions onto the stack
+    // (in reverse order, so we pop them in the right order)
+    a_Exp exp;
+    auto exp_idx = exps.size() - 1;
+    for( auto it = exps.rbegin(); it != exps.rend(); ++it )
+    {
+        exp = *it;
+        ret = emit_engine_emit_exp( emit, exp );
+        if( !ret )
+            return FALSE;
+
+        if( isa( exp->type, emit->env->t_dur ) )
+        {
+            // make durations into absolute times
+            emit->append( instr = new Chuck_Instr_Reg_Push_Now );
+            instr->set_linepos( exp->linepos );
+            emit->append( instr = new Chuck_Instr_Add_double );
+            instr->set_linepos( exp->linepos );
+        }
+        else if( isa( exp->type, emit->env->t_time ) )
+        {
+            // store linepos so that we can give an accurate error message
+            // if this time turns out to be in the past.
+            select_op->set_time_exp_linepos( exp_idx, exp->linepos );
+        }
+
+        exp_idx--;
+    }
+
+    emit->append( select_op );
+    select_op->set_linepos( stmt->linepos );
+
+    // emit bodies
+    vector<Chuck_Instr_Goto *> end_jumps;
+    Chuck_Instr_Goto * end_jump;
+    size_t last_idx = bodies.size() - 1;
+
+    for( size_t i = 0; i < bodies.size(); i++ )
+    {
+        emit->push_scope();
+
+        select_op->set_body_addr( i, emit->next_index() );
+
+        ret = emit_engine_emit_stmt( emit, bodies[i] );
+        if( !ret ) return FALSE;
+
+        if( i < last_idx )
+        {
+            // don't need goto on last body
+            emit->append( end_jump = new Chuck_Instr_Goto( 0 ) );
+            end_jumps.push_back( end_jump );
+        }
+
+        emit->pop_scope();
+    }
+
+    t_CKUINT end_addr = emit->next_index();
+    for( const auto &op : end_jumps )
+    {
+        op->set( end_addr );
+    }
+
+    // stack of break
+    while( emit->code->stack_break.size() && emit->code->stack_break.back() )
+    {
+        emit->code->stack_break.back()->set( emit->next_index() );
+        emit->code->stack_break.pop_back();
+    }
+
+    // pop break stack
+    emit->code->stack_break.pop_back();
+    // pop stack
+    emit->pop_scope();
 
     return ret;
 }

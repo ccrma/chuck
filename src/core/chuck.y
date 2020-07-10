@@ -80,6 +80,8 @@ a_Program g_program = NULL;
     a_Complex complex_exp;
     a_Polar polar_exp;
     a_Vec vec_exp; // ge: added 1.3.5.3
+    a_Case case_item;
+    a_Case_List case_list;
 };
 
 // expect shift/reduce conflicts
@@ -88,7 +90,8 @@ a_Program g_program = NULL;
 // 1.3.6.0: changed to 40 for external keyword
 // 1.4.0.0: changed to 41 for global keyword
 // 1.4.0.1: changed to 79 for left recursion
-%expect 79
+// NEXT: changed to 81 for select statement
+%expect 81
 
 %token <sval> ID STRING_LIT CHAR_LIT
 %token <ival> NUM
@@ -99,8 +102,8 @@ a_Program g_program = NULL;
   LBRACK RBRACK LBRACE RBRACE DOT
   PLUS MINUS TIMES DIVIDE PERCENT
   EQ NEQ LT LE GT GE AND OR ASSIGN
-  IF THEN ELSE WHILE FOR DO LOOP
-  BREAK CONTINUE NULL_TOK FUNCTION RETURN
+  IF THEN ELSE WHILE FOR DO LOOP SELECT
+  BREAK CONTINUE CASE NULL_TOK FUNCTION RETURN
   QUESTION EXCLAMATION S_OR S_AND S_XOR
   PLUSPLUS MINUSMINUS DOLLAR POUNDPAREN PERCENTPAREN ATPAREN
   SIMULT PATTERN CODE TRANSPORT HOST
@@ -135,6 +138,7 @@ a_Program g_program = NULL;
 %type <stmt> selection_statement
 %type <stmt> jump_statement
 %type <stmt> expression_statement
+%type <stmt> select_statement
 %type <exp> expression
 %type <exp> chuck_expression
 %type <exp> arrow_expression
@@ -175,6 +179,8 @@ a_Program g_program = NULL;
 %type <complex_exp> complex_exp
 %type <polar_exp> polar_exp
 %type <vec_exp> vec_exp // ge: added 1.3.5.3
+%type <case_list> select_case_list
+%type <case_item> select_case
 
 %start program
 
@@ -310,6 +316,7 @@ statement
         : expression_statement              { $$ = $1; }
         | loop_statement                    { $$ = $1; }
         | selection_statement               { $$ = $1; }
+        | select_statement                  { $$ = $1; }
         | jump_statement                    { $$ = $1; }
         // | label_statement                   { }
         | code_segment                      { $$ = $1; }
@@ -328,7 +335,24 @@ selection_statement
         | IF LPAREN expression RPAREN statement ELSE statement
             { $$ = new_stmt_from_if( $3, $5, $7, EM_lineNum ); }
         ;
+
+select_case
+        : CASE dur_expression COLON statement
+            { $$ = new_case($2, $4, EM_lineNum ); }
+        ;
         
+select_case_list
+        : select_case
+            { $$ = new_case_list( $1, EM_lineNum ); }
+        | select_case_list select_case
+            { $$ = append_case_list( $1, $2, EM_lineNum ); }
+        ;
+
+select_statement
+        : SELECT LBRACE select_case_list RBRACE
+            { $$ = new_stmt_from_select( $3, EM_lineNum ); }
+        ;
+
 loop_statement
         : WHILE LPAREN expression RPAREN statement
             { $$ = new_stmt_from_while( $3, $5, EM_lineNum ); }
