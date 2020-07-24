@@ -1380,10 +1380,6 @@ void xcorr_fft( SAMPLE * f, t_CKINT fsize, SAMPLE * g, t_CKINT gsize, SAMPLE * b
     // sanity check
     assert( fsize == gsize && gsize == size );
 
-    // take fft
-    rfft( f, size/2, FFT_FORWARD );
-    rfft( g, size/2, FFT_FORWARD );
-
     // complex
     t_CKCOMPLEX_SAMPLE * F = (t_CKCOMPLEX_SAMPLE *)f;
     t_CKCOMPLEX_SAMPLE * G = (t_CKCOMPLEX_SAMPLE *)g;
