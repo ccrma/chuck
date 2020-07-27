@@ -1,0 +1,2 @@
+This UAna undoes the conversion of Flip, changing analysis buffers into signal
+for audiation or consumption by UGens.

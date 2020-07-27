@@ -1,0 +1,6 @@
+This UAna counts the number of zero crossings in the sample buffer and outputs
+the count in the first element of the UAnaBlob's magnitude buffer (fvals). Only
+UAna inputs are considered. See the Flip UAna for converting a UGen's signal
+into the analysis domain. If the input buffer is non-empty, this assumes a
+"half" crossing, so 0.5 is added to the output. This is why the "counted" result
+is a float and not an int.
