@@ -72,7 +72,7 @@ examples: fft.ck, fft2.ck, fft3.ck win.ck
 \verbatiminput{examples/uana/uana_ifft.txt}
 extends UAna 
 
-    \chuckmultifunction{ .size - ( float, READ/WRITE ) }{ get/set the IFFT size}
+    \chuckmultifunction{ .size - ( int, READ/WRITE ) }{ get/set the IFFT size}
     \chuckmultifunction{ .window() - ( float[], READ/WRITE ) }{ get/set the transform window/size (also see AAA Windowing)}
     \chuckmultifunction{ .windowSize - ( int, READ only ) }{ get the current window size}
     \chuckmultifunction{ .transform - ( complex[], WRITE only ) }{ manually take IFFT (as opposed to using .upchuck() / upchuck operator)}
@@ -93,7 +93,7 @@ examples: ifft.ck, fft2.ck, ifft3.ck
 \verbatiminput{examples/uana/uana_dct.txt}
 extends UAna 
 
-    \chuckmultifunction{ .size - ( float, READ/WRITE ) }{ get/set the DCT size}
+    \chuckmultifunction{ .size - ( int, READ/WRITE ) }{ get/set the DCT size}
     \chuckmultifunction{ .window() - ( float[], READ/WRITE ) }{ get/set the transform window/size (also see AAA Windowing)}
     \chuckmultifunction{ .windowSize - ( int, READ only )  }{get the current window size}
     \chuckmultifunction{ .transform - ( float[], WRITE ) }{ manually take DCT (as opposed to using .upchuck() / upchuck operator)}
@@ -114,7 +114,7 @@ examples: dct.ck
 \verbatiminput{examples/uana/uana_idct.txt}
 extends UAna 
 
-    \chuckmultifunction{ .size - ( float, READ/WRITE ) }{ get/set the IDCT size}
+    \chuckmultifunction{ .size - ( int, READ/WRITE ) }{ get/set the IDCT size}
     \chuckmultifunction{ .window() - ( float[], READ/WRITE ) }{ get/set the transform window/size (also see AAA Windowing)}
     \chuckmultifunction{ .windowSize - ( int, READ only ) }{ get the current window size}
     \chuckmultifunction{ .transform - ( float[], WRITE ) }{ manually take IDCT (as opposed to using .upchuck() / upchuck operator)}
@@ -195,8 +195,7 @@ examples: rms.ck
 \verbatiminput{examples/uana/uana_spectral_rolloff.txt}
 extends UAna 
 
-    \chuckmultifunction{ float .percent((float val)) }{ set the percentage for computing rolloff}
-    \chuckmultifunction{ float .percent(( )) }{ get the percentage specified for the rolloff}
+    \chuckmultifunction{ float .percent( float READ/WRITE ) }{ set the percentage for computing rolloff}
     \chuckmultifunction{ float .compute(float[]) }{ manually computes the rolloff from a float array}
 
 (UAna input/output)

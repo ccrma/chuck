@@ -2,7 +2,7 @@
 Step s => ZeroX z => dac;
 1.0 => float v;
 
-// infnite time-loop
+// infinite time-loop
 while( true )
 {
     // set the step value

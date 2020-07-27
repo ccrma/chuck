@@ -8,6 +8,6 @@ the magnitude spectrum.  A buffering mechanism maintains the previous
 FFTsize # of samples, allowing FFT's to be taken at any point in time,
 on demand (via .upchuck() or by upchucking a downstream UAna;
 The window size (along with an arbitry window shape) is controlled
-via the .window method. The hop size is complete dynamic, and is throttled 
+via the .window method. The hop size is completely dynamic, and is throttled
 by how time is advanced.
 
