@@ -1,3 +1,8 @@
+1.4.0.2
+---
+  - (deprecated) Chubgraph => (new) Chugraph;
+    Chubgraph will continue to function.
+
 1.4.0.1
 ---
   - (fixed) when opening audio input devices where the default
