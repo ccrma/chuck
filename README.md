@@ -1,4 +1,4 @@
-# ChucK [![Build Status](https://travis-ci.org/ccrma/chuck.svg?branch=master)](https://travis-ci.org/ccrma/chuck)
+# ChucK [![Build Status](https://travis-ci.org/ccrma/chuck.svg?branch=main)](https://travis-ci.org/ccrma/chuck)
 
 Please note that the `master` branch has been renamed to `main.`
 
