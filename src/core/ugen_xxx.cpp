@@ -119,6 +119,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     type_engine_register_deprecate( env, "zerox", "ZeroX" );
     type_engine_register_deprecate( env, "delayp", "DelayP" );
     type_engine_register_deprecate( env, "sndbuf", "SndBuf" );
+    type_engine_register_deprecate( env, "Chubgraph", "Chugraph" );
 
     //! \section audio output
     
@@ -126,7 +127,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // init as base class: Subgraph
     //-------------------------------------------------------------------------
     doc = "Base class for chubgraph-based user unit generators. ";
-    if( !type_engine_import_ugen_begin( env, "Chubgraph", "UGen", env->global(),
+    if( !type_engine_import_ugen_begin( env, "Chugraph", "UGen", env->global(),
                                         subgraph_ctor, NULL, NULL, NULL, 1, 1, doc.c_str() ) )
         return FALSE;
     

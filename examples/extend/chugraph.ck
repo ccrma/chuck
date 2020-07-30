@@ -1,7 +1,7 @@
-// Chubgraph
+// Chugraph
 // Create new UGens by compositing existing UGens
 
-class MyString extends Chubgraph
+class MyString extends Chugraph
 {
     // karplus + strong plucked string filter
     // Ge Wang (gewang@cs.princeton.edu)
