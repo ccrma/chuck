@@ -4916,6 +4916,8 @@ void ADSR :: setAttackRate(MY_FLOAT aRate)
     attackRate = -aRate;
   }
   else attackRate = aRate;
+  
+  m_attackTime = attackRate * Stk::sampleRate(); 
 }
 
 void ADSR :: setDecayRate(MY_FLOAT aRate)
@@ -4927,7 +4929,7 @@ void ADSR :: setDecayRate(MY_FLOAT aRate)
   else decayRate = aRate;
 
   // chuck
-  m_decayTime = -1.0;
+  m_decayTime = decayRate * Stk::sampleRate();
 }
 
 void ADSR :: setSustainLevel(MY_FLOAT aLevel)
@@ -4952,7 +4954,7 @@ void ADSR :: setReleaseRate(MY_FLOAT aRate)
   else releaseRate = aRate;
 
   // chuck
-  m_releaseTime = -1.0;
+  m_releaseTime = releaseRate * Stk::sampleRate();
 }
 
 void ADSR :: setAttackTime(MY_FLOAT aTime)
