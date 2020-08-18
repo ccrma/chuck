@@ -4874,6 +4874,7 @@ ADSR :: ADSR() : Envelope()
   decayRate = (MY_FLOAT) 0.001;
   sustainLevel = (MY_FLOAT) 0.5;
   releaseRate = (MY_FLOAT) 0.01;
+  m_attackTime = (MY_FLOAT) 0.;
   m_decayTime = (MY_FLOAT) -1.0; // not used
   m_releaseTime = (MY_FLOAT) -1.0; // not used
   state = DONE;
@@ -4961,6 +4962,8 @@ void ADSR :: setAttackTime(MY_FLOAT aTime)
     attackRate = 1.0 / ( -aTime * Stk::sampleRate() );
   }
   else attackRate = 1.0 / ( aTime * Stk::sampleRate() );
+
+  m_attackTime = aTime;
 }
 
 void ADSR :: setDecayTime(MY_FLOAT aTime)
@@ -4993,11 +4996,9 @@ void ADSR :: setReleaseTime(MY_FLOAT aTime)
 }
 
 // chuck
-MY_FLOAT ADSR :: getAttackTime() { return 1.0 / (attackRate*Stk::sampleRate()); }
-MY_FLOAT ADSR :: getDecayTime()
-{ return (1.0 - sustainLevel) / (decayRate*Stk::sampleRate()); }
-MY_FLOAT ADSR :: getReleaseTime()
-{ return sustainLevel / (releaseRate*Stk::sampleRate()); }
+MY_FLOAT ADSR :: getAttackTime() { return m_attackTime; }
+MY_FLOAT ADSR :: getDecayTime() { return m_decayTime; }
+MY_FLOAT ADSR :: getReleaseTime() { return m_releaseTime; }
 
 void ADSR :: setAllTimes(MY_FLOAT aTime, MY_FLOAT dTime, MY_FLOAT sLevel, MY_FLOAT rTime)
 {
