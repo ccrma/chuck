@@ -239,7 +239,7 @@ class RtMidiIn : public RtMidi
       values of "true" imply that the respective message type will be
       ignored.
   */
-  void ignoreTypes( bool midiSysex = true, bool midiTime = false, bool midiSense = true );
+  void ignoreTypes( bool midiSysex = false, bool midiTime = false, bool midiSense = true );
 
   //! Fill the user-provided vector with the data bytes for the next available MIDI message in the input queue and return the event delta-time in seconds.
   /*!
@@ -277,7 +277,7 @@ class RtMidiIn : public RtMidi
 
     // Default constructor.
     RtMidiInData()
-      : queueLimit(1024), ignoreFlags(5), doInput(false), firstMessage(true),
+      : queueLimit(1024), ignoreFlags(0), doInput(false), firstMessage(true),
         apiData(0), usingCallback(false), userCallback(0), userData(0) {}
   };
 
