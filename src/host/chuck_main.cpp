@@ -886,7 +886,7 @@ bool go( int argc, const char ** argv )
         // TODO: refactor initialize() to take in the dac and adc nums
         ChuckAudio::m_adc_n = adc;
         ChuckAudio::m_dac_n = dac;
-        t_CKBOOL retval = ChuckAudio::initialize( adc_chans, dac_chans,
+        t_CKBOOL retval = ChuckAudio::initialize( dac_chans, adc_chans,
             srate, buffer_size, num_buffers, cb, (void *)the_chuck, force_srate );
         // check
         if( !retval )
@@ -1037,7 +1037,11 @@ bool go( int argc, const char ** argv )
         // real-time audio
         if( g_enable_realtime_audio )
         {
-            usleep( 10000 );
+            Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();
+            if (hook)
+                hook->m_hook(hook->m_bindle);
+            else
+                usleep( 10000 );
         }
         else // silent mode
         {
@@ -1046,6 +1050,10 @@ bool go( int argc, const char ** argv )
         }
     }
     
+    Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();
+    if (hook)
+        hook->m_quit(hook->m_bindle);
+
     return TRUE;
 }
 

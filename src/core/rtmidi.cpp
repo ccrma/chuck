@@ -161,7 +161,7 @@ RtMidiOut :: RtMidiOut() : RtMidi()
 //*********************************************************************//
 
 // API information found at:
-//   - http://developer. apple .com/audio/pdf/coreaudio.pdf
+//   - http://developer. apple .com/audio/pdf/coreaudio.pdf 
 
 #if defined(__MACOSX_CORE__)
 
@@ -204,7 +204,7 @@ struct CoreMidiData {
   NB. won't get connected devices correctly before 10.3.
 */
 static void readable_name(MIDIEndpointRef end, char *buffer, int bufsize)
-{
+{  
     MIDIEntityRef ent = 0; // NULL;
     MIDIDeviceRef dev = 0; //NULL;
     int ii, count, length;//, ret;
@@ -213,7 +213,7 @@ static void readable_name(MIDIEndpointRef end, char *buffer, int bufsize)
     CFStringRef s;
 
     buffer[0] = '\0';
-
+  
     if( MIDIObjectGetDataProperty(end, kMIDIPropertyConnectionUniqueID, &data) == 0)
     {
         length = CFDataGetLength(data) / sizeof(SInt32);
@@ -227,7 +227,7 @@ static void readable_name(MIDIEndpointRef end, char *buffer, int bufsize)
                 buffer += 2;
                 bufsize -= 2;
             }
-
+      
             if (get_device_name(idarray[ii], buffer, bufsize) == 0) {
                 count++;
                 bufsize -= strlen(buffer);
@@ -261,7 +261,7 @@ static void readable_name(MIDIEndpointRef end, char *buffer, int bufsize)
     if (MIDIObjectGetStringProperty(end, kMIDIPropertyName, &s) == 0) {
         CFStringGetCString(s, buffy, 128, 0);
         CFRelease(s);
-
+        
         // copy if different
         if( strcmp( mid, buffy ) && strlen(buffy) < bufsize ) {
             *buffer = ' ';
@@ -298,7 +298,7 @@ static int get_device_name(SInt32 uniqueid, char *buffer, int bufsize)
         return -1;
 
     // now clear any external flag.
-    if (type > 0)
+    if (type > 0) 
         type = (MIDIObjectType) (type & (~kMIDIObjectType_ExternalMask));
 
     if (type == kMIDIObjectType_Device) {
@@ -596,7 +596,7 @@ std::string RtMidiIn :: getPortName( unsigned int portNumber )
     error( RtMidiError::INVALID_PARAMETER );
   }
   portRef = MIDIGetSource( portNumber );
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1030
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1030  
   readable_name(portRef, name, sizeof(name));
 #else
   MIDIObjectGetStringProperty( portRef, kMIDIPropertyName, &nameRef );
@@ -1075,11 +1075,11 @@ void RtMidiIn :: openPort( unsigned int portNumber )
                                 SND_SEQ_PORT_TYPE_APPLICATION );
     snd_seq_port_info_set_midi_channels(pinfo, 16);
     snd_seq_port_info_set_timestamping(pinfo, 1);
-    snd_seq_port_info_set_timestamp_real(pinfo, 1);
+    snd_seq_port_info_set_timestamp_real(pinfo, 1);    
     snd_seq_port_info_set_timestamp_queue(pinfo, data->queue_id);
     snd_seq_port_info_set_name(pinfo, "RtMidi Input");
     data->vport = snd_seq_create_port(data->seq, pinfo);
-
+  
     if ( data->vport < 0 ) {
       errorString_ = "RtMidiIn::openPort: ALSA error creating input port.";
       error( RtMidiError::DRIVER_ERROR );
@@ -1137,7 +1137,7 @@ void RtMidiIn :: openVirtualPort()
                 SND_SEQ_PORT_TYPE_APPLICATION );
     snd_seq_port_info_set_midi_channels(pinfo, 16);
     snd_seq_port_info_set_timestamping(pinfo, 1);
-    snd_seq_port_info_set_timestamp_real(pinfo, 1);
+    snd_seq_port_info_set_timestamp_real(pinfo, 1);    
     snd_seq_port_info_set_timestamp_queue(pinfo, data->queue_id);
     snd_seq_port_info_set_name(pinfo, "RtMidi Input");
     data->vport = snd_seq_create_port(data->seq, pinfo);
@@ -1418,11 +1418,11 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
   snd_seq_ev_set_direct(&ev);
   for ( unsigned int i=0; i<nBytes; i++ ) data->buffer[i] = message->at(i);
   result = snd_midi_event_encode( data->coder, data->buffer, (long)nBytes, &ev );
-  // if ( result < (int)nBytes ) {
-  //   errorString_ = "RtMidiOut::sendMessage: event parsing error!";
-  //   error( RtMidiError::WARNING );
-  //   return;
-  // }
+  if ( result < (int)nBytes ) {
+    errorString_ = "RtMidiOut::sendMessage: event parsing error!";
+    error( RtMidiError::WARNING );
+    return;
+  }
 
   // Send the event.
   result = snd_seq_event_output(data->seq, &ev);
@@ -1870,7 +1870,7 @@ struct WinMidiData {
 //*********************************************************************//
 
 static void CALLBACK midiInputCallback( HMIDIOUT hmin,
-                                        UINT inputStatus,
+                                        UINT inputStatus, 
                                         DWORD instancePtr,
                                         DWORD midiMessage,
                                         DWORD timestamp )
@@ -2183,7 +2183,7 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
     sysex.lpData = (LPSTR) buffer;
     sysex.dwBufferLength = nBytes;
     sysex.dwFlags = 0;
-    result = midiOutPrepareHeader( data->outHandle,  &sysex, sizeof(MIDIHDR) );
+    result = midiOutPrepareHeader( data->outHandle,  &sysex, sizeof(MIDIHDR) ); 
     if ( result != MMSYSERR_NOERROR ) {
       free( buffer );
       errorString_ = "RtMidiOut::sendMessage: error preparing sysex header.";

@@ -122,6 +122,10 @@ public:
 public:
     // additional native chuck bindings/types (use with extra caution)
     bool bind( f_ck_query queryFunc, const std::string & name );
+    // set a function pointer to call from the main thread loop
+    bool setMainThreadHook( Chuck_DL_MainThreadHook * hook );
+    // get pointer to current function to be called from main loop
+    Chuck_DL_MainThreadHook * getMainThreadHook();
 
 public:
     // get VM (dangerous)
@@ -200,6 +204,8 @@ protected:
     std::map< std::string, std::list<std::string> > m_listParams;
     // did user init?
     t_CKBOOL m_init;
+    // main thread "hook" (if there is a main thread)
+    Chuck_DL_MainThreadHook * m_hook;
 };
 
 

@@ -1,3 +1,36 @@
+1.4.0.2
+---
+  - (deprecated) Chubgraph => (new) Chugraph;
+    Chubgraph will continue to function.
+
+1.4.0.1
+---
+  - (fixed) when opening audio input devices where the default
+    device has insufficient chanels (e.g., MacOS input is mono
+    by default), logic has been added to also match sample rates
+    when searching for alternate audio input devices;  additional
+    logic added in the specific case of mono input devices to
+    simulate stereo, to fulfill the standard request for stereo
+    input.
+  - (fixed) added check to prevent crash in rare situations involving
+    self-join when deleting XThread in background. (git PR #103)
+  - (fixed) by stuntgoat@github -- right-recursion in chuck parser
+    can exhaust memory in larger chuck files; this has been updated
+    to use left recursion.  (git PR #32, (finally) merged by hand by 
+    Spencer and Ge)  Also thanks to Tom Lieber for the initial analysis
+    and solution:
+    https://lists.cs.princeton.edu/pipermail/chuck-users/2009-April/004029.html
+  - (added) by Nathan Tindall -- Q and freq bounding for filters (LPF,
+    HPF, BPF, BRF) to avoid LOUD FILTER EXPLOSIONS; now negative values
+    will throw an exception on the offending shred.
+  - (restored, macOS) MAUI Chugin now (re)supported, post 1.4.0.0
+  - (added; developer) ChucK.h API to set a main thread hook (e.g., for 
+    graphical functionalitie from Chugins)
+  - (updated, developer) Chugin API now support main thread callback
+    for graphical-/GUI purposes
+  - (developer) refactored code to move I/O-related code out of
+    chuck_lang and into chuck_io.
+
 1.4.0.0
 ---
   ********************************************************

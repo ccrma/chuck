@@ -41,6 +41,7 @@
 #include "chuck_vm.h"
 #include "chuck_compile.h"
 #include "chuck_lang.h"
+#include "chuck_io.h"
 #include "chuck_carrier.h"
 #include <stdlib.h>
 #include <string.h>
@@ -4874,7 +4875,6 @@ ADSR :: ADSR() : Envelope()
   decayRate = (MY_FLOAT) 0.001;
   sustainLevel = (MY_FLOAT) 0.5;
   releaseRate = (MY_FLOAT) 0.01;
-  m_attackTime = (MY_FLOAT) 0.;
   m_decayTime = (MY_FLOAT) -1.0; // not used
   m_releaseTime = (MY_FLOAT) -1.0; // not used
   state = DONE;
@@ -4916,8 +4916,6 @@ void ADSR :: setAttackRate(MY_FLOAT aRate)
     attackRate = -aRate;
   }
   else attackRate = aRate;
-  
-  m_attackTime = attackRate * Stk::sampleRate(); 
 }
 
 void ADSR :: setDecayRate(MY_FLOAT aRate)
@@ -4929,7 +4927,7 @@ void ADSR :: setDecayRate(MY_FLOAT aRate)
   else decayRate = aRate;
 
   // chuck
-  m_decayTime = decayRate * Stk::sampleRate();
+  m_decayTime = -1.0;
 }
 
 void ADSR :: setSustainLevel(MY_FLOAT aLevel)
@@ -4954,7 +4952,7 @@ void ADSR :: setReleaseRate(MY_FLOAT aRate)
   else releaseRate = aRate;
 
   // chuck
-  m_releaseTime = releaseRate * Stk::sampleRate();
+  m_releaseTime = -1.0;
 }
 
 void ADSR :: setAttackTime(MY_FLOAT aTime)
@@ -4964,8 +4962,6 @@ void ADSR :: setAttackTime(MY_FLOAT aTime)
     attackRate = 1.0 / ( -aTime * Stk::sampleRate() );
   }
   else attackRate = 1.0 / ( aTime * Stk::sampleRate() );
-
-  m_attackTime = aTime;
 }
 
 void ADSR :: setDecayTime(MY_FLOAT aTime)
@@ -4998,9 +4994,11 @@ void ADSR :: setReleaseTime(MY_FLOAT aTime)
 }
 
 // chuck
-MY_FLOAT ADSR :: getAttackTime() { return m_attackTime; }
-MY_FLOAT ADSR :: getDecayTime() { return m_decayTime; }
-MY_FLOAT ADSR :: getReleaseTime() { return m_releaseTime; }
+MY_FLOAT ADSR :: getAttackTime() { return 1.0 / (attackRate*Stk::sampleRate()); }
+MY_FLOAT ADSR :: getDecayTime()
+{ return (1.0 - sustainLevel) / (decayRate*Stk::sampleRate()); }
+MY_FLOAT ADSR :: getReleaseTime()
+{ return sustainLevel / (releaseRate*Stk::sampleRate()); }
 
 void ADSR :: setAllTimes(MY_FLOAT aTime, MY_FLOAT dTime, MY_FLOAT sLevel, MY_FLOAT rTime)
 {
@@ -18662,6 +18660,9 @@ namespace stk {
     
 MidiFileIn :: MidiFileIn( std::string fileName )
 {
+    // ge: initialize
+    bpm_ = 0;
+    
     // Attempt to open the file.
     file_.open( fileName.c_str(), std::ios::in | std::ios::binary );
     if ( !file_ ) {
@@ -18773,6 +18774,10 @@ MidiFileIn :: MidiFileIn( std::string fileName )
                 tempoEvent.count = count;
                 value = ( event[3] << 16 ) + ( event[4] << 8 ) + event[5];
                 tempoEvent.tickSeconds = (double) (0.000001 * value / tickrate);
+                // ge: check
+                // std::cerr << "tick: " << 60000000 / value << std::endl;
+                // ge: set BPM
+                bpm_ = 60000000.0 / value;
                 if ( count > tempoEvents_.back().count )
                     tempoEvents_.push_back( tempoEvent );
                 else
@@ -18803,6 +18808,21 @@ MidiFileIn :: ~MidiFileIn()
     file_.close();
 }
 
+int MidiFileIn :: getFileFormat() const
+{
+    return format_;
+}
+
+unsigned int MidiFileIn :: getNumberOfTracks() const
+{
+    return nTracks_;
+}
+
+int MidiFileIn :: getDivision() const
+{
+    return division_;
+}
+
 void MidiFileIn :: rewindTrack( unsigned int track )
 {
     if ( track >= nTracks_ ) {
@@ -18824,6 +18844,12 @@ double MidiFileIn :: getTickSeconds( unsigned int track )
     }
     
     return tickSeconds_[track];
+}
+
+// ge: implemented
+double MidiFileIn :: getBPM()
+{
+    return bpm_;
 }
 
 unsigned long MidiFileIn :: getNextEvent( std::vector<unsigned char> *event, unsigned int track )
@@ -18919,6 +18945,9 @@ unsigned long MidiFileIn :: getNextEvent( std::vector<unsigned char> *event, uns
             double tickrate = (double) (division_ & 0x7FFF);
             unsigned long value = ( event->at(3) << 16 ) + ( event->at(4) << 8 ) + event->at(5);
             tickSeconds_[track] = (double) (0.000001 * value / tickrate);
+            
+            // ge: set BPM
+            bpm_ = 60000000.0 / value;
         }
         
         if ( format_ == 1 ) {
@@ -18989,7 +19018,6 @@ bool MidiFileIn :: readVariableLength( unsigned long *value )
 } 
     
 } // stk namespace
-
 
 // chuck - import
 // wrapper functions
