@@ -412,6 +412,8 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
             return FALSE;
         }
 
+        rtmin->ignoreTypes(false, false, false);
+
         // resize?
         if( device_num >= (t_CKINT)the_mins.capacity() )
         {

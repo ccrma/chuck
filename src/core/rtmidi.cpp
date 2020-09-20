@@ -1418,11 +1418,11 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
   snd_seq_ev_set_direct(&ev);
   for ( unsigned int i=0; i<nBytes; i++ ) data->buffer[i] = message->at(i);
   result = snd_midi_event_encode( data->coder, data->buffer, (long)nBytes, &ev );
-  if ( result < (int)nBytes ) {
-    errorString_ = "RtMidiOut::sendMessage: event parsing error!";
-    error( RtMidiError::WARNING );
-    return;
-  }
+  //if ( result < (int)nBytes ) {
+  //  errorString_ = "RtMidiOut::sendMessage: event parsing error!";
+  //  error( RtMidiError::WARNING );
+  //  return;
+  //}
 
   // Send the event.
   result = snd_seq_event_output(data->seq, &ev);

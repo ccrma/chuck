@@ -1465,11 +1465,14 @@ CK_DLL_CTRL( gen10_coeffs )
         d->coeffs[ii] = v;
     }
     
-    j = genX_MAX_COEFFS;
+    // reset table - this allow not only to add but also to remove partials
+    for( i=0; i<genX_tableSize; i++ ) d->genX_table[i] = 0.;
+
+    j = size;
     while (j--) {
       if (d->coeffs[j] != 0) {
          for (i = 0; i < genX_tableSize; i++) {
-            t_CKDOUBLE val = (t_CKDOUBLE) (TWO_PI * (t_CKDOUBLE) i / (genX_tableSize / (j + 1)));
+            t_CKDOUBLE val = (t_CKDOUBLE) (TWO_PI * (t_CKDOUBLE) i / (genX_tableSize / (t_CKFLOAT)(j + 1)));
             d->genX_table[i] += sin(val) * d->coeffs[j];
          }
       }
