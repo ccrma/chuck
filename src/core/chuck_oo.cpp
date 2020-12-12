@@ -3105,6 +3105,7 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
 }
 
 Chuck_IO_Chout::Chuck_IO_Chout( Chuck_Carrier * carrier ) {
+    m_callback = NULL;
     // store
     carrier->chout = this;
     // add ref
