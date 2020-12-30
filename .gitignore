@@ -14,3 +14,5 @@ project.xcworkspace
 xcuserdata
 
 .vscode
+.vs
+chuck.vcxproj.user
