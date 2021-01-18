@@ -37,7 +37,7 @@
 */
 /**********************************************************************/
 
-#include "RtMidi.h"
+#include "rtmidi.h"
 #include <sstream>
 
 #if defined(TARGET_OS_IPHONE)
