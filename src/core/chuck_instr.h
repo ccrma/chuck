@@ -3140,10 +3140,9 @@ public:
     virtual const char * params() const
     {
         static char buffer[256];
-        static size_t remaining, written;
+        static int remaining = sizeof(buffer), written;
         static char * nxt;
 
-        remaining = 256;
         written =
             snprintf( buffer, remaining, "timeouts=%lu events=%lu", m_num_timeouts, m_num_events );
         if( written < 0 || written > remaining )
