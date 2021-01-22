@@ -1976,9 +1976,8 @@ void Chuck_Event::signal()
         m_queue.pop();
         // release it!
         m_queue_lock.release();
-        // REFACTOR-2017: BUG-FIX
-        // release the extra ref we added when we started waiting for this event
-        SAFE_RELEASE( shred->event );
+        // jump to event handler
+        shred->goto_event_handler( this );
         // get shreduler
         Chuck_VM_Shreduler * shreduler = shred->vm_ref->shreduler();
         // remove the blocked shred from the list
@@ -2020,13 +2019,6 @@ t_CKBOOL Chuck_Event::remove( Chuck_VM_Shred * shred )
         }
         else
         {
-            // TARPIT: this might seem like the right place for
-            // SAFE_RELEASE(shred->event), however this might cause
-            // the deletion of the object while we are still using it.
-            // so, put it in the caller: Chuck_VM_Shreduler::remove_blocked()
-
-            // zero out
-            shred->event = NULL;
             // flag
             removed = TRUE;
         }
@@ -2102,9 +2094,22 @@ void Chuck_Event::broadcast()
 //-----------------------------------------------------------------------------
 // name: wait()
 // desc: cause event/condition variable to block the current shred, putting it
-//       on its waiting list, and suspennd the shred from the VM.
+//       on its waiting list, and suspend the shred from the VM.
 //-----------------------------------------------------------------------------
-void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
+t_CKBOOL Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
+{
+    return this->wait( shred, vm, shred->next_pc, FALSE );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: wait()
+// desc: cause event/condition variable to block the current shred, putting it
+//       on its waiting list, and suspend the shred from the VM.
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm, t_CKUINT handler_sp, t_CKBOOL has_timeout )
 {
     EM_log( CK_LOG_FINE, "shred '%d' wait on event '%x'...", shred->xid, (t_CKUINT)this );
     // make sure the shred info matches the vm
@@ -2119,34 +2124,33 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
     // RETURN.v_int = 1;
 
     // see if we can wait
-    if( RETURN.v_int )
+    if( !RETURN.v_int )
     {
-        // suspend
-        shred->is_running = FALSE;
+        // can't wait
 
-        // add to waiting list
-        m_queue_lock.acquire();
-        m_queue.push( shred );
-        m_queue_lock.release();
-
-        // add event to shred
-        assert( shred->event == NULL );
-        shred->event = this;
-        // the shred might need the event pointer after it's been released by the
-        // vm instruction Chuck_Instr_Release_Object2, in order to tell the event
-        // to forget the shred. So, add another reference so it won't be freed
-        // until the shred is done with it.  REFACTOR-2017
-        SAFE_ADD_REF( shred->event );
-
-        // add shred to shreduler
-        vm->shreduler()->add_blocked( shred );
-    }
-    else // can't wait
-    {
         // push the current time
         t_CKTIME *& sp = (t_CKTIME *&)shred->reg->sp;
         push_( sp, shred->now );
+        return FALSE;
     }
+
+    // suspend
+    shred->is_running = FALSE;
+
+    // add to waiting list
+    m_queue_lock.acquire();
+    m_queue.push( shred );
+    m_queue_lock.release();
+
+    shred->add_waiting_event( this, handler_sp );
+
+    if( !has_timeout )
+    {
+        // add shred to shreduler
+        vm->shreduler()->add_blocked( shred );
+    }
+
+    return TRUE;
 }
 
 

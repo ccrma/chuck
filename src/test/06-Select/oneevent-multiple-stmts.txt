@@ -1,0 +1,4 @@
+"hello" : (string)
+"there" : (string)
+"yes" : (string)
+"done" : (string)

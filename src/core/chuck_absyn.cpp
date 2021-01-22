@@ -321,6 +321,18 @@ a_Stmt new_stmt_from_case( a_Exp exp, int pos )
     return a;    
 }
 
+a_Stmt new_stmt_from_select( a_Case_List case_list, int pos )
+{
+    a_Stmt a = (a_Stmt)checked_malloc( sizeof( struct a_Stmt_ ) );
+    a->s_type = ae_stmt_select;
+    a->stmt_select.cases = case_list;
+    a->linepos = pos;
+    a->stmt_select.linepos = pos;
+    a->stmt_select.self = a;
+
+    return a;
+}
+
 a_Exp append_expression( a_Exp list, a_Exp exp, int pos )
 {
   a_Exp current;
@@ -970,6 +982,36 @@ void delete_id_list( a_Id_List x )
     }
 }
 
+a_Case new_case( a_Exp exp, a_Stmt stmt, int pos )
+{
+    a_Case a = (a_Case)checked_malloc( sizeof( struct a_Case_ ) );
+
+    a->exp = exp;
+    a->stmt = stmt;
+    a->linepos = pos;
+
+    return a;
+}
+
+a_Case_List new_case_list( a_Case case_item, int pos )
+{
+    a_Case_List a = (a_Case_List)checked_malloc( sizeof( struct a_Case_List_ ) );
+    a->item = case_item;
+    a->next = NULL;
+    a->linepos = pos;
+
+    return a;
+}
+
+a_Case_List append_case_list( a_Case_List case_list, a_Case case_item, int pos )
+{
+  a_Case_List a = new_case_list( case_item, pos );
+  a_Case_List current = case_list;
+
+  while (current->next != NULL) current = current->next;
+  current->next = a;
+  return case_list;
+}
 
 static const char * op_str[] = {
   "+",

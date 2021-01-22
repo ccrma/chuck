@@ -55,6 +55,7 @@ t_CKBOOL type_engine_scan1_loop( Chuck_Env * env, a_Stmt_Loop stmt );
 t_CKBOOL type_engine_scan1_break( Chuck_Env * env, a_Stmt_Break br );
 t_CKBOOL type_engine_scan1_continue( Chuck_Env * env, a_Stmt_Continue cont );
 t_CKBOOL type_engine_scan1_return( Chuck_Env * env, a_Stmt_Return stmt );
+t_CKBOOL type_engine_scan1_select( Chuck_Env * env, a_Stmt_Select stmt );
 t_CKBOOL type_engine_scan1_switch( Chuck_Env * env, a_Stmt_Switch stmt );
 t_CKBOOL type_engine_scan1_exp( Chuck_Env * env, a_Exp exp );
 t_CKBOOL type_engine_scan1_exp_binary( Chuck_Env * env, a_Exp_Binary binary );
@@ -81,6 +82,8 @@ t_CKBOOL type_engine_scan1_cast_valid( Chuck_Env * env, t_CKTYPE to, t_CKTYPE fr
 t_CKBOOL type_engine_scan1_code_segment( Chuck_Env * env, a_Stmt_Code stmt, t_CKBOOL push = TRUE );
 t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def func_def );
 t_CKBOOL type_engine_scan1_class_def( Chuck_Env * env, a_Class_Def class_def );
+t_CKBOOL type_engine_scan1_case( Chuck_Env * env, a_Case c );
+t_CKBOOL type_engine_scan1_case_list( Chuck_Env * env, a_Case_List cl );
 
 t_CKBOOL type_engine_scan2_stmt_list( Chuck_Env * env, a_Stmt_List list );
 t_CKBOOL type_engine_scan2_stmt( Chuck_Env * env, a_Stmt stmt );
@@ -92,6 +95,7 @@ t_CKBOOL type_engine_scan2_until( Chuck_Env * env, a_Stmt_Until stmt );
 t_CKBOOL type_engine_scan2_break( Chuck_Env * env, a_Stmt_Break br );
 t_CKBOOL type_engine_scan2_continue( Chuck_Env * env, a_Stmt_Continue cont );
 t_CKBOOL type_engine_scan2_return( Chuck_Env * env, a_Stmt_Return stmt );
+t_CKBOOL type_engine_scan2_select( Chuck_Env * env, a_Stmt_Select stmt );
 t_CKBOOL type_engine_scan2_switch( Chuck_Env * env, a_Stmt_Switch stmt );
 t_CKBOOL type_engine_scan2_exp( Chuck_Env * env, a_Exp exp );
 t_CKBOOL type_engine_scan2_exp_binary( Chuck_Env * env, a_Exp_Binary binary );
@@ -120,6 +124,8 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def func_def );
 t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def );
 t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def func_def );
 t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def );
+t_CKBOOL type_engine_scan2_case( Chuck_Env * env, a_Case c );
+t_CKBOOL type_engine_scan2_case_list( Chuck_Env * env, a_Case_List cl );
 
 
 
@@ -535,6 +541,14 @@ t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
             env->class_scope--;
             break;
 
+        case ae_stmt_select:
+            env->class_scope++;
+            env->curr->value.push();
+                ret = type_engine_scan1_select( env, &stmt->stmt_select );
+                env->curr->value.pop();
+                env->class_scope--;
+                break;
+
         case ae_stmt_case:
             // ret = type_engine_scan1_case( env, &stmt->stmt_case );
             break;
@@ -671,6 +685,23 @@ t_CKBOOL type_engine_scan1_loop( Chuck_Env * env, a_Stmt_Loop stmt )
 
     // check the body
     if( !type_engine_scan1_stmt( env, stmt->body ) )
+        return FALSE;
+
+    return TRUE;
+}
+
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_scan1_select()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_scan1_select( Chuck_Env * env, a_Stmt_Select stmt )
+{
+
+    if( !type_engine_scan1_case_list( env, stmt->cases ))
         return FALSE;
 
     return TRUE;
@@ -880,7 +911,7 @@ t_CKBOOL type_engine_scan1_exp_binary( Chuck_Env * env, a_Exp_Binary binary )
 // desc: ...
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp rhs, 
-                              a_Exp_Binary binary )
+                               a_Exp_Binary binary )
 {
     // TODO: check for static here
     
@@ -1155,7 +1186,7 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
 // desc: ...
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp args, 
-                                         t_CKFUNC & ck_func, int linepos )
+                                        t_CKFUNC & ck_func, int linepos )
 {
     // Chuck_Func * func = NULL;
     // Chuck_Func * up = NULL;
@@ -1406,11 +1437,45 @@ error:
 
 
 //-----------------------------------------------------------------------------
+// name: type_engine_scan1_case()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_scan1_case( Chuck_Env * env, a_Case c )
+{
+    if( !type_engine_scan1_exp( env, c->exp ))
+        return FALSE;
+
+    if( !type_engine_scan1_stmt( env, c->stmt ))
+        return FALSE;
+
+    return TRUE;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_scan1_case_list()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_scan1_case_list( Chuck_Env * env, a_Case_List list )
+{
+    a_Case_List cur = list;
+
+    while (cur != NULL) {
+        if( !type_engine_scan1_case( env, cur->item ) )
+            return FALSE;
+        cur = cur->next;
+    }
+
+    return TRUE;
+}
+
+
+//-----------------------------------------------------------------------------
 // name: type_engine_scan2_prog()
 // desc: data in env should be ready
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan2_prog( Chuck_Env * env, a_Program prog,
-                                   te_HowMuch how_much )
+                                te_HowMuch how_much )
 {
     t_CKBOOL ret = TRUE;
 
@@ -1576,6 +1641,14 @@ t_CKBOOL type_engine_scan2_stmt( Chuck_Env * env, a_Stmt stmt )
             env->class_scope--;
             break;
 
+        case ae_stmt_select:
+            env->class_scope++;
+            env->curr->value.push();
+            ret = type_engine_scan2_select( env, &stmt->stmt_select );
+            env->curr->value.pop();
+            env->class_scope--;
+            break;
+
         case ae_stmt_case:
             // ret = type_engine_scan2_case( env, &stmt->stmt_case );
             break;
@@ -1712,6 +1785,22 @@ t_CKBOOL type_engine_scan2_loop( Chuck_Env * env, a_Stmt_Loop stmt )
 
     // check the body
     if( !type_engine_scan2_stmt( env, stmt->body ) )
+        return FALSE;
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_scan2_select()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_scan2_select( Chuck_Env * env, a_Stmt_Select stmt )
+{
+
+    if( !type_engine_scan2_case_list( env, stmt->cases ))
         return FALSE;
 
     return TRUE;
@@ -2730,3 +2819,40 @@ error:
 
     return FALSE;
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_scan2_case()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_scan2_case( Chuck_Env * env, a_Case c )
+{
+    if( !type_engine_scan2_exp( env, c->exp ))
+        return FALSE;
+
+    if( !type_engine_scan2_stmt( env, c->stmt ))
+        return FALSE;
+
+    return TRUE;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_scan2_case_list()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_scan2_case_list( Chuck_Env * env, a_Case_List list )
+{
+    a_Case_List cur = list;
+
+    while (cur != NULL) {
+        if( !type_engine_scan2_case( env, cur->item ) )
+            return FALSE;
+        cur = cur->next;
+    }
+
+    return TRUE;
+}
+

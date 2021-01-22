@@ -443,6 +443,7 @@ public:
 
     // control scope (for break, continue)
     std::vector<a_Stmt> breaks;
+    std::vector<a_Stmt> continues;
 
     // reserved words
     std::map<std::string, t_CKBOOL> key_words;
@@ -507,7 +508,39 @@ public:
     // check whether the context is the global context
     t_CKBOOL is_global()
     { return class_def == NULL && func == NULL && class_scope == 0; }
+
+    void push_break( a_Stmt stmt )
+    {
+        breaks.push_back( stmt );
+    }
+
+    void pop_break( a_Stmt check_stmt )
+    {
+        assert( check_stmt != NULL && breaks.size() && breaks.back() == check_stmt );
+        breaks.pop_back();
+    }
+
+    t_CKBOOL is_inside_breakable_stmt()
+    {
+        return breaks.size() > 0;
+    }
+
+    void push_continue( a_Stmt stmt )
+    {
+        continues.push_back( stmt) ;
+    }
     
+    void pop_continue( a_Stmt check_stmt )
+    {
+        assert( check_stmt != NULL && continues.size() && continues.back() == check_stmt );
+        continues.pop_back();
+    }
+
+    t_CKBOOL is_inside_continueable_stmt()
+    {
+        return continues.size() > 0;
+    }
+
 public:
     // REFACTOR-2017: public types
     Chuck_Type * t_void;

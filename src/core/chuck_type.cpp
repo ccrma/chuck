@@ -109,6 +109,7 @@ t_CKBOOL type_engine_check_loop( Chuck_Env * env, a_Stmt_Loop stmt );
 t_CKBOOL type_engine_check_break( Chuck_Env * env, a_Stmt_Break br );
 t_CKBOOL type_engine_check_continue( Chuck_Env * env, a_Stmt_Continue cont );
 t_CKBOOL type_engine_check_return( Chuck_Env * env, a_Stmt_Return stmt );
+t_CKBOOL type_engine_check_select( Chuck_Env * env, a_Stmt_Select stmt );
 t_CKBOOL type_engine_check_switch( Chuck_Env * env, a_Stmt_Switch stmt );
 t_CKTYPE type_engine_check_exp( Chuck_Env * env, a_Exp exp );
 t_CKTYPE type_engine_check_exp_binary( Chuck_Env * env, a_Exp_Binary binary );
@@ -398,6 +399,7 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     env->key_words["fun"] = TRUE;
     env->key_words["break"] = TRUE;
     env->key_words["continue"] = TRUE;
+    env->key_words["select"] = TRUE;
 
     env->key_values["now"] = TRUE;
     env->key_values["true"] = TRUE;
@@ -819,6 +821,14 @@ t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt )
             env->class_scope--;
             break;
 
+        case ae_stmt_select:
+            env->class_scope++;
+            env->curr->value.push();
+            ret = type_engine_check_select( env, &stmt->stmt_select );
+            env->curr->value.pop();
+            env->class_scope--;
+            break;
+
         case ae_stmt_exp:
             ret = ( type_engine_check_exp( env, stmt->stmt_exp ) != NULL );
             break;
@@ -963,7 +973,8 @@ t_CKBOOL type_engine_check_for( Chuck_Env * env, a_Stmt_For stmt )
         return FALSE;
 
     // for break and continue statement
-    env->breaks.push_back( stmt->self );
+    env->push_break( stmt->self );
+    env->push_continue( stmt->self );
 
     // check body
     // TODO: restore break stack? (same for other loops)
@@ -971,8 +982,8 @@ t_CKBOOL type_engine_check_for( Chuck_Env * env, a_Stmt_For stmt )
         return FALSE;
         
     // remove the loop from the stack
-    assert( env->breaks.size() && env->breaks.back() == stmt->self );
-    env->breaks.pop_back();
+    env->pop_continue( stmt->self );
+    env->pop_break( stmt->self );
 
     return TRUE;
 }
@@ -1010,15 +1021,16 @@ t_CKBOOL type_engine_check_while( Chuck_Env * env, a_Stmt_While stmt )
     }
 
     // for break and continue statement
-    env->breaks.push_back( stmt->self );
+    env->push_break( stmt->self );
+    env->push_continue( stmt->self );
 
     // check the body
     if( !type_engine_check_stmt( env, stmt->body ) )
         return FALSE;
 
     // remove the loop from the stack
-    assert( env->breaks.size() && env->breaks.back() == stmt->self );
-    env->breaks.pop_back();
+    env->pop_continue( stmt->self );
+    env->pop_break( stmt->self );
 
     return TRUE;
 }
@@ -1056,15 +1068,16 @@ t_CKBOOL type_engine_check_until( Chuck_Env * env, a_Stmt_Until stmt )
     }
 
     // for break and continue statement
-    env->breaks.push_back( stmt->self );
+    env->push_break( stmt->self );
+    env->push_continue( stmt->self );
 
     // check the body
     if( !type_engine_check_stmt( env, stmt->body ) )
         return FALSE;
 
     // remove the loop from the stack
-    assert( env->breaks.size() && env->breaks.back() == stmt->self );
-    env->breaks.pop_back();
+    env->pop_continue( stmt->self );
+    env->pop_break( stmt->self );
 
     return TRUE;
 }
@@ -1098,15 +1111,76 @@ t_CKBOOL type_engine_check_loop( Chuck_Env * env, a_Stmt_Loop stmt )
     }
 
     // for break and continue statement
-    env->breaks.push_back( stmt->self );
+    env->push_break( stmt->self );
+    env->push_continue( stmt->self );
 
     // check the body
     if( !type_engine_check_stmt( env, stmt->body ) )
         return FALSE;
 
     // remove the loop from the stack
-    assert( env->breaks.size() && env->breaks.back() == stmt->self );
-    env->breaks.pop_back();
+    env->pop_continue( stmt->self );
+    env->pop_break( stmt->self );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_check_case()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_check_case( Chuck_Env * env, a_Case kase )
+{
+    if( !type_engine_check_exp( env, kase->exp ) )
+        return FALSE;
+    if( !type_engine_check_stmt( env, kase->stmt ) )
+        return FALSE;
+
+    t_CKTYPE exp_type = kase->exp->type;
+
+    switch( exp_type->xid )
+    {
+    case te_dur:
+    case te_time:
+        break;
+
+    default:
+        if( isa( exp_type, env->t_event ) ) break;
+
+        EM_error2( kase->exp->linepos,
+            "invalid type '%s' in select case: must be dur, time, or Event", exp_type->name.c_str() );
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_check_select()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_check_select( Chuck_Env * env, a_Stmt_Select stmt )
+{
+    a_Case_List cur = stmt->cases;
+
+    // for break statement
+    // don't push_continue - continue not allowed in select
+    env->push_break( stmt->self );
+
+    while( cur != NULL )
+    {
+        if( !type_engine_check_case( env, cur->item ) )
+            return FALSE;
+        cur = cur->next;
+    }
+
+    env->pop_break( stmt->self );
 
     return TRUE;
 }
@@ -1136,10 +1210,10 @@ t_CKBOOL type_engine_check_switch( Chuck_Env * env, a_Stmt_Switch stmt )
 t_CKBOOL type_engine_check_break( Chuck_Env * env, a_Stmt_Break br )
 {
     // check to see if inside valid stmt
-    if( env->breaks.size() <= 0 )
+    if( !env->is_inside_breakable_stmt() )
     {
         EM_error2( br->linepos,
-            "'break' found outside of for/while/until/switch..." );
+            "'break' found outside of for/while/until/select..." );
         return FALSE;
     }
     
@@ -1156,7 +1230,7 @@ t_CKBOOL type_engine_check_break( Chuck_Env * env, a_Stmt_Break br )
 t_CKBOOL type_engine_check_continue( Chuck_Env * env, a_Stmt_Continue cont )
 {
     // check to see if inside valid loop
-    if( env->breaks.size() <= 0 )
+    if( !env->is_inside_continueable_stmt() )
     {
         EM_error2( cont->linepos,
             "'continue' found outside of for/while/until..." );

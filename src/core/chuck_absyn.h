@@ -103,6 +103,7 @@ typedef struct a_Stmt_Continue_ * a_Stmt_Continue;
 typedef struct a_Stmt_Return_ * a_Stmt_Return;
 typedef struct a_Stmt_Case_ * a_Stmt_Case;
 typedef struct a_Stmt_GotoLabel_ * a_Stmt_GotoLabel;
+typedef struct a_Stmt_Select_ * a_Stmt_Select;
 typedef struct a_Decl_ * a_Decl;
 typedef struct a_Var_Decl_ * a_Var_Decl;
 typedef struct a_Var_Decl_List_ * a_Var_Decl_List;
@@ -115,6 +116,8 @@ typedef struct a_Array_Sub_ * a_Array_Sub;
 typedef struct a_Complex_ * a_Complex;
 typedef struct a_Polar_ * a_Polar;
 typedef struct a_Vec_ * a_Vec; // ge: added 1.3.5.3
+typedef struct a_Case_ * a_Case;
+typedef struct a_Case_List_ * a_Case_List;
 
 // forward reference for type
 typedef struct Chuck_Type * t_CKTYPE;
@@ -151,6 +154,7 @@ a_Stmt new_stmt_from_continue( int pos );
 a_Stmt new_stmt_from_return( a_Exp exp, int pos );
 a_Stmt new_stmt_from_label( c_str xid, int pos );
 a_Stmt new_stmt_from_case( a_Exp exp, int pos );
+a_Stmt new_stmt_from_select( a_Case_List case_list, int pos );
 a_Exp append_expression( a_Exp list, a_Exp exp, int pos );
 a_Exp new_exp_from_binary( a_Exp lhs, ae_Operator oper, a_Exp rhs, int pos );
 a_Exp new_exp_from_unary( ae_Operator oper, a_Exp exp, int pos );
@@ -190,6 +194,9 @@ a_Array_Sub prepend_array_sub( a_Array_Sub array, a_Exp exp, int pos );
 a_Complex new_complex( a_Exp re, int pos );
 a_Polar new_polar( a_Exp mod, int pos ); // ge: added 1.3.5.3
 a_Vec new_vec( a_Exp e, int pos );
+a_Case new_case( a_Exp guard, a_Stmt stmt, int pos );
+a_Case_List new_case_list( a_Case c, int pos );
+a_Case_List append_case_list( a_Case_List list, a_Case c, int pos );
 
 a_Class_Def new_class_def( ae_Keyword class_decl, a_Id_List xid, a_Class_Ext ext, a_Class_Body body, int pos );
 a_Class_Body new_class_body( a_Section section, int pos );
@@ -236,6 +243,8 @@ struct a_Arg_List_ { a_Type_Decl type_decl; a_Var_Decl var_decl; t_CKTYPE type;
 struct a_Complex_ { a_Exp re; a_Exp im; int linepos; a_Exp self; };
 struct a_Polar_ { a_Exp mod; a_Exp phase; int linepos; a_Exp self; };
 struct a_Vec_ { a_Exp args; int numdims; int linepos; a_Exp self; }; // ge: added 1.3.5.3
+struct a_Case_ { a_Exp exp; a_Stmt stmt; int linepos; };
+struct a_Case_List_ { a_Case item; a_Case_List next; int linepos; };
 
 // enum primary exp type
 typedef enum { ae_primary_var, ae_primary_num, ae_primary_float, 
@@ -317,11 +326,13 @@ struct a_Stmt_Continue_ { int linepos; a_Stmt self; };
 struct a_Stmt_Return_ { a_Exp val; int linepos; a_Stmt self; };
 struct a_Stmt_Case_ { a_Exp exp; int linepos; a_Stmt self; };
 struct a_Stmt_GotoLabel_ { S_Symbol name; int linepos; a_Stmt self; };
+struct a_Stmt_Select_ { a_Case_List cases; int linepos; a_Stmt self; };
 
 // enum values for stmt type
 typedef enum { ae_stmt_exp, ae_stmt_while, ae_stmt_until, ae_stmt_for, ae_stmt_loop,
                ae_stmt_if, ae_stmt_code, ae_stmt_switch, ae_stmt_break, 
-               ae_stmt_continue, ae_stmt_return, ae_stmt_case, ae_stmt_gotolabel
+               ae_stmt_continue, ae_stmt_return, ae_stmt_case, ae_stmt_gotolabel,
+               ae_stmt_select
              } ae_Stmt_Type;
  
 struct a_Stmt_
@@ -344,6 +355,7 @@ struct a_Stmt_
         struct a_Stmt_Return_ stmt_return;
         struct a_Stmt_Case_ stmt_case;
         struct a_Stmt_GotoLabel_ stmt_gotolabel;
+        struct a_Stmt_Select_ stmt_select;
     };
 
     int linepos;

@@ -8,6 +8,7 @@
 /src/core/chuck.yy.c
 /src/Release
 /src/Debug
+/src/test/03-Modules/file.bin
 
 .DS_Store
 project.xcworkspace

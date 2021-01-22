@@ -230,6 +230,8 @@ break                   { adjust(); return BREAK; }
 if                      { adjust(); return IF; }
 else                    { adjust(); return ELSE; }
 do                      { adjust(); return DO; }
+select                  { adjust(); return SELECT; }
+case                    { adjust(); return CASE; }
 "<<<"                   { adjust(); return L_HACK; }
 ">>>"                   { adjust(); return R_HACK; }
 

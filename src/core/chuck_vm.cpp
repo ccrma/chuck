@@ -1875,9 +1875,10 @@ Chuck_VM_Shred::Chuck_VM_Shred()
     // obj_array_size = 0;
     base_ref = NULL;
     vm_ref = NULL;
-    event = NULL;
     xid = 0;
     m_serials = NULL;
+    timeout_pc = 0;
+    goto_timeout_on_wake = FALSE;
 
     // set
     CK_TRACK( stat = NULL );
@@ -2233,6 +2234,104 @@ bool Chuck_VM_Shred::popLoopCounter()
 
 
 //-----------------------------------------------------------------------------
+// name: add_waiting_event()
+// desc: add an event that we should be waiting on
+//-----------------------------------------------------------------------------
+void Chuck_VM_Shred::add_waiting_event( Chuck_Event * event, t_CKUINT ret_sp )
+{
+    if( event == NULL )
+    {
+        CK_FPRINTF_STDERR(
+            "[chuck](VM): NullPointerException: (Chuck_VM_Shred::add_waiting_event) in shred[id=%lu:%s]\n",
+            xid, name.c_str() );
+        return;
+    }
+    event->add_ref();
+    m_waiting_events.insert( { event, ret_sp } );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: has_waiting_event()
+// desc: are we waiting on any events?
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM_Shred::has_waiting_events()
+{
+    return m_waiting_events.size() > 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: clear_waiting_events()
+// desc: we should not be waiting on events any more. clear and release them.
+//-----------------------------------------------------------------------------
+void Chuck_VM_Shred::clear_waiting_events()
+{
+    for( auto i : m_waiting_events )
+    {
+        auto ev = i.first;
+        ev->remove( this );
+        ev->release();
+    }
+    m_waiting_events.clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: handle_timeout()
+// desc: when a shred is about to wake up, allow for the timeout handler to
+//       be jumped to if necessary.
+//-----------------------------------------------------------------------------
+void Chuck_VM_Shred::handle_timeout()
+{
+    if( goto_timeout_on_wake )
+    {
+        // this wakeup is the result of a select {} timeout,
+        // so jump to the handler and clear any events that were
+        // also waiting
+        goto_timeout_handler();
+        clear_waiting_events();
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: goto_timeout_handler()
+// desc: jump to the stored timeout handler
+//-----------------------------------------------------------------------------
+void Chuck_VM_Shred::goto_timeout_handler()
+{
+    pc = timeout_pc;
+    next_pc = pc + 1;
+    goto_timeout_on_wake = FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: goto_event_handler()
+// desc: jump to handler for given event that we're waiting on
+//-----------------------------------------------------------------------------
+void Chuck_VM_Shred::goto_event_handler( Chuck_Event * event )
+{
+    pc = m_waiting_events[event];
+    next_pc = pc + 1;
+    goto_timeout_on_wake = FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_VM_Shreduler()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -2327,20 +2426,13 @@ t_CKBOOL Chuck_VM_Shreduler::add_blocked( Chuck_VM_Shred * shred )
 t_CKBOOL Chuck_VM_Shreduler::remove_blocked( Chuck_VM_Shred * shred )
 {
     // remove from hash
-    std::map<Chuck_VM_Shred *, Chuck_VM_Shred *>::iterator iter;
-    iter = blocked.find( shred );
-    blocked.erase( iter );
-
-    // remove from event
-    if( shred->event != NULL )
+    auto iter = blocked.find( shred );
+    if( iter != blocked.end() )
     {
-        Chuck_Event * event_to_release = shred->event;
-        // this call causes shred->event to become a null pointer
-        shred->event->remove( shred );
-        // but, we still have to release the event afterward
-        // to signify that the shred is done using the event
-        SAFE_RELEASE( event_to_release );
+        blocked.erase( iter );
     }
+
+    shred->clear_waiting_events();
     
     return TRUE;
 }
@@ -2584,6 +2676,8 @@ Chuck_VM_Shred * Chuck_VM_Shreduler::get( )
         shred_list = shred->next;
         shred->next = NULL;
         shred->prev = NULL;
+
+        shred->handle_timeout();
         
         if( shred_list )
         {
@@ -2672,7 +2766,7 @@ t_CKBOOL Chuck_VM_Shreduler::remove( Chuck_VM_Shred * out )
     if( !out ) return FALSE;
 
     // if blocked
-    if( out->event != NULL )
+    if( out->has_waiting_events() && !out->goto_timeout_on_wake )
     {
         return remove_blocked( out );
     }
@@ -2801,7 +2895,7 @@ void Chuck_VM_Shreduler::status( Chuck_VM_Status * status )
     {
         shred = list[i];
         status->list.push_back( new Chuck_VM_Shred_Status(
-            shred->xid, shred->name, shred->start, shred->event != NULL ) );
+            shred->xid, shred->name, shred->start, shred->has_waiting_events() ) );
     }    
 }
 
