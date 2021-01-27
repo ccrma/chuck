@@ -36,6 +36,7 @@
 
 #include "chuck_def.h"
 #include <stdio.h>
+#include <stdarg.h>
 
 
 #if defined(_cplusplus) || defined(__cplusplus)
