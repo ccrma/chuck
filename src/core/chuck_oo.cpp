@@ -3199,6 +3199,7 @@ void Chuck_IO_Chout::write( t_CKFLOAT val )
 
 Chuck_IO_Cherr::Chuck_IO_Cherr( Chuck_Carrier * carrier ) {
     // store
+    m_callback = NULL;
     carrier->cherr = this;
     // add ref
     this->add_ref();
