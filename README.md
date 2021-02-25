@@ -8,7 +8,7 @@ Please note that the `master` branch has been renamed to `main.`
 
 ## Strongly-timed, Concurrent, and On-the-fly Music Programming Language  
 
-This is a custom fork of ChucK for use in [ruckus](https://github.com/tonal-glyph/ruckus). All attempts will be made to keep it compiling and compatible with 1.4.0.0 API. That being said, I may crazily refactor this to my own liking.
+This is a custom fork of ChucK for use in [ruckus](https://github.com/tonal-glyph/ruckus). All attempts will be made to keep it compiling and compatible with 1.4.X.X API. That being said, I may crazily refactor this to my own liking.
 
 Welcome to ChucK! 
 
