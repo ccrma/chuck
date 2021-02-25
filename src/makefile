@@ -33,7 +33,7 @@ osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
 win32:
 	make -f $(COREDIR)/makefile.x/makefile.win32
 
-CK_VERSION=1.4.0.0
+CK_VERSION=1.4.0.1
 
 
 ########################### COMPILATION TOOLS ##################################
@@ -46,28 +46,35 @@ LD=g++
 
 ############################# COMPILER FLAGS ###################################
 CFLAGS+=-I. -I$(COREDIR) -I$(COREDIR)/lo
+CXXFLAGS+=-I. -I$(COREDIR) -I$(COREDIR)/lo
 
 ifneq ($(CHUCK_STAT),)
 CFLAGS+= -D__CHUCK_STAT_TRACK__
+CXXFLAGS+= -D__CHUCK_STAT_TRACK__
 endif
 
 ifneq ($(CHUCK_DEBUG),)
 CFLAGS+= -g
+CXXFLAGS+= -g
 else
 CFLAGS+= -O3
+CXXFLAGS+= -O3
 endif
 
 ifneq ($(USE_64_BIT_SAMPLE),)
 CFLAGS+= -D__CHUCK_USE_64_BIT_SAMPLE__
+CXXFLAGS+= -D__CHUCK_USE_64_BIT_SAMPLE__
 endif
 
 ifneq ($(CHUCK_STRICT),)
 CFLAGS+= -Wall
+CXXFLAGS+= -Wall
 endif
 
 ifneq ($(findstring arm,$(shell uname -m)),)
 # some sort of arm platform- enable aggressive optimizations
 CFLAGS+= -ffast-math
+CXXFLAGS+= -ffast-math
 endif
 
 
@@ -135,6 +142,7 @@ LO_CFLAGS=-DHAVE_CONFIG_H -I.
 
 # remove -arch options
 CFLAGSDEPEND=$(CFLAGS)
+CXXFLAGSDEPEND=$(CXXFLAGS)
 
 ifneq (,$(ARCHS))
 ARCHOPTS=$(addprefix -arch ,$(ARCHS))
@@ -171,8 +179,8 @@ $(COBJS_HOST): %.o: %.c
 	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
 $(CXXOBJS_HOST): %.o: %.cpp
-	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
-	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
+	$(CXX) $(CXXFLAGS) $(ARCHOPTS) -c $< -o $@
+	@$(CXX) -MM -MQ "$@" $(CXXFLAGSDEPEND) $< > $*.d
 
 clean:
 	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} $(OBJS) \

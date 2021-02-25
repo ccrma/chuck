@@ -190,9 +190,9 @@ t_CKBOOL ck_connect( ck_socket sock, const char * hostname, int port )
     else
     {
 #ifdef __PLATFORM_WIN32__
-        memcpy( (char *)&sock->sock_in.sin_addr, host->h_addr, host->h_length );
+        memcpy( (char *)&sock->sock_in.sin_addr, host->h_addr_list[0], host->h_length );
 #else
-        bcopy( host->h_addr, (char *)&sock->sock_in.sin_addr, host->h_length );
+        bcopy( host->h_addr_list[0], (char *)&sock->sock_in.sin_addr, host->h_length );
 #endif
     }
 

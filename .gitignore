@@ -1,14 +1,16 @@
 *.d
 *.o
 
-src/chuck
-src/core/chuck.output
-#src/chuck.tab.c
-#src/chuck.tab.h
-#src/chuck.yy.c
-src/Release
-src/Debug
+/src/chuck
+/src/core/chuck.output
+/src/core/chuck.tab.c
+/src/core/chuck.tab.h
+/src/core/chuck.yy.c
+/src/Release
+/src/Debug
 
 .DS_Store
 project.xcworkspace
 xcuserdata
+
+.vscode

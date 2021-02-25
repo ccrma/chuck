@@ -56,15 +56,3 @@ extern "C" {
         delete v;
     }
 }
-// CIMGUI_API ImGuiStyle* igGetStyle()
-// {
-//     return &ImGui::GetStyle();
-// }
-// CIMGUI_API ImGuiStyle* ImGuiStyle_ImGuiStyle(void)
-// {
-//     return IM_NEW(ImGuiStyle)();
-// }
-// CIMGUI_API void ImGuiStyle_destroy(ImGuiStyle* self)
-// {
-//     IM_DELETE(self);
-// }

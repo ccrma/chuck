@@ -40,6 +40,7 @@
 #include "chuck_instr.h"
 #include "chuck_compile.h"
 #include "chuck_vm.h"
+#include "chuck.h"
 #include <sstream>
 using namespace std;
 
@@ -556,6 +557,17 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
 }
 
 
+//-----------------------------------------------------------------------------
+// name: ck_create_main_thread_hook()
+// desc: ...
+//-----------------------------------------------------------------------------
+Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query * query,
+                                                                 f_mainthreadhook hook,
+                                                                 f_mainthreadquit quit,
+                                                                 void * bindle )
+{
+    return new Chuck_DL_MainThreadHook( hook, quit, bindle, query->carrier() );
+}
 
 
 //-----------------------------------------------------------------------------
@@ -935,6 +947,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     doc_class = ck_doc_class;
     doc_func = ck_doc_func;
     doc_var = ck_doc_var;
+    create_main_thread_hook = ck_create_main_thread_hook;
     m_carrier = carrier;
     
 //    memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
@@ -1004,6 +1017,41 @@ Chuck_DL_Func::~Chuck_DL_Func()
         delete args[i];
 }
 
+
+/*******************************************************************************
+ 
+ Main Thread Hook stuff
+ 
+*******************************************************************************/
+
+t_CKBOOL ck_mthook_activate(Chuck_DL_MainThreadHook *hook)
+{
+    hook->m_carrier->chuck->setMainThreadHook(hook);
+    hook->m_active = true;
+    return hook->m_active;
+}
+
+t_CKBOOL ck_mthook_deactivate(Chuck_DL_MainThreadHook *hook)
+{
+    hook->m_carrier->chuck->setMainThreadHook(NULL);
+    hook->m_active = false;
+    return hook->m_active;
+}
+
+//-----------------------------------------------------------------------------
+// name: Chuck_DL_MainThreadHook()
+// desc: ...
+//-----------------------------------------------------------------------------
+Chuck_DL_MainThreadHook::Chuck_DL_MainThreadHook(f_mainthreadhook hook, f_mainthreadquit quit,
+                                                 void * bindle, Chuck_Carrier * carrier) :
+m_hook(hook),
+m_quit(quit),
+m_carrier(carrier),
+m_bindle(bindle),
+activate(ck_mthook_activate),
+deactivate(ck_mthook_deactivate),
+m_active(FALSE)
+{ }
 
 
 

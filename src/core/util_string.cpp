@@ -380,7 +380,7 @@ char* CreatePathByExpandingTildePath(const char* path)
         
         result = (char*)calloc(1, strlen(expandedPath) + 1); //the extra char is for the null-termination
         if(result)
-            strncpy(result, expandedPath, strlen(expandedPath) + 1); //copy the null-termination as well
+            memcpy(result, expandedPath, strlen(expandedPath) + 1); //copy the null-termination as well
         
         globfree(&globbuf);
     }
