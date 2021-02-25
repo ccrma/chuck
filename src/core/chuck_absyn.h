@@ -32,6 +32,7 @@
 #ifndef __CHUCK_ABSYN_H__
 #define __CHUCK_ABSYN_H__
 
+#include "chuck_def.h"
 #include "chuck_symbol.h"
 
 #if defined(_cplusplus) || defined(__cplusplus)

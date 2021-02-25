@@ -84,10 +84,10 @@ LINK32=link.exe
 # Name "chuck_win32 - Win32 Debug"
 # Begin Group "Source Files"
 
-# PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# PROP Default_Filter "cc;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\chuck_absyn.cpp
+SOURCE=.\chuck_absyn.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -100,7 +100,7 @@ SOURCE=.\chuck_absyn.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_bbq.cpp
+#SOURCE=.\chuck_bbq.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -113,7 +113,7 @@ SOURCE=.\chuck_bbq.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_compile.cpp
+SOURCE=.\chuck_compile.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -126,7 +126,7 @@ SOURCE=.\chuck_compile.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_console.cpp
+SOURCE=.\chuck_console.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -139,7 +139,7 @@ SOURCE=.\chuck_console.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_dl.cpp
+SOURCE=.\chuck_dl.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -152,7 +152,7 @@ SOURCE=.\chuck_dl.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_emit.cpp
+SOURCE=.\chuck_emit.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -165,7 +165,7 @@ SOURCE=.\chuck_emit.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_errmsg.cpp
+SOURCE=.\chuck_errmsg.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -178,7 +178,7 @@ SOURCE=.\chuck_errmsg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_frame.cpp
+SOURCE=.\chuck_frame.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -191,7 +191,7 @@ SOURCE=.\chuck_frame.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_globals.cpp
+SOURCE=.\chuck_globals.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -204,7 +204,7 @@ SOURCE=.\chuck_globals.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_instr.cpp
+SOURCE=.\chuck_instr.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -217,7 +217,7 @@ SOURCE=.\chuck_instr.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_io.cpp
+SOURCE=.\chuck_io.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -230,7 +230,7 @@ SOURCE=.\chuck_io.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_lang.cpp
+SOURCE=.\chuck_lang.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -243,7 +243,7 @@ SOURCE=.\chuck_lang.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_main.cpp
+SOURCE=.\chuck_main.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -256,7 +256,7 @@ SOURCE=.\chuck_main.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_oo.cpp
+SOURCE=.\chuck_oo.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -269,7 +269,7 @@ SOURCE=.\chuck_oo.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_otf.cpp
+SOURCE=.\chuck_otf.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -282,7 +282,7 @@ SOURCE=.\chuck_otf.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_parse.cpp
+SOURCE=.\chuck_parse.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -295,7 +295,7 @@ SOURCE=.\chuck_parse.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_scan.cpp
+SOURCE=.\chuck_scan.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -308,7 +308,7 @@ SOURCE=.\chuck_scan.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_shell.cpp
+SOURCE=.\chuck_shell.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -321,7 +321,7 @@ SOURCE=.\chuck_shell.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_stats.cpp
+SOURCE=.\chuck_stats.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -334,7 +334,7 @@ SOURCE=.\chuck_stats.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_symbol.cpp
+SOURCE=.\chuck_symbol.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -347,7 +347,7 @@ SOURCE=.\chuck_symbol.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_table.cpp
+SOURCE=.\chuck_table.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -360,7 +360,7 @@ SOURCE=.\chuck_table.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_type.cpp
+SOURCE=.\chuck_type.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -373,7 +373,7 @@ SOURCE=.\chuck_type.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_ugen.cpp
+SOURCE=.\chuck_ugen.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -386,7 +386,7 @@ SOURCE=.\chuck_ugen.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_utils.cpp
+SOURCE=.\chuck_utils.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -399,7 +399,7 @@ SOURCE=.\chuck_utils.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_vm.cpp
+SOURCE=.\chuck_vm.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -425,7 +425,7 @@ SOURCE=.\chuck_win32.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\digiio_rtaudio.cpp
+SOURCE=.\digiio_rtaudio.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -438,7 +438,7 @@ SOURCE=.\digiio_rtaudio.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\hidio_sdl.cpp
+SOURCE=.\hidio_sdl.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -451,7 +451,7 @@ SOURCE=.\hidio_sdl.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\midiio_rtmidi.cpp
+SOURCE=.\midiio_rtmidi.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -464,7 +464,7 @@ SOURCE=.\midiio_rtmidi.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\RtAudio\RtAudio.cpp
+SOURCE=.\rtaudio.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -477,7 +477,7 @@ SOURCE=.\RtAudio\RtAudio.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\rtmidi.cpp
+SOURCE=.\rtmidi.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -490,7 +490,7 @@ SOURCE=.\rtmidi.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\uana_extract.cpp
+SOURCE=.\uana_extract.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -503,7 +503,7 @@ SOURCE=.\uana_extract.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\uana_xform.cpp
+SOURCE=.\uana_xform.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -516,7 +516,7 @@ SOURCE=.\uana_xform.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ugen_filter.cpp
+SOURCE=.\ugen_filter.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -529,7 +529,7 @@ SOURCE=.\ugen_filter.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ugen_osc.cpp
+SOURCE=.\ugen_osc.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -542,7 +542,7 @@ SOURCE=.\ugen_osc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ugen_stk.cpp
+SOURCE=.\ugen_stk.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -555,7 +555,7 @@ SOURCE=.\ugen_stk.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ugen_xxx.cpp
+SOURCE=.\ugen_xxx.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -568,7 +568,7 @@ SOURCE=.\ugen_xxx.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ulib_machine.cpp
+SOURCE=.\ulib_machine.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -581,7 +581,7 @@ SOURCE=.\ulib_machine.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ulib_math.cpp
+SOURCE=.\ulib_math.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -594,7 +594,7 @@ SOURCE=.\ulib_math.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ulib_opsc.cpp
+SOURCE=.\ulib_opsc.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -607,7 +607,7 @@ SOURCE=.\ulib_opsc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ulib_regex.cpp
+SOURCE=.\ulib_regex.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -620,7 +620,7 @@ SOURCE=.\ulib_regex.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ulib_std.cpp
+SOURCE=.\ulib_std.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -633,7 +633,7 @@ SOURCE=.\ulib_std.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_buffers.cpp
+SOURCE=.\util_buffers.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -646,7 +646,7 @@ SOURCE=.\util_buffers.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_console.cpp
+SOURCE=.\util_console.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -659,7 +659,7 @@ SOURCE=.\util_console.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_hid.cpp
+SOURCE=.\util_hid.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -700,7 +700,7 @@ SOURCE=.\util_network.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_opsc.cpp
+SOURCE=.\util_opsc.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -726,7 +726,7 @@ SOURCE=.\util_raw.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_serial.cpp
+SOURCE=.\util_serial.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -752,7 +752,7 @@ SOURCE=.\util_sndfile.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_string.cpp
+SOURCE=.\util_string.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -765,7 +765,7 @@ SOURCE=.\util_string.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_thread.cpp
+SOURCE=.\util_thread.cc
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
@@ -792,22 +792,22 @@ SOURCE=.\util_xforms.c
 # End Group
 # Begin Group "Header Files"
 
-# PROP Default_Filter "h;hpp;hxx;hm;inl"
+# PROP Default_Filter "h;hh;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\chuck_absyn.h
+SOURCE=.\chuck_absyn.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_bbq.h
+SOURCE=.\chuck_bbq.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_compile.h
+SOURCE=.\chuck_compile.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_console.h
+SOURCE=.\chuck_console.hh
 # End Source File
 # Begin Source File
 
@@ -815,11 +815,11 @@ SOURCE=.\chuck_def.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_dl.h
+SOURCE=.\chuck_dl.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_emit.h
+SOURCE=.\chuck_emit.hh
 # End Source File
 # Begin Source File
 
@@ -827,71 +827,71 @@ SOURCE=.\chuck_errmsg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_frame.h
+SOURCE=.\chuck_frame.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_globals.h
+SOURCE=.\chuck_globals.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_instr.h
+SOURCE=.\chuck_instr.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_io.h
+SOURCE=.\chuck_io.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_lang.h
+SOURCE=.\chuck_lang.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_oo.h
+SOURCE=.\chuck_oo.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_otf.h
+SOURCE=.\chuck_otf.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_parse.h
+SOURCE=.\chuck_parse.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_scan.h
+SOURCE=.\chuck_scan.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_shell.h
+SOURCE=.\chuck_shell.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_stats.h
+SOURCE=.\chuck_stats.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_symbol.h
+SOURCE=.\chuck_symbol.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_table.h
+SOURCE=.\chuck_table.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_type.h
+SOURCE=.\chuck_type.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_ugen.h
+SOURCE=.\chuck_ugen.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_utils.h
+SOURCE=.\chuck_utils.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_vm.h
+SOURCE=.\chuck_vm.hh
 # End Source File
 # Begin Source File
 
@@ -899,7 +899,7 @@ SOURCE=.\chuck_win32.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\digiio_rtaudio.h
+SOURCE=.\digiio_rtaudio.hh
 # End Source File
 # Begin Source File
 
@@ -907,79 +907,75 @@ SOURCE=.\dirent.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\hidio_sdl.h
+SOURCE=.\hidio_sdl.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\midiio_rtmidi.h
+SOURCE=.\midiio_rtmidi.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\RtAudio\RtAudio.h
+SOURCE=.\rtaudio.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\RtAudio\RtError.h
+SOURCE=.\rtmidi.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\rtmidi.h
+SOURCE=.\uana_extract.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\uana_extract.h
+SOURCE=.\uana_xform.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\uana_xform.h
+SOURCE=.\ugen_filter.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\ugen_filter.h
+SOURCE=.\ugen_osc.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\ugen_osc.h
+SOURCE=.\ugen_stk.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\ugen_stk.h
+SOURCE=.\ugen_xxx.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\ugen_xxx.h
+SOURCE=.\ulib_machine.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\ulib_machine.h
+SOURCE=.\ulib_math.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\ulib_math.h
+SOURCE=.\ulib_opsc.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\ulib_opsc.h
+SOURCE=.\ulib_regex.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\ulib_regex.h
+SOURCE=.\ulib_std.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\ulib_std.h
+SOURCE=.\util_buffers.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_buffers.h
+SOURCE=.\util_console.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_console.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\util_hid.h
+SOURCE=.\util_hid.hh
 # End Source File
 # Begin Source File
 
@@ -991,7 +987,7 @@ SOURCE=.\util_network.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_opsc.h
+SOURCE=.\util_opsc.hh
 # End Source File
 # Begin Source File
 
@@ -999,7 +995,7 @@ SOURCE=.\util_raw.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_serial.h
+SOURCE=.\util_serial.hh
 # End Source File
 # Begin Source File
 
@@ -1007,11 +1003,11 @@ SOURCE=.\util_sndfile.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_string.h
+SOURCE=.\util_string.hh
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_thread.h
+SOURCE=.\util_thread.hh
 # End Source File
 # Begin Source File
 

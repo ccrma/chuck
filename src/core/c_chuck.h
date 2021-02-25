@@ -35,7 +35,9 @@
 #ifdef __cplusplus
     extern "C" {
 #endif
-#define ENUMS_AND_STRUCTS
+#ifndef ENUMS_AND_STRUCTS
+    #define ENUMS_AND_STRUCTS
+#endif
 #ifdef ENUMS_AND_STRUCTS
 // C++ class typedef
 typedef struct ChucK ChucK;

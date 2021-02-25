@@ -122,12 +122,12 @@ LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
 
 
 ############################ CHUCK HOST TARGETS ################################
-CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp \
-	RtAudio/RtAudio.cpp
+CXXSRCS_HOST+= chuck_main.cc chuck_audio.cc chuck_console.cc \
+	rtaudio.cc
 
 
 ############################ OBJECT FILE TARGETS ###############################
-CXXOBJS_HOST=$(addprefix $(HOSTDIR)/,$(CXXSRCS_HOST:.cpp=.o))
+CXXOBJS_HOST=$(addprefix $(HOSTDIR)/,$(CXXSRCS_HOST:.cc=.o))
 
 COBJS=$(COBJS_HOST) $(addprefix $(COREDIR)/,$(COBJS_CORE))
 CXXOBJS=$(CXXOBJS_HOST) $(addprefix $(COREDIR)/,$(CXXOBJS_CORE))
@@ -178,14 +178,14 @@ $(COBJS_HOST): %.o: %.c
 	$(CC) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
-$(CXXOBJS_HOST): %.o: %.cpp
+$(CXXOBJS_HOST): %.o: %.cc
 	$(CXX) $(CXXFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM -MQ "$@" $(CXXFLAGSDEPEND) $< > $*.d
 
 clean: 
 	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} $(OBJS) \
         $(patsubst %.o,%.d,$(OBJS))*~ $(COREDIR)/chuck.output \
-	$(COREDIR)/chuck.tab.h $(COREDIR)/chuck.tab.c \
+	$(COREDIR)/chuck.tab.h $(COREDIR)/chuck.tab.c test/03-Modules/file.bin \
         $(COREDIR)/chuck.yy.c $(DIST_DIR){,.tgz,.zip} Release Debug
 	
 
