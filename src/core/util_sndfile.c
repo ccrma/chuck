@@ -86,7 +86,7 @@ word gsm_mult ( word a, word b)
 {
 	if (a == MIN_WORD && b == MIN_WORD)
 		return MAX_WORD;
-	
+
 	return SASR_L( (longword)a * (longword)b, 15 );
 }
 
@@ -140,7 +140,7 @@ longword gsm_L_sub ( longword a, longword b)
 	}
 	else if (b <= 0) return a - b;
 	else {
-		/* a<0, b>0 */  
+		/* a<0, b>0 */
 
 		ulongword A = (ulongword)-(a + 1) + b;
 		return A >= MAX_LONGWORD ? MIN_LONGWORD : -(longword)A - 1;
@@ -172,7 +172,7 @@ word gsm_norm (longword a )
  * variable L_var1 for positive values on the interval
  *
  * with minimum of
- * minimum of 1073741824  (01000000000000000000000000000000) and 
+ * minimum of 1073741824  (01000000000000000000000000000000) and
  * maximum of 2147483647  (01111111111111111111111111111111)
  *
  *
@@ -193,7 +193,7 @@ word gsm_norm (longword a )
 		a = ~a;
 	}
 
-	return    a & 0xffff0000 
+	return    a & 0xffff0000
 		? ( a & 0xff000000
 		  ?  -1 + bitoff[ 0xFF & (a >> 24) ]
 		  :   7 + bitoff[ 0xFF & (a >> 16) ] )
@@ -242,7 +242,7 @@ longword gsm_L_asr (longword a, int n)
 **		if (n >= 16) return -(a < 0);
 **		if (n <= -16) return 0;
 **		if (n < 0) return a << -n;
-**	
+**
 **	#	ifdef	SASR_W
 **			return a >> n;
 **	#	else
@@ -250,9 +250,9 @@ longword gsm_L_asr (longword a, int n)
 **			else return -(word)( -(uword)a >> n );
 **	#	endif
 **	}
-**	
+**
 */
-/* 
+/*
  *  (From p. 46, end of section 4.2.5)
  *
  *  NOTE: The following lines gives [sic] one correct implementation
@@ -293,7 +293,7 @@ word gsm_div (word num, word denum)
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: a7398579-e2e1-4733-aa2d-4c6efc0c58ff
@@ -2058,7 +2058,7 @@ d2alaw_array	(double *ptr, unsigned int count, unsigned char *buffer, double nor
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 289ccfc2-42a6-4f1f-a29f-4dcc9bfa8752
@@ -2548,7 +2548,7 @@ au_read_header (SF_PRIVATE *psf)
 } /* au_read_header */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 31f691b1-cde9-4ed2-9469-6bca60fb9cd0
@@ -3175,7 +3175,7 @@ au_g72x_close	(SF_PRIVATE *psf)
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 3cc5439e-7247-486b-b2e6-11a4affa5744
@@ -3450,8 +3450,8 @@ avr_close (SF_PRIVATE *psf)
 
 
 
-/* 
- *  4.2 FIXED POINT IMPLEMENTATION OF THE RPE-LTP CODER 
+/*
+ *  4.2 FIXED POINT IMPLEMENTATION OF THE RPE-LTP CODER
  */
 
 void Gsm_Coder (
@@ -3464,7 +3464,7 @@ void Gsm_Coder (
  * The RPE-LTD coder works on a frame by frame basis.  The length of
  * the frame is equal to 160 samples.  Some computations are done
  * once per frame to produce at the output of the coder the
- * LARc[1..8] parameters which are the coded LAR coefficients and 
+ * LARc[1..8] parameters which are the coded LAR coefficients and
  * also to realize the inverse filtering operation for the entire
  * frame (160 samples of signal d[0..159]).  These parts produce at
  * the output of the coder:
@@ -3526,7 +3526,7 @@ void Gsm_Coder (
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: ae8ef1b2-5a1e-4263-94cd-42b15dca81a3
@@ -3850,7 +3850,7 @@ psf_calc_max_all_channels (SF_PRIVATE *psf, double *peaks, int normalize)
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 0aae0d9d-ab2b-4d70-ade3-47a534666f8e
@@ -5096,7 +5096,7 @@ void Gsm_Decoder (
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 11ae5b90-2e8b-400b-ac64-a69a1fc6cc41
@@ -5627,7 +5627,7 @@ DO_NOT_USE_sf_dither_double (const SF_DITHER_INFO *dither, const double *in, dou
 #endif
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 673fad58-5314-421c-9144-9d54bfdf104c
@@ -6822,7 +6822,7 @@ dwd_read_header (SF_PRIVATE *psf)
 #endif
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: a5e1d2a6-a840-4039-a0e7-e1a43eb05a4f
@@ -7481,7 +7481,7 @@ dwvw_write_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 } /* dwvw_write_d */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 1ca09552-b01f-4d7f-9bcf-612f834fe41d
@@ -9836,11 +9836,11 @@ g721_decoder(
 	update(4, y, g721_witab[i] << 5, g721_fitab[i], dq, sr, dqsez, state_ptr);
 
 	/* sr was 14-bit dynamic range */
-	return (sr << 2);	
+	return (sr << 2);
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 101b6e25-457d-490a-99ae-e2e74a26ea24
@@ -9896,12 +9896,12 @@ g721_decoder(
  * Maps G.723_16 code word to reconstructed scale factor normalized log
  * magnitude values.  Comes from Table 11/G.726
  */
-static short   g723_16_dqlntab[4] = { 116, 365, 365, 116}; 
+static short   g723_16_dqlntab[4] = { 116, 365, 365, 116};
 
 /* Maps G.723_16 code word to log of scale factor multiplier.
  *
  * g723_16_witab[4] is actually {-22 , 439, 439, -22}, but FILTD wants it
- * as WI << 5  (multiplied by 32), so we'll do that here 
+ * as WI << 5  (multiplied by 32), so we'll do that here
  */
 static short   g723_16_witab[4] = {-704, 14048, 14048, -704};
 
@@ -9957,7 +9957,7 @@ g723_16_encoder(
        if (i == 3)                          /* i code for the zero region */
          if ((d & 0x8000) == 0)             /* If d > 0, i=3 isn't right... */
            i = 0;
-           
+
        dq = reconstruct(i & 2, g723_16_dqlntab[i], y); /* quantized diff. */
 
        sr = (dq < 0) ? se - (dq & 0x3FFF) : se + dq; /* reconstructed signal */
@@ -10003,11 +10003,11 @@ g723_16_decoder(
        update(2, y, g723_16_witab[i], g723_16_fitab[i], dq, sr, dqsez, state_ptr);
 
 		/* sr was of 14-bit dynamic range */
-		return (sr << 2);       
+		return (sr << 2);
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: ae265466-c3fc-4f83-bb32-edae488a5ca5
@@ -10151,7 +10151,7 @@ g723_24_decoder(
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 75389236-650b-4427-98f3-0df6e8fb24bc
@@ -10309,7 +10309,7 @@ int	g723_40_decoder	(int i, G72x_STATE *state_ptr)
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: eb8d9a00-32bf-4dd2-b287-01b0336d72bf
@@ -10346,14 +10346,14 @@ int	g723_40_decoder	(int i, G72x_STATE *state_ptr)
  *
  * Common routines for G.721 and G.723 conversions.
  */
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 
-static 
-short power2 [15] = 
+static
+short power2 [15] =
 {	1, 2, 4, 8, 0x10, 0x20, 0x40, 0x80,
 	0x100, 0x200, 0x400, 0x800, 0x1000, 0x2000, 0x4000
 } ;
@@ -10366,7 +10366,7 @@ short power2 [15] =
  *
  * Using linear search for simple coding.
  */
-static 
+static
 int quan (int val, short *table, int size)
 {
 	int		i;
@@ -10383,7 +10383,7 @@ int quan (int val, short *table, int size)
  * returns the integer product of the 14-bit integer "an" and
  * "floating point" representation (4-bit exponent, 6-bit mantessa) "srn".
  */
-static 
+static
 int fmult (int an, int srn)
 {
 	short		anmag, anexp, anmant;
@@ -10404,7 +10404,7 @@ int fmult (int an, int srn)
 	*/
 
 	wanmant = (anmant * (srn & 0x37)) >> 4 ;
-	
+
 	retval = (wanexp >= 0) ? ((wanmant << wanexp) & 0x7FFF) :
 	    (wanmant >> -wanexp);
 
@@ -10448,12 +10448,12 @@ int g72x_reader_init (G72x_DATA *data, int codec)
 		} ;
 
 	memset (data, 0, sizeof (G72x_DATA)) ;
-	
+
 	pstate = (G72x_STATE*) data->sprivateo ;
 	private_init_state (pstate) ;
-		
+
 	pstate->encoder = NULL ;
-	
+
 	switch (codec)
 	{	case G723_16_BITS_PER_SAMPLE : /* 2 bits per sample. */
 				pstate->decoder = g723_16_decoder ;
@@ -10461,28 +10461,28 @@ int g72x_reader_init (G72x_DATA *data, int codec)
 				data->samplesperblock = G723_16_SAMPLES_PER_BLOCK ;
 				pstate->codec_bits = 2 ;
 				break ;
-				
-		case G723_24_BITS_PER_SAMPLE : /* 3 bits per sample. */ 
+
+		case G723_24_BITS_PER_SAMPLE : /* 3 bits per sample. */
 				pstate->decoder = g723_24_decoder ;
 				data->blocksize = G723_24_BYTES_PER_BLOCK ;
 				data->samplesperblock = G723_24_SAMPLES_PER_BLOCK ;
 				pstate->codec_bits = 3 ;
 				break ;
-				
+
 		case G721_32_BITS_PER_SAMPLE : /* 4 bits per sample. */
 				pstate->decoder = g721_decoder ;
 				data->blocksize = G721_32_BYTES_PER_BLOCK ;
 				data->samplesperblock = G721_32_SAMPLES_PER_BLOCK ;
 				pstate->codec_bits = 4 ;
 				break ;
-				
+
 		case G721_40_BITS_PER_SAMPLE : /* 5 bits per sample. */
 				pstate->decoder = g723_40_decoder ;
 				data->blocksize = G721_40_BYTES_PER_BLOCK ;
 				data->samplesperblock = G721_40_SAMPLES_PER_BLOCK ;
 				pstate->codec_bits = 5 ;
 				break ;
-				
+
 		default : return 1 ;
 		} ;
 
@@ -10498,12 +10498,12 @@ int g72x_writer_init (G72x_DATA *data, int codec)
 		} ;
 
 	memset (data, 0, sizeof (G72x_DATA)) ;
-	
+
 	pstate = (G72x_STATE*) data->sprivateo ;
 	private_init_state (pstate) ;
-		
+
 	pstate->decoder = NULL ;
-	
+
 	switch (codec)
 	{	case G723_16_BITS_PER_SAMPLE : /* 2 bits per sample. */
 				pstate->encoder = g723_16_encoder ;
@@ -10511,28 +10511,28 @@ int g72x_writer_init (G72x_DATA *data, int codec)
 				data->samplesperblock = G723_16_SAMPLES_PER_BLOCK ;
 				pstate->codec_bits = 2 ;
 				break ;
-				
-		case G723_24_BITS_PER_SAMPLE : /* 3 bits per sample. */ 
+
+		case G723_24_BITS_PER_SAMPLE : /* 3 bits per sample. */
 				pstate->encoder = g723_24_encoder ;
 				data->blocksize = G723_24_BYTES_PER_BLOCK ;
 				data->samplesperblock = G723_24_SAMPLES_PER_BLOCK ;
 				pstate->codec_bits = 3 ;
 				break ;
-				
+
 		case G721_32_BITS_PER_SAMPLE : /* 4 bits per sample. */
 				pstate->encoder = g721_encoder ;
 				data->blocksize = G721_32_BYTES_PER_BLOCK ;
 				data->samplesperblock = G721_32_SAMPLES_PER_BLOCK ;
 				pstate->codec_bits = 4 ;
 				break ;
-				
+
 		case G721_40_BITS_PER_SAMPLE : /* 5 bits per sample. */
 				pstate->encoder = g723_40_encoder ;
 				data->blocksize = G721_40_BYTES_PER_BLOCK ;
 				data->samplesperblock = G721_40_SAMPLES_PER_BLOCK ;
 				pstate->codec_bits = 5 ;
 				break ;
-				
+
 		default : return 1 ;
 		} ;
 
@@ -10543,9 +10543,9 @@ int unpack_bytes (G72x_DATA *data, int bits)
 {	unsigned int    in_buffer = 0 ;
 	unsigned char	in_byte ;
 	int				k, in_bits = 0, bindex = 0 ;
-	
+
 	for (k = 0 ; bindex <= data->blocksize && k < G72x_BLOCK_SIZE ; k++)
-	{	if (in_bits < bits) 
+	{	if (in_bits < bits)
 		{	in_byte = data->block [bindex++] ;
 
 			in_buffer |= (in_byte << in_bits);
@@ -10555,21 +10555,21 @@ int unpack_bytes (G72x_DATA *data, int bits)
 		in_buffer >>= bits;
 		in_bits -= bits;
 		} ;
-		
+
 	return k ;
 } /* unpack_bytes */
 
 int g72x_decode_block (G72x_DATA *data)
 {	G72x_STATE *pstate ;
 	int	k, count ;
-	
+
 	pstate = (G72x_STATE*) data->sprivateo ;
-	
+
 	count = unpack_bytes (data, pstate->codec_bits) ;
-	
+
 	for (k = 0 ; k < count ; k++)
 		data->samples [k] = pstate->decoder (data->samples [k], pstate) ;
-	
+
 	return 0 ;
 }	/* g72x_decode_block */
 
@@ -10582,7 +10582,7 @@ int pack_bytes (G72x_DATA *data, int bits)
 	for (k = 0 ; k < G72x_BLOCK_SIZE ; k++)
 	{	out_buffer |= (data->samples [k] << out_bits) ;
 		out_bits += bits ;
-		if (out_bits >= 8) 
+		if (out_bits >= 8)
 		{	out_byte = out_buffer & 0xFF ;
 			out_bits -= 8 ;
 			out_buffer >>= 8 ;
@@ -10598,12 +10598,12 @@ int g72x_encode_block (G72x_DATA *data)
 	int k, count ;
 
 	pstate = (G72x_STATE*) data->sprivateo ;
-	
+
 	for (k = 0 ; k < data->samplesperblock ; k++)
 		data->samples [k] = pstate->encoder (data->samples [k], pstate) ;
-	
+
 	count = pack_bytes (data, pstate->codec_bits) ;
-	
+
 	return count ;
 }	/* g72x_encode_block */
 
@@ -10937,13 +10937,13 @@ update(
 		state_ptr->ap += (0x200 - state_ptr->ap) >> 4;
 	else
 		state_ptr->ap += (-state_ptr->ap) >> 4;
-		
+
 	return ;
 } /* update */
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 6298dc75-fd0f-4062-9b90-f73ed69f22d4
@@ -11542,7 +11542,7 @@ gsm610_close	(SF_PRIVATE *psf)
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 8575187d-af4f-4acf-b9dd-6ff705628345
@@ -11567,7 +11567,7 @@ gsm gsm_create (void)
 
 	r = malloc (sizeof(struct gsm_state));
 	if (!r) return r;
-	
+
 	memset((char *)r, 0, sizeof (struct gsm_state));
 	r->nrp = 40;
 
@@ -11579,10 +11579,10 @@ void gsm_init (gsm state)
 {
 	memset (state, 0, sizeof (struct gsm_state)) ;
 	state->nrp = 40 ;
-} 
+}
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 9fedb6b3-ed99-40c2-aac1-484c536261fe
@@ -11791,7 +11791,7 @@ int gsm_decode (gsm s, gsm_byte * c, gsm_signal * target)
 			xmaxc[2] = sr & 0x3f;  sr >>= 6;
 			xmc[26] = sr & 0x7;  sr >>= 3;
 			xmc[27] = sr & 0x7;  sr >>= 3;
-			sr |= (uword)*c++ << 1;	
+			sr |= (uword)*c++ << 1;
 			xmc[28] = sr & 0x7;  sr >>= 3;
 			xmc[29] = sr & 0x7;  sr >>= 3;
 			xmc[30] = sr & 0x7;  sr >>= 3;
@@ -11808,7 +11808,7 @@ int gsm_decode (gsm s, gsm_byte * c, gsm_signal * target)
 			xmc[38] = sr & 0x7;  sr >>= 3;
 			sr = *c++;
 			Nc[3] = sr & 0x7f;  sr >>= 7;
-			sr |= (uword)*c++ << 1;		
+			sr |= (uword)*c++ << 1;
 			bc[3] = sr & 0x3;  sr >>= 2;
 			Mc[3] = sr & 0x3;  sr >>= 2;
 			sr |= (uword)*c++ << 5;
@@ -11946,7 +11946,7 @@ int gsm_decode (gsm s, gsm_byte * c, gsm_signal * target)
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 6a9b6628-821c-4a96-84c1-485ebd35f170
@@ -11975,7 +11975,7 @@ void gsm_destroy (gsm S)
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: f423d09b-6ccc-47e0-9b18-ee1cf7a8e473
@@ -12429,7 +12429,7 @@ void gsm_encode (gsm s, gsm_signal * source, gsm_byte * c)
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: cfe9c43d-d97c-4216-b5e5-ccd6a25b582b
@@ -12488,7 +12488,7 @@ int gsm_option (gsm r, int opt, int * val)
 
 	case GSM_OPT_WAV49:
 
-#ifdef WAV49 
+#ifdef WAV49
 		result = r->wav_fmt;
 		if (val) r->wav_fmt = !!*val;
 #endif
@@ -12501,7 +12501,7 @@ int gsm_option (gsm r, int opt, int * val)
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 963ff156-506f-4359-9145-371e9060b030
@@ -12724,7 +12724,7 @@ htk_read_header (SF_PRIVATE *psf)
 } /* htk_read_header */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: c350e972-082e-4c20-8934-03391a723560
@@ -13091,7 +13091,7 @@ count ++ ;
 
 		pima->block [blockindx] = (pima->samples [chan] >> 8) & 0xFF ;
 		pima->block [blockindx + 1] = (pima->samples [chan] & 0x80) + (pima->stepindx [chan] & 0x7F) ;
-		
+
 		pima->previous [chan] = pima->samples [chan] ;
 		} ;
 
@@ -13146,7 +13146,7 @@ count ++ ;
 
 if (0 && count ++ < 5)
 	printf ("chan: %d    blockindx: %3d    indx: %3d\n", chan, blockindx, indx) ;
-		
+
 			pima->block [blockindx] = pima->samples [indx] & 0x0F ;
 			pima->block [blockindx] |= (pima->samples [indx + pima->channels] << 4) & 0xF0 ;
 			} ;
@@ -13727,7 +13727,7 @@ ima_write_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 75a54b82-ad18-4758-9933-64e00a7f24e0
@@ -14029,7 +14029,7 @@ interleave_seek	(SF_PRIVATE *psf, int mode, sf_count_t samples_from_start)
 } /* interleave_seek */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 82314e13-0225-4408-a2f2-e6dab3f38904
@@ -14356,7 +14356,7 @@ get_encoding_str (int encoding)
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: f2714ab8-f286-4c94-9740-edaf673a1c71
@@ -14688,7 +14688,7 @@ static void Cut_Calculation_of_the_LTP_parameters (
 	else scal = 6 - temp;
 
 	assert(scal >= 0);
-	ltp_cut = (longword)SASR_W(dmax, scal) * st->ltp_cut / 100; 
+	ltp_cut = (longword)SASR_W(dmax, scal) * st->ltp_cut / 100;
 
 
 	/*  Initialization of a working array wt
@@ -14720,7 +14720,7 @@ static void Cut_Calculation_of_the_LTP_parameters (
 		register float	a = lp[-8], b = lp[-7], c = lp[-6],
 				d = lp[-5], e = lp[-4], f = lp[-3],
 				g = lp[-2], h = lp[-1];
-		register float  E; 
+		register float  E;
 		register float  S0 = 0, S1 = 0, S2 = 0, S3 = 0, S4 = 0,
 				S5 = 0, S6 = 0, S7 = 0, S8 = 0;
 
@@ -14886,7 +14886,7 @@ static void Calculation_of_the_LTP_parameters (
 		register float	a = lp[-8], b = lp[-7], c = lp[-6],
 				d = lp[-5], e = lp[-4], f = lp[-3],
 				g = lp[-2], h = lp[-1];
-		register float  E; 
+		register float  E;
 		register float  S0 = 0, S1 = 0, S2 = 0, S3 = 0, S4 = 0,
 				S5 = 0, S6 = 0, S7 = 0, S8 = 0;
 
@@ -15099,7 +15099,7 @@ static void Fast_Calculation_of_the_LTP_parameters (
 		register float	a = lp[-8], b = lp[-7], c = lp[-6],
 				d = lp[-5], e = lp[-4], f = lp[-3],
 				g = lp[-2], h = lp[-1];
-		register float  E; 
+		register float  E;
 		register float  S0 = 0, S1 = 0, S2 = 0, S3 = 0, S4 = 0,
 				S5 = 0, S6 = 0, S7 = 0, S8 = 0;
 
@@ -15216,7 +15216,7 @@ static void Long_term_analysis_filtering (
 	case 0:	long_termSTEP(  3277 ); break;
 	case 1:	long_termSTEP( 11469 ); break;
 	case 2: long_termSTEP( 21299 ); break;
-	case 3: long_termSTEP( 32767 ); break; 
+	case 3: long_termSTEP( 32767 ); break;
 	}
 }
 
@@ -15237,7 +15237,7 @@ void Gsm_Long_Term_Predictor (	/* 4x for 160 samples */
 	assert( dpp); assert( Nc ); assert( bc );
 
 #if defined(FAST) && defined(USE_FLOAT_MUL)
-	if (S->fast) 
+	if (S->fast)
 #if   defined (LTP_CUT)
 		if (S->ltp_cut)
 			Cut_Fast_Calculation_of_the_LTP_parameters(S,
@@ -15245,7 +15245,7 @@ void Gsm_Long_Term_Predictor (	/* 4x for 160 samples */
 		else
 #endif /* LTP_CUT */
 			Fast_Calculation_of_the_LTP_parameters(d, dp, bc, Nc );
-	else 
+	else
 #endif /* FAST & USE_FLOAT_MUL */
 #ifdef LTP_CUT
 		if (S->ltp_cut)
@@ -15285,7 +15285,7 @@ void Gsm_Long_Term_Synthesis_Filtering (
 	 */
 	brp = gsm_QLB[ bcr ];
 
-	/*  Computation of the reconstructed short term residual 
+	/*  Computation of the reconstructed short term residual
 	 *  signal drp[0..39]
 	 */
 	assert(brp != MIN_WORD);
@@ -15304,7 +15304,7 @@ void Gsm_Long_Term_Synthesis_Filtering (
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: b369b90d-0284-42a0-87b0-99a25bbd93ac
@@ -15374,7 +15374,7 @@ static void Autocorrelation (
 			float_s[k] = (float)	\
 				(s[k] = GSM_MULT_R(s[k], 16384 >> (n-1)));\
 		break;
-# else 
+# else
 #   define SCALE(n)	\
 	case n: for (k = 0; k <= 159; k++) \
 			s[k] = GSM_MULT_R( s[k], 16384 >> (n-1) );\
@@ -15438,13 +15438,13 @@ static void Autocorrelation (
 		lpcSTEP(5); lpcSTEP(6); lpcSTEP(7); lpcSTEP(8);
 	}
 
-	for (k = 9; k--; L_ACF[k] <<= 1) ; 
+	for (k = 9; k--; L_ACF[k] <<= 1) ;
 
 	}
 	/*   Rescaling of the array s[0..159]
 	 */
 	if (scalauto > 0) {
-		assert(scalauto <= 4); 
+		assert(scalauto <= 4);
 		for (k = 160; k--; *s++ <<= scalauto) ;
 	}
 }
@@ -15528,7 +15528,7 @@ static void Reflection_coefficients (
 		assert(*r >= 0);
 		if (P[1] > 0) *r = -*r;		/* r[n] = sub(0, r[n]) */
 		assert (*r != MIN_WORD);
-		if (n == 8) return; 
+		if (n == 8) return;
 
 		/*  Schur recursion
 		 */
@@ -15596,7 +15596,7 @@ static void Quantization_and_coding (
 
 	/*  This procedure needs four tables; the following equations
 	 *  give the optimum scaling for the constants:
-	 *  
+	 *
 	 *  A[0..7] = integer( real_A[0..7] * 1024 )
 	 *  B[0..7] = integer( real_B[0..7] *  512 )
 	 *  MAC[0..7] = maximum of the LARc[0..7]
@@ -15643,7 +15643,7 @@ void Gsm_LPC_Analysis (
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 63146664-a002-4e1e-8b7b-f0cc8a6a53da
@@ -15697,7 +15697,7 @@ macbinary3_open (SF_PRIVATE *psf)
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: c397a7d7-1a31-4349-9684-bd29ef06211e
@@ -15756,7 +15756,7 @@ macos_guess_file_type (SF_PRIVATE *psf, const char *filename)
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 5fbf66d7-9547-442a-9c73-92fd164f3a95
@@ -16144,7 +16144,7 @@ mat4_marker_to_str (int marker)
 } /* mat4_marker_to_str */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: f7e5f5d6-fc39-452e-bc4a-59627116ff59
@@ -16645,7 +16645,7 @@ mat5_read_header (SF_PRIVATE *psf)
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: dfdb6742-b2be-4be8-b390-d0c674e8bc8e
@@ -17473,7 +17473,7 @@ choose_predictor (unsigned int channels, short *data, int *block_pred, int *idel
 } /* choose_predictor */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: a98908a3-5305-4935-872b-77d6a86c330f
@@ -17823,7 +17823,7 @@ nist_write_header (SF_PRIVATE *psf, int calc_length)
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: b45ed85d-9e22-4ad9-b78c-4b58b67152a8
@@ -17943,7 +17943,7 @@ ogg_read_header (SF_PRIVATE *psf)
 #endif
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 9ff1fe9c-629e-4e9c-9ef5-3d0eb1e427a0
@@ -18785,7 +18785,7 @@ paf24_write_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 477a5308-451e-4bbd-bab4-fab6caa4e884
@@ -21767,7 +21767,7 @@ i2bet_array (int *src, tribyte *dest, int count)
 */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: d8bc7c0e-1e2f-4ff3-a28f-10ce1fbade3b
@@ -21784,7 +21784,7 @@ i2bet_array (int *src, tribyte *dest, int count)
 
 
 /*	4.2.0 .. 4.2.3	PREPROCESSING SECTION
- *  
+ *
  *  	After A-law to linear conversion (or directly from the
  *   	Ato D converter) the following scaling is assumed for
  * 	input to the RPE-LTP algorithm:
@@ -21795,7 +21795,7 @@ i2bet_array (int *src, tribyte *dest, int count)
  *	Where S is the sign bit, v a valid bit, and * a "don't care" bit.
  * 	The original signal is called sop[..]
  *
- *      out:   0.1................... 12 
+ *      out:   0.1................... 12
  *	     S.S.v.v.v.v.v.v.v.v.v.v.v.v.0.0
  */
 
@@ -21832,7 +21832,7 @@ void Gsm_Preprocess (
 
 
 	/*  4.2.2   Offset compensation
-	 * 
+	 *
 	 *  This part implements a high-pass filter and requires extended
 	 *  arithmetic precision for the recursive part of this filter.
 	 *  The input of this procedure is the array so[0...159] and the
@@ -21879,7 +21879,7 @@ void Gsm_Preprocess (
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: b760b0d9-3a05-4da3-9dc9-441ffb905d87
@@ -22076,7 +22076,7 @@ pvf_read_header (SF_PRIVATE *psf)
 } /* pvf_read_header */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 20a26761-8bc1-41d7-b1f3-9793bf3d9864
@@ -22182,7 +22182,7 @@ raw_open	(SF_PRIVATE *psf)
 } /* raw_open */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: f0066de7-d6ce-4f36-a1e0-e475c07d4e1a
@@ -22211,7 +22211,7 @@ static void Weighting_filter (
  *  The coefficients of the weighting filter are stored in a table
  *  (see table 4.4).  The following scaling is used:
  *
- *	H[0..10] = integer( real_H[ 0..10] * 8192 ); 
+ *	H[0..10] = integer( real_H[ 0..10] * 8192 );
  */
 {
 	/* word			wt[ 50 ]; */
@@ -22232,7 +22232,7 @@ static void Weighting_filter (
 	e -= 5;
 
 	/*  Compute the signal x[0..39]
-	 */ 
+	 */
 	for (k = 0; k <= 39; k++) {
 
 		L_result = 8192 >> 1;
@@ -22247,7 +22247,7 @@ static void Weighting_filter (
 #define	rpeSTEP( i, H )	(e[ k + i ] * (longword)H)
 
 		/*  Every one of these multiplications is done twice --
-		 *  but I don't see an elegant way to optimize this. 
+		 *  but I don't see an elegant way to optimize this.
 		 *  Do you?
 		 */
 
@@ -22265,16 +22265,16 @@ static void Weighting_filter (
 		L_result += rpeSTEP(	10, 	-134 ) ;
 #else
 		L_result +=
-		  rpeSTEP(	0, 	-134 ) 
-		+ rpeSTEP(	1, 	-374 ) 
+		  rpeSTEP(	0, 	-134 )
+		+ rpeSTEP(	1, 	-374 )
 	     /* + rpeSTEP(	2, 	0    )  */
-		+ rpeSTEP(	3, 	2054 ) 
-		+ rpeSTEP(	4, 	5741 ) 
-		+ rpeSTEP(	5, 	8192 ) 
-		+ rpeSTEP(	6, 	5741 ) 
-		+ rpeSTEP(	7, 	2054 ) 
+		+ rpeSTEP(	3, 	2054 )
+		+ rpeSTEP(	4, 	5741 )
+		+ rpeSTEP(	5, 	8192 )
+		+ rpeSTEP(	6, 	5741 )
+		+ rpeSTEP(	7, 	2054 )
 	     /* + rpeSTEP(	8, 	0    )  */
-		+ rpeSTEP(	9, 	-374 ) 
+		+ rpeSTEP(	9, 	-374 )
 		+ rpeSTEP(10, 	-134 )
 		;
 #endif
@@ -22298,7 +22298,7 @@ static void Weighting_filter (
 /* 4.2.14 */
 
 static void RPE_grid_selection (
-	word		* x,		/* [0..39]		IN  */ 
+	word		* x,		/* [0..39]		IN  */
 	word		* xM,		/* [0..12]		OUT */
 	word		* Mc_out	/*			OUT */
 )
@@ -22331,7 +22331,7 @@ static void RPE_grid_selection (
 	 *		L_temp   = GSM_L_MULT( temp1, temp1 );
 	 *		L_result = GSM_L_ADD( L_temp, L_result );
 	 *	}
-	 * 
+	 *
 	 *	if (L_result > EM) {
 	 *		Mc = m;
 	 *		EM = L_result;
@@ -22493,7 +22493,7 @@ static void APCM_quantization (
 	 *  can be calculated by using the expononent and the mantissa part of
 	 *  xmaxc (logarithmic table).
 	 *  So, this method avoids any division and uses only a scaling
-	 *  of the RPE samples by a function of the expononent.  A direct 
+	 *  of the RPE samples by a function of the expononent.  A direct
 	 *  multiplication by the inverse of the mantissa (NRFAC[0..7]
 	 *  found in table 4.5) gives the 3 bit coded version xMc[0..12]
 	 *  of the RPE samples.
@@ -22504,7 +22504,7 @@ static void APCM_quantization (
 	 */
 
 	assert( expon <= 4096 && expon >= -4096);
-	assert( mant >= 0 && mant <= 7 ); 
+	assert( mant >= 0 && mant <= 7 );
 
 	temp1 = 6 - expon;		/* normalization by the expononent */
 	temp2 = gsm_NRFAC[ mant ];  	/* inverse mantissa 		 */
@@ -22534,7 +22534,7 @@ static void APCM_inverse_quantization (
 	word		mant,
 	word		expon,
 	register word	* xMp)	/* [0..12]			OUT 	*/
-/* 
+/*
  *  This part is for decoding the RPE sequence of coded xMc[0..12]
  *  samples to obtain the xMp[0..12] array.  Table 4.6 is used to get
  *  the mantissa of xmaxc (FAC[0..7]).
@@ -22543,7 +22543,7 @@ static void APCM_inverse_quantization (
 	int	i;
 	word	temp, temp1, temp2, temp3;
 
-	assert( mant >= 0 && mant <= 7 ); 
+	assert( mant >= 0 && mant <= 7 );
 
 	temp1 = gsm_FAC[ mant ];	/* see 4.2-15 for mant */
 	temp2 = gsm_sub( 6, expon );	/* see 4.2-15 for exp  */
@@ -22620,7 +22620,7 @@ void Gsm_Update_of_reconstructed_short_time_residual_signal (
 {
 	int 		k;
 
-	for (k = 0; k <= 79; k++) 
+	for (k = 0; k <= 79; k++)
 		dp[ -120 + k ] = dp[ -80 + k ];
 
 	for (k = 0; k <= 39; k++)
@@ -22669,7 +22669,7 @@ void Gsm_RPE_Decoding (
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 82005b9e-1560-4e94-9ddb-00cb14867295
@@ -22991,7 +22991,7 @@ rx2_close	(SF_PRIVATE *psf)
 #endif
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 7366e813-9fee-4d1f-881e-e4a691469370
@@ -23178,7 +23178,7 @@ sd2_close	(SF_PRIVATE *psf)
 #endif
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 1ee183e5-6b9f-4c2c-bd0a-24f35595cefc
@@ -24361,7 +24361,7 @@ endswap_long_copy (long *dest, long *src, int len)
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 4cf6cc94-da4e-4ef5-aa4c-03dc6cd16810
@@ -24435,7 +24435,7 @@ static void Decoding_of_the_coded_Log_Area_Ratios (
 }
 
 /* 4.2.9 */
-/* Computation of the quantized reflection coefficients 
+/* Computation of the quantized reflection coefficients
  */
 
 /* 4.2.9.1  Interpolation of the LARpp[1..8] to get the LARp[1..8]
@@ -24785,7 +24785,7 @@ void Gsm_Short_Term_Synthesis_Filter (
 }
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 019ac7ba-c6dd-4540-abf0-8644b6c4a633
@@ -27412,7 +27412,7 @@ hexdump (void *data, int len)
 #endif
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 04393aa1-9389-46fe-baf2-58a7bd544fd6
@@ -27818,7 +27818,7 @@ svx_write_header (SF_PRIVATE *psf, int calc_length)
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: a80ab6fb-7d75-4d32-a6b0-0061a3f05d95
@@ -27872,7 +27872,7 @@ word gsm_QLB[4] = {  3277,    11469,	21299,	   32767	};
 word gsm_H[11] = {-134, -374, 0, 2054, 5741, 8192, 5741, 2054, 0, -374, -134 };
 
 
-/*   Table 4.5 	 Normalized inverse mantissa used to compute xM/xmax 
+/*   Table 4.5 	 Normalized inverse mantissa used to compute xM/xmax
  */
 /* i		 	0        1    2      3      4      5     6      7   */
 word gsm_NRFAC[8] = { 29128, 26215, 23832, 21846, 20165, 18725, 17476, 16384 };
@@ -27884,7 +27884,7 @@ word gsm_NRFAC[8] = { 29128, 26215, 23832, 21846, 20165, 18725, 17476, 16384 };
 word gsm_FAC[8]	= { 18431, 20479, 22527, 24575, 26623, 28671, 30719, 32767 };
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 8957c531-e6b0-4097-9202-da7ca42729ca
@@ -28259,7 +28259,7 @@ txw_seek (SF_PRIVATE *psf, int mode, sf_count_t offset)
 #endif
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 4d0ba7af-b1c5-46b4-a900-7c6f59fd9a89
@@ -29309,7 +29309,7 @@ d2ulaw_array	(double *ptr, unsigned int count, unsigned char *buffer, double nor
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 655cc790-f058-45e8-89c9-86967cccc37e
@@ -30183,7 +30183,7 @@ BLOCK 9 - data block that supersedes blocks 1 and 8.
 ------------------------------------------------------------------------*/
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 40a50167-a81c-463a-9e1d-3282ff84e09d
@@ -30715,7 +30715,7 @@ vox_write_d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: e15e97fe-ff9d-4b46-a489-7059fb2d0b1e
@@ -33143,7 +33143,7 @@ wve_read_header (SF_PRIVATE *psf)
 #endif
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: ba368cb5-523f-45e4-98c1-5b99a102f73f
@@ -34316,7 +34316,7 @@ d2dles_array (XI_PRIVATE *pxi, double *src, short *dest, int count, double normf
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 1ab2dbe0-29af-4d80-9c6f-cb21b67521bc

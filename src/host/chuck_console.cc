@@ -72,7 +72,7 @@ t_CKBOOL Chuck_Console::next_command( const string & prompt, string & out )
 
     // read the next line
     line_read = io_readline( prompt.c_str() );
-    
+
     // check to see if EOF encountered
     // do we need more return codes to differentiate between
     // EOF encountered vs. empty line?
@@ -91,7 +91,7 @@ t_CKBOOL Chuck_Console::next_command( const string & prompt, string & out )
 
     // free the thing
     free( line_read );
-    
+
     return TRUE;
 }
 

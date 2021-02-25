@@ -154,7 +154,7 @@ void ChuckAudio::probe()
     RtAudio * audio = NULL;
     // device info struct
     RtAudio::DeviceInfo info;
-    
+
     // allocate RtAudio
     try { audio = new RtAudio( ); }
     catch( RtAudioError err )
@@ -170,7 +170,7 @@ void ChuckAudio::probe()
 
     // reset -- what does this do
     EM_reset_msg();
-    
+
     // loop over devices
     for( int i = 0; i < devices; i++ )
     {
@@ -180,13 +180,13 @@ void ChuckAudio::probe()
             error.printMessage();
             break;
         }
-        
+
         // print
         EM_error2b( 0, "------( audio device: %d )---------------", i+1 );
         print( info );
         // skip
         if( i < devices ) EM_error2( 0, "" );
-        
+
         // reset
         EM_reset_msg();
     }
@@ -212,7 +212,7 @@ t_CKUINT ChuckAudio::device_named( const std::string & name, t_CKBOOL needs_dac,
     RtAudio * audio = NULL;
     // device info struct
     RtAudio::DeviceInfo info;
-    
+
     // allocate RtAudio
     try { audio = new RtAudio(); }
     catch( RtAudioError err )
@@ -221,11 +221,11 @@ t_CKUINT ChuckAudio::device_named( const std::string & name, t_CKBOOL needs_dac,
         EM_error2b( 0, "%s", err.getMessage().c_str() );
         return -1;
     }
-    
-    // get count    
+
+    // get count
     int devices = audio->getDeviceCount();
     int device_no = -1;
-    
+
     // loop
     for( int i = 0; i < devices; i++ )
     {
@@ -245,7 +245,7 @@ t_CKUINT ChuckAudio::device_named( const std::string & name, t_CKBOOL needs_dac,
             break;
         }
     }
-    
+
     // not found, yet
     if( device_no == -1 )
     {
@@ -258,7 +258,7 @@ t_CKUINT ChuckAudio::device_named( const std::string & name, t_CKBOOL needs_dac,
                 error.printMessage();
                 break;
             }
-            
+
             if( info.name.find(name) != std::string::npos )
             {
                 // skip over ones with 0 channels, if needed
@@ -274,7 +274,7 @@ t_CKUINT ChuckAudio::device_named( const std::string & name, t_CKBOOL needs_dac,
 
     // clean up
     SAFE_DELETE( audio );
-    
+
     // done
     return device_no;
 }
@@ -377,11 +377,11 @@ static unsigned int __stdcall watch_dog( void * )
                 g_watchdog_state = FALSE;
             }
         }
-        
+
         // advance time
         usleep( 40000 );
     }
-    
+
     // log
     EM_log( CK_LOG_SEVERE, "stopping real-time watch dog process..." );
 
@@ -407,7 +407,7 @@ t_CKBOOL ChuckAudio::watchdog_start()
     g_watchdog_thread = new XThread;
     // start it
     g_watchdog_thread->start( watch_dog, NULL );
-    
+
     return TRUE;
 }
 
@@ -430,7 +430,7 @@ t_CKBOOL ChuckAudio::watchdog_stop()
     usleep( 100000 );
     // delete watchdog thread | TODO: is this safe?
     SAFE_DELETE( g_watchdog_thread );
-    
+
     return TRUE;
 }
 
@@ -461,7 +461,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
     m_start = 0;
     m_go = 0;
     m_silent = 0;
-    
+
     // remember callback
     m_audio_cb = callback;
     // remember user data to pass to callback
@@ -483,7 +483,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
         EM_error2( 0, "%s", err.getMessage().c_str() );
         return m_init = FALSE;
     }
-        
+
     // convert 1-based ordinal to 0-based ordinal (added 1.3.0.0)
     // note: this is to preserve previous devices numbering after RtAudio change
     if( m_num_channels_out > 0 )
@@ -503,7 +503,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
 
         // get device info
         RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo(m_dac_n);
-        
+
         // ensure correct channel count if default device is requested
         if( useDefault )
         {
@@ -522,7 +522,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
                         break;
                     }
                 }
-                
+
                 // check for error
                 if( m_dac_n == -1 )
                 {
@@ -564,7 +564,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
                 diffToNextHighest = diff;
             }
         }
-            
+
         // see if we found exact match (added 1.3.1.2)
         if( closestDiff != 0 )
         {
@@ -600,7 +600,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
             }
         }
     }
-        
+
     // convert 1-based ordinal to 0-based ordinal
     if( m_num_channels_in > 0 )
     {
@@ -609,10 +609,10 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
         {
             // get default input device
             m_adc_n = m_rtaudio->getDefaultInputDevice();
-            
+
             // ensure correct channel count if default device is requested
             RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo(m_adc_n);
-            
+
             // check if input channels > 0
             if( device_info.inputChannels < m_num_channels_in )
             {
@@ -708,18 +708,18 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
         output_parameters.deviceId = m_dac_n;
         output_parameters.nChannels = m_num_channels_out;
         output_parameters.firstChannel = 0;
-        
+
         RtAudio::StreamParameters input_parameters;
         input_parameters.deviceId = m_adc_n;
         input_parameters.nChannels = m_expand_in_mono2stereo ? 1 : m_num_channels_in;
         input_parameters.firstChannel = 0;
-        
+
         RtAudio::StreamOptions stream_options;
         stream_options.flags = 0;
         stream_options.numberOfBuffers = num_buffers;
         stream_options.streamName = "ChucK";
         stream_options.priority = 0;
-            
+
         // open RtAudio
         m_rtaudio->openStream(
             m_num_channels_out > 0 ? &output_parameters : NULL,
@@ -734,7 +734,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
         SAFE_DELETE( m_rtaudio );
         return m_init = FALSE;
     }
-        
+
     // check bufsize
     if( bufsize != (int)m_buffer_size )
     {
@@ -773,7 +773,7 @@ int ChuckAudio::cb( void * output_buffer, void * input_buffer, unsigned int buff
 {
     // length, in bytes of output
     t_CKUINT len = buffer_size * sizeof(SAMPLE) * m_num_channels_out;
-    
+
     // priority boost
     if( !m_go && XThreadUtil::our_priority != 0x7fffffff )
     {
@@ -895,7 +895,7 @@ t_CKBOOL ChuckAudio::stop( )
     {
         return FALSE;
     }
-    
+
     // REFACTOR-2017: set end flag
     m_silent = TRUE;
 

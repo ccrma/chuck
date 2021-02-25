@@ -1,21 +1,21 @@
 /*----------------------------------------------------------------------------
  ChucK Concurrent, On-the-fly Audio Programming Language
  Compiler and Virtual Machine
- 
+
  Copyright (c) 2003 Ge Wang and Perry R. Cook.  All rights reserved.
  http://chuck.stanford.edu/
  http://chuck.cs.princeton.edu/
- 
+
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
  (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -126,7 +126,7 @@ int chuck_main( int argc, const char ** argv )
 
     // clean up
     global_cleanup();
-    
+
     return 0;
 }
 
@@ -141,7 +141,7 @@ void cb( t_CKSAMPLE * in, t_CKSAMPLE * out, t_CKUINT numFrames,
         t_CKUINT numInChans, t_CKUINT numOutChans, void * data )
 {
     // TODO: check channel numbers
-    
+
     // call up to ChucK
     the_chuck->run( in, out, numFrames );
 }
@@ -157,10 +157,10 @@ static void version()
 {
     CK_FPRINTF_STDERR( "\n" );
     CK_FPRINTF_STDERR( "chuck version: %s\n", ChucK::version() );
-    
+
     // platform string
     string platform = "";
-    
+
 #if defined(__PLATFORM_WIN32__)
     platform = "microsoft win32";
 #elif defined(__WINDOWS_DS__)
@@ -182,7 +182,7 @@ static void version()
 #else
     platform = "uh... unknown";
 #endif
-    
+
     CK_FPRINTF_STDERR( "   %s : %ld-bit\n", platform.c_str(), machine_intsize() );
     CK_FPRINTF_STDERR( "   http://chuck.cs.princeton.edu/\n" );
     CK_FPRINTF_STDERR( "   http://chuck.stanford.edu/\n\n" );
@@ -222,15 +222,15 @@ t_CKBOOL get_count( const char * arg, t_CKUINT * out )
     if( !strncmp( arg, "--", 2 ) ) arg += 2;
     else if( !strncmp( arg, "-", 1 ) ) arg += 1;
     else return FALSE;
-    
+
     // end of string
     if( *arg == '\0' ) return FALSE;
     // not digit
     if( *arg < '0' || *arg > '9' ) return FALSE;
-    
+
     // number
     *out = (t_CKUINT)atoi( arg );
-    
+
     return TRUE;
 }
 
@@ -286,7 +286,7 @@ void global_cleanup()
     // REFACTOR-2017: TODO; RESOLVED: used to be all_detach()
     // need to call this before deleting the_chuck/the VM
     ChucK::globalCleanup();
-    
+
     // delete the chuck
     SAFE_DELETE( the_chuck );
 
@@ -339,14 +339,14 @@ t_CKBOOL init_shell( Chuck_Shell * shell, Chuck_Shell_UI * ui, Chuck_VM * vm )
         CK_FPRINTF_STDERR( "[chuck]: error starting shell UI...\n" );
         return FALSE;
     }
-    
+
     // initialize
     if( !shell->init( vm, ui ) )
     {
         CK_FPRINTF_STDERR( "[chuck]: error starting shell...\n" );
         return FALSE;
     }
-    
+
     return TRUE;
 }
 
@@ -362,23 +362,23 @@ void * shell_cb( void * p )
     Chuck_Shell * shell;
     // log
     EM_log( CK_LOG_INFO, "starting thread routine for shell..." );
-    
+
     // assuming this is absolutely necessary, an assert may be better
     assert( p != NULL );
-    
+
     shell = ( Chuck_Shell * ) p;
-    
+
     //atexit( wait_for_shell );
-    
+
     // run the shell
     shell->run();
-    
+
     // delete and set to NULL
     SAFE_DELETE( g_shell );
     // perhaps let shell destructor clean up mode and ui?
-    
+
     EM_log( CK_LOG_INFO, "exiting thread routine for shell..." );
-    
+
     return NULL;
 }
 
@@ -421,7 +421,7 @@ bool go( int argc, const char ** argv )
     t_CKBOOL update_otf_vm = TRUE;
     string   filename = "";
     vector<string> args;
-    
+
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path;
     // initial chug-in path (added 1.3.0.0)
@@ -441,7 +441,7 @@ bool go( int argc, const char ** argv )
     parse_path_list( initial_chugin_path, dl_search_path );
     // list of individually named chug-ins (added 1.3.0.0)
     std::list<std::string> named_dls;
-    
+
 #if defined(__DISABLE_WATCHDOG__)
     do_watchdog = FALSE;
 #elif defined(__MACOSX_CORE__)
@@ -451,20 +451,20 @@ bool go( int argc, const char ** argv )
 #else
     do_watchdog = FALSE;
 #endif
-    
+
     t_CKUINT files = 0;
     t_CKUINT count = 1;
     t_CKINT i;
-    
+
     // set log level
     EM_setlog( log_level );
-    
+
     // add myself to the list of Chuck_Systems that might need to be cleaned up
     // g_systems.push_back( this );
-    
-    
+
+
     //------------------------- COMMAND LINE ARGUMENTS -----------------------------
-    
+
     // parse command line args
     for( i = 1; i < argc; i++ )
     {
@@ -527,7 +527,7 @@ bool go( int argc, const char ** argv )
                 const char * str = argv[i]+6;
                 char * endptr = NULL;
                 long dev = strtol(str, &endptr, 10);
-                
+
                 // check if arg was a number (added 1.3.0.0)
                 if( endptr != NULL && *endptr == '\0' )
                 {
@@ -557,7 +557,7 @@ bool go( int argc, const char ** argv )
                 const char * str = argv[i]+6;
                 char * endptr = NULL;
                 long dev = strtol(str, &endptr, 10);
-                
+
                 // check if arg was a number (added 1.3.0.0)
                 if( endptr != NULL && *endptr == '\0' )
                 {
@@ -721,14 +721,14 @@ bool go( int argc, const char ** argv )
                 int is_otf = FALSE;
                 // log level
                 EM_setlog( log_level );
-                
+
                 // do it
                 if( otf_send_cmd( argc, argv, i, g_otf_dest, g_otf_port, &is_otf ) )
                     exit( 0 );
-                
+
                 // is otf
                 if( is_otf ) exit( 1 );
-                
+
                 // done
                 CK_FPRINTF_STDERR( "[chuck]: invalid flag '%s'\n", argv[i] );
                 usage();
@@ -741,15 +741,15 @@ bool go( int argc, const char ** argv )
             files++;
         }
     }
-    
+
     // log level
     EM_setlog( log_level );
-    
+
     // probe
     if( probe )
     {
         ChuckAudio::probe();
-        
+
 #ifndef __DISABLE_MIDI__
         EM_error2b( 0, "" );
         probeMidiIn();
@@ -757,16 +757,16 @@ bool go( int argc, const char ** argv )
         probeMidiOut();
         EM_error2b( 0, "" );
 #endif  // __DISABLE_MIDI__
-        
+
         HidInManager::probeHidIn();
-        
+
         // exit
         exit( 0 );
     }
-    
+
     // set caution to wind
     ChucK::enableSystemCall = g_enable_system_cmd;
-    
+
     // check buffer size
     buffer_size = ensurepow2( buffer_size );
     // check mode and blocking
@@ -780,13 +780,13 @@ bool go( int argc, const char ** argv )
     g_do_watchdog = do_watchdog;
     // set adaptive size
     if( adaptive_size < 0 ) adaptive_size = buffer_size;
-    
+
     if( !files && vm_halt && !g_enable_shell )
     {
         CK_FPRINTF_STDERR( "[chuck]: no input files... (try --help)\n" );
         exit( 1 );
     }
-    
+
     // shell initialization without vm
     if( g_enable_shell && no_vm )
     {
@@ -802,14 +802,14 @@ bool go( int argc, const char ** argv )
         // done
         exit( 0 );
     }
-    
+
     // make sure vm
     if( no_vm )
     {
         CK_FPRINTF_STDERR( "[chuck]: '--empty' can only be used with shell...\n" );
         exit( 1 );
     }
-    
+
     // find dac_name if appropriate (added 1.3.0.0)
     if( dac_name.size() > 0 )
     {
@@ -826,7 +826,7 @@ bool go( int argc, const char ** argv )
             exit( 1 );
         }
     }
-    
+
     // find adc_name if appropriate (added 1.3.0.0)
     if( adc_name.size() > 0 )
     {
@@ -843,11 +843,11 @@ bool go( int argc, const char ** argv )
             exit( 1 );
         }
     }
-    
+
     //------------------------- VIRTUAL MACHINE SETUP -----------------------------
     // instantiate ChucK
     the_chuck = new ChucK();
-    
+
     // set params
     the_chuck->setParam( CHUCK_PARAM_SAMPLE_RATE, srate );
     the_chuck->setParam( CHUCK_PARAM_INPUT_CHANNELS, adc_chans );
@@ -864,14 +864,14 @@ bool go( int argc, const char ** argv )
     // set hint, so internally can advise things like async data writes etc.
     the_chuck->setParam( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO, g_enable_realtime_audio );
     the_chuck->setLogLevel( log_level );
-    
+
     // initialize
     if( !the_chuck->init() )
     {
         CK_FPRINTF_STDERR( "[chuck]: failed to initialize...\n" );
         exit( 1 );
     }
-    
+
     //--------------------------- AUDIO I/O SETUP ---------------------------------
     // log
     EM_log( CK_LOG_SYSTEM, "initializing audio I/O..." );
@@ -879,7 +879,7 @@ bool go( int argc, const char ** argv )
     EM_pushlog();
     // log
     EM_log( CK_LOG_SYSTEM, "probing '%s' audio subsystem...", g_enable_realtime_audio ? "real-time" : "fake-time" );
-    
+
     // initialize audio system
     if( g_enable_realtime_audio )
     {
@@ -899,7 +899,7 @@ bool go( int argc, const char ** argv )
             exit( 1 );
         }
     }
-    
+
     // log
     EM_log( CK_LOG_SYSTEM, "real-time audio: %s", g_enable_realtime_audio ? "YES" : "NO" );
     EM_log( CK_LOG_SYSTEM, "mode: %s", block ? "BLOCKING" : "CALLBACK" );
@@ -912,7 +912,7 @@ bool go( int argc, const char ** argv )
         EM_log( CK_LOG_SYSTEM, "adaptive block processing: %ld", adaptive_size > 1 ? adaptive_size : 0 );
     }
     EM_log( CK_LOG_SYSTEM, "channels in: %ld out: %ld", adc_chans, dac_chans );
-    
+
     // pop
     EM_poplog();
 
@@ -920,14 +920,14 @@ bool go( int argc, const char ** argv )
     // pre-load hid
     if( load_hid ) HidInManager::init();
 #endif // __ALTER_HID__
-    
+
     // catch SIGINT
     signal( SIGINT, signal_int );
 #ifndef __PLATFORM_WIN32__
     // catch SIGPIPE
     signal( SIGPIPE, signal_pipe );
 #endif
-    
+
     // shell initialization
     if( g_enable_shell )
     {
@@ -940,15 +940,15 @@ bool go( int argc, const char ** argv )
 
     // reset count
     count = 1;
-    
+
     // log
     EM_log( CK_LOG_SEVERE, "starting compilation..." );
     // push indent
     EM_pushlog();
-    
-    
+
+
     //------------------------- SOURCE COMPILATION --------------------------------
-    
+
     // loop through and process each file
     for( i = 1; i < argc; i++ )
     {
@@ -961,17 +961,17 @@ bool go( int argc, const char ** argv )
                 the_chuck->compiler()->emitter->dump = FALSE;
             else
                 get_count( argv[i], &count );
-            
+
             continue;
         }
-        
+
         // compile it!
         the_chuck->compileFile( argv[i], "", count );
-        
+
         // reset count
         count = 1;
     }
-    
+
     // pop indent
     EM_poplog();
     
@@ -989,10 +989,10 @@ bool go( int argc, const char ** argv )
             exit( 1 );
         }
     }
-    
-    
+
+
     //----------------------- SHELL SETUP -----------------------------
-    
+
     // start shell on separate thread | REFACTOR-2017: per-VM?!?
     if( g_enable_shell )
     {
@@ -1002,35 +1002,35 @@ bool go( int argc, const char ** argv )
         g_tid_shell = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)shell_cb, g_shell, 0, 0 );
 #endif
     }
-    
+
     //-------------------------- MAIN CHUCK LOOP!!! -----------------------------
-    
+
     // log
     EM_log( CK_LOG_SYSTEM, "running main loop..." );
     // push indent
     EM_pushlog();
-    
+
     // start it!
     the_chuck->start();
-    
+
     // log
     EM_log( CK_LOG_SEVERE, "virtual machine running..." );
     // pop indent
     EM_poplog();
-    
+
     // silent mode buffers
     SAMPLE * input = new SAMPLE[buffer_size*adc_chans];
     SAMPLE * output = new SAMPLE[buffer_size*dac_chans];
     // zero out
     memset( input, 0, sizeof(SAMPLE)*buffer_size*adc_chans );
     memset( output, 0, sizeof(SAMPLE)*buffer_size*dac_chans );
-    
+
     // start audio
     if( g_enable_realtime_audio )
     {
         ChuckAudio::start();
     }
-    
+
     // wait
     while( the_chuck->vm()->running() )
     {
