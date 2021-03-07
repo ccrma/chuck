@@ -1,7 +1,8 @@
 # uncomment the following to force 32-bit compilation
 # FORCE_M32=-m32
 
-ifneq ($(shell sw_vers -productVersion | egrep '10\.(6|7|8|9|10|11|12|13|14|15)(\.[0-9]+)?'),)
+# the sw_vers trick only works after 10.6
+ifneq ($(shell sw_vers -productVersion | egrep '^1[1-2]|^10\.(6|7|8|9|10|11|12|13|14|15)(\.[0-9]+)?'),)
 SDK=$(shell xcodebuild -sdk macosx -version | grep '^Path:' | sed 's/Path: \(.*\)/\1/')
 ISYSROOT=-isysroot $(SDK)
 LINK_EXTRAS=-F/System/Library/PrivateFrameworks \
