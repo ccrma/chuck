@@ -130,6 +130,7 @@ public:
 public:
     // get VM (dangerous)
     Chuck_VM * vm() { return m_carrier->vm; }
+    bool vmrunning() { return m_carrier->vm && m_carrier->vm->running(); }
     // get compiler (dangerous)
     Chuck_Compiler * compiler() { return m_carrier->compiler; }
 
