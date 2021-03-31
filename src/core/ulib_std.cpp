@@ -667,6 +667,7 @@ CK_DLL_SFUN( system_impl )
 {
     const char * cmd = GET_CK_STRING(ARGS)->str().c_str();
 
+#ifndef __CHIP_MODE__
     // check globals for permission
     if( !ChucK::enableSystemCall )
     {
@@ -684,6 +685,12 @@ CK_DLL_SFUN( system_impl )
         EM_poplog();
         RETURN->v_int = system( cmd );
     }
+#else
+    CK_FPRINTF_STDERR( "[chuck]:error: VM not authorized to call Std.system( string )...\n" );
+    CK_FPRINTF_STDERR( "[chuck]:  (command string was: \"%s\")\n", cmd );
+    CK_FPRINTF_STDERR( "[chuck]:  (note: Std.system() disabled on iOS)\n" );
+    RETURN->v_int = 0;
+#endif
 }
 
 // aoti
