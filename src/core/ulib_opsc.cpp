@@ -39,7 +39,11 @@
 #define ULIB_OPSC_CPP 
 #endif
 
+#ifdef __UNITY_FLAT__
+#include "lo.h"
+#else
 #include "lo/lo.h"
+#endif
 
 #include "ulib_opsc.h"
 #include "chuck_type.h"
