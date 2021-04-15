@@ -2074,8 +2074,32 @@ void Chuck_Event::global_listen( void (* cb)(void),
     Chuck_Global_Event_Listener new_listener;
     
     // store cb and whether to listen until canceled
-    new_listener.callback = cb;
+    new_listener.void_callback = cb;
     new_listener.listen_forever = listen_forever;
+    new_listener.named = false;
+    
+    // store storage
+    m_global_queue.push( new_listener );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: global_listen()
+// desc: register a callback to a global event
+//-----------------------------------------------------------------------------
+void Chuck_Event::global_listen( std::string name, void (* cb)(const char *),
+    t_CKBOOL listen_forever )
+{
+    // storage
+    Chuck_Global_Event_Listener new_listener;
+    
+    // store cb and whether to listen until canceled
+    new_listener.named_callback = cb;
+    new_listener.listen_forever = listen_forever;
+    new_listener.named = true;
+    new_listener.name = name;
     
     // store storage
     m_global_queue.push( new_listener );
@@ -2101,7 +2125,52 @@ t_CKBOOL Chuck_Event::remove_listen( void (* cb)(void) )
     while( !m_global_queue.empty() )
     {
         // check if the callback we are looking for
-        if( m_global_queue.front().callback != cb )
+        if( m_global_queue.front().named || m_global_queue.front().void_callback != cb )
+        {
+            // if not, enqueue it into temp
+            temp.push( m_global_queue.front() );
+        }
+        else
+        {
+            // flag, don't add to temp
+            removed = TRUE;
+        }
+
+        // pop the top
+        m_global_queue.pop();
+    }
+
+    // copy temp back to queue
+    m_global_queue = temp;
+    // release lock
+    #ifndef __DISABLE_THREADS__
+    m_queue_lock.release();
+    #endif
+
+    return removed;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: remove_listen()
+// desc: deregister a callback to a global event
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Event::remove_listen( std::string name, void (* cb)(const char *)  )
+{
+    std::queue<Chuck_Global_Event_Listener> temp;
+    t_CKBOOL removed = FALSE;
+
+    // lock
+    #ifndef __DISABLE_THREADS__
+    m_queue_lock.acquire();
+    #endif
+    // while something in queue
+    while( !m_global_queue.empty() )
+    {
+        // check if the callback we are looking for
+        if( !m_global_queue.front().named || m_global_queue.front().named_callback != cb )
         {
             // if not, enqueue it into temp
             temp.push( m_global_queue.front() );
@@ -2146,9 +2215,13 @@ void Chuck_Event::signal_global()
         // pop the top
         m_global_queue.pop();
         // call callback
-        if( listener.callback != NULL )
+        if( !listener.named && listener.void_callback != NULL )
         {
-            listener.callback();
+            listener.void_callback();
+        }
+        else if( listener.named && listener.named_callback != NULL )
+        {
+            listener.named_callback( listener.name.c_str() );
         }
         // if call forever, add back to m_global_queue
         if( listener.listen_forever )
@@ -2183,9 +2256,13 @@ void Chuck_Event::broadcast_global()
         // pop the top
         m_global_queue.pop();
         // call callback
-        if( listener.callback != NULL )
+        if( !listener.named && listener.void_callback != NULL )
         {
-            listener.callback();
+            listener.void_callback();
+        }
+        else if( listener.named && listener.named_callback != NULL )
+        {
+            listener.named_callback( listener.name.c_str() );
         }
         // if call forever, add back to m_global_queue
         if( listener.listen_forever )

@@ -429,9 +429,15 @@ public:
 //-----------------------------------------------------------------------------
 struct Chuck_Global_Event_Listener
 {
-    void (* callback)(void);
+    union {
+        void (* void_callback)(void);
+        void (* named_callback)(const char *);
+
+    };
     t_CKBOOL listen_forever;
-    Chuck_Global_Event_Listener() : callback(NULL), listen_forever(FALSE) {};
+    t_CKBOOL named;
+    std::string name;
+    Chuck_Global_Event_Listener() : void_callback(NULL), listen_forever(FALSE), named(FALSE), name("") {};
 };
 
 
@@ -451,7 +457,9 @@ public:
     void signal_global();
     void broadcast_global();
     void global_listen( void (* cb)(void), t_CKBOOL listen_forever );
+    void global_listen( std::string name, void (* cb)(const char *), t_CKBOOL listen_forever );
     t_CKBOOL remove_listen( void (* cb)(void) );
+    t_CKBOOL remove_listen( std::string name, void (* cb)(const char *) );
 
 public: // internal
     // added 1.3.0.0: queue_broadcast now takes event_buffer
