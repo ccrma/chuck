@@ -47,12 +47,13 @@
 #define t_CKSINGLE                  float
 #ifdef _WIN64                       // REFACTOR-2017
 #define t_CKINT                     long long // REFACTOR-2017
+#define CK_INT_MAX                  LLONG_MAX
 #else
 #define t_CKINT                     long
-#define CK_FLT_MAX                  DBL_MAX
-#define CK_FLT_MIN                  DBL_MIN
 #define CK_INT_MAX                  LONG_MAX
 #endif
+#define CK_FLT_MAX                  DBL_MAX
+#define CK_FLT_MIN                  DBL_MIN
 
 #else
 #define t_CKTIME                    double
