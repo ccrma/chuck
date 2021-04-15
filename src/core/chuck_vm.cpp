@@ -3257,6 +3257,19 @@ void Chuck_VM::handle_global_queue_messages()
                 delete message.getIntRequest;
                 break;
 
+            case get_named_global_int_request:
+                // ensure fp is not null
+                if( message.getNamedIntRequest->fp != NULL )
+                {
+                    // ensure the value exists
+                    init_global_int( message.getNamedIntRequest->name );
+                    // call the callback with the value
+                    message.getNamedIntRequest->fp( message.getNamedIntRequest->name.c_str(), m_global_ints[message.getNamedIntRequest->name]->val );
+                }
+                // clean up request storage
+                delete message.getNamedIntRequest;
+                break;
+
             case set_global_float_request:
                 // ensure the container exists
                 init_global_float( message.setFloatRequest->name );
@@ -3279,6 +3292,19 @@ void Chuck_VM::handle_global_queue_messages()
                 delete message.getFloatRequest;
                 break;
 
+            case get_named_global_float_request:
+                // ensure fp is not null
+                if( message.getNamedFloatRequest->fp != NULL )
+                {
+                    // ensure value exists
+                    init_global_float( message.getNamedFloatRequest->name );
+                    // call callback with float
+                    message.getNamedFloatRequest->fp( message.getNamedFloatRequest->name.c_str(), m_global_floats[message.getNamedFloatRequest->name]->val );
+                }
+                // clean up request storage
+                delete message.getNamedFloatRequest;
+                break;
+
             case set_global_string_request:
                 // ensure the container exists
                 init_global_string( message.setStringRequest->name );
@@ -3299,6 +3325,19 @@ void Chuck_VM::handle_global_queue_messages()
                 }
                 // clean up request storage
                 delete message.getStringRequest;
+                break;
+
+            case get_named_global_string_request:
+                // ensure fp is not null
+                if( message.getNamedStringRequest->fp != NULL )
+                {
+                    // ensure value exists
+                    init_global_string( message.getNamedStringRequest->name );
+                    // call callback with string
+                    message.getNamedStringRequest->fp( message.getNamedStringRequest->name.c_str(), m_global_strings[message.getNamedStringRequest->name]->val->c_str() );
+                }
+                // clean up request storage
+                delete message.getNamedStringRequest;
                 break;
 
             case signal_global_event_request:
@@ -3380,6 +3419,50 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.listenForEventRequest;
                 }
                 break;
+
+            case listen_for_named_global_event_request:
+                // ensure callback is not null
+                if( message.listenForNamedEventRequest->callback != NULL )
+                {
+                    // ensure it exists
+                    if( m_global_events.count( message.listenForNamedEventRequest->name ) > 0 )
+                    {
+                        // get event
+                        Chuck_Event * event = get_global_event( message.listenForNamedEventRequest->name );
+                        if( message.listenForNamedEventRequest->deregister )
+                        {
+                            // deregister
+                            event->remove_listen( message.listenForNamedEventRequest->name, message.listenForNamedEventRequest->callback );
+                        }
+                        else
+                        {
+                            // register
+                            event->global_listen( message.listenForNamedEventRequest->name, 
+                                message.listenForNamedEventRequest->callback,
+                                message.listenForNamedEventRequest->listen_forever );
+                        }
+                    }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
+                }
+                // clean up request storage
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.listenForNamedEventRequest;
+                }
+                break;
+
+
             case set_global_int_array_request:
                 {
                     // replace an entire array, if it exists
@@ -3424,6 +3507,7 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.setIntArrayRequest;
                 }
                 break;
+
             case get_global_int_array_request:
                 {
                     // fetch an entire array, if it exists
@@ -3465,6 +3549,50 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.getIntArrayRequest;
                 }
                 break;
+
+            case get_named_global_int_array_request:
+                {
+                    // fetch an entire array, if it exists
+                    Chuck_Get_Named_Global_Int_Array_Request * request =
+                        message.getNamedIntArrayRequest;
+                    if( m_global_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_global_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_global_arrays[request->name]->array_type == te_globalInt &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            // TODO: why is m_vector a vector of unsigned ints...??
+                            request->callback(
+                                request->name.c_str(),
+                                (t_CKINT *) &(intArray->m_vector[0]),
+                                intArray->size()
+                            );
+                        }
+                    }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.getNamedIntArrayRequest;
+                }
+                break;
+
             case set_global_int_array_value_request:
                 {
                     // set a single value, if array exists and index in range
@@ -3506,6 +3634,7 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.setIntArrayValueRequest;
                 }
                 break;
+            
             case get_global_int_array_value_request:
                 {
                     // get a single value, if array exists and index in range
@@ -3547,6 +3676,49 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.getIntArrayValueRequest;
                 }
                 break;
+
+            case get_named_global_int_array_value_request:
+                {
+                    // get a single value, if array exists and index in range
+                    Chuck_Get_Named_Global_Int_Array_Value_Request * request =
+                        message.getNamedIntArrayValueRequest;
+                    // fetch an entire array, if it exists
+                    if( m_global_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_global_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_global_arrays[request->name]->array_type == te_globalInt &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            // TODO why is it unsigned int storage?
+                            t_CKUINT result = 0;
+                            intArray->get( request->index, &result );
+                            request->callback( request->name.c_str(), result );
+                        }
+                    }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.getNamedIntArrayValueRequest;
+                }
+                break;
+
             case set_global_associative_int_array_value_request:
                 {
                     // set a single value by key, if array exists
@@ -3585,6 +3757,7 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.setAssociativeIntArrayValueRequest;
                 }
                 break;
+            
             case get_global_associative_int_array_value_request:
                 {
                     // get a single value by key, if array exists and key in map
@@ -3626,6 +3799,49 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.getAssociativeIntArrayValueRequest;
                 }
                 break;
+
+            case get_named_global_associative_int_array_value_request:
+                {
+                    // get a single value by key, if array exists and key in map
+                    Chuck_Get_Named_Global_Associative_Int_Array_Value_Request * request =
+                        message.getNamedAssociativeIntArrayValueRequest;
+                    // fetch an entire array, if it exists
+                    if( m_global_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_global_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_global_arrays[request->name]->array_type == te_globalInt &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            // TODO why is it unsigned int storage?
+                            t_CKUINT result = 0;
+                            intArray->get( request->key, &result );
+                            request->callback( request->name.c_str(), result );
+                        }
+                    }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
+                }
+                
+                // clean up request storage
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.getNamedAssociativeIntArrayValueRequest;
+                }
+                break;
+
             case set_global_float_array_request:
                 {
                     // replace an entire array, if it exists
@@ -3670,6 +3886,7 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.setFloatArrayRequest;
                 }
                 break;
+
             case get_global_float_array_request:
                 {
                     // fetch an entire array, if it exists
@@ -3710,6 +3927,49 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.getFloatArrayRequest;
                 }
                 break;
+
+            case get_named_global_float_array_request:
+                {
+                    // fetch an entire array, if it exists
+                    Chuck_Get_Named_Global_Float_Array_Request * request =
+                        message.getNamedFloatArrayRequest;
+                    if( m_global_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_global_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_global_arrays[request->name]->array_type == te_globalFloat &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            request->callback(
+                                request->name.c_str(),
+                                &(floatArray->m_vector[0]),
+                                floatArray->size()
+                            );
+                        }
+                    }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
+                }
+        
+                // clean up request storage
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.getNamedFloatArrayRequest;
+                }
+                break;
+
             case set_global_float_array_value_request:
                 {
                     // set a single value, if array exists and index in range
@@ -3751,6 +4011,7 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.setFloatArrayValueRequest;
                 }
                 break;
+
             case get_global_float_array_value_request:
                 {
                     // get a single value, if array exists and index in range
@@ -3791,6 +4052,48 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.getFloatArrayValueRequest;
                 }
                 break;
+
+            case get_named_global_float_array_value_request:
+                {
+                    // get a single value, if array exists and index in range
+                    Chuck_Get_Named_Global_Float_Array_Value_Request * request =
+                        message.getNamedFloatArrayValueRequest;
+                    // fetch an entire array, if it exists
+                    if( m_global_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_global_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_global_arrays[request->name]->array_type == te_globalFloat &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            t_CKFLOAT result = 0;
+                            floatArray->get( request->index, &result );
+                            request->callback( request->name.c_str(), result );
+                        }
+                    }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
+                }
+        
+                // clean up request storage
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.getNamedFloatArrayValueRequest;
+                }
+                break;
+                
             case set_global_associative_float_array_value_request:
                 {
                     // set a single value by key, if array exists
@@ -3829,6 +4132,7 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.setAssociativeFloatArrayValueRequest;
                 }
                 break;
+
             case get_global_associative_float_array_value_request:
                 {
                     // get a single value by key, if array exists and key in map
@@ -3867,6 +4171,47 @@ void Chuck_VM::handle_global_queue_messages()
                 else
                 {
                     delete message.getAssociativeFloatArrayValueRequest;
+                }
+                break;
+
+            case get_named_global_associative_float_array_value_request:
+                {
+                    // get a single value by key, if array exists and key in map
+                    Chuck_Get_Named_Global_Associative_Float_Array_Value_Request * request =
+                        message.getNamedAssociativeFloatArrayValueRequest;
+                    // fetch an entire array, if it exists
+                    if( m_global_arrays.count( request->name ) > 0 )
+                    {
+                        // we know that array's name. does it exist yet; do we have a callback?
+                        Chuck_Object * array = m_global_arrays[request->name]->array;
+                        if( array != NULL &&
+                            m_global_arrays[request->name]->array_type == te_globalFloat &&
+                            request->callback != NULL )
+                        {
+                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            t_CKFLOAT result = 0;
+                            floatArray->get( request->key, &result );
+                            request->callback( request->name.c_str(), result );
+                        }
+                    }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
+                }
+        
+                // clean up request storage
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.getNamedAssociativeFloatArrayValueRequest;
                 }
                 break;
             }
