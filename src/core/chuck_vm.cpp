@@ -1799,6 +1799,31 @@ t_CKBOOL Chuck_VM::get_global_int( std::string name,
 
 
 //-----------------------------------------------------------------------------
+// name: get_global_int()
+// desc: get a global int by name, with a by name callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_global_int( std::string name,
+                                     void (* callback)(const char *, t_CKINT) )
+{
+    Chuck_Get_Named_Global_Int_Request * get_int_message =
+        new Chuck_Get_Named_Global_Int_Request;
+    get_int_message->name = name;
+    get_int_message->fp = callback;
+    
+    Chuck_Global_Request r;
+    r.type = get_named_global_int_request;
+    r.getNamedIntRequest = get_int_message;
+
+    m_global_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: set_global_int()
 // desc: set a global int by name
 //-----------------------------------------------------------------------------
@@ -1890,6 +1915,30 @@ t_CKBOOL Chuck_VM::get_global_float( std::string name,
 
 
 //-----------------------------------------------------------------------------
+// name: get_global_float()
+// desc: get a global float by name, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_global_float( std::string name,
+                                       void (* callback)(const char *, t_CKFLOAT) )
+{
+    Chuck_Get_Named_Global_Float_Request * get_float_message =
+        new Chuck_Get_Named_Global_Float_Request;
+    get_float_message->name = name;
+    get_float_message->fp = callback;
+    
+    Chuck_Global_Request r;
+    r.type = get_named_global_float_request;
+    r.getNamedFloatRequest = get_float_message;
+
+    m_global_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: set_global_float()
 // desc: set a global float by name
 //-----------------------------------------------------------------------------
@@ -1971,6 +2020,30 @@ t_CKBOOL Chuck_VM::get_global_string( std::string name,
     Chuck_Global_Request r;
     r.type = get_global_string_request;
     r.getStringRequest = get_string_message;
+
+    m_global_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_string()
+// desc: get a global string by name, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_global_string( std::string name,
+        void (* callback)(const char *, const char *) )
+{
+    Chuck_Get_Named_Global_String_Request * get_string_message =
+        new Chuck_Get_Named_Global_String_Request;
+    get_string_message->name = name;
+    get_string_message->fp = callback;
+    
+    Chuck_Global_Request r;
+    r.type = get_named_global_string_request;
+    r.getNamedStringRequest = get_string_message;
 
     m_global_request_queue.put( r );
     
@@ -2131,6 +2204,34 @@ t_CKBOOL Chuck_VM::listen_for_global_event( std::string name,
 
 
 //-----------------------------------------------------------------------------
+// name: listen_for_global_event()
+// desc: listen for an Event by name, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::listen_for_global_event( std::string name,
+    void (* callback)(const char *), t_CKBOOL listen_forever )
+{
+    Chuck_Listen_For_Named_Global_Event_Request * listen_event_message =
+        new Chuck_Listen_For_Named_Global_Event_Request;
+    listen_event_message->callback = callback;
+    listen_event_message->name = name;
+    listen_event_message->listen_forever = listen_forever;
+    listen_event_message->deregister = FALSE;
+    
+    Chuck_Global_Request r;
+    r.type = listen_for_named_global_event_request;
+    r.listenForNamedEventRequest = listen_event_message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: stop_listening_for_global_event()
 // desc: listen for an Event by name
 //-----------------------------------------------------------------------------
@@ -2147,6 +2248,32 @@ t_CKBOOL Chuck_VM::stop_listening_for_global_event( std::string name,
     Chuck_Global_Request r;
     r.type = listen_for_global_event_request;
     r.listenForEventRequest = listen_event_message;
+
+    m_global_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: stop_listening_for_global_event()
+// desc: listen for an Event by name, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::stop_listening_for_global_event( std::string name,
+    void (* callback)(const char *) )
+{
+    Chuck_Listen_For_Named_Global_Event_Request * listen_event_message =
+        new Chuck_Listen_For_Named_Global_Event_Request;
+    listen_event_message->callback = callback;
+    listen_event_message->name = name;
+    listen_event_message->listen_forever = FALSE;
+    listen_event_message->deregister = TRUE;
+    
+    Chuck_Global_Request r;
+    r.type = listen_for_named_global_event_request;
+    r.listenForNamedEventRequest = listen_event_message;
 
     m_global_request_queue.put( r );
     
@@ -2372,6 +2499,31 @@ t_CKBOOL Chuck_VM::get_global_int_array( std::string name, void (* callback)(t_C
 
 
 //-----------------------------------------------------------------------------
+// name: get_global_int_array()
+// desc: tell the vm to get an entire int array, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_global_int_array( std::string name, void (* callback)(const char *, t_CKINT[], t_CKUINT))
+{
+    Chuck_Get_Named_Global_Int_Array_Request * message =
+        new Chuck_Get_Named_Global_Int_Array_Request;
+    message->name = name;
+    message->callback = callback;
+    
+    Chuck_Global_Request r;
+    r.type = get_named_global_int_array_request;
+    r.getNamedIntArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: set_global_int_array_value()
 // desc: tell the vm to set one value of an int array by index
 //-----------------------------------------------------------------------------
@@ -2424,6 +2576,32 @@ t_CKBOOL Chuck_VM::get_global_int_array_value( std::string name, t_CKUINT index,
 
 
 //-----------------------------------------------------------------------------
+// name: get_global_int_array_value()
+// desc: tell the vm to get one value of an int array by index, with named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_global_int_array_value( std::string name, t_CKUINT index, void (* callback)(const char *, t_CKINT) )
+{
+    Chuck_Get_Named_Global_Int_Array_Value_Request * message =
+        new Chuck_Get_Named_Global_Int_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->callback = callback;
+    
+    Chuck_Global_Request r;
+    r.type = get_named_global_int_array_value_request;
+    r.getNamedIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: set_global_associative_int_array_value()
 // desc: tell the vm to set one value of an associative array by string key
 //-----------------------------------------------------------------------------
@@ -2464,6 +2642,32 @@ t_CKBOOL Chuck_VM::get_global_associative_int_array_value( std::string name, std
     Chuck_Global_Request r;
     r.type = get_global_associative_int_array_value_request;
     r.getAssociativeIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_associative_int_array_value()
+// desc: tell the vm to get one value of an associative array by string key, with named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_global_associative_int_array_value( std::string name, std::string key, void (* callback)(const char *, t_CKINT) )
+{
+    Chuck_Get_Named_Global_Associative_Int_Array_Value_Request * message =
+        new Chuck_Get_Named_Global_Associative_Int_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->callback = callback;
+    
+    Chuck_Global_Request r;
+    r.type = get_named_global_associative_int_array_value_request;
+    r.getNamedAssociativeIntArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
 
@@ -2530,6 +2734,31 @@ t_CKBOOL Chuck_VM::get_global_float_array( std::string name, void (* callback)(t
 
 
 //-----------------------------------------------------------------------------
+// name: get_global_float_array()
+// desc: tell the vm to get an entire float array, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_global_float_array( std::string name, void (* callback)(const char *, t_CKFLOAT[], t_CKUINT))
+{
+    Chuck_Get_Named_Global_Float_Array_Request * message =
+        new Chuck_Get_Named_Global_Float_Array_Request;
+    message->name = name;
+    message->callback = callback;
+    
+    Chuck_Global_Request r;
+    r.type = get_named_global_float_array_request;
+    r.getNamedFloatArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: set_global_float_array_value()
 // desc: tell the vm to set one value of an float array by index
 //-----------------------------------------------------------------------------
@@ -2582,6 +2811,32 @@ t_CKBOOL Chuck_VM::get_global_float_array_value( std::string name, t_CKUINT inde
 
 
 //-----------------------------------------------------------------------------
+// name: get_global_float_array_value()
+// desc: tell the vm to get one value of an float array by index, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_global_float_array_value( std::string name, t_CKUINT index, void (* callback)(const char *, t_CKFLOAT) )
+{
+    Chuck_Get_Named_Global_Float_Array_Value_Request * message =
+        new Chuck_Get_Named_Global_Float_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->callback = callback;
+    
+    Chuck_Global_Request r;
+    r.type = get_named_global_float_array_value_request;
+    r.getNamedFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: set_global_associative_float_array_value()
 // desc: tell the vm to set one value of an associative array by string key
 //-----------------------------------------------------------------------------
@@ -2622,6 +2877,32 @@ t_CKBOOL Chuck_VM::get_global_associative_float_array_value( std::string name, s
     Chuck_Global_Request r;
     r.type = get_global_associative_float_array_value_request;
     r.getAssociativeFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_associative_float_array_value()
+// desc: tell the vm to get one value of an associative array by string key, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::get_global_associative_float_array_value( std::string name, std::string key, void (* callback)(const char *, t_CKFLOAT) )
+{
+    Chuck_Get_Named_Global_Associative_Float_Array_Value_Request * message =
+        new Chuck_Get_Named_Global_Associative_Float_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->callback = callback;
+    
+    Chuck_Global_Request r;
+    r.type = get_named_global_associative_float_array_value_request;
+    r.getNamedAssociativeFloatArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
 
