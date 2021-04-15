@@ -1225,6 +1225,21 @@ struct Chuck_Get_Global_Int_Request
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Named_Global_Int_Request
+// desc: container for messages to get global ints with a name (2021)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Named_Global_Int_Request
+{
+    std::string name;
+    void (* fp)(const char *, t_CKINT);
+    // constructor
+    Chuck_Get_Named_Global_Int_Request() : fp(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Set_Global_Float_Request
 // desc: container for messages to set global floats (REFACTOR-2017)
 //-----------------------------------------------------------------------------
@@ -1249,6 +1264,21 @@ struct Chuck_Get_Global_Float_Request
     void (* fp)(t_CKFLOAT);
     // constructor
     Chuck_Get_Global_Float_Request() : fp(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Named_Global_Float_Request
+// desc: container for messages to get global floats with a name (2021)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Named_Global_Float_Request
+{
+    std::string name;
+    void (* fp)(const char *, t_CKFLOAT);
+    // constructor
+    Chuck_Get_Named_Global_Float_Request() : fp(NULL) { }
 };
 
 
@@ -1288,6 +1318,24 @@ struct Chuck_Listen_For_Global_Event_Request
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Listen_For_Named_Global_Event_Request
+// desc: container for messages to wait on global events with a name (2021)
+//-----------------------------------------------------------------------------
+struct Chuck_Listen_For_Named_Global_Event_Request
+{
+    std::string name;
+    t_CKBOOL listen_forever;
+    t_CKBOOL deregister;
+    void (* callback)(const char *);
+    // constructor
+    Chuck_Listen_For_Named_Global_Event_Request() : listen_forever(FALSE),
+        deregister(FALSE), callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Set_Global_String_Request
 // desc: container for messages to set global strings (REFACTOR-2017)
 //-----------------------------------------------------------------------------
@@ -1318,6 +1366,21 @@ struct Chuck_Get_Global_String_Request
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Named_Global_String_Request
+// desc: container for messages to get global strings with a name (2021)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Named_Global_String_Request
+{
+    std::string name;
+    void (* fp)(const char *, const char *);
+    // constructor
+    Chuck_Get_Named_Global_String_Request() : fp(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Set_Global_Int_Array_Request
 // desc: container for messages to set global int arrays (REFACTOR-2017)
 //-----------------------------------------------------------------------------
@@ -1342,6 +1405,21 @@ struct Chuck_Get_Global_Int_Array_Request
     void (* callback)(t_CKINT[], t_CKUINT);
     // constructor
     Chuck_Get_Global_Int_Array_Request() : callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Named_Global_Int_Array_Request
+// desc: container for messages to get global int arrays with name (2021)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Named_Global_Int_Array_Request
+{
+    std::string name;
+    void (* callback)(const char *, t_CKINT[], t_CKUINT);
+    // constructor
+    Chuck_Get_Named_Global_Int_Array_Request() : callback(NULL) { }
 };
 
 
@@ -1380,6 +1458,22 @@ struct Chuck_Get_Global_Int_Array_Value_Request
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Named_Global_Int_Array_Value_Request
+// desc: container for messages to get individual elements of int arrays with name (2021)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Named_Global_Int_Array_Value_Request
+{
+    std::string name;
+    t_CKUINT index;
+    void (* callback)(const char *, t_CKINT);
+    // constructor
+    Chuck_Get_Named_Global_Int_Array_Value_Request() : index(-1), callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Set_Global_Associative_Int_Array_Value_Request
 // desc: container for messages to set elements of associative int arrays (REFACTOR-2017)
 //-----------------------------------------------------------------------------
@@ -1412,6 +1506,22 @@ struct Chuck_Get_Global_Associative_Int_Array_Value_Request
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Named_Global_Associative_Int_Array_Value_Request
+// desc: container for messages to get elements of associative int arrays with name (2021)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Named_Global_Associative_Int_Array_Value_Request
+{
+    std::string name;
+    std::string key;
+    void (* callback)(const char *, t_CKINT);
+    // constructor
+    Chuck_Get_Named_Global_Associative_Int_Array_Value_Request() : callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Set_Global_Float_Array_Request
 // desc: container for messages to set global float arrays (REFACTOR-2017)
 //-----------------------------------------------------------------------------
@@ -1436,6 +1546,21 @@ struct Chuck_Get_Global_Float_Array_Request
     void (* callback)(t_CKFLOAT[], t_CKUINT);
     // constructor
     Chuck_Get_Global_Float_Array_Request() : callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Named_Global_Float_Array_Request
+// desc: container for messages to get global float arrays with name (2021)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Named_Global_Float_Array_Request
+{
+    std::string name;
+    void (* callback)(const char *, t_CKFLOAT[], t_CKUINT);
+    // constructor
+    Chuck_Get_Named_Global_Float_Array_Request() : callback(NULL) { }
 };
 
 
@@ -1474,6 +1599,22 @@ struct Chuck_Get_Global_Float_Array_Value_Request
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Named_Global_Float_Array_Value_Request
+// desc: container for messages to get individual elements of float arrays with a name (2021)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Named_Global_Float_Array_Value_Request
+{
+    std::string name;
+    t_CKUINT index;
+    void (* callback)(const char *, t_CKFLOAT);
+    // constructor
+    Chuck_Get_Named_Global_Float_Array_Value_Request() : index(-1), callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Set_Global_Associative_Float_Array_Value_Request
 // desc: container for messages to set elements of associative float arrays (REFACTOR-2017)
 //-----------------------------------------------------------------------------
@@ -1500,6 +1641,22 @@ struct Chuck_Get_Global_Associative_Float_Array_Value_Request
     void (* callback)(t_CKFLOAT);
     // constructor
     Chuck_Get_Global_Associative_Float_Array_Value_Request() : callback(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Named_Global_Associative_Float_Array_Value_Request
+// desc: container for messages to get elements of associative float arrays by name (2021)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Named_Global_Associative_Float_Array_Value_Request
+{
+    std::string name;
+    std::string key;
+    void (* callback)(const char *, t_CKFLOAT);
+    // constructor
+    Chuck_Get_Named_Global_Associative_Float_Array_Value_Request() : callback(NULL) { }
 };
 
 
