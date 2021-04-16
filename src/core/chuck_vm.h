@@ -393,31 +393,22 @@ struct Chuck_Set_Global_Int_Request;
 struct Chuck_Get_Global_Int_Request;
 struct Chuck_Set_Global_Float_Request;
 struct Chuck_Get_Global_Float_Request;
-struct Chuck_Get_Named_Global_Float_Request;
 struct Chuck_Signal_Global_Event_Request;
 struct Chuck_Listen_For_Global_Event_Request;
-struct Chuck_Listen_For_Named_Global_Event_Request;
 struct Chuck_Set_Global_String_Request;
 struct Chuck_Get_Global_String_Request;
-struct Chuck_Get_Named_Global_String_Request;
 struct Chuck_Set_Global_Int_Array_Request;
 struct Chuck_Get_Global_Int_Array_Request;
-struct Chuck_Get_Named_Global_Int_Array_Request;
 struct Chuck_Set_Global_Int_Array_Value_Request;
 struct Chuck_Get_Global_Int_Array_Value_Request;
-struct Chuck_Get_Named_Global_Int_Array_Value_Request;
 struct Chuck_Set_Global_Associative_Int_Array_Value_Request;
 struct Chuck_Get_Global_Associative_Int_Array_Value_Request;
-struct Chuck_Get_Named_Global_Associative_Int_Array_Value_Request;
 struct Chuck_Set_Global_Float_Array_Request;
 struct Chuck_Get_Global_Float_Array_Request;
-struct Chuck_Get_Named_Global_Float_Array_Request;
 struct Chuck_Set_Global_Float_Array_Value_Request;
 struct Chuck_Get_Global_Float_Array_Value_Request;
-struct Chuck_Get_Named_Global_Float_Array_Value_Request;
 struct Chuck_Set_Global_Associative_Float_Array_Value_Request;
 struct Chuck_Get_Global_Associative_Float_Array_Value_Request;
-struct Chuck_Get_Named_Global_Associative_Float_Array_Value_Request;
 struct Chuck_Execute_Chuck_Msg_Request;
 
 // Forward references for global storage
@@ -442,34 +433,25 @@ enum Chuck_Global_Request_Type
     get_global_int_request,
     set_global_float_request,
     get_global_float_request,
-    get_named_global_float_request,
     set_global_string_request,
     get_global_string_request,
-    get_named_global_string_request,
     // events
     signal_global_event_request,
     listen_for_global_event_request,
-    listen_for_named_global_event_request,
     // int arrays
     set_global_int_array_request,
     get_global_int_array_request,
-    get_named_global_int_array_request,
     set_global_int_array_value_request,
     get_global_int_array_value_request,
-    get_named_global_int_array_value_request,
     set_global_associative_int_array_value_request,
     get_global_associative_int_array_value_request,
-    get_named_global_associative_int_array_value_request,
     // float arrays
     set_global_float_array_request,
     get_global_float_array_request,
-    get_named_global_float_array_request,
     set_global_float_array_value_request,
     get_global_float_array_value_request,
-    get_named_global_float_array_value_request,
     set_global_associative_float_array_value_request,
     get_global_associative_float_array_value_request,
-    get_named_global_associative_float_array_value_request,
     // shreds
     spork_shred_request,
     // chuck_msg
@@ -503,34 +485,25 @@ struct Chuck_Global_Request
         Chuck_Get_Global_Int_Request * getIntRequest;
         Chuck_Set_Global_Float_Request * setFloatRequest;
         Chuck_Get_Global_Float_Request * getFloatRequest;
-        Chuck_Get_Named_Global_Float_Request * getNamedFloatRequest;
         Chuck_Set_Global_String_Request * setStringRequest;
         Chuck_Get_Global_String_Request * getStringRequest;
-        Chuck_Get_Named_Global_String_Request * getNamedStringRequest;
         // events
         Chuck_Signal_Global_Event_Request * signalEventRequest;
         Chuck_Listen_For_Global_Event_Request * listenForEventRequest;
-        Chuck_Listen_For_Named_Global_Event_Request * listenForNamedEventRequest;
         // int arrays
         Chuck_Set_Global_Int_Array_Request * setIntArrayRequest;
         Chuck_Get_Global_Int_Array_Request * getIntArrayRequest;
-        Chuck_Get_Named_Global_Int_Array_Request * getNamedIntArrayRequest;
         Chuck_Set_Global_Int_Array_Value_Request * setIntArrayValueRequest;
         Chuck_Get_Global_Int_Array_Value_Request * getIntArrayValueRequest;
-        Chuck_Get_Named_Global_Int_Array_Value_Request * getNamedIntArrayValueRequest;
         Chuck_Set_Global_Associative_Int_Array_Value_Request * setAssociativeIntArrayValueRequest;
         Chuck_Get_Global_Associative_Int_Array_Value_Request * getAssociativeIntArrayValueRequest;
-        Chuck_Get_Named_Global_Associative_Int_Array_Value_Request * getNamedAssociativeIntArrayValueRequest;
         // float arrays
         Chuck_Set_Global_Float_Array_Request * setFloatArrayRequest;
         Chuck_Get_Global_Float_Array_Request * getFloatArrayRequest;
-        Chuck_Get_Named_Global_Float_Array_Request * getNamedFloatArrayRequest;
         Chuck_Set_Global_Float_Array_Value_Request * setFloatArrayValueRequest;
         Chuck_Get_Global_Float_Array_Value_Request * getFloatArrayValueRequest;
-        Chuck_Get_Named_Global_Float_Array_Value_Request * getNamedFloatArrayValueRequest;
         Chuck_Set_Global_Associative_Float_Array_Value_Request * setAssociativeFloatArrayValueRequest;
         Chuck_Get_Global_Associative_Float_Array_Value_Request * getAssociativeFloatArrayValueRequest;
-        Chuck_Get_Named_Global_Associative_Float_Array_Value_Request * getNamedAssociativeFloatArrayValueRequest;
         // shreds
         Chuck_VM_Shred * shred;
         // chuck_msg
