@@ -1216,24 +1216,14 @@ struct Chuck_Set_Global_Int_Request
 struct Chuck_Get_Global_Int_Request
 {
     std::string name;
-    void (* fp)(t_CKINT);
+    union {
+        void (* cb_with_name)(const char*, t_CKINT);
+        void (* cb_with_id)(t_CKUINT, t_CKINT);
+        void (* cb)(t_CKINT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
     // constructor
-    Chuck_Get_Global_Int_Request() : fp(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_Named_Global_Int_Request
-// desc: container for messages to get global ints with a name (2021)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_Named_Global_Int_Request
-{
-    std::string name;
-    void (* fp)(const char *, t_CKINT);
-    // constructor
-    Chuck_Get_Named_Global_Int_Request() : fp(NULL) { }
+    Chuck_Get_Global_Int_Request() : cb(NULL), cb_type(ck_get_plain) { }
 };
 
 
@@ -1784,7 +1774,8 @@ t_CKBOOL Chuck_VM::get_global_int( std::string name,
     Chuck_Get_Global_Int_Request * get_int_message =
         new Chuck_Get_Global_Int_Request;
     get_int_message->name = name;
-    get_int_message->fp = callback;
+    get_int_message->cb = callback;
+    get_int_message->cb_type = ck_get_plain;
     
     Chuck_Global_Request r;
     r.type = get_global_int_request;
@@ -1805,14 +1796,15 @@ t_CKBOOL Chuck_VM::get_global_int( std::string name,
 t_CKBOOL Chuck_VM::get_global_int( std::string name,
                                      void (* callback)(const char *, t_CKINT) )
 {
-    Chuck_Get_Named_Global_Int_Request * get_int_message =
-        new Chuck_Get_Named_Global_Int_Request;
+    Chuck_Get_Global_Int_Request * get_int_message =
+        new Chuck_Get_Global_Int_Request;
     get_int_message->name = name;
-    get_int_message->fp = callback;
+    get_int_message->cb_with_name = callback;
+    get_int_message->cb_type = ck_get_name;
     
     Chuck_Global_Request r;
-    r.type = get_named_global_int_request;
-    r.getNamedIntRequest = get_int_message;
+    r.type = get_global_int_request;
+    r.getIntRequest = get_int_message;
 
     m_global_request_queue.put( r );
     
@@ -3245,29 +3237,26 @@ void Chuck_VM::handle_global_queue_messages()
                 break;
 
             case get_global_int_request:
-                // ensure fp is not null
-                if( message.getIntRequest->fp != NULL )
+                // ensure one of the callbacks is not null (union)
+                if( message.getIntRequest->cb != NULL )
                 {
                     // ensure the value exists
                     init_global_int( message.getIntRequest->name );
                     // call the callback with the value
-                    message.getIntRequest->fp( m_global_ints[message.getIntRequest->name]->val );
+                    switch( message.getIntRequest->cb_type )
+                    {
+                    case ck_get_plain:
+                        message.getIntRequest->cb( m_global_ints[message.getIntRequest->name]->val );
+                        break;
+                    case ck_get_name:
+                        message.getIntRequest->cb_with_name( message.getIntRequest->name.c_str(), m_global_ints[message.getIntRequest->name]->val );
+                        break;
+                    case ck_get_id:
+                        break;
+                    }
                 }
                 // clean up request storage
                 delete message.getIntRequest;
-                break;
-
-            case get_named_global_int_request:
-                // ensure fp is not null
-                if( message.getNamedIntRequest->fp != NULL )
-                {
-                    // ensure the value exists
-                    init_global_int( message.getNamedIntRequest->name );
-                    // call the callback with the value
-                    message.getNamedIntRequest->fp( message.getNamedIntRequest->name.c_str(), m_global_ints[message.getNamedIntRequest->name]->val );
-                }
-                // clean up request storage
-                delete message.getNamedIntRequest;
                 break;
 
             case set_global_float_request:

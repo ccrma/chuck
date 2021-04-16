@@ -391,7 +391,6 @@ public:
 // Forward references for global messages
 struct Chuck_Set_Global_Int_Request;
 struct Chuck_Get_Global_Int_Request;
-struct Chuck_Get_Named_Global_Int_Request;
 struct Chuck_Set_Global_Float_Request;
 struct Chuck_Get_Global_Float_Request;
 struct Chuck_Get_Named_Global_Float_Request;
@@ -441,7 +440,6 @@ enum Chuck_Global_Request_Type
     // primitives
     set_global_int_request,
     get_global_int_request,
-    get_named_global_int_request,
     set_global_float_request,
     get_global_float_request,
     get_named_global_float_request,
@@ -481,6 +479,16 @@ enum Chuck_Global_Request_Type
 
 
 
+enum Chuck_Global_Get_Callback_Type
+{
+    ck_get_plain,
+    ck_get_name,
+    ck_get_id
+};
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: strct Global_Request
 // desc: a global request (REFACTOR-2017)
@@ -493,7 +501,6 @@ struct Chuck_Global_Request
         // primitives
         Chuck_Set_Global_Int_Request * setIntRequest;
         Chuck_Get_Global_Int_Request * getIntRequest;
-        Chuck_Get_Named_Global_Int_Request * getNamedIntRequest;
         Chuck_Set_Global_Float_Request * setFloatRequest;
         Chuck_Get_Global_Float_Request * getFloatRequest;
         Chuck_Get_Named_Global_Float_Request * getNamedFloatRequest;
