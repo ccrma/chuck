@@ -1217,7 +1217,7 @@ struct Chuck_Get_Global_Int_Request
 {
     std::string name;
     union {
-        void (* cb_with_name)(const char*, t_CKINT);
+        void (* cb_with_name)(const char *, t_CKINT);
         void (* cb_with_id)(t_CKUINT, t_CKINT);
         void (* cb)(t_CKINT);
     };
@@ -1251,24 +1251,14 @@ struct Chuck_Set_Global_Float_Request
 struct Chuck_Get_Global_Float_Request
 {
     std::string name;
-    void (* fp)(t_CKFLOAT);
+    union {
+        void (* cb_with_name)(const char *, t_CKFLOAT);
+        void (* cb_with_id)(t_CKUINT, t_CKFLOAT);
+        void (* cb)(t_CKFLOAT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
     // constructor
-    Chuck_Get_Global_Float_Request() : fp(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_Named_Global_Float_Request
-// desc: container for messages to get global floats with a name (2021)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_Named_Global_Float_Request
-{
-    std::string name;
-    void (* fp)(const char *, t_CKFLOAT);
-    // constructor
-    Chuck_Get_Named_Global_Float_Request() : fp(NULL) { }
+    Chuck_Get_Global_Float_Request() : cb(NULL), cb_type(ck_get_plain) { }
 };
 
 
@@ -1298,28 +1288,15 @@ struct Chuck_Listen_For_Global_Event_Request
     std::string name;
     t_CKBOOL listen_forever;
     t_CKBOOL deregister;
-    void (* callback)(void);
+    union {
+        void (* cb_with_name)(const char *);
+        void (* cb_with_id)(t_CKUINT);
+        void (* cb)(void);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
     // constructor
     Chuck_Listen_For_Global_Event_Request() : listen_forever(FALSE),
-        deregister(FALSE), callback(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Listen_For_Named_Global_Event_Request
-// desc: container for messages to wait on global events with a name (2021)
-//-----------------------------------------------------------------------------
-struct Chuck_Listen_For_Named_Global_Event_Request
-{
-    std::string name;
-    t_CKBOOL listen_forever;
-    t_CKBOOL deregister;
-    void (* callback)(const char *);
-    // constructor
-    Chuck_Listen_For_Named_Global_Event_Request() : listen_forever(FALSE),
-        deregister(FALSE), callback(NULL) { }
+        deregister(FALSE), cb(NULL), cb_type(ck_get_plain) { }
 };
 
 
@@ -1347,24 +1324,14 @@ struct Chuck_Set_Global_String_Request
 struct Chuck_Get_Global_String_Request
 {
     std::string name;
-    void (* fp)(const char *);
+    union {
+        void (* cb_with_name)(const char *, const char *);
+        void (* cb_with_id)(t_CKUINT, const char *);
+        void (* cb)(const char *);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
     // constructor
-    Chuck_Get_Global_String_Request() : fp(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_Named_Global_String_Request
-// desc: container for messages to get global strings with a name (2021)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_Named_Global_String_Request
-{
-    std::string name;
-    void (* fp)(const char *, const char *);
-    // constructor
-    Chuck_Get_Named_Global_String_Request() : fp(NULL) { }
+    Chuck_Get_Global_String_Request() : cb(NULL), cb_type(ck_get_plain) { }
 };
 
 
@@ -1392,24 +1359,14 @@ struct Chuck_Set_Global_Int_Array_Request
 struct Chuck_Get_Global_Int_Array_Request
 {
     std::string name;
-    void (* callback)(t_CKINT[], t_CKUINT);
+    union {
+        void (* cb_with_name)(const char *, t_CKINT[], t_CKUINT);
+        void (* cb_with_id)(t_CKUINT, t_CKINT[], t_CKUINT);
+        void (* cb)(t_CKINT[], t_CKUINT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
     // constructor
-    Chuck_Get_Global_Int_Array_Request() : callback(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_Named_Global_Int_Array_Request
-// desc: container for messages to get global int arrays with name (2021)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_Named_Global_Int_Array_Request
-{
-    std::string name;
-    void (* callback)(const char *, t_CKINT[], t_CKUINT);
-    // constructor
-    Chuck_Get_Named_Global_Int_Array_Request() : callback(NULL) { }
+    Chuck_Get_Global_Int_Array_Request() : cb(NULL), cb_type(ck_get_plain) { }
 };
 
 
@@ -1439,25 +1396,15 @@ struct Chuck_Get_Global_Int_Array_Value_Request
 {
     std::string name;
     t_CKUINT index;
-    void (* callback)(t_CKINT);
+    union {
+        void (* cb_with_name)(const char *, t_CKINT);
+        void (* cb_with_id)(t_CKUINT, t_CKINT);
+        void (* cb)(t_CKINT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
     // constructor
-    Chuck_Get_Global_Int_Array_Value_Request() : index(-1), callback(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_Named_Global_Int_Array_Value_Request
-// desc: container for messages to get individual elements of int arrays with name (2021)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_Named_Global_Int_Array_Value_Request
-{
-    std::string name;
-    t_CKUINT index;
-    void (* callback)(const char *, t_CKINT);
-    // constructor
-    Chuck_Get_Named_Global_Int_Array_Value_Request() : index(-1), callback(NULL) { }
+    Chuck_Get_Global_Int_Array_Value_Request() : index(-1), cb(NULL),
+        cb_type(ck_get_plain) { }
 };
 
 
@@ -1487,25 +1434,15 @@ struct Chuck_Get_Global_Associative_Int_Array_Value_Request
 {
     std::string name;
     std::string key;
-    void (* callback)(t_CKINT);
+    union {
+        void (* cb_with_name)(const char *, t_CKINT);
+        void (* cb_with_id)(t_CKUINT, t_CKINT);
+        void (* cb)(t_CKINT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
     // constructor
-    Chuck_Get_Global_Associative_Int_Array_Value_Request() : callback(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_Named_Global_Associative_Int_Array_Value_Request
-// desc: container for messages to get elements of associative int arrays with name (2021)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_Named_Global_Associative_Int_Array_Value_Request
-{
-    std::string name;
-    std::string key;
-    void (* callback)(const char *, t_CKINT);
-    // constructor
-    Chuck_Get_Named_Global_Associative_Int_Array_Value_Request() : callback(NULL) { }
+    Chuck_Get_Global_Associative_Int_Array_Value_Request() : cb(NULL),
+        cb_type(ck_get_plain) { }
 };
 
 
@@ -1533,24 +1470,14 @@ struct Chuck_Set_Global_Float_Array_Request
 struct Chuck_Get_Global_Float_Array_Request
 {
     std::string name;
-    void (* callback)(t_CKFLOAT[], t_CKUINT);
+    union {
+        void (* cb_with_name)(const char *, t_CKFLOAT[], t_CKUINT);
+        void (* cb_with_id)(t_CKUINT, t_CKFLOAT[], t_CKUINT);
+        void (* cb)(t_CKFLOAT[], t_CKUINT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
     // constructor
-    Chuck_Get_Global_Float_Array_Request() : callback(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_Named_Global_Float_Array_Request
-// desc: container for messages to get global float arrays with name (2021)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_Named_Global_Float_Array_Request
-{
-    std::string name;
-    void (* callback)(const char *, t_CKFLOAT[], t_CKUINT);
-    // constructor
-    Chuck_Get_Named_Global_Float_Array_Request() : callback(NULL) { }
+    Chuck_Get_Global_Float_Array_Request() : cb(NULL), cb_type(ck_get_plain) { }
 };
 
 
@@ -1580,25 +1507,15 @@ struct Chuck_Get_Global_Float_Array_Value_Request
 {
     std::string name;
     t_CKUINT index;
-    void (* callback)(t_CKFLOAT);
+    union {
+        void (* cb_with_name)(const char *, t_CKFLOAT);
+        void (* cb_with_id)(t_CKUINT, t_CKFLOAT);
+        void (* cb)(t_CKFLOAT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
     // constructor
-    Chuck_Get_Global_Float_Array_Value_Request() : index(-1), callback(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_Named_Global_Float_Array_Value_Request
-// desc: container for messages to get individual elements of float arrays with a name (2021)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_Named_Global_Float_Array_Value_Request
-{
-    std::string name;
-    t_CKUINT index;
-    void (* callback)(const char *, t_CKFLOAT);
-    // constructor
-    Chuck_Get_Named_Global_Float_Array_Value_Request() : index(-1), callback(NULL) { }
+    Chuck_Get_Global_Float_Array_Value_Request() : index(-1), cb(NULL),
+        cb_type(ck_get_plain) { }
 };
 
 
@@ -1628,25 +1545,15 @@ struct Chuck_Get_Global_Associative_Float_Array_Value_Request
 {
     std::string name;
     std::string key;
-    void (* callback)(t_CKFLOAT);
+    union {
+        void (* cb_with_name)(const char *, t_CKFLOAT);
+        void (* cb_with_id)(t_CKUINT, t_CKFLOAT);
+        void (* cb)(t_CKFLOAT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
     // constructor
-    Chuck_Get_Global_Associative_Float_Array_Value_Request() : callback(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_Named_Global_Associative_Float_Array_Value_Request
-// desc: container for messages to get elements of associative float arrays by name (2021)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_Named_Global_Associative_Float_Array_Value_Request
-{
-    std::string name;
-    std::string key;
-    void (* callback)(const char *, t_CKFLOAT);
-    // constructor
-    Chuck_Get_Named_Global_Associative_Float_Array_Value_Request() : callback(NULL) { }
+    Chuck_Get_Global_Associative_Float_Array_Value_Request() : cb(NULL),
+        cb_type(ck_get_plain) { }
 };
 
 
@@ -1892,7 +1799,8 @@ t_CKBOOL Chuck_VM::get_global_float( std::string name,
     Chuck_Get_Global_Float_Request * get_float_message =
         new Chuck_Get_Global_Float_Request;
     get_float_message->name = name;
-    get_float_message->fp = callback;
+    get_float_message->cb = callback;
+    get_float_message->cb_type = ck_get_plain;
     
     Chuck_Global_Request r;
     r.type = get_global_float_request;
@@ -1913,14 +1821,15 @@ t_CKBOOL Chuck_VM::get_global_float( std::string name,
 t_CKBOOL Chuck_VM::get_global_float( std::string name,
                                        void (* callback)(const char *, t_CKFLOAT) )
 {
-    Chuck_Get_Named_Global_Float_Request * get_float_message =
-        new Chuck_Get_Named_Global_Float_Request;
+    Chuck_Get_Global_Float_Request * get_float_message =
+        new Chuck_Get_Global_Float_Request;
     get_float_message->name = name;
-    get_float_message->fp = callback;
+    get_float_message->cb_with_name = callback;
+    get_float_message->cb_type = ck_get_name;
     
     Chuck_Global_Request r;
-    r.type = get_named_global_float_request;
-    r.getNamedFloatRequest = get_float_message;
+    r.type = get_global_float_request;
+    r.getFloatRequest = get_float_message;
 
     m_global_request_queue.put( r );
     
@@ -2007,7 +1916,8 @@ t_CKBOOL Chuck_VM::get_global_string( std::string name,
     Chuck_Get_Global_String_Request * get_string_message =
         new Chuck_Get_Global_String_Request;
     get_string_message->name = name;
-    get_string_message->fp = callback;
+    get_string_message->cb = callback;
+    get_string_message->cb_type = ck_get_plain;
     
     Chuck_Global_Request r;
     r.type = get_global_string_request;
@@ -2028,14 +1938,15 @@ t_CKBOOL Chuck_VM::get_global_string( std::string name,
 t_CKBOOL Chuck_VM::get_global_string( std::string name,
         void (* callback)(const char *, const char *) )
 {
-    Chuck_Get_Named_Global_String_Request * get_string_message =
-        new Chuck_Get_Named_Global_String_Request;
+    Chuck_Get_Global_String_Request * get_string_message =
+        new Chuck_Get_Global_String_Request;
     get_string_message->name = name;
-    get_string_message->fp = callback;
+    get_string_message->cb_with_name = callback;
+    get_string_message->cb_type = ck_get_name;
     
     Chuck_Global_Request r;
-    r.type = get_named_global_string_request;
-    r.getNamedStringRequest = get_string_message;
+    r.type = get_global_string_request;
+    r.getStringRequest = get_string_message;
 
     m_global_request_queue.put( r );
     
@@ -2176,7 +2087,8 @@ t_CKBOOL Chuck_VM::listen_for_global_event( std::string name,
 {
     Chuck_Listen_For_Global_Event_Request * listen_event_message =
         new Chuck_Listen_For_Global_Event_Request;
-    listen_event_message->callback = callback;
+    listen_event_message->cb = callback;
+    listen_event_message->cb_type = ck_get_plain;
     listen_event_message->name = name;
     listen_event_message->listen_forever = listen_forever;
     listen_event_message->deregister = FALSE;
@@ -2202,16 +2114,17 @@ t_CKBOOL Chuck_VM::listen_for_global_event( std::string name,
 t_CKBOOL Chuck_VM::listen_for_global_event( std::string name,
     void (* callback)(const char *), t_CKBOOL listen_forever )
 {
-    Chuck_Listen_For_Named_Global_Event_Request * listen_event_message =
-        new Chuck_Listen_For_Named_Global_Event_Request;
-    listen_event_message->callback = callback;
+    Chuck_Listen_For_Global_Event_Request * listen_event_message =
+        new Chuck_Listen_For_Global_Event_Request;
+    listen_event_message->cb_with_name = callback;
+    listen_event_message->cb_type = ck_get_name;
     listen_event_message->name = name;
     listen_event_message->listen_forever = listen_forever;
     listen_event_message->deregister = FALSE;
     
     Chuck_Global_Request r;
-    r.type = listen_for_named_global_event_request;
-    r.listenForNamedEventRequest = listen_event_message;
+    r.type = listen_for_global_event_request;
+    r.listenForEventRequest = listen_event_message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
 
@@ -2232,7 +2145,8 @@ t_CKBOOL Chuck_VM::stop_listening_for_global_event( std::string name,
 {
     Chuck_Listen_For_Global_Event_Request * listen_event_message =
         new Chuck_Listen_For_Global_Event_Request;
-    listen_event_message->callback = callback;
+    listen_event_message->cb = callback;
+    listen_event_message->cb_type = ck_get_plain;
     listen_event_message->name = name;
     listen_event_message->listen_forever = FALSE;
     listen_event_message->deregister = TRUE;
@@ -2256,16 +2170,17 @@ t_CKBOOL Chuck_VM::stop_listening_for_global_event( std::string name,
 t_CKBOOL Chuck_VM::stop_listening_for_global_event( std::string name,
     void (* callback)(const char *) )
 {
-    Chuck_Listen_For_Named_Global_Event_Request * listen_event_message =
-        new Chuck_Listen_For_Named_Global_Event_Request;
-    listen_event_message->callback = callback;
+    Chuck_Listen_For_Global_Event_Request * listen_event_message =
+        new Chuck_Listen_For_Global_Event_Request;
+    listen_event_message->cb_with_name = callback;
+    listen_event_message->cb_type = ck_get_name;
     listen_event_message->name = name;
     listen_event_message->listen_forever = FALSE;
     listen_event_message->deregister = TRUE;
     
     Chuck_Global_Request r;
-    r.type = listen_for_named_global_event_request;
-    r.listenForNamedEventRequest = listen_event_message;
+    r.type = listen_for_global_event_request;
+    r.listenForEventRequest = listen_event_message;
 
     m_global_request_queue.put( r );
     
@@ -2474,7 +2389,8 @@ t_CKBOOL Chuck_VM::get_global_int_array( std::string name, void (* callback)(t_C
     Chuck_Get_Global_Int_Array_Request * message =
         new Chuck_Get_Global_Int_Array_Request;
     message->name = name;
-    message->callback = callback;
+    message->cb = callback;
+    message->cb_type = ck_get_plain;
     
     Chuck_Global_Request r;
     r.type = get_global_int_array_request;
@@ -2496,14 +2412,15 @@ t_CKBOOL Chuck_VM::get_global_int_array( std::string name, void (* callback)(t_C
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::get_global_int_array( std::string name, void (* callback)(const char *, t_CKINT[], t_CKUINT))
 {
-    Chuck_Get_Named_Global_Int_Array_Request * message =
-        new Chuck_Get_Named_Global_Int_Array_Request;
+    Chuck_Get_Global_Int_Array_Request * message =
+        new Chuck_Get_Global_Int_Array_Request;
     message->name = name;
-    message->callback = callback;
+    message->cb_with_name = callback;
+    message->cb_type = ck_get_name;
     
     Chuck_Global_Request r;
-    r.type = get_named_global_int_array_request;
-    r.getNamedIntArrayRequest = message;
+    r.type = get_global_int_array_request;
+    r.getIntArrayRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
 
@@ -2551,7 +2468,8 @@ t_CKBOOL Chuck_VM::get_global_int_array_value( std::string name, t_CKUINT index,
         new Chuck_Get_Global_Int_Array_Value_Request;
     message->name = name;
     message->index = index;
-    message->callback = callback;
+    message->cb = callback;
+    message->cb_type = ck_get_plain;
     
     Chuck_Global_Request r;
     r.type = get_global_int_array_value_request;
@@ -2573,15 +2491,16 @@ t_CKBOOL Chuck_VM::get_global_int_array_value( std::string name, t_CKUINT index,
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::get_global_int_array_value( std::string name, t_CKUINT index, void (* callback)(const char *, t_CKINT) )
 {
-    Chuck_Get_Named_Global_Int_Array_Value_Request * message =
-        new Chuck_Get_Named_Global_Int_Array_Value_Request;
+    Chuck_Get_Global_Int_Array_Value_Request * message =
+        new Chuck_Get_Global_Int_Array_Value_Request;
     message->name = name;
     message->index = index;
-    message->callback = callback;
+    message->cb_with_name = callback;
+    message->cb_type = ck_get_name;
     
     Chuck_Global_Request r;
-    r.type = get_named_global_int_array_value_request;
-    r.getNamedIntArrayValueRequest = message;
+    r.type = get_global_int_array_value_request;
+    r.getIntArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
 
@@ -2629,7 +2548,8 @@ t_CKBOOL Chuck_VM::get_global_associative_int_array_value( std::string name, std
         new Chuck_Get_Global_Associative_Int_Array_Value_Request;
     message->name = name;
     message->key = key;
-    message->callback = callback;
+    message->cb = callback;
+    message->cb_type = ck_get_plain;
     
     Chuck_Global_Request r;
     r.type = get_global_associative_int_array_value_request;
@@ -2651,15 +2571,16 @@ t_CKBOOL Chuck_VM::get_global_associative_int_array_value( std::string name, std
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::get_global_associative_int_array_value( std::string name, std::string key, void (* callback)(const char *, t_CKINT) )
 {
-    Chuck_Get_Named_Global_Associative_Int_Array_Value_Request * message =
-        new Chuck_Get_Named_Global_Associative_Int_Array_Value_Request;
+    Chuck_Get_Global_Associative_Int_Array_Value_Request * message =
+        new Chuck_Get_Global_Associative_Int_Array_Value_Request;
     message->name = name;
     message->key = key;
-    message->callback = callback;
+    message->cb_with_name = callback;
+    message->cb_type = ck_get_name;
     
     Chuck_Global_Request r;
-    r.type = get_named_global_associative_int_array_value_request;
-    r.getNamedAssociativeIntArrayValueRequest = message;
+    r.type = get_global_associative_int_array_value_request;
+    r.getAssociativeIntArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
 
@@ -2709,7 +2630,8 @@ t_CKBOOL Chuck_VM::get_global_float_array( std::string name, void (* callback)(t
     Chuck_Get_Global_Float_Array_Request * message =
         new Chuck_Get_Global_Float_Array_Request;
     message->name = name;
-    message->callback = callback;
+    message->cb = callback;
+    message->cb_type = ck_get_plain;
     
     Chuck_Global_Request r;
     r.type = get_global_float_array_request;
@@ -2731,14 +2653,15 @@ t_CKBOOL Chuck_VM::get_global_float_array( std::string name, void (* callback)(t
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::get_global_float_array( std::string name, void (* callback)(const char *, t_CKFLOAT[], t_CKUINT))
 {
-    Chuck_Get_Named_Global_Float_Array_Request * message =
-        new Chuck_Get_Named_Global_Float_Array_Request;
+    Chuck_Get_Global_Float_Array_Request * message =
+        new Chuck_Get_Global_Float_Array_Request;
     message->name = name;
-    message->callback = callback;
+    message->cb_with_name = callback;
+    message->cb_type = ck_get_name;
     
     Chuck_Global_Request r;
-    r.type = get_named_global_float_array_request;
-    r.getNamedFloatArrayRequest = message;
+    r.type = get_global_float_array_request;
+    r.getFloatArrayRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
 
@@ -2786,7 +2709,8 @@ t_CKBOOL Chuck_VM::get_global_float_array_value( std::string name, t_CKUINT inde
         new Chuck_Get_Global_Float_Array_Value_Request;
     message->name = name;
     message->index = index;
-    message->callback = callback;
+    message->cb = callback;
+    message->cb_type = ck_get_plain;
     
     Chuck_Global_Request r;
     r.type = get_global_float_array_value_request;
@@ -2808,15 +2732,16 @@ t_CKBOOL Chuck_VM::get_global_float_array_value( std::string name, t_CKUINT inde
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::get_global_float_array_value( std::string name, t_CKUINT index, void (* callback)(const char *, t_CKFLOAT) )
 {
-    Chuck_Get_Named_Global_Float_Array_Value_Request * message =
-        new Chuck_Get_Named_Global_Float_Array_Value_Request;
+    Chuck_Get_Global_Float_Array_Value_Request * message =
+        new Chuck_Get_Global_Float_Array_Value_Request;
     message->name = name;
     message->index = index;
-    message->callback = callback;
+    message->cb_with_name = callback;
+    message->cb_type = ck_get_name;
     
     Chuck_Global_Request r;
-    r.type = get_named_global_float_array_value_request;
-    r.getNamedFloatArrayValueRequest = message;
+    r.type = get_global_float_array_value_request;
+    r.getFloatArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
 
@@ -2864,7 +2789,8 @@ t_CKBOOL Chuck_VM::get_global_associative_float_array_value( std::string name, s
         new Chuck_Get_Global_Associative_Float_Array_Value_Request;
     message->name = name;
     message->key = key;
-    message->callback = callback;
+    message->cb = callback;
+    message->cb_type = ck_get_plain;
     
     Chuck_Global_Request r;
     r.type = get_global_associative_float_array_value_request;
@@ -2886,15 +2812,16 @@ t_CKBOOL Chuck_VM::get_global_associative_float_array_value( std::string name, s
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::get_global_associative_float_array_value( std::string name, std::string key, void (* callback)(const char *, t_CKFLOAT) )
 {
-    Chuck_Get_Named_Global_Associative_Float_Array_Value_Request * message =
-        new Chuck_Get_Named_Global_Associative_Float_Array_Value_Request;
+    Chuck_Get_Global_Associative_Float_Array_Value_Request * message =
+        new Chuck_Get_Global_Associative_Float_Array_Value_Request;
     message->name = name;
     message->key = key;
-    message->callback = callback;
+    message->cb_with_name = callback;
+    message->cb_type = ck_get_name;
     
     Chuck_Global_Request r;
-    r.type = get_named_global_associative_float_array_value_request;
-    r.getNamedAssociativeFloatArrayValueRequest = message;
+    r.type = get_global_associative_float_array_value_request;
+    r.getAssociativeFloatArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
 
@@ -3269,29 +3196,26 @@ void Chuck_VM::handle_global_queue_messages()
                 break;
 
             case get_global_float_request:
-                // ensure fp is not null
-                if( message.getFloatRequest->fp != NULL )
+                // ensure one cb is not null (union)
+                if( message.getFloatRequest->cb != NULL )
                 {
                     // ensure value exists
                     init_global_float( message.getFloatRequest->name );
                     // call callback with float
-                    message.getFloatRequest->fp( m_global_floats[message.getFloatRequest->name]->val );
+                    switch( message.getFloatRequest->cb_type )
+                    {
+                    case ck_get_plain:
+                        message.getFloatRequest->cb( m_global_floats[message.getFloatRequest->name]->val );
+                        break;
+                    case ck_get_name:
+                        message.getFloatRequest->cb_with_name( message.getFloatRequest->name.c_str(), m_global_floats[message.getFloatRequest->name]->val );
+                        break;
+                    case ck_get_id:
+                        break;
+                    }
                 }
                 // clean up request storage
                 delete message.getFloatRequest;
-                break;
-
-            case get_named_global_float_request:
-                // ensure fp is not null
-                if( message.getNamedFloatRequest->fp != NULL )
-                {
-                    // ensure value exists
-                    init_global_float( message.getNamedFloatRequest->name );
-                    // call callback with float
-                    message.getNamedFloatRequest->fp( message.getNamedFloatRequest->name.c_str(), m_global_floats[message.getNamedFloatRequest->name]->val );
-                }
-                // clean up request storage
-                delete message.getNamedFloatRequest;
                 break;
 
             case set_global_string_request:
@@ -3304,29 +3228,26 @@ void Chuck_VM::handle_global_queue_messages()
                 break;
 
             case get_global_string_request:
-                // ensure fp is not null
-                if( message.getStringRequest->fp != NULL )
+                // ensure one callback is not null (union)
+                if( message.getStringRequest->cb != NULL )
                 {
                     // ensure value exists
                     init_global_string( message.getStringRequest->name );
                     // call callback with string
-                    message.getStringRequest->fp( m_global_strings[message.getStringRequest->name]->val->c_str() );
+                    switch( message.getStringRequest->cb_type )
+                    {
+                    case ck_get_plain:
+                        message.getStringRequest->cb( m_global_strings[message.getStringRequest->name]->val->c_str() );
+                        break;
+                    case ck_get_name:
+                        message.getStringRequest->cb_with_name( message.getStringRequest->name.c_str(), m_global_strings[message.getStringRequest->name]->val->c_str() );
+                        break;
+                    case ck_get_id:
+                        break;
+                    }
                 }
                 // clean up request storage
                 delete message.getStringRequest;
-                break;
-
-            case get_named_global_string_request:
-                // ensure fp is not null
-                if( message.getNamedStringRequest->fp != NULL )
-                {
-                    // ensure value exists
-                    init_global_string( message.getNamedStringRequest->name );
-                    // call callback with string
-                    message.getNamedStringRequest->fp( message.getNamedStringRequest->name.c_str(), m_global_strings[message.getNamedStringRequest->name]->val->c_str() );
-                }
-                // clean up request storage
-                delete message.getNamedStringRequest;
                 break;
 
             case signal_global_event_request:
@@ -3369,8 +3290,8 @@ void Chuck_VM::handle_global_queue_messages()
                 break;
 
             case listen_for_global_event_request:
-                // ensure callback is not null
-                if( message.listenForEventRequest->callback != NULL )
+                // ensure a callback is not null (union)
+                if( message.listenForEventRequest->cb != NULL )
                 {
                     // ensure it exists
                     if( m_global_events.count( message.listenForEventRequest->name ) > 0 )
@@ -3380,13 +3301,38 @@ void Chuck_VM::handle_global_queue_messages()
                         if( message.listenForEventRequest->deregister )
                         {
                             // deregister
-                            event->remove_listen( message.listenForEventRequest->callback );
+                            switch( message.listenForEventRequest->cb_type )
+                            {
+                            case ck_get_plain:
+                                event->remove_listen( message.listenForEventRequest->cb );
+                                break;
+                            case ck_get_name:
+                                event->remove_listen( message.listenForEventRequest->name,
+                                    message.listenForEventRequest->cb_with_name );
+                                break;
+                            case ck_get_id:
+                                break;
+                            }
+                            
                         }
                         else
                         {
                             // register
-                            event->global_listen( message.listenForEventRequest->callback,
-                                message.listenForEventRequest->listen_forever );
+                            switch( message.listenForEventRequest->cb_type )
+                            {
+                            case ck_get_plain:
+                                event->global_listen( message.listenForEventRequest->cb,
+                                    message.listenForEventRequest->listen_forever );
+                                break;
+                            case ck_get_name:
+                                event->global_listen( message.listenForEventRequest->name,
+                                    message.listenForEventRequest->cb_with_name,
+                                    message.listenForEventRequest->listen_forever );
+                                break;
+                            case ck_get_id:
+                                break;
+                            }
+                            
                         }
                     }
                     else
@@ -3408,49 +3354,6 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.listenForEventRequest;
                 }
                 break;
-
-            case listen_for_named_global_event_request:
-                // ensure callback is not null
-                if( message.listenForNamedEventRequest->callback != NULL )
-                {
-                    // ensure it exists
-                    if( m_global_events.count( message.listenForNamedEventRequest->name ) > 0 )
-                    {
-                        // get event
-                        Chuck_Event * event = get_global_event( message.listenForNamedEventRequest->name );
-                        if( message.listenForNamedEventRequest->deregister )
-                        {
-                            // deregister
-                            event->remove_listen( message.listenForNamedEventRequest->name, message.listenForNamedEventRequest->callback );
-                        }
-                        else
-                        {
-                            // register
-                            event->global_listen( message.listenForNamedEventRequest->name, 
-                                message.listenForNamedEventRequest->callback,
-                                message.listenForNamedEventRequest->listen_forever );
-                        }
-                    }
-                    else
-                    {
-                        // name does not exist. possible that object just doesn't exist yet.
-                        if( message.retries > 0 )
-                        {
-                            should_retry_this_request = true;
-                        }
-                    }
-                }
-                // clean up request storage
-                if( should_retry_this_request )
-                {
-                    m_global_request_retry_queue.put( message );
-                }
-                else
-                {
-                    delete message.listenForNamedEventRequest;
-                }
-                break;
-
 
             case set_global_int_array_request:
                 {
@@ -3508,14 +3411,28 @@ void Chuck_VM::handle_global_queue_messages()
                         Chuck_Object * array = m_global_arrays[request->name]->array;
                         if( array != NULL &&
                             m_global_arrays[request->name]->array_type == te_globalInt &&
-                            request->callback != NULL )
+                            request->cb != NULL )
                         {
                             Chuck_Array4 * intArray = (Chuck_Array4 *) array;
                             // TODO: why is m_vector a vector of unsigned ints...??
-                            request->callback(
-                                (t_CKINT *) &(intArray->m_vector[0]),
-                                intArray->size()
-                            );
+                            switch( request->cb_type )
+                            {
+                            case ck_get_plain:
+                                request->cb(
+                                    (t_CKINT *) &(intArray->m_vector[0]),
+                                    intArray->size()
+                                );
+                                break;
+                            case ck_get_name:
+                                request->cb_with_name(
+                                    request->name.c_str(),
+                                    (t_CKINT *) &(intArray->m_vector[0]),
+                                    intArray->size()
+                                );
+                                break;
+                            case ck_get_id:
+                                break;
+                            }
                         }
                     }
                     else
@@ -3536,49 +3453,6 @@ void Chuck_VM::handle_global_queue_messages()
                 else
                 {
                     delete message.getIntArrayRequest;
-                }
-                break;
-
-            case get_named_global_int_array_request:
-                {
-                    // fetch an entire array, if it exists
-                    Chuck_Get_Named_Global_Int_Array_Request * request =
-                        message.getNamedIntArrayRequest;
-                    if( m_global_arrays.count( request->name ) > 0 )
-                    {
-                        // we know that array's name. does it exist yet; do we have a callback?
-                        Chuck_Object * array = m_global_arrays[request->name]->array;
-                        if( array != NULL &&
-                            m_global_arrays[request->name]->array_type == te_globalInt &&
-                            request->callback != NULL )
-                        {
-                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
-                            // TODO: why is m_vector a vector of unsigned ints...??
-                            request->callback(
-                                request->name.c_str(),
-                                (t_CKINT *) &(intArray->m_vector[0]),
-                                intArray->size()
-                            );
-                        }
-                    }
-                    else
-                    {
-                        // name does not exist. possible that object just doesn't exist yet.
-                        if( message.retries > 0 )
-                        {
-                            should_retry_this_request = true;
-                        }
-                    }
-                }
-                
-                // clean up request storage
-                if( should_retry_this_request )
-                {
-                    m_global_request_retry_queue.put( message );
-                }
-                else
-                {
-                    delete message.getNamedIntArrayRequest;
                 }
                 break;
 
@@ -3632,17 +3506,27 @@ void Chuck_VM::handle_global_queue_messages()
                     // fetch an entire array, if it exists
                     if( m_global_arrays.count( request->name ) > 0 )
                     {
-                        // we know that array's name. does it exist yet; do we have a callback?
+                        // we know that array's name. does it exist yet; do we have a callback? (union)
                         Chuck_Object * array = m_global_arrays[request->name]->array;
                         if( array != NULL &&
                             m_global_arrays[request->name]->array_type == te_globalInt &&
-                            request->callback != NULL )
+                            request->cb != NULL )
                         {
                             Chuck_Array4 * intArray = (Chuck_Array4 *) array;
                             // TODO why is it unsigned int storage?
                             t_CKUINT result = 0;
                             intArray->get( request->index, &result );
-                            request->callback( result );
+                            switch( request->cb_type )
+                            {
+                            case ck_get_plain:
+                                request->cb( result );
+                                break;
+                            case ck_get_name:
+                                request->cb_with_name( request->name.c_str(), result );
+                                break;
+                            case ck_get_id:
+                                break;
+                            }
                         }
                     }
                     else
@@ -3663,48 +3547,6 @@ void Chuck_VM::handle_global_queue_messages()
                 else
                 {
                     delete message.getIntArrayValueRequest;
-                }
-                break;
-
-            case get_named_global_int_array_value_request:
-                {
-                    // get a single value, if array exists and index in range
-                    Chuck_Get_Named_Global_Int_Array_Value_Request * request =
-                        message.getNamedIntArrayValueRequest;
-                    // fetch an entire array, if it exists
-                    if( m_global_arrays.count( request->name ) > 0 )
-                    {
-                        // we know that array's name. does it exist yet; do we have a callback?
-                        Chuck_Object * array = m_global_arrays[request->name]->array;
-                        if( array != NULL &&
-                            m_global_arrays[request->name]->array_type == te_globalInt &&
-                            request->callback != NULL )
-                        {
-                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
-                            // TODO why is it unsigned int storage?
-                            t_CKUINT result = 0;
-                            intArray->get( request->index, &result );
-                            request->callback( request->name.c_str(), result );
-                        }
-                    }
-                    else
-                    {
-                        // name does not exist. possible that object just doesn't exist yet.
-                        if( message.retries > 0 )
-                        {
-                            should_retry_this_request = true;
-                        }
-                    }
-                }
-                
-                // clean up request storage
-                if( should_retry_this_request )
-                {
-                    m_global_request_retry_queue.put( message );
-                }
-                else
-                {
-                    delete message.getNamedIntArrayValueRequest;
                 }
                 break;
 
@@ -3755,17 +3597,27 @@ void Chuck_VM::handle_global_queue_messages()
                     // fetch an entire array, if it exists
                     if( m_global_arrays.count( request->name ) > 0 )
                     {
-                        // we know that array's name. does it exist yet; do we have a callback?
+                        // we know that array's name. does it exist yet; do we have a callback? (union)
                         Chuck_Object * array = m_global_arrays[request->name]->array;
                         if( array != NULL &&
                             m_global_arrays[request->name]->array_type == te_globalInt &&
-                            request->callback != NULL )
+                            request->cb != NULL )
                         {
                             Chuck_Array4 * intArray = (Chuck_Array4 *) array;
                             // TODO why is it unsigned int storage?
                             t_CKUINT result = 0;
                             intArray->get( request->key, &result );
-                            request->callback( result );
+                            switch( request->cb_type )
+                            {
+                            case ck_get_plain:
+                                request->cb( result );
+                                break;
+                            case ck_get_name:
+                                request->cb_with_name( request->name.c_str(), result );
+                                break;
+                            case ck_get_id:
+                                break;
+                            }
                         }
                     }
                     else
@@ -3786,48 +3638,6 @@ void Chuck_VM::handle_global_queue_messages()
                 else
                 {
                     delete message.getAssociativeIntArrayValueRequest;
-                }
-                break;
-
-            case get_named_global_associative_int_array_value_request:
-                {
-                    // get a single value by key, if array exists and key in map
-                    Chuck_Get_Named_Global_Associative_Int_Array_Value_Request * request =
-                        message.getNamedAssociativeIntArrayValueRequest;
-                    // fetch an entire array, if it exists
-                    if( m_global_arrays.count( request->name ) > 0 )
-                    {
-                        // we know that array's name. does it exist yet; do we have a callback?
-                        Chuck_Object * array = m_global_arrays[request->name]->array;
-                        if( array != NULL &&
-                            m_global_arrays[request->name]->array_type == te_globalInt &&
-                            request->callback != NULL )
-                        {
-                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
-                            // TODO why is it unsigned int storage?
-                            t_CKUINT result = 0;
-                            intArray->get( request->key, &result );
-                            request->callback( request->name.c_str(), result );
-                        }
-                    }
-                    else
-                    {
-                        // name does not exist. possible that object just doesn't exist yet.
-                        if( message.retries > 0 )
-                        {
-                            should_retry_this_request = true;
-                        }
-                    }
-                }
-                
-                // clean up request storage
-                if( should_retry_this_request )
-                {
-                    m_global_request_retry_queue.put( message );
-                }
-                else
-                {
-                    delete message.getNamedAssociativeIntArrayValueRequest;
                 }
                 break;
 
@@ -3883,17 +3693,31 @@ void Chuck_VM::handle_global_queue_messages()
                         message.getFloatArrayRequest;
                     if( m_global_arrays.count( request->name ) > 0 )
                     {
-                        // we know that array's name. does it exist yet; do we have a callback?
+                        // we know that array's name. does it exist yet; do we have a callback? (union)
                         Chuck_Object * array = m_global_arrays[request->name]->array;
                         if( array != NULL &&
                             m_global_arrays[request->name]->array_type == te_globalFloat &&
-                            request->callback != NULL )
+                            request->cb != NULL )
                         {
                             Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
-                            request->callback(
-                                &(floatArray->m_vector[0]),
-                                floatArray->size()
-                            );
+                            switch( request->cb_type )
+                            {
+                            case ck_get_plain:
+                                request->cb(
+                                    &(floatArray->m_vector[0]),
+                                    floatArray->size()
+                                );
+                                break;
+                            case ck_get_name:
+                                request->cb_with_name(
+                                    request->name.c_str(),
+                                    &(floatArray->m_vector[0]),
+                                    floatArray->size()
+                                );
+                                break;
+                            case ck_get_id:
+                                break;
+                            }
                         }
                     }
                     else
@@ -3914,48 +3738,6 @@ void Chuck_VM::handle_global_queue_messages()
                 else
                 {
                     delete message.getFloatArrayRequest;
-                }
-                break;
-
-            case get_named_global_float_array_request:
-                {
-                    // fetch an entire array, if it exists
-                    Chuck_Get_Named_Global_Float_Array_Request * request =
-                        message.getNamedFloatArrayRequest;
-                    if( m_global_arrays.count( request->name ) > 0 )
-                    {
-                        // we know that array's name. does it exist yet; do we have a callback?
-                        Chuck_Object * array = m_global_arrays[request->name]->array;
-                        if( array != NULL &&
-                            m_global_arrays[request->name]->array_type == te_globalFloat &&
-                            request->callback != NULL )
-                        {
-                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
-                            request->callback(
-                                request->name.c_str(),
-                                &(floatArray->m_vector[0]),
-                                floatArray->size()
-                            );
-                        }
-                    }
-                    else
-                    {
-                        // name does not exist. possible that object just doesn't exist yet.
-                        if( message.retries > 0 )
-                        {
-                            should_retry_this_request = true;
-                        }
-                    }
-                }
-        
-                // clean up request storage
-                if( should_retry_this_request )
-                {
-                    m_global_request_retry_queue.put( message );
-                }
-                else
-                {
-                    delete message.getNamedFloatArrayRequest;
                 }
                 break;
 
@@ -4009,16 +3791,26 @@ void Chuck_VM::handle_global_queue_messages()
                     // fetch an entire array, if it exists
                     if( m_global_arrays.count( request->name ) > 0 )
                     {
-                        // we know that array's name. does it exist yet; do we have a callback?
+                        // we know that array's name. does it exist yet; do we have a callback? (union)
                         Chuck_Object * array = m_global_arrays[request->name]->array;
                         if( array != NULL &&
                             m_global_arrays[request->name]->array_type == te_globalFloat &&
-                            request->callback != NULL )
+                            request->cb != NULL )
                         {
                             Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
                             t_CKFLOAT result = 0;
                             floatArray->get( request->index, &result );
-                            request->callback( result );
+                            switch( request->cb_type )
+                            {
+                            case ck_get_plain:
+                                request->cb( result );
+                                break;
+                            case ck_get_name:
+                                request->cb_with_name( request->name.c_str(), result );
+                                break;
+                            case ck_get_id:
+                                break;
+                            }
                         }
                     }
                     else
@@ -4039,47 +3831,6 @@ void Chuck_VM::handle_global_queue_messages()
                 else
                 {
                     delete message.getFloatArrayValueRequest;
-                }
-                break;
-
-            case get_named_global_float_array_value_request:
-                {
-                    // get a single value, if array exists and index in range
-                    Chuck_Get_Named_Global_Float_Array_Value_Request * request =
-                        message.getNamedFloatArrayValueRequest;
-                    // fetch an entire array, if it exists
-                    if( m_global_arrays.count( request->name ) > 0 )
-                    {
-                        // we know that array's name. does it exist yet; do we have a callback?
-                        Chuck_Object * array = m_global_arrays[request->name]->array;
-                        if( array != NULL &&
-                            m_global_arrays[request->name]->array_type == te_globalFloat &&
-                            request->callback != NULL )
-                        {
-                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
-                            t_CKFLOAT result = 0;
-                            floatArray->get( request->index, &result );
-                            request->callback( request->name.c_str(), result );
-                        }
-                    }
-                    else
-                    {
-                        // name does not exist. possible that object just doesn't exist yet.
-                        if( message.retries > 0 )
-                        {
-                            should_retry_this_request = true;
-                        }
-                    }
-                }
-        
-                // clean up request storage
-                if( should_retry_this_request )
-                {
-                    m_global_request_retry_queue.put( message );
-                }
-                else
-                {
-                    delete message.getNamedFloatArrayValueRequest;
                 }
                 break;
                 
@@ -4130,16 +3881,26 @@ void Chuck_VM::handle_global_queue_messages()
                     // fetch an entire array, if it exists
                     if( m_global_arrays.count( request->name ) > 0 )
                     {
-                        // we know that array's name. does it exist yet; do we have a callback?
+                        // we know that array's name. does it exist yet; do we have a callback? (union)
                         Chuck_Object * array = m_global_arrays[request->name]->array;
                         if( array != NULL &&
                             m_global_arrays[request->name]->array_type == te_globalFloat &&
-                            request->callback != NULL )
+                            request->cb != NULL )
                         {
                             Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
                             t_CKFLOAT result = 0;
                             floatArray->get( request->key, &result );
-                            request->callback( result );
+                            switch( request->cb_type )
+                            {
+                            case ck_get_plain:
+                                request->cb( result );
+                                break;
+                            case ck_get_name:
+                                request->cb_with_name( request->name.c_str(), result );
+                                break;
+                            case ck_get_id:
+                                break;
+                            }
                         }
                     }
                     else
@@ -4162,49 +3923,7 @@ void Chuck_VM::handle_global_queue_messages()
                     delete message.getAssociativeFloatArrayValueRequest;
                 }
                 break;
-
-            case get_named_global_associative_float_array_value_request:
-                {
-                    // get a single value by key, if array exists and key in map
-                    Chuck_Get_Named_Global_Associative_Float_Array_Value_Request * request =
-                        message.getNamedAssociativeFloatArrayValueRequest;
-                    // fetch an entire array, if it exists
-                    if( m_global_arrays.count( request->name ) > 0 )
-                    {
-                        // we know that array's name. does it exist yet; do we have a callback?
-                        Chuck_Object * array = m_global_arrays[request->name]->array;
-                        if( array != NULL &&
-                            m_global_arrays[request->name]->array_type == te_globalFloat &&
-                            request->callback != NULL )
-                        {
-                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
-                            t_CKFLOAT result = 0;
-                            floatArray->get( request->key, &result );
-                            request->callback( request->name.c_str(), result );
-                        }
-                    }
-                    else
-                    {
-                        // name does not exist. possible that object just doesn't exist yet.
-                        if( message.retries > 0 )
-                        {
-                            should_retry_this_request = true;
-                        }
-                    }
-                }
-        
-                // clean up request storage
-                if( should_retry_this_request )
-                {
-                    m_global_request_retry_queue.put( message );
-                }
-                else
-                {
-                    delete message.getNamedAssociativeFloatArrayValueRequest;
-                }
-                break;
             }
-        
         }
         else
         {
