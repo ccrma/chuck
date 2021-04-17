@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
-// name: r.ck
+// name: r.ck ('r' is for "receiver")
 // desc: OpenSoundControl (OSC) receiver example
-// note: launch with s.ck (that's the sender!)
+// note: launch with s.ck (that's the sender)
 //----------------------------------------------------------------------------
 
 // the patch

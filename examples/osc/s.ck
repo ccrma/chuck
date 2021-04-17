@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
-// name: s.ck
+// name: s.ck ('s' is "sender")
 // desc: OpenSoundControl (OSC) sender example
-// note: launch with r.ck (that's the receiver!)
+// note: launch with r.ck (that's the receiver)
 //----------------------------------------------------------------------------
 
 // destination host name
