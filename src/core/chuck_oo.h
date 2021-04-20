@@ -70,6 +70,17 @@ class  CBufferSimple; // added 1.3.0.0
 
 
 
+// enum
+enum Chuck_Global_Get_Callback_Type
+{
+    ck_get_plain,
+    ck_get_name,
+    ck_get_id
+};
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: struct Chuck_VM_Object
 // desc: base vm object
@@ -432,12 +443,14 @@ struct Chuck_Global_Event_Listener
     union {
         void (* void_callback)(void);
         void (* named_callback)(const char *);
-
+        void (* id_callback)(t_CKINT);
     };
     t_CKBOOL listen_forever;
-    t_CKBOOL named;
+    Chuck_Global_Get_Callback_Type callback_type;
     std::string name;
-    Chuck_Global_Event_Listener() : void_callback(NULL), listen_forever(FALSE), named(FALSE), name("") {};
+    t_CKINT id;
+    Chuck_Global_Event_Listener() : void_callback(NULL), listen_forever(FALSE), 
+        callback_type(ck_get_plain), name(""), id(0) {};
 };
 
 
@@ -458,8 +471,10 @@ public:
     void broadcast_global();
     void global_listen( void (* cb)(void), t_CKBOOL listen_forever );
     void global_listen( std::string name, void (* cb)(const char *), t_CKBOOL listen_forever );
+    void global_listen( t_CKINT id, void (* cb)(t_CKINT), t_CKBOOL listen_forever );
     t_CKBOOL remove_listen( void (* cb)(void) );
     t_CKBOOL remove_listen( std::string name, void (* cb)(const char *) );
+    t_CKBOOL remove_listen( t_CKINT id, void (* cb)(t_CKINT) );
 
 public: // internal
     // added 1.3.0.0: queue_broadcast now takes event_buffer
