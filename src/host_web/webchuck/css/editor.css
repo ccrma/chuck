@@ -154,3 +154,6 @@ th, td {
     outline:0;
 }
 
+.ace_editor * {
+    font-family: monospace !important;
+}
