@@ -40,7 +40,7 @@ EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
     core/ulib_math.cpp core/ulib_regex.cpp core/ulib_std.cpp \
     core/util_buffers.cpp core/util_math.c core/util_raw.c \
     core/util_string.cpp core/util_xforms.c core/chuck_win32.c \
-    core/chuck.tab.c core/util_sndfile.c
+    core/util_sndfile.c
 
 
 .PHONY: emscripten
@@ -58,7 +58,6 @@ host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
         $(EMSCRIPTENSRCS) -o host_web/webchuck/js/webchuck.js \
         -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8"]' \
         -s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"' \
-        -s EXPORT_ES6=1 \
         -s ALLOW_MEMORY_GROWTH=1 \
         -s --extern-post-js host_web/chucknode-postjs.js \
         -s RESERVED_FUNCTION_POINTERS=50 -s FORCE_FILESYSTEM=1
