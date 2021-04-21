@@ -794,7 +794,7 @@ class ChuckNode extends AudioWorkletProcessor
                             thePort.postMessage( { type: "eventCallback", callback: theCallback } );
                             Module.removeFunction( pointer );
                         }
-                    })(thePort, theCallback) );
+                    })(thePort, theCallback), 'v' );
                     listenForChuckEventOnce( theID, theVariable, pointer );
                 })(this.port, event.data.callback, event.data.variable, this.myID, this.Module);
                 break;
@@ -805,7 +805,7 @@ class ChuckNode extends AudioWorkletProcessor
                     {
                         thePort.postMessage( { type: "eventCallback", callback: theCallback } );
                     }
-                })(this.port, event.data.callback) );
+                })(this.port, event.data.callback), 'v' );
                 startListeningForChuckEvent( this.myID, event.data.variable, this.myPointers[event.data.callback] );
                 break;
             case 'stopListeningForChuckEvent':
@@ -848,7 +848,7 @@ class ChuckNode extends AudioWorkletProcessor
                             thePort.postMessage( { 
                                 type: "intArrayCallback", 
                                 callback: theCallback, 
-                                result: result
+                                result: Array.from(result)
                             } );
                             Module.removeFunction( pointer );
                         }
@@ -906,7 +906,7 @@ class ChuckNode extends AudioWorkletProcessor
                             thePort.postMessage( { 
                                 type: "floatArrayCallback", 
                                 callback: theCallback, 
-                                result: result
+                                result: Array.from(result)
                             } );
                             Module.removeFunction( pointer );
                         }
