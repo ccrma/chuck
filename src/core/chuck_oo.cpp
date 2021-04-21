@@ -2193,7 +2193,7 @@ t_CKBOOL Chuck_Event::remove_listen( std::string name, void (* cb)(const char *)
     while( !m_global_queue.empty() )
     {
         // check if the callback we are looking for
-        if( !m_global_queue.front().callback_type != ck_get_name || m_global_queue.front().named_callback != cb )
+        if( m_global_queue.front().callback_type != ck_get_name || m_global_queue.front().named_callback != cb )
         {
             // if not, enqueue it into temp
             temp.push( m_global_queue.front() );
@@ -2238,7 +2238,7 @@ t_CKBOOL Chuck_Event::remove_listen( t_CKINT id, void (* cb)(t_CKINT)  )
     while( !m_global_queue.empty() )
     {
         // check if the callback we are looking for
-        if( !m_global_queue.front().callback_type != ck_get_id || m_global_queue.front().id_callback != cb )
+        if( m_global_queue.front().callback_type != ck_get_id || m_global_queue.front().id_callback != cb )
         {
             // if not, enqueue it into temp
             temp.push( m_global_queue.front() );
