@@ -154,6 +154,6 @@ th, td {
     outline:0;
 }
 
-.ace_editor * {
-    font-family: monospace !important;
+.ace_editor, .ace_editor * {
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", "Droid Sans Mono", "Consolas", monospace !important; font-size: 12px !important; font-weight: 400 !important; letter-spacing: 0 !important;
 }
