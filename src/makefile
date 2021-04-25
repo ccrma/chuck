@@ -6,7 +6,7 @@ CK_PLATFORM=
 
 ########################## DEFAULT MAKE TARGET #################################
 # default target: print usage message and quit
-current: 
+current:
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
 	@echo "   make osx, make cygwin, or make win32"
@@ -46,28 +46,35 @@ LD=g++
 
 ############################# COMPILER FLAGS ###################################
 CFLAGS+=-I. -I$(COREDIR) -I$(COREDIR)/lo
+CXXFLAGS+=-I. -I$(COREDIR) -I$(COREDIR)/lo
 
 ifneq ($(CHUCK_STAT),)
 CFLAGS+= -D__CHUCK_STAT_TRACK__
+CXXFLAGS+= -D__CHUCK_STAT_TRACK__
 endif
 
 ifneq ($(CHUCK_DEBUG),)
 CFLAGS+= -g
+CXXFLAGS+= -g
 else
 CFLAGS+= -O3
+CXXFLAGS+= -O3
 endif
 
 ifneq ($(USE_64_BIT_SAMPLE),)
 CFLAGS+= -D__CHUCK_USE_64_BIT_SAMPLE__
+CXXFLAGS+= -D__CHUCK_USE_64_BIT_SAMPLE__
 endif
 
 ifneq ($(CHUCK_STRICT),)
 CFLAGS+= -Wall
+CXXFLAGS+= -Wall
 endif
 
 ifneq ($(findstring arm,$(shell uname -m)),)
 # some sort of arm platform- enable aggressive optimizations
 CFLAGS+= -ffast-math
+CXXFLAGS+= -ffast-math
 endif
 
 
@@ -115,12 +122,12 @@ LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
 
 
 ############################ CHUCK HOST TARGETS ################################
-CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp \
-	RtAudio/RtAudio.cpp
+CXXSRCS_HOST+= chuck_main.cc chuck_audio.cc chuck_console.cc \
+	rtaudio.cc
 
 
 ############################ OBJECT FILE TARGETS ###############################
-CXXOBJS_HOST=$(addprefix $(HOSTDIR)/,$(CXXSRCS_HOST:.cpp=.o))
+CXXOBJS_HOST=$(addprefix $(HOSTDIR)/,$(CXXSRCS_HOST:.cc=.o))
 
 COBJS=$(COBJS_HOST) $(addprefix $(COREDIR)/,$(COBJS_CORE))
 CXXOBJS=$(CXXOBJS_HOST) $(addprefix $(COREDIR)/,$(CXXOBJS_CORE))
@@ -135,6 +142,7 @@ LO_CFLAGS=-DHAVE_CONFIG_H -I.
 
 # remove -arch options
 CFLAGSDEPEND=$(CFLAGS)
+CXXFLAGSDEPEND=$(CXXFLAGS)
 
 ifneq (,$(ARCHS))
 ARCHOPTS=$(addprefix -arch ,$(ARCHS))
@@ -170,14 +178,14 @@ $(COBJS_HOST): %.o: %.c
 	$(CC) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
-$(CXXOBJS_HOST): %.o: %.cpp
-	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
-	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
+$(CXXOBJS_HOST): %.o: %.cc
+	$(CXX) $(CXXFLAGS) $(ARCHOPTS) -c $< -o $@
+	@$(CXX) -MM -MQ "$@" $(CXXFLAGSDEPEND) $< > $*.d
 
-clean: 
+clean:
 	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} $(OBJS) \
         $(patsubst %.o,%.d,$(OBJS))*~ $(COREDIR)/chuck.output \
-	$(COREDIR)/chuck.tab.h $(COREDIR)/chuck.tab.c \
+	$(COREDIR)/chuck.tab.h $(COREDIR)/chuck.tab.c test/03-Modules/file.bin \
         $(COREDIR)/chuck.yy.c $(DIST_DIR){,.tgz,.zip} Release Debug
 	
 
@@ -199,7 +207,7 @@ src-dist:
 	mkdir $(DIST_DIR) $(DIST_DIR)/src $(DIST_DIR)/examples
 # copy src
 	git archive HEAD src | tar -x -C $(DIST_DIR)
-	rm -r $(DIST_DIR)/src/test 
+	rm -r $(DIST_DIR)/src/test
 # copy examples
 	git archive HEAD examples | tar -x -C $(DIST_DIR)
 # copy notes
