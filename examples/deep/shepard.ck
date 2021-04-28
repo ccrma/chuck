@@ -3,7 +3,7 @@
 // desc: continuous shepard-risset tone generator; 
 //       descending but can easily made to ascend
 //
-// author: Ge Wang (http://www.gewang.com/)
+// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
 //   date: spring 2016
 //--------------------------------------------------------------------
 
