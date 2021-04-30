@@ -78,7 +78,8 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
                                 const char * extension, 
                                 std::list<std::string> & chugin_search_paths,
                                 std::list<std::string> & named_dls);
-t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query query, const char * name, const char * nspc );
+t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env,
+                      f_ck_query query, const char * name, const char * nspc );
 
 
 

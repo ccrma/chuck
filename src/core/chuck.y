@@ -88,7 +88,8 @@ a_Program g_program = NULL;
 // 1.3.5.3: changed to 39 for vec literal
 // 1.3.6.0: changed to 40 for external keyword
 // 1.4.0.0: changed to 41 for global keyword
-%expect 41
+// 1.4.0.1: changed to 79 for left recursion
+%expect 79
 
 %token <sval> ID STRING_LIT CHAR_LIT
 %token <ival> NUM
@@ -182,7 +183,7 @@ a_Program g_program = NULL;
 
 program
         : program_section                   { $$ = g_program = new_program( $1, EM_lineNum ); }
-        | program_section program           { $$ = g_program = prepend_program( $1, $2, EM_lineNum ); }
+        | program program_section           { $$ = g_program = append_program( $1, $2, EM_lineNum ); }
         ;
         
 program_section
@@ -303,7 +304,7 @@ arg_list
 
 statement_list
         : statement                         { $$ = new_stmt_list( $1, EM_lineNum ); }
-        | statement statement_list          { $$ = prepend_stmt_list( $1, $2, EM_lineNum ); }
+        | statement_list statement          { $$ = append_stmt_list( $1, $2, EM_lineNum ); }
         ;
         
 statement
@@ -358,7 +359,7 @@ expression_statement
         
 expression
         : chuck_expression                  { $$ = $1; }
-        | chuck_expression COMMA expression { $$ = prepend_expression( $1, $3, EM_lineNum ); }
+        | expression COMMA chuck_expression  { $$ = append_expression( $1, $3, EM_lineNum ); }
         ;
 
 chuck_expression

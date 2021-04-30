@@ -1458,7 +1458,7 @@ extends \hypertarget{ugen_FM}{FM}
 \item STK waveform oscillator class. 
 \item see examples/dope.ck
 \end{chuckitemize} 
-\verbatiminput{examples/ugen/WaveLoop.txt}
+\verbatiminput{examples/ugen/WvLoop.txt}
 \control
 \begin{chuckitemize}
 \item {\bf .freq} (float, READ/WRITE) {\it frequency of playback (loops/second)}
@@ -1509,8 +1509,12 @@ extends \hypertarget{ugen_FM}{FM}
 extends Event
 \control
 \begin{chuckitemize}
-\item {\bf .open} (int, READ/WRITE) {\it set port to receive}
-\item {\bf .recv} (MidiMsg, READ) {\it receives MIDI input}
+\item {\bf .open} (int, READ/WRITE) \textrightarrow bool {\it set port to receive}
+\item {\bf .open} (string, READ/WRITE) \textrightarrow bool {\it set port to receive, exact name match or substring}
+\item {\bf .recv} (MidiMsg, READ) \textrightarrow bool {\it receives MIDI input, returns false if no data available}
+\item {\bf .good} (READ only) \textrightarrow bool {\it check if open}
+\item {\bf .num} (READ only) \textrightarrow int {\it port number}
+\item {\bf .name} (READ only) \textrightarrow string {\it port name}
 \end{chuckitemize}
 (see MIDI tutorial)
 }
@@ -1523,8 +1527,12 @@ extends Event
 extends Event
 \control
 \begin{chuckitemize}
-\item {\bf .open} (int, READ/WRITE) {\it set port to send}
+\item {\bf .open} (int, READ/WRITE) \textrightarrow bool {\it set port to send}
+\item {\bf .open} (string, READ/WRITE) \textrightarrow bool {\it set port to send, exact name match or substring}
 \item {\bf .send} (MidiMsg, WRITE) {\it sends MIDI output}
+\item {\bf .good} (READ only) \textrightarrow bool {\it check if open}
+\item {\bf .num} (READ only) \textrightarrow int {\it port number}
+\item {\bf .name} (READ only) \textrightarrow string {\it port name}
 \end{chuckitemize}
 (see MIDI tutorial)
 }
@@ -1554,7 +1562,10 @@ extends Event
 \begin{chuckitemize}
 \item {\bf .port} (int, READ/WRITE) {\it set port to receive}
 \item {\bf .listen} () {\it starts object listening to port}
+\item {\bf .listen} (int(port)) {\it starts object listening to port}
+\item {\bf .event} (string(spec), READ/WRITE) {\it define string for event to receive in form ``address[,types]''}
 \item {\bf .event} (string(name), string(type), READ/WRITE) {\it define string for event to receive}
+\item {\bf .stop} () {\it stops listening to port}
 \end{chuckitemize}
 (see events tutorial)
 }
@@ -1566,8 +1577,16 @@ extends Event
 \end{chuckitemize}
 \control
 \begin{chuckitemize}
-\item {\bf .setHost} (string(host), int(port), READ/WRITE) {\it set port on the host to receive}
-\item {\bf .startMsg} (string(name), string(type), READ/WRITE)  {\it  define string for event to send}
+\item {\bf .setHost} (string(host), int(port), WRITE) {\it set port on the host to receive}
+\item {\bf .startMsg} (string(spec), WRITE)  {\it start message, spec should be in form ``address[,types...]''}
+\item {\bf .startMsg} (string(address), string(types), WRITE)  {\it start message with address and types}
+\item {\bf .addInt} (int(value), WRITE)  {\it  append value to message}
+\item {\bf .addFloat} (float(value), WRITE)  {\it append value to message}
+\item {\bf .addString} (string(value), WRITE)  {\it append value to message}
+\item {\bf .openBundle} (time(value), WRITE)  {\it start bundle with the 'immediately' time tag}
+\item {\bf .closeBundle} (WRITE)  {\it close current bundle}
+\item {\bf .hold} (bool(on), WRITE)  {\it don't send messages immediately, hold until kicked or until a message is finished without this flag}
+\item {\bf .kick} (WRITE)  {\it kick currently held message}
 \end{chuckitemize}
 (see events tutorial)
 }
@@ -1580,9 +1599,63 @@ extends Event
 extends Event
 \control
 \begin{chuckitemize}
-\item {\bf .nextMsg} (int, READ) {\it the number of messages in queue}
-\item {\bf .getFloat} (float, READ) {\it gets float from message}
-\item {\bf .getInt} (int, READ) {\it gets int from message}
+\item {\bf .nextMsg} (READ) \textrightarrow bool {\it try to get next message from queue, return false if none left}
+\item {\bf .getFloat} (READ) \textrightarrow float {\it gets next value from message as float}
+\item {\bf .getInt} (READ) \textrightarrow int {\it gets next value from message as int}
+\item {\bf .getString} (READ) \textrightarrow string {\it gets next value from message as string}
+\item {\bf .hasMsg} (READ) \textrightarrow bool {\it check if there are messages left in queue}
+\end{chuckitemize}
+(see events tutorial)
+}
+
+\chuckugen{
+\ugen{OscOut}
+\begin{chuckitemize}
+\item New Open Sound Control output
+\end{chuckitemize}
+\control
+\begin{chuckitemize}
+\item {\bf .dest} (string(host), int(port), WRITE) {\it set port on the host to receive}
+\item {\bf .start} (string(method), WRITE) {\it begin message for method/address}
+\item {\bf .start} (string(method), string(host), int(port), WRITE) {\it begin message for method/address and destination}
+\item {\bf .add} (int(value), WRITE) {\it append value}
+\item {\bf .add} (float(value), WRITE) {\it append value}
+\item {\bf .add} (string(value), WRITE) {\it append value}
+\item {\bf .send} () {\it finish and send message}
+\end{chuckitemize}
+(see events tutorial)
+}
+
+\chuckugen{
+\ugen{OscIn}
+\begin{chuckitemize}
+\item New Open Sound Control input
+\end{chuckitemize}
+\control
+\begin{chuckitemize}
+\item {\bf .port} (int, READ/WRITE) {\it set port to receive}
+\item {\bf .addAddress} (string(address), WRITE) {\it add OSC address/spec to receive}
+\item {\bf .removeAddress} (string(address), WRITE) {\it remove OSC address/spec to receive}
+\item {\bf .removeAllAddresses} () {\it remove all previously added OSC addresses/specs}
+\item {\bf .listenAll} () {\it listen for all OSC messages}
+\item {\bf .recv} (OscMsg, WRITE) \textrightarrow bool {\it return next message from queue or return false if queue empty}
+\end{chuckitemize}
+(see events tutorial)
+}
+
+\chuckugen{
+\ugen{OscMsg}
+\begin{chuckitemize}
+\item New Open Sound Control message
+\end{chuckitemize}
+\control
+\begin{chuckitemize}
+\item {\bf .address} (string READ/WRITE) {\it OSC address}
+\item {\bf .typetag} (string READ/WRITE) {\it OSC type tag}
+\item {\bf .numArgs} (int READ) {\it count of OSC arguments}
+\item {\bf .getInt} (int READ) \textrightarrow int {\it get i'th argument as int}
+\item {\bf .getFloat} (int READ) \textrightarrow int {\it get i'th argument as float}
+\item {\bf .getString} (int READ) \textrightarrow string {\it get i'th argument as string}
 \end{chuckitemize}
 (see events tutorial)
 }

@@ -642,12 +642,17 @@ void * otf_cb( void * p )
     {
         // REFACTOR-2017: change g_sock to per-VM socket
         client = ck_accept( carrier->otf_socket );
+
+        // check for thread shutdown, potentially occured during ck_accept
+        if(!carrier->otf_thread) 
+            break;
+
         if( !client )
         {
             if( carrier->vm )
                 EM_log( CK_LOG_INFO, "[chuck]: socket error during accept()...\n" );
             usleep( 40000 );
-            ck_close( client );
+            // ck_close( client );  don't close NULL client
             continue;
         }
         msg.clear();
@@ -720,9 +725,9 @@ const char * poop[] = {
     "[chuck]: lack of destructors have led to the unrecoverable mass build-up of trash\n"
     "         the chuck garbage collector will now run, deleting all files (bye.)",
     "[chuck]: calling machine.crash()...",
-    "[chuck]: an unknown fatal error has occured.  please restart your computer...",
-    "[chuck]: an unknown fatal error has occured.  please reinstall your OS...",
-    "[chuck]: an unknown fatal error has occured.  please update to chuck-3.0",
+    "[chuck]: an unknown fatal error has occurred.  please restart your computer...",
+    "[chuck]: an unknown fatal error has occurred.  please reinstall your OS...",
+    "[chuck]: an unknown fatal error has occurred.  please update to chuck-3.0",
     "[chuck]: internal error: unknown error",
     "[chuck]: page fault!!!",
     "[chuck]: error printing error message.  cannot continue 2#%%HGAFf9a0x"
@@ -744,6 +749,6 @@ void uh( )
     {
         int n = (int)(rand() / (float)RAND_MAX * poop_size);
         printf( "%s\n", poop[n] );
-        usleep( (unsigned long)(rand() / (float)RAND_MAX * 2000000) );
+        usleep( (unsigned long)(rand() / (float)RAND_MAX * 2000000) / 10 );
     }
 }

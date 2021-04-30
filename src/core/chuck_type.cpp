@@ -36,6 +36,7 @@
 #include "chuck_vm.h"
 #include "chuck_errmsg.h"
 #include "chuck_lang.h"
+#include "chuck_io.h"
 #include "util_string.h"
 #include "ugen_xxx.h"
 
@@ -6160,8 +6161,8 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
             a_Exp exp_decl = new_exp_decl( type_decl, var_decl_list, TRUE, 0 );
             // add addr
             var_decl->addr = (void *)cl->svars[j]->static_addr;
-            // prepend exp stmt to stmt list
-            svar_decls = prepend_stmt_list( new_stmt_from_expression( exp_decl, 0 ), svar_decls, 0 );
+            // append exp stmt to stmt list
+            svar_decls = append_stmt_list( svar_decls, new_stmt_from_expression( exp_decl, 0 ), 0 );
         }
 
         // if there are any declarations, prepend them to body

@@ -73,8 +73,8 @@ public:
     bool setParam( const std::string & name, t_CKFLOAT value );
     bool setParam( const std::string & name, const std::string & value );
     // get params
-    t_ckINT getParamInt( const std::string & key ) const;
-    t_ckFLOAT getParamFloat( const std::string & key ) const;
+    t_CKINT getParamInt( const std::string & key ) const;
+    t_CKFLOAT getParamFloat( const std::string & key ) const;
     std::string getParamString( const std::string & key ) const;
 
 public:

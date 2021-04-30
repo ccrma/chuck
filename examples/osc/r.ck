@@ -1,4 +1,8 @@
-// (launch with s.ck)
+//----------------------------------------------------------------------------
+// name: r.ck ('r' is for "receiver")
+// desc: OpenSoundControl (OSC) receiver example
+// note: launch with s.ck (that's the sender)
+//----------------------------------------------------------------------------
 
 // the patch
 SinOsc s => JCRev r => dac;
@@ -11,8 +15,8 @@ OscIn oin;
 OscMsg msg;
 // use port 6449 (or whatever)
 6449 => oin.port;
-// create an address in the receiver
-oin.addAddress( "/foo/notes, if" );
+// create an address in the receiver, expect an int and a float
+oin.addAddress( "/foo/notes, i f" );
 
 // infinite event loop
 while( true )
@@ -23,11 +27,13 @@ while( true )
     // grab the next message from the queue. 
     while( oin.recv(msg) )
     { 
+        // expected datatypes (note: as indicated by "i f")
         int i;
         float f;
 
-        // getFloat fetches the expected float (as indicated by "i f")
+        // fetch the first data element as int
         msg.getInt(0) => i => Std.mtof => s.freq;
+        // fetch the second data element as float
         msg.getFloat(1) => f => s.gain;
 
         // print

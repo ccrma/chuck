@@ -1378,7 +1378,7 @@ CK_DLL_SFUN( XCorr_compute )
 void xcorr_fft( SAMPLE * f, t_CKINT fsize, SAMPLE * g, t_CKINT gsize, SAMPLE * buffy, t_CKINT size )
 {
     // sanity check
-    assert( fsize == gsize == size );
+    assert( fsize == gsize && gsize == size );
 
     // take fft
     rfft( f, size/2, FFT_FORWARD );
