@@ -2652,7 +2652,7 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
         if( d->curf < 0 ) d->curf = 0;
         else if( d->curf >= d->num_frames )
         {
-            d->curf = d->num_frames; // ge:
+            d->curf = d->num_frames-1; // 1.4.0.2 (added back the -1)
             d->current_val = 0;
             return;
         }
@@ -2663,7 +2663,7 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
     if( d->fd != NULL ) sndbuf_load( d, index );
     
     // sets curr to correct position ( account for channels )
-//    t_CKUINT index = d->chan + i * d->num_channels;
+    // t_CKUINT index = d->chan + i * d->num_channels;
     if(d->buffer)
         d->current_val = d->buffer[index];
     else
