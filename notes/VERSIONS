@@ -1,7 +1,12 @@
 1.4.0.2
 ---
+  - (fixed) resolved a bug with SndBuf not playing when .rate < 0 and while
+    .pos beyond the end
+  - (fixed) resolved a bug with SndBuf where it could output DC when .rate < 0
+    after it reaches the beginning of the file (e.g., if the first sample is
+    non-zero)
   - (deprecated) Chubgraph => (new) Chugraph;
-    Chubgraph will continue to function.
+    Chubgraph will continue to function, with a deprecation warning.
 
 1.4.0.1
 ---
