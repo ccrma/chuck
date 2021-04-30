@@ -685,6 +685,7 @@ bool ChucK::shutdown()
     // STK-specific
     stk_detach( m_carrier );
     
+#ifndef __DISABLE_OTF_SERVER__
     // cancel otf thread
     if(m_carrier->otf_thread)
     {
@@ -702,7 +703,8 @@ bool ChucK::shutdown()
     // reset
     m_carrier->otf_socket = NULL;
     m_carrier->otf_port = 0;
-    
+#endif // __DISABLE_OTF_SERVER__
+
     // TODO: a different way to unlock?
     // unlock all objects to delete chout, cherr
     Chuck_VM_Object::unlock_all();
