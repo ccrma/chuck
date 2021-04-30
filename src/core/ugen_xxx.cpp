@@ -2651,13 +2651,13 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
     {
         if( d->curf < 0 )
         {
-            d->curf = 0;
+            d->curf = -1;
             d->current_val = 0;  // 1.4.0.2 (ge) added to avoid DC
             return; // 1.4.0.2 (ge) added
         }
-        else if( d->curf >= d->num_frames )
+        else if( d->curf > d->num_frames )
         {
-            d->curf = d->num_frames-1; // 1.4.0.2 (ge) added back the -1
+            d->curf = d->num_frames; // 1.4.0.2 (ge) added back the -1
             d->current_val = 0;
             return;
         }
@@ -2880,28 +2880,28 @@ CK_DLL_TICK( sndbuf_tick )
     
     // we're ticking once per sample ( system )
     // curf in samples;
-    
-    if( !d->loop && d->curf >= d->num_frames )
+    if( !d->loop && (d->curf >= d->num_frames || d->curf < 0) )
     {
         *out = 0;
-        return TRUE;
     }
-    
-    // calculate frame
-    if( d->interp == SNDBUF_DROP )
-    { 
-        *out = d->current_val;
-    }
-    else if( d->interp == SNDBUF_INTERP )
+    else // 1.4.0.2 ge: put this into else block so that rate can advance below even for the *out == 0 case above
     {
-        // samplewise linear interp
-        double alpha = d->curf - floor(d->curf);
-        *out = d->current_val;
-        *out += (float)alpha * ( sndbuf_sampleAt(d, (long)d->curf+1 ) - *out );
-    }
-    else if( d->interp == SNDBUF_SINC ) {
-        // do that fancy sinc function!
-        sndbuf_sinc_interpolate(d, out);
+        // calculate frame
+        if( d->interp == SNDBUF_DROP )
+        {
+            *out = d->current_val;
+        }
+        else if( d->interp == SNDBUF_INTERP )
+        {
+            // samplewise linear interp
+            double alpha = d->curf - floor(d->curf);
+            *out = d->current_val;
+            *out += (float)alpha * ( sndbuf_sampleAt(d, (long)d->curf+1 ) - *out );
+        }
+        else if( d->interp == SNDBUF_SINC ) {
+            // do that fancy sinc function!
+            sndbuf_sinc_interpolate(d, out);
+        }
     }
     
     // advance
