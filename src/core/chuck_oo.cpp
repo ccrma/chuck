@@ -54,7 +54,7 @@ t_CKBOOL Chuck_VM_Object::our_locks_in_effect = TRUE;
 const t_CKINT Chuck_IO::INT32 = 0x1;
 const t_CKINT Chuck_IO::INT16 = 0x2;
 const t_CKINT Chuck_IO::INT8 = 0x4;
-#ifndef __DISABLE__THREADS
+#ifndef __DISABLE_THREADS__
 const t_CKINT Chuck_IO::MODE_SYNC = 0;
 const t_CKINT Chuck_IO::MODE_ASYNC = 1;
 #else
