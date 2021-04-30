@@ -34,6 +34,7 @@
 #include "ugen_filter.h"
 #include "chuck_type.h"
 #include "chuck_compile.h"
+#include "chuck_instr.h"
 #include <math.h>
 #include <stdlib.h>
 
@@ -1271,6 +1272,12 @@ CK_DLL_CTRL( BPF_ctrl_freq )
     // implementation: adapted from SC3's BPF
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
+    
+    // added: 1.4.0.1 (Nathan Tindall)
+    if( freq < 0 ) {
+        throw_exception(SHRED, "NegativeFrequencyException", 
+                               "freq value for BPF is negative");
+    }
 
     // set
     d->set_bpf( freq, d->m_Q );
@@ -1303,6 +1310,12 @@ CK_DLL_CTRL( BPF_ctrl_Q )
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
 
+    // added: 1.4.0.1 (Nathan Tindall)
+    if( Q < 0 ) {
+        throw_exception(SHRED, "NegativeQException", 
+                               "Q value for BPF is negative");
+    }
+
     // set
     d->set_bpf( d->m_freq, Q );
 
@@ -1334,6 +1347,16 @@ CK_DLL_CTRL( BPF_ctrl_set )
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
+
+    // added: 1.4.0.1 (Nathan Tindall)
+    if( freq < 0 ) {
+        throw_exception(SHRED, "NegativeFrequencyException", 
+                               "freq value for BPF is negative");
+    }
+    if( Q < 0 ) {
+        throw_exception(SHRED, "NegativeQException", 
+                               "Q value for BPF is negative");
+    }
 
     // set
     d->set_bpf( freq, Q );
@@ -1386,6 +1409,12 @@ CK_DLL_CTRL( BRF_ctrl_freq )
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
 
+    // added: 1.4.0.1 (Nathan Tindall)
+    if( freq < 0 ) {
+        throw_exception(SHRED, "NegativeFrequencyException", 
+                               "freq value for BRF is negative");
+    }
+
     // set
     d->set_brf( freq, d->m_Q );
 
@@ -1416,6 +1445,12 @@ CK_DLL_CTRL( BRF_ctrl_Q )
     // implementation: adapted from SC3's BRF
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
+
+    // added: 1.4.0.1 (Nathan Tindall)
+    if( Q < 0 ) {
+        throw_exception(SHRED, "NegativeQException", 
+                               "Q value for BRF is negative");
+    }
 
     // set
     d->set_brf( d->m_freq, Q );
@@ -1448,6 +1483,16 @@ CK_DLL_CTRL( BRF_ctrl_set )
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
+
+    // added: 1.4.0.1 (Nathan Tindall)
+    if( freq < 0 ) {
+        throw_exception(SHRED, "NegativeFrequencyException", 
+                               "freq value for BRF is negative");
+    }
+    if( Q < 0 ) {
+        throw_exception(SHRED, "NegativeQException", 
+                               "Q value for BRF is negative");
+    }
 
     // set
     d->set_brf( freq, Q );
@@ -1501,6 +1546,12 @@ CK_DLL_CTRL( RLPF_ctrl_freq )
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
 
+    // added: 1.4.0.1 (Nathan Tindall)
+    if( freq < 0 ) {
+        throw_exception(SHRED, "NegativeFrequencyException", 
+                               "freq value for LPF is negative");
+    }
+
     // set
     d->set_rlpf( freq, d->m_Q );
 
@@ -1530,6 +1581,12 @@ CK_DLL_CTRL( RLPF_ctrl_Q )
 {
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
+
+    // added: 1.4.0.1 (Nathan Tindall)
+    if( Q < 0 ) {
+        throw_exception(SHRED, "NegativeQException", 
+                               "Q value for LPF is negative");
+    }
 
     // set
     d->set_rlpf( d->m_freq, Q );
@@ -1562,6 +1619,16 @@ CK_DLL_CTRL( RLPF_ctrl_set )
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
+
+    // added: 1.4.0.1 (Nathan Tindall)
+    if( freq < 0 ) {
+        throw_exception(SHRED, "NegativeFrequencyException", 
+                               "freq value for LPF is negative");
+    }
+    if( Q < 0 ) {
+        throw_exception(SHRED, "NegativeQException", 
+                               "Q value for LPF is negative");
+    }
 
     // set
     d->set_rlpf( freq, Q );
@@ -1617,6 +1684,14 @@ CK_DLL_CTRL( ResonZ_ctrl_freq )
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
 
+    // added: 1.4.0.1 (Nathan Tindall)
+    // commented out for now: main culprits LPF HPF BPF BRF; still
+    //     hoping to retain experimental possibilties for other filters (ge)
+    // if( freq < 0 ) {
+    //     throw_exception(SHRED, "NegativeFrequencyException",
+    //                            "freq value for ResonZ is negative");
+    // }
+
     // set
     d->set_resonz( freq, d->m_Q );
 
@@ -1646,6 +1721,14 @@ CK_DLL_CTRL( ResonZ_ctrl_Q )
 {
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
+
+    // added: 1.4.0.1 (Nathan Tindall)
+    // commented out for now: main culprits LPF HPF BPF BRF; still
+    //     hoping to retain experimental possibilties for other filters (ge)
+    // if( Q < 0 ) {
+    //     throw_exception(SHRED, "NegativeQException",
+    //                            "Q value for ResonZ is negative");
+    // }
 
     // set
     d->set_resonz( d->m_freq, Q );
@@ -1678,6 +1761,18 @@ CK_DLL_CTRL( ResonZ_ctrl_set )
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
+
+    // added: 1.4.0.1 (Nathan Tindall)
+    // commented out for now: main culprits LPF HPF BPF BRF; still
+    //     hoping to retain experimental possibilties for other filters (ge)
+    // if( freq < 0 ) {
+    //    throw_exception(SHRED, "NegativeFrequencyException",
+    //                           "freq value for ResonZ is negative");
+    // }
+    // if( Q < 0 ) {
+    //     throw_exception(SHRED, "NegativeQException",
+    //                            "Q value for ResonZ is negative");
+    // }
 
     // set
     d->set_resonz( freq, Q );
@@ -1733,6 +1828,12 @@ CK_DLL_CTRL( RHPF_ctrl_freq )
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
 
+    // added: 1.4.0.1 (Nathan Tindall)
+    if( freq < 0 ) {
+        throw_exception(SHRED, "NegativeFrequencyException", 
+                               "freq value for HPF is negative");
+    }
+
     // set
     d->set_rhpf( freq, d->m_Q );
 
@@ -1762,6 +1863,12 @@ CK_DLL_CTRL( RHPF_ctrl_Q )
 {
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
+
+    // added: 1.4.0.1 (Nathan Tindall)
+    if( Q < 0 ) {
+        throw_exception(SHRED, "NegativeQException", 
+                               "Q value for HPF is negative");
+    }
 
     // set
     d->set_rhpf( d->m_freq, Q );
@@ -1795,8 +1902,18 @@ CK_DLL_CTRL( RHPF_ctrl_set )
     t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
 
+    // added: 1.4.0.1 (Nathan Tindall)
+    if( freq < 0 ) {
+        throw_exception(SHRED, "NegativeFrequencyException", 
+                               "freq value for LPF is negative");
+    }
+    if( Q < 0 ) {
+        throw_exception(SHRED, "NegativeQException", 
+                               "Q value for LPF is negative");
+    }
+
     // set
-    d->set_rlpf( freq, Q );
+    d->set_rhpf( freq, Q );
 }
 
 

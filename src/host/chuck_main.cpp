@@ -408,6 +408,7 @@ bool go( int argc, const char ** argv )
     t_CKBOOL auto_depend = FALSE;
     t_CKBOOL block = FALSE;
     // t_CKBOOL enable_shell = FALSE;
+    t_CKBOOL syntax_check_only = FALSE;
     t_CKBOOL no_vm = FALSE;
     t_CKBOOL load_hid = FALSE;
     t_CKBOOL enable_server = TRUE;
@@ -492,6 +493,10 @@ bool go( int argc, const char ** argv )
             // blocking removed, ge: 1.3.5.3
             // else if( !strcmp(argv[i], "--blocking") )
             //     block = TRUE;
+            else if( !strcmp(argv[i], "--syntax") ) {
+                syntax_check_only = TRUE;
+                g_enable_realtime_audio = FALSE;
+            }
             else if( !strcmp(argv[i], "--hid") )
                 load_hid = TRUE;
             else if( !strcmp(argv[i], "--shell") || !strcmp( argv[i], "-e" ) )
@@ -881,7 +886,7 @@ bool go( int argc, const char ** argv )
         // TODO: refactor initialize() to take in the dac and adc nums
         ChuckAudio::m_adc_n = adc;
         ChuckAudio::m_dac_n = dac;
-        t_CKBOOL retval = ChuckAudio::initialize( adc_chans, dac_chans,
+        t_CKBOOL retval = ChuckAudio::initialize( dac_chans, adc_chans,
             srate, buffer_size, num_buffers, cb, (void *)the_chuck, force_srate );
         // check
         if( !retval )
@@ -970,6 +975,9 @@ bool go( int argc, const char ** argv )
     // pop indent
     EM_poplog();
     
+    if( syntax_check_only )
+        return TRUE;
+
     // boost priority
     if( XThreadUtil::our_priority != 0x7fffffff )
     {
@@ -1029,7 +1037,11 @@ bool go( int argc, const char ** argv )
         // real-time audio
         if( g_enable_realtime_audio )
         {
-            usleep( 10000 );
+            Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();
+            if (hook)
+                hook->m_hook(hook->m_bindle);
+            else
+                usleep( 10000 );
         }
         else // silent mode
         {
@@ -1038,6 +1050,10 @@ bool go( int argc, const char ** argv )
         }
     }
     
+    Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();
+    if (hook)
+        hook->m_quit(hook->m_bindle);
+
     return TRUE;
 }
 

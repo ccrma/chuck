@@ -1,3 +1,15 @@
+# NOTE: chuck_win32.h and chuck_win32.c come from the output of
+# chuck.lex and chuck.y
+#
+# > flex -ochuck.yy.c chuck.lex
+# > bison -dv -b chuck chuck.y
+#
+# to create the chuck_win32 files:
+#
+# > cat chuck.tab.c chuck.yy.c > chuck_win32.c
+# > cp chuck.tab.h chuck_win32.h
+#
+# ALSO: we are actually now building in 64-bit, but yeah.
 
 MSBUILD=msbuild.exe
 

@@ -90,7 +90,7 @@
 
 
 // chuck statics
-const char ChucK::VERSION[] = "1.4.0.0 (numchucks)";
+const char ChucK::VERSION[] = "1.4.0.1 (numchucks)";
 t_CKUINT ChucK::o_numVMs = 0;
 t_CKBOOL ChucK::o_isGlobalInit = FALSE;
 t_CKBOOL ChucK::enableSystemCall = FALSE;
@@ -140,6 +140,8 @@ ChucK::ChucK()
     initDefaultParams();
     // did user init?
     m_init = FALSE;
+    // zero out the hook
+    m_hook = NULL; // m_hook = nullptr
     
     // global init, if needed
     if( !o_isGlobalInit ) globalInit();
@@ -684,22 +686,23 @@ bool ChucK::shutdown()
     stk_detach( m_carrier );
     
     // cancel otf thread
-#ifndef __DISABLE_OTF_SERVER__
+    if(m_carrier->otf_thread)
+    {
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-    if( m_carrier->otf_thread ) pthread_cancel( m_carrier->otf_thread );
+        pthread_cancel( m_carrier->otf_thread );
 #else
-    if( m_carrier->otf_thread ) CloseHandle( m_carrier->otf_thread );
+        CloseHandle( m_carrier->otf_thread ); // doesn't cancel thread
 #endif
+        m_carrier->otf_thread = 0; // signals thread shutdown
+    }
+
     // close otf socket
     if( m_carrier->otf_socket ) ck_close( m_carrier->otf_socket );
     
     // reset
     m_carrier->otf_socket = NULL;
     m_carrier->otf_port = 0;
-    m_carrier->otf_thread = 0;
     
-#endif
-
     // TODO: a different way to unlock?
     // unlock all objects to delete chout, cherr
     Chuck_VM_Object::unlock_all();
@@ -1714,4 +1717,30 @@ void ChucK::poop()
     #ifndef __DISABLE_OTF_SERVER__
     ::uh();
     #endif
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setMainThreadHook()
+// desc: set a function pointer to call from the main thread loop
+//       e.g., for graphics, MAUI, potentially from a chug-in
+//-----------------------------------------------------------------------------
+bool ChucK::setMainThreadHook(Chuck_DL_MainThreadHook * hook)
+{
+    m_hook = hook;
+    return true;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getMainThreadHook()
+// desc: get pointer to current function to be called from main loop
+//-----------------------------------------------------------------------------
+Chuck_DL_MainThreadHook * ChucK::getMainThreadHook()
+{
+    return m_hook;
 }

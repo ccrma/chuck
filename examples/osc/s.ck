@@ -1,17 +1,22 @@
-// launch with r.ck
+//----------------------------------------------------------------------------
+// name: s.ck ('s' is "sender")
+// desc: OpenSoundControl (OSC) sender example
+// note: launch with r.ck (that's the receiver)
+//----------------------------------------------------------------------------
 
-// name
+// destination host name
 "localhost" => string hostname;
+// destination port number
 6449 => int port;
 
 // check command line
 if( me.args() ) me.arg(0) => hostname;
 if( me.args() > 1 ) me.arg(1) => Std.atoi => port;
 
-// send object
+// sender object
 OscOut xmit;
 
-// aim the transmitter
+// aim the transmitter at destination
 xmit.dest( hostname, port );
 
 // infinite time loop

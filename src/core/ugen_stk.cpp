@@ -41,6 +41,7 @@
 #include "chuck_vm.h"
 #include "chuck_compile.h"
 #include "chuck_lang.h"
+#include "chuck_io.h"
 #include "chuck_carrier.h"
 #include <stdlib.h>
 #include <string.h>
@@ -18685,6 +18686,9 @@ namespace stk {
     
 MidiFileIn :: MidiFileIn( std::string fileName )
 {
+    // ge: initialize
+    bpm_ = 0;
+    
     // Attempt to open the file.
     file_.open( fileName.c_str(), std::ios::in | std::ios::binary );
     if ( !file_ ) {
@@ -18796,6 +18800,10 @@ MidiFileIn :: MidiFileIn( std::string fileName )
                 tempoEvent.count = count;
                 value = ( event[3] << 16 ) + ( event[4] << 8 ) + event[5];
                 tempoEvent.tickSeconds = (double) (0.000001 * value / tickrate);
+                // ge: check
+                // std::cerr << "tick: " << 60000000 / value << std::endl;
+                // ge: set BPM
+                bpm_ = 60000000.0 / value;
                 if ( count > tempoEvents_.back().count )
                     tempoEvents_.push_back( tempoEvent );
                 else
@@ -18826,6 +18834,21 @@ MidiFileIn :: ~MidiFileIn()
     file_.close();
 }
 
+int MidiFileIn :: getFileFormat() const
+{
+    return format_;
+}
+
+unsigned int MidiFileIn :: getNumberOfTracks() const
+{
+    return nTracks_;
+}
+
+int MidiFileIn :: getDivision() const
+{
+    return division_;
+}
+
 void MidiFileIn :: rewindTrack( unsigned int track )
 {
     if ( track >= nTracks_ ) {
@@ -18847,6 +18870,12 @@ double MidiFileIn :: getTickSeconds( unsigned int track )
     }
     
     return tickSeconds_[track];
+}
+
+// ge: implemented
+double MidiFileIn :: getBPM()
+{
+    return bpm_;
 }
 
 unsigned long MidiFileIn :: getNextEvent( std::vector<unsigned char> *event, unsigned int track )
@@ -18942,6 +18971,9 @@ unsigned long MidiFileIn :: getNextEvent( std::vector<unsigned char> *event, uns
             double tickrate = (double) (division_ & 0x7FFF);
             unsigned long value = ( event->at(3) << 16 ) + ( event->at(4) << 8 ) + event->at(5);
             tickSeconds_[track] = (double) (0.000001 * value / tickrate);
+            
+            // ge: set BPM
+            bpm_ = 60000000.0 / value;
         }
         
         if ( format_ == 1 ) {
@@ -19012,7 +19044,6 @@ bool MidiFileIn :: readVariableLength( unsigned long *value )
 } 
     
 } // stk namespace
-
 
 // chuck - import
 // wrapper functions

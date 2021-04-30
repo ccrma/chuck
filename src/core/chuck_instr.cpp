@@ -7503,12 +7503,12 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         if( type->size == sz_INT && iskindofint(vm->env(), type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
             t_CKINT * sp = (t_CKINT *)the_sp;
-            if( !isa( type, vm->env()->t_string ) ||  *(sp) == 0 )
+            if( !isa( type, vm->env()->t_string ) || *(sp) == 0 )
             {
                 if( isa( type, vm->env()->t_object ) )
                 {
                     // print it
-                    if( *(sp-1) == 0 )
+                    if( *(sp) == 0 )
                         CK_FPRINTF_STDERR( "null " );
                     else
                         CK_FPRINTF_STDERR( "0x%lx ", *(sp) );

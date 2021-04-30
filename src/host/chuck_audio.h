@@ -135,8 +135,10 @@ public: // data
     static t_CKBOOL m_start;
     static t_CKBOOL m_go; // counter of # of times callback called
     static t_CKBOOL m_silent; // if true, will output silence
+    static t_CKBOOL m_expand_in_mono2stereo; // 1.4.0.1 for in:1 out:2
     static t_CKUINT m_num_channels_out;
     static t_CKUINT m_num_channels_in;
+    static t_CKUINT m_num_channels_max; // the max of out/in
     static t_CKUINT m_sample_rate;
     static t_CKUINT m_bps;
     static t_CKUINT m_buffer_size;
