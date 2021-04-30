@@ -574,7 +574,7 @@ t_CKUINT MidiMsg_offset_data2 = 0;
 t_CKUINT MidiMsg_offset_data3 = 0;
 t_CKUINT MidiMsg_offset_when = 0;
 static t_CKUINT MidiOut_offset_data = 0;
-
+#ifndef __DISABLE_MIDI__
 //-----------------------------------------------------------------------------
 // name: init_class_Midi()
 // desc: ...
@@ -712,10 +712,12 @@ error:
     
     return FALSE;
 }
+#endif // __DISABLE_MIDI__
 
 
 
 
+#ifndef __DISABLE_HID__
 // static
 static t_CKUINT HidIn_offset_data = 0;
 
@@ -1151,11 +1153,13 @@ error:
     
     return FALSE;
 }
+#endif // __DISABLE_HID__
 
 
 
 
 
+#ifndef __DISABLE_MIDI__
 // static
 static t_CKUINT MidiRW_offset_data = 0;
 static t_CKUINT MidiMsgOut_offset_data = 0;
@@ -1271,6 +1275,7 @@ error:
     
     return FALSE;
 }
+#endif // __DISABLE_MIDI__
 
 
 
