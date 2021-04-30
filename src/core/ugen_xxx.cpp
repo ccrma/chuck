@@ -2649,10 +2649,15 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
     } 
     else
     {
-        if( d->curf < 0 ) d->curf = 0;
+        if( d->curf < 0 )
+        {
+            d->curf = 0;
+            d->current_val = 0;  // 1.4.0.2 (ge) added to avoid DC
+            return; // 1.4.0.2 (ge) added
+        }
         else if( d->curf >= d->num_frames )
         {
-            d->curf = d->num_frames-1; // 1.4.0.2 (added back the -1)
+            d->curf = d->num_frames-1; // 1.4.0.2 (ge) added back the -1
             d->current_val = 0;
             return;
         }
