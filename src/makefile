@@ -31,7 +31,7 @@ EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
     core/chuck.cpp core/chuck_absyn.cpp \
     core/chuck_carrier.cpp core/chuck_compile.cpp core/chuck_dl.cpp \
     core/chuck_emit.cpp core/chuck_errmsg.cpp core/chuck_frame.cpp \
-    core/chuck_instr.cpp core/chuck_lang.cpp core/chuck_oo.cpp \
+    core/chuck_instr.cpp core/chuck_io.cpp core/chuck_lang.cpp core/chuck_oo.cpp \
     core/chuck_parse.cpp core/chuck_scan.cpp core/chuck_stats.cpp \
     core/chuck_symbol.cpp core/chuck_table.cpp core/chuck_type.cpp \
     core/chuck_ugen.cpp core/chuck_utils.cpp core/chuck_vm.cpp \
@@ -51,7 +51,7 @@ host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
         -Icore -D__DISABLE_MIDI__ -D__DISABLE_WATCHDOG__ \
         -D__DISABLE_KBHIT__ -D__DISABLE_PROMPTER__ -D__DISABLE_RTAUDIO__ \
         -D__DISABLE_OTF_SERVER__ -D__ALTER_HID__ -D__DISABLE_HID__ \
-        -D__DISABLE_SERIAL__ -D__DISABLE_THREADS__ \
+        -D__DISABLE_SERIAL__ -D__DISABLE_FILEIO__ -D__DISABLE_THREADS__ \
         -D__DISABLE_NETWORK__ -D__DISABLE_SHELL__ \
         -D__CHUCK_USE_PLANAR_BUFFERS__ \
 	-Wformat=0 \
