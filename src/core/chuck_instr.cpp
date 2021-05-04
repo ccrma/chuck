@@ -3707,7 +3707,7 @@ void Chuck_Instr_Alloc_Word_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
     if( m_should_execute_ctors &&
         vm->globals_manager()->should_call_global_ctor( m_name, m_type ) )
     {
-        // call ctors
+        // call ctors (normally done by the pre_constructor instruction)
         call_all_parent_pre_constructors( vm, shred,
             m_chuck_type, m_stack_offset );
         // tell VM we did it so that it will never be done again for m_name

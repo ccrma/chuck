@@ -221,7 +221,8 @@ void Chuck_UGen::init()
     m_inlet = m_outlet = NULL;
     m_multi_in_v = m_multi_out_v = NULL;
     
-    // yes more hacks (add some time after REFACTOR-2017)
+    // 1.4.0.1: yes more hacks. buffered flag allows 
+    // global ugens' samples to be gotten
     m_is_buffered = FALSE;
     // buffer empty for any ugen that is not buffered
     m_buffer.resize( 0 );
