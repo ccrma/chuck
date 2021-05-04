@@ -2287,7 +2287,7 @@ void Chuck_Instr_Reg_Push_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
         {
             // int pointer to registers
             t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-            t_CKUINT val = (t_CKUINT) vm->get_global_int_value( m_name );
+            t_CKUINT val = (t_CKUINT) vm->globals_manager()->get_global_int_value( m_name );
             
             // push global map content into int-reg stack
             push_( reg_sp, val );
@@ -2297,7 +2297,7 @@ void Chuck_Instr_Reg_Push_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
         {
             // float pointer to registers
             t_CKFLOAT *& reg_sp = (t_CKFLOAT *&)shred->reg->sp;
-            t_CKFLOAT val = (t_CKFLOAT) vm->get_global_float_value( m_name );
+            t_CKFLOAT val = (t_CKFLOAT) vm->globals_manager()->get_global_float_value( m_name );
             
             // push global map content into float-reg stack
             push_( reg_sp, val );
@@ -2307,7 +2307,7 @@ void Chuck_Instr_Reg_Push_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
         {
             // pointer to registers
             t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-            t_CKUINT val = (t_CKUINT) vm->get_global_string( m_name );
+            t_CKUINT val = (t_CKUINT) vm->globals_manager()->get_global_string( m_name );
             
             // push global map content into string-reg stack
             push_( reg_sp, val );
@@ -2316,7 +2316,7 @@ void Chuck_Instr_Reg_Push_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
         case te_globalEvent:
         {
             t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-            t_CKUINT val = (t_CKUINT) vm->get_global_event( m_name );
+            t_CKUINT val = (t_CKUINT) vm->globals_manager()->get_global_event( m_name );
             
             // push global map content into event-reg stack
             push_( reg_sp, val );
@@ -2324,7 +2324,7 @@ void Chuck_Instr_Reg_Push_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
             break;
         case te_globalUGen:
         {
-            if( !vm->is_global_ugen_valid( m_name ) )
+            if( !vm->globals_manager()->is_global_ugen_valid( m_name ) )
             {
                 // we have a problem
                 CK_FPRINTF_STDERR(
@@ -2334,7 +2334,7 @@ void Chuck_Instr_Reg_Push_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
             }
         
             t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-            t_CKUINT val = (t_CKUINT) vm->get_global_ugen( m_name );
+            t_CKUINT val = (t_CKUINT) vm->globals_manager()->get_global_ugen( m_name );
             
             // push global map content into event-reg stack
             push_( reg_sp, val );
@@ -2345,7 +2345,7 @@ void Chuck_Instr_Reg_Push_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
             // all array allocations return a Chuck_Object * casted to an int
             // --> put exactly that on the stack
             t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-            t_CKUINT val = (t_CKUINT) vm->get_global_array( m_name );
+            t_CKUINT val = (t_CKUINT) vm->globals_manager()->get_global_array( m_name );
             
             // push global map content into object-reg stack
             push_( reg_sp, val );
@@ -2394,23 +2394,23 @@ void Chuck_Instr_Reg_Push_Global_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred * 
     t_CKUINT addr;
     switch( m_type ) {
         case te_globalInt:
-            addr = (t_CKUINT) vm->get_ptr_to_global_int( m_name );
+            addr = (t_CKUINT) vm->globals_manager()->get_ptr_to_global_int( m_name );
             break;
         case te_globalFloat:
-            addr = (t_CKUINT) vm->get_ptr_to_global_float( m_name );
+            addr = (t_CKUINT) vm->globals_manager()->get_ptr_to_global_float( m_name );
             break;
         case te_globalString:
-            addr = (t_CKUINT) vm->get_ptr_to_global_string( m_name );
+            addr = (t_CKUINT) vm->globals_manager()->get_ptr_to_global_string( m_name );
             break;
         case te_globalEvent:
             // TODO: should this be a * or a * * ?
-            addr = (t_CKUINT) vm->get_ptr_to_global_event( m_name );
+            addr = (t_CKUINT) vm->globals_manager()->get_ptr_to_global_event( m_name );
             break;
         case te_globalUGen:
-            addr = (t_CKUINT) vm->get_ptr_to_global_ugen( m_name );
+            addr = (t_CKUINT) vm->globals_manager()->get_ptr_to_global_ugen( m_name );
             break;
         case te_globalArraySymbol:
-            addr = (t_CKUINT) vm->get_ptr_to_global_array( m_name );
+            addr = (t_CKUINT) vm->globals_manager()->get_ptr_to_global_array( m_name );
             break;
             
     }
@@ -3646,8 +3646,8 @@ void Chuck_Instr_Alloc_Word_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
         {
             case te_globalInt:
             case te_globalFloat:
-                vm->init_global_array( m_name, m_chuck_type, m_type );
-                addr = (t_CKUINT) vm->get_ptr_to_global_array( m_name );
+                vm->globals_manager()->init_global_array( m_name, m_chuck_type, m_type );
+                addr = (t_CKUINT) vm->globals_manager()->get_ptr_to_global_array( m_name );
                 break;
             case te_globalString:
                 EM_error2( 0, "global string arrays are currently disabled." );
@@ -3672,26 +3672,26 @@ void Chuck_Instr_Alloc_Word_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
         // not array
         switch( m_type ) {
             case te_globalInt:
-                vm->init_global_int( m_name );
-                addr = (t_CKUINT) vm->get_ptr_to_global_int( m_name );
+                vm->globals_manager()->init_global_int( m_name );
+                addr = (t_CKUINT) vm->globals_manager()->get_ptr_to_global_int( m_name );
                 break;
             case te_globalFloat:
-                vm->init_global_float( m_name );
-                addr = (t_CKUINT) vm->get_ptr_to_global_float( m_name );
+                vm->globals_manager()->init_global_float( m_name );
+                addr = (t_CKUINT) vm->globals_manager()->get_ptr_to_global_float( m_name );
                 break;
             case te_globalString:
-                vm->init_global_string( m_name );
-                addr = (t_CKUINT) vm->get_ptr_to_global_string( m_name );
+                vm->globals_manager()->init_global_string( m_name );
+                addr = (t_CKUINT) vm->globals_manager()->get_ptr_to_global_string( m_name );
                 break;
             case te_globalEvent:
                 // events are already init in emit
                 // but might need to execute ctors (below)
-                addr = (t_CKUINT) vm->get_global_event( m_name );
+                addr = (t_CKUINT) vm->globals_manager()->get_global_event( m_name );
                 break;
             case te_globalUGen:
                 // ugens are already init in emit
                 // but might need to execute ctors (below)
-                addr = (t_CKUINT) vm->get_global_ugen( m_name );
+                addr = (t_CKUINT) vm->globals_manager()->get_global_ugen( m_name );
                 break;
             case te_globalArraySymbol:
                 EM_error2( 0, "(internal error) symbol-only global type used in allocation" );
@@ -3705,13 +3705,13 @@ void Chuck_Instr_Alloc_Word_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
     
     // if we have ctors to execute, do it
     if( m_should_execute_ctors &&
-        vm->should_call_global_ctor( m_name, m_type ) )
+        vm->globals_manager()->should_call_global_ctor( m_name, m_type ) )
     {
         // call ctors
         call_all_parent_pre_constructors( vm, shred,
             m_chuck_type, m_stack_offset );
         // tell VM we did it so that it will never be done again for m_name
-        vm->global_ctor_was_called( m_name, m_type );
+        vm->globals_manager()->global_ctor_was_called( m_name, m_type );
     }
     
     return;
