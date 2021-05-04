@@ -860,12 +860,16 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         {
             env()->clear_user_namespace();
         }
+
+        // 1.4.0.1: also clear any global variables
+        m_globals_manager->cleanup_global_variables();
         
         m_shred_id = 0;
         m_num_shreds = 0;
     }
     else if( msg->type == MSG_CLEARGLOBALS ) // added chunity
     {
+        // clean up global variables without clearing the whole VM
         m_globals_manager->cleanup_global_variables();
     }
     else if( msg->type == MSG_ADD )
@@ -1970,9 +1974,11 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
     SAMPLE gain[256], sum;
 
     #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+    // planar buffers means non-interleaved. this is required for some platforms,
+    // e.g. WebAudio
     const SAMPLE * input = vm_ref->input_ref() + offset;
     SAMPLE * output = vm_ref->output_ref() + offset;
-    t_CKUINT buffer_length = vm_ref->buffer_length();
+    t_CKUINT buffer_length = vm_ref->most_recent_buffer_length();
     #else
     // get audio data from VM
     const SAMPLE * input = vm_ref->input_ref() + (offset*m_num_adc_channels);
@@ -2094,7 +2100,7 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
     #ifdef __CHUCK_USE_PLANAR_BUFFERS__
     const SAMPLE * input = vm_ref->input_ref() + N;
     SAMPLE * output = vm_ref->output_ref() + N;
-    t_CKUINT buffer_length = vm_ref->buffer_length();
+    t_CKUINT buffer_length = vm_ref->most_recent_buffer_length();
     #else
     const SAMPLE * input = vm_ref->input_ref() + (N*m_num_adc_channels);
     SAMPLE * output = vm_ref->output_ref() + (N*m_num_dac_channels);

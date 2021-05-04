@@ -37,9 +37,7 @@
 #include "chuck.h"
 #include "chuck_errmsg.h"
 
-#ifndef __DISABLE_SERIAL__
 #include "chuck_io.h"
-#endif
 
 #ifndef __DISABLE_OTF_SERVER__
 #include "chuck_otf.h"

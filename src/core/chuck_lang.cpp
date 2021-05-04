@@ -1214,6 +1214,8 @@ CK_DLL_CTRL( ugen_connected )
     RETURN->v_int = ret;
 }
 
+// 1.4.0.1: "buffered" flag -- necessary for getUGenSamples()
+// for global UGens
 CK_DLL_MFUN( ugen_buffered )
 {
     // get as ugen
@@ -1229,11 +1231,6 @@ CK_DLL_MFUN( ugen_buffered )
     Chuck_DL_Return ret;
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_buffered( ugen->m_multi_chan[i], ARGS, &ret, VM, SHRED, API );
-    // added 1.3.0.2 -- apply op to subgraph outlet
-    if( ugen->inlet() )
-        ugen->inlet()->m_is_buffered = buffered;
-    if( ugen->outlet() )
-        ugen->outlet()->m_is_buffered = buffered;
 }
 
 CK_DLL_MFUN( ugen_cget_buffered )

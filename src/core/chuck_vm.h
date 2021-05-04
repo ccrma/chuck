@@ -500,8 +500,8 @@ public:
     // for shreduler, ge: 1.3.5.3
     const SAMPLE * input_ref() { return m_input_ref; }
     SAMPLE * output_ref() { return m_output_ref; }
-    // for shreduler, jack: planar audio buffers
-    t_CKUINT buffer_length() { return m_current_buffer_frames; }
+    // for shreduler, jack: planar (non-interleaved) audio buffers
+    t_CKUINT most_recent_buffer_length() { return m_current_buffer_frames; }
 
 protected:
     // for shreduler, ge: 1.3.5.3
@@ -864,6 +864,13 @@ private:
 
     // global variables -- messages for set, get, etc.
     XCircleBuffer< Chuck_Global_Request > m_global_request_queue;
+
+    // retry queue: sometimes a request comes through exactly 1 sample
+    // before the relevant global variable is constructed 
+    // (e.g. signalEvent before the compileCode that would construct the event)
+    // in these cases, retrying 1 sample later usually works.
+    // this is ok because the external host has no guarantee of sample-level
+    // determinism, like we have within the ChucK VM
     XCircleBuffer< Chuck_Global_Request > m_global_request_retry_queue;
 };
 
