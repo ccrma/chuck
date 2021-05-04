@@ -1871,9 +1871,9 @@ struct WinMidiData {
 
 static void CALLBACK midiInputCallback( HMIDIOUT hmin,
                                         UINT inputStatus, 
-                                        DWORD instancePtr,
-                                        DWORD midiMessage,
-                                        DWORD timestamp )
+                                        DWORD_PTR instancePtr,
+                                        DWORD_PTR midiMessage,
+                                        DWORD_PTR timestamp )
 {
   if ( inputStatus != MIM_DATA && inputStatus != MIM_LONGDATA ) return;
 
@@ -1983,8 +1983,8 @@ void RtMidiIn :: openPort( unsigned int portNumber )
   WinMidiData *data = static_cast<WinMidiData *> (apiData_);
   MMRESULT result = midiInOpen( &data->inHandle,
                                 portNumber,
-                                (DWORD)&midiInputCallback,
-                                (DWORD)&inputData_,
+                                (DWORD_PTR)&midiInputCallback,
+                                (DWORD_PTR)&inputData_,
                                 CALLBACK_FUNCTION );
   if ( result != MMSYSERR_NOERROR ) {
     errorString_ = "RtMidiIn::openPort: error creating Windows MM MIDI input port.";
