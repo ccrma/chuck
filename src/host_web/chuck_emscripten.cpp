@@ -348,7 +348,7 @@ extern "C"
         msg->reply = ( ck_msg_func )NULL;
     
         // tell the VM to clear
-        chuck->vm()->execute_chuck_msg_with_globals( msg );
+        chuck->vm()->globals_manager()->execute_chuck_msg_with_globals( msg );
     
         return true;
     }
@@ -368,7 +368,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
-        return chuck_instances[chuckID]->vm()->get_global_int_value( std::string( name ) );
+        return chuck_instances[chuckID]->vm()->globals_manager()->get_global_int_value( std::string( name ) );
     }
     
     
@@ -386,7 +386,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
-        return chuck_instances[chuckID]->vm()->get_global_float_value( std::string( name ) );
+        return chuck_instances[chuckID]->vm()->globals_manager()->get_global_float_value( std::string( name ) );
     }
     
     
@@ -514,7 +514,7 @@ extern "C"
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
         
-        return chuck_instances[chuckID]->vm()->_get_global_int_array_value(
+        return chuck_instances[chuckID]->vm()->globals_manager()->_get_global_int_array_value(
             std::string( name ), index );
     }
     
@@ -536,7 +536,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->vm()->_get_global_associative_int_array_value(
+        return chuck_instances[chuckID]->vm()->globals_manager()->_get_global_associative_int_array_value(
             std::string( name ), std::string( key ) );
     }
     
@@ -581,7 +581,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->vm()->_get_global_float_array_value(
+        return chuck_instances[chuckID]->vm()->globals_manager()->_get_global_float_array_value(
             std::string( name ), index );
     }
     
@@ -603,7 +603,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->vm()->_get_global_associative_float_array_value(
+        return chuck_instances[chuckID]->vm()->globals_manager()->_get_global_associative_float_array_value(
             std::string( name) , std::string( key ) );
     }
     
@@ -704,7 +704,7 @@ extern "C"
             msg->reply = ( ck_msg_func )NULL;
             
             // tell the VM to clear
-            chuck->vm()->execute_chuck_msg_with_globals( msg );
+            chuck->vm()->globals_manager()->execute_chuck_msg_with_globals( msg );
             
             return true;
         }
@@ -729,7 +729,7 @@ extern "C"
             msg->reply = ( ck_msg_func )NULL;
             
             // tell the VM to clear
-            chuck->vm()->execute_chuck_msg_with_globals( msg );
+            chuck->vm()->globals_manager()->execute_chuck_msg_with_globals( msg );
             
             return true;
         }
