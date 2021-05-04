@@ -388,6 +388,230 @@ public:
 
 
 
+// forward reference
+struct Chuck_Globals_Manager;
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_VM
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_VM : Chuck_Object
+{
+//-----------------------------------------------------------------------------
+// functions
+//-----------------------------------------------------------------------------
+public:
+    Chuck_VM();
+    ~Chuck_VM();
+
+public: // init
+    t_CKBOOL initialize( t_CKUINT srate, t_CKUINT dac_chan, t_CKUINT adc_chan,
+                         t_CKUINT adaptive, t_CKBOOL halt );
+    t_CKBOOL initialize_synthesis( );
+    t_CKBOOL setCarrier( Chuck_Carrier * c ) { m_carrier = c; return TRUE; }
+    t_CKBOOL shutdown();
+    t_CKBOOL has_init() { return m_init; }
+
+public: // run state; 1.3.5.3
+    // run start
+    t_CKBOOL start();
+    // get run state
+    t_CKBOOL running();
+    // run stop
+    t_CKBOOL stop();
+    // backdoor to access state directly (should be called from inside VM only)
+    t_CKBOOL & runningState() { return m_is_running; }
+
+public: // shreds
+    // spork code as shred; if not immediate, enqueue for next sample
+    // REFACTOR-2017: added immediate flag
+    Chuck_VM_Shred * spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
+                            t_CKBOOL immediate = FALSE );
+    // get reference to shreduler
+    Chuck_VM_Shreduler * shreduler() const;
+    // the next spork ID
+    t_CKUINT next_id( );
+    // the last used spork ID
+    t_CKUINT last_id( );
+
+public: // audio
+    t_CKUINT srate() const;
+
+public: // running the machine
+    // compute next N frames
+    t_CKBOOL run( t_CKINT numFrames, const SAMPLE * input, SAMPLE * output );
+    // compute all shreds for current time
+    t_CKBOOL compute( );
+    // abort current running shred
+    t_CKBOOL abort_current_shred( );
+    
+public: // invoke functions
+    t_CKBOOL invoke_static( Chuck_VM_Shred * shred );
+
+public: // garbage collection
+    void gc();
+    void gc( t_CKUINT amount );
+
+public: // msg
+    t_CKBOOL queue_msg( Chuck_Msg * msg, int num_msg );
+    // CBufferSimple added 1.3.0.0 to fix uber-crash
+    t_CKBOOL queue_event( Chuck_Event * event, int num_msg, CBufferSimple * buffer = NULL );
+    t_CKUINT process_msg( Chuck_Msg * msg );
+    Chuck_Msg * get_reply( );
+
+    // added 1.3.0.0 to fix uber-crash
+    CBufferSimple * create_event_buffer();
+    void destroy_event_buffer( CBufferSimple * buffer );
+    
+public: // get error
+    const char * last_error() const
+    { return m_last_error.c_str(); }
+
+public:
+    // REFACTOR-2017: get associated, per-VM environment, chout, cherr
+    Chuck_Carrier * carrier() const { return m_carrier; }
+    Chuck_Env * env() const { return m_carrier->env; }
+    Chuck_IO_Chout * chout() const { return m_carrier->chout; }
+    Chuck_IO_Cherr * cherr() const { return m_carrier->cherr; }
+    // 1.4.0.1: get associated globals manager
+    Chuck_Globals_Manager * globals_manager() const { return m_globals_manager; }
+
+//-----------------------------------------------------------------------------
+// data
+//-----------------------------------------------------------------------------
+protected:
+    // REFACTOR-2017: added per-ChucK carrier
+    Chuck_Carrier * m_carrier;
+
+public:
+    // ugen
+    Chuck_UGen * m_adc;
+    Chuck_UGen * m_dac;
+    Chuck_UGen * m_bunghole;
+    t_CKUINT m_srate;
+    t_CKUINT m_num_adc_channels;
+    t_CKUINT m_num_dac_channels;
+    t_CKBOOL m_halt;
+    t_CKBOOL m_is_running;
+
+    // for shreduler, ge: 1.3.5.3
+    const SAMPLE * input_ref() { return m_input_ref; }
+    SAMPLE * output_ref() { return m_output_ref; }
+    // for shreduler, jack: planar audio buffers
+    t_CKUINT buffer_length() { return m_current_buffer_frames; }
+
+protected:
+    // for shreduler, ge: 1.3.5.3
+    const SAMPLE * m_input_ref;
+    SAMPLE * m_output_ref;
+    t_CKUINT m_current_buffer_frames;
+
+public:
+    // protected, but needs to be accessible from Globals Manager
+    Chuck_VM_Shred * spork( Chuck_VM_Shred * shred );
+protected:
+    t_CKBOOL free( Chuck_VM_Shred * shred, t_CKBOOL cascade, 
+                   t_CKBOOL dec = TRUE );
+    void dump( Chuck_VM_Shred * shred );
+    void release_dump();
+
+protected:
+    t_CKBOOL m_init;
+    std::string m_last_error;
+
+    // shred
+    Chuck_VM_Shred * m_shreds;
+    t_CKUINT m_num_shreds;
+    t_CKUINT m_shred_id;
+    Chuck_VM_Shreduler * m_shreduler;
+    // place to put dumped shreds
+    std::vector<Chuck_VM_Shred *> m_shred_dump;
+    t_CKUINT m_num_dumped_shreds;
+
+    // message queue
+    CBufferSimple * m_msg_buffer;
+    CBufferSimple * m_reply_buffer;
+    CBufferSimple * m_event_buffer;
+    
+    // TODO: vector? (added 1.3.0.0 to fix uber-crash)
+    std::list<CBufferSimple *> m_event_buffers;
+
+protected:
+    // 1.4.0.1: manager for global variables
+    Chuck_Globals_Manager * m_globals_manager;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: enum Chuck_Msg_Type
+// desc: ...
+//-----------------------------------------------------------------------------
+enum Chuck_Msg_Type
+{
+    MSG_ADD = 1,
+    MSG_REMOVE,
+    MSG_REMOVEALL,
+    MSG_REPLACE,
+    MSG_STATUS,
+    MSG_PAUSE,
+    MSG_KILL,
+    MSG_TIME,
+    MSG_RESET_ID,
+    MSG_DONE,
+    MSG_ABORT,
+    MSG_ERROR, // added 1.3.0.0
+    MSG_CLEARVM,
+    MSG_CLEARGLOBALS,
+};
+
+
+
+
+// callback function prototype
+typedef void (* ck_msg_func)( const Chuck_Msg * msg );
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Msg
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Msg
+{
+    t_CKUINT type;
+    t_CKUINT param;
+    Chuck_VM_Code * code;
+    Chuck_VM_Shred * shred;
+    t_CKTIME when;
+
+    void * user;
+    ck_msg_func reply;
+    t_CKUINT replyA;
+    t_CKUINT replyB;
+    void * replyC;
+
+    std::vector<std::string> * args;
+
+    Chuck_Msg() : args(NULL) { clear(); }
+    ~Chuck_Msg() { SAFE_DELETE( args ); }
+    
+    // added 1.3.0.0
+    void clear() { SAFE_DELETE( args ); memset( this, 0, sizeof(*this) ); }
+    
+    void set( const std::vector<std::string> & vargs )
+    {
+        SAFE_DELETE(args);
+        args = new std::vector<std::string>;
+        (*args) = vargs;
+    }
+};
+
+
+
+
+// Global Variables & Management -- added 1.4.0.1
 // Forward references for global messages
 struct Chuck_Set_Global_Int_Request;
 struct Chuck_Get_Global_Int_Request;
@@ -471,33 +695,33 @@ struct Chuck_Global_Request
     t_CKUINT retries;
     union {
         // primitives
-        Chuck_Set_Global_Int_Request * setIntRequest;
-        Chuck_Get_Global_Int_Request * getIntRequest;
-        Chuck_Set_Global_Float_Request * setFloatRequest;
-        Chuck_Get_Global_Float_Request * getFloatRequest;
-        Chuck_Set_Global_String_Request * setStringRequest;
-        Chuck_Get_Global_String_Request * getStringRequest;
+        Chuck_Set_Global_Int_Request* setIntRequest;
+        Chuck_Get_Global_Int_Request* getIntRequest;
+        Chuck_Set_Global_Float_Request* setFloatRequest;
+        Chuck_Get_Global_Float_Request* getFloatRequest;
+        Chuck_Set_Global_String_Request* setStringRequest;
+        Chuck_Get_Global_String_Request* getStringRequest;
         // events
-        Chuck_Signal_Global_Event_Request * signalEventRequest;
-        Chuck_Listen_For_Global_Event_Request * listenForEventRequest;
+        Chuck_Signal_Global_Event_Request* signalEventRequest;
+        Chuck_Listen_For_Global_Event_Request* listenForEventRequest;
         // int arrays
-        Chuck_Set_Global_Int_Array_Request * setIntArrayRequest;
-        Chuck_Get_Global_Int_Array_Request * getIntArrayRequest;
-        Chuck_Set_Global_Int_Array_Value_Request * setIntArrayValueRequest;
-        Chuck_Get_Global_Int_Array_Value_Request * getIntArrayValueRequest;
-        Chuck_Set_Global_Associative_Int_Array_Value_Request * setAssociativeIntArrayValueRequest;
-        Chuck_Get_Global_Associative_Int_Array_Value_Request * getAssociativeIntArrayValueRequest;
+        Chuck_Set_Global_Int_Array_Request* setIntArrayRequest;
+        Chuck_Get_Global_Int_Array_Request* getIntArrayRequest;
+        Chuck_Set_Global_Int_Array_Value_Request* setIntArrayValueRequest;
+        Chuck_Get_Global_Int_Array_Value_Request* getIntArrayValueRequest;
+        Chuck_Set_Global_Associative_Int_Array_Value_Request* setAssociativeIntArrayValueRequest;
+        Chuck_Get_Global_Associative_Int_Array_Value_Request* getAssociativeIntArrayValueRequest;
         // float arrays
-        Chuck_Set_Global_Float_Array_Request * setFloatArrayRequest;
-        Chuck_Get_Global_Float_Array_Request * getFloatArrayRequest;
-        Chuck_Set_Global_Float_Array_Value_Request * setFloatArrayValueRequest;
-        Chuck_Get_Global_Float_Array_Value_Request * getFloatArrayValueRequest;
-        Chuck_Set_Global_Associative_Float_Array_Value_Request * setAssociativeFloatArrayValueRequest;
-        Chuck_Get_Global_Associative_Float_Array_Value_Request * getAssociativeFloatArrayValueRequest;
+        Chuck_Set_Global_Float_Array_Request* setFloatArrayRequest;
+        Chuck_Get_Global_Float_Array_Request* getFloatArrayRequest;
+        Chuck_Set_Global_Float_Array_Value_Request* setFloatArrayValueRequest;
+        Chuck_Get_Global_Float_Array_Value_Request* getFloatArrayValueRequest;
+        Chuck_Set_Global_Associative_Float_Array_Value_Request* setAssociativeFloatArrayValueRequest;
+        Chuck_Get_Global_Associative_Float_Array_Value_Request* getAssociativeFloatArrayValueRequest;
         // shreds
-        Chuck_VM_Shred * shred;
+        Chuck_VM_Shred* shred;
         // chuck_msg
-        Chuck_Execute_Chuck_Msg_Request * executeChuckMsgRequest;
+        Chuck_Execute_Chuck_Msg_Request* executeChuckMsgRequest;
     };
 
     Chuck_Global_Request()
@@ -514,321 +738,133 @@ struct Chuck_Global_Request
 // name: struct Chuck_VM
 // desc: ...
 //-----------------------------------------------------------------------------
-struct Chuck_VM : Chuck_Object
+struct Chuck_Globals_Manager : Chuck_Object
 {
-//-----------------------------------------------------------------------------
-// functions
-//-----------------------------------------------------------------------------
 public:
-    Chuck_VM();
-    ~Chuck_VM();
-
-public: // init
-    t_CKBOOL initialize( t_CKUINT srate, t_CKUINT dac_chan, t_CKUINT adc_chan,
-                         t_CKUINT adaptive, t_CKBOOL halt );
-    t_CKBOOL initialize_synthesis( );
-    t_CKBOOL setCarrier( Chuck_Carrier * c ) { m_carrier = c; return TRUE; }
-    t_CKBOOL shutdown();
-    t_CKBOOL has_init() { return m_init; }
-
-public: // run state; 1.3.5.3
-    // run start
-    t_CKBOOL start();
-    // get run state
-    t_CKBOOL running();
-    // run stop
-    t_CKBOOL stop();
-    // backdoor to access state directly (should be called from inside VM only)
-    t_CKBOOL & runningState() { return m_is_running; }
-
-public: // shreds
-    // spork code as shred; if not immediate, enqueue for next sample
-    // REFACTOR-2017: added immediate flag
-    Chuck_VM_Shred * spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
-                            t_CKBOOL immediate = FALSE );
-    // get reference to shreduler
-    Chuck_VM_Shreduler * shreduler() const;
-    // the next spork ID
-    t_CKUINT next_id( );
-    // the last used spork ID
-    t_CKUINT last_id( );
-
-public: // audio
-    t_CKUINT srate() const;
-
-public: // running the machine
-    // compute next N frames
-    t_CKBOOL run( t_CKINT numFrames, const SAMPLE * input, SAMPLE * output );
-    // compute all shreds for current time
-    t_CKBOOL compute( );
-    // abort current running shred
-    t_CKBOOL abort_current_shred( );
-    
-public: // invoke functions
-    t_CKBOOL invoke_static( Chuck_VM_Shred * shred );
-
-public: // garbage collection
-    void gc();
-    void gc( t_CKUINT amount );
-
-public: // msg
-    t_CKBOOL queue_msg( Chuck_Msg * msg, int num_msg );
-    // CBufferSimple added 1.3.0.0 to fix uber-crash
-    t_CKBOOL queue_event( Chuck_Event * event, int num_msg, CBufferSimple * buffer = NULL );
-    t_CKUINT process_msg( Chuck_Msg * msg );
-    Chuck_Msg * get_reply( );
-
-    // added 1.3.0.0 to fix uber-crash
-    CBufferSimple * create_event_buffer();
-    void destroy_event_buffer( CBufferSimple * buffer );
-    
-public: // get error
-    const char * last_error() const
-    { return m_last_error.c_str(); }
+    Chuck_Globals_Manager( Chuck_VM * vm );
+    ~Chuck_Globals_Manager();
 
 public:
     // REFACTOR-2017: externally accessible + global variables.
     // use these getters and setters from outside the audio thread
-    t_CKBOOL get_global_int( std::string name, void (* callback)(t_CKINT) );
-    t_CKBOOL get_global_int( std::string name, void (* callback)(const char *, t_CKINT) );
-    t_CKBOOL get_global_int( std::string name, t_CKINT callbackID, void (* callback)(t_CKINT, t_CKINT) );
+    t_CKBOOL get_global_int( std::string name, void (*callback)(t_CKINT) );
+    t_CKBOOL get_global_int( std::string name, void (*callback)(const char*, t_CKINT) );
+    t_CKBOOL get_global_int( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKINT) );
     t_CKBOOL set_global_int( std::string name, t_CKINT val );
 
-    t_CKBOOL get_global_float( std::string name, void (* callback)(t_CKFLOAT) );
-    t_CKBOOL get_global_float( std::string name, void (* callback)(const char *, t_CKFLOAT) );
-    t_CKBOOL get_global_float( std::string name, t_CKINT callbackID, void (* callback)(t_CKINT, t_CKFLOAT) );
+    t_CKBOOL get_global_float( std::string name, void (*callback)(t_CKFLOAT) );
+    t_CKBOOL get_global_float( std::string name, void (*callback)(const char*, t_CKFLOAT) );
+    t_CKBOOL get_global_float( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKFLOAT) );
     t_CKBOOL set_global_float( std::string name, t_CKFLOAT val );
-    
-    t_CKBOOL get_global_string( std::string name, void (* callback)(const char *) );
-    t_CKBOOL get_global_string( std::string name, void (* callback)(const char *, const char *) );
-    t_CKBOOL get_global_string( std::string name, t_CKINT callbackID, void (* callback)(t_CKINT, const char *) );
+
+    t_CKBOOL get_global_string( std::string name, void (*callback)(const char*) );
+    t_CKBOOL get_global_string( std::string name, void (*callback)(const char*, const char*) );
+    t_CKBOOL get_global_string( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT, const char*) );
     t_CKBOOL set_global_string( std::string name, std::string val );
-    
+
     t_CKBOOL signal_global_event( std::string name );
     t_CKBOOL broadcast_global_event( std::string name );
-    t_CKBOOL listen_for_global_event( std::string name, void (* callback)(void), t_CKBOOL listen_forever );
-    t_CKBOOL listen_for_global_event( std::string name, void (* callback)(const char *), t_CKBOOL listen_forever );
-    t_CKBOOL listen_for_global_event( std::string name, t_CKINT callbackID, void (* callback)(t_CKINT), t_CKBOOL listen_forever );
-    t_CKBOOL stop_listening_for_global_event( std::string name, void (* callback)(void) );
-    t_CKBOOL stop_listening_for_global_event( std::string name, void (* callback)(const char *) );
-    t_CKBOOL stop_listening_for_global_event( std::string name, t_CKINT callbackID, void (* callback)(t_CKINT) );
-    
-    t_CKBOOL get_global_ugen_samples( std::string name, SAMPLE * buffer, int numFrames );
-    
+    t_CKBOOL listen_for_global_event( std::string name, void (*callback)(void), t_CKBOOL listen_forever );
+    t_CKBOOL listen_for_global_event( std::string name, void (*callback)(const char*), t_CKBOOL listen_forever );
+    t_CKBOOL listen_for_global_event( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT), t_CKBOOL listen_forever );
+    t_CKBOOL stop_listening_for_global_event( std::string name, void (*callback)(void) );
+    t_CKBOOL stop_listening_for_global_event( std::string name, void (*callback)(const char*) );
+    t_CKBOOL stop_listening_for_global_event( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT) );
+
+    t_CKBOOL get_global_ugen_samples( std::string name, SAMPLE* buffer, int numFrames );
+
     t_CKBOOL set_global_int_array( std::string name, t_CKINT arrayValues[], t_CKUINT numValues );
-    t_CKBOOL get_global_int_array( std::string name, void (* callback)(t_CKINT[], t_CKUINT));
-    t_CKBOOL get_global_int_array( std::string name, void (* callback)(const char *, t_CKINT[], t_CKUINT));
-    t_CKBOOL get_global_int_array( std::string name, t_CKINT callbackID, void (* callback)(t_CKINT, t_CKINT[], t_CKUINT));
+    t_CKBOOL get_global_int_array( std::string name, void (*callback)(t_CKINT[], t_CKUINT) );
+    t_CKBOOL get_global_int_array( std::string name, void (*callback)(const char*, t_CKINT[], t_CKUINT) );
+    t_CKBOOL get_global_int_array( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKINT[], t_CKUINT) );
     t_CKBOOL set_global_int_array_value( std::string name, t_CKUINT index, t_CKINT value );
-    t_CKBOOL get_global_int_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKINT) );
-    t_CKBOOL get_global_int_array_value( std::string name, t_CKUINT index, void (* callback)(const char *, t_CKINT) );
-    t_CKBOOL get_global_int_array_value( std::string name, t_CKINT callbackID, t_CKUINT index, void (* callback)(t_CKINT, t_CKINT) );
+    t_CKBOOL get_global_int_array_value( std::string name, t_CKUINT index, void (*callback)(t_CKINT) );
+    t_CKBOOL get_global_int_array_value( std::string name, t_CKUINT index, void (*callback)(const char*, t_CKINT) );
+    t_CKBOOL get_global_int_array_value( std::string name, t_CKINT callbackID, t_CKUINT index, void (*callback)(t_CKINT, t_CKINT) );
     t_CKBOOL set_global_associative_int_array_value( std::string name, std::string key, t_CKINT value );
-    t_CKBOOL get_global_associative_int_array_value( std::string name, std::string key, void (* callback)(t_CKINT) );
-    t_CKBOOL get_global_associative_int_array_value( std::string name, std::string key, void (* callback)(const char *, t_CKINT) );
-    t_CKBOOL get_global_associative_int_array_value( std::string name, t_CKINT callbackID, std::string key, void (* callback)(t_CKINT, t_CKINT) );
-    
+    t_CKBOOL get_global_associative_int_array_value( std::string name, std::string key, void (*callback)(t_CKINT) );
+    t_CKBOOL get_global_associative_int_array_value( std::string name, std::string key, void (*callback)(const char*, t_CKINT) );
+    t_CKBOOL get_global_associative_int_array_value( std::string name, t_CKINT callbackID, std::string key, void (*callback)(t_CKINT, t_CKINT) );
+
     t_CKBOOL set_global_float_array( std::string name, t_CKFLOAT arrayValues[], t_CKUINT numValues );
-    t_CKBOOL get_global_float_array( std::string name, void (* callback)(t_CKFLOAT[], t_CKUINT));
-    t_CKBOOL get_global_float_array( std::string name, void (* callback)(const char *, t_CKFLOAT[], t_CKUINT));
-    t_CKBOOL get_global_float_array( std::string name, t_CKINT callbackID, void (* callback)(t_CKINT, t_CKFLOAT[], t_CKUINT));
+    t_CKBOOL get_global_float_array( std::string name, void (*callback)(t_CKFLOAT[], t_CKUINT) );
+    t_CKBOOL get_global_float_array( std::string name, void (*callback)(const char*, t_CKFLOAT[], t_CKUINT) );
+    t_CKBOOL get_global_float_array( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKFLOAT[], t_CKUINT) );
     t_CKBOOL set_global_float_array_value( std::string name, t_CKUINT index, t_CKFLOAT value );
-    t_CKBOOL get_global_float_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKFLOAT) );
-    t_CKBOOL get_global_float_array_value( std::string name, t_CKUINT index, void (* callback)(const char *, t_CKFLOAT) );
-    t_CKBOOL get_global_float_array_value( std::string name, t_CKINT callbackID, t_CKUINT index, void (* callback)(t_CKINT, t_CKFLOAT) );
+    t_CKBOOL get_global_float_array_value( std::string name, t_CKUINT index, void (*callback)(t_CKFLOAT) );
+    t_CKBOOL get_global_float_array_value( std::string name, t_CKUINT index, void (*callback)(const char*, t_CKFLOAT) );
+    t_CKBOOL get_global_float_array_value( std::string name, t_CKINT callbackID, t_CKUINT index, void (*callback)(t_CKINT, t_CKFLOAT) );
     t_CKBOOL set_global_associative_float_array_value( std::string name, std::string key, t_CKFLOAT value );
-    t_CKBOOL get_global_associative_float_array_value( std::string name, std::string key, void (* callback)(t_CKFLOAT) );
-    t_CKBOOL get_global_associative_float_array_value( std::string name, std::string key, void (* callback)(const char *, t_CKFLOAT) );
-    t_CKBOOL get_global_associative_float_array_value( std::string name, t_CKINT callbackID, std::string key, void (* callback)(t_CKINT, t_CKFLOAT) );
+    t_CKBOOL get_global_associative_float_array_value( std::string name, std::string key, void (*callback)(t_CKFLOAT) );
+    t_CKBOOL get_global_associative_float_array_value( std::string name, std::string key, void (*callback)(const char*, t_CKFLOAT) );
+    t_CKBOOL get_global_associative_float_array_value( std::string name, t_CKINT callbackID, std::string key, void (*callback)(t_CKINT, t_CKFLOAT) );
 
 public:
     // run Chuck_Msg in the globals order
-    t_CKBOOL execute_chuck_msg_with_globals( Chuck_Msg * msg );
-    
+    t_CKBOOL execute_chuck_msg_with_globals( Chuck_Msg* msg );
+
 public:
     // REFACTOR-2017: externally accessible + global variables.
     // these internal functions are to be used only by other
     // chuck code in the audio thread.
     t_CKBOOL init_global_int( std::string name );
     t_CKINT get_global_int_value( std::string name );
-    t_CKINT * get_ptr_to_global_int( std::string name );
-    
+    t_CKINT* get_ptr_to_global_int( std::string name );
+
     t_CKBOOL init_global_float( std::string name );
     t_CKFLOAT get_global_float_value( std::string name );
-    t_CKFLOAT * get_ptr_to_global_float( std::string name );
-    
-    t_CKBOOL init_global_string( std::string name );
-    Chuck_String * get_global_string( std::string name );
-    Chuck_String * * get_ptr_to_global_string( std::string name );
-    
-    t_CKBOOL init_global_event( std::string name, Chuck_Type * type );
-    Chuck_Event * get_global_event( std::string name );
-    Chuck_Event * * get_ptr_to_global_event( std::string name );
+    t_CKFLOAT* get_ptr_to_global_float( std::string name );
 
-    t_CKBOOL init_global_ugen( std::string name, Chuck_Type * type );
+    t_CKBOOL init_global_string( std::string name );
+    Chuck_String* get_global_string( std::string name );
+    Chuck_String** get_ptr_to_global_string( std::string name );
+
+    t_CKBOOL init_global_event( std::string name, Chuck_Type* type );
+    Chuck_Event* get_global_event( std::string name );
+    Chuck_Event** get_ptr_to_global_event( std::string name );
+
+    t_CKBOOL init_global_ugen( std::string name, Chuck_Type* type );
     t_CKBOOL is_global_ugen_init( std::string name );
     t_CKBOOL is_global_ugen_valid( std::string name );
-    Chuck_UGen * get_global_ugen( std::string name );
-    Chuck_UGen * * get_ptr_to_global_ugen( std::string name );
-    
-    t_CKBOOL init_global_array( std::string name, Chuck_Type * type, te_GlobalType arr_type );
-    Chuck_Object * get_global_array( std::string name );
+    Chuck_UGen* get_global_ugen( std::string name );
+    Chuck_UGen** get_ptr_to_global_ugen( std::string name );
+
+    t_CKBOOL init_global_array( std::string name, Chuck_Type* type, te_GlobalType arr_type );
+    Chuck_Object* get_global_array( std::string name );
     t_CKINT _get_global_int_array_value( std::string name, t_CKUINT index );
     t_CKINT _get_global_associative_int_array_value( std::string name, std::string key );
     t_CKFLOAT _get_global_float_array_value( std::string name, t_CKUINT index );
     t_CKFLOAT _get_global_associative_float_array_value( std::string name, std::string key );
-    Chuck_Object * * get_ptr_to_global_array( std::string name );
-    
+    Chuck_Object** get_ptr_to_global_array( std::string name );
+
     t_CKBOOL should_call_global_ctor( std::string name, te_GlobalType type );
     void global_ctor_was_called( std::string name, te_GlobalType type );
-    
-protected:
-    // REFACTOR-2017: global queue
-    void handle_global_queue_messages();
 
-public:
-    // REFACTOR-2017: get associated, per-VM environment, chout, cherr
-    Chuck_Carrier * carrier() const { return m_carrier; }
-    Chuck_Env * env() const { return m_carrier->env; }
-    Chuck_IO_Chout * chout() const { return m_carrier->chout; }
-    Chuck_IO_Cherr * cherr() const { return m_carrier->cherr; }
-
-
-//-----------------------------------------------------------------------------
-// data
-//-----------------------------------------------------------------------------
-protected:
-    // REFACTOR-2017: added per-ChucK carrier
-    Chuck_Carrier * m_carrier;
-
-public:
-    // ugen
-    Chuck_UGen * m_adc;
-    Chuck_UGen * m_dac;
-    Chuck_UGen * m_bunghole;
-    t_CKUINT m_srate;
-    t_CKUINT m_num_adc_channels;
-    t_CKUINT m_num_dac_channels;
-    t_CKBOOL m_halt;
-    t_CKBOOL m_is_running;
-
-    // for shreduler, ge: 1.3.5.3
-    const SAMPLE * input_ref() { return m_input_ref; }
-    SAMPLE * output_ref() { return m_output_ref; }
-    // for shreduler, jack: planar audio buffers
-    t_CKUINT buffer_length() { return m_current_buffer_frames; }
-
-protected:
-    // for shreduler, ge: 1.3.5.3
-    const SAMPLE * m_input_ref;
-    SAMPLE * m_output_ref;
-    t_CKUINT m_current_buffer_frames;
-
-protected:
-    Chuck_VM_Shred * spork( Chuck_VM_Shred * shred );
-    t_CKBOOL free( Chuck_VM_Shred * shred, t_CKBOOL cascade, 
-                   t_CKBOOL dec = TRUE );
-    void dump( Chuck_VM_Shred * shred );
-    void release_dump();
-
-protected:
-    t_CKBOOL m_init;
-    std::string m_last_error;
-
-    // shred
-    Chuck_VM_Shred * m_shreds;
-    t_CKUINT m_num_shreds;
-    t_CKUINT m_shred_id;
-    Chuck_VM_Shreduler * m_shreduler;
-    // place to put dumped shreds
-    std::vector<Chuck_VM_Shred *> m_shred_dump;
-    t_CKUINT m_num_dumped_shreds;
-
-    // message queue
-    CBufferSimple * m_msg_buffer;
-    CBufferSimple * m_reply_buffer;
-    CBufferSimple * m_event_buffer;
-    
-    // TODO: vector? (added 1.3.0.0 to fix uber-crash)
-    std::list<CBufferSimple *> m_event_buffers;
-
-private:
-    // global variables
+    // global variables -- clean up
     void cleanup_global_variables();
 
-    std::map< std::string, Chuck_Global_Int_Container * > m_global_ints;
-    std::map< std::string, Chuck_Global_Float_Container * > m_global_floats;
-    std::map< std::string, Chuck_Global_String_Container * > m_global_strings;
-    std::map< std::string, Chuck_Global_Event_Container * > m_global_events;
-    std::map< std::string, Chuck_Global_UGen_Container * > m_global_ugens;
-    std::map< std::string, Chuck_Global_Array_Container * > m_global_arrays;
-    
+    // request queue: add, query for size
+    t_CKBOOL _add_request( Chuck_Global_Request request );
+    t_CKBOOL _more_requests();
+
+    // REFACTOR-2017: execute the messages from the global queue
+    void handle_global_queue_messages();
+
+private:
+    // ptr to my vm
+    Chuck_VM * m_vm;
+
+    // global variables -- storage 
+    std::map< std::string, Chuck_Global_Int_Container* > m_global_ints;
+    std::map< std::string, Chuck_Global_Float_Container* > m_global_floats;
+    std::map< std::string, Chuck_Global_String_Container* > m_global_strings;
+    std::map< std::string, Chuck_Global_Event_Container* > m_global_events;
+    std::map< std::string, Chuck_Global_UGen_Container* > m_global_ugens;
+    std::map< std::string, Chuck_Global_Array_Container* > m_global_arrays;
+
+    // global variables -- messages for set, get, etc.
     XCircleBuffer< Chuck_Global_Request > m_global_request_queue;
     XCircleBuffer< Chuck_Global_Request > m_global_request_retry_queue;
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: enum Chuck_Msg_Type
-// desc: ...
-//-----------------------------------------------------------------------------
-enum Chuck_Msg_Type
-{
-    MSG_ADD = 1,
-    MSG_REMOVE,
-    MSG_REMOVEALL,
-    MSG_REPLACE,
-    MSG_STATUS,
-    MSG_PAUSE,
-    MSG_KILL,
-    MSG_TIME,
-    MSG_RESET_ID,
-    MSG_DONE,
-    MSG_ABORT,
-    MSG_ERROR, // added 1.3.0.0
-    MSG_CLEARVM,
-    MSG_CLEARGLOBALS,
-};
-
-
-
-
-// callback function prototype
-typedef void (* ck_msg_func)( const Chuck_Msg * msg );
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Msg
-// desc: ...
-//-----------------------------------------------------------------------------
-struct Chuck_Msg
-{
-    t_CKUINT type;
-    t_CKUINT param;
-    Chuck_VM_Code * code;
-    Chuck_VM_Shred * shred;
-    t_CKTIME when;
-
-    void * user;
-    ck_msg_func reply;
-    t_CKUINT replyA;
-    t_CKUINT replyB;
-    void * replyC;
-
-    std::vector<std::string> * args;
-
-    Chuck_Msg() : args(NULL) { clear(); }
-    ~Chuck_Msg() { SAFE_DELETE( args ); }
-    
-    // added 1.3.0.0
-    void clear() { SAFE_DELETE( args ); memset( this, 0, sizeof(*this) ); }
-    
-    void set( const std::vector<std::string> & vargs )
-    {
-        SAFE_DELETE(args);
-        args = new std::vector<std::string>;
-        (*args) = vargs;
-    }
 };
 
 
