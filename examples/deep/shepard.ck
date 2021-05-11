@@ -19,11 +19,11 @@
 1::ms => dur T;
 
 // starting pitches (in MIDI note numbers, octaves apart)
-[ 12.0, 24, 36, 48, 60, 72, 84, 96, 108 ] @=> float pitches[];
+[ 12.0, 24, 36, 48, 60, 72, 84, 96, 108, 120 ] @=> float pitches[];
 // number of tones
 pitches.size() => int N;
 // bank of tones
-TriOsc tones[N];
+SinOsc tones[N];
 // overall gain
 Gain gain => dac; 1.0/N => gain.gain;
 // connect to dac
