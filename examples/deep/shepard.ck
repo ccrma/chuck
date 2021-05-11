@@ -23,7 +23,7 @@
 // number of tones
 pitches.size() => int N;
 // bank of tones
-SinOsc tones[N];
+TriOsc tones[N];
 // overall gain
 Gain gain => dac; 1.0/N => gain.gain;
 // connect to dac
