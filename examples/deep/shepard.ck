@@ -1,7 +1,7 @@
 //--------------------------------------------------------------------
 // name: shepard.ck
 // desc: continuous shepard-risset tone generator; 
-//       descending but can easily made to ascend
+//       ascending but can easily made to descend
 //
 // author: Ge Wang (https://ccrma.stanford.edu/~ge/)
 //   date: spring 2016
@@ -14,7 +14,7 @@
 // normalize to 1.0 at x==MU
 1 / gauss(MU, MU, SIGMA) => float SCALE;
 // increment per unit time (use negative for descending)
--.002 => float INC;
+.004 => float INC;
 // unit time (change interval)
 1::ms => dur T;
 
@@ -43,9 +43,9 @@ while( true )
         // increment pitch
         INC +=> pitches[i];
         // wrap (for positive INC)
-        if( pitches[i] > 120 ) 12 => pitches[i];
+        if( pitches[i] > 120 ) 108 -=> pitches[i];
         // wrap (for negative INC)
-        if( pitches[i] < 12 ) 120 => pitches[i];
+        else if( pitches[i] < 12 ) 108 +=> pitches[i];
     }
     
     // advance time
