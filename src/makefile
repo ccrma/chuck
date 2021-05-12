@@ -204,23 +204,6 @@ chuck-core:
 chuck: chuck-core $(COBJS_HOST) $(CXXOBJS_HOST)
 	$(LD) -o chuck $(OBJS) $(LDFLAGS) $(ARCHOPTS)
 
-
-######### subsection for generating the parser for windows #########
-core/chuck.tab.c core/chuck.tab.h: core/chuck.y
-	$(YACC) -dv -b chuck core/chuck.y
-
-core/chuck.yy.c: core/chuck.lex
-	$(LEX) -ocore/chuck.yy.c core/chuck.lex
-
-core/chuck_win32.c: core/chuck.yy.c
-	$(LEX) --nounistd -ocore/chuck.yy.c core/chuck.lex
-	cat core/chuck.tab.c core/chuck.yy.c > $@
-
-core/chuck_win32.h: core/chuck.tab.h
-	cat core/chuck.tab.h > $@
-######## end subsection ###########
-
-
 $(COBJS_HOST): %.o: %.c
 	$(CC) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
