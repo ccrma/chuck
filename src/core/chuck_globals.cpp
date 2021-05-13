@@ -2363,7 +2363,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         m_vm->process_msg( message.executeChuckMsgRequest->msg );
                     }
                     // clean up request storage
-                    delete message.executeChuckMsgRequest;
+                    SAFE_DELETE( message.executeChuckMsgRequest );
                     break;
                     
                 case spork_shred_request:
