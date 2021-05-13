@@ -425,6 +425,7 @@
 		09AAE1A618211D8F002C9B92 /* makefile.pulse */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = makefile.pulse; path = ../makefile.pulse; sourceTree = SOURCE_ROOT; };
 		09F05F580B74558400023899 /* tilt.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = tilt.ck; path = examples/hid/tilt.ck; sourceTree = SOURCE_ROOT; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		8615DFF6264CD96B0084EF86 /* chuck_carrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chuck_carrier.h; path = ../core/chuck_carrier.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -838,9 +839,10 @@
 				09922D48181601F700806471 /* lo */,
 				04393AC81F733747008E9322 /* chuck.cpp */,
 				04393AC91F733747008E9322 /* chuck.h */,
-				0982F1992021871C005B1521 /* chuck_carrier.cpp */,
 				09A40B060A9A54DA007604EA /* chuck_absyn.cpp */,
 				09A40B070A9A54DA007604EA /* chuck_absyn.h */,
+				0982F1992021871C005B1521 /* chuck_carrier.cpp */,
+				8615DFF6264CD96B0084EF86 /* chuck_carrier.h */,
 				09A40B0A0A9A54DA007604EA /* chuck_compile.cpp */,
 				09A40B0B0A9A54DA007604EA /* chuck_compile.h */,
 				09A40B0E0A9A54DA007604EA /* chuck_def.h */,

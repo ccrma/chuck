@@ -226,8 +226,8 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         prog = prog->next;
     }
     
-    // 1.4.0.1: error-checking: was dac-replacement initted?
-    // (see chuck_compile.h for an explanation on replacement dacs
+    // 1.4.0.2 (jack): error-checking: was dac-replacement initted?
+    // (see chuck_compile.h for an explanation on replacement dacs)
     if( emit->should_replace_dac )
     {
         if( !emit->env->vm()->globals_manager()->is_global_ugen_init( emit->dac_replacement ) )
@@ -2905,7 +2905,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         }
         else if( exp->var == insert_symbol( "dac" ) )
         {
-            // 1.4.0.1: see chuck_compile.h for an explanation of 
+            // 1.4.0.2 (jack): see chuck_compile.h for an explanation of
             // replacement dacs
             // should replace dac with global ugen?
             if( emit->should_replace_dac )
