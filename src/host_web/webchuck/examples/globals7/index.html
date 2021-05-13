@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>ChucK + JS => ChucKScript</title>
+    <link rel="stylesheet" href="../../css/editor.css">
+  </head>
+  <body onresize="chuckEditor.resize();">
+<div>
+    <div id="program">// Globals 7: setting and getting ints[], floats[]
+global int globalInts[5];
+global float globalFloats[5];
+2 => globalInts[1];
+4.5 => globalFloats[3];
+
+3 => globalInts["hi"];
+5.5 => globalFloats["hello"];
+global Event windsOfChange;
+
+<<< globalInts[1], globalFloats[3], globalInts["hi"], globalFloats["hello"] >>>;
+windsOfChange.signal();
+0.5::second => now;
+<<< globalInts[1], globalFloats[3], globalInts["hi"], globalFloats["hello"] >>>;
+<<< globalInts["bye"], globalFloats["goodbye"] >>>;
+<<< globalInts[7], globalFloats[7] >>>;
+windsOfChange.signal();
+</div>
+</div>
+<div class="buttons">
+    <button class="chuckButton" id="startChuck" disabled="disabled">Start ChucK</button>
+    <button class="chuckButton" id="compileButton" disabled="disabled">Compile and Run</button>
+    <button class="chuckButton" id="replaceButton" disabled="disabled">Replace</button>
+    <button class="chuckButton" id="removeButton" disabled="disabled">Remove</button>
+    <button class="chuckButton" id="clearButton" disabled="disabled">Clear VM and Globals</button>
+    <button class="chuckButton" id="micButton" disabled="disabled">Enable Microphone</button>
+    <button class="chuckButton" id="fileFormButton">Show File Uploader</button>
+</div>
+<div id="fileForm" class="hidden">
+    <p>File name to use in ChucK: <input type="text" id="uploadFilename"></p>
+    <p>Local file to upload: <input type="file" id="uploadFile" name="uploadFile"></p>
+    <p><button class="chuckButton" id="fileButton" disabled="disabled">Upload File to Virtual File System</button></p>
+</div>
+<div>
+    <textarea id="output"></textarea>
+    <div id="shreds">
+        <table id="shredstable">
+            <col width="60px">
+            <col width="1*">
+            <col width="50px">
+            <col width="60px">
+            <tr><th>shred</th><th>code</th><th>time</th><th>remove</th>
+        </table>
+    </div>
+    <div class="clearfix"></div>
+</div>
+    <script type="text/javascript" src="../../js/ace-min-noconflict/ace.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../js/editor.js"></script>
+    <script type="text/javascript" src="../../js/defer.js"></script>
+    <script>
+        // override
+        var whereIsChuck = "../../js";
+    </script>
+    <script type="text/javascript" src="../../js/webchuck_host.js"></script>
+    <script type="text/javascript" src="../../js/host.js"></script>
+    <script>
+        theChuckReady.then( function() {
+            // compile it for this test without waiting for the user to click button
+            // just to make sure the global Event exists
+            theChuck.runCode( "global Event windsOfChange;" ).then( function( shred )
+            {
+                // so we can do this after
+                theChuck.listenForEventOnce( "windsOfChange", function()
+                {
+                    
+                    theChuck.setIntArray( "globalInts", [0, 1, 2, 3, 4, 5, 6, 7] );
+                    theChuck.setIntArrayValue( "globalInts", 1, 50 );
+                    theChuck.setAssociativeIntArrayValue( "globalInts", "hi", 51 );
+                    theChuck.setAssociativeIntArrayValue( "globalInts", "bye", 52 );
+                    theChuck.setFloatArray( "globalFloats", [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5] );
+                    theChuck.setFloatArrayValue( "globalFloats", 3, 50.5 );
+                    theChuck.setAssociativeFloatArrayValue( "globalFloats", "hello", 51.5 );
+                    theChuck.setAssociativeFloatArrayValue( "globalFloats", "goodbye", 52.5 );
+
+                    theChuck.listenForEventOnce( "windsOfChange", function() 
+                    {
+                        theChuck.getIntArrayValue( "globalInts", 1 ).then( function( result )
+                        {
+                            chuckPrint( "the gotten global int is ", result );
+                        });
+                        theChuck.getAssociativeIntArrayValue( "globalInts", "hi" ).then( function( result )
+                        {
+                            chuckPrint( "the gotten global associative int is ", result );
+                        });
+                        theChuck.getFloatArrayValue( "globalFloats", 3 ).then( function( result )
+                        {
+                            chuckPrint( "the gotten global float is ", result );
+                        });
+                        theChuck.getAssociativeFloatArrayValue( "globalFloats", "hello" ).then( function( result )
+                        {
+                            chuckPrint( "the gotten global associative float is ", result );
+                        });
+                        theChuck.getIntArray( "globalInts" ).then( function( result )
+                        {
+                            chuckPrint( "the gotten int array is ", result );
+                        });
+                        theChuck.getFloatArray( "globalFloats" ).then( function( result )
+                        {
+                            chuckPrint( "the gotten float array is ", result );
+                        });
+                    } );
+                } );
+            });
+        });
+    </script>
+  </body>
+</html>
+
+

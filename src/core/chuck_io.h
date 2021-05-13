@@ -34,7 +34,9 @@
 
 #include "chuck_oo.h"
 #include "chuck_dl.h"
+#ifndef __DISABLE_SERIAL__
 #include "util_thread.h"
+#endif
 #include "util_buffers.h"
 #include <list>
 
@@ -42,17 +44,26 @@
 
 
 // class initialization
+// do not __DISABLE_MIDI__ this one in particular
 t_CKBOOL init_class_Midi( Chuck_Env * env );
+#ifndef __DISABLE_MIDI__
 t_CKBOOL init_class_MidiRW( Chuck_Env * env );
+#endif
+#ifndef __DISABLE_HID__
 t_CKBOOL init_class_HID( Chuck_Env * env );
+#endif
 t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type );
+#ifndef __DISABLE_FILEIO__
 t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type );
+#endif
 // added 1.3.0.0 -- moved to be full-fledged class
 t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type );
 // added 1.3.0.0 -- moved to be full-fledged class
 t_CKBOOL init_class_cherr( Chuck_Env * env, Chuck_Type * type );
+#ifndef __DISABLE_SERIAL__
  // added 1.3.1
 t_CKBOOL init_class_serialio( Chuck_Env * env );
+#endif
 
 
 
@@ -66,6 +77,7 @@ CK_DLL_SFUN( io_newline );
 CK_DLL_SFUN( io_openfile );
 
 
+#ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // fileio API
 //-----------------------------------------------------------------------------
@@ -94,6 +106,7 @@ CK_DLL_MFUN( fileio_writestring );
 CK_DLL_MFUN( fileio_writeint );
 CK_DLL_MFUN( fileio_writeintflags );
 CK_DLL_MFUN( fileio_writefloat );
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -137,6 +150,7 @@ CK_DLL_MFUN( cherr_writefloat );
 
 
 
+
 //-----------------------------------------------------------------------------
 // MidiMsg API
 //-----------------------------------------------------------------------------
@@ -147,6 +161,7 @@ extern t_CKUINT MidiMsg_offset_data2;
 extern t_CKUINT MidiMsg_offset_data3;
 extern t_CKUINT MidiMsg_offset_when;
 
+#ifndef __DISABLE_MIDI__
 //-----------------------------------------------------------------------------
 // MidiRW API
 //-----------------------------------------------------------------------------
@@ -207,8 +222,11 @@ CK_DLL_MFUN( MidiOut_num );
 CK_DLL_MFUN( MidiOut_name );
 CK_DLL_MFUN( MidiOut_printerr );
 CK_DLL_MFUN( MidiOut_send );
+#endif // __DISABLE_MIDI__
 
 
+
+#ifndef __DISABLE_HID__
 //-----------------------------------------------------------------------------
 // HidMsg API
 //-----------------------------------------------------------------------------
@@ -257,9 +275,11 @@ CK_DLL_MFUN( HidOut_num );
 CK_DLL_MFUN( HidOut_name );
 CK_DLL_MFUN( HidOut_printerr );
 CK_DLL_MFUN( HidOut_send );
+#endif // __DISABLE_HID__
 
 
 
+#ifndef __DISABLE_SERIAL__
 //-----------------------------------------------------------------------------
 // name: struct Chuck_IO_Serial
 // desc: chuck serial I/O
@@ -413,7 +433,7 @@ protected:
     
     Chuck_VM * m_vmRef;
 };
-
+#endif // __DISABLE_SERIAL__
 
 
 

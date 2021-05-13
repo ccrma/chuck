@@ -1,0 +1,151 @@
+{
+	"scopeName": "source.chuck",
+	"name": "ChucK",
+	"fileTypes": [
+	  "ck"
+	],
+	"patterns": [
+	  {
+		"captures": {
+		  "0": {
+			"name": "punctuation.definition.comment.chuck"
+		  }
+		},
+		"match": "/\\*\\*/",
+		"name": "comment.block.empty.chuck"
+	  },
+	  {
+		"begin": "/\\*",
+		"captures": {
+		  "0": {
+			"name": "punctuation.definition.comment.chuck"
+		  }
+		},
+		"end": "\\*/",
+		"name": "comment.block.chuck"
+	  },
+	  {
+		"begin": "(^[ \\t]+)?(?=//|<\\-\\-)",
+		"beginCaptures": {
+		  "1": {
+			"name": "punctuation.whitespace.comment.leading.chuck"
+		  }
+		},
+		"end": "(?!\\G)",
+		"patterns": [
+		  {
+			"begin": "//|<\\-\\-",
+			"beginCaptures": {
+			  "0": {
+				"name": "punctuation.definition.comment.chuck"
+			  }
+			},
+			"end": "\\n",
+			"name": "comment.line.double-slash.chuck"
+		  }
+		]
+	  },
+	  {
+		"begin": "\"",
+		"beginCaptures": {
+		  "0": {
+			"name": "punctuation.definition.string.begin.chuck"
+		  }
+		},
+		"end": "\"",
+		"endCaptures": {
+		  "0": {
+			"name": "punctuation.definition.string.end.chuck"
+		  }
+		},
+		"name": "string.quoted.double.chuck",
+		"patterns": [
+		  {
+			"name": "constant.character.escape.chuck",
+			"match": "\\\\."
+		  }
+		]
+	  },
+	  {
+		"match": "<<<|>>>",
+		"name": "support.function.debug.chuck"
+	  },
+	  {
+		"match": "\\b(int|float|time|dur|void|same|complex|polar|string|global)\\b",
+		"name": "storage.type.chuck"
+	  },
+	  {
+		"match": "\\b(if|else|while|until|for|repeat|break|continue|return|switch|do)\\b",
+		"name": "keyword.control.chuck"
+	  },
+	  {
+		"match": "\\b(class|interface)\\b",
+		"name": "storage.type.class.chuck"
+	  },
+	  {
+		"match": "\\b(extends|public|static|pure|implements|protected|private)\\b",
+		"name": "storage.modifier.class.chuck"
+	  },
+	  {
+		"match": "\\b(this|super)\\b",
+		"name": "variable.language.chuck"
+	  },
+	  {
+		"match": "\\b(function|fun|spork|const|new)\\b",
+		"name": "keyword.control.chuck"
+	  },
+	  {
+		"match": "\\b(now|true|false|maybe|null|NULL|me|samp|ms|second|minute|hour|day|week|chout|cherr|dac|adc|blackhole)\\b",
+		"name": "constant.special.chuck"
+	  },
+	  {
+		"match": "\\b(\\d+|pi)\\b",
+		"name": "constant.numeric.chuck"
+	  },
+	  {
+		"match": "=>|=<|@=>|\\+=>|\\-=>|\\*=>|\\/=>|%=>|\\+\\+|\\+|\\-\\-|\\-|\\*|\\/(?!\\/)|%|==|!=|<=|>=|<<|>>|<|>|&&|\\|\\||&|\\||\\^|\\$|::",
+		"name": "keyword.operator.chuck"
+	  },
+	  {
+		"match": "\\b(UGen|SinOsc|PulseOsc|SqrOsc|TriOsc|SawOsc|Phasor|Noise|Impulse|Step|Gain|SndBuf2?|HalfRect|FullRect|Mix2|Pan2|GenX|CurveTable|WarpTable|LiSa|Envelope|ADSR|Delay|DelayA|DelayL|Echo|JCRev|NRev|PRCRev|Chorus|Modulate|PitShift|SubNoise|Blit|BlitSaw|BlitSquare|WvIn|WaveLoop|WvOut|OneZero|TwoZero|OnePole|TwoPole|PoleZero|BiQuad|Filter|LPF|HPF|BPF|BRF|ResonZ|Dyno|StkInstrument|BandedWG|BlowBotl|BlowHole|Bowed|Brass|Clarinet|Flute|Mandolin|ModalBar|Moog|Saxofony|Shakers|Sitar|StifKarp|VoicForm|FM|BeeThree|FMVoices|HevyMetl|PercFlut|Rhodey|TubeBell|Wurley|UGen_Multi|UGen_Stereo|Chubgraph|Chugen|FilterBasic|FilterStk|LiSa10|Gen5|Gen7|Gen9|Gen10|Gen17|CNoise|BLT)\\b",
+		"name": "support.class.ugen.chuck"
+	  },
+	  {
+		"match": "\\b(UAna|UAnaBlob|Windowing|FFT|IFFT|DCT|IDCT|Centroid|Flux|RMS|RollOff|ZeroX|FeatureCollector|Flip|pilF|AutoCorr|XCorr)\\b",
+		"name": "support.class.uana.chuck"
+	  },
+	  {
+		"match": "\\b(Std|Machine|Math|Shred|RegEx|Object)\\b",
+		"name": "support.class.library.chuck"
+	  },
+	  {
+		"match": "\\b(Event|MidiIn|MidiMsg|OscRecv|OscEvent|Hid|HidMsg|MidiOut|OscOut|OscIn|OscMsg)\\b",
+		"name": "support.class.event.chuck"
+	  },
+	  {
+		"match": "\\b(IO|FileIO|StdOut|StdErr|SerialIO|MidiFileIn|KBHit)\\b",
+		"name": "support.class.io.chuck"
+	  },
+	  {
+		"match": "\\b(ABSaturator|AmbPan3|Binaural|Bitcrusher|Elliptic|ExpDelay|ExpEnv|Faust|FluidSynth|FoldbackSaturator|GVerb|KasFilter|LADSPA|MagicSine|Mesh2D|Multicomb|NHHall|Overdrive|Pan4|Pan8|Pan16|Perlin|PitchTrack|PowerADSR|Random|Sigmund|Spectacle|Wavetable|WinFuncEnv|WPDiodeLadder|WPKorg35)\\b",
+		"name": "support.class.chugin.chuck"
+	  },
+	  {
+		"match": "(\\.)\\s*([a-zA-Z_$][\\w$]*)",
+		"captures": {
+		  "2": {
+			"name": "entity.name.function.chuck"
+		  }
+		}
+	  },
+	  {
+		"match": "([A-Za-z_$][\\w$]*)\\s*(\\()",
+		"captures": {
+		  "1": {
+			"name": "entity.name.function.chuck"
+		  }
+		}
+	  }
+	]
+  }
+  

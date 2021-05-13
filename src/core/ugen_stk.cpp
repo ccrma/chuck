@@ -444,6 +444,7 @@ CK_DLL_CTRL( WvIn_ctrl_path );
 CK_DLL_CGET( WvIn_cget_rate );
 CK_DLL_CGET( WvIn_cget_path );
 
+#ifndef __DISABLE_WVOUT__
 // WvOut
 CK_DLL_CTOR( WvOut_ctor );
 CK_DLL_DTOR( WvOut_dtor );
@@ -469,6 +470,7 @@ CK_DLL_CGET( WvOut_cget_record );
 CK_DLL_CGET( WvOut_cget_autoPrefix );
 CK_DLL_CTRL( WvOut_ctrl_fileGain );
 CK_DLL_CGET( WvOut_cget_fileGain );
+#endif
 
 
 // FM
@@ -4376,7 +4378,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // end the class import
     type_engine_import_class_end( env );
 
-
+    
+    #ifndef __DISABLE_WVOUT__
     //------------------------------------------------------------------------
     // begin WvOut ugen
     //------------------------------------------------------------------------
@@ -4391,7 +4394,7 @@ Currently, WvOut is non-interpolating and the output rate is always `Stk::sample
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
-    if( !type_engine_import_ugen_begin( env, "WvOut", "UGen", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "WvOut", "UGen", env->global(),
                         WvOut_ctor, WvOut_dtor,
                         WvOut_tick, WvOut_pmsg, doc.c_str() ) ) return FALSE;
     
@@ -4468,7 +4471,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     type_engine_import_class_end( env );
     
     
-    if( !type_engine_import_ugen_begin( env, "WvOut2", "WvOut", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "WvOut2", "WvOut", env->global(),
                                         NULL, NULL,
                                         NULL, WvOut2_tickf, WvOut_pmsg, 2, 2 ) ) return FALSE;
 
@@ -4494,7 +4497,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     // end the class import
     type_engine_import_class_end( env );
-    
+    #endif //__DISABLE_WVOUT__
+
 
     //------------------------------------------------------------------------
     // begin BLT (BandLtd)
@@ -5579,7 +5583,7 @@ void BeeThree :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT BeeThree :: tick()
 {
-  register MY_FLOAT temp;
+  MY_FLOAT temp;
 
   if (modDepth > 0.0)   {
     temp = 1.0 + (modDepth * vibrato->tick() * 0.1);
@@ -7433,19 +7437,19 @@ MY_FLOAT Delay :: getDelay(void) const
 MY_FLOAT Delay :: energy(void) const
 {
   int i;
-  register MY_FLOAT e = 0;
+  MY_FLOAT e = 0;
   if (inPoint >= outPoint) {
     for (i=outPoint; i<inPoint; i++) {
-      register MY_FLOAT t = inputs[i];
+      MY_FLOAT t = inputs[i];
       e += t*t;
     }
   } else {
     for (i=outPoint; i<length; i++) {
-      register MY_FLOAT t = inputs[i];
+      MY_FLOAT t = inputs[i];
       e += t*t;
     }
     for (i=0; i<inPoint; i++) {
-      register MY_FLOAT t = inputs[i];
+      MY_FLOAT t = inputs[i];
       e += t*t;
     }
   }
@@ -8534,7 +8538,7 @@ void FMVoices :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT FMVoices :: tick()
 {
-  register MY_FLOAT temp, temp2;
+  MY_FLOAT temp, temp2;
 
   temp = gains[3] * adsr[3]->tick() * waves[3]->tick();
   temp2 = vibrato->tick() * modDepth * (MY_FLOAT) 0.1;
@@ -9268,7 +9272,7 @@ void HevyMetl :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT HevyMetl :: tick()
 {
-  register MY_FLOAT temp;
+  MY_FLOAT temp;
 
   temp = vibrato->tick() * modDepth * 0.2;    
   waves[0]->setFrequency(baseFrequency * (1.0 + temp) * ratios[0]);
@@ -11382,7 +11386,7 @@ void PercFlut :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT PercFlut :: tick()
 {
-  register MY_FLOAT temp;
+  MY_FLOAT temp;
 
   temp = vibrato->tick() * modDepth * (MY_FLOAT) 0.2;    
   waves[0]->setFrequency(baseFrequency * ((MY_FLOAT) 1.0 + temp) * ratios[0]);
@@ -15072,7 +15076,7 @@ void Stk :: setRawwavePath(std::string newPath)
 
 void Stk :: swap16(unsigned char *ptr)
 {
-  register unsigned char val;
+  unsigned char val;
 
   // Swap 1st and 2nd bytes
   val = *(ptr);
@@ -15082,7 +15086,7 @@ void Stk :: swap16(unsigned char *ptr)
 
 void Stk :: swap32(unsigned char *ptr)
 {
-  register unsigned char val;
+  unsigned char val;
 
   // Swap 1st and 4th bytes
   val = *(ptr);
@@ -15098,7 +15102,7 @@ void Stk :: swap32(unsigned char *ptr)
 
 void Stk :: swap64(unsigned char *ptr)
 {
-  register unsigned char val;
+  unsigned char val;
 
   // Swap 1st and 8th bytes
   val = *(ptr);
@@ -16316,8 +16320,8 @@ void WaveLoop :: addPhaseOffset(MY_FLOAT anAngle)
 
 const MY_FLOAT *WaveLoop :: tickFrame(void)
 {
-  register MY_FLOAT tyme, alpha;
-  register unsigned long i, index;
+  MY_FLOAT tyme, alpha;
+  unsigned long i, index;
 
   // Check limits of time address ... if necessary, recalculate modulo fileSize.
   while (time < 0.0)
@@ -17729,8 +17733,8 @@ MY_FLOAT *WvIn :: tick(MY_FLOAT *vec, unsigned int vectorSize)
 
 const MY_FLOAT *WvIn :: tickFrame(void)
 {
-  register MY_FLOAT tyme, alpha;
-  register unsigned long i, index;
+  MY_FLOAT tyme, alpha;
+  unsigned long i, index;
 
   if (finished) return lastOutput;
 
@@ -17821,11 +17825,13 @@ MY_FLOAT *WvIn :: tickFrame(MY_FLOAT *frameVector, unsigned int frames)
 /***************************************************/
 
 
+#ifndef __DISABLE_WVOUT__
 const WvOut::FILE_TYPE WvOut :: WVOUT_RAW = 1;
 const WvOut::FILE_TYPE WvOut :: WVOUT_WAV = 2;
 const WvOut::FILE_TYPE WvOut :: WVOUT_SND = 3;
 const WvOut::FILE_TYPE WvOut :: WVOUT_AIF = 4;
 const WvOut::FILE_TYPE WvOut :: WVOUT_MAT = 5;
+#endif
 
 // WAV header structure. See ftp://ftp.isi.edu/in-notes/rfc2361.txt
 // for information regarding format codes.
@@ -17885,36 +17891,54 @@ struct mathdr {
   // There's more, but it's of variable length
 };
 
+
+#ifndef __DISABLE_WVOUT__
 size_t WvOut::fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream)
 {
+    #ifndef __DISABLE_THREADS__
     if(asyncIO)
         return asyncWriteThread->fwrite(ptr, size, nitems, stream);
     else
         return ::fwrite(ptr, size, nitems, stream);
+    #else
+    return ::fwrite(ptr, size, nitems, stream);
+    #endif
 }
 
 int WvOut::fseek(FILE *stream, long offset, int whence)
 {
+    #ifndef __DISABLE_THREADS__
     if(asyncIO)
         return asyncWriteThread->fseek(stream, offset, whence);
     else
         return ::fseek(stream, offset, whence);
+    #else
+    return ::fseek(stream, offset, whence);
+    #endif
 }
 
 int WvOut::fflush(FILE *stream)
 {
+    #ifndef __DISABLE_THREADS__
     if(asyncIO)
         return asyncWriteThread->fflush(stream);
     else
         return ::fflush(stream);
+    #else
+    return ::fflush(stream);
+    #endif
 }
 
 int WvOut::fclose(FILE *stream)
 {
+    #ifndef __DISABLE_THREADS__
     if(asyncIO)
         return asyncWriteThread->fclose(stream);
     else
         return ::fclose(stream);
+    #else
+    return ::fclose(stream);
+    #endif
 }
 
 size_t WvOut::fread(void *ptr, size_t size, size_t nitems, FILE *stream)
@@ -17926,7 +17950,7 @@ size_t WvOut::fread(void *ptr, size_t size, size_t nitems, FILE *stream)
 
 WvOut :: WvOut()
 {
-  init();    
+  init();
 }
 
 WvOut::WvOut( const char *fileName, unsigned int nChannels, FILE_TYPE type, Stk::STK_FORMAT format )
@@ -17956,7 +17980,7 @@ void WvOut :: init()
   start = TRUE;
   flush = 0;
   fileGain = 1;
-  
+
   // spencer: added as flag for off-thread write
   asyncIO = FALSE;
   asyncWriteThread = NULL;
@@ -17993,7 +18017,7 @@ void WvOut :: openFile( const char *fileName, unsigned int nChannels, WvOut::FIL
   closeFile();
   str_filename.set( fileName );
   //strncpy( m_filename, fileName, 255);
-  //if ( strlen( fileName ) > 255 ) 
+  //if ( strlen( fileName ) > 255 )
   //  m_filename[255] = '\0';
 
   if ( nChannels < 1 ) {
@@ -18006,11 +18030,11 @@ void WvOut :: openFile( const char *fileName, unsigned int nChannels, WvOut::FIL
   fileType = type;
 
   if ( format != STK_SINT8 && format != STK_SINT16 &&
-       format != STK_SINT32 && format != MY_FLOAT32 && 
+       format != STK_SINT32 && format != MY_FLOAT32 &&
        format != MY_FLOAT64 ) {
     sprintf( msg, "[chuck](via WvOut): Unknown data type specified (%ld).", format );
     handleError(msg, StkError::FUNCTION_ARGUMENT);
-  } 
+  }
   dataType = format;
 
   bool result = false;
@@ -18288,7 +18312,7 @@ if( little_endian )
 
   *(unsigned long *)(hdr.srate+2) = (unsigned long) rate;
 
-  byteswap = false;  
+  byteswap = false;
 if( little_endian )
 {
   byteswap = true;
@@ -18320,7 +18344,7 @@ if( little_endian )
     if ( fwrite(&type, 4, 1, fd) != 1 ) goto error;
     if ( fwrite(&zeroes, 2, 1, fd) != 1 ) goto error;
   }
-  
+
   if ( fwrite(&ssnd, 4, 4, fd) != 4 ) goto error;
 
   // printf("\nCreating AIF file: %s\n", name);
@@ -18517,7 +18541,7 @@ void WvOut :: writeData( unsigned long frames )
         if(float_sample < 0) float_sample = 0;
         if(float_sample > 255) float_sample = 255;
         unsigned char sample = (unsigned char) float_sample;
-        
+
         if ( fwrite(&sample, 1, 1, fd) != 1 ) goto error;
       }
     }
@@ -18527,7 +18551,7 @@ void WvOut :: writeData( unsigned long frames )
         if(float_sample < -128) float_sample = -128;
         if(float_sample > 127) float_sample = 127;
         signed char sample = (signed char) float_sample;
-        
+
         if ( fwrite(&sample, 1, 1, fd) != 1 ) goto error;
       }
     }
@@ -18538,7 +18562,7 @@ void WvOut :: writeData( unsigned long frames )
       if(float_sample < -32767) float_sample = -32767;
       if(float_sample > 32767) float_sample = 32767;
       SINT16 sample = (SINT16) float_sample;
-      
+
       if ( byteswap ) swap16( (unsigned char *)&sample );
       if ( fwrite(&sample, 2, 1, fd) != 1 ) goto error;
     }
@@ -18549,7 +18573,7 @@ void WvOut :: writeData( unsigned long frames )
       if(float_sample < -2147483647) float_sample = (float)-2147483647;
       if(float_sample > 2147483647) float_sample = (float)2147483647;
       SINT32 sample = (SINT32) float_sample;
-      
+
       if ( byteswap ) swap32( (unsigned char *)&sample );
       if ( fwrite(&sample, 4, 1, fd) != 1 ) goto error;
     }
@@ -18558,7 +18582,7 @@ void WvOut :: writeData( unsigned long frames )
     FLOAT32 sample;
     for ( unsigned long k=0; k<frames*channels; k++ ) {
       sample = (FLOAT32) (data[k]);
-      
+
       if ( byteswap ) swap32( (unsigned char *)&sample );
       if ( fwrite(&sample, 4, 1, fd) != 1 ) goto error;
     }
@@ -18567,7 +18591,7 @@ void WvOut :: writeData( unsigned long frames )
     FLOAT64 sample;
     for ( unsigned long k=0; k<frames*channels; k++ ) {
       sample = (FLOAT64) (data[k]);
-      
+
       if ( byteswap ) swap64( (unsigned char *)&sample );
       if ( fwrite(&sample, 8, 1, fd) != 1 ) goto error;
     }
@@ -18629,6 +18653,8 @@ void WvOut :: tickFrame(const MY_FLOAT *frameVector, unsigned int frames)
     }
   }
 }
+#endif //__DISABLE_WVOUT__
+
 
 
 
@@ -26149,6 +26175,7 @@ Chuck_Carrier * getCarrier( Chuck_VM * vm, const std::string & where = "" )
 
 
 
+#ifndef __DISABLE_WVOUT__
 // WvOut
 //-----------------------------------------------------------------------------
 // name: WvOut_ctor()
@@ -26165,6 +26192,7 @@ CK_DLL_CTOR( WvOut_ctor )
     // check
     if( carrier != NULL )
     {
+        #ifndef __DISABLE_THREADS__
         // REFACTOR-2017 TODO Ge: Fix wvout realtime audio [DONE]
         // check if need to create per-VM write thread
         if( carrier->stk_writeThread == NULL )
@@ -26176,6 +26204,7 @@ CK_DLL_CTOR( WvOut_ctor )
         // REFACTOR-2017: set async mode, if on realtime audio thread...
         yo->asyncIO = carrier->hintIsRealtimeAudio();
         yo->asyncWriteThread = carrier->stk_writeThread;
+        #endif
     }
 
     // set offset data
@@ -26801,6 +26830,8 @@ CK_DLL_CGET( WvOut_cget_fileGain )
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     RETURN->v_float = w->fileGain;
 }
+#endif //__DISABLE_WVOUT__
+
 
 
 //-----------------------------------------------------------------------------
@@ -27209,22 +27240,26 @@ t_CKBOOL stk_detach( Chuck_Carrier * carrier )
     // check
     if( carrier != NULL )
     {
+        #ifndef __DISABLE_WVOUT__
         // close files
         std::map<WvOut *, WvOut *>::iterator iter;
         for( iter = carrier->stk_wvOutMap.begin();
              iter != carrier->stk_wvOutMap.end(); iter++ ) {
             (*iter).second->closeFile();
         }
-        
+
         // TODO: release the WvOut
         carrier->stk_wvOutMap.clear();
         
         // deal with per-VM stk write thread
+        #ifndef __DISABLE_THREADS__
         if( carrier->stk_writeThread )
         {
             carrier->stk_writeThread->shutdown(); // deletes itself
             carrier->stk_writeThread = NULL;
         }
+        #endif //__DISABLE_THREADS__
+        #endif //__DISABLE_WVOUT__
     }
     
     return TRUE;

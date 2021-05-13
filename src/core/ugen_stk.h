@@ -5398,8 +5398,12 @@ public: // SWAP formerly protected
 #if !defined(__WVOUT_H)
 #define __WVOUT_H
 
+
+#ifndef __DISABLE_WVOUT__
 #include <stdio.h>
+#ifndef __DISABLE_THREADS__
 #include "util_thread.h"
+#endif
 
 #define BUFFER_SIZE 1024  // sample frames
 
@@ -5523,6 +5527,7 @@ class WvOut : public Stk
   t_CKBOOL asyncIO;
   XWriteThread * asyncWriteThread;
 };
+#endif // __DISABLED_WVOUT__
 
 #endif // defined(__WVOUT_H)
 

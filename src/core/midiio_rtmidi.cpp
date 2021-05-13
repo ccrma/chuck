@@ -49,7 +49,7 @@
 #define MIDI_BUFFER_SIZE 8192
 
 std::vector<RtMidiIn *> MidiInManager::the_mins;
-std::vector<CBufferAdvance *> MidiInManager::the_bufs;
+std::vector< std::map< Chuck_VM *, CBufferAdvance * > > MidiInManager::the_bufs;
 std::vector<RtMidiOut *> MidiOutManager::the_mouts;
 std::map< Chuck_VM *, CBufferSimple * > MidiInManager::m_event_buffers;
 
@@ -383,22 +383,13 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
         {
             m_event_buffers[vm] = vm->create_event_buffer();
         }
-        
-        // allocate the buffer
-        CBufferAdvance * cbuf = new CBufferAdvance;
-        if( !cbuf->initialize( MIDI_BUFFER_SIZE, sizeof(MidiMsg), m_event_buffers[vm] ) )
-        {
-            if( !min->m_suppress_output )
-                EM_error2( 0, "MidiIn: couldn't allocate CBuffer for port %i...", device_num );
-            delete cbuf;
-            return FALSE;
-        }
 
         // allocate
         RtMidiIn * rtmin = new RtMidiIn;
         try {
-            rtmin->openPort( device_num );
-            rtmin->setCallback( cb_midi_input, cbuf );
+            rtmin->openPort( (unsigned int) device_num );
+            // callback, userData. first cast device num to unsigned int, then to void *
+            rtmin->setCallback( cb_midi_input, (void *) ( (unsigned int) device_num ) );
         } catch( RtMidiError & err ) {
             if( !min->m_suppress_output )
             {
@@ -408,7 +399,6 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
                 // const char * e = err.getMessage().c_str();
                 // EM_error2( 0, "...(%s)", err.getMessage().c_str() );
             }
-            delete cbuf;
             return FALSE;
         }
 
@@ -421,15 +411,19 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
             the_bufs.resize( size );
         }
 
-        // put cbuf and rtmin in vector for future generations
+        // put rtmin in vector for future generations
         the_mins[device_num] = rtmin;
-        the_bufs[device_num] = cbuf;
+    }
+    // if it doesn't exist already, allocate the buffer and put it in the_bufs
+    if( !add_vm( vm, device_num, min->m_suppress_output ) )
+    {
+        return FALSE;
     }
 
     // set min
     min->min = the_mins[device_num];
     // found
-    min->m_buffer = the_bufs[device_num];
+    min->m_buffer = the_bufs[device_num][vm];
     // get an index into your (you are min here) own buffer, 
     // and a free ticket to your own workshop
     min->m_read_index = min->m_buffer->join( (Chuck_Event *)min->SELF );
@@ -453,7 +447,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, const std::string & n
         t_CKINT count = rtmin->getPortCount();
         for(t_CKINT i = 0; i < count; i++)
         {
-            std::string port_name = rtmin->getPortName( i );
+            std::string port_name = rtmin->getPortName( (unsigned int) i );
             if( port_name == name)
             {
                 device_num = i;
@@ -466,7 +460,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, const std::string & n
             // search by substring
             for(t_CKINT i = 0; i < count; i++)
             {
-                std::string port_name = rtmin->getPortName( i );
+                std::string port_name = rtmin->getPortName( (unsigned int) i );
                 if( port_name.find( name ) != std::string::npos )
                 {
                     device_num = i;
@@ -503,11 +497,61 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, const std::string & n
 
 
 //-----------------------------------------------------------------------------
+// name: add_vm()
+// desc: add vm
+//-----------------------------------------------------------------------------
+t_CKBOOL MidiInManager::add_vm( Chuck_VM * vm, t_CKINT device_num,
+                                t_CKBOOL suppress_output )
+{
+    if( device_num >= the_bufs.capacity() )
+    {
+        if( !suppress_output )
+            EM_error2( 0, "MidiIn: couldn't allocate CBuffer for unopened port %i...", device_num );
+        return FALSE;
+    }
+    
+    if( the_bufs[device_num].count( vm ) > 0
+        && the_bufs[device_num][vm] != NULL )
+    {
+        // already exists: don't need to do anything
+        return TRUE;
+    }
+
+    // allocate the buffer
+    CBufferAdvance * cbuf = new CBufferAdvance;
+    if( !cbuf->initialize( MIDI_BUFFER_SIZE, sizeof(MidiMsg), m_event_buffers[vm] ) )
+    {
+        if( !suppress_output )
+            EM_error2( 0, "MidiIn: couldn't allocate CBuffer for port %i...", device_num );
+        delete cbuf;
+        return FALSE;
+    }
+    
+    the_bufs[device_num][vm] = cbuf;
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: cleanup_buffer()
 // desc: cleanup buffer
 //-----------------------------------------------------------------------------
 void MidiInManager::cleanup_buffer( Chuck_VM * vm )
 {
+    // cleanup all cbufs stored for that vm
+    for( int i = 0; i < the_bufs.size(); i++ )
+    {
+        if( the_bufs[i].count( vm ) > 0 )
+        {
+            CBufferAdvance * cbuf = the_bufs[i][vm];
+            delete cbuf;
+            the_bufs[i].erase( vm );
+        }
+        
+    }
+    
     if( m_event_buffers.count( vm ) > 0 )
     {
         vm->destroy_event_buffer( m_event_buffers[vm] );
@@ -571,17 +615,35 @@ t_CKUINT MidiIn::recv( MidiMsg * msg )
 void MidiInManager::cb_midi_input( double deltatime, std::vector<unsigned char> * msg,
                                    void * userData )
 {
-    unsigned int nBytes = msg->size();
-    CBufferAdvance * cbuf = (CBufferAdvance *)userData;
+    // this cb is per-Midi-in AKA per-device number.
+    // it needs to know its device number so it can inform all VMs waiting
+    // on that device number.
+    // --> device num stored in userData
+    unsigned int nBytes = (unsigned int) msg->size();
+    unsigned int device_num = (unsigned int) ((unsigned long) userData);
+    // check if we know the bufs for that device num (we should!)
+    if( device_num >= the_bufs.size() )
+    {
+        EM_error2( 0, "MidiIn: couldn't find buffers for port %i...", device_num );
+        return;
+    }
     MidiMsg m;
     if( nBytes >= 1 ) m.data[0] = msg->at(0);
     if( nBytes >= 2 ) m.data[1] = msg->at(1);
     if( nBytes >= 3 ) m.data[2] = msg->at(2);
 
-    // put in the buffer, make sure not active sensing
+    // put in all the buffers, make sure not active sensing
     if( m.data[2] != 0xfe )
     {
-        cbuf->put( &m, 1 );
+        for( std::map< Chuck_VM *, CBufferAdvance * >::iterator it =
+             the_bufs[device_num].begin(); it != the_bufs[device_num].end(); it++ )
+        {
+            CBufferAdvance * cbuf = it->second;
+            if( cbuf != NULL )
+            {
+                cbuf->put( &m, 1 );
+            }
+        }
     }
 }
 
@@ -611,7 +673,7 @@ void probeMidiIn()
     std::string s;
     for( t_CKUINT i = 0; i < num; i++ )
     {
-        try { s = min->getPortName( i ); }
+        try { s = min->getPortName( (unsigned int) i ); }
         catch( RtMidiError & err )
         { err.printMessage(); return; }
         EM_error2b( 0, "    [%i] : \"%s\"", i, s.c_str() );
@@ -644,7 +706,7 @@ void probeMidiOut()
     std::string s;
     for( t_CKUINT i = 0; i < num; i++ )
     {
-        try { s = mout->getPortName( i ); }
+        try { s = mout->getPortName( (unsigned int) i ); }
         catch( RtMidiError & err )
         { err.printMessage(); return; }
         EM_error2b( 0, "    [%i] : \"%s\"", i, s.c_str() );
@@ -672,7 +734,7 @@ t_CKBOOL MidiOutManager::open( MidiOut * mout, t_CKINT device_num )
         // allocate
         RtMidiOut * rtmout = new RtMidiOut;
         try {
-            rtmout->openPort( device_num );
+            rtmout->openPort( (unsigned int) device_num );
         } catch( RtMidiError & err ) {
             if( !mout->m_suppress_output )
             {
@@ -717,7 +779,7 @@ t_CKBOOL MidiOutManager::open( MidiOut * mout, const std::string & name )
         t_CKINT count = rtmout->getPortCount();
         for(t_CKINT i = 0; i < count; i++)
         {
-            std::string port_name = rtmout->getPortName( i );
+            std::string port_name = rtmout->getPortName( (unsigned int) i );
             if( port_name == name )
             {
                 device_num = i;
@@ -730,7 +792,7 @@ t_CKBOOL MidiOutManager::open( MidiOut * mout, const std::string & name )
             // search by substring
             for(t_CKINT i = 0; i < count; i++)
             {
-                std::string port_name = rtmout->getPortName( i );
+                std::string port_name = rtmout->getPortName( (unsigned int) i );
                 if( port_name.find( name ) != std::string::npos )
                 {
                     device_num = i;

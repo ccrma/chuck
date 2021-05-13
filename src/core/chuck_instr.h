@@ -2676,7 +2676,8 @@ struct Chuck_Instr_Alloc_Word_Global : public Chuck_Instr_Unary_Op
 public:
     // (added 1.3.0.0 -- is_object)
     Chuck_Instr_Alloc_Word_Global()
-    { this->set( 0 ); }
+    { this->set( 0 ); m_stack_offset = 0; m_chuck_type = NULL;
+      m_should_execute_ctors = FALSE; m_is_array = FALSE; }
     
     virtual const char * params() const
     { static char buffer[256];
@@ -2686,6 +2687,12 @@ public:
     // global name and type
     std::string m_name;
     te_GlobalType m_type;
+    t_CKBOOL m_is_array;
+    
+    // for objects
+    t_CKBOOL m_should_execute_ctors;
+    t_CKUINT m_stack_offset;
+    Chuck_Type * m_chuck_type;
     
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };

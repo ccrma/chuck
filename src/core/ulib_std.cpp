@@ -34,10 +34,14 @@
 #include <time.h>
 #include <math.h>
 #include "util_buffers.h"
+#ifndef __DISABLE_PROMPTER__
 #include "util_console.h"
+#endif
 #include "util_math.h"
 #include "util_string.h"
+#ifndef __DISABLE_THREADS__
 #include "util_thread.h"
+#endif
 #include "chuck.h"
 #include "chuck_type.h"
 #include "chuck_compile.h"
@@ -61,7 +65,9 @@ int setenv( const char *n, const char *v, int i )
 // for ConsoleInput and StringTokenizer
 #include <sstream>
 #include <iostream>
+#ifndef __DISABLE_THREADS__
 #include "util_thread.h"
+#endif
 using namespace std;
 
 
@@ -661,6 +667,7 @@ CK_DLL_SFUN( system_impl )
 {
     const char * cmd = GET_CK_STRING(ARGS)->str().c_str();
 
+#ifndef __CHIP_MODE__
     // check globals for permission
     if( !ChucK::enableSystemCall )
     {
@@ -678,6 +685,12 @@ CK_DLL_SFUN( system_impl )
         EM_poplog();
         RETURN->v_int = system( cmd );
     }
+#else
+    CK_FPRINTF_STDERR( "[chuck]:error: VM not authorized to call Std.system( string )...\n" );
+    CK_FPRINTF_STDERR( "[chuck]:  (command string was: \"%s\")\n", cmd );
+    CK_FPRINTF_STDERR( "[chuck]:  (note: Std.system() disabled on iOS)\n" );
+    RETURN->v_int = 0;
+#endif
 }
 
 // aoti

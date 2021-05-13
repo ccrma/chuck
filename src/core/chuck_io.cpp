@@ -35,7 +35,9 @@
 #include "chuck_instr.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
+#ifndef __DISABLE_HID__
 #include "hidio_sdl.h"
+#endif
 
 #ifndef __DISABLE_MIDI__
 #include "midiio_rtmidi.h"
@@ -217,6 +219,7 @@ error:
 
 
 
+#ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // name: init_class_fileio()
 // desc: ...
@@ -375,6 +378,7 @@ error:
     
     return FALSE;
 }
+#endif // __DISABLE_FILEIO__
 
 
 
@@ -574,7 +578,6 @@ t_CKUINT MidiMsg_offset_data2 = 0;
 t_CKUINT MidiMsg_offset_data3 = 0;
 t_CKUINT MidiMsg_offset_when = 0;
 static t_CKUINT MidiOut_offset_data = 0;
-
 //-----------------------------------------------------------------------------
 // name: init_class_Midi()
 // desc: ...
@@ -716,6 +719,7 @@ error:
 
 
 
+#ifndef __DISABLE_HID__
 // static
 static t_CKUINT HidIn_offset_data = 0;
 
@@ -1151,11 +1155,13 @@ error:
     
     return FALSE;
 }
+#endif // __DISABLE_HID__
 
 
 
 
 
+#ifndef __DISABLE_MIDI__
 // static
 static t_CKUINT MidiRW_offset_data = 0;
 static t_CKUINT MidiMsgOut_offset_data = 0;
@@ -1167,8 +1173,6 @@ static t_CKUINT MidiMsgIn_offset_data = 0;
 t_CKBOOL init_class_MidiRW( Chuck_Env * env )
 {
     Chuck_DL_Func * func = NULL;
-    
-#ifndef __DISABLE_MIDI__
     
     // init base class
     if( !type_engine_import_class_begin( env, "MidiRW", "Object",
@@ -1257,8 +1261,6 @@ t_CKBOOL init_class_MidiRW( Chuck_Env * env )
     // end the class import
     type_engine_import_class_end( env );
     
-#endif // __DISABLE_MIDI__
-    
     // initialize
     // HidInManager::init();
     
@@ -1271,6 +1273,7 @@ error:
     
     return FALSE;
 }
+#endif // __DISABLE_MIDI__
 
 
 
@@ -1294,6 +1297,7 @@ CK_DLL_SFUN( io_newline )
 }
 
 
+#ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // FileIO API
 //-----------------------------------------------------------------------------
@@ -1601,6 +1605,7 @@ CK_DLL_MFUN( fileio_writefloat )
         f->write(val);
     }
 }
+#endif // __DISABLE_FILEIO__
 
 
 //-----------------------------------------------------------------------------
@@ -1997,6 +2002,7 @@ CK_DLL_MFUN( MidiOut_send )
 #endif // __DISABLE_MIDI__
 
 
+#ifndef __DISABLE_HID__
 //-----------------------------------------------------------------------------
 // HidMsg API
 //-----------------------------------------------------------------------------
@@ -2394,8 +2400,10 @@ CK_DLL_MFUN( HidOut_send )
     // the_msg.data[2] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data3);
     RETURN->v_int = mout->send( &the_msg );
 }
+#endif // __DISABLE_HID__
 
 
+#ifndef __DISABLE_MIDI__
 //-----------------------------------------------------------------------------
 // MidiRW API
 //-----------------------------------------------------------------------------
@@ -2560,10 +2568,12 @@ CK_DLL_MFUN( MidiMsgIn_read )
     OBJ_MEMBER_TIME(fake_msg, MidiMsg_offset_when) = time;
 #endif // __DISABLE_MIDI__
 }
+#endif // __DISABLE_MIDI__
 
 
 
 
+#ifndef __DISABLE_SERIAL__
 // available baud rates
 const t_CKUINT Chuck_IO_Serial::CK_BAUD_2400   = 2400;
 const t_CKUINT Chuck_IO_Serial::CK_BAUD_4800   = 4800;
@@ -4446,6 +4456,8 @@ CK_DLL_MFUN(serialio_canWait)
     Chuck_IO_Serial *cereal = (Chuck_IO_Serial *) SELF;
     RETURN->v_int = cereal->can_wait();
 }
+
+#endif // __DISABLE_SERIAL__
 
 
 

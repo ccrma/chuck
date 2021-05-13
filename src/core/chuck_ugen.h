@@ -39,6 +39,7 @@
 #include "chuck_def.h"
 #include "chuck_oo.h"
 #include "chuck_dl.h"
+#include "util_buffers.h"
 
 
 // forward reference
@@ -77,6 +78,8 @@ public: // src
     t_CKUINT system_tick( t_CKTIME now );
     t_CKUINT system_tick_v( t_CKTIME now, t_CKUINT numFrames );
     t_CKBOOL alloc_v( t_CKUINT size );
+    t_CKBOOL set_is_buffered( t_CKBOOL buffered );
+    void get_buffer( SAMPLE * buffer, t_CKINT num_elem );
     
     Chuck_UGen *src_chan( t_CKUINT chan );
     Chuck_UGen *dst_for_src_chan( t_CKUINT chan );
@@ -154,6 +157,10 @@ public: // data
     
     // what a hack!
     t_CKBOOL m_is_uana;
+    
+    // what a hack! (added some time after REFACTOR-2017)
+    t_CKBOOL m_is_buffered;
+    AccumBuffer m_buffer;
 };
 
 

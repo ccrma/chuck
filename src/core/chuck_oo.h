@@ -42,7 +42,9 @@
 #include <queue>
 #include <fstream>
 #include <sstream> // REFACTOR-2017: for custom output
+#ifndef __DISABLE_THREADS__
 #include "util_thread.h" // added 1.3.0.0
+#endif
 
 
 
@@ -64,6 +66,17 @@ struct Chuck_VM_Shred;
 struct Chuck_VM;
 struct Chuck_IO_File;
 class  CBufferSimple; // added 1.3.0.0
+
+
+
+
+// enum
+enum Chuck_Global_Get_Callback_Type
+{
+    ck_get_plain,
+    ck_get_name,
+    ck_get_id
+};
 
 
 
@@ -422,16 +435,53 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: Chuck_Global_Event_Listener
+// desc: base Listener struct
+//-----------------------------------------------------------------------------
+struct Chuck_Global_Event_Listener
+{
+    union {
+        void (* void_callback)(void);
+        void (* named_callback)(const char *);
+        void (* id_callback)(t_CKINT);
+    };
+    t_CKBOOL listen_forever;
+    Chuck_Global_Get_Callback_Type callback_type;
+    std::string name;
+    t_CKINT id;
+    Chuck_Global_Event_Listener() : void_callback(NULL), listen_forever(FALSE), 
+        callback_type(ck_get_plain), name(""), id(0) {};
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_Event
 // desc: base Chuck Event class
 //-----------------------------------------------------------------------------
 struct Chuck_Event : Chuck_Object
 {
 public:
+    // signal/broadcast "local" -- signal ChucK Events
     void signal();
     void broadcast();
     void wait( Chuck_VM_Shred * shred, Chuck_VM * vm );
     t_CKBOOL remove( Chuck_VM_Shred * shred );
+
+    // 1.4.0.0: global events -- signal/broadcast code running
+    // externally, elsewhere in the host
+    void signal_global();
+    void broadcast_global();
+
+    // 1.4.0.1: global events multiple callbacks.
+    // can listen with a callback(), callback( event name ), or callback( id )
+    void global_listen( void (* cb)(void), t_CKBOOL listen_forever );
+    void global_listen( std::string name, void (* cb)(const char *), t_CKBOOL listen_forever );
+    void global_listen( t_CKINT id, void (* cb)(t_CKINT), t_CKBOOL listen_forever );
+    t_CKBOOL remove_listen( void (* cb)(void) );
+    t_CKBOOL remove_listen( std::string name, void (* cb)(const char *) );
+    t_CKBOOL remove_listen( t_CKINT id, void (* cb)(t_CKINT) );
 
 public: // internal
     // added 1.3.0.0: queue_broadcast now takes event_buffer
@@ -442,7 +492,12 @@ public:
 
 protected:
     std::queue<Chuck_VM_Shred *> m_queue;
+    #ifndef __DISABLE_THREADS__
+    // 1.4.0.1 TODO: rewrite queue_broadcast to use a lock-free queue 
+    // and avoid the use of a lock in events
     XMutex m_queue_lock;
+    #endif
+    std::queue<Chuck_Global_Event_Listener> m_global_queue;
 };
 
 
@@ -518,7 +573,9 @@ public:
     static const t_CKINT MODE_SYNC;
     static const t_CKINT MODE_ASYNC;
     Chuck_Event * m_asyncEvent;
+    #ifndef __DISABLE_THREADS__
     XThread * m_thread;
+    #endif
     struct async_args
     {
         Chuck_IO_File * fileio_obj;
@@ -531,7 +588,7 @@ public:
 
 
 
-
+#ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // name: Chuck_IO_File
 // desc: Chuck File IO class
@@ -583,10 +640,12 @@ public:
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
     
+    #ifndef __DISABLE_THREADS__
     // writing -- async
     static THREAD_RETURN ( THREAD_TYPE writeStr_thread ) ( void *data );
     static THREAD_RETURN ( THREAD_TYPE writeInt_thread ) ( void *data );
     static THREAD_RETURN ( THREAD_TYPE writeFloat_thread ) ( void *data );
+    #endif
     
 public:
     // constants
@@ -613,6 +672,7 @@ protected:
     // vm and shred
     Chuck_VM * m_vmRef;
 };
+#endif // __DISABLE_FILEIO__
 
 
 
@@ -634,7 +694,7 @@ public:
     virtual void flush();
     virtual t_CKINT mode();
     virtual void mode( t_CKINT flag );
-    
+
     // reading
     virtual Chuck_String * readLine();
     virtual t_CKINT readInt( t_CKINT flags );
@@ -651,7 +711,7 @@ public:
 public: // REFACTOR-2017
     // set callback
     void set_output_callback( void (* fp)(const char *) );
-    
+
 private:
     // callback
     void (* m_callback)(const char *);
@@ -671,7 +731,7 @@ struct Chuck_IO_Cherr : Chuck_IO
 public:
     Chuck_IO_Cherr( Chuck_Carrier * carrier );
     virtual ~Chuck_IO_Cherr();
-    
+
 public:
     // meta
     virtual t_CKBOOL good();
@@ -679,14 +739,14 @@ public:
     virtual void flush();
     virtual t_CKINT mode();
     virtual void mode( t_CKINT flag );
-    
+
     // reading
     virtual Chuck_String * readLine();
     virtual t_CKINT readInt( t_CKINT flags );
     virtual t_CKFLOAT readFloat();
     virtual t_CKBOOL readString( std::string & str );
     virtual t_CKBOOL eof();
-    
+
     // writing
     virtual void write( const std::string & val );
     virtual void write( t_CKINT val );
@@ -696,7 +756,7 @@ public:
 public:
     // set callback | REFACTOR-2017
     void set_output_callback( void (* fp)(const char *) );
-    
+
 private:
     // callback
     void (* m_callback)(const char *);

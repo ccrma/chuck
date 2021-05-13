@@ -38,8 +38,9 @@
 #include <iostream>
 #include "chuck_utils.h"
 #include "chuck_errmsg.h"
+#ifndef __DISABLE_THREADS__
 #include "util_thread.h"
-
+#endif
 
 // global
 int EM_tokPos = 0;
@@ -57,7 +58,9 @@ static size_t g_lasterrorIndex = strlen(g_lasterror);
 // log globals
 t_CKINT g_loglevel = CK_LOG_CORE;
 t_CKINT g_logstack = 0;
+#ifndef __DISABLE_THREADS__
 XMutex g_logmutex;
+#endif
 
 // more local globals
 static const size_t g_buffer2_size = 1024;
@@ -574,7 +577,9 @@ void EM_log( t_CKINT level, const char * message, ... )
     // check level
     if( level > g_loglevel ) return;
 
+    #ifndef __DISABLE_THREADS__
     g_logmutex.acquire();
+    #endif
     CK_FPRINTF_STDERR( "[chuck]:" );
     CK_FPRINTF_STDERR( "(%i:%s): ", level, g_str[level] );
 
@@ -588,7 +593,9 @@ void EM_log( t_CKINT level, const char * message, ... )
 
     CK_FPRINTF_STDERR( "\n" );
     CK_FFLUSH_STDERR();
+    #ifndef __DISABLE_THREADS__
     g_logmutex.release();
+    #endif
 }
 
 

@@ -56,8 +56,12 @@ public:
     PhyHidDevIn();
     ~PhyHidDevIn();
     t_CKBOOL open( Chuck_VM * vm, t_CKINT type, t_CKUINT number );
+    t_CKBOOL add_vm( Chuck_VM * vm );
     t_CKBOOL read( t_CKINT element_type, t_CKINT element_num, HidMsg * msg );
     t_CKBOOL send( const HidMsg * msg );
+    // close for a specific vm only
+    t_CKBOOL remove_vm( Chuck_VM * vm );
+    // close for all vms
     t_CKBOOL close();
     std::string name();
     
@@ -67,7 +71,7 @@ public:
     t_CKBOOL unregister_client( HidIn * client );
 
 public:
-    CBufferAdvance * cbuf;
+    std::map< Chuck_VM *, CBufferAdvance * > cbufs;
 
 protected:    
     t_CKINT device_type;
@@ -105,7 +109,6 @@ PhyHidDevIn::PhyHidDevIn()
 {
     device_type = CK_HID_DEV_NONE;
     device_num = 0;
-    cbuf = NULL;
 }
 
 
@@ -127,8 +130,6 @@ PhyHidDevIn::~PhyHidDevIn()
 //-----------------------------------------------------------------------------
 t_CKBOOL PhyHidDevIn::open( Chuck_VM * vm, t_CKINT type, t_CKUINT number )
 {
-    // int temp;
-
     // check
     if( device_type != CK_HID_DEV_NONE )
     {
@@ -164,17 +165,42 @@ t_CKBOOL PhyHidDevIn::open( Chuck_VM * vm, t_CKINT type, t_CKUINT number )
     }
     
     // allocate the buffer
-    cbuf = new CBufferAdvance;
-    if( !cbuf->initialize( BUFFER_SIZE, sizeof(HidMsg), HidInManager::m_event_buffers[vm] ) )
+    if( !add_vm( vm ) )
     {
-        // log
-        EM_log( CK_LOG_WARNING, "PhyHidDevIn: open operation failed: cannot initialize buffer" );
-        this->close();
+        // error messages already printed in add_vm
         return FALSE;
     }
 
     device_type = type;
     device_num = number;
+
+    return TRUE;
+}
+
+//-----------------------------------------------------------------------------
+// name: add_vm()
+// desc: adds a buffer specifically for this vm
+//-----------------------------------------------------------------------------
+t_CKBOOL PhyHidDevIn::add_vm( Chuck_VM * vm )
+{
+    // allocate the buffer
+    if( cbufs.count( vm ) != 0 )
+    {
+        // log
+        EM_log( CK_LOG_WARNING,
+                "PhyHidDevIn: add_vm() unnecessary -> add_vm() already called for this VM" );
+        return FALSE;
+    }
+    
+    cbufs[vm] = new CBufferAdvance;
+    if( !cbufs[vm]->initialize( BUFFER_SIZE, sizeof(HidMsg), HidInManager::m_event_buffers[vm] ) )
+    {
+        // log
+        EM_log( CK_LOG_WARNING, "PhyHidDevIn: add_vm() operation failed: cannot initialize buffer" );
+        // REFACTOR-2017: changed from close-all-hard to just-close-for-this-vm
+        this->remove_vm( vm );
+        return FALSE;
+    }
 
     return TRUE;
 }
@@ -193,8 +219,8 @@ t_CKBOOL PhyHidDevIn::read( t_CKINT element_type, t_CKINT element_num, HidMsg * 
         return FALSE;
     }
     
-    if( default_drivers[device_type].read( device_num, element_type, 
-                                           element_num, msg ) )
+    if( default_drivers[device_type].read( (int) device_num, (int) element_type,
+                                           (int) element_num, msg ) )
     {
         EM_log( CK_LOG_WARNING, 
                 "PhyHidDevIn: read() failed for %s %i, element type %i, element number %i",
@@ -220,7 +246,7 @@ t_CKBOOL PhyHidDevIn::send( const HidMsg * msg )
         return FALSE;
     }
     
-    if( default_drivers[device_type].send( device_num, msg ) )
+    if( default_drivers[device_type].send( (int) device_num, msg ) )
     {
         EM_log( CK_LOG_WARNING, 
                 "PhyHidDevIn: send() failed for %s %i",
@@ -232,18 +258,47 @@ t_CKBOOL PhyHidDevIn::send( const HidMsg * msg )
 }
 
 //-----------------------------------------------------------------------------
+// name: remove_vm()
+// desc: removes a buffer specifically for this vm
+//-----------------------------------------------------------------------------
+t_CKBOOL PhyHidDevIn::remove_vm( Chuck_VM * vm )
+{
+    // check if it exists
+    if( cbufs.count( vm ) == 0 )
+    {
+        // log
+        EM_log( CK_LOG_WARNING,
+                "PhyHidDevIn: remove_vm() unnecessary -> add_vm() never called for this VM" );
+        return FALSE;
+    }
+    
+    // delete cbufs[vm] and remove from map
+    SAFE_DELETE( cbufs[vm] );
+    cbufs.erase( vm );
+
+    return TRUE;
+}
+
+//-----------------------------------------------------------------------------
 // name: close()
 // desc: closes the device, deallocates all associated data
 //-----------------------------------------------------------------------------
 t_CKBOOL PhyHidDevIn::close()
 {
-    // check
-    if( cbuf != NULL )
+    // close all cbufs: this is a totally-clear-up-everything operation
+    for( std::map< Chuck_VM *, CBufferAdvance * >::iterator it =
+             cbufs.begin(); it != cbufs.end(); it++ )
     {
-        // delete
-        SAFE_DELETE( cbuf );
-        // TODO: release references from cbuf?
+        CBufferAdvance * cbuf = it->second;
+        if( cbuf != NULL )
+        {
+            // delete
+            SAFE_DELETE( cbuf );
+            // REFACTOR-2017: copied over this TODO from previous edition:
+            // TODO: release references from cbuf
+        }
     }
+    cbufs.clear();
 
     if( device_type <= CK_HID_DEV_NONE || device_type >= CK_HID_DEV_COUNT )
     {
@@ -684,14 +739,19 @@ t_CKBOOL HidInManager::open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, t_
             v.resize( size );
         }
 
-        // put cbuf and rtmin in vector for future generations
+        // put cbufs and rtmin in vector for future generations
         v[device_num] = phin;
+    }
+    else
+    {
+        // still need to initialize the cbuf for THIS vm
+        v[device_num]->add_vm( vm );
     }
 
     // set min
     hin->phin = v[device_num];
     // found
-    hin->m_buffer = v[device_num]->cbuf;
+    hin->m_buffer = v[device_num]->cbufs[vm];
     // get an index into your (you are min here) own buffer, 
     // and a free ticket to your own workshop
     hin->m_read_index = hin->m_buffer->join( (Chuck_Event *)hin->SELF );
@@ -758,13 +818,6 @@ t_CKBOOL HidInManager::open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, st
             }
             
             std::string name = _name;
-            
-//            PhyHidDevIn * phyHid = devices[j];
-//            if(!phyHid)
-//                continue;
-//            
-//            std::string name = phyHid->name();
-            
             if(name == device_name)
             {
                 return open( hin, vm, i, j );
@@ -799,6 +852,21 @@ void HidInManager::cleanup_buffer( Chuck_VM * vm )
 {
     if( m_event_buffers.count( vm ) > 0 )
     {
+        // first, we need to tell all PhyHidDevIn that rely on this buffer to forget it
+        for( vector<vector<PhyHidDevIn *> >::size_type i = 0; i < the_matrix.size(); i++ )
+        {
+            for( vector<PhyHidDevIn *>::size_type j = 0; j < the_matrix[i].size(); j++ )
+            {
+                // tell this PhyHidDevIn to forget about this vm,
+                // if it knows about it already
+                if( the_matrix[i][j] != NULL )
+                {
+                    the_matrix[i][j]->remove_vm( vm );
+                }
+            }
+        }
+        
+        // then, we can destroy the buffer
         vm->destroy_event_buffer( m_event_buffers[vm] );
         m_event_buffers.erase( vm );
     }
@@ -898,12 +966,21 @@ std::string HidIn::name()
 void HidInManager::push_message( HidMsg & msg )
 {
     // find the queue
-    if( the_matrix[msg.device_type][msg.device_num] != NULL )
+    PhyHidDevIn * dev = the_matrix[msg.device_type][msg.device_num];
+    if( dev != NULL )
     {
-        CBufferAdvance * cbuf = the_matrix[msg.device_type][msg.device_num]->cbuf;
-        if( cbuf != NULL )
-            // queue the thing
-            cbuf->put( &msg, 1 );
+        // PhyHidDevIn has an array of cbufs, indexed by VM pointer
+        // --> do a ->put on ALL of them.
+        for( std::map< Chuck_VM *, CBufferAdvance * >::iterator it =
+             dev->cbufs.begin(); it != dev->cbufs.end(); it++ )
+        {
+            CBufferAdvance * cbuf = it->second;
+            if( cbuf != NULL )
+            {
+                // queue the thing
+                cbuf->put( &msg, 1 );
+            }
+        }
     }
 }
 

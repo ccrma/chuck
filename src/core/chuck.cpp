@@ -36,10 +36,18 @@
 //-----------------------------------------------------------------------------
 #include "chuck.h"
 #include "chuck_errmsg.h"
+
 #include "chuck_io.h"
+
+#ifndef __DISABLE_OTF_SERVER__
 #include "chuck_otf.h"
 #include "ulib_machine.h"
+#endif
+
+#ifndef __DISABLE_NETWORK__
 #include "util_network.h"
+#endif
+
 #include "util_string.h"
 #include "ugen_stk.h"
 
@@ -100,6 +108,7 @@ const char * ChucK::version()
 
 
 
+#ifndef __DISABLE_OTF_SERVER__
 //-----------------------------------------------------------------------------
 // name: intSize()
 // desc: get chuck int size (in bits)
@@ -108,6 +117,7 @@ t_CKUINT ChucK::intSize()
 {
     return machine_intsize();
 }
+#endif
 
 
 
@@ -313,7 +323,7 @@ t_CKINT ChucK::getParamInt( const std::string & key )
     t_CKINT result = 0;
     if( m_params.count( key ) > 0 && ck_param_types[key] == ck_param_int )
     {
-        istringstream s( m_params[key] );
+        std::istringstream s( m_params[key] );
         s >> result;
     }
     return result;
@@ -331,7 +341,7 @@ t_CKFLOAT ChucK::getParamFloat( const std::string & key )
     t_CKFLOAT result = 0;
     if( m_params.count( key ) > 0 && ck_param_types[key] == ck_param_float )
     {
-        istringstream s( m_params[key] );
+        std::istringstream s( m_params[key] );
         s >> result;
     }
     return result;
@@ -458,8 +468,8 @@ bool ChucK::initCompiler()
     // get compiler params
     t_CKBOOL dump = getParamInt( CHUCK_PARAM_DUMP_INSTRUCTIONS ) != 0;
     t_CKBOOL auto_depend = getParamInt( CHUCK_PARAM_AUTO_DEPEND ) != 0;
-    string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
-    string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
+    std::string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
+    std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
     t_CKUINT deprecate = getParamInt( CHUCK_PARAM_DEPRECATE_LEVEL );
     
     // list of search pathes (added 1.3.0.0)
@@ -606,6 +616,7 @@ bool ChucK::initChugins()
 //-----------------------------------------------------------------------------
 bool ChucK::initOTF()
 {
+#ifndef __DISABLE_OTF_SERVER__
     // server
     if( getParamInt( CHUCK_PARAM_OTF_ENABLE ) != 0 )
     {
@@ -640,7 +651,7 @@ bool ChucK::initOTF()
         // log
         EM_log( CK_LOG_SYSTEM, "OTF server/listener: OFF" );
     }
-    
+#endif
     return true;
 }
 
@@ -672,6 +683,7 @@ bool ChucK::shutdown()
     // STK-specific
     stk_detach( m_carrier );
     
+#ifndef __DISABLE_OTF_SERVER__
     // cancel otf thread
     if(m_carrier->otf_thread)
     {
@@ -689,7 +701,8 @@ bool ChucK::shutdown()
     // reset
     m_carrier->otf_socket = NULL;
     m_carrier->otf_port = 0;
-    
+#endif // __DISABLE_OTF_SERVER__
+
     // TODO: a different way to unlock?
     // unlock all objects to delete chout, cherr
     Chuck_VM_Object::unlock_all();
@@ -726,8 +739,8 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
         return false;
     }
     
-    string filename;
-    vector<string> args;
+    std::string filename;
+    std::vector<std::string> args;
     Chuck_VM_Code * code = NULL;
     Chuck_VM_Shred * shred = NULL;
     
@@ -737,7 +750,7 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
     EM_pushlog();
     
     // append
-    string theThing = path + ":" + argsTogether;
+    std::string theThing = path + ":" + argsTogether;
     
     // parse out command line arguments
     if( !extract_args( theThing, filename, args ) )
@@ -768,8 +781,14 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
     // spork it
     while( count-- )
     {
+        #ifndef __EMSCRIPTEN__
         // spork (for now, spork_immediate arg is always false)
         shred = m_carrier->vm->spork( code, NULL, FALSE );
+        #else
+        // spork (in emscripten, need to spork immediately so can get shred id)
+        shred = m_carrier->vm->spork( code, NULL, TRUE );
+        #endif
+        
         // add args
         shred->args = args;
     }
@@ -800,7 +819,7 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
         return false;
     }
     
-    vector<string> args;
+    std::vector<std::string> args;
     Chuck_VM_Code * vm_code = NULL;
     Chuck_VM_Shred * shred = NULL;
     
@@ -810,8 +829,8 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
     EM_pushlog();
     
     // falsify filename / path for various logs
-    string theThing = "compiled.code:" + argsTogether;
-    string fakefakeFilename = "<result file name goes here>";
+    std::string theThing = "compiled.code:" + argsTogether;
+    std::string fakefakeFilename = "<result file name goes here>";
     
     // parse out command line arguments
     if( !extract_args( theThing, fakefakeFilename, args ) )
@@ -844,8 +863,13 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
     // spork it
     while( count-- )
     {
+        #ifndef __EMSCRIPTEN__
         // spork (for now, spork_immediate arg is always false)
         shred = m_carrier->vm->spork( vm_code, NULL, FALSE );
+        #else
+        // spork (in emscripten, need to spork immediately so can get shred id)
+        shred = m_carrier->vm->spork( vm_code, NULL, TRUE );
+        #endif
         // add args
         shred->args = args;
     }
@@ -908,7 +932,7 @@ void ChucK::run( SAMPLE * input, SAMPLE * output, int numFrames )
 t_CKBOOL ChucK::setGlobalInt( const char * name, t_CKINT val )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return m_carrier->vm->set_global_int( std::string( name ), val );
+    return m_carrier->vm->globals_manager()->set_global_int( std::string( name ), val );
 }
 
 
@@ -921,7 +945,34 @@ t_CKBOOL ChucK::setGlobalInt( const char * name, t_CKINT val )
 t_CKBOOL ChucK::getGlobalInt( const char * name, void (* callback)(t_CKINT) )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return m_carrier->vm->get_global_int( std::string( name ), callback );
+    return m_carrier->vm->globals_manager()->get_global_int( std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalInt()
+// desc: send a message to get the value of a global int via callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalInt( const char * name, void (* callback)(const char *, t_CKINT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_int( std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalInt()
+// desc: send a message to get the value of a global int via callback, with id
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalInt( const char * name, t_CKINT id,
+    void (* callback)(t_CKINT, t_CKINT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_int( std::string( name ), id, callback );
 }
 
 
@@ -934,7 +985,7 @@ t_CKBOOL ChucK::getGlobalInt( const char * name, void (* callback)(t_CKINT) )
 t_CKBOOL ChucK::setGlobalFloat( const char * name, t_CKFLOAT val )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return m_carrier->vm->set_global_float( std::string( name ), val );
+    return m_carrier->vm->globals_manager()->set_global_float( std::string( name ), val );
 }
 
 
@@ -947,7 +998,90 @@ t_CKBOOL ChucK::setGlobalFloat( const char * name, t_CKFLOAT val )
 t_CKBOOL ChucK::getGlobalFloat( const char * name, void (* callback)(t_CKFLOAT) )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return m_carrier->vm->get_global_float( std::string( name ), callback );
+    return m_carrier->vm->globals_manager()->get_global_float( std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalFloat()
+// desc: send a message to get the value of a global float via callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalFloat( const char * name, void (* callback)(const char *, t_CKFLOAT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_float( std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalFloat()
+// desc: send a message to get the value of a global float via callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalFloat( const char * name, t_CKINT id,
+    void (* callback)(t_CKINT, t_CKFLOAT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_float( std::string( name ), id, callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setGlobalString()
+// desc: send a message to set the value of a global string
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::setGlobalString( const char * name, const char * val )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->set_global_string( std::string( name ),
+        std::string( val ) );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalString()
+// desc: send a message to get the value of a global string via callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalString( const char * name,
+    void (* callback)( const char * ) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_string( std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalString()
+// desc: send a message to get the value of a global string via callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalString( const char * name,
+    void (* callback)( const char *,  const char * ) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_string( std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalString()
+// desc: send a message to get the value of a global string via callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalString( const char * name, t_CKINT id,
+    void (* callback)(t_CKINT,  const char *) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_string( std::string( name ), id, callback );
 }
 
 
@@ -960,7 +1094,7 @@ t_CKBOOL ChucK::getGlobalFloat( const char * name, void (* callback)(t_CKFLOAT) 
 t_CKBOOL ChucK::signalGlobalEvent( const char * name )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return m_carrier->vm->signal_global_event( std::string( name ) );
+    return m_carrier->vm->globals_manager()->signal_global_event( std::string( name ) );
 }
 
 
@@ -973,7 +1107,459 @@ t_CKBOOL ChucK::signalGlobalEvent( const char * name )
 t_CKBOOL ChucK::broadcastGlobalEvent( const char * name )
 {
     if( !m_carrier->vm->running() ) return FALSE;
-    return m_carrier->vm->broadcast_global_event( std::string( name ) );
+    return m_carrier->vm->globals_manager()->broadcast_global_event( std::string( name ) );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: listenForGlobalEvent()
+// desc: send a message to broadcast a global event
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::listenForGlobalEvent( const char * name, void (* callback)(void),
+    t_CKBOOL listen_forever )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->listen_for_global_event( std::string( name ),
+        callback, listen_forever );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: listenForGlobalEvent()
+// desc: send a message to broadcast a global event
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::listenForGlobalEvent( const char * name, void (* callback)(const char *),
+    t_CKBOOL listen_forever )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->listen_for_global_event( std::string( name ),
+        callback, listen_forever );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: listenForGlobalEvent()
+// desc: send a message to broadcast a global event
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::listenForGlobalEvent( const char * name, t_CKINT id,
+    void (* callback)(t_CKINT), t_CKBOOL listen_forever )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->listen_for_global_event( std::string( name ), id,
+        callback, listen_forever );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: stopListeningForGlobalEvent()
+// desc: send a message to broadcast a global event
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::stopListeningForGlobalEvent( const char * name,
+    void (* callback)(void) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->stop_listening_for_global_event(
+        std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: stopListeningForGlobalEvent()
+// desc: send a message to broadcast a global event
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::stopListeningForGlobalEvent( const char * name,
+    void (* callback)(const char *) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->stop_listening_for_global_event(
+        std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: stopListeningForGlobalEvent()
+// desc: send a message to broadcast a global event
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::stopListeningForGlobalEvent( const char * name, t_CKINT id,
+    void (* callback)(t_CKINT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->stop_listening_for_global_event(
+        std::string( name ), id, callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalUGenSamples()
+// desc: directly get ugen samples (call only from audio thread!!!)
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalUGenSamples( const char * name,
+    SAMPLE * buffer, int numSamples )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_ugen_samples(
+        std::string( name ), buffer, numSamples );
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: setGlobalIntArray()
+// desc: send a message to set a global int array
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::setGlobalIntArray( const char * name,
+    t_CKINT arrayValues[], t_CKUINT numValues )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->set_global_int_array( std::string( name ),
+        arrayValues, numValues );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalIntArray()
+// desc: send a message to get a global int array with a callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalIntArray( const char * name,
+    void (* callback)(t_CKINT[], t_CKUINT))
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_int_array(
+        std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalIntArray()
+// desc: send a message to get a global int array with a callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalIntArray( const char * name,
+    void (* callback)(const char *, t_CKINT[], t_CKUINT))
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_int_array(
+        std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalIntArray()
+// desc: send a message to get a global int array with a callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalIntArray( const char * name, t_CKINT id,
+    void (* callback)(t_CKINT, t_CKINT[], t_CKUINT))
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_int_array(
+        std::string( name ), id, callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setGlobalIntArrayValue()
+// desc: send a message to set a global int array value by index
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::setGlobalIntArrayValue( const char * name, t_CKUINT index, t_CKINT value )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->set_global_int_array_value(
+        std::string( name ), index, value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalIntArrayValue()
+// desc: send a message to get a global int array value by index
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalIntArrayValue( const char * name, t_CKUINT index, void (* callback)(t_CKINT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_int_array_value(
+        std::string( name ), index, callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalIntArrayValue()
+// desc: send a message to get a global int array value by index
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalIntArrayValue( const char * name, t_CKUINT index, void (* callback)(const char *, t_CKINT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_int_array_value(
+        std::string( name ), index, callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalIntArrayValue()
+// desc: send a message to get a global int array value by index
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalIntArrayValue( const char * name, t_CKINT id,
+    t_CKUINT index, void (* callback)(t_CKINT, t_CKINT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_int_array_value(
+        std::string( name ), id, index, callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setGlobalAssociativeIntArrayValue()
+// desc: send a message to set a global int array value by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::setGlobalAssociativeIntArrayValue( const char * name, char * key, t_CKINT value )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->set_global_associative_int_array_value(
+        std::string( name ), std::string( key ), value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalAssociativeIntArrayValue()
+// desc: send a message to get a global int array value by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalAssociativeIntArrayValue( const char * name, char * key, void (* callback)(t_CKINT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_associative_int_array_value(
+        std::string( name ), std::string( key ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalAssociativeIntArrayValue()
+// desc: send a message to get a global int array value by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalAssociativeIntArrayValue( const char * name, char * key, void (* callback)(const char *, t_CKINT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_associative_int_array_value(
+        std::string( name ), std::string( key ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalAssociativeIntArrayValue()
+// desc: send a message to get a global int array value by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalAssociativeIntArrayValue( const char * name, t_CKINT id,
+    char * key, void (* callback)(t_CKINT, t_CKINT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_associative_int_array_value(
+        std::string( name ), id, std::string( key ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setGlobalFloatArray()
+// desc: send a message to set a global float array
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::setGlobalFloatArray( const char * name,
+    t_CKFLOAT arrayValues[], t_CKUINT numValues )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->set_global_float_array( std::string( name ),
+        arrayValues, numValues );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalFloatArray()
+// desc: send a message to get a global float array with a callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalFloatArray( const char * name,
+    void (* callback)(t_CKFLOAT[], t_CKUINT))
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_float_array(
+        std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalFloatArray()
+// desc: send a message to get a global float array with a callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalFloatArray( const char * name,
+    void (* callback)(const char *, t_CKFLOAT[], t_CKUINT))
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_float_array(
+        std::string( name ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalFloatArray()
+// desc: send a message to get a global float array with a callback
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalFloatArray( const char * name, t_CKINT id,
+    void (* callback)(t_CKINT, t_CKFLOAT[], t_CKUINT))
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_float_array(
+        std::string( name ), id, callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setGlobalFloatArrayValue()
+// desc: send a message to set a global float array value by index
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::setGlobalFloatArrayValue( const char * name, t_CKUINT index, t_CKFLOAT value )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->set_global_float_array_value(
+        std::string( name ), index, value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalFloatArrayValue()
+// desc: send a message to get a global float array value by index
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalFloatArrayValue( const char * name, t_CKUINT index, void (* callback)(t_CKFLOAT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_float_array_value(
+        std::string( name ), index, callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalFloatArrayValue()
+// desc: send a message to get a global float array value by index
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalFloatArrayValue( const char * name, t_CKUINT index, void (* callback)(const char *, t_CKFLOAT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_float_array_value(
+        std::string( name ), index, callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalFloatArrayValue()
+// desc: send a message to get a global float array value by index
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalFloatArrayValue( const char * name, t_CKINT id,
+    t_CKUINT index, void (* callback)(t_CKINT, t_CKFLOAT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_float_array_value(
+        std::string( name ), id, index, callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setGlobalAssociativeFloatArrayValue()
+// desc: send a message to set a global float array value by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::setGlobalAssociativeFloatArrayValue( const char * name, char * key, t_CKFLOAT value )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->set_global_associative_float_array_value(
+        std::string( name ), std::string( key ), value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalAssociativeFloatArrayValue()
+// desc: send a message to get a global float array value by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalAssociativeFloatArrayValue( const char * name, char * key, void (* callback)(t_CKFLOAT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_associative_float_array_value(
+        std::string( name ), std::string( key ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalAssociativeFloatArrayValue()
+// desc: send a message to get a global float array value by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalAssociativeFloatArrayValue( const char * name, char * key, void (* callback)(const char *, t_CKFLOAT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_associative_float_array_value(
+        std::string( name ), std::string( key ), callback );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalAssociativeFloatArrayValue()
+// desc: send a message to get a global float array value by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::getGlobalAssociativeFloatArrayValue( const char * name, 
+    t_CKINT id, char * key, void (* callback)(t_CKINT, t_CKFLOAT) )
+{
+    if( !m_carrier->vm->running() ) return FALSE;
+    return m_carrier->vm->globals_manager()->get_global_associative_float_array_value(
+        std::string( name ), id, std::string( key ), callback );
 }
 
 
@@ -1080,8 +1666,10 @@ void ChucK::globalCleanup()
     HidInManager::cleanup();
     #endif // __ALTER_HID__
     
+    #ifndef __DISABLE_SERIAL__
     // shutdown serial
     Chuck_IO_Serial::shutdown();
+    #endif
 
     #ifndef __DISABLE_KBHIT__
     // shutdown kb loop
@@ -1126,7 +1714,9 @@ t_CKINT ChucK::getLogLevel()
 //-----------------------------------------------------------------------------
 void ChucK::poop()
 {
+    #ifndef __DISABLE_OTF_SERVER__
     ::uh();
+    #endif
 }
 
 

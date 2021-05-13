@@ -64,7 +64,10 @@ typedef enum {
 //       (REFACTOR-2017)
 //-----------------------------------------------------------------------------
 typedef enum {
-    te_globalInt, te_globalFloat, te_globalEvent
+    te_globalInt, te_globalFloat, te_globalString, te_globalEvent,
+    te_globalUGen,
+    // symbol: not used for declarations, only for later lookups :/
+    te_globalArraySymbol
 } te_GlobalType;
 
 
@@ -530,7 +533,9 @@ public:
     Chuck_Type * t_uanablob;
     Chuck_Type * t_shred;
     Chuck_Type * t_io;
+    #ifndef __DISABLE_FILEIO__
     Chuck_Type * t_fileio;
+    #endif
     Chuck_Type * t_chout;
     Chuck_Type * t_cherr;
     Chuck_Type * t_thread;

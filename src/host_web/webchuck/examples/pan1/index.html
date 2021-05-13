@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>ChucK + JS => ChucKScript</title>
+    <link rel="stylesheet" href="../../css/editor.css">
+  </head>
+  <body onresize="chuckEditor.resize();">
+<div>
+    <div id="program">// Pan 1: Demonstrating panning in ChucK
+TriOsc tLeft => dac.chan(0);
+TriOsc tRight => dac.chan(1);
+// short for p.left => dac.chan(0); p.right => dac.chan(1);
+TriOsc tPan => Pan2 p => dac;
+
+// left = low, right = mid, panning = high
+tLeft.freq() * 1.5 => tRight.freq;
+tLeft.freq() * 2 => tPan.freq;
+// make left / right quieter
+0.4 => tLeft.gain => tRight.gain;
+
+// pan at 0.3 cycles per second
+SinOsc lfo => blackhole;
+0.3 => lfo.freq;
+while( true )
+{
+    lfo.last() => p.pan;
+    10::ms => now;
+}
+</div>
+</div>
+<div class="buttons">
+    <button class="chuckButton" id="startChuck" disabled="disabled">Start ChucK</button>
+    <button class="chuckButton" id="compileButton" disabled="disabled">Compile and Run</button>
+    <button class="chuckButton" id="replaceButton" disabled="disabled">Replace</button>
+    <button class="chuckButton" id="removeButton" disabled="disabled">Remove</button>
+    <button class="chuckButton" id="clearButton" disabled="disabled">Clear VM and Globals</button>
+    <button class="chuckButton" id="micButton" disabled="disabled">Enable Microphone</button>
+    <button class="chuckButton" id="fileFormButton">Show File Uploader</button>
+</div>
+<div id="fileForm" class="hidden">
+    <p>File name to use in ChucK: <input type="text" id="uploadFilename"></p>
+    <p>Local file to upload: <input type="file" id="uploadFile" name="uploadFile"></p>
+    <p><button class="chuckButton" id="fileButton" disabled="disabled">Upload File to Virtual File System</button></p>
+</div>
+<div>
+    <textarea id="output"></textarea>
+    <div id="shreds">
+        <table id="shredstable">
+            <col width="60px">
+            <col width="1*">
+            <col width="50px">
+            <col width="60px">
+            <tr><th>shred</th><th>code</th><th>time</th><th>remove</th>
+        </table>
+    </div>
+    <div class="clearfix"></div>
+</div>
+    <script type="text/javascript" src="../../js/ace-min-noconflict/ace.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../js/editor.js"></script>
+    <script type="text/javascript" src="../../js/defer.js"></script>
+    <script>
+        // override
+        var whereIsChuck = "../../js";
+    </script>
+    <script type="text/javascript" src="../../js/webchuck_host.js"></script>
+    <script type="text/javascript" src="../../js/host.js"></script>
+  </body>
+</html>
+
+

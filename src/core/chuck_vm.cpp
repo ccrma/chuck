@@ -34,11 +34,21 @@
 #include "chuck_lang.h"
 #include "chuck_type.h"
 #include "chuck_dl.h"
+
+#ifndef __DISABLE_SERIAL__
 #include "chuck_io.h"
+#endif
+
 #include "chuck_errmsg.h"
 #include "ugen_xxx.h"
-#include "hidio_sdl.h"  // 1.4.0.0
 
+#ifndef __DISABLE_HID__
+#include "hidio_sdl.h"  // 1.4.0.0
+#endif
+
+#ifndef __DISABLE_MIDI__
+#include "midiio_rtmidi.h"  // 1.4.0.1
+#endif
 
 #include <algorithm>
 using namespace std;
@@ -135,6 +145,7 @@ Chuck_VM::Chuck_VM()
     m_num_shreds = 0;
     m_shreduler = NULL;
     m_num_dumped_shreds = 0;
+    m_globals_manager = NULL;
     m_msg_buffer = NULL;
     m_reply_buffer = NULL;
     m_event_buffer = NULL;
@@ -150,9 +161,7 @@ Chuck_VM::Chuck_VM()
     m_init = FALSE;
     m_input_ref = NULL;
     m_output_ref = NULL;
-    
-    // REFACTOR-2017: TODO might want to dynamically grow queue?
-    m_global_request_queue.init( 16384 );
+    m_current_buffer_frames = 0;
 }
 
 
@@ -219,6 +228,10 @@ t_CKBOOL Chuck_VM::initialize( t_CKUINT srate, t_CKUINT dac_chan,
     m_event_buffer = new CBufferSimple;
     m_event_buffer->initialize( 1024, sizeof(Chuck_Event *) );
     //m_event_buffer->join(); // this should also return 0
+
+    // 1.4.0.1: added globals manager
+    EM_log( CK_LOG_SYSTEM, "allocating globals manager..." );
+    m_globals_manager = new Chuck_Globals_Manager( this );
 
     // pop log
     EM_poplog();
@@ -331,17 +344,25 @@ t_CKBOOL Chuck_VM::shutdown()
     Chuck_VM_Object::unlock_all();
     
     // REFACTOR-2017: clean up after my global variables
-    cleanup_global_variables();
+    m_globals_manager->cleanup_global_variables();
+    SAFE_DELETE( m_globals_manager );
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing shreduler..." );
     // free the shreduler
     SAFE_DELETE( m_shreduler );
     
+    #ifndef __DISABLE_HID__
     // log
     EM_log( CK_LOG_SYSTEM, "unregistering VM from HID manager..." );
     // clean up this vm
     HidInManager::cleanup_buffer( this );
+    #endif
+    
+    #ifndef __DISABLE_MIDI__
+    EM_log( CK_LOG_SYSTEM, "unregistering VM from MIDI manager..." );
+    MidiInManager::cleanup_buffer( this );
+    #endif
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing msg/reply/event buffers..." );
@@ -457,7 +478,7 @@ t_CKBOOL Chuck_VM::compute()
     t_CKBOOL iterate = TRUE;
     
     // REFACTOR-2017: spork queued shreds, handle global messages
-    handle_global_queue_messages();
+    m_globals_manager->handle_global_queue_messages();
 
     // iteration until no more shreds/events/messages
     while( iterate )
@@ -494,14 +515,22 @@ t_CKBOOL Chuck_VM::compute()
 
         // broadcast queued events
         while( m_event_buffer->get( &event, 1 ) )
-        { event->broadcast(); iterate = TRUE; }
+        {
+            event->broadcast();
+            event->broadcast_global();
+            iterate = TRUE;
+        }
         
         // loop over thread-specific queued event buffers (added 1.3.0.0)
         for( list<CBufferSimple *>::const_iterator i = m_event_buffers.begin();
              i != m_event_buffers.end(); i++ )
         {
             while( (*i)->get( &event, 1 ) )
-            { event->broadcast(); iterate = TRUE; }
+            {
+                event->broadcast();
+                event->broadcast_global();
+                iterate = TRUE;
+            }
         }
 
         // process messages
@@ -515,7 +544,8 @@ t_CKBOOL Chuck_VM::compute()
 
     // continue executing if have shreds left or if don't-halt
     // or if have shreds to add or globals to process
-    return ( m_num_shreds || !m_halt || m_global_request_queue.more() );
+    // (TODO: restrict this to just shred-messages to pass, as it once was?)
+    return ( m_num_shreds || !m_halt || m_globals_manager->_more_requests() );
 }
 
 
@@ -528,7 +558,7 @@ t_CKBOOL Chuck_VM::compute()
 t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 {
     // copy
-    m_input_ref = input; m_output_ref = output;
+    m_input_ref = input; m_output_ref = output; m_current_buffer_frames = N;
     // frame count
     t_CKINT frame = 0;
 
@@ -830,9 +860,17 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         {
             env()->clear_user_namespace();
         }
+
+        // 1.4.0.1: also clear any global variables
+        m_globals_manager->cleanup_global_variables();
         
         m_shred_id = 0;
         m_num_shreds = 0;
+    }
+    else if( msg->type == MSG_CLEARGLOBALS ) // added chunity
+    {
+        // clean up global variables without clearing the whole VM
+        m_globals_manager->cleanup_global_variables();
     }
     else if( msg->type == MSG_ADD )
     {
@@ -912,11 +950,23 @@ done:
 
 //-----------------------------------------------------------------------------
 // name: next_id()
-// desc: ...
+// desc: first increments the shred id, then returns it
 //-----------------------------------------------------------------------------
 t_CKUINT Chuck_VM::next_id( )
 {
     return ++m_shred_id;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: last_id()
+// desc: returns the last used shred id
+//-----------------------------------------------------------------------------
+t_CKUINT Chuck_VM::last_id( )
+{
+    return m_shred_id;
 }
 
 
@@ -978,7 +1028,7 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
         spork_request.type = spork_shred_request;
         spork_request.shred = shred;
 
-        m_global_request_queue.put( spork_request );
+        m_globals_manager->_add_request( spork_request );
     }
 
     // track new shred
@@ -1150,535 +1200,7 @@ void Chuck_VM::release_dump( )
 
 
 
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Set_Global_Int_Request
-// desc: container for messages to set global ints (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Set_Global_Int_Request
-{
-    std::string name;
-    t_CKINT val;
-    // constructor
-    Chuck_Set_Global_Int_Request() : val(0) { }
-};
 
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_Global_Int_Request
-// desc: container for messages to get global ints (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_Global_Int_Request
-{
-    std::string name;
-    void (* fp)(t_CKINT);
-    // constructor
-    Chuck_Get_Global_Int_Request() : fp(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Set_Global_Float_Request
-// desc: container for messages to set global floats (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Set_Global_Float_Request
-{
-    std::string name;
-    t_CKFLOAT val;
-    // constructor
-    Chuck_Set_Global_Float_Request() : val(0) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_Global_Float_Request
-// desc: container for messages to get global floats (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_Global_Float_Request
-{
-    std::string name;
-    void (* fp)(t_CKFLOAT);
-    // constructor
-    Chuck_Get_Global_Float_Request() : fp(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Signal_Global_Event_Request
-// desc: container for messages to signal global events (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Signal_Global_Event_Request
-{
-    std::string name;
-    t_CKBOOL is_broadcast;
-    // constructor
-    Chuck_Signal_Global_Event_Request() : is_broadcast(TRUE) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Global_Int_Container
-// desc: container for global ints
-//-----------------------------------------------------------------------------
-struct Chuck_Global_Int_Container
-{
-    t_CKINT val;
-    
-    Chuck_Global_Int_Container() { val = 0; }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Global_Float_Container
-// desc: container for global floats
-//-----------------------------------------------------------------------------
-struct Chuck_Global_Float_Container
-{
-    t_CKFLOAT val;
-    
-    Chuck_Global_Float_Container() { val = 0; }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Global_Event_Container
-// desc: container for global events
-//-----------------------------------------------------------------------------
-struct Chuck_Global_Event_Container
-{
-    Chuck_Event * val;
-    Chuck_Type * type;
-    t_CKBOOL ctor_needs_to_be_called;
-    
-    Chuck_Global_Event_Container() { val = NULL; type = NULL;
-        ctor_needs_to_be_called = TRUE; }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_global_int()
-// desc: get a global int by name
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::get_global_int( std::string name,
-                                     void (* callback)(t_CKINT) )
-{
-    Chuck_Get_Global_Int_Request * get_int_message =
-        new Chuck_Get_Global_Int_Request;
-    get_int_message->name = name;
-    get_int_message->fp = callback;
-    
-    Chuck_Global_Request r;
-    r.type = get_global_int_request;
-    r.getIntRequest = get_int_message;
-
-    m_global_request_queue.put( r );
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: set_global_int()
-// desc: set a global int by name
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::set_global_int( std::string name, t_CKINT val )
-{
-    Chuck_Set_Global_Int_Request * set_int_message =
-        new Chuck_Set_Global_Int_Request;
-    set_int_message->name = name;
-    set_int_message->val = val;
-    
-    Chuck_Global_Request r;
-    r.type = set_global_int_request;
-    r.setIntRequest = set_int_message;
-
-    m_global_request_queue.put( r );
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: init_global_int()
-// desc: tell the vm that a global int is now available
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_global_int( std::string name )
-{
-    if( m_global_ints.count( name ) == 0 )
-    {
-        m_global_ints[name] = new Chuck_Global_Int_Container;
-    }
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_global_int_value()
-// desc: get a value directly from the vm (internal)
-//-----------------------------------------------------------------------------
-t_CKINT Chuck_VM::get_global_int_value( std::string name )
-{
-    // ensure exists
-    init_global_int( name );
-    
-    return m_global_ints[name]->val;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_ptr_to_global_int()
-// desc: get a pointer directly from the vm (internal)
-//-----------------------------------------------------------------------------
-t_CKINT * Chuck_VM::get_ptr_to_global_int( std::string name )
-{
-    return &( m_global_ints[name]->val );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_global_float()
-// desc: get a global float by name
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::get_global_float( std::string name,
-                                       void (* callback)(t_CKFLOAT) )
-{
-    Chuck_Get_Global_Float_Request * get_float_message =
-        new Chuck_Get_Global_Float_Request;
-    get_float_message->name = name;
-    get_float_message->fp = callback;
-    
-    Chuck_Global_Request r;
-    r.type = get_global_float_request;
-    r.getFloatRequest = get_float_message;
-
-    m_global_request_queue.put( r );
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: set_global_float()
-// desc: set a global float by name
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::set_global_float( std::string name, t_CKFLOAT val )
-{
-    Chuck_Set_Global_Float_Request * set_float_message =
-        new Chuck_Set_Global_Float_Request;
-    set_float_message->name = name;
-    set_float_message->val = val;
-    
-    Chuck_Global_Request r;
-    r.type = set_global_float_request;
-    r.setFloatRequest = set_float_message;
-
-    m_global_request_queue.put( r );
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: init_global_float()
-// desc: tell the vm that a global float is now available
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_global_float( std::string name )
-{
-    if( m_global_floats.count( name ) == 0 )
-    {
-        m_global_floats[name] = new Chuck_Global_Float_Container;
-    }
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_global_float_value()
-// desc: get a value directly from the vm (internal)
-//-----------------------------------------------------------------------------
-t_CKFLOAT Chuck_VM::get_global_float_value( std::string name )
-{
-    // ensure exists
-    init_global_float( name );
-    
-    return m_global_floats[name]->val;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_ptr_to_global_float()
-// desc: get a pointer directly to the vm (internal)
-//-----------------------------------------------------------------------------
-t_CKFLOAT * Chuck_VM::get_ptr_to_global_float( std::string name )
-{
-    return &( m_global_floats[name]->val );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: signal_global_event()
-// desc: signal() an Event by name
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::signal_global_event( std::string name )
-{
-    Chuck_Signal_Global_Event_Request * signal_event_message =
-        new Chuck_Signal_Global_Event_Request;
-    signal_event_message->name = name;
-    signal_event_message->is_broadcast = FALSE;
-    
-    Chuck_Global_Request r;
-    r.type = signal_global_event_request;
-    r.signalEventRequest = signal_event_message;
-
-    m_global_request_queue.put( r );
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: broadcast_global_event()
-// desc: broadcast() an Event by name
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::broadcast_global_event( std::string name )
-{
-    Chuck_Signal_Global_Event_Request * signal_event_message =
-        new Chuck_Signal_Global_Event_Request;
-    signal_event_message->name = name;
-    signal_event_message->is_broadcast = TRUE;
-    
-    Chuck_Global_Request r;
-    r.type = signal_global_event_request;
-    r.signalEventRequest = signal_event_message;
-
-    m_global_request_queue.put( r );
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: init_global_event()
-// desc: tell the vm that a global float is now available
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_global_event( std::string name, Chuck_Type * type )
-{
-    // if it hasn't been initted yet
-    if( m_global_events.count( name ) == 0 ) {
-        // create a new storage container
-        m_global_events[name] = new Chuck_Global_Event_Container;
-        // create the chuck object
-        m_global_events[name]->val =
-            (Chuck_Event *) instantiate_and_initialize_object( type, this );
-        // add a reference to it so it won't be deleted until we're done
-        // cleaning up the VM
-        m_global_events[name]->val->add_ref();
-        // store its type in the container, too (is it a user-defined class?)
-        m_global_events[name]->type = type;
-    }
-    // already exists. check if there's a type mismatch.
-    else if( type->name != m_global_events[name]->type->name )
-    {
-        return FALSE;
-    }
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_global_event()
-// desc: get a pointer directly from the vm (internal)
-//-----------------------------------------------------------------------------
-Chuck_Event * Chuck_VM::get_global_event( std::string name )
-{
-    return m_global_events[name]->val;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_ptr_to_global_event()
-// desc: get a pointer pointer directly from the vm (internal)
-//-----------------------------------------------------------------------------
-Chuck_Event * * Chuck_VM::get_ptr_to_global_event( std::string name )
-{
-    return &( m_global_events[name]->val );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: cleanup_global_variables()
-// desc: set a pointer directly on the vm (internal)
-//-----------------------------------------------------------------------------
-void Chuck_VM::cleanup_global_variables()
-{
-    // ints: delete containers and clear map
-    for( std::map< std::string, Chuck_Global_Int_Container * >::iterator it=
-         m_global_ints.begin(); it!=m_global_ints.end(); it++ )
-    {
-        delete (it->second);
-    }
-    m_global_ints.clear();
-    
-    // floats: delete containers and clear map
-    for( std::map< std::string, Chuck_Global_Float_Container * >::iterator it=
-         m_global_floats.begin(); it!=m_global_floats.end(); it++ )
-    {
-        delete (it->second);
-    }
-    m_global_floats.clear();
-    
-    // events: release events, delete containers, and clear map
-    for( std::map< std::string, Chuck_Global_Event_Container * >::iterator it=
-         m_global_events.begin(); it!=m_global_events.end(); it++ )
-    {
-        SAFE_RELEASE( it->second->val );
-        delete (it->second);
-    }
-    m_global_events.clear();
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: handle_global_queue_messages()
-// desc: update vm with set, get, listen, spork, etc. messages
-//-----------------------------------------------------------------------------
-void Chuck_VM::handle_global_queue_messages()
-{
-    while( m_global_request_queue.more() )
-    {
-        Chuck_Global_Request message;
-        if( m_global_request_queue.get( & message ) )
-        {
-            switch( message.type )
-            {
-
-            case spork_shred_request:
-                // spork the shred!
-                this->spork( message.shred );
-                break;
-
-            case set_global_int_request:
-                // ensure the container exists
-                init_global_int( message.setIntRequest->name );
-                // set int
-                m_global_ints[message.setIntRequest->name]->val = message.setIntRequest->val;
-                // clean up request storage
-                delete message.setIntRequest;
-                break;
-
-            case get_global_int_request:
-                // ensure fp is not null
-                if( message.getIntRequest->fp != NULL )
-                {
-                    // ensure the value exists
-                    init_global_int( message.getIntRequest->name );
-                    // call the callback with the value
-                    message.getIntRequest->fp( m_global_ints[message.getIntRequest->name]->val );
-                }
-                // clean up request storage
-                delete message.getIntRequest;
-                break;
-
-            case set_global_float_request:
-                // ensure the container exists
-                init_global_float( message.setFloatRequest->name );
-                // set float
-                m_global_floats[message.setFloatRequest->name]->val = message.setFloatRequest->val;
-                // clean up request storage
-                delete message.setFloatRequest;
-                break;
-
-            case get_global_float_request:
-                // ensure fp is not null
-                if( message.getFloatRequest->fp != NULL )
-                {
-                    // ensure value exists
-                    init_global_float( message.getFloatRequest->name );
-                    // call callback with float
-                    message.getFloatRequest->fp( m_global_floats[message.getFloatRequest->name]->val );
-                }
-                // clean up request storage
-                delete message.getFloatRequest;
-                break;
-
-            case signal_global_event_request:
-                // ensure it exists and it doesn't need its ctor called
-                if( m_global_events.count( message.signalEventRequest->name ) > 0 )
-                {
-                    // get the event
-                    Chuck_Event * event = get_global_event( message.signalEventRequest->name );
-                    // signal it, or broadcast it
-                    if( message.signalEventRequest->is_broadcast )
-                    {
-                        event->broadcast();
-                    }
-                    else
-                    {
-                        event->signal();
-                    }
-                }
-                // clean up request storage
-                delete message.signalEventRequest;
-                break;
-            }
-        }
-        else
-        {
-            // get failed. problem?
-            break;
-        }
-    }
-}
 
 
 
@@ -1877,7 +1399,9 @@ Chuck_VM_Shred::Chuck_VM_Shred()
     vm_ref = NULL;
     event = NULL;
     xid = 0;
+    #ifndef __DISABLE_SERIAL__
     m_serials = NULL;
+    #endif
 
     // set
     CK_TRACK( stat = NULL );
@@ -2010,6 +1534,7 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     // clear it
     code_orig = code = NULL;
 
+    #ifndef __DISABLE_SERIAL__
     // HACK (added 1.3.2.0): close serial devices
     if(m_serials != NULL)
     {
@@ -2018,10 +1543,11 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
             (*i)->release();
             (*i)->close();
         }
-        
+
         m_serials->clear();
         SAFE_DELETE(m_serials);
     }
+    #endif
     
     // 1.3.5.3 pop all loop counters
     while( this->popLoopCounter() );
@@ -2153,6 +1679,7 @@ CK_VM_DEBUG(CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
 
 
 
+#ifndef __DISABLE_SERIAL__
 //-----------------------------------------------------------------------------
 // name: add_serialio()
 // desc: ...
@@ -2178,6 +1705,7 @@ t_CKVOID Chuck_VM_Shred::remove_serialio( Chuck_IO_Serial * serial )
     m_serials->remove( serial );
     serial->release();
 }
+#endif
 
 
 
@@ -2444,9 +1972,18 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
 {
     t_CKINT i, j, numFrames;
     SAMPLE gain[256], sum;
+
+    #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+    // planar buffers means non-interleaved. this is required for some platforms,
+    // e.g. WebAudio
+    const SAMPLE * input = vm_ref->input_ref() + offset;
+    SAMPLE * output = vm_ref->output_ref() + offset;
+    t_CKUINT buffer_length = vm_ref->most_recent_buffer_length();
+    #else
     // get audio data from VM
     const SAMPLE * input = vm_ref->input_ref() + (offset*m_num_adc_channels);
     SAMPLE * output = vm_ref->output_ref() + (offset*m_num_dac_channels);
+    #endif
     
     // compute number of frames to compute; update
     numFrames = ck_min( m_max_block_size, numLeft );
@@ -2479,13 +2016,26 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
         // loop over channels
         for( j = 0; j < m_num_adc_channels; j++ )
         {
+            #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+            // current frame = offset + i
+            // current channel = j
+            // sample = buffer size * j + offset + i
+            // the "+offset" is taken care of in initialization
+            // the "+i" is taken care of by incrementing input below
+            m_adc->m_multi_chan[j]->m_current_v[i] = input[buffer_length * j] * gain[j] * m_adc->m_gain;
+            #else
             m_adc->m_multi_chan[j]->m_current_v[i] = input[j] * gain[j] * m_adc->m_gain;
+            #endif
             sum += m_adc->m_multi_chan[j]->m_current_v[i];
         }
         m_adc->m_current_v[i] = sum / m_num_adc_channels;
         
         // advance pointer
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        input++;
+        #else
         input += m_num_adc_channels;
+        #endif
     }
     
     // ???
@@ -2509,10 +2059,25 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
     for( i = 0; i < numFrames; i++ )
     {
         for( j = 0; j < m_num_dac_channels; j++ )
+        {
+            #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+            // current frame = offset + i
+            // current channel = j
+            // sample = buffer size * j + offset + i
+            // "+offset" taken care of in initialization
+            // "+i" taken care of by incrementing below
+            output[buffer_length * j] = m_dac->m_multi_chan[j]->m_current_v[i];
+            #else
             output[j] = m_dac->m_multi_chan[j]->m_current_v[i];
+            #endif
+        }
         
         // advance pointer
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        output++;
+        #else
         output += m_num_dac_channels;
+        #endif
     }
 }
 
@@ -2532,15 +2097,29 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
     SAMPLE sum = 0.0f;
     t_CKUINT i;
     // input and output
+    #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+    const SAMPLE * input = vm_ref->input_ref() + N;
+    SAMPLE * output = vm_ref->output_ref() + N;
+    t_CKUINT buffer_length = vm_ref->most_recent_buffer_length();
+    #else
     const SAMPLE * input = vm_ref->input_ref() + (N*m_num_adc_channels);
     SAMPLE * output = vm_ref->output_ref() + (N*m_num_dac_channels);
+    #endif
 
     // INPUT: loop over channels
     for( i = 0; i < m_num_adc_channels; i++ )
     {
         // ge: switched order of lines 1.3.5.3
         m_adc->m_multi_chan[i]->m_last = m_adc->m_multi_chan[i]->m_current;
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        // current frame = N
+        // current channel = i
+        // sample = buffer size * i + N
+        // the +N is taken care of by initialization
+        m_adc->m_multi_chan[i]->m_current = input[buffer_length * i] * m_adc->m_multi_chan[i]->m_gain * m_adc->m_gain;
+        #else
         m_adc->m_multi_chan[i]->m_current = input[i] * m_adc->m_multi_chan[i]->m_gain * m_adc->m_gain;
+        #endif
         m_adc->m_multi_chan[i]->m_time = this->now_system;
         sum += m_adc->m_multi_chan[i]->m_current;
     }
@@ -2551,7 +2130,17 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
     m_dac->system_tick( this->now_system );
     // OUTPUT
     for( i = 0; i < m_num_dac_channels; i++ )
+    {
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        // current frame = N
+        // current channel = i
+        // sample = buffer size * i + N
+        // the +N is taken care of by initialization
+        output[buffer_length * i] = m_dac->m_multi_chan[i]->m_current; // * .5f;
+        #else
         output[i] = m_dac->m_multi_chan[i]->m_current; // * .5f;
+        #endif
+    }
 
     // suck samples
     m_bunghole->system_tick( this->now_system );
@@ -2876,4 +2465,3166 @@ void Chuck_VM_Status::clear()
     }
     
     list.clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_Global_Int_Request
+// desc: container for messages to set global ints (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_Global_Int_Request
+{
+    std::string name;
+    t_CKINT val;
+    // constructor
+    Chuck_Set_Global_Int_Request() : val(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Global_Int_Request
+// desc: container for messages to get global ints (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Global_Int_Request
+{
+    std::string name;
+    union {
+        void (* cb_with_name)(const char *, t_CKINT);
+        void (* cb_with_id)(t_CKINT, t_CKINT);
+        void (* cb)(t_CKINT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
+    t_CKINT id;
+    // constructor
+    Chuck_Get_Global_Int_Request() : cb(NULL), cb_type(ck_get_plain), id(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_Global_Float_Request
+// desc: container for messages to set global floats (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_Global_Float_Request
+{
+    std::string name;
+    t_CKFLOAT val;
+    // constructor
+    Chuck_Set_Global_Float_Request() : val(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Global_Float_Request
+// desc: container for messages to get global floats (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Global_Float_Request
+{
+    std::string name;
+    union {
+        void (* cb_with_name)(const char *, t_CKFLOAT);
+        void (* cb_with_id)(t_CKINT, t_CKFLOAT);
+        void (* cb)(t_CKFLOAT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
+    t_CKINT id;
+    // constructor
+    Chuck_Get_Global_Float_Request() : cb(NULL), cb_type(ck_get_plain), id(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Signal_Global_Event_Request
+// desc: container for messages to signal global events (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Signal_Global_Event_Request
+{
+    std::string name;
+    t_CKBOOL is_broadcast;
+    // constructor
+    Chuck_Signal_Global_Event_Request() : is_broadcast(TRUE) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Listen_For_Global_Event_Request
+// desc: container for messages to wait on global events (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Listen_For_Global_Event_Request
+{
+    std::string name;
+    t_CKBOOL listen_forever;
+    t_CKBOOL deregister;
+    union {
+        void (* cb_with_name)(const char *);
+        void (* cb_with_id)(t_CKINT);
+        void (* cb)(void);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
+    t_CKINT id;
+    // constructor
+    Chuck_Listen_For_Global_Event_Request() : listen_forever(FALSE),
+        deregister(FALSE), cb(NULL), cb_type(ck_get_plain), id(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_Global_String_Request
+// desc: container for messages to set global strings (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_Global_String_Request
+{
+    std::string name;
+    std::string val;
+    // constructor
+    Chuck_Set_Global_String_Request() { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Global_String_Request
+// desc: container for messages to get global strings (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Global_String_Request
+{
+    std::string name;
+    union {
+        void (* cb_with_name)(const char *, const char *);
+        void (* cb_with_id)(t_CKINT, const char *);
+        void (* cb)(const char *);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
+    t_CKINT id;
+    // constructor
+    Chuck_Get_Global_String_Request() : cb(NULL), cb_type(ck_get_plain), id(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_Global_Int_Array_Request
+// desc: container for messages to set global int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_Global_Int_Array_Request
+{
+    std::string name;
+    std::vector< t_CKINT > arrayValues;
+    // constructor
+    Chuck_Set_Global_Int_Array_Request() { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Global_Int_Array_Request
+// desc: container for messages to get global int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Global_Int_Array_Request
+{
+    std::string name;
+    union {
+        void (* cb_with_name)(const char *, t_CKINT[], t_CKUINT);
+        void (* cb_with_id)(t_CKINT, t_CKINT[], t_CKUINT);
+        void (* cb)(t_CKINT[], t_CKUINT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
+    t_CKINT id;
+    // constructor
+    Chuck_Get_Global_Int_Array_Request() : cb(NULL), cb_type(ck_get_plain), id(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_Global_Int_Array_Value_Request
+// desc: container for messages to set individual elements of int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_Global_Int_Array_Value_Request
+{
+    std::string name;
+    t_CKUINT index;
+    t_CKINT value;
+    // constructor
+    Chuck_Set_Global_Int_Array_Value_Request() : index(-1), value(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Global_Int_Array_Value_Request
+// desc: container for messages to get individual elements of int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Global_Int_Array_Value_Request
+{
+    std::string name;
+    t_CKUINT index;
+    union {
+        void (* cb_with_name)(const char *, t_CKINT);
+        void (* cb_with_id)(t_CKINT, t_CKINT);
+        void (* cb)(t_CKINT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
+    t_CKINT id;
+    // constructor
+    Chuck_Get_Global_Int_Array_Value_Request() : index(-1), cb(NULL),
+        cb_type(ck_get_plain), id(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_Global_Associative_Int_Array_Value_Request
+// desc: container for messages to set elements of associative int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_Global_Associative_Int_Array_Value_Request
+{
+    std::string name;
+    std::string key;
+    t_CKINT value;
+    // constructor
+    Chuck_Set_Global_Associative_Int_Array_Value_Request() : value(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Global_Associative_Int_Array_Value_Request
+// desc: container for messages to get elements of associative int arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Global_Associative_Int_Array_Value_Request
+{
+    std::string name;
+    std::string key;
+    union {
+        void (* cb_with_name)(const char *, t_CKINT);
+        void (* cb_with_id)(t_CKINT, t_CKINT);
+        void (* cb)(t_CKINT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
+    t_CKINT id;
+    // constructor
+    Chuck_Get_Global_Associative_Int_Array_Value_Request() : cb(NULL),
+        cb_type(ck_get_plain), id(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_Global_Float_Array_Request
+// desc: container for messages to set global float arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_Global_Float_Array_Request
+{
+    std::string name;
+    std::vector< t_CKFLOAT > arrayValues;
+    // constructor
+    Chuck_Set_Global_Float_Array_Request() { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Global_Float_Array_Request
+// desc: container for messages to get global float arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Global_Float_Array_Request
+{
+    std::string name;
+    union {
+        void (* cb_with_name)(const char *, t_CKFLOAT[], t_CKUINT);
+        void (* cb_with_id)(t_CKINT, t_CKFLOAT[], t_CKUINT);
+        void (* cb)(t_CKFLOAT[], t_CKUINT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
+    t_CKINT id;
+    // constructor
+    Chuck_Get_Global_Float_Array_Request() : cb(NULL), cb_type(ck_get_plain), id(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_Global_Float_Array_Value_Request
+// desc: container for messages to set individual elements of float arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_Global_Float_Array_Value_Request
+{
+    std::string name;
+    t_CKUINT index;
+    t_CKFLOAT value;
+    // constructor
+    Chuck_Set_Global_Float_Array_Value_Request() : index(-1), value(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Global_Float_Array_Value_Request
+// desc: container for messages to get individual elements of float arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Global_Float_Array_Value_Request
+{
+    std::string name;
+    t_CKUINT index;
+    union {
+        void (* cb_with_name)(const char *, t_CKFLOAT);
+        void (* cb_with_id)(t_CKINT, t_CKFLOAT);
+        void (* cb)(t_CKFLOAT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
+    t_CKINT id;
+    // constructor
+    Chuck_Get_Global_Float_Array_Value_Request() : index(-1), cb(NULL),
+        cb_type(ck_get_plain), id(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Set_Global_Associative_Float_Array_Value_Request
+// desc: container for messages to set elements of associative float arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Set_Global_Associative_Float_Array_Value_Request
+{
+    std::string name;
+    std::string key;
+    t_CKFLOAT value;
+    // constructor
+    Chuck_Set_Global_Associative_Float_Array_Value_Request() : value(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Get_Global_Associative_Float_Array_Value_Request
+// desc: container for messages to get elements of associative float arrays (REFACTOR-2017)
+//-----------------------------------------------------------------------------
+struct Chuck_Get_Global_Associative_Float_Array_Value_Request
+{
+    std::string name;
+    std::string key;
+    union {
+        void (* cb_with_name)(const char *, t_CKFLOAT);
+        void (* cb_with_id)(t_CKINT, t_CKFLOAT);
+        void (* cb)(t_CKFLOAT);
+    };
+    Chuck_Global_Get_Callback_Type cb_type;
+    t_CKINT id;
+    // constructor
+    Chuck_Get_Global_Associative_Float_Array_Value_Request() : cb(NULL),
+        cb_type(ck_get_plain), id(0) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Execute_Chuck_Msg_Request
+// desc: container for Chuck_Msg (but to be called from the globals callback
+//       rather than the Chuck_Msg callback)
+//-----------------------------------------------------------------------------
+struct Chuck_Execute_Chuck_Msg_Request
+{
+    Chuck_Msg * msg;
+    // constructor
+    Chuck_Execute_Chuck_Msg_Request() : msg(NULL) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Global_Int_Container
+// desc: container for global ints
+//-----------------------------------------------------------------------------
+struct Chuck_Global_Int_Container
+{
+    t_CKINT val;
+
+    Chuck_Global_Int_Container() { val = 0; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Global_Float_Container
+// desc: container for global floats
+//-----------------------------------------------------------------------------
+struct Chuck_Global_Float_Container
+{
+    t_CKFLOAT val;
+
+    Chuck_Global_Float_Container() { val = 0; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Global_String_Container
+// desc: container for global ints
+//-----------------------------------------------------------------------------
+struct Chuck_Global_String_Container
+{
+    Chuck_String * val;
+
+    Chuck_Global_String_Container() { val = NULL; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Global_Event_Container
+// desc: container for global events
+//-----------------------------------------------------------------------------
+struct Chuck_Global_Event_Container
+{
+    Chuck_Event * val;
+    Chuck_Type * type;
+    t_CKBOOL ctor_needs_to_be_called;
+
+    Chuck_Global_Event_Container() { val = NULL; type = NULL;
+    ctor_needs_to_be_called = TRUE; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Global_UGen_Container
+// desc: container for global ugens
+//-----------------------------------------------------------------------------
+struct Chuck_Global_UGen_Container
+{
+    Chuck_UGen * val;
+    Chuck_Type * type;
+    t_CKBOOL ctor_needs_to_be_called;
+
+    Chuck_Global_UGen_Container() { val = NULL; type = NULL;
+    ctor_needs_to_be_called = TRUE; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Global_Array_Container
+// desc: container for global arrays
+//-----------------------------------------------------------------------------
+struct Chuck_Global_Array_Container
+{
+    Chuck_Object * array;
+    te_GlobalType array_type;
+    t_CKBOOL ctor_needs_to_be_called;
+
+    Chuck_Global_Array_Container( te_GlobalType arr_type )
+    {
+        array = NULL;
+        ctor_needs_to_be_called = FALSE;
+        array_type = arr_type;
+    }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Globals_Manager()
+// desc: constructor: size queues appropriately
+//-----------------------------------------------------------------------------
+Chuck_Globals_Manager::Chuck_Globals_Manager( Chuck_VM * vm )
+{
+    // store
+    m_vm = vm;
+
+    // REFACTOR-2017: TODO might want to dynamically grow queue?
+    m_global_request_queue.init( 16384 );
+    m_global_request_retry_queue.init( 16384 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_Globals_Manager()
+// desc: destructor: clean up
+//-----------------------------------------------------------------------------
+Chuck_Globals_Manager::~Chuck_Globals_Manager()
+{
+    cleanup_global_variables();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: add_request
+// desc: add a request to the queue
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::_add_request( Chuck_Global_Request request )
+{
+    m_global_request_queue.put( request );
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: more_requests
+// desc: are there more requests left?
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::_more_requests()
+{
+    return m_global_request_queue.more();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_int()
+// desc: get a global int by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_int( std::string name,
+    void (* callback)(t_CKINT) )
+{
+    Chuck_Get_Global_Int_Request * get_int_message =
+        new Chuck_Get_Global_Int_Request;
+    get_int_message->name = name;
+    get_int_message->cb = callback;
+    get_int_message->cb_type = ck_get_plain;
+
+    Chuck_Global_Request r;
+    r.type = get_global_int_request;
+    r.getIntRequest = get_int_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_int()
+// desc: get a global int by name, with a by name callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_int( std::string name,
+    void (* callback)(const char *, t_CKINT) )
+{
+    Chuck_Get_Global_Int_Request * get_int_message =
+        new Chuck_Get_Global_Int_Request;
+    get_int_message->name = name;
+    get_int_message->cb_with_name = callback;
+    get_int_message->cb_type = ck_get_name;
+
+    Chuck_Global_Request r;
+    r.type = get_global_int_request;
+    r.getIntRequest = get_int_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_int()
+// desc: get a global int by name, with id in callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_int( std::string name, t_CKINT id,
+    void (* callback)(t_CKINT, t_CKINT) )
+{
+    Chuck_Get_Global_Int_Request * get_int_message =
+        new Chuck_Get_Global_Int_Request;
+    get_int_message->name = name;
+    get_int_message->cb_with_id = callback;
+    get_int_message->id = id;
+    get_int_message->cb_type = ck_get_id;
+
+    Chuck_Global_Request r;
+    r.type = get_global_int_request;
+    r.getIntRequest = get_int_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_global_int()
+// desc: set a global int by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::set_global_int( std::string name, t_CKINT val )
+{
+    Chuck_Set_Global_Int_Request * set_int_message =
+        new Chuck_Set_Global_Int_Request;
+    set_int_message->name = name;
+    set_int_message->val = val;
+
+    Chuck_Global_Request r;
+    r.type = set_global_int_request;
+    r.setIntRequest = set_int_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_global_int()
+// desc: tell the vm that a global int is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::init_global_int( std::string name )
+{
+    if( m_global_ints.count( name ) == 0 )
+    {
+        m_global_ints[name] = new Chuck_Global_Int_Container;
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_int_value()
+// desc: get a value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Globals_Manager::get_global_int_value( std::string name )
+{
+    // ensure exists
+    init_global_int( name );
+
+    return m_global_ints[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_ptr_to_global_int()
+// desc: get a pointer directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKINT * Chuck_Globals_Manager::get_ptr_to_global_int( std::string name )
+{
+    return &( m_global_ints[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_float()
+// desc: get a global float by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_float( std::string name,
+    void (* callback)(t_CKFLOAT) )
+{
+    Chuck_Get_Global_Float_Request * get_float_message =
+        new Chuck_Get_Global_Float_Request;
+    get_float_message->name = name;
+    get_float_message->cb = callback;
+    get_float_message->cb_type = ck_get_plain;
+
+    Chuck_Global_Request r;
+    r.type = get_global_float_request;
+    r.getFloatRequest = get_float_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_float()
+// desc: get a global float by name, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_float( std::string name,
+    void (* callback)(const char *, t_CKFLOAT) )
+{
+    Chuck_Get_Global_Float_Request * get_float_message =
+        new Chuck_Get_Global_Float_Request;
+    get_float_message->name = name;
+    get_float_message->cb_with_name = callback;
+    get_float_message->cb_type = ck_get_name;
+
+    Chuck_Global_Request r;
+    r.type = get_global_float_request;
+    r.getFloatRequest = get_float_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_float()
+// desc: get a global float by name, with id in callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_float( std::string name, t_CKINT id,
+    void (* callback)(t_CKINT, t_CKFLOAT) )
+{
+    Chuck_Get_Global_Float_Request * get_float_message =
+        new Chuck_Get_Global_Float_Request;
+    get_float_message->name = name;
+    get_float_message->cb_with_id = callback;
+    get_float_message->id = id;
+    get_float_message->cb_type = ck_get_id;
+
+    Chuck_Global_Request r;
+    r.type = get_global_float_request;
+    r.getFloatRequest = get_float_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_global_float()
+// desc: set a global float by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::set_global_float( std::string name, t_CKFLOAT val )
+{
+    Chuck_Set_Global_Float_Request * set_float_message =
+        new Chuck_Set_Global_Float_Request;
+    set_float_message->name = name;
+    set_float_message->val = val;
+
+    Chuck_Global_Request r;
+    r.type = set_global_float_request;
+    r.setFloatRequest = set_float_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_global_float()
+// desc: tell the vm that a global float is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::init_global_float( std::string name )
+{
+    if( m_global_floats.count( name ) == 0 )
+    {
+        m_global_floats[name] = new Chuck_Global_Float_Container;
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_float_value()
+// desc: get a value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKFLOAT Chuck_Globals_Manager::get_global_float_value( std::string name )
+{
+    // ensure exists
+    init_global_float( name );
+
+    return m_global_floats[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_ptr_to_global_float()
+// desc: get a pointer directly to the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKFLOAT * Chuck_Globals_Manager::get_ptr_to_global_float( std::string name )
+{
+    return &( m_global_floats[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_string()
+// desc: get a global string by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_string( std::string name,
+    void (* callback)(const char *) )
+{
+    Chuck_Get_Global_String_Request * get_string_message =
+        new Chuck_Get_Global_String_Request;
+    get_string_message->name = name;
+    get_string_message->cb = callback;
+    get_string_message->cb_type = ck_get_plain;
+
+    Chuck_Global_Request r;
+    r.type = get_global_string_request;
+    r.getStringRequest = get_string_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_string()
+// desc: get a global string by name, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_string( std::string name,
+    void (* callback)(const char *, const char *) )
+{
+    Chuck_Get_Global_String_Request * get_string_message =
+        new Chuck_Get_Global_String_Request;
+    get_string_message->name = name;
+    get_string_message->cb_with_name = callback;
+    get_string_message->cb_type = ck_get_name;
+
+    Chuck_Global_Request r;
+    r.type = get_global_string_request;
+    r.getStringRequest = get_string_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_string()
+// desc: get a global string by name, with id in callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_string( std::string name, t_CKINT id,
+    void (* callback)(t_CKINT, const char *) )
+{
+    Chuck_Get_Global_String_Request * get_string_message =
+        new Chuck_Get_Global_String_Request;
+    get_string_message->name = name;
+    get_string_message->cb_with_id = callback;
+    get_string_message->id = id;
+    get_string_message->cb_type = ck_get_id;
+
+    Chuck_Global_Request r;
+    r.type = get_global_string_request;
+    r.getStringRequest = get_string_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_global_string()
+// desc: set a global string by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::set_global_string( std::string name, std::string val )
+{
+    Chuck_Set_Global_String_Request * set_string_message =
+        new Chuck_Set_Global_String_Request;
+    set_string_message->name = name;
+    set_string_message->val = val;
+
+    Chuck_Global_Request r;
+    r.type = set_global_string_request;
+    r.setStringRequest = set_string_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_global_string()
+// desc: tell the vm that a global string is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::init_global_string( std::string name )
+{
+    if( m_global_strings.count( name ) == 0 )
+    {
+        // make container
+        m_global_strings[name] = new Chuck_Global_String_Container;
+        // init
+        m_global_strings[name]->val = (Chuck_String *)
+            instantiate_and_initialize_object( m_vm->env()->t_string, m_vm );
+
+        // add reference to prevent deletion
+        m_global_strings[name]->val->add_ref();
+
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_string_value()
+// desc: get a value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_String * Chuck_Globals_Manager::get_global_string( std::string name )
+{
+    // ensure exists
+    init_global_string( name );
+
+    return m_global_strings[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_global_string_value()
+// desc: set a value directly to the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_String * * Chuck_Globals_Manager::get_ptr_to_global_string( std::string name )
+{
+    return &( m_global_strings[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: signal_global_event()
+// desc: signal() an Event by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::signal_global_event( std::string name )
+{
+    Chuck_Signal_Global_Event_Request * signal_event_message =
+        new Chuck_Signal_Global_Event_Request;
+    signal_event_message->name = name;
+    signal_event_message->is_broadcast = FALSE;
+
+    Chuck_Global_Request r;
+    r.type = signal_global_event_request;
+    r.signalEventRequest = signal_event_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: broadcast_global_event()
+// desc: broadcast() an Event by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::broadcast_global_event( std::string name )
+{
+    Chuck_Signal_Global_Event_Request * signal_event_message =
+        new Chuck_Signal_Global_Event_Request;
+    signal_event_message->name = name;
+    signal_event_message->is_broadcast = TRUE;
+
+    Chuck_Global_Request r;
+    r.type = signal_global_event_request;
+    r.signalEventRequest = signal_event_message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: listen_for_global_event()
+// desc: listen for an Event by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::listen_for_global_event( std::string name,
+    void (* callback)(void), t_CKBOOL listen_forever )
+{
+    Chuck_Listen_For_Global_Event_Request * listen_event_message =
+        new Chuck_Listen_For_Global_Event_Request;
+    listen_event_message->cb = callback;
+    listen_event_message->cb_type = ck_get_plain;
+    listen_event_message->name = name;
+    listen_event_message->listen_forever = listen_forever;
+    listen_event_message->deregister = FALSE;
+
+    Chuck_Global_Request r;
+    r.type = listen_for_global_event_request;
+    r.listenForEventRequest = listen_event_message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: listen_for_global_event()
+// desc: listen for an Event by name, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::listen_for_global_event( std::string name,
+    void (* callback)(const char *), t_CKBOOL listen_forever )
+{
+    Chuck_Listen_For_Global_Event_Request * listen_event_message =
+        new Chuck_Listen_For_Global_Event_Request;
+    listen_event_message->cb_with_name = callback;
+    listen_event_message->cb_type = ck_get_name;
+    listen_event_message->name = name;
+    listen_event_message->listen_forever = listen_forever;
+    listen_event_message->deregister = FALSE;
+
+    Chuck_Global_Request r;
+    r.type = listen_for_global_event_request;
+    r.listenForEventRequest = listen_event_message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: listen_for_global_event()
+// desc: listen for an Event by name, with id in callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::listen_for_global_event( std::string name, t_CKINT id,
+    void (* callback)(t_CKINT), t_CKBOOL listen_forever )
+{
+    Chuck_Listen_For_Global_Event_Request * listen_event_message =
+        new Chuck_Listen_For_Global_Event_Request;
+    listen_event_message->cb_with_id = callback;
+    listen_event_message->id = id;
+    listen_event_message->cb_type = ck_get_id;
+    listen_event_message->name = name;
+    listen_event_message->listen_forever = listen_forever;
+    listen_event_message->deregister = FALSE;
+
+    Chuck_Global_Request r;
+    r.type = listen_for_global_event_request;
+    r.listenForEventRequest = listen_event_message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: stop_listening_for_global_event()
+// desc: listen for an Event by name
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::stop_listening_for_global_event( std::string name,
+    void (* callback)(void) )
+{
+    Chuck_Listen_For_Global_Event_Request * listen_event_message =
+        new Chuck_Listen_For_Global_Event_Request;
+    listen_event_message->cb = callback;
+    listen_event_message->cb_type = ck_get_plain;
+    listen_event_message->name = name;
+    listen_event_message->listen_forever = FALSE;
+    listen_event_message->deregister = TRUE;
+
+    Chuck_Global_Request r;
+    r.type = listen_for_global_event_request;
+    r.listenForEventRequest = listen_event_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: stop_listening_for_global_event()
+// desc: listen for an Event by name, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::stop_listening_for_global_event( std::string name,
+    void (* callback)(const char *) )
+{
+    Chuck_Listen_For_Global_Event_Request * listen_event_message =
+        new Chuck_Listen_For_Global_Event_Request;
+    listen_event_message->cb_with_name = callback;
+    listen_event_message->cb_type = ck_get_name;
+    listen_event_message->name = name;
+    listen_event_message->listen_forever = FALSE;
+    listen_event_message->deregister = TRUE;
+
+    Chuck_Global_Request r;
+    r.type = listen_for_global_event_request;
+    r.listenForEventRequest = listen_event_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: stop_listening_for_global_event()
+// desc: listen for an Event by name, with id in callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::stop_listening_for_global_event( std::string name, t_CKINT id,
+    void (* callback)(t_CKINT) )
+{
+    Chuck_Listen_For_Global_Event_Request * listen_event_message =
+        new Chuck_Listen_For_Global_Event_Request;
+    listen_event_message->cb_with_id = callback;
+    listen_event_message->id = id;
+    listen_event_message->cb_type = ck_get_id;
+    listen_event_message->name = name;
+    listen_event_message->listen_forever = FALSE;
+    listen_event_message->deregister = TRUE;
+
+    Chuck_Global_Request r;
+    r.type = listen_for_global_event_request;
+    r.listenForEventRequest = listen_event_message;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_global_event()
+// desc: tell the vm that a global event is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::init_global_event( std::string name, Chuck_Type * type )
+{
+    // if it hasn't been initted yet
+    if( m_global_events.count( name ) == 0 ) {
+        // create a new storage container
+        m_global_events[name] = new Chuck_Global_Event_Container;
+        // create the chuck object
+        m_global_events[name]->val =
+            (Chuck_Event *) instantiate_and_initialize_object( type, m_vm );
+        // add a reference to it so it won't be deleted until we're done
+        // cleaning up the VM
+        m_global_events[name]->val->add_ref();
+        // store its type in the container, too (is it a user-defined class?)
+        m_global_events[name]->type = type;
+    }
+    // already exists. check if there's a type mismatch.
+    else if( type->name != m_global_events[name]->type->name )
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_event()
+// desc: get a pointer directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Event * Chuck_Globals_Manager::get_global_event( std::string name )
+{
+    return m_global_events[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_ptr_to_global_event()
+// desc: get a pointer pointer directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Event * * Chuck_Globals_Manager::get_ptr_to_global_event( std::string name )
+{
+    return &( m_global_events[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_global_ugen()
+// desc: tell the vm that a global ugen is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_ugen_samples( std::string name,
+    SAMPLE * buffer, int numFrames )
+{
+    // if hasn't been init, or it has been init and hasn't been constructed,
+    if( m_global_ugens.count( name ) == 0 ||
+        should_call_global_ctor( name, te_globalUGen ) )
+    {
+        // fail without doing anything
+        return FALSE;
+    }
+
+    // else, fill (if the ugen isn't buffered, then it will fill with zeroes)
+    m_global_ugens[name]->val->get_buffer( buffer, numFrames );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_global_ugen()
+// desc: tell the vm that a global ugen is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::init_global_ugen( std::string name, Chuck_Type * type )
+{
+
+    // if it hasn't been initted yet
+    if( m_global_ugens.count( name ) == 0 ) {
+        // create a new storage container
+        m_global_ugens[name] = new Chuck_Global_UGen_Container;
+        // create the chuck object
+        m_global_ugens[name]->val =
+            (Chuck_UGen *) instantiate_and_initialize_object( type, m_vm );
+        // add a reference to it so it won't be deleted until we're done
+        // cleaning up the VM
+        m_global_ugens[name]->val->add_ref();
+        // store its type in the container, too (is it a user-defined class?)
+        m_global_ugens[name]->type = type;
+    }
+    // already exists. check if there's a type mismatch.
+    else if( type->name != m_global_ugens[name]->type->name )
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: is_global_ugen_init()
+// desc: has a global ugen been initialized during emit?
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::is_global_ugen_init( std::string name )
+{
+    return m_global_ugens.count( name ) > 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: is_global_ugen_valid()
+// desc: has a global ugen been initialized during emit
+//       and constructed during runtime?
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::is_global_ugen_valid( std::string name )
+{
+    return is_global_ugen_init( name ) &&
+        !should_call_global_ctor( name, te_globalUGen );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_ugen()
+// desc: get directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_UGen * Chuck_Globals_Manager::get_global_ugen( std::string name )
+{
+    return m_global_ugens[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_ptr_to_global_ugen()
+// desc: get ptr directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_UGen * * Chuck_Globals_Manager::get_ptr_to_global_ugen( std::string name )
+{
+    return &( m_global_ugens[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_global_int_array()
+// desc: tell the vm to set an entire int array
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::set_global_int_array( std::string name, t_CKINT arrayValues[], t_CKUINT numValues )
+{
+    Chuck_Set_Global_Int_Array_Request * message =
+        new Chuck_Set_Global_Int_Array_Request;
+    message->name = name;
+    message->arrayValues.resize( numValues );
+    for( int i = 0; i < numValues; i++ )
+    {
+        message->arrayValues[i] = arrayValues[i];
+    }
+
+    Chuck_Global_Request r;
+    r.type = set_global_int_array_request;
+    r.setIntArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_int_array()
+// desc: tell the vm to get an entire int array
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_int_array( std::string name, void (* callback)(t_CKINT[], t_CKUINT))
+{
+    Chuck_Get_Global_Int_Array_Request * message =
+        new Chuck_Get_Global_Int_Array_Request;
+    message->name = name;
+    message->cb = callback;
+    message->cb_type = ck_get_plain;
+
+    Chuck_Global_Request r;
+    r.type = get_global_int_array_request;
+    r.getIntArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_int_array()
+// desc: tell the vm to get an entire int array, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_int_array( std::string name, void (* callback)(const char *, t_CKINT[], t_CKUINT))
+{
+    Chuck_Get_Global_Int_Array_Request * message =
+        new Chuck_Get_Global_Int_Array_Request;
+    message->name = name;
+    message->cb_with_name = callback;
+    message->cb_type = ck_get_name;
+
+    Chuck_Global_Request r;
+    r.type = get_global_int_array_request;
+    r.getIntArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_int_array()
+// desc: tell the vm to get an entire int array, with id in callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_int_array( std::string name, t_CKINT id, 
+    void (* callback)(t_CKINT, t_CKINT[], t_CKUINT) )
+{
+    Chuck_Get_Global_Int_Array_Request * message =
+        new Chuck_Get_Global_Int_Array_Request;
+    message->name = name;
+    message->cb_with_id = callback;
+    message->id = id;
+    message->cb_type = ck_get_id;
+
+    Chuck_Global_Request r;
+    r.type = get_global_int_array_request;
+    r.getIntArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_global_int_array_value()
+// desc: tell the vm to set one value of an int array by index
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::set_global_int_array_value( std::string name, t_CKUINT index, t_CKINT value )
+{
+    Chuck_Set_Global_Int_Array_Value_Request * message =
+        new Chuck_Set_Global_Int_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->value = value;
+
+    Chuck_Global_Request r;
+    r.type = set_global_int_array_value_request;
+    r.setIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_int_array_value()
+// desc: tell the vm to get one value of an int array by index
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_int_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKINT) )
+{
+    Chuck_Get_Global_Int_Array_Value_Request * message =
+        new Chuck_Get_Global_Int_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->cb = callback;
+    message->cb_type = ck_get_plain;
+
+    Chuck_Global_Request r;
+    r.type = get_global_int_array_value_request;
+    r.getIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_int_array_value()
+// desc: tell the vm to get one value of an int array by index, with named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_int_array_value( std::string name, t_CKUINT index, void (* callback)(const char *, t_CKINT) )
+{
+    Chuck_Get_Global_Int_Array_Value_Request * message =
+        new Chuck_Get_Global_Int_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->cb_with_name = callback;
+    message->cb_type = ck_get_name;
+
+    Chuck_Global_Request r;
+    r.type = get_global_int_array_value_request;
+    r.getIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_int_array_value()
+// desc: tell the vm to get one value of an int array by index, with id in callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_int_array_value( std::string name, 
+    t_CKINT id, t_CKUINT index, void (* callback)(t_CKINT, t_CKINT) )
+{
+    Chuck_Get_Global_Int_Array_Value_Request * message =
+        new Chuck_Get_Global_Int_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->cb_with_id = callback;
+    message->id = id;
+    message->cb_type = ck_get_id;
+
+    Chuck_Global_Request r;
+    r.type = get_global_int_array_value_request;
+    r.getIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_global_associative_int_array_value()
+// desc: tell the vm to set one value of an associative array by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::set_global_associative_int_array_value( std::string name, std::string key, t_CKINT value )
+{
+    Chuck_Set_Global_Associative_Int_Array_Value_Request * message =
+        new Chuck_Set_Global_Associative_Int_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->value = value;
+
+    Chuck_Global_Request r;
+    r.type = set_global_associative_int_array_value_request;
+    r.setAssociativeIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_associative_int_array_value()
+// desc: tell the vm to get one value of an associative array by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_associative_int_array_value( std::string name, std::string key, void (* callback)(t_CKINT) )
+{
+    Chuck_Get_Global_Associative_Int_Array_Value_Request * message =
+        new Chuck_Get_Global_Associative_Int_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->cb = callback;
+    message->cb_type = ck_get_plain;
+
+    Chuck_Global_Request r;
+    r.type = get_global_associative_int_array_value_request;
+    r.getAssociativeIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_associative_int_array_value()
+// desc: tell the vm to get one value of an associative array by string key, with named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_associative_int_array_value( std::string name, std::string key, void (* callback)(const char *, t_CKINT) )
+{
+    Chuck_Get_Global_Associative_Int_Array_Value_Request * message =
+        new Chuck_Get_Global_Associative_Int_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->cb_with_name = callback;
+    message->cb_type = ck_get_name;
+
+    Chuck_Global_Request r;
+    r.type = get_global_associative_int_array_value_request;
+    r.getAssociativeIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_associative_int_array_value()
+// desc: tell the vm to get one value of an associative array by string key, with id in callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_associative_int_array_value( std::string name,
+    t_CKINT id, std::string key, void (* callback)(t_CKINT, t_CKINT) )
+{
+    Chuck_Get_Global_Associative_Int_Array_Value_Request * message =
+        new Chuck_Get_Global_Associative_Int_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->cb_with_id = callback;
+    message->id = id;
+    message->cb_type = ck_get_id;
+
+    Chuck_Global_Request r;
+    r.type = get_global_associative_int_array_value_request;
+    r.getAssociativeIntArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_global_float_array()
+// desc: tell the vm to set an entire float array
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::set_global_float_array( std::string name, t_CKFLOAT arrayValues[], t_CKUINT numValues )
+{
+    Chuck_Set_Global_Float_Array_Request * message =
+        new Chuck_Set_Global_Float_Array_Request;
+    message->name = name;
+    message->arrayValues.resize( numValues );
+    for( int i = 0; i < numValues; i++ )
+    {
+        message->arrayValues[i] = arrayValues[i];
+    }
+
+    Chuck_Global_Request r;
+    r.type = set_global_float_array_request;
+    r.setFloatArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_float_array()
+// desc: tell the vm to get an entire float array
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_float_array( std::string name, void (* callback)(t_CKFLOAT[], t_CKUINT))
+{
+    Chuck_Get_Global_Float_Array_Request * message =
+        new Chuck_Get_Global_Float_Array_Request;
+    message->name = name;
+    message->cb = callback;
+    message->cb_type = ck_get_plain;
+
+    Chuck_Global_Request r;
+    r.type = get_global_float_array_request;
+    r.getFloatArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_float_array()
+// desc: tell the vm to get an entire float array, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_float_array( std::string name, void (* callback)(const char *, t_CKFLOAT[], t_CKUINT))
+{
+    Chuck_Get_Global_Float_Array_Request * message =
+        new Chuck_Get_Global_Float_Array_Request;
+    message->name = name;
+    message->cb_with_name = callback;
+    message->cb_type = ck_get_name;
+
+    Chuck_Global_Request r;
+    r.type = get_global_float_array_request;
+    r.getFloatArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_float_array()
+// desc: tell the vm to get an entire float array, with id in callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_float_array( std::string name, t_CKINT id,
+    void (* callback)(t_CKINT, t_CKFLOAT[], t_CKUINT))
+{
+    Chuck_Get_Global_Float_Array_Request * message =
+        new Chuck_Get_Global_Float_Array_Request;
+    message->name = name;
+    message->cb_with_id = callback;
+    message->id = id;
+    message->cb_type = ck_get_id;
+
+    Chuck_Global_Request r;
+    r.type = get_global_float_array_request;
+    r.getFloatArrayRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_global_float_array_value()
+// desc: tell the vm to set one value of an float array by index
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::set_global_float_array_value( std::string name, t_CKUINT index, t_CKFLOAT value )
+{
+    Chuck_Set_Global_Float_Array_Value_Request * message =
+        new Chuck_Set_Global_Float_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->value = value;
+
+    Chuck_Global_Request r;
+    r.type = set_global_float_array_value_request;
+    r.setFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_float_array_value()
+// desc: tell the vm to get one value of an float array by index
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_float_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKFLOAT) )
+{
+    Chuck_Get_Global_Float_Array_Value_Request * message =
+        new Chuck_Get_Global_Float_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->cb = callback;
+    message->cb_type = ck_get_plain;
+
+    Chuck_Global_Request r;
+    r.type = get_global_float_array_value_request;
+    r.getFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_float_array_value()
+// desc: tell the vm to get one value of an float array by index, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_float_array_value( std::string name, t_CKUINT index, void (* callback)(const char *, t_CKFLOAT) )
+{
+    Chuck_Get_Global_Float_Array_Value_Request * message =
+        new Chuck_Get_Global_Float_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->cb_with_name = callback;
+    message->cb_type = ck_get_name;
+
+    Chuck_Global_Request r;
+    r.type = get_global_float_array_value_request;
+    r.getFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_float_array_value()
+// desc: tell the vm to get one value of an float array by index, with id in callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_float_array_value( std::string name, t_CKINT id,
+    t_CKUINT index, void (* callback)(t_CKINT, t_CKFLOAT) )
+{
+    Chuck_Get_Global_Float_Array_Value_Request * message =
+        new Chuck_Get_Global_Float_Array_Value_Request;
+    message->name = name;
+    message->index = index;
+    message->cb_with_id = callback;
+    message->id = id;
+    message->cb_type = ck_get_id;
+
+    Chuck_Global_Request r;
+    r.type = get_global_float_array_value_request;
+    r.getFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_global_associative_float_array_value()
+// desc: tell the vm to set one value of an associative array by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::set_global_associative_float_array_value( std::string name, std::string key, t_CKFLOAT value )
+{
+    Chuck_Set_Global_Associative_Float_Array_Value_Request * message =
+        new Chuck_Set_Global_Associative_Float_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->value = value;
+
+    Chuck_Global_Request r;
+    r.type = set_global_associative_float_array_value_request;
+    r.setAssociativeFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_associative_float_array_value()
+// desc: tell the vm to get one value of an associative array by string key
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_associative_float_array_value( std::string name, std::string key, void (* callback)(t_CKFLOAT) )
+{
+    Chuck_Get_Global_Associative_Float_Array_Value_Request * message =
+        new Chuck_Get_Global_Associative_Float_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->cb = callback;
+    message->cb_type = ck_get_plain;
+
+    Chuck_Global_Request r;
+    r.type = get_global_associative_float_array_value_request;
+    r.getAssociativeFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_associative_float_array_value()
+// desc: tell the vm to get one value of an associative array by string key, with a named callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_associative_float_array_value( std::string name, std::string key, void (* callback)(const char *, t_CKFLOAT) )
+{
+    Chuck_Get_Global_Associative_Float_Array_Value_Request * message =
+        new Chuck_Get_Global_Associative_Float_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->cb_with_name = callback;
+    message->cb_type = ck_get_name;
+
+    Chuck_Global_Request r;
+    r.type = get_global_associative_float_array_value_request;
+    r.getAssociativeFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_associative_float_array_value()
+// desc: tell the vm to get one value of an associative array by string key, with id in callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::get_global_associative_float_array_value( std::string name, 
+    t_CKINT id, std::string key, void (* callback)(t_CKINT, t_CKFLOAT) )
+{
+    Chuck_Get_Global_Associative_Float_Array_Value_Request * message =
+        new Chuck_Get_Global_Associative_Float_Array_Value_Request;
+    message->name = name;
+    message->key = key;
+    message->cb_with_id = callback;
+    message->id = id;
+    message->cb_type = ck_get_id;
+
+    Chuck_Global_Request r;
+    r.type = get_global_associative_float_array_value_request;
+    r.getAssociativeFloatArrayValueRequest = message;
+    // chuck object might not be constructed on time. retry only once
+    r.retries = 1;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute_chuck_msg_with_globals()
+// desc: execute a Chuck_Msg in the globals callback
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::execute_chuck_msg_with_globals( Chuck_Msg * msg )
+{
+    Chuck_Execute_Chuck_Msg_Request * message =
+        new Chuck_Execute_Chuck_Msg_Request;
+    message->msg = msg;
+
+    Chuck_Global_Request r;
+    r.type = execute_chuck_msg_request;
+    r.executeChuckMsgRequest = message;
+    r.retries = 0;
+
+    m_global_request_queue.put( r );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_global_array()
+// desc: tell the vm that a global string is now available
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::init_global_array( std::string name, Chuck_Type * type, te_GlobalType arr_type )
+{
+    if( m_global_arrays.count( name ) == 0 )
+    {
+        // make container
+        m_global_arrays[name] = new Chuck_Global_Array_Container( arr_type );
+        // do not init
+        m_global_arrays[name]->array = NULL;
+        // global variable type
+        m_global_arrays[name]->array_type = arr_type;
+        // note: Chuck_Type * is currently unused, but may be necessary later
+        // TODO: how to init if user sets it before any script makes it?
+        // TODO: how to keep reference to prevent from being deleted if
+        //  a script ends and takes the array with it?
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_array()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Object * Chuck_Globals_Manager::get_global_array( std::string name )
+{
+    return m_global_arrays[name]->array;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: _get_global_int_array_value()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Globals_Manager::_get_global_int_array_value( std::string name, t_CKUINT index )
+{
+    t_CKUINT result = 0;
+    Chuck_Object * array = m_global_arrays[name]->array;
+    if( array != NULL &&
+        m_global_arrays[name]->array_type == te_globalInt )
+    {
+        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+        // TODO why is it unsigned int storage?
+        intArray->get( index, &result );
+    }
+    return result;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: _get_global_associative_int_array_value()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Globals_Manager::_get_global_associative_int_array_value( std::string name, std::string key )
+{
+    t_CKUINT result = 0;
+    Chuck_Object * array = m_global_arrays[name]->array;
+    if( array != NULL &&
+        m_global_arrays[name]->array_type == te_globalInt )
+    {
+        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+        // TODO why is it unsigned int storage?
+        intArray->get( key, &result );
+    }
+    return result;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: _get_global_float_array_value()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKFLOAT Chuck_Globals_Manager::_get_global_float_array_value( std::string name, t_CKUINT index )
+{
+    t_CKFLOAT result = 0;
+    Chuck_Object * array = m_global_arrays[name]->array;
+    if( array != NULL &&
+        m_global_arrays[name]->array_type == te_globalFloat )
+    {
+        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+        floatArray->get( index, &result );
+    }
+    return result;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: _get_global_associative_float_array_value()
+// desc: get value directly from the vm (internal)
+//-----------------------------------------------------------------------------
+t_CKFLOAT Chuck_Globals_Manager::_get_global_associative_float_array_value( std::string name, std::string key )
+{
+    t_CKFLOAT result = 0;
+    Chuck_Object * array = m_global_arrays[name]->array;
+    if( array != NULL &&
+        m_global_arrays[name]->array_type == te_globalFloat )
+    {
+        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+        floatArray->get( key, &result );
+    }
+    return result;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_ptr_to_global_array()
+// desc: get ptr directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Object * * Chuck_Globals_Manager::get_ptr_to_global_array( std::string name )
+{
+    return &( m_global_arrays[name]->array );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: should_call_global_ctor()
+// desc: ask the vm if a global needs to be constructed after init
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::should_call_global_ctor( std::string name,
+    te_GlobalType type )
+{
+    switch( type )
+    {
+    case te_globalInt:
+    case te_globalFloat:
+    case te_globalString:
+        // these basic types don't have ctors
+        return FALSE;
+        break;
+    case te_globalEvent:
+        return m_global_events.count( name ) > 0 &&
+            m_global_events[name]->ctor_needs_to_be_called;
+        break;
+    case te_globalUGen:
+        return m_global_ugens.count( name ) > 0 &&
+            m_global_ugens[name]->ctor_needs_to_be_called;
+        break;
+    case te_globalArraySymbol:
+        // this case is only used for array-as-symbol, not array-as-decl.
+        // if arrays need their ctors called, we need a rearchitecture!
+        return FALSE;
+        break;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: global_ctor_was_called()
+// desc: tell the vm that a global has been constructed after init
+//-----------------------------------------------------------------------------
+void Chuck_Globals_Manager::global_ctor_was_called( std::string name,
+    te_GlobalType type )
+{
+    switch( type )
+    {
+    case te_globalInt:
+    case te_globalFloat:
+    case te_globalString:
+        // do nothing for these basic types
+        break;
+    case te_globalEvent:
+        if( m_global_events.count( name ) > 0 )
+        {
+            m_global_events[name]->ctor_needs_to_be_called = FALSE;
+        }
+        break;
+    case te_globalUGen:
+        if( m_global_ugens.count( name ) > 0 )
+        {
+            m_global_ugens[name]->ctor_needs_to_be_called = FALSE;
+        }
+        break;
+    case te_globalArraySymbol:
+        // do nothing
+        break;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: cleanup_global_variables()
+// desc: set a pointer directly on the vm (internal)
+//-----------------------------------------------------------------------------
+void Chuck_Globals_Manager::cleanup_global_variables()
+{
+    // ints: delete containers and clear map
+    for( std::map< std::string, Chuck_Global_Int_Container * >::iterator it=
+        m_global_ints.begin(); it!=m_global_ints.end(); it++ )
+    {
+        delete (it->second);
+    }
+    m_global_ints.clear();
+
+    // floats: delete containers and clear map
+    for( std::map< std::string, Chuck_Global_Float_Container * >::iterator it=
+        m_global_floats.begin(); it!=m_global_floats.end(); it++ )
+    {
+        delete (it->second);
+    }
+    m_global_floats.clear();
+
+    // strings: release strings, delete containers, and clear map
+    for( std::map< std::string, Chuck_Global_String_Container * >::iterator it=
+        m_global_strings.begin(); it!=m_global_strings.end(); it++ )
+    {
+        SAFE_RELEASE( it->second->val );
+        delete (it->second);
+    }
+    m_global_strings.clear();
+
+    // events: release events, delete containers, and clear map
+    for( std::map< std::string, Chuck_Global_Event_Container * >::iterator it=
+        m_global_events.begin(); it!=m_global_events.end(); it++ )
+    {
+        SAFE_RELEASE( it->second->val );
+        delete (it->second);
+    }
+    m_global_events.clear();
+
+    // ugens: release ugens, delete containers, and clear map
+    for( std::map< std::string, Chuck_Global_UGen_Container * >::iterator it=
+        m_global_ugens.begin(); it!=m_global_ugens.end(); it++ )
+    {
+        SAFE_RELEASE( it->second->val );
+        delete (it->second);
+    }
+    m_global_ugens.clear();
+
+    // arrays: release arrays, delete containers, and clear map
+    for( std::map< std::string, Chuck_Global_Array_Container * >::iterator it=
+        m_global_arrays.begin(); it!=m_global_arrays.end(); it++ )
+    {
+        // release. array initialization adds a reference,
+        // but the release instruction is prevented from being
+        // used on all global objects (including arrays)
+        SAFE_RELEASE( it->second->array );
+        delete (it->second);
+    }
+    m_global_arrays.clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: handle_global_queue_messages()
+// desc: update vm with set, get, listen, spork, etc. messages
+//-----------------------------------------------------------------------------
+void Chuck_Globals_Manager::handle_global_queue_messages()
+{
+    bool should_retry_this_request = false;
+
+    while( m_global_request_queue.more() )
+    {
+        should_retry_this_request = false;
+
+        Chuck_Global_Request message;
+        if( m_global_request_queue.get( & message ) )
+        {
+            switch( message.type )
+            {
+            case execute_chuck_msg_request:
+                if( message.executeChuckMsgRequest->msg != NULL )
+                {
+                    // this will automatically delete msg if applicable
+                    m_vm->process_msg( message.executeChuckMsgRequest->msg );
+                }
+                // clean up request storage
+                delete message.executeChuckMsgRequest;
+                break;
+
+            case spork_shred_request:
+                // spork the shred!
+                m_vm->spork( message.shred );
+                break;
+
+            case set_global_int_request:
+                // ensure the container exists
+                init_global_int( message.setIntRequest->name );
+                // set int
+                m_global_ints[message.setIntRequest->name]->val = message.setIntRequest->val;
+                // clean up request storage
+                delete message.setIntRequest;
+                break;
+
+            case get_global_int_request:
+                // ensure one of the callbacks is not null (union)
+                if( message.getIntRequest->cb != NULL )
+                {
+                    // ensure the value exists
+                    init_global_int( message.getIntRequest->name );
+                    // call the callback with the value
+                    switch( message.getIntRequest->cb_type )
+                    {
+                    case ck_get_plain:
+                        message.getIntRequest->cb( m_global_ints[message.getIntRequest->name]->val );
+                        break;
+                    case ck_get_name:
+                        message.getIntRequest->cb_with_name( message.getIntRequest->name.c_str(), m_global_ints[message.getIntRequest->name]->val );
+                        break;
+                    case ck_get_id:
+                        message.getIntRequest->cb_with_id( message.getIntRequest->id, m_global_ints[message.getIntRequest->name]->val );
+                        break;
+                    }
+                }
+                // clean up request storage
+                delete message.getIntRequest;
+                break;
+
+            case set_global_float_request:
+                // ensure the container exists
+                init_global_float( message.setFloatRequest->name );
+                // set float
+                m_global_floats[message.setFloatRequest->name]->val = message.setFloatRequest->val;
+                // clean up request storage
+                delete message.setFloatRequest;
+                break;
+
+            case get_global_float_request:
+                // ensure one cb is not null (union)
+                if( message.getFloatRequest->cb != NULL )
+                {
+                    // ensure value exists
+                    init_global_float( message.getFloatRequest->name );
+                    // call callback with float
+                    switch( message.getFloatRequest->cb_type )
+                    {
+                    case ck_get_plain:
+                        message.getFloatRequest->cb( m_global_floats[message.getFloatRequest->name]->val );
+                        break;
+                    case ck_get_name:
+                        message.getFloatRequest->cb_with_name( message.getFloatRequest->name.c_str(), m_global_floats[message.getFloatRequest->name]->val );
+                        break;
+                    case ck_get_id:
+                        message.getFloatRequest->cb_with_id( message.getFloatRequest->id, m_global_floats[message.getFloatRequest->name]->val );
+                        break;
+                    }
+                }
+                // clean up request storage
+                delete message.getFloatRequest;
+                break;
+
+            case set_global_string_request:
+                // ensure the container exists
+                init_global_string( message.setStringRequest->name );
+                // set string
+                m_global_strings[message.setStringRequest->name]->val->set( message.setStringRequest->val );
+                // clean up request storage
+                delete message.setStringRequest;
+                break;
+
+            case get_global_string_request:
+                // ensure one callback is not null (union)
+                if( message.getStringRequest->cb != NULL )
+                {
+                    // ensure value exists
+                    init_global_string( message.getStringRequest->name );
+                    // call callback with string
+                    switch( message.getStringRequest->cb_type )
+                    {
+                    case ck_get_plain:
+                        message.getStringRequest->cb( m_global_strings[message.getStringRequest->name]->val->c_str() );
+                        break;
+                    case ck_get_name:
+                        message.getStringRequest->cb_with_name( message.getStringRequest->name.c_str(), m_global_strings[message.getStringRequest->name]->val->c_str() );
+                        break;
+                    case ck_get_id:
+                        message.getStringRequest->cb_with_id( message.getStringRequest->id, m_global_strings[message.getStringRequest->name]->val->c_str() );
+                        break;
+                    }
+                }
+                // clean up request storage
+                delete message.getStringRequest;
+                break;
+
+            case signal_global_event_request:
+                // ensure it exists and it doesn't need its ctor called
+                if( m_global_events.count( message.signalEventRequest->name ) > 0 &&
+                    !should_call_global_ctor( message.signalEventRequest->name, te_globalEvent ) )
+                {
+                    // get the event
+                    Chuck_Event * event = get_global_event( message.signalEventRequest->name );
+                    // signal it, or broadcast it
+                    if( message.signalEventRequest->is_broadcast )
+                    {
+                        event->broadcast();
+                        event->broadcast_global();
+                    }
+                    else
+                    {
+                        event->signal();
+                        event->signal_global();
+                    }
+                }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+
+                // clean up request storage
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.signalEventRequest;
+                }
+                break;
+
+            case listen_for_global_event_request:
+                // ensure a callback is not null (union)
+                if( message.listenForEventRequest->cb != NULL )
+                {
+                    // ensure it exists
+                    if( m_global_events.count( message.listenForEventRequest->name ) > 0 )
+                    {
+                        // get event
+                        Chuck_Event * event = get_global_event( message.listenForEventRequest->name );
+                        if( message.listenForEventRequest->deregister )
+                        {
+                            // deregister
+                            switch( message.listenForEventRequest->cb_type )
+                            {
+                            case ck_get_plain:
+                                event->remove_listen( message.listenForEventRequest->cb );
+                                break;
+                            case ck_get_name:
+                                event->remove_listen( message.listenForEventRequest->name,
+                                    message.listenForEventRequest->cb_with_name );
+                                break;
+                            case ck_get_id:
+                                event->remove_listen( message.listenForEventRequest->id,
+                                    message.listenForEventRequest->cb_with_id );
+                                break;
+                            }
+
+                        }
+                        else
+                        {
+                            // register
+                            switch( message.listenForEventRequest->cb_type )
+                            {
+                            case ck_get_plain:
+                                event->global_listen( message.listenForEventRequest->cb,
+                                    message.listenForEventRequest->listen_forever );
+                                break;
+                            case ck_get_name:
+                                event->global_listen( message.listenForEventRequest->name,
+                                    message.listenForEventRequest->cb_with_name,
+                                    message.listenForEventRequest->listen_forever );
+                                break;
+                            case ck_get_id:
+                                event->global_listen( message.listenForEventRequest->id,
+                                    message.listenForEventRequest->cb_with_id,
+                                    message.listenForEventRequest->listen_forever );
+                                break;
+                            }
+
+                        }
+                    }
+                    else
+                    {
+                        // name does not exist. possible that object just doesn't exist yet.
+                        if( message.retries > 0 )
+                        {
+                            should_retry_this_request = true;
+                        }
+                    }
+                }
+                // clean up request storage
+                if( should_retry_this_request )
+                {
+                    m_global_request_retry_queue.put( message );
+                }
+                else
+                {
+                    delete message.listenForEventRequest;
+                }
+                break;
+
+            case set_global_int_array_request:
+            {
+                // replace an entire array, if it exists
+                Chuck_Set_Global_Int_Array_Request * request =
+                    message.setIntArrayRequest;
+                if( m_global_arrays.count( request->name ) > 0 )
+                {
+                    // we know that array's name. does it exist yet? is it an int array?
+                    Chuck_Object * array = m_global_arrays[request->name]->array;
+                    if( array != NULL &&
+                        m_global_arrays[request->name]->array_type == te_globalInt )
+                    {
+                        // it exists! get existing array, new size
+                        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                        t_CKUINT newSize = request->arrayValues.size();
+
+                        // resize and copy in
+                        intArray->set_size( newSize );
+                        for( int i = 0; i < newSize; i++ )
+                        {
+                            intArray->set( i, request->arrayValues[i] );
+                        }
+                    }
+                }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+            }
+
+            // clean up request storage
+            if( should_retry_this_request )
+            {
+                m_global_request_retry_queue.put( message );
+            }
+            else
+            {
+                delete message.setIntArrayRequest;
+            }
+            break;
+
+            case get_global_int_array_request:
+            {
+                // fetch an entire array, if it exists
+                Chuck_Get_Global_Int_Array_Request * request =
+                    message.getIntArrayRequest;
+                if( m_global_arrays.count( request->name ) > 0 )
+                {
+                    // we know that array's name. does it exist yet; do we have a callback?
+                    Chuck_Object * array = m_global_arrays[request->name]->array;
+                    if( array != NULL &&
+                        m_global_arrays[request->name]->array_type == te_globalInt &&
+                        request->cb != NULL )
+                    {
+                        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                        // TODO: why is m_vector a vector of unsigned ints...??
+                        switch( request->cb_type )
+                        {
+                        case ck_get_plain:
+                            request->cb(
+                                (t_CKINT *) &(intArray->m_vector[0]),
+                                intArray->size()
+                            );
+                            break;
+                        case ck_get_name:
+                            request->cb_with_name(
+                                request->name.c_str(),
+                                (t_CKINT *) &(intArray->m_vector[0]),
+                                intArray->size()
+                            );
+                            break;
+                        case ck_get_id:
+                            request->cb_with_id(
+                                request->id,
+                                (t_CKINT *) &(intArray->m_vector[0]),
+                                intArray->size()
+                            );
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+            }
+
+            // clean up request storage
+            if( should_retry_this_request )
+            {
+                m_global_request_retry_queue.put( message );
+            }
+            else
+            {
+                delete message.getIntArrayRequest;
+            }
+            break;
+
+            case set_global_int_array_value_request:
+            {
+                // set a single value, if array exists and index in range
+                Chuck_Set_Global_Int_Array_Value_Request * request =
+                    message.setIntArrayValueRequest;
+                if( m_global_arrays.count( request->name ) > 0 )
+                {
+                    // we know that array's name. does it exist yet? is it an int array?
+                    Chuck_Object * array = m_global_arrays[request->name]->array;
+                    if( array != NULL &&
+                        m_global_arrays[request->name]->array_type == te_globalInt )
+                    {
+                        // it exists! get existing array
+                        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                        // set! (if index within range)
+                        if( intArray->size() > request->index )
+                        {
+                            intArray->set( request->index, request->value );
+                        }
+                    }
+                }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+            }
+
+            // clean up request storage
+            if( should_retry_this_request )
+            {
+                m_global_request_retry_queue.put( message );
+            }
+            else
+            {
+                delete message.setIntArrayValueRequest;
+            }
+            break;
+
+            case get_global_int_array_value_request:
+            {
+                // get a single value, if array exists and index in range
+                Chuck_Get_Global_Int_Array_Value_Request * request =
+                    message.getIntArrayValueRequest;
+                // fetch an entire array, if it exists
+                if( m_global_arrays.count( request->name ) > 0 )
+                {
+                    // we know that array's name. does it exist yet; do we have a callback? (union)
+                    Chuck_Object * array = m_global_arrays[request->name]->array;
+                    if( array != NULL &&
+                        m_global_arrays[request->name]->array_type == te_globalInt &&
+                        request->cb != NULL )
+                    {
+                        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                        // TODO why is it unsigned int storage?
+                        t_CKUINT result = 0;
+                        intArray->get( request->index, &result );
+                        switch( request->cb_type )
+                        {
+                        case ck_get_plain:
+                            request->cb( result );
+                            break;
+                        case ck_get_name:
+                            request->cb_with_name( request->name.c_str(), result );
+                            break;
+                        case ck_get_id:
+                            request->cb_with_id( request->id, result );
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+            }
+
+            // clean up request storage
+            if( should_retry_this_request )
+            {
+                m_global_request_retry_queue.put( message );
+            }
+            else
+            {
+                delete message.getIntArrayValueRequest;
+            }
+            break;
+
+            case set_global_associative_int_array_value_request:
+            {
+                // set a single value by key, if array exists
+                Chuck_Set_Global_Associative_Int_Array_Value_Request * request =
+                    message.setAssociativeIntArrayValueRequest;
+                if( m_global_arrays.count( request->name ) > 0 )
+                {
+                    // we know that array's name. does it exist yet? is it an int array?
+                    Chuck_Object * array = m_global_arrays[request->name]->array;
+                    if( array != NULL &&
+                        m_global_arrays[request->name]->array_type == te_globalInt )
+                    {
+                        // it exists! get existing array
+                        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                        // set!
+                        intArray->set( request->key, request->value );
+                    }
+                }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+            }
+
+            // clean up request storage
+            if( should_retry_this_request )
+            {
+                m_global_request_retry_queue.put( message );
+            }
+            else
+            {
+                delete message.setAssociativeIntArrayValueRequest;
+            }
+            break;
+
+            case get_global_associative_int_array_value_request:
+            {
+                // get a single value by key, if array exists and key in map
+                Chuck_Get_Global_Associative_Int_Array_Value_Request * request =
+                    message.getAssociativeIntArrayValueRequest;
+                // fetch an entire array, if it exists
+                if( m_global_arrays.count( request->name ) > 0 )
+                {
+                    // we know that array's name. does it exist yet; do we have a callback? (union)
+                    Chuck_Object * array = m_global_arrays[request->name]->array;
+                    if( array != NULL &&
+                        m_global_arrays[request->name]->array_type == te_globalInt &&
+                        request->cb != NULL )
+                    {
+                        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                        // TODO why is it unsigned int storage?
+                        t_CKUINT result = 0;
+                        intArray->get( request->key, &result );
+                        switch( request->cb_type )
+                        {
+                        case ck_get_plain:
+                            request->cb( result );
+                            break;
+                        case ck_get_name:
+                            request->cb_with_name( request->name.c_str(), result );
+                            break;
+                        case ck_get_id:
+                            request->cb_with_id( request->id, result );
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+            }
+
+            // clean up request storage
+            if( should_retry_this_request )
+            {
+                m_global_request_retry_queue.put( message );
+            }
+            else
+            {
+                delete message.getAssociativeIntArrayValueRequest;
+            }
+            break;
+
+            case set_global_float_array_request:
+            {
+                // replace an entire array, if it exists
+                Chuck_Set_Global_Float_Array_Request * request =
+                    message.setFloatArrayRequest;
+                if( m_global_arrays.count( request->name ) > 0 )
+                {
+                    // we know that array's name. does it exist yet? is it a float array?
+                    Chuck_Object * array = m_global_arrays[request->name]->array;
+                    if( array != NULL &&
+                        m_global_arrays[request->name]->array_type == te_globalFloat )
+                    {
+                        // it exists! get existing array, new size
+                        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                        t_CKUINT newSize = request->arrayValues.size();
+
+                        // resize and copy in
+                        floatArray->set_size( newSize );
+                        for( int i = 0; i < newSize; i++ )
+                        {
+                            floatArray->set( i, request->arrayValues[i] );
+                        }
+                    }
+                }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+            }
+
+            // clean up request storage
+            if( should_retry_this_request )
+            {
+                m_global_request_retry_queue.put( message );
+            }
+            else
+            {
+                delete message.setFloatArrayRequest;
+            }
+            break;
+
+            case get_global_float_array_request:
+            {
+                // fetch an entire array, if it exists
+                Chuck_Get_Global_Float_Array_Request * request =
+                    message.getFloatArrayRequest;
+                if( m_global_arrays.count( request->name ) > 0 )
+                {
+                    // we know that array's name. does it exist yet; do we have a callback? (union)
+                    Chuck_Object * array = m_global_arrays[request->name]->array;
+                    if( array != NULL &&
+                        m_global_arrays[request->name]->array_type == te_globalFloat &&
+                        request->cb != NULL )
+                    {
+                        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                        switch( request->cb_type )
+                        {
+                        case ck_get_plain:
+                            request->cb(
+                                &(floatArray->m_vector[0]),
+                                floatArray->size()
+                            );
+                            break;
+                        case ck_get_name:
+                            request->cb_with_name(
+                                request->name.c_str(),
+                                &(floatArray->m_vector[0]),
+                                floatArray->size()
+                            );
+                            break;
+                        case ck_get_id:
+                            request->cb_with_id(
+                                request->id,
+                                &(floatArray->m_vector[0]),
+                                floatArray->size()
+                            );
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+            }
+
+            // clean up request storage
+            if( should_retry_this_request )
+            {
+                m_global_request_retry_queue.put( message );
+            }
+            else
+            {
+                delete message.getFloatArrayRequest;
+            }
+            break;
+
+            case set_global_float_array_value_request:
+            {
+                // set a single value, if array exists and index in range
+                Chuck_Set_Global_Float_Array_Value_Request * request =
+                    message.setFloatArrayValueRequest;
+                if( m_global_arrays.count( request->name ) > 0 )
+                {
+                    // we know that array's name. does it exist yet? is it a float array?
+                    Chuck_Object * array = m_global_arrays[request->name]->array;
+                    if( array != NULL &&
+                        m_global_arrays[request->name]->array_type == te_globalFloat )
+                    {
+                        // it exists! get existing array
+                        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                        // set! (if index within range)
+                        if( floatArray->size() > request->index )
+                        {
+                            floatArray->set( request->index, request->value );
+                        }
+                    }
+                }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+            }
+
+            // clean up request storage
+            if( should_retry_this_request )
+            {
+                m_global_request_retry_queue.put( message );
+            }
+            else
+            {
+                delete message.setFloatArrayValueRequest;
+            }
+            break;
+
+            case get_global_float_array_value_request:
+            {
+                // get a single value, if array exists and index in range
+                Chuck_Get_Global_Float_Array_Value_Request * request =
+                    message.getFloatArrayValueRequest;
+                // fetch an entire array, if it exists
+                if( m_global_arrays.count( request->name ) > 0 )
+                {
+                    // we know that array's name. does it exist yet; do we have a callback? (union)
+                    Chuck_Object * array = m_global_arrays[request->name]->array;
+                    if( array != NULL &&
+                        m_global_arrays[request->name]->array_type == te_globalFloat &&
+                        request->cb != NULL )
+                    {
+                        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                        t_CKFLOAT result = 0;
+                        floatArray->get( request->index, &result );
+                        switch( request->cb_type )
+                        {
+                        case ck_get_plain:
+                            request->cb( result );
+                            break;
+                        case ck_get_name:
+                            request->cb_with_name( request->name.c_str(), result );
+                            break;
+                        case ck_get_id:
+                            request->cb_with_id( request->id, result );
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+            }
+
+            // clean up request storage
+            if( should_retry_this_request )
+            {
+                m_global_request_retry_queue.put( message );
+            }
+            else
+            {
+                delete message.getFloatArrayValueRequest;
+            }
+            break;
+
+            case set_global_associative_float_array_value_request:
+            {
+                // set a single value by key, if array exists
+                Chuck_Set_Global_Associative_Float_Array_Value_Request * request =
+                    message.setAssociativeFloatArrayValueRequest;
+                if( m_global_arrays.count( request->name ) > 0 )
+                {
+                    // we know that array's name. does it exist yet? is it a float array?
+                    Chuck_Object * array = m_global_arrays[request->name]->array;
+                    if( array != NULL &&
+                        m_global_arrays[request->name]->array_type == te_globalFloat )
+                    {
+                        // it exists! get existing array
+                        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                        // set!
+                        floatArray->set( request->key, request->value );
+                    }
+                }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+            }
+
+            // clean up request storage
+            if( should_retry_this_request )
+            {
+                m_global_request_retry_queue.put( message );
+            }
+            else
+            {
+                delete message.setAssociativeFloatArrayValueRequest;
+            }
+            break;
+
+            case get_global_associative_float_array_value_request:
+            {
+                // get a single value by key, if array exists and key in map
+                Chuck_Get_Global_Associative_Float_Array_Value_Request * request =
+                    message.getAssociativeFloatArrayValueRequest;
+                // fetch an entire array, if it exists
+                if( m_global_arrays.count( request->name ) > 0 )
+                {
+                    // we know that array's name. does it exist yet; do we have a callback? (union)
+                    Chuck_Object * array = m_global_arrays[request->name]->array;
+                    if( array != NULL &&
+                        m_global_arrays[request->name]->array_type == te_globalFloat &&
+                        request->cb != NULL )
+                    {
+                        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                        t_CKFLOAT result = 0;
+                        floatArray->get( request->key, &result );
+                        switch( request->cb_type )
+                        {
+                        case ck_get_plain:
+                            request->cb( result );
+                            break;
+                        case ck_get_name:
+                            request->cb_with_name( request->name.c_str(), result );
+                            break;
+                        case ck_get_id:
+                            request->cb_with_id( request->id, result );
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    // name does not exist. possible that object just doesn't exist yet.
+                    if( message.retries > 0 )
+                    {
+                        should_retry_this_request = true;
+                    }
+                }
+            }
+
+            // clean up request storage
+            if( should_retry_this_request )
+            {
+                m_global_request_retry_queue.put( message );
+            }
+            else
+            {
+                delete message.getAssociativeFloatArrayValueRequest;
+            }
+            break;
+            }
+        }
+        else
+        {
+            // get failed. problem?
+            break;
+        }
+    }
+
+    // process retries
+    while( m_global_request_retry_queue.more() )
+    {
+        // get the request
+        Chuck_Global_Request message;
+        if( m_global_request_retry_queue.get( &message ) )
+        {
+            // make sure it should be retried
+            if( message.retries == 0 )
+            {
+                // trying to retry something that shouldn't be.
+                continue;
+            }
+
+            // decrement the number of retries
+            message.retries--;
+            // add it back to the queue for next time
+            m_global_request_queue.put( message );
+        }
+        else
+        {
+            // get failed. problem?
+            break;
+        }
+    }
 }
