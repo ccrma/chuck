@@ -4,10 +4,10 @@
 if(me.args())
     me.arg(0) => Std.atoi => num;
 
-me.dir() => string meDir;
-me.dir(1) => string meDir1;
-me.dir(2) => string meDir2;
-me.dir(3) => string meDir3;
+me.dir() => global string meDir;
+me.dir(1) => global string meDir1;
+me.dir(2) => global string meDir2;
+me.dir(3) => global string meDir3;
 
 if(meDir1 + "05-Global/" != meDir)
 {

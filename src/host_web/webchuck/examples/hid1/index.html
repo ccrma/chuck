@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>ChucK + JS => ChucKScript</title>
+    <link rel="stylesheet" href="../../css/editor.css">
+  </head>
+  <body onresize="chuckEditor.resize();">
+<div>
+    <div id="program">// HID 1: keyboard organ
+global Event buttonDown;
+global Event buttonUp;
+global int whichButton;
+// patch
+BeeThree organ => JCRev r => Echo e => Echo e2 => dac;
+r => dac;
+
+// set delays
+240::ms => e.max => e.delay;
+480::ms => e2.max => e2.delay;
+// set gains
+.6 => e.gain;
+.3 => e2.gain;
+.05 => r.mix;
+0 => organ.gain;
+
+fun void RespondToButtonDown()
+{
+    while( true )
+    {
+        buttonDown => now;
+        chout <= IO.newline();
+        <<< whichButton, "down" >>>;
+        Std.mtof( whichButton - 25 ) => float freq;
+        if( freq > 20000 ) continue;
+
+        freq => organ.freq;
+        .5 => organ.gain;
+        1 => organ.noteOn;
+
+        80::ms => now;
+    } 
+}
+spork ~ RespondToButtonDown();
+
+fun void RespondToButtonUp()
+{
+    while( true )
+    {
+        buttonUp => now;
+        <<< whichButton, "up" >>>;
+        0 => organ.noteOff;
+    }
+}
+spork ~ RespondToButtonUp();
+
+while( true )
+{
+    1::second => now;
+}
+</div>
+</div>
+<div class="buttons">
+    <button class="chuckButton" id="startChuck" disabled="disabled">Start ChucK</button>
+    <button class="chuckButton" id="compileButton" disabled="disabled">Compile and Run</button>
+    <button class="chuckButton" id="replaceButton" disabled="disabled">Replace</button>
+    <button class="chuckButton" id="removeButton" disabled="disabled">Remove</button>
+    <button class="chuckButton" id="clearButton" disabled="disabled">Clear VM and Globals</button>
+    <button class="chuckButton" id="micButton" disabled="disabled">Enable Microphone</button>
+    <button class="chuckButton" id="fileFormButton">Show File Uploader</button>
+</div>
+<div id="fileForm" class="hidden">
+    <p>File name to use in ChucK: <input type="text" id="uploadFilename"></p>
+    <p>Local file to upload: <input type="file" id="uploadFile" name="uploadFile"></p>
+    <p><button class="chuckButton" id="fileButton" disabled="disabled">Upload File to Virtual File System</button></p>
+</div>
+<div>
+    <p>Type below in the output to play the keyboard organ!</p>
+</div>
+<div>
+    <textarea id="output"></textarea>
+    <div id="shreds">
+        <table id="shredstable">
+            <col width="60px">
+            <col width="1*">
+            <col width="50px">
+            <col width="60px">
+            <tr><th>shred</th><th>code</th><th>time</th><th>remove</th>
+        </table>
+    </div>
+    <div class="clearfix"></div>
+</div>
+    <script type="text/javascript" src="../../js/ace-min-noconflict/ace.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../js/editor.js"></script>
+    <script type="text/javascript" src="../../js/defer.js"></script>
+    <script>
+        // override
+        var whereIsChuck = "../../js";
+    </script>
+    <script type="text/javascript" src="../../js/webchuck_host.js"></script>
+    <script type="text/javascript" src="../../js/host.js"></script>
+    <script>
+        // make editor a bit smaller
+        chuckEditor.setOptions({
+            maxLines: 20,
+            minLines: 20
+        }); 
+
+        theChuckReady.then( function() 
+        {
+            var output = document.getElementById( "output" );
+            output.onkeydown = function( e )
+            {
+                theChuck.setInt( "whichButton", e.key.charCodeAt(0) );
+                theChuck.broadcastEvent( "buttonDown" );
+            }
+            output.onkeyup = function( e )
+            {
+                theChuck.setInt( "whichButton", e.key.charCodeAt(0) );
+                theChuck.broadcastEvent( "buttonUp" );
+            }
+        });
+    </script>
+  </body>
+</html>
+
+

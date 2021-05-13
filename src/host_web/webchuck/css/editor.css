@@ -1,0 +1,159 @@
+body {
+    font-family: arial;
+    margin: 0;
+    padding: none;
+}
+
+#output {
+    width: 59%;
+    float: left;
+    height: 300px;
+    margin: 0 auto;
+    margin-top: 10px;
+    border-left: 0px;
+    border-right: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    display: block;
+    background-color: black;
+    color: white;
+    font-family: 'Lucida Console', Monaco, monospace;
+    outline: none;
+    resize: none;
+}
+
+#shreds {
+    margin-top: 10px;
+    width: 40%;
+    float: right;
+    height: 300px;
+    overflow: auto;
+}
+
+#shredstable {
+    width: 90%;
+    border-style: hidden;
+    border-collapse: collapse;
+}
+
+th, td {
+  text-align:left;
+  border: 1px solid #dddddd;
+  padding: 3px 5px;
+}
+
+
+.clearfix {
+    clear: both;
+}
+
+
+#fileForm {
+    margin: 24px 15px 5px 36px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#fileForm > p {
+    margin: 8px 0px;
+}
+
+.hidden {
+    display: none;
+}
+
+
+
+
+/* BUTTONS */
+.buttons {
+    margin-top: 8px;
+    margin-left: 12px;
+}
+
+#startChuck {
+	background-color:#ffffff;
+	color: #000000;
+	border-color: #dbdbdb;
+/* 	text-shadow:0px 1px 3px #dbdbdb; */
+}
+
+#startChuck:hover {
+	background-color:#eeeeee;
+}
+
+#clearButton, #micButton, #fileFormButton, #fileButton {
+	background-color:#fbfbfb;
+	color: #000000;
+	border-color: #dbdbdb;
+/* 	text-shadow:0px 1px 3px #dbdbdb; */
+}
+
+#clearButton:hover, #micButton:hover, 
+#fileFormButton:hover, #fileButton:hover {
+	background-color:#eeeeee;
+}
+
+
+#compileButton {
+	background-color:#44c767;
+	border-color: #298a43;
+/* 	text-shadow:0px 1px 3px #28703b; */
+}
+#compileButton:hover {
+	background-color:#40ad5d;
+}
+
+
+#replaceButton {
+	background-color:#1258e3;
+	border-color: #1e355c;
+/* 	text-shadow:0px 1px 3px #324873; */
+}
+#replaceButton:hover {
+	background-color:#1852bd;
+}
+
+
+#removeButton {
+	background-color:#d12727;
+	border-color: #7d1f1f;
+/* 	text-shadow:0px 1px 3px #803838; */
+}
+#removeButton:hover {
+	background-color:#b82828;
+}
+
+
+.chuckButton {
+    -moz-border-radius:8px;
+	-webkit-border-radius:8px;
+	border-radius:8px;
+	border-width:1px;
+	border-style: solid;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size:14px;
+	padding:8px 12px 6px 12px;
+	text-decoration:none;
+}
+.chuckButton:active {
+	position:relative;
+	top:1px;
+}
+.chuckButton:disabled {
+    background-color: #dbdbdb          !important;
+    cursor: default                    !important;
+    border-color: #aaaaaa              !important;
+/*     text-shadow:0px 1px 3px #aaaaaa    !important; */
+    color: #ffffff                     !important;
+}
+
+.chuckButton:focus {
+    outline:0;
+}
+
+.ace_editor, .ace_editor * {
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", "Droid Sans Mono", "Consolas", monospace !important; font-size: 12px !important; font-weight: 400 !important; letter-spacing: 0 !important;
+}

@@ -120,7 +120,8 @@ struct Chuck_Emitter : public Chuck_VM_Object
     // constructor
     Chuck_Emitter()
     { env = NULL; code = NULL; context = NULL; 
-      nspc = NULL; func = NULL; dump = FALSE; }
+      nspc = NULL; func = NULL; dump = FALSE;
+      should_replace_dac = FALSE; }
 
     // destructor
     ~Chuck_Emitter()
@@ -148,6 +149,10 @@ struct Chuck_Emitter : public Chuck_VM_Object
 
     // default durations
     t_CKBOOL find_dur( const std::string & name, t_CKDUR * out );
+    
+    // post REFACTOR-2017: replace-dac
+    std::string dac_replacement;
+    t_CKBOOL should_replace_dac;
 };
 
 

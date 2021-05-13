@@ -225,6 +225,22 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         // the next
         prog = prog->next;
     }
+    
+    // 1.4.0.1: error-checking: was dac-replacement initted?
+    // (see chuck_compile.h for an explanation on replacement dacs
+    if( emit->should_replace_dac )
+    {
+        if( !emit->env->vm()->globals_manager()->is_global_ugen_init( emit->dac_replacement ) )
+        {
+            EM_error2( 0, "compiler error: dac replacement '%s' was never initialized...",
+                emit->dac_replacement.c_str() );
+            EM_error2( 0, " ... (hint: need to declare this variable as a global UGen)" );
+            ret = FALSE;
+        }
+    
+        // (also need to make sure it was constructed; see runtime error in
+        // Chuck_Instr_Reg_Push_Global)
+    }
 
     if( ret )
     {
@@ -2889,7 +2905,23 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         }
         else if( exp->var == insert_symbol( "dac" ) )
         {
-            emit->append( new Chuck_Instr_DAC );
+            // 1.4.0.1: see chuck_compile.h for an explanation of 
+            // replacement dacs
+            // should replace dac with global ugen?
+            if( emit->should_replace_dac )
+            {
+                // push the global UGen on to the stack
+                Chuck_Instr_Reg_Push_Global * instr =
+                    new Chuck_Instr_Reg_Push_Global(
+                        emit->dac_replacement, te_globalUGen );
+                instr->set_linepos( exp->linepos );
+                emit->append( instr );
+            }
+            else
+            {
+                // proceed as normal -- push the dac onto the stack~
+                emit->append( new Chuck_Instr_DAC );
+            }
         }
         else if( exp->var == insert_symbol( "adc" ) )
         {
@@ -4008,6 +4040,8 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
     t_CKBOOL is_obj = FALSE;
     t_CKBOOL is_ref = FALSE;
     t_CKBOOL is_init = FALSE;
+    t_CKBOOL is_array = FALSE;
+    t_CKBOOL needs_global_ctor = FALSE;
     
     t_CKTYPE t = type_engine_find_type( emit->env, decl->type->xid );
     te_GlobalType globalType;
@@ -4022,16 +4056,29 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         {
             globalType = te_globalFloat;
         }
+        else if( isa( t, emit->env->t_string ) )
+        {
+            globalType = te_globalString;
+        }
         else if( isa( t, emit->env->t_event ) )
         {
             // kind-of-event (te_Type for this would be te_user, which is not helpful)
             globalType = te_globalEvent;
+            // need to call ctors
+            needs_global_ctor = TRUE;
+        }
+        else if( isa( t, emit->env->t_ugen ) )
+        {
+            // kind-of-ugen (te_Type might not be te_ugen, so we store globalUGen in our own field)
+            globalType = te_globalUGen;
+            // need to call ctors
+            needs_global_ctor = TRUE;
         }
         else
         {
             // fail if type unsupported
             EM_error2( decl->linepos, (std::string("unsupported type for global keyword: ") + t->name).c_str() );
-            EM_error2( decl->linepos, "... (supported types: int, float, Event)" );
+            EM_error2( decl->linepos, "... (supported types: int, float, string, Event, UGen)" );
             return FALSE;
         }
     }
@@ -4051,13 +4098,21 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         is_ref = decl->type->ref;
         // not init
         is_init = FALSE;
+        // is array
+        is_array = FALSE;
 
-        // if this is an object
+        // if this is an object, do instantiation
         if( is_obj )
         {
-            // if array, then check to see if empty []
+            // if this is an array, ...
             if( list->var_decl->array )
             {
+                is_array = TRUE;
+                
+                // ... then check to see if empty []
+                // and only instantiate if NOT empty
+                // REFACTOR-2017 TODO: do we want to
+                //  avoid doing this if the array is global?
                 if( list->var_decl->array->exp_list )
                 {
                     // set
@@ -4070,7 +4125,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             else if( !is_ref )
             {
                 // REFACTOR-2017: don't emit instructions to instantiate
-                // global variables -- they are init/instantiated
+                // non-array global variables -- they are init/instantiated
                 // during emit (see below in this function)
                 if( !decl->is_global )
                 {
@@ -4101,6 +4156,8 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 return FALSE;
             }
         }*/
+
+        // done with object instantiation
 
         // put in the value
 
@@ -4154,22 +4211,45 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     instr->m_name = value->name;
                     instr->m_type = globalType;
                     instr->set_linepos( decl->linepos );
-                    emit->append( instr );
+                    instr->m_is_array = is_array;
+                    
+                    // extra fields for objects that need their ctors called
+                    if( needs_global_ctor )
+                    {
+                        instr->m_chuck_type = type;
+                        instr->m_stack_offset = local->offset;
+                        instr->m_should_execute_ctors = TRUE;
+                    }
                     
                     // if it's an event, we need to initialize it and check if the exact type matches
                     if( globalType == te_globalEvent )
                     {
                         // init and construct it now!
-                        if( !emit->env->vm()->init_global_event( value->name, t ) )
+                        if( !emit->env->vm()->globals_manager()->init_global_event( value->name, t ) )
                         {
                             // if the type doesn't exactly match (different kinds of Event), then fail.
                             EM_error2( decl->linepos,
-                                "(emit): global Event '%s' has different type '%s' than already existing global Event of the same name",
+                                "global Event '%s' has different type '%s' than already existing global Event of the same name",
+                                value->name.c_str(), t->name.c_str() );
+                            return FALSE;
+                        }
+                    }
+                    // if it's a ugen, we need to initialize it and check if the exact type matches
+                    else if( globalType == te_globalUGen )
+                    {
+                        // init and construct it now!
+                        if( !emit->env->vm()->globals_manager()->init_global_ugen( value->name, t ) )
+                        {
+                            // if the type doesn't exactly match (different kinds of Event), then fail.
+                            EM_error2( decl->linepos,
+                                "global UGen '%s' has different type '%s' than already existing global UGen of the same name",
                                 value->name.c_str(), t->name.c_str() );
                             return FALSE;
                         }
                     }
                     
+                    // add instruction
+                    emit->append( instr );
                 }
                 // zero out location in memory, and leave addr on operand stack
                 // TODO: this is wrong for static
@@ -4799,9 +4879,21 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         {
             global_type = te_globalFloat;
         }
+        else if( isa( v->type, emit->env->t_string ) )
+        {
+            global_type = te_globalString;
+        }
         else if( isa( v->type, emit->env->t_event ) )
         {
             global_type = te_globalEvent;
+        }
+        else if( isa( v->type, emit->env->t_ugen ) )
+        {
+            global_type = te_globalUGen;
+        }
+        else if( isa( v->type, emit->env->t_array ) )
+        {
+            global_type = te_globalArraySymbol;
         }
         else
         {
@@ -4863,7 +4955,10 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
             emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)v->func_ref ) );
         else if( v->is_global )
         {
-            emit->append( new Chuck_Instr_Reg_Push_Global( v->name, global_type ) );
+            Chuck_Instr_Reg_Push_Global * instr =
+                new Chuck_Instr_Reg_Push_Global( v->name, global_type );
+            instr->set_linepos( linepos );
+            emit->append( instr );
         }
         // check size
         // (added 1.3.1.0: iskindofint -- since in some 64-bit systems, sz_INT == sz_FLOAT)

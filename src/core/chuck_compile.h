@@ -110,6 +110,15 @@ public: // compile
     // get the code generated from the last go()
     Chuck_VM_Code * output( );
 
+public: // replace-dac
+    // 1.4.0.1: sets a "replacement dac": one global UGen is secretly used 
+    // as a stand-in for "dac" for this compilation
+    // for example, ChuckSubInstances in Chunity use a global Gain as a
+    // replacement dac, then use the global getUGenSamples() function to
+    // get the samples of the gain. this enables the creation 
+    // of a new sample sucker.
+    void setReplaceDac( t_CKBOOL shouldReplaceDac, const std::string & replacement );
+
 protected: // internal
     // do entire file
     t_CKBOOL do_entire_file( Chuck_Context * context );

@@ -46,6 +46,9 @@ IS          (u|U|l|L)*
 
 #include <stdlib.h>
 #include <string.h>
+#ifndef __PLATFORM_WIN32__
+#include <unistd.h>
+#endif
 #include "chuck_utils.h"
 #include "chuck_absyn.h"
 #include "chuck_errmsg.h"

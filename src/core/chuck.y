@@ -38,6 +38,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#ifndef __PLATFORM_WIN32__
+#include <unistd.h>
+#endif
 #include "chuck_utils.h"
 #include "chuck_errmsg.h"
 #include "chuck_absyn.h"
