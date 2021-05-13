@@ -39,6 +39,7 @@
 #include "chuck_ugen.h"
 #include "chuck_dl.h"
 #include "chuck_errmsg.h"
+#include "chuck_globals.h" // added 1.4.0.2
 
 #include "util_string.h"
 
