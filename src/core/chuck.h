@@ -142,6 +142,10 @@ public:
     Chuck_DL_MainThreadHook * getMainThreadHook();
 
 public:
+    // get globals (needed to access Globals Manager)
+    Chuck_Globals_Manager * globals();
+
+public:
     // get VM (dangerous)
     Chuck_VM * vm() { return m_carrier->vm; }
     // get compiler (dangerous)

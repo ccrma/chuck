@@ -924,6 +924,23 @@ void ChucK::run( SAMPLE * input, SAMPLE * output, int numFrames )
 
 
 
+//-----------------------------------------------------------------------------
+// name: globals()
+// desc: returns VM Globals Manager
+//-----------------------------------------------------------------------------
+Chuck_Globals_Manager * ChucK::globals()
+{
+    // check pointer
+    if( !m_carrier->vm ) return NULL;
+    // check if running
+    if( !m_carrier->vm->running() ) return NULL;
+
+    // return the thing!
+    return m_carrier->vm->globals_manager();
+}
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: setGlobalInt()
