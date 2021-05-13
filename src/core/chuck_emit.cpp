@@ -4044,7 +4044,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
     t_CKBOOL needs_global_ctor = FALSE;
     
     t_CKTYPE t = type_engine_find_type( emit->env, decl->type->xid );
-    te_GlobalType globalType;
+    te_GlobalType globalType; // added 1.4.0.1 (jack)
     
     if( decl->is_global )
     {

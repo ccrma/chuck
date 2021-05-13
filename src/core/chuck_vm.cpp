@@ -145,7 +145,7 @@ Chuck_VM::Chuck_VM()
     m_num_shreds = 0;
     m_shreduler = NULL;
     m_num_dumped_shreds = 0;
-    m_globals_manager = NULL;
+    m_globals_manager = NULL; // 1.4.0.2 (jack)
     m_msg_buffer = NULL;
     m_reply_buffer = NULL;
     m_event_buffer = NULL;
@@ -478,6 +478,7 @@ t_CKBOOL Chuck_VM::compute()
     t_CKBOOL iterate = TRUE;
     
     // REFACTOR-2017: spork queued shreds, handle global messages
+    // global manager added 1.4.0.2 (jack)
     m_globals_manager->handle_global_queue_messages();
 
     // iteration until no more shreds/events/messages
@@ -1027,7 +1028,7 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
         Chuck_Global_Request spork_request;
         spork_request.type = spork_shred_request;
         spork_request.shred = shred;
-
+        // added 1.4.0.2 (jack)
         m_globals_manager->_add_request( spork_request );
     }
 
