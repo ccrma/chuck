@@ -389,7 +389,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
         try {
             rtmin->openPort( (unsigned int) device_num );
             // callback, userData. first cast device num to unsigned int, then to void *
-            rtmin->setCallback( cb_midi_input, (void *) ( (unsigned int) device_num ) );
+            rtmin->setCallback( cb_midi_input, (void *) ( (t_CKUINT)device_num ) );
         } catch( RtMidiError & err ) {
             if( !min->m_suppress_output )
             {

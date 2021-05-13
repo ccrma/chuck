@@ -82,6 +82,7 @@ struct Chuck_Global_String_Container;
 struct Chuck_Global_Event_Container;
 struct Chuck_Global_UGen_Container;
 struct Chuck_Global_Array_Container;
+struct Chuck_Global_Object_Container;
 
 
 
@@ -276,6 +277,12 @@ public:
     t_CKFLOAT get_global_float_array_value( std::string name, t_CKUINT index );
     t_CKFLOAT get_global_associative_float_array_value( std::string name, std::string key );
 
+    t_CKBOOL init_global_object( std::string name, Chuck_Type* type );
+    t_CKBOOL is_global_object_init( std::string name );
+    t_CKBOOL is_global_object_valid( std::string name );
+    Chuck_Object* get_global_object( std::string name );
+    Chuck_Object** get_ptr_to_global_object( std::string name );
+    
     t_CKBOOL should_call_global_ctor( std::string name, te_GlobalType type );
     void global_ctor_was_called( std::string name, te_GlobalType type );
     
@@ -300,7 +307,8 @@ private:
     std::map< std::string, Chuck_Global_Event_Container* > m_global_events;
     std::map< std::string, Chuck_Global_UGen_Container* > m_global_ugens;
     std::map< std::string, Chuck_Global_Array_Container* > m_global_arrays;
-    
+    std::map< std::string, Chuck_Global_Object_Container* > m_global_objects;
+
     // global variables -- messages for set, get, etc.
     XCircleBuffer< Chuck_Global_Request > m_global_request_queue;
     
