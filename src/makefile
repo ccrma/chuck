@@ -71,7 +71,7 @@ osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
 win32:
 	make -f $(COREDIR)/makefile.x/makefile.win32
 
-CK_VERSION=1.4.0.1
+CK_VERSION=1.4.0.2
 
 
 ########################### COMPILATION TOOLS ##################################

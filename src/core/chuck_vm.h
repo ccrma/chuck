@@ -476,7 +476,7 @@ public:
     Chuck_Env * env() const { return m_carrier->env; }
     Chuck_IO_Chout * chout() const { return m_carrier->chout; }
     Chuck_IO_Cherr * cherr() const { return m_carrier->cherr; }
-    // 1.4.0.1: get associated globals manager
+    // 1.4.0.2 (jack): get associated globals manager
     Chuck_Globals_Manager * globals_manager() const { return m_globals_manager; }
 
 //-----------------------------------------------------------------------------
@@ -540,7 +540,7 @@ protected:
     std::list<CBufferSimple *> m_event_buffers;
 
 protected:
-    // 1.4.0.1: manager for global variables
+    // 1.4.0.2 (jack): manager for global variables
     Chuck_Globals_Manager * m_globals_manager;
 };
 
@@ -611,8 +611,8 @@ struct Chuck_Msg
 
 
 
-// Global Variables & Management -- added 1.4.0.1
-// Forward references for global messages
+// global variables & management -- added 1.4.0.2 (jack)
+// forward references for global messages
 struct Chuck_Set_Global_Int_Request;
 struct Chuck_Get_Global_Int_Request;
 struct Chuck_Set_Global_Float_Request;
@@ -635,7 +635,7 @@ struct Chuck_Set_Global_Associative_Float_Array_Value_Request;
 struct Chuck_Get_Global_Associative_Float_Array_Value_Request;
 struct Chuck_Execute_Chuck_Msg_Request;
 
-// Forward references for global storage
+// forward references for global storage
 struct Chuck_Global_Int_Container;
 struct Chuck_Global_Float_Container;
 struct Chuck_Global_String_Container;
@@ -686,7 +686,7 @@ enum Chuck_Global_Request_Type
 
 
 //-----------------------------------------------------------------------------
-// name: strct Global_Request
+// name: struct Global_Request
 // desc: a global request (REFACTOR-2017)
 //-----------------------------------------------------------------------------
 struct Chuck_Global_Request
@@ -728,15 +728,14 @@ struct Chuck_Global_Request
     {
         retries = 0;
     }
-
 };
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_VM
-// desc: ...
+// name: struct Chuck_Globals_Manager
+// desc: manager for globals storage | added 1.4.0.2 (jack)
 //-----------------------------------------------------------------------------
 struct Chuck_Globals_Manager : Chuck_Object
 {

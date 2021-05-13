@@ -1214,7 +1214,7 @@ CK_DLL_CTRL( ugen_connected )
     RETURN->v_int = ret;
 }
 
-// 1.4.0.1: "buffered" flag -- necessary for getUGenSamples()
+// 1.4.0.2 (jack): "buffered" flag -- necessary for getUGenSamples()
 // for global UGens
 CK_DLL_MFUN( ugen_buffered )
 {

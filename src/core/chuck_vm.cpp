@@ -47,7 +47,7 @@
 #endif
 
 #ifndef __DISABLE_MIDI__
-#include "midiio_rtmidi.h"  // 1.4.0.1
+#include "midiio_rtmidi.h"  // 1.4.0.2
 #endif
 
 #include <algorithm>
@@ -229,7 +229,7 @@ t_CKBOOL Chuck_VM::initialize( t_CKUINT srate, t_CKUINT dac_chan,
     m_event_buffer->initialize( 1024, sizeof(Chuck_Event *) );
     //m_event_buffer->join(); // this should also return 0
 
-    // 1.4.0.1: added globals manager
+    // 1.4.0.2 (jack): added globals manager
     EM_log( CK_LOG_SYSTEM, "allocating globals manager..." );
     m_globals_manager = new Chuck_Globals_Manager( this );
 
@@ -861,7 +861,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
             env()->clear_user_namespace();
         }
 
-        // 1.4.0.1: also clear any global variables
+        // 1.4.0.2 (jack): also clear any global variables
         m_globals_manager->cleanup_global_variables();
         
         m_shred_id = 0;

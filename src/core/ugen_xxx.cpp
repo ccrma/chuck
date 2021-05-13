@@ -2886,7 +2886,7 @@ CK_DLL_TICK( sndbuf_tick )
     {
         *out = 0;
     }
-    else // 1.4.0.2 ge: put this into else block so that rate can advance below even for the *out == 0 case above
+    else // 1.4.0.2 (ge): put this into else block so that rate can advance below even for the *out == 0 case above
     {
         // calculate frame
         if( d->interp == SNDBUF_DROP )
