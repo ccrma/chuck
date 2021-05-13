@@ -31,7 +31,8 @@ EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
     core/chuck.cpp core/chuck_absyn.cpp \
     core/chuck_carrier.cpp core/chuck_compile.cpp core/chuck_dl.cpp \
     core/chuck_emit.cpp core/chuck_errmsg.cpp core/chuck_frame.cpp \
-    core/chuck_instr.cpp core/chuck_io.cpp core/chuck_lang.cpp core/chuck_oo.cpp \
+    core/chuck_globals.cpp core/chuck_instr.cpp core/chuck_io.cpp \
+    core/chuck_lang.cpp core/chuck_oo.cpp \
     core/chuck_parse.cpp core/chuck_scan.cpp core/chuck_stats.cpp \
     core/chuck_symbol.cpp core/chuck_table.cpp core/chuck_type.cpp \
     core/chuck_ugen.cpp core/chuck_utils.cpp core/chuck_vm.cpp \
@@ -142,7 +143,8 @@ CXXOBJS_CORE+= chuck.o chuck_absyn.o chuck_parse.o chuck_errmsg.o \
 	chuck_frame.o chuck_symbol.o chuck_table.o chuck_utils.o \
 	chuck_vm.o chuck_instr.o chuck_scan.o chuck_type.o chuck_emit.o \
 	chuck_compile.o chuck_dl.o chuck_oo.o chuck_lang.o chuck_ugen.o \
-	chuck_otf.o chuck_stats.o chuck_shell.o chuck_io.o chuck_carrier.o \
+	chuck_otf.o chuck_stats.o chuck_shell.o chuck_io.o \
+	chuck_carrier.o chuck_globals.o \
 	hidio_sdl.o midiio_rtmidi.o rtmidi.o ugen_osc.o ugen_filter.o \
 	ugen_stk.o ugen_xxx.o ulib_machine.o ulib_math.o ulib_std.o \
 	ulib_opsc.o ulib_regex.o util_buffers.o util_console.o \

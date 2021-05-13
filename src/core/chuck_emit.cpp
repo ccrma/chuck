@@ -34,6 +34,7 @@
 #include "chuck_vm.h"
 #include "chuck_errmsg.h"
 #include "chuck_instr.h"
+#include "chuck_globals.h" // added 1.4.0.2
 #include <sstream>
 #include <iostream>
 

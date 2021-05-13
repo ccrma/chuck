@@ -27,7 +27,7 @@
 // desc: chuck engine header; VM + compiler + state; no audio I/O
 //       REFACTOR-2017
 //
-// author: Ge Wang (http://www.gewang.com/)
+// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
 // date: fall 2017
 //
 // additional authors:
@@ -36,8 +36,8 @@
 //-----------------------------------------------------------------------------
 #include "chuck.h"
 #include "chuck_errmsg.h"
-
 #include "chuck_io.h"
+#include "chuck_globals.h" // added 1.4.0.2
 
 #ifndef __DISABLE_OTF_SERVER__
 #include "chuck_otf.h"
