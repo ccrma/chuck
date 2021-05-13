@@ -4912,13 +4912,13 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         {
             global_type = te_globalUGen;
         }
-        else if( isa( v->type, emit->env->t_object ) )
-        {
-            global_type = te_globalObject;
-        }
         else if( isa( v->type, emit->env->t_array ) )
         {
             global_type = te_globalArraySymbol;
+        }
+        else if( isa( v->type, emit->env->t_object ) )
+        {
+            global_type = te_globalObject;
         }
         else
         {
