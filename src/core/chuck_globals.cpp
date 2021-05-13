@@ -527,6 +527,23 @@ struct Chuck_Global_Array_Container
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Global_Object_Container
+// desc: container for global ChucK objects
+//-----------------------------------------------------------------------------
+struct Chuck_Global_Object_Container
+{
+    Chuck_Object * val;
+    Chuck_Type * type;
+    t_CKBOOL ctor_needs_to_be_called;
+    
+    Chuck_Global_Object_Container() { val = NULL; type = NULL;
+        ctor_needs_to_be_called = TRUE; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_Globals_Manager()
 // desc: constructor: size queues appropriately
 //-----------------------------------------------------------------------------
@@ -1291,7 +1308,7 @@ Chuck_Event * * Chuck_Globals_Manager::get_ptr_to_global_event( std::string name
 
 
 //-----------------------------------------------------------------------------
-// name: init_global_ugen()
+// name: get_global_ugen_samples()
 // desc: tell the vm that a global ugen is now available
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Globals_Manager::get_global_ugen_samples( std::string name,
@@ -2206,6 +2223,87 @@ Chuck_Object * * Chuck_Globals_Manager::get_ptr_to_global_array( std::string nam
 
 
 //-----------------------------------------------------------------------------
+// name: init_global_object()
+// desc: init a global object
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::init_global_object( std::string name, Chuck_Type * type )
+{
+    // if it hasn't been initted yet
+    if( m_global_objects.count( name ) == 0 ) {
+        // create a new storage container
+        m_global_objects[name] = new Chuck_Global_Object_Container;
+        // create the chuck object
+        m_global_objects[name]->val =
+        (Chuck_Object *) instantiate_and_initialize_object( type, m_vm );
+        // add a reference to it so it won't be deleted until we're done
+        // cleaning up the VM
+        m_global_objects[name]->val->add_ref();
+        // store its type in the container, too (is it a user-defined class?)
+        m_global_objects[name]->type = type;
+    }
+    // already exists. check if there's a type mismatch.
+    else if( type->name != m_global_objects[name]->type->name )
+    {
+        return FALSE;
+    }
+    
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: is_global_object_init()
+// desc: has a global object been initialized during emit?
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::is_global_object_init( std::string name )
+{
+    return m_global_objects.count( name ) > 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: is_global_object_valid()
+// desc: has a global object been initialized during emit
+//       and constructed during runtime?
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::is_global_object_valid( std::string name )
+{
+    return is_global_object_init( name ) &&
+    !should_call_global_ctor( name, te_globalObject );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_global_object()
+// desc: get directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Object * Chuck_Globals_Manager::get_global_object( std::string name )
+{
+    return m_global_objects[name]->val;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_ptr_to_global_object()
+// desc: get ptr directly from the vm (internal)
+//-----------------------------------------------------------------------------
+Chuck_Object ** Chuck_Globals_Manager::get_ptr_to_global_object( std::string name )
+{
+    return &( m_global_objects[name]->val );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: should_call_global_ctor()
 // desc: ask the vm if a global needs to be constructed after init
 //-----------------------------------------------------------------------------
@@ -2232,6 +2330,10 @@ t_CKBOOL Chuck_Globals_Manager::should_call_global_ctor( std::string name,
             // this case is only used for array-as-symbol, not array-as-decl.
             // if arrays need their ctors called, we need a rearchitecture!
             return FALSE;
+            break;
+        case te_globalObject:
+            return m_global_objects.count(name) > 0 &&
+            m_global_objects[name]->ctor_needs_to_be_called;
             break;
     }
 }
@@ -2267,6 +2369,12 @@ void Chuck_Globals_Manager::global_ctor_was_called( std::string name,
             break;
         case te_globalArraySymbol:
             // do nothing
+            break;
+        case te_globalObject:
+            if( m_global_objects.count( name ) > 0 )
+            {
+                m_global_objects[name]->ctor_needs_to_be_called = FALSE;
+            }
             break;
     }
 }
@@ -2334,6 +2442,15 @@ void Chuck_Globals_Manager::cleanup_global_variables()
         delete (it->second);
     }
     m_global_arrays.clear();
+    
+    // ugens: release objects, delete containers, and clear map
+    for( std::map< std::string, Chuck_Global_Object_Container * >::iterator it=
+        m_global_objects.begin(); it!=m_global_objects.end(); it++ )
+    {
+        SAFE_RELEASE( it->second->val );
+        delete (it->second);
+    }
+    m_global_objects.clear();
 }
 
 

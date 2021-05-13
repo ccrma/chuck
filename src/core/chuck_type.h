@@ -65,7 +65,7 @@ typedef enum {
 //-----------------------------------------------------------------------------
 typedef enum {
     te_globalInt, te_globalFloat, te_globalString, te_globalEvent,
-    te_globalUGen,
+    te_globalUGen, te_globalObject,
     // symbol: not used for declarations, only for later lookups :/
     te_globalArraySymbol
 } te_GlobalType;
