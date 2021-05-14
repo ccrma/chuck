@@ -187,57 +187,57 @@ public:
 public: // TODONOW: convert names
     // REFACTOR-2017: externally accessible + global variables.
     // use these getters and setters from outside the audio thread
-    t_CKBOOL get_global_int( std::string name, void (*callback)(t_CKINT) );
-    t_CKBOOL get_global_int( std::string name, void (*callback)(const char*, t_CKINT) );
-    t_CKBOOL get_global_int( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKINT) );
-    t_CKBOOL set_global_int( std::string name, t_CKINT val );
+    t_CKBOOL getGlobalInt( const std::string & name, void (*callback)(t_CKINT) );
+    t_CKBOOL getGlobalInt( const std::string & name, void (*callback)(const char*, t_CKINT) );
+    t_CKBOOL getGlobalInt( const std::string & name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKINT) );
+    t_CKBOOL setGlobalInt( const std::string & name, t_CKINT val );
     
-    t_CKBOOL get_global_float( std::string name, void (*callback)(t_CKFLOAT) );
-    t_CKBOOL get_global_float( std::string name, void (*callback)(const char*, t_CKFLOAT) );
-    t_CKBOOL get_global_float( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKFLOAT) );
-    t_CKBOOL set_global_float( std::string name, t_CKFLOAT val );
+    t_CKBOOL getGlobalFloat( const std::string & name, void (*callback)(t_CKFLOAT) );
+    t_CKBOOL getGlobalFloat( const std::string & name, void (*callback)(const char*, t_CKFLOAT) );
+    t_CKBOOL getGlobalFloat( const std::string & name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKFLOAT) );
+    t_CKBOOL setGlobalFloat( const std::string & name, t_CKFLOAT val );
     
-    t_CKBOOL get_global_string( std::string name, void (*callback)(const char*) );
-    t_CKBOOL get_global_string( std::string name, void (*callback)(const char*, const char*) );
-    t_CKBOOL get_global_string( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT, const char*) );
-    t_CKBOOL set_global_string( std::string name, std::string val );
+    t_CKBOOL getGlobalString( const std::string & name, void (*callback)(const char*) );
+    t_CKBOOL getGlobalString( const std::string & name, void (*callback)(const char*, const char*) );
+    t_CKBOOL getGlobalString( const std::string & name, t_CKINT callbackID, void (*callback)(t_CKINT, const char*) );
+    t_CKBOOL setGlobalString( const std::string & name, const std::string & val );
     
-    t_CKBOOL signal_global_event( std::string name );
-    t_CKBOOL broadcast_global_event( std::string name );
-    t_CKBOOL listen_for_global_event( std::string name, void (*callback)(void), t_CKBOOL listen_forever );
-    t_CKBOOL listen_for_global_event( std::string name, void (*callback)(const char*), t_CKBOOL listen_forever );
-    t_CKBOOL listen_for_global_event( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT), t_CKBOOL listen_forever );
-    t_CKBOOL stop_listening_for_global_event( std::string name, void (*callback)(void) );
-    t_CKBOOL stop_listening_for_global_event( std::string name, void (*callback)(const char*) );
-    t_CKBOOL stop_listening_for_global_event( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT) );
+    t_CKBOOL signalGlobalEvent( const std::string & name );
+    t_CKBOOL broadcastGlobalEvent( const std::string & name );
+    t_CKBOOL listenForGlobalEvent( const std::string & name, void (*callback)(void), t_CKBOOL listen_forever );
+    t_CKBOOL listenForGlobalEvent( const std::string & name, void (*callback)(const char*), t_CKBOOL listen_forever );
+    t_CKBOOL listenForGlobalEvent( const std::string & name, t_CKINT callbackID, void (*callback)(t_CKINT), t_CKBOOL listen_forever );
+    t_CKBOOL stopListeningForGlobalEvent( const std::string & name, void (*callback)(void) );
+    t_CKBOOL stopListeningForGlobalEvent( const std::string & name, void (*callback)(const char*) );
+    t_CKBOOL stopListeningForGlobalEvent( const std::string & name, t_CKINT callbackID, void (*callback)(t_CKINT) );
     
-    t_CKBOOL get_global_ugen_samples( std::string name, SAMPLE* buffer, int numFrames );
+    t_CKBOOL getGlobalUGenSamples( const std::string & name, SAMPLE* buffer, int numFrames );
     
-    t_CKBOOL set_global_int_array( std::string name, t_CKINT arrayValues[], t_CKUINT numValues );
-    t_CKBOOL get_global_int_array( std::string name, void (*callback)(t_CKINT[], t_CKUINT) );
-    t_CKBOOL get_global_int_array( std::string name, void (*callback)(const char*, t_CKINT[], t_CKUINT) );
-    t_CKBOOL get_global_int_array( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKINT[], t_CKUINT) );
-    t_CKBOOL set_global_int_array_value( std::string name, t_CKUINT index, t_CKINT value );
-    t_CKBOOL get_global_int_array_value( std::string name, t_CKUINT index, void (*callback)(t_CKINT) );
-    t_CKBOOL get_global_int_array_value( std::string name, t_CKUINT index, void (*callback)(const char*, t_CKINT) );
-    t_CKBOOL get_global_int_array_value( std::string name, t_CKINT callbackID, t_CKUINT index, void (*callback)(t_CKINT, t_CKINT) );
-    t_CKBOOL set_global_associative_int_array_value( std::string name, std::string key, t_CKINT value );
-    t_CKBOOL get_global_associative_int_array_value( std::string name, std::string key, void (*callback)(t_CKINT) );
-    t_CKBOOL get_global_associative_int_array_value( std::string name, std::string key, void (*callback)(const char*, t_CKINT) );
-    t_CKBOOL get_global_associative_int_array_value( std::string name, t_CKINT callbackID, std::string key, void (*callback)(t_CKINT, t_CKINT) );
+    t_CKBOOL setGlobalIntArray( const std::string & name, t_CKINT arrayValues[], t_CKUINT numValues );
+    t_CKBOOL getGlobalIntArray( const std::string & name, void (*callback)(t_CKINT[], t_CKUINT) );
+    t_CKBOOL getGlobalIntArray( const std::string & name, void (*callback)(const char*, t_CKINT[], t_CKUINT) );
+    t_CKBOOL getGlobalIntArray( const std::string & name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKINT[], t_CKUINT) );
+    t_CKBOOL setGlobalIntArrayValue( const std::string & name, t_CKUINT index, t_CKINT value );
+    t_CKBOOL getGlobalIntArrayValue( const std::string & name, t_CKUINT index, void (*callback)(t_CKINT) );
+    t_CKBOOL getGlobalIntArrayValue( const std::string & name, t_CKUINT index, void (*callback)(const char*, t_CKINT) );
+    t_CKBOOL getGlobalIntArrayValue( const std::string & name, t_CKINT callbackID, t_CKUINT index, void (*callback)(t_CKINT, t_CKINT) );
+    t_CKBOOL setGlobalAssociativeIntArrayValue( const std::string & name, const std::string & key, t_CKINT value );
+    t_CKBOOL getGlobalAssociativeIntArrayValue( const std::string & name, const std::string & key, void (*callback)(t_CKINT) );
+    t_CKBOOL getGlobalAssociativeIntArrayValue( const std::string & name, const std::string & key, void (*callback)(const char*, t_CKINT) );
+    t_CKBOOL getGlobalAssociativeIntArrayValue( const std::string & name, t_CKINT callbackID, const std::string & key, void (*callback)(t_CKINT, t_CKINT) );
     
-    t_CKBOOL set_global_float_array( std::string name, t_CKFLOAT arrayValues[], t_CKUINT numValues );
-    t_CKBOOL get_global_float_array( std::string name, void (*callback)(t_CKFLOAT[], t_CKUINT) );
-    t_CKBOOL get_global_float_array( std::string name, void (*callback)(const char*, t_CKFLOAT[], t_CKUINT) );
-    t_CKBOOL get_global_float_array( std::string name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKFLOAT[], t_CKUINT) );
-    t_CKBOOL set_global_float_array_value( std::string name, t_CKUINT index, t_CKFLOAT value );
-    t_CKBOOL get_global_float_array_value( std::string name, t_CKUINT index, void (*callback)(t_CKFLOAT) );
-    t_CKBOOL get_global_float_array_value( std::string name, t_CKUINT index, void (*callback)(const char*, t_CKFLOAT) );
-    t_CKBOOL get_global_float_array_value( std::string name, t_CKINT callbackID, t_CKUINT index, void (*callback)(t_CKINT, t_CKFLOAT) );
-    t_CKBOOL set_global_associative_float_array_value( std::string name, std::string key, t_CKFLOAT value );
-    t_CKBOOL get_global_associative_float_array_value( std::string name, std::string key, void (*callback)(t_CKFLOAT) );
-    t_CKBOOL get_global_associative_float_array_value( std::string name, std::string key, void (*callback)(const char*, t_CKFLOAT) );
-    t_CKBOOL get_global_associative_float_array_value( std::string name, t_CKINT callbackID, std::string key, void (*callback)(t_CKINT, t_CKFLOAT) );
+    t_CKBOOL setGlobalFloatArray( const std::string & name, t_CKFLOAT arrayValues[], t_CKUINT numValues );
+    t_CKBOOL getGlobalFloatArray( const std::string & name, void (*callback)(t_CKFLOAT[], t_CKUINT) );
+    t_CKBOOL getGlobalFloatArray( const std::string & name, void (*callback)(const char*, t_CKFLOAT[], t_CKUINT) );
+    t_CKBOOL getGlobalFloatArray( const std::string & name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKFLOAT[], t_CKUINT) );
+    t_CKBOOL setGlobalFloatArrayValue( const std::string & name, t_CKUINT index, t_CKFLOAT value );
+    t_CKBOOL getGlobalFloatArrayValue( const std::string & name, t_CKUINT index, void (*callback)(t_CKFLOAT) );
+    t_CKBOOL getGlobalFloatArrayValue( const std::string & name, t_CKUINT index, void (*callback)(const char*, t_CKFLOAT) );
+    t_CKBOOL getGlobalFloatArrayValue( const std::string & name, t_CKINT callbackID, t_CKUINT index, void (*callback)(t_CKINT, t_CKFLOAT) );
+    t_CKBOOL setGlobalAssociativeFloatArrayValue( const std::string & name, const std::string & key, t_CKFLOAT value );
+    t_CKBOOL getGlobalAssociativeFloatArrayValue( const std::string & name, const std::string & key, void (*callback)(t_CKFLOAT) );
+    t_CKBOOL getGlobalAssociativeFloatArrayValue( const std::string & name, const std::string & key, void (*callback)(const char*, t_CKFLOAT) );
+    t_CKBOOL getGlobalAssociativeFloatArrayValue( const std::string & name, t_CKINT callbackID, const std::string & key, void (*callback)(t_CKINT, t_CKFLOAT) );
     
 public:
     // run Chuck_Msg in the globals order
@@ -247,44 +247,44 @@ public:
     // REFACTOR-2017: externally accessible + global variables.
     // WARNING: these internal functions are to be used only by other
     // chuck code in the audio thread.
-    t_CKBOOL init_global_int( std::string name );
-    t_CKINT get_global_int_value( std::string name );
-    t_CKINT* get_ptr_to_global_int( std::string name );
+    t_CKBOOL init_global_int( const std::string & name );
+    t_CKINT get_global_int_value( const std::string & name );
+    t_CKINT* get_ptr_to_global_int( const std::string & name );
     
-    t_CKBOOL init_global_float( std::string name );
-    t_CKFLOAT get_global_float_value( std::string name );
-    t_CKFLOAT* get_ptr_to_global_float( std::string name );
+    t_CKBOOL init_global_float( const std::string & name );
+    t_CKFLOAT get_global_float_value( const std::string & name );
+    t_CKFLOAT* get_ptr_to_global_float( const std::string & name );
     
-    t_CKBOOL init_global_string( std::string name );
-    Chuck_String* get_global_string( std::string name );
-    Chuck_String** get_ptr_to_global_string( std::string name );
+    t_CKBOOL init_global_string( const std::string & name );
+    Chuck_String* get_global_string( const std::string & name );
+    Chuck_String** get_ptr_to_global_string( const std::string & name );
     
-    t_CKBOOL init_global_event( std::string name, Chuck_Type* type );
-    Chuck_Event* get_global_event( std::string name );
-    Chuck_Event** get_ptr_to_global_event( std::string name );
+    t_CKBOOL init_global_event( const std::string & name, Chuck_Type* type );
+    Chuck_Event* get_global_event( const std::string & name );
+    Chuck_Event** get_ptr_to_global_event( const std::string & name );
     
-    t_CKBOOL init_global_ugen( std::string name, Chuck_Type* type );
-    t_CKBOOL is_global_ugen_init( std::string name );
-    t_CKBOOL is_global_ugen_valid( std::string name );
-    Chuck_UGen* get_global_ugen( std::string name );
-    Chuck_UGen** get_ptr_to_global_ugen( std::string name );
+    t_CKBOOL init_global_ugen( const std::string & name, Chuck_Type* type );
+    t_CKBOOL is_global_ugen_init( const std::string & name );
+    t_CKBOOL is_global_ugen_valid( const std::string & name );
+    Chuck_UGen* get_global_ugen( const std::string & name );
+    Chuck_UGen** get_ptr_to_global_ugen( const std::string & name );
     
-    t_CKBOOL init_global_array( std::string name, Chuck_Type* type, te_GlobalType arr_type );
-    Chuck_Object* get_global_array( std::string name );
-    Chuck_Object** get_ptr_to_global_array( std::string name );
-    t_CKINT get_global_int_array_value( std::string name, t_CKUINT index );
-    t_CKINT get_global_associative_int_array_value( std::string name, std::string key );
-    t_CKFLOAT get_global_float_array_value( std::string name, t_CKUINT index );
-    t_CKFLOAT get_global_associative_float_array_value( std::string name, std::string key );
+    t_CKBOOL init_global_array( const std::string & name, Chuck_Type* type, te_GlobalType arr_type );
+    Chuck_Object* get_global_array( const std::string & name );
+    Chuck_Object** get_ptr_to_global_array( const std::string & name );
+    t_CKINT get_global_int_array_value( const std::string & name, t_CKUINT index );
+    t_CKINT get_global_associative_int_array_value( const std::string & name, const std::string & key );
+    t_CKFLOAT get_global_float_array_value( const std::string & name, t_CKUINT index );
+    t_CKFLOAT get_global_associative_float_array_value( const std::string & name, const std::string & key );
 
-    t_CKBOOL init_global_object( std::string name, Chuck_Type* type );
-    t_CKBOOL is_global_object_init( std::string name );
-    t_CKBOOL is_global_object_valid( std::string name );
-    Chuck_Object* get_global_object( std::string name );
-    Chuck_Object** get_ptr_to_global_object( std::string name );
+    t_CKBOOL init_global_object( const std::string & name, Chuck_Type* type );
+    t_CKBOOL is_global_object_init( const std::string & name );
+    t_CKBOOL is_global_object_valid( const std::string & name );
+    Chuck_Object* get_global_object( const std::string & name );
+    Chuck_Object** get_ptr_to_global_object( const std::string & name );
     
-    t_CKBOOL should_call_global_ctor( std::string name, te_GlobalType type );
-    void global_ctor_was_called( std::string name, te_GlobalType type );
+    t_CKBOOL should_call_global_ctor( const std::string & name, te_GlobalType type );
+    void global_ctor_was_called( const std::string & name, te_GlobalType type );
     
     // global variables -- clean up
     void cleanup_global_variables();
