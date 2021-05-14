@@ -184,7 +184,7 @@ public:
     Chuck_Globals_Manager( Chuck_VM * vm );
     ~Chuck_Globals_Manager();
     
-public: // TODONOW: convert names
+public:
     // REFACTOR-2017: externally accessible + global variables.
     // use these getters and setters from outside the audio thread
     t_CKBOOL getGlobalInt( const std::string & name, void (*callback)(t_CKINT) );
