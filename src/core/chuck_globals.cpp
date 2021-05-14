@@ -598,14 +598,14 @@ t_CKBOOL Chuck_Globals_Manager::more_requests()
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_int()
+// name: getGlobalInt()
 // desc: get a global int by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_int( std::string name,
-                                               void (* callback)(t_CKINT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalInt( const std::string & name,
+                                              void (* callback)(t_CKINT) )
 {
     Chuck_Get_Global_Int_Request * get_int_message =
-    new Chuck_Get_Global_Int_Request;
+        new Chuck_Get_Global_Int_Request;
     get_int_message->name = name;
     get_int_message->cb = callback;
     get_int_message->cb_type = ck_get_plain;
@@ -623,14 +623,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_int( std::string name,
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_int()
+// name: getGlobalInt()
 // desc: get a global int by name, with a by name callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_int( std::string name,
-                                               void (* callback)(const char *, t_CKINT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalInt( const std::string & name,
+                                              void (* callback)(const char *, t_CKINT) )
 {
     Chuck_Get_Global_Int_Request * get_int_message =
-    new Chuck_Get_Global_Int_Request;
+        new Chuck_Get_Global_Int_Request;
     get_int_message->name = name;
     get_int_message->cb_with_name = callback;
     get_int_message->cb_type = ck_get_name;
@@ -648,14 +648,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_int( std::string name,
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_int()
+// name: getGlobalInt()
 // desc: get a global int by name, with id in callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_int( std::string name, t_CKINT id,
-                                               void (* callback)(t_CKINT, t_CKINT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalInt( const std::string & name, t_CKINT id,
+                                              void (* callback)(t_CKINT, t_CKINT) )
 {
     Chuck_Get_Global_Int_Request * get_int_message =
-    new Chuck_Get_Global_Int_Request;
+        new Chuck_Get_Global_Int_Request;
     get_int_message->name = name;
     get_int_message->cb_with_id = callback;
     get_int_message->id = id;
@@ -675,13 +675,13 @@ t_CKBOOL Chuck_Globals_Manager::get_global_int( std::string name, t_CKINT id,
 
 
 //-----------------------------------------------------------------------------
-// name: set_global_int()
+// name: setGlobalInt()
 // desc: set a global int by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::set_global_int( std::string name, t_CKINT val )
+t_CKBOOL Chuck_Globals_Manager::setGlobalInt( const std::string & name, t_CKINT val )
 {
     Chuck_Set_Global_Int_Request * set_int_message =
-    new Chuck_Set_Global_Int_Request;
+        new Chuck_Set_Global_Int_Request;
     set_int_message->name = name;
     set_int_message->val = val;
     
@@ -701,7 +701,7 @@ t_CKBOOL Chuck_Globals_Manager::set_global_int( std::string name, t_CKINT val )
 // name: init_global_int()
 // desc: tell the vm that a global int is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::init_global_int( std::string name )
+t_CKBOOL Chuck_Globals_Manager::init_global_int( const std::string & name )
 {
     if( m_global_ints.count( name ) == 0 )
     {
@@ -718,7 +718,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_int( std::string name )
 // name: get_global_int_value()
 // desc: get a value directly from the vm (internal)
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Globals_Manager::get_global_int_value( std::string name )
+t_CKINT Chuck_Globals_Manager::get_global_int_value( const std::string & name )
 {
     // ensure exists
     init_global_int( name );
@@ -733,7 +733,7 @@ t_CKINT Chuck_Globals_Manager::get_global_int_value( std::string name )
 // name: get_ptr_to_global_int()
 // desc: get a pointer directly from the vm (internal)
 //-----------------------------------------------------------------------------
-t_CKINT * Chuck_Globals_Manager::get_ptr_to_global_int( std::string name )
+t_CKINT * Chuck_Globals_Manager::get_ptr_to_global_int( const std::string & name )
 {
     return &( m_global_ints[name]->val );
 }
@@ -742,14 +742,14 @@ t_CKINT * Chuck_Globals_Manager::get_ptr_to_global_int( std::string name )
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_float()
+// name: getGlobalFloat()
 // desc: get a global float by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_float( std::string name,
-                                                 void (* callback)(t_CKFLOAT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalFloat( const std::string & name,
+                                                void (* callback)(t_CKFLOAT) )
 {
     Chuck_Get_Global_Float_Request * get_float_message =
-    new Chuck_Get_Global_Float_Request;
+        new Chuck_Get_Global_Float_Request;
     get_float_message->name = name;
     get_float_message->cb = callback;
     get_float_message->cb_type = ck_get_plain;
@@ -767,14 +767,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_float( std::string name,
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_float()
+// name: getGlobalFloat()
 // desc: get a global float by name, with a named callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_float( std::string name,
-                                                 void (* callback)(const char *, t_CKFLOAT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalFloat( const std::string & name,
+                                                void (* callback)(const char *, t_CKFLOAT) )
 {
     Chuck_Get_Global_Float_Request * get_float_message =
-    new Chuck_Get_Global_Float_Request;
+        new Chuck_Get_Global_Float_Request;
     get_float_message->name = name;
     get_float_message->cb_with_name = callback;
     get_float_message->cb_type = ck_get_name;
@@ -792,14 +792,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_float( std::string name,
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_float()
+// name: getGlobalFloat()
 // desc: get a global float by name, with id in callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_float( std::string name, t_CKINT id,
-                                                 void (* callback)(t_CKINT, t_CKFLOAT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalFloat( const std::string & name, t_CKINT id,
+                                                void (* callback)(t_CKINT, t_CKFLOAT) )
 {
     Chuck_Get_Global_Float_Request * get_float_message =
-    new Chuck_Get_Global_Float_Request;
+        new Chuck_Get_Global_Float_Request;
     get_float_message->name = name;
     get_float_message->cb_with_id = callback;
     get_float_message->id = id;
@@ -818,13 +818,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_float( std::string name, t_CKINT id,
 
 
 //-----------------------------------------------------------------------------
-// name: set_global_float()
+// name: setGlobalFloat()
 // desc: set a global float by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::set_global_float( std::string name, t_CKFLOAT val )
+t_CKBOOL Chuck_Globals_Manager::setGlobalFloat( const std::string & name,
+                                                t_CKFLOAT val )
 {
     Chuck_Set_Global_Float_Request * set_float_message =
-    new Chuck_Set_Global_Float_Request;
+        new Chuck_Set_Global_Float_Request;
     set_float_message->name = name;
     set_float_message->val = val;
     
@@ -844,7 +845,7 @@ t_CKBOOL Chuck_Globals_Manager::set_global_float( std::string name, t_CKFLOAT va
 // name: init_global_float()
 // desc: tell the vm that a global float is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::init_global_float( std::string name )
+t_CKBOOL Chuck_Globals_Manager::init_global_float( const std::string & name )
 {
     if( m_global_floats.count( name ) == 0 )
     {
@@ -861,7 +862,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_float( std::string name )
 // name: get_global_float_value()
 // desc: get a value directly from the vm (internal)
 //-----------------------------------------------------------------------------
-t_CKFLOAT Chuck_Globals_Manager::get_global_float_value( std::string name )
+t_CKFLOAT Chuck_Globals_Manager::get_global_float_value( const std::string & name )
 {
     // ensure exists
     init_global_float( name );
@@ -876,7 +877,7 @@ t_CKFLOAT Chuck_Globals_Manager::get_global_float_value( std::string name )
 // name: get_ptr_to_global_float()
 // desc: get a pointer directly to the vm (internal)
 //-----------------------------------------------------------------------------
-t_CKFLOAT * Chuck_Globals_Manager::get_ptr_to_global_float( std::string name )
+t_CKFLOAT * Chuck_Globals_Manager::get_ptr_to_global_float( const std::string & name )
 {
     return &( m_global_floats[name]->val );
 }
@@ -885,14 +886,14 @@ t_CKFLOAT * Chuck_Globals_Manager::get_ptr_to_global_float( std::string name )
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_string()
+// name: getGlobalString()
 // desc: get a global string by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_string( std::string name,
-                                                  void (* callback)(const char *) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalString( const std::string & name,
+                                                 void (* callback)(const char *) )
 {
     Chuck_Get_Global_String_Request * get_string_message =
-    new Chuck_Get_Global_String_Request;
+        new Chuck_Get_Global_String_Request;
     get_string_message->name = name;
     get_string_message->cb = callback;
     get_string_message->cb_type = ck_get_plain;
@@ -910,14 +911,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_string( std::string name,
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_string()
+// name: getGlobalString()
 // desc: get a global string by name, with a named callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_string( std::string name,
-                                                  void (* callback)(const char *, const char *) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalString( const std::string & name,
+                                                 void (* callback)(const char *, const char *) )
 {
     Chuck_Get_Global_String_Request * get_string_message =
-    new Chuck_Get_Global_String_Request;
+        new Chuck_Get_Global_String_Request;
     get_string_message->name = name;
     get_string_message->cb_with_name = callback;
     get_string_message->cb_type = ck_get_name;
@@ -935,14 +936,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_string( std::string name,
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_string()
+// name: getGlobalString()
 // desc: get a global string by name, with id in callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_string( std::string name, t_CKINT id,
-                                                  void (* callback)(t_CKINT, const char *) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalString( const std::string & name, t_CKINT id,
+                                                 void (* callback)(t_CKINT, const char *) )
 {
     Chuck_Get_Global_String_Request * get_string_message =
-    new Chuck_Get_Global_String_Request;
+        new Chuck_Get_Global_String_Request;
     get_string_message->name = name;
     get_string_message->cb_with_id = callback;
     get_string_message->id = id;
@@ -961,13 +962,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_string( std::string name, t_CKINT id,
 
 
 //-----------------------------------------------------------------------------
-// name: set_global_string()
+// name: setGlobalString()
 // desc: set a global string by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::set_global_string( std::string name, std::string val )
+t_CKBOOL Chuck_Globals_Manager::setGlobalString( const std::string & name,
+                                                 const std::string & val )
 {
     Chuck_Set_Global_String_Request * set_string_message =
-    new Chuck_Set_Global_String_Request;
+        new Chuck_Set_Global_String_Request;
     set_string_message->name = name;
     set_string_message->val = val;
     
@@ -987,7 +989,7 @@ t_CKBOOL Chuck_Globals_Manager::set_global_string( std::string name, std::string
 // name: init_global_string()
 // desc: tell the vm that a global string is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::init_global_string( std::string name )
+t_CKBOOL Chuck_Globals_Manager::init_global_string( const std::string & name )
 {
     if( m_global_strings.count( name ) == 0 )
     {
@@ -1012,7 +1014,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_string( std::string name )
 // name: get_global_string_value()
 // desc: get a value directly from the vm (internal)
 //-----------------------------------------------------------------------------
-Chuck_String * Chuck_Globals_Manager::get_global_string( std::string name )
+Chuck_String * Chuck_Globals_Manager::get_global_string( const std::string & name )
 {
     // ensure exists
     init_global_string( name );
@@ -1027,7 +1029,7 @@ Chuck_String * Chuck_Globals_Manager::get_global_string( std::string name )
 // name: set_global_string_value()
 // desc: set a value directly to the vm (internal)
 //-----------------------------------------------------------------------------
-Chuck_String * * Chuck_Globals_Manager::get_ptr_to_global_string( std::string name )
+Chuck_String * * Chuck_Globals_Manager::get_ptr_to_global_string( const std::string & name )
 {
     return &( m_global_strings[name]->val );
 }
@@ -1036,13 +1038,13 @@ Chuck_String * * Chuck_Globals_Manager::get_ptr_to_global_string( std::string na
 
 
 //-----------------------------------------------------------------------------
-// name: signal_global_event()
+// name: signalGlobalEvent()
 // desc: signal() an Event by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::signal_global_event( std::string name )
+t_CKBOOL Chuck_Globals_Manager::signalGlobalEvent( const std::string & name )
 {
     Chuck_Signal_Global_Event_Request * signal_event_message =
-    new Chuck_Signal_Global_Event_Request;
+        new Chuck_Signal_Global_Event_Request;
     signal_event_message->name = name;
     signal_event_message->is_broadcast = FALSE;
     
@@ -1059,13 +1061,13 @@ t_CKBOOL Chuck_Globals_Manager::signal_global_event( std::string name )
 
 
 //-----------------------------------------------------------------------------
-// name: broadcast_global_event()
+// name: broadcastGlobalEvent()
 // desc: broadcast() an Event by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::broadcast_global_event( std::string name )
+t_CKBOOL Chuck_Globals_Manager::broadcastGlobalEvent( const std::string & name )
 {
     Chuck_Signal_Global_Event_Request * signal_event_message =
-    new Chuck_Signal_Global_Event_Request;
+        new Chuck_Signal_Global_Event_Request;
     signal_event_message->name = name;
     signal_event_message->is_broadcast = TRUE;
     
@@ -1083,14 +1085,15 @@ t_CKBOOL Chuck_Globals_Manager::broadcast_global_event( std::string name )
 
 
 //-----------------------------------------------------------------------------
-// name: listen_for_global_event()
+// name: listenForGlobalEvent()
 // desc: listen for an Event by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::listen_for_global_event( std::string name,
-                                                        void (* callback)(void), t_CKBOOL listen_forever )
+t_CKBOOL Chuck_Globals_Manager::listenForGlobalEvent( const std::string & name,
+                                                      void (* callback)(void),
+                                                      t_CKBOOL listen_forever )
 {
     Chuck_Listen_For_Global_Event_Request * listen_event_message =
-    new Chuck_Listen_For_Global_Event_Request;
+        new Chuck_Listen_For_Global_Event_Request;
     listen_event_message->cb = callback;
     listen_event_message->cb_type = ck_get_plain;
     listen_event_message->name = name;
@@ -1112,14 +1115,15 @@ t_CKBOOL Chuck_Globals_Manager::listen_for_global_event( std::string name,
 
 
 //-----------------------------------------------------------------------------
-// name: listen_for_global_event()
+// name: listenForGlobalEvent()
 // desc: listen for an Event by name, with a named callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::listen_for_global_event( std::string name,
-                                                        void (* callback)(const char *), t_CKBOOL listen_forever )
+t_CKBOOL Chuck_Globals_Manager::listenForGlobalEvent( const std::string & name,
+                                                      void (* callback)(const char *),
+                                                      t_CKBOOL listen_forever )
 {
     Chuck_Listen_For_Global_Event_Request * listen_event_message =
-    new Chuck_Listen_For_Global_Event_Request;
+        new Chuck_Listen_For_Global_Event_Request;
     listen_event_message->cb_with_name = callback;
     listen_event_message->cb_type = ck_get_name;
     listen_event_message->name = name;
@@ -1141,14 +1145,16 @@ t_CKBOOL Chuck_Globals_Manager::listen_for_global_event( std::string name,
 
 
 //-----------------------------------------------------------------------------
-// name: listen_for_global_event()
+// name: listenForGlobalEvent()
 // desc: listen for an Event by name, with id in callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::listen_for_global_event( std::string name, t_CKINT id,
-                                                        void (* callback)(t_CKINT), t_CKBOOL listen_forever )
+t_CKBOOL Chuck_Globals_Manager::listenForGlobalEvent( const std::string & name,
+                                                      t_CKINT id,
+                                                      void (* callback)(t_CKINT),
+                                                      t_CKBOOL listen_forever )
 {
     Chuck_Listen_For_Global_Event_Request * listen_event_message =
-    new Chuck_Listen_For_Global_Event_Request;
+        new Chuck_Listen_For_Global_Event_Request;
     listen_event_message->cb_with_id = callback;
     listen_event_message->id = id;
     listen_event_message->cb_type = ck_get_id;
@@ -1171,14 +1177,14 @@ t_CKBOOL Chuck_Globals_Manager::listen_for_global_event( std::string name, t_CKI
 
 
 //-----------------------------------------------------------------------------
-// name: stop_listening_for_global_event()
-// desc: listen for an Event by name
+// name: stopListeningForGlobalEvent()
+// desc: stop listening for an event by name
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::stop_listening_for_global_event( std::string name,
-                                                                void (* callback)(void) )
+t_CKBOOL Chuck_Globals_Manager::stopListeningForGlobalEvent( const std::string & name,
+                                                             void (* callback)(void) )
 {
     Chuck_Listen_For_Global_Event_Request * listen_event_message =
-    new Chuck_Listen_For_Global_Event_Request;
+        new Chuck_Listen_For_Global_Event_Request;
     listen_event_message->cb = callback;
     listen_event_message->cb_type = ck_get_plain;
     listen_event_message->name = name;
@@ -1198,14 +1204,14 @@ t_CKBOOL Chuck_Globals_Manager::stop_listening_for_global_event( std::string nam
 
 
 //-----------------------------------------------------------------------------
-// name: stop_listening_for_global_event()
-// desc: listen for an Event by name, with a named callback
+// name: stopListeningForGlobalEvent()
+// desc: stop listening for an Event by name, with a named callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::stop_listening_for_global_event( std::string name,
-                                                                void (* callback)(const char *) )
+t_CKBOOL Chuck_Globals_Manager::stopListeningForGlobalEvent( const std::string & name,
+                                                             void (* callback)(const char *) )
 {
     Chuck_Listen_For_Global_Event_Request * listen_event_message =
-    new Chuck_Listen_For_Global_Event_Request;
+        new Chuck_Listen_For_Global_Event_Request;
     listen_event_message->cb_with_name = callback;
     listen_event_message->cb_type = ck_get_name;
     listen_event_message->name = name;
@@ -1225,14 +1231,14 @@ t_CKBOOL Chuck_Globals_Manager::stop_listening_for_global_event( std::string nam
 
 
 //-----------------------------------------------------------------------------
-// name: stop_listening_for_global_event()
-// desc: listen for an Event by name, with id in callback
+// name: stopListeningForGlobalEvent()
+// desc: stop listening for an Event by name, with id in callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::stop_listening_for_global_event( std::string name, t_CKINT id,
-                                                                void (* callback)(t_CKINT) )
+t_CKBOOL Chuck_Globals_Manager::stopListeningForGlobalEvent( const std::string & name,
+    t_CKINT id, void (* callback)(t_CKINT) )
 {
     Chuck_Listen_For_Global_Event_Request * listen_event_message =
-    new Chuck_Listen_For_Global_Event_Request;
+        new Chuck_Listen_For_Global_Event_Request;
     listen_event_message->cb_with_id = callback;
     listen_event_message->id = id;
     listen_event_message->cb_type = ck_get_id;
@@ -1256,10 +1262,12 @@ t_CKBOOL Chuck_Globals_Manager::stop_listening_for_global_event( std::string nam
 // name: init_global_event()
 // desc: tell the vm that a global event is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::init_global_event( std::string name, Chuck_Type * type )
+t_CKBOOL Chuck_Globals_Manager::init_global_event( const std::string & name,
+                                                   Chuck_Type * type )
 {
     // if it hasn't been initted yet
-    if( m_global_events.count( name ) == 0 ) {
+    if( m_global_events.count( name ) == 0 )
+    {
         // create a new storage container
         m_global_events[name] = new Chuck_Global_Event_Container;
         // create the chuck object
@@ -1287,7 +1295,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_event( std::string name, Chuck_Type 
 // name: get_global_event()
 // desc: get a pointer directly from the vm (internal)
 //-----------------------------------------------------------------------------
-Chuck_Event * Chuck_Globals_Manager::get_global_event( std::string name )
+Chuck_Event * Chuck_Globals_Manager::get_global_event( const std::string & name )
 {
     return m_global_events[name]->val;
 }
@@ -1299,7 +1307,7 @@ Chuck_Event * Chuck_Globals_Manager::get_global_event( std::string name )
 // name: get_ptr_to_global_event()
 // desc: get a pointer pointer directly from the vm (internal)
 //-----------------------------------------------------------------------------
-Chuck_Event * * Chuck_Globals_Manager::get_ptr_to_global_event( std::string name )
+Chuck_Event * * Chuck_Globals_Manager::get_ptr_to_global_event( const std::string & name )
 {
     return &( m_global_events[name]->val );
 }
@@ -1308,11 +1316,11 @@ Chuck_Event * * Chuck_Globals_Manager::get_ptr_to_global_event( std::string name
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_ugen_samples()
-// desc: tell the vm that a global ugen is now available
+// name: getGlobalUGenSamples()
+// desc: get buffer samples
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_ugen_samples( std::string name,
-                                                        SAMPLE * buffer, int numFrames )
+t_CKBOOL Chuck_Globals_Manager::getGlobalUGenSamples( const std::string & name,
+                                                      SAMPLE * buffer, int numFrames )
 {
     // if hasn't been init, or it has been init and hasn't been constructed,
     if( m_global_ugens.count( name ) == 0 ||
@@ -1335,11 +1343,13 @@ t_CKBOOL Chuck_Globals_Manager::get_global_ugen_samples( std::string name,
 // name: init_global_ugen()
 // desc: tell the vm that a global ugen is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::init_global_ugen( std::string name, Chuck_Type * type )
+t_CKBOOL Chuck_Globals_Manager::init_global_ugen( const std::string & name,
+                                                  Chuck_Type * type )
 {
     
     // if it hasn't been initted yet
-    if( m_global_ugens.count( name ) == 0 ) {
+    if( m_global_ugens.count( name ) == 0 )
+    {
         // create a new storage container
         m_global_ugens[name] = new Chuck_Global_UGen_Container;
         // create the chuck object
@@ -1367,7 +1377,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_ugen( std::string name, Chuck_Type *
 // name: is_global_ugen_init()
 // desc: has a global ugen been initialized during emit?
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::is_global_ugen_init( std::string name )
+t_CKBOOL Chuck_Globals_Manager::is_global_ugen_init( const std::string & name )
 {
     return m_global_ugens.count( name ) > 0;
 }
@@ -1380,7 +1390,7 @@ t_CKBOOL Chuck_Globals_Manager::is_global_ugen_init( std::string name )
 // desc: has a global ugen been initialized during emit
 //       and constructed during runtime?
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::is_global_ugen_valid( std::string name )
+t_CKBOOL Chuck_Globals_Manager::is_global_ugen_valid( const std::string & name )
 {
     return is_global_ugen_init( name ) &&
     !should_call_global_ctor( name, te_globalUGen );
@@ -1393,7 +1403,7 @@ t_CKBOOL Chuck_Globals_Manager::is_global_ugen_valid( std::string name )
 // name: get_global_ugen()
 // desc: get directly from the vm (internal)
 //-----------------------------------------------------------------------------
-Chuck_UGen * Chuck_Globals_Manager::get_global_ugen( std::string name )
+Chuck_UGen * Chuck_Globals_Manager::get_global_ugen( const std::string & name )
 {
     return m_global_ugens[name]->val;
 }
@@ -1405,7 +1415,7 @@ Chuck_UGen * Chuck_Globals_Manager::get_global_ugen( std::string name )
 // name: get_ptr_to_global_ugen()
 // desc: get ptr directly from the vm (internal)
 //-----------------------------------------------------------------------------
-Chuck_UGen * * Chuck_Globals_Manager::get_ptr_to_global_ugen( std::string name )
+Chuck_UGen * * Chuck_Globals_Manager::get_ptr_to_global_ugen( const std::string & name )
 {
     return &( m_global_ugens[name]->val );
 }
@@ -1414,13 +1424,15 @@ Chuck_UGen * * Chuck_Globals_Manager::get_ptr_to_global_ugen( std::string name )
 
 
 //-----------------------------------------------------------------------------
-// name: set_global_int_array()
+// name: setGlobalIntArray()
 // desc: tell the vm to set an entire int array
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::set_global_int_array( std::string name, t_CKINT arrayValues[], t_CKUINT numValues )
+t_CKBOOL Chuck_Globals_Manager::setGlobalIntArray( const std::string & name,
+                                                   t_CKINT arrayValues[],
+                                                   t_CKUINT numValues )
 {
     Chuck_Set_Global_Int_Array_Request * message =
-    new Chuck_Set_Global_Int_Array_Request;
+        new Chuck_Set_Global_Int_Array_Request;
     message->name = name;
     message->arrayValues.resize( numValues );
     for( int i = 0; i < numValues; i++ )
@@ -1443,13 +1455,14 @@ t_CKBOOL Chuck_Globals_Manager::set_global_int_array( std::string name, t_CKINT 
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_int_array()
+// name: getGlobalIntArray()
 // desc: tell the vm to get an entire int array
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_int_array( std::string name, void (* callback)(t_CKINT[], t_CKUINT))
+t_CKBOOL Chuck_Globals_Manager::getGlobalIntArray( const std::string & name,
+                                                   void (* callback)(t_CKINT[], t_CKUINT) )
 {
     Chuck_Get_Global_Int_Array_Request * message =
-    new Chuck_Get_Global_Int_Array_Request;
+        new Chuck_Get_Global_Int_Array_Request;
     message->name = name;
     message->cb = callback;
     message->cb_type = ck_get_plain;
@@ -1469,13 +1482,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_int_array( std::string name, void (* 
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_int_array()
+// name: getGlobalIntArray()
 // desc: tell the vm to get an entire int array, with a named callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_int_array( std::string name, void (* callback)(const char *, t_CKINT[], t_CKUINT))
+t_CKBOOL Chuck_Globals_Manager::getGlobalIntArray( const std::string & name,
+    void (* callback)(const char *, t_CKINT[], t_CKUINT) )
 {
     Chuck_Get_Global_Int_Array_Request * message =
-    new Chuck_Get_Global_Int_Array_Request;
+        new Chuck_Get_Global_Int_Array_Request;
     message->name = name;
     message->cb_with_name = callback;
     message->cb_type = ck_get_name;
@@ -1495,14 +1509,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_int_array( std::string name, void (* 
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_int_array()
+// name: getGlobalIntArray()
 // desc: tell the vm to get an entire int array, with id in callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_int_array( std::string name, t_CKINT id,
-                                                     void (* callback)(t_CKINT, t_CKINT[], t_CKUINT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalIntArray( const std::string & name,
+    t_CKINT id, void (* callback)(t_CKINT, t_CKINT[], t_CKUINT) )
 {
     Chuck_Get_Global_Int_Array_Request * message =
-    new Chuck_Get_Global_Int_Array_Request;
+        new Chuck_Get_Global_Int_Array_Request;
     message->name = name;
     message->cb_with_id = callback;
     message->id = id;
@@ -1523,13 +1537,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_int_array( std::string name, t_CKINT 
 
 
 //-----------------------------------------------------------------------------
-// name: set_global_int_array_value()
+// name: setGlobalIntArrayValue()
 // desc: tell the vm to set one value of an int array by index
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::set_global_int_array_value( std::string name, t_CKUINT index, t_CKINT value )
+t_CKBOOL Chuck_Globals_Manager::setGlobalIntArrayValue( const std::string & name,
+                                                        t_CKUINT index, t_CKINT value )
 {
     Chuck_Set_Global_Int_Array_Value_Request * message =
-    new Chuck_Set_Global_Int_Array_Value_Request;
+        new Chuck_Set_Global_Int_Array_Value_Request;
     message->name = name;
     message->index = index;
     message->value = value;
@@ -1549,13 +1564,14 @@ t_CKBOOL Chuck_Globals_Manager::set_global_int_array_value( std::string name, t_
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_int_array_value()
+// name: getGlobalIntArrayValue()
 // desc: tell the vm to get one value of an int array by index
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_int_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKINT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalIntArrayValue( const std::string & name,
+    t_CKUINT index, void (* callback)(t_CKINT) )
 {
     Chuck_Get_Global_Int_Array_Value_Request * message =
-    new Chuck_Get_Global_Int_Array_Value_Request;
+        new Chuck_Get_Global_Int_Array_Value_Request;
     message->name = name;
     message->index = index;
     message->cb = callback;
@@ -1576,13 +1592,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_int_array_value( std::string name, t_
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_int_array_value()
+// name: getGlobalIntArrayValue()
 // desc: tell the vm to get one value of an int array by index, with named callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_int_array_value( std::string name, t_CKUINT index, void (* callback)(const char *, t_CKINT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalIntArrayValue( const std::string & name,
+    t_CKUINT index, void (* callback)(const char *, t_CKINT) )
 {
     Chuck_Get_Global_Int_Array_Value_Request * message =
-    new Chuck_Get_Global_Int_Array_Value_Request;
+        new Chuck_Get_Global_Int_Array_Value_Request;
     message->name = name;
     message->index = index;
     message->cb_with_name = callback;
@@ -1603,14 +1620,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_int_array_value( std::string name, t_
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_int_array_value()
+// name: getGlobalIntArrayValue()
 // desc: tell the vm to get one value of an int array by index, with id in callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_int_array_value( std::string name,
-                                                           t_CKINT id, t_CKUINT index, void (* callback)(t_CKINT, t_CKINT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalIntArrayValue( const std::string & name,
+    t_CKINT id, t_CKUINT index, void (* callback)(t_CKINT, t_CKINT) )
 {
     Chuck_Get_Global_Int_Array_Value_Request * message =
-    new Chuck_Get_Global_Int_Array_Value_Request;
+        new Chuck_Get_Global_Int_Array_Value_Request;
     message->name = name;
     message->index = index;
     message->cb_with_id = callback;
@@ -1632,13 +1649,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_int_array_value( std::string name,
 
 
 //-----------------------------------------------------------------------------
-// name: set_global_associative_int_array_value()
+// name: setGlobalAssociativeIntArrayValue()
 // desc: tell the vm to set one value of an associative array by string key
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::set_global_associative_int_array_value( std::string name, std::string key, t_CKINT value )
+t_CKBOOL Chuck_Globals_Manager::setGlobalAssociativeIntArrayValue(
+    const std::string & name, const std::string & key, t_CKINT value )
 {
     Chuck_Set_Global_Associative_Int_Array_Value_Request * message =
-    new Chuck_Set_Global_Associative_Int_Array_Value_Request;
+        new Chuck_Set_Global_Associative_Int_Array_Value_Request;
     message->name = name;
     message->key = key;
     message->value = value;
@@ -1658,13 +1676,14 @@ t_CKBOOL Chuck_Globals_Manager::set_global_associative_int_array_value( std::str
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_associative_int_array_value()
+// name: getGlobalAssociativeIntArrayValue()
 // desc: tell the vm to get one value of an associative array by string key
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_associative_int_array_value( std::string name, std::string key, void (* callback)(t_CKINT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalAssociativeIntArrayValue(
+    const std::string & name, const std::string & key, void (* callback)(t_CKINT) )
 {
     Chuck_Get_Global_Associative_Int_Array_Value_Request * message =
-    new Chuck_Get_Global_Associative_Int_Array_Value_Request;
+        new Chuck_Get_Global_Associative_Int_Array_Value_Request;
     message->name = name;
     message->key = key;
     message->cb = callback;
@@ -1685,13 +1704,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_associative_int_array_value( std::str
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_associative_int_array_value()
+// name: getGlobalAssociativeIntArrayValue()
 // desc: tell the vm to get one value of an associative array by string key, with named callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_associative_int_array_value( std::string name, std::string key, void (* callback)(const char *, t_CKINT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalAssociativeIntArrayValue( const std::string & name,
+    const std::string & key, void (* callback)(const char *, t_CKINT) )
 {
     Chuck_Get_Global_Associative_Int_Array_Value_Request * message =
-    new Chuck_Get_Global_Associative_Int_Array_Value_Request;
+        new Chuck_Get_Global_Associative_Int_Array_Value_Request;
     message->name = name;
     message->key = key;
     message->cb_with_name = callback;
@@ -1712,14 +1732,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_associative_int_array_value( std::str
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_associative_int_array_value()
+// name: getGlobalAssociativeIntArrayValue()
 // desc: tell the vm to get one value of an associative array by string key, with id in callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_associative_int_array_value( std::string name,
-                                                                       t_CKINT id, std::string key, void (* callback)(t_CKINT, t_CKINT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalAssociativeIntArrayValue( const std::string & name,
+    t_CKINT id, const std::string & key, void (* callback)(t_CKINT, t_CKINT) )
 {
     Chuck_Get_Global_Associative_Int_Array_Value_Request * message =
-    new Chuck_Get_Global_Associative_Int_Array_Value_Request;
+        new Chuck_Get_Global_Associative_Int_Array_Value_Request;
     message->name = name;
     message->key = key;
     message->cb_with_id = callback;
@@ -1741,13 +1761,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_associative_int_array_value( std::str
 
 
 //-----------------------------------------------------------------------------
-// name: set_global_float_array()
+// name: setGlobalFloatArray()
 // desc: tell the vm to set an entire float array
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::set_global_float_array( std::string name, t_CKFLOAT arrayValues[], t_CKUINT numValues )
+t_CKBOOL Chuck_Globals_Manager::setGlobalFloatArray( const std::string & name,
+    t_CKFLOAT arrayValues[], t_CKUINT numValues )
 {
     Chuck_Set_Global_Float_Array_Request * message =
-    new Chuck_Set_Global_Float_Array_Request;
+        new Chuck_Set_Global_Float_Array_Request;
     message->name = name;
     message->arrayValues.resize( numValues );
     for( int i = 0; i < numValues; i++ )
@@ -1770,13 +1791,14 @@ t_CKBOOL Chuck_Globals_Manager::set_global_float_array( std::string name, t_CKFL
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_float_array()
+// name: getGlobalFloatArray()
 // desc: tell the vm to get an entire float array
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_float_array( std::string name, void (* callback)(t_CKFLOAT[], t_CKUINT))
+t_CKBOOL Chuck_Globals_Manager::getGlobalFloatArray( const std::string & name,
+    void (* callback)(t_CKFLOAT[], t_CKUINT))
 {
     Chuck_Get_Global_Float_Array_Request * message =
-    new Chuck_Get_Global_Float_Array_Request;
+        new Chuck_Get_Global_Float_Array_Request;
     message->name = name;
     message->cb = callback;
     message->cb_type = ck_get_plain;
@@ -1796,13 +1818,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_float_array( std::string name, void (
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_float_array()
+// name: getGlobalFloatArray()
 // desc: tell the vm to get an entire float array, with a named callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_float_array( std::string name, void (* callback)(const char *, t_CKFLOAT[], t_CKUINT))
+t_CKBOOL Chuck_Globals_Manager::getGlobalFloatArray( const std::string & name,
+    void (* callback)(const char *, t_CKFLOAT[], t_CKUINT) )
 {
     Chuck_Get_Global_Float_Array_Request * message =
-    new Chuck_Get_Global_Float_Array_Request;
+        new Chuck_Get_Global_Float_Array_Request;
     message->name = name;
     message->cb_with_name = callback;
     message->cb_type = ck_get_name;
@@ -1822,14 +1845,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_float_array( std::string name, void (
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_float_array()
+// name: getGlobalFloatArray()
 // desc: tell the vm to get an entire float array, with id in callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_float_array( std::string name, t_CKINT id,
-                                                       void (* callback)(t_CKINT, t_CKFLOAT[], t_CKUINT))
+t_CKBOOL Chuck_Globals_Manager::getGlobalFloatArray( const std::string & name,
+    t_CKINT id, void (* callback)(t_CKINT, t_CKFLOAT[], t_CKUINT))
 {
     Chuck_Get_Global_Float_Array_Request * message =
-    new Chuck_Get_Global_Float_Array_Request;
+        new Chuck_Get_Global_Float_Array_Request;
     message->name = name;
     message->cb_with_id = callback;
     message->id = id;
@@ -1850,13 +1873,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_float_array( std::string name, t_CKIN
 
 
 //-----------------------------------------------------------------------------
-// name: set_global_float_array_value()
+// name: setGlobalFloatArrayValue()
 // desc: tell the vm to set one value of an float array by index
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::set_global_float_array_value( std::string name, t_CKUINT index, t_CKFLOAT value )
+t_CKBOOL Chuck_Globals_Manager::setGlobalFloatArrayValue( const std::string & name,
+                                                          t_CKUINT index, t_CKFLOAT value )
 {
     Chuck_Set_Global_Float_Array_Value_Request * message =
-    new Chuck_Set_Global_Float_Array_Value_Request;
+        new Chuck_Set_Global_Float_Array_Value_Request;
     message->name = name;
     message->index = index;
     message->value = value;
@@ -1876,13 +1900,14 @@ t_CKBOOL Chuck_Globals_Manager::set_global_float_array_value( std::string name, 
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_float_array_value()
+// name: getGlobalFloatArrayValue()
 // desc: tell the vm to get one value of an float array by index
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_float_array_value( std::string name, t_CKUINT index, void (* callback)(t_CKFLOAT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalFloatArrayValue( const std::string & name,
+    t_CKUINT index, void (* callback)(t_CKFLOAT) )
 {
     Chuck_Get_Global_Float_Array_Value_Request * message =
-    new Chuck_Get_Global_Float_Array_Value_Request;
+        new Chuck_Get_Global_Float_Array_Value_Request;
     message->name = name;
     message->index = index;
     message->cb = callback;
@@ -1903,13 +1928,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_float_array_value( std::string name, 
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_float_array_value()
+// name: getGlobalFloatArrayValue()
 // desc: tell the vm to get one value of an float array by index, with a named callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_float_array_value( std::string name, t_CKUINT index, void (* callback)(const char *, t_CKFLOAT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalFloatArrayValue( const std::string & name,
+    t_CKUINT index, void (* callback)(const char *, t_CKFLOAT) )
 {
     Chuck_Get_Global_Float_Array_Value_Request * message =
-    new Chuck_Get_Global_Float_Array_Value_Request;
+        new Chuck_Get_Global_Float_Array_Value_Request;
     message->name = name;
     message->index = index;
     message->cb_with_name = callback;
@@ -1930,14 +1956,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_float_array_value( std::string name, 
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_float_array_value()
+// name: getGlobalFloatArrayValue()
 // desc: tell the vm to get one value of an float array by index, with id in callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_float_array_value( std::string name, t_CKINT id,
-                                                             t_CKUINT index, void (* callback)(t_CKINT, t_CKFLOAT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalFloatArrayValue( const std::string & name,
+    t_CKINT id, t_CKUINT index, void (* callback)(t_CKINT, t_CKFLOAT) )
 {
     Chuck_Get_Global_Float_Array_Value_Request * message =
-    new Chuck_Get_Global_Float_Array_Value_Request;
+        new Chuck_Get_Global_Float_Array_Value_Request;
     message->name = name;
     message->index = index;
     message->cb_with_id = callback;
@@ -1959,13 +1985,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_float_array_value( std::string name, 
 
 
 //-----------------------------------------------------------------------------
-// name: set_global_associative_float_array_value()
+// name: setGlobalAssociativeFloatArrayValue()
 // desc: tell the vm to set one value of an associative array by string key
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::set_global_associative_float_array_value( std::string name, std::string key, t_CKFLOAT value )
+t_CKBOOL Chuck_Globals_Manager::setGlobalAssociativeFloatArrayValue( const std::string & name,
+    const std::string & key, t_CKFLOAT value )
 {
     Chuck_Set_Global_Associative_Float_Array_Value_Request * message =
-    new Chuck_Set_Global_Associative_Float_Array_Value_Request;
+        new Chuck_Set_Global_Associative_Float_Array_Value_Request;
     message->name = name;
     message->key = key;
     message->value = value;
@@ -1985,13 +2012,14 @@ t_CKBOOL Chuck_Globals_Manager::set_global_associative_float_array_value( std::s
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_associative_float_array_value()
+// name: getGlobalAssociativeFloatArrayValue()
 // desc: tell the vm to get one value of an associative array by string key
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_associative_float_array_value( std::string name, std::string key, void (* callback)(t_CKFLOAT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalAssociativeFloatArrayValue( const std::string & name,
+    const std::string & key, void (* callback)(t_CKFLOAT) )
 {
     Chuck_Get_Global_Associative_Float_Array_Value_Request * message =
-    new Chuck_Get_Global_Associative_Float_Array_Value_Request;
+        new Chuck_Get_Global_Associative_Float_Array_Value_Request;
     message->name = name;
     message->key = key;
     message->cb = callback;
@@ -2012,13 +2040,14 @@ t_CKBOOL Chuck_Globals_Manager::get_global_associative_float_array_value( std::s
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_associative_float_array_value()
+// name: getGlobalAssociativeFloatArrayValue()
 // desc: tell the vm to get one value of an associative array by string key, with a named callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_associative_float_array_value( std::string name, std::string key, void (* callback)(const char *, t_CKFLOAT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalAssociativeFloatArrayValue( const std::string & name,
+    const std::string & key, void (* callback)(const char *, t_CKFLOAT) )
 {
     Chuck_Get_Global_Associative_Float_Array_Value_Request * message =
-    new Chuck_Get_Global_Associative_Float_Array_Value_Request;
+        new Chuck_Get_Global_Associative_Float_Array_Value_Request;
     message->name = name;
     message->key = key;
     message->cb_with_name = callback;
@@ -2039,14 +2068,15 @@ t_CKBOOL Chuck_Globals_Manager::get_global_associative_float_array_value( std::s
 
 
 //-----------------------------------------------------------------------------
-// name: get_global_associative_float_array_value()
+// name: getGlobalAssociativeFloatArrayValue()
 // desc: tell the vm to get one value of an associative array by string key, with id in callback
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::get_global_associative_float_array_value( std::string name,
-                                                                         t_CKINT id, std::string key, void (* callback)(t_CKINT, t_CKFLOAT) )
+t_CKBOOL Chuck_Globals_Manager::getGlobalAssociativeFloatArrayValue(
+    const std::string & name, t_CKINT id, const std::string & key,
+    void (* callback)(t_CKINT, t_CKFLOAT) )
 {
     Chuck_Get_Global_Associative_Float_Array_Value_Request * message =
-    new Chuck_Get_Global_Associative_Float_Array_Value_Request;
+        new Chuck_Get_Global_Associative_Float_Array_Value_Request;
     message->name = name;
     message->key = key;
     message->cb_with_id = callback;
@@ -2074,7 +2104,7 @@ t_CKBOOL Chuck_Globals_Manager::get_global_associative_float_array_value( std::s
 t_CKBOOL Chuck_Globals_Manager::execute_chuck_msg_with_globals( Chuck_Msg * msg )
 {
     Chuck_Execute_Chuck_Msg_Request * message =
-    new Chuck_Execute_Chuck_Msg_Request;
+        new Chuck_Execute_Chuck_Msg_Request;
     message->msg = msg;
     
     Chuck_Global_Request r;
@@ -2094,7 +2124,7 @@ t_CKBOOL Chuck_Globals_Manager::execute_chuck_msg_with_globals( Chuck_Msg * msg 
 // name: init_global_array()
 // desc: tell the vm that a global string is now available
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::init_global_array( std::string name, Chuck_Type * type, te_GlobalType arr_type )
+t_CKBOOL Chuck_Globals_Manager::init_global_array( const std::string & name, Chuck_Type * type, te_GlobalType arr_type )
 {
     if( m_global_arrays.count( name ) == 0 )
     {
@@ -2120,7 +2150,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_array( std::string name, Chuck_Type 
 // name: get_global_array()
 // desc: get value directly from the vm (internal)
 //-----------------------------------------------------------------------------
-Chuck_Object * Chuck_Globals_Manager::get_global_array( std::string name )
+Chuck_Object * Chuck_Globals_Manager::get_global_array( const std::string & name )
 {
     return m_global_arrays[name]->array;
 }
@@ -2132,7 +2162,8 @@ Chuck_Object * Chuck_Globals_Manager::get_global_array( std::string name )
 // name: _get_global_int_array_value()
 // desc: get value directly from the vm (internal)
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Globals_Manager::get_global_int_array_value( std::string name, t_CKUINT index )
+t_CKINT Chuck_Globals_Manager::get_global_int_array_value( const std::string & name,
+                                                           t_CKUINT index )
 {
     t_CKUINT result = 0;
     Chuck_Object * array = m_global_arrays[name]->array;
@@ -2153,7 +2184,8 @@ t_CKINT Chuck_Globals_Manager::get_global_int_array_value( std::string name, t_C
 // name: _get_global_associative_int_array_value()
 // desc: get value directly from the vm (internal)
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Globals_Manager::get_global_associative_int_array_value( std::string name, std::string key )
+t_CKINT Chuck_Globals_Manager::get_global_associative_int_array_value(
+    const std::string & name, const std::string & key )
 {
     t_CKUINT result = 0;
     Chuck_Object * array = m_global_arrays[name]->array;
@@ -2174,7 +2206,8 @@ t_CKINT Chuck_Globals_Manager::get_global_associative_int_array_value( std::stri
 // name: _get_global_float_array_value()
 // desc: get value directly from the vm (internal)
 //-----------------------------------------------------------------------------
-t_CKFLOAT Chuck_Globals_Manager::get_global_float_array_value( std::string name, t_CKUINT index )
+t_CKFLOAT Chuck_Globals_Manager::get_global_float_array_value( const std::string & name,
+                                                               t_CKUINT index )
 {
     t_CKFLOAT result = 0;
     Chuck_Object * array = m_global_arrays[name]->array;
@@ -2194,7 +2227,8 @@ t_CKFLOAT Chuck_Globals_Manager::get_global_float_array_value( std::string name,
 // name: _get_global_associative_float_array_value()
 // desc: get value directly from the vm (internal)
 //-----------------------------------------------------------------------------
-t_CKFLOAT Chuck_Globals_Manager::get_global_associative_float_array_value( std::string name, std::string key )
+t_CKFLOAT Chuck_Globals_Manager::get_global_associative_float_array_value(
+    const std::string & name, const std::string & key )
 {
     t_CKFLOAT result = 0;
     Chuck_Object * array = m_global_arrays[name]->array;
@@ -2214,7 +2248,7 @@ t_CKFLOAT Chuck_Globals_Manager::get_global_associative_float_array_value( std::
 // name: get_ptr_to_global_array()
 // desc: get ptr directly from the vm (internal)
 //-----------------------------------------------------------------------------
-Chuck_Object * * Chuck_Globals_Manager::get_ptr_to_global_array( std::string name )
+Chuck_Object * * Chuck_Globals_Manager::get_ptr_to_global_array( const std::string & name )
 {
     return &( m_global_arrays[name]->array );
 }
@@ -2226,7 +2260,8 @@ Chuck_Object * * Chuck_Globals_Manager::get_ptr_to_global_array( std::string nam
 // name: init_global_object()
 // desc: init a global object
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::init_global_object( std::string name, Chuck_Type * type )
+t_CKBOOL Chuck_Globals_Manager::init_global_object( const std::string & name,
+                                                    Chuck_Type * type )
 {
     // if it hasn't been initted yet
     if( m_global_objects.count( name ) == 0 ) {
@@ -2257,7 +2292,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_object( std::string name, Chuck_Type
 // name: is_global_object_init()
 // desc: has a global object been initialized during emit?
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::is_global_object_init( std::string name )
+t_CKBOOL Chuck_Globals_Manager::is_global_object_init( const std::string & name )
 {
     return m_global_objects.count( name ) > 0;
 }
@@ -2270,7 +2305,7 @@ t_CKBOOL Chuck_Globals_Manager::is_global_object_init( std::string name )
 // desc: has a global object been initialized during emit
 //       and constructed during runtime?
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::is_global_object_valid( std::string name )
+t_CKBOOL Chuck_Globals_Manager::is_global_object_valid( const std::string & name )
 {
     return is_global_object_init( name ) &&
     !should_call_global_ctor( name, te_globalObject );
@@ -2283,7 +2318,7 @@ t_CKBOOL Chuck_Globals_Manager::is_global_object_valid( std::string name )
 // name: get_global_object()
 // desc: get directly from the vm (internal)
 //-----------------------------------------------------------------------------
-Chuck_Object * Chuck_Globals_Manager::get_global_object( std::string name )
+Chuck_Object * Chuck_Globals_Manager::get_global_object( const std::string & name )
 {
     return m_global_objects[name]->val;
 }
@@ -2295,7 +2330,7 @@ Chuck_Object * Chuck_Globals_Manager::get_global_object( std::string name )
 // name: get_ptr_to_global_object()
 // desc: get ptr directly from the vm (internal)
 //-----------------------------------------------------------------------------
-Chuck_Object ** Chuck_Globals_Manager::get_ptr_to_global_object( std::string name )
+Chuck_Object ** Chuck_Globals_Manager::get_ptr_to_global_object( const std::string & name )
 {
     return &( m_global_objects[name]->val );
 }
@@ -2307,8 +2342,8 @@ Chuck_Object ** Chuck_Globals_Manager::get_ptr_to_global_object( std::string nam
 // name: should_call_global_ctor()
 // desc: ask the vm if a global needs to be constructed after init
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Globals_Manager::should_call_global_ctor( std::string name,
-                                                        te_GlobalType type )
+t_CKBOOL Chuck_Globals_Manager::should_call_global_ctor( const std::string & name,
+                                                         te_GlobalType type )
 {
     switch( type )
     {
@@ -2345,8 +2380,8 @@ t_CKBOOL Chuck_Globals_Manager::should_call_global_ctor( std::string name,
 // name: global_ctor_was_called()
 // desc: tell the vm that a global has been constructed after init
 //-----------------------------------------------------------------------------
-void Chuck_Globals_Manager::global_ctor_was_called( std::string name,
-                                                   te_GlobalType type )
+void Chuck_Globals_Manager::global_ctor_was_called( const std::string & name,
+                                                    te_GlobalType type )
 {
     switch( type )
     {
@@ -2494,7 +2529,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     // set int
                     m_global_ints[message.setIntRequest->name]->val = message.setIntRequest->val;
                     // clean up request storage
-                    delete message.setIntRequest;
+                    SAFE_DELETE( message.setIntRequest );
                     break;
                     
                 case get_global_int_request:
@@ -2518,7 +2553,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                     // clean up request storage
-                    delete message.getIntRequest;
+                    SAFE_DELETE( message.getIntRequest );
                     break;
                     
                 case set_global_float_request:
@@ -2527,7 +2562,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     // set float
                     m_global_floats[message.setFloatRequest->name]->val = message.setFloatRequest->val;
                     // clean up request storage
-                    delete message.setFloatRequest;
+                    SAFE_DELETE( message.setFloatRequest );
                     break;
                     
                 case get_global_float_request:
@@ -2551,7 +2586,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                     // clean up request storage
-                    delete message.getFloatRequest;
+                    SAFE_DELETE( message.getFloatRequest );
                     break;
                     
                 case set_global_string_request:
@@ -2560,7 +2595,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     // set string
                     m_global_strings[message.setStringRequest->name]->val->set( message.setStringRequest->val );
                     // clean up request storage
-                    delete message.setStringRequest;
+                    SAFE_DELETE( message.setStringRequest );
                     break;
                     
                 case get_global_string_request:
@@ -2584,7 +2619,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                     // clean up request storage
-                    delete message.getStringRequest;
+                    SAFE_DELETE( message.getStringRequest );
                     break;
                     
                 case signal_global_event_request:
@@ -2622,7 +2657,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.signalEventRequest;
+                        SAFE_DELETE( message.signalEventRequest );
                     }
                     break;
                     
@@ -2693,7 +2728,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.listenForEventRequest;
+                        SAFE_DELETE( message.listenForEventRequest );
                     }
                     break;
                     
@@ -2738,7 +2773,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.setIntArrayRequest;
+                        SAFE_DELETE( message.setIntArrayRequest );
                     }
                     break;
                     
@@ -2799,7 +2834,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.getIntArrayRequest;
+                        SAFE_DELETE( message.getIntArrayRequest );
                     }
                     break;
                     
@@ -2841,7 +2876,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.setIntArrayValueRequest;
+                        SAFE_DELETE( message.setIntArrayValueRequest );
                     }
                     break;
                     
@@ -2894,7 +2929,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.getIntArrayValueRequest;
+                        SAFE_DELETE( message.getIntArrayValueRequest );
                     }
                     break;
                     
@@ -2933,7 +2968,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.setAssociativeIntArrayValueRequest;
+                        SAFE_DELETE( message.setAssociativeIntArrayValueRequest );
                     }
                     break;
                     
@@ -2986,7 +3021,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.getAssociativeIntArrayValueRequest;
+                        SAFE_DELETE( message.getAssociativeIntArrayValueRequest );
                     }
                     break;
                     
@@ -3031,7 +3066,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.setFloatArrayRequest;
+                        SAFE_DELETE( message.setFloatArrayRequest );
                     }
                     break;
                     
@@ -3091,7 +3126,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.getFloatArrayRequest;
+                        SAFE_DELETE( message.getFloatArrayRequest );
                     }
                     break;
                     
@@ -3133,7 +3168,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.setFloatArrayValueRequest;
+                        SAFE_DELETE( message.setFloatArrayValueRequest );
                     }
                     break;
                     
@@ -3185,7 +3220,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.getFloatArrayValueRequest;
+                        SAFE_DELETE( message.getFloatArrayValueRequest );
                     }
                     break;
                     
@@ -3224,7 +3259,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.setAssociativeFloatArrayValueRequest;
+                        SAFE_DELETE( message.setAssociativeFloatArrayValueRequest );
                     }
                     break;
                     
@@ -3276,7 +3311,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        delete message.getAssociativeFloatArrayValueRequest;
+                        SAFE_DELETE( message.getAssociativeFloatArrayValueRequest );
                     }
                     break;
             }
