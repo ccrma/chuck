@@ -1968,11 +1968,11 @@ void Chuck_Array32::zero( t_CKUINT start, t_CKUINT end )
 t_CKUINT Chuck_Event::our_can_wait = 0;
 
 //-----------------------------------------------------------------------------
-// name: signal()
+// name: signal_local()
 // desc: signal a event/condition variable, shreduling the next waiting shred
-//       (if there is one or more)
+//       (if there is one or more); local in this case means within VM
 //-----------------------------------------------------------------------------
-void Chuck_Event::signal()
+void Chuck_Event::signal_local()
 {
     #ifndef __DISABLE_THREADS__
     m_queue_lock.acquire();
@@ -2411,10 +2411,11 @@ void Chuck_Event::queue_broadcast( CBufferSimple * event_buffer )
 
 
 //-----------------------------------------------------------------------------
-// name: broadcast()
+// name: broadcast_local()
 // desc: broadcast a event/condition variable, shreduling all waiting shreds
+//       local here means within VM
 //-----------------------------------------------------------------------------
-void Chuck_Event::broadcast()
+void Chuck_Event::broadcast_local()
 {
     // lock queue
     #ifndef __DISABLE_THREADS__
@@ -2428,7 +2429,7 @@ void Chuck_Event::broadcast()
         m_queue_lock.release();
         #endif
         // signal the next shred
-        this->signal();
+        this->signal_local();
         // lock again
         #ifndef __DISABLE_THREADS__
         m_queue_lock.acquire();
@@ -3433,7 +3434,7 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeStr_thread ) ( void *data )
     args->fileio_obj->write ( args->stringArg );
     Chuck_Event *e = args->fileio_obj->m_asyncEvent;
     delete args;
-    e->broadcast(); // wake up
+    e->broadcast_local(); // wake up
     e->broadcast_global();
 
     return (THREAD_RETURN)0;
@@ -3443,7 +3444,7 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeInt_thread ) ( void *data )
 {
     async_args *args = (async_args *)data;
     args->fileio_obj->write ( args->intArg );
-    args->fileio_obj->m_asyncEvent->broadcast(); // wake up
+    args->fileio_obj->m_asyncEvent->broadcast_local(); // wake up
     args->fileio_obj->m_asyncEvent->broadcast_global();
     delete args;
 
@@ -3454,7 +3455,7 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
 {
     async_args *args = (async_args *)data;
     args->fileio_obj->write ( args->floatArg );
-    args->fileio_obj->m_asyncEvent->broadcast(); // wake up
+    args->fileio_obj->m_asyncEvent->broadcast_local(); // wake up
     args->fileio_obj->m_asyncEvent->broadcast_global();
     delete args;
 

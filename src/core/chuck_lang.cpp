@@ -1529,14 +1529,14 @@ CK_DLL_DTOR( event_dtor )
 CK_DLL_MFUN( event_signal )
 {
     Chuck_Event * d = (Chuck_Event *)SELF;
-    d->signal();
+    d->signal_local();
     d->signal_global();
 }
 
 CK_DLL_MFUN( event_broadcast )
 {
     Chuck_Event * d = (Chuck_Event *)SELF;
-    d->broadcast();
+    d->broadcast_local();
     d->broadcast_global();
 }
 

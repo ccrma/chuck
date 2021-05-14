@@ -464,12 +464,13 @@ struct Chuck_Event : Chuck_Object
 {
 public:
     // signal/broadcast "local" -- signal ChucK Events
-    void signal();
-    void broadcast();
+    void signal_local();
+    void broadcast_local();
     void wait( Chuck_VM_Shred * shred, Chuck_VM * vm );
     t_CKBOOL remove( Chuck_VM_Shred * shred );
 
-    // 1.4.0.0: global events -- signal/broadcast code running
+public:
+    // 1.4.0.0 (jack): global events -- signal/broadcast code running
     // externally, elsewhere in the host
     void signal_global();
     void broadcast_global();
