@@ -520,7 +520,7 @@ t_CKBOOL Chuck_VM::compute()
         // broadcast queued events
         while( m_event_buffer->get( &event, 1 ) )
         {
-            event->broadcast();
+            event->broadcast_local();
             event->broadcast_global();
             iterate = TRUE;
         }
@@ -531,7 +531,7 @@ t_CKBOOL Chuck_VM::compute()
         {
             while( (*i)->get( &event, 1 ) )
             {
-                event->broadcast();
+                event->broadcast_local();
                 event->broadcast_global();
                 iterate = TRUE;
             }

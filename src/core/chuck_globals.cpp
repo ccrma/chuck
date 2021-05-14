@@ -2632,12 +2632,12 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         // signal it, or broadcast it
                         if( message.signalEventRequest->is_broadcast )
                         {
-                            event->broadcast();
+                            event->broadcast_local();
                             event->broadcast_global();
                         }
                         else
                         {
-                            event->signal();
+                            event->signal_local();
                             event->signal_global();
                         }
                     }
