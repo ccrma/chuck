@@ -36,7 +36,6 @@
 #include "chuck_ugen.h"
 #include "chuck_type.h"
 #include "chuck_carrier.h"
-#include "util_buffers.h"
 
 // tracking
 #ifdef __CHUCK_STAT_TRACK__
@@ -78,8 +77,6 @@ struct Chuck_IO_Serial;
 #endif
 
 class CBufferSimple;
-//XXXclass BBQ;
-//XXXclass Digitalio;
 
 
 

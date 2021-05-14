@@ -42,6 +42,7 @@
 
 #include "chuck_errmsg.h"
 #include "ugen_xxx.h"
+#include "util_buffers.h"
 
 #ifndef __DISABLE_HID__
 #include "hidio_sdl.h"  // 1.4.0.0
