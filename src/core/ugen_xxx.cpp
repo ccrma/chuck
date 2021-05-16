@@ -1517,7 +1517,7 @@ CK_DLL_CTRL( stereo_ctrl_pan )
     // for more info on panning laws
     // https://www.cs.cmu.edu/~music/icm-online/readings/panlaws/index.html
 
-    // pan it (OLD: linear and wtf)
+    // pan it (OLD: pseudo-linear and wtf)
     // left->m_pan = pan < 0.0 ? 1.0 : 1.0 - pan;
     // right->m_pan = pan > 0.0 ? 1.0 : 1.0 + pan;
     // cerr << "pan: " << pan
