@@ -1511,9 +1511,9 @@ CK_DLL_MFUN( osc_address_next_string  ) {
 }
 
 
-// OscRecv functions 
 
 
+// OscRecv functions
 //----------------------------------------------
 // name : osc_recv_ctor  
 // desc : CTOR function 

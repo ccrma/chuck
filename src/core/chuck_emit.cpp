@@ -3731,7 +3731,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
     // make sure that the base type is object
     assert( t_base->info != NULL );
 
-    // if base is static
+    // if base is static?
     if( !base_static )
     {
         // if is a func
@@ -3810,7 +3810,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
         // emit the type
         // commented out so built-in static member variables don't have an 
         // extra thing on the stack - spencer
-        //emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)t_base ) );
+        // emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)t_base ) );
 
         // if is a func
         if( isfunc( emit->env, member->self->type ) )

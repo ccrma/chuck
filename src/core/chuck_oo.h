@@ -175,6 +175,14 @@ public:
     virtual ~Chuck_Object();
 
 public:
+    // output current state (can be overridden)
+    virtual void dump();
+
+public:
+    // output type info (can be overriden; but probably shouldn't be)
+    virtual void apropos();
+    
+public:
     // virtual table
     Chuck_VTable * vtable;
     // reference to type
@@ -221,7 +229,7 @@ public:
     virtual t_CKINT erase( const std::string & key ) = 0; // erase
     virtual void clear( ) = 0; // clear
     
-    Chuck_Type *m_array_type;
+    Chuck_Type * m_array_type;
 };
 
 
