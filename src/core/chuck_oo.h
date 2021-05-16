@@ -216,8 +216,8 @@ struct Chuck_Array : Chuck_Object
     // functionality that we can keep in common...
 
 public:
-    // Chuck_Array();
-    // virtual ~Chuck_Array() { }
+    Chuck_Array() : m_array_type(NULL) { }
+    virtual ~Chuck_Array();
 
     virtual t_CKINT size( ) = 0; // const { return m_size; } // array size
     virtual t_CKINT capacity( ) = 0; // const { return m_capacity; } // array capacity

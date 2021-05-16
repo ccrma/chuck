@@ -1507,9 +1507,21 @@ CK_DLL_CTRL( stereo_ctrl_pan )
     else if( pan > 1.0 ) pan = 1.0;
     // set it
     OBJ_MEMBER_FLOAT(SELF, stereo_offset_pan) = pan;
-    // pan it
-    left->m_pan = pan < 0.0 ? 1.0 : 1.0 - pan;
-    right->m_pan = pan > 0.0 ? 1.0 : 1.0 + pan;
+
+    // remap to [0,pi/2]
+    t_CKFLOAT panme = (pan+1.0)/2 * ONE_PI/2;
+    // pan it (NEW: constant-power panning; fixed 1.4.0.2)
+    left->m_pan = ::cos(panme);
+    right->m_pan = ::sin(panme);
+
+    // for more info on panning laws
+    // https://www.cs.cmu.edu/~music/icm-online/readings/panlaws/index.html
+
+    // pan it (OLD: linear and wtf)
+    // left->m_pan = pan < 0.0 ? 1.0 : 1.0 - pan;
+    // right->m_pan = pan > 0.0 ? 1.0 : 1.0 + pan;
+    // cerr << "pan: " << pan
+    //      << " left: " << left->m_pan << " right: " << right->m_pan << endl;
 
     RETURN->v_float = pan;
 }

@@ -347,7 +347,7 @@ Chuck_Object::~Chuck_Object()
 // name: dump()
 // desc: output current state (can be overridden)
 //-----------------------------------------------------------------------------
-void Chuck_Object::dump()
+void Chuck_Object::dump() // 1.4.0.2
 {
     // TODO: implement!
 }
@@ -359,10 +359,37 @@ void Chuck_Object::dump()
 // name: apropos()
 // desc: output interface (can be overriden; but probably shouldn't be)
 //-----------------------------------------------------------------------------
-void Chuck_Object::apropos()
+void Chuck_Object::apropos() // 1.4.0.2
 {
-    // apropos on type
-    this->type_ref->apropos();
+    // type to unpack
+    Chuck_Type * type = this->type_ref;
+
+    // if type is generic "@array"
+    if( type->xid == te_array )
+    {
+        // get more specific
+        Chuck_Array * arr = (Chuck_Array *)this;
+        // however, a number of chuck array allocations still do not
+        // set the m_array_type member; update to this only if it exists
+        if( arr->m_array_type != NULL )
+            type = arr->m_array_type;
+    }
+
+    // unpack type and output its info
+    type->apropos();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_Array()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_Array::~Chuck_Array()
+{
+    // decrement reference count; added (ge): 1.4.0.2
+    SAFE_RELEASE(m_array_type);
 }
 
 
