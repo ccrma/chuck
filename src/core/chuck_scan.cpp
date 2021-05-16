@@ -2499,6 +2499,8 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     func = env->context->new_Chuck_Func();
     // set the name
     func->name = func_name;
+    // set the base name (i.e., without designations); 1.4.0.2
+    func->base_name = orig_name;
     // reference the function definition
     func->def = f;
     // note whether the function is marked as member
@@ -2677,15 +2679,13 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     // enter the name into the function table
     env->curr->func.add( func->name, func );
 
-    // add for orig name
+    // if not overload, add entries for orig name
     if( !overload )
     {
         env->curr->value.add( orig_name, value );
         env->curr->func.add( orig_name, func );
     }
-
-    // if overload
-    if( overload )
+    else // if overload (changed from separate if statement 1.4.0.2)
     {
         // make sure returns are equal
         if( *(f->ret_type) != *(overload->func_ref->def->ret_type) )

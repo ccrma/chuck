@@ -40,6 +40,7 @@
 #include "util_string.h"
 #include "ugen_xxx.h"
 
+#include <strstream>
 using namespace std;
 
 
@@ -6373,6 +6374,8 @@ void escape_table( )
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: escape_str()
 // desc: ...
@@ -6470,6 +6473,13 @@ t_CKBOOL escape_str( char * str_lit, int linepos )
     return TRUE;
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: str2char
+// desc: handle escape characters
+//-----------------------------------------------------------------------------
 t_CKINT str2char( const char * c, int linepos )
 {
     if(c[0] == '\\')
@@ -6496,4 +6506,234 @@ t_CKINT str2char( const char * c, int linepos )
     {
         return c[0];
     }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Type()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
+                        Chuck_Type * _p, t_CKUINT _s )
+{
+    m_env = env;
+    xid = _id; name = _n; parent = _p; size = _s; owner = NULL;
+    array_type = NULL; array_depth = 0; obj_size = 0;
+    info = NULL; func = NULL; def = NULL; is_copy = FALSE;
+    ugen_info = NULL; is_complete = TRUE; has_constructor = FALSE;
+    has_destructor = FALSE;
+    allocator = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_Type()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_Type::~Chuck_Type()
+{
+    // reset
+    reset();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: reset()
+// desc: reset this type struct
+//-----------------------------------------------------------------------------
+void Chuck_Type::reset()
+{
+    // CK_FPRINTF_STDERR( "type: %s %i\n", c_name(), (t_CKUINT)this );
+    xid = te_void;
+    size = array_depth = obj_size = 0;
+    is_copy = FALSE;
+    
+    // free only if not locked: to prevent garbage collection after exit
+    if( !this->m_locked )
+    {
+        // TODO: uncomment this, fix it to behave correctly
+        // release references
+        // SAFE_RELEASE(parent);
+        // SAFE_RELEASE(array_type);
+        SAFE_RELEASE(info);
+        // SAFE_RELEASE(owner);
+        // SAFE_RELEASE(func);
+        // SAFE_RELEASE(ugen_info);
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: operator =
+// desc: assignment operator; this does not touch the Chuck_VM_Object
+//-----------------------------------------------------------------------------
+const Chuck_Type & Chuck_Type::operator =( const Chuck_Type & rhs )
+{
+    // release first
+    this->reset();
+    
+    // copy
+    this->xid = rhs.xid;
+    this->name = rhs.name;
+    this->parent = rhs.parent;
+    this->obj_size = rhs.obj_size;
+    this->size = rhs.size;
+    this->def = rhs.def;
+    this->is_copy = TRUE;
+    this->array_depth = rhs.array_depth;
+    this->array_type = rhs.array_type; // SAFE_ADD_REF(this->array_type);
+    this->func = rhs.func; // SAFE_ADD_REF(this->func);
+    this->info = rhs.info; SAFE_ADD_REF(this->info);
+    this->owner = rhs.owner; // SAFE_ADD_REF(this->owner);
+    
+    return *this;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: copy()
+// desc: create a copy of this type struct
+//-----------------------------------------------------------------------------
+Chuck_Type * Chuck_Type::copy( Chuck_Env * env ) const
+{
+    // allocate new instance
+    Chuck_Type * n = env->context->new_Chuck_Type( env );
+    // invoke = operator
+    *n = *this;
+    // return new instance
+    return n;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: str()
+// desc: get a string of this type
+//-----------------------------------------------------------------------------
+const std::string & Chuck_Type::str()
+{
+    // start with base name
+    ret = name;
+    // add array levels as needed
+    for( t_CKUINT i = 0; i < array_depth; i++ )
+        ret += std::string("[]");
+    // return it
+    return ret;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: c_name()
+// desc: return this->str() as C string
+//-----------------------------------------------------------------------------
+const char * Chuck_Type::c_name()
+{
+    return str().c_str();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: apropos()
+// desc: dump info to string
+//-----------------------------------------------------------------------------
+void Chuck_Type::apropos( std::string & output )
+{
+    // reset
+    output = "";
+    // make a string output stream
+    ostringstream sout;
+    // type
+    Chuck_Type * type = this;
+    // line prefix
+    string PREFIX = ""; // [chuck]: ";
+    
+    // delimiter
+    sout << PREFIX;
+    for( int i = 0; i < str().length(); i++ ) sout << "-";
+    sout << endl;
+    // type name
+    sout << PREFIX << str() << (this->ugen_info ? " (unit generator)" : "") << endl;
+    // delimiter
+    sout << PREFIX;
+    for( int i = 0; i < str().length(); i++ ) sout << "-";
+    sout << endl;
+    // inheritance
+    if( type->parent != NULL )
+    {
+        sout << PREFIX << "  |- inherits";
+        while( type->parent != NULL )
+        {
+            // move up
+            type = type->parent;
+            // print
+            sout << " -> " << type->str() << "";
+        }
+        sout << endl;
+        // set back to this
+        type = this;
+    }
+    // description
+    if( this->doc != "" )
+        sout << PREFIX << "  |- description: " << this->doc << "" << endl;
+    
+//    // storage for functions in type
+//    vector<Chuck_Func *> funcs;
+//    // get functions from type info
+//    type->parent->parent->info->get_funcs( funcs );
+//    // print functions
+//    for( t_CKUINT i = 0; i < funcs.size(); i++ )
+//    {
+//        // sout << funcs[i]->base_name << endl;
+//    }
+    
+    //    // storage for values in type
+    //    vector<Chuck_Value *> values;
+    //    // get values from type info
+    //    type->parent->parent->parent->info->get_values( values );
+    //    // print values
+    //    for( t_CKUINT i = 0; i < values.size(); i++ )
+    //    {
+    //        CK_STDCERR << values[i]->name << CK_STDENDL;
+    //    }
+    //
+    //    CK_STDCERR << funcs.size() << " " << values.size() << CK_STDENDL;
+    
+    sout << PREFIX;
+    for( int i = 0; i < str().length(); i++ ) sout << "-";
+    sout << endl;
+
+    // done
+    output = sout.str();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: apropos()
+// desc: dump info to console
+//-----------------------------------------------------------------------------
+void Chuck_Type::apropos()
+{
+    // the info
+    string output;
+    // get it
+    this->apropos( output );
+    // print it
+    CK_STDCERR << output << CK_STDENDL;
 }
