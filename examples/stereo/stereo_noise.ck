@@ -16,7 +16,7 @@ Noise n => Pan2 p => dac;
 1::second => now;
 
 // print
-<<< "starting to pan left <-> right...", "" >>>;
+<<< "panning left <-> right...", "" >>>;
 // time loop
 while( true )
 {
