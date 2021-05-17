@@ -202,11 +202,13 @@ void Chuck_UGen::init()
     m_last = 0.0f;
     m_op = UGEN_OP_TICK;
     m_gain = 1.0f;
-    m_pan = 1.0f;
     m_next = 0.0f;
     m_use_next = FALSE;
     m_max_block_size = -1;
-    
+    // if this is part of a stereo UGen, this parameter will be initialized
+    // according to the underly panning law (1.4.0.2)
+    m_pan = 1.0f;
+
     m_sum_v = NULL;
     m_current_v = NULL;
 

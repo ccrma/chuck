@@ -72,7 +72,7 @@ CK_DLL_TICK( foogen_tick );
 // LiSa query
 DLL_QUERY lisa_query( Chuck_DL_Query * query );
 
-
+// sample rate
 t_CKUINT g_srate;
 
 // offset
@@ -82,6 +82,7 @@ static t_CKUINT foogen_offset_data = 0;
 static t_CKUINT stereo_offset_left = 0;
 static t_CKUINT stereo_offset_right = 0;
 static t_CKUINT stereo_offset_pan = 0;
+static t_CKUINT stereo_offset_panType = 0;
 static t_CKUINT cnoise_offset_data = 0;
 static t_CKUINT impulse_offset_data = 0;
 static t_CKUINT step_offset_data = 0;
@@ -89,6 +90,17 @@ static t_CKUINT delayp_offset_data = 0;
 static t_CKUINT sndbuf_offset_data = 0;
 static t_CKUINT dyno_offset_data = 0;
 // static t_CKUINT zerox_offset_data = 0;
+
+
+
+
+// panning types enumeration
+enum PanTypesEnum
+{
+    PAN_WTF_UNITY = 0, // default in dac/adc
+    PAN_EQ_POWER, // default in Pan2
+    PAN_LINEAR // not supported
+};
 
 
 
@@ -214,7 +226,11 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add pan
     stereo_offset_pan = type_engine_import_mvar( env, "float", "@pan", FALSE );
     if( stereo_offset_pan == CK_INVALID_OFFSET ) goto error;
-    
+
+    // add panning law (see PanTypesEnum)
+    stereo_offset_panType = type_engine_import_mvar( env, "int", "@panType", FALSE );
+    if( stereo_offset_panType == CK_INVALID_OFFSET ) goto error;
+
     // add pan
     func = make_new_mfun( "float", "pan", stereo_ctrl_pan );
     func->add_arg( "float", "val" );
@@ -222,6 +238,15 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "pan", stereo_cget_pan );
     func->doc = "pan between left and right channels, in range [-1,1], with -1 being far-left, 1 far-right, and 0 centered.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add panType
+    func = make_new_mfun( "int", "panType", stereo_ctrl_panType );
+    func->add_arg( "int", "val" );
+    func->doc = "set the panning type: (0) unity again anti-panning, (1) constant power.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    func = make_new_mfun( "int", "panType", stereo_cget_panType );
+    func->doc = "get the panning type: (0) unity again anti-panning, (1) constant power.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
@@ -262,7 +287,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     doc = "a mono-to-stereo unit generator for stereo panning.";
     if( !type_engine_import_ugen_begin( env, "Pan2", "UGen_Stereo", env->global(),
-                                        NULL, NULL, NULL, NULL, 2, 2, doc.c_str() ) )
+                                        pan2_ctor, NULL, NULL, NULL, 2, 2, doc.c_str() ) )
         return FALSE;
     
     if( !type_engine_import_add_ex( env, "stereo/moe2.ck" ) ) goto error;
@@ -1464,6 +1489,56 @@ CK_DLL_CGET( multi_cget_chan )
 
 
 //-----------------------------------------------------------------------------
+// name: pan_eq_power()
+// desc: helper function; pan in range [-1,1]
+//-----------------------------------------------------------------------------
+void pan_eq_power( Chuck_UGen * left, Chuck_UGen * right, t_CKFLOAT pan)
+{
+    // remap pan from [-1,1] to [0,pi/2]
+    t_CKFLOAT panme = (pan+1.0)/2 * ONE_PI/2;
+    // pan it (NEW: constant-power panning; fixed 1.4.0.2)
+    left->m_pan = ::cos(panme);
+    right->m_pan = ::sin(panme);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: pan_this()
+// desc: helper function; pan in range [-1,1]
+//
+// for more info on panning laws
+// https://www.cs.cmu.edu/~music/icm-online/readings/panlaws/index.html
+//-----------------------------------------------------------------------------
+void pan_this( Chuck_UGen * left, Chuck_UGen * right, t_CKFLOAT pan, t_CKINT law )
+{
+    // unity wtf "pan"
+    if( law == PAN_WTF_UNITY )
+    {
+        left->m_pan = pan < 0.0 ? 1.0 : 1.0 - pan;
+        right->m_pan = pan > 0.0 ? 1.0 : 1.0 + pan;
+    }
+    // constant power panning
+    else if( law == PAN_EQ_POWER )
+    {
+        pan_eq_power( left, right, pan );
+    }
+    else
+    {
+        // unsupported
+        // TODONOW: error message
+    }
+
+    // wondering what these do? might observe by uncommenting this
+    // cerr << "pan: " << pan << " type: " << law
+    //      << " left: " << left->m_pan << " right: " << right->m_pan << endl;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: stereo_ctor()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -1471,6 +1546,8 @@ CK_DLL_CTOR( stereo_ctor )
 {
     // get ugen
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    // default panning law to preserve unity gain (but a WTF panning scheme)
+    OBJ_MEMBER_INT(SELF, stereo_offset_panType) = PAN_WTF_UNITY;
 
     // multi
     if( ugen->m_multi_chan_size )
@@ -1507,22 +1584,12 @@ CK_DLL_CTRL( stereo_ctrl_pan )
     else if( pan > 1.0 ) pan = 1.0;
     // set it
     OBJ_MEMBER_FLOAT(SELF, stereo_offset_pan) = pan;
+    // get panning law
+    t_CKINT law = OBJ_MEMBER_INT(SELF, stereo_offset_panType);
+    // pan it!
+    pan_this( left, right, pan, law );
 
-    // remap to [0,pi/2]
-    t_CKFLOAT panme = (pan+1.0)/2 * ONE_PI/2;
-    // pan it (NEW: constant-power panning; fixed 1.4.0.2)
-    left->m_pan = ::cos(panme);
-    right->m_pan = ::sin(panme);
-
-    // for more info on panning laws
-    // https://www.cs.cmu.edu/~music/icm-online/readings/panlaws/index.html
-
-    // pan it (OLD: pseudo-linear and wtf)
-    // left->m_pan = pan < 0.0 ? 1.0 : 1.0 - pan;
-    // right->m_pan = pan > 0.0 ? 1.0 : 1.0 + pan;
-    // cerr << "pan: " << pan
-    //      << " left: " << left->m_pan << " right: " << right->m_pan << endl;
-
+    // pass through pan value
     RETURN->v_float = pan;
 }
 
@@ -1536,6 +1603,44 @@ CK_DLL_CTRL( stereo_ctrl_pan )
 CK_DLL_CGET( stereo_cget_pan )
 {
     RETURN->v_float = OBJ_MEMBER_FLOAT(SELF, stereo_offset_pan);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: stereo_ctrl_panType()
+// desc: ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( stereo_ctrl_panType )
+{
+    Chuck_UGen * ugen = (Chuck_UGen * )SELF;
+    Chuck_UGen * left = ugen->m_multi_chan[0];
+    Chuck_UGen * right = ugen->m_multi_chan[1];
+
+    // get arg
+    t_CKINT panType = GET_CK_INT(ARGS);
+    // set it
+    OBJ_MEMBER_INT(SELF, stereo_offset_panType) = panType;
+    // get pan
+    t_CKFLOAT pan = OBJ_MEMBER_FLOAT(SELF, stereo_offset_pan);
+    // pan it!
+    pan_this( left, right, pan, panType );
+    
+    // pass through pan value
+    RETURN->v_int = panType;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: stereo_cget_panType()
+// desc: ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( stereo_cget_panType )
+{
+    RETURN->v_int = OBJ_MEMBER_INT(SELF, stereo_offset_panType);
 }
 
 
@@ -1560,6 +1665,28 @@ CK_DLL_TICK( dac_tick )
 CK_DLL_TICK( bunghole_tick )
 {
     *out = 0.0f; return 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: pan2_ctor()
+// desc: ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( pan2_ctor )
+{
+    // get ugen
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+
+    // default panning law to constant power
+    OBJ_MEMBER_INT(SELF, stereo_offset_panType) = PAN_EQ_POWER;
+
+    // do the pan
+    pan_this( ugen->m_multi_chan[0], ugen->m_multi_chan[1],
+              OBJ_MEMBER_FLOAT(SELF, stereo_offset_pan),
+              OBJ_MEMBER_INT(SELF, stereo_offset_panType) );
+
 }
 
 

@@ -4,20 +4,29 @@
     this can be used in-language across ChucK files (each file must first 
     "declare" the global value before using it). This also support usage from
     external hosts such as Chunity. (thanks to Jack Atherton for this work!)
+  - (added) constant power panning (as controlled by the .pan parameter)
+    for all UGen_Stereo--including Pan2, stereo dac, stereo adc; this is
+    controllable using the new .panType parameter.  By default, constant
+    power panning is NOT enabled for dac and adc, whose panning behavior 
+    is unchanged (panType==0) and favors a kind of unity-gain-preserving
+    but perceptually suspect panning scheme. By contrast, Pan2 will default
+    to use constant power panning (panType==1).  This will alter exist the
+    effect of any code that uses Pan2.  Specifically, this will introduce
+    a ~3 dB reduction in the output Pan2 (it is possible to
+    restore the previous behavior by explicitly setting .panType to 0). 
+    This ~3 dB reduction corresponds to the equal-powered amplitude value
+    when pan is at center (pan=0). Mathematically, the reduction amount 
+    can be calculated using Std.lintodb(Math.cos(pi/4))
+    [To hear this new behavior, check out examples/stereo/stereo_noise.ck]
   - (fixed) resolved a bug with SndBuf not playing when .rate < 0 and while
     .pos beyond the end
   - (fixed) resolved a bug with SndBuf where it could output DC when .rate < 0
     after it reaches the beginning of the file (e.g., if the first sample is
     non-zero)
-  - (fixed/modified) the .pan parameter for all UGen_Stereo--including Pan2,
-    stereo dac, stereo adc--defaults to constant-power panning (previously
-    was using a pseudo-linear calculation). This will alter exist the effect
-    of any code that uses .pan.
-    [To hear this new behavior, check out examples/stereo/stereo_noise.ck]
   - (deprecated) Chubgraph => (new) Chugraph;
     Chubgraph will continue to function, with a deprecation warning.
-  - (documentation) updated embedded documentation text for inline UGens
-    and libraries.
+  - (documentation) updated embedded documentation text for all statically
+    linked UGens and libraries.
   - (internal/refactor) the "Mega Merge 2021" integrates a long-standing
     branch since REFACTOR-2017 that includes support for globals and was
     the basis for Chunity.  Future Chunity releases will align with mainline
