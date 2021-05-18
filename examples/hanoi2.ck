@@ -1,34 +1,30 @@
 // towers of annoy
-// demonstrates: recursion, arrays, stereo, sndbuf,
-//               questionable sonification
+// demonstrates: recursion, arrays, sndbuf, stereo, questionable sonification
 
 // number of disks
-10 => int disks;
-// min duration for each move
-200::ms => dur wait => dur the_wait;
+11 => int disks;
+// duration for each move
+200::ms => dur wait;
 // step number
 0 => int STEPS;
 
 // gain to pan to dac
-Gain g => Pan2 pan;
-// stereo from here
-pan.left => NRev r1 => dac.left;
-pan.right => NRev r2 => dac.right;
+Gain g => Pan2 pan => JCRev r => dac;
 // set gain
 .5 => g.gain;
 // set mix
-.1 => r1.mix => r2.mix;
+.15 => r.mix;
 
 // the pegs (0 not used - for easy indexing)
 SndBuf pegs[4];
 
 // load files
-me.dir() + "/data/snare-chili.wav" => pegs[1].read;
-me.dir() + "/data/kick.wav" => pegs[2].read;
-me.dir() + "/data/snare-hop.wav" => pegs[3].read;
+"data/hihat-open.wav" => pegs[1].read;
+"data/hihat.wav" => pegs[2].read;
+"data/snare-chili.wav" => pegs[3].read;
 
 // connect to gain
-for( 1 => int i; i < pegs.size(); i++ )
+for( 1 => int i; i < pegs.cap(); i++ )
     pegs[i] => g;
 
 // the hanoi
@@ -43,23 +39,18 @@ fun void hanoi( int num, int src, int dest, int other )
     <<< "step", STEPS, " | move disk from peg", src, " -> ", "peg", dest >>>;
     // sonify
     0 => pegs[dest].pos;
-    // gain
-    Math.random2f( .2, .9 ) => pegs[dest].gain;
     // pan
-    .8 * (dest - 2) => pan.pan;
+    dest - 2 => pan.pan;
     // advance time
-    the_wait => now;
+    wait => now;
 
     // move onto the biggest
     if( num > 1 ) hanoi( num - 1, other, dest, src );
 }
 
-// start it
 hanoi( disks, 1, 3, 2 );
 
-<<<"done!">>>;
+<<< "done.", "" >>>;
 
 // let time pass for reverb to go...
 2::second => now;
-
-
