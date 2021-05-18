@@ -1,0 +1,4 @@
+This UAna computes the correlation of the first two incoming UAnae and outputs
+the result via its UAnaBlob in the magnitude spectrum. Only UAna inputs are
+considered; any signal/UGen inputs are ignored. See the Flip UAna for converting
+a UGen's signal into a suitable input.
