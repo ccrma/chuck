@@ -949,14 +949,19 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "set the size of the array. If the new size is less than the current size, elements will be deleted from the end; if the new size is larger than the current size, 0 or null elements will be added to the end.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // note 1.4.0.2: this is returning SIZE for historical/compatibility reasons;
+    // for now, no change; but might deprecate in the future and encourage programmer to
+    // explicitly updated to .size() OR .capacity(), depending on the context
+    // ---------
     // add cap()
     func = make_new_mfun( "int", "cap", array_get_capacity_hack );
-    func->doc = "get current capacity of the array (number of elements that can be held without reallocating internal buffer).";
+    func->doc = "for historical/compatibilty reasons, this is the same as .size(); it is recommended to explicitly use .size() or .capacity().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add capacity()
-    // func = make_new_mfun( "int", "capacity", array_get_capacity );
-    // if( !type_engine_import_mfun( env, func ) ) goto error;
+    // add capacity() // 1.4.0.2
+    func = make_new_mfun( "int", "capacity", array_get_capacity );
+    func->doc = "get current capacity of the array (number of elements that can be held without reallocating internal buffer).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
     // func = make_new_mfun( "int", "capacity", array_set_capacity );
     // func->add_arg( "int", "val" );
     // if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -2359,9 +2364,10 @@ CK_DLL_MFUN( array_clear )
 CK_DLL_MFUN( array_reset )
 {
     Chuck_Array * array = (Chuck_Array *)SELF;
-    array->clear();
     // default capacity
     array->set_capacity( 8 );
+    // clear the array
+    array->clear();
 }
 
 // array.cap()
