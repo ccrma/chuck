@@ -6,6 +6,8 @@
 //
 // NOTE: in a future version of chuck...
 //       this class will be able to extend UGen
+// NOTE: the above is now possible using Chugraphs,
+//       Chugens, or Chugins!
 
 // the Dinky class
 public class Dinky
