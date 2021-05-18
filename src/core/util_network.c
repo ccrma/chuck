@@ -36,6 +36,7 @@
 //-----------------------------------------------------------------------------
 #include "util_network.h"
 #include "chuck_utils.h"
+#include "chuck_errmsg.h"
 #include <stdio.h>
 
 #if defined(__PLATFORM_WIN32__)
@@ -228,6 +229,23 @@ t_CKBOOL ck_bind( ck_socket sock, int port )
 
     ret = bind( sock->sock, (struct sockaddr *)&sock->sock_in, 
         sizeof(struct sockaddr_in));
+
+    if(port == 0 && ret == 0)
+    {
+        struct sockaddr_in  sinmsg;
+        int len = sizeof(sinmsg);
+        memset(&sinmsg, 0, len);
+        if(getsockname(sock->sock, (struct sockaddr *) &sinmsg, &len) < 0)
+        { 
+            CK_FPRINTF_STDERR( "[chuck]: %s\n", 
+                "unexpected error in getsockname");
+        }
+        else
+        {
+            CK_FPRINTF_STDERR( "[chuck]: listening on port %ld\n", 
+                ntohs(sinmsg.sin_port));
+        }
+    }
 
     return ( ret >= 0 );
 }
