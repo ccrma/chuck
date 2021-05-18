@@ -39,7 +39,11 @@
 #define ULIB_OPSC_CPP 
 #endif
 
+#ifdef __UNITY_FLAT__
+#include "lo.h"
+#else
 #include "lo/lo.h"
+#endif
 
 #include "ulib_opsc.h"
 #include "chuck_type.h"
@@ -1507,9 +1511,9 @@ CK_DLL_MFUN( osc_address_next_string  ) {
 }
 
 
-// OscRecv functions 
 
 
+// OscRecv functions
 //----------------------------------------------
 // name : osc_recv_ctor  
 // desc : CTOR function 

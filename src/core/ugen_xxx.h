@@ -47,6 +47,8 @@ DLL_QUERY xxx_query( Chuck_DL_Query * query );
 CK_DLL_CTOR( stereo_ctor );
 CK_DLL_CTRL( stereo_ctrl_pan );
 CK_DLL_CGET( stereo_cget_pan );
+CK_DLL_CTRL( stereo_ctrl_panType );
+CK_DLL_CGET( stereo_cget_panType );
 
 // multi
 CK_DLL_CTOR( multi_ctor );

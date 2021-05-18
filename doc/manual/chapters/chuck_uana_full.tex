@@ -72,7 +72,7 @@ examples: fft.ck, fft2.ck, fft3.ck win.ck
 \verbatiminput{examples/uana/uana_ifft.txt}
 extends UAna 
 
-    \chuckmultifunction{ .size - ( float, READ/WRITE ) }{ get/set the IFFT size}
+    \chuckmultifunction{ .size - ( int, READ/WRITE ) }{ get/set the IFFT size}
     \chuckmultifunction{ .window() - ( float[], READ/WRITE ) }{ get/set the transform window/size (also see AAA Windowing)}
     \chuckmultifunction{ .windowSize - ( int, READ only ) }{ get the current window size}
     \chuckmultifunction{ .transform - ( complex[], WRITE only ) }{ manually take IFFT (as opposed to using .upchuck() / upchuck operator)}
@@ -93,7 +93,7 @@ examples: ifft.ck, fft2.ck, ifft3.ck
 \verbatiminput{examples/uana/uana_dct.txt}
 extends UAna 
 
-    \chuckmultifunction{ .size - ( float, READ/WRITE ) }{ get/set the DCT size}
+    \chuckmultifunction{ .size - ( int, READ/WRITE ) }{ get/set the DCT size}
     \chuckmultifunction{ .window() - ( float[], READ/WRITE ) }{ get/set the transform window/size (also see AAA Windowing)}
     \chuckmultifunction{ .windowSize - ( int, READ only )  }{get the current window size}
     \chuckmultifunction{ .transform - ( float[], WRITE ) }{ manually take DCT (as opposed to using .upchuck() / upchuck operator)}
@@ -114,7 +114,7 @@ examples: dct.ck
 \verbatiminput{examples/uana/uana_idct.txt}
 extends UAna 
 
-    \chuckmultifunction{ .size - ( float, READ/WRITE ) }{ get/set the IDCT size}
+    \chuckmultifunction{ .size - ( int, READ/WRITE ) }{ get/set the IDCT size}
     \chuckmultifunction{ .window() - ( float[], READ/WRITE ) }{ get/set the transform window/size (also see AAA Windowing)}
     \chuckmultifunction{ .windowSize - ( int, READ only ) }{ get the current window size}
     \chuckmultifunction{ .transform - ( float[], WRITE ) }{ manually take IDCT (as opposed to using .upchuck() / upchuck operator)}
@@ -126,6 +126,50 @@ extends UAna
     \chuckfunction{ {\bf output} audio samples (overlap-added and streamed out to UGens connected via \chuckop)}
 
 examples: idct.ck
+}
+
+\chuckugen{\ugen{[uana]: Flip}
+\begin{chuckitemize}
+    \item Transform signal into analysis domain
+\end{chuckitemize}
+\verbatiminput{examples/uana/uana_flip.txt}
+extends UAna
+
+    \chuckmultifunction{ .size  ( int, READ/WRITE ) }{ get/set the sample buffer size}
+    \chuckmultifunction{ .window()  ( float[], READ/WRITE )  }{get/set the transform window/size
+      (also see AAA Windowing)}
+    \chuckmultifunction{ .windowSize  ( int, READ only ) }{ get the current window size}
+    \chuckmultifunction{ .transform  ( float[], WRITE only ) }{ manually transform the buffer(as opposed to
+      using .upchuck() / upchuck operator)}
+
+(UAna input/output)
+
+    \chuckfunction{ {\bf input:} audio samples from an incoming UGen}
+    \chuckfunction{ {\bf {\bf output}} magnitude spectrum in float array}
+
+example: flip.ck
+}
+
+\chuckugen{\ugen{[uana]: pilF}
+\begin{chuckitemize}
+    \item transform from analysis domain to signal
+\end{chuckitemize}
+\verbatiminput{examples/uana/uana_pilf.txt}
+extends UAna
+
+    \chuckmultifunction{ .size  ( int, READ/WRITE ) }{ get/set the sample buffer size}
+    \chuckmultifunction{ .window()  ( float[], READ/WRITE )  }{get/set the transform window/size
+      (also see AAA Windowing)}
+    \chuckmultifunction{ .windowSize  ( int, READ only ) }{ get the current window size}
+    \chuckmultifunction{ .transform  ( float[], WRITE only ) }{ manually transform the buffer(as opposed to
+      using .upchuck() / upchuck operator)}
+
+(UAna input/output)
+
+    \chuckfunction{ {\bf input:} analysis buffer from an incoming UAna}
+    \chuckfunction{ {\bf {\bf output}} analysis buffer transformed into signal domain}
+
+example: flip.ck
 }
 
 \ugenheading{feature extractors}
@@ -195,8 +239,7 @@ examples: rms.ck
 \verbatiminput{examples/uana/uana_spectral_rolloff.txt}
 extends UAna 
 
-    \chuckmultifunction{ float .percent((float val)) }{ set the percentage for computing rolloff}
-    \chuckmultifunction{ float .percent(( )) }{ get the percentage specified for the rolloff}
+    \chuckmultifunction{ float .percent( float READ/WRITE ) }{ set the percentage for computing rolloff}
     \chuckmultifunction{ float .compute(float[]) }{ manually computes the rolloff from a float array}
 
 (UAna input/output)
@@ -206,4 +249,73 @@ extends UAna
       vector, accessible via .fval(0). This is a normalized value in the range
       [0,1), mapped to the frequency range 0 to nyquist frequency.}
 examples: rolloff.ck
+}
+
+
+\chuckugen{\ugen{[uana]: XCorr }
+\begin{chuckitemize}
+    \item  Cross-correlation
+\end{chuckitemize}
+\verbatiminput{examples/uana/uana_cross_correlation.txt}
+extends UAna
+
+    \chuckmultifunction{ int .normalize( int READ/WRITE ) }{ whether to normalize the correlation result to the range [0, 1)}
+    \chuckmultifunction{ float[] .compute( float[], float[] ) }{ manually computes the cross-correlation of two float arrays}
+
+(UAna input/output)
+
+    \chuckfunction{ {\bf input:} complex spectral frames (e.g., via UAnae connected via \upchuckop)}
+    \chuckfunction{ {\bf output} the computed correlation result is stored in the blob's floating point
+      vector, accessible via .fvals().}
+examples: xcorr.ck
+}
+
+\chuckugen{\ugen{[uana]: AutoCorr }
+\begin{chuckitemize}
+    \item  Auto-correlation
+\end{chuckitemize}
+\verbatiminput{examples/uana/uana_auto_correlation.txt}
+extends UAna
+
+    \chuckmultifunction{ int .normalize(int READ/WRITE) }{ whether to normalize the correlation result to the range [0, 1)}
+    \chuckmultifunction{ float[] .compute(float[]) }{ manually computes the auto-correlation of a float array}
+
+(UAna input/output)
+
+    \chuckfunction{ {\bf input:} complex spectral frames (e.g., via UAnae connected via \upchuckop)}
+    \chuckfunction{ {\bf output} the computed correlation result is stored in the blob's floating point
+      vector, accessible via .fvals().}
+examples: autocorr.ck
+}
+
+\chuckugen{\ugen{[uana]: ZeroX }
+\begin{chuckitemize}
+    \item  zero-crossing counter
+\end{chuckitemize}
+\verbatiminput{examples/uana/uana_zero_crossings.txt}
+extends UAna
+
+    \chuckmultifunction{ float .compute( float[] ) }{ manually computes the number of zero crossings in the sample buffer}
+
+(UAna input/output)
+
+    \chuckfunction{ {\bf input:} complex spectral frames (e.g., via UAnae connected via \upchuckop)}
+    \chuckfunction{ {\bf output} the number of zero crossings is stored in the first element of the
+      blob's floating point vector, accessible via .fvals().}
+examples: zerox.ck
+}
+
+\chuckugen{\ugen{[uana]: FeatureCollector }
+\begin{chuckitemize}
+    \item  UAnae vector concatenator
+\end{chuckitemize}
+\verbatiminput{examples/uana/uana_feature_collector.txt}
+extends UAna
+
+(UAna input/output)
+
+    \chuckfunction{ {\bf input:} complex spectral frames (e.g., via UAnae connected via \upchuckop)}
+    \chuckfunction{ {\bf output} a single float vector of the concatenated upstream UAnae magnitude vectors, in the order
+      in which they were upChucKed.}
+examples: concat.ck
 }

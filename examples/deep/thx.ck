@@ -1,32 +1,81 @@
-//---------------------------------------------------------------------
+//--------------------------------------------------------------------
 // name: thx.ck
-// desc: THX Deep Note emulator
-//       (original Deep Note by James Andy Moorer)
+// desc: emulation of the original THX Deep Note
+//       (by Dr. James Andy Moorer)
 //
-// authors: 
+// author: Perry R. Cook (https://www.cs.princeton.edu/~prc/)
+//         Ge Wang (https://ccrma.stanford.edu/~ge/)
+//
 // Perry R. Cook (Jan 8, 2007) -- original ChucK version
-// Ge Wang -- modified final chord: D1,D1,D2,D3,D4,A4,D5,A5,D6,A6
-//         -- added detune (original Deep Note root between D and Eb)
+// Ge Wang -- modified final chord to align with original Deep Note
+//         -- added beginning "chaotic" section
 //         -- time-driven loops (was counter-driven loops)
-//---------------------------------------------------------------------
-
+//
+// THX resources from /Artful Design/:
+//     https://artful.design/thx/
+//
+// Andy Moorer's personal account
+//.    http://www.jamminpower.org/THX.html
+//
+// -------------------------------------------------------------------
+// Ge, Fall 2017: from Andy Mooorer:
+// -------------------------------------------------------------------
+// OK - I dug out the original program. Here are the frequency
+// bounds of the cluster:
+// #define LOCLUST 40.0
+// #define HICLUST 350.0
+//
+// I had started with them in a more narrow range, but then 
+// widened it. With the randomness, they never get anywhere 
+// near the limits.  And here are the pitches in the final
+// chord for all 30 voices:
+//
+// double freqs[NOSCS], initialfreqs[NOSCS],
+// finalfreqs[] =
+// { 1800.0, 1800.0, 1800.0,
+//   1500.0, 1500.0,
+//   1200.0, 1200.0, 1200.0, 1200.0,
+//   900.0, 900.0, 900.0, 900.0,
+//   600.0, 600.0, 600.0,
+//   300.0, 300.0, 300.0, 300.0,
+//   150.0, 150.0, 150.0, 150.0,
+//   75.0, 75.0, 75.0
+//   37.5, 37.5, 37.5,
+// };
+//
+// Note that in the final chord, they are detuned a bit by 
+// injecting a bit of randomness to make sure they don't fuse
+// totally. Several people have commented that the chord 
+// sounds "bigger" than an equivalent orchestra or organ 
+// chord (like the big chord in the Bm fugue which was my
+// inspiration). I believe this is because of the just 
+// temperament of the chord. Moving the thirds and fifths 
+// to equal temperament just doesn't have the same impact. 
+//
+// Let me know if you have any other questions. I am really 
+// excited to see your new book. It looks like great fun!
+// -A
+//--------------------------------------------------------------------
+ 
 // 30 target frequencies, corresponding to pitches in a big chord:
-// D1,  D1,   D2,   D3,    D4,    A4,    D5,    A5,  D6,   A6
-[ 36.7, 36.7, 73.4, 146.8, 293.7, 440.0, 587.3, 880.0, 1174.7, 1760.0,
-  36.7, 36.7, 73.4, 146.8, 293.7, 440.0, 587.3, 880.0, 1174.7, 1760.15,
-  36.7, 36.7, 73.4, 146.8, 293.7, 440.0, 587.3, 880.0, 1174.7, 1759.85 
+// D1,  D2, D3,  D4,  D5,  A5,  D6,   F#6,  A6
+[ 37.5, 75, 150, 300, 600, 900, 1200, 1500, 1800,
+  37.5, 75, 150, 300, 600, 900, 1200, 1500, 1800,
+  37.5, 75, 150, 300, 600, 900, 1200,       1800,
+            150, 300,      900, 1200  
 ] @=> float targets[];
-// detune mutiplier (original Deep Note between D and Eb)
-Math.mtof(26.3) / Math.mtof(26) => float detune;
 
 // initial frequencies
 float initials[30];
+// for the initial "wavering" in the steady state
+float initialsBase[30];
+float randomRates[30];
 
 // parameters (play with these to control timing)
-3.0::second => dur initialHold; // initial steady segment
-5.5::second => dur sweepTime; // duration over which to change freq
-3.5::second => dur targetHold; // duration to hold target chord
-2.0::second => dur decayTime; // duration for reverb tail to decay to 0
+12.5::second => dur initialHold; // initial steady segment
+6.0::second => dur sweepTime; // duration over which to change freq
+5.5::second => dur targetHold; // duration to hold target chord
+6.0::second => dur decayTime; // duration for reverb tail to decay to 0
 
 // sound objects
 SawOsc saw[30]; // sawtooth waveform (30 of them)
@@ -46,13 +95,16 @@ for( 0 => int i; i < 30; i++ )
     // connect sound objects (right channel)
     saw[i] => gainR[i] => reverbR;
     // randomize initial frequencies
-    Math.random2f( 200.0, 400.0 ) => initials[i] => saw[i].freq;
+    Math.random2f( 160.0, 360.0 ) => initials[i] 
+               => initialsBase[i] => saw[i].freq;
     // initial gain for each sawtooth generator
     0.1 => saw[i].gain;
     // randomize gain (volume)
     Math.random2f( 0.0, 1.0 ) => gainL[i].gain;
     // right.gain is 1-left.gain -- effectively panning in stereo
     1.0 - gainL[i].gain() => gainR[i].gain;
+    // rate at which to waver the initial voices
+    Math.random2f(.1,1) => randomRates[i];
 }
 
 // hold steady cluster (initial chaotic random frequencies)
@@ -66,6 +118,9 @@ while( now < end )
     for( 0 => int i; i < 30; i++ ) {
         // set gradually decaying values to volume
         0.1 * Math.pow(progress,3) => saw[i].gain;
+        // waver the voices
+        initialsBase[i] + (1.25-progress)*.5*initialsBase[i]*Math.sin(now/second*randomRates[i])
+             => initials[i] => saw[i].freq;
     }
     // advance time
     10::ms => now;
@@ -81,7 +136,7 @@ while( now < end )
     // for each sawtooth
     for( 0 => int i; i < 30; i++ ) {
         // update frequency by delta, towards target
-        initials[i] + (targets[i]*detune-initials[i])*progress => saw[i].freq;
+        initials[i] + (targets[i]-initials[i])*progress => saw[i].freq;
     }
     // advance time
     10::ms => now;
@@ -107,4 +162,4 @@ while( now < end )
 }
 
 // wait for reverb tail before ending
-2::second => now;
+5::second => now;

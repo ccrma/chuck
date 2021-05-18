@@ -444,6 +444,7 @@ CK_DLL_CTRL( WvIn_ctrl_path );
 CK_DLL_CGET( WvIn_cget_rate );
 CK_DLL_CGET( WvIn_cget_path );
 
+#ifndef __DISABLE_WVOUT__
 // WvOut
 CK_DLL_CTOR( WvOut_ctor );
 CK_DLL_DTOR( WvOut_dtor );
@@ -469,6 +470,7 @@ CK_DLL_CGET( WvOut_cget_record );
 CK_DLL_CGET( WvOut_cget_autoPrefix );
 CK_DLL_CTRL( WvOut_ctrl_fileGain );
 CK_DLL_CGET( WvOut_cget_fileGain );
+#endif
 
 
 // FM
@@ -1254,10 +1256,10 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     //! \section stk - instruments
 
     //------------------------------------------------------------------------
-    // begin Instrmnt ugen
+    // begin StkInstrument UGen
     //------------------------------------------------------------------------
 
-    doc = "Super-class for STK instruments.";
+    doc = "base class for STK instruments.";
     
     if( !type_engine_import_ugen_begin( env, "StkInstrument", "UGen", env->global(),
                                        Instrmnt_ctor, NULL, Instrmnt_tick, Instrmnt_pmsg,
@@ -1268,27 +1270,27 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
 
     func = make_new_mfun( "float", "noteOn", Instrmnt_ctrl_noteOn ); //! note on
     func->add_arg( "float", "value" );
-    func->doc = "Trigger note on.";
+    func->doc = "trigger note on.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "noteOff", Instrmnt_ctrl_noteOff ); //! note off
     func->add_arg( "float", "value" );
-    func->doc = "Trigger note off.";
+    func->doc = "trigger note off.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", Instrmnt_ctrl_freq ); //! frequency
     func->add_arg( "float", "value" );
-    func->doc = "Set frequency.";
+    func->doc = "set frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", Instrmnt_cget_freq ); //! frequency
-    func->doc = "Get frequency.";
+    func->doc = "get frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "controlChange", Instrmnt_ctrl_controlChange ); //! control change
     func->add_arg( "int", "ctrl" );
     func->add_arg( "float", "value" );
-    func->doc = "Assert control change; numbers are instrument specific, value range:  [0.0 - 128.0]";
+    func->doc = "assert control change; numbers are instrument specific, value range: [0.0 - 127.0]";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1299,7 +1301,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin BandedWG ugen
     //------------------------------------------------------------------------
 
-    doc = "This class uses banded waveguide techniques to model a variety of sounds, including bowed bars, glasses, and bowls.  For more information, see Essl, G. and Cook, P. 'Banded Waveguides: Towards Physical Modelling of Bar Percussion Instruments', Proceedings of the 1999 International Computer Music Conference.\n\
+    doc = "a banded waveguide model for generating a variety of sounds, including bowed bars, glasses, and bowls. For more information, see Essl and Cook 'Banded Waveguides: Towards Physical Modelling of Bar Percussion Instruments', In Proceedings of the 1999 International Computer Music Conference.\n\
 \n\
 Control Change Numbers:\n\
 \n\
@@ -1332,80 +1334,80 @@ Modified for Stk 4.0 by Gary Scavone.";
 
     func = make_new_mfun( "float", "pluck", BandedWG_ctrl_pluck ); //! pluck waveguide
     func->add_arg( "float", "value" );
-    func->doc = "Pluck instrument, [0.0-1.0].";
+    func->doc = "pluck instrument, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "startBowing", BandedWG_ctrl_startBowing ); //! startBowing
     func->add_arg( "float", "value" );
-    func->doc = "Start bowing, [0.0-1.0].";
+    func->doc = "start bowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stopBowing", BandedWG_ctrl_stopBowing ); //! stopBowing
     func->add_arg( "float", "value" );
-    func->doc = "Stop bowing, [0.0-1.0].";
+    func->doc = "stop bowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "bowRate", BandedWG_ctrl_bowRate ); //! strike bowRate
     func->add_arg( "float", "value" );
-    func->doc = "Set bowing rate (seconds).";
+    func->doc = "set bowing rate (seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "bowRate", BandedWG_cget_bowRate ); //! strike bowRate
-    func->doc = "Get bowing rate (seconds).";
+    func->doc = "get bowing rate (seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "bowPressure", BandedWG_ctrl_bowPressure ); //! bowPressure
     func->add_arg( "float", "value" );
-    func->doc = "Set bow pressure, [0.0-1.0].";
+    func->doc = "set bow pressure, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "bowPressure", BandedWG_cget_bowPressure ); //! bowPressure
-    func->doc = "Get bow pressure, [0.0-1.0].";
+    func->doc = "get bow pressure, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "bowMotion", BandedWG_ctrl_bowMotion ); //! bowMotion
     func->add_arg( "float", "value" );
-    func->doc = "Set bow motion, [0.0-1.0].";
+    func->doc = "set bow motion, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "bowMotion", BandedWG_cget_bowMotion ); //! bowMotion
-    func->doc = "Get bow motion, [0.0-1.0].";
+    func->doc = "get bow motion, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "integrationConstant", BandedWG_ctrl_vibratoFreq ); //! vibratoFreq
     func->add_arg( "float", "value" );
-    func->doc = "Set integration constant, vibrato frequency.";
+    func->doc = "set integration constant, vibrato frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "integrationConstant", BandedWG_cget_vibratoFreq ); //! vibratoFreq
-    func->doc = "Get integration constant, vibrato frequency.";
+    func->doc = "get integration constant, vibrato frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modesGain", BandedWG_ctrl_modesGain ); //! modesGain
     func->add_arg( "float", "value" );
-    func->doc = "Set amplitude for modes.";
+    func->doc = "set amplitude for modes.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modesGain", BandedWG_cget_modesGain ); //! modesGain
-    func->doc = "Get amplitude for modes.";
+    func->doc = "get amplitude for modes.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "preset", BandedWG_ctrl_preset ); //! preset
     func->add_arg( "int", "value" );
-    func->doc = "Set instrument preset, (0-3, see above).";
+    func->doc = "set instrument preset, (0-3, see above).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "preset", BandedWG_cget_preset ); //! preset
-    func->doc = "Get instrument preset, (0-3, see above).";
+    func->doc = "get instrument preset, (0-3, see above).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "strikePosition", BandedWG_ctrl_strikePosition ); //! strike Position
     func->add_arg( "float", "value" );
-    func->doc = "Set strike position, [0.0-1.0].";
+    func->doc = "set strike position, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "strikePosition", BandedWG_cget_strikePosition ); //! strike Position
-    func->doc = "Get strike position, [0.0-1.0].";
+    func->doc = "get strike position, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1416,7 +1418,7 @@ Modified for Stk 4.0 by Gary Scavone.";
     // begin BlowBotl ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a helmholtz resonator (biquad filter) with a polynomial jet excitation (a la Cook).\n\
+    doc = "a helmholtz resonator (BiQuad filter) with a polynomial jet excitation (a la Cook).\n\
 \n\
 Control Change Numbers:\n\
 \n\
@@ -1440,57 +1442,57 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002";
 
     func = make_new_mfun( "float", "startBlowing", BlowBotl_ctrl_startBlowing ); //! note on
     func->add_arg( "float", "value" );
-    func->doc = "Start blowing, [0.0-1.0].";
+    func->doc = "start blowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stopBlowing", BlowBotl_ctrl_stopBlowing ); //! note on
     func->add_arg( "float", "value" );
-    func->doc = "Stop blowing, [0.0-1.0].";
+    func->doc = "stop blowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", BlowBotl_ctrl_rate ); //! attack rate
     func->add_arg( "float", "value" );
-    func->doc = "Set rate of attack";
+    func->doc = "set rate of attack";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", BlowBotl_cget_rate ); //! attack rate
-    func->doc = "Get rate of attack";
+    func->doc = "get rate of attack";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "noiseGain", BlowBotl_ctrl_noiseGain ); //! noiseGain
     func->add_arg( "float", "value" );
-    func->doc = "Set noise component gain, [0.0-1.0].";
+    func->doc = "set noise component gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "noiseGain", BlowBotl_cget_noiseGain ); //! noiseGain
-    func->doc = "Get noise component gain, [0.0-1.0].";
+    func->doc = "get noise component gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", BlowBotl_ctrl_vibratoFreq ); //! vibratoFreq
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato frequency (Hz).";
+    func->doc = "set vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", BlowBotl_cget_vibratoFreq ); //! vibratoFreq
-    func->doc = "Get vibrato frequency (Hz).";
+    func->doc = "get vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", BlowBotl_ctrl_vibratoGain ); //! vibratoGain
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato gain, [0.0-1.0].";
+    func->doc = "set vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", BlowBotl_cget_vibratoGain ); //! vibratoGain
-    func->doc = "Get vibrato gain, [0.0-1.0].";
+    func->doc = "get vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "volume", BlowBotl_ctrl_volume ); //! volume
     func->add_arg( "float", "value" );
-    func->doc = "Set volume, [0.0-1.0].";
+    func->doc = "set volume, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "volume", BlowBotl_cget_volume ); //! volume
-    func->doc = "Get volume, [0.0-1.0].";
+    func->doc = "get volume, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1502,9 +1504,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002";
     // begin BlowHole ugen
     //------------------------------------------------------------------------
 
-    doc = "This class is based on the clarinet model, with the addition of a two-port register hole and a three-port dynamic tonehole implementation, as discussed by Scavone and Cook (1998).\n\
+    doc = "based on the clarinet model, with the addition of a two-port register hole and a three-port dynamic tonehole implementation, as discussed by Scavone and Cook (1998).\n\
 \n\
-In this implementation, the distances between the reed/register hole and tonehole/bell are fixed.  As a result, both the tonehole and register hole will have variable influence on the playing frequency, which is dependent on the length of the air column.  In addition, the highest playing freqeuency is limited by these fixed lengths. This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
+In this implementation, the distances between the reed/register hole and tonehole/bell are fixed. As a result, both the tonehole and register hole will have variable influence on the playing frequency, which is dependent on the length of the air column. In addition, the highest playing freqeuency is limited by these fixed lengths. This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
 Control Change Numbers:\n\
 \n\
@@ -1529,66 +1531,66 @@ Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "float", "startBlowing", BlowHole_ctrl_startBlowing ); //! note on
     func->add_arg( "float", "value" );
-    func->doc = "Start blowing, [0.0-1.0]";
+    func->doc = "start blowing, [0.0-1.0]";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stopBlowing", BlowHole_ctrl_stopBlowing ); //! note on
     func->add_arg( "float", "value" );
-    func->doc = "Stop blowing, [0.0-1.0]";
+    func->doc = "stop blowing, [0.0-1.0]";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vent", BlowHole_ctrl_vent ); //! vent frequency
     func->add_arg( "float", "value" );
-    func->doc = "Set vent frequency, [0.0-1.0].";
+    func->doc = "set vent frequency, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vent", BlowHole_cget_vent ); //! vent frequency
-    func->doc = "Get vent frequency, [0.0-1.0].";
+    func->doc = "get vent frequency, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "tonehole", BlowHole_ctrl_tonehole ); //! tonehole size
     func->add_arg( "float", "value" );
-    func->doc = "Set tonehole size, [0.0-1.0].";
+    func->doc = "set tonehole size, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "tonehole", BlowHole_cget_tonehole ); //! tonehole size
-    func->doc = "Get tonehole size, [0.0-1.0].";
+    func->doc = "get tonehole size, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "reed", BlowHole_ctrl_reed ); //! reed stiffness
     func->add_arg( "float", "value" );
-    func->doc = "Set reed stiffness, [0.0-1.0].";
+    func->doc = "set reed stiffness, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "reed", BlowHole_cget_reed ); //! reed stiffness
-    func->doc = "Get reed stiffness, [0.0-1.0].";
+    func->doc = "get reed stiffness, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", BlowHole_ctrl_rate ); //! attack rate
     func->add_arg( "float", "value" );
-    func->doc = "Set rate of attack, [0.0-1.0].";
+    func->doc = "set rate of attack, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", BlowHole_cget_rate ); //! attack rate
-    func->doc = "Get rate of attack, [0.0-1.0].";
+    func->doc = "get rate of attack, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "noiseGain", BlowHole_ctrl_noiseGain ); //! noise gain
     func->add_arg( "float", "value" );
-    func->doc = "Set noise component gain, [0.0-1.0].";
+    func->doc = "set noise component gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "noiseGain", BlowHole_cget_noiseGain ); //! noise gain
-    func->doc = "Get noise component gain, [0.0-1.0].";
+    func->doc = "get noise component gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pressure", BlowHole_ctrl_pressure ); //! breath pressure
     func->add_arg( "float", "value" );
-    func->doc = "Set pressure, [0.0-1.0].";
+    func->doc = "set pressure, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pressure", BlowHole_cget_pressure ); //! breath pressure
-    func->doc = "Get pressure, [0.0-1.0].";
+    func->doc = "get pressure, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1599,7 +1601,7 @@ Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Bowed ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a bowed string model, a la Smith (1986), after McIntyre, Schumacher, Woodhouse (1983).\n\
+    doc = "a bowed string model, a la Smith (1986), after McIntyre, Schumacher, Woodhouse (1983).\n\
 \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
@@ -1626,57 +1628,57 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "float", "startBowing", Bowed_ctrl_startBowing ); //! begin bowing instrument
     func->add_arg( "float", "value" );
-    func->doc = "Start bowing, [0.0-1.0].";
+    func->doc = "start bowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stopBowing", Bowed_ctrl_stopBowing ); //! stop bowing
     func->add_arg( "float", "value" );
-    func->doc = "Stop bowing, [0.0-1.0].";
+    func->doc = "stop bowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "bowPressure", Bowed_ctrl_bowPressure ); //! bowPressure
     func->add_arg( "float", "value" );
-    func->doc = "Set bow pressure, [0.0-1.0]";
+    func->doc = "set bow pressure, [0.0-1.0]";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "bowPressure", Bowed_cget_bowPressure ); //! bowPressure
-    func->doc = "Get bow pressure, [0.0-1.0]";
+    func->doc = "get bow pressure, [0.0-1.0]";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "bowPosition", Bowed_ctrl_bowPos ); //! bowPos
     func->add_arg( "float", "value" );
-    func->doc = "Set bow position, [0.0-1.0]";
+    func->doc = "set bow position, [0.0-1.0]";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "bowPosition", Bowed_cget_bowPos ); //! bowPos
-    func->doc = "Get bow position, [0.0-1.0]";
+    func->doc = "get bow position, [0.0-1.0]";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", Bowed_ctrl_vibratoFreq ); //! vibratoFreq
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato frequency (Hz).";
+    func->doc = "set vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", Bowed_cget_vibratoFreq ); //! vibratoFreq
-    func->doc = "Get vibrato frequency (Hz).";
+    func->doc = "get vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Bowed_ctrl_vibratoGain ); //! vibratoGain
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato gain, [0.0-1.0].";
+    func->doc = "set vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Bowed_cget_vibratoGain ); //! vibratoGain
-    func->doc = "Get vibrato gain, [0.0-1.0].";
+    func->doc = "get vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "volume", Bowed_ctrl_volume ); //! volume
     func->add_arg( "float", "value" );
-    func->doc = "Set volume, [0.0-1.0].";
+    func->doc = "set volume, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "volume", Bowed_cget_volume ); //! volume
-    func->doc = "Get volume, [0.0-1.0].";
+    func->doc = "get volume, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // end the class import
@@ -1687,7 +1689,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Brass ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a simple brass instrument waveguide model, a la Cook (TBone, HosePlayer).\n\
+    doc = "a simple brass instrument waveguide model, a la Cook (TBone, HosePlayer).\n\
 \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
@@ -1714,71 +1716,71 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "float", "clear", Brass_ctrl_clear ); //! clear instrument
     func->add_arg( "float", "value" );
-    func->doc = "Clear instrument.";
+    func->doc = "clear instrument.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "startBlowing", Brass_ctrl_startBlowing ); //! note on
     func->add_arg( "float", "value" );
-    func->doc = "Start blowing, [0.0-1.0].";
+    func->doc = "start blowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stopBlowing", Brass_ctrl_stopBlowing ); //! note on
     func->add_arg( "float", "value" );
-    func->doc = "Stop blowing, [0.0-1.0].";
+    func->doc = "stop blowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "lip", Brass_ctrl_lip ); //! lip stiffness
     func->add_arg( "float", "value" );
-    func->doc = "Set lip tension, [0.0-1.0].";
+    func->doc = "set lip tension, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "lip", Brass_cget_lip ); //! lip stiffness
-    func->doc = "Get lip tension, [0.0-1.0].";
+    func->doc = "get lip tension, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "slide", Brass_ctrl_slide ); //! slide
     func->add_arg( "float", "value" );
-    func->doc = "Set slide length, [0.0-1.0].";
+    func->doc = "set slide length, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "slide", Brass_cget_slide ); //! slide
-    func->doc = "Get slide length, [0.0-1.0].";
+    func->doc = "get slide length, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", Brass_ctrl_vibratoFreq ); //! vibratoFreq
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato frequency (Hz).";
+    func->doc = "set vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", Brass_cget_vibratoFreq ); //! vibratoFreq
-    func->doc = "Get vibrato frequency (Hz).";
+    func->doc = "get vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Brass_ctrl_vibratoGain ); //! vibratoGain
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato gain, [0.0-1.0].";
+    func->doc = "set vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Brass_cget_vibratoGain ); //! vibratoGain
-    func->doc = "Get vibrato gain, [0.0-1.0].";
+    func->doc = "get vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "volume", Brass_ctrl_volume ); //! volume
     func->add_arg( "float", "value" );
-    func->doc = "Set volume, [0.0-1.0].";
+    func->doc = "set volume, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "volume", Brass_cget_volume ); //! volume
-    func->doc = "Get volume, [0.0-1.0].";
+    func->doc = "get volume, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", Brass_ctrl_rate ); //! attack rate
     func->add_arg( "float", "value" );
-    func->doc = "Set rate of attack (seconds).";
+    func->doc = "set rate of attack (seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", Brass_cget_rate ); //! attack rate
-    func->doc = "Get rate of attack (seconds).";
+    func->doc = "get rate of attack (seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1789,7 +1791,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Clarinet ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a simple clarinet physical model, as discussed by Smith (1986), McIntyre, Schumacher, Woodhouse (1983), and others.\n\
+    doc = "a simple clarinet physical model, as discussed by Smith (1986), McIntyre, Schumacher, Woodhouse (1983), and others.\n\
 \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
@@ -1816,71 +1818,71 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "float", "clear", Clarinet_ctrl_clear ); //! note on
     func->add_arg( "float", "value" );
-    func->doc = "Clear instrument.";
+    func->doc = "clear instrument.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "startBlowing", Clarinet_ctrl_startBlowing ); //! note on
     func->add_arg( "float", "value" );
-    func->doc = "Start blowing, [0.0-1.0].";
+    func->doc = "start blowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stopBlowing", Clarinet_ctrl_stopBlowing ); //! note on
     func->add_arg( "float", "value" );
-    func->doc = "Stop blowing, [0.0-1.0].";
+    func->doc = "stop blowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", Clarinet_ctrl_rate ); //! attack rate
     func->add_arg( "float", "value" );
-    func->doc = "Set rate of attack (seconds).";
+    func->doc = "set rate of attack (seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", Clarinet_cget_rate ); //! attack rate
-    func->doc = "Get rate of attack (seconds).";
+    func->doc = "get rate of attack (seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "reed", Clarinet_ctrl_reed); //! reed
     func->add_arg( "float", "value" );
-    func->doc = "Set reed stiffness, [0.0-1.0].";
+    func->doc = "set reed stiffness, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "reed", Clarinet_cget_reed); //! reed
-    func->doc = "Get reed stiffness, [0.0-1.0].";
+    func->doc = "get reed stiffness, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "noiseGain", Clarinet_ctrl_noiseGain ); //! noiseGain
     func->add_arg( "float", "value" );
-    func->doc = "Set noise component gain, [0.0-1.0].";
+    func->doc = "set noise component gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "noiseGain", Clarinet_cget_noiseGain ); //! noiseGain
-    func->doc = "Get noise component gain, [0.0-1.0].";
+    func->doc = "get noise component gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", Clarinet_ctrl_vibratoFreq ); //! rvibratoFreq
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato frequency (Hz).";
+    func->doc = "set vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", Clarinet_cget_vibratoFreq ); //! rvibratoFreq
-    func->doc = "Get vibrato frequency (Hz).";
+    func->doc = "get vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Clarinet_ctrl_vibratoGain ); //! vibratoGain
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato gain, [0.0-1.0].";
+    func->doc = "set vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Clarinet_cget_vibratoGain ); //! vibratoGain
-    func->doc = "Get vibrato gain, [0.0-1.0].";
+    func->doc = "get vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pressure", Clarinet_ctrl_pressure ); //! pressure
     func->add_arg( "float", "value" );
-    func->doc = "Set pressure, [0.0-1.0].";
+    func->doc = "set pressure, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pressure", Clarinet_cget_pressure ); //! pressure
-    func->doc = "Get pressure, [0.0-1.0].";
+    func->doc = "get pressure, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1891,7 +1893,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Flute ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a simple flute physical model, as discussed by Karjalainen, Smith, Waryznyk, etc. The jet model uses a polynomial, a la Cook.\n\
+    doc = "a simple flute physical model, as discussed by Karjalainen, Smith, Waryznyk, etc. The jet model uses a polynomial, a la Cook.\n\
 \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
@@ -1917,89 +1919,89 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "float", "clear", Flute_ctrl_clear ); //! clear
     func->add_arg( "float", "value" );
-    func->doc = "Clear instrument.";
+    func->doc = "clear instrument.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "startBlowing", Flute_ctrl_startBlowing ); //! startBlowing
     func->add_arg( "float", "value" );
-    func->doc = "Start blowing, [0.0-1.0].";
+    func->doc = "start blowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stopBlowing", Flute_ctrl_stopBlowing ); //! stopBlowing
     func->add_arg( "float", "value" );
-    func->doc = "Stop blowing, [0.0-1.0].";
+    func->doc = "stop blowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", Flute_ctrl_rate ); //! attack rate
     func->add_arg( "float", "value" );
-    func->doc = "Set rate of attack (seconds).";
+    func->doc = "set rate of attack (seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", Flute_cget_rate ); //! attack rate
-    func->doc = "Get rate of attack (seconds).";
+    func->doc = "get rate of attack (seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "jetReflection", Flute_ctrl_jetReflection ); //! jet reflection
     func->add_arg( "float", "value" );
-    func-> doc = "Set jet reflection.";
+    func-> doc = "set jet reflection.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "jetReflection", Flute_cget_jetReflection ); //! jet reflection
-    func-> doc = "Get jet reflection.";
+    func-> doc = "get jet reflection.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "jetDelay", Flute_ctrl_jetDelay ); //! jet delay
     func->add_arg( "float", "value" );
-    func->doc = "Set jet delay.";
+    func->doc = "set jet delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "jetDelay", Flute_cget_jetDelay ); //! jet delay
-    func->doc = "Get jet delay.";
+    func->doc = "get jet delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "endReflection", Flute_ctrl_endReflection ); //! end reflection
     func->add_arg( "float", "value" );
-    func->doc = "Set end reflection.";
+    func->doc = "set end reflection.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "endReflection", Flute_cget_endReflection ); //! end reflection
-    func->doc = "Get end reflection.";
+    func->doc = "get end reflection.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "noiseGain", Flute_ctrl_noiseGain ); //! noiseGain
     func->add_arg( "float", "value" );
-    func->doc = "Set noise component gain, [0.0-1.0].";
+    func->doc = "set noise component gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "noiseGain", Flute_cget_noiseGain ); //! noiseGain
-    func->doc = "Get noise component gain, [0.0-1.0].";
+    func->doc = "get noise component gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", Flute_ctrl_vibratoFreq ); //! vibratoFreq
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato frequency (Hz).";
+    func->doc = "set vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", Flute_cget_vibratoFreq ); //! vibratoFreq
-    func->doc = "Get vibrato frequency (Hz).";
+    func->doc = "get vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Flute_ctrl_vibratoGain ); //! vibratoGain
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato gain, [0.0-1.0].";
+    func->doc = "set vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Flute_cget_vibratoGain ); //! vibratoGain
-    func->doc = "Get vibrato gain, [0.0-1.0].";
+    func->doc = "get vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pressure", Flute_ctrl_pressure ); //! pressure
     func->add_arg( "float", "value" );
-    func->doc = "Set pressure, [0.0-1.0].";
+    func->doc = "set pressure, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pressure", Flute_cget_pressure ); //! pressure
-    func->doc = "Get pressure, [0.0-1.0].";
+    func->doc = "get pressure, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -2010,9 +2012,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Mandolin ugen
     //------------------------------------------------------------------------
 
-    doc = "This class inherits from PluckTwo and uses 'commuted synthesis' techniques to model a mandolin instrument.\n\
+    doc = "inherits from PluckTwo and uses 'commuted synthesis' techniques to model a mandolin instrument.\n\
 \n\
-This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others. Commuted Synthesis, in particular, is covered by patents, granted, pending, and/or applied-for. All are assigned to the Board of Trustees, Stanford University.  For information, contact the Office of Technology Licensing, Stanford University.\n\
+This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others. Commuted Synthesis, in particular, is covered by patents, granted, pending, and/or applied-for. All are assigned to the Board of Trustees, Stanford University. For information, contact the Office of Technology Licensing, Stanford University.\n\
 \n\
 Control Change Numbers:\n\
 \n\
@@ -2039,57 +2041,57 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     func = make_new_mfun( "float", "pluck", Mandolin_ctrl_pluck );  //! pluck string with given amplitude 
     func->add_arg( "float", "value" );
-    func->doc = "Pluck instrument, [0.0-1.0].";
+    func->doc = "pluck the instrument, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pluckPos", Mandolin_ctrl_pluckPos ); //! set pluck position ( 0-1) along string
     func->add_arg( "float", "value" );
-    func->doc = "Set pluck position, [0.0-1.0].";
+    func->doc = "set pluck position, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pluckPos", Mandolin_cget_pluckPos ); //! get pluck position ( 0-1) along string
-    func->doc = "Get pluck position, [0.0-1.0].";
+    func->doc = "get pluck position, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "bodySize", Mandolin_ctrl_bodySize ); //! modify instrument size
     func->add_arg( "float", "value" );
-    func->doc = "Set body size (percentage).";
+    func->doc = "set body size (percentage).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "bodySize", Mandolin_cget_bodySize ); //! modify instrument size
-    func->doc = "Get body size (percentage).";
+    func->doc = "get body size (percentage).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stringDamping", Mandolin_ctrl_stringDamping ); //! control string damping
     func->add_arg( "float", "value" );
-    func->doc = "Set string damping, [0.0-1.0].";
+    func->doc = "set string damping, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stringDamping", Mandolin_cget_stringDamping ); //! control string damping
-    func->doc = "Get string damping, [0.0-1.0].";
+    func->doc = "get string damping, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stringDetune", Mandolin_ctrl_stringDetune ); //! control detuning of string pair
     func->add_arg( "float", "value" );
-    func->doc = "Set detuning of string pair, [0.0-1.0].";
+    func->doc = "set detuning of string pair, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stringDetune", Mandolin_cget_stringDetune ); //! control detuning of string pair
-    func->doc = "Get detuning of string pair, [0.0-1.0].";
+    func->doc = "get detuning of string pair, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "afterTouch", Mandolin_ctrl_afterTouch ); //! aftertouch
     func->add_arg( "float", "value" );
-    func->doc = "Set aftertouch (currently unsupported).";
+    func->doc = "set aftertouch (currently unsupported).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "bodyIR", Mandolin_ctrl_bodyIR ); //! read body impulse response
     func->add_arg( "string", "path" );
-    func->doc = "Set body impulse response.";
+    func->doc = "set body impulse response.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "bodyIR", Mandolin_cget_bodyIR ); //! get path
-    func->doc = "Get body impulse response.";
+    func->doc = "get body impulse response.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // end the class import
@@ -2100,7 +2102,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin ModalBar ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a number of different struck bar instruments. It inherits from the Modal class.\n\
+    doc = "a suite of struck bar instruments. It inherits from the Modal class.\n\
 \n\
 Control Change Numbers:\n\
 \n\
@@ -2137,125 +2139,125 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "float", "strike", ModalBar_ctrl_strike ); //! strike bar
     func->add_arg( "float", "value" );
-    func->doc = "Strike bar, [0.0-1.0].";
+    func->doc = "strike bar, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "damp", ModalBar_ctrl_damp ); //! damp bar
     func->add_arg( "float", "value" );
-    func->doc = "Damp bar, [0.0-1.0].";
+    func->doc = "damp bar, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "clear", ModalBar_ctrl_clear ); //! clear
     func->add_arg( "float", "value" );
-    func->doc = "Clear instrument.";
+    func->doc = "clear instrument.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "preset", ModalBar_ctrl_preset ); //! choose preset
     func->add_arg( "int", "value" );
-    func->doc = "Set preset (see above).";
+    func->doc = "set preset (see above).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "preset", ModalBar_cget_preset ); //! choose preset
-    func->doc = "Get preset.";
+    func->doc = "get preset.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stickHardness", ModalBar_ctrl_stickHardness ); //! set stickHardness
     func->add_arg( "float", "value" );
-    func->doc = "Set stick hardness, [0.0-1.0].";
+    func->doc = "set stick hardness, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stickHardness", ModalBar_cget_stickHardness ); //! set stickHardness
-    func->doc = "Get stick hardness, [0.0-1.0]";
+    func->doc = "get stick hardness, [0.0-1.0]";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "strikePosition", ModalBar_ctrl_strikePosition ); //! set strikePosition
     func->add_arg( "float", "value" );
-    func->doc = "Set strike position, [0.0-1.0].";
+    func->doc = "set strike position, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "strikePosition", ModalBar_cget_strikePosition ); //! set strikePosition
-    func->doc = "Get strike position, [0.0-1.0].";
+    func->doc = "get strike position, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", ModalBar_ctrl_vibratoGain ); //! set vibratoGain
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato gain, [0.0-1.0].";
+    func->doc = "set vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", ModalBar_cget_vibratoGain ); //! set vibratoGain
-    func->doc = "Get vibrato gain, [0.0-1.0].";
+    func->doc = "get vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", ModalBar_ctrl_vibratoFreq ); //! set vibratoFreq
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato frequency (Hz).";
+    func->doc = "set vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", ModalBar_cget_vibratoFreq ); //! set vibratoFreq
-    func->doc = "Get vibrato frequency (Hz).";
+    func->doc = "get vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "directGain", ModalBar_ctrl_directGain ); //! set directGain
     func->add_arg( "float", "value" );
-    func->doc = "Set direct gain, [0.0-1.0].";
+    func->doc = "set direct gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "directGain", ModalBar_cget_directGain ); //! set directGain
-    func->doc = "Get direct gain, [0.0-1.0].";
+    func->doc = "get direct gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "masterGain", ModalBar_ctrl_masterGain ); //! set masterGain
     func->add_arg( "float", "value" );
-    func->doc = "Set master gain, [0.0-1.0].";
+    func->doc = "set master gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "masterGain", ModalBar_cget_masterGain ); //! set masterGain
-    func->doc = "Get master gain, [0.0-1.0].";
+    func->doc = "get master gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "mode", ModalBar_ctrl_mode ); //! choose mode
     func->add_arg( "int", "value" );
-    func->doc = "Set mode.";
+    func->doc = "set mode.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "mode", ModalBar_cget_mode ); //! choose mode
-    func->doc = "Get mode.";
+    func->doc = "get mode.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modeRatio", ModalBar_ctrl_modeRatio ); //! mode edit (modeRatio)
     func->add_arg( "float", "value" );
-    func->doc = "Set ratio for selected mode.";
+    func->doc = "set ratio for selected mode.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modeRatio", ModalBar_cget_modeRatio ); //! mode edit (modeRatio)
-    func->doc = "Get ratio for selected mode.";
+    func->doc = "get ratio for selected mode.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modeRadius", ModalBar_ctrl_modeRadius ); //! mode edit (modeRadius)
     func->add_arg( "float", "value" );
-    func->doc = "Set radius for selected mode, [0.0-1.0].";
+    func->doc = "set radius for selected mode, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modeRadius", ModalBar_cget_modeRadius ); //! mode edit (modeRadius)
-    func->doc = "Get radius for selected mode, [0.0-1.0].";
+    func->doc = "get radius for selected mode, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modeGain", ModalBar_ctrl_modeGain ); //! mode edit (modeGain)
     func->add_arg( "float", "value" );
-    func->doc = "Set gain for selected mode, [0.0-1.0].";
+    func->doc = "set gain for selected mode, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modeGain", ModalBar_cget_modeGain ); //! mode edit (modeGain)
-    func->doc = "Get gain for selected mode, [0.0-1.0].";
+    func->doc = "get gain for selected mode, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "volume", ModalBar_ctrl_volume ); //! volume
     func->add_arg( "float", "value" );
-    func->doc = "Set volume, [0.0-1.0].";
+    func->doc = "set volume, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "volume", ModalBar_cget_volume ); //! volume
-    func->doc = "Get volume, [0.0-1.0].";
+    func->doc = "get volume, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -2266,7 +2268,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Moog ugen
     //------------------------------------------------------------------------
 
-    doc = "This instrument uses one attack wave, one looped wave, and an ADSR envelope (inherited from the Sampler class) and adds two sweepable formant (FormSwep) filters.\n\
+    doc = "a Moog instrument modeled using one attack wave, one looped wave, and an ADSR envelope (inherited from the Sampler class) and adds two sweepable formant (FormSwep) filters.\n\
 \n\
 Control Change Numbers:\n\
 \n\
@@ -2293,88 +2295,88 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "float", "lfoSpeed", Moog_ctrl_modSpeed ); //! modulation speed
     func->add_arg( "float", "value" );
-    func->doc = "Set LFO modulation speed.";
+    func->doc = "set LFO modulation speed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "lfoSpeed", Moog_cget_modSpeed ); //! modulation speed
-    func->doc = "Get LFO modulation speed.";
+    func->doc = "get LFO modulation speed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "lfoDepth", Moog_ctrl_modDepth ); //! modulation depth
     func->add_arg( "float", "value" );
-    func->doc = "Set LFO modulation depth.";
+    func->doc = "set LFO modulation depth.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "lfoDepth", Moog_cget_modDepth ); //! modulation depth
-    func->doc = "Get LFO modulation depth.";
+    func->doc = "get LFO modulation depth.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modSpeed", Moog_ctrl_modSpeed ); //! modulation speed
     func->add_arg( "float", "value" );
-    func->doc = "Set modulation speed.";
+    func->doc = "set modulation speed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modSpeed", Moog_cget_modSpeed ); //! modulation speed
-    func->doc = "Get modulation speed.";
+    func->doc = "get modulation speed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modDepth", Moog_ctrl_modDepth ); //! modulation depth
     func->add_arg( "float", "value" );
-    func->doc = "Set modulation depth.";
+    func->doc = "set modulation depth.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modDepth", Moog_cget_modDepth ); //! modulation depth
-    func->doc = "Get modulation depth.";
+    func->doc = "get modulation depth.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     func = make_new_mfun( "float", "filterQ", Moog_ctrl_filterQ ); //! filter Q value
     func->add_arg( "float", "value" );
-    func->doc = "Set filter Q value, [0.0-1.0].";
+    func->doc = "set filter Q value, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "filterQ", Moog_cget_filterQ ); //! filter Q value
-    func->doc = "Get filter Q value, [0.0-1.0].";
+    func->doc = "get filter Q value, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "filterSweepRate", Moog_ctrl_filterSweepRate ); //! filter sweep rate
     func->add_arg( "float", "value" );
-    func->doc = "Set filter sweep rate, [0.0-1.0].";
+    func->doc = "set filter sweep rate, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "filterSweepRate", Moog_cget_filterSweepRate ); //! filter sweep rate
-    func->doc = "Get filter sweep rate, [0.0-1.0].";
+    func->doc = "get filter sweep rate, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "afterTouch", Moog_ctrl_afterTouch ); // aftertouch
     func->add_arg( "float", "value" );
-    func->doc = "Set aftertouch, [0.0-1.0].";
+    func->doc = "set aftertouch, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "volume", Moog_ctrl_volume ); //! volume
     func->add_arg( "float", "value" );
-    func->doc = "Set volume.";
+    func->doc = "set volume.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "volume", Moog_cget_volume ); //! volume
-    func->doc = "Get volume.";
+    func->doc = "get volume.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", Moog_ctrl_vibratoFreq ); //! vibrato frequency
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato frequency (Hz).";
+    func->doc = "set vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", Moog_cget_vibratoFreq ); //! vibrato frequency
-    func->doc = "Get vibrato frequency (Hz).";
+    func->doc = "get vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Moog_ctrl_vibratoGain ); //! vibrato gain
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato gain, [0.0-1.0].";
+    func->doc = "set vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Moog_cget_vibratoGain ); //! vibrato gain
-    func->doc = "Get vibrato gain, [0.0-1.0].";
+    func->doc = "get vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -2385,7 +2387,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Saxofony ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a 'hybrid' digital waveguide instrument that can generate a variety of wind-like sounds.  It has also been referred to as the 'blowed string' model. The waveguide section is essentially that of a string, with one rigid and one lossy termination.  The non-linear function is a reed table.  The string can be 'blown' at any point between the terminations, though just as with strings, it is impossible to excite the system at either end.  If the excitation is placed at the string mid-point, the sound is that of a clarinet.  At points closer to the 'bridge', the sound is closer to that of a saxophone.  See Scavone (2002) for more details.\n\
+    doc = "a 'hybrid' digital waveguide instrument that can generate a variety of wind-like sounds. It has also been referred to as the 'blowed string' model. The waveguide section is essentially that of a string, with one rigid and one lossy termination. The non-linear function is a reed table. The string can be 'blown' at any point between the terminations, though just as with strings, it is impossible to excite the system at either end. If the excitation is placed at the string mid-point, the sound is that of a clarinet. At points closer to the 'bridge', the sound is closer to that of a saxophone. See Scavone (2002) for more details.\n\
 \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
@@ -2413,89 +2415,89 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "float", "clear", Saxofony_ctrl_clear ); //! clear instrument
     func->add_arg( "float", "value" );
-    func->doc = "Clear instrument.";
+    func->doc = "clear instrument.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "startBlowing", Saxofony_ctrl_startBlowing ); //! note on
     func->add_arg( "float", "value" );
-    func->doc = "Start blowing, [0.0-1.0].";
+    func->doc = "start blowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stopBlowing", Saxofony_ctrl_stopBlowing ); //! note on
     func->add_arg( "float", "value" );
-    func->doc = "Stop blowing, [0.0-1.0].";
+    func->doc = "stop blowing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", Saxofony_ctrl_rate ); //! rate
     func->add_arg( "float", "value" );
-    func->doc = "Set rate of attack (seconds).";
+    func->doc = "set rate of attack (seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", Saxofony_cget_rate ); //! rate
-    func->doc = "Get rate of attack (seconds).";
+    func->doc = "get rate of attack (seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stiffness", Saxofony_ctrl_reed ); //! stiffness
     func->add_arg( "float", "value" );
-    func->doc = "Set reed stiffness, [0.0-1.0].";
+    func->doc = "set reed stiffness, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stiffness", Saxofony_cget_reed ); //! stiffness
-    func->doc = "Get reed stiffness, [0.0-1.0].";
+    func->doc = "get reed stiffness, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "aperture", Saxofony_ctrl_aperture ); //! aperture
     func->add_arg( "float", "value" );
-    func->doc = "Set reed aperture, [0.0-1.0].";
+    func->doc = "set reed aperture, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "aperture", Saxofony_cget_aperture ); //! aperture
-    func->doc = "Get reed aperture, [0.0-1.0].";
+    func->doc = "get reed aperture, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "noiseGain", Saxofony_ctrl_noiseGain ); //! noiseGain
     func->add_arg( "float", "value" );
-    func->doc = "Set noise component gain, [0.0-1.0].";
+    func->doc = "set noise component gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "noiseGain", Saxofony_cget_noiseGain ); //! noiseGain
-    func->doc = "Get noise component gain, [0.0-1.0].";
+    func->doc = "get noise component gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Saxofony_ctrl_vibratoGain ); //! vibratoGain
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato gain, [0.0-1.0].";
+    func->doc = "set vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Saxofony_cget_vibratoGain ); //! vibratoGain
-    func->doc = "Get vibrato gain, [0.0-1.0].";
+    func->doc = "get vibrato gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", Saxofony_ctrl_vibratoFreq ); //! vibratoFreq
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato frequency (Hz).";
+    func->doc = "set vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", Saxofony_cget_vibratoFreq ); //! vibratoFreq
-    func->doc = "Get vibrato frequency (Hz).";
+    func->doc = "get vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "blowPosition", Saxofony_ctrl_blowPosition ); //! blowPosition
     func->add_arg( "float", "value" );
-    func->doc = "Set lip stiffness, [0.0-1.0].";
+    func->doc = "set lip stiffness, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "blowPosition", Saxofony_cget_blowPosition ); //! blowPosition
-    func->doc = "Get lip stiffness, [0.0-1.0].";
+    func->doc = "get lip stiffness, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pressure", Saxofony_ctrl_pressure ); //! pressure
     func->add_arg( "float", "value" );
-    func->doc = "Set pressure, [0.0-1.0]";
+    func->doc = "set pressure, [0.0-1.0]";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pressure", Saxofony_cget_pressure ); //! pressure
-    func->doc = "Get pressure, [0.0-1.0]";
+    func->doc = "get pressure, [0.0-1.0]";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -2558,66 +2560,66 @@ by Perry R. Cook, 1996 - 1999.";
 
     func = make_new_mfun( "int", "which", Shakers_ctrl_which ); //! select instrument
     func->add_arg( "int", "value" );
-    func->doc = "Set instrument, [0-22] (see above).";
+    func->doc = "set instrument, [0-22] (see above).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "which", Shakers_cget_which ); //! select instrument
-    func->doc = "Get instrument, [0-22] (see above).";
+    func->doc = "get instrument, [0-22] (see above).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "preset", Shakers_ctrl_which ); //! select instrument
     func->add_arg( "int", "value" );
-    func->doc = "Set instrument, [0-22] (see above).";
+    func->doc = "set instrument, [0-22] (see above).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "preset", Shakers_cget_which ); //! select instrument
-    func->doc = "Get instrument, [0-22] (see above).";
+    func->doc = "get instrument, [0-22] (see above).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "energy", Shakers_ctrl_energy ); //! energy
     func->add_arg( "float", "value" );
-    func->doc = "Set shake energy, [0.0-1.0].";
+    func->doc = "set shake energy, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "energy", Shakers_cget_energy ); //! energy
-    func->doc = "Get shake energy, [0.0-1.0].";
+    func->doc = "get shake energy, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "decay", Shakers_ctrl_decay ); //! decay
     func->add_arg( "float", "value" );
-    func->doc = "Set system decay, [0.0-1.0].";
+    func->doc = "set system decay, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "decay", Shakers_cget_decay ); //! decay
-    func->doc = "Get system decay, [0.0-1.0].";
+    func->doc = "get system decay, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "objects", Shakers_ctrl_objects ); //! objects
     func->add_arg( "float", "value" );
-    func->doc = "Set number of objects, [0.0-128.0].";
+    func->doc = "set number of objects, [0.0-128.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "objects", Shakers_cget_objects ); //! objects
-    func->doc = "Get number of objects, [0.0-128.0].";
+    func->doc = "get number of objects, [0.0-128.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", Shakers_ctrl_freq ); //! frequency
     func->add_arg( "float", "value" );
-    func->doc = "Set frequency (Hz).";
+    func->doc = "set frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", Shakers_cget_freq ); //! frequency
-    func->doc = "Get frequency (Hz).";
+    func->doc = "get frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "noteOn", Shakers_ctrl_noteOn ); //! note on
     func->add_arg( "float", "value" );
-    func->doc = "Trigger note on.";
+    func->doc = "trigger note on.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "noteOff", Shakers_ctrl_noteOff ); //! note off
     func->add_arg( "float", "value" );
-    func->doc = "Trigger note off.";
+    func->doc = "trigger note off.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -2628,7 +2630,7 @@ by Perry R. Cook, 1996 - 1999.";
     // begin Sitar ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a sitar plucked string physical model based on the Karplus-Strong algorithm.\n\
+    doc = "a sitar plucked string physical model based on the Karplus-Strong algorithm.\n\
     \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others. There exist at least two patents, assigned to Stanford, bearing the names of Karplus and/or Strong.\n\
 \n\
@@ -2646,12 +2648,12 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     func = make_new_mfun( "float", "pluck", Sitar_ctrl_pluck ); //! pluck
     func->add_arg( "float", "value" );
-    func->doc = "Pluck string.";
+    func->doc = "pluck string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "clear", Sitar_ctrl_clear ); 
     func->add_arg( "float", "value" );
-    func->doc = "Clear instrument.";
+    func->doc = "clear instrument.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -2662,7 +2664,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin StifKarp ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a simple plucked string algorithm (Karplus Strong) with enhancements (Jaffe-Smith, Smith, and others), including string stiffness and pluck position controls. The stiffness is modeled with allpass filters.\n\
+    doc = "a simple plucked string algorithm (Karplus Strong) with enhancements (Jaffe-Smith, Smith, and others), including string stiffness and pluck position controls. The stiffness is modeled with allpass filters.\n\
 \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
@@ -2688,48 +2690,48 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "float", "pluck", StifKarp_ctrl_pluck ); //! pluck
     func->add_arg( "float", "value" );
-    func->doc = "Pluck string.";
+    func->doc = "pluck string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "clear", StifKarp_ctrl_clear ); 
     func->add_arg( "float", "value" );
-    func->doc = "Clear instrument.";
+    func->doc = "clear instrument.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pickupPosition", StifKarp_ctrl_pickupPosition ); 
     func->add_arg( "float", "value" );
-    func->doc = "Set pickup position, [0.0-1.0].";
+    func->doc = "set pickup position, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pickupPosition", StifKarp_cget_pickupPosition );
-    func->doc = "Get pickup position, [0.0-1.0].";
+    func->doc = "get pickup position, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stretch", StifKarp_ctrl_stretch ); 
     func->add_arg( "float", "value" );
-    func->doc = "Set string strech, [0.0-1.0].";
+    func->doc = "set string strech, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stretch", StifKarp_cget_stretch );
-    func->doc = "Get string strech, [0.0-1.0].";
+    func->doc = "get string strech, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "sustain", StifKarp_ctrl_sustain ); 
     func->add_arg( "float", "value" );
-    func->doc = "Set string sustain, [0.0-1.0].";
+    func->doc = "set string sustain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "sustain", StifKarp_cget_sustain );
-    func->doc = "Get string sustain, [0.0-1.0].";
+    func->doc = "get string sustain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "baseLoopGain", StifKarp_ctrl_baseLoopGain ); 
     func->add_arg( "float", "value" );
-    func->doc = "Set base loop gain, [0.0-1.0].";
+    func->doc = "set base loop gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "baseLoopGain", StifKarp_cget_baseLoopGain );
-    func->doc = "Get base loop gain, [0.0-1.0].";
+    func->doc = "get base loop gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -2741,7 +2743,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin VoicForm ugen
     //------------------------------------------------------------------------
 
-    doc = "This instrument contains an excitation singing wavetable (looping wave with random and periodic vibrato, smoothing on frequency, etc.), excitation noise, and four sweepable complex resonances.\n\
+    doc = "an instrument containing an excitation singing wavetable (looping wave with random and periodic vibrato, smoothing on frequency, etc.), excitation noise, and four sweepable complex resonances.\n\
 \n\
 Measured formant data is included, and enough data is there to support either parallel or cascade synthesis. In the floating point case cascade synthesis is the most natural so that's what you'll find here.\n\
 \n\
@@ -2778,93 +2780,93 @@ Phoneme Names:\n\
 
     func = make_new_mfun( "string", "phoneme", VoicForm_ctrl_phoneme ); //! select phoneme  ( above ) 
     func->add_arg( "string", "value" );
-    func->doc = "Set phoneme (see above).";
+    func->doc = "set phoneme (see above).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "phoneme", VoicForm_cget_phoneme ); //! select phoneme  ( above )
-    func->doc = "Get phoneme (see above).";
+    func->doc = "get phoneme (see above).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "speak", VoicForm_ctrl_speak ); //! start singing
     func->add_arg( "float", "value" );
-    func->doc = "Start singing, [0.0-1.0].";
+    func->doc = "start singing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "quiet", VoicForm_ctrl_quiet ); //! stop singing
     func->add_arg( "float", "value" );
-    func->doc = "Stop singing, [0.0-1.0].";
+    func->doc = "stop singing, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "voiced", VoicForm_ctrl_voiced ); //! set mix for voiced component
     func->add_arg( "float", "value" );
-    func->doc = "Set mix for voiced component, [0.0 - 1.0].";
+    func->doc = "set mix for voiced component, [0.0 - 1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "voiced", VoicForm_cget_voiced ); //! set mix for voiced component
-    func->doc = "Get mix for voiced component, [0.0 - 1.0].";
+    func->doc = "get mix for voiced component, [0.0 - 1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "unVoiced", VoicForm_ctrl_unVoiced ); //! set mix for unvoiced component
     func->add_arg( "float", "value" );
-    func->doc = "Set mix for unvoiced component, [0.0 - 1.0].";
+    func->doc = "set mix for unvoiced component, [0.0 - 1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "unVoiced", VoicForm_cget_unVoiced ); //! set mix for unvoiced component
-    func->doc = "Get mix for unvoiced component, [0.0 - 1.0].";
+    func->doc = "get mix for unvoiced component, [0.0 - 1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pitchSweepRate", VoicForm_ctrl_pitchSweepRate ); //! pitch sweep
     func->add_arg( "float", "value" );
-    func->doc = "Set rate of pitch sweep, [0.0-1.0].";
+    func->doc = "set rate of pitch sweep, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pitchSweepRate", VoicForm_cget_pitchSweepRate ); //! pitch sweep
-    func->doc = "Get rate of pitch sweep, [0.0-1.0].";
+    func->doc = "get rate of pitch sweep, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "voiceMix", VoicForm_ctrl_voiceMix ); //! voiced/unvoiced mix
     func->add_arg( "float", "value" );
-    func->doc = "Set voiced/unvoiced mix, [0.0-1.0].";
+    func->doc = "set voiced/unvoiced mix, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "voiceMix", VoicForm_cget_voiceMix ); //! voiced/unvoiced mix
-    func->doc = "Get voiced/unvoiced mix, [0.0-1.0].";
+    func->doc = "get voiced/unvoiced mix, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "phonemeNum", VoicForm_ctrl_selPhoneme ); //! select phoneme by number
     func->add_arg( "int", "value" );
-    func->doc = "Set phoneme by number, [0.0-128.0].";
+    func->doc = "set phoneme by number, [0.0-128.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "phonemeNum", VoicForm_cget_selPhoneme ); //! select phoneme by number
-    func->doc = "Get phoneme by number, [0.0-128.0].";
+    func->doc = "get phoneme by number, [0.0-128.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", VoicForm_ctrl_vibratoFreq );//! vibrato
     func->add_arg( "float", "value" );
-    func->doc = "Set vibrato frequency (Hz).";
+    func->doc = "set vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoFreq", VoicForm_cget_vibratoFreq );//! vibrato
-    func->doc = "Get vibrato frequency (Hz).";
+    func->doc = "get vibrato frequency (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", VoicForm_ctrl_vibratoGain );//! vibrato depth
-    func->doc = "Set vibrato gain (Hz), [0.0-1.0].";
+    func->doc = "set vibrato gain (Hz), [0.0-1.0].";
     func->add_arg( "float", "value" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", VoicForm_cget_vibratoGain );//! vibrato depth
-    func->doc = "Get vibrato gain (Hz), [0.0-1.0].";
+    func->doc = "get vibrato gain (Hz), [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "loudness", VoicForm_ctrl_loudness ); //! 'loudness' of voicee
     func->add_arg( "float", "value" );
-    func->doc = "Set 'loudness' of voice, [0.0-1.0].";
+    func->doc = "set 'loudness' of voice, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "loudness", VoicForm_cget_loudness ); //! 'loudness' of voicee
-    func->doc = "Get 'loudness' of voice, [0.0-1.0].";
+    func->doc = "get 'loudness' of voice, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -2878,7 +2880,7 @@ Phoneme Names:\n\
     // begin FM ugen
     //------------------------------------------------------------------------
 
-    doc = "This class controls an arbitrary number of waves and envelopes, determined via a constructor argument.\n\
+    doc = "this class controls an arbitrary number of waves and envelopes, determined via a constructor argument.\n\
 \n\
 Control Change Numbers:\n\
 \n\
@@ -2907,47 +2909,47 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "float", "lfoDepth", FM_ctrl_modDepth ); //!modulation Depth
     func->add_arg( "float", "value" );
-    func->doc = "Set modulation depth, [0.0-1.0].";
+    func->doc = "set modulation depth, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "lfoDepth", FM_cget_modDepth ); //!modulation Depth
-    func->doc = "Get modulation depth, [0.0-1.0].";
+    func->doc = "get modulation depth, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "lfoSpeed", FM_ctrl_modSpeed ); //!modulation Speed
     func->add_arg( "float", "value" );
-    func->doc = "Set modulation speed (Hz).";
+    func->doc = "set modulation speed (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "lfoSpeed", FM_cget_modSpeed ); //!modulation Speed
-    func->doc = "Get modulation speed (Hz).";
+    func->doc = "get modulation speed (Hz).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "afterTouch", FM_ctrl_afterTouch ); //!aftertouch
     func->add_arg( "float", "value" );
-    func->doc = "Set aftertouch, [0.0-1.0].";
+    func->doc = "set aftertouch, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "afterTouch", FM_cget_afterTouch ); //!aftertouch
-    func->doc = "Get aftertouch, [0.0-1.0].";
+    func->doc = "get aftertouch, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "controlOne", FM_ctrl_control1 ); //! FM control 1
     func->add_arg( "float", "value" );
-    func->doc = "Set control one [instrument specific].";
+    func->doc = "set control one [instrument specific].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "controlOne", FM_cget_control1 ); //! FM control 1
-    func->doc = "Get control one [instrument specific].";
+    func->doc = "get control one [instrument specific].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "controlTwo", FM_ctrl_control2 ); //! FM control 2
     func->add_arg( "float", "value" );
-    func->doc = "Set control two [instrument specific].";
+    func->doc = "set control two [instrument specific].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     func = make_new_mfun( "float", "controlTwo", FM_cget_control2 ); //! FM control 2
-    func->doc = "Get control two [instrument specific].";
+    func->doc = "get control two [instrument specific].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -2958,7 +2960,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin BeeThree ugen
     //------------------------------------------------------------------------
 
-    doc = " This class implements a simple 4 operator topology, also referred to as algorithm 8 of the TX81Z.\n\
+    doc = "a simple 4-operator FM topology, also referred to as algorithm 8 of the TX81Z.\n\
 \n\
 Algorithm 8 is :\n\
     \n\
@@ -2992,7 +2994,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin FMVoices ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements 3 carriers and a common modulator, also referred to as algorithm 6 of the TX81Z.\n\
+    doc = "a FM instrument with 3 carriers and a common modulator, also referred to as algorithm 6 of the TX81Z.\n\
 \n\
 Algorithm 6 is :\n\
     \n\
@@ -3018,29 +3020,29 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "float", "vowel", FMVoices_ctrl_vowel ); //!select vowel
     func->add_arg( "float", "value" );
-    func->doc = "Set vowel, [0.0-1.0].";
+    func->doc = "set vowel, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vowel", FMVoices_cget_vowel ); //!select vowel
-    func->doc = "Get vowel, [0.0-1.0].";
+    func->doc = "get vowel, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "spectralTilt", FMVoices_ctrl_spectralTilt ); //! spectral tilt
     func->add_arg( "float", "value" );
-    func->doc = "Set spectral tilt, [0.0-1.0].";
+    func->doc = "set spectral tilt, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "spectralTilt", FMVoices_cget_spectralTilt ); //! spectral tilt
-    func->doc = "Get spectral tilt, [0.0-1.0].";
+    func->doc = "get spectral tilt, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "adsrTarget", FMVoices_ctrl_adsrTarget ); //!adsr targets
     func->add_arg( "float", "value" );
-    func->doc = "Set ADSR targets, [0.0-1.0].";
+    func->doc = "set ADSR targets, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "adsrTarget", FMVoices_cget_adsrTarget ); //!adsr targets
-    func->doc = "Get ADSR targets, [0.0-1.0].";
+    func->doc = "get ADSR targets, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -3051,7 +3053,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin HevyMetl ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements 3 cascade operators with feedback modulation, also referred to as algorithm 3 of the TX81Z.\n\
+    doc = "a FM instrument containing 3 cascade operators with feedback modulation, also referred to as algorithm 3 of the TX81Z.\n\
 \n\
 Algorithm 3 is :\n\
     \n\
@@ -3082,7 +3084,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin PercFlut ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements algorithm 4 of the TX81Z.\n\
+    doc = "a FM instrument corresponding to algorithm 4 of the TX81Z.\n\
 \n\
 Algorithm 4 is :\n\
     \n\
@@ -3113,7 +3115,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Rhodey ugen
     //------------------------------------------------------------------------
 
-    doc = " This class implements two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
+    doc = "two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
 \n\
 Algorithm 5 is :\n\
     \n\
@@ -3148,7 +3150,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin TubeBell ugen
     //------------------------------------------------------------------------
     
-    doc = "This class implements two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
+    doc = "two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
 \n\
 Algorithm 5 is :\n\
     \n\
@@ -3180,7 +3182,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Wurley ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
+    doc = "two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
 \n\
 Algorithm 5 is :\n\
 \n\
@@ -3220,7 +3222,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Delay ugen
     //------------------------------------------------------------------------
 
-    doc = "This protected Filter subclass implements a non-interpolating digital delay-line. A fixed maximum length of 4095 and a delay of zero is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
+    doc = "a non-interpolating digital delay-line. A fixed maximum length of 4095 and a delay of zero is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
 \n\
 A non-interpolating delay line is typically used in fixed delay-length applications, such as for reverberation.\n\
 \n\
@@ -3236,24 +3238,24 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( Delay_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "dur", "delay", Delay_ctrl_delay ); //! length of delay
     func->add_arg( "dur", "value" );
-    func->doc = "Set length of delay.";
+    func->doc = "set length of delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "delay", Delay_cget_delay ); //! length of delay
-    func->doc = "Get length of delay.";
+    func->doc = "get length of delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "max", Delay_ctrl_max ); //! max delay (buffer size) 
     func->add_arg( "dur", "value" );
-    func->doc = "Set max delay (buffer size).";
+    func->doc = "set max delay (buffer size).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "max", Delay_cget_max ); //! max delay (buffer size)
-    func->doc = "Get max delay (buffer size).";
+    func->doc = "get max delay (buffer size).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "clear", Delay_clear ); //! clear delay
-    func->doc = "Clear delay line.";
+    func->doc = "clear delay line.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // delay 'subs' not actually extending .
@@ -3266,7 +3268,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin DelayA ugen
     //------------------------------------------------------------------------
 
-    doc = "This Delay subclass implements a fractional-length digital delay-line using a first-order allpass filter. A fixed maximum length of 4095 and a delay of 0.5 is set using the default constructor.  Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
+    doc = "a fractional-length digital delay-line using a first-order allpass filter. A fixed maximum length of 4095 and a delay of 0.5 is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
 \n\
 An allpass filter has unity magnitude gain but variable phase delay properties, making it useful in achieving fractional delays without affecting a signal's frequency magnitude response. In order to achieve a maximally flat phase delay response, the minimum delay possible in this implementation is limited to a value of 0.5.\n\
 \n\
@@ -3280,24 +3282,24 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( DelayA_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "dur", "delay", DelayA_ctrl_delay ); //! length of delay
     func->add_arg( "dur", "value" );
-    func->doc = "Set length of delay.";
+    func->doc = "set length of delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "delay", DelayA_cget_delay ); //! length of delay
-    func->doc = "Get length of delay.";
+    func->doc = "get length of delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "max", DelayA_ctrl_max ); //! max delay ( buffer size ) 
     func->add_arg( "dur", "value" );
-    func->doc = "Set max delay (buffer size).";
+    func->doc = "set max delay (buffer size).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "max", DelayA_cget_max ); //! max delay ( buffer size )
-    func->doc = "Get max delay (buffer size).";
+    func->doc = "get max delay (buffer size).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "clear", DelayA_clear ); //! clear delay
-    func->doc = "Clear delay line.";
+    func->doc = "clear delay line.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -3308,7 +3310,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin DelayL ugen
     //------------------------------------------------------------------------
 
-    doc = "This Delay subclass implements a fractional-length digital delay-line using first-order linear interpolation. A fixed maximum length of 4095 and a delay of zero is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
+    doc = "a fractional-length digital delay-line using first-order linear interpolation. A fixed maximum length of 4095 and a delay of zero is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
 \n\
 Linear interpolation is an efficient technique for achieving fractional delay lengths, though it does introduce high-frequency signal attenuation to varying degrees depending on the fractional delay setting. The use of higher order Lagrange interpolators can typically improve (minimize) this attenuation characteristic.\n\
 \n\
@@ -3327,24 +3329,24 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( DelayL_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "dur", "delay", DelayL_ctrl_delay ); //! length of delay
     func->add_arg( "dur", "value" );
-    func->doc = "Set length of delay.";
+    func->doc = "set length of delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "delay", DelayL_cget_delay ); //! length of delay
-    func->doc = "Get length of delay.";
+    func->doc = "get length of delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "max", DelayL_ctrl_max ); //! max delay ( buffer size ) 
     func->add_arg( "dur", "value" );
-    func->doc = "Set max delay (buffer size).";
+    func->doc = "set max delay (buffer size).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "max", DelayL_cget_max ); //! max delay ( buffer size )
-    func->doc = "Get max delay (buffer size).";
+    func->doc = "get max delay (buffer size).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "clear", DelayL_clear ); //! clear delay
-    func->doc = "Clear delay line.";
+    func->doc = "clear delay line.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // end the class import
@@ -3355,7 +3357,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Echo ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a echo effect.\n\
+    doc = "an echo effect.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -3370,29 +3372,29 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( Echo_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "dur", "delay", Echo_ctrl_delay ); //! length of echo
     func->add_arg( "dur", "value" );
-    func->doc = "Set length of echo.";
+    func->doc = "set length of echo.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "delay", Echo_cget_delay ); //! length of echo
-    func->doc = "Get length of echo.";
+    func->doc = "get length of echo.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "max", Echo_ctrl_max ); //! max delay
     func->add_arg( "dur", "value" );
-    func->doc = "Set max delay (buffer size).";
+    func->doc = "set max delay (buffer size).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "max", Echo_cget_max ); //! max delay
-    func->doc = "Get max delay (buffer size).";
+    func->doc = "get max delay (buffer size).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", Echo_ctrl_mix ); //! mix level ( wet/dry ) 
     func->add_arg( "float", "value" );
-    func->doc = "Set mix level (wet/dry).";
+    func->doc = "set mix level (wet/dry).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", Echo_cget_mix ); //! mix level ( wet/dry )
-    func->doc = "Get mix level (wet/dry).";
+    func->doc = "get mix level (wet/dry).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -3405,7 +3407,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //------------------------------------------------------------------------
     // begin Envelope ugen
     //------------------------------------------------------------------------
-    doc = "This class implements a simple envelope generator which is capable of ramping to a target value by a specified rate. It also responds to simple `keyOn` and `keyOff` messages, ramping to 1.0 on `keyOn` and to 0.0 on `keyOff`.\n\
+    doc = "a simple envelope generator which is capable of ramping to a target value by a specified rate. It also responds to simple `keyOn` and `keyOff` messages, ramping to 1.0 on `keyOn` and to 0.0 on `keyOff`.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -3421,66 +3423,66 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( Envelope_offset_data == CK_INVALID_OFFSET ) goto error;
 
     func = make_new_mfun( "int", "keyOn", Envelope_ctrl_keyOn0 ); //! ramp to 1.0
-    func->doc = "Get keyOn state.";
+    func->doc = "get keyOn state.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "keyOn", Envelope_ctrl_keyOn ); //! ramp to 1.0
     func->add_arg( "int", "value" );
-    func->doc = "Ramp to 1.0.";
+    func->doc = "ramp to 1.0.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "keyOff", Envelope_ctrl_keyOff0 ); //! ramp to 0.0
-    func->doc = "Get keyOff state.";
+    func->doc = "get keyOff state.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "keyOff", Envelope_ctrl_keyOff ); //! ramp to 0.0
     func->add_arg( "int", "value" );
-    func->doc = "Ramp to 0.0.";
+    func->doc = "ramp to 0.0.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "target", Envelope_ctrl_target ); //! ramp to arbitrary value.
     func->add_arg( "float", "value" );
-    func->doc = "Set value to ramp to.";
+    func->doc = "set value to ramp to.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "target", Envelope_cget_target ); //! ramp to arbitrary value.
-    func->doc = "Get value to ramp to.";
+    func->doc = "get value to ramp to.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "time", Envelope_ctrl_time ); //! time to reach target
     func->add_arg( "float", "value" );
-    func->doc = "Set time to reach target (in seconds).";
+    func->doc = "set time to reach target (in seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "time", Envelope_cget_time ); //! time to reach target
-    func->doc = "Get time to reach target (in seconds).";
+    func->doc = "get time to reach target (in seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "duration", Envelope_ctrl_duration ); //! time to reach target
     func->add_arg( "dur", "value" );
-    func->doc = "Set duration to reach target.";
+    func->doc = "set duration to reach target.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "duration", Envelope_cget_duration ); //! time to reach target
-    func->doc = "Get duration to reach target.";
+    func->doc = "get duration to reach target.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", Envelope_ctrl_rate ); //! attack rate 
     func->add_arg( "float", "value" );
-    func->doc = "Set rate of change.";
+    func->doc = "set rate of change.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", Envelope_cget_rate ); //! attack rate
-    func->doc = "Get rate of change.";
+    func->doc = "get rate of change.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "value", Envelope_ctrl_value ); //! set immediate value
     func->add_arg( "float", "value" );
-    func->doc = "Set immediate value.";
+    func->doc = "set immediate value.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "value", Envelope_cget_value ); //! set immediate value
-    func->doc = "Get immediate value.";
+    func->doc = "get immediate value.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -3492,7 +3494,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin ADSR ugen
     //------------------------------------------------------------------------
    
-    doc = "This Envelope subclass implements a traditional ADSR (Attack, Decay, Sustain, Release) envelope.  It responds to simple `keyOn` and `keyOff` messages, keeping track of its state.\n\
+    doc = "a traditional ADSR (Attack, Decay, Sustain, Release) envelope. It responds to simple `keyOn` and `keyOff` messages, keeping track of its state.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -3505,65 +3507,65 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "dur", "attackTime", ADSR_ctrl_attackTime ); //! attack time
     func->add_arg( "dur", "value" );
-    func->doc = "Set attack time.";
+    func->doc = "set attack time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "attackTime", ADSR_cget_attackTime ); //! attack time
-    func->doc = "Get attack time.";
+    func->doc = "get attack time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "attackRate", ADSR_ctrl_attackRate ); //! attack rate
     func->add_arg( "float", "value" );
-    func->doc = "Set attack rate.";
+    func->doc = "set attack rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "attackRate", ADSR_cget_attackRate ); //! attack rate
-    func->doc = "Get attack rate.";
+    func->doc = "get attack rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "decayTime", ADSR_ctrl_decayTime ); //! decay time 
     func->add_arg( "dur", "value" );
-    func->doc = "Set decay time.";
+    func->doc = "set decay time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "decayTime", ADSR_cget_decayTime ); //! decay time
-    func->doc = "Get decay time.";
+    func->doc = "get decay time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "decayRate", ADSR_ctrl_decayRate ); //! decay rate
     func->add_arg( "float", "value" );
-    func->doc = "Set decay rate.";
+    func->doc = "set decay rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "decayRate", ADSR_cget_decayRate ); //! decay rate
-    func->doc = "Get decay rate.";
+    func->doc = "get decay rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "sustainLevel", ADSR_ctrl_sustainLevel ); //! sustain level
     func->add_arg( "float", "value" );
-    func->doc = "Set sustain level.";
+    func->doc = "set sustain level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "sustainLevel", ADSR_cget_sustainLevel ); //! sustain level
-    func->doc = "Get sustain level.";
+    func->doc = "get sustain level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "releaseTime", ADSR_ctrl_releaseTime ); //! release time 
     func->add_arg( "dur", "value" );
-    func->doc = "Set release time.";
+    func->doc = "set release time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "releaseTime", ADSR_cget_releaseTime ); //! release time
-    func->doc = "Get release time.";
+    func->doc = "get release time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "releaseRate", ADSR_ctrl_releaseRate ); //! release rate
     func->add_arg( "float", "value" );
-    func->doc = "Set release rate.";
+    func->doc = "set release rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "releaseRate", ADSR_cget_releaseRate ); //! release rate
-    func->doc = "Get release rate.";
+    func->doc = "get release rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "set", ADSR_ctrl_set ); //! set
@@ -3571,7 +3573,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->add_arg( "float", "decayTime" );
     func->add_arg( "float", "sustainLevel" );
     func->add_arg( "float", "releaseTime" );
-    func->doc = "Set attack, decay, sustain, and release all at once (in seconds).";
+    func->doc = "set attack, decay, sustain, and release all at once (in seconds).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "set", ADSR_ctrl_set2 ); //! set
@@ -3579,11 +3581,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->add_arg( "dur", "decayDuration" );
     func->add_arg( "float", "sustainLevel" );
     func->add_arg( "dur", "releaseDuration" );
-    func->doc = "Set attack, decay, sustain, and release all at once.";
+    func->doc = "set attack, decay, sustain, and release all at once.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "state", ADSR_cget_state ); //! attack=0, decay=1 , sustain=2, release=3, done=4
-    func->doc = "Get state; attack=0, decay=1, sustain=2, release=3, done=4";
+    func->doc = "get state; attack=0, decay=1, sustain=2, release=3, done=4";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     if( !type_engine_import_svar( env, "int", "ATTACK", TRUE, (t_CKUINT) &ADSR_state_ATTACK) ) goto error;
@@ -3716,7 +3718,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin OnePole ugen
     //------------------------------------------------------------------------
 
-    doc = "This protected Filter subclass implements a one-pole digital filter.  A method is provided for setting the pole position along the real axis of the z-plane while maintaining a constant peak filter gain.\n\
+    doc = "a one-pole digital filter. A method is provided for setting the pole position along the real axis of the z-plane while maintaining a constant peak filter gain.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -3730,29 +3732,29 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     func = make_new_mfun( "float", "a1", OnePole_ctrl_a1 ); //! filter coefficient
     func->add_arg( "float", "value" );
-    func->doc = "Set filter coefficient.";
+    func->doc = "set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "a1", OnePole_cget_a1 ); //! filter coefficient
-    func->doc = "Get filter coefficient.";
+    func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", OnePole_ctrl_b0 ); //! filter coefficient 
     func->add_arg( "float", "value" );
-    func->doc = "Set filter coefficient.";
+    func->doc = "set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", OnePole_cget_b0 ); //! filter coefficient
-    func->doc = "Get filter coefficient.";
+    func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pole", OnePole_ctrl_pole ); //! set pole position along real axis of z-plane
     func->add_arg( "float", "value" );
-    func->doc = "Set pole position along real axis of z-plane.";
+    func->doc = "set pole position along real axis of z-plane.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pole", OnePole_cget_pole ); //! set pole position along real axis of z-plane
-    func->doc = "Get pole position along real axis of z-plane.";
+    func->doc = "get pole position along real axis of z-plane.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -3763,7 +3765,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //------------------------------------------------------------------------
     // begin TwoPole ugen
     //------------------------------------------------------------------------
-    doc = "This protected Filter subclass implements a two-pole digital filter.  A method is provided for creating a resonance in the frequency response while maintaining a nearly constant filter gain.\n\
+    doc = "a two-pole digital filter. A method is provided for creating a resonance in the frequency response while maintaining a nearly constant filter gain.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -3778,56 +3780,56 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( TwoPole_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "a1", TwoPole_ctrl_a1 ); //! filter coefficient
     func->add_arg( "float", "value" );
-    func->doc = "Set filter coefficient.";
+    func->doc = "set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "a1", TwoPole_cget_a1 ); //! filter coefficient
-    func->doc = "Get filter coefficient.";
+    func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "a2", TwoPole_ctrl_a2 ); //! filter coefficient
     func->add_arg( "float", "value" );
-    func->doc = "Set filter coefficient.";
+    func->doc = "set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "a2", TwoPole_cget_a2 ); //! filter coefficient
-    func->doc = "Get filter coefficient.";
+    func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", TwoPole_ctrl_b0 ); //! filter coefficient
     func->add_arg( "float", "value" );
-    func->doc = "Set filter coefficient.";
+    func->doc = "set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", TwoPole_cget_b0 ); //! filter coefficient
-    func->doc = "Get filter coefficient.";
+    func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", TwoPole_ctrl_freq ); //! filter resonance frequency
     func->add_arg( "float", "value" );
-    func->doc = "Set filter resonance frequency.";
+    func->doc = "set filter resonance frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", TwoPole_cget_freq ); //! filter resonance frequency
-    func->doc = "Get filter resonance frequency.";
+    func->doc = "get filter resonance frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "radius", TwoPole_ctrl_radius ); //! filter resonance radius
     func->add_arg( "float", "value" );
-    func->doc = "Set filter radius resonance.";
+    func->doc = "set filter radius resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "radius", TwoPole_cget_radius ); //! filter resonance radius
-    func->doc = "Get filter radius resonance.";
+    func->doc = "get filter radius resonance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "norm", TwoPole_ctrl_norm ); //! toggle filter normalization 
     func->add_arg( "int", "value" );
-    func->doc = "Set filter normalization";
+    func->doc = "set filter normalization.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "norm", TwoPole_cget_norm ); //! toggle filter normalization
-    func->doc = "Get filter normalization";
+    func->doc = "get filter normalization.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -3838,7 +3840,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //------------------------------------------------------------------------
     // begin OneZero ugen
     //------------------------------------------------------------------------
-    doc = " This protected Filter subclass implements a one-zero digital filter.  A method is provided for setting the zero position along the real axis of the z-plane while maintaining a constant filter gain.\n\
+    doc = "a one-zero digital filter. A method is provided for setting the zero position along the real axis of the z-plane while maintaining a constant filter gain.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -3851,29 +3853,29 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( OneZero_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "zero", OneZero_ctrl_zero ); //! set zero position
     func->add_arg( "float", "value" );
-    func->doc = "Set zero position";
+    func->doc = "set zero position.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "zero", OneZero_cget_zero ); //! set zero position
-    func->doc = "Get zero position";
+    func->doc = "get zero position.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", OneZero_ctrl_b0 ); //! filter coefficient
     func->add_arg( "float", "value" );
-    func->doc = "Set filter coefficient.";
+    func->doc = "set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", OneZero_cget_b0 ); //! filter coefficient
-    func->doc = "Get filter coefficient.";
+    func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b1", OneZero_ctrl_b1 ); //! filter coefficient 
     func->add_arg( "float", "value" );
-    func->doc = "Set filter coefficient.";
+    func->doc = "set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b1", OneZero_cget_b1 ); //! filter coefficient
-    func->doc = "Get filter coefficient.";
+    func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -3885,7 +3887,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin TwoZero ugen
     //------------------------------------------------------------------------
 
-    doc =  "This protected Filter subclass implements a two-zero digital filter.  A method is provided for creating a 'notch' in the frequency response while maintaining a constant filter gain.\n\
+    doc = "a two-zero digital filter. A method is provided for creating a 'notch' in the frequency response while maintaining a constant filter gain.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -3898,47 +3900,47 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( TwoZero_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "b0", TwoZero_ctrl_b0 ); //! filter coefficient 
     func->add_arg( "float", "value" );
-    func->doc = "Set filter coefficient.";
+    func->doc = "set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", TwoZero_cget_b0 ); //! filter coefficient
-    func->doc = "Get filter coefficient.";
+    func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b1", TwoZero_ctrl_b1 ); //! filter coefficient 
     func->add_arg( "float", "value" );
-    func->doc = "Set filter coefficient.";
+    func->doc = "set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b1", TwoZero_cget_b1 ); //! filter coefficient
-    func->doc = "Get filter coefficient.";
+    func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b2", TwoZero_ctrl_b2 ); //! filter coefficient 
     func->add_arg( "float", "value" );
-    func->doc = "Set filter coefficient.";
+    func->doc = "set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b2", TwoZero_cget_b2 ); //! filter coefficient
-    func->doc = "Get filter coefficient.";
+    func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", TwoZero_ctrl_freq ); //! filter notch frequency
     func->add_arg( "float", "value" );
-    func->doc = "Set filter notch frequency.";
+    func->doc = "set filter notch frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", TwoZero_cget_freq ); //! filter notch frequency
-    func->doc = "Get filter notch frequency.";
+    func->doc = "get filter notch frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "radius", TwoZero_ctrl_radius ); //! filter notch radius
     func->add_arg( "float", "value" );
-    func->doc = "Set filter notch radius.";
+    func->doc = "set filter notch radius.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "radius", TwoZero_cget_radius ); //! filter notch radius
-    func->doc = "Get filter notch radius.";
+    func->doc = "get filter notch radius.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -3950,7 +3952,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin PoleZero ugen
     //------------------------------------------------------------------------
 
-    doc = "This protected Filter subclass implements a one-pole, one-zero digital filter. A method is provided for creating an allpass filter with a given coefficient. Another method is provided to create a DC blocking filter.\n\
+    doc = "a one-pole, one-zero digital filter. A method is provided for creating an allpass filter with a given coefficient. Another method is provided to create a DC blocking filter.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -3963,47 +3965,47 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( PoleZero_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "a1", PoleZero_ctrl_a1 ); //! filter coefficient 
     func->add_arg( "float", "value" );
-    func->doc = "Set filter coefficient.";
+    func->doc = "set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "a1", PoleZero_cget_a1 ); //! filter coefficient
-    func->doc = "Get filter coefficient.";
+    func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", PoleZero_ctrl_b0 ); //! filter coefficient
     func->add_arg( "float", "value" );
-    func->doc = "Set filter coefficient.";
+    func->doc = "set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b0", PoleZero_cget_b0 ); //! filter coefficient
-    func->doc = "Get filter coefficient.";
+    func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b1", PoleZero_ctrl_b1 ); //! filter coefficient 
     func->add_arg( "float", "value" );
-    func->doc = "Set filter coefficient.";
+    func->doc = "set filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "b1", PoleZero_cget_b1 ); //! filter coefficient
-    func->doc = "Get filter coefficient.";
+    func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "blockZero", PoleZero_ctrl_blockZero ); //! DC blocking filter with given pole position
     func->add_arg( "float", "value" );
-    func->doc = "Set DC blocking filter with given pole position.";
+    func->doc = "set DC blocking filter with given pole position.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "blockZero", PoleZero_cget_blockZero ); //! DC blocking filter with given pole position
-    func->doc = "Get DC blocking filter with given pole position.";
+    func->doc = "get DC blocking filter with given pole position.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "allpass", PoleZero_ctrl_allpass ); //!allpass filter with given coefficient
     func->add_arg( "float", "value" );
-    func->doc = "Set allpass filter with given coefficient.";
+    func->doc = "set allpass filter with given coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "allpass", PoleZero_cget_allpass ); //!allpass filter with given coefficient
-    func->doc = "Get allpass filter with given coefficient.";
+    func->doc = "get allpass filter with given coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -4019,7 +4021,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin JCRev ugen
     //------------------------------------------------------------------------
 
-    doc = "John Chowning's reverberator class. This class is derived from the CLM NRev function, which is based on the use of networks of simple allpass and comb delay filters.  This particular arrangement consists of 6 comb filters in parallel, followed by 3 allpass filters, a lowpass filter, and another allpass in series, followed by two allpass filters in parallel with corresponding right and left outputs.\n\
+    doc = "John Chowning's reverberator class. This class is derived from the CLM NRev function, which is based on the use of networks of simple allpass and comb delay filters. This particular arrangement consists of 6 comb filters in parallel, followed by 3 allpass filters, a lowpass filter, and another allpass in series, followed by two allpass filters in parallel with corresponding right and left outputs.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4032,11 +4034,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( JCRev_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "mix", JCRev_ctrl_mix ); //! mix level
     func->add_arg( "float", "value" );
-    func->doc = "Set mix level.";
+    func->doc = "set mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", JCRev_cget_mix ); //! mix level
-    func->doc = "Get mix level.";
+    func->doc = "get mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -4048,7 +4050,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin NRev ugen
     //------------------------------------------------------------------------
 
-    doc =  "CCRMA's NRev reverberator class. This class is derived from the CLM NRev function, which is based on the use of networks of simple allpass and comb delay filters.  This particular arrangement consists of 6 comb filters in parallel, followed by 3 allpass filters, a lowpass filter, and another allpass in series, followed by two allpass filters in parallel with corresponding rightand left outputs.\n\
+    doc =  "CCRMA's NRev reverberator class. This class is derived from the CLM NRev function, which is based on the use of networks of simple allpass and comb delay filters. This particular arrangement consists of 6 comb filters in parallel, followed by 3 allpass filters, a lowpass filter, and another allpass in series, followed by two allpass filters in parallel with corresponding rightand left outputs.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4061,11 +4063,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( NRev_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "mix", NRev_ctrl_mix ); // set effect mix
     func->add_arg( "float", "value" );
-    func->doc = "Set mix level.";
+    func->doc = "set mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", NRev_cget_mix ); // set effect mix
-    func->doc = "Get mix level.";
+    func->doc = "get mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -4076,7 +4078,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin PRCRev ugen
     //------------------------------------------------------------------------
 
-    doc =  "Perry's simple reverberator class. This class is based on some of the famous Stanford/CCRMA reverbs (NRev, KipRev), which were based on the Chowning/Moorer/Schroeder reverberators using networks of simple allpass and comb delay filters.  This class implements two series allpass units and two parallel comb filters.\n\
+    doc =  "Perry's simple reverberator class. This class is based on some of the famous Stanford/CCRMA reverbs (NRev, KipRev), which were based on the Chowning/Moorer/Schroeder reverberators using networks of simple allpass and comb delay filters. This class implements two series allpass units and two parallel comb filters.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4089,11 +4091,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( PRCRev_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "mix", PRCRev_ctrl_mix ); //! mix level
     func->add_arg( "float", "value" );
-    func->doc = "Set mix level.";
+    func->doc = "set mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", PRCRev_cget_mix ); //! mix level
-    func->doc = "Get mix level.";
+    func->doc = "get mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -4105,7 +4107,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Chorus ugen
     //------------------------------------------------------------------------
 
-    doc = "Implements a chorus effect.\n\
+    doc = "a chorus effect.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4118,38 +4120,38 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( Chorus_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "modFreq", Chorus_ctrl_modFreq ); //! modulation frequency
     func->add_arg( "float", "value" );
-    func->doc = "Set modulation frequency.";
+    func->doc = "set modulation frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modFreq", Chorus_cget_modFreq ); //! modulation frequency
-    func->doc = "Get modulation frequency.";
+    func->doc = "get modulation frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modDepth", Chorus_ctrl_modDepth ); //! modulation depth
     func->add_arg( "float", "value" );
-    func->doc = "Set modulation depth.";
+    func->doc = "set modulation depth.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "modDepth", Chorus_cget_modDepth ); //! modulation depth
-    func->doc = "Get modulation depth.";
+    func->doc = "get modulation depth.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "baseDelay", Chorus_ctrl_baseDelay ); //! base delay
     func->add_arg( "dur", "value" );
-    func->doc = "Set base delay.";
+    func->doc = "set base delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "baseDelay", Chorus_cget_baseDelay ); //! base delay
-    func->doc = "Get base delay.";
+    func->doc = "get base delay.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", Chorus_ctrl_mix ); //! effect mix
     func->add_arg( "float", "value" );
-    func->doc = "Set effect mix.";
+    func->doc = "set effect mix.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", Chorus_cget_mix ); //! effect mix
-    func->doc = "Get effect mix.";
+    func->doc = "get effect mix.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "max", Chorus_ctrl_set );
@@ -4166,7 +4168,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Modulate ugen
     //------------------------------------------------------------------------
 
-    doc = "This class combines random and periodic modulations to give a nice, natural human modulation function.\n\
+    doc = "combines random and periodic modulations to give a nice, natural human modulation function.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4179,29 +4181,29 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( Modulate_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "vibratoRate", Modulate_ctrl_vibratoRate );  //! set rate of vibrato
     func->add_arg( "float", "value" );
-    func->doc = "Set rate for vibrato.";
+    func->doc = "set rate for vibrato.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoRate", Modulate_cget_vibratoRate );  //! set rate of vibrato
-    func->doc = "Get rate for vibrato.";
+    func->doc = "get rate for vibrato.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Modulate_ctrl_vibratoGain ); //! gain for vibrato
     func->add_arg( "float", "value" );
-    func->doc = "Set gain for vibrato.";
+    func->doc = "set gain for vibrato.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "vibratoGain", Modulate_cget_vibratoGain ); //! gain for vibrato
-    func->doc = "Get gain for vibrato.";
+    func->doc = "get gain for vibrato.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "randomGain", Modulate_ctrl_randomGain ); //!  gain for random contribution
     func->add_arg( "float", "value" );
-    func->doc = "Set gain for random contribution";
+    func->doc = "set gain for random contribution.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "randomGain", Modulate_cget_randomGain ); //!  gain for random contribution
-    func->doc = "Get gain for random contribution";
+    func->doc = "get gain for random contribution.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -4213,7 +4215,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin PitShift ugen
     //------------------------------------------------------------------------
 
-    doc = "This class implements a simple pitch shifter using delay lines.\n\
+    doc = "a simple pitch shifter using delay lines.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4226,30 +4228,30 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( PitShift_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "shift", PitShift_ctrl_shift ); //! degree of pitch shifting
     func->add_arg( "float", "value" );
-    func->doc = "Set degree of pitch shifting";
+    func->doc = "set degree of pitch shifting";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "shift", PitShift_cget_shift ); //! degree of pitch shifting
-    func->doc = "Get degree of pitch shifting";
+    func->doc = "get degree of pitch shifting";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", PitShift_ctrl_effectMix ); //! mix level
     func->add_arg( "float", "value" );
-    func->doc = "Set mix level";
+    func->doc = "set mix level";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "mix", PitShift_cget_effectMix ); //! mix level
-    func->doc = "Get mix level";
+    func->doc = "get mix level";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "effectMix", PitShift_ctrl_effectMix ); //! mix level
-    func->doc = "Set effect mix level";
+    func->doc = "set effect mix level";
     func->add_arg( "float", "value" );
     
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "effectMix", PitShift_cget_effectMix ); //! mix level
-    func->doc = "Get effect mix level";
+    func->doc = "get effect mix level";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -4261,7 +4263,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin SubNoise ugen
     //------------------------------------------------------------------------
 
-    doc = "Generates a new random number every 'rate' ticks using the C `rand()` function. The quality of the r`and()` function varies from one OS to another.\n\
+    doc = "generates a new random number every 'rate' ticks using the C `rand()` function. The quality of the r`and()` function varies from one OS to another.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4274,11 +4276,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( SubNoise_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "int", "rate", SubNoise_ctrl_rate ); //! subsampling rate
     func->add_arg( "int", "value" );
-    func->doc = "Set subsampling rate";
+    func->doc = "set subsampling rate";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "rate", SubNoise_cget_rate ); //! subsampling rate
-    func->doc = "Get subsampling rate";
+    func->doc = "get subsampling rate";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -4291,7 +4293,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin WvIn ugen
     //------------------------------------------------------------------------
 
-    doc = "This class provides input support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\n\
+    doc = "input support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\n\
 \n\
 WvIn loads the contents of an audio file for subsequent output. Linear interpolation is used for fractional 'read rates'.\n\
 \n\
@@ -4310,20 +4312,20 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( WvIn_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "float", "rate", WvIn_ctrl_rate ); //! playback rate
     func->add_arg( "float", "value" );
-    func->doc = "Set playback rate.";
+    func->doc = "set playback rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "rate", WvIn_cget_rate ); //! playback rate
-    func->doc = "Get playback rate.";
+    func->doc = "get playback rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "path", WvIn_ctrl_path ); //! specifies file to be played
     func->add_arg( "string", "value" );
-    func->doc = "Set file to be played.";
+    func->doc = "set file to be played.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "path", WvIn_cget_path ); //! specifies file to be played
-    func->doc = "Get file to be played.";
+    func->doc = "get file to be played.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -4335,7 +4337,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin WaveLoop ugen
     //------------------------------------------------------------------------
 
-    doc = "This class inherits from WvIn and provides audio file looping functionality.\n\
+    doc = "inherits from WvIn and provides audio file looping functionality.\n\
 \n\
 WaveLoop supports multi-channel data in interleaved format. It is important to distinguish the `tick()` methods, which return samples produced by averaging across sample frames, from the `tickFrame()` methods, which return pointers to multi-channel sample frames. For single-channel data, these methods return equivalent values.\n\
 \n\
@@ -4348,50 +4350,51 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     func = make_new_mfun( "float", "freq", WaveLoop_ctrl_freq ); //! set frequency of playback ( loops / second )
     func->add_arg( "float", "value" );
-    func->doc = "Set frequency of playback (loops/second).";
+    func->doc = "set frequency of playback (loops/second).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", WaveLoop_cget_freq ); //! set frequency of playback ( loops / second )
-    func->doc = "Get frequency of playback (loops/second).";
+    func->doc = "get frequency of playback (loops/second).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "addPhase", WaveLoop_ctrl_phase ); //! offset by phase
     func->add_arg( "float", "value" );
-    func->doc = "Set offset by phase.";
+    func->doc = "set offset by phase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "addPhase", WaveLoop_cget_phase ); //! offset by phase
-    func->doc = "Get offset by phase.";
+    func->doc = "get offset by phase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "addPhaseOffset", WaveLoop_ctrl_phaseOffset ); //! set phase offset
     func->add_arg( "float", "value" );
-    func->doc = "Set phase offset.";
+    func->doc = "set phase offset.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "addPhaseOffset", WaveLoop_cget_phaseOffset ); //! set phase offset
-    func->doc = "Get phase offset.";
+    func->doc = "get phase offset.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
 
-
+    
+    #ifndef __DISABLE_WVOUT__
     //------------------------------------------------------------------------
     // begin WvOut ugen
     //------------------------------------------------------------------------
  
-    doc = "This class provides output support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\n\
+    doc = "output support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\n\
 \n\
-WvOut writes samples to an audio file. It supports multi-channel data in interleaved format.  It is important to distinguish the `tick()` methods, which output single samples to all channels in a sample frame, from the `tickFrame()` method, which takes a pointer to multi-channel sample frame data.\n\
+WvOut writes samples to an audio file. It supports multi-channel data in interleaved format. It is important to distinguish the `tick()` methods, which output single samples to all channels in a sample frame, from the `tickFrame()` method, which takes a pointer to multi-channel sample frame data.\n\
 \n\
-WvOut currently supports WAV, AIFF, AIFC, SND (AU), MAT-file (Matlab), and STK RAW file formats.  Signed integer (8-, 16-, and 32-bit) and floating- point (32- and 64-bit) data types are supported.  STK RAW files use 16-bit integers by definition.  MAT-files will always be written as 64-bit floats.  If a data type specification does not match the specified file type, the data type will automatically be modified.  Uncompressed data types are not supported.\n\
+WvOut currently supports WAV, AIFF, AIFC, SND (AU), MAT-file (Matlab), and STK RAW file formats. Signed integer (8-, 16-, and 32-bit) and floating- point (32- and 64-bit) data types are supported. STK RAW files use 16-bit integers by definition. MAT-files will always be written as 64-bit floats. If a data type specification does not match the specified file type, the data type will automatically be modified. Uncompressed data types are not supported.\n\
 \n\
 Currently, WvOut is non-interpolating and the output rate is always `Stk::sampleRate()`.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
-    if( !type_engine_import_ugen_begin( env, "WvOut", "UGen", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "WvOut", "UGen", env->global(),
                         WvOut_ctor, WvOut_dtor,
                         WvOut_tick, WvOut_pmsg, doc.c_str() ) ) return FALSE;
     
@@ -4401,74 +4404,74 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     func = make_new_mfun( "string", "matFilename", WvOut_ctrl_matFilename ); //!open matlab file for writing
     func->add_arg( "string", "value" );
-    func->doc = "Open MatLab file for writing.";
+    func->doc = "open MATLAB file for writing.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "sndFilename", WvOut_ctrl_sndFilename ); //!open snd file for writing
     func->add_arg( "string", "value" );
-    func->doc = "Open SND file for writing.";
+    func->doc = "open SND file for writing.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "wavFilename", WvOut_ctrl_wavFilename ); //!open WAVE file for writing
     func->add_arg( "string", "value" );
-    func->doc = "Open WAVE file for writing.";
+    func->doc = "open WAVE file for writing.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "rawFilename", WvOut_ctrl_rawFilename ); //!open raw file for writing
     func->add_arg( "string", "value" );
-    func->doc = "Open a raw file for writing.";
+    func->doc = "open a raw file for writing.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "aifFilename", WvOut_ctrl_aifFilename ); //!open AIFF file for writing
     func->add_arg( "string", "value" );
-    func->doc = "Open an AIFF file for writing.";
+    func->doc = "open an AIFF file for writing.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "filename", WvOut_cget_filename ); //!get filename
-    func->doc = "Get filename.";
+    func->doc = "get filename.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "record", WvOut_ctrl_record ); // !start/stop output
     func->add_arg( "int", "value" );
-    func->doc = "Start/stop output.";
+    func->doc = "start/stop output.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "record", WvOut_cget_record ); // !start/stop output
-    func->doc = "Start/stop output.";
+    func->doc = "start/stop output.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "closeFile", WvOut_ctrl_closeFile ); //! close file properly
     func->add_arg( "string", "value" );
-    func->doc = "Close the file properly.";
+    func->doc = "close the file properly.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "closeFile", WvOut_ctrl_closeFile ); //! close file properly
-    func->doc = "Close the file properly.";
+    func->doc = "close the file properly.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "autoPrefix", WvOut_ctrl_autoPrefix ); //! set/get auto prefix string
     func->add_arg( "string", "value" );
-    func->doc = "Set auto prefix string.";
+    func->doc = "set auto prefix string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "autoPrefix", WvOut_cget_autoPrefix ); //! set/get auto prefix string
-    func->doc = "Get auto prefix string.";
+    func->doc = "get auto prefix string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     func = make_new_mfun( "float", "fileGain", WvOut_ctrl_fileGain ); //! set/get auto prefix string
     func->add_arg( "float", "value" );
-    func->doc = "Set file gain.";
+    func->doc = "set file gain.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     func = make_new_mfun( "float", "fileGain", WvOut_cget_fileGain ); //! set/get auto prefix string
-    func->doc = "Get file gain.";
+    func->doc = "get file gain.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // end the class import
     type_engine_import_class_end( env );
     
     
-    if( !type_engine_import_ugen_begin( env, "WvOut2", "WvOut", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "WvOut2", "WvOut", env->global(),
                                         NULL, NULL,
                                         NULL, WvOut2_tickf, WvOut_pmsg, 2, 2 ) ) return FALSE;
 
@@ -4494,13 +4497,14 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     // end the class import
     type_engine_import_class_end( env );
-    
+    #endif //__DISABLE_WVOUT__
+
 
     //------------------------------------------------------------------------
     // begin BLT (BandLtd)
     //------------------------------------------------------------------------
 
-    doc = "Super-class for band-limited oscillators.";
+    doc = "super-class for band-limited oscillators.";
     
     if( !type_engine_import_ugen_begin( env, "BLT", "UGen", env->global(), 
          BLT_ctor, BLT_dtor,
@@ -4516,29 +4520,29 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "float", "phase", BLT_ctrl_phase ); //!set phase
     func->add_arg( "float", "value" );
-    func->doc = "Set phase.";
+    func->doc = "set phase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "phase", BLT_cget_phase ); //!get phase
-    func->doc = "Get phase.";
+    func->doc = "get phase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", BLT_ctrl_freq ); //!set freq
     func->add_arg( "float", "value" );
-    func->doc = "Set frequency.";
+    func->doc = "set frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "freq", BLT_cget_freq ); //!get freq
-    func->doc = "Set frequency.";
+    func->doc = "set frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "harmonics", BLT_ctrl_harmonics ); //!set harmonics
     func->add_arg( "int", "value" );
-    func->doc = "Set harmonics.";
+    func->doc = "set harmonics.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "harmonics", BLT_cget_harmonics ); //!get harmonics
-    func->doc = "Get harmonics.";
+    func->doc = "get harmonics.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -4549,7 +4553,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Blit
     //------------------------------------------------------------------------
 
-    doc = "This class generates a band-limited impulse train using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the impulse train and the number of harmonics contained in the resulting signal.\n\
+    doc = "a band-limited impulse train using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the impulse train and the number of harmonics contained in the resulting signal.\n\
 \n\
 The signal is normalized so that the peak value is +/-1.0.\n\
 \n\
@@ -4571,7 +4575,7 @@ Revisions by Gary Scavone for STK, 2005.";
     // begin BlitSaw
     //------------------------------------------------------------------------
 
-    doc = "This class generates a band-limited sawtooth waveform using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the sawtooth and the number of harmonics contained in the resulting signal.\n\
+    doc = "a band-limited sawtooth waveform using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the sawtooth and the number of harmonics contained in the resulting signal.\n\
 \n\
 If `nHarmonics` is 0, then the signal will contain all harmonics up to half the sample rate. Note, however, that this setting may produce aliasing in the signal when the frequency is changing (no automatic modification of the number of harmonics is performed by the `setFrequency()` function).\n\
 \n\
@@ -4589,7 +4593,7 @@ Modified algorithm code by Gary Scavone, 2005.";
     // begin BlitSquare
     //------------------------------------------------------------------------
 
-    doc = "This class generates a band-limited square wave signal. It is derived in part from the approach reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The algorithm implemented in this class uses a SincM function with an even M value to achieve a bipolar bandlimited impulse train. This signal is then integrated to achieve a square waveform. The integration process has an associated DC offset but that is subtracted off the output signal.\n\
+    doc = "a band-limited square wave signal. It is derived in part from the approach reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The algorithm implemented in this class uses a SincM function with an even M value to achieve a bipolar bandlimited impulse train. This signal is then integrated to achieve a square waveform. The integration process has an associated DC offset but that is subtracted off the output signal.\n\
 \n\
 The user can specify both the fundamental frequency of the waveform and the number of harmonics contained in the resulting signal.\n\
 \n\
@@ -4824,22 +4828,22 @@ struct SKINISpec skini_msgs[__SK_MaxMsgTypes_] =
 /*     type is the message type sent back from the SKINI line parser.    */
 /*     data<n> is either                                                 */
 /*          NOPE    : field not used, specifically, there aren't going   */                                           
-/*                    to be any more fields on this line.  So if there   */
+/*                    to be any more fields on this line. So if there   */
 /*                    is is NOPE in data2, data3 won't even be checked   */
 /*          SK_INT  : byte (actually scanned as 32 bit signed integer)   */
 /*                      If it's a MIDI data field which is required to   */
 /*                      be an integer, like a controller number, it's    */
-/*                      0-127.  Otherwise) get creative with SK_INTs     */
-/*          SK_DBL  : double precision floating point.  SKINI uses these */
+/*                      0-127. Otherwise) get creative with SK_INTs     */
+/*          SK_DBL  : double precision floating point. SKINI uses these */
 /*                    in the MIDI context for note numbers with micro    */
 /*                    tuning, velocities, controller values, etc.        */
-/*          SK_STR  : only valid in final field.  This allows (nearly)   */
+/*          SK_STR  : only valid in final field. This allows (nearly)   */
 /*                    arbitrary message types to be supported by simply  */
 /*                    scanning the string to EndOfLine and then passing  */
-/*                    it to a more intellegent handler.  For example,    */
+/*                    it to a more intellegent handler. For example,    */
 /*                    MIDI SYSEX (system exclusive) messages of up to    */
 /*                    256bytes can be read as space-delimited integers   */
-/*                    into the 1K SK_STR buffer.  Longer bulk dumps,     */
+/*                    into the 1K SK_STR buffer. Longer bulk dumps,     */
 /*                    soundfiles, etc. should be handled as a new        */
 /*                    message type pointing to a FileName stored in the  */
 /*                    SK_STR field, or as a new type of multi-line       */                                      
@@ -4854,7 +4858,7 @@ struct SKINISpec skini_msgs[__SK_MaxMsgTypes_] =
 
     This Envelope subclass implements a
     traditional ADSR (Attack, Decay,
-    Sustain, Release) envelope.  It
+    Sustain, Release) envelope. It
     responds to simple keyOn and keyOff
     messages, keeping track of its state.
     The \e state = ADSR::DONE after the
@@ -5029,7 +5033,7 @@ void ADSR :: setValue(MY_FLOAT aValue)
   target = aValue;
   value = aValue;
   this->setSustainLevel(aValue);
-  rate = (MY_FLOAT)  0.0;
+  rate = (MY_FLOAT)0.0;
 }
 
 int ADSR :: getState(void) const
@@ -5103,7 +5107,7 @@ MY_FLOAT *ADSR :: tick(MY_FLOAT *vec, unsigned int vectorSize)
 
     This class uses banded waveguide techniques to
     model a variety of sounds, including bowed
-    bars, glasses, and bowls.  For more
+    bars, glasses, and bowls. For more
     information, see Essl, G. and Cook, P. "Banded
     Waveguides: Towards Physical Modelling of Bar
     Percussion Instruments", Proceedings of the
@@ -5317,7 +5321,7 @@ void BandedWG :: setFrequency(MY_FLOAT frequency)
     }
     //  CK_STDCERR << CK_STDENDL;
 
-    // Set the bandpass filter resonances
+    // set the bandpass filter resonances
     radius = 1.0 - ONE_PI * 32 / Stk::sampleRate(); //freakency * modes[i] / Stk::sampleRate()/32;
     if ( radius < 0.0 ) radius = 0.0;
     bandpass[i].setResonance(freakency * modes[i], radius, true);
@@ -5524,7 +5528,7 @@ void BandedWG :: controlChange(int number, MY_FLOAT value)
 
     The basic Chowning/Stanford FM patent expired
     in 1995, but there exist follow-on patents,
-    mostly assigned to Yamaha.  If you are of the
+    mostly assigned to Yamaha. If you are of the
     type who should worry about this (making
     money) worry away.
 
@@ -5579,7 +5583,7 @@ void BeeThree :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT BeeThree :: tick()
 {
-  register MY_FLOAT temp;
+  MY_FLOAT temp;
 
   if (modDepth > 0.0)   {
     temp = 1.0 + (modDepth * vibrato->tick() * 0.1);
@@ -5607,7 +5611,7 @@ MY_FLOAT BeeThree :: tick()
     \brief STK biquad (two-pole, two-zero) filter class.
 
     This protected Filter subclass implements a
-    two-pole, two-zero digital filter.  A method
+    two-pole, two-zero digital filter. A method
     is provided for creating a resonance in the
     frequency response while maintaining a constant
     filter gain.
@@ -5733,14 +5737,14 @@ MY_FLOAT *BiQuad :: tick(MY_FLOAT *vec, unsigned int vectorSize)
 
     This class generates a band-limited impulse train using a
     closed-form algorithm reported by Stilson and Smith in "Alias-Free
-    Digital Synthesis of Classic Analog Waveforms", 1996.  The user
+    Digital Synthesis of Classic Analog Waveforms", 1996. The user
     can specify both the fundamental frequency of the impulse train
     and the number of harmonics contained in the resulting signal.
 
     The signal is normalized so that the peak value is +/-1.0.
 
     If nHarmonics is 0, then the signal will contain all harmonics up
-    to half the sample rate.  Note, however, that this setting may
+    to half the sample rate. Note, however, that this setting may
     produce aliasing in the signal when the frequency is changing (no
     automatic modification of the number of harmonics is performed by
     the setFrequency() function).
@@ -5840,12 +5844,12 @@ MY_FLOAT Blit :: tick( void )
 
     This class generates a band-limited sawtooth waveform using a
     closed-form algorithm reported by Stilson and Smith in "Alias-Free
-    Digital Synthesis of Classic Analog Waveforms", 1996.  The user
+    Digital Synthesis of Classic Analog Waveforms", 1996. The user
     can specify both the fundamental frequency of the sawtooth and the
     number of harmonics contained in the resulting signal.
 
     If nHarmonics is 0, then the signal will contain all harmonics up
-    to half the sample rate.  Note, however, that this setting may
+    to half the sample rate. Note, however, that this setting may
     produce aliasing in the signal when the frequency is changing (no
     automatic modification of the number of harmonics is performed by
     the setFrequency() function).
@@ -5892,11 +5896,11 @@ void BlitSaw :: setHarmonics( unsigned int nHarmonics )
   this->updateHarmonics();
 
   // I found that the initial DC offset could be minimized with an
-  // initial state setting as given below.  This initialization should
+  // initial state setting as given below. This initialization should
   // only happen before starting the oscillator for the first time
   // (but after setting the frequency and number of harmonics).  I
   // struggled a bit to decide where best to put this and finally
-  // settled on here.  In general, the user shouldn't be messing with
+  // settled on here. In general, the user shouldn't be messing with
   // the number of harmonics once the oscillator is running because
   // this is automatically taken care of in the setFrequency()
   // function.  (GPS - 1 October 2005)
@@ -5924,10 +5928,10 @@ MY_FLOAT BlitSaw :: tick( void )
 {
   // The code below implements the BLIT algorithm of Stilson and
   // Smith, followed by a summation and filtering operation to produce
-  // a sawtooth waveform.  After experimenting with various approaches
+  // a sawtooth waveform. After experimenting with various approaches
   // to calculate the average value of the BLIT over one period, I
   // found that an estimate of C2_ = 1.0 / period (in samples) worked
-  // most consistently.  A "leaky integrator" is then applied to the
+  // most consistently. A "leaky integrator" is then applied to the
   // difference of the BLIT output and C2_. (GPS - 1 October 2005)
 
   // A fully  optimized version of this code would replace the two sin 
@@ -5962,12 +5966,12 @@ MY_FLOAT BlitSaw :: tick( void )
 /*! \class BlitSquare
     \brief STK band-limited square wave class.
 
-    This class generates a band-limited square wave signal.  It is
+    This class generates a band-limited square wave signal. It is
     derived in part from the approach reported by Stilson and Smith in
     "Alias-Free Digital Synthesis of Classic Analog Waveforms", 1996.
     The algorithm implemented in this class uses a SincM function with
     an even M value to achieve a bipolar bandlimited impulse train.
-    This signal is then integrated to achieve a square waveform.  The
+    This signal is then integrated to achieve a square waveform. The
     integration process has an associated DC offset but that is
     subtracted off the output signal.
 
@@ -5976,7 +5980,7 @@ MY_FLOAT BlitSaw :: tick( void )
     signal.
 
     If nHarmonics is 0, then the signal will contain all harmonics up
-    to half the sample rate.  Note, however, that this setting may
+    to half the sample rate. Note, however, that this setting may
     produce aliasing in the signal when the frequency is changing (no
     automatic modification of the number of harmonics is performed by
     the setFrequency() function).
@@ -6013,7 +6017,7 @@ void BlitSquare :: setFrequency( MY_FLOAT frequency )
 #endif
 
   // By using an even value of the parameter M, we get a bipolar blit
-  // waveform at half the blit frequency.  Thus, we need to scale the
+  // waveform at half the blit frequency. Thus, we need to scale the
   // frequency value here by 0.5. (GPS, 2006).
   p_ = 0.5 * Stk::sampleRate() / frequency;
   rate_ = ONE_PI / p_;
@@ -6279,10 +6283,10 @@ void BlowBotl :: controlChange(int number, MY_FLOAT value)
 
     In this implementation, the distances between
     the reed/register hole and tonehole/bell are
-    fixed.  As a result, both the tonehole and
+    fixed. As a result, both the tonehole and
     register hole will have variable influence on
     the playing frequency, which is dependent on
-    the length of the air column.  In addition,
+    the length of the air column. In addition,
     the highest playing freqeuency is limited by
     these fixed lengths.
     This is a digital waveguide model, making its
@@ -6595,12 +6599,12 @@ MY_FLOAT BowTabl :: tick(MY_FLOAT input)
   MY_FLOAT sample;
   sample = input + offSet;  // add bias to input
   sample *= slope;          // then scale it
-  lastOutput = (MY_FLOAT)  fabs((double) sample) + (MY_FLOAT) 0.75;
-  lastOutput = (MY_FLOAT)  pow( lastOutput,(MY_FLOAT) -4.0 );
+  lastOutput = (MY_FLOAT)fabs((double) sample) + (MY_FLOAT) 0.75;
+  lastOutput = (MY_FLOAT)pow( lastOutput,(MY_FLOAT) -4.0 );
 
-  // Set minimum friction to 0.0
+  // set minimum friction to 0.0
   //if (lastOutput < 0.0 ) lastOutput = 0.0;
-  // Set maximum friction to 1.0.
+  // set maximum friction to 1.0.
   if (lastOutput > 1.0 ) lastOutput = (MY_FLOAT) 1.0;
 
   return lastOutput;
@@ -7433,19 +7437,19 @@ MY_FLOAT Delay :: getDelay(void) const
 MY_FLOAT Delay :: energy(void) const
 {
   int i;
-  register MY_FLOAT e = 0;
+  MY_FLOAT e = 0;
   if (inPoint >= outPoint) {
     for (i=outPoint; i<inPoint; i++) {
-      register MY_FLOAT t = inputs[i];
+      MY_FLOAT t = inputs[i];
       e += t*t;
     }
   } else {
     for (i=outPoint; i<length; i++) {
-      register MY_FLOAT t = inputs[i];
+      MY_FLOAT t = inputs[i];
       e += t*t;
     }
     for (i=0; i<inPoint; i++) {
-      register MY_FLOAT t = inputs[i];
+      MY_FLOAT t = inputs[i];
       e += t*t;
     }
   }
@@ -7511,16 +7515,16 @@ MY_FLOAT *Delay :: tick(MY_FLOAT *vec, unsigned int vectorSize)
 
     This Delay subclass implements a fractional-
     length digital delay-line using a first-order
-    allpass filter.  A fixed maximum length
+    allpass filter. A fixed maximum length
     of 4095 and a delay of 0.5 is set using the
-    default constructor.  Alternatively, the
+    default constructor. Alternatively, the
     delay and maximum length can be set during
     instantiation with an overloaded constructor.
 
     An allpass filter has unity magnitude gain but
     variable phase delay properties, making it useful
     in achieving fractional delays without affecting
-    a signal's frequency magnitude response.  In
+    a signal's frequency magnitude response. In
     order to achieve a maximally flat phase delay
     response, the minimum delay possible in this
     implementation is limited to a value of 0.5.
@@ -7660,9 +7664,9 @@ MY_FLOAT DelayA :: tick(MY_FLOAT sample)
 
     This Delay subclass implements a fractional-
     length digital delay-line using first-order
-    linear interpolation.  A fixed maximum length
+    linear interpolation. A fixed maximum length
     of 4095 and a delay of zero is set using the
-    default constructor.  Alternatively, the
+    default constructor. Alternatively, the
     delay and maximum length can be set during
     instantiation with an overloaded constructor.
 
@@ -7670,7 +7674,7 @@ MY_FLOAT DelayA :: tick(MY_FLOAT sample)
     for achieving fractional delay lengths, though
     it does introduce high-frequency signal
     attenuation to varying degrees depending on the
-    fractional delay setting.  The use of higher
+    fractional delay setting. The use of higher
     order Lagrange interpolators can typically
     improve (minimize) this attenuation characteristic.
 
@@ -7790,9 +7794,9 @@ MY_FLOAT DelayL :: tick(MY_FLOAT sample)
 
     This class implements a drum sampling
     synthesizer using WvIn objects and one-pole
-    filters.  The drum rawwave files are sampled
+    filters. The drum rawwave files are sampled
     at 22050 Hz, but will be appropriately
-    interpolated for other sample rates.  You can
+    interpolated for other sample rates. You can
     specify the maximum polyphony (maximum number
     of simultaneous voices) via a #define in the
     Drummer.h.
@@ -7803,7 +7807,7 @@ MY_FLOAT DelayL :: tick(MY_FLOAT sample)
 
 #include <math.h>
 
-// Not really General MIDI yet.  Coming soon.
+// Not really General MIDI yet. Coming soon.
 unsigned char genMIDIMap[128] =
   { 0,0,0,0,0,0,0,0,        // 0-7
     0,0,0,0,0,0,0,0,        // 8-15
@@ -8203,7 +8207,7 @@ MY_FLOAT Envelope :: lastOut(void) const
 
     The basic Chowning/Stanford FM patent expired
     in 1995, but there exist follow-on patents,
-    mostly assigned to Yamaha.  If you are of the
+    mostly assigned to Yamaha. If you are of the
     type who should worry about this (making
     money) worry away.
 
@@ -8432,7 +8436,7 @@ void FM :: controlChange(int number, MY_FLOAT value)
 
     The basic Chowning/Stanford FM patent expired
     in 1995, but there exist follow-on patents,
-    mostly assigned to Yamaha.  If you are of the
+    mostly assigned to Yamaha. If you are of the
     type who should worry about this (making
     money) worry away.
 
@@ -8534,7 +8538,7 @@ void FMVoices :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT FMVoices :: tick()
 {
-  register MY_FLOAT temp, temp2;
+  MY_FLOAT temp, temp2;
 
   temp = gains[3] * adsr[3]->tick() * waves[3]->tick();
   temp2 = vibrato->tick() * modDepth * (MY_FLOAT) 0.1;
@@ -8614,7 +8618,7 @@ void FMVoices :: controlChange(int number, MY_FLOAT value)
 
     The \e gain parameter is applied at the filter
     input and does not affect the coefficient values.
-    The default gain value is 1.0.  This structure
+    The default gain value is 1.0. This structure
     results in one extra multiply per computed sample,
     but allows easy control of the overall filter gain.
 
@@ -8845,7 +8849,7 @@ MY_FLOAT *FilterStk :: tick(MY_FLOAT *vec, unsigned int vectorSize)
 
     This class implements a simple flute
     physical model, as discussed by Karjalainen,
-    Smith, Waryznyk, etc.  The jet model uses
+    Smith, Waryznyk, etc. The jet model uses
     a polynomial, a la Cook.
 
     This is a digital waveguide model, making its
@@ -9099,7 +9103,7 @@ FormSwep :: FormSwep() : BiQuad()
   deltaGain = (MY_FLOAT) 0.0;
   deltaFrequency = (MY_FLOAT) 0.0;
   deltaRadius = (MY_FLOAT) 0.0;
-  sweepState = (MY_FLOAT)  0.0;
+  sweepState = (MY_FLOAT) 0.0;
   sweepRate = (MY_FLOAT) 0.002;
   dirty = false;
   this->clear();
@@ -9211,7 +9215,7 @@ MY_FLOAT *FormSwep :: tick(MY_FLOAT *vec, unsigned int vectorSize)
 
     The basic Chowning/Stanford FM patent expired
     in 1995, but there exist follow-on patents,
-    mostly assigned to Yamaha.  If you are of the
+    mostly assigned to Yamaha. If you are of the
     type who should worry about this (making
     money) worry away.
 
@@ -9268,7 +9272,7 @@ void HevyMetl :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT HevyMetl :: tick()
 {
-  register MY_FLOAT temp;
+  MY_FLOAT temp;
 
   temp = vibrato->tick() * modDepth * 0.2;    
   waves[0]->setFrequency(baseFrequency * (1.0 + temp) * ratios[0]);
@@ -9365,7 +9369,7 @@ void Instrmnt :: controlChange(int number, MY_FLOAT value)
     This class is derived from the CLM JCRev
     function, which is based on the use of
     networks of simple allpass and comb delay
-    filters.  This class implements three series
+    filters. This class implements three series
     allpass units, followed by four parallel comb
     filters, and two decorrelation delay lines in
     parallel at the output.
@@ -9533,7 +9537,7 @@ MY_FLOAT JetTabl :: tick( MY_FLOAT input )
   // Perform "table lookup" using a polynomial
   // calculation (x^3 - x), which approximates
   // the jet sigmoid behavior.
-  lastOutput = input * (input * input - (MY_FLOAT)  1.0);
+  lastOutput = input * (input * input - (MY_FLOAT)1.0);
 
   // Saturate at +/- 1.0.
   if (lastOutput > 1.0) 
@@ -9564,8 +9568,8 @@ MY_FLOAT *JetTabl :: tick(MY_FLOAT *vec, unsigned int vectorSize)
     Stanford University, Yamaha, and others.
     Commuted Synthesis, in particular, is covered
     by patents, granted, pending, and/or
-    applied-for.  All are assigned to the Board of
-    Trustees, Stanford University.  For
+    applied-for. All are assigned to the Board of
+    Trustees, Stanford University. For
     information, contact the Office of Technology
     Licensing, Stanford University.
 
@@ -9754,7 +9758,7 @@ void Mandolin :: controlChange(int number, MY_FLOAT value)
 
     This class implements a rectilinear,
     two-dimensional digital waveguide mesh
-    structure.  For details, see Van Duyne and
+    structure. For details, see Van Duyne and
     Smith, "Physical Modeling with the 2-D Digital
     Waveguide Mesh", Proceedings of the 1993
     International Computer Music Conference.
@@ -10037,7 +10041,7 @@ MY_FLOAT Mesh2D :: tick0()
   }    
 
   // Loop over velocity-junction boundary faces, update edge
-  // reflections, with filtering.  We're only filtering on one x and y
+  // reflections, with filtering. We're only filtering on one x and y
   // edge here and even this could be made much sparser.
   for (y=0; y<NY-1; y++) {
     vxp1[0][y] = filterY[y]->tick(vxm[0][y]);
@@ -10048,9 +10052,9 @@ MY_FLOAT Mesh2D :: tick0()
     vym1[x][NY-1] = vyp[x][NY-1];
   }
 
-  // Output = sum of outgoing waves at far corner.  Note that the last
+  // Output = sum of outgoing waves at far corner. Note that the last
   // index in each coordinate direction is used only with the other
-  // coordinate indices at their next-to-last values.  This is because
+  // coordinate indices at their next-to-last values. This is because
   // the "unit strings" attached to each velocity node to terminate
   // the mesh are not themselves connected together.
   outsamp = vxp[NX-1][NY-2] + vyp[NX-2][NY-1];
@@ -10088,7 +10092,7 @@ MY_FLOAT Mesh2D :: tick1()
   }
 
   // Loop over velocity-junction boundary faces, update edge
-  // reflections, with filtering.  We're only filtering on one x and y
+  // reflections, with filtering. We're only filtering on one x and y
   // edge here and even this could be made much sparser.
   for (y=0; y<NY-1; y++) {
     vxp[0][y] = filterY[y]->tick(vxm1[0][y]);
@@ -10371,7 +10375,7 @@ MY_FLOAT Modal :: tick()
     \brief STK resonant bar instrument class.
 
     This class implements a number of different
-    struck bar instruments.  It inherits from the
+    struck bar instruments. It inherits from the
     Modal class.
 
     Control Change Numbers: 
@@ -10457,9 +10461,9 @@ void ModalBar :: setStrikePosition(MY_FLOAT position)
   this->setModeGain(0, 0.12 * temp);
 
   temp = sin(0.05 + (3.9 * temp2));
-  this->setModeGain(1,(MY_FLOAT) -0.03 * temp);
+  this->setModeGain(1, (MY_FLOAT)-0.03 * temp);
 
-  temp = (MY_FLOAT)  sin(-0.05 + (11 * temp2));
+  temp = (MY_FLOAT)sin(-0.05 + (11 * temp2));
   this->setModeGain(2,(MY_FLOAT) 0.11 * temp);
 }
 
@@ -10602,7 +10606,7 @@ Modulate :: ~Modulate()
 
 void Modulate :: reset()
 {
-  lastOutput = (MY_FLOAT)  0.0;
+  lastOutput = (MY_FLOAT)0.0;
 }
 
 void Modulate :: setVibratoRate(MY_FLOAT aRate)
@@ -10817,7 +10821,7 @@ void Moog :: controlChange(int number, MY_FLOAT value)
     This class is derived from the CLM NRev
     function, which is based on the use of
     networks of simple allpass and comb delay
-    filters.  This particular arrangement consists
+    filters. This particular arrangement consists
     of 6 comb filters in parallel, followed by 3
     allpass filters, a lowpass filter, and another
     allpass in series, followed by two allpass
@@ -10940,7 +10944,7 @@ MY_FLOAT NRev :: tick(MY_FLOAT input)
     \brief STK noise generator.
 
     Generic random number generation using the
-    C rand() function.  The quality of the rand()
+    C rand() function. The quality of the rand()
     function varies from one OS to another.
 
     by Perry R. Cook and Gary P. Scavone, 1995 - 2002.
@@ -11001,7 +11005,7 @@ MY_FLOAT Noise :: lastOut() const
     \brief STK one-pole filter class.
 
     This protected Filter subclass implements
-    a one-pole digital filter.  A method is
+    a one-pole digital filter. A method is
     provided for setting the pole position along
     the real axis of the z-plane while maintaining
     a constant peak filter gain.
@@ -11030,7 +11034,7 @@ OnePole :: OnePole(MY_FLOAT thePole) : FilterStk()
     B = (MY_FLOAT) (1.0 + thePole);
 
   A[1] = -thePole;
-  FilterStk::setCoefficients( 1, &B, 2,  A );
+  FilterStk::setCoefficients( 1, &B, 2, A );
 }
 
 OnePole :: ~OnePole()    
@@ -11102,7 +11106,7 @@ MY_FLOAT *OnePole :: tick(MY_FLOAT *vec, unsigned int vectorSize)
     \brief STK one-zero filter class.
 
     This protected Filter subclass implements
-    a one-zero digital filter.  A method is
+    a one-zero digital filter. A method is
     provided for setting the zero position
     along the real axis of the z-plane while
     maintaining a constant filter gain.
@@ -11203,7 +11207,7 @@ MY_FLOAT *OneZero :: tick(MY_FLOAT *vec, unsigned int vectorSize)
     Stanford/CCRMA reverbs (NRev, KipRev), which
     were based on the Chowning/Moorer/Schroeder
     reverberators using networks of simple allpass
-    and comb delay filters.  This class implements
+    and comb delay filters. This class implements
     two series allpass units and two parallel comb
     filters.
 
@@ -11319,7 +11323,7 @@ MY_FLOAT PRCRev :: tick(MY_FLOAT input)
 
     The basic Chowning/Stanford FM patent expired
     in 1995, but there exist follow-on patents,
-    mostly assigned to Yamaha.  If you are of the
+    mostly assigned to Yamaha. If you are of the
     type who should worry about this (making
     money) worry away.
 
@@ -11382,7 +11386,7 @@ void PercFlut :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT PercFlut :: tick()
 {
-  register MY_FLOAT temp;
+  MY_FLOAT temp;
 
   temp = vibrato->tick() * modDepth * (MY_FLOAT) 0.2;    
   waves[0]->setFrequency(baseFrequency * ((MY_FLOAT) 1.0 + temp) * ratios[0]);
@@ -11499,7 +11503,7 @@ const MY_FLOAT Phonemes :: phonemeParameters[32][4][3] =
       { 895, 0.900,  -3},
       {2556, 0.950, -17},
       {3070, 0.910, -20}},
-   {  { 637, 0.910,   0},       // ohh (bone)  NOTE::  same as aww (bought)
+   {  { 637, 0.910,   0},       // ohh (bone) NOTE: same as aww (bought)
       { 895, 0.900,  -3},
       {2556, 0.950, -17},
       {3070, 0.910, -20}},
@@ -11789,7 +11793,7 @@ MY_FLOAT *PitShift :: tick(MY_FLOAT *vec, unsigned int vectorSize)
     Smith, and others.
 
     PluckTwo is an abstract class, with no excitation
-    specified.  Therefore, it can't be directly
+    specified. Therefore, it can't be directly
     instantiated.
 
     This is a digital waveguide model, making its
@@ -12036,9 +12040,9 @@ MY_FLOAT Plucked :: tick()
     \brief STK one-pole, one-zero filter class.
 
     This protected Filter subclass implements
-    a one-pole, one-zero digital filter.  A
+    a one-pole, one-zero digital filter. A
     method is provided for creating an allpass
-    filter with a given coefficient.  Another
+    filter with a given coefficient. Another
     method is provided to create a DC blocking filter.
 
     by Perry R. Cook and Gary P. Scavone, 1995 - 2002.
@@ -12431,7 +12435,7 @@ bool Reverb :: isPrime(int number)
 
     The basic Chowning/Stanford FM patent expired
     in 1995, but there exist follow-on patents,
-    mostly assigned to Yamaha.  If you are of the
+    mostly assigned to Yamaha. If you are of the
     type who should worry about this (making
     money) worry away.
 
@@ -12524,7 +12528,7 @@ MY_FLOAT Rhodey :: tick()
     \brief STK SKINI parsing class
 
     This class parses SKINI formatted text
-    messages.  It can be used to parse individual
+    messages. It can be used to parse individual
     messages or it can be passed an entire file.
     The file specification is Perry's and his
     alone, but it's all text so it shouldn't be to
@@ -12533,7 +12537,7 @@ MY_FLOAT Rhodey :: tick()
     SKINI (Synthesis toolKit Instrument Network
     Interface) is like MIDI, but allows for
     floating-point control changes, note numbers,
-    etc.  The following example causes a sharp
+    etc. The following example causes a sharp
     middle C to be played with a velocity of 111.132:
 
     noteOn  60.01  111.13
@@ -12548,7 +12552,7 @@ MY_FLOAT Rhodey :: tick()
 #include <stdlib.h>
 
 // Constructor for use when parsing SKINI strings (coming over socket
-// for example.  Use parseThis() method with string pointer.
+// for example. Use parseThis() method with string pointer.
 SKINI :: SKINI()
 {
 }
@@ -12934,19 +12938,19 @@ MY_FLOAT Sampler :: tick()
 
     This class implements a "hybrid" digital
     waveguide instrument that can generate a
-    variety of wind-like sounds.  It has also been
-    referred to as the "blowed string" model.  The
+    variety of wind-like sounds. It has also been
+    referred to as the "blowed string" model. The
     waveguide section is essentially that of a
     string, with one rigid and one lossy
-    termination.  The non-linear function is a
-    reed table.  The string can be "blown" at any
+    termination. The non-linear function is a
+    reed table. The string can be "blown" at any
     point between the terminations, though just as
     with strings, it is impossible to excite the
-    system at either end.  If the excitation is
+    system at either end. If the excitation is
     placed at the string mid-point, the sound is
-    that of a clarinet.  At points closer to the
+    that of a clarinet. At points closer to the
     "bridge", the sound is closer to that of a
-    saxophone.  See Scavone (2002) for more details.
+    saxophone. See Scavone (2002) for more details.
 
     This is a digital waveguide model, making its
     use possibly subject to patents held by Stanford
@@ -13163,7 +13167,7 @@ void Saxofony :: controlChange(int number, MY_FLOAT value)
     PhISEM (Physically Informed Stochastic Event
     Modeling) is an algorithmic approach for
     simulating collisions of multiple independent
-    sound producing objects.  This class is a
+    sound producing objects. This class is a
     meta-model that can simulate a Maraca, Sekere,
     Cabasa, Bamboo Wind Chimes, Water Drops,
     Tambourine, Sleighbells, and a Guiro.
@@ -13171,7 +13175,7 @@ void Saxofony :: controlChange(int number, MY_FLOAT value)
     PhOLIES (Physically-Oriented Library of
     Imitated Environmental Sounds) is a similar
     approach for the synthesis of environmental
-    sounds.  This class implements simulations of
+    sounds. This class implements simulations of
     breaking sticks, crunchy snow (or not), a
     wrench, sandpaper, and more.
 
@@ -13294,11 +13298,11 @@ MY_FLOAT noise_tick() //  Return random MY_FLOAT float between -1.0 and 1.0
 #define WUTR_SYSTEM_DECAY 0.996
 #define WUTR_GAIN 1.0
 #define WUTR_NUM_SOURCES 10
-#define WUTR_CENTER_FREQ0  450.0
-#define WUTR_CENTER_FREQ1  600.0
-#define WUTR_CENTER_FREQ2  750.0 
-#define WUTR_RESON   0.9985
-#define WUTR_FREQ_SWEEP  1.0001
+#define WUTR_CENTER_FREQ0 450.0
+#define WUTR_CENTER_FREQ1 600.0
+#define WUTR_CENTER_FREQ2 750.0
+#define WUTR_RESON 0.9985
+#define WUTR_FREQ_SWEEP 1.0001
 
 // Tambourine
 #define TAMB_SOUND_DECAY 0.95
@@ -13308,7 +13312,7 @@ MY_FLOAT noise_tick() //  Return random MY_FLOAT float between -1.0 and 1.0
 #define TAMB_SHELL_FREQ 2300
 #define TAMB_SHELL_GAIN 0.1
 #define TAMB_SHELL_RESON 0.96
-#define TAMB_CYMB_FREQ1  5600
+#define TAMB_CYMB_FREQ1 5600
 #define TAMB_CYMB_FREQ2 8100
 #define TAMB_CYMB_RESON 0.99
 
@@ -13328,18 +13332,18 @@ MY_FLOAT noise_tick() //  Return random MY_FLOAT float between -1.0 and 1.0
 #define GUIR_SOUND_DECAY 0.95
 #define GUIR_GAIN 10.0
 #define GUIR_NUM_PARTS 128
-#define GUIR_GOURD_FREQ  2500.0
+#define GUIR_GOURD_FREQ 2500.0
 #define GUIR_GOURD_RESON 0.97
-#define GUIR_GOURD_FREQ2  4000.0
+#define GUIR_GOURD_FREQ2 4000.0
 #define GUIR_GOURD_RESON2 0.97
 
 // Wrench
 #define WRENCH_SOUND_DECAY 0.95
 #define WRENCH_GAIN 5
 #define WRENCH_NUM_PARTS 128
-#define WRENCH_FREQ  3200.0
+#define WRENCH_FREQ 3200.0
 #define WRENCH_RESON 0.99
-#define WRENCH_FREQ2  8000.0
+#define WRENCH_FREQ2 8000.0
 #define WRENCH_RESON2 0.992
 
 // Cokecan
@@ -13348,7 +13352,7 @@ MY_FLOAT noise_tick() //  Return random MY_FLOAT float between -1.0 and 1.0
 #define COKECAN_GAIN 0.8
 #define COKECAN_NUM_PARTS 48
 #define COKECAN_HELMFREQ 370
-#define COKECAN_HELM_RES  0.99
+#define COKECAN_HELM_RES 0.99
 #define COKECAN_METLFREQ0 1025
 #define COKECAN_METLFREQ1 1424
 #define COKECAN_METLFREQ2 2149
@@ -14437,9 +14441,9 @@ void Simple :: controlChange(int number, MY_FLOAT value)
 
     This class contains all that is needed to make
     a pitched musical sound, like a simple voice
-    or violin.  In general, it will not be used
+    or violin. In general, it will not be used
     alone because of munchkinification effects
-    from pitch shifting.  It will be used as an
+    from pitch shifting. It will be used as an
     excitation source for other instruments.
 
     by Perry R. Cook and Gary P. Scavone, 1995 - 2002.
@@ -15017,7 +15021,7 @@ void StifKarp :: controlChange(int number, MY_FLOAT value)
 
     Nearly all STK classes inherit from this class.
     The global sample rate can be queried and
-    modified via Stk.  In addition, this class
+    modified via Stk. In addition, this class
     provides error handling and byte-swapping
     functions.
 
@@ -15072,7 +15076,7 @@ void Stk :: setRawwavePath(std::string newPath)
 
 void Stk :: swap16(unsigned char *ptr)
 {
-  register unsigned char val;
+  unsigned char val;
 
   // Swap 1st and 2nd bytes
   val = *(ptr);
@@ -15082,7 +15086,7 @@ void Stk :: swap16(unsigned char *ptr)
 
 void Stk :: swap32(unsigned char *ptr)
 {
-  register unsigned char val;
+  unsigned char val;
 
   // Swap 1st and 4th bytes
   val = *(ptr);
@@ -15098,7 +15102,7 @@ void Stk :: swap32(unsigned char *ptr)
 
 void Stk :: swap64(unsigned char *ptr)
 {
-  register unsigned char val;
+  unsigned char val;
 
   // Swap 1st and 8th bytes
   val = *(ptr);
@@ -15173,7 +15177,7 @@ void StkError :: printMessage(void)
     \brief STK sub-sampled noise generator.
 
     Generates a new random number every "rate" ticks
-    using the C rand() function.  The quality of the
+    using the C rand() function. The quality of the
     rand() function varies from one OS to another.
 
     by Perry R. Cook and Gary P. Scavone, 1995 - 2002.
@@ -15216,7 +15220,7 @@ MY_FLOAT SubNoise :: tick()
 
     This class loads a table of floating-point
     doubles, which are assumed to be in big-endian
-    format.  Linear interpolation is performed for
+    format. Linear interpolation is performed for
     fractional lookup indexes.
 
     An StkError will be thrown if the table file
@@ -15339,7 +15343,7 @@ MY_FLOAT *Table :: tick(MY_FLOAT *vec, unsigned int vectorSize)
 
     The basic Chowning/Stanford FM patent expired
     in 1995, but there exist follow-on patents,
-    mostly assigned to Yamaha.  If you are of the
+    mostly assigned to Yamaha. If you are of the
     type who should worry about this (making
     money) worry away.
 
@@ -15423,7 +15427,7 @@ MY_FLOAT TubeBell :: tick()
     \brief STK two-pole filter class.
 
     This protected Filter subclass implements
-    a two-pole digital filter.  A method is
+    a two-pole digital filter. A method is
     provided for creating a resonance in the
     frequency response while maintaining a nearly
     constant filter gain.
@@ -15522,7 +15526,7 @@ MY_FLOAT *TwoPole :: tick(MY_FLOAT *vec, unsigned int vectorSize)
     \brief STK two-zero filter class.
 
     This protected Filter subclass implements
-    a two-zero digital filter.  A method is
+    a two-zero digital filter. A method is
     provided for creating a "notch" in the
     frequency response while maintaining a
     constant filter gain.
@@ -15695,7 +15699,7 @@ void Vector3D :: setZ(double aval)
 
     Measured formant data is included, and enough
     data is there to support either parallel or
-    cascade synthesis.  In the floating point case
+    cascade synthesis. In the floating point case
     cascade synthesis is the most natural so
     that's what you'll find here.
 
@@ -15951,14 +15955,14 @@ void VoicForm :: controlChange(int number, MY_FLOAT value)
     \brief STK voice manager class.
 
     This class can be used to manage a group of
-    STK instrument classes.  Individual voices can
+    STK instrument classes. Individual voices can
     be controlled via unique note tags.
     Instrument groups can be controlled by channel
     number.
 
     A previously constructed STK instrument class
     is linked with a voice manager using the
-    addInstrument() function.  An optional channel
+    addInstrument() function. An optional channel
     number argument can be specified to the
     addInstrument() function as well (default
     channel = 0).  The voice manager does not
@@ -15967,10 +15971,10 @@ void VoicForm :: controlChange(int number, MY_FLOAT value)
     deallocate all instruments.
 
     The tick() function returns the mix of all
-    sounding voices.  Each noteOn returns a unique
+    sounding voices. Each noteOn returns a unique
     tag (credits to the NeXT MusicKit), so you can
     send control changes to specific voices within
-    an ensemble.  Alternately, control changes can
+    an ensemble. Alternately, control changes can
     be sent to all voices on a given channel.
 
     by Perry R. Cook and Gary P. Scavone, 1995 - 2002.
@@ -16219,7 +16223,7 @@ MY_FLOAT Voicer :: lastOutRight() const
     audio file looping functionality.
 
     WaveLoop supports multi-channel data in
-    interleaved format.  It is important to
+    interleaved format. It is important to
     distinguish the tick() methods, which return
     samples produced by averaging across sample
     frames, from the tickFrame() methods, which
@@ -16316,8 +16320,8 @@ void WaveLoop :: addPhaseOffset(MY_FLOAT anAngle)
 
 const MY_FLOAT *WaveLoop :: tickFrame(void)
 {
-  register MY_FLOAT tyme, alpha;
-  register unsigned long i, index;
+  MY_FLOAT tyme, alpha;
+  unsigned long i, index;
 
   // Check limits of time address ... if necessary, recalculate modulo fileSize.
   while (time < 0.0)
@@ -16542,7 +16546,7 @@ MY_FLOAT Whistle :: tick()
     temp  = -temp;       // We know (hope) it's inside, just how much??
     if (temp < (PEA_RADIUS * 1.25))        {            
       pea->getVelocity(tempVector); //  This is the can/pea collision
-      tempX = tempVectorP->getX();  // calculation.  Could probably
+      tempX = tempVectorP->getX();  // calculation. Could probably
       tempY = tempVectorP->getY();  // simplify using tables, etc.
       phi = -atan2(tempY,tempX);
       cosphi = cos(phi);
@@ -16645,7 +16649,7 @@ void Whistle :: controlChange(int number, MY_FLOAT value)
 
     The basic Chowning/Stanford FM patent expired
     in 1995, but there exist follow-on patents,
-    mostly assigned to Yamaha.  If you are of the
+    mostly assigned to Yamaha. If you are of the
     type who should worry about this (making
     money) worry away.
 
@@ -16758,24 +16762,24 @@ void Wurley :: controlChange( int which, MY_FLOAT value )
     \brief STK audio data input base class.
 
     This class provides input support for various
-    audio file formats.  It also serves as a base
+    audio file formats. It also serves as a base
     class for "realtime" streaming subclasses.
 
     WvIn loads the contents of an audio file for
-    subsequent output.  Linear interpolation is
+    subsequent output. Linear interpolation is
     used for fractional "read rates".
 
     WvIn supports multi-channel data in interleaved
-    format.  It is important to distinguish the
+    format. It is important to distinguish the
     tick() methods, which return samples produced
     by averaging across sample frames, from the 
     tickFrame() methods, which return pointers to
-    multi-channel sample frames.  For single-channel
+    multi-channel sample frames. For single-channel
     data, these methods return equivalent values.
 
     Small files are completely read into local memory
-    during instantiation.  Large files are read
-    incrementally from disk.  The file size threshold
+    during instantiation. Large files are read
+    incrementally from disk. The file size threshold
     and the increment size values are defined in
     WvIn.h.
 
@@ -16783,7 +16787,7 @@ void Wurley :: controlChange( int which, MY_FLOAT value )
     MAT-file (Matlab), and STK RAW file formats.
     Signed integer (8-, 16-, and 32-bit) and floating-
     point (32- and 64-bit) data types are supported.
-    Uncompressed data types are not supported.  If
+    Uncompressed data types are not supported. If
     using MAT-files, data should be saved in an array
     with each data channel filling a matrix row.
 
@@ -17315,7 +17319,7 @@ if( little_endian )
 if( little_endian )
   swap16((unsigned char *)&temp);
 
-  // Get file sample rate from the header.  For AIFF files, this value
+  // Get file sample rate from the header. For AIFF files, this value
   // is stored in a 10-byte, IEEE Standard 754 floating point number,
   // so we need to convert it first.
   unsigned char srate[10];
@@ -17729,8 +17733,8 @@ MY_FLOAT *WvIn :: tick(MY_FLOAT *vec, unsigned int vectorSize)
 
 const MY_FLOAT *WvIn :: tickFrame(void)
 {
-  register MY_FLOAT tyme, alpha;
-  register unsigned long i, index;
+  MY_FLOAT tyme, alpha;
+  unsigned long i, index;
 
   if (finished) return lastOutput;
 
@@ -17790,12 +17794,12 @@ MY_FLOAT *WvIn :: tickFrame(MY_FLOAT *frameVector, unsigned int frames)
     \brief STK audio data output base class.
 
     This class provides output support for various
-    audio file formats.  It also serves as a base
+    audio file formats. It also serves as a base
     class for "realtime" streaming subclasses.
 
-    WvOut writes samples to an audio file.  It
+    WvOut writes samples to an audio file. It
     supports multi-channel data in interleaved
-    format.  It is important to distinguish the
+    format. It is important to distinguish the
     tick() methods, which output single samples
     to all channels in a sample frame, from the
     tickFrame() method, which takes a pointer
@@ -17803,14 +17807,14 @@ MY_FLOAT *WvIn :: tickFrame(MY_FLOAT *frameVector, unsigned int frames)
 
     WvOut currently supports WAV, AIFF, AIFC, SND
     (AU), MAT-file (Matlab), and STK RAW file
-    formats.  Signed integer (8-, 16-, and 32-bit)
+    formats. Signed integer (8-, 16-, and 32-bit)
     and floating- point (32- and 64-bit) data types
-    are supported.  STK RAW files use 16-bit
-    integers by definition.  MAT-files will always
-    be written as 64-bit floats.  If a data type
+    are supported. STK RAW files use 16-bit
+    integers by definition. MAT-files will always
+    be written as 64-bit floats. If a data type
     specification does not match the specified file
     type, the data type will automatically be
-    modified.  Uncompressed data types are not
+    modified. Uncompressed data types are not
     supported.
 
     Currently, WvOut is non-interpolating and the
@@ -17821,11 +17825,13 @@ MY_FLOAT *WvIn :: tickFrame(MY_FLOAT *frameVector, unsigned int frames)
 /***************************************************/
 
 
+#ifndef __DISABLE_WVOUT__
 const WvOut::FILE_TYPE WvOut :: WVOUT_RAW = 1;
 const WvOut::FILE_TYPE WvOut :: WVOUT_WAV = 2;
 const WvOut::FILE_TYPE WvOut :: WVOUT_SND = 3;
 const WvOut::FILE_TYPE WvOut :: WVOUT_AIF = 4;
 const WvOut::FILE_TYPE WvOut :: WVOUT_MAT = 5;
+#endif
 
 // WAV header structure. See ftp://ftp.isi.edu/in-notes/rfc2361.txt
 // for information regarding format codes.
@@ -17885,36 +17891,54 @@ struct mathdr {
   // There's more, but it's of variable length
 };
 
+
+#ifndef __DISABLE_WVOUT__
 size_t WvOut::fwrite(const void * ptr, size_t size, size_t nitems, FILE * stream)
 {
+    #ifndef __DISABLE_THREADS__
     if(asyncIO)
         return asyncWriteThread->fwrite(ptr, size, nitems, stream);
     else
         return ::fwrite(ptr, size, nitems, stream);
+    #else
+    return ::fwrite(ptr, size, nitems, stream);
+    #endif
 }
 
 int WvOut::fseek(FILE *stream, long offset, int whence)
 {
+    #ifndef __DISABLE_THREADS__
     if(asyncIO)
         return asyncWriteThread->fseek(stream, offset, whence);
     else
         return ::fseek(stream, offset, whence);
+    #else
+    return ::fseek(stream, offset, whence);
+    #endif
 }
 
 int WvOut::fflush(FILE *stream)
 {
+    #ifndef __DISABLE_THREADS__
     if(asyncIO)
         return asyncWriteThread->fflush(stream);
     else
         return ::fflush(stream);
+    #else
+    return ::fflush(stream);
+    #endif
 }
 
 int WvOut::fclose(FILE *stream)
 {
+    #ifndef __DISABLE_THREADS__
     if(asyncIO)
         return asyncWriteThread->fclose(stream);
     else
         return ::fclose(stream);
+    #else
+    return ::fclose(stream);
+    #endif
 }
 
 size_t WvOut::fread(void *ptr, size_t size, size_t nitems, FILE *stream)
@@ -17926,7 +17950,7 @@ size_t WvOut::fread(void *ptr, size_t size, size_t nitems, FILE *stream)
 
 WvOut :: WvOut()
 {
-  init();    
+  init();
 }
 
 WvOut::WvOut( const char *fileName, unsigned int nChannels, FILE_TYPE type, Stk::STK_FORMAT format )
@@ -17956,7 +17980,7 @@ void WvOut :: init()
   start = TRUE;
   flush = 0;
   fileGain = 1;
-  
+
   // spencer: added as flag for off-thread write
   asyncIO = FALSE;
   asyncWriteThread = NULL;
@@ -17993,7 +18017,7 @@ void WvOut :: openFile( const char *fileName, unsigned int nChannels, WvOut::FIL
   closeFile();
   str_filename.set( fileName );
   //strncpy( m_filename, fileName, 255);
-  //if ( strlen( fileName ) > 255 ) 
+  //if ( strlen( fileName ) > 255 )
   //  m_filename[255] = '\0';
 
   if ( nChannels < 1 ) {
@@ -18006,11 +18030,11 @@ void WvOut :: openFile( const char *fileName, unsigned int nChannels, WvOut::FIL
   fileType = type;
 
   if ( format != STK_SINT8 && format != STK_SINT16 &&
-       format != STK_SINT32 && format != MY_FLOAT32 && 
+       format != STK_SINT32 && format != MY_FLOAT32 &&
        format != MY_FLOAT64 ) {
     sprintf( msg, "[chuck](via WvOut): Unknown data type specified (%ld).", format );
     handleError(msg, StkError::FUNCTION_ARGUMENT);
-  } 
+  }
   dataType = format;
 
   bool result = false;
@@ -18288,7 +18312,7 @@ if( little_endian )
 
   *(unsigned long *)(hdr.srate+2) = (unsigned long) rate;
 
-  byteswap = false;  
+  byteswap = false;
 if( little_endian )
 {
   byteswap = true;
@@ -18320,7 +18344,7 @@ if( little_endian )
     if ( fwrite(&type, 4, 1, fd) != 1 ) goto error;
     if ( fwrite(&zeroes, 2, 1, fd) != 1 ) goto error;
   }
-  
+
   if ( fwrite(&ssnd, 4, 4, fd) != 4 ) goto error;
 
   // printf("\nCreating AIF file: %s\n", name);
@@ -18418,7 +18442,7 @@ bool WvOut :: setMatFile( const char *fileName )
   // 3. Array Name
   // We'll use fileName for the matlab array name (as well as the file name).
   // If fileName is 4 characters or less, we have to use a compressed data element
-  // format for the array name data element.  Otherwise, the array name must
+  // format for the array name data element. Otherwise, the array name must
   // be formatted in 8-byte increments (up to 31 characters + NULL).
   SINT32 namelength = (SINT32) strlen(fileName);
   if (strstr(fileName, ".mat")) namelength -= 4;
@@ -18517,7 +18541,7 @@ void WvOut :: writeData( unsigned long frames )
         if(float_sample < 0) float_sample = 0;
         if(float_sample > 255) float_sample = 255;
         unsigned char sample = (unsigned char) float_sample;
-        
+
         if ( fwrite(&sample, 1, 1, fd) != 1 ) goto error;
       }
     }
@@ -18527,7 +18551,7 @@ void WvOut :: writeData( unsigned long frames )
         if(float_sample < -128) float_sample = -128;
         if(float_sample > 127) float_sample = 127;
         signed char sample = (signed char) float_sample;
-        
+
         if ( fwrite(&sample, 1, 1, fd) != 1 ) goto error;
       }
     }
@@ -18538,7 +18562,7 @@ void WvOut :: writeData( unsigned long frames )
       if(float_sample < -32767) float_sample = -32767;
       if(float_sample > 32767) float_sample = 32767;
       SINT16 sample = (SINT16) float_sample;
-      
+
       if ( byteswap ) swap16( (unsigned char *)&sample );
       if ( fwrite(&sample, 2, 1, fd) != 1 ) goto error;
     }
@@ -18549,7 +18573,7 @@ void WvOut :: writeData( unsigned long frames )
       if(float_sample < -2147483647) float_sample = (float)-2147483647;
       if(float_sample > 2147483647) float_sample = (float)2147483647;
       SINT32 sample = (SINT32) float_sample;
-      
+
       if ( byteswap ) swap32( (unsigned char *)&sample );
       if ( fwrite(&sample, 4, 1, fd) != 1 ) goto error;
     }
@@ -18558,7 +18582,7 @@ void WvOut :: writeData( unsigned long frames )
     FLOAT32 sample;
     for ( unsigned long k=0; k<frames*channels; k++ ) {
       sample = (FLOAT32) (data[k]);
-      
+
       if ( byteswap ) swap32( (unsigned char *)&sample );
       if ( fwrite(&sample, 4, 1, fd) != 1 ) goto error;
     }
@@ -18567,7 +18591,7 @@ void WvOut :: writeData( unsigned long frames )
     FLOAT64 sample;
     for ( unsigned long k=0; k<frames*channels; k++ ) {
       sample = (FLOAT64) (data[k]);
-      
+
       if ( byteswap ) swap64( (unsigned char *)&sample );
       if ( fwrite(&sample, 8, 1, fd) != 1 ) goto error;
     }
@@ -18629,6 +18653,8 @@ void WvOut :: tickFrame(const MY_FLOAT *frameVector, unsigned int frames)
     }
   }
 }
+#endif //__DISABLE_WVOUT__
+
 
 
 
@@ -18638,7 +18664,7 @@ void WvOut :: tickFrame(const MY_FLOAT *frameVector, unsigned int frames)
  
  This class can be used to read events from a standard MIDI file.
  Event bytes are copied to a C++ vector and must be subsequently
- interpreted by the user.  The function getNextMidiEvent() skips
+ interpreted by the user. The function getNextMidiEvent() skips
  meta and sysex events, returning only MIDI channel messages.
  Event delta-times are returned in the form of "ticks" and a
  function is provided to determine the current "seconds per tick".
@@ -18729,9 +18755,9 @@ MidiFileIn :: MidiFileIn( std::string fileName )
         tickrate = (double) (*data & 0x7FFF); // ticks per quarter note
     }
     
-    // Now locate the track offsets and lengths.  If not using time
+    // Now locate the track offsets and lengths. If not using time
     // code, we can initialize the "tick time" using a default tempo of
-    // 120 beats per minute.  We will then check for tempo meta-events
+    // 120 beats per minute. We will then check for tempo meta-events
     // afterward.
     unsigned int i;
     for ( i=0; i<nTracks_; i++ ) {
@@ -18856,8 +18882,8 @@ unsigned long MidiFileIn :: getNextEvent( std::vector<unsigned char> *event, uns
 {
     // Fill the user-provided vector with the next event in the
     // specified track (default = 0) and return the event delta time in
-    // ticks.  This function assumes that the stored track pointer is
-    // positioned at the start of a track event.  If the track has
+    // ticks. This function assumes that the stored track pointer is
+    // positioned at the start of a track event. If the track has
     // reached its end, the event vector size will be zero.
     //
     // If we have a format 0 or 2 file and we're not using timecode, we
@@ -18976,7 +19002,7 @@ unsigned long MidiFileIn :: getNextMidiEvent( std::vector<unsigned char> *midiEv
 {
     // Fill the user-provided vector with the next MIDI event in the
     // specified track (default = 0) and return the event delta time in
-    // ticks.  Meta-Events preceeding this event are skipped and ignored.
+    // ticks. Meta-Events preceeding this event are skipped and ignored.
     if ( track >= nTracks_ ) {
         CK_STDCOUT << "MidiFileIn::getNextMidiEvent: invalid track argument (" <<  track << ").";
         handleError( "", StkError::WARNING ); return 0;
@@ -18998,7 +19024,7 @@ unsigned long MidiFileIn :: getNextMidiEvent( std::vector<unsigned char> *midiEv
 bool MidiFileIn :: readVariableLength( unsigned long *value )
 {
     // It is assumed that this function is called with the file read
-    // pointer positioned at the start of a variable-length value.  The
+    // pointer positioned at the start of a variable-length value. The
     // function returns "true" if the value is successfully parsed and
     // "false" otherwise.
     *value = 0;
@@ -24999,7 +25025,7 @@ CK_DLL_CTRL( Moog_ctrl_filterQ )
     Moog * m = (Moog *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS); 
     m->controlChange( __SK_FilterQ_, f * 128.0 );
-    RETURN->v_float = (t_CKFLOAT)  10.0 * ( m->filterQ - 0.80 );
+    RETURN->v_float = (t_CKFLOAT)10.0 * ( m->filterQ - 0.80 );
 }
 
 
@@ -25010,7 +25036,7 @@ CK_DLL_CTRL( Moog_ctrl_filterQ )
 CK_DLL_CGET( Moog_cget_filterQ )
 {
     Moog * m = (Moog *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    RETURN->v_float = (t_CKFLOAT)  10.0 * ( m->filterQ - 0.80 );
+    RETURN->v_float = (t_CKFLOAT)10.0 * ( m->filterQ - 0.80 );
 }
 
 
@@ -25023,7 +25049,7 @@ CK_DLL_CTRL( Moog_ctrl_filterSweepRate )
     Moog * m = (Moog *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS); 
     m->controlChange( __SK_FilterSweepRate_, f * 128.0 );
-    RETURN->v_float = (t_CKFLOAT)  m->filterRate * 5000;
+    RETURN->v_float = (t_CKFLOAT)m->filterRate * 5000;
 }
 
 
@@ -25034,7 +25060,7 @@ CK_DLL_CTRL( Moog_ctrl_filterSweepRate )
 CK_DLL_CGET( Moog_cget_filterSweepRate )
 {
     Moog * m = (Moog *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    RETURN->v_float = (t_CKFLOAT)  m->filterRate * 5000;
+    RETURN->v_float = (t_CKFLOAT)m->filterRate * 5000;
 }
 
 
@@ -25083,7 +25109,7 @@ CK_DLL_CTRL( Moog_ctrl_vibratoGain )
     Moog * m = (Moog *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS); 
     m->controlChange( __SK_ModWheel_, f * 128.0 );
-    RETURN->v_float = (t_CKFLOAT)  m->m_vibratoGain;
+    RETURN->v_float = (t_CKFLOAT)m->m_vibratoGain;
 }
 
 
@@ -25094,7 +25120,7 @@ CK_DLL_CTRL( Moog_ctrl_vibratoGain )
 CK_DLL_CGET( Moog_cget_vibratoGain )
 {
     Moog * m = (Moog *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    RETURN->v_float = (t_CKFLOAT)  m->m_vibratoGain;
+    RETURN->v_float = (t_CKFLOAT)m->m_vibratoGain;
 }
 
 
@@ -25107,7 +25133,7 @@ CK_DLL_CTRL( Moog_ctrl_volume )
     Moog * m = (Moog *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS); 
     m->controlChange( __SK_AfterTouch_Cont_, f * 128.0 );
-    RETURN->v_float = (t_CKFLOAT)  m->m_volume;
+    RETURN->v_float = (t_CKFLOAT)m->m_volume;
 }
 
 
@@ -25118,7 +25144,7 @@ CK_DLL_CTRL( Moog_ctrl_volume )
 CK_DLL_CGET( Moog_cget_volume )
 {
     Moog * m = (Moog *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    RETURN->v_float = (t_CKFLOAT)  m->m_volume;
+    RETURN->v_float = (t_CKFLOAT)m->m_volume;
 }
 
 
@@ -25248,7 +25274,7 @@ CK_DLL_CTRL( PitShift_ctrl_shift )
     PitShift * p = (PitShift *)OBJ_MEMBER_UINT(SELF, PitShift_offset_data);
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
     p->setShift( f );
-    RETURN->v_float = (t_CKFLOAT)  1.0 - p->rate;
+    RETURN->v_float = (t_CKFLOAT)1.0 - p->rate;
 }
 
 
@@ -25259,7 +25285,7 @@ CK_DLL_CTRL( PitShift_ctrl_shift )
 CK_DLL_CGET( PitShift_cget_shift )
 {
     PitShift * p = (PitShift *)OBJ_MEMBER_UINT(SELF, PitShift_offset_data);
-    RETURN->v_float = (t_CKFLOAT)  1.0 - p->rate;
+    RETURN->v_float = (t_CKFLOAT)1.0 - p->rate;
 }
 
 
@@ -25272,7 +25298,7 @@ CK_DLL_CTRL( PitShift_ctrl_effectMix )
     PitShift * p = (PitShift *)OBJ_MEMBER_UINT(SELF, PitShift_offset_data);
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
     p->setEffectMix( f );
-    RETURN->v_float = (t_CKFLOAT)  p->effectMix;
+    RETURN->v_float = (t_CKFLOAT)p->effectMix;
 }
 
 
@@ -25283,7 +25309,7 @@ CK_DLL_CTRL( PitShift_ctrl_effectMix )
 CK_DLL_CGET( PitShift_cget_effectMix )
 {
     PitShift * p = (PitShift *)OBJ_MEMBER_UINT(SELF, PitShift_offset_data);
-    RETURN->v_float = (t_CKFLOAT)  p->effectMix;
+    RETURN->v_float = (t_CKFLOAT)p->effectMix;
 }
 
 
@@ -26149,6 +26175,7 @@ Chuck_Carrier * getCarrier( Chuck_VM * vm, const std::string & where = "" )
 
 
 
+#ifndef __DISABLE_WVOUT__
 // WvOut
 //-----------------------------------------------------------------------------
 // name: WvOut_ctor()
@@ -26165,6 +26192,7 @@ CK_DLL_CTOR( WvOut_ctor )
     // check
     if( carrier != NULL )
     {
+        #ifndef __DISABLE_THREADS__
         // REFACTOR-2017 TODO Ge: Fix wvout realtime audio [DONE]
         // check if need to create per-VM write thread
         if( carrier->stk_writeThread == NULL )
@@ -26176,6 +26204,7 @@ CK_DLL_CTOR( WvOut_ctor )
         // REFACTOR-2017: set async mode, if on realtime audio thread...
         yo->asyncIO = carrier->hintIsRealtimeAudio();
         yo->asyncWriteThread = carrier->stk_writeThread;
+        #endif
     }
 
     // set offset data
@@ -26801,6 +26830,8 @@ CK_DLL_CGET( WvOut_cget_fileGain )
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     RETURN->v_float = w->fileGain;
 }
+#endif //__DISABLE_WVOUT__
+
 
 
 //-----------------------------------------------------------------------------
@@ -27209,22 +27240,26 @@ t_CKBOOL stk_detach( Chuck_Carrier * carrier )
     // check
     if( carrier != NULL )
     {
+        #ifndef __DISABLE_WVOUT__
         // close files
         std::map<WvOut *, WvOut *>::iterator iter;
         for( iter = carrier->stk_wvOutMap.begin();
              iter != carrier->stk_wvOutMap.end(); iter++ ) {
             (*iter).second->closeFile();
         }
-        
+
         // TODO: release the WvOut
         carrier->stk_wvOutMap.clear();
         
         // deal with per-VM stk write thread
+        #ifndef __DISABLE_THREADS__
         if( carrier->stk_writeThread )
         {
             carrier->stk_writeThread->shutdown(); // deletes itself
             carrier->stk_writeThread = NULL;
         }
+        #endif //__DISABLE_THREADS__
+        #endif //__DISABLE_WVOUT__
     }
     
     return TRUE;

@@ -841,7 +841,7 @@ CK_DLL_TOCK( RMS_tock )
         assert( BLOB_IN != NULL );
         // get the array
         Chuck_Array8 & mag = BLOB_IN->fvals();
-        // compute centroid
+        // compute RMS
         result = compute_rms( mag, mag.size() );
     }
     // otherwise zero out
@@ -1436,7 +1436,7 @@ static t_CKINT compute_zerox( Chuck_Array8 & buffer, t_CKUINT size )
     t_CKFLOAT v = 0, p = 0;
     buffer.get( 0, &p );
 
-    // Compute centroid using moments
+    // count number of zero crossings
     for( i = 0; i < size; i++ )
     {
         buffer.get( i, &v );
@@ -1515,12 +1515,12 @@ CK_DLL_SFUN( ZeroX_compute )
     // sanity check
     if( !array )
     {
-        // no centroid
+        // input buffer was empty, so no zero crossings
         RETURN->v_float = 0.0;
     }
     else
     {
         // do it
-        RETURN->v_float = (t_CKFLOAT)( compute_centroid( *array, array->size() ) + .5 );
+        RETURN->v_float = (t_CKFLOAT)( compute_zerox( *array, array->size() ) + .5 );
     }
 }

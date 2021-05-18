@@ -71,7 +71,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: osc
     //---------------------------------------------------------------------
-    doc = "Base class for simple oscillator unit generators.";
+    doc = "base class for simple oscillator unit generators.";
     if( !type_engine_import_ugen_begin( env, "Osc", "UGen", env->global(), 
                                         osc_ctor, osc_dtor, osc_tick, osc_pmsg,
                                         doc.c_str() ) )
@@ -84,42 +84,43 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     // add ctrl: freq
     func = make_new_mfun( "float", "freq", osc_ctrl_freq );
     func->add_arg( "float", "hz" );
-    func->doc = "Frequency of oscillator in Hertz (cycles per second).";
+    func->doc = "set frequency of oscillator in Hertz; maintains phase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "freq", osc_cget_freq );
-    func->doc = "Frequency of oscillator in Hertz (cycles per second).";
+    func->doc = "get frequency of oscillator in Hertz.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: period
     func = make_new_mfun( "dur", "period", osc_ctrl_period );
     func->add_arg( "dur", "value" );
-    func->doc = "Period of oscillator (inverse of frequency).";
+    func->doc = "set period of oscillator (inverse of frequency).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "period", osc_cget_period );
-    func->doc = "Period of oscillator (inverse of frequency).";
+    func->doc = "get period of oscillator (inverse of frequency).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add ctrl: sfreq ( == freq ) 
     func = make_new_mfun( "float", "sfreq", osc_ctrl_freq );
     func->add_arg( "float", "hz" );
+    func->doc = "set frequency of oscillator in Hertz; resets phase to 0.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: phase
     func = make_new_mfun( "float", "phase", osc_ctrl_phase );
     func->add_arg( "float", "phase" );
-    func->doc = "Oscillator phase, in range [0,1). ";
+    func->doc = "set oscillator phase, in range [0,1).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "phase", osc_cget_phase );
-    func->doc = "Oscillator phase, in range [0,1). ";
+    func->doc = "get oscillator phase, in range [0,1).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: sync
     func = make_new_mfun( "int", "sync", osc_ctrl_sync );
     func->add_arg( "int", "type" );
-    func->doc = "Mode for input (if any). 0: sync frequency to input, 1: sync phase to input, 2: frequency modulation (add input to set frequency)";
+    func->doc = "choose how to interpret input: (0) sync frequency to input; (1) sync phase to input; (2) frequency modulation (add input to internal frequency).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "sync", osc_cget_sync );
-    func->doc = "Mode for input (if any). 0: sync frequency to input, 1: sync phase to input, 2: frequency modulation (add input to set frequency)";
+    func->doc = "get current interpretation of input: (0) sync frequency to input; (1) sync phase to input; (2) frequency modulation (add input to internal frequency).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -129,7 +130,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // phasor
     //---------------------------------------------------------------------
-    doc = "Phasor oscillator. Linearly rises from 0 to 1. Can be used as a phase control.";
+    doc = "a phasor oscillator; linearly rises from 0 to 1; can be used as a phase control.";
     if( !type_engine_import_ugen_begin( env, "Phasor", "Osc", env->global(), 
                                         NULL, NULL, osc_tick, NULL,
                                         doc.c_str() ) )
@@ -141,7 +142,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // sinosc
     //---------------------------------------------------------------------
-    doc = "Sine wave oscillator.";
+    doc = "a sine wave oscillator.";
     if( !type_engine_import_ugen_begin( env, "SinOsc", "Osc", env->global(),
                                         NULL, NULL, sinosc_tick, NULL,
                                         doc.c_str() ) )
@@ -156,7 +157,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // triosc - triangle oscillator
     //---------------------------------------------------------------------
-    doc = "Triangle wave oscillator.";
+    doc = "a triangle wave oscillator.";
     if( !type_engine_import_ugen_begin( env, "TriOsc", "Osc", env->global(),
                                         NULL, NULL, triosc_tick, NULL,
                                         doc.c_str() ) )
@@ -164,11 +165,11 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     
     func = make_new_mfun( "float", "width", osc_ctrl_width );
     func->add_arg( "float", "width" );
-    func->doc = "Width of triangle wave (ratio of rise time to fall time).";
+    func->doc = "set width of triangle wave (ratio of rise time to fall time).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "width", osc_cget_width );
-    func->doc = "Width of triangle wave (ratio of rise time to fall time).";
+    func->doc = "get width of triangle wave (ratio of rise time to fall time).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -178,7 +179,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // sawosc - sawtooth oscillator  (  0 | 1  triangle wave  )
     //---------------------------------------------------------------------
-    doc = "Sawtooth wave oscillator.";
+    doc = "sawtooth wave oscillator.";
     if( !type_engine_import_ugen_begin( env, "SawOsc", "TriOsc", env->global(),
                                         sawosc_ctor, NULL, NULL, NULL,
                                         doc.c_str() ) )
@@ -186,11 +187,11 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
 
     func = make_new_mfun( "float", "width", sawosc_ctrl_width );
     func->add_arg( "float", "width" );
-    func->doc = "Whether falling sawtooth wave (0) or rising sawtooth wave (1).";
+    func->doc = "whether sawtooth wave is to fall (0) or rise (1).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "width", osc_cget_width );
-    func->doc = "Whether falling sawtooth wave (0) or rising sawtooth wave (1).";
+    func->doc = "whether sawtooth wave is to fall (0) or rise (1).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -200,7 +201,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // pulseosc - pulse-width oscillator
     //---------------------------------------------------------------------
-    doc = "Pulse width oscillator.";
+    doc = "a pulse width oscillator.";
     if( !type_engine_import_ugen_begin( env, "PulseOsc", "Osc", env->global(),
                                         NULL, NULL, pulseosc_tick, NULL,
                                         doc.c_str() ) )
@@ -208,11 +209,11 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
 
     func = make_new_mfun( "float", "width", osc_ctrl_width );
     func->add_arg( "float", "width" );
-    func->doc = "Length of duty cycle [0,1).";
+    func->doc = "set width of duty cycle [0,1).";
     if( !type_engine_import_mfun( env, func ) ) goto error;    
 
     func = make_new_mfun( "float", "width", osc_cget_width );
-    func->doc = "Length of duty cycle [0,1).";
+    func->doc = "get width of duty cycle [0,1)/";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -222,14 +223,14 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // sqrosc - square_wave oscillator ( 0.5 pulse ) 
     //---------------------------------------------------------------------
-    doc = "Square wave oscillator (pulse with 0.5 duty cycle).";
+    doc = "a square wave oscillator (same as PulseOsc with 0.5 duty cycle).";
     if( !type_engine_import_ugen_begin( env, "SqrOsc", "PulseOsc", env->global(),
                                         sqrosc_ctor, NULL, NULL, NULL,
                                         doc.c_str() ) )
         return FALSE;
     
     func = make_new_mfun( "float", "width", sqrosc_ctrl_width );
-    func->doc = "Length of duty cycle (always 0.5)";
+    func->doc = "set width of duty cycle (always 0.5).";
     if( !type_engine_import_mfun( env, func ) ) goto error;    
 
     // end the class import
@@ -916,7 +917,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     std::string doc;
     Chuck_DL_Func * func = NULL;
     
-    doc = "Ported from rtcmix. See <a href=\"http://www.music.columbia.edu/cmix/makegens.html\">\
+    doc = "ported from rtcmix. See <a href=\"http://www.music.columbia.edu/cmix/makegens.html\">\
     http://www.music.columbia.edu/cmix/makegens.html</a> \
     for more information on the GenX family of UGens. Currently coefficients past \
     the 100th are ignored.\
@@ -940,12 +941,12 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
         
     func = make_new_mfun( "float", "lookup", genX_lookup ); //lookup table value
     func->add_arg( "float", "which" );
-    func->doc = "Returns lookup table value at index i [ -1, 1 ]. Absolute value is used in the range [ -1, 0 ).";
+    func->doc = "get lookup table value at index i [ -1, 1 ]; absolute value is used in the range [ -1, 0 )";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float[]", "coefs", genX_coeffs ); //load table
     func->add_arg( "float", "v[]" );
-    func->doc = "Set lookup table coefficients. Meaning is dependent on subclass.";
+    func->doc = "set lookup table coefficients; meaning is dependent on subclass";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -955,7 +956,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // gen5
     //---------------------------------------------------------------------
-    doc = "Constructs a lookup table composed of sequential exponential curves. "
+    doc = "constructs a lookup table composed of sequential exponential curves. "
     "For a table with N curves, starting value of y', and value yn for lookup "
     "index xn, set the coefficients to [ y', y0, x0, ..., yN-1, xN-1 ]. "
     "Note that there must be an odd number of coefficients. "
@@ -969,7 +970,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     
     func = make_new_mfun( "float[]", "coefs", gen5_coeffs ); //load table
     func->add_arg( "float", "v[]" );
-    func->doc = "Set lookup table coefficients.";
+    func->doc = "set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -980,7 +981,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // gen7
     //---------------------------------------------------------------------
-    doc = "Constructs a lookup table composed of sequential line segments. "
+    doc = "constructs a lookup table composed of sequential line segments. "
     "For a table with N lines, starting value of y', and value yn for lookup"
     "index xn, set the coefficients to [ y', y0, x0, ..., yN-1, xN-1 ]. "
     "Note that there must be an odd number of coefficients. "
@@ -993,7 +994,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
 
     func = make_new_mfun( "float[]", "coefs", gen7_coeffs ); //load table
     func->add_arg( "float", "v[]" );
-    func->doc = "Set lookup table coefficients.";
+    func->doc = "set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1003,7 +1004,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // gen9
     //---------------------------------------------------------------------
-    doc = "Constructs a lookup table of partials with specified amplitudes, "
+    doc = "constructs a lookup table of partials with specified amplitudes, "
     "phases, and harmonic ratios to the fundamental. "
     "Coefficients are specified in triplets of [ ratio, amplitude, phase ] "
     "arranged in a single linear array.";
@@ -1014,7 +1015,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
         
     func = make_new_mfun( "float[]", "coefs", gen9_coeffs ); //load table
     func->add_arg( "float", "v[]" );
-    func->doc = "Set lookup table coefficients.";
+    func->doc = "set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1025,7 +1026,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // gen10
     //---------------------------------------------------------------------
-    doc = "Constructs a lookup table of harmonic partials with specified "
+    doc = "constructs a lookup table of harmonic partials with specified "
     "amplitudes. The amplitude of partial n is specified by the nth element of "
     "the coefficients. For example, setting coefs to [ 1 ] will produce a sine wave.";
 
@@ -1035,7 +1036,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
         
     func = make_new_mfun( "float[]", "coefs", gen10_coeffs ); //load table
     func->add_arg( "float", "v[]" );
-    func->doc = "Set lookup table coefficients.";
+    func->doc = "set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1045,7 +1046,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // gen17
     //---------------------------------------------------------------------
-    doc = "Constructs a Chebyshev polynomial wavetable with harmonic partials "
+    doc = "constructs a Chebyshev polynomial wavetable with harmonic partials "
     "of specified weights. The weight of partial n is specified by the nth "
     "element of the coefficients. Primarily used for waveshaping, driven by a "
     "SinOsc instead of a Phasor. See "
@@ -1060,7 +1061,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
         
     func = make_new_mfun( "float[]", "coefs", gen17_coeffs ); //load table
     func->add_arg( "float", "v[]" );
-    func->doc = "Set lookup table coefficients.";
+    func->doc = "set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1069,7 +1070,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // Curve
     //---------------------------------------------------------------------
-    doc = "Constructs a wavetable composed of segments of variable times, "
+    doc = "constructs a wavetable composed of segments of variable times, "
     "values, and curvatures. Coefficients are specified as a single linear "
     "array of triplets of [ time, value, curvature ] followed by a final duple "
     "of [ time, value ] to specify the final value of the table. time values "
@@ -1083,7 +1084,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
         
     func = make_new_mfun( "float[]", "coefs", curve_coeffs ); //load table
     func->add_arg( "float", "v[]" );
-    func->doc = "Set lookup table coefficients.";
+    func->doc = "set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1092,7 +1093,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // Warp
     //---------------------------------------------------------------------
-    doc = "";
+    doc = "...";
 
     if( !type_engine_import_ugen_begin( env, "WarpTable", "GenX", env->global(),
                                         NULL, NULL, genX_tick, NULL, doc.c_str() ) )
@@ -1100,7 +1101,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
         
     func = make_new_mfun( "float[]", "coefs", warp_coeffs ); //load table
     func->add_arg( "float", "v[]" );
-    func->doc = "Set lookup table coefficients.";
+    func->doc = "set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     /*

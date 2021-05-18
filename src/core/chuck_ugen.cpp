@@ -202,11 +202,13 @@ void Chuck_UGen::init()
     m_last = 0.0f;
     m_op = UGEN_OP_TICK;
     m_gain = 1.0f;
-    m_pan = 1.0f;
     m_next = 0.0f;
     m_use_next = FALSE;
     m_max_block_size = -1;
-    
+    // if this is part of a stereo UGen, this parameter will be initialized
+    // according to the underly panning law (1.4.0.2)
+    m_pan = 1.0f;
+
     m_sum_v = NULL;
     m_current_v = NULL;
 
@@ -220,6 +222,12 @@ void Chuck_UGen::init()
     m_is_subgraph = FALSE;
     m_inlet = m_outlet = NULL;
     m_multi_in_v = m_multi_out_v = NULL;
+    
+    // 1.4.0.2 (jack): yes more hacks. buffered flag allows 
+    // global ugens' samples to be gotten
+    m_is_buffered = FALSE;
+    // buffer empty for any ugen that is not buffered
+    m_buffer.resize( 0 );
 }
 
 
@@ -364,11 +372,67 @@ t_CKUINT Chuck_UGen::get_num_src()
 
 
 //-----------------------------------------------------------------------------
+// name: set_is_buffered()
+// dsec: set whether we should store our old samples
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_UGen::set_is_buffered( t_CKBOOL buffered )
+{
+    // check if value is really changing. if not, return
+    if( ( buffered && m_is_buffered ) || ( !buffered && !m_is_buffered ) )
+    {
+        return TRUE;
+    }
+    
+    if( buffered )
+    {
+        // alloc
+        // (TODO: smarter way of maximum size of my buffer)
+        m_buffer.resize( 8192 );
+    }
+    else
+    {
+        // dealloc
+        m_buffer.resize( 0 );
+    }
+    
+    // store flag
+    m_is_buffered = buffered;
+    
+    return TRUE;
+    
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_buffer()
+// dsec: get the most recent buffer of samples
+//-----------------------------------------------------------------------------
+void Chuck_UGen::get_buffer( SAMPLE * buffer, t_CKINT num_elem )
+{
+    if( m_is_buffered )
+    {
+        // if we actually store our samples, give them num_elem of them
+        m_buffer.get_most_recent( buffer, num_elem );
+    }
+    else
+    {
+        // otherwise, give them 0
+        memset( buffer, 0, sizeof( SAMPLE ) * num_elem );
+    }
+}
+
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: src_chan()
 // desc: added 1.3.3.1
 //       destination ugen for a given source channel
 //-----------------------------------------------------------------------------
-Chuck_UGen *Chuck_UGen::src_chan( t_CKUINT chan )
+Chuck_UGen * Chuck_UGen::src_chan( t_CKUINT chan )
 {
     if( this->m_num_outs == 1)
         return this;
@@ -383,7 +447,7 @@ Chuck_UGen *Chuck_UGen::src_chan( t_CKUINT chan )
 // desc: added 1.3.3.1
 //       destination ugen for a given source channel
 //-----------------------------------------------------------------------------
-Chuck_UGen *Chuck_UGen::dst_for_src_chan( t_CKUINT chan )
+Chuck_UGen * Chuck_UGen::dst_for_src_chan( t_CKUINT chan )
 {
     if( this->m_num_ins == 1)
         return this;
@@ -987,6 +1051,13 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
         }
     }
     
+    // store in buffer
+    if( m_is_buffered )
+    {
+        // m_current is the mono mixdown of all channels (if > 1)
+        m_buffer.put( m_current );
+    }
+    
     return m_valid;
 }
 
@@ -1218,6 +1289,16 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
         
         // save as last
         m_last = m_current_v[numFrames-1];
+    }
+    
+    // store in buffer
+    if( m_is_buffered )
+    {
+        // m_current_v is the mono mixdown of all channels (if > 1)
+        for( j = 0; j < numFrames; j++ )
+        {
+            m_buffer.put( m_current_v[j] );
+        }
     }
     
     return m_valid;

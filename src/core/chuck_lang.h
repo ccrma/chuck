@@ -72,6 +72,8 @@ CK_DLL_MFUN( object_equals );
 CK_DLL_MFUN( object_getType );
 CK_DLL_MFUN( object_hashCode );
 CK_DLL_MFUN( object_toString );
+CK_DLL_MFUN( object_dump );
+CK_DLL_MFUN( object_apropos );
 
 
 //-----------------------------------------------------------------------------
@@ -91,6 +93,8 @@ CK_DLL_MFUN( ugen_numChannels );
 CK_DLL_MFUN( ugen_cget_numChannels );
 CK_DLL_MFUN( ugen_chan );
 CK_DLL_MFUN( ugen_connected );
+CK_DLL_MFUN( ugen_buffered );
+CK_DLL_MFUN( ugen_cget_buffered );
 
 
 //-----------------------------------------------------------------------------

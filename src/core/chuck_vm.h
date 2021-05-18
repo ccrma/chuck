@@ -34,8 +34,8 @@
 
 #include "chuck_oo.h"
 #include "chuck_ugen.h"
+#include "chuck_type.h"
 #include "chuck_carrier.h"
-#include "util_buffers.h"
 
 // tracking
 #ifdef __CHUCK_STAT_TRACK__
@@ -71,12 +71,12 @@ struct Chuck_VM;
 struct Chuck_VM_Func;
 struct Chuck_VM_FTable;
 struct Chuck_Msg;
+#ifndef __DISABLE_SERIAL__
 // hack: spencer?
 struct Chuck_IO_Serial;
+#endif
 
 class CBufferSimple;
-//XXXclass BBQ;
-//XXXclass Digitalio;
 
 
 
@@ -178,11 +178,13 @@ public:
     // add parent object reference (added 1.3.1.2)
     t_CKVOID add_parent_ref( Chuck_Object * obj );
     
+    #ifndef __DISABLE_SERIAL__
     // HACK - spencer (added 1.3.2.0)
     // add/remove SerialIO devices to close on shred exit
     // REFACTOR-2017: TODO -- remove
     t_CKVOID add_serialio( Chuck_IO_Serial * serial );
     t_CKVOID remove_serialio( Chuck_IO_Serial * serial );
+    #endif
     
 //-----------------------------------------------------------------------------
 // data
@@ -249,8 +251,10 @@ public: // ge: 1.3.5.3
     // loop counter pointer stack
     std::vector<t_CKUINT *> m_loopCounters;
     
+#ifndef __DISABLE_SERIAL__
 private:
     std::list<Chuck_IO_Serial *> * m_serials;
+#endif
 };
 
 
@@ -381,53 +385,8 @@ public:
 
 
 
-// Forward references for global messages, storage
-struct Chuck_Set_Global_Int_Request;
-struct Chuck_Get_Global_Int_Request;
-struct Chuck_Set_Global_Float_Request;
-struct Chuck_Get_Global_Float_Request;
-struct Chuck_Signal_Global_Event_Request;
-struct Chuck_Global_Int_Container;
-struct Chuck_Global_Float_Container;
-struct Chuck_Global_Event_Container;
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: enum Global_Request_Type
-// desc: what kind of global message request is this? (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-enum Chuck_Global_Request_Type
-{
-    set_global_int_request,
-    get_global_int_request,
-    set_global_float_request,
-    get_global_float_request,
-    signal_global_event_request,
-    spork_shred_request
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: strct Global_Request
-// desc: a global request (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Global_Request
-{
-    Chuck_Global_Request_Type type;
-    union {
-        Chuck_Set_Global_Int_Request * setIntRequest;
-        Chuck_Get_Global_Int_Request * getIntRequest;
-        Chuck_Set_Global_Float_Request * setFloatRequest;
-        Chuck_Get_Global_Float_Request * getFloatRequest;
-        Chuck_Signal_Global_Event_Request * signalEventRequest;
-        Chuck_VM_Shred * shred;
-    };
-
-};
+// forward reference
+struct Chuck_Globals_Manager; // added 1.4.0.2 (jack)
 
 
 
@@ -472,6 +431,8 @@ public: // shreds
     Chuck_VM_Shreduler * shreduler() const;
     // the next spork ID
     t_CKUINT next_id( );
+    // the last used spork ID
+    t_CKUINT last_id( );
 
 public: // audio
     t_CKUINT srate() const;
@@ -507,44 +468,13 @@ public: // get error
     { return m_last_error.c_str(); }
 
 public:
-    // REFACTOR-2017: externally accessible + global variables.
-    // use these getters and setters from outside the audio thread
-    t_CKBOOL get_global_int( std::string name, void (* callback)(t_CKINT) );
-    t_CKBOOL set_global_int( std::string name, t_CKINT val );
-
-    t_CKBOOL get_global_float( std::string name, void (* callback)(t_CKFLOAT) );
-    t_CKBOOL set_global_float( std::string name, t_CKFLOAT val );
-    
-    t_CKBOOL signal_global_event( std::string name );
-    t_CKBOOL broadcast_global_event( std::string name );
-    
-public:
-    // REFACTOR-2017: externally accessible + global variables.
-    // these internal functions are to be used only by other
-    // chuck code in the audio thread.
-    t_CKBOOL init_global_int( std::string name );
-    t_CKINT get_global_int_value( std::string name );
-    t_CKINT * get_ptr_to_global_int( std::string name );
-    
-    t_CKBOOL init_global_float( std::string name );
-    t_CKFLOAT get_global_float_value( std::string name );
-    t_CKFLOAT * get_ptr_to_global_float( std::string name );
-    
-    t_CKBOOL init_global_event( std::string name, Chuck_Type * type );
-    Chuck_Event * get_global_event( std::string name );
-    Chuck_Event * * get_ptr_to_global_event( std::string name );
-
-protected:
-    // REFACTOR-2017: global queue
-    void handle_global_queue_messages();
-
-public:
     // REFACTOR-2017: get associated, per-VM environment, chout, cherr
     Chuck_Carrier * carrier() const { return m_carrier; }
     Chuck_Env * env() const { return m_carrier->env; }
     Chuck_IO_Chout * chout() const { return m_carrier->chout; }
     Chuck_IO_Cherr * cherr() const { return m_carrier->cherr; }
-
+    // 1.4.0.2 (jack): get associated globals manager
+    Chuck_Globals_Manager * globals_manager() const { return m_globals_manager; }
 
 //-----------------------------------------------------------------------------
 // data
@@ -567,14 +497,21 @@ public:
     // for shreduler, ge: 1.3.5.3
     const SAMPLE * input_ref() { return m_input_ref; }
     SAMPLE * output_ref() { return m_output_ref; }
+    // for shreduler, jack: planar (non-interleaved) audio buffers
+    t_CKUINT most_recent_buffer_length() { return m_current_buffer_frames; }
 
 protected:
     // for shreduler, ge: 1.3.5.3
     const SAMPLE * m_input_ref;
     SAMPLE * m_output_ref;
+    t_CKUINT m_current_buffer_frames;
+
+public:
+    // protected, but needs to be accessible from Globals Manager (1.4.0.2)
+    // generally, this should not be called except by internals such as GM
+    Chuck_VM_Shred * spork( Chuck_VM_Shred * shred );
 
 protected:
-    Chuck_VM_Shred * spork( Chuck_VM_Shred * shred );
     t_CKBOOL free( Chuck_VM_Shred * shred, t_CKBOOL cascade, 
                    t_CKBOOL dec = TRUE );
     void dump( Chuck_VM_Shred * shred );
@@ -601,15 +538,9 @@ protected:
     // TODO: vector? (added 1.3.0.0 to fix uber-crash)
     std::list<CBufferSimple *> m_event_buffers;
 
-private:
-    // global variables
-    void cleanup_global_variables();
-
-    std::map< std::string, Chuck_Global_Int_Container * > m_global_ints;
-    std::map< std::string, Chuck_Global_Float_Container * > m_global_floats;
-    std::map< std::string, Chuck_Global_Event_Container * > m_global_events;
-    
-    XCircleBuffer< Chuck_Global_Request > m_global_request_queue;
+protected:
+    // 1.4.0.2 (jack): manager for global variables
+    Chuck_Globals_Manager * m_globals_manager;
 };
 
 
@@ -634,6 +565,7 @@ enum Chuck_Msg_Type
     MSG_ABORT,
     MSG_ERROR, // added 1.3.0.0
     MSG_CLEARVM,
+    MSG_CLEARGLOBALS,
 };
 
 
