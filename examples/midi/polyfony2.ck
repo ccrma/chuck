@@ -2,7 +2,7 @@
 // name: polyfony2.ck
 // desc: polyfonic clarinet model with midi input
 //
-// by: Ananya Misra and Ge Wang
+// authors: Ananya Misra and Ge Wang
 // send all complaints to prc@cs.princeton.edu
 //--------------------------------------------
 
@@ -78,7 +78,8 @@ while( true )
     while( min.recv( msg ) )
     {
         // catch only noteon
-        if( (msg.data1 & 0xf0) == 0x90 ){
+        if( (msg.data1 & 0xf0) == 0x90 )
+        {
             // check velocity
             if( msg.data3 > 0 )
             {
@@ -96,7 +97,8 @@ while( true )
                 if( us[msg.data2] != null ) us[msg.data2].signal();
             }
         }
-        else if( (msg.data1 & 0xf0) == 0x80 ){
+        else if( (msg.data1 & 0xf0) == 0x80 )
+        {
             us[msg.data2].signal();
         }
     }
