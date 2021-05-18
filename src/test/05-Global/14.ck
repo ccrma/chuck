@@ -9,7 +9,7 @@ global int a[2];
 [ 1, 2, 3, 4, 5 ] @=> global int b[];
 
 // loop over and print
-for( 0 => int i; i < b.cap(); i++ ) 
+for( 0 => int i; i < b.size(); i++ ) 
     //<<<b[i]>>>;
     b[i];
 

@@ -1,4 +1,4 @@
-// array pass by reference test - should change values?
+// array pass by reference test
 
 // function that takes array
 fun void mirror( int arg[] )
