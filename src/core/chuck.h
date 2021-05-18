@@ -131,7 +131,7 @@ public:
 
 public:
     // is initialized
-    bool running() { return m_init; }
+    bool isInit() { return m_init; }
     
 public:
     // additional native chuck bindings/types (use with extra caution)
@@ -148,9 +148,10 @@ public:
 public:
     // get VM (dangerous)
     Chuck_VM * vm() { return m_carrier->vm; }
-    bool vmrunning() { return m_carrier->vm && m_carrier->vm->running(); }
     // get compiler (dangerous)
     Chuck_Compiler * compiler() { return m_carrier->compiler; }
+    // is the VM running
+    bool vm_running() { return m_carrier->vm && m_carrier->vm->running(); }
 
 public:
     // global callback functions: replace printing to command line with a callback function

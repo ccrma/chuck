@@ -3519,19 +3519,26 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
 
 
 
-Chuck_IO_Chout::Chuck_IO_Chout( Chuck_Carrier * carrier ) {
-    m_callback = NULL;
+//-----------------------------------------------------------------------------
+// name: Chuck_IO_Chout()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_IO_Chout::Chuck_IO_Chout( Chuck_Carrier * carrier )
+{
     // store
     carrier->chout = this;
     // add ref
     this->add_ref();
+    // zero out
+    m_callback = NULL;
     // initialize (added 1.3.0.0)
     initialize_object( this, carrier->env->t_chout );
     // lock so can't be deleted conventionally
     this->lock();
 }
 
-Chuck_IO_Chout::~Chuck_IO_Chout() {
+Chuck_IO_Chout::~Chuck_IO_Chout()
+{
     m_callback = NULL;
 }
 
@@ -3612,19 +3619,28 @@ void Chuck_IO_Chout::write( t_CKFLOAT val )
 }
 
 
-Chuck_IO_Cherr::Chuck_IO_Cherr( Chuck_Carrier * carrier ) {
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_IO_Cherr()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_IO_Cherr::Chuck_IO_Cherr( Chuck_Carrier * carrier )
+{
     // store
-    m_callback = NULL;
     carrier->cherr = this;
     // add ref
     this->add_ref();
+    // zero out
+    m_callback = NULL;
     // initialize (added 1.3.0.0)
     initialize_object( this, carrier->env->t_cherr );
     // lock so can't be deleted conventionally
     this->lock();
 }
 
-Chuck_IO_Cherr::~Chuck_IO_Cherr() {
+Chuck_IO_Cherr::~Chuck_IO_Cherr()
+{
     m_callback = NULL;
 }
 
