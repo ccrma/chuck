@@ -959,23 +959,24 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add capacity() // 1.4.0.2
-    func = make_new_mfun( "int", "capacity", array_get_capacity );
-    func->doc = "get current capacity of the array (number of elements that can be held without reallocating internal buffer).";
+    func = make_new_mfun( "int", "capacity", array_set_capacity );
+    func->doc = "ensure capacity of the array (number of addressable elements).";
+    func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    // func = make_new_mfun( "int", "capacity", array_set_capacity );
-    // func->add_arg( "int", "val" );
-    // if( !type_engine_import_mfun( env, func ) ) goto error;
+    func = make_new_mfun( "int", "capacity", array_get_capacity );
+    func->doc = "get current capacity of the array (number of addressable elements).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add find()
     func = make_new_mfun( "int", "find", array_find );
     func->add_arg( "string", "key" );
-    func->doc = "get number of elements with the specified key. ";
+    func->doc = "get number of elements with the specified key.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add erase()
     func = make_new_mfun( "int", "erase", array_erase );
     func->add_arg( "string", "key" );
-    func->doc = "erase all elements with the specified key. ";
+    func->doc = "erase all elements with the specified key.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
@@ -2365,7 +2366,7 @@ CK_DLL_MFUN( array_reset )
 {
     Chuck_Array * array = (Chuck_Array *)SELF;
     // default capacity
-    array->set_capacity( 8 );
+    array->set_size( 8 );
     // clear the array
     array->clear();
 }

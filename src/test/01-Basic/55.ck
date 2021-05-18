@@ -16,4 +16,4 @@ fun int[] bar()
 bar() @=> int b[];
 
 // test
-if( foo()[1][1] == 4 && b.cap() == 3 ) <<<"success">>>;
+if( foo()[1][1] == 4 && b.size() == 3 ) <<<"success">>>;

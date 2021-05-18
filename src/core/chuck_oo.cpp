@@ -679,8 +679,27 @@ t_CKINT Chuck_Array4::set_capacity( t_CKINT capacity )
     // sanity check
     assert( capacity >= 0 );
 
-    // ensure size
-    set_size( capacity );
+    // ensure size (removed 1.4.0.2 in favor of actually setting capacity)
+    // set_size( capacity );
+    
+    // if clearing size
+    if( capacity < m_vector.size() )
+    {
+        // zero out section
+        zero( capacity, m_vector.size() );
+    }
+    
+    // what the size was
+    t_CKINT capacity_prev = m_vector.capacity();
+    // reserve vector
+    m_vector.reserve( capacity );
+    
+    // if clearing size
+    if( m_vector.capacity() > capacity_prev )
+    {
+        // zero out section
+        zero( capacity_prev, m_vector.capacity() );
+    }
 
     return m_vector.capacity();
 }
