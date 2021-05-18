@@ -6645,7 +6645,7 @@ void Chuck_Instr_Cast_object2string::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     // return
     Chuck_DL_Return RETURN;
     // get toString from it (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
-    object_toString( obj, NULL, &RETURN, vm, NULL, Chuck_DL_Api::Api::instance() );
+    object_toString( obj, NULL, &RETURN, vm, shred, Chuck_DL_Api::Api::instance() );
     Chuck_String * str = RETURN.v_string;
     // set it
     push_( sp, (t_CKUINT)str );
