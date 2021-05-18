@@ -36,7 +36,9 @@
 #define __UTIL_BUFFERS_H__
 
 #include "chuck_oo.h"
+#ifndef __DISABLE_THREADS__
 #include "util_thread.h"
+#endif
 #include <vector>
 #include <queue>
 #include <iostream>
@@ -98,7 +100,9 @@ protected:
     SINT__   m_max_elem;
 
     // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
     XMutex m_mutex;
+    #endif
     
     CBufferSimple * m_event_buffer;
 };
@@ -152,6 +156,7 @@ public:
 public:
     void put( SAMPLE next );
     void get( SAMPLE * buffer, t_CKINT num_elem );
+    void get_most_recent( SAMPLE * buffer, t_CKINT num_elem );
 
 protected:
     SAMPLE * m_data;

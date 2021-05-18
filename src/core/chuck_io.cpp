@@ -35,7 +35,9 @@
 #include "chuck_instr.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
+#ifndef __DISABLE_HID__
 #include "hidio_sdl.h"
+#endif
 
 #ifndef __DISABLE_MIDI__
 #include "midiio_rtmidi.h"
@@ -88,7 +90,7 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
     
     // log
-    EM_log( CK_LOG_SEVERE, "class 'io'" );
+    EM_log( CK_LOG_SEVERE, "class 'IO'" );
     
     // init as base class
     // TODO: ctor/dtor?
@@ -217,6 +219,7 @@ error:
 
 
 
+#ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // name: init_class_fileio()
 // desc: ...
@@ -227,7 +230,7 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
     
     // log
-    EM_log( CK_LOG_SEVERE, "class 'fileio'" );
+    EM_log( CK_LOG_SEVERE, "class 'FileIO'" );
     
     // init as base class
     // TODO: ctor/dtor?
@@ -375,6 +378,7 @@ error:
     
     return FALSE;
 }
+#endif // __DISABLE_FILEIO__
 
 
 
@@ -574,7 +578,6 @@ t_CKUINT MidiMsg_offset_data2 = 0;
 t_CKUINT MidiMsg_offset_data3 = 0;
 t_CKUINT MidiMsg_offset_when = 0;
 static t_CKUINT MidiOut_offset_data = 0;
-
 //-----------------------------------------------------------------------------
 // name: init_class_Midi()
 // desc: ...
@@ -716,6 +719,7 @@ error:
 
 
 
+#ifndef __DISABLE_HID__
 // static
 static t_CKUINT HidIn_offset_data = 0;
 
@@ -1151,11 +1155,13 @@ error:
     
     return FALSE;
 }
+#endif // __DISABLE_HID__
 
 
 
 
 
+#ifndef __DISABLE_MIDI__
 // static
 static t_CKUINT MidiRW_offset_data = 0;
 static t_CKUINT MidiMsgOut_offset_data = 0;
@@ -1167,8 +1173,6 @@ static t_CKUINT MidiMsgIn_offset_data = 0;
 t_CKBOOL init_class_MidiRW( Chuck_Env * env )
 {
     Chuck_DL_Func * func = NULL;
-    
-#ifndef __DISABLE_MIDI__
     
     // init base class
     if( !type_engine_import_class_begin( env, "MidiRW", "Object",
@@ -1257,8 +1261,6 @@ t_CKBOOL init_class_MidiRW( Chuck_Env * env )
     // end the class import
     type_engine_import_class_end( env );
     
-#endif // __DISABLE_MIDI__
-    
     // initialize
     // HidInManager::init();
     
@@ -1271,6 +1273,7 @@ error:
     
     return FALSE;
 }
+#endif // __DISABLE_MIDI__
 
 
 
@@ -1294,6 +1297,7 @@ CK_DLL_SFUN( io_newline )
 }
 
 
+#ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // FileIO API
 //-----------------------------------------------------------------------------
@@ -1601,6 +1605,7 @@ CK_DLL_MFUN( fileio_writefloat )
         f->write(val);
     }
 }
+#endif // __DISABLE_FILEIO__
 
 
 //-----------------------------------------------------------------------------
@@ -1997,6 +2002,7 @@ CK_DLL_MFUN( MidiOut_send )
 #endif // __DISABLE_MIDI__
 
 
+#ifndef __DISABLE_HID__
 //-----------------------------------------------------------------------------
 // HidMsg API
 //-----------------------------------------------------------------------------
@@ -2394,8 +2400,10 @@ CK_DLL_MFUN( HidOut_send )
     // the_msg.data[2] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data3);
     RETURN->v_int = mout->send( &the_msg );
 }
+#endif // __DISABLE_HID__
 
 
+#ifndef __DISABLE_MIDI__
 //-----------------------------------------------------------------------------
 // MidiRW API
 //-----------------------------------------------------------------------------
@@ -2560,10 +2568,12 @@ CK_DLL_MFUN( MidiMsgIn_read )
     OBJ_MEMBER_TIME(fake_msg, MidiMsg_offset_when) = time;
 #endif // __DISABLE_MIDI__
 }
+#endif // __DISABLE_MIDI__
 
 
 
 
+#ifndef __DISABLE_SERIAL__
 // available baud rates
 const t_CKUINT Chuck_IO_Serial::CK_BAUD_2400   = 2400;
 const t_CKUINT Chuck_IO_Serial::CK_BAUD_4800   = 4800;
@@ -4098,7 +4108,7 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     // log
     EM_log( CK_LOG_SEVERE, "class 'SerialIO'" );
     
-    std::string doc = "Handles reading and writing for serial input/output devices, such as Arduino.";
+    std::string doc = "serial input/output. popularly used to communicate with systems like Arduino.";
     
     Chuck_Type * type = type_engine_import_class_begin( env, "SerialIO", "IO",
                                                         env->global(), serialio_ctor, serialio_dtor, doc.c_str() );
@@ -4111,14 +4121,14 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     
     // add list()
     func = make_new_sfun( "string[]", "list", serialio_list );
-    func->doc = "Return list of available serial devices.";
+    func->doc = "get list of available serial devices.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
     
     func = make_new_mfun("int", "open", serialio_open);
     func->add_arg("int", "i");
     func->add_arg("int", "baud");
     func->add_arg("int", "mode");
-    func->doc = "Open serial device i with specified baud rate and mode (binary or ASCII).";
+    func->doc = "open serial device i with specified baud rate and mode (binary or ASCII).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     func = make_new_mfun("void", "close", serialio_close);
@@ -4134,78 +4144,78 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     
     // add onLine
     func = make_new_mfun("SerialIO", "onLine", serialio_onLine);
-    func->doc = "Wait for one line (ASCII mode only).";
+    func->doc = "wait for one line (ASCII mode only).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add onByte
     func = make_new_mfun("SerialIO", "onByte", serialio_onByte);
-    func->doc = "Wait for one byte (binary mode only).";
+    func->doc = "wait for one byte (binary mode only).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add onBytes
     func = make_new_mfun("SerialIO", "onBytes", serialio_onBytes);
     func->add_arg("int", "num");
-    func->doc = "Wait for requested number of bytes (binary mode only).";
+    func->doc = "wait for requested number of bytes (binary mode only).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add onInts
     func = make_new_mfun("SerialIO", "onInts", serialio_onInts);
     func->add_arg("int", "num");
-    func->doc = "Wait for requested number of ints (ASCII or binary mode).";
+    func->doc = "wait for requested number of ints (ASCII or binary mode).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add onInts
     func = make_new_mfun("SerialIO", "onFloats", serialio_onFloats);
     func->add_arg("int", "num");
-    func->doc = "Wait for requested number of floats (ASCII or binary mode).";
+    func->doc = "wait for requested number of floats (ASCII or binary mode).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add getLine
     func = make_new_mfun("string", "getLine", serialio_getLine);
-    func->doc = "Get next requested line.";
+    func->doc = "get next requested line.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add getByte
     func = make_new_mfun("int", "getByte", serialio_getByte);
-    func->doc = "Get next requested byte. ";
+    func->doc = "get next requested byte. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add getBytes
     func = make_new_mfun("int[]", "getBytes", serialio_getBytes);
-    func->doc = "Get next requested number of bytes. ";
+    func->doc = "get next requested number of bytes. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add getInts
     func = make_new_mfun("int[]", "getInts", serialio_getInts);
-    func->doc = "Get next requested number of integers. ";
+    func->doc = "get next requested number of integers. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add writeByte
     func = make_new_mfun("void", "writeByte", serialio_writeByte);
     func->add_arg("int", "b");
-    func->doc = "Write a single byte.";
+    func->doc = "write a single byte.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add writeBytes
     func = make_new_mfun("void", "writeBytes", serialio_writeBytes);
     func->add_arg("int[]", "b");
-    func->doc = "Write array of bytes.";
+    func->doc = "write array of bytes.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add setBaudRate
     func = make_new_mfun("int", "baudRate", serialio_setBaudRate);
     func->add_arg("int", "r");
-    func->doc = "Set baud rate.";
+    func->doc = "set baud rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add getBaudRate
     func = make_new_mfun("int", "baudRate", serialio_getBaudRate);
-    func->doc = "Get current baud rate.";
+    func->doc = "get current baud rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add getBaudRate
     func = make_new_mfun("void", "flush", serialio_flush);
-    func->doc = "Flush the IO buffer.";
+    func->doc = "flush the IO buffer.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add can_wait
@@ -4447,5 +4457,4 @@ CK_DLL_MFUN(serialio_canWait)
     RETURN->v_int = cereal->can_wait();
 }
 
-
-
+#endif // __DISABLE_SERIAL__

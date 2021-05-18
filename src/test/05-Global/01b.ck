@@ -1,4 +1,4 @@
-// 01.ck : test assignment
+// 01b.ck : test assignment (deprecated)
 
 // assignment
 1 => external int x;

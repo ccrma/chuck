@@ -32,7 +32,9 @@
 #include "chuck_compile.h"
 #include "chuck_lang.h"
 #include "chuck_errmsg.h"
+#ifndef  __DISABLE_OTF_SERVER__
 #include "chuck_otf.h"
+#endif
 
 #include "ugen_osc.h"
 #include "ugen_xxx.h"
@@ -40,10 +42,18 @@
 #include "ugen_stk.h"
 #include "uana_xform.h"
 #include "uana_extract.h"
+
+#ifndef __DISABLE_OTF_SERVER__
 #include "ulib_machine.h"
+#endif
+
 #include "ulib_math.h"
 #include "ulib_std.h"
+
+#ifndef __DISABLE_NETWORK__
 #include "ulib_opsc.h"
+#endif
+
 #include "ulib_regex.h"
 #include "chuck_io.h"
 
@@ -346,6 +356,21 @@ t_CKBOOL Chuck_Compiler::resolve( const string & type )
 
 
 //-----------------------------------------------------------------------------
+// name: setReplaceDac()
+// desc: tell the compiler whether dac should be replaced in scripts
+//       with the name of an external UGen, and if so which one
+//-----------------------------------------------------------------------------
+void Chuck_Compiler::setReplaceDac( t_CKBOOL shouldReplaceDac,
+    const std::string & replacement )
+{
+    emitter->should_replace_dac = shouldReplaceDac;
+    emitter->dac_replacement = replacement;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: do_entire_file()
 // desc: parse, type-check, and emit a program
 //-----------------------------------------------------------------------------
@@ -615,10 +640,11 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     // load it
     type_engine_load_context( env, context );
     
-//#ifndef __DISABLE_MIDI__
+    // still compile MidiMsg even if __DISABLE_MIDI__
     if( !init_class_Midi( env ) ) goto error;
+#ifndef __DISABLE_MIDI__
     if( !init_class_MidiRW( env ) ) goto error;
-//#endif // __DISABLE_MIDI__
+#endif // __DISABLE_MIDI__
 
     // load
     EM_log( CK_LOG_SEVERE, "module osc..." );
@@ -635,23 +661,36 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     load_module( compiler, env, extract_query, "extract", "global" );
     
     // load
+    #ifndef __DISABLE_OTF_SERVER__
     EM_log( CK_LOG_SEVERE, "class 'machine'..." );
     if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
     machine_init( compiler, otf_process_msg );
+    #endif
+    
     EM_log( CK_LOG_SEVERE, "class 'std'..." );
     if( !load_module( compiler, env, libstd_query, "Std", "global" ) ) goto error;
     EM_log( CK_LOG_SEVERE, "class 'math'..." );
     if( !load_module( compiler, env, libmath_query, "Math", "global" ) ) goto error;
 
+    #ifndef __DISABLE_NETWORK__
     EM_log( CK_LOG_SEVERE, "class 'opsc'..." );
     if( !load_module( compiler, env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
+    #endif
+    
     EM_log( CK_LOG_SEVERE, "class 'RegEx'..." );
     if( !load_module( compiler, env, regex_query, "RegEx", "global" ) ) goto error;
+    
+    // Deprecated:
     // if( !load_module( compiler, env, net_query, "net", "global" ) ) goto error;
     
+    #ifndef __DISABLE_HID__
     if( !init_class_HID( env ) ) goto error;
+    #endif
+  
+    #ifndef __DISABLE_SERIAL__
     if( !init_class_serialio( env ) ) goto error;
-        
+    #endif
+    
     // clear context
     type_engine_unload_context( env );
     

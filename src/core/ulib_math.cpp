@@ -44,10 +44,10 @@
 static double g_pi = ONE_PI;
 static double g_twopi = TWO_PI;
 static double g_e = ::exp( 1.0 );
-static t_CKFLOAT g_floatMax = DBL_MAX;
-static t_CKFLOAT g_floatMin = DBL_MIN;
+static t_CKFLOAT g_floatMax = CK_FLT_MAX;
+static t_CKFLOAT g_floatMin = CK_FLT_MIN;
 static t_CKFLOAT g_inf = 0.0;
-static t_CKINT g_intMax = LONG_MAX;
+static t_CKINT g_intMax = CK_INT_MAX;
 static t_CKINT g_randomMax = CK_RANDOM_MAX;
 static t_CKCOMPLEX g_i = { 0.0, 1.0 };
 static t_CKFLOAT fzero() { return 0.0; }
@@ -332,7 +332,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_svar( QUERY, "float", "e", TRUE, &g_e );
 
     // float max
-    assert( sizeof(t_CKFLOAT) == sizeof(double) );
+    //assert( sizeof(t_CKFLOAT) == sizeof(double) );
     QUERY->add_svar( QUERY, "float", "FLOAT_MAX", TRUE, &g_floatMax );
 
     // float min
@@ -340,9 +340,9 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
 
     // int max
 #ifdef _WIN64 // REFACTOR-2017
-    assert( sizeof(t_CKINT) == sizeof(long long) );
+    //assert( sizeof(t_CKINT) == sizeof(long long) );
 #else
-    assert( sizeof(t_CKINT) == sizeof(long) );
+    //assert( sizeof(t_CKINT) == sizeof(long) );
 #endif
     QUERY->add_svar( QUERY, "int", "INT_MAX", TRUE, &g_intMax );
 
@@ -726,7 +726,9 @@ CK_DLL_SFUN( randomf_impl )
 CK_DLL_SFUN( random2f_impl )
 {
     t_CKFLOAT min = GET_CK_FLOAT(ARGS), max = *((t_CKFLOAT *)ARGS + 1);
-    RETURN->v_float = min + (max-min)*(::random()/(t_CKFLOAT)CK_RANDOM_MAX);
+    t_CKFLOAT normRand = ((t_CKFLOAT)::random()*1.0/(t_CKFLOAT)CK_RANDOM_MAX);
+    //CK_FPRINTF_STDERR( "[chuck random2f]: %G --> %G, %G\n", normRand, min, max );
+    RETURN->v_float = min + (max-min)* normRand;
 }
 
 

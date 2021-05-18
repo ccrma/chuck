@@ -121,7 +121,9 @@ void CBufferAdvance::cleanup()
 UINT__ CBufferAdvance::join( Chuck_Event * event )
 {
     // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
     m_mutex.acquire();
+    #endif
 
     // index of new pointer that will be pushed back
     UINT__ read_offset_index;
@@ -143,7 +145,9 @@ UINT__ CBufferAdvance::join( Chuck_Event * event )
     }
 
     // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
     m_mutex.release();
+    #endif
 
     // return index
     return read_offset_index;
@@ -161,7 +165,9 @@ void CBufferAdvance::resign( UINT__ read_offset_index )
         return;
 
     // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
     m_mutex.acquire();
+    #endif
 
     // add this index to free queue
     m_free.push( read_offset_index );
@@ -171,7 +177,9 @@ void CBufferAdvance::resign( UINT__ read_offset_index )
     m_read_offsets[read_offset_index].event = NULL;
 
     // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
     m_mutex.release();
+    #endif
 }
 
 
@@ -208,7 +216,9 @@ void CBufferAdvance::put( void * data, UINT__ num_elem )
     BYTE__ * d = (BYTE__ *)data;
 
     // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
     m_mutex.acquire();
+    #endif
 
     // copy
     for( i = 0; i < num_elem; i++ )
@@ -240,7 +250,9 @@ void CBufferAdvance::put( void * data, UINT__ num_elem )
     }
 
     // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
     m_mutex.release();
+    #endif
 }
 
 
@@ -308,17 +320,23 @@ UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_ind
     BYTE__ * d = (BYTE__ *)data;
 
     // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
     m_mutex.acquire();
+    #endif
 
     // make sure index is valid
     if( read_offset_index >= m_read_offsets.size() )
     {
+        #ifndef __DISABLE_THREADS__
         m_mutex.release();
+        #endif
         return 0;
     }
     if( m_read_offsets[read_offset_index].read_offset < 0 )
     {
+        #ifndef __DISABLE_THREADS__
         m_mutex.release();
+        #endif
         return 0;
     }
 
@@ -327,7 +345,9 @@ UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_ind
     // read catch up with write
     if( m_read_offset == m_write_offset )
     {
+        #ifndef __DISABLE_THREADS__
         m_mutex.release();
+        #endif
         return 0;
     }
 
@@ -357,7 +377,9 @@ UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_ind
     m_read_offsets[read_offset_index].read_offset = m_read_offset;
 
     // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
     m_mutex.release();
+    #endif
 
     // return number of elems
     return i;
@@ -615,7 +637,7 @@ void AccumBuffer::put( SAMPLE data )
 
 //-----------------------------------------------------------------------------
 // name: get()
-// desc: get
+// desc: get least recent num_elem (starting with our oldest element)
 //-----------------------------------------------------------------------------
 void AccumBuffer::get( SAMPLE * buffer, t_CKINT num_elem )
 {
@@ -635,6 +657,58 @@ void AccumBuffer::get( SAMPLE * buffer, t_CKINT num_elem )
     {
         // amount
         amount = m_write_offset;
+        // to copy
+        t_CKINT tocopy2 = ck_min( left, amount );
+        // update left
+        left -= tocopy2;
+        // copy before the write pointer
+        memcpy( buffer + tocopy, m_data, tocopy2 * sizeof(SAMPLE) );
+
+        // more?
+        if( left )
+        {
+            // make sure
+            assert( m_max_elem == (tocopy + tocopy2) );
+            assert( num_elem > m_max_elem );
+            // zero it out
+            memset( buffer + m_max_elem, 0, (num_elem - m_max_elem) * sizeof(SAMPLE) );
+        }
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_most_recent()
+// desc: get most recent num_elem. (get() gets least recent num_elem)
+//-----------------------------------------------------------------------------
+void AccumBuffer::get_most_recent( SAMPLE * buffer, t_CKINT num_elem )
+{
+    // compute offset of starting point to copy memory
+    t_CKINT startOffset = m_write_offset - num_elem;
+    // wrap around until have a valid offset
+    while( startOffset < 0 )
+    {
+        startOffset += m_max_elem;
+    }
+
+    // left to copy
+    t_CKINT left = num_elem;
+    // amount
+    t_CKINT amount = m_max_elem - startOffset;
+    // to copy
+    t_CKINT tocopy = ck_min( left, amount );
+    // update left
+    left -= tocopy;
+    // copy after the write pointer
+    memcpy( buffer, m_data + startOffset, tocopy * sizeof(SAMPLE) );
+
+    // more?
+    if( left )
+    {
+        // amount
+        amount = startOffset;
         // to copy
         t_CKINT tocopy2 = ck_min( left, amount );
         // update left

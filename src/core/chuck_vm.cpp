@@ -34,11 +34,23 @@
 #include "chuck_lang.h"
 #include "chuck_type.h"
 #include "chuck_dl.h"
+#include "chuck_globals.h" // added 1.4.0.2 (jack)
+
+#ifndef __DISABLE_SERIAL__
 #include "chuck_io.h"
+#endif
+
 #include "chuck_errmsg.h"
 #include "ugen_xxx.h"
-#include "hidio_sdl.h"  // 1.4.0.0
+#include "util_buffers.h"
 
+#ifndef __DISABLE_HID__
+#include "hidio_sdl.h"  // 1.4.0.0
+#endif
+
+#ifndef __DISABLE_MIDI__
+#include "midiio_rtmidi.h"  // 1.4.0.2
+#endif
 
 #include <algorithm>
 using namespace std;
@@ -135,6 +147,7 @@ Chuck_VM::Chuck_VM()
     m_num_shreds = 0;
     m_shreduler = NULL;
     m_num_dumped_shreds = 0;
+    m_globals_manager = NULL; // 1.4.0.2 (jack)
     m_msg_buffer = NULL;
     m_reply_buffer = NULL;
     m_event_buffer = NULL;
@@ -150,9 +163,7 @@ Chuck_VM::Chuck_VM()
     m_init = FALSE;
     m_input_ref = NULL;
     m_output_ref = NULL;
-    
-    // REFACTOR-2017: TODO might want to dynamically grow queue?
-    m_global_request_queue.init( 16384 );
+    m_current_buffer_frames = 0;
 }
 
 
@@ -219,6 +230,10 @@ t_CKBOOL Chuck_VM::initialize( t_CKUINT srate, t_CKUINT dac_chan,
     m_event_buffer = new CBufferSimple;
     m_event_buffer->initialize( 1024, sizeof(Chuck_Event *) );
     //m_event_buffer->join(); // this should also return 0
+
+    // 1.4.0.2 (jack): added globals manager
+    EM_log( CK_LOG_SYSTEM, "allocating globals manager..." );
+    m_globals_manager = new Chuck_Globals_Manager( this );
 
     // pop log
     EM_poplog();
@@ -331,17 +346,25 @@ t_CKBOOL Chuck_VM::shutdown()
     Chuck_VM_Object::unlock_all();
     
     // REFACTOR-2017: clean up after my global variables
-    cleanup_global_variables();
+    m_globals_manager->cleanup_global_variables();
+    SAFE_DELETE( m_globals_manager );
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing shreduler..." );
     // free the shreduler
     SAFE_DELETE( m_shreduler );
     
+    #ifndef __DISABLE_HID__
     // log
     EM_log( CK_LOG_SYSTEM, "unregistering VM from HID manager..." );
     // clean up this vm
     HidInManager::cleanup_buffer( this );
+    #endif
+    
+    #ifndef __DISABLE_MIDI__
+    EM_log( CK_LOG_SYSTEM, "unregistering VM from MIDI manager..." );
+    MidiInManager::cleanup_buffer( this );
+    #endif
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing msg/reply/event buffers..." );
@@ -457,7 +480,9 @@ t_CKBOOL Chuck_VM::compute()
     t_CKBOOL iterate = TRUE;
     
     // REFACTOR-2017: spork queued shreds, handle global messages
-    handle_global_queue_messages();
+    // this is called once per chuck time / sample / "tick"
+    // global manager added 1.4.0.2 (jack)
+    m_globals_manager->handle_global_queue_messages();
 
     // iteration until no more shreds/events/messages
     while( iterate )
@@ -494,14 +519,22 @@ t_CKBOOL Chuck_VM::compute()
 
         // broadcast queued events
         while( m_event_buffer->get( &event, 1 ) )
-        { event->broadcast(); iterate = TRUE; }
+        {
+            event->broadcast_local();
+            event->broadcast_global();
+            iterate = TRUE;
+        }
         
         // loop over thread-specific queued event buffers (added 1.3.0.0)
         for( list<CBufferSimple *>::const_iterator i = m_event_buffers.begin();
              i != m_event_buffers.end(); i++ )
         {
             while( (*i)->get( &event, 1 ) )
-            { event->broadcast(); iterate = TRUE; }
+            {
+                event->broadcast_local();
+                event->broadcast_global();
+                iterate = TRUE;
+            }
         }
 
         // process messages
@@ -515,7 +548,8 @@ t_CKBOOL Chuck_VM::compute()
 
     // continue executing if have shreds left or if don't-halt
     // or if have shreds to add or globals to process
-    return ( m_num_shreds || !m_halt || m_global_request_queue.more() );
+    // (TODO: restrict this to just shred-messages to pass, as it once was?)
+    return ( m_num_shreds || !m_halt || m_globals_manager->more_requests() );
 }
 
 
@@ -528,7 +562,7 @@ t_CKBOOL Chuck_VM::compute()
 t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 {
     // copy
-    m_input_ref = input; m_output_ref = output;
+    m_input_ref = input; m_output_ref = output; m_current_buffer_frames = N;
     // frame count
     t_CKINT frame = 0;
 
@@ -830,9 +864,17 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         {
             env()->clear_user_namespace();
         }
+
+        // 1.4.0.2 (jack): also clear any global variables
+        m_globals_manager->cleanup_global_variables();
         
         m_shred_id = 0;
         m_num_shreds = 0;
+    }
+    else if( msg->type == MSG_CLEARGLOBALS ) // added chunity
+    {
+        // clean up global variables without clearing the whole VM
+        m_globals_manager->cleanup_global_variables();
     }
     else if( msg->type == MSG_ADD )
     {
@@ -912,11 +954,23 @@ done:
 
 //-----------------------------------------------------------------------------
 // name: next_id()
-// desc: ...
+// desc: first increments the shred id, then returns it
 //-----------------------------------------------------------------------------
 t_CKUINT Chuck_VM::next_id( )
 {
     return ++m_shred_id;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: last_id()
+// desc: returns the last used shred id
+//-----------------------------------------------------------------------------
+t_CKUINT Chuck_VM::last_id( )
+{
+    return m_shred_id;
 }
 
 
@@ -977,8 +1031,8 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
         Chuck_Global_Request spork_request;
         spork_request.type = spork_shred_request;
         spork_request.shred = shred;
-
-        m_global_request_queue.put( spork_request );
+        // added 1.4.0.2 (jack)
+        m_globals_manager->add_request( spork_request );
     }
 
     // track new shred
@@ -1150,535 +1204,7 @@ void Chuck_VM::release_dump( )
 
 
 
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Set_Global_Int_Request
-// desc: container for messages to set global ints (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Set_Global_Int_Request
-{
-    std::string name;
-    t_CKINT val;
-    // constructor
-    Chuck_Set_Global_Int_Request() : val(0) { }
-};
 
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_Global_Int_Request
-// desc: container for messages to get global ints (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_Global_Int_Request
-{
-    std::string name;
-    void (* fp)(t_CKINT);
-    // constructor
-    Chuck_Get_Global_Int_Request() : fp(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Set_Global_Float_Request
-// desc: container for messages to set global floats (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Set_Global_Float_Request
-{
-    std::string name;
-    t_CKFLOAT val;
-    // constructor
-    Chuck_Set_Global_Float_Request() : val(0) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Get_Global_Float_Request
-// desc: container for messages to get global floats (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Get_Global_Float_Request
-{
-    std::string name;
-    void (* fp)(t_CKFLOAT);
-    // constructor
-    Chuck_Get_Global_Float_Request() : fp(NULL) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Signal_Global_Event_Request
-// desc: container for messages to signal global events (REFACTOR-2017)
-//-----------------------------------------------------------------------------
-struct Chuck_Signal_Global_Event_Request
-{
-    std::string name;
-    t_CKBOOL is_broadcast;
-    // constructor
-    Chuck_Signal_Global_Event_Request() : is_broadcast(TRUE) { }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Global_Int_Container
-// desc: container for global ints
-//-----------------------------------------------------------------------------
-struct Chuck_Global_Int_Container
-{
-    t_CKINT val;
-    
-    Chuck_Global_Int_Container() { val = 0; }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Global_Float_Container
-// desc: container for global floats
-//-----------------------------------------------------------------------------
-struct Chuck_Global_Float_Container
-{
-    t_CKFLOAT val;
-    
-    Chuck_Global_Float_Container() { val = 0; }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_Global_Event_Container
-// desc: container for global events
-//-----------------------------------------------------------------------------
-struct Chuck_Global_Event_Container
-{
-    Chuck_Event * val;
-    Chuck_Type * type;
-    t_CKBOOL ctor_needs_to_be_called;
-    
-    Chuck_Global_Event_Container() { val = NULL; type = NULL;
-        ctor_needs_to_be_called = TRUE; }
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_global_int()
-// desc: get a global int by name
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::get_global_int( std::string name,
-                                     void (* callback)(t_CKINT) )
-{
-    Chuck_Get_Global_Int_Request * get_int_message =
-        new Chuck_Get_Global_Int_Request;
-    get_int_message->name = name;
-    get_int_message->fp = callback;
-    
-    Chuck_Global_Request r;
-    r.type = get_global_int_request;
-    r.getIntRequest = get_int_message;
-
-    m_global_request_queue.put( r );
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: set_global_int()
-// desc: set a global int by name
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::set_global_int( std::string name, t_CKINT val )
-{
-    Chuck_Set_Global_Int_Request * set_int_message =
-        new Chuck_Set_Global_Int_Request;
-    set_int_message->name = name;
-    set_int_message->val = val;
-    
-    Chuck_Global_Request r;
-    r.type = set_global_int_request;
-    r.setIntRequest = set_int_message;
-
-    m_global_request_queue.put( r );
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: init_global_int()
-// desc: tell the vm that a global int is now available
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_global_int( std::string name )
-{
-    if( m_global_ints.count( name ) == 0 )
-    {
-        m_global_ints[name] = new Chuck_Global_Int_Container;
-    }
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_global_int_value()
-// desc: get a value directly from the vm (internal)
-//-----------------------------------------------------------------------------
-t_CKINT Chuck_VM::get_global_int_value( std::string name )
-{
-    // ensure exists
-    init_global_int( name );
-    
-    return m_global_ints[name]->val;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_ptr_to_global_int()
-// desc: get a pointer directly from the vm (internal)
-//-----------------------------------------------------------------------------
-t_CKINT * Chuck_VM::get_ptr_to_global_int( std::string name )
-{
-    return &( m_global_ints[name]->val );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_global_float()
-// desc: get a global float by name
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::get_global_float( std::string name,
-                                       void (* callback)(t_CKFLOAT) )
-{
-    Chuck_Get_Global_Float_Request * get_float_message =
-        new Chuck_Get_Global_Float_Request;
-    get_float_message->name = name;
-    get_float_message->fp = callback;
-    
-    Chuck_Global_Request r;
-    r.type = get_global_float_request;
-    r.getFloatRequest = get_float_message;
-
-    m_global_request_queue.put( r );
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: set_global_float()
-// desc: set a global float by name
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::set_global_float( std::string name, t_CKFLOAT val )
-{
-    Chuck_Set_Global_Float_Request * set_float_message =
-        new Chuck_Set_Global_Float_Request;
-    set_float_message->name = name;
-    set_float_message->val = val;
-    
-    Chuck_Global_Request r;
-    r.type = set_global_float_request;
-    r.setFloatRequest = set_float_message;
-
-    m_global_request_queue.put( r );
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: init_global_float()
-// desc: tell the vm that a global float is now available
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_global_float( std::string name )
-{
-    if( m_global_floats.count( name ) == 0 )
-    {
-        m_global_floats[name] = new Chuck_Global_Float_Container;
-    }
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_global_float_value()
-// desc: get a value directly from the vm (internal)
-//-----------------------------------------------------------------------------
-t_CKFLOAT Chuck_VM::get_global_float_value( std::string name )
-{
-    // ensure exists
-    init_global_float( name );
-    
-    return m_global_floats[name]->val;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_ptr_to_global_float()
-// desc: get a pointer directly to the vm (internal)
-//-----------------------------------------------------------------------------
-t_CKFLOAT * Chuck_VM::get_ptr_to_global_float( std::string name )
-{
-    return &( m_global_floats[name]->val );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: signal_global_event()
-// desc: signal() an Event by name
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::signal_global_event( std::string name )
-{
-    Chuck_Signal_Global_Event_Request * signal_event_message =
-        new Chuck_Signal_Global_Event_Request;
-    signal_event_message->name = name;
-    signal_event_message->is_broadcast = FALSE;
-    
-    Chuck_Global_Request r;
-    r.type = signal_global_event_request;
-    r.signalEventRequest = signal_event_message;
-
-    m_global_request_queue.put( r );
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: broadcast_global_event()
-// desc: broadcast() an Event by name
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::broadcast_global_event( std::string name )
-{
-    Chuck_Signal_Global_Event_Request * signal_event_message =
-        new Chuck_Signal_Global_Event_Request;
-    signal_event_message->name = name;
-    signal_event_message->is_broadcast = TRUE;
-    
-    Chuck_Global_Request r;
-    r.type = signal_global_event_request;
-    r.signalEventRequest = signal_event_message;
-
-    m_global_request_queue.put( r );
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: init_global_event()
-// desc: tell the vm that a global float is now available
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::init_global_event( std::string name, Chuck_Type * type )
-{
-    // if it hasn't been initted yet
-    if( m_global_events.count( name ) == 0 ) {
-        // create a new storage container
-        m_global_events[name] = new Chuck_Global_Event_Container;
-        // create the chuck object
-        m_global_events[name]->val =
-            (Chuck_Event *) instantiate_and_initialize_object( type, this );
-        // add a reference to it so it won't be deleted until we're done
-        // cleaning up the VM
-        m_global_events[name]->val->add_ref();
-        // store its type in the container, too (is it a user-defined class?)
-        m_global_events[name]->type = type;
-    }
-    // already exists. check if there's a type mismatch.
-    else if( type->name != m_global_events[name]->type->name )
-    {
-        return FALSE;
-    }
-    
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_global_event()
-// desc: get a pointer directly from the vm (internal)
-//-----------------------------------------------------------------------------
-Chuck_Event * Chuck_VM::get_global_event( std::string name )
-{
-    return m_global_events[name]->val;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get_ptr_to_global_event()
-// desc: get a pointer pointer directly from the vm (internal)
-//-----------------------------------------------------------------------------
-Chuck_Event * * Chuck_VM::get_ptr_to_global_event( std::string name )
-{
-    return &( m_global_events[name]->val );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: cleanup_global_variables()
-// desc: set a pointer directly on the vm (internal)
-//-----------------------------------------------------------------------------
-void Chuck_VM::cleanup_global_variables()
-{
-    // ints: delete containers and clear map
-    for( std::map< std::string, Chuck_Global_Int_Container * >::iterator it=
-         m_global_ints.begin(); it!=m_global_ints.end(); it++ )
-    {
-        delete (it->second);
-    }
-    m_global_ints.clear();
-    
-    // floats: delete containers and clear map
-    for( std::map< std::string, Chuck_Global_Float_Container * >::iterator it=
-         m_global_floats.begin(); it!=m_global_floats.end(); it++ )
-    {
-        delete (it->second);
-    }
-    m_global_floats.clear();
-    
-    // events: release events, delete containers, and clear map
-    for( std::map< std::string, Chuck_Global_Event_Container * >::iterator it=
-         m_global_events.begin(); it!=m_global_events.end(); it++ )
-    {
-        SAFE_RELEASE( it->second->val );
-        delete (it->second);
-    }
-    m_global_events.clear();
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: handle_global_queue_messages()
-// desc: update vm with set, get, listen, spork, etc. messages
-//-----------------------------------------------------------------------------
-void Chuck_VM::handle_global_queue_messages()
-{
-    while( m_global_request_queue.more() )
-    {
-        Chuck_Global_Request message;
-        if( m_global_request_queue.get( & message ) )
-        {
-            switch( message.type )
-            {
-
-            case spork_shred_request:
-                // spork the shred!
-                this->spork( message.shred );
-                break;
-
-            case set_global_int_request:
-                // ensure the container exists
-                init_global_int( message.setIntRequest->name );
-                // set int
-                m_global_ints[message.setIntRequest->name]->val = message.setIntRequest->val;
-                // clean up request storage
-                delete message.setIntRequest;
-                break;
-
-            case get_global_int_request:
-                // ensure fp is not null
-                if( message.getIntRequest->fp != NULL )
-                {
-                    // ensure the value exists
-                    init_global_int( message.getIntRequest->name );
-                    // call the callback with the value
-                    message.getIntRequest->fp( m_global_ints[message.getIntRequest->name]->val );
-                }
-                // clean up request storage
-                delete message.getIntRequest;
-                break;
-
-            case set_global_float_request:
-                // ensure the container exists
-                init_global_float( message.setFloatRequest->name );
-                // set float
-                m_global_floats[message.setFloatRequest->name]->val = message.setFloatRequest->val;
-                // clean up request storage
-                delete message.setFloatRequest;
-                break;
-
-            case get_global_float_request:
-                // ensure fp is not null
-                if( message.getFloatRequest->fp != NULL )
-                {
-                    // ensure value exists
-                    init_global_float( message.getFloatRequest->name );
-                    // call callback with float
-                    message.getFloatRequest->fp( m_global_floats[message.getFloatRequest->name]->val );
-                }
-                // clean up request storage
-                delete message.getFloatRequest;
-                break;
-
-            case signal_global_event_request:
-                // ensure it exists and it doesn't need its ctor called
-                if( m_global_events.count( message.signalEventRequest->name ) > 0 )
-                {
-                    // get the event
-                    Chuck_Event * event = get_global_event( message.signalEventRequest->name );
-                    // signal it, or broadcast it
-                    if( message.signalEventRequest->is_broadcast )
-                    {
-                        event->broadcast();
-                    }
-                    else
-                    {
-                        event->signal();
-                    }
-                }
-                // clean up request storage
-                delete message.signalEventRequest;
-                break;
-            }
-        }
-        else
-        {
-            // get failed. problem?
-            break;
-        }
-    }
-}
 
 
 
@@ -1877,7 +1403,9 @@ Chuck_VM_Shred::Chuck_VM_Shred()
     vm_ref = NULL;
     event = NULL;
     xid = 0;
+    #ifndef __DISABLE_SERIAL__
     m_serials = NULL;
+    #endif
 
     // set
     CK_TRACK( stat = NULL );
@@ -2010,6 +1538,7 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     // clear it
     code_orig = code = NULL;
 
+    #ifndef __DISABLE_SERIAL__
     // HACK (added 1.3.2.0): close serial devices
     if(m_serials != NULL)
     {
@@ -2018,10 +1547,11 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
             (*i)->release();
             (*i)->close();
         }
-        
+
         m_serials->clear();
         SAFE_DELETE(m_serials);
     }
+    #endif
     
     // 1.3.5.3 pop all loop counters
     while( this->popLoopCounter() );
@@ -2153,6 +1683,7 @@ CK_VM_DEBUG(CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
 
 
 
+#ifndef __DISABLE_SERIAL__
 //-----------------------------------------------------------------------------
 // name: add_serialio()
 // desc: ...
@@ -2178,6 +1709,7 @@ t_CKVOID Chuck_VM_Shred::remove_serialio( Chuck_IO_Serial * serial )
     m_serials->remove( serial );
     serial->release();
 }
+#endif
 
 
 
@@ -2444,9 +1976,18 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
 {
     t_CKINT i, j, numFrames;
     SAMPLE gain[256], sum;
+
+    #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+    // planar buffers means non-interleaved. this is required for some platforms,
+    // e.g. WebAudio
+    const SAMPLE * input = vm_ref->input_ref() + offset;
+    SAMPLE * output = vm_ref->output_ref() + offset;
+    t_CKUINT buffer_length = vm_ref->most_recent_buffer_length();
+    #else
     // get audio data from VM
     const SAMPLE * input = vm_ref->input_ref() + (offset*m_num_adc_channels);
     SAMPLE * output = vm_ref->output_ref() + (offset*m_num_dac_channels);
+    #endif
     
     // compute number of frames to compute; update
     numFrames = ck_min( m_max_block_size, numLeft );
@@ -2479,13 +2020,26 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
         // loop over channels
         for( j = 0; j < m_num_adc_channels; j++ )
         {
+            #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+            // current frame = offset + i
+            // current channel = j
+            // sample = buffer size * j + offset + i
+            // the "+offset" is taken care of in initialization
+            // the "+i" is taken care of by incrementing input below
+            m_adc->m_multi_chan[j]->m_current_v[i] = input[buffer_length * j] * gain[j] * m_adc->m_gain;
+            #else
             m_adc->m_multi_chan[j]->m_current_v[i] = input[j] * gain[j] * m_adc->m_gain;
+            #endif
             sum += m_adc->m_multi_chan[j]->m_current_v[i];
         }
         m_adc->m_current_v[i] = sum / m_num_adc_channels;
         
         // advance pointer
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        input++;
+        #else
         input += m_num_adc_channels;
+        #endif
     }
     
     // ???
@@ -2509,10 +2063,25 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
     for( i = 0; i < numFrames; i++ )
     {
         for( j = 0; j < m_num_dac_channels; j++ )
+        {
+            #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+            // current frame = offset + i
+            // current channel = j
+            // sample = buffer size * j + offset + i
+            // "+offset" taken care of in initialization
+            // "+i" taken care of by incrementing below
+            output[buffer_length * j] = m_dac->m_multi_chan[j]->m_current_v[i];
+            #else
             output[j] = m_dac->m_multi_chan[j]->m_current_v[i];
+            #endif
+        }
         
         // advance pointer
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        output++;
+        #else
         output += m_num_dac_channels;
+        #endif
     }
 }
 
@@ -2532,15 +2101,29 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
     SAMPLE sum = 0.0f;
     t_CKUINT i;
     // input and output
+    #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+    const SAMPLE * input = vm_ref->input_ref() + N;
+    SAMPLE * output = vm_ref->output_ref() + N;
+    t_CKUINT buffer_length = vm_ref->most_recent_buffer_length();
+    #else
     const SAMPLE * input = vm_ref->input_ref() + (N*m_num_adc_channels);
     SAMPLE * output = vm_ref->output_ref() + (N*m_num_dac_channels);
+    #endif
 
     // INPUT: loop over channels
     for( i = 0; i < m_num_adc_channels; i++ )
     {
         // ge: switched order of lines 1.3.5.3
         m_adc->m_multi_chan[i]->m_last = m_adc->m_multi_chan[i]->m_current;
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        // current frame = N
+        // current channel = i
+        // sample = buffer size * i + N
+        // the +N is taken care of by initialization
+        m_adc->m_multi_chan[i]->m_current = input[buffer_length * i] * m_adc->m_multi_chan[i]->m_gain * m_adc->m_gain;
+        #else
         m_adc->m_multi_chan[i]->m_current = input[i] * m_adc->m_multi_chan[i]->m_gain * m_adc->m_gain;
+        #endif
         m_adc->m_multi_chan[i]->m_time = this->now_system;
         sum += m_adc->m_multi_chan[i]->m_current;
     }
@@ -2551,7 +2134,17 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
     m_dac->system_tick( this->now_system );
     // OUTPUT
     for( i = 0; i < m_num_dac_channels; i++ )
+    {
+        #ifdef __CHUCK_USE_PLANAR_BUFFERS__
+        // current frame = N
+        // current channel = i
+        // sample = buffer size * i + N
+        // the +N is taken care of by initialization
+        output[buffer_length * i] = m_dac->m_multi_chan[i]->m_current; // * .5f;
+        #else
         output[i] = m_dac->m_multi_chan[i]->m_current; // * .5f;
+        #endif
+    }
 
     // suck samples
     m_bunghole->system_tick( this->now_system );

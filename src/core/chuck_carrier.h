@@ -36,7 +36,9 @@
 #define __CHUCK_CARRIER_H__
 
 #include "chuck_def.h"
+#ifndef __DISABLE_OTF_SERVER__
 #include "util_thread.h"
+#endif
 #include <map>
 
 
@@ -74,14 +76,18 @@ struct Chuck_Carrier
     Chuck_IO_Chout * chout;
     Chuck_IO_Cherr * cherr;
     
+    #ifndef __DISABLE_OTF_SERVER__
     // OTF programming things
     ck_socket otf_socket;
     t_CKINT otf_port;
     CHUCK_THREAD otf_thread;
+    #endif
     
     // STK-specific
+    #ifndef __DISABLE_WVOUT__
     XWriteThread * stk_writeThread;
     std::map<WvOut *, WvOut *> stk_wvOutMap;
+    #endif
     
     // constructor
     Chuck_Carrier() :
@@ -89,12 +95,17 @@ struct Chuck_Carrier
         compiler( NULL ),
         env( NULL ),
         vm( NULL ),
-        chout( NULL ),
-        cherr( NULL ),
+        #ifndef __DISABLE_OTF_SERVER__
         otf_socket( NULL ),
         otf_port( 0 ),
         otf_thread( 0 ),
-        stk_writeThread( NULL )
+        #endif
+        #ifndef __DISABLE_WVOUT__
+        stk_writeThread( NULL ),
+        #endif
+        chout( NULL ),
+        cherr( NULL )
+
     { }
     
     // get hint: is realtime audio?

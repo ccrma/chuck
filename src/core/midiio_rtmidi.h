@@ -187,9 +187,11 @@ public:
 protected:
     MidiInManager();
     ~MidiInManager();
+    
+    static t_CKBOOL add_vm( Chuck_VM * vm, t_CKINT device_num, t_CKBOOL suppress_output );
 
     static std::vector<RtMidiIn *> the_mins;
-    static std::vector<CBufferAdvance *> the_bufs;
+    static std::vector< std::map< Chuck_VM *, CBufferAdvance * > > the_bufs;
 
 public:
     static std::map< Chuck_VM *, CBufferSimple * > m_event_buffers;

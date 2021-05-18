@@ -64,7 +64,10 @@ typedef enum {
 //       (REFACTOR-2017)
 //-----------------------------------------------------------------------------
 typedef enum {
-    te_globalInt, te_globalFloat, te_globalEvent
+    te_globalInt, te_globalFloat, te_globalString, te_globalEvent,
+    te_globalUGen, te_globalObject,
+    // symbol: not used for declarations, only for later lookups :/
+    te_globalArraySymbol
 } te_GlobalType;
 
 
@@ -530,7 +533,9 @@ public:
     Chuck_Type * t_uanablob;
     Chuck_Type * t_shred;
     Chuck_Type * t_io;
+    #ifndef __DISABLE_FILEIO__
     Chuck_Type * t_fileio;
+    #endif
     Chuck_Type * t_chout;
     Chuck_Type * t_cherr;
     Chuck_Type * t_thread;
@@ -621,89 +626,40 @@ struct Chuck_Type : public Chuck_VM_Object
     // example files
     std::vector<std::string> examples;
 
+    // reference to environment RE-FACTOR 2017
+    Chuck_Env * m_env;
+
 public:
     // constructor
-    Chuck_Type( Chuck_Env * env, te_Type _id = te_null, const std::string & _n = "",
-                Chuck_Type * _p = NULL, t_CKUINT _s = 0 )
-    {
-        m_env = env;
-        xid = _id; name = _n; parent = _p; size = _s; owner = NULL;
-        array_type = NULL; array_depth = 0; obj_size = 0;
-        info = NULL; func = NULL; def = NULL; is_copy = FALSE; 
-        ugen_info = NULL; is_complete = TRUE; has_constructor = FALSE;
-        has_destructor = FALSE;
-        allocator = NULL;
-    }
-
+    Chuck_Type( Chuck_Env * env,
+                te_Type _id = te_null,
+                const std::string & _n = "",
+                Chuck_Type * _p = NULL,
+                t_CKUINT _s = 0 );
     // destructor
-    virtual ~Chuck_Type() { reset(); }
-    
-    // reset
-    void reset()
-    {
-        // CK_FPRINTF_STDERR( "type: %s %i\n", c_name(), (t_CKUINT)this );
-        xid = te_void; 
-        size = array_depth = obj_size = 0;
-        is_copy = FALSE;
-
-        // free only if not locked: to prevent garbage collection after exit
-        if( !this->m_locked )
-        {
-            // TODO: uncomment this, fix it to behave correctly
-            // release references
-            // SAFE_RELEASE(parent);
-            // SAFE_RELEASE(array_type);
-            SAFE_RELEASE(info);
-            // SAFE_RELEASE(owner);
-            // SAFE_RELEASE(func);
-            // SAFE_RELEASE(ugen_info);
-        }
-    }   
-    
+    virtual ~Chuck_Type();
+        // reset
+    void reset();
     // assignment - this does not touch the Chuck_VM_Object
-    const Chuck_Type & operator =( const Chuck_Type & rhs )
-    {
-        // release first
-        this->reset();
+    const Chuck_Type & operator =( const Chuck_Type & rhs );
+    // make a copy of this type struct
+    Chuck_Type * copy( Chuck_Env * env ) const;
 
-        // copy
-        this->xid = rhs.xid;
-        this->name = rhs.name;
-        this->parent = rhs.parent;
-        this->obj_size = rhs.obj_size;
-        this->size = rhs.size;
-        this->def = rhs.def;
-        this->is_copy = TRUE;
-        this->array_depth = rhs.array_depth;
-        this->array_type = rhs.array_type;
-        // SAFE_ADD_REF(this->array_type);
-        this->func = rhs.func;
-        // SAFE_ADD_REF(this->func);
-        this->info = rhs.info;
-        SAFE_ADD_REF(this->info);
-        this->owner = rhs.owner;
-        // SAFE_ADD_REF(this->owner);
-
-        return *this;
-    }
-
-    // copy
-    Chuck_Type * copy( Chuck_Env * env ) const
-    { Chuck_Type * n = env->context->new_Chuck_Type( env );
-      *n = *this; return n; }
-    
+public:
     // to string
-    std::string ret;
-    const std::string & str()
-    { ret = name;
-      for( t_CKUINT i = 0; i < array_depth; i++ ) ret += std::string("[]");
-      return ret; }
-    // to c
-    const char * c_name()
-    { return str().c_str(); }
+    const std::string & str();
+    // to c string
+    const char * c_name();
     
-    //ref
-    Chuck_Env * m_env;
+protected:
+    // this for str() and c_name() use only
+    std::string ret;
+
+public:
+    // dump info to string
+    void apropos( std::string & output );
+    // dump info to console
+    void apropos();
 };
 
 
@@ -784,8 +740,10 @@ struct Chuck_Value : public Chuck_VM_Object
 //-----------------------------------------------------------------------------
 struct Chuck_Func : public Chuck_VM_Object
 {
-    // name
+    // name (actual in VM name, e.g., "dump@0@Object")
     std::string name;
+    // base name (without the designation, e.g., "dump"); 1.4.0.2
+    std::string base_name;
     // func def from parser
     a_Func_Def def;
     // code (included imported)
@@ -935,8 +893,7 @@ const char * howmuch2str( te_HowMuch how_much );
 t_CKBOOL escape_str( char * str_lit, int linepos );
 t_CKINT str2char( const char * char_lit, int linepos );
 
-// REFACTOR-2017: exile! now stored in env
-// default types
+// REFACTOR-2017: exile! these default types now stored in env
 //extern Chuck_Type t_void;
 //extern Chuck_Type t_int;
 //extern Chuck_Type t_float;
