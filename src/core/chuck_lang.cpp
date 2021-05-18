@@ -931,12 +931,12 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
 
     // add reset()
     func = make_new_mfun( "void", "reset", array_reset );
-    func->doc = "reset array to original state; clears the array and sets capacity to 8.";
+    func->doc = "reset array size to 0, set capacity to (at least) 8.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add popBack()
     func = make_new_mfun( "void", "popBack", array_pop_back );
-    func->doc = "remove the last item of the array";
+    func->doc = "remove the last item of the array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add size()
@@ -949,9 +949,8 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "set the size of the array. If the new size is less than the current size, elements will be deleted from the end; if the new size is larger than the current size, 0 or null elements will be added to the end.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // note 1.4.0.2: this is returning SIZE for historical/compatibility reasons;
-    // for now, no change; but might deprecate in the future and encourage programmer to
-    // explicitly updated to .size() OR .capacity(), depending on the context
+    // note 1.4.0.2: in the future, should deprecate and encourage programmer
+    // to explicitly use .size() OR .capacity(), depending on the context
     // ---------
     // add cap()
     func = make_new_mfun( "int", "cap", array_get_capacity_hack );

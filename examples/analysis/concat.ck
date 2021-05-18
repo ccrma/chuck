@@ -1,6 +1,7 @@
-// FeatureCollector is really meant to be used for recording data for machine
+// name: concat.ck
+// desc: FeatureCollector is really meant to be used for recording data for machine
 // learning analysis (see https://chuck.cs.princeton.edu/doc/language/uana.html),
-// but this example shows barebons usage of the UAana for something silly.
+// but this example shows bare-bones usage of the UAana for something silly.
 //
 // author: Curtis Ullerich
 
@@ -16,7 +17,8 @@ second/freq => dur period;
 (period/samp)$int => int size; // number of samples in a period
 size => f1.size => f2.size;
 
-while(true) {
-  period => now;
-  pilf.upchuck();
+while(true)
+{
+    period => now;
+    pilf.upchuck();
 }

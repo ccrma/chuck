@@ -4,6 +4,5 @@
 ../midi/polyfony.ck
 ../midi/polyfony2.ck
 
-../osc/OSC_send.ck
-../osc/OSC_recv.ck
-../osc/OSC_xmit.ck
+../osc/s.ck (Open Sound Control sender)
+../osc/r.ck (Open Sound Control receiver)
