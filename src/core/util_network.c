@@ -230,20 +230,22 @@ t_CKBOOL ck_bind( ck_socket sock, int port )
     ret = bind( sock->sock, (struct sockaddr *)&sock->sock_in, 
         sizeof(struct sockaddr_in));
 
-    if(port == 0 && ret == 0)
+    // added 1.4.0.2 (PR #157 | @dbadb)
+    // "Support for reporting dynamically assigned otf port."
+    if( port == 0 && ret == 0 )
     {
-        struct sockaddr_in  sinmsg;
-        int len = sizeof(sinmsg);
-        memset(&sinmsg, 0, len);
-        if(getsockname(sock->sock, (struct sockaddr *) &sinmsg, &len) < 0)
+        struct sockaddr_in sinmsg;
+        unsigned int len = sizeof(sinmsg);
+        memset( &sinmsg, 0, len );
+        if( getsockname( sock->sock, (struct sockaddr *)&sinmsg, &len ) < 0 )
         { 
-            CK_FPRINTF_STDERR( "[chuck]: %s\n", 
-                "unexpected error in getsockname");
+            CK_FPRINTF_STDERR( "[chuck]: %s\n",
+                               "unexpected error in getsockname");
         }
         else
         {
-            CK_FPRINTF_STDERR( "[chuck]: listening on port %ld\n", 
-                ntohs(sinmsg.sin_port));
+            CK_FPRINTF_STDERR( "[chuck]: listening on port %ld\n",
+                                ntohs(sinmsg.sin_port));
         }
     }
 

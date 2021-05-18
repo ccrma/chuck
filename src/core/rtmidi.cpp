@@ -1871,7 +1871,7 @@ struct WinMidiData {
 
 static void CALLBACK midiInputCallback( HMIDIOUT hmin,
                                         UINT inputStatus, 
-                                        DWORD_PTR instancePtr,
+                                        DWORD_PTR instancePtr, // 1.4.0.2 DWORD changed to DWORD_PTR | PR #157 @dbadb
                                         DWORD_PTR midiMessage,
                                         DWORD_PTR timestamp )
 {
@@ -1983,7 +1983,7 @@ void RtMidiIn :: openPort( unsigned int portNumber )
   WinMidiData *data = static_cast<WinMidiData *> (apiData_);
   MMRESULT result = midiInOpen( &data->inHandle,
                                 portNumber,
-                                (DWORD_PTR)&midiInputCallback,
+                                (DWORD_PTR)&midiInputCallback, // 1.4.0.2 DWORD changed to DWORD_PTR | PR #157 @dbadb
                                 (DWORD_PTR)&inputData_,
                                 CALLBACK_FUNCTION );
   if ( result != MMSYSERR_NOERROR ) {

@@ -1032,7 +1032,7 @@ bool go( int argc, const char ** argv )
     }
     
     // wait
-    while( the_chuck->vmrunning() )
+    while( the_chuck->vm_running() )
     {
         // real-time audio
         if( g_enable_realtime_audio )
