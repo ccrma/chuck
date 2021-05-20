@@ -1,5 +1,11 @@
-// take us to your leader (talk into the mic)
-// gewang, prc
+// name: we-robot.ck
+// desc: take us to your leader (talk into the mic), multi-channel
+// author: gewang, prc
+// note: ChucK can be started with as much channels as is
+//       supported on the underlyding audio device; this can be
+//       done on command line (see chuck --help for more info)
+//       or in the miniAudicle Preferences (note changes will
+//       not take effect until the ChucK VM is (re)started
 
 // n channels
 dac.channels() => int N;
