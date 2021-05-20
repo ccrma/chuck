@@ -1,6 +1,5 @@
 // serial IO list
 SerialIO.list() @=> string list[];
-
 // print list
 for( int i; i < list.size(); i++ )
 {
@@ -10,8 +9,7 @@ for( int i; i < list.size(); i++ )
 // device number
 0 => int device;
 if( me.args() ) me.arg(0) => Std.atoi => device;
-
-// serial IO
+// serial io
 SerialIO cereal;
 // open serial device
 cereal.open( device, SerialIO.B9600, SerialIO.ASCII );
