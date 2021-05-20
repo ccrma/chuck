@@ -1,21 +1,27 @@
-
+// serial IO list
 SerialIO.list() @=> string list[];
-
-for(int i; i < list.size(); i++)
+// print list
+for( int i; i < list.size(); i++ )
 {
     chout <= i <= ": " <= list[i] <= IO.newline();
 }
 
+// device number
 0 => int device;
-if(me.args()) me.arg(0) => Std.atoi => device;
-
+if( me.args() ) me.arg(0) => Std.atoi => device;
+// serial io
 SerialIO cereal;
-cereal.open(device, SerialIO.B9600, SerialIO.BINARY);
+// open serial device
+cereal.open( device, SerialIO.B9600, SerialIO.BINARY );
 
-while(true)
+// infinite time-loop
+while( true )
 {
+    // wait on event
     cereal.onInts(1) => now;
+    // get int
     cereal.getInts() @=> int i[];
-    if(i.size() > 0)
+    // print
+    if( i.size() > 0 )
         chout <= "int: " <= i[0] <= "\n";
 }
