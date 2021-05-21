@@ -1,15 +1,14 @@
 # uncomment the following to force 32-bit compilation
 # FORCE_M32=-m32
 
-ifneq ($(shell sw_vers -productVersion | egrep '10\.(6|7|8|9|10|11|12|13|14|15)(\.[0-9]+)?'),)
+ifeq (, $(shell which xcrun))
+$(error "No xcrun in ${PATH}. Is XCode installed?")
+endif
+
 SDK=$(shell xcrun --show-sdk-path)
 ISYSROOT=-isysroot $(SDK)
 LINK_EXTRAS=-F/System/Library/PrivateFrameworks \
     -weak_framework MultitouchSupport
-else
-ISYSROOT=-isysroot /Developer/SDKs/MacOSX10.4u.sdk
-LINK_EXTRAS=
-endif
 
 ifneq ($(shell which clang),)
 # force clang if available (for OS X 10.4 compatibility)
