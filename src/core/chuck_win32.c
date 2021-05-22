@@ -3924,7 +3924,7 @@ char *yytext;
 #include "chuck_absyn.h"
 #include "chuck_errmsg.h"
 
-#ifndef __PLATFORM_WIN32__
+#if !defined(__PLATFORM_WIN32__) && !defined(__ANDROID__)
   #include "chuck.tab.h"
 #else
   #include "chuck_win32.h"
