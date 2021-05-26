@@ -23,6 +23,10 @@
   - (fixed) resolved a bug with SndBuf where it could output DC when .rate < 0
     after it reaches the beginning of the file (e.g., if the first sample is
     non-zero)
+  - (updated/fixed) clearly separated array.size() and array.capacity();
+    for historical/compatability reasons, array.cap() is the same as
+    array.size() and generally should be avoided in favor of either .size()
+    or .capacity()
   - (deprecated) Chubgraph => (new) Chugraph;
     Chubgraph will continue to function, with a deprecation warning.
   - (documentation) updated embedded documentation text for all statically
