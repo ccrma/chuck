@@ -54,21 +54,14 @@ t_CKBOOL Chuck_VM_Object::our_locks_in_effect = TRUE;
 const t_CKINT Chuck_IO::INT32 = 0x1;
 const t_CKINT Chuck_IO::INT16 = 0x2;
 const t_CKINT Chuck_IO::INT8 = 0x4;
-#ifndef __DISABLE_THREADS__
 const t_CKINT Chuck_IO::MODE_SYNC = 0;
 const t_CKINT Chuck_IO::MODE_ASYNC = 1;
-#else
-const t_CKINT Chuck_IO::MODE_SYNC = 1;
-const t_CKINT Chuck_IO::MODE_ASYNC = 0;
-#endif
-#ifndef __DISABLE_FILEIO__
 const t_CKINT Chuck_IO_File::FLAG_READ_WRITE = 0x8;
 const t_CKINT Chuck_IO_File::FLAG_READONLY = 0x10;
 const t_CKINT Chuck_IO_File::FLAG_WRITEONLY = 0x20;
 const t_CKINT Chuck_IO_File::FLAG_APPEND = 0x40;
 const t_CKINT Chuck_IO_File::TYPE_ASCII = 0x80;
 const t_CKINT Chuck_IO_File::TYPE_BINARY = 0x100;
-#endif
 
 
 
@@ -344,58 +337,6 @@ Chuck_Object::~Chuck_Object()
 
 
 //-----------------------------------------------------------------------------
-// name: dump()
-// desc: output current state (can be overridden)
-//-----------------------------------------------------------------------------
-void Chuck_Object::dump() // 1.4.0.2
-{
-    // TODO: implement!
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: apropos()
-// desc: output interface (can be overriden; but probably shouldn't be)
-//-----------------------------------------------------------------------------
-void Chuck_Object::apropos() // 1.4.0.2
-{
-    // type to unpack
-    Chuck_Type * type = this->type_ref;
-
-    // if type is generic "@array"
-    if( type->xid == te_array )
-    {
-        // get more specific
-        Chuck_Array * arr = (Chuck_Array *)this;
-        // however, a number of chuck array allocations still do not
-        // set the m_array_type member; update to this only if it exists
-        if( arr->m_array_type != NULL )
-            type = arr->m_array_type;
-    }
-
-    // unpack type and output its info
-    type->apropos();
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: ~Chuck_Array()
-// desc: destructor
-//-----------------------------------------------------------------------------
-Chuck_Array::~Chuck_Array()
-{
-    // decrement reference count; added (ge): 1.4.0.2
-    SAFE_RELEASE(m_array_type);
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: Chuck_Array4()
 // desc: constructor
 //-----------------------------------------------------------------------------
@@ -632,8 +573,30 @@ t_CKINT Chuck_Array4::pop_back( )
     return 1;
 }
 
+//-----------------------------------------------------------------------------
+// name: pop_out()
+// desc: pops out lol
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array4::pop_out( t_CKUINT pos )
+{
+	// check
+	if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
+		return 0;
 
+	if( m_is_obj )
+	{
+		// get pointer
+		Chuck_Object * v = (Chuck_Object *)m_vector[m_vector.size()-1];
+		// if not null, release
+		if( v ) v->release();
+	}
 
+	// zero
+	//m_vector[m_vector.size()-pos] = 0;
+	//add to vector
+	m_vector.erase(m_vector.begin()+pos);
+	return 1;
+}
 
 //-----------------------------------------------------------------------------
 // name: back()
@@ -679,27 +642,8 @@ t_CKINT Chuck_Array4::set_capacity( t_CKINT capacity )
     // sanity check
     assert( capacity >= 0 );
 
-    // ensure size (removed 1.4.0.2 in favor of actually setting capacity)
-    // set_size( capacity );
-    
-    // if clearing size
-    if( capacity < m_vector.size() )
-    {
-        // zero out section
-        zero( capacity, m_vector.size() );
-    }
-    
-    // what the size was
-    t_CKINT capacity_prev = m_vector.capacity();
-    // reserve vector
-    m_vector.reserve( capacity );
-    
-    // if clearing size
-    if( m_vector.capacity() > capacity_prev )
-    {
-        // zero out section
-        zero( capacity_prev, m_vector.capacity() );
-    }
+    // ensure size
+    set_size( capacity );
 
     return m_vector.capacity();
 }
@@ -983,6 +927,22 @@ t_CKINT Chuck_Array8::pop_back( )
 }
 
 
+//-----------------------------------------------------------------------------
+// name: pop_out()
+// desc: pops out lol
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array8::pop_out( t_CKUINT pos )
+{
+        // check
+        if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
+                return 0;
+
+        // zero
+        //m_vector[m_vector.size()-pos] = 0;
+        //add to vector
+        m_vector.erase(m_vector.begin()+pos);
+        return 1;
+}
 
 
 //-----------------------------------------------------------------------------
@@ -1292,6 +1252,22 @@ t_CKINT Chuck_Array16::pop_back( )
     m_vector.pop_back();
     
     return 1;
+}
+//-----------------------------------------------------------------------------
+// name: pop_out()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array16::pop_out( t_CKUINT pos )
+{
+        // check
+        if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
+                return 0;
+
+        // zero
+        //m_vector[m_vector.size()-pos] = 0;
+        //add to vector
+        m_vector.erase(m_vector.begin()+pos);
+        return 1;
 }
 
 
@@ -2039,15 +2015,13 @@ void Chuck_Array32::zero( t_CKUINT start, t_CKUINT end )
 t_CKUINT Chuck_Event::our_can_wait = 0;
 
 //-----------------------------------------------------------------------------
-// name: signal_local()
+// name: signal()
 // desc: signal a event/condition variable, shreduling the next waiting shred
-//       (if there is one or more); local in this case means within VM
+//       (if there is one or more)
 //-----------------------------------------------------------------------------
-void Chuck_Event::signal_local()
+void Chuck_Event::signal()
 {
-    #ifndef __DISABLE_THREADS__
     m_queue_lock.acquire();
-    #endif
     if( !m_queue.empty() )
     {
         // get the shred on top of the queue
@@ -2055,9 +2029,7 @@ void Chuck_Event::signal_local()
         // pop the top
         m_queue.pop();
         // release it!
-        #ifndef __DISABLE_THREADS__
         m_queue_lock.release();
-        #endif
         // REFACTOR-2017: BUG-FIX
         // release the extra ref we added when we started waiting for this event
         SAFE_RELEASE( shred->event );
@@ -2073,9 +2045,7 @@ void Chuck_Event::signal_local()
     }
     else
     {
-        #ifndef __DISABLE_THREADS__
         m_queue_lock.release();
-        #endif
     }
 }
 
@@ -2092,9 +2062,7 @@ t_CKBOOL Chuck_Event::remove( Chuck_VM_Shred * shred )
     t_CKBOOL removed = FALSE;
 
     // lock
-    #ifndef __DISABLE_THREADS__
     m_queue_lock.acquire();
-    #endif
     // while something in queue
     while( !m_queue.empty() )
     {
@@ -2124,324 +2092,9 @@ t_CKBOOL Chuck_Event::remove( Chuck_VM_Shred * shred )
     // copy temp back to queue
     m_queue = temp;
     // release lock
-    #ifndef __DISABLE_THREADS__
     m_queue_lock.release();
-    #endif
 
     return removed;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: global_listen()
-// desc: register a callback to a global event
-//-----------------------------------------------------------------------------
-void Chuck_Event::global_listen( void (* cb)(void),
-    t_CKBOOL listen_forever )
-{
-    // storage
-    Chuck_Global_Event_Listener new_listener;
-    
-    // store cb and whether to listen until canceled
-    new_listener.void_callback = cb;
-    new_listener.listen_forever = listen_forever;
-    new_listener.callback_type = ck_get_plain;
-    
-    // store storage
-    m_global_queue.push( new_listener );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: global_listen()
-// desc: register a callback to a global event
-//-----------------------------------------------------------------------------
-void Chuck_Event::global_listen( std::string name, void (* cb)(const char *),
-    t_CKBOOL listen_forever )
-{
-    // storage
-    Chuck_Global_Event_Listener new_listener;
-    
-    // store cb and whether to listen until canceled
-    new_listener.named_callback = cb;
-    new_listener.listen_forever = listen_forever;
-    new_listener.callback_type = ck_get_name;
-    new_listener.name = name;
-    
-    // store storage
-    m_global_queue.push( new_listener );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: global_listen()
-// desc: register a callback to a global event
-//-----------------------------------------------------------------------------
-void Chuck_Event::global_listen( t_CKINT id, void (* cb)(t_CKINT),
-    t_CKBOOL listen_forever )
-{
-    // storage
-    Chuck_Global_Event_Listener new_listener;
-    
-    // store cb and whether to listen until canceled
-    new_listener.id_callback = cb;
-    new_listener.listen_forever = listen_forever;
-    new_listener.callback_type = ck_get_id;
-    new_listener.id = id;
-    
-    // store storage
-    m_global_queue.push( new_listener );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: remove_listen()
-// desc: deregister a callback to a global event
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Event::remove_listen( void (* cb)(void) )
-{
-    std::queue<Chuck_Global_Event_Listener> temp;
-    t_CKBOOL removed = FALSE;
-
-    // lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
-    // while something in queue
-    while( !m_global_queue.empty() )
-    {
-        // check if the callback we are looking for
-        if( m_global_queue.front().callback_type != ck_get_plain || m_global_queue.front().void_callback != cb )
-        {
-            // if not, enqueue it into temp
-            temp.push( m_global_queue.front() );
-        }
-        else
-        {
-            // flag, don't add to temp
-            removed = TRUE;
-        }
-
-        // pop the top
-        m_global_queue.pop();
-    }
-
-    // copy temp back to queue
-    m_global_queue = temp;
-    // release lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.release();
-    #endif
-
-    return removed;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: remove_listen()
-// desc: deregister a callback to a global event
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Event::remove_listen( std::string name, void (* cb)(const char *)  )
-{
-    std::queue<Chuck_Global_Event_Listener> temp;
-    t_CKBOOL removed = FALSE;
-
-    // lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
-    // while something in queue
-    while( !m_global_queue.empty() )
-    {
-        // check if the callback we are looking for
-        if( m_global_queue.front().callback_type != ck_get_name || m_global_queue.front().named_callback != cb )
-        {
-            // if not, enqueue it into temp
-            temp.push( m_global_queue.front() );
-        }
-        else
-        {
-            // flag, don't add to temp
-            removed = TRUE;
-        }
-
-        // pop the top
-        m_global_queue.pop();
-    }
-
-    // copy temp back to queue
-    m_global_queue = temp;
-    // release lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.release();
-    #endif
-
-    return removed;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: remove_listen()
-// desc: deregister a callback to a global event
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Event::remove_listen( t_CKINT id, void (* cb)(t_CKINT)  )
-{
-    std::queue<Chuck_Global_Event_Listener> temp;
-    t_CKBOOL removed = FALSE;
-
-    // lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
-    // while something in queue
-    while( !m_global_queue.empty() )
-    {
-        // check if the callback we are looking for
-        if( m_global_queue.front().callback_type != ck_get_id || m_global_queue.front().id_callback != cb )
-        {
-            // if not, enqueue it into temp
-            temp.push( m_global_queue.front() );
-        }
-        else
-        {
-            // flag, don't add to temp
-            removed = TRUE;
-        }
-
-        // pop the top
-        m_global_queue.pop();
-    }
-
-    // copy temp back to queue
-    m_global_queue = temp;
-    // release lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.release();
-    #endif
-
-    return removed;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: signal_global()
-// desc: call a global callback listener
-//-----------------------------------------------------------------------------
-void Chuck_Event::signal_global()
-{
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
-    
-    if( !m_global_queue.empty() )
-    {
-        // get the listener on top of the queue
-        Chuck_Global_Event_Listener listener = m_global_queue.front();
-        // pop the top
-        m_global_queue.pop();
-        // call callback
-        switch( listener.callback_type )
-        {
-        case ck_get_plain:
-            if( listener.void_callback != NULL )
-            {
-                listener.void_callback();
-            }
-            break;
-        case ck_get_name:
-            if( listener.named_callback != NULL )
-            {
-                listener.named_callback( listener.name.c_str() );
-            }
-            break;
-        case ck_get_id:
-            if( listener.id_callback != NULL )
-            {
-                listener.id_callback( listener.id );
-            }
-            break;
-        }
-        // if call forever, add back to m_global_queue
-        if( listener.listen_forever )
-        {
-            m_global_queue.push( listener );
-        }
-    }
-    
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.release();
-    #endif
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: broadcast_global()
-// desc: call a global callback listener
-//-----------------------------------------------------------------------------
-void Chuck_Event::broadcast_global()
-{
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
-    std::queue< Chuck_Global_Event_Listener > call_again;
-    
-    while( !m_global_queue.empty() )
-    {
-        // get the listener on top of the queue
-        Chuck_Global_Event_Listener listener = m_global_queue.front();
-        // pop the top
-        m_global_queue.pop();
-        // call callback
-        switch( listener.callback_type )
-        {
-        case ck_get_plain:
-            if( listener.void_callback != NULL )
-            {
-                listener.void_callback();
-            }
-            break;
-        case ck_get_name:
-            if( listener.named_callback != NULL )
-            {
-                listener.named_callback( listener.name.c_str() );
-            }
-            break;
-        case ck_get_id:
-            if( listener.id_callback != NULL )
-            {
-                listener.id_callback( listener.id );
-            }
-            break;
-        }
-        // if call forever, add back to m_global_queue
-        if( listener.listen_forever )
-        {
-            call_again.push( listener );
-        }
-    }
-    
-    // for those that should be called again, store them again
-    m_global_queue = call_again;
-
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.release();
-    #endif
 }
 
 
@@ -2456,25 +2109,19 @@ void Chuck_Event::broadcast_global()
 void Chuck_Event::queue_broadcast( CBufferSimple * event_buffer )
 {
     // TODO: handle multiple VM
-    #ifndef __DISABLE_THREADS__
     m_queue_lock.acquire();
-    #endif
     if( !m_queue.empty() )
     {
         // get shred (only to get the VM ref)
         Chuck_VM_Shred * shred = m_queue.front();
         // release lock
-        #ifndef __DISABLE_THREADS__
         m_queue_lock.release();
-        #endif
         // queue the event on the vm (added 1.3.0.0: event_buffer)
         shred->vm_ref->queue_event( this, 1, event_buffer );
     }
     else
     {
-        #ifndef __DISABLE_THREADS__
         m_queue_lock.release();
-        #endif
     }
 }
 
@@ -2482,34 +2129,25 @@ void Chuck_Event::queue_broadcast( CBufferSimple * event_buffer )
 
 
 //-----------------------------------------------------------------------------
-// name: broadcast_local()
+// name: broadcast()
 // desc: broadcast a event/condition variable, shreduling all waiting shreds
-//       local here means within VM
 //-----------------------------------------------------------------------------
-void Chuck_Event::broadcast_local()
+void Chuck_Event::broadcast()
 {
     // lock queue
-    #ifndef __DISABLE_THREADS__
     m_queue_lock.acquire();
-    #endif
     // while not empty
     while( !m_queue.empty() )
     {
         // release first
-        #ifndef __DISABLE_THREADS__
         m_queue_lock.release();
-        #endif
         // signal the next shred
-        this->signal_local();
+        this->signal();
         // lock again
-        #ifndef __DISABLE_THREADS__
         m_queue_lock.acquire();
-        #endif
     }
     // release
-    #ifndef __DISABLE_THREADS__
     m_queue_lock.release();
-    #endif
 }
 
 
@@ -2541,13 +2179,9 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
         shred->is_running = FALSE;
 
         // add to waiting list
-        #ifndef __DISABLE_THREADS__
         m_queue_lock.acquire();
-        #endif
         m_queue.push( shred );
-        #ifndef __DISABLE_THREADS__
         m_queue_lock.release();
-        #endif
 
         // add event to shred
         assert( shred->event == NULL );
@@ -2592,7 +2226,6 @@ Chuck_IO::~Chuck_IO()
 
 
 
-#ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // name: Chuck_IO_File()
 // desc: constructor
@@ -2608,9 +2241,7 @@ Chuck_IO_File::Chuck_IO_File( Chuck_VM * vm )
     m_dir_start = 0;
     m_asyncEvent = new Chuck_Event;
     initialize_object( m_asyncEvent, vm->env()->t_event );
-    #ifndef __DISABLE_THREADS__
     m_thread = new XThread;
-    #endif
 }
 
 
@@ -2625,9 +2256,7 @@ Chuck_IO_File::~Chuck_IO_File()
     // clean up
     this->close();
     delete m_asyncEvent;
-    #ifndef __DISABLE_THREADS__
     delete m_thread;
-    #endif
 }
 
 
@@ -2643,7 +2272,7 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
     EM_log( CK_LOG_INFO, "FileIO: opening file from disk..." );
     EM_log( CK_LOG_INFO, "FileIO: path: %s", path.c_str() );
     EM_pushlog();
-
+    
     // if no flag specified, make it READ by default
     if( !(flags & FLAG_READ_WRITE) &&
         !(flags & FLAG_READONLY) &&
@@ -2660,7 +2289,7 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
         flags ^= FLAG_WRITEONLY;
         flags |= FLAG_READ_WRITE;
     }
-
+    
     // check flags for errors
     if ((flags & TYPE_ASCII) &&
         (flags & TYPE_BINARY))
@@ -2668,45 +2297,45 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
         EM_error3( "[chuck](via FileIO): cannot open file in both ASCII and binary mode" );
         goto error;
     }
-
+    
     if ((flags & FLAG_READ_WRITE) &&
         (flags & FLAG_READONLY))
     {
         EM_error3( "[chuck](via FileIO): conflicting flags: READ_WRITE and READ" );
         goto error;
     }
-
+    
     if ((flags & FLAG_READ_WRITE) &&
         (flags & FLAG_WRITEONLY))
     {
         EM_error3( "[chuck](via FileIO): conflicting flags: READ_WRITE and WRITE" );
         goto error;
     }
-
+    
     if ((flags & FLAG_READ_WRITE) &&
         (flags & FLAG_APPEND))
     {
         EM_error3( "[chuck](via FileIO): conflicting flags: READ_WRITE and APPEND" );
         goto error;
     }
-
+    
     if ((flags & FLAG_WRITEONLY) &&
         (flags & FLAG_READONLY))
     {
         EM_error3( "[chuck](via FileIO): conflicting flags: WRITE and READ" );
         goto error;
     }
-
+    
     if ((flags & FLAG_APPEND) &&
         (flags & FLAG_READONLY))
     {
         EM_error3( "[chuck](via FileIO): conflicting flags: APPEND and FLAG_READ" );
         goto error;
     }
-
+    
     // set open flags
     ios_base::openmode mode;
-
+    
     if (flags & FLAG_READ_WRITE)
         mode = ios_base::in | ios_base::out;
     else if (flags & FLAG_READONLY)
@@ -2715,21 +2344,21 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
         mode = ios_base::out | ios_base::app;
     else if (flags & FLAG_WRITEONLY)
         mode = ios_base::out | ios_base::trunc;
-
+    
     if (flags & TYPE_BINARY)
         mode |= ios_base::binary;
-
+    
     // close first
     if (m_io.is_open())
         this->close();
-
+    
     // try to open as a dir first (fixed 1.3.0.0 removed warning)
     if( (m_dir = opendir( path.c_str() )) )
     {
         EM_poplog();
         return TRUE;
     }
-
+    
     // not a dir, create file if it does not exist unless flag is
     // readonly
     if ( !(flags & FLAG_READONLY) )
@@ -2744,17 +2373,17 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
         else
             m_io.close();
     }
-
+    
     //open file
     m_io.open( path.c_str(), mode );
-
+    
     // seek to beginning if necessary
     if (flags & FLAG_READ_WRITE)
     {
         m_io.seekp(0);
         m_io.seekg(0);
     }
-
+    
     /* ATODO: Ge's code
      // windows sucks for being creative in the wrong places
      #ifdef __PLATFORM_WIN32__
@@ -2764,14 +2393,14 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
      m_io.open( path.c_str(), (_Ios_Openmode)nMode );
      #endif
      */
-
+    
     // check for error
     if( !(m_io.is_open()) )
     {
         // EM_error3( "[chuck](via FileIO): cannot open file: '%s'", path.c_str() );
         goto error;
     }
-
+    
     // set path
     m_path = path;
     // set flags
@@ -2780,24 +2409,24 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
         m_flags |= Chuck_IO_File::TYPE_ASCII; // ASCII is default
     // set mode
     m_iomode = MODE_SYNC;
-
+    
     // pop
     EM_poplog();
-
+    
     return TRUE;
-
+    
 error:
-
+    
     // pop
     EM_poplog();
-
+    
     // reset
     m_path = "";
     m_flags = 0;
     m_iomode = MODE_SYNC;
     m_io.clear();
     m_io.close();
-
+    
     return FALSE;
 }
 
@@ -2881,7 +2510,7 @@ t_CKINT Chuck_IO_File::mode()
 // desc: ...
 //-----------------------------------------------------------------------------
 void Chuck_IO_File::mode( t_CKINT flag )
-{
+{    
     // sanity
     if ( m_dir )
     {
@@ -2893,7 +2522,7 @@ void Chuck_IO_File::mode( t_CKINT flag )
         EM_error3( "[chuck](via FileIO): invalid mode flag" );
         return;
     }
-
+    
     m_iomode = flag;
 }
 
@@ -2913,7 +2542,7 @@ t_CKINT Chuck_IO_File::size()
         EM_error3( "[chuck](via FileIO): cannot get size on a directory" );
         return -1;
     }
-
+    
     // no easy way to find file size in C++
     // have to seek to end, report position
     FILE * stream = fopen( m_path.c_str(), "r" );
@@ -2962,7 +2591,7 @@ t_CKINT Chuck_IO_File::tell()
         EM_error3( "[chuck](via FileIO): cannot tell on directory" );
         return -1;
     }
-
+    
     return m_io.tellg();
 }
 
@@ -2995,7 +2624,7 @@ Chuck_Array4 * Chuck_IO_File::dirList()
         initialize_object( ret, m_vmRef->env()->t_array );
         return ret;
     }
-
+    
     // fill vector with entry names
     rewinddir( m_dir );
     std::vector<Chuck_String *> entrylist;
@@ -3011,7 +2640,7 @@ Chuck_Array4 * Chuck_IO_File::dirList()
             entrylist.push_back( s );
         }
     }
-
+    
     // make array
     Chuck_Array4 *array = new Chuck_Array4( true, entrylist.size() );
     initialize_object( array, m_vmRef->env()->t_array );
@@ -3067,18 +2696,18 @@ Chuck_String * Chuck_IO_File::readLine()
         EM_error3( "[chuck](via FileIO): cannot readLine: no file open" );
         return new Chuck_String( "" );
     }
-
+    
     if (m_io.fail()) {
         EM_error3( "[chuck](via FileIO): cannot readLine: I/O stream failed" );
         return new Chuck_String( "" );
     }
-
+    
     if ( m_dir )
     {
         EM_error3( "[chuck](via FileIO): cannot readLine on directory" );
         return new Chuck_String( "" );
     }
-
+    
     string s;
     getline( m_io, s );
     return new Chuck_String( s );
@@ -3098,23 +2727,23 @@ t_CKINT Chuck_IO_File::readInt( t_CKINT flags )
         EM_error3( "[chuck](via FileIO): cannot readInt: no file open" );
         return 0;
     }
-
+    
     if (m_io.eof()) {
         EM_error3( "[chuck](via FileIO): cannot readInt: EOF reached" );
         return 0;
     }
-
+    
     if ( m_dir )
     {
         EM_error3( "[chuck](via FileIO): cannot read on directory" );
         return 0;
     }
-
+    
     if (m_io.fail()) {
         EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
         return 0;
     }
-
+    
     if (m_flags & TYPE_ASCII) {
         // ASCII
         t_CKINT val = 0;
@@ -3122,7 +2751,7 @@ t_CKINT Chuck_IO_File::readInt( t_CKINT flags )
         // if (m_io.fail())
         //     EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
         return val;
-
+        
     } else if (m_flags & TYPE_BINARY) {
         // binary
         if (flags & Chuck_IO::INT32) {
@@ -3160,7 +2789,7 @@ t_CKINT Chuck_IO_File::readInt( t_CKINT flags )
             EM_error3( "[chuck](via FileIO): readInt error: invalid int size flag" );
             return 0;
         }
-
+        
     } else {
         EM_error3( "[chuck](via FileIO): readInt error: invalid ASCII/binary flag" );
         return 0;
@@ -3181,23 +2810,23 @@ t_CKFLOAT Chuck_IO_File::readFloat()
         EM_error3( "[chuck](via FileIO): cannot readFloat: no file open" );
         return 0;
     }
-
+    
     if (m_io.eof()) {
         EM_error3( "[chuck](via FileIO): cannot readFloat: EOF reached" );
         return 0;
     }
-
+    
     if (m_io.fail()) {
         EM_error3( "[chuck](via FileIO): cannot readFloat: I/O stream failed" );
         return 0;
     }
-
+    
     if ( m_dir )
     {
         EM_error3( "[chuck](via FileIO): cannot read a directory" );
         return 0;
     }
-
+    
     if (m_flags & TYPE_ASCII) {
         // ASCII
         t_CKFLOAT val = 0;
@@ -3205,7 +2834,7 @@ t_CKFLOAT Chuck_IO_File::readFloat()
         // if (m_io.fail())
         //     EM_error3( "[chuck](via FileIO): cannot readFloat: I/O stream failed" );
         return val;
-
+        
     } else if (m_flags & TYPE_BINARY) {
         // binary
         t_CKFLOAT i;
@@ -3215,7 +2844,7 @@ t_CKFLOAT Chuck_IO_File::readFloat()
         else if (m_io.fail())
             EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
         return i;
-
+        
     } else {
         EM_error3( "[chuck](via FileIO): readFloat error: invalid ASCII/binary flag" );
         return 0;
@@ -3239,23 +2868,23 @@ t_CKBOOL Chuck_IO_File::readString( std::string & str )
         EM_error3( "[chuck](via FileIO): cannot readString: no file open" );
         return FALSE;
     }
-
+    
     if (m_io.eof()) {
         EM_error3( "[chuck](via FileIO): cannot readString: EOF reached" );
         return FALSE;
     }
-
+    
     if ( m_dir )
     {
         EM_error3( "[chuck](via FileIO): cannot read on directory" );
         return FALSE;
     }
-
+    
     if (m_io.fail()) {
         EM_error3( "[chuck](via FileIO): cannot readString: I/O stream failed" );
         return FALSE;
     }
-
+    
     if (m_flags & TYPE_ASCII) {
         // ASCII
         m_io >> str;
@@ -3354,20 +2983,20 @@ void Chuck_IO_File::write( const std::string & val )
         EM_error3( "[chuck](via FileIO): cannot write: no file open" );
         return;
     }
-
+    
     if (m_io.fail()) {
         EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
         return;
     }
-
+    
     if ( m_dir )
     {
         EM_error3( "[chuck](via FileIO): cannot write to a directory" );
         return;
     }
-
+    
     m_io.write( val.c_str(), val.size() );
-
+    
     if (m_io.fail()) { // check both before and after write if stream is ok
         EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
     }
@@ -3387,18 +3016,18 @@ void Chuck_IO_File::write( t_CKINT val )
         EM_error3( "[chuck](via FileIO): cannot write: no file open" );
         return;
     }
-
+    
     if (m_io.fail()) {
         EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
         return;
     }
-
+    
     if ( m_dir )
     {
         EM_error3( "[chuck](via FileIO): cannot write on directory" );
         return;
     }
-
+    
     if (m_flags & TYPE_ASCII) {
         m_io << val;
     } else if (m_flags & TYPE_BINARY) {
@@ -3406,7 +3035,7 @@ void Chuck_IO_File::write( t_CKINT val )
     } else {
         EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
     }
-
+    
     if (m_io.fail()) { // check both before and after write if stream is ok
         EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
     }
@@ -3426,18 +3055,18 @@ void Chuck_IO_File::write( t_CKINT val, t_CKINT flags )
         EM_error3( "[chuck](via FileIO): cannot write: no file open" );
         return;
     }
-
+    
     if (m_io.fail()) {
         EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
         return;
     }
-
+    
     if ( m_dir )
     {
         EM_error3( "[chuck](via FileIO): cannot write on directory" );
         return;
     }
-
+    
     if (m_flags & TYPE_ASCII) {
         m_io << val;
     } else if (m_flags & TYPE_BINARY) {
@@ -3449,7 +3078,7 @@ void Chuck_IO_File::write( t_CKINT val, t_CKINT flags )
     } else {
         EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
     }
-
+    
     if (m_io.fail()) { // check both before and after write if stream is ok
         EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
     }
@@ -3469,18 +3098,18 @@ void Chuck_IO_File::write( t_CKFLOAT val )
         EM_error3( "[chuck](via FileIO): cannot write: no file open" );
         return;
     }
-
+    
     if (m_io.fail()) {
         EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
         return;
     }
-
+    
     if ( m_dir )
     {
         EM_error3( "[chuck](via FileIO): cannot write to a directory" );
         return;
     }
-
+    
     if (m_flags & TYPE_ASCII) {
         m_io << val;
     } else if (m_flags & TYPE_BINARY) {
@@ -3488,7 +3117,7 @@ void Chuck_IO_File::write( t_CKFLOAT val )
     } else {
         EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
     }
-
+    
     if (m_io.fail()) { // check both before and after write if stream is ok
         EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
     }
@@ -3497,7 +3126,6 @@ void Chuck_IO_File::write( t_CKFLOAT val )
 
 
 
-#ifndef __DISABLE_THREADS__
 // static helper functions for writing asynchronously
 THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeStr_thread ) ( void *data )
 {
@@ -3505,9 +3133,8 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeStr_thread ) ( void *data )
     args->fileio_obj->write ( args->stringArg );
     Chuck_Event *e = args->fileio_obj->m_asyncEvent;
     delete args;
-    e->broadcast_local(); // wake up
-    e->broadcast_global();
-
+    e->broadcast(); // wake up
+    
     return (THREAD_RETURN)0;
 }
 
@@ -3515,10 +3142,9 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeInt_thread ) ( void *data )
 {
     async_args *args = (async_args *)data;
     args->fileio_obj->write ( args->intArg );
-    args->fileio_obj->m_asyncEvent->broadcast_local(); // wake up
-    args->fileio_obj->m_asyncEvent->broadcast_global();
+    args->fileio_obj->m_asyncEvent->broadcast(); // wake up
     delete args;
-
+    
     return (THREAD_RETURN)0;
 }
 
@@ -3526,38 +3152,24 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
 {
     async_args *args = (async_args *)data;
     args->fileio_obj->write ( args->floatArg );
-    args->fileio_obj->m_asyncEvent->broadcast_local(); // wake up
-    args->fileio_obj->m_asyncEvent->broadcast_global();
+    args->fileio_obj->m_asyncEvent->broadcast(); // wake up
     delete args;
-
+    
     return (THREAD_RETURN)0;
 }
-#endif // __DISABLE_THREADS__
-#endif // __DISABLE_FILEIO__
 
-
-
-
-//-----------------------------------------------------------------------------
-// name: Chuck_IO_Chout()
-// desc: constructor
-//-----------------------------------------------------------------------------
-Chuck_IO_Chout::Chuck_IO_Chout( Chuck_Carrier * carrier )
-{
+Chuck_IO_Chout::Chuck_IO_Chout( Chuck_Carrier * carrier ) {
     // store
     carrier->chout = this;
     // add ref
     this->add_ref();
-    // zero out
-    m_callback = NULL;
     // initialize (added 1.3.0.0)
     initialize_object( this, carrier->env->t_chout );
     // lock so can't be deleted conventionally
     this->lock();
 }
 
-Chuck_IO_Chout::~Chuck_IO_Chout()
-{
+Chuck_IO_Chout::~Chuck_IO_Chout() {
     m_callback = NULL;
 }
 
@@ -3638,28 +3250,18 @@ void Chuck_IO_Chout::write( t_CKFLOAT val )
 }
 
 
-
-
-//-----------------------------------------------------------------------------
-// name: Chuck_IO_Cherr()
-// desc: constructor
-//-----------------------------------------------------------------------------
-Chuck_IO_Cherr::Chuck_IO_Cherr( Chuck_Carrier * carrier )
-{
+Chuck_IO_Cherr::Chuck_IO_Cherr( Chuck_Carrier * carrier ) {
     // store
     carrier->cherr = this;
     // add ref
     this->add_ref();
-    // zero out
-    m_callback = NULL;
     // initialize (added 1.3.0.0)
     initialize_object( this, carrier->env->t_cherr );
     // lock so can't be deleted conventionally
     this->lock();
 }
 
-Chuck_IO_Cherr::~Chuck_IO_Cherr()
-{
+Chuck_IO_Cherr::~Chuck_IO_Cherr() {
     m_callback = NULL;
 }
 
