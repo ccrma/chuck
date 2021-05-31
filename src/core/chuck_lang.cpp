@@ -39,7 +39,6 @@
 #include "chuck_errmsg.h"
 #include "chuck_ugen.h"
 #include "util_string.h"
-// #include "util_serial.h"
 
 #include <math.h>
 #include <iostream>
@@ -64,9 +63,9 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'object'" );
+    EM_log( CK_LOG_SEVERE, "class 'Object'" );
     
-    const char * doc = "Base class for all class types in ChucK.";
+    const char * doc = "base class for all class types in ChucK.";
     
     // init as base class
     if( !type_engine_import_class_begin( env, type, env->global(), object_ctor, object_dtor, doc ) )
@@ -78,7 +77,17 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
 
     // add toString()
     func = make_new_mfun( "string", "toString", object_toString );
-    func->doc = "Return a textual description of this object.";
+    func->doc = "get a textual description of this object.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add dump()
+    func = make_new_mfun( "void", "dump", object_dump );
+    func->doc = "output current state of the object as text.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add api()
+    func = make_new_mfun( "void", "apropos", object_apropos );
+    func->doc = "output information about the object's type.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -105,7 +114,7 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
 {
     Chuck_DL_Func * func = NULL;
 
-    EM_log( CK_LOG_SEVERE, "class 'ugen'" );
+    EM_log( CK_LOG_SEVERE, "class 'UGen'" );
 
     // add ugen info
     type->ugen_info = new Chuck_UGen_Info;
@@ -114,7 +123,7 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
     type->ugen_info->num_ins = 1;
     type->ugen_info->num_outs = 1;
 
-    const char * doc = "Base class for all UGen types in ChucK.";
+    const char * doc = "base class for all unit generator (UGen) types in ChucK.";
 
     // init as base class
     // TODO: ctor/dtor, ugen's sometimes created internally?
@@ -124,10 +133,10 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
     // gain
     func = make_new_mfun( "float", "gain", ugen_gain );
     func->add_arg( "float", "val" );
-    func->doc = "Set the gain of the ugen.";
+    func->doc = "set the gain of the unit generator.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "gain", ugen_cget_gain );
-    func->doc = "Return the gain of the ugen.";
+    func->doc = "get the gain of the unit generator.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 /*    // next
@@ -139,37 +148,46 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
 */
     // last
     func = make_new_mfun( "float", "last", ugen_last );
-    func->doc = "Return the last sample value of the unit generator.";
+    func->doc = "get the last sample value of the unit generator.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // op
     func = make_new_mfun( "int", "op", ugen_op );
     func->add_arg( "int", "val" );
-    func->doc = "Set the ugen's operation mode. Accepted values are: 1 (sum inputs), 2 (take difference between first input and subsequent inputs), 3 (multiply inputs), 4 (divide first input by subsequent inputs), 0 (do not synthesize audio, output 0) or -1 (passthrough inputs to output).";
+    func->doc = "set the unit generator's operation mode. Accepted values are: 1 (sum inputs), 2 (take difference between first input and subsequent inputs), 3 (multiply inputs), 4 (divide first input by subsequent inputs), 0 (do not synthesize audio, output 0) or -1 (passthrough inputs to output).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "op", ugen_cget_op );
-    func->doc = "Return the ugen's operation mode.";
+    func->doc = "get the unit generator's operation mode.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add numChannels
     func = make_new_mfun( "int", "channels", ugen_numChannels );
     func->add_arg( "int", "num" );
-    func->doc = "Set number of channels. (Not currently supported.)";
+    func->doc = "set number of channels. (currently NOT supported)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "channels", ugen_cget_numChannels );
-    func->doc = "Return number of channels.";
+    func->doc = "get number of channels.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add chan
     func = make_new_mfun( "UGen", "chan", ugen_chan );
     func->add_arg( "int", "num" );
-    func->doc = "Return channel at specified index.";
+    func->doc = "get channel (as a UGen) at specified index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add isConnectedTo
     func = make_new_mfun( "int", "isConnectedTo", ugen_connected );
     func->add_arg( "UGen", "right" );
-    func->doc = "Return true if this ugen's output is connected to the input of the argument. Return false otherwise. ";
+    func->doc = "return true if this UGen's output is connected to the input of the argument; return false otherwise.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // add buffered
+    func = make_new_mfun( "int", "buffered", ugen_buffered );
+    func->add_arg( "int", "val" );
+    func->doc = "set the unit generator's buffered operation mode, typically used externally from hosts that embed ChucK as a component. If true, the UGen stores a buffer of its most recent samples, which can be fetched using global variables in the host language.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    func = make_new_mfun( "int", "buffered", ugen_cget_buffered );
+    func->doc = "get the ugen's buffered operation mode.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end
@@ -198,7 +216,7 @@ t_CKBOOL init_class_uana( Chuck_Env * env, Chuck_Type * type )
 {
     Chuck_DL_Func * func = NULL;
 
-    EM_log( CK_LOG_SEVERE, "class 'uana'" );
+    EM_log( CK_LOG_SEVERE, "class 'UAna'" );
 
     // add uana info
     type->ugen_info = new Chuck_UGen_Info;
@@ -207,7 +225,7 @@ t_CKBOOL init_class_uana( Chuck_Env * env, Chuck_Type * type )
     type->ugen_info->num_ins = 1;
     type->ugen_info->num_outs = 1;
 
-    const char * doc = "Base class from which all unit analyzers (UAnae) inherit; UAnae (note plural form) can be interconnected via => (standard chuck operator) or via =^ (upchuck operator), specify the the types of and when data is passed between UAnae and UGens.  When .upchuck() is invoked on a given UAna, the UAna-chain (UAnae connected via =^) is traversed backwards from the upchucked UAna, and analysis is performed at each UAna along the chain; the updated analysis results are stored in UAnaBlobs.";
+    const char * doc = "base class from which all unit analyzer (UAna) type inherit; UAnae (note plural form) can be interconnected using => (standard chuck operator) or using =^ (upchuck operator), specify the the types of and when data is passed between UAnae and UGens.  When .upchuck() is invoked on a given UAna, the UAna-chain (UAnae connected via =^) is traversed backwards from the upchucked UAna, and analysis is performed at each UAna along the chain; the updated analysis results are stored in UAnaBlobs.";
 
     // init as base class, type should already know the parent type
     // TODO: ctor/dtor, ugen's sometimes created internally?
@@ -220,35 +238,35 @@ t_CKBOOL init_class_uana( Chuck_Env * env, Chuck_Type * type )
 
     // add upchuck
     func = make_new_mfun( "UAnaBlob", "upchuck", uana_upchuck );
-    func->doc = "Initiate analysis at the UAna; returns result.";
+    func->doc = "initiate analysis at the UAna and return result.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add fvals
     func = make_new_mfun( "float[]", "fvals", uana_fvals );
-    func->doc = "Get blob's float array.";
+    func->doc = "get blob's float array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add cvals
     func = make_new_mfun( "complex[]", "cvals", uana_cvals );
-    func->doc = "Get blob's complex array.";
+    func->doc = "get blob's complex array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add fval
     func = make_new_mfun( "float", "fval", uana_fval );
     func->add_arg( "int", "index" );
-    func->doc = "Get blob's float value at index.";
+    func->doc = "get blob's float value at index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add cval
     func = make_new_mfun( "complex", "cval", uana_cval );
     func->add_arg( "int", "index" );
-    func->doc = "Get blob's complex value at index.";
+    func->doc = "get blob's complex value at index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add isUpConnectedTo
     func = make_new_mfun( "int", "isUpConnectedTo", uana_connected );
     func->add_arg( "UAna", "right" );
-    func->doc = "Is connected to another uana via =^?";
+    func->doc = "is connected to another uana via =^?";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // TODO: add nonchuck
@@ -289,9 +307,9 @@ t_CKBOOL init_class_blob( Chuck_Env * env, Chuck_Type * type )
     // Chuck_Value * value = NULL;
     
     // log
-    EM_log( CK_LOG_SEVERE, "class 'uanablob'" );
+    EM_log( CK_LOG_SEVERE, "class 'UAnaBlob'" );
     
-    const char * doc = "This object contains results associated with UAna analysis. There is a UAnaBlob associated with every UAna.  As a UAna is upchucked, the result is stored in the UAnaBlob's floating point vector and/or complex vector.  The intended interpretation of the results depends on the specific UAna.";
+    const char * doc = "contains results associated with UAna analysis. There is a UAnaBlob associated with every UAna. As a UAna is upchucked, the result is stored in the UAnaBlob's floating point vector and/or complex vector. The intended interpretation of the results depends on the specific UAna.";
     
     // init class
     // TODO: ctor/dtor
@@ -308,29 +326,29 @@ t_CKBOOL init_class_blob( Chuck_Env * env, Chuck_Type * type )
 
     // add when
     func = make_new_mfun( "time", "when", uanablob_when );
-    func->doc = "Get the time when blob was last upchucked.";
+    func->doc = "get the time when blob was last upchucked.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add fvals
     func = make_new_mfun( "float[]", "fvals", uanablob_fvals );
-    func->doc = "Get blob's float array.";
+    func->doc = "get blob's float array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add cvals
     func = make_new_mfun( "complex[]", "cvals", uanablob_cvals );
-    func->doc = "Get blob's complex array.";
+    func->doc = "get blob's complex array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add fval
     func = make_new_mfun( "float", "fval", uanablob_fval );
     func->add_arg( "int", "index" );
-    func->doc = "Get blob's float value at index.";
+    func->doc = "get blob's float value at index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add cval
     func = make_new_mfun( "complex", "cval", uanablob_cval );
     func->add_arg( "int", "index" );
-    func->doc = "Get blob's complex value at index.";
+    func->doc = "get blob's complex value at index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end class import
@@ -362,9 +380,9 @@ t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type )
     Chuck_Value * value = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'event'" );
+    EM_log( CK_LOG_SEVERE, "class 'Event'" );
     
-    const char *doc = "The Event class allows exact synchronization across an arbitrary number of shreds.";
+    const char *doc = "a mechanism for precise synchronization across shreds.";
 
     // init as base class
     // TODO: ctor/dtor?
@@ -373,23 +391,23 @@ t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type )
 
     // add signal()
     func = make_new_mfun( "void", "signal", event_signal );
-    func->doc = "Signal one shred that is waiting on this event. ";
+    func->doc = "signal one shred that is waiting on this event.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add broadcast()
     func = make_new_mfun( "void", "broadcast", event_broadcast );
-    func->doc = "Signal all shreds that are waiting on this event.";
+    func->doc = "signal all shreds that are waiting on this event.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add wait()
     func = make_new_mfun( "void", "wait", event_wait );
     func->add_arg( "Shred", "me" );
-    func->doc = "(Currently unsupported.)";
+    func->doc = "(currently unsupported)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add can_wait()
     func = make_new_mfun( "int", "can_wait", event_can_wait );
-    func->doc = "Whether or not the event can be waited on. Currently always returns true.";
+    func->doc = "can the event can be waited on? Currently always returns true.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -426,9 +444,9 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'shred'" );
+    EM_log( CK_LOG_SEVERE, "class 'Shred'" );
 
-    const char *doc = "Shred facilitates various operations and interactions with shreds running in the ChucK virtual machine.";
+    const char *doc = "a strongly-timed ChucK thread of execution.";
     
     // init as base class
     // TODO: ctor/dtor?
@@ -441,7 +459,7 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     // add fromId()
     func = make_new_sfun( "Shred", "fromId", shred_fromId );
     func->add_arg( "int", "id" );
-    func->doc = "Return a Shred object corresponding to the provided shred ID.";
+    func->doc = "get Shred corresponding to a Shred ID.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
     
     // add clone()
@@ -450,27 +468,27 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
 
     // add exit()
     func = make_new_mfun( "void", "exit", shred_exit );
-    func->doc = "Immediately halt the shred's operation and remove it from the virtual machine.";
+    func->doc = "halt the shred's operation and remove it from the virtual machine.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add id()
     func = make_new_mfun( "int", "id", shred_id );
-    func->doc = "Return the unique numeric id of the shred.";
+    func->doc = "get the unique numeric id of the Shred.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add yield()
     func = make_new_mfun( "void", "yield", shred_yield );
-    func->doc = "Cause the shred to temporarily stop processing, allowing other scheduled shreds to run as needed.";
+    func->doc = "cause the current Shred to temporarily suspend without advancing time, allowing other simultaneously schreduled shreds to run as needed. NOTE: yield() is equivalent to '0::second +=> now;'";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add running()
     func = make_new_mfun( "int", "running", shred_running );
-    func->doc = "Return true if the shred is currently running; false otherwise.";
+    func->doc = "is the Shred currently running?";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add done()
     func = make_new_mfun( "int", "done", shred_done );
-    func->doc = "Return true if the shred is done processing; false otherwise.";
+    func->doc = "is the Shred done running?";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add nargs()
@@ -479,7 +497,7 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
 
     // add nargs()
     func = make_new_mfun( "int", "args", shred_numArgs );
-    func->doc = "Return the number of arguments provided to the shred.";
+    func->doc = "get the number of arguments provided to the Shred.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add arg()
@@ -490,33 +508,33 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     // add arg()
     func = make_new_mfun( "string", "arg", shred_getArg );
     func->add_arg( "int", "index" );
-    func->doc = "Return the argument at the specified index.";
+    func->doc = "get the Shred argument at the specified index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add sourcePath() (added 1.3.0.0)
     func = make_new_mfun( "string", "sourcePath", shred_sourcePath );
-    func->doc = "Return the path of the source code file from which this shred's code is derived.";
+    func->doc = "get the path of the source file from which this Shred's code is derived (same as .path()).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add path() (added 1.3.2.0)
     func = make_new_mfun( "string", "path", shred_sourcePath );
-    func->doc = "Return the file path of the source code file from which this shred's code is derived (same as .sourcePath()).";
+    func->doc = "get the path of the source file from which this Shred's code is derived (same as .sourcePath()).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add sourceDir() (added 1.3.0.0)
     func = make_new_mfun( "string", "sourceDir", shred_sourceDir );
-    func->doc = "Return the enclosing directory of the source code file from which this shred's code is derived.";
+    func->doc = "get the enclosing directory of the source file from which this Shred's code is derived (same as .dir()).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add dir() (added 1.3.2.0)
     func = make_new_mfun( "string", "dir", shred_sourceDir );
-    func->doc = "Return the enclosing directory of the source code file from which this shred's code is derived (same as .sourceDir()).";
+    func->doc = "get the enclosing directory of the source file from which this Shred's code is derived (same as .sourceDir()).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add dir() (added 1.3.2.0, ge)
     func = make_new_mfun( "string", "dir", shred_sourceDir2 );
     func->add_arg( "int", "levelsUp" );
-    func->doc = "Return the enclosing directory, the specified number of parent directories up.";
+    func->doc = "get the enclosing directory, the specified number of parent directories up.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // end the class import
@@ -548,7 +566,7 @@ t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type )
     EM_log( CK_LOG_SEVERE, "class 'vec3' (primitive)" );
 
     // document
-    const char *doc = "vec3 is a primitive type for a 3-dimensional vector; potentially useful for 3D coordinates, RGB color, or as a value/goal/slew interpolator.";
+    const char *doc = "a primitive type for a 3-dimensional vector; potentially useful for 3D coordinate, RGB color, or as a value/goal/slew interpolator.";
     
     // init as base class
     if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc ) )
@@ -638,7 +656,7 @@ t_CKBOOL init_class_vec4( Chuck_Env * env, Chuck_Type * type )
     EM_log( CK_LOG_SEVERE, "class 'vec4' (primitive)" );
     
     // document
-    const char *doc = "vec4 is a primitive type for a 4-dimensional vector; potentially useful for 4D coordinatesm and RGBA color.";
+    const char *doc = "a primitive type for a 4-dimensional vector; potentially useful for 4D coordinate and RGBA color.";
     
     // init as base class
     if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc ) )
@@ -692,7 +710,7 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     // log
     EM_log( CK_LOG_SEVERE, "class 'string'" );
 
-    const char * doc = "The string class holds textual data as a sequence of characters, and provides a number of functions for manipulating text.";
+    const char * doc = "textual data as a sequence of characters, along with functions for manipulating text.";
 
     // init as base class
     // TODO: ctor/dtor
@@ -701,32 +719,32 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
 
     // add length()
     func = make_new_mfun( "int", "length", string_length );
-    func->doc = "Return the number of characters of the string.";
+    func->doc = "get the number of characters of the string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add upper()
     func = make_new_mfun( "string", "upper", string_upper );
-    func->doc = "Return a new string in which the lowercase characters of the original string have been converted to uppercase.";
+    func->doc = "get a new string in which the lowercase characters of the original string have been converted to uppercase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add lower()
     func = make_new_mfun( "string", "lower", string_lower );
-    func->doc = "Return a new string in which the uppercase characters of the original string have been converted to lowercase.";
+    func->doc = "get a new string in which the uppercase characters of the original string have been converted to lowercase.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ltrim()
     func = make_new_mfun( "string", "ltrim", string_ltrim );
-    func->doc = "Return a new string in which leading whitespace has been removed.";
+    func->doc = "get a new string in which leading whitespace has been removed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add rtrim()
     func = make_new_mfun( "string", "rtrim", string_rtrim );
-    func->doc = "Return a new string in which trailing whitespace has been removed.";
+    func->doc = "get a new string in which trailing whitespace has been removed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add trim()
     func = make_new_mfun( "string", "trim", string_trim );
-    func->doc = "Return a new string in which leading and trailing whitespace has been removed.";
+    func->doc = "get a new string in which leading and trailing whitespace has been removed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add toString()
@@ -736,41 +754,41 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     // add charAt()
     func = make_new_mfun( "int", "charAt", string_charAt );
     func->add_arg("int", "index");
-    func->doc = "Return a character at the specified index.";
+    func->doc = "get a character at the specified index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add setCharAt()
     func = make_new_mfun( "int", "setCharAt", string_setCharAt );
     func->add_arg("int", "index");
     func->add_arg("int", "theChar");
-    func->doc = "Set the character at the specified index.";
+    func->doc = "set the character at the specified index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add substring()
     func = make_new_mfun( "string", "substring", string_substring );
     func->add_arg("int", "start");
-    func->doc = "Return a new string containing the substring from the start index to the end of the string.";
+    func->doc = "get a new string containing the substring from the start index to the end of the string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add substring()
     func = make_new_mfun( "string", "substring", string_substringN );
     func->add_arg("int", "start");
     func->add_arg("int", "length");
-    func->doc = "Return a new string containing the substring from the start index of the specified length.";
+    func->doc = "get a new string containing the substring from the start index of the specified length.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add insert()
     func = make_new_mfun( "void", "insert", string_insert );
     func->add_arg("int", "position");
     func->add_arg("string", "str");
-    func->doc = "Insert str at the specified position.";
+    func->doc = "insert a string at the specified position.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add replace()
     func = make_new_mfun( "void", "replace", string_replace );
     func->add_arg( "int", "position" );
     func->add_arg( "string", "str" );
-    func->doc = "Replace characters from the start position to the end of the string with str.";
+    func->doc = "get characters from the start position to the end of the string with str.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add replace()
@@ -778,71 +796,71 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "int", "position" );
     func->add_arg( "int", "length" );
     func->add_arg( "string", "str" );
-    func->doc = "Replace length characters from the start position with str.";
+    func->doc = "get length characters from the start position with str.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add find()
     func = make_new_mfun( "int", "find", string_find );
     func->add_arg( "int", "theChar" );
-    func->doc = "Return the index of the first occurence of theChar, or -1 if theChar is not found.";
+    func->doc = "get the index of the first occurence of theChar, or -1 if theChar is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add find()
     func = make_new_mfun( "int", "find", string_findStart );
     func->add_arg( "int", "theChar" );
     func->add_arg( "int", "start" );
-    func->doc = "Return the index of the first occurence of theChar at or after the start position, or -1 if theChar is not found.";
+    func->doc = "get the index of the first occurence of theChar at or after the start position, or -1 if theChar is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add find()
     func = make_new_mfun( "int", "find", string_findStr );
     func->add_arg( "string", "str" );
-    func->doc = "Return the index of the first occurence of str, or -1 if str is not found.";
+    func->doc = "get the index of the first occurence of str, or -1 if str is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add find()
     func = make_new_mfun( "int", "find", string_findStrStart );
     func->add_arg( "string", "str" );
     func->add_arg( "int", "start" );
-    func->doc = "Return the index of the first occurence of str at or after the start position, or -1 if str is not found.";
+    func->doc = "get the index of the first occurence of str at or after the start position, or -1 if str is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add rfind()
     func = make_new_mfun( "int", "rfind", string_rfind );
     func->add_arg( "int", "theChar" );
-    func->doc = "Return the index of the last occurence of theChar, or -1 if theChar is not found.";
+    func->doc = "get the index of the last occurence of theChar, or -1 if theChar is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add rfind()
     func = make_new_mfun( "int", "rfind", string_rfindStart );
     func->add_arg( "int", "theChar" );
     func->add_arg( "int", "start" );
-    func->doc = "Return the index of the last occurence of theChar at or before the start position, or -1 if theChar is not found.";
+    func->doc = "get the index of the last occurence of theChar at or before the start position, or -1 if theChar is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add rfind()
     func = make_new_mfun( "int", "rfind", string_rfindStr );
     func->add_arg( "string", "str" );
-    func->doc = "Return the index of the last occurence of str, or -1 if str is not found.";
+    func->doc = "get the index of the last occurence of str, or -1 if str is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add rfind()
     func = make_new_mfun( "int", "rfind", string_rfindStrStart );
     func->add_arg( "string", "str" );
     func->add_arg( "int", "start" );
-    func->doc = "Return the index of the last occurence of str at or before the start position, or -1 if str is not found.";
+    func->doc = "get the index of the last occurence of str at or before the start position, or -1 if str is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add erase()
     func = make_new_mfun( "void", "erase", string_erase );
     func->add_arg( "int", "start" );
     func->add_arg( "int", "length" );
-    func->doc = "Erase length characters of the string from start position.";
+    func->doc = "erase length characters of the string from start position.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add toInt()
     func = make_new_mfun( "int", "toInt", string_toInt );
-    func->doc = "Attempt to convert the contents of the string to an integer and return the result, or 0 if conversion failed.";
+    func->doc = "attemp to convert the contents of the string to an integer and return the result, or 0 if conversion failed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add toFloat()
@@ -902,23 +920,23 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
 
     // init as base class
     // TODO: ctor/dtor?
-    const char *doc = "The array class is used to store linear sequences of data, also providing capabilities for stack and map data structures.";
-    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc ) )
+    string doc = "storage construct for sequential data of the same type; can also be used as a stack or a map data structure.";
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc.c_str() ) )
         return FALSE;
 
     // add clear()
     func = make_new_mfun( "void", "clear", array_clear );
-    func->doc = "Clear the contents of the array.";
+    func->doc = "clear the contents of the array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add reset()
     func = make_new_mfun( "void", "reset", array_reset );
-    func->doc = "Reset array to original state; clears the array and sets capacity to 8.";
+    func->doc = "reset array size to 0, set capacity to (at least) 8.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add popBack()
     func = make_new_mfun( "void", "popBack", array_pop_back );
-    func->doc = "Remove the last item of the array";
+    func->doc = "remove the last item of the array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add popOut()
@@ -929,36 +947,41 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
 
     // add size()
     func = make_new_mfun( "int", "size", array_get_size );
-    func->doc = "Return the number of elements in the array.";
+    func->doc = "get the number of elements in the array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add size()
     func = make_new_mfun( "int", "size", array_set_size );
     func->add_arg( "int", "newSize" );
-    func->doc = "Set the size of the array. If the new size is less than the current size, elements will be deleted from the end; if the new size is larger than the current size, 0 or null elements will be added to the end.";
+    func->doc = "set the size of the array. If the new size is less than the current size, elements will be deleted from the end; if the new size is larger than the current size, 0 or null elements will be added to the end.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // note 1.4.0.2: in the future, should deprecate and encourage programmer
+    // to explicitly use .size() OR .capacity(), depending on the context
+    // ---------
     // add cap()
     func = make_new_mfun( "int", "cap", array_get_capacity_hack );
-    func->doc = "Return current capacity of the array (number of elements that can be held without reallocating internal buffer). ";
+    func->doc = "for historical/compatibilty reasons, this is the same as .size(); it is recommended to explicitly use .size() or .capacity().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add capacity()
-    // func = make_new_mfun( "int", "capacity", array_get_capacity );
-    // if( !type_engine_import_mfun( env, func ) ) goto error;
-    // func = make_new_mfun( "int", "capacity", array_set_capacity );
-    // func->add_arg( "int", "val" );
-    // if( !type_engine_import_mfun( env, func ) ) goto error;
+    // add capacity() // 1.4.0.2
+    func = make_new_mfun( "int", "capacity", array_set_capacity );
+    func->doc = "ensure capacity of the array (number of addressable elements).";
+    func->add_arg( "int", "val" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    func = make_new_mfun( "int", "capacity", array_get_capacity );
+    func->doc = "get current capacity of the array (number of addressable elements).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add find()
     func = make_new_mfun( "int", "find", array_find );
     func->add_arg( "string", "key" );
-    func->doc = "Return number of elements with the specified key. ";
+    func->doc = "get number of elements with the specified key.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add erase()
     func = make_new_mfun( "int", "erase", array_erase );
     func->add_arg( "string", "key" );
-    func->doc = "Erase all elements with the specified key. ";
+    func->doc = "erase all elements with the specified key.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
@@ -1044,6 +1067,25 @@ CK_DLL_MFUN( object_toString )
     // set return
     RETURN->v_object = str;
 }
+
+// dump
+CK_DLL_MFUN( object_dump )
+{
+    // get object
+    Chuck_Object * me = SELF;
+    // call dump
+    me->dump();
+}
+
+// apropos
+CK_DLL_MFUN( object_apropos )
+{
+    // get object
+    Chuck_Object * me = SELF;
+    // call dump
+    me->apropos();
+}
+
 
 
 // ctor
@@ -1210,6 +1252,33 @@ CK_DLL_CTRL( ugen_connected )
     }
 
     RETURN->v_int = ret;
+}
+
+// 1.4.0.2 (jack): "buffered" flag -- necessary for getUGenSamples()
+// for global UGens
+CK_DLL_MFUN( ugen_buffered )
+{
+    // get as ugen
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    // get arg
+    t_CKINT buffered = GET_CK_INT( ARGS );
+    // set op
+    ugen->set_is_buffered( buffered );
+    // set return
+    RETURN->v_int = ugen->m_is_buffered;
+
+    // for multiple channels
+    Chuck_DL_Return ret;
+    for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
+        ugen_buffered( ugen->m_multi_chan[i], ARGS, &ret, VM, SHRED, API );
+}
+
+CK_DLL_MFUN( ugen_cget_buffered )
+{
+    // get as ugen
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    // set return
+    RETURN->v_int = ugen->m_is_buffered;
 }
 
 
@@ -1500,13 +1569,15 @@ CK_DLL_DTOR( event_dtor )
 CK_DLL_MFUN( event_signal )
 {
     Chuck_Event * d = (Chuck_Event *)SELF;
-    d->signal();
+    d->signal_local();
+    d->signal_global();
 }
 
 CK_DLL_MFUN( event_broadcast )
 {
     Chuck_Event * d = (Chuck_Event *)SELF;
-    d->broadcast();
+    d->broadcast_local();
+    d->broadcast_global();
 }
 
 CK_DLL_MFUN( event_wait )
@@ -2299,9 +2370,10 @@ CK_DLL_MFUN( array_clear )
 CK_DLL_MFUN( array_reset )
 {
     Chuck_Array * array = (Chuck_Array *)SELF;
-    array->clear();
     // default capacity
-    array->set_capacity( 8 );
+    array->set_size( 8 );
+    // clear the array
+    array->clear();
 }
 
 // array.cap()
