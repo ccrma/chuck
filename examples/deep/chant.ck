@@ -4,9 +4,10 @@
 //       variable rates, source-filter model, and interpolation.
 //
 // This is a classic source-filter model for rudimentary singing
-// synthesis: an impulse train (source, crudely modeling the
+// synthesis: an impulse train (the "source", crudely modeling
 // opening/closing of the glottis in the vocal tract) going through
-// a bank of three formant filters.
+// a bank of three formant filters (roughly modeling the filtering
+// by the vocal cavity to induce the perception of different vowels).
 //
 // This example demonstrates an elegant way to implement this in
 // ChucK, by breaking up the tasks into three concurrent shreds:
@@ -15,7 +16,7 @@
 //      strongly-timed mechanisms to modulate the impulse train
 //      period to create vibrato
 //   3. doInterpolation() interpolates the period and formants,
-//      to smoothly glide from note to note
+//      to smoothly glide from note to note, vowel to vowel
 //
 // author: Perry R. Cook (2006)
 //         modified by Rebecca Fiebrink and Ge Wang (2007, 2021)
