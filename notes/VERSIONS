@@ -18,6 +18,9 @@
     when pan is at center (pan=0). Mathematically, the reduction amount 
     can be calculated using Std.lintodb(Math.cos(pi/4))
     [To hear this new behavior, check out examples/stereo/stereo_noise.ck]
+  - (added) examples/deep/chant.ck (by Perry Cook, 2006) -- a chant singing
+    synthesizer that makes use of ChucK's strongly-time and concurrent
+    programming features.
   - (fixed) resolved a bug with SndBuf not playing when .rate < 0 and while
     .pos beyond the end
   - (fixed) resolved a bug with SndBuf where it could output DC when .rate < 0
