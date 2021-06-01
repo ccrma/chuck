@@ -9,8 +9,8 @@
 // a bank of three formant filters (roughly modeling the filtering
 // by the vocal cavity to induce the perception of different vowels).
 //
-// This example demonstrates an elegant way to implement this in
-// ChucK, by breaking up the tasks into three concurrent shreds:
+// This example demonstrates an elegant way to implement the above
+// in ChucK, by breaking up the tasks into three concurrent shreds:
 //   1. a main shred selects the next target pitch and formants
 //   2. doImpulse() generates the impulse train; using ChucK's
 //      strongly-timed mechanisms to modulate the impulse train
