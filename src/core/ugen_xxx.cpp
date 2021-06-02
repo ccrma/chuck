@@ -990,11 +990,16 @@ error:
 //static t_CKUINT LiSaBasic_offset_data = 0;
 static t_CKUINT LiSaMulti_offset_data = 0;
 
+// max channels for multichannel LiSa
+#define LiSa_MAXCHANNELS 16 // 1.4.0.2 (ge) increased from 10 to 16
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: lisa_query()
 // desc: ...
 //-----------------------------------------------------------------------------
-#define LiSa_channels 10 //max channels for multichannel LiSa
 DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
 {
     Chuck_Env * env = QUERY->env();
@@ -1255,19 +1260,76 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    
     // end the class import
     type_engine_import_class_end( env );
 
-    // description
-    doc = "a (li)ve (sa)mpling unit generator (multi-channel edition); also popularly used for granular synthesis.";
+
+    // LiSa2 description
+    doc = "a (li)ve (sa)mpling unit generator (stereo edition); also popularly used for granular synthesis.";
+    // multichannel
+    if( !type_engine_import_ugen_begin( env, "LiSa2", "LiSa", env->global(),
+                                       LiSaMulti_ctor, LiSaMulti_dtor,
+                                       NULL, LiSaMulti_tickf,
+                                       LiSaMulti_pmsg, 1, 2, doc.c_str() ) )
+        return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+    
+    
+    // LiSa4 description
+    doc = "a (li)ve (sa)mpling unit generator (quad edition); also popularly used for granular synthesis.";
+    // multichannel
+    if( !type_engine_import_ugen_begin( env, "LiSa4", "LiSa", env->global(),
+                                       LiSaMulti_ctor, LiSaMulti_dtor,
+                                       NULL, LiSaMulti_tickf,
+                                       LiSaMulti_pmsg, 1, 4, doc.c_str() ) )
+        return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+    
+    // LiSa6 description
+    doc = "a (li)ve (sa)mpling unit generator (6-channel edition); also popularly used for granular synthesis.";
+    // multichannel
+    if( !type_engine_import_ugen_begin( env, "LiSa6", "LiSa", env->global(),
+                                       LiSaMulti_ctor, LiSaMulti_dtor,
+                                       NULL, LiSaMulti_tickf,
+                                       LiSaMulti_pmsg, 1, 6, doc.c_str() ) )
+        return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+    
+    // LiSa8 description
+    doc = "a (li)ve (sa)mpling unit generator (8-channel edition); also popularly used for granular synthesis.";
+    // multichannel
+    if( !type_engine_import_ugen_begin( env, "LiSa8", "LiSa", env->global(),
+                                       LiSaMulti_ctor, LiSaMulti_dtor,
+                                       NULL, LiSaMulti_tickf,
+                                       LiSaMulti_pmsg, 1, 8, doc.c_str() ) )
+        return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+
+
+    // LiSa16 description
+    doc = "a (li)ve (sa)mpling unit generator (10-channel edition); also popularly used for granular synthesis.";
     // multichannel
     if( !type_engine_import_ugen_begin( env, "LiSa10", "LiSa", env->global(),
+                                       LiSaMulti_ctor, LiSaMulti_dtor,
+                                       NULL, LiSaMulti_tickf,
+                                       LiSaMulti_pmsg, 1, 10, doc.c_str() ) )
+        return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+    
+    // LiSa16 description
+    doc = "a (li)ve (sa)mpling unit generator (16-channel edition); also popularly used for granular synthesis.";
+    // multichannel
+    if( !type_engine_import_ugen_begin( env, "LiSa16", "LiSa", env->global(),
                                         LiSaMulti_ctor, LiSaMulti_dtor,
                                         NULL, LiSaMulti_tickf,
-                                        LiSaMulti_pmsg, 1, LiSa_channels, doc.c_str() ) )
+                                        LiSaMulti_pmsg, 1, LiSa_MAXCHANNELS, doc.c_str() ) )
         return FALSE;
-	
+    // end the class import
     type_engine_import_class_end( env );
     
     return TRUE;
@@ -3868,7 +3930,7 @@ struct LiSaMulti_data
     t_CKFLOAT coeff; // feedback coeff
     t_CKFLOAT voiceGain[LiSa_MAXVOICES]; // gain control for each voice
     t_CKFLOAT voicePan[LiSa_MAXVOICES];  // pan control for each voice; places voice between any pair of channels.
-    t_CKFLOAT channelGain[LiSa_MAXVOICES][LiSa_channels];
+    t_CKFLOAT channelGain[LiSa_MAXVOICES][LiSa_MAXCHANNELS];
     t_CKDOUBLE p_inc[LiSa_MAXVOICES], pindex[LiSa_MAXVOICES]; // playback increment
     
     // ramp stuff
@@ -3879,6 +3941,14 @@ struct LiSaMulti_data
 
     t_CKINT track;
 	t_CKINT num_chans;
+    
+    // constructor; 1.4.0.2 (ge) added
+    LiSaMulti_data()
+        : mdata(NULL), outsamples(NULL), mdata_len(0), maxvoices(0),
+          loop_end_rec(0), rindex(0), looprec(FALSE), reset(FALSE),
+          append(FALSE), coeff(0), rec_ramplen(0), rec_ramplen_inv(0),
+          track(0), num_chans(0)
+    { /* zero out things out! */ }
 
     // allocate memory, length in samples
     inline int buffer_alloc(t_CKINT length)
