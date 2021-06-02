@@ -18,22 +18,41 @@
     when pan is at center (pan=0). Mathematically, the reduction amount 
     can be calculated using Std.lintodb(Math.cos(pi/4))
     [To hear this new behavior, check out examples/stereo/stereo_noise.ck]
+  - (added) new Multi-channel LiSa UGens! (LiSa10 was already present)
+        LiSa2 (stereo)
+        LiSa4 (quad),
+        LiSa6 (6-channel; laptop orchestra edition!)
+        LiSa8 (8-channel),
+        LiSa16 (16-channel)
+  - (fixed) LiSa playback bug; voice panning now handles the mono case;
+    previously was silencing voice playback
   - (added) examples/deep/chant.ck (by Perry Cook, 2006) -- a chant singing
     synthesizer that makes use of ChucK's strongly-time and concurrent
     programming features.
+  - (BEHAVIOR HANGED) clearly separated array.size() and array.capacity();
+    for historical/compatability reasons, array.cap() is the same as
+    array.size() and generally should be avoided in favor of either .size()
+    or .capacity()
+  - (BEHAVIOR CHANGED): when connecting two multi-channel UGen's (both
+    are at least stereo), say LHS => RHS, if LHS channels < RHS channels,
+    the channels will be connected one-by-one up to the LHS channel count;
+    previously, the LHS channels will be automatically repeated to connect
+    to the RHS channels that have no corresponding LHS channels.  This
+    behavior can still be achieved by manually connecting the individual
+    channels of LHS and and RHS through LHS.chan(n) and RHS.chan(n).
   - (fixed) resolved a bug with SndBuf not playing when .rate < 0 and while
     .pos beyond the end
   - (fixed) resolved a bug with SndBuf where it could output DC when .rate < 0
     after it reaches the beginning of the file (e.g., if the first sample is
     non-zero)
-  - (updated/fixed) clearly separated array.size() and array.capacity();
-    for historical/compatability reasons, array.cap() is the same as
-    array.size() and generally should be avoided in favor of either .size()
-    or .capacity()
   - (deprecated) Chubgraph => (new) Chugraph;
     Chubgraph will continue to function, with a deprecation warning.
   - (documentation) updated embedded documentation text for all statically
     linked UGens and libraries.
+  - (documentation) brought examples in alignment between distribution
+    and the online examples collection:
+        http://chuck.stanford.edu/doc/examples
+        OR http://chuck.cs.princeton.edu/doc/examples
   - (internal/refactor) the "Mega Merge 2021" integrates a long-standing
     branch since REFACTOR-2017 that includes support for globals and was
     the basis for Chunity.  Future Chunity releases will align with mainline
