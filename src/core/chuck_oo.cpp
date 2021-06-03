@@ -645,7 +645,7 @@ t_CKINT Chuck_Array4::pop_out( t_CKUINT pos )
 	if( m_is_obj )
 	{
 		// get pointer
-		Chuck_Object * v = (Chuck_Object *)m_vector[m_vector.size()-(pos+1)];
+		Chuck_Object * v = (Chuck_Object *)m_vector[pos];
 		// if not null, release
 		if( v ) v->release();
 	}
