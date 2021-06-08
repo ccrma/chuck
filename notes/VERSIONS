@@ -50,9 +50,10 @@
   - (documentation) updated embedded documentation text for all statically
     linked UGens and libraries.
   - (documentation) brought examples in alignment between distribution
-    and the online examples collection:
+    and the online examples collection; many examples updated for clarity
+    and utility
         http://chuck.stanford.edu/doc/examples
-        OR http://chuck.cs.princeton.edu/doc/examples
+        http://chuck.cs.princeton.edu/doc/examples
   - (internal/refactor) the "Mega Merge 2021" integrates a long-standing
     branch since REFACTOR-2017 that includes support for globals and was
     the basis for Chunity.  Future Chunity releases will align with mainline
