@@ -39,9 +39,10 @@ LiSa lisa[3];
 0 => int recbuf;
 2 => int playbuf;
 
-// LiSa params, set
-for( 0 => int i; i < 3; i++ )
+// go through each LiSa
+for( 0 => int i; i < lisa.size(); i++ )
 {
+    // set LiSa params
     lisa[i].duration(bufferlen);
     lisa[i].loopEndRec(reclooplen);
     lisa[i].maxVoices(30);
@@ -82,12 +83,12 @@ while( true )
 
     // rotate the record LiSa
     lisa[recbuf++].record( 0 );
-    if( recbuf == 3 ) 0 => recbuf;
+    if( recbuf == lisa.size() ) 0 => recbuf;
     lisa[recbuf].record( 1 );
 
     // rotate the play LiSa
     playbuf++;
-    if( playbuf == 3 ) 0 => playbuf;
+    if( playbuf == lisa.size() ) 0 => playbuf;
 }
 
 // for sporking grains; can do lots of different stuff here -- just one example here
