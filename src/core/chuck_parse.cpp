@@ -95,6 +95,23 @@ FILE *win32_tmpfile()
 
 
 //-----------------------------------------------------------------------------
+// name: android_tmpfile()
+// desc: replacement for broken tmpfile() on Android
+//-----------------------------------------------------------------------------
+#ifdef __ANDROID__
+
+#include "chuck_android.h"
+
+FILE *android_tmpfile()
+{
+    return ChuckAndroid::getTemporaryFile();
+}
+
+#endif
+
+
+
+//-----------------------------------------------------------------------------
 // name: chuck_parse()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -118,9 +135,13 @@ t_CKBOOL chuck_parse( c_constr fname, FILE * fd, c_constr code )
         // generate temp file
 #ifdef __PLATFORM_WIN32__
         fd = win32_tmpfile();
+#elif defined (__ANDROID__)
+        fd = android_tmpfile();
 #else
         fd = tmpfile();
 #endif
+        // on some systems, tmpfile() can return NULL
+        if( !fd ) { EM_error2( 0, "unable to create temp file" ); return FALSE; }
         // flag it to close
         clo = TRUE;
         // write
