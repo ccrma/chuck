@@ -37,7 +37,6 @@
 #include "chuck_def.h"
 #include <stdio.h>
 
-
 #if defined(_cplusplus) || defined(__cplusplus)
 extern "C" {
 #endif
@@ -171,6 +170,33 @@ const char * mini_type( const char * str );
 
 #if defined(_cplusplus) || defined(__cplusplus)
 }
+#endif
+
+
+
+#if defined(_cplusplus) || defined(__cplusplus)
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Scoped_PushLog
+// desc: scoped EM_pushlog for convenience and auto-balancing of push/pop logs
+// usage: create an instance of Chuck_Scoped_PushLog when you want to push the
+// log level; the log level will be automatically popped when the instance goes
+// out of scope and the Chuck_Scoped_PushLog is deconstructed. 
+//-----------------------------------------------------------------------------
+class Chuck_Scoped_PushLog
+{
+public:
+    Chuck_Scoped_PushLog()
+    {
+        EM_pushlog();
+    }
+    
+    ~Chuck_Scoped_PushLog()
+    {
+        EM_poplog();
+    }
+};
+
 #endif
 
 
