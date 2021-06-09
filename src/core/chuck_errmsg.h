@@ -177,21 +177,21 @@ const char * mini_type( const char * str );
 #if defined(_cplusplus) || defined(__cplusplus)
 
 //-----------------------------------------------------------------------------
-// name: Chuck_Scoped_PushLog
+// name: class SmartPushLog (added 1.4.0.2 spencer)
 // desc: scoped EM_pushlog for convenience and auto-balancing of push/pop logs
-// usage: create an instance of Chuck_Scoped_PushLog when you want to push the
+// usage: create an instance of SmartPushLog when you want to push the
 // log level; the log level will be automatically popped when the instance goes
-// out of scope and the Chuck_Scoped_PushLog is deconstructed. 
+// out of scope and the SmartPushLog is deconstructed.
 //-----------------------------------------------------------------------------
-class Chuck_Scoped_PushLog
+class SmartPushLog
 {
 public:
-    Chuck_Scoped_PushLog()
+    SmartPushLog()
     {
         EM_pushlog();
     }
     
-    ~Chuck_Scoped_PushLog()
+    ~SmartPushLog()
     {
         EM_poplog();
     }
