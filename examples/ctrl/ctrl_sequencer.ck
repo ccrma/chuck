@@ -1,6 +1,7 @@
 // um, by philipd
 // (what is it?)
 
+// base Player class
 class Player
 { 
     UGen @ base;
@@ -76,23 +77,25 @@ class ClarPlayer extends Player
     }
 }
 
-
+// length of sequence
 12 => int seqn;
+// a sequence
 Note sequence[seqn];
+// order
 int order[seqn];
-[0,2,4,7,9, 12, 14, 16, 19, 21] @=> int scale[];
-10 => int nscale;
+// scale
+[0, 2, 4, 7, 9, 12, 14, 16, 19, 21] @=> int scale[];
+// durations
 [0.25::second, 0.125::second, 0.125::second,  0.375::second] @=> dur times[];
-4 => int ntimes;
 
-//fun initialize ( Note sequence, int n ) { 
+// new sequence
 fun void newsequence()
 { 
-    for ( 0 => int i; i < seqn ; i++ )
+    for( 0 => int i; i < seqn; i++ )
     {
         i => order[i];		
-        55 + scale[Math.random2(0, nscale - 1)] => int note;
-        times[Math.random2(0, ntimes - 1)] => dur mydur;
+        55 + scale[Math.random2(0, scale.size() - 1)] => int note;
+        times[Math.random2(0, times.size() - 1)] => dur mydur;
         Math.random2f( 0.75, 0.9 ) => float vel; 
         sequence[i].set( note, vel, mydur );
     }
@@ -107,26 +110,35 @@ fun void swap( )
     tmp => order[a];
 }
 
+// instantiate a mandolin player
 MandPlayer mand;
+// instantiate a clarinet player
 ClarPlayer clar;
+
+// effects
 Gain g => JCRev j => Echo e => dac;
 0.95 => j.gain;
 0.1 => j.mix;
-
+// set echo amount
 1.15::second => e.max;
 1.0::second => e.delay;
 0.3 => e.mix;
 
+// connect to effects
 mand.connect(g);
+// connect to effects
 clar.connect(g);
 
+// set gain
 0.6 => g.gain;
 
+// new sequence!
 newsequence();
 
-while ( true )
+// infinite time-loop
+while( true )
 {
-    for ( 0 => int j ; j < seqn; j++ )
+    for( 0 => int j; j < seqn; j++ )
     { 
         sequence[order[j]] @=> Note cur;
         cur.playOn ( mand );
@@ -142,4 +154,3 @@ while ( true )
     if ( Math.random2(0, 10) > 8 )
         newsequence();
 }
-

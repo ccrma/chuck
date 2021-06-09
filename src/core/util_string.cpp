@@ -361,7 +361,7 @@ done:
 
 /* from http://developer.apple.com/library/mac/#qa/qa1549/_index.html */
 
-#if !defined(__PLATFORM_WIN32__) && !defined(__EMSCRIPTEN__)
+#if !defined(__PLATFORM_WIN32__) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
 
 #include <glob.h>
 
@@ -389,7 +389,7 @@ char* CreatePathByExpandingTildePath(const char* path)
     return result;
 }
 
-#endif // __PLATFORM_WIN32__ && __EMSCRIPTEN__
+#endif // __PLATFORM_WIN32__ && __EMSCRIPTEN__ && __ANDROID__
 
 
 // get full path to file
@@ -431,8 +431,8 @@ std::string get_full_path( const std::string & fp )
 
 std::string expand_filepath( std::string & fp )
 {
-#if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__) || defined(__EMSCRIPTEN__)
-    // no expansion in Windows systems or Emscripten
+#if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__) || defined(__EMSCRIPTEN__) || defined(__ANDROID__)
+    // no expansion in Windows systems or Emscripten or Android
     return fp;
 #else
     

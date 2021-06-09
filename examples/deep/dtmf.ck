@@ -1,6 +1,6 @@
 // name: dtmf.ck
 // desc: dual tone multiple frequency
-//       (play this into analog phones to call random people)
+//       (can be played into analog phones to place calls)
 // author: Perry Cook
 
 SinOsc row => dac;
@@ -46,4 +46,3 @@ while (i < 7) {
     0.05 :: second => now;
     i + 1 => i;
 }
-

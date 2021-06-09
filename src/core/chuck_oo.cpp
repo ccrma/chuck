@@ -679,8 +679,27 @@ t_CKINT Chuck_Array4::set_capacity( t_CKINT capacity )
     // sanity check
     assert( capacity >= 0 );
 
-    // ensure size
-    set_size( capacity );
+    // ensure size (removed 1.4.0.2 in favor of actually setting capacity)
+    // set_size( capacity );
+    
+    // if clearing size
+    if( capacity < m_vector.size() )
+    {
+        // zero out section
+        zero( capacity, m_vector.size() );
+    }
+    
+    // what the size was
+    t_CKINT capacity_prev = m_vector.capacity();
+    // reserve vector
+    m_vector.reserve( capacity );
+    
+    // if clearing size
+    if( m_vector.capacity() > capacity_prev )
+    {
+        // zero out section
+        zero( capacity_prev, m_vector.capacity() );
+    }
 
     return m_vector.capacity();
 }
@@ -3519,18 +3538,26 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
 
 
 
-Chuck_IO_Chout::Chuck_IO_Chout( Chuck_Carrier * carrier ) {
+//-----------------------------------------------------------------------------
+// name: Chuck_IO_Chout()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_IO_Chout::Chuck_IO_Chout( Chuck_Carrier * carrier )
+{
     // store
     carrier->chout = this;
     // add ref
     this->add_ref();
+    // zero out
+    m_callback = NULL;
     // initialize (added 1.3.0.0)
     initialize_object( this, carrier->env->t_chout );
     // lock so can't be deleted conventionally
     this->lock();
 }
 
-Chuck_IO_Chout::~Chuck_IO_Chout() {
+Chuck_IO_Chout::~Chuck_IO_Chout()
+{
     m_callback = NULL;
 }
 
@@ -3611,18 +3638,28 @@ void Chuck_IO_Chout::write( t_CKFLOAT val )
 }
 
 
-Chuck_IO_Cherr::Chuck_IO_Cherr( Chuck_Carrier * carrier ) {
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_IO_Cherr()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_IO_Cherr::Chuck_IO_Cherr( Chuck_Carrier * carrier )
+{
     // store
     carrier->cherr = this;
     // add ref
     this->add_ref();
+    // zero out
+    m_callback = NULL;
     // initialize (added 1.3.0.0)
     initialize_object( this, carrier->env->t_cherr );
     // lock so can't be deleted conventionally
     this->lock();
 }
 
-Chuck_IO_Cherr::~Chuck_IO_Cherr() {
+Chuck_IO_Cherr::~Chuck_IO_Cherr()
+{
     m_callback = NULL;
 }
 

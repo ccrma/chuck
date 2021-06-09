@@ -397,7 +397,7 @@ t_CKBOOL Chuck_Compiler::do_entire_file( Chuck_Context * context )
         return FALSE;
 
     // set the state of the context to done
-    context->progress = Chuck_Context::P_ALL;
+    context->progress = Chuck_Context::P_ALL_DONE;
 
     return TRUE;
 }
@@ -432,7 +432,7 @@ t_CKBOOL Chuck_Compiler::do_only_classes( Chuck_Context * context )
         return FALSE;
 
     // set the state of the context to done
-    context->progress = Chuck_Context::P_ALL;
+    context->progress = Chuck_Context::P_ALL_DONE;
 
     return TRUE;
 }
@@ -465,7 +465,7 @@ t_CKBOOL Chuck_Compiler::do_all_except_classes( Chuck_Context * context )
         return FALSE;
 
     // set the state of the context to done
-    context->progress = Chuck_Context::P_ALL;
+    context->progress = Chuck_Context::P_ALL_DONE;
 
     return TRUE;
 }

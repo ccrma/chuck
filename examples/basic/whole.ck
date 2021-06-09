@@ -1,4 +1,4 @@
-// another candidate for lamest demo
+// another candidate for least exciting demo
 
 // patch
 SinOsc s => JCRev r => dac;

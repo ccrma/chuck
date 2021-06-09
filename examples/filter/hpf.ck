@@ -1,17 +1,14 @@
-// our patch
+// HPF is a high-pass filter
 Noise n => HPF f => dac;
 
 // set gain
 .5 => f.gain;
 
 // infinite time-loop
-float t;
 while( true )
 {
     // sweep the cutoff
-    Math.sin(t) * 110 => Std.fabs => Std.mtof => f.freq;
-    // increment t
-    .005 +=> t;
+    Math.sin(now/second) * 110 => Math.fabs => Std.mtof => f.freq;
     // advance time
     5::ms => now;
 }
