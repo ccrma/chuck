@@ -481,7 +481,8 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
     {
         // problem finding audio devices, most likely
         EM_error2( 0, "%s", err.getMessage().c_str() );
-        return m_init = FALSE;
+        // clean up
+        goto error;
     }
         
     // convert 1-based ordinal to 0-based ordinal (added 1.3.0.0)
@@ -528,7 +529,8 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
                 {
                     EM_error2( 0, "no audio output device with requested channel count (%i)...",
                                m_num_channels_out );
-                    return m_init = FALSE;
+                    // clean up
+                    goto error;
                 }
             }
         }
@@ -574,7 +576,8 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
                 // request sample rate not found, error out
                 EM_error2( 0, "unsupported sample rate (%d) requested...", sample_rate );
                 EM_error2( 0, "| (try --probe to enumerate available sample rates)" );
-                return m_init = FALSE;
+                // clean up
+                goto error;
             }
 
             // use next highest if available
@@ -687,7 +690,8 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
                     // problem finding audio devices, most likely
                     // EM_error2( 0, "unable to find audio input device with requested channel count (%i)...",
                     //               m_num_channels_in);
-                    // return m_init = FALSE;
+                    // clean up
+                    // goto error;
                 }
             }
         }
@@ -732,7 +736,8 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
         EM_log( CK_LOG_INFO, "exception caught: '%s'...", err.getMessage().c_str() );
         EM_error2( 0, "%s", err.getMessage().c_str() );
         SAFE_DELETE( m_rtaudio );
-        return m_init = FALSE;
+        // clean up
+        goto error;
     }
         
     // check bufsize
@@ -758,7 +763,15 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
     memset( m_buffer_in, 0, m_buffer_size * sizeof(SAMPLE) * m_num_channels_max );
     memset( m_buffer_out, 0, m_buffer_size * sizeof(SAMPLE) * m_num_channels_max );
 
+    // set flag and return
     return m_init = TRUE;
+    
+// handle common error case (added 1.4.0.2)
+error:
+    // pop log indent (added 1.4.0.2)
+    EM_poplog();
+    // set flag and return
+    return m_init = FALSE;
 }
 
 

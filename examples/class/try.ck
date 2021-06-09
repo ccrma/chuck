@@ -7,6 +7,8 @@
 //       1. we will have better dependency/include system
 //       2. we can extend Dinky from UGen, so we don't have 
 //          to use a 'connect( UGen )' function in Dinky
+// NOTE: the above (#2) is now possible using Chugraphs!
+//       check out: extend/chugraph.ck
 
 // instantiate a Dinky (not connected yet)
 Dinky imp;

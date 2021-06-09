@@ -1,4 +1,3 @@
-
 char bytes[1024];
 
 void setup()
@@ -13,4 +12,3 @@ void loop()
   if(nRead > 0)
     Serial.println("bar");
 }
-

@@ -1,4 +1,4 @@
-// dct.ck: taking DCT via upchcuk, printing the spectrum
+// dct.ck: taking DCT via upchuck, printing the spectrum
 // authors: Rebecca Fiebrink and Ge Wang
 
 // our patch

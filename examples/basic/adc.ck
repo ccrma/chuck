@@ -1,7 +1,7 @@
 // mic-in to audio out
 
 // the patch
-adc => dac;
+adc => Gain g => dac;
 
 // infinite time-loop
 while( true )

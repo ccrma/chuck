@@ -1,4 +1,4 @@
-// 17.ck : partial array
+// partial array (17.ck)
 
 // declare int array 2x2
 int x[2][2];

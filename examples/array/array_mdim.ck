@@ -1,4 +1,4 @@
-// 15.ck : multi-dimensional array instantiation
+// multi-dimensional array instantiation (15.ck)
 
 // delcare int array 2x2x2
 int a[2][2][2];
@@ -11,4 +11,5 @@ float b[2][2][2];
 [ [1,2], [3,4] ] @=> int c[][];
 
 // test
-if( a[1][1][1] == 5 && b[1][1][1] == 5.0 && c[0][1] == 2 ) <<<"success">>>;
+if( a[1][1][1] == 5 && b[1][1][1] == 5.0 && c[0][1] == 2 )
+    <<<"success">>>;

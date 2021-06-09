@@ -1,23 +1,29 @@
-
+// serial IO list
 SerialIO.list() @=> string list[];
-
-for(int i; i < list.size(); i++)
+// print list
+for( int i; i < list.size(); i++ )
 {
     chout <= i <= ": " <= list[i] <= IO.newline();
 }
 
+// serial io
 SerialIO cereal;
-cereal.open(0, SerialIO.B9600, SerialIO.BINARY);
+// open serial
+cereal.open( 0, SerialIO.B9600, SerialIO.BINARY );
 
-while(true)
+// infinite time-loop
+while( true )
 {
+    // wait on bytes
     cereal.onBytes(4) => now;
+    // get bytes
     cereal.getBytes() @=> int bytes[];
+    // print
     chout <= "bytes: ";
-    for(int i; i < bytes.size(); i++)
+    for( int i; i < bytes.size(); i++ )
     {
         chout <= bytes[i] <= " ";
     }
-    
+    // output endline
     chout <= IO.newline();
 }

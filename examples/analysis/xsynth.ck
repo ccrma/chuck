@@ -1,7 +1,8 @@
 // really really bad cross synthesizer...
 
-// our patch
+// source one (mic)
 adc => FFT X => blackhole;
+// source two (to be connected below)
 FFT Y => blackhole;
 // synthesis
 IFFT ifft => dac;
@@ -30,14 +31,14 @@ complex Z[FFT_SIZE/2];
 // control loop
 while( true )
 {
-    // take fft
+    // take ffts
     X.upchuck();
     Y.upchuck();
     
-    // multiply
+    // multiply in frequency domain
     for( int i; i < X.size()/2; i++ )
         Math.sqrt((Y.cval(i)$polar).mag) * X.cval(i) => Z[i];
-        //2 * Y.cval(i) * X.cval(i) => Z[i];
+        // 2 * Y.cval(i) * X.cval(i) => Z[i];
     
     // take ifft
     ifft.transform( Z );
