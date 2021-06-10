@@ -1,33 +1,70 @@
-#ifdef __ANDROID__
+/*----------------------------------------------------------------------------
+ ChucK Concurrent, On-the-fly Audio Programming Language
+ Compiler and Virtual Machine
+ 
+ Copyright (c) 2004 Ge Wang and Perry R. Cook.  All rights reserved.
+   http://chuck.stanford.edu/
+   http://chuck.cs.princeton.edu/
+ 
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ U.S.A.
+ -----------------------------------------------------------------------------*/
 
-#include "chuck_android.h"
+//-----------------------------------------------------------------------------
+// name: util_platforms.cpp
+// desc: platform-specific utilities, e.g., tmpfile() for Android etc.
+//
+// author: Andriy Kunitsyn (kunitzin@gmail.com) original ChuckAndroid
+//         Ge Wang (https://ccrma.stanford.edu/~ge/) added util_platforms.*
+// date: Summer 2021
+//-----------------------------------------------------------------------------
+#include "util_platforms.h"
+
+
+
+
+//-----------------------------------------------------------------------------
+#ifdef __ANDROID__
+//-----------------------------------------------------------------------------
 #include <jni.h>
 #include <cassert>
 #include <memory>
 #include <functional>
 
-static JavaVM *jvm_instance = NULL;
+static JavaVM * jvm_instance = NULL;
 
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
+JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM * vm, void * reserved )
 {
     jvm_instance = vm;
 
     return JNI_VERSION_1_6;
 }
 
-JavaVM *ChuckAndroid::getJVM()
+JavaVM * ChuckAndroid::getJVM()
 {
     return jvm_instance;
 }
 
-FILE *ChuckAndroid::getTemporaryFile()
+FILE * ChuckAndroid::getTemporaryFile()
 {
-    JavaVM *jvm = getJVM();
+    JavaVM * jvm = getJVM();
     if( !jvm )
     {
         return NULL;
     }
-    JNIEnv* env = NULL;
+    JNIEnv * env = NULL;
     bool needs_detaching = false;
     int reason = jvm->GetEnv((void **)&env, JNI_VERSION_1_6);
     if( reason != JNI_OK && reason != JNI_EDETACHED )
