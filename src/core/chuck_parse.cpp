@@ -94,20 +94,22 @@ FILE *win32_tmpfile()
 
 
 
+
 //-----------------------------------------------------------------------------
 // name: android_tmpfile()
 // desc: replacement for broken tmpfile() on Android
 //-----------------------------------------------------------------------------
 #ifdef __ANDROID__
 
-#include "chuck_android.h"
+#include "util_platforms.h"
 
-FILE *android_tmpfile()
+FILE * android_tmpfile()
 {
     return ChuckAndroid::getTemporaryFile();
 }
 
 #endif
+
 
 
 
