@@ -50,6 +50,11 @@
     mariobuoninfante for help in addressing this)
   - (fixed) reset Gen10 table to allow add/remove partials; thanks to 
     mariobuoninfant
+  - (fixed) updated MidiOut and removed check in order to allow messages
+    of size less than or greater than 3 bytes; thanks to mariobuoninfante
+    for this issue report on Ubuntu Studio 64-bit; this fix addresses
+    the sending of MIDI clock, stop, continue, and SysEx -- also thank 
+    you mariobuoninfante for the fix.
   - (deprecated) Chubgraph => (new) Chugraph;
     Chubgraph will continue to function, with a deprecation warning.
   - (documentation) updated embedded documentation text for all statically
