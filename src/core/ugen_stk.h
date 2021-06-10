@@ -433,6 +433,7 @@ public:
   MY_FLOAT sustainLevel;
   MY_FLOAT releaseRate;
   // chuck
+  MY_FLOAT m_attackTime; // 1.4.0.2
   MY_FLOAT m_decayTime;
   MY_FLOAT m_releaseTime;
 };

@@ -4873,15 +4873,22 @@ struct SKINISpec skini_msgs[__SK_MaxMsgTypes_] =
 
 ADSR :: ADSR() : Envelope()
 {
-  target = (MY_FLOAT) 0.0;
-  value = (MY_FLOAT) 0.0;
-  attackRate = (MY_FLOAT) 0.001;
-  decayRate = (MY_FLOAT) 0.001;
-  sustainLevel = (MY_FLOAT) 0.5;
-  releaseRate = (MY_FLOAT) 0.01;
-  m_decayTime = (MY_FLOAT) -1.0; // not used
-  m_releaseTime = (MY_FLOAT) -1.0; // not used
-  state = DONE;
+    target = (MY_FLOAT) 0.0;
+    value = (MY_FLOAT) 0.0;
+    attackRate = (MY_FLOAT) 0.001;
+    decayRate = (MY_FLOAT) 0.001;
+    sustainLevel = (MY_FLOAT) 0.5;
+    releaseRate = (MY_FLOAT) 0.01;
+    state = DONE;
+    // chuck
+    m_attackTime = (MY_FLOAT) -1.0; // 1.4.0.2 (thanks mariobuoninfante)
+    m_decayTime = (MY_FLOAT) -1.0;
+    m_releaseTime = (MY_FLOAT) -1.0;
+
+    // initialize times to default rates | 1.4.0.2
+    setAttackRate( attackRate );
+    setDecayRate( decayRate );
+    setReleaseRate( releaseRate );
 }
 
 ADSR :: ~ADSR()
@@ -4890,214 +4897,267 @@ ADSR :: ~ADSR()
 
 void ADSR :: keyOn()
 {
-  target = (MY_FLOAT) 1.0;
-  rate = attackRate;
-  state = ATTACK;
+    target = (MY_FLOAT)1.0;
+    rate = attackRate;
+    state = ATTACK;
 }
 
 void ADSR :: keyOff()
 {
-  // chuck
-  if( m_releaseTime > 0 )
-  {
-      // in case release triggered before sustain
-      rate = value / (m_releaseTime * Stk::sampleRate());
-  }
-  else
-  {
-      // rate was set
-      rate = releaseRate;
-  }
+    // chuck
+    if( m_releaseTime > 0 )
+    {
+        // in case release triggered before sustain
+        rate = value / (m_releaseTime * Stk::sampleRate());
+    }
+    else
+    {
+        // rate was set
+        rate = releaseRate;
+    }
 
-  target = (MY_FLOAT) 0.0;
-  state = RELEASE;
+    target = (MY_FLOAT)0.0;
+    state = RELEASE;
 }
 
 void ADSR :: setAttackRate(MY_FLOAT aRate)
 {
-  if (aRate < 0.0) {
-    printf("[chuck](via ADSR): negative rates not allowed ... correcting!\n");
-    attackRate = -aRate;
-  }
-  else attackRate = aRate;
+    // sanity check
+    if( aRate == 0.0 )
+    {
+        printf("[chuck](via ADSR): zero attack rate ... ignoring!\n");
+        return;
+    }
+    
+    if (aRate < 0.0) {
+        printf("[chuck](via ADSR): negative rates not allowed ... correcting!\n");
+        attackRate = -aRate;
+    }
+    else attackRate = aRate;
+    
+    // 1.4.0.2 (thanks mariobuoninfante)
+    m_attackTime = 1 / (aRate * Stk::sampleRate());
 }
 
 void ADSR :: setDecayRate(MY_FLOAT aRate)
 {
-  if (aRate < 0.0) {
-    printf("[chuck](via ADSR): negative rates not allowed ... correcting!\n");
-    decayRate = -aRate;
-  }
-  else decayRate = aRate;
+    // sanity check
+    if( aRate == 0.0 )
+    {
+        printf("[chuck](via ADSR): zero decay rate ... ignoring!\n");
+        return;
+    }
 
-  // chuck
-  m_decayTime = -1.0;
+    if (aRate < 0.0) {
+        printf("[chuck](via ADSR): negative rates not allowed ... correcting!\n");
+        decayRate = -aRate;
+    }
+    else decayRate = aRate;
+
+    // 1.4.0.2 changed from -1.0 (thanks mariobuoninfante)
+    m_decayTime = 1 / (aRate * Stk::sampleRate());
 }
 
 void ADSR :: setSustainLevel(MY_FLOAT aLevel)
 {
-  if (aLevel < 0.0 ) {
-    printf("[chuck](via ADSR): sustain level out of range ... correcting!\n");
-    sustainLevel = (MY_FLOAT) 0.0;
-  }
-  else sustainLevel = aLevel;
-
-  // chuck: need to recompute decay and release rates
-  if( m_decayTime > 0.0 ) setDecayTime( m_decayTime );
-  if( m_releaseTime > 0.0 ) setReleaseTime( m_releaseTime );
+    if (aLevel < 0.0 ) {
+        printf("[chuck](via ADSR): sustain level out of range ... correcting!\n");
+        sustainLevel = (MY_FLOAT) 0.0;
+    }
+    else {
+        sustainLevel = aLevel;
+    }
+    
+    // chuck: need to recompute decay and release rates
+    if( m_decayTime > 0.0 ) setDecayTime( m_decayTime );
+    if( m_releaseTime > 0.0 ) setReleaseTime( m_releaseTime );
 }
 
 void ADSR :: setReleaseRate(MY_FLOAT aRate)
 {
-  if (aRate < 0.0) {
-    printf("[chuck](via ADSR): negative rates not allowed ... correcting!\n");
-    releaseRate = -aRate;
-  }
-  else releaseRate = aRate;
+    // sanity check
+    if( aRate == 0.0 )
+    {
+        printf("[chuck](via ADSR): zero release rate ... ignoring!\n");
+        return;
+    }
 
-  // chuck
-  m_releaseTime = -1.0;
+    if (aRate < 0.0) {
+        printf("[chuck](via ADSR): negative rates not allowed ... correcting!\n");
+        releaseRate = -aRate;
+    }
+    else {
+        releaseRate = aRate;
+    }
+    
+    // chuck (thanks mariobuoninfante)
+    m_releaseTime = 1 / (aRate * Stk::sampleRate());
 }
 
 void ADSR :: setAttackTime(MY_FLOAT aTime)
 {
-  if (aTime < 0.0) {
-    printf("[chuck](via ADSR): negative rates not allowed ... correcting!\n");
-    attackRate = 1.0 / ( -aTime * Stk::sampleRate() );
-  }
-  else attackRate = 1.0 / ( aTime * Stk::sampleRate() );
+    if( aTime < 0.0 ) {
+        printf("[chuck](via ADSR): negative rates not allowed ... correcting!\n");
+        attackRate = 1.0 / ( -aTime * Stk::sampleRate() );
+    }
+    else {
+        attackRate = 1.0 / ( aTime * Stk::sampleRate() );
+    }
+    
+    // added 1.4.0.2 (thanks mariobuoninfante)
+    m_attackTime = aTime;
 }
 
 void ADSR :: setDecayTime(MY_FLOAT aTime)
 {
-  if (aTime < 0.0) {
-    printf("[chuck](via ADSR): negative times not allowed ... correcting!\n");
-    // chuck: compute rate for 1.0 to sustain
-    decayRate = (1.0 - sustainLevel) / ( -aTime * Stk::sampleRate() );
-  }
-  else if( aTime == 0.0 ) {
-    // printf("[chuck](via ADSR): zero decay time not allowed ... correcting!\n");
-    decayRate = FLT_MAX; // a big number
-  }
-  else decayRate = (1.0 - sustainLevel) / ( aTime * Stk::sampleRate() );
+    // check for negative
+    if (aTime < 0.0) {
+        printf("[chuck](via ADSR): negative times not allowed ... correcting!\n");
+        aTime = -aTime;
+    }
+  
+    // check for zero
+    if( aTime == 0.0 ) {
+        // printf("[chuck](via ADSR): zero decay time not allowed ... correcting!\n");
+        decayRate = FLT_MAX; // a big number
+    }
+    else {
+        // chuck: compute rate for 1.0 to sustain
+        decayRate = (1.0 - sustainLevel) / (aTime * Stk::sampleRate());
+    }
 
-  // chuck
-  m_decayTime = aTime;
+    // chuck
+    m_decayTime = aTime;
 }
 
 void ADSR :: setReleaseTime(MY_FLOAT aTime)
 {
-  if (aTime < 0.0) {
-    printf("[chuck](via ADSR): negative times not allowed ... correcting!\n");
-    releaseRate = sustainLevel / ( -aTime * Stk::sampleRate() );
-  }
-  else releaseRate = sustainLevel / ( aTime * Stk::sampleRate() );
+    // check for negative
+    if (aTime < 0.0) {
+        printf("[chuck](via ADSR): negative times not allowed ... correcting!\n");
+        aTime = -aTime;
+    }
+    
+    // check for zero
+    if( aTime == 0.0 ) {
+        // printf("[chuck](via ADSR): zero release time not allowed ... correcting!\n");
+        releaseRate = FLT_MAX; // a big number
+    }
+    else {
+        releaseRate = sustainLevel / ( aTime * Stk::sampleRate() );
+    }
 
-  // chuck
-  m_releaseTime = aTime;
+    // chuck
+    m_releaseTime = aTime;
 }
 
-// chuck
-MY_FLOAT ADSR :: getAttackTime() { return 1.0 / (attackRate*Stk::sampleRate()); }
-MY_FLOAT ADSR :: getDecayTime()
-{ return (1.0 - sustainLevel) / (decayRate*Stk::sampleRate()); }
-MY_FLOAT ADSR :: getReleaseTime()
-{ return sustainLevel / (releaseRate*Stk::sampleRate()); }
+// chuck | 1.4.0.2 update (thanks mariobuoninfante)
+MY_FLOAT ADSR :: getAttackTime() { return m_attackTime; }
+// { return 1.0 / (attackRate*Stk::sampleRate()); }
+MY_FLOAT ADSR :: getDecayTime() { return m_decayTime; }
+// { return (1.0 - sustainLevel) / (decayRate*Stk::sampleRate()); }
+MY_FLOAT ADSR :: getReleaseTime() { return m_releaseTime; }
+// { return sustainLevel / (releaseRate*Stk::sampleRate()); }
 
 void ADSR :: setAllTimes(MY_FLOAT aTime, MY_FLOAT dTime, MY_FLOAT sLevel, MY_FLOAT rTime)
 {
-  this->setAttackTime(aTime);
-  this->setDecayTime(dTime);
-  this->setSustainLevel(sLevel);
-  this->setReleaseTime(rTime);
+    // set this first, as decay and release rates depends on sustain level
+    this->setSustainLevel(sLevel);
+    // set the rest
+    this->setAttackTime(aTime);
+    this->setDecayTime(dTime);
+    this->setReleaseTime(rTime);
 }
 
 void ADSR :: setTarget(MY_FLOAT aTarget)
 {
-  target = aTarget;
-  if (value < target) {
-    state = ATTACK;
-    this->setSustainLevel(target);
-    rate = attackRate;
-  }
-  if (value > target) {
-    this->setSustainLevel(target);
-    state = DECAY;
-    rate = decayRate;
-  }
+    target = aTarget;
+    if (value < target) {
+        state = ATTACK;
+        this->setSustainLevel(target);
+        rate = attackRate;
+    } // 1.4.0.2 (ge): I don't understand this logic;
+      // what if value > target but we are still in the attack?
+    if (value > target) {
+        this->setSustainLevel(target);
+        state = DECAY;
+        rate = decayRate;
+    }
 }
 
 void ADSR :: setValue(MY_FLOAT aValue)
 {
-  state = SUSTAIN;
-  target = aValue;
-  value = aValue;
-  this->setSustainLevel(aValue);
-  rate = (MY_FLOAT)0.0;
+    state = SUSTAIN;
+    target = aValue;
+    value = aValue;
+    this->setSustainLevel(aValue);
+    rate = (MY_FLOAT)0.0;
 }
 
 int ADSR :: getState(void) const
 {
-  return state;
+    return state;
 }
 
 MY_FLOAT ADSR :: tick()
 {
-  switch(state)
-  {
-  case ATTACK:
-    value += rate;
-    if (value >= target)
+    switch(state)
     {
-      value = target;
-      rate = decayRate;
-      target = sustainLevel;
-      state = DECAY;
-
-      // TODO: check this
-      if( decayRate >= FLT_MAX ) // big number
-      {
-          // go directly to sustain;
-          state = SUSTAIN;
-          value = sustainLevel;
-          rate = 0.0;
-      }
+        case ATTACK:
+            value += rate;
+            
+            // check if we reached/overshot the goal
+            if( m_attackTime <= 0 || value >= target )
+            {
+                state = DECAY;
+                value = target;
+                target = sustainLevel;
+                rate = decayRate;
+                
+                // 1.4.0.2
+                // if( m_decayTime <= 0 ) // if( decayRate >= FLT_MAX ) // big number
+                // {
+                //     // go directly to sustain;
+                //     state = SUSTAIN;
+                //     value = sustainLevel;
+                //     rate = (MY_FLOAT)0.0;
+                // }
+            }
+            break;
+            
+        case DECAY:
+            value -= rate;
+            
+            // check if we reached/overshot the goal
+            if( m_decayTime <= 0 || value <= sustainLevel )
+            {
+                state = SUSTAIN;
+                value = sustainLevel;
+                rate = (MY_FLOAT)0.0;
+            }
+            break;
+            
+        case RELEASE:
+            // chuck
+            value -= rate;
+            
+            // check if we reached/overshot the goal
+            if( m_releaseTime <= 0 || value <= 0.0 )
+            {
+                state = DONE;
+                value = (MY_FLOAT)0.0;
+            }
     }
-    break;
-
-  case DECAY:
-    value -= decayRate;
-    if (value <= sustainLevel)
-    {
-      value = sustainLevel;
-      rate = (MY_FLOAT) 0.0;
-      state = SUSTAIN;
-    }
-    break;
-
-  case RELEASE:
-    // WAS:
-    // value -= releaseRate;
-
-    // chuck
-    value -= rate;
-
-    if (value <= 0.0)
-    {
-      value = (MY_FLOAT) 0.0;
-      state = DONE;
-    }
-  }
-
-  return value;
+    
+    return value;
 }
 
-MY_FLOAT *ADSR :: tick(MY_FLOAT *vec, unsigned int vectorSize)
+MY_FLOAT * ADSR :: tick(MY_FLOAT *vec, unsigned int vectorSize)
 {
-  for (unsigned int i=0; i<vectorSize; i++)
-    vec[i] = tick();
+    for ( t_CKUINT i= 0 ; i < vectorSize; i++ )
+        vec[i] = tick();
 
-  return vec;
+    return vec;
 }
 
 
@@ -6669,7 +6729,7 @@ Bowed :: Bowed(MY_FLOAT lowestFrequency)
 
   adsr = new ADSR;
   adsr->setAllTimes((MY_FLOAT) 0.02,(MY_FLOAT) 0.005,(MY_FLOAT) 0.9,(MY_FLOAT) 0.01);
-    
+
   betaRatio = (MY_FLOAT)0.127236;
 
   // Necessary to initialize internal variables.
@@ -23093,10 +23153,13 @@ CK_DLL_CTRL( ADSR_ctrl_set )
     t_CKFLOAT d = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT s = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT r = GET_NEXT_FLOAT(ARGS);
-    e->setAttackTime( a );
-    e->setDecayTime( d );
-    e->setSustainLevel( s );
-    e->setReleaseTime( r );
+
+    // 1.4.0.2 calling this aggregate function
+    e->setAllTimes( a, d, s, r );
+    // e->setAttackTime( a );
+    // e->setDecayTime( d );
+    // e->setSustainLevel( s );
+    // e->setReleaseTime( r );
 }
 
 
