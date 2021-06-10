@@ -45,6 +45,9 @@
   - (fixed) resolved a bug with SndBuf where it could output DC when .rate < 0
     after it reaches the beginning of the file (e.g., if the first sample is
     non-zero)
+  - (fixed) resolved a bug in ADSR when sustain is set to 0 and audio stops,
+    .releaseTime return NaN and basically the world ends (thanks to
+    mariobuoninfante for help in addressing this)
   - (deprecated) Chubgraph => (new) Chugraph;
     Chubgraph will continue to function, with a deprecation warning.
   - (documentation) updated embedded documentation text for all statically
