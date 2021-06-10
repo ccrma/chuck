@@ -48,6 +48,8 @@
   - (fixed) resolved a bug in ADSR when sustain is set to 0 and audio stops,
     .releaseTime return NaN and basically the world ends (thanks to
     mariobuoninfante for help in addressing this)
+  - (fixed) reset Gen10 table to allow add/remove partials; thanks to 
+    mariobuoninfant
   - (deprecated) Chubgraph => (new) Chugraph;
     Chubgraph will continue to function, with a deprecation warning.
   - (documentation) updated embedded documentation text for all statically
