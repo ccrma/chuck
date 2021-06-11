@@ -3,7 +3,7 @@
 ChucK is a strongly-typed language, meaning that types are resolved at compile-time. However, it is not quite statically-typed, because the compiler/type system is a part of the ChucK virtual machine, and is a runtime component. This type system helps to impose precision and clarity in the code, and naturally lends to organization of complex programs. At the same time, it is also dynamic in that changes to the type system can take place (in a well-defined manner) at runtime. This dynamic aspect forms the basis for on-the-fly programming.
 
 This section deals with types, values, and the declaration and usage of variables. As in other strongly-typed programming languages, we can think of a type as associated behaviors of data. (For example, an 'int' is a type that means integer, and adding two integer is defined to produce a third integer representing the sum.) Classes and objects allow us to extend the type system with our own custom types, but we won't cover them in this section. We will focus mainly on primitive types here, and leave the discussion of more complex types for classes and objects.
- 
+
 \section{primitive types}
 
 The primitive, or intrinsic types are those which are simple datatypes (they have no additional data attributes). Objects are not primitive types. Primitive types are passed by value. Primitive types cannot be extended. The primitive types in ChucK are:
@@ -17,7 +17,7 @@ The primitive, or intrinsic types are those which are simple datatypes (they hav
 For a summary of operations on these types, go to operations and operators.
 
 All other types are derived from 'object', either as part of the ChucK standard library, or as a new class that you create. For specification, go to classes and objects.
- 
+
 
 \section{values (literals)}
 
@@ -35,7 +35,7 @@ float:
 dur:
 \chuckterm{5.5::second}
  In the above code, second is an existing duration variable. For more on durations, see the manipulating time section.
- 
+
 
 \section{variables}
 
@@ -88,7 +88,7 @@ Once you have bar, you can inductively use it to construct new durations:
 \end{verbatim}
 
  Since time is central to programming ChucK, it is important to understand time, dur, the relationship and operations between them. There is more information in the manipulating time section.
- 
+
 \section{reference types}
 
 Reference types are types which inherit from the object class. Some default reference types include:
@@ -151,4 +151,229 @@ added/assigned/etc.:
  #(3, 4) => complex cmp;
  pol $ complex + #(10, 3) + cmp => complex cmp2;
  cmp $ polar + %(10, .25*pi) - pol => polar pol2;
+\end{verbatim}
+
+\section{vector types}
+
+Currently there are two vector types in ChucK:
+
+\begin{chuckitemize}
+\item  vec3 : 3 term vector object
+\item  vec4 : 4 term vector object
+\end{chuckitemize}
+
+vec3:
+
+This object type was designed to encaplsulate a starting value, a target value
+and a slew rate to approach the target value.  These values correspond to the x,
+y, and z components respectively.  The x component, however, will not remain at
+the initialized value, but will be updated at the slew rate as it progresses
+towards the target value.
+
+A vec3 object can be initiallized by ChucKing an array:
+\begin{verbatim}
+@(2,1,3) => vec3 v;
+\end{verbatim}
+
+Once values are set, the component values can be accessed using the following:
+\begin{verbatim}
+@(2,1,3) => vec3 v;
+// print values of vec3 v as initialized:
+<<< v.x, v.y, v.z >>>;
+\end{verbatim}
+
+A vector can be fully set by calling the .set member function with all 3 values
+supplied as the arguments:
+\begin{verbatim}
+vec3 v;
+v.set(2,1,3);
+// or using the following syntax
+(2,1,3) => v.set;
+\end{verbatim}
+
+The .update member function can accept 1 or 2 arguments.  If a single argument
+is provided, then the target value will be updated to the new value:
+\begin{verbatim}
+@(2,1,3) => vec3 v;
+<<< v.x, v.y, v.z >>>;
+// output should be 2 1 3
+9 => v.update;
+<<< v.x, v.y, v.z >>>;
+// output should be 2 9 4
+\end{verbatim}
+
+Providing 2 arguments to .update will set the target and slew respectively:
+\begin{verbatim}
+@(2,1,3) => vec3 v;
+<<< v.x, v.y, v.z >>>;
+// output should be 2 1 3
+(7,13) => v.update;
+<<< v.x, v.y, v.z >>>;
+// output should be 2 7 13
+\end{verbatim}
+
+Member values can be accessed directly as indicated in the above examples by
+using .x, .y and .z.  These values are available for both set and get operations:
+\begin{verbatim}
+@(2,1,3) => vec3 v;
+<<< v.x, v.y, v.z >>>;
+// output should be 2 1 3
+7 => v.y;
+<<< v.x, v.y, v.z >>>;
+// output should be 2 7 3
+\end{verbatim}
+
+The magnitude of the vector can be obtained using the .magnitude member function.
+This value is derived from the square root of (v.x^2 + v.y^2 + v.z^2):
+\begin{verbatim}
+@(2,1,3) => vec3 v;
+<<< v.magnitude() >>>;
+// output should be 3.741657
+\end{verbatim}
+
+The vector can be normalized to a unit vector by dividing each component by the
+vector's magnitude.  The .normalize function performs this in place altering the
+vec3 components.
+\begin{verbatim}
+@(2,1,3) => vec3 v;
+v.normalize();
+<<< v.x, v.y, v.z >>>;
+// output should be 0.534522 0.267261 0.801784
+\end{verbatim}
+
+Addition of vectors can be performed utilizing a standard + operator:
+\begin{verbatim}
+@(1,2,3) => vec3 v1;
+@(4,5,6) => vec3 v2;
+vec3 v3;
+v1 + v2 => v3;
+<<< v3.x, v3.y, v3.z >>>;
+// output should be 5.000000 7.000000 9.000000
+\end{verbatim}
+
+Subtraction of vectors can be performed utilizing a standard - operator:
+\begin{verbatim}
+@(1,2,3) => vec3 v1;
+@(7,6,5) => vec3 v2;
+vec3 v3;
+v2 - v1 => v3;
+<<< v3.x, v3.y, v3.z >>>;
+// output should be 6.000000 4.000000 2.000000
+\end{verbatim}
+
+Cross product of vectors can be performed utilizing a standard * operator:
+\begin{verbatim}
+@(1,2,3) => vec3 v1;
+@(7,6,5) => vec3 v2;
+vec3 v3;
+v2 * v1 => v3;
+<<< v3.x, v3.y, v3.z >>>;
+// output should be 8.000000 -16.000000 8.000000
+\end{verbatim}
+
+The values in the vector can be scaled by a scaler value using the * operator
+as well.
+\begin{verbatim}
+@(1,2,3) => vec3 v1;
+5 * v1 => vec3 v2;
+<<< v2.x, v2.y, v2.z >>>;
+// output should be 5.000000 10.000000 15.000000
+\end{verbatim}
+
+
+vec4:
+
+This object type was designed to encaplsulate a 4 value vector.  The vec4 object
+has 3 member functions: .set, .magnitude and .normalize.  It was not designed to
+track changes over time like the vec3 object.
+
+A vec3 object can be initiallized by ChucKing an array:
+\begin{verbatim}
+@(2,1,3,5) => vec4 v;
+\end{verbatim}
+
+Once values are set, the component values can be accessed using the following:
+\begin{verbatim}
+@(2,1,3,5) => vec4 v;
+// print values of vec4 v as initialized:
+<<< v.x, v.y, v.z, v.w >>>;
+\end{verbatim}
+
+A vector can be fully set by calling the .set member function with all 3 values
+supplied as the arguments:
+\begin{verbatim}
+vec4 v;
+v.set(2,1,3,5);
+// or using the following syntax
+(2,1,3,5) => v.set;
+\end{verbatim}
+
+
+Member values can be accessed directly as indicated in the above examples by
+using .x, .y, .z and .w.  These values are available for both set and get
+operations:
+\begin{verbatim}
+@(2,1,3,5) => vec4 v;
+<<< v.x, v.y, v.z, v.w >>>;
+// output should be 2 1 3 5
+7 => v.y;
+<<< v.x, v.y, v.z, v.w >>>;
+// output should be 2 7 3 5
+\end{verbatim}
+
+The magnitude of the vector can be obtained using the .magnitude member function.
+This value is derived from the square root of (v.x^2 + v.y^2 + v.z^2 + v.w^2):
+\begin{verbatim}
+@(2,1,3,5) => vec4 v;
+<<< "magnitude: ", v.magnitude() >>>;
+// output should be magnitude: 6.244998
+\end{verbatim}
+
+The vector can be normalized to a unit vector by dividing each component by the
+vector's magnitude.  The .normalize function performs this in place altering the
+vec4 components.
+\begin{verbatim}
+@(2,1,3,5) => vec4 v;
+v.normalize();
+<<< v.x, v.y, v.z, v.w >>>;
+// output should be 0.320256 0.160128 0.480384 0.800641
+\end{verbatim}
+
+Addition of vectors can be performed utilizing a standard + operator:
+\begin{verbatim}
+@(1,2,3,4) => vec4 v1;
+@(5,6,7,8) => vec4 v2;
+vec4 v3;
+v1 + v2 => v3;
+<<< v3.x, v3.y, v3.z, v3.w >>>;
+// output should be 6.000000 8.000000 10.000000 12.000000
+\end{verbatim}
+
+Subtraction of vectors can be performed utilizing a standard - operator:
+\begin{verbatim}
+@(1,2,3,4) => vec4 v1;
+@(8,7,6,5) => vec4 v2;
+vec4 v3;
+v2 - v1 => v3;
+<<< v3.x, v3.y, v3.z, v3.w >>>;
+// output should be 7.000000 5.000000 3.000000 1.000000
+\end{verbatim}
+
+Cross product of vectors can be performed utilizing a standard * operator:
+\begin{verbatim}
+@(1,2,3,4) => vec4 v1;
+@(5,6,7,8) => vec4 v2;
+vec4 v3;
+v2 * v1 => v3;
+<<< v3.x, v3.y, v3.z, v3.w >>>;
+// output should be -4.000000 8.000000 -4.000000 0.000000
+\end{verbatim}
+
+The values in the vector can be scaled by a scaler value using the * operator
+as well.
+\begin{verbatim}
+@(1,2,3,4) => vec3 v1;
+5 * v1 => vec3 v2;
+<<< v2.x, v2.y, v2.z, v2.w >>>;
+// output should be 5.000000 10.000000 15.000000 20.000000
 \end{verbatim}
