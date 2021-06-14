@@ -399,11 +399,11 @@ t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type )
     func->doc = "signal all shreds that are waiting on this event.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add wait()
-    func = make_new_mfun( "void", "wait", event_wait );
-    func->add_arg( "Shred", "me" );
-    func->doc = "(currently unsupported)";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
+    // add wait() | commented out 1.4.0.2 (ge) -- it doesn't DO anything!!!
+    // func = make_new_mfun( "void", "wait", event_wait );
+    // func->add_arg( "Shred", "me" );
+    // func->doc = "(currently unsupported; use Event => now to wait on event)";
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add can_wait()
     func = make_new_mfun( "int", "can_wait", event_can_wait );
@@ -954,7 +954,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     // ---------
     // add cap()
     func = make_new_mfun( "int", "cap", array_get_capacity_hack );
-    func->doc = "for historical/compatibilty reasons, this is the same as .size(); it is recommended to explicitly use .size() or .capacity().";
+    func->doc = "(deprecated) For historical/compatibilty reasons, .cap() is always equal to .size(); instead of using .cap(), it is recommended to explicitly use .size() or .capacity().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add capacity() // 1.4.0.2
