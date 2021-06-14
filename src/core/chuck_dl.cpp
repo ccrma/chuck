@@ -576,12 +576,12 @@ Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query
 //-----------------------------------------------------------------------------
 t_CKBOOL CK_DLL_CALL ck_doc_class( Chuck_DL_Query * query, const char * doc )
 {
-#ifdef CK_DOC // disable unless CK_DOC
+// #ifdef CK_DOC // disable unless CK_DOC
     if(query->curr_class)
         query->curr_class->doc = doc;
     else
         return FALSE;
-#endif // CK_DOC
+// #endif // CK_DOC
     
     return TRUE;
 }
@@ -592,12 +592,12 @@ t_CKBOOL CK_DLL_CALL ck_doc_class( Chuck_DL_Query * query, const char * doc )
 //-----------------------------------------------------------------------------
 t_CKBOOL CK_DLL_CALL ck_add_example( Chuck_DL_Query * query, const char * ex )
 {
-#ifdef CK_DOC // disable unless CK_DOC
+// #ifdef CK_DOC // disable unless CK_DOC
     if(query->curr_class)
         query->curr_class->examples.push_back(ex);
     else
         return FALSE;
-#endif // CK_DOC
+// #endif // CK_DOC
     
     return TRUE;
 }
@@ -605,12 +605,12 @@ t_CKBOOL CK_DLL_CALL ck_add_example( Chuck_DL_Query * query, const char * ex )
 // set current function documentation
 t_CKBOOL CK_DLL_CALL ck_doc_func( Chuck_DL_Query * query, const char * doc )
 {
-#ifdef CK_DOC // disable unless CK_DOC
+// #ifdef CK_DOC // disable unless CK_DOC
     if(query->curr_func)
         query->curr_func->doc = doc;
     else
         return FALSE;
-#endif // CK_DOC
+// #endif // CK_DOC
     
     return TRUE;
 }
@@ -618,12 +618,12 @@ t_CKBOOL CK_DLL_CALL ck_doc_func( Chuck_DL_Query * query, const char * doc )
 // set last mvar documentation
 t_CKBOOL CK_DLL_CALL ck_doc_var( Chuck_DL_Query * query, const char * doc )
 {
-#ifdef CK_DOC // disable unless CK_DOC
+// #ifdef CK_DOC // disable unless CK_DOC
     if(query->last_var)
         query->last_var->doc = doc;
     else
         return FALSE;
-#endif // CK_DOC
+// #endif // CK_DOC
     
     return TRUE;
 }
