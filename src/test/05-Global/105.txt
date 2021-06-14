@@ -1,0 +1,3 @@
+first! at line 1
+line 3 has the magic number
+[./05-Global/105.ck:5] says hello
