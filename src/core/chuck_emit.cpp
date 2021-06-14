@@ -2899,6 +2899,30 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         {
             emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
         }
+        else if( exp->var == insert_symbol( "__LINE__" ) )
+        {
+            emit->append( new Chuck_Instr_Reg_Push_Imm( exp->linepos ) );
+        }
+        else if( exp->var == insert_symbol( "__FILE__" ) )
+        {
+            // CHECKME (ABL): this is a naive duplicate of the ae_primary_str
+            // case below, and so requires similar fixing.
+            str = new Chuck_String();
+            if( !str || !initialize_object( str, emit->env->t_string ) )
+            {
+                // error (TODO: why is this a SAFE_RELEASE and not SAFE_DELETE?)
+                SAFE_RELEASE( str );
+                // error out
+                CK_FPRINTF_STDERR(
+                    "[chuck](emitter): OutOfMemory: while allocating string literal for __FILE__\n" );
+                return FALSE;
+            }
+            str->set( emit->env->context->filename );
+            temp = (t_CKUINT)str;
+            emit->append( new Chuck_Instr_Reg_Push_Imm( temp ) );
+            // add reference for string literal (added 1.3.0.2)
+            str->add_ref();
+        }
         else if( exp->var == insert_symbol( "pi" ) )
         {
             double pi = 3.14159265358979323846;
