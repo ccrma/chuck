@@ -29,8 +29,8 @@
   - (added) examples/deep/chant.ck (by Perry Cook, 2006) -- a chant singing
     synthesizer that makes use of ChucK's strongly-time and concurrent
     programming features.
-  - (BEHAVIOR HANGED) clearly separated array.size() and array.capacity();
-    for historical/compatability reasons, array.cap() is the same as
+  - (BEHAVIOR CHANGED) clearly separated array.size() and array.capacity();
+    for historical/compatibility reasons, array.cap() is the same as
     array.size() and generally should be avoided in favor of either .size()
     or .capacity()
   - (BEHAVIOR CHANGED): when connecting two multi-channel UGen's (both
