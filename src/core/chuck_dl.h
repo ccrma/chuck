@@ -674,37 +674,36 @@ public:
     struct ObjectApi
     {
         ObjectApi();
-        
     private:
+        // function pointer get_type()
         Type (* const get_type)( CK_DL_API, Chuck_VM_Shred *, std::string &name );
-
+        // function pointer create()
         Object (* const create)( CK_DL_API, Chuck_VM_Shred *, Type type );
-        
+        // function pointer create_string()
         String (* const create_string)( CK_DL_API, Chuck_VM_Shred *, std::string &value );
-        
+        // function pointers for get_mvar_*()
         t_CKBOOL (* const get_mvar_int)( CK_DL_API, Object object, std::string &name, t_CKINT &value );
         t_CKBOOL (* const get_mvar_float)( CK_DL_API, Object object, std::string &name, t_CKFLOAT &value );
         t_CKBOOL (* const get_mvar_dur)( CK_DL_API, Object object, std::string &name, t_CKDUR &value );
         t_CKBOOL (* const get_mvar_time)( CK_DL_API, Object object, std::string &name, t_CKTIME &value );
         t_CKBOOL (* const get_mvar_string)( CK_DL_API, Object object, std::string &name, String &value );
         t_CKBOOL (* const get_mvar_object)( CK_DL_API, Object object, std::string &name, Object &value );
-        
+        // function pointer for set_string()
         t_CKBOOL (* const set_string)( CK_DL_API, String string, std::string &value );
-        
     } * const object;
     
     Api() :
-    vm(new VMApi),
-    object(new ObjectApi)
-    {}
+        vm(new VMApi),
+        object(new ObjectApi)
+    { }
     
 private:
-    Api(Api &a) :
-    vm(a.vm),
-    object(a.object)
+    Api( Api & a ) :
+        vm(a.vm),
+        object(a.object)
     { assert(0); };
     
-    Api &operator=(Api &a) { assert(0); return a; }
+    Api & operator=( Api & a ) { assert(0); return a; }
 };
 }
 

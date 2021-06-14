@@ -1238,7 +1238,6 @@ CK_DLL_MFUN( MidiFileIn_rewind );
 //-----------------------------------------------------------------------------
 DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
 {
-
     Chuck_Env * env = QUERY->env();
     Chuck_DL_Func * func = NULL;
 
