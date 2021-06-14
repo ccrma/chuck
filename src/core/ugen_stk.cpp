@@ -1238,7 +1238,6 @@ CK_DLL_MFUN( MidiFileIn_rewind );
 //-----------------------------------------------------------------------------
 DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
 {
-
     Chuck_Env * env = QUERY->env();
     Chuck_DL_Func * func = NULL;
 
@@ -23174,10 +23173,13 @@ CK_DLL_CTRL( ADSR_ctrl_set2 )
     t_CKDUR d = GET_NEXT_DUR(ARGS);
     t_CKFLOAT s = GET_NEXT_FLOAT(ARGS);
     t_CKDUR r = GET_NEXT_DUR(ARGS);
-    e->setAttackTime( a / Stk::sampleRate() );
-    e->setDecayTime( d / Stk::sampleRate() );
-    e->setSustainLevel( s );
-    e->setReleaseTime( r / Stk::sampleRate() );
+    
+    // 1.4.0.2 calling this aggregate function
+    e->setAllTimes( a/Stk::sampleRate(), d/Stk::sampleRate(), s, r/Stk::sampleRate() );
+    // e->setAttackTime( a / Stk::sampleRate() );
+    // e->setDecayTime( d / Stk::sampleRate() );
+    // e->setSustainLevel( s );
+    // e->setReleaseTime( r / Stk::sampleRate() );
 }
 
 

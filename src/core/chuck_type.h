@@ -655,11 +655,21 @@ protected:
     // this for str() and c_name() use only
     std::string ret;
 
-public:
-    // dump info to string
-    void apropos( std::string & output );
+public: // apropos | 1.4.0.2 (ge)
     // dump info to console
     void apropos();
+    // dump info to string
+    void apropos( std::string & output );
+
+protected: // apropos-related helper function
+    // dump top level info
+    void apropos_top( std::string & output, const std::string & prefix );
+    // dump info about functions
+    void apropos_funcs( std::string & output, const std::string & prefix, t_CKBOOL includeParent );
+    // dump info about vars
+    void apropos_vars( std::string & output, const std::string & prefix, t_CKBOOL includeParent );
+    // dump info about examples
+    void apropos_examples( std::string & output, const std::string & prefix );
 };
 
 
