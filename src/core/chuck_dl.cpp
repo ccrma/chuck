@@ -758,7 +758,11 @@ const Chuck_DL_Query * Chuck_DLL::query( )
         << CK_DLL_VERSION_GETMINOR(dll_version)
         << " in '"
         << m_filename
-        << "'";
+        << "' (ChucK host DL version: "
+        << CK_DLL_VERSION_MAJOR
+        << "."
+        << CK_DLL_VERSION_MINOR
+        << ")";
         
         m_last_error = oss.str();
         

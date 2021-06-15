@@ -4728,7 +4728,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     if( overflow_( shred->mem ) ) goto error_overflow;
 
     // call the function (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
-    f( mem_sp, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
+    f( func->base_type, mem_sp, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
     mem_sp -= push;
 
     // push the return
@@ -6301,10 +6301,14 @@ void Chuck_Instr_Dot_Static_Func::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 {
     // register stack pointer
     t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
-    
+
     // pop the type pointer
     pop_( sp, 1 );
-    
+    // get the type | 1.4.0.2 (ge) added to support static apropos()
+    Chuck_Type * type = (Chuck_Type *)(*sp);
+    // set the type into the func code
+    m_func->code->base_type = type;
+
     // push the address
     push_( sp, (t_CKUINT)(m_func) );
 }

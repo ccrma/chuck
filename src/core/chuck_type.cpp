@@ -6676,6 +6676,14 @@ void Chuck_Type::apropos( std::string & output )
     Chuck_Type * type = this;
     // only the first
     t_CKBOOL inherited = FALSE;
+    // handle arrays special
+    if( this->array_type )
+    {
+        // skip current one, which extend @array to avoid printing duplicates
+        type = type->parent;
+        // yes to inherited
+        inherited = TRUE;
+    }
     // got something
     while( type )
     {
@@ -6763,20 +6771,21 @@ void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
     // type
     Chuck_Type * type = this;
     // name str
-    string nameStr = str() + (this->ugen_info ? " (unit generator)" : "");
+    string nameStr = "* " + str() + (this->ugen_info ? " (unit generator)" : "")
+        + (this->array_type ? " (" + this->name + " array)" : "") + " *";
     
     //-------------------------------------------------------------------------
     // top level info: name, inheritane, description
     //-------------------------------------------------------------------------
     // delimiter
     sout << PREFIX;
-    for( int i = 0; i < nameStr.length(); i++ ) sout << "-";
+    for( int i = 0; i < nameStr.length(); i++ ) sout << "*";
     sout << endl;
     // type name
     sout << PREFIX << nameStr << endl;
     // delimiter
     sout << PREFIX;
-    for( int i = 0; i < nameStr.length(); i++ ) sout << "-";
+    for( int i = 0; i < nameStr.length(); i++ ) sout << "*";
     sout << endl;
     // description
     if( this->doc != "" )
