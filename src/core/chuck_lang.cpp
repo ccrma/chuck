@@ -920,7 +920,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
 
     // init as base class
     // TODO: ctor/dtor?
-    string doc = "storage construct for sequential data of the same type; can also be used as a stack or a map data structure.";
+    string doc = "storage construct for sequential data of the same type; can also be used as an associative map data structure; also can be used as a stack with << operator to append/push and popBack to pop.";
     if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc.c_str() ) )
         return FALSE;
 
@@ -969,13 +969,13 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     // add find()
     func = make_new_mfun( "int", "find", array_find );
     func->add_arg( "string", "key" );
-    func->doc = "get number of elements with the specified key.";
+    func->doc = "(map only) Get number of elements with the specified key.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add erase()
     func = make_new_mfun( "int", "erase", array_erase );
     func->add_arg( "string", "key" );
-    func->doc = "erase all elements with the specified key.";
+    func->doc = "(map only) Erase all elements with the specified key.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
