@@ -86,9 +86,9 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add api()
-    func = make_new_mfun( "void", "apropos", object_apropos );
+    func = make_new_sfun( "void", "apropos", object_apropos );
     func->doc = "output information about the object's type.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
+    if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -1072,12 +1072,13 @@ CK_DLL_MFUN( object_dump )
 }
 
 // apropos
-CK_DLL_MFUN( object_apropos )
+CK_DLL_SFUN( object_apropos )
 {
+    TYPE->apropos();
     // get object
-    Chuck_Object * me = SELF;
+    // Chuck_Object * me = SELF;
     // call dump
-    me->apropos();
+    // me->apropos();
 }
 
 
