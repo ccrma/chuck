@@ -2371,6 +2371,8 @@ t_CKBOOL Chuck_Globals_Manager::should_call_global_ctor( const std::string & nam
             m_global_objects[name]->ctor_needs_to_be_called;
             break;
     }
+
+    return FALSE;
 }
 
 

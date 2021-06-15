@@ -41,7 +41,7 @@
 #include "util_string.h"
 #include "ugen_xxx.h"
 
-#include <strstream>
+#include <sstream>
 #include <algorithm>
 using namespace std;
 
