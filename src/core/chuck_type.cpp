@@ -6771,8 +6771,19 @@ void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
     // type
     Chuck_Type * type = this;
     // name str
-    string nameStr = "* " + str() + (this->ugen_info ? " (unit generator)" : "")
-        + (this->array_type ? " (" + this->name + " array)" : "") + " *";
+    string nameStr = "* " + str();
+    // check if ugen
+    if( this->ugen_info ) nameStr += " (unit generator)";
+    // check if array
+    if( this->array_depth > 0 )
+    {
+        nameStr += " (";
+        if( this->array_depth > 1 )
+        { nameStr += to_string(this->array_depth) + "D "; }
+        nameStr += this->name + " array)";
+    }
+    // print
+    nameStr += " *";
     
     //-------------------------------------------------------------------------
     // top level info: name, inheritane, description

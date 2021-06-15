@@ -146,8 +146,6 @@ public:
     
     // filename this code came from (added 1.3.0.0)
     std::string filename;
-    // base type (when applicable, e.g., if this is a static func)
-    Chuck_Type * base_type;
 
     // native func types
     enum { NATIVE_UNKNOWN, NATIVE_CTOR, NATIVE_DTOR, NATIVE_MFUN, NATIVE_SFUN };

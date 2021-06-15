@@ -4680,14 +4680,17 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
     Chuck_DL_Return retval;
 
-    // pop word
-    pop_( reg_sp, 2 );
+    // pop word | 1.4.0.2 (ge): pop an extra element as the base_type
+    // this accompanies the introduction of TYPE to static function calls
+    pop_( reg_sp, 3 );
+    // get the base type
+    Chuck_Type * base_type = (Chuck_Type *)*reg_sp;
     // get the function to be called as code
-    Chuck_VM_Code * func = (Chuck_VM_Code *)*reg_sp;
+    Chuck_VM_Code * func = (Chuck_VM_Code *)*(reg_sp+1);
     // get the function to be called
     f_sfun f = (f_sfun)func->native_func;
     // get the local stack depth - caller local variables
-    t_CKUINT local_depth = *(reg_sp+1);
+    t_CKUINT local_depth = *(reg_sp+2);
     // convert to number of int's (was: 4-byte words), extra partial word counts as additional word
     local_depth = ( local_depth / sz_INT ) + ( local_depth & 0x3 ? 1 : 0 ); // ISSUE: 64-bit (fixed 1.3.1.0)
     // get the stack depth of the callee function args
@@ -4727,8 +4730,11 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     // detect overflow/underflow
     if( overflow_( shred->mem ) ) goto error_overflow;
 
-    // call the function (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
-    f( func->base_type, mem_sp, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
+    // call the function
+    // (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
+    // (added 1.4.0.2 -- base_type)
+    f( base_type, mem_sp, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
+    // clean up memory stack
     mem_sp -= push;
 
     // push the return
@@ -6303,11 +6309,8 @@ void Chuck_Instr_Dot_Static_Func::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
     t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
 
     // pop the type pointer
-    pop_( sp, 1 );
-    // get the type | 1.4.0.2 (ge) added to support static apropos()
-    Chuck_Type * type = (Chuck_Type *)(*sp);
-    // set the type into the func code
-    m_func->code->base_type = type;
+    // pop_( sp, 1 );
+    // 1.4.0.2 (ge): leave the base type on the operand stack
 
     // push the address
     push_( sp, (t_CKUINT)(m_func) );
