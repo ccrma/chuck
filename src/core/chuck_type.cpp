@@ -42,6 +42,7 @@
 #include "ugen_xxx.h"
 
 #include <strstream>
+#include <algorithm>
 using namespace std;
 
 
@@ -6671,8 +6672,24 @@ void Chuck_Type::apropos( std::string & output )
     // functions
     //-------------------------------------------------------------------------
     string outputFuncs;
-    // generate string
-    apropos_funcs( outputFuncs, PREFIX, TRUE );
+    // type
+    Chuck_Type * type = this;
+    // only the first
+    t_CKBOOL inherited = FALSE;
+    // got something
+    while( type )
+    {
+        // string
+        string temp;
+        // generate string
+        type->apropos_funcs( temp, PREFIX, inherited );
+        // append
+        outputFuncs += temp;
+        // go up the inheritance chain
+        type = type->parent;
+        // all inherited from here
+        inherited = TRUE;
+    }
 
     //-------------------------------------------------------------------------
     // variables
@@ -6745,19 +6762,21 @@ void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
     ostringstream sout;
     // type
     Chuck_Type * type = this;
+    // name str
+    string nameStr = str() + (this->ugen_info ? " (unit generator)" : "");
     
     //-------------------------------------------------------------------------
     // top level info: name, inheritane, description
     //-------------------------------------------------------------------------
     // delimiter
     sout << PREFIX;
-    for( int i = 0; i < str().length(); i++ ) sout << "-";
+    for( int i = 0; i < nameStr.length(); i++ ) sout << "-";
     sout << endl;
     // type name
-    sout << PREFIX << str() << (this->ugen_info ? " (unit generator)" : "") << endl;
+    sout << PREFIX << nameStr << endl;
     // delimiter
     sout << PREFIX;
-    for( int i = 0; i < str().length(); i++ ) sout << "-";
+    for( int i = 0; i < nameStr.length(); i++ ) sout << "-";
     sout << endl;
     // description
     if( this->doc != "" )
@@ -6765,7 +6784,7 @@ void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
     // inheritance
     if( type->parent != NULL )
     {
-        sout << PREFIX << "  |- inheritance: " << str();
+        sout << PREFIX << "  |- (inheritance) " << str();
         while( type->parent != NULL )
         {
             // move up
@@ -6773,14 +6792,14 @@ void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
             // print
             sout << " -> " << type->str() << "";
         }
-        sout << endl;
+        sout << PREFIX << "" << endl;
         // set back to this
         type = this;
     }
     // delimiter
-    sout << PREFIX;
-    for( int i = 0; i < str().length(); i++ ) sout << "-";
-    sout << endl;
+    // sout << PREFIX;
+    // for( int i = 0; i < str().length(); i++ ) sout << "-";
+    // sout << endl;
     // store
     output = sout.str();
 }
@@ -6864,7 +6883,7 @@ void apropos_func( std::ostringstream & sout, Chuck_Func * func, const std::stri
 // name: apropos_funcs()
 // desc: dump info about funcs; added 1.4.0.2 (ge)
 //-----------------------------------------------------------------------------
-void Chuck_Type::apropos_funcs( std::string & output, const std::string & PREFIX, t_CKBOOL includeParents )
+void Chuck_Type::apropos_funcs( std::string & output, const std::string & PREFIX, t_CKBOOL inherited )
 {
     // make a string output stream
     ostringstream sout;
@@ -6883,12 +6902,21 @@ void Chuck_Type::apropos_funcs( std::string & output, const std::string & PREFIX
         vector<Chuck_Func *> mfuncs;
         // static functions
         vector<Chuck_Func *> sfuncs;
-        // member variables
-        vector<Chuck_Value *> mvars;
-        // static variables
-        vector<Chuck_Value *> svars;
         // counter by name
         map<string, int> func_names;
+        
+        if( funcs.size() > 0 )
+        {
+            // type name
+            string name = this->name + " " + "functions" + (inherited ? " (inherited)" : "" );
+            // number of '-'
+            t_CKUINT n = name.length(); t_CKUINT i;
+            // output
+            for( i = 0; i < n; i++ ) { sout << "-"; }
+            sout << endl << name << endl;
+            for( i = 0; i < n; i++ ) { sout << "-"; }
+            sout << endl;
+        }
 
         // iterate over retrieved functions
         for( vector<Chuck_Func *>::iterator f = funcs.begin(); f != funcs.end(); f++ )

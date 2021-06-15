@@ -1289,7 +1289,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "void", "controlChange", Instrmnt_ctrl_controlChange ); //! control change
     func->add_arg( "int", "ctrl" );
     func->add_arg( "float", "value" );
-    func->doc = "assert control change; numbers are instrument specific, value range: [0.0 - 127.0]";
+    func->doc = "assert control change; numbers are instrument specific [0.0 - 127.0]";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import

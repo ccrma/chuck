@@ -665,9 +665,9 @@ protected: // apropos-related helper function
     // dump top level info
     void apropos_top( std::string & output, const std::string & prefix );
     // dump info about functions
-    void apropos_funcs( std::string & output, const std::string & prefix, t_CKBOOL includeParent );
+    void apropos_funcs( std::string & output, const std::string & prefix, t_CKBOOL inherited );
     // dump info about vars
-    void apropos_vars( std::string & output, const std::string & prefix, t_CKBOOL includeParent );
+    void apropos_vars( std::string & output, const std::string & prefix, t_CKBOOL inherited );
     // dump info about examples
     void apropos_examples( std::string & output, const std::string & prefix );
 };
