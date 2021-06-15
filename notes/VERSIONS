@@ -1,5 +1,17 @@
 1.4.0.2
 ---
+  - (added) static Object.apropos();
+    all ChucK objects (i.e., all non-primitive types) can now invoke 
+    .apropos(), which will dynamically generate and print to console
+    the description and inheritance hierarchy of the underlying type,
+    as well as the available functions.  This can be called on any
+    object instance or on any class (without an instance):
+        // prints to console info about underlying type
+        SinOsc foo;
+        foo.apropos();
+        // prints to console info about the class
+        (identical output as above)
+        SinOsc.apropos();
   - (added) "global" declarations for int, float, string, Object, UGen, Event;
     this can be used in-language across ChucK files (each file must first 
     "declare" the global value before using it). This also support usage from
@@ -33,6 +45,10 @@
     for historical/compatibility reasons, array.cap() is the same as
     array.size() and generally should be avoided in favor of either .size()
     or .capacity()
+  - (BEHAVIOR CHANGED): internally, all ChucK static functions are now
+    passed an extra parameter (Chuck_Type * TYPE) as a pointer to the
+    base type/class. This will affect Chugins, which should be updated/
+    rebuilt with the latest headers.
   - (BEHAVIOR CHANGED): when connecting two multi-channel UGen's (both
     are at least stereo), say LHS => RHS, if LHS channels < RHS channels,
     the channels will be connected one-by-one up to the LHS channel count;
