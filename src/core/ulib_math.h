@@ -54,6 +54,7 @@ CK_DLL_SFUN( hypot_impl );
 CK_DLL_SFUN( pow_impl );
 CK_DLL_SFUN( sqrt_impl );
 CK_DLL_SFUN( exp_impl );
+CK_DLL_SFUN( exp2_impl );
 CK_DLL_SFUN( log_impl );
 CK_DLL_SFUN( log2_impl );
 CK_DLL_SFUN( log10_impl );

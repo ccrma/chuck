@@ -64,6 +64,8 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 
     // class
     QUERY->begin_class( QUERY, "Machine", "Object" );
+    // add documentation | 1.4.0.2
+    QUERY->doc_class( QUERY, "runtime interface to the ChucK virtual machine." );
 
     // add add
     //! compile and spork a new shred from file at 'path' into the VM now
