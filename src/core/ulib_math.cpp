@@ -375,14 +375,17 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     // pi
     //! see \example math.ck
     QUERY->add_svar( QUERY, "float", "PI", TRUE, &g_pi );
-    //! see \example math.ck
-    // QUERY->add_svar( QUERY, "float", "pi", TRUE, &g_pi );
-    QUERY->doc_var( QUERY, "an approximation of pi." );
+    QUERY->doc_var( QUERY, "an approximation of pi. (Same as global keyword \'pi\'.)" );
+    // 1.4.1.0 (ge): special disable to avoid conflict (don't forget to reenabled)
+    type_engine_enable_reserved( env, "pi", FALSE );
+    QUERY->add_svar( QUERY, "float", "pi", TRUE, &g_pi );
+    QUERY->doc_var( QUERY, "an approximation of pi. (Same as global keyword \'pi\'.)" );
 
     // twopi
     QUERY->add_svar( QUERY, "float", "TWO_PI", TRUE, &g_twopi );
+    QUERY->doc_var( QUERY, "an approximation of 2*pi" );
     // twopi
-    // QUERY->add_svar( QUERY, "float", "two_pi", TRUE, &g_twopi );
+    QUERY->add_svar( QUERY, "float", "two_pi", TRUE, &g_twopi );
     QUERY->doc_var( QUERY, "an approximation of 2*pi" );
 
     // e
@@ -399,7 +402,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
 
     // float min
     QUERY->add_svar( QUERY, "float", "FLOAT_MIN_MAG", TRUE, &g_floatMin );
-    QUERY->doc_var( QUERY, "smallest non-negative representable floating-point value." );
+    QUERY->doc_var( QUERY, "smallest representable non-negative floating-point value." );
 
     // int max
 #ifdef _WIN64 // REFACTOR-2017
@@ -433,6 +436,9 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
 
     // done
     QUERY->end_class( QUERY );
+
+    // 1.4.1.0 (ge): IMPORTANT re-enable keyword
+    type_engine_enable_reserved( env, "pi", FALSE );
 
     return TRUE;
 }
