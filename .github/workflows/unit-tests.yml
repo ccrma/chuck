@@ -15,10 +15,10 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: configure
-      run: sudo apt-get update --fix-missing && sudo apt-get install -y libsndfile1-dev && sudo apt-get install -y libpulse-dev && sudo apt-get install -y libasound2-dev
+      run: apt-get update --fix-missing && apt-get install -y libsndfile1-dev && apt-get install -y libpulse-dev && apt-get install -y libasound2-dev
     
     - name: make
       run: cd src/ && make linux-pulse
       
     - name: make check
-      run: sudo mv ./chuck /usr/local/bin/ && cd test/ && python test.py
+      run: mv ./chuck /usr/local/bin/ && cd test/ && python test.py
