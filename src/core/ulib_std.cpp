@@ -171,12 +171,12 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // add abs
     QUERY->add_sfun( QUERY, abs_impl, "int", "abs" );
     QUERY->add_arg( QUERY, "int", "value" );
-    QUERY->doc_func( QUERY, "compute the absolute value of an integer." );
+    QUERY->doc_func( QUERY, "compute absolute value (integer)." );
     
     // add fabs
     QUERY->add_sfun( QUERY, fabs_impl, "float", "fabs" );
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "compute the absolute value of a float." );
+    QUERY->doc_func( QUERY, "compute absolute value (floating point)." );
 
     // add rand
     QUERY->add_sfun( QUERY, rand_impl, "int", "rand"); //! return int between 0 and RAND_MAX
