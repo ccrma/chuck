@@ -6834,13 +6834,7 @@ void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
 void apropos_func_arg( std::ostringstream & sout, a_Arg_List arg )
 {
     // argument type
-    sout << arg->type->name.c_str();
-    // is type an array?
-    if( arg->type->array_depth )
-    {
-        for( int i = 0; i < arg->type->array_depth; i++ )
-            sout << "[]";
-    }
+    sout << arg->type->str();
     // space
     sout << " ";
     // argument name
@@ -6860,14 +6854,7 @@ void apropos_func_arg( std::ostringstream & sout, a_Arg_List arg )
 void apropos_func( std::ostringstream & sout, Chuck_Func * func, const std::string & PREFIX )
 {
     // output return type
-    sout << func->def->ret_type->c_name();
-    // if return type is an array
-    if( func->def->ret_type->array_depth )
-    {
-        // output "[]" for each dimension of the array
-        for( int i = 0; i < func->def->ret_type->array_depth; i++ )
-            sout << "[]";
-    }
+    sout << func->def->ret_type->str();
     // space
     sout << " ";
     // output function name
@@ -6928,7 +6915,7 @@ void Chuck_Type::apropos_funcs( std::string & output, const std::string & PREFIX
         if( funcs.size() > 0 )
         {
             // type name
-            string name = this->name + " " + "functions" + (inherited ? " (inherited)" : "" );
+            string name = this->str() + " " + "functions" + (inherited ? " (inherited)" : "" );
             // number of '-'
             t_CKUINT n = name.length(); t_CKUINT i;
             // output
