@@ -206,7 +206,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // add sgn
     QUERY->add_sfun( QUERY, sgn_impl, "float", "sgn" ); //! return sign of value (-1, 0, 1)
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "compute the sign of the input as -1.0 (negative), 0 (zero), or 1.0 (positive)." );
+    QUERY->doc_func( QUERY, "get sign of value as -1 (negative), 0, or 1 (positive)." );
 
     // add system
     //! see \example std.ck

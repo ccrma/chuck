@@ -92,7 +92,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     // add sgn
     QUERY->add_sfun( QUERY, sgn_impl, "float", "sgn" );
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "get sign of value as -1, 0, or 1" );
+    QUERY->doc_func( QUERY, "get sign of value as -1 (negative), 0, or 1 (positive)." );
     
     // sin
     QUERY->add_sfun( QUERY, sin_impl, "float", "sin" );
