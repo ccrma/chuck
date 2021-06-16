@@ -1418,7 +1418,7 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
   snd_seq_ev_set_direct(&ev);
   for ( unsigned int i=0; i<nBytes; i++ ) data->buffer[i] = message->at(i);
   result = snd_midi_event_encode( data->coder, data->buffer, (long)nBytes, &ev );
-  // commenting this out allows sending MIDI messages < and > 3 | 1.4.0.2 (mariobuoninfante)
+  // commenting this out allows sending MIDI messages < and > 3 | 1.4.1.0 (mariobuoninfante)
   // if( result < (int)nBytes ) {
   //   errorString_ = "RtMidiOut::sendMessage: event parsing error!";
   //   error( RtMidiError::WARNING );
@@ -1872,7 +1872,7 @@ struct WinMidiData {
 
 static void CALLBACK midiInputCallback( HMIDIOUT hmin,
                                         UINT inputStatus, 
-                                        DWORD_PTR instancePtr, // 1.4.0.2 DWORD changed to DWORD_PTR | PR #157 @dbadb
+                                        DWORD_PTR instancePtr, // 1.4.1.0 DWORD changed to DWORD_PTR | PR #157 @dbadb
                                         DWORD_PTR midiMessage,
                                         DWORD_PTR timestamp )
 {
@@ -1984,7 +1984,7 @@ void RtMidiIn :: openPort( unsigned int portNumber )
   WinMidiData *data = static_cast<WinMidiData *> (apiData_);
   MMRESULT result = midiInOpen( &data->inHandle,
                                 portNumber,
-                                (DWORD_PTR)&midiInputCallback, // 1.4.0.2 DWORD changed to DWORD_PTR | PR #157 @dbadb
+                                (DWORD_PTR)&midiInputCallback, // 1.4.1.0 DWORD changed to DWORD_PTR | PR #157 @dbadb
                                 (DWORD_PTR)&inputData_,
                                 CALLBACK_FUNCTION );
   if ( result != MMSYSERR_NOERROR ) {

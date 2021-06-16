@@ -37,7 +37,7 @@
 #include "chuck.h"
 #include "chuck_errmsg.h"
 #include "chuck_io.h"
-#include "chuck_globals.h" // added 1.4.0.2
+#include "chuck_globals.h" // added 1.4.1.0
 
 #ifndef __DISABLE_OTF_SERVER__
 #include "chuck_otf.h"
@@ -88,7 +88,7 @@
 
 
 // chuck statics
-const char ChucK::VERSION[] = "1.4.0.2-dev (numchucks)";
+const char ChucK::VERSION[] = "1.4.1.0-dev (numchucks)";
 t_CKUINT ChucK::o_numVMs = 0;
 t_CKBOOL ChucK::o_isGlobalInit = FALSE;
 t_CKBOOL ChucK::enableSystemCall = FALSE;

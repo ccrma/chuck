@@ -230,7 +230,7 @@ t_CKBOOL ck_bind( ck_socket sock, int port )
     ret = bind( sock->sock, (struct sockaddr *)&sock->sock_in, 
         sizeof(struct sockaddr_in));
 
-    // added 1.4.0.2 (PR #157 | @dbadb)
+    // added 1.4.1.0 (PR #157 | @dbadb)
     // "Support for reporting dynamically assigned otf port."
     if( port == 0 && ret == 0 )
     {

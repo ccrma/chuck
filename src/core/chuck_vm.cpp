@@ -34,7 +34,7 @@
 #include "chuck_lang.h"
 #include "chuck_type.h"
 #include "chuck_dl.h"
-#include "chuck_globals.h" // added 1.4.0.2 (jack)
+#include "chuck_globals.h" // added 1.4.1.0 (jack)
 
 #ifndef __DISABLE_SERIAL__
 #include "chuck_io.h"
@@ -49,7 +49,7 @@
 #endif
 
 #ifndef __DISABLE_MIDI__
-#include "midiio_rtmidi.h"  // 1.4.0.2
+#include "midiio_rtmidi.h"  // 1.4.1.0
 #endif
 
 #include <algorithm>
@@ -147,7 +147,7 @@ Chuck_VM::Chuck_VM()
     m_num_shreds = 0;
     m_shreduler = NULL;
     m_num_dumped_shreds = 0;
-    m_globals_manager = NULL; // 1.4.0.2 (jack)
+    m_globals_manager = NULL; // 1.4.1.0 (jack)
     m_msg_buffer = NULL;
     m_reply_buffer = NULL;
     m_event_buffer = NULL;
@@ -231,7 +231,7 @@ t_CKBOOL Chuck_VM::initialize( t_CKUINT srate, t_CKUINT dac_chan,
     m_event_buffer->initialize( 1024, sizeof(Chuck_Event *) );
     //m_event_buffer->join(); // this should also return 0
 
-    // 1.4.0.2 (jack): added globals manager
+    // 1.4.1.0 (jack): added globals manager
     EM_log( CK_LOG_SYSTEM, "allocating globals manager..." );
     m_globals_manager = new Chuck_Globals_Manager( this );
 
@@ -481,7 +481,7 @@ t_CKBOOL Chuck_VM::compute()
     
     // REFACTOR-2017: spork queued shreds, handle global messages
     // this is called once per chuck time / sample / "tick"
-    // global manager added 1.4.0.2 (jack)
+    // global manager added 1.4.1.0 (jack)
     m_globals_manager->handle_global_queue_messages();
 
     // iteration until no more shreds/events/messages
@@ -865,7 +865,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
             env()->clear_user_namespace();
         }
 
-        // 1.4.0.2 (jack): also clear any global variables
+        // 1.4.1.0 (jack): also clear any global variables
         m_globals_manager->cleanup_global_variables();
         
         m_shred_id = 0;
@@ -1031,7 +1031,7 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
         Chuck_Global_Request spork_request;
         spork_request.type = spork_shred_request;
         spork_request.shred = shred;
-        // added 1.4.0.2 (jack)
+        // added 1.4.1.0 (jack)
         m_globals_manager->add_request( spork_request );
     }
 

@@ -206,7 +206,7 @@ void Chuck_UGen::init()
     m_use_next = FALSE;
     m_max_block_size = -1;
     // if this is part of a stereo UGen, this parameter will be initialized
-    // according to the underly panning law (1.4.0.2)
+    // according to the underly panning law (1.4.1.0)
     m_pan = 1.0f;
 
     m_sum_v = NULL;
@@ -223,7 +223,7 @@ void Chuck_UGen::init()
     m_inlet = m_outlet = NULL;
     m_multi_in_v = m_multi_out_v = NULL;
     
-    // 1.4.0.2 (jack): yes more hacks. buffered flag allows 
+    // 1.4.1.0 (jack): yes more hacks. buffered flag allows 
     // global ugens' samples to be gotten
     m_is_buffered = FALSE;
     // buffer empty for any ugen that is not buffered
@@ -521,17 +521,17 @@ t_CKBOOL Chuck_UGen::add( Chuck_UGen * src, t_CKBOOL isUpChuck )
     }
     else if( outs >= 2 && ins >= 2 )
     {
-        // 1.4.0.2 (ge) -- if both outs and ins are at least stereo, add channels
+        // 1.4.1.0 (ge) -- if both outs and ins are at least stereo, add channels
         // one-to-one up to the lesser of the values of outs and ins; previously,
         // if outs < ins the unmapped ins channels will add lower outs channels;
 
-        // the lesser of outs and ins | 1.4.0.2 (ge) modified
+        // the lesser of outs and ins | 1.4.1.0 (ge) modified
         t_CKUINT lesser = outs > ins ? ins : outs;
         // do 1:1 mapping
         for( i = 0; i < lesser; i++ )
             if( !this->m_multi_chan[i]->add( src->m_multi_chan[i], isUpChuck ) ) return FALSE;
 
-        // (pre-1.4.0.2) add to each channel
+        // (pre-1.4.1.0) add to each channel
         // for( i = 0; i < ins; i++ )
         //     if( !this->m_multi_chan[i]->add( src->m_multi_chan[i%outs], isUpChuck ) ) return FALSE;
     }

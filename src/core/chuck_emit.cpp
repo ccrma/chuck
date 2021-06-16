@@ -34,7 +34,7 @@
 #include "chuck_vm.h"
 #include "chuck_errmsg.h"
 #include "chuck_instr.h"
-#include "chuck_globals.h" // added 1.4.0.2
+#include "chuck_globals.h" // added 1.4.1.0
 #include <sstream>
 #include <iostream>
 
@@ -227,7 +227,7 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         prog = prog->next;
     }
     
-    // 1.4.0.2 (jack): error-checking: was dac-replacement initted?
+    // 1.4.1.0 (jack): error-checking: was dac-replacement initted?
     // (see chuck_compile.h for an explanation on replacement dacs)
     if( emit->should_replace_dac )
     {
@@ -2906,7 +2906,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         }
         else if( exp->var == insert_symbol( "dac" ) )
         {
-            // 1.4.0.2 (jack): see chuck_compile.h for an explanation of
+            // 1.4.1.0 (jack): see chuck_compile.h for an explanation of
             // replacement dacs
             // should replace dac with global ugen?
             if( emit->should_replace_dac )
@@ -3817,7 +3817,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
         {
             // emit the type - spencer
             emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)t_base ) );
-            // get the func | 1.4.0.2 (ge) added looking in parent
+            // get the func | 1.4.1.0 (ge) added looking in parent
             value = type_engine_find_value( t_base, member->xid );
             // get the function reference
             func = value->func_ref;
@@ -3828,7 +3828,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
         }
         else
         {
-            // get the func | 1.4.0.2 (ge) added looking in parent
+            // get the func | 1.4.1.0 (ge) added looking in parent
             value = type_engine_find_value( t_base, member->xid );
             // make sure it's there
             assert( value != NULL );

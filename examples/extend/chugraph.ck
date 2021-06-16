@@ -1,7 +1,7 @@
 // name: chugraph.ck
 // desc: pronounced "chuh-graph" -- rhymes with "subgraph"
 //       create new UGens by compositing existing UGens!
-// note: (chuck-1.4.0.2 ad up) "Chubgraph" deprecated; use "Chugraph"
+// note: (chuck-1.4.1.0 and up) "Chubgraph" deprecated; use "Chugraph"
 
 // make a plucked string
 class PluckedString extends Chubgraph // Chugraph

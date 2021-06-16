@@ -766,9 +766,9 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
     // set flag and return
     return m_init = TRUE;
     
-// handle common error case (added 1.4.0.2)
+// handle common error case (added 1.4.1.0)
 error:
-    // pop log indent (added 1.4.0.2)
+    // pop log indent (added 1.4.1.0)
     EM_poplog();
     // set flag and return
     return m_init = FALSE;

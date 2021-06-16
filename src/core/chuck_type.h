@@ -655,7 +655,7 @@ protected:
     // this for str() and c_name() use only
     std::string ret;
 
-public: // apropos | 1.4.0.2 (ge)
+public: // apropos | 1.4.1.0 (ge)
     // dump info to console
     void apropos();
     // dump info to string
@@ -752,7 +752,7 @@ struct Chuck_Func : public Chuck_VM_Object
 {
     // name (actual in VM name, e.g., "dump@0@Object")
     std::string name;
-    // base name (without the designation, e.g., "dump"); 1.4.0.2
+    // base name (without the designation, e.g., "dump"); 1.4.1.0
     std::string base_name;
     // func def from parser
     a_Func_Def def;

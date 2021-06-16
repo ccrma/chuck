@@ -177,7 +177,7 @@ const char * mini_type( const char * str );
 #if defined(_cplusplus) || defined(__cplusplus)
 
 //-----------------------------------------------------------------------------
-// name: class SmartPushLog (added 1.4.0.2 spencer)
+// name: class SmartPushLog (added 1.4.1.0 spencer)
 // desc: scoped EM_pushlog for convenience and auto-balancing of push/pop logs
 // usage: create an instance of SmartPushLog when you want to push the
 // log level; the log level will be automatically popped when the instance goes

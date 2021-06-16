@@ -402,7 +402,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
             return FALSE;
         }
 
-        // clear ignore types | 1.4.0.2 (mariobuoninfante)
+        // clear ignore types | 1.4.1.0 (mariobuoninfante)
         rtmin->ignoreTypes( false, false, false );
 
         // resize?

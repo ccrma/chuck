@@ -483,7 +483,7 @@ public:
     void signal_global();
     void broadcast_global();
 
-    // 1.4.0.2 (jack): global events multiple callbacks.
+    // 1.4.1.0 (jack): global events multiple callbacks.
     // can listen with a callback(), callback( event name ), or callback( id )
     void global_listen( void (* cb)(void), t_CKBOOL listen_forever );
     void global_listen( std::string name, void (* cb)(const char *), t_CKBOOL listen_forever );
@@ -502,7 +502,7 @@ public:
 protected:
     std::queue<Chuck_VM_Shred *> m_queue;
     #ifndef __DISABLE_THREADS__
-    // 1.4.0.2 (ge/jack) TODO: rewrite queue_broadcast to use a lock-free queue 
+    // 1.4.1.0 (ge/jack) TODO: rewrite queue_broadcast to use a lock-free queue
     // and avoid the use of a lock in events
     XMutex m_queue_lock;
     #endif

@@ -6651,7 +6651,7 @@ const char * Chuck_Type::c_name()
 
 //-----------------------------------------------------------------------------
 // name: apropos()
-// desc: dump info to string; added 1.4.0.2 (ge)
+// desc: dump info to string; added 1.4.1.0 (ge)
 //       portions of this adapted from ckdoc -- thanks be to Spencer Salazar
 //-----------------------------------------------------------------------------
 void Chuck_Type::apropos( std::string & output )
@@ -6762,7 +6762,7 @@ static string capitalize( const string & s )
 
 //-----------------------------------------------------------------------------
 // name: apropos_top()
-// desc: dump top level info; added 1.4.0.2 (ge)
+// desc: dump top level info; added 1.4.1.0 (ge)
 //-----------------------------------------------------------------------------
 void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
 {
@@ -6888,7 +6888,7 @@ void apropos_func( std::ostringstream & sout, Chuck_Func * func, const std::stri
 
 //-----------------------------------------------------------------------------
 // name: apropos_funcs()
-// desc: dump info about funcs; added 1.4.0.2 (ge)
+// desc: dump info about funcs; added 1.4.1.0 (ge)
 //-----------------------------------------------------------------------------
 void Chuck_Type::apropos_funcs( std::string & output, const std::string & PREFIX, t_CKBOOL inherited )
 {

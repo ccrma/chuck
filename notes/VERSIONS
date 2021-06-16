@@ -1,4 +1,5 @@
-1.4.0.2
+1.4.1.0
+(June 2021)
 ---
   - (added) static Object.apropos();
     all ChucK objects (i.e., all non-primitive types) can now invoke 

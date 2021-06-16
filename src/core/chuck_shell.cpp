@@ -602,7 +602,7 @@ void Chuck_Shell::do_code( string & code, string & out, string command )
 #if defined(__PLATFORM_LINUX__) || defined(__MACOSX_CORE__)
     char tmp_dir[] = "/tmp";
     char * tmp_filepath = new char [32];
-    // 1.4.0.2: changed chuck_file.XXXXXX to chuck_shell.XXXXXX
+    // 1.4.1.0: changed chuck_file.XXXXXX to chuck_shell.XXXXXX
     strncpy( tmp_filepath, "/tmp/chuck_shell.XXXXXX", 32 );
     int fd = mkstemp( tmp_filepath );
     if( fd == -1 )
