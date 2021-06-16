@@ -6880,7 +6880,7 @@ void apropos_func( std::ostringstream & sout, Chuck_Func * func, const std::stri
     // close paren
     sout << ");" << endl;
     // output doc
-    sout << PREFIX << "    " << capitalize(func->doc) << endl;
+    if( func->doc != "" ) sout << PREFIX << "    " << capitalize(func->doc) << endl;
 }
 
 
