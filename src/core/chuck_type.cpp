@@ -4600,6 +4600,23 @@ t_CKBOOL type_engine_check_reserved( Chuck_Env * env, S_Symbol xid, int pos )
 
 
 //-----------------------------------------------------------------------------
+// name: type_engine_enable_reserved()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKVOID type_engine_enable_reserved( Chuck_Env * env, const std::string & xid, t_CKBOOL value )
+{
+    // find if the key exists
+    if( env->key_values.find( xid ) != env->key_values.end() )
+    {
+        // set value
+        env->key_values[xid] = value;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: type_engine_check_primitive()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -6669,9 +6686,9 @@ void Chuck_Type::apropos( std::string & output )
     apropos_top( outputTop, PREFIX );
 
     //-------------------------------------------------------------------------
-    // functions
+    // functions and variables
     //-------------------------------------------------------------------------
-    string outputFuncs;
+    string outputAPI;
     // type
     Chuck_Type * type = this;
     // only the first
@@ -6692,7 +6709,11 @@ void Chuck_Type::apropos( std::string & output )
         // generate string
         type->apropos_funcs( temp, PREFIX, inherited );
         // append
-        outputFuncs += temp;
+        outputAPI += temp;
+        // generate string
+        type->apropos_vars( temp, PREFIX, inherited );
+        // append
+        outputAPI += temp;
         // go up the inheritance chain
         type = type->parent;
         // all inherited from here
@@ -6703,8 +6724,6 @@ void Chuck_Type::apropos( std::string & output )
     // variables
     //-------------------------------------------------------------------------
     string outputVars;
-    // generate string
-    // apropos_vars( outputVars, PREFIX, TRUE );
 
     //-------------------------------------------------------------------------
     // examples
@@ -6714,7 +6733,7 @@ void Chuck_Type::apropos( std::string & output )
     // apropos_examples( outputExamples, PREFIX );
 
     // done
-    output = outputTop + outputFuncs + outputVars + outputExamples;
+    output = outputTop + outputAPI + outputExamples;
 }
 
 
@@ -6743,7 +6762,18 @@ static bool comp_func( Chuck_Func * a, Chuck_Func * b )
 
 // comparer
 static bool comp_value( Chuck_Value * a, Chuck_Value * b )
-{ return a->name < b->name; }
+{
+    string lowerA = a->name;;
+    for( std::string::size_type i = 0; i < lowerA.length(); i++)
+        lowerA[i] = tolower(a->name[i]);
+    string lowerB = b->name;;
+    for( std::string::size_type i = 0; i < lowerB.length(); i++)
+        lowerB[i] = tolower(b->name[i]);
+    // if not the same
+    if( lowerA != lowerB ) return lowerA < lowerB;
+    // if same, favor lower-case
+    else return a->name > b->name;
+}
 
 // capitalize first character
 static string capitalize( const string & s )
@@ -6853,6 +6883,10 @@ void apropos_func_arg( std::ostringstream & sout, a_Arg_List arg )
 //-----------------------------------------------------------------------------
 void apropos_func( std::ostringstream & sout, Chuck_Func * func, const std::string & PREFIX )
 {
+    // print line prefix, if any
+    sout << PREFIX;
+    // print static
+    sout << (func->def->static_decl ? "static " : " ");
     // output return type
     sout << func->def->ret_type->str();
     // space
@@ -6898,12 +6932,10 @@ void Chuck_Type::apropos_funcs( std::string & output, const std::string & PREFIX
     // check type info
     if( this->info )
     {
-        // retrieve functions in this type
+        // vector of functions
         vector<Chuck_Func *> funcs;
+        // retrieve functions in this type
         this->info->get_funcs(funcs);
-        // retrieve variables in this type
-        vector<Chuck_Value *> vars;
-        this->info->get_values(vars);
 
         // member functions
         vector<Chuck_Func *> mfuncs;
@@ -6911,19 +6943,6 @@ void Chuck_Type::apropos_funcs( std::string & output, const std::string & PREFIX
         vector<Chuck_Func *> sfuncs;
         // counter by name
         map<string, int> func_names;
-        
-        if( funcs.size() > 0 )
-        {
-            // type name
-            string name = this->str() + " " + "functions" + (inherited ? " (inherited)" : "" );
-            // number of '-'
-            t_CKUINT n = name.length(); t_CKUINT i;
-            // output
-            for( i = 0; i < n; i++ ) { sout << "-"; }
-            sout << endl << name << endl;
-            for( i = 0; i < n; i++ ) { sout << "-"; }
-            sout << endl;
-        }
 
         // iterate over retrieved functions
         for( vector<Chuck_Func *>::iterator f = funcs.begin(); f != funcs.end(); f++ )
@@ -6947,12 +6966,26 @@ void Chuck_Type::apropos_funcs( std::string & output, const std::string & PREFIX
             // check for static declaration
             if( func->def->static_decl == ae_key_static ) {
                 // append to static funcs list
-                sfuncs.push_back(func);
+                sfuncs.push_back( func );
             } else {
                 // append to static funcs list
-                mfuncs.push_back(func);
+                mfuncs.push_back( func );
             }
         }
+        
+        if( sfuncs.size() > 0 || mfuncs.size() > 0 )
+        {
+            // type name
+            string name = this->str() + " " + "functions" + (inherited ? " (inherited)" : "" );
+            // number of '-'
+            t_CKUINT n = name.length(); t_CKUINT i;
+            // output
+            for( i = 0; i < n; i++ ) { sout << "-"; }
+            sout << endl << name << endl;
+            for( i = 0; i < n; i++ ) { sout << "-"; }
+            sout << endl;
+        }
+
 
         // sort
         sort( mfuncs.begin(), mfuncs.end(), comp_func );
@@ -6966,8 +6999,6 @@ void Chuck_Type::apropos_funcs( std::string & output, const std::string & PREFIX
             {
                 // pointer to chuck func
                 Chuck_Func * func = *f;
-                // print line prefix, if any
-                sout << PREFIX;
                 // output function content
                 apropos_func( sout, func, PREFIX );
             }
@@ -6981,16 +7012,139 @@ void Chuck_Type::apropos_funcs( std::string & output, const std::string & PREFIX
             {
                 // pointer to chuck func
                 Chuck_Func * func = *f;
-                // print line prefix, if any
-                sout << PREFIX;
-                // print static
-                sout << "static ";
                 // output function content
                 apropos_func( sout, func, PREFIX );
             }
         }
     }
 
+    // output to string
+    output = sout.str();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: apropos_var()
+// desc: helper function for outputing variable
+//-----------------------------------------------------------------------------
+void apropos_var( std::ostringstream & sout, Chuck_Value * var, const std::string & PREFIX )
+{
+    // print line prefix, if any
+    sout << PREFIX;
+    // print static
+    sout << (var->is_static ? "static " : "");
+    // print const
+    sout << (var->is_const ? "const " : "");
+    // print
+    sout << (var->is_const ? "global " : "");
+
+    // output variable type
+    sout << var->type->str() << " ";
+    // output variable name
+    sout << var->name << ";" << endl;
+
+    // output doc
+    if( var->doc != "" ) sout << PREFIX << "    " << capitalize(var->doc) << endl;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: apropos_vars()
+// desc: dump info about vars; added 1.4.1.0 (ge)
+//-----------------------------------------------------------------------------
+void Chuck_Type::apropos_vars( std::string & output, const std::string & PREFIX, t_CKBOOL inherited )
+{
+    // make a string output stream
+    ostringstream sout;
+    
+    // check type info
+    if( this->info )
+    {
+        // vector of variables
+        vector<Chuck_Value *> vars;
+        // retrieve variables in this type
+        this->info->get_values(vars);
+        
+        // member variables
+        vector<Chuck_Value *> mvars;
+        // static variables
+        vector<Chuck_Value *> svars;
+        
+        // iterate over retrieved functions
+        for( vector<Chuck_Value *>::iterator v = vars.begin(); v != vars.end(); v++ )
+        {
+            // get pointer to chuck value
+            Chuck_Value * value = *v;
+            // check for NULL
+            if( value == NULL ) continue;
+            // see if name if empty
+            if( value->name.length() == 0 ) continue;
+            // see if name is internally reserved
+            if( value->name[0] == '@' ) continue;
+            // see if name is a function
+            if( value->type-> name == "[function]" ) continue;
+
+            // check for static declaration
+            if( value->is_static ) {
+                // append to static funcs list
+                svars.push_back( value );
+            } else {
+                // append to static funcs list
+                mvars.push_back( value );
+            }
+        }
+
+        // see if we have any to print
+        if( mvars.size() > 0 | svars.size() > 0 )
+        {
+            // type name
+            string name = this->str() + " " + "variables" + (inherited ? " (inherited)" : "" );
+            // number of '-'
+            t_CKUINT n = name.length(); t_CKUINT i;
+            // output
+            for( i = 0; i < n; i++ ) { sout << "-"; }
+            sout << endl << name << endl;
+            for( i = 0; i < n; i++ ) { sout << "-"; }
+            sout << endl;
+        }
+
+        // sort
+        sort( mvars.begin(), mvars.end(), comp_value );
+        sort( svars.begin(), svars.end(), comp_value );
+        
+        // one or more static vars?
+        if( mvars.size() )
+        {
+            // iterate over static vars
+            for( vector<Chuck_Value *>::iterator v = mvars.begin(); v != mvars.end(); v++ )
+            {
+                // pointer to chuck func
+                Chuck_Value * var = *v;
+                // print line prefix, if any
+                sout << PREFIX;
+                // output var
+                apropos_var( sout, var, PREFIX );
+            }
+        }
+        
+        // one or more static functions?
+        if( svars.size() )
+        {
+            // iterate over static functions
+            for( vector<Chuck_Value *>::iterator v = svars.begin(); v != svars.end(); v++ )
+            {
+                // pointer to chuck func
+                Chuck_Value * var = *v;
+                // output var
+                apropos_var( sout, var, PREFIX );
+            }
+        }
+    }
+    
     // output to string
     output = sout.str();
 }
