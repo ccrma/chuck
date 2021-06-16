@@ -1,5 +1,4 @@
-1.4.1.0
-(June 2021)
+1.4.1.0 (June 2021)
 ---
   - (added) static Object.apropos();
     all ChucK objects (i.e., all non-primitive types) can now invoke 
@@ -7,11 +6,11 @@
     the description and inheritance hierarchy of the underlying type,
     as well as the available functions.  This can be called on any
     object instance or on any class (without an instance):
-        // prints to console info about underlying type
+        // an object instance
         SinOsc foo;
+        // print to console info about its underlying type
         foo.apropos();
-        // prints to console info about the class
-        (identical output as above)
+        // print to console info about the class (identical output as above)
         SinOsc.apropos();
   - (added) "global" declarations for int, float, string, Object, UGen, Event;
     this can be used in-language across ChucK files (each file must first 
