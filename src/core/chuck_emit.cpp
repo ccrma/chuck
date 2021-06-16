@@ -3818,17 +3818,9 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
             // emit the type - spencer
             emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)t_base ) );
             // get the func | 1.4.0.2 (ge) added looking in parent
-            Chuck_Type * theType = t_base;
-            // check current type
-            while( theType != NULL )
-            {
-                // lookup
-                func = theType->info->lookup_func( member->xid, FALSE );
-                // done as soon as we find
-                if( func ) break;
-                // go up the chain
-                theType = theType->parent;
-            }
+            value = type_engine_find_value( t_base, member->xid );
+            // get the function reference
+            func = value->func_ref;
             // make sure it's there
             assert( func != NULL );
             // emit the function
@@ -3837,17 +3829,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
         else
         {
             // get the func | 1.4.0.2 (ge) added looking in parent
-            Chuck_Type * theType = t_base;
-            // check current type
-            while( theType != NULL )
-            {
-                // look up the value
-                value = theType->info->lookup_value( member->xid, FALSE );
-                // done as soon as we find
-                if( value ) break;
-                // go up the chain
-                theType = theType->parent;
-            }
+            value = type_engine_find_value( t_base, member->xid );
             // make sure it's there
             assert( value != NULL );
 
