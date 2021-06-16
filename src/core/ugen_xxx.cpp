@@ -991,7 +991,7 @@ error:
 static t_CKUINT LiSaMulti_offset_data = 0;
 
 // max channels for multichannel LiSa
-#define LiSa_MAXCHANNELS 16 // 1.4.0.2 (ge) increased from 10 to 16
+#define LiSa_MAXCHANNELS 16 // 1.4.1.0 (ge) increased from 10 to 16
 
 
 
@@ -1558,7 +1558,7 @@ void pan_eq_power( Chuck_UGen * left, Chuck_UGen * right, t_CKFLOAT pan)
 {
     // remap pan from [-1,1] to [0,pi/2]
     t_CKFLOAT panme = (pan+1.0)/2 * ONE_PI/2;
-    // pan it (NEW: constant-power panning; fixed 1.4.0.2)
+    // pan it (NEW: constant-power panning; fixed 1.4.1.0)
     left->m_pan = ::cos(panme);
     right->m_pan = ::sin(panme);
 }
@@ -2860,12 +2860,12 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
         if( d->curf < 0 )
         {
             d->curf = -1;
-            d->current_val = 0;  // 1.4.0.2 (ge) added to avoid DC
-            return; // 1.4.0.2 (ge) added
+            d->current_val = 0;  // 1.4.1.0 (ge) added to avoid DC
+            return; // 1.4.1.0 (ge) added
         }
         else if( d->curf > d->num_frames )
         {
-            d->curf = d->num_frames; // 1.4.0.2 (ge) added back the -1
+            d->curf = d->num_frames; // 1.4.1.0 (ge) added back the -1
             d->current_val = 0;
             return;
         }
@@ -3092,7 +3092,7 @@ CK_DLL_TICK( sndbuf_tick )
     {
         *out = 0;
     }
-    else // 1.4.0.2 (ge): put this into else block so that rate can advance below even for the *out == 0 case above
+    else // 1.4.1.0 (ge): put this into else block so that rate can advance below even for the *out == 0 case above
     {
         // calculate frame
         if( d->interp == SNDBUF_DROP )
@@ -3912,7 +3912,7 @@ LiSa updates/fixes:
 4. corrected loopEnd so it is the same as duration, not 1 less than duration, when set...
 */
 
-#define LiSa_MAXVOICES 256 // 1.4.0.2 (ge) increased from 200
+#define LiSa_MAXVOICES 256 // 1.4.1.0 (ge) increased from 200
 #define LiSa_MAXBUFSIZE 44100000
 //-----------------------------------------------------------------------------
 // name: LiSaMulti_data
@@ -3942,7 +3942,7 @@ struct LiSaMulti_data
     t_CKINT track;
 	t_CKINT num_chans;
     
-    // constructor; 1.4.0.2 (ge) added
+    // constructor; 1.4.1.0 (ge) added
     LiSaMulti_data()
         : mdata(NULL), outsamples(NULL), mdata_len(0), maxvoices(0),
           loop_end_rec(0), rindex(0), looprec(FALSE), reset(FALSE),
@@ -3963,7 +3963,7 @@ struct LiSaMulti_data
             
         mdata_len = length;
         // default maxvoices; user can set
-        maxvoices = 16; // 1.4.0.2 (ge) increased from 10 to 16
+        maxvoices = 16; // 1.4.1.0 (ge) increased from 10 to 16
         rec_ramplen = 0.;
         rec_ramplen_inv = 1.;
         

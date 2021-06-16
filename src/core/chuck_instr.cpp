@@ -39,7 +39,7 @@
 #include "chuck_ugen.h"
 #include "chuck_dl.h"
 #include "chuck_errmsg.h"
-#include "chuck_globals.h" // added 1.4.0.2
+#include "chuck_globals.h" // added 1.4.1.0
 
 #include "util_string.h"
 
@@ -4680,7 +4680,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
     Chuck_DL_Return retval;
 
-    // pop word | 1.4.0.2 (ge): pop an extra element as the base_type
+    // pop word | 1.4.1.0 (ge): pop an extra element as the base_type
     // this accompanies the introduction of TYPE to static function calls
     pop_( reg_sp, 3 );
     // get the base type
@@ -4732,7 +4732,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
     // call the function
     // (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
-    // (added 1.4.0.2 -- base_type)
+    // (added 1.4.1.0 -- base_type)
     f( base_type, mem_sp, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
     // clean up memory stack
     mem_sp -= push;
@@ -6310,7 +6310,7 @@ void Chuck_Instr_Dot_Static_Func::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
     // pop the type pointer
     // pop_( sp, 1 );
-    // 1.4.0.2 (ge): leave the base type on the operand stack
+    // 1.4.1.0 (ge): leave the base type on the operand stack
 
     // push the address
     push_( sp, (t_CKUINT)(m_func) );

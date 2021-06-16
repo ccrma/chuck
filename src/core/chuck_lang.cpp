@@ -87,7 +87,7 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
     
     // add api()
     func = make_new_sfun( "void", "apropos", object_apropos );
-    func->doc = "output information about the object's type.";
+    func->doc = "dynamically generate and output information about a class or object.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // end the class import
@@ -399,7 +399,7 @@ t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type )
     func->doc = "signal all shreds that are waiting on this event.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add wait() | commented out 1.4.0.2 (ge) -- it doesn't DO anything!!!
+    // add wait() | commented out 1.4.1.0 (ge) -- it doesn't DO anything!!!
     // func = make_new_mfun( "void", "wait", event_wait );
     // func->add_arg( "Shred", "me" );
     // func->doc = "(currently unsupported; use Event => now to wait on event)";
@@ -949,7 +949,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "set the size of the array. If the new size is less than the current size, elements will be deleted from the end; if the new size is larger than the current size, 0 or null elements will be added to the end.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // note 1.4.0.2: in the future, should deprecate and encourage programmer
+    // note 1.4.1.0: in the future, should deprecate and encourage programmer
     // to explicitly use .size() OR .capacity(), depending on the context
     // ---------
     // add cap()
@@ -957,7 +957,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "(deprecated) For historical/compatibilty reasons, .cap() is always equal to .size(); instead of using .cap(), it is recommended to explicitly use .size() or .capacity().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add capacity() // 1.4.0.2
+    // add capacity() // 1.4.1.0
     func = make_new_mfun( "int", "capacity", array_set_capacity );
     func->doc = "ensure capacity of the array (number of addressable elements).";
     func->add_arg( "int", "val" );
@@ -1249,7 +1249,7 @@ CK_DLL_CTRL( ugen_connected )
     RETURN->v_int = ret;
 }
 
-// 1.4.0.2 (jack): "buffered" flag -- necessary for getUGenSamples()
+// 1.4.1.0 (jack): "buffered" flag -- necessary for getUGenSamples()
 // for global UGens
 CK_DLL_MFUN( ugen_buffered )
 {

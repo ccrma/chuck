@@ -110,7 +110,7 @@ public: // compile
     // get the code generated from the last go()
     Chuck_VM_Code * output( );
 
-public: // replace-dac | added 1.4.0.2 (jack) 
+public: // replace-dac | added 1.4.1.0 (jack) 
     // sets a "replacement dac": one global UGen is secretly used
     // as a stand-in for "dac" for this compilation;
     // for example, ChuckSubInstances in Chunity use a global Gain as a

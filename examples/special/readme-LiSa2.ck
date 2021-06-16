@@ -172,8 +172,9 @@ loopme.play( voice1, 0 );
 //  mylisa.pan(int voice); returns pan value of voice
 //  mylisa.pan(int voice, float where); pans specified voice where can be [0., 7.], to place voice across LiSa's 8 outputs
 //
-// Note that that LiSa defaults to mono; as of chuck 1.4.0.2,
-// multi-channel LiSas can be instantiated using the following UGens:
+// Note that that LiSa defaults to mono;
+// As of chuck 1.4.1.0 multi-channel LiSas can be instantiated
+// using the following UGens:
 //   LiSa2 (stereo)
 //   LiSa4 (quad),
 //   LiSa6 (6-channel, laptop orchestra edition)

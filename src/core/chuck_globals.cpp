@@ -24,7 +24,7 @@
 
 //-----------------------------------------------------------------------------
 // file: chuck_globals.cpp
-// desc: system to support in-language globals; added 1.4.0.2
+// desc: system to support in-language globals; added 1.4.1.0
 //
 // author: Jack Atherton (lja@ccrma.stanford.edu)
 //         Ge Wang (ge@ccrma.stanford.edu)

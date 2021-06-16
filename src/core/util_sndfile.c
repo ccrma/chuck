@@ -24413,7 +24413,7 @@ static void Decoding_of_the_coded_Log_Area_Ratios (
 	 */
 
 #undef	short_termSTEP
-    // 1.4.0.2 (ge) added explicit cast: (word)(B << 1)
+    // 1.4.1.0 (ge) added explicit cast: (word)(B << 1)
 #define	short_termSTEP( B, MIC, INVA )	\
 		temp1    = GSM_ADD( *LARc++, MIC ) << 10;	\
 		temp1    = GSM_SUB( temp1, (word)(B << 1) );		\
@@ -24423,7 +24423,7 @@ static void Decoding_of_the_coded_Log_Area_Ratios (
 	short_termSTEP(      0,  -32,  13107 );
 	short_termSTEP(      0,  -32,  13107 );
 	short_termSTEP(   2048,  -16,  13107 );
-    // 1.4.0.2 (ge) using two's complement to rid compiler warning:
+    // 1.4.1.0 (ge) using two's complement to rid compiler warning:
     // shifting a negative signed value is undefined [-Wshift-negative-value]
 	short_termSTEP( 0xf600,  -16,  13107 ); // short_termSTEP(  -2560,  -16,  13107 );
 
