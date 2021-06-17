@@ -1,4 +1,4 @@
-# ChucK [![Build Status](https://travis-ci.com/ccrma/chuck.svg?branch=main)](https://travis-ci.com/ccrma/chuck)
+# ChucK [![macOS - Build and Unit Tests](https://github.com/ccrma/chuck/actions/workflows/macos-build-unit-tests.yml/badge.svg)](https://github.com/ccrma/chuck/actions/workflows/macos-build-unit-tests.yml)
 
 Please note that the `master` branch has been renamed to `main.`
 
