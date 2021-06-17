@@ -14,8 +14,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Compile - Linux
+    - name: Compile - Windows
       run: cd src/ && make win32
       
-    - name: Unit Tests - Linux
+    - name: Unit Tests - Windows
       run: cd src/ && cd test/ && python test.py
