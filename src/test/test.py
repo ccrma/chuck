@@ -85,13 +85,13 @@ def main():
 
     handle_directory(test_dir, exe)
 
-    print ""
+    print("")
 
     if failures == 0:
-        print "Success - all " + str(successes) + " tests passed!"
+        print("Success - all " + str(successes) + " tests passed!")
         sys.exit(0)
     else:
-        print "Failure - " + str(failures) + " test(s) failed"
+        print("Failure - " + str(failures) + " test(s) failed")
         sys.exit(-1)
 
 
