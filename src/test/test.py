@@ -8,6 +8,8 @@ import time
 
 failures = 0
 successes = 0
+skipped = 0
+skipTests = {"WvOut.ck"}
 
 
 def handle_directory(dir, exe):
@@ -27,7 +29,13 @@ def handle_directory(dir, exe):
 
 def run_test(exe, path, filename, attempt):
     global successes
+    global skipped
+
     print("> %s %s" % (exe, path))
+
+    if filename in skipTests:
+        skipped += 1
+        return
 
     try:
         result = subprocess.check_output([exe, "--silent", "%s" % path], stderr=subprocess.STDOUT).decode("utf-8")
