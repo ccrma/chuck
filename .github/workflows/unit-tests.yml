@@ -18,4 +18,4 @@ jobs:
       run: cd src/ && make osx
       
     - name: unit tests
-      run: export PATH=$PATH:$(pwd) && cd test/ && python test.py
+      run: export PATH=$PATH:$(pwd) && pwd && echo $PATH && cd test/ && python test.py
