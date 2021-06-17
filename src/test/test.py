@@ -11,8 +11,8 @@ successes = 0
 
 
 def handle_directory(dir, exe):
-    print ""
-    print ">>> Performing tests in %s <<<" % dir
+    print("")
+    print(">>> Performing tests in %s <<<" % dir)
 
     global successes
 
@@ -27,7 +27,7 @@ def handle_directory(dir, exe):
 
 def run_test(exe, path, filename, attempt):
     global successes
-    print "> %s %s" % (exe, path)
+    print("> %s %s" % (exe, path))
 
     try:
         result = subprocess.check_output([exe, "--silent", "%s" % path], stderr=subprocess.STDOUT)
@@ -61,7 +61,7 @@ def handle_failure(exe, path, filename, attempt, error_string):
 
     if attempt < retry_attempts_for_failed_tests:
         time.sleep(sleep_interval_between_runs_seconds)
-        print "Retrying test: %s %s" % (exe, path)
+        print("Retrying test: %s %s" % (exe, path))
         run_test(exe, path, filename, attempt + 1)
     else:
         fail(filename, error_string)
@@ -69,8 +69,8 @@ def handle_failure(exe, path, filename, attempt, error_string):
 
 def fail(test_name, output):
     global failures
-    print "*** Test '%s' failed: ***" % test_name
-    print output
+    print("*** Test '%s' failed: ***" % test_name)
+    print(output)
     failures += 1
 
 
