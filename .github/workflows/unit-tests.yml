@@ -1,0 +1,28 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: configure
+      run: |
+      sudo apt-get update --fix-missing
+      sudo apt-get install -y libsndfile1-dev
+      sudo apt-get install -y libpulse-dev
+      sudo apt-get install -y libasound2-dev
+    
+    - name: make
+      run: cd src/ && make linux-pulse
+      
+    - name: make check
+      run: mv ./chuck /usr/local/bin/ && cd test/ && python test.py
