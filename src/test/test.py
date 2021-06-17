@@ -32,7 +32,10 @@ def run_test(exe, path, filename, attempt):
     try:
         result = subprocess.check_output([exe, "--silent", "%s" % path], stderr=subprocess.STDOUT)
 
-        if not result.strip().endswith(("\"success\" : (string)",)):
+        if result.strip().endswith(("\"success\" : (string)",)):
+            successes += 1
+
+        else:
             if os.path.isfile(path.replace(".ck", ".txt")):
                 # print "\tChecking result with answer file: " + path.replace(".ck", ".txt")
 
@@ -45,9 +48,6 @@ def run_test(exe, path, filename, attempt):
                     successes += 1
             else:
                 handle_failure(exe, path, filename, attempt, result)
-
-        else:
-            successes += 1
     except subprocess.CalledProcessError as e:
         handle_failure(exe, path, filename, attempt, e.output)
 
