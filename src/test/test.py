@@ -96,7 +96,7 @@ def main():
     print("")
 
     if skipped > 0:
-        print("Skipped " + str(skipped) + " tests: " + skipTests)
+        print("Skipped " + str(skipped) + " tests: " + str(skipTests))
 
     if failures == 0:
         print("Success - all " + str(successes) + " tests passed!")
