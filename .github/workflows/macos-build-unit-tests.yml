@@ -1,4 +1,4 @@
-name: Unit Tests
+name: macOS - Build and Unit Tests
 
 on:
   push:
@@ -14,8 +14,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: make
+    - name: Compile - macOS
       run: cd src/ && make osx
       
-    - name: unit tests
-      run: cd src/ && export PATH=$PATH:$(pwd) && pwd && echo $PATH && cd test/ && python test.py
+    - name: Unit Tests - macOS
+      run: cd src/ && export PATH=$PATH:$(pwd) && cd test/ && python test.py
