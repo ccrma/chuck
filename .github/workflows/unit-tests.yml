@@ -9,20 +9,13 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: macos-11
 
     steps:
     - uses: actions/checkout@v2
-    
-    - name: configure
-      run: |
-      sudo apt-get update --fix-missing
-      sudo apt-get install -y libsndfile1-dev
-      sudo apt-get install -y libpulse-dev
-      sudo apt-get install -y libasound2-dev
-    
+
     - name: make
-      run: cd src/ && make linux-pulse
+      run: cd src/ && make osx
       
-    - name: make check
+    - name: unit tests
       run: mv ./chuck /usr/local/bin/ && cd test/ && python test.py
