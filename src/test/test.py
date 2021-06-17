@@ -32,7 +32,7 @@ def run_test(exe, path, filename, attempt):
     try:
         result = subprocess.check_output([exe, "--silent", "%s" % path], stderr=subprocess.STDOUT)
 
-        if result.strip().endswith(("\"success\" : (string)",)):
+        if result.strip().encode().endswith(("\"success\" : (string)",)):
             successes += 1
 
         else:
