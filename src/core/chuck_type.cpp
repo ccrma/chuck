@@ -1949,8 +1949,6 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
 
         return right;
     }
-    
-    
 
     // time advance ( dur => now )
     if( isa( left, env->t_dur ) && isa( right, env->t_time ) && rhs->s_meta == ae_meta_var
@@ -2011,10 +2009,11 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
             {
                 rhs->decl.type->ref = TRUE;
             }
-            // TODO: const
             // assigment?
             if( rhs->s_meta == ae_meta_var )
             {
+                // TODO: check if rhs is const
+
                 // emit ref - remember for emitter
                 rhs->emit_var = TRUE;
                 // right side
@@ -4611,6 +4610,21 @@ t_CKVOID type_engine_enable_reserved( Chuck_Env * env, const std::string & xid, 
         // set value
         env->key_values[xid] = value;
     }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_check_const()
+// desc: check whether exp is const
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_check_const( Chuck_Env * env, a_Exp exp, int pos )
+{
+//    switch( exp->s_type )
+//    {
+//    }
+    return FALSE;
 }
 
 
