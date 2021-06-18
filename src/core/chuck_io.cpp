@@ -3082,7 +3082,7 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
         }
         else
         {
-            char * buf = (char *) &val;
+            char * buf = (char *)&val;
             
             // assume 4-byte int
             for(int i = 0; i < size; i++)

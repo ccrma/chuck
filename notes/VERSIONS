@@ -41,6 +41,10 @@
   - (added) examples/deep/chant.ck (by Perry Cook, 2006) -- a chant singing
     synthesizer that makes use of ChucK's strongly-time and concurrent
     programming features.
+  - (added) .frames() for SndBuf and SndBuf2; returns the number of sample
+    frames in the loaded sound file. This is identical in behavior to
+    .samples() -- but for stereo+, .frames() is semanitically more 
+    accurate than .samples().
   - (BEHAVIOR CHANGED) clearly separated array.size() and array.capacity();
     for historical/compatibility reasons, array.cap() is the same as
     array.size() and generally should be avoided in favor of either .size()
@@ -85,6 +89,8 @@
     the basis for Chunity.  Future Chunity releases will align with mainline
     ChucK language features. (thanks to Jack Atherton for several years of
     laying the groundwork and for ChucK in Chunity!)
+  - (internal/development) Thanks to Mark Cerqueira -- migrated from old
+    Travis CI (continuous integration testing) to GHA (GitHub Actions).
 
 1.4.0.1
 ---

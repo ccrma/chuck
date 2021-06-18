@@ -1284,12 +1284,14 @@ void RtMidiOut :: initialize( void )
   result = snd_midi_event_new( data->bufferSize, &data->coder );
   if ( result < 0 ) {
     delete data;
+    data = NULL; // 1.4.1.0 (ge)
     errorString_ = "RtMidiOut::initialize: error initializing MIDI event parser!\n\n";
     error( RtMidiError::DRIVER_ERROR );
   }
   data->buffer = (unsigned char *) malloc( data->bufferSize );
   if ( data->buffer == NULL ) {
     delete data;
+    data = NULL; // 1.4.1.0 (ge)
     errorString_ = "RtMidiOut::initialize: error allocating buffer memory!\n\n";
     error( RtMidiError::MEMORY_ERROR );
   }
