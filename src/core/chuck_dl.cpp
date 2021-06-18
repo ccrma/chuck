@@ -562,9 +562,9 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
 // desc: ...
 //-----------------------------------------------------------------------------
 Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query * query,
-                                                                 f_mainthreadhook hook,
-                                                                 f_mainthreadquit quit,
-                                                                 void * bindle )
+                                                                  f_mainthreadhook hook,
+                                                                  f_mainthreadquit quit,
+                                                                  void * bindle )
 {
     return new Chuck_DL_MainThreadHook( hook, quit, bindle, query->carrier() );
 }

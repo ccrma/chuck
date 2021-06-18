@@ -1037,11 +1037,17 @@ bool go( int argc, const char ** argv )
         // real-time audio
         if( g_enable_realtime_audio )
         {
+            // NOTE: with real-time audio, chuck VM computation
+            // is driven from the audio callback function, not
+            // on this main thread loop.
+
+            // get main thread hook, call it if there is one
             Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();
-            if (hook)
-                hook->m_hook(hook->m_bindle);
-            else
+            if( hook ) {
+                hook->m_hook( hook->m_bindle );
+            } else {
                 usleep( 10000 );
+            }
         }
         else // silent mode
         {
@@ -1050,9 +1056,10 @@ bool go( int argc, const char ** argv )
         }
     }
     
+    // get main thread hook
     Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();
-    if (hook)
-        hook->m_quit(hook->m_bindle);
+    // call it if there is one
+    if( hook ) { hook->m_quit(hook->m_bindle); }
 
     return TRUE;
 }
