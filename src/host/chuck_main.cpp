@@ -138,7 +138,7 @@ int chuck_main( int argc, const char ** argv )
 // desc: audio callback
 //-----------------------------------------------------------------------------
 void cb( t_CKSAMPLE * in, t_CKSAMPLE * out, t_CKUINT numFrames,
-        t_CKUINT numInChans, t_CKUINT numOutChans, void * data )
+         t_CKUINT numInChans, t_CKUINT numOutChans, void * data )
 {
     // TODO: check channel numbers
     
@@ -455,14 +455,7 @@ bool go( int argc, const char ** argv )
     t_CKUINT files = 0;
     t_CKUINT count = 1;
     t_CKINT i;
-    
-    // set log level
-    EM_setlog( log_level );
-    
-    // add myself to the list of Chuck_Systems that might need to be cleaned up
-    // g_systems.push_back( this );
-    
-    
+
     //------------------------- COMMAND LINE ARGUMENTS -----------------------------
     
     // parse command line args
@@ -741,10 +734,10 @@ bool go( int argc, const char ** argv )
             files++;
         }
     }
-    
-    // log level
-    EM_setlog( log_level );
-    
+
+    // log level (commented out; this is done below)
+    // EM_setlog( log_level );
+
     // probe
     if( probe )
     {
@@ -1007,14 +1000,14 @@ bool go( int argc, const char ** argv )
     
     // log
     EM_log( CK_LOG_SYSTEM, "running main loop..." );
-    // push indent
-    EM_pushlog();
-    
+
     // start it!
     the_chuck->start();
     
+    // push indent
+    EM_pushlog();
     // log
-    EM_log( CK_LOG_SEVERE, "virtual machine running..." );
+    EM_log( CK_LOG_SYSTEM, "starting virtual machine..." );
     // pop indent
     EM_poplog();
     
@@ -1024,10 +1017,11 @@ bool go( int argc, const char ** argv )
     // zero out
     memset( input, 0, sizeof(SAMPLE)*buffer_size*adc_chans );
     memset( output, 0, sizeof(SAMPLE)*buffer_size*dac_chans );
-    
-    // start audio
+
+    // if real-time audio mode
     if( g_enable_realtime_audio )
     {
+        // start real-time audio I/O
         ChuckAudio::start();
     }
     
@@ -1039,7 +1033,7 @@ bool go( int argc, const char ** argv )
         {
             // NOTE: with real-time audio, chuck VM computation
             // is driven from the audio callback function, not
-            // on this main thread loop.
+            // on this main-thread (keep-alive) loop.
 
             // get main thread hook, call it if there is one
             Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();

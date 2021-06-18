@@ -138,6 +138,8 @@ ChucK::ChucK()
     initDefaultParams();
     // did user init?
     m_init = FALSE;
+    // did user start ChucK?
+    m_started = FALSE;
     // zero out the hook
     m_hook = NULL; // m_hook = nullptr
     
@@ -717,9 +719,11 @@ bool ChucK::shutdown()
     SAFE_DELETE( m_carrier->vm );
     SAFE_DELETE( m_carrier->compiler );
     m_carrier->env = NULL;
-    
-    // flag
+
+    // clear flag
     m_init = FALSE;
+    // clear flag
+    m_started = FALSE;
 
     // done
     return true;
@@ -901,9 +905,19 @@ bool ChucK::start()
         CK_FPRINTF_STDERR( "[chuck]: cannot start, VM not initialized...\n" );
         return false;
     }
+
+    // if already started
+    if( m_started )
+    {
+        // return VM running state
+        return m_carrier->vm->running();
+    }
     
     // start the VM!
     if( !m_carrier->vm->running() ) m_carrier->vm->start();
+
+    // set flag
+    m_started = TRUE;
 
     // return state
     return m_carrier->vm->running();
@@ -919,7 +933,7 @@ bool ChucK::start()
 void ChucK::run( SAMPLE * input, SAMPLE * output, int numFrames )
 {
     // make sure we started...
-    if( !m_carrier->vm->running() ) this->start();
+    if( !m_started ) this->start();
     
     // call the callback
     m_carrier->vm->run( numFrames, input, output );
