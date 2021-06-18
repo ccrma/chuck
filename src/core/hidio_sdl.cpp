@@ -1040,7 +1040,7 @@ void HidInManager::probeHidIn()
         
         for( int j = 0; j < count; j++ )
         {
-            const char * name;
+            const char * name = NULL;
             if( default_drivers[i].name )
                 name = default_drivers[i].name( j );
             if( !name )

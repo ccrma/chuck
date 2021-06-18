@@ -224,6 +224,9 @@ private:
                 int whence;
             } seek;
         };
+
+        // 1.4.1.0 (ge) added
+        Message() : file(NULL) { }
     };
 
 	// circular buffer

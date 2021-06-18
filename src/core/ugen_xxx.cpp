@@ -791,7 +791,12 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 
     // add cget: samples
     func = make_new_mfun( "int", "samples", sndbuf_cget_samples );
-    func->doc = "get total number of sample frames in the file.";
+    func->doc = "get total number of sample frames in the file; same as .frames().";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add cget: frames
+    func = make_new_mfun( "int", "frames", sndbuf_cget_samples );
+    func->doc = "get total number of sample frames in the file; same as .samples().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add cget: length
@@ -818,7 +823,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: SndBuf2
     //---------------------------------------------------------------------
-    doc = "a interpolating sound buffer with two-channel output. Reads from a variety of uncompressed formats.";
+    doc = "an interpolating sound buffer with two-channel output. Reads from a variety of uncompressed formats.";
     if( !type_engine_import_ugen_begin( env, "SndBuf2", "SndBuf", env->global(),
                                         NULL, NULL,
                                         NULL, sndbuf_tickf, NULL, 2, 2, doc.c_str() ) )

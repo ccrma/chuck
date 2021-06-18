@@ -18471,6 +18471,8 @@ bool WvOut :: setMatFile( const char *fileName )
   }
 
   struct mathdr hdr;
+  // 1.4.1.0 (ge) zero out
+  memset( hdr.heading, 0, sizeof(hdr.heading) );
   strcpy(hdr.heading,"MATLAB 5.0 MAT-file, Generated using the Synthesis ToolKit in C++ (STK). By Perry R. Cook and Gary P. Scavone, 1995-2002.");
 
   int i;
