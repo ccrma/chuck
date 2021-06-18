@@ -81,11 +81,11 @@ XThread::~XThread( )
         // TODO: find an alternative for Android?
 #if defined(__PLATFORM_MACOSX__) || ( defined(__PLATFORM_LINUX__) && !defined(__ANDROID__) ) || defined(__WINDOWS_PTHREAD__)
         // log
-        EM_log( CK_LOG_FINEST, "cancelling XThread: %d on thread: %d", (t_CKUINT)thread, (t_CKUINT)pthread_self() );
+        EM_log( CK_LOG_FINER, "cancelling XThread: %u on thread: %u", (t_CKUINT)thread, (t_CKUINT)pthread_self() );
         pthread_cancel(thread);
         pthread_join(thread, NULL);
         // log
-        EM_log( CK_LOG_FINEST, "joined with XThread: %d on thread: %d", (t_CKUINT)thread, (t_CKUINT)pthread_self() );
+        EM_log( CK_LOG_FINER, "joined with XThread: %u on thread: %u", (t_CKUINT)thread, (t_CKUINT)pthread_self() );
 #elif defined(__PLATFORM_WIN32__)
         TerminateThread((HANDLE)thread, 0);
 #endif
@@ -295,11 +295,11 @@ void XWriteThread::shutdown()
     SmartPushLog logPush;
 
     // log
-    EM_log( CK_LOG_FINEST, "waiting on write thread: %d", (t_CKUINT)m_thread.getThread() );
+    EM_log( CK_LOG_FINER, "waiting on write thread: %u", (t_CKUINT)m_thread.getThread() );
     // wait on the thread
     m_thread.wait( -1, false );
     // log
-    EM_log( CK_LOG_FINEST, "done waiting for thread: %d", (t_CKUINT)m_thread.getThread() );
+    EM_log( CK_LOG_FINER, "done waiting for thread: %u", (t_CKUINT)m_thread.getThread() );
 }
 
 
