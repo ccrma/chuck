@@ -494,23 +494,27 @@ void CK_DLL_CALL ck_add_ugen_funcf_auto_num_channels( Chuck_DL_Query * query,
 void CK_DLL_CALL ck_add_ugen_ctrl( Chuck_DL_Query * query, f_ctrl ugen_ctrl, f_cget ugen_cget,
                                    const char * type, const char * name )
 {
-    // make sure there is class
-    if( !query->curr_class )
-    {
-        // error
-        EM_error2( 0, "class import: add_ugen_func invoked without begin_class..." );
-        return;
-    }
+    // this is no longer used
+    EM_error2( 0, "class import: obselete ck_add_ugen_ctrl invoked..." );
+    return;
     
-    // allocate
-    Chuck_DL_Ctrl * c = new Chuck_DL_Ctrl;
-    c->name = name;
-    c->type = type;
-    c->ctrl = ugen_ctrl;
-    c->cget = ugen_cget;
-    
-    // set
-    query->curr_func = NULL;
+//    // make sure there is class
+//    if( !query->curr_class )
+//    {
+//        // error
+//        EM_error2( 0, "class import: add_ugen_func invoked without begin_class..." );
+//        return;
+//    }
+//
+//    // allocate
+//    Chuck_DL_Ctrl * c = new Chuck_DL_Ctrl;
+//    c->name = name;
+//    c->type = type;
+//    c->ctrl = ugen_ctrl;
+//    c->cget = ugen_cget;
+//
+//    // set
+//    query->curr_func = NULL;
 }
 
 
@@ -562,9 +566,9 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
 // desc: ...
 //-----------------------------------------------------------------------------
 Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query * query,
-                                                                 f_mainthreadhook hook,
-                                                                 f_mainthreadquit quit,
-                                                                 void * bindle )
+                                                                  f_mainthreadhook hook,
+                                                                  f_mainthreadquit quit,
+                                                                  void * bindle )
 {
     return new Chuck_DL_MainThreadHook( hook, quit, bindle, query->carrier() );
 }
@@ -946,7 +950,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     add_ugen_func = ck_add_ugen_func;
     add_ugen_funcf = ck_add_ugen_funcf;
     add_ugen_funcf_auto_num_channels = ck_add_ugen_funcf_auto_num_channels;
-    add_ugen_ctrl = ck_add_ugen_ctrl;
+    add_ugen_ctrl = ck_add_ugen_ctrl; // not used but needed for import for now
     end_class = ck_end_class;
     doc_class = ck_doc_class;
     doc_func = ck_doc_func;
@@ -954,7 +958,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     create_main_thread_hook = ck_create_main_thread_hook;
     m_carrier = carrier;
     
-//    memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
+    // memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
     
     dll_name = "[noname]";
     reserved = NULL;

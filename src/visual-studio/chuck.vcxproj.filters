@@ -229,6 +229,9 @@
     <ClCompile Include="..\core\chuck_carrier.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="..\core\chuck_globals.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\core\chuck.h">
@@ -431,6 +434,9 @@
     </ClInclude>
     <ClInclude Include="..\host\RtAudio\RtError.h">
       <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\chuck_globals.h">
+      <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

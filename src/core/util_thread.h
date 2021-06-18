@@ -86,7 +86,10 @@ public:
 public:
     // test for a thread cancellation request.
     static void test( );
-    
+
+    // get internal thread reference
+    THREAD_HANDLE getThread() { return thread; }
+
     // clear
     void clear() { thread = 0; }
 
@@ -221,6 +224,9 @@ private:
                 int whence;
             } seek;
         };
+
+        // 1.4.1.0 (ge) added
+        Message() : file(NULL) { }
     };
 
 	// circular buffer
