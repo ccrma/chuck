@@ -9,7 +9,7 @@ import time
 failures = 0
 successes = 0
 skipped = 0
-skipTests = {"WvOut.ck"}
+skipTests = {}
 
 
 def handle_directory(dir, exe):
