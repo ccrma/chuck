@@ -664,6 +664,9 @@ bool ChucK::initOTF()
 //-----------------------------------------------------------------------------
 bool ChucK::shutdown()
 {
+    // log
+    EM_log( CK_LOG_SYSTEM, "shutting down ChucK instance..." );
+
     // stop VM
     if( m_carrier != NULL && m_carrier->vm != NULL  )
     {
@@ -685,7 +688,7 @@ bool ChucK::shutdown()
     
 #ifndef __DISABLE_OTF_SERVER__
     // cancel otf thread
-    if(m_carrier->otf_thread)
+    if( m_carrier->otf_thread )
     {
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
         pthread_cancel( m_carrier->otf_thread );
