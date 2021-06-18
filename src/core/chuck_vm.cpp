@@ -594,11 +594,13 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 
 // vm stop here
 vm_stop:
+
+    // log, check so we only log once, in case run() still gets called
+    // after the initial stoppage; calling stop after resets m_is_running
+    if( m_is_running ) EM_log( CK_LOG_SYSTEM, "stopping virtual machine..." );
+
     // stop, 1.3.5.3
     this->stop();
-
-    // log
-    EM_log( CK_LOG_SYSTEM, "virtual machine stopped..." );
 
     return TRUE;
 }

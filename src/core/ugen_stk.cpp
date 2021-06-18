@@ -18471,6 +18471,8 @@ bool WvOut :: setMatFile( const char *fileName )
   }
 
   struct mathdr hdr;
+  // 1.4.1.0 (ge) zero out
+  memset( hdr.heading, 0, sizeof(hdr.heading) );
   strcpy(hdr.heading,"MATLAB 5.0 MAT-file, Generated using the Synthesis ToolKit in C++ (STK). By Perry R. Cook and Gary P. Scavone, 1995-2002.");
 
   int i;
@@ -27300,12 +27302,16 @@ CK_DLL_MFUN( MidiFileIn_rewind )
 t_CKBOOL stk_detach( Chuck_Carrier * carrier )
 {
     // log
-    EM_log( CK_LOG_INFO, "(via STK): detaching file handles..." );
-    
+    EM_log( CK_LOG_INFO, "cleaning up STK resources..." );
     // check
     if( carrier != NULL )
     {
+        // push log (auto cleaning smart pointer)
+        SmartPushLog pushLog;
+
         #ifndef __DISABLE_WVOUT__
+        // log
+        EM_log( CK_LOG_INFO, "(via STK): detaching file handles..." );
         // close files
         std::map<WvOut *, WvOut *>::iterator iter;
         for( iter = carrier->stk_wvOutMap.begin();
@@ -27318,6 +27324,8 @@ t_CKBOOL stk_detach( Chuck_Carrier * carrier )
         
         // deal with per-VM stk write thread
         #ifndef __DISABLE_THREADS__
+        // log
+        EM_log( CK_LOG_INFO, "(via STK): stopping write threads..." );
         if( carrier->stk_writeThread )
         {
             carrier->stk_writeThread->shutdown(); // deletes itself

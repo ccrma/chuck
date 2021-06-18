@@ -91,13 +91,16 @@ int lo_send(lo_address t, const char *path, const char *types, ...)
 
     va_start(ap, types);
     ret = lo_message_add_varargs_internal(msg, types, ap, file, line);
+    // 1.4.1.0 (ge) added matching va_end
+    va_end(ap);
 
-    if (ret) {
-	lo_message_free(msg);
-	t->errnum = ret;
-	if (ret == -1) t->errstr = "unknown type";
-	else t->errstr = "bad format/args";
-	return ret;
+    if( ret )
+    {
+        lo_message_free(msg);
+        t->errnum = ret;
+        if (ret == -1) t->errstr = "unknown type";
+        else t->errstr = "bad format/args";
+        return ret;
     }
 
     ret = lo_send_message(t, path, msg);
@@ -135,10 +138,12 @@ int lo_send_timestamped(lo_address t, lo_timetag ts,
 
     va_start(ap, types);
     ret = lo_message_add_varargs_internal(msg, types, ap, file, line);
+    // 1.4.1.0 (ge) added matching va_end
+    va_end(ap);
 
     if (t->errnum) {
-	lo_message_free(msg);
-	return t->errnum;
+        lo_message_free(msg);
+        return t->errnum;
     }
 
     lo_bundle_add_message(b, path, msg);
@@ -180,6 +185,8 @@ int lo_send_from(lo_address to, lo_server from, lo_timetag ts,
 
     va_start(ap, types);
     ret = lo_message_add_varargs_internal(msg, types, ap, file, line);
+    // 1.4.1.0 (ge) added matching va_end
+    va_end(ap);
 
     if (to->errnum) {
 	if (b) lo_bundle_free(b);
