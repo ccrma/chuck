@@ -23,6 +23,7 @@
     <ClInclude Include="..\core\chuck_absyn.h" />
     <ClInclude Include="..\core\chuck_carrier.h" />
     <ClInclude Include="..\core\chuck_compile.h" />
+    <ClInclude Include="..\core\chuck_globals.h" />
     <ClInclude Include="..\host\chuck_audio.h" />
     <ClInclude Include="..\host\chuck_console.h" />
     <ClInclude Include="..\core\chuck_def.h" />
@@ -92,6 +93,7 @@
     <ClCompile Include="..\core\chuck_absyn.cpp" />
     <ClCompile Include="..\core\chuck_carrier.cpp" />
     <ClCompile Include="..\core\chuck_compile.cpp" />
+    <ClCompile Include="..\core\chuck_globals.cpp" />
     <ClCompile Include="..\host\chuck_audio.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\core;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\core;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
