@@ -152,9 +152,10 @@ class Stk
 public:
 
   typedef unsigned long STK_FORMAT;
-  static const STK_FORMAT STK_SINT8;   /*!< -128 to +127 */
-  static const STK_FORMAT STK_SINT16;  /*!< -32768 to +32767 */
-  static const STK_FORMAT STK_SINT32;  /*!< -2147483648 to +2147483647. */
+  static const STK_FORMAT STK_SINT8;  /*!< -128 to +127 */
+  static const STK_FORMAT STK_SINT16; /*!< -32768 to +32767 */
+  // static const STK_FORMAT STK_SINT24; /*!< -8388608 to +8388607  MAYBE?? | added 1.4.1.0 */
+  static const STK_FORMAT STK_SINT32; /*!< -2147483648 to +2147483647. */
   static const STK_FORMAT MY_FLOAT32; /*!< Normalized between plus/minus 1.0. */
   static const STK_FORMAT MY_FLOAT64; /*!< Normalized between plus/minus 1.0. */
 
@@ -1051,6 +1052,8 @@ class BandedWG : public Instrmnt
   MY_FLOAT freakency;
   MY_FLOAT baseGain;
   MY_FLOAT gains[MAX_BANDED_MODES];
+  MY_FLOAT outGains[MAX_BANDED_MODES]; // 1.4.1.0 (prc): REPAIRATHON2021 addition
+  MY_FLOAT modeReson; // 1.4.1.0 (prc): REPAIRATHON2021 addition
   MY_FLOAT basegains[MAX_BANDED_MODES];
   MY_FLOAT excitation[MAX_BANDED_MODES];
   MY_FLOAT integrationConstant;
@@ -1059,7 +1062,7 @@ class BandedWG : public Instrmnt
   MY_FLOAT bowTarget;
   MY_FLOAT bowPosition;
   MY_FLOAT strikeAmp;
-  int strikePosition;
+  MY_FLOAT strikePosition; // 1.4.1.0 (prc): REPAIRATHON2021 changed from int
 };
 
 #endif
@@ -1491,6 +1494,42 @@ class FM : public Instrmnt
   //! Load the rawwave filenames in waves.
   void loadWaves(const char **filenames);
 
+  /***************************************/
+  // 1.4.1.0 (prc): *** REPAIRATHON2021 ***
+  // NEW FM PARAMETER ACCESS, NEW PARAMETERS!!!
+  //! Set all parameters of one of the internal ADSRs
+  void setADSR(int which, MY_FLOAT a, MY_FLOAT d, MY_FLOAT s, MY_FLOAT r);
+
+  //! Set gain of individual operator
+  void setOpGain(int opNum, MY_FLOAT g);
+
+  //! Get the value of operator gain
+  MY_FLOAT getOpGain(int opNum);
+
+  //! Set individual operator Amplitude Modulation
+  void setOpAM(int opNum, MY_FLOAT g);
+
+  //! Get the value of operator Amplitude Modulation
+  MY_FLOAT getOpAM(int opNum);
+
+  //! Get the value of operator Frequency Ratio
+  MY_FLOAT getRatio(int opNum);
+
+  //! Set individual operator waveform (0-7)
+  void setOpWave(int opNum, int wave);
+
+  //! Set the value of operator 4 feedback
+  void setOp4Feedback(MY_FLOAT fbVal);
+
+  //! Get the value of operator 4 feedback
+  MY_FLOAT getOp4Feedback();
+
+  MY_FLOAT getFMTableGain(int index);     // table lookup accessing functions
+  MY_FLOAT getFMTableTime(int index);     // to mimic TX81Z integer
+  MY_FLOAT getFMTableSusLevel(int index); // programming settings
+  // 1.4.1.0 (prc): *** END REPAIRATHON2021 BLOCK ***
+  /****************************************/
+   
   //! Set instrument parameters for a particular frequency.
   virtual void setFrequency(MY_FLOAT frequency);
 
@@ -1509,7 +1548,7 @@ class FM : public Instrmnt
   //! Set the value of control1.
   void setControl1(MY_FLOAT cVal);
 
-  //! Set the value of control1.
+  //! Set the value of control2.
   void setControl2(MY_FLOAT cVal);
 
   //! Start envelopes toward "on" targets.
@@ -1536,6 +1575,12 @@ class FM : public Instrmnt
   MY_FLOAT baseFrequency;
   MY_FLOAT *ratios;
   MY_FLOAT *gains;
+  MY_FLOAT *baseGains; // 1.4.1.0 (prc): REPAIRATHON2021 addition
+  MY_FLOAT op4Feedback; // 1.4.1.0 (prc): REPAIRATHON2021 addition
+  MY_FLOAT *opAMs; // 1.4.1.0 (prc): REPAIRATHON2021 addition
+  int bCompatible; // 1.4.1.0 (prc): REPAIRATHON2021 backward compatibilty
+                     // addition (Rhodey, Wurley, and TubeBell AM)
+
   MY_FLOAT modDepth;
   MY_FLOAT control1;
   MY_FLOAT control2;
@@ -2486,6 +2531,10 @@ class Brass: public Instrmnt
   MY_FLOAT slideTarget;
   MY_FLOAT vibratoGain;
   MY_FLOAT maxPressure;
+  int compatible; // 1.4.1.0 (prc) REPAIRATHON2021 compatibility addition (if
+                  // anyone ever got Brass working before, this lets old code work fine)
+  MY_FLOAT gainHack; // 1.4.1.0 (prc) REPAIRATHON2021 New Hack for
+                     // consistency over pitch range
 
 };
 
@@ -3114,6 +3163,169 @@ class HevyMetl : public FM
 
 
 
+/***** 1.4.1.0 REPAIRATHON2021 BRAND NEW FM ALGORITHMS!!! *****/
+
+/***************************************************/
+/*! \class HnkyTonk
+ \brief STK Honkey Tonk Piano FM synthesis instrument.
+ 
+ This class implements 4 cascade operators with
+ feedback modulation on the master modulator,
+ also referred to as algorithm 1 of the TX81Z.
+ 
+ Algorithm 1 is :
+ 4-->3-->2-->1-->Out
+ 
+ Control Change Numbers:
+ - Total Modulator Index = 2
+ - Modulator Crossfade = 4
+ - LFO Speed = 11
+ - LFO Depth = 1
+ - ADSR 2 & 4 Target = 128
+ 
+ The basic Chowning/Stanford FM patent expired
+ in 1995, but there exist follow-on patents,
+ mostly assigned to Yamaha.  If you are of the
+ type who should worry about this (making
+ money) worry away.
+ 
+ by Perry R. Cook, 2021.
+ */
+/***************************************************/
+
+#if !defined(__HNKYTONK_H)
+#define __HNKYTONK_H
+
+class HnkyTonk : public FM
+{
+public:
+    //! Class constructor.
+    HnkyTonk();
+    
+    //! Class destructor.
+    ~HnkyTonk();
+    
+    //! Start a note with the given frequency and amplitude.
+    void noteOn(MY_FLOAT frequency, MY_FLOAT amplitude);
+    void noteOn( MY_FLOAT amplitude) { noteOn(baseFrequency, amplitude); }
+    
+    //! Compute one output sample.
+    MY_FLOAT tick();
+};
+
+#endif
+
+/***** 1.4.1.0 REPAIRATHON2021 BRAND NEW FM ALGORITHMS!!! *****/
+
+/***************************************************/
+/*! \class FrencHrn
+ \brief NEW STK-style French Horn FM synthesis instrument.
+ 
+ This class implements 3 cascade operators with
+ feedback modulation, also referred to as
+ algorithm 3 of the TX81Z.
+ 
+ Algorithm 3 is :     4--\
+ 3-->2-- + -->1-->Out
+ 
+ Control Change Numbers:
+ - Total Modulator Index = 2
+ - Modulator Crossfade = 4
+ - LFO Speed = 11
+ - LFO Depth = 1
+ - ADSR 2 & 4 Target = 128
+ 
+ The basic Chowning/Stanford FM patent expired
+ in 1995, but there exist follow-on patents,
+ mostly assigned to Yamaha.  If you are of the
+ type who should worry about this (making
+ money) worry away.
+ 
+ by Perry R. Cook, 2021.
+ */
+/***************************************************/
+
+#if !defined(__FRENCHRN_H)
+#define __FRENCHRN_H
+
+class FrencHrn : public FM
+{
+public:
+    //! Class constructor.
+    FrencHrn();
+    
+    //! Class destructor.
+    ~FrencHrn();
+    
+    //! Start a note with the given frequency and amplitude.
+    void noteOn(MY_FLOAT frequency, MY_FLOAT amplitude);
+    void noteOn( MY_FLOAT amplitude) { noteOn(baseFrequency, amplitude); }
+    
+    //! Compute one output sample.
+    MY_FLOAT tick();
+};
+
+#endif
+
+
+/***** 1.4.1.0 REPAIRATHON2021 BRAND NEW FM ALGORITHMS!!! *****/
+
+/***************************************************/
+/*! \class KrstlChr
+ \brief New STK-style Crystal Choir FM synthesis instrument.
+ 
+ This class implements 3 parallel operators with
+ one modulated, by one with feedback modulation,
+ also referred to as algorithm 7 of the TX81Z.
+ 
+ Algorithm 3 is :     4-->3-->\
+ 2--> + -->Out
+ 1-->/
+ 
+ Control Change Numbers:
+ - Total Modulator Index = 2
+ - Modulator Crossfade = 4
+ - LFO Speed = 11
+ - LFO Depth = 1
+ - ADSR 2 & 4 Target = 128
+ 
+ The basic Chowning/Stanford FM patent expired
+ in 1995, but there exist follow-on patents,
+ mostly assigned to Yamaha.  If you are of the
+ type who should worry about this (making
+ money) worry away.
+ 
+ by Perry R. Cook, 2021.
+ */
+/***************************************************/
+
+#if !defined(__KRSTLCHR_H)
+#define __KRSTLCHR_H
+
+class KrstlChr : public FM
+{
+public:
+    //! Class constructor.
+    KrstlChr();
+    
+    //! Class destructor.
+    ~KrstlChr();
+    
+    //! Start a note with the given frequency and amplitude.
+    void noteOn(MY_FLOAT frequency, MY_FLOAT amplitude);
+    void noteOn( MY_FLOAT amplitude) { noteOn(baseFrequency, amplitude); }
+    
+    //! Compute one output sample.
+    MY_FLOAT tick();
+};
+
+#endif
+
+/***** 1.4.1.0 END REPAIRATHON2021 BRAND NEW FM ALGORITHMS!!! *****/
+
+
+
+
 /***************************************************/
 /*! \class Reverb
     \brief STK abstract reverberator parent class.
@@ -3262,6 +3474,8 @@ class PluckTwo : public Instrmnt
 
   //! Set instrument parameters for a particular frequency.
   virtual void setFrequency(MY_FLOAT frequency);
+  // 1.4.1.0. REPAIRATHON FIX HERE:
+  // added minus 1 from length in setFrequency (tuning error)
 
   //! Detune the two strings by the given factor.  A value of 1.0 produces unison strings.
   void setDetune(MY_FLOAT detune);
@@ -3878,7 +4092,7 @@ class Moog : public Sampler
   MY_FLOAT modDepth;
   MY_FLOAT filterQ;
   MY_FLOAT filterRate;
-
+  MY_FLOAT filterStartFreq; // 1.4.1.0 (prc)
 };
 
 #endif

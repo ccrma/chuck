@@ -6900,7 +6900,7 @@ void apropos_func( std::ostringstream & sout, Chuck_Func * func, const std::stri
     // print line prefix, if any
     sout << PREFIX;
     // print static
-    sout << (func->def->static_decl ? "static " : " ");
+    sout << (func->def->static_decl == ae_key_static ? "static " : "");
     // output return type
     sout << func->def->ret_type->str();
     // space
