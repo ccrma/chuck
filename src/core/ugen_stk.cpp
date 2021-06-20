@@ -79,13 +79,16 @@ static t_CKUINT Instrmnt_offset_data = 0;
 //static t_CKUINT StifKarp_offset_data = 0;
 //static t_CKUINT VoicForm_offset_data = 0;
 static t_CKUINT FM_offset_data = 0;
-//static t_CKUINT BeeThree_offset_data = 0;
-//static t_CKUINT FMVoices_offset_data = 0;
-//static t_CKUINT HevyMetl_offset_data = 0;
-//static t_CKUINT PercFlut_offset_data = 0;
-//static t_CKUINT Rhodey_offset_data = 0;
-//static t_CKUINT TubeBell_offset_data = 0;
-//static t_CKUINT Wurley_offset_data = 0;
+//static t_CKUINT BeeThree_offset_data = 0;  // NOTE: TX81Z Algorithm 8 (lots of Organs)
+//static t_CKUINT FMVoices_offset_data = 0;  // NOTE: TX81Z Algorithm 6
+//static t_CKUINT HevyMetl_offset_data = 0;  // NOTE: TX81Z Algorithm 3 (Trumpet too)
+//static t_CKUINT HnkyTonk offset_data = 0;  // 1.4.1.0 (prc) REPAIRATHON2021 ADDITION, TX81Z Algorithm 1
+//static t_CKUINT FrencHrn offset_data = 0;  // 1.4.1.0 (prc) REPAIRATHON2021 ADDITION, TX81Z Algorithm 2
+//static t_CKUINT KrstlChr offset_data = 0;  // 1.4.1.0 (prc) REPAIRATHON2021 ADDITION, TX81Z Algorithm 7
+//static t_CKUINT PercFlut_offset_data = 0;  // NOTE: TX81Z Algorithm 4
+//static t_CKUINT Rhodey_offset_data = 0;    // NOTE: TX81Z Algorithm 5 (also Wurley, TubeBell)
+//static t_CKUINT TubeBell_offset_data = 0;  // NOTE: TX81Z Algorithm 5 (also Rhodey, Wurley)
+//static t_CKUINT Wurley_offset_data = 0;    // NOTE: TX81Z Algorithm 5 (also Rhodey, TubeBell)
 static t_CKUINT FormSwep_offset_data = 0;
 static t_CKUINT Delay_offset_data = 0;
 static t_CKUINT DelayA_offset_data = 0;
@@ -487,6 +490,22 @@ CK_DLL_CTRL( FM_ctrl_control1 );
 CK_DLL_CTRL( FM_ctrl_control2 );
 CK_DLL_CTRL( FM_ctrl_controlChange );
 CK_DLL_CTRL( FM_ctrl_afterTouch );
+// 1.4.1.0 (prc) REPAIRATHON2021 NEW Set/Get access functions
+CK_DLL_CTRL( FM_ctrl_opADSR );
+CK_DLL_CTRL( FM_ctrl_opRatio );
+CK_DLL_CGET( FM_cget_opRatio );
+CK_DLL_CTRL( FM_ctrl_opGain );
+CK_DLL_CGET( FM_cget_opGain );
+CK_DLL_CTRL( FM_ctrl_opAM );
+CK_DLL_CTRL( FM_cget_opAM );
+CK_DLL_CTRL( FM_ctrl_opWave );
+CK_DLL_CTRL( FM_ctrl_op4Feedback );
+CK_DLL_CTRL( FM_cget_op4Feedback );
+CK_DLL_CGET( FM_cget_getFMTableGain );
+CK_DLL_CGET( FM_cget_getFMTableTime );
+CK_DLL_CGET( FM_cget_getFMTableSusLevel );
+// 1.4.1.0 (prc) END NEW REPAIRATHON2021 Set/Get access functinos
+
 CK_DLL_CGET( FM_cget_freq );
 CK_DLL_CGET( FM_cget_modDepth );
 CK_DLL_CGET( FM_cget_modSpeed );
@@ -778,6 +797,24 @@ CK_DLL_DTOR( HevyMetl_dtor );
 CK_DLL_TICK( HevyMetl_tick );
 CK_DLL_PMSG( HevyMetl_pmsg );
 
+// HnkyTonk 1.4.1.0 (prc) REPAIRATHON2021 ADDITION, Algorithm 1
+CK_DLL_CTOR( HnkyTonk_ctor );
+CK_DLL_DTOR( HnkyTonk_dtor );
+CK_DLL_TICK( HnkyTonk_tick );
+CK_DLL_PMSG( HnkyTonk_pmsg );
+
+// FrencHrn 1.4.1.0 (prc) REPAIRATHON2021 ADDITION, Algorithm 2
+CK_DLL_CTOR( FrencHrn_ctor );
+CK_DLL_DTOR( FrencHrn_dtor );
+CK_DLL_TICK( FrencHrn_tick );
+CK_DLL_PMSG( FrencHrn_pmsg );
+
+// KrstlChr 1.4.1.0 (prc) REPAIRATHON2021 ADDITION, Algorithm 7
+CK_DLL_CTOR( KrstlChr_ctor );
+CK_DLL_DTOR( KrstlChr_dtor );
+CK_DLL_TICK( KrstlChr_tick );
+CK_DLL_PMSG( KrstlChr_pmsg );
+
 // JetTabl
 CK_DLL_CTOR( JetTabl_ctor );
 CK_DLL_DTOR( JetTabl_dtor );
@@ -874,6 +911,7 @@ CK_DLL_CTRL( Moog_ctrl_modSpeed );
 CK_DLL_CTRL( Moog_ctrl_modDepth );
 CK_DLL_CTRL( Moog_ctrl_filterQ );
 CK_DLL_CTRL( Moog_ctrl_filterSweepRate );
+CK_DLL_CTRL( Moog_ctrl_filterStartFreq ); // 1.4.1.0 (prc) added
 CK_DLL_CTRL( Moog_ctrl_afterTouch );
 CK_DLL_CTRL( Moog_ctrl_vibratoFreq );
 CK_DLL_CTRL( Moog_ctrl_vibratoGain );
@@ -884,6 +922,7 @@ CK_DLL_CGET( Moog_cget_modSpeed );
 CK_DLL_CGET( Moog_cget_modDepth );
 CK_DLL_CGET( Moog_cget_filterQ );
 CK_DLL_CGET( Moog_cget_filterSweepRate );
+CK_DLL_CGET( Moog_cget_filterStartFreq ); // 1.4.1.0 (prc) added
 CK_DLL_CGET( Moog_cget_vibratoFreq );
 CK_DLL_CGET( Moog_cget_vibratoGain );
 CK_DLL_CGET( Moog_cget_volume );
@@ -1242,7 +1281,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     Chuck_DL_Func * func = NULL;
 
     std::string doc;
-    
+
     // set srate
     Stk::setSampleRate( QUERY->srate );
     // test for endian
@@ -1258,8 +1297,8 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin StkInstrument UGen
     //------------------------------------------------------------------------
 
-    doc = "base class for STK instruments.";
-    
+    doc = "super-class for STK instruments.";
+
     if( !type_engine_import_ugen_begin( env, "StkInstrument", "UGen", env->global(),
                                        Instrmnt_ctor, NULL, Instrmnt_tick, Instrmnt_pmsg,
                                        doc.c_str()) ) return FALSE;
@@ -1289,7 +1328,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "void", "controlChange", Instrmnt_ctrl_controlChange ); //! control change
     func->add_arg( "int", "ctrl" );
     func->add_arg( "float", "value" );
-    func->doc = "assert control change; numbers are instrument specific [0.0 - 127.0]";
+    func->doc = "assert control change; numbers are instrument specific; value range [0.0 - 127.0]";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1300,7 +1339,7 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // begin BandedWG ugen
     //------------------------------------------------------------------------
 
-    doc = "a banded waveguide model for generating a variety of sounds, including bowed bars, glasses, and bowls. For more information, see Essl and Cook 'Banded Waveguides: Towards Physical Modelling of Bar Percussion Instruments', In Proceedings of the 1999 International Computer Music Conference.\n\
+    doc = "This class uses banded waveguide techniques to model a variety of sounds, including bowed bars, glasses, and bowls. For more information, see Essl, G. and Cook, P. 'Banded Waveguides: Towards Physical Modelling of Bar Percussion Instruments', Proceedings of the 1999 International Computer Music Conference.\n\
 \n\
 Control Change Numbers:\n\
 \n\
@@ -1322,7 +1361,7 @@ Modified for Stk 4.0 by Gary Scavone.";
     if( !type_engine_import_ugen_begin( env, "BandedWG", "StkInstrument", env->global(),
                         BandedWG_ctor, BandedWG_dtor,
                         BandedWG_tick, BandedWG_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/band-o-matic.ck");
     type_engine_import_add_ex(env, "stk/bandedwg.ck");
     type_engine_import_add_ex(env, "stk/bandedwg2.ck");
@@ -1417,7 +1456,7 @@ Modified for Stk 4.0 by Gary Scavone.";
     // begin BlowBotl ugen
     //------------------------------------------------------------------------
 
-    doc = "a helmholtz resonator (BiQuad filter) with a polynomial jet excitation (a la Cook).\n\
+    doc = "This class implements a helmholtz resonator (biquad filter) with a polynomial jet excitation (a la Cook).\n\
 \n\
 Control Change Numbers:\n\
 \n\
@@ -1431,7 +1470,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002";
     if( !type_engine_import_ugen_begin( env, "BlowBotl", "StkInstrument", env->global(), 
                         BlowBotl_ctor, BlowBotl_dtor,
                         BlowBotl_tick, BlowBotl_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/blowbotl.ck");
     type_engine_import_add_ex(env, "stk/blowbotl2.ck");
 
@@ -1498,12 +1537,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002";
     type_engine_import_class_end( env );
 
 
-
     //------------------------------------------------------------------------
     // begin BlowHole ugen
     //------------------------------------------------------------------------
 
-    doc = "based on the clarinet model, with the addition of a two-port register hole and a three-port dynamic tonehole implementation, as discussed by Scavone and Cook (1998).\n\
+    doc = "This class is based on the clarinet model, with the addition of a two-port register hole and a three-port dynamic tonehole implementation, as discussed by Scavone and Cook (1998).\n\
 \n\
 In this implementation, the distances between the reed/register hole and tonehole/bell are fixed. As a result, both the tonehole and register hole will have variable influence on the playing frequency, which is dependent on the length of the air column. In addition, the highest playing freqeuency is limited by these fixed lengths. This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
@@ -1516,11 +1554,11 @@ Control Change Numbers:\n\
 - Breath Pressure = 128\n\
 \n\
 Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "BlowHole", "StkInstrument", env->global(), 
                         BlowHole_ctor, BlowHole_dtor,
                         BlowHole_tick, BlowHole_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/blowhole.ck");
     type_engine_import_add_ex(env, "stk/blowhole2.ck");
 
@@ -1600,7 +1638,7 @@ Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Bowed ugen
     //------------------------------------------------------------------------
 
-    doc = "a bowed string model, a la Smith (1986), after McIntyre, Schumacher, Woodhouse (1983).\n\
+    doc = "This class implements a bowed string model, a la Smith (1986), after McIntyre, Schumacher, Woodhouse (1983).\n\
 \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
@@ -1613,11 +1651,11 @@ Control Change Numbers:\n\
 - Volume = 128\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "Bowed", "StkInstrument", env->global(), 
                         Bowed_ctor, Bowed_dtor,
                         Bowed_tick, Bowed_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/bowed.ck");
     type_engine_import_add_ex(env, "stk/bowed2.ck");
 
@@ -1679,7 +1717,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func = make_new_mfun( "float", "volume", Bowed_cget_volume ); //! volume
     func->doc = "get volume, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -1688,7 +1726,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Brass ugen
     //------------------------------------------------------------------------
 
-    doc = "a simple brass instrument waveguide model, a la Cook (TBone, HosePlayer).\n\
+    doc = "This class implements a simple brass instrument waveguide model, a la Cook (TBone, HosePlayer).\n\
 \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
@@ -1701,7 +1739,7 @@ Control Change Numbers:\n\
 - Volume = 128\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "Brass", "StkInstrument", env->global(), 
                         Brass_ctor, Brass_dtor,
                         Brass_tick, Brass_pmsg, doc.c_str() ) ) return FALSE;
@@ -1790,7 +1828,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Clarinet ugen
     //------------------------------------------------------------------------
 
-    doc = "a simple clarinet physical model, as discussed by Smith (1986), McIntyre, Schumacher, Woodhouse (1983), and others.\n\
+    doc = "This class implements a simple clarinet physical model, as discussed by Smith (1986), McIntyre, Schumacher, Woodhouse (1983), and others.\n\
 \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
@@ -1803,11 +1841,11 @@ Control Change Numbers:\n\
 - Breath Pressure = 128\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "Clarinet", "StkInstrument", env->global(), 
                         Clarinet_ctor, Clarinet_dtor,
                         Clarinet_tick, Clarinet_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/clarinet.ck");
     type_engine_import_add_ex(env, "stk/clarinet2.ck");
 
@@ -1892,7 +1930,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Flute ugen
     //------------------------------------------------------------------------
 
-    doc = "a simple flute physical model, as discussed by Karjalainen, Smith, Waryznyk, etc. The jet model uses a polynomial, a la Cook.\n\
+    doc = "This class implements a simple flute physical model, as discussed by Karjalainen, Smith, Waryznyk, etc. The jet model uses a polynomial, a la Cook.\n\
 \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
@@ -1905,11 +1943,11 @@ Control Change Numbers:\n\
 - Breath Pressure = 128\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "Flute", "StkInstrument", env->global(), 
                         Flute_ctor, Flute_dtor,
                         Flute_tick, Flute_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/flute.ck");
 
     // member variable
@@ -2011,7 +2049,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Mandolin ugen
     //------------------------------------------------------------------------
 
-    doc = "inherits from PluckTwo and uses 'commuted synthesis' techniques to model a mandolin instrument.\n\
+    doc = "This class inherits from PluckTwo and uses 'commuted synthesis' techniques to model a mandolin instrument.\n\
 \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others. Commuted Synthesis, in particular, is covered by patents, granted, pending, and/or applied-for. All are assigned to the Board of Trustees, Stanford University. For information, contact the Office of Technology Licensing, Stanford University.\n\
 \n\
@@ -2024,12 +2062,12 @@ Control Change Numbers:\n\
 - Microphone Position = 128\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     //! see \example mand-o-matic.ck
     if( !type_engine_import_ugen_begin( env, "Mandolin", "StkInstrument", env->global(), 
                         Mandolin_ctor, Mandolin_dtor,
                         Mandolin_tick, Mandolin_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/mandolin.ck");
     type_engine_import_add_ex(env, "stk/mand-o-matic.ck");
     type_engine_import_add_ex(env, "stk/mand-o-matic-simple.ck");
@@ -2040,7 +2078,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     func = make_new_mfun( "float", "pluck", Mandolin_ctrl_pluck );  //! pluck string with given amplitude 
     func->add_arg( "float", "value" );
-    func->doc = "pluck the instrument, [0.0-1.0].";
+    func->doc = "pluck instrument, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pluckPos", Mandolin_ctrl_pluckPos ); //! set pluck position ( 0-1) along string
@@ -2092,7 +2130,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func = make_new_mfun( "string", "bodyIR", Mandolin_cget_bodyIR ); //! get path
     func->doc = "get body impulse response.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -2101,7 +2139,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin ModalBar ugen
     //------------------------------------------------------------------------
 
-    doc = "a suite of struck bar instruments. It inherits from the Modal class.\n\
+    doc = "This class implements a number of different struck bar instruments. It inherits from the Modal class.\n\
 \n\
 Control Change Numbers:\n\
 \n\
@@ -2123,27 +2161,27 @@ Control Change Numbers:\n\
 - Clump = 8\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     //! see \example modalbot.ck
     if( !type_engine_import_ugen_begin( env, "ModalBar", "StkInstrument", env->global(),
                         ModalBar_ctor, ModalBar_dtor,
                         ModalBar_tick, ModalBar_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/modalbar.ck");
     type_engine_import_add_ex(env, "stk/modalbar2.ck");
-    
+
     // member variable
     // ModalBar_offset_data = type_engine_import_mvar ( env, "int", "@ModalBar_data", FALSE );
     // if( ModalBar_offset_data == CK_INVALID_OFFSET ) goto error;
 
     func = make_new_mfun( "float", "strike", ModalBar_ctrl_strike ); //! strike bar
     func->add_arg( "float", "value" );
-    func->doc = "strike bar, [0.0-1.0].";
+    func->doc = "Strike bar, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "damp", ModalBar_ctrl_damp ); //! damp bar
     func->add_arg( "float", "value" );
-    func->doc = "damp bar, [0.0-1.0].";
+    func->doc = "Damp bar, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "clear", ModalBar_ctrl_clear ); //! clear
@@ -2267,7 +2305,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Moog ugen
     //------------------------------------------------------------------------
 
-    doc = "a Moog instrument modeled using one attack wave, one looped wave, and an ADSR envelope (inherited from the Sampler class) and adds two sweepable formant (FormSwep) filters.\n\
+    doc = "This instrument uses one attack wave, one looped wave, and an ADSR envelope (inherited from the Sampler class) and adds two sweepable formant (FormSwep) filters.\n\
 \n\
 Control Change Numbers:\n\
 \n\
@@ -2278,12 +2316,12 @@ Control Change Numbers:\n\
 - Gain = 128\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     //! see \example moogie.ck
     if( !type_engine_import_ugen_begin( env, "Moog", "StkInstrument", env->global(), 
                         Moog_ctor, Moog_dtor,
                         Moog_tick, Moog_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/moog.ck");
     type_engine_import_add_ex(env, "stk/moog2.ck");
     type_engine_import_add_ex(env, "stk/moogie.ck");
@@ -2346,6 +2384,15 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get filter sweep rate, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    func = make_new_mfun( "float", "filterStartFreq", Moog_ctrl_filterStartFreq ); //! filter starting frequency
+    func->add_arg( "float", "freq" );
+    func->doc = "set filter starting frequency.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "filterStartFreq", Moog_cget_filterStartFreq ); //! filter starting frequency
+    func->doc = "get filter starting frequency.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "afterTouch", Moog_ctrl_afterTouch ); // aftertouch
     func->add_arg( "float", "value" );
     func->doc = "set aftertouch, [0.0-1.0].";
@@ -2386,7 +2433,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Saxofony ugen
     //------------------------------------------------------------------------
 
-    doc = "a 'hybrid' digital waveguide instrument that can generate a variety of wind-like sounds. It has also been referred to as the 'blowed string' model. The waveguide section is essentially that of a string, with one rigid and one lossy termination. The non-linear function is a reed table. The string can be 'blown' at any point between the terminations, though just as with strings, it is impossible to excite the system at either end. If the excitation is placed at the string mid-point, the sound is that of a clarinet. At points closer to the 'bridge', the sound is closer to that of a saxophone. See Scavone (2002) for more details.\n\
+    doc = "This class implements a 'hybrid' digital waveguide instrument that can generate a variety of wind-like sounds. It has also been referred to as the 'blowed string' model. The waveguide section is essentially that of a string, with one rigid and one lossy termination. The non-linear function is a reed table. The string can be 'blown' at any point between the terminations, though just as with strings, it is impossible to excite the system at either end. If the excitation is placed at the string mid-point, the sound is that of a clarinet. At points closer to the 'bridge', the sound is closer to that of a saxophone. See Scavone (2002) for more details.\n\
 \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
@@ -2401,11 +2448,11 @@ Control Change Numbers:\n\
 - Breath Pressure = 128\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "Saxofony", "StkInstrument", env->global(), 
                         Saxofony_ctor, Saxofony_dtor,
                         Saxofony_tick, Saxofony_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/saxofony.ck");
 
     // member variable
@@ -2544,15 +2591,15 @@ Control Change Numbers:\n\
 - Tuned Bamboo Chimes = 22\n\
 \n\
 by Perry R. Cook, 1996 - 1999.";
-    
+
     //! see \example shake-o-matic.ck
     if( !type_engine_import_ugen_begin( env, "Shakers", "StkInstrument", env->global(), 
                         Shakers_ctor, Shakers_dtor,
                         Shakers_tick, Shakers_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/shake-cycle.ck");
     type_engine_import_add_ex(env, "stk/shake-o-matic.ck");
-    
+
     // member variable
     // Shakers_offset_data = type_engine_import_mvar ( env, "int", "@Shakers_data", FALSE );
     // if( Shakers_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -2629,16 +2676,16 @@ by Perry R. Cook, 1996 - 1999.";
     // begin Sitar ugen
     //------------------------------------------------------------------------
 
-    doc = "a sitar plucked string physical model based on the Karplus-Strong algorithm.\n\
+    doc = "This class implements a sitar plucked string physical model based on the Karplus-Strong algorithm.\n\
     \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others. There exist at least two patents, assigned to Stanford, bearing the names of Karplus and/or Strong.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "Sitar", "StkInstrument", env->global(), 
                         Sitar_ctor, Sitar_dtor,
                         Sitar_tick, Sitar_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/sitar.ck");
 
     // member variable
@@ -2663,7 +2710,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin StifKarp ugen
     //------------------------------------------------------------------------
 
-    doc = "a simple plucked string algorithm (Karplus Strong) with enhancements (Jaffe-Smith, Smith, and others), including string stiffness and pluck position controls. The stiffness is modeled with allpass filters.\n\
+    doc = "This class implements a simple plucked string algorithm (Karplus Strong) with enhancements (Jaffe-Smith, Smith, and others), including string stiffness and pluck position controls. The stiffness is modeled with allpass filters.\n\
 \n\
 This is a digital waveguide model, making its use possibly subject to patents held by Stanford University, Yamaha, and others.\n\
 \n\
@@ -2674,15 +2721,15 @@ Control Change Numbers:\n\
 - String Stretch = 1\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     //! see \example stifkarp.ck
     if( !type_engine_import_ugen_begin( env, "StifKarp", "StkInstrument", env->global(), 
                         StifKarp_ctor, StifKarp_dtor,
                         StifKarp_tick, StifKarp_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/stifkarp.ck");
     type_engine_import_add_ex(env, "stk/stif-o-karp.ck");
-    
+
     // member variable
     // StifKarp_offset_data = type_engine_import_mvar ( env, "int", "@StifKarp_data", FALSE );
     // if( StifKarp_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -2733,7 +2780,6 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get base loop gain, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-
     // end the class import
     type_engine_import_class_end( env );
 
@@ -2742,7 +2788,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin VoicForm ugen
     //------------------------------------------------------------------------
 
-    doc = "an instrument containing an excitation singing wavetable (looping wave with random and periodic vibrato, smoothing on frequency, etc.), excitation noise, and four sweepable complex resonances.\n\
+    doc = "This instrument contains an excitation singing wavetable (looping wave with random and periodic vibrato, smoothing on frequency, etc.), excitation noise, and four sweepable complex resonances.\n\
 \n\
 Measured formant data is included, and enough data is there to support either parallel or cascade synthesis. In the floating point case cascade synthesis is the most natural so that's what you'll find here.\n\
 \n\
@@ -2765,12 +2811,12 @@ Phoneme Names:\n\
     'xxx'  'hee'  'hoo'  'hah'\n\
     'bbb'  'ddd'  'jjj'  'ggg'\n\
     'vvv'  'zzz'  'thz'  'zhh'";
-    
+
     //! see \example voic-o-form.ck
     if( !type_engine_import_ugen_begin( env, "VoicForm", "StkInstrument", env->global(), 
                         VoicForm_ctor, VoicForm_dtor,
                         VoicForm_tick, VoicForm_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/voic-o-form.ck");
 
     // member variable
@@ -2874,12 +2920,13 @@ Phoneme Names:\n\
 
     //! \section2 stk - fm synths
 
-
     //------------------------------------------------------------------------
     // begin FM ugen
     //------------------------------------------------------------------------
 
-    doc = "this class controls an arbitrary number of waves and envelopes, determined via a constructor argument.\n\
+    doc = "STK FM synthesis super class.\n\
+\n\
+This class controls an arbitrary number of waves and envelopes, determined via a constructor argument.\n\
 \n\
 Control Change Numbers:\n\
 \n\
@@ -2892,7 +2939,7 @@ Control Change Numbers:\n\
 The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "FM", "StkInstrument", env->global(), 
                                         FM_ctor, FM_dtor,
                                         FM_tick, FM_pmsg, doc.c_str() ) ) return FALSE;
@@ -2901,7 +2948,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // all subclasses of FM must use this offset, as this is where the inherited 
     // functions will look for the object
     // the other option would be to keep SubClass_offset_data, but assign
-    // the value to FM_offset_data.  
+    // the value to FM_offset_data. 
     // FM_offset_data = type_engine_import_mvar ( env, "int", "@FM_data", FALSE );
     // if( FM_offset_data == CK_INVALID_OFFSET ) goto error;
     FM_offset_data = Instrmnt_offset_data;
@@ -2933,6 +2980,85 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get aftertouch, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // 1.4.1.0 (prc) REPAIRATHON2021 NEW SET/GET ACCESS FUNCTIONS
+    func = make_new_mfun( "float", "opADSR", FM_ctrl_opADSR ); //!adsr
+    func->add_arg( "int", "opNum" );
+    func->add_arg( "float", "attack" );
+    func->add_arg( "float", "decay" );
+    func->add_arg( "float", "sustain" );
+    func->add_arg( "float", "release" );
+    func->doc = "set operator ADSR: attack (sec), decay (sec), sustain [0.0-1.0], release (sec).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // for now, there is no getADSR function
+
+    // 1.4.1.0 (prc) REPAIRATHON2021 NEW SET/GET ACCESS FUNCTIONS
+    func = make_new_mfun( "float", "opGain", FM_ctrl_opGain ); //!OperatorGain
+    func->add_arg( "int", "opNum" );
+    func->add_arg( "float", "value" );
+    func->doc = "set operator gain.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "opGain", FM_cget_opGain ); //!OperatorGain
+    func->add_arg( "int", "opNum" );
+    func->doc = "get gperator gain.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "opAM", FM_ctrl_opAM ); // !OperatorAmplitudeModulation
+    func->add_arg( "int", "opNum" );
+    func->add_arg( "float", "value" );
+    func->doc = "set operator amplitude modulation.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "opAM", FM_cget_opAM ); //!OperatorAmplitudeModulation
+    func->add_arg( "int", "opNum" );
+    func->doc = "get operator amplitude modulation.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "op4Feedback", FM_ctrl_op4Feedback ); //!Operator4Feedback
+    func->add_arg( "float", "value" );
+    func->doc = "set operator 4 feedback.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "op4Feedback", FM_cget_op4Feedback ); //!Operator4Feedback
+    func->doc = "get operator 4 feedback.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "opWave", FM_ctrl_opWave ); //!OperatorWaveform
+    func->add_arg( "int", "opNum" );
+    func->add_arg( "int", "wave" );
+    func->doc = "set operator waveform [1-8].";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // NOTE: setRatio was declared in original .h file, but maybe never fully implemented??
+    func = make_new_mfun( "float", "opRatio", FM_ctrl_opRatio ); //!Frequency Ratio (from master freq)
+    func->add_arg( "int", "opNum" );
+    func->add_arg( "float", "ratio" );
+    func->doc = "set operator frequency ratio.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "opRatio", FM_cget_opRatio ); //!OperatorFrequencyRatio
+    func->add_arg( "int", "opNum" );
+    func->doc = "get operator frequency ratio.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "getFMTableGain", FM_cget_getFMTableGain ); //!Gain Table Lookup (from integer 0-100)
+    func->add_arg( "int", "index" );
+    func->doc = "get table gain lookup.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "getFMTableTime", FM_cget_getFMTableTime ); //!Envelope Time Table Lookup (from integer 0-32)
+    func->add_arg( "int", "index" );
+    func->doc = "get table time lookup.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "getFMTableSusLevel", FM_cget_getFMTableSusLevel ); //!Sustain Level Table Lookup (from integer 0-16)
+    func->add_arg( "int", "index" );
+    func->doc = "get sustain level lookup.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    //  ***** END  REPAIRATHON2021 NEW SET/GET ADDITIONS*****
+
     func = make_new_mfun( "float", "controlOne", FM_ctrl_control1 ); //! FM control 1
     func->add_arg( "float", "value" );
     func->doc = "set control one [instrument specific].";
@@ -2946,7 +3072,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->add_arg( "float", "value" );
     func->doc = "set control two [instrument specific].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     func = make_new_mfun( "float", "controlTwo", FM_cget_control2 ); //! FM control 2
     func->doc = "get control two [instrument specific].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -2959,7 +3085,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin BeeThree ugen
     //------------------------------------------------------------------------
 
-    doc = "a simple 4-operator FM topology, also referred to as algorithm 8 of the TX81Z.\n\
+    doc = "STK Hammond-oid organ FM synthesis instrument.\n\
+\n\
+This class implements a simple 4 operator topology, also referred to as algorithm 8 of the TX81Z.\n\
 \n\
 Algorithm 8 is :\n\
     \n\
@@ -2980,7 +3108,7 @@ Control Change Numbers:\n\
 The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "BeeThree", "FM", env->global(), 
                         BeeThree_ctor, BeeThree_dtor,
                         BeeThree_tick, BeeThree_pmsg, doc.c_str() ) ) return FALSE;
@@ -2993,7 +3121,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin FMVoices ugen
     //------------------------------------------------------------------------
 
-    doc = "a FM instrument with 3 carriers and a common modulator, also referred to as algorithm 6 of the TX81Z.\n\
+    doc = "STK singing FM synthesis instrument.\n\
+\n\
+This class implements 3 carriers and a common modulator, also referred to as algorithm 6 of the TX81Z.\n\
 \n\
 Algorithm 6 is :\n\
     \n\
@@ -3012,7 +3142,7 @@ Control Change Numbers:\n\
 The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "FMVoices", "FM", env->global(), 
                         FMVoices_ctor, FMVoices_dtor,
                         FMVoices_tick, FMVoices_pmsg, doc.c_str() ) ) return FALSE;
@@ -3052,7 +3182,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin HevyMetl ugen
     //------------------------------------------------------------------------
 
-    doc = "a FM instrument containing 3 cascade operators with feedback modulation, also referred to as algorithm 3 of the TX81Z.\n\
+    doc = "A STK heavy metal FM synthesis instrument.\n\
+\n\
+This class implements 3 cascade operators with feedback modulation, also referred to as algorithm 3 of the TX81Z.\n\
 \n\
 Algorithm 3 is :\n\
     \n\
@@ -3070,7 +3202,7 @@ Control Change Numbers:\n\
 The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "HevyMetl", "FM", env->global(), 
                         HevyMetl_ctor, HevyMetl_dtor,
                         HevyMetl_tick, HevyMetl_pmsg, doc.c_str() ) ) return FALSE;
@@ -3079,11 +3211,119 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     type_engine_import_class_end( env );
 
 
+
+
+
+    /***** REPAIRATHON2021 NEW FM SUB CLASS/ALGORITHM ADDITIONS *****/
+
+    //------------------------------------------------------------------------
+    // begin HnkyTonk ugen
+    //------------------------------------------------------------------------
+
+    doc = "STK-style Honkey Tonk Piano FM synthesis instrument.\n\
+\n\
+This class implements 4 cascade operators with feedback modulation, also referred to as algorithm 1 of the TX81Z.\n\
+\n\
+Algorithm 1 is :\n\
+    \n\
+    ____4-->3-->2-->1-->Out\n\
+    \n\
+Control Change Numbers:\n\
+\n\
+- Total Modulator Index = 2 (.controlOne)\n\
+- Modulator Crossfade = 4 (.controlTwo)\n\
+- LFO Speed = 11\n\
+- LFO Depth = 1\n\
+- ADSR 2 & 4 Target = 128\n\
+\n\
+The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+
+    if( !type_engine_import_ugen_begin( env, "HnkyTonk", "FM", env->global(),
+        HnkyTonk_ctor, HnkyTonk_dtor,
+        HnkyTonk_tick, HnkyTonk_pmsg, doc.c_str() ) ) return FALSE;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+
+    //------------------------------------------------------------------------
+    // begin FrencHrn ugen
+    //------------------------------------------------------------------------
+
+    doc = "STK-style French Horn FM synthesis instrument.\n\
+\n\
+This class implements 3 cascade operators and a 4th modulator with feedback modulation, also referred to as algorithm 2 of the TX81Z.\n\
+\n\
+Algorithm 2 is :\n\
+    \n\
+    ____4--\\\n\
+    3--+-->>2-->1-->Out\n\
+    \n\
+Control Change Numbers:\n\
+\n\
+- Total Modulator Index = 2 (.controlOne)\n\
+- Modulator Crossfade = 4 (.controlTwo)\n\
+- LFO Speed = 11\n\
+- LFO Depth = 1\n\
+- ADSR 2 & 4 Target = 128\n\
+\n\
+The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+
+    if( !type_engine_import_ugen_begin( env, "FrencHrn", "FM", env->global(),
+        FrencHrn_ctor, FrencHrn_dtor,
+        FrencHrn_tick, FrencHrn_pmsg, doc.c_str() ) ) return FALSE;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+
+    //------------------------------------------------------------------------
+    // begin KrstlChr ugen
+    //------------------------------------------------------------------------
+
+    doc = "STK-style \"Crystal Choir\" FM synthesis instrument.\n\
+\n\
+This class implements 3 parallel operators with being modulated (feedback modulation), also referred to as algorithm 7 of the TX81Z.\n\
+\n\
+Algorithm 7 is :\n\
+    \n\
+    1 -\\\n\
+    2 - +-> Out \n\
+    4-->3 -/ \n\
+    \n\
+Control Change Numbers:\n\
+\n\
+- Total Modulator Index = 2 (.controlOne)\n\
+- Modulator Crossfade = 4 (.controlTwo)\n\
+- LFO Speed = 11\n\
+- LFO Depth = 1\n\
+- ADSR 2 & 4 Target = 128\n\
+\n\
+The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
+\n\
+by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
+
+    if( !type_engine_import_ugen_begin( env, "KrstlChr", "FM", env->global(),
+        KrstlChr_ctor, KrstlChr_dtor,
+        KrstlChr_tick, KrstlChr_pmsg, doc.c_str() ) ) return FALSE;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    /***** END REPAIRATHON2021 FM ALGORITHM ADDITIONS *****/
+
+
     //------------------------------------------------------------------------
     // begin PercFlut ugen
     //------------------------------------------------------------------------
 
-    doc = "a FM instrument corresponding to algorithm 4 of the TX81Z.\n\
+    doc = "STK percussive flute FM synthesis instrument.\n\
+\n\
+This class implements algorithm 4 of the TX81Z.\n\
 \n\
 Algorithm 4 is :\n\
     \n\
@@ -3101,7 +3341,7 @@ Control Change Numbers:\n\
 The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "PercFlut", "FM", env->global(), 
                         PercFlut_ctor, PercFlut_dtor,
                         PercFlut_tick, PercFlut_pmsg, doc.c_str() ) ) return FALSE;
@@ -3114,7 +3354,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Rhodey ugen
     //------------------------------------------------------------------------
 
-    doc = "two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
+    doc = "STK Fender Rhodes-like electric piano FM synthesis instrument.\n\
+\n\
+This class implements two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
 \n\
 Algorithm 5 is :\n\
     \n\
@@ -3133,12 +3375,12 @@ Control Change Numbers:\n\
 The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     //! see \examples rhodey.ck
     if( !type_engine_import_ugen_begin( env, "Rhodey", "FM", env->global(), 
                         Rhodey_ctor, Rhodey_dtor,
                         Rhodey_tick, Rhodey_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "stk/rhodey.ck");
 
     // end the class import
@@ -3149,7 +3391,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin TubeBell ugen
     //------------------------------------------------------------------------
     
-    doc = "two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
+    doc = "STK tubular bell (orchestral chime) FM synthesis instrument.\n\
+\n\
+This class implements two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
 \n\
 Algorithm 5 is :\n\
     \n\
@@ -3168,7 +3412,7 @@ Control Change Numbers:\n\
 The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "TubeBell", "FM", env->global(), 
                         TubeBell_ctor, TubeBell_dtor,
                         TubeBell_tick, TubeBell_pmsg, doc.c_str() ) ) return FALSE;
@@ -3181,7 +3425,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Wurley ugen
     //------------------------------------------------------------------------
 
-    doc = "two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
+    doc = "STK Wurlitzer electric piano FM synthesis instrument.\n\
+\n\
+This class implements two simple FM Pairs summed together, also referred to as algorithm 5 of the TX81Z.\n\
 \n\
 Algorithm 5 is :\n\
 \n\
@@ -3200,7 +3446,7 @@ Control Change Numbers:\n\
 The basic Chowning/Stanford FM patent expired in 1995, but there exist follow-on patents, mostly assigned to Yamaha. If you are of the type who should worry about this (making money) worry away.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     //! see \examples wurley.ck
     if( !type_engine_import_ugen_begin( env, "Wurley", "FM", env->global(), 
                         Wurley_ctor, Wurley_dtor,
@@ -3214,25 +3460,25 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     type_engine_import_class_end( env );
 
     //end FM
-    
+
     //! \section stk - delay
 
     //------------------------------------------------------------------------
     // begin Delay ugen
     //------------------------------------------------------------------------
 
-    doc = "a non-interpolating digital delay-line. A fixed maximum length of 4095 and a delay of zero is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
+    doc = "A non-interpolating digital delay-line. A fixed maximum length of 4095 and a delay of zero is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
 \n\
 A non-interpolating delay line is typically used in fixed delay-length applications, such as for reverberation.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     //! see \example net_relay.ck
     if( !type_engine_import_ugen_begin( env, "Delay", "UGen", env->global(), 
                         Delay_ctor, Delay_dtor,
                         Delay_tick, Delay_pmsg, doc.c_str() ) ) return FALSE;
-    
-    //member variable
+
+    // member variable
     Delay_offset_data = type_engine_import_mvar ( env, "int", "@Delay_data", FALSE );
     if( Delay_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "dur", "delay", Delay_ctrl_delay ); //! length of delay
@@ -3267,16 +3513,16 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin DelayA ugen
     //------------------------------------------------------------------------
 
-    doc = "a fractional-length digital delay-line using a first-order allpass filter. A fixed maximum length of 4095 and a delay of 0.5 is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
+    doc = "A fractional-length digital delay-line using a first-order allpass filter. A fixed maximum length of 4095 and a delay of 0.5 is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
 \n\
 An allpass filter has unity magnitude gain but variable phase delay properties, making it useful in achieving fractional delays without affecting a signal's frequency magnitude response. In order to achieve a maximally flat phase delay response, the minimum delay possible in this implementation is limited to a value of 0.5.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "DelayA", "UGen", env->global(), 
                         DelayA_ctor, DelayA_dtor,
                         DelayA_tick, DelayA_pmsg, doc.c_str() ) ) return FALSE;
-    //member variable
+    // member variable
     DelayA_offset_data = type_engine_import_mvar ( env, "int", "@DelayA_data", FALSE );
     if( DelayA_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "dur", "delay", DelayA_ctrl_delay ); //! length of delay
@@ -3309,21 +3555,21 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin DelayL ugen
     //------------------------------------------------------------------------
 
-    doc = "a fractional-length digital delay-line using first-order linear interpolation. A fixed maximum length of 4095 and a delay of zero is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
+    doc = "A fractional-length digital delay-line using first-order linear interpolation. A fixed maximum length of 4095 and a delay of zero is set using the default constructor. Alternatively, the delay and maximum length can be set during instantiation with an overloaded constructor.\n\
 \n\
 Linear interpolation is an efficient technique for achieving fractional delay lengths, though it does introduce high-frequency signal attenuation to varying degrees depending on the fractional delay setting. The use of higher order Lagrange interpolators can typically improve (minimize) this attenuation characteristic.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     //! see \example i-robot.ck
     if( !type_engine_import_ugen_begin( env, "DelayL", "UGen", env->global(), 
                         DelayL_ctor, DelayL_dtor,
                         DelayL_tick, DelayL_pmsg, doc.c_str() ) ) return FALSE;
-    
+
     type_engine_import_add_ex(env, "basic/delay.ck");
     type_engine_import_add_ex(env, "basic/i-robot.ck");
     
-    //member variable
+    // member variable
     DelayL_offset_data = type_engine_import_mvar ( env, "int", "@DelayL_data", FALSE );
     if( DelayL_offset_data == CK_INVALID_OFFSET ) goto error;
     func = make_new_mfun( "dur", "delay", DelayL_ctrl_delay ); //! length of delay
@@ -3356,10 +3602,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Echo ugen
     //------------------------------------------------------------------------
 
-    doc = "an echo effect.\n\
+    doc = "An echo effect.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
-    
+
     if( !type_engine_import_ugen_begin( env, "Echo", "UGen", env->global(), 
                         Echo_ctor, Echo_dtor,
                         Echo_tick, Echo_pmsg, doc.c_str() ) ) return FALSE;
@@ -3406,7 +3652,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //------------------------------------------------------------------------
     // begin Envelope ugen
     //------------------------------------------------------------------------
-    doc = "a simple envelope generator which is capable of ramping to a target value by a specified rate. It also responds to simple `keyOn` and `keyOff` messages, ramping to 1.0 on `keyOn` and to 0.0 on `keyOff`.\n\
+    doc = "This class implements a simple envelope generator which is capable of ramping to a target value by a specified rate. It also responds to simple `keyOn` and `keyOff` messages, ramping to 1.0 on `keyOn` and to 0.0 on `keyOff`.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -3493,7 +3739,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin ADSR ugen
     //------------------------------------------------------------------------
    
-    doc = "a traditional ADSR (Attack, Decay, Sustain, Release) envelope. It responds to simple `keyOn` and `keyOff` messages, keeping track of its state.\n\
+    doc = "This Envelope subclass implements a traditional ADSR (Attack, Decay, Sustain, Release) envelope. It responds to simple `keyOn` and `keyOff` messages, keeping track of its state.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -3592,14 +3838,15 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( !type_engine_import_svar( env, "int", "SUSTAIN", TRUE, (t_CKUINT) &ADSR_state_SUSTAIN) ) goto error;
     if( !type_engine_import_svar( env, "int", "RELEASE", TRUE, (t_CKUINT) &ADSR_state_RELEASE) ) goto error;
     if( !type_engine_import_svar( env, "int", "DONE", TRUE, (t_CKUINT) &ADSR_state_DONE) ) goto error;
-    
+
     // end the class import
     type_engine_import_class_end( env );
 
-    //uhhh we are supposed to have target and value here as well..  d'oh
+    // uhhh we are supposed to have target and value here as well.. d'oh
 
     //! \section stk - filters
-    
+
+
 
 
     /* -- using native BiQuad --
@@ -3717,7 +3964,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin OnePole ugen
     //------------------------------------------------------------------------
 
-    doc = "a one-pole digital filter. A method is provided for setting the pole position along the real axis of the z-plane while maintaining a constant peak filter gain.\n\
+    doc = "This Filter subclass implements a one-pole digital filter. A method is provided for setting the pole position along the real axis of the z-plane while maintaining a constant peak filter gain.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -3764,7 +4011,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //------------------------------------------------------------------------
     // begin TwoPole ugen
     //------------------------------------------------------------------------
-    doc = "a two-pole digital filter. A method is provided for creating a resonance in the frequency response while maintaining a nearly constant filter gain.\n\
+    doc = "This Filter subclass implements a two-pole digital filter. A method is provided for creating a resonance in the frequency response while maintaining a nearly constant filter gain.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -3839,7 +4086,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //------------------------------------------------------------------------
     // begin OneZero ugen
     //------------------------------------------------------------------------
-    doc = "a one-zero digital filter. A method is provided for setting the zero position along the real axis of the z-plane while maintaining a constant filter gain.\n\
+    doc = "This Filter subclass implements a one-zero digital filter. A method is provided for setting the zero position along the real axis of the z-plane while maintaining a constant filter gain.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -3886,7 +4133,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin TwoZero ugen
     //------------------------------------------------------------------------
 
-    doc = "a two-zero digital filter. A method is provided for creating a 'notch' in the frequency response while maintaining a constant filter gain.\n\
+    doc = "This Filter subclass implements a two-zero digital filter. A method is provided for creating a 'notch' in the frequency response while maintaining a constant filter gain.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4049,7 +4296,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin NRev ugen
     //------------------------------------------------------------------------
 
-    doc =  "CCRMA's NRev reverberator class. This class is derived from the CLM NRev function, which is based on the use of networks of simple allpass and comb delay filters. This particular arrangement consists of 6 comb filters in parallel, followed by 3 allpass filters, a lowpass filter, and another allpass in series, followed by two allpass filters in parallel with corresponding rightand left outputs.\n\
+    doc = "CCRMA's NRev reverberator class. This class is derived from the CLM NRev function, which is based on the use of networks of simple allpass and comb delay filters. This particular arrangement consists of 6 comb filters in parallel, followed by 3 allpass filters, a lowpass filter, and another allpass in series, followed by two allpass filters in parallel with corresponding rightand left outputs.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4077,7 +4324,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin PRCRev ugen
     //------------------------------------------------------------------------
 
-    doc =  "Perry's simple reverberator class. This class is based on some of the famous Stanford/CCRMA reverbs (NRev, KipRev), which were based on the Chowning/Moorer/Schroeder reverberators using networks of simple allpass and comb delay filters. This class implements two series allpass units and two parallel comb filters.\n\
+    doc = "Perry's simple reverberator class. This class is based on some of the famous Stanford/CCRMA reverbs (NRev, KipRev), which were based on the Chowning/Moorer/Schroeder reverberators using networks of simple allpass and comb delay filters. This class implements two series allpass units and two parallel comb filters.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4106,7 +4353,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Chorus ugen
     //------------------------------------------------------------------------
 
-    doc = "a chorus effect.\n\
+    doc = "A chorus effect.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4167,7 +4414,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Modulate ugen
     //------------------------------------------------------------------------
 
-    doc = "combines random and periodic modulations to give a nice, natural human modulation function.\n\
+    doc = "This class combines random and periodic modulations to give a nice, natural human modulation function.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4214,7 +4461,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin PitShift ugen
     //------------------------------------------------------------------------
 
-    doc = "a simple pitch shifter using delay lines.\n\
+    doc = "This class implements a simple pitch shifter using delay lines.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4262,7 +4509,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin SubNoise ugen
     //------------------------------------------------------------------------
 
-    doc = "generates a new random number every 'rate' ticks using the C `rand()` function. The quality of the r`and()` function varies from one OS to another.\n\
+    doc = "Generates a new random number every 'rate' ticks using the C `rand()` function. The quality of the r`and()` function varies from one OS to another.\n\
 \n\
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
@@ -4292,7 +4539,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin WvIn ugen
     //------------------------------------------------------------------------
 
-    doc = "input support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\n\
+    doc = "This class provides input support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\n\
 \n\
 WvIn loads the contents of an audio file for subsequent output. Linear interpolation is used for fractional 'read rates'.\n\
 \n\
@@ -4336,7 +4583,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin WaveLoop ugen
     //------------------------------------------------------------------------
 
-    doc = "inherits from WvIn and provides audio file looping functionality.\n\
+    doc = "This class inherits from WvIn and provides audio file looping functionality.\n\
 \n\
 WaveLoop supports multi-channel data in interleaved format. It is important to distinguish the `tick()` methods, which return samples produced by averaging across sample frames, from the `tickFrame()` methods, which return pointers to multi-channel sample frames. For single-channel data, these methods return equivalent values.\n\
 \n\
@@ -4383,7 +4630,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin WvOut ugen
     //------------------------------------------------------------------------
  
-    doc = "output support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\n\
+    doc = "This class provides output support for various audio file formats. It also serves as a base class for 'realtime' streaming subclasses.\n\
 \n\
 WvOut writes samples to an audio file. It supports multi-channel data in interleaved format. It is important to distinguish the `tick()` methods, which output single samples to all channels in a sample frame, from the `tickFrame()` method, which takes a pointer to multi-channel sample frame data.\n\
 \n\
@@ -4394,8 +4641,7 @@ Currently, WvOut is non-interpolating and the output rate is always `Stk::sample
 by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     
     if( !type_engine_import_ugen_begin( env, "WvOut", "UGen", env->global(),
-                        WvOut_ctor, WvOut_dtor,
-                        WvOut_tick, WvOut_pmsg, doc.c_str() ) ) return FALSE;
+        WvOut_ctor, WvOut_dtor, WvOut_tick, WvOut_pmsg, doc.c_str() ) ) return FALSE;
     
     //member variable
     WvOut_offset_data = type_engine_import_mvar ( env, "int", "@WvOut_data", FALSE );
@@ -4513,7 +4759,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // all subclasses of BLT must use this offset, as this is where the 
     // inherited functions will look for the object
     // the other option would be to keep SubClass_offset_data, but assign
-    // the value to BLT_offset_data.  
+    // the value to BLT_offset_data. 
     BLT_offset_data = type_engine_import_mvar( env, "int", "@BLT_data", FALSE );
     if( BLT_offset_data == CK_INVALID_OFFSET ) goto error;
 
@@ -4552,7 +4798,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // begin Blit
     //------------------------------------------------------------------------
 
-    doc = "a band-limited impulse train using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the impulse train and the number of harmonics contained in the resulting signal.\n\
+    doc = "This class generates a band-limited impulse train using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the impulse train and the number of harmonics contained in the resulting signal.\n\
 \n\
 The signal is normalized so that the peak value is +/-1.0.\n\
 \n\
@@ -4574,7 +4820,7 @@ Revisions by Gary Scavone for STK, 2005.";
     // begin BlitSaw
     //------------------------------------------------------------------------
 
-    doc = "a band-limited sawtooth waveform using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the sawtooth and the number of harmonics contained in the resulting signal.\n\
+    doc = "This class generates a band-limited sawtooth waveform using a closed-form algorithm reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The user can specify both the fundamental frequency of the sawtooth and the number of harmonics contained in the resulting signal.\n\
 \n\
 If `nHarmonics` is 0, then the signal will contain all harmonics up to half the sample rate. Note, however, that this setting may produce aliasing in the signal when the frequency is changing (no automatic modification of the number of harmonics is performed by the `setFrequency()` function).\n\
 \n\
@@ -4592,7 +4838,7 @@ Modified algorithm code by Gary Scavone, 2005.";
     // begin BlitSquare
     //------------------------------------------------------------------------
 
-    doc = "a band-limited square wave signal. It is derived in part from the approach reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The algorithm implemented in this class uses a SincM function with an even M value to achieve a bipolar bandlimited impulse train. This signal is then integrated to achieve a square waveform. The integration process has an associated DC offset but that is subtracted off the output signal.\n\
+    doc = "This class generates a band-limited square wave signal. It is derived in part from the approach reported by Stilson and Smith in 'Alias-Free Digital Synthesis of Classic Analog Waveforms', 1996. The algorithm implemented in this class uses a SincM function with an even M value to achieve a bipolar bandlimited impulse train. This signal is then integrated to achieve a square waveform. The integration process has an associated DC offset but that is subtracted off the output signal.\n\
 \n\
 The user can specify both the fundamental frequency of the waveform and the number of harmonics contained in the resulting signal.\n\
 \n\
@@ -4827,22 +5073,22 @@ struct SKINISpec skini_msgs[__SK_MaxMsgTypes_] =
 /*     type is the message type sent back from the SKINI line parser.    */
 /*     data<n> is either                                                 */
 /*          NOPE    : field not used, specifically, there aren't going   */                                           
-/*                    to be any more fields on this line. So if there   */
+/*                    to be any more fields on this line. So if there    */
 /*                    is is NOPE in data2, data3 won't even be checked   */
 /*          SK_INT  : byte (actually scanned as 32 bit signed integer)   */
-/*                      If it's a MIDI data field which is required to   */
-/*                      be an integer, like a controller number, it's    */
-/*                      0-127. Otherwise) get creative with SK_INTs     */
-/*          SK_DBL  : double precision floating point. SKINI uses these */
+/*                    If it's a MIDI data field which is required to     */
+/*                    be an integer, like a controller number, it's      */
+/*                    0-127 otherwise get creative with SK_INTs          */
+/*          SK_DBL  : double precision floating point. SKINI uses these  */
 /*                    in the MIDI context for note numbers with micro    */
 /*                    tuning, velocities, controller values, etc.        */
-/*          SK_STR  : only valid in final field. This allows (nearly)   */
+/*          SK_STR  : only valid in final field. This allows (nearly)    */
 /*                    arbitrary message types to be supported by simply  */
 /*                    scanning the string to EndOfLine and then passing  */
-/*                    it to a more intellegent handler. For example,    */
+/*                    it to a more intellegent handler. For example,     */
 /*                    MIDI SYSEX (system exclusive) messages of up to    */
 /*                    256bytes can be read as space-delimited integers   */
-/*                    into the 1K SK_STR buffer. Longer bulk dumps,     */
+/*                    into the 1K SK_STR buffer. Longer bulk dumps,      */
 /*                    soundfiles, etc. should be handled as a new        */
 /*                    message type pointing to a FileName stored in the  */
 /*                    SK_STR field, or as a new type of multi-line       */                                      
@@ -5220,6 +5466,12 @@ BandedWG :: BandedWG()
 
   strikeAmp = 0.0;
 
+  for (int i=0; i<MAX_BANDED_MODES; i++) { /***** REPAIRATHON2021 HACK, Better for Strike Position and more *****/
+    outGains[i] = 1.0;			/***** REPAIRATHON2021 HACKS, Better for Strike Position and more *****/
+  }
+
+  modeReson = 1.0;			/***** REPAIRATHON2021 HACKS, actually allows mode resonance manipulation *****/
+
   // chuck
   m_frequency = freakency;
   // rate
@@ -5233,6 +5485,7 @@ BandedWG :: BandedWG()
   // reverse: nothing (set directly from preset in setPreset)
   m_preset = 0;
   // reverse: not used
+  strikePosition = 0.0; // 1.4.1.0 (prc) added
   m_strikePosition = 0;
 }
 
@@ -5398,7 +5651,17 @@ void BandedWG :: setFrequency(MY_FLOAT frequency)
 
 void BandedWG :: setStrikePosition(MY_FLOAT position)
 {
-  strikePosition = (int)(delay[0].getDelay() * position / 2.0);
+  // 1.4.1.0 (prc)
+  // strikePosition = (int)(delay[0].getDelay() * position / 2.0);
+  // m_strikePosition = position;
+
+  // 1.4.1.0 (prc)
+  strikePosition = position; /***** REPAIRATHON2021 HACK *****/
+  for (int i=0; i<MAX_BANDED_MODES; i++) { /***** REPAIRATHON2021 HACKS *****/
+    outGains[i] = fabs(sin((i+1)*ONE_PI*strikePosition)); /***** REPAIRATHON2021 HACKS *****/
+    if (strikePosition == 0.0) outGains[i] = 1.0; // AVOID (Override) EDGE CASES
+    if (strikePosition == 1.0) outGains[i] = 1.0; // WHERE GAINS WOULD COME OUT ZERO
+  }
   m_strikePosition = position;
 }
 
@@ -5419,10 +5682,11 @@ void BandedWG :: pluck(MY_FLOAT amplitude)
 {
   int j;
   MY_FLOAT min_len = delay[nModes-1].getDelay();
-  for (int i=0; i<nModes; i++)
-    for(j=0; j<(int)(delay[i].getDelay()/min_len); j++)
+  for (int i=0; i<nModes; i++) {
+    for(j=0; j<(int)(delay[i].getDelay()/min_len); j++) {
       delay[i].tick( excitation[i]*amplitude / nModes /*/ (delay[i].getDelay()/min_len)*/);
-
+    }
+  }
   /*    strikeAmp += amplitude;*/
 }
 
@@ -5466,8 +5730,12 @@ MY_FLOAT BandedWG :: tick()
     else
       velocityInput = integrationConstant * velocityInput;
 
-    for (k=0; k<nModes; k++)
-      velocityInput += baseGain * delay[k].lastOut();
+      for (k=0; k<nModes; k++)   {
+          // 1.4.1.0 REPAIRATHON2021 HACKS out with the old:
+          // velocityInput += baseGain * delay[k].lastOut();
+          // 1.4.1.0 REPAIRATHON2021 HACKS in with the new:
+          velocityInput += outGains[k]*baseGain * delay[k].lastOut();
+      }
       
     if ( trackVelocity )  {
       bowVelocity *= 0.9995;
@@ -5482,11 +5750,12 @@ MY_FLOAT BandedWG :: tick()
     input = input/(MY_FLOAT)nModes;
   }
 
-  MY_FLOAT data = 0.0;  
+  MY_FLOAT data = 0.0;
   for (k=0; k<nModes; k++) {
     bandpass[k].tick(input + gains[k] * delay[k].lastOut());
-    delay[k].tick(bandpass[k].lastOut());
-    data += bandpass[k].lastOut();
+    delay[k].tick(modeReson*bandpass[k].lastOut()); /***** REPAIRATHON2021 HACKS ADDED Mode Resonance *****/
+    // data += bandpass[k].lastOut();               /***** REPAIRATHON2021 HACKS *****/
+    data += outGains[k]*bandpass[k].lastOut();      /***** ADDED OUTGAINS FOR STRIKE/BOW POSITION *****/
   }
   
   //lastOutput = data * nModes;
@@ -5532,13 +5801,16 @@ void BandedWG :: controlChange(int number, MY_FLOAT value)
     adsr->setTarget(norm);
   }      
   else if (number == __SK_ModWheel_) { // 1
-    //    baseGain = 0.9989999999 + (0.001 * norm );
-    baseGain = 0.8999999999999999 + (0.1 * norm);
-    //  CK_STDCERR << "[chuck](via STK): Yuck!" << CK_STDENDL;
-    for (int i=0; i<nModes; i++)
-      gains[i]=(MY_FLOAT) basegains[i]*baseGain;
-    //      gains[i]=(MY_FLOAT) pow(baseGain, (int)((MY_FLOAT)delay[i].getDelay()+i));
-    m_modesGain = norm;
+      // baseGain = 0.9989999999 + (0.001 * norm );  // DELETE THESE SOMEDAY
+      // baseGain = 0.8999999999999999 + (0.1 * norm);	// 1.4.1.0 REPAIRATHON2021 HACK, better modeResonance implementation
+      if( norm > 1.0 ) {
+          CK_STDCERR << "[chuck](via STK): BandedWG: modeResonance > 1.0!!!" << CK_STDENDL;
+      }
+      modeReson = norm; // 1.4.1.0 (prc) REPAIRATHON2021: NOW THIS DOES IT ALL (later in tick)
+      // for (int i=0; i<nModes; i++) // REPAIRATHON2021 HACK, take these out
+      //   gains[i]=(MY_FLOAT) basegains[i]*baseGain; // REPAIRATHON2021 HACK, take these out
+      //   gains[i]=(MY_FLOAT) pow(baseGain, (int)((MY_FLOAT)delay[i].getDelay()+i));
+      m_modesGain = norm;
   }
   else if (number == __SK_ModFrequency_) // 11
     integrationConstant = norm;
@@ -5614,6 +5886,11 @@ BeeThree :: BeeThree()
   gains[2] = __FM_gains[99];
   gains[3] = __FM_gains[95];
 
+  baseGains[0] = gains[0]; // 1.4.1.0 (prc) REPARIATHON2021 ADDITION
+  baseGains[1] = gains[1];
+  baseGains[2] = gains[2];
+  baseGains[3] = gains[3];
+
   adsr[0]->setAllTimes( 0.005, 0.003, 1.0, 0.01);
   adsr[1]->setAllTimes( 0.005, 0.003, 1.0, 0.01);
   adsr[2]->setAllTimes( 0.005, 0.003, 1.0, 0.01);
@@ -5624,16 +5901,23 @@ BeeThree :: BeeThree()
 
 BeeThree :: ~BeeThree()
 {
+    // note: waves array taken care of in FM destructor
 }
 
 void BeeThree :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 {
-  gains[0] = amplitude * __FM_gains[95];
-  gains[1] = amplitude * __FM_gains[95];
-  gains[2] = amplitude * __FM_gains[99];
-  gains[3] = amplitude * __FM_gains[95];
-  this->setFrequency(frequency);
-  this->keyOn();
+  // 1.4.1.0 (prc) updated REPAIRATHON2021
+  // gains[0] = amplitude * __FM_gains[95];
+  // gains[1] = amplitude * __FM_gains[95];
+  // gains[2] = amplitude * __FM_gains[99];
+  // gains[3] = amplitude * __FM_gains[95];
+  gains[0] = amplitude * baseGains[0];
+  gains[1] = amplitude * baseGains[1];
+  gains[2] = amplitude * baseGains[2];
+  gains[3] = amplitude * baseGains[3];
+    
+    this->setFrequency(frequency);
+    this->keyOn();
 
 #if defined(_STK_DEBUG_)
   CK_STDCERR << "BeeThree: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
@@ -5642,26 +5926,25 @@ void BeeThree :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT BeeThree :: tick()
 {
-  MY_FLOAT temp;
-
-  if (modDepth > 0.0)   {
-    temp = 1.0 + (modDepth * vibrato->tick() * 0.1);
-    waves[0]->setFrequency(baseFrequency * temp * ratios[0]);
-    waves[1]->setFrequency(baseFrequency * temp * ratios[1]);
-    waves[2]->setFrequency(baseFrequency * temp * ratios[2]);
-    waves[3]->setFrequency(baseFrequency * temp * ratios[3]);
-  }
-
-  waves[3]->addPhaseOffset(twozero->lastOut());
-  temp = control1 * 2.0 * gains[3] * adsr[3]->tick() * waves[3]->tick();
-  twozero->tick(temp);
-
-  temp += control2 * 2.0 * gains[2] * adsr[2]->tick() * waves[2]->tick();
-  temp += gains[1] * adsr[1]->tick() * waves[1]->tick();
-  temp += gains[0] * adsr[0]->tick() * waves[0]->tick();
-
-  lastOutput = temp * 0.125;
-  return lastOutput;
+    register MY_FLOAT temp, temp2;
+    // save for AM later
+    // 1.4.1.0 (prc) REPAIRATHON2021 ADDITION, allow for tremelo or vibrato
+    temp2 = vibrato->tick();
+    temp = temp2 * modDepth * 0.2;
+    for (int i = 0; i < 4; i++) {
+        if (ratios[i] > 0.0) {
+            waves[i]->setFrequency(baseFrequency * (1.0 + temp) * ratios[i]);
+        }
+    }
+    waves[3]->addPhaseOffset(twozero->lastOut());
+    temp = (1.0 + opAMs[3]*temp2) * control1 * 2.0 * gains[3] * adsr[3]->tick() * waves[3]->tick();
+    twozero->tick(temp);
+    temp += (1.0 + opAMs[2]*temp2) * control2 * 2.0 * gains[2] * adsr[2]->tick() * waves[2]->tick();
+    temp += (1.0 + opAMs[1]*temp2) * gains[1] * adsr[1]->tick() * waves[1]->tick();
+    temp += (1.0 + opAMs[0]*temp2) * gains[0] * adsr[0]->tick() * waves[0]->tick();
+    
+    lastOutput = temp * 0.125;
+    return lastOutput;
 }
 
 
@@ -5957,12 +6240,12 @@ void BlitSaw :: setHarmonics( unsigned int nHarmonics )
   // I found that the initial DC offset could be minimized with an
   // initial state setting as given below. This initialization should
   // only happen before starting the oscillator for the first time
-  // (but after setting the frequency and number of harmonics).  I
+  // (but after setting the frequency and number of harmonics). I
   // struggled a bit to decide where best to put this and finally
   // settled on here. In general, the user shouldn't be messing with
   // the number of harmonics once the oscillator is running because
   // this is automatically taken care of in the setFrequency()
-  // function.  (GPS - 1 October 2005)
+  // function. (GPS - 1 October 2005)
   state_ = -0.5 * a_;
 }
 
@@ -6928,7 +7211,7 @@ Brass :: Brass(MY_FLOAT lowestFrequency)
   adsr = new ADSR;
   adsr->setAllTimes( 0.005, 0.001, 1.0, 0.010);
 
-  // Concatenate the STK rawwave path to the rawwave file
+  // concatenate the STK rawwave path to the rawwave file
   vibrato = new WaveLoop( "special:sinewave", TRUE );
   vibrato->setFrequency( 6.137 );
   vibratoGain = 0.0;
@@ -6939,14 +7222,21 @@ Brass :: Brass(MY_FLOAT lowestFrequency)
 
   // Necessary to initialize variables.
   setFrequency( 220.0 );
+    
+  // 1.4.1.0 (prc) REPAIRATHON2021 Hack
+  // NOTE: THIS NEEDS COMPATIBILITY REVERSE HACKING
+  gainHack = 1.0;
 
-  // CHUCK
+  // chuck
   //reverse: nothing
   m_rate = .005;
   //reverse: I give up!
   m_lip = 0.1; 
   //reverse: this is a special variable... we'll just leave this be for now
-  m_slide = length;
+
+  // 1.4.1.0 (prc) REPAIRATHON2021 HACK No we won't !!
+  //  m_slide = length;
+  m_slide = 0.5;
   //reverse: setVibratoFreq( norm * 12.0 );
   m_vibratoFreq = vibrato->m_freq / 12.0;
   //reverse: setVibratoGain(norm * 0.4)
@@ -6980,12 +7270,20 @@ void Brass :: setFrequency(MY_FLOAT frequency)
   }
 
   // Fudge correction for filter delays.
-  slideTarget = (Stk::sampleRate() / freakency * 2.0) + 3.0;
+  // 1.4.1.0 (prc) updated | was * 2) + 3.0;
+  slideTarget = ((Stk::sampleRate() / freakency) * 2.075);
   delayLine->setDelay(slideTarget); // play a harmonic
 
   lipTarget = freakency;
-  lipFilter->setResonance( freakency, 0.997 );
+  // 1.4.1.0 (prc) hell with it, near lossless lip );
+  lipFilter->setResonance( freakency, 0.9995 ); // was 0.997
 
+  // 1.4.1.0 (prc) REPAIRATHON2021
+  // NOTE: THIS NEEDS COMPATIBILITY REVERSE HACKING
+  gainHack = 0.02 + (freakency - 150.0)/1000.0; // REPAIRATHON2021 Hack
+  if (gainHack < 0.02) gainHack = 0.02;
+  if (gainHack > 2.0) gainHack = 2.0;
+    
   // chuck
   m_frequency = freakency;
 }
@@ -6998,14 +7296,16 @@ void Brass :: setLip(MY_FLOAT frequency)
     freakency = 220.0;
   }
 
-  lipFilter->setResonance( freakency, 0.997 );
+  lipFilter->setResonance( freakency, 0.9995 ); // 1.4.1.0 (prc) was 0.997 );
 }
 
 void Brass :: startBlowing(MY_FLOAT amplitude, MY_FLOAT rate)
 {
-  adsr->setAttackRate(rate);
-  maxPressure = amplitude;
-  adsr->keyOn();
+    adsr->setAttackRate(rate);
+    // REPAIRATHON2021 Hack | NOTE: THIS NEEDS COMPATIBILITY REVERSE HACKING
+    // maxPressure = amplitude;
+    maxPressure = amplitude*gainHack;
+    adsr->keyOn();
 }
 
 void Brass :: stopBlowing(MY_FLOAT rate)
@@ -7048,7 +7348,9 @@ MY_FLOAT Brass :: tick()
   lastOutput = deltaPressure * mouthPressure + ( 1.0 - deltaPressure) * borePressure;
   lastOutput = delayLine->tick( dcBlock->tick( lastOutput ) );
 
-  return lastOutput;
+  return lastOutput/gainHack; /***** REPAIRATHON2021 Hack *****/  // NOTE:  THIS NEEDS COMPATIBILITY REVERSE HACKING
+
+  // return lastOutput;
 }
 
 void Brass :: controlChange(int number, MY_FLOAT value)
@@ -7154,11 +7456,11 @@ void Chorus :: setEffectMix(MY_FLOAT mix)
 {
   effectMix = mix;
   if ( mix < 0.0 ) {
-    CK_STDCERR << "[chuck](via STK): Chorus: setEffectMix parameter is less than zero!" << CK_STDENDL;
+    CK_STDCERR << "[chuck](via STK): Chorus: setEffectMix parameter (" << mix << ") is less than zero!" << CK_STDENDL;
     effectMix = 0.0;
   }
   else if ( mix > 1.0 ) {
-    CK_STDCERR << "[chuck](via STK): Chorus: setEffectMix parameter is greater than 1.0!" << CK_STDENDL;
+    CK_STDCERR << "[chuck](via STK): Chorus: setEffectMix parameter (" << mix << ") is greater than 1.0!" << CK_STDENDL;
     effectMix = 1.0;
   }
 }
@@ -7496,19 +7798,19 @@ MY_FLOAT Delay :: getDelay(void) const
 MY_FLOAT Delay :: energy(void) const
 {
   int i;
-  MY_FLOAT e = 0;
+  register MY_FLOAT e = 0;
   if (inPoint >= outPoint) {
     for (i=outPoint; i<inPoint; i++) {
-      MY_FLOAT t = inputs[i];
+      register MY_FLOAT t = inputs[i];
       e += t*t;
     }
   } else {
     for (i=outPoint; i<length; i++) {
-      MY_FLOAT t = inputs[i];
+      register MY_FLOAT t = inputs[i];
       e += t*t;
     }
     for (i=0; i<inPoint; i++) {
-      MY_FLOAT t = inputs[i];
+      register MY_FLOAT t = inputs[i];
       e += t*t;
     }
   }
@@ -8089,11 +8391,11 @@ void Echo :: setEffectMix(MY_FLOAT mix)
 {
   effectMix = mix;
   if ( mix < 0.0 ) {
-    CK_STDCERR << "[chuck](via STK): Echo: setEffectMix parameter is less than zero!" << CK_STDENDL;
+    CK_STDCERR << "[chuck](via STK): Echo: setEffectMix parameter (" << mix << ") is less than zero!" << CK_STDENDL;
     effectMix = 0.0;
   }
   else if ( mix > 1.0 ) {
-    CK_STDCERR << "[chuck](via STK): Echo: setEffectMix parameter is greater than 1.0!" << CK_STDENDL;
+    CK_STDCERR << "[chuck](via STK): Echo: setEffectMix parameter (" << mix << ") is greater than 1.0!" << CK_STDENDL;
     effectMix = 1.0;
   }
 }
@@ -8296,11 +8598,15 @@ FM :: FM(int operators)
   int i;
   ratios = (MY_FLOAT *) new MY_FLOAT[nOperators];
   gains = (MY_FLOAT *) new MY_FLOAT[nOperators];
+  baseGains = (MY_FLOAT *) new MY_FLOAT[nOperators]; /* 1.4.1.0 REPAIRATHON2021 ADDITION */
+  opAMs = (MY_FLOAT *) new MY_FLOAT[nOperators]; /* 1.4.1.0 REPAIRATHON2021 ADDITION */
   adsr = (ADSR **) calloc( nOperators, sizeof(ADSR *) );
   waves = (WaveLoop **) calloc( nOperators, sizeof(WaveLoop *) );
   for (i=0; i<nOperators; i++ ) {
     ratios[i] = 1.0;
     gains[i] = 1.0;
+    baseGains[i] = 1.0; // 1.4.1.0
+    opAMs[i] = 0.0; // 1.4.1.0
     adsr[i] = new ADSR();
   }
 
@@ -8329,15 +8635,20 @@ FM :: FM(int operators)
     __FM_attTimes[i] = temp;
     temp *= 0.707101;
   }
+
+  // 1.4.1.0 REPAIRATHON2021 COMPATIBILITY HACK
+  // (for Wurley, Rhodey, TubeBell AM vs. Vibrato)
+  bCompatible = 1;
 }
 
 FM :: ~FM()
 {
   delete vibrato;
   delete twozero;
-
   delete [] ratios;
   delete [] gains;
+  delete [] baseGains; // 1.4.1.0
+  delete [] opAMs; // 1.4.1.0
   for (int i=0; i<nOperators; i++ ) {
     delete adsr[i];
     delete waves[i];
@@ -8352,6 +8663,98 @@ void FM :: loadWaves(const char **filenames )
   for (int i=0; i<nOperators; i++ )
     waves[i] = new WaveLoop( filenames[i], TRUE );
 }
+
+// 1.4.1.0 (prc) ***** REPAIRATHON2021 NEW SET/GET ACCESSING FUNCTIONS  *****
+
+void FM :: setADSR(int opNum, MY_FLOAT attack, MY_FLOAT decay, MY_FLOAT sustain, MY_FLOAT release)
+{
+    adsr[opNum]->setAllTimes( attack, decay, sustain, release);
+    bCompatible = 0; /***** REPAIRATHON2021 COMPATILITY HACK *****/
+}
+
+void FM :: setOpGain(int opNum, MY_FLOAT gain)
+{
+    gains[opNum] = gain;
+    baseGains[opNum] = gain ; /*****  REPAIRATHON2021 ADDITION */
+    bCompatible = 0; /***** REPAIRATHON2021 COMPATILITY HACK *****/
+}
+
+MY_FLOAT FM :: getOpGain(int opNum)
+{
+    return baseGains[opNum];
+}
+
+void FM :: setOpAM(int opNum, MY_FLOAT gain) /*****  REPAIRATHON2021 ADDITION NEW SET/GET ACCESSING FUNCTION */
+{
+    opAMs[opNum] = gain;
+    bCompatible = 0; /***** REPAIRATHON2021 COMPATILITY HACK *****/
+}
+
+MY_FLOAT FM :: getOpAM(int opNum)
+{
+    return opAMs[opNum] ;
+}
+
+void FM :: setOpWave(int opNum, int wave)
+{
+    delete waves[opNum];
+    if      (wave == 1)  {
+        waves[opNum] = new WaveLoop( "special:sinewave", TRUE );
+    }
+    else if (wave == 2)  {
+        waves[opNum] = new WaveLoop( "special:twopeaks", TRUE );
+    }
+    else if (wave == 3)  {
+        waves[opNum] = new WaveLoop( "special:halfwave", TRUE );
+    }
+    else if (wave == 4)  {
+        waves[opNum] = new WaveLoop( "special:snglpeak", TRUE );
+    }
+    else if (wave == 5)  {
+        waves[opNum] = new WaveLoop( "special:sineblnk", TRUE );
+    }
+    else if (wave == 6)  {
+        waves[opNum] = new WaveLoop( "special:peksblnk", TRUE );
+    }
+    else if (wave == 7)  {
+        waves[opNum] = new WaveLoop( "special:fwavblnk", TRUE );
+    }
+    else if (wave == 8)  {
+        waves[opNum] = new WaveLoop( "special:ppksblnk", TRUE );
+    }
+    else {
+        printf("Wave# out of range!!  Setting to sine wave\n");
+        waves[opNum] = new WaveLoop( "special:sinewave", TRUE );
+    }
+
+    bCompatible = 0; /***** REPAIRATHON2021 COMPATILITY HACK (primarily for Rhodey/Wurley/TubeBell AM vs. Vibrato *****/
+}
+
+MY_FLOAT FM :: getFMTableGain(int index)  /* TX81Z integer to float table lookup */
+{
+    MY_FLOAT gain = 1.0;
+    if (index < 0 || index > 100) printf("FM gain table index must be 0-99!!\n Returning 1.0\n");
+    else gain = __FM_gains[index];
+    return gain;
+}
+
+MY_FLOAT FM :: getFMTableSusLevel(int index)  /* TX81Z integer to float table lookup */
+{
+    MY_FLOAT gain = 1.0;
+    if (index < 0 || index > 15) printf("FM sustain table index must be 0-15!!\n Returning 1.0\n");
+    else gain = __FM_susLevels[index];
+    return gain;
+}
+
+MY_FLOAT FM :: getFMTableTime(int index)  /* TX81Z integer to float table lookup */
+{
+    MY_FLOAT gain = 1.0;
+    if (index < 0 || index > 31) printf("FM envelope time table index must be 0-31!!\n Returning 1.0\n");
+    else gain = __FM_attTimes[index];
+    return gain;
+}
+
+// 1.4.1.0 (prc) ***** END REPARIATHON2021 BLOCK
 
 void FM :: setFrequency(MY_FLOAT frequency)
 {    
@@ -8380,6 +8783,15 @@ void FM :: setRatio(int waveIndex, MY_FLOAT ratio)
     waves[waveIndex]->setFrequency(baseFrequency * ratio);
   else
     waves[waveIndex]->setFrequency(ratio);
+}
+
+MY_FLOAT FM :: getRatio(int waveIndex)
+{
+    if ( waveIndex >= nOperators ) {
+        CK_STDCERR << "[chuck](via STK): FM: getRatio waveIndex parameter is greater than the number of operators!" << CK_STDENDL;
+    }
+    
+    return ratios[waveIndex];
 }
 
 void FM :: setGain(int waveIndex, MY_FLOAT gain)
@@ -8415,6 +8827,21 @@ void FM :: setControl2(MY_FLOAT cVal)
 {
   control2 = cVal * (MY_FLOAT) 2.0;
 }
+
+// 1.4.1.0 ***** REPAIRATHON2021 NEW PARAMETER ACCESS *****
+
+void FM :: setOp4Feedback(MY_FLOAT fbVal)
+{
+    op4Feedback = fbVal;
+    twozero->gain = fbVal;
+}
+
+MY_FLOAT FM :: getOp4Feedback()
+{
+    return op4Feedback;
+}
+
+// 1.4.1.0 ***** END REPAIRATHON2021 NEW PARAMETER ACCESS *****
 
 void FM :: keyOn()
 {
@@ -8519,12 +8946,18 @@ FMVoices :: FMVoices()
 
   gains[3] = __FM_gains[80];
 
+  baseGains[0] = gains[0];  // 1.4.1.0 ***** REPAIRATHON2021 ADDITIONS *****
+  baseGains[1] = gains[1];
+  baseGains[2] = gains[2];
+  baseGains[3] = gains[3];
+
   adsr[0]->setAllTimes( 0.05, 0.05, __FM_susLevels[15], 0.05);
   adsr[1]->setAllTimes( 0.05, 0.05, __FM_susLevels[15], 0.05);
   adsr[2]->setAllTimes( 0.05, 0.05, __FM_susLevels[15], 0.05);
   adsr[3]->setAllTimes( 0.01, 0.01, __FM_susLevels[15], 0.5);
 
   twozero->setGain( 0.0 );
+  op4Feedback = 0.0; // 1.4.1.0 addedd
   modDepth = (MY_FLOAT) 0.005;
   currentVowel = 0;
   tilt[0] = 1.0;
@@ -8539,6 +8972,7 @@ FMVoices :: FMVoices()
 
 FMVoices :: ~FMVoices()
 {
+    // note: waves array taken care of in FM destructor
 }
 
 void FMVoices :: setFrequency(MY_FLOAT frequency)
@@ -8574,9 +9008,10 @@ void FMVoices :: setFrequency(MY_FLOAT frequency)
   temp = (temp2 * Phonemes::formantFrequency(i, 2) / baseFrequency) + 0.5;
   tempi = (int) temp;
   this->setRatio(2, (MY_FLOAT) tempi);    
-  gains[0] = 1.0;
-  gains[1] = 1.0;
-  gains[2] = 1.0;
+
+  gains[0] = baseGains[0]; // 1.4.1.0 updated; was = 1.0;
+  gains[1] = baseGains[1]; // 1.4.1.0 updated; was = 1.0;
+  gains[2] = baseGains[2]; // 1.4.1.0 updated; was = 1.0;
 
   // chuck
   m_frequency = baseFrequency;
@@ -8595,28 +9030,31 @@ void FMVoices :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 #endif
 }
 
-MY_FLOAT FMVoices :: tick()
+MY_FLOAT FMVoices :: tick() // 1.4.1.0 updated (prc)
 {
-  MY_FLOAT temp, temp2;
+    register MY_FLOAT temp, temp2;
 
-  temp = gains[3] * adsr[3]->tick() * waves[3]->tick();
-  temp2 = vibrato->tick() * modDepth * (MY_FLOAT) 0.1;
+    temp2 = vibrato->tick() * modDepth * (MY_FLOAT) 0.1;
+    for (int i; i < 4; i++)  {
+        if (ratios[i] > 0.0) {
+            waves[i]->setFrequency(baseFrequency * (1.0 + temp2) * ratios[i]);
+        }
+    }
 
-  waves[0]->setFrequency(baseFrequency * (1.0 + temp2) * ratios[0]);
-  waves[1]->setFrequency(baseFrequency * (1.0 + temp2) * ratios[1]);
-  waves[2]->setFrequency(baseFrequency * (1.0 + temp2) * ratios[2]);
-  waves[3]->setFrequency(baseFrequency * (1.0 + temp2) * ratios[3]);
-
-  waves[0]->addPhaseOffset(temp * mods[0]);
-  waves[1]->addPhaseOffset(temp * mods[1]);
-  waves[2]->addPhaseOffset(temp * mods[2]);
-  waves[3]->addPhaseOffset(twozero->lastOut());
-  twozero->tick(temp);
-  temp =  gains[0] * tilt[0] * adsr[0]->tick() * waves[0]->tick();
-  temp += gains[1] * tilt[1] * adsr[1]->tick() * waves[1]->tick();
-  temp += gains[2] * tilt[2] * adsr[2]->tick() * waves[2]->tick();
+    temp2 = vibrato->lastOut(); // save pure lfo for AM later /***** REPAIRATHON2021 ADDITION *****/
+    temp = (1.0 + opAMs[3]*temp2) * gains[3] * adsr[3]->tick() * waves[3]->tick();
+    twozero->tick(temp);
     
-  return temp * 0.33;
+    waves[0]->addPhaseOffset(control1*temp * mods[0]);
+    waves[1]->addPhaseOffset(control1*temp * mods[1]);
+    waves[2]->addPhaseOffset(control1*temp * mods[2]);
+    waves[3]->addPhaseOffset(control2*twozero->lastOut()); // Doesn't do anything for Voice, but...
+    
+    temp =  (1.0 + opAMs[0]*temp2) * gains[0] * tilt[0] * adsr[0]->tick() * waves[0]->tick();
+    temp += (1.0 + opAMs[1]*temp2) * gains[1] * tilt[1] * adsr[1]->tick() * waves[1]->tick();
+    temp += (1.0 + opAMs[2]*temp2) * gains[2] * tilt[2] * adsr[2]->tick() * waves[2]->tick();
+    
+    return temp * 0.33;
 }
 
 void FMVoices :: controlChange(int number, MY_FLOAT value)
@@ -9300,6 +9738,11 @@ HevyMetl :: HevyMetl()
   gains[1] = __FM_gains[76];
   gains[2] = __FM_gains[91];
   gains[3] = __FM_gains[68];
+    
+  baseGains[0] = gains[0];  // 1.4.1.0 ***** REPAIRATHON2021 ADDITIONS *****
+  baseGains[1] = gains[0];
+  baseGains[2] = gains[0];
+  baseGains[3] = gains[0];
 
   adsr[0]->setAllTimes( 0.001, 0.001, 1.0, 0.01);
   adsr[1]->setAllTimes( 0.001, 0.010, 1.0, 0.50);
@@ -9307,20 +9750,30 @@ HevyMetl :: HevyMetl()
   adsr[3]->setAllTimes( 0.030, 0.010, 0.2, 0.20);
 
   twozero->setGain( 2.0 );
+  op4Feedback = 2.0; // 1.4.1.0
   vibrato->setFrequency( 5.5 );
   modDepth = 0.0;
 }  
 
 HevyMetl :: ~HevyMetl()
 {
+    // note: waves array taken care of in FM destructor
 }
 
 void HevyMetl :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 {
-  gains[0] = amplitude * __FM_gains[92];
-  gains[1] = amplitude * __FM_gains[76];
-  gains[2] = amplitude * __FM_gains[91];
-  gains[3] = amplitude * __FM_gains[68];
+  // 1.4.1.0 (prc) commented out
+  // gains[0] = amplitude * __FM_gains[92]; // OLD WAY OF DOING IT
+  // gains[1] = amplitude * __FM_gains[76]; // ... DELETE THESE SOMEDAY
+  // gains[2] = amplitude * __FM_gains[91];
+  // gains[3] = amplitude * __FM_gains[68];
+
+  // 1.4.1.0 ***** REPAIRATHON2021 CHANGESS *****
+  gains[0] = amplitude * baseGains[0];
+  gains[1] = amplitude * baseGains[1];
+  gains[2] = amplitude * baseGains[2];
+  gains[3] = amplitude * baseGains[3];
+    
   this->setFrequency(frequency);
   this->keyOn();
 
@@ -9329,32 +9782,417 @@ void HevyMetl :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 #endif
 }
 
-MY_FLOAT HevyMetl :: tick()
+MY_FLOAT HevyMetl :: tick() // 1.4.1.0 (prc) REPAIRATHON2021 updated
 {
-  MY_FLOAT temp;
-
-  temp = vibrato->tick() * modDepth * 0.2;    
-  waves[0]->setFrequency(baseFrequency * (1.0 + temp) * ratios[0]);
-  waves[1]->setFrequency(baseFrequency * (1.0 + temp) * ratios[1]);
-  waves[2]->setFrequency(baseFrequency * (1.0 + temp) * ratios[2]);
-  waves[3]->setFrequency(baseFrequency * (1.0 + temp) * ratios[3]);
+    register MY_FLOAT temp, temp2;
     
-  temp = gains[2] * adsr[2]->tick() * waves[2]->tick();
-  waves[1]->addPhaseOffset(temp);
+    temp2 = vibrato->tick();  // save for AM later /*****2021 REPAIRATHON ADDITION *****/
+    temp =  temp2 * modDepth * 0.2;
+    for (int i = 0; i < 4; i++) {
+        if (ratios[i] > 0.0) {
+            waves[i]->setFrequency(baseFrequency * (1.0 + temp) * ratios[i]);
+        }
+    }
     
-  waves[3]->addPhaseOffset(twozero->lastOut());
-  temp = (1.0 - (control2 * 0.5)) * gains[3] * adsr[3]->tick() * waves[3]->tick();
-  twozero->tick(temp);
+    // waves[0]->setFrequency(baseFrequency * (1.0 + temp) * ratios[0]);
+    // waves[1]->setFrequency(baseFrequency * (1.0 + temp) * ratios[1]);
+    // waves[2]->setFrequency(baseFrequency * (1.0 + temp) * ratios[2]);
+    // waves[3]->setFrequency(baseFrequency * (1.0 + temp) * ratios[3]);
     
-  temp += control2 * (MY_FLOAT) 0.5 * gains[1] * adsr[1]->tick() * waves[1]->tick();
-  temp = temp * control1;
+    /***** REPAIRATHON2021 NOTE!!!! THIS ALGORITHM MIGHT HAVE BEEN WRONG ALL ALONG!!! *****/
+    temp = (1.0 + opAMs[2]*temp2) * gains[2] * adsr[2]->tick() * waves[2]->tick(); // Op3
+    waves[1]->addPhaseOffset(temp);
     
-  waves[0]->addPhaseOffset(temp);
-  temp = gains[0] * adsr[0]->tick() * waves[0]->tick();
+    waves[3]->addPhaseOffset(twozero->lastOut()); // Op4
+    temp = (1.0 + opAMs[3]*temp2 - (control2 * 0.5)) * gains[3] * adsr[3]->tick() * waves[3]->tick(); // Op4
+    twozero->tick(temp);
     
-  lastOutput = temp * 0.5;
-  return lastOutput;
+    temp += (1.0 + opAMs[1]*temp2) * control2 * (MY_FLOAT) 0.5 * gains[1] * adsr[1]->tick() * waves[1]->tick(); // Op2
+    // temp = temp * control1;
+    
+    waves[0]->addPhaseOffset(temp);
+    temp = (1.0 + opAMs[0]*temp2) * gains[0] * adsr[0]->tick() * waves[0]->tick(); // Added AM // Op1
+    
+    lastOutput = temp * 0.5;
+    return lastOutput;
 }
+
+
+
+
+
+//-----------------------------------------------------------------------------
+// 1.4.1.0 ***** REPAIRATHON2021 BRAND NEW FM ALGORITHMS!!! *****
+//-----------------------------------------------------------------------------
+/***** REPAIRATHON2021 BRAND NEW FM ALGORITHMS!!! *****/
+/***************************************************/
+/*! \class HnkyTonk
+    \brief New STK-style Honkey Tonk Piano FM synthesis instrument.
+ 
+   This class implements 4 cascade operators with
+   feedback modulation on the master modulator,
+   also referred to as algorithm 1 of the TX81Z.
+ 
+   Algorithm 1 is :
+       4-->3-->2-->1-->Out
+ 
+   Control Change Numbers:
+       - Total Modulator Index = 2
+       - Modulator Crossfade = 4
+       - LFO Speed = 11
+       - LFO Depth = 1
+       - ADSR 2 & 4 Target = 128
+ 
+   The basic Chowning/Stanford FM patent expired
+   in 1995, but there exist follow-on patents,
+   mostly assigned to Yamaha. If you are of the
+   type who should worry about this (making
+   money) worry away.
+ 
+   by Perry R. Cook, 2021.
+ */
+/***************************************************/
+
+HnkyTonk :: HnkyTonk()
+: FM()
+{
+    // Concatenate the STK rawwave path to the rawwave files
+    for ( int i=0; i<3; i++ )
+        waves[i] = new WaveLoop( "special:sinewave", TRUE );
+    waves[3] = new WaveLoop( "special:sineblnk", TRUE );
+    
+    this->setRatio(0, 1.51); // 1.51
+    this->setRatio(1, 1.49); // 1.49
+    this->setRatio(2, 10.49); // 10.49
+    this->setRatio(3, 7.22);
+    
+    gains[0] = __FM_gains[99];
+    gains[1] = __FM_gains[78]; // 78
+    gains[2] = __FM_gains[61]; // 61
+    gains[3] = __FM_gains[48]; // 48
+    
+    baseGains[0] = gains[0];   /***** REPAIRATHON2021 CHANGES *****/
+    baseGains[1] = gains[1];
+    baseGains[2] = gains[2];
+    baseGains[3] = gains[3];
+    
+    adsr[0]->setAllTimes( __FM_attTimes[20], __FM_attTimes[8], __FM_susLevels[12], __FM_attTimes[5]); // 6
+    adsr[1]->setAllTimes( __FM_attTimes[22], __FM_attTimes[3], __FM_susLevels[12], __FM_attTimes[4]);
+    adsr[2]->setAllTimes( __FM_attTimes[24], __FM_attTimes[27], __FM_susLevels[13], __FM_attTimes[3]);
+    adsr[3]->setAllTimes( __FM_attTimes[24], __FM_attTimes[1], __FM_susLevels[0], __FM_attTimes[3]);
+    
+    twozero->setGain( 0.8 );
+    op4Feedback = 0.8;
+    vibrato->setFrequency( 6.0 );
+    modDepth = 0.05;
+}
+
+HnkyTonk :: ~HnkyTonk()
+{
+    // note: waves array taken care of in FM destructor
+}
+
+void HnkyTonk :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
+{
+    //  gains[0] = amplitude * __FM_gains[92]; // OLD WAY OF DOING IT
+    //  gains[1] = amplitude * __FM_gains[76];     // DELETE THESE SOMEDAY
+    //  gains[2] = amplitude * __FM_gains[91];
+    //  gains[3] = amplitude * __FM_gains[68];
+    
+    gains[0] = amplitude * baseGains[0];  /***** REPAIRATHON2021 CHANGES *****/
+    gains[1] = amplitude * baseGains[1];
+    gains[2] = amplitude * baseGains[2];
+    gains[3] = amplitude * baseGains[3];
+    
+    this->setFrequency(frequency);
+    this->keyOn();
+    
+#if defined(_STK_DEBUG_)
+    CK_STDCERR << "HevyMetl: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
+#endif
+}
+
+MY_FLOAT HnkyTonk :: tick()  /***** REPAIRATHON2021  NEED TO FIX THIS!!! */
+{
+    register MY_FLOAT temp, temp2;
+    
+    temp2 = vibrato->tick();
+    
+    temp = temp2 * modDepth * 0.2;
+    for (int i = 0; i < 4; i++)  {
+        if (ratios[i] > 0.0) {
+            waves[i]->setFrequency(baseFrequency * (1.0 + temp) * ratios[i]);
+        }
+    }
+    
+    waves[3]->addPhaseOffset(twozero->lastOut());
+    temp = (1.0 + opAMs[3]*temp2) * control1 * gains[3] * adsr[3]->tick() * waves[3]->tick();
+    twozero->tick(temp);
+    
+    waves[2]->addPhaseOffset(temp);
+    temp = (1.0 + opAMs[2]*temp2) * gains[2] * adsr[2]->tick() * waves[2]->tick();
+    
+    waves[1]->addPhaseOffset(temp);
+    temp = (1.0 + opAMs[1]*temp2) * control1 * gains[1] * adsr[1]->tick() * waves[1]->tick();
+    
+    waves[0]->addPhaseOffset(temp);
+    temp = (1.0 + opAMs[0]*temp2) * gains[0] * adsr[0]->tick() * waves[0]->tick();
+    
+    lastOutput = temp;
+    return lastOutput;
+}
+
+
+
+
+/***************************************************/
+/*! \class FrencHrn
+    \brief NEW STK-style French Horn FM synthesis instrument.
+ 
+    This class implements 3 cascade operators with
+    feedback modulation, also referred to as
+    algorithm 3 of the TX81Z.
+
+    Algorithm 3 is: 4--\
+                3-->2-- + -->1-->Out
+ 
+    Control Change Numbers:
+        - Total Modulator Index = 2
+        - Modulator Crossfade = 4
+        - LFO Speed = 11
+        - LFO Depth = 1
+        - ADSR 2 & 4 Target = 128
+ 
+    The basic Chowning/Stanford FM patent expired
+    in 1995, but there exist follow-on patents,
+    mostly assigned to Yamaha. If you are of the
+    type who should worry about this (making
+    money) worry away.
+ 
+    by Perry R. Cook, 2021.
+ */
+/***************************************************/
+
+FrencHrn :: FrencHrn()
+: FM()
+{
+    // Concatenate the STK rawwave path to the rawwave files
+    for( int i=0; i<4; i++ )
+        waves[i] = new WaveLoop( "special:sinewave", TRUE );
+    
+    this->setRatio(0, 1.0);
+    this->setRatio(1, 0.99);
+    this->setRatio(2, 3.14);
+    this->setRatio(3, 0.99);
+    
+    gains[0] = __FM_gains[97];    /***** REPAIRATHON2021: French Horn!!! *****/
+    gains[1] = __FM_gains[77]; // Factory Bank 1759 says 67, adjust for controls
+    gains[2] = __FM_gains[59];
+    gains[3] = __FM_gains[71];
+    
+    baseGains[0] = gains[0];
+    baseGains[1] = gains[1];
+    baseGains[2] = gains[2];
+    baseGains[3] = gains[3];
+    
+    adsr[0]->setAllTimes( __FM_attTimes[12], __FM_attTimes[31], __FM_susLevels[15], __FM_attTimes[16]); // 6
+    adsr[1]->setAllTimes( __FM_attTimes[14], __FM_attTimes[31], __FM_susLevels[15], __FM_attTimes[16]);
+    adsr[2]->setAllTimes( __FM_attTimes[31], __FM_attTimes[14], __FM_susLevels[0], __FM_attTimes[16]);
+    adsr[3]->setAllTimes( __FM_attTimes[8], __FM_attTimes[5], __FM_susLevels[0], __FM_attTimes[16]);
+    
+    twozero->setGain( 1.0 ); //   2.0 );
+    op4Feedback = 1.0;
+    vibrato->setFrequency( 6.0 );
+    modDepth = 0.0;
+    control1 = 1.0;
+    control2 = 1.0;
+    //  control1 = 1.3;
+    //  control2 = 1.3;
+}
+
+FrencHrn :: ~FrencHrn()
+{
+    // note: waves array taken care of in FM destructor
+}
+
+void FrencHrn :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
+{
+    gains[0] = amplitude * baseGains[0];
+    gains[1] = amplitude * baseGains[1];
+    gains[2] = amplitude * baseGains[2];
+    gains[3] = amplitude * baseGains[3];
+    
+    this->setFrequency(frequency);
+    this->keyOn();
+    
+#if defined(_STK_DEBUG_)
+    CK_STDCERR << "HevyMetl: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
+#endif
+}
+
+MY_FLOAT FrencHrn :: tick()
+{
+    register MY_FLOAT temp, temp2;
+    
+    temp2 = vibrato->tick();  // save for AM /***** REPAIRATHON2021 HACK *****/
+    
+    temp = temp2 * modDepth * 0.2;
+    for (int i = 0; i < 4; i++)  {
+        if (ratios[i] > 0.0) {
+            waves[i]->setFrequency(baseFrequency * (1.0 + temp) * ratios[i]);
+        }
+    }
+    
+    waves[3]->addPhaseOffset(twozero->lastOut());		// Operator 4
+    //  temp = (1.0 - (control2 * 0.5)) * gains[3] * adsr[3]->tick() * waves[3]->tick();
+    temp = (1.0 + opAMs[3]*temp2) * control2 * 0.5 * gains[3] * adsr[3]->tick() * waves[3]->tick(); // ADDED AM
+    twozero->tick(temp);
+    temp = temp * control2;
+    
+    temp += (1.0 + opAMs[2]*temp2) * control1 * 0.5 * gains[2] * adsr[2]->tick() * waves[2]->tick(); // Operator 3 // ADDED AM too
+    
+    waves[1]->addPhaseOffset(temp);    			// Operator 2
+    temp = (1.0 + opAMs[1]*temp2) * gains[1] * adsr[1]->tick() * waves[1]->tick(); // ADDED AM
+    temp = temp * 0.5 * (control1 + control2);
+    //  temp = temp * control1;
+    
+    waves[0]->addPhaseOffset(temp);			// Operator 1
+    temp = (1.0 + opAMs[0]*temp2) * gains[0] * adsr[0]->tick() * waves[0]->tick(); // ADDED AM
+    
+    lastOutput = temp;
+    return lastOutput;
+}
+
+//-----------------------------------------------------------------------------
+// 1.4.1.0 ***** REPAIRATHON2021 BRAND NEW FM ALGORITHMS!!! *****
+//-----------------------------------------------------------------------------
+
+/***************************************************/
+/*! \class KrstlChr
+    \brief New STK-style "Crystal Choir" FM synthesis instrument.
+ 
+    This class implements 3 parallel operators with
+    one modulated, by one with feedback modulation,
+    also referred to as algorithm 7 of the TX81Z.
+ 
+    Algorithm 3 is: 4-->3-->\
+                        2--> + -->Out
+                        1-->/
+ 
+    Control Change Numbers:
+       - Total Modulator Index = 2
+       - Modulator Crossfade = 4
+       - LFO Speed = 11
+       - LFO Depth = 1
+       - ADSR 2 & 4 Target = 128
+ 
+    The basic Chowning/Stanford FM patent expired
+    in 1995, but there exist follow-on patents,
+    mostly assigned to Yamaha. If you are of the
+    type who should worry about this (making
+    money) worry away.
+ 
+    by Perry R. Cook, 2021.
+ */
+/***************************************************/
+
+KrstlChr :: KrstlChr()
+: FM()
+{
+    // Concatenate the STK rawwave path to the rawwave files
+    waves[0] = new WaveLoop( "special:sineblnk", TRUE );
+    waves[1] = new WaveLoop( "special:snglpeak", TRUE );
+    waves[2] = new WaveLoop( "special:sinewave", TRUE );
+    waves[3] = new WaveLoop( "special:snglpeak", TRUE );
+    
+    //  this->setRatio(0, 1.50); // This is what PatchBase editor says
+    //  this->setRatio(1, 1.51); // Factory bank 1761 is
+    //  this->setRatio(2, 1.49); // but I think that's shit
+    //  this->setRatio(3, 8.63);
+    
+    this->setRatio(0, 1.00);
+    this->setRatio(1, 0.99);
+    this->setRatio(2, 1.01);
+    this->setRatio(3, 8.63);
+    
+    gains[0] = __FM_gains[99];
+    gains[1] = __FM_gains[99];
+    gains[2] = __FM_gains[89];
+    gains[3] = __FM_gains[77]; // Factory Bank 1761 says 67
+    
+    baseGains[0] = gains[0];
+    baseGains[1] = gains[1];
+    baseGains[2] = gains[2];
+    baseGains[3] = gains[3];
+    
+    adsr[0]->setAllTimes( __FM_attTimes[14], __FM_attTimes[8], 1.0, __FM_attTimes[5]);
+    adsr[1]->setAllTimes( __FM_attTimes[11], __FM_attTimes[8], 1.0, __FM_attTimes[7]);
+    adsr[2]->setAllTimes( __FM_attTimes[15], __FM_attTimes[7], 1.0, __FM_attTimes[7]);
+    adsr[3]->setAllTimes( __FM_attTimes[31], __FM_attTimes[0], 1.0, __FM_attTimes[4]);
+    
+    twozero->setGain( 2.0 ); // Op4 Feedback
+    op4Feedback = 2.0;
+    vibrato->setFrequency( 5.5 );
+    modDepth = 0.05;
+}
+
+KrstlChr :: ~KrstlChr()
+{
+    // note: waves array taken care of in FM destructor
+}
+
+void KrstlChr :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
+{
+    gains[0] = amplitude * baseGains[0]; /***** REPAIRATHON2021 *****/
+    gains[1] = amplitude * baseGains[1];
+    gains[2] = amplitude * baseGains[2];
+    gains[3] = amplitude * baseGains[3];
+    
+    this->setFrequency(frequency);
+    this->keyOn();
+    
+#if defined(_STK_DEBUG_)
+    CK_STDCERR << "HevyMetl: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
+#endif
+}
+
+MY_FLOAT KrstlChr :: tick()
+{
+    register MY_FLOAT temp, temp2;
+    
+    temp2 = vibrato->tick() * modDepth * 0.2; // Save for AM
+    
+    temp = vibrato->tick() * modDepth * 0.2;
+    for (int i = 0; i < 4; i++)  {
+        if (ratios[i] > 0.0) {
+            waves[i]->setFrequency(baseFrequency * (1.0 + temp) * ratios[i]);
+        }
+    }
+    
+    waves[3]->addPhaseOffset(twozero->lastOut());
+    twozero->tick(temp);
+    temp = (1.0 + opAMs[3]*temp2) * gains[3] * adsr[3]->tick() * waves[3]->tick(); // Add AM
+    
+    waves[2]->addPhaseOffset(temp);
+    
+    temp = (1.0 + opAMs[2]*temp2 - (control2 * 0.5)) * gains[2] * adsr[2]->tick() * waves[2]->tick(); // Add AM
+    
+    temp += (1.0 + opAMs[1]*temp2) * control2 * (MY_FLOAT) 0.5 * gains[1] * adsr[1]->tick() * waves[1]->tick(); // Add AM
+    temp = temp * control1;
+    
+    temp += (1.0 + opAMs[0]*temp2) * gains[0] * adsr[0]->tick() * waves[0]->tick();  // Add AM
+    
+    lastOutput = temp * 0.5;
+    return lastOutput;
+}
+
+//-----------------------------------------------------------------------------
+// 1.4.1.0 ***** END REPAIRATHON2021 ADDITIONS of NEW FM ALGORITHMS *****
+//-----------------------------------------------------------------------------
+
+
+
+
 /***************************************************/
 /*! \class Instrmnt
     \brief STK instrument abstract base class.
@@ -10795,8 +11633,10 @@ void Moog :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
   loopGain = amplitude;
 
   temp = filterQ + (MY_FLOAT) 0.05;
-  filters[0]->setStates( 2000.0, temp );
-  filters[1]->setStates( 2000.0, temp );
+  // 1.4.1.0 (prc) updated; was 2000.0, temp );
+  filters[0]->setStates( filterStartFreq, temp );
+    // 1.4.1.0 (prc) updated; was 2000.0, temp );
+  filters[1]->setStates( filterStartFreq, temp );
 
   temp = filterQ + (MY_FLOAT) 0.099;
   filters[0]->setTargets( frequency, temp );
@@ -10804,6 +11644,9 @@ void Moog :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
   filters[0]->setSweepRate( filterRate * 22050.0 / Stk::sampleRate() );
   filters[1]->setSweepRate( filterRate * 22050.0 / Stk::sampleRate() );
+
+  // 1.4.1.0
+  // printf("FilterRate: %f\n",filterRate);
 
 #if defined(_STK_DEBUG_)
   CK_STDCERR << "[chuck](via STK): Moog: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
@@ -10852,7 +11695,7 @@ void Moog :: controlChange(int number, MY_FLOAT value)
   if (number == __SK_FilterQ_) // 2
     filterQ = 0.80 + ( 0.1 * norm );
   else if (number == __SK_FilterSweepRate_) // 4
-    filterRate = norm * 0.0002;
+    filterRate = norm * 0.002; // 1.4.1.0 (prc) was .0002
   else if (number == __SK_ModFrequency_) { // 11
      this->setModulationSpeed( norm * 12.0 );
      }
@@ -11403,10 +12246,17 @@ PercFlut :: PercFlut()
   this->setRatio(1, 3.00 * 0.995);
   this->setRatio(2, 2.99 * 1.005);
   this->setRatio(3, 6.00 * 0.997);
+
   gains[0] = __FM_gains[99];
   gains[1] = __FM_gains[71];
   gains[2] = __FM_gains[93];
   gains[3] = __FM_gains[85];
+
+  // 1.4.1.0 (prc) added
+  baseGains[0] = gains[0];
+  baseGains[1] = gains[1];
+  baseGains[2] = gains[2];
+  baseGains[3] = gains[3];
 
   adsr[0]->setAllTimes( 0.05, 0.05, __FM_susLevels[14], 0.05);
   adsr[1]->setAllTimes( 0.02, 0.50, __FM_susLevels[13], 0.5);
@@ -11414,11 +12264,13 @@ PercFlut :: PercFlut()
   adsr[3]->setAllTimes( 0.02, 0.05, __FM_susLevels[13], 0.01);
 
   twozero->setGain( 0.0 );
+  op4Feedback = 0.0; // 1.4.1.0 (prc)
   modDepth = 0.005;
 }  
 
 PercFlut :: ~PercFlut()
 {
+    // note: waves array taken care of in FM destructor
 }
 
 void PercFlut :: setFrequency(MY_FLOAT frequency)
@@ -11431,10 +12283,18 @@ void PercFlut :: setFrequency(MY_FLOAT frequency)
 
 void PercFlut :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 {
-  gains[0] = amplitude * __FM_gains[99] * 0.5;
-  gains[1] = amplitude * __FM_gains[71] * 0.5;
-  gains[2] = amplitude * __FM_gains[93] * 0.5;
-  gains[3] = amplitude * __FM_gains[85] * 0.5;
+  // 1.4.1.0 (prc) commented out
+  // gains[0] = amplitude * __FM_gains[99] * 0.5;  // OLD WAY OF DOING IT
+  // gains[1] = amplitude * __FM_gains[71] * 0.5;  // DELETE THESE SOMEDAY
+  // gains[2] = amplitude * __FM_gains[93] * 0.5;
+  // gains[3] = amplitude * __FM_gains[85] * 0.5;
+
+  // 1.4.1.0 (prc) ***** REPAIRATHON2021 ADDITIONS *****
+  gains[0] = amplitude * baseGains[0] * 0.5;
+  gains[1] = amplitude * baseGains[1] * 0.5;
+  gains[2] = amplitude * baseGains[2] * 0.5;
+  gains[3] = amplitude * baseGains[3] * 0.5;
+    
   this->setFrequency(frequency);
   this->keyOn();
 
@@ -11443,32 +12303,38 @@ void PercFlut :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 #endif
 }
 
-MY_FLOAT PercFlut :: tick()
+MY_FLOAT PercFlut :: tick() // 1.4.1.0 (prc) REPAIRATHON2021 updated
 {
-  MY_FLOAT temp;
+  register MY_FLOAT temp, temp2;
+  
+  // save for AM later /***** REPAIRATHON2021 ADDITION *****/
+  temp2 = vibrato->tick();
 
-  temp = vibrato->tick() * modDepth * (MY_FLOAT) 0.2;    
-  waves[0]->setFrequency(baseFrequency * ((MY_FLOAT) 1.0 + temp) * ratios[0]);
-  waves[1]->setFrequency(baseFrequency * ((MY_FLOAT) 1.0 + temp) * ratios[1]);
-  waves[2]->setFrequency(baseFrequency * ((MY_FLOAT) 1.0 + temp) * ratios[2]);
-  waves[3]->setFrequency(baseFrequency * ((MY_FLOAT) 1.0 + temp) * ratios[3]);
-    
+  temp = temp2 * modDepth * 0.2;
+  for (int i = 0; i < 4; i++) {
+      if (ratios[i] > 0.0) {
+          waves[i]->setFrequency(baseFrequency * (1.0 + temp) * ratios[i]);
+      }
+  }
+  
   waves[3]->addPhaseOffset(twozero->lastOut());
-  temp = gains[3] * adsr[3]->tick() * waves[3]->tick();
-
+  temp = (1.0 + opAMs[3]*temp2) * gains[3] * adsr[3]->tick() * waves[3]->tick(); // ADD AM
+  
   twozero->tick(temp);
   waves[2]->addPhaseOffset(temp);
-  temp = (1.0 - (control2 * 0.5)) * gains[2] * adsr[2]->tick() * waves[2]->tick();
-
-  temp += control2 * 0.5 * gains[1] * adsr[1]->tick() * waves[1]->tick();
+  temp = (1.0 + opAMs[2]*temp2 - (control2 * 0.5)) * gains[2] * adsr[2]->tick() * waves[2]->tick(); // ADD AM
+  
+  temp += (1.0 + opAMs[1]*temp2) * control2 * 0.5 * gains[1] * adsr[1]->tick() * waves[1]->tick(); // ADD AM
   temp = temp * control1;
-
+  
   waves[0]->addPhaseOffset(temp);
-  temp = gains[0] * adsr[0]->tick() * waves[0]->tick();
-    
+  temp = (1.0 + opAMs[0]*temp2) * gains[0] * adsr[0]->tick() * waves[0]->tick(); // ADD AM
+  
   lastOutput = temp * (MY_FLOAT) 0.5;
+
   return lastOutput;
 }
+
 /***************************************************/
 /*! \class Phonemes
     \brief STK phonemes table.
@@ -11788,11 +12654,11 @@ void PitShift :: setEffectMix(MY_FLOAT mix)
 {
   effectMix = mix;
   if ( mix < 0.0 ) {
-    CK_STDCERR << "[chuck](via STK): PitShift: setEffectMix parameter is less than zero!" << CK_STDENDL;
+    CK_STDCERR << "[chuck](via STK): PitShift: setEffectMix parameter (" << mix << ") is less than zero!" << CK_STDENDL;
     effectMix = 0.0;
   }
   else if ( mix > 1.0 ) {
-    CK_STDCERR << "[chuck](via STK): PitShift: setEffectMix parameter is greater than 1.0!" << CK_STDENDL;
+    CK_STDCERR << "[chuck](via STK): PitShift: setEffectMix parameter (" << mix << ") is greater than 1.0!" << CK_STDENDL;
     effectMix = 1.0;
   }
 }
@@ -11911,7 +12777,8 @@ void PluckTwo :: setFrequency(MY_FLOAT frequency)
   }
 
   // Delay = length - approximate filter delay.
-  lastLength = ( Stk::sampleRate() / lastFrequency);
+  // 1.4.1.0 (prc) REPAIRATHON2021 BUG FIX (minus 1)
+  lastLength = ( Stk::sampleRate() / lastFrequency) - 1;
   MY_FLOAT delay = (lastLength / detuning) - (MY_FLOAT) 0.5;
   if ( delay <= 0.0 ) delay = 0.3;
   else if ( delay > length ) delay = length;
@@ -12199,7 +13066,7 @@ MY_FLOAT *PoleZero :: tick(MY_FLOAT *vec, unsigned int vectorSize)
 
     This class implements a simple one breakpoint,
     non-linear reed function, as described by
-    Smith (1986).  This function is based on a
+    Smith (1986). This function is based on a
     memoryless non-linear spring model of the reed
     (the reed mass is ignored) which saturates when
     the reed collides with the mouthpiece facing.
@@ -12521,16 +13388,25 @@ Rhodey :: Rhodey()
   gains[2] = __FM_gains[99];
   gains[3] = __FM_gains[67];
 
+  baseGains[0] = gains[0]; // 1.4.1.0 (prc) REPARIATHON2021 ADDITION
+  baseGains[1] = gains[1];
+  baseGains[2] = gains[2];
+  baseGains[3] = gains[3];
+    
   adsr[0]->setAllTimes( 0.001, 1.50, 0.0, 0.04);
   adsr[1]->setAllTimes( 0.001, 1.50, 0.0, 0.04);
   adsr[2]->setAllTimes( 0.001, 1.00, 0.0, 0.04);
   adsr[3]->setAllTimes( 0.001, 0.25, 0.0, 0.04);
 
   twozero->setGain((MY_FLOAT) 1.0);
-}  
+  op4Feedback = 1.0;
+    
+  bCompatible = 1; // 1.4.1.0 (prc) REPAIRATHON2021 HACK: When created, I'm a Rhodey, that can change.... *****/
+}
 
 Rhodey :: ~Rhodey()
 {
+    // note: waves array taken care of in FM destructor
 }
 
 void Rhodey :: setFrequency(MY_FLOAT frequency)
@@ -12546,10 +13422,18 @@ void Rhodey :: setFrequency(MY_FLOAT frequency)
 
 void Rhodey :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 {
-  gains[0] = amplitude * __FM_gains[99];
-  gains[1] = amplitude * __FM_gains[90];
-  gains[2] = amplitude * __FM_gains[99];
-  gains[3] = amplitude * __FM_gains[67];
+  // 1.4.1.0 (prc) REPAIRATHON2021 commented out
+  // gains[0] = amplitude * __FM_gains[99]; // OLD WAY OF DOING IT
+  // gains[1] = amplitude * __FM_gains[90]; // DELETE THESE SOMEDAY
+  // gains[2] = amplitude * __FM_gains[99];
+  // gains[3] = amplitude * __FM_gains[67];
+  
+  // 1.4.1.0 (prc) REPAIRATHON2021 added
+  gains[0] = amplitude * baseGains[0];
+  gains[1] = amplitude * baseGains[1];
+  gains[2] = amplitude * baseGains[2];
+  gains[3] = amplitude * baseGains[3];
+    
   this->setFrequency(frequency);
   this->keyOn();
 
@@ -12558,28 +13442,51 @@ void Rhodey :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 #endif
 }
 
-MY_FLOAT Rhodey :: tick()
+MY_FLOAT Rhodey :: tick() // 1.4.1.0 (prc) REPAIRATHON2021
 {
-  MY_FLOAT temp, temp2;
-
-  temp = gains[1] * adsr[1]->tick() * waves[1]->tick();
-  temp = temp * control1;
-
-  waves[0]->addPhaseOffset(temp);
-  waves[3]->addPhaseOffset(twozero->lastOut());
-  temp = gains[3] * adsr[3]->tick() * waves[3]->tick();
-  twozero->tick(temp);
-
-  waves[2]->addPhaseOffset(temp);
-  temp = ( 1.0 - (control2 * 0.5)) * gains[0] * adsr[0]->tick() * waves[0]->tick();
-  temp += control2 * 0.5 * gains[2] * adsr[2]->tick() * waves[2]->tick();
-
-  // Calculate amplitude modulation and apply it to output.
-  temp2 = vibrato->tick() * modDepth;
-  temp = temp * (1.0 + temp2);
+    MY_FLOAT temp, temp2;
     
-  lastOutput = temp * 0.5;
-  return lastOutput;
+    temp2 = vibrato->tick();
+    
+    if (bCompatible) { // 1.4.1.0 (prc) REPAIRATHON2021 COMPATIBILITY, "I'm still a Rhodey"
+        temp = gains[1] * adsr[1]->tick() * waves[1]->tick();
+        temp = temp * control1;
+        
+        waves[0]->addPhaseOffset(temp);
+        waves[3]->addPhaseOffset(twozero->lastOut());
+        temp = gains[3] * adsr[3]->tick() * waves[3]->tick();
+        twozero->tick(temp);
+        
+        waves[2]->addPhaseOffset(temp);
+        temp = ( 1.0 - (control2 * 0.5)) * gains[0] * adsr[0]->tick() * waves[0]->tick();
+        temp += control2 * 0.5 * gains[2] * adsr[2]->tick() * waves[2]->tick();
+        
+        // Calculate amplitude modulation and apply it to output.
+        temp2 *= modDepth;
+        temp = temp * (1.0 + temp2);
+    } else { // 1.4.1.0 (prc) REPAIRATHON NEW FUNCTIONs, modDepth = vibrato, opAMs[n] = AM
+        temp = temp2 * modDepth * 0.2;
+        for (int i = 0; i < 4; i++) {
+            if (ratios[i] > 0.0) {
+                waves[i]->setFrequency(baseFrequency * (1.0 + temp) * ratios[i]);
+            }
+        }
+        
+        temp = (1.0 + opAMs[1] * temp2) * gains[1] * adsr[1]->tick() * waves[1]->tick();
+        temp = temp * control1;
+        
+        waves[0]->addPhaseOffset(temp);
+        waves[3]->addPhaseOffset(twozero->lastOut());
+        temp = (1.0 + opAMs[3] * temp2) * gains[3] * adsr[3]->tick() * waves[3]->tick();
+        twozero->tick(temp);
+        
+        waves[2]->addPhaseOffset(temp);
+        temp = ( 1.0 - (control2 * 0.5) + (opAMs[0] * temp2)) * gains[0] * adsr[0]->tick() * waves[0]->tick();
+        temp += (1.0 + opAMs[2] * temp2) * control2 * 0.5 * gains[2] * adsr[2]->tick() * waves[2]->tick();
+    }
+    
+    lastOutput = temp * 0.5;
+    return lastOutput;
 }
 
 /***************************************************/
@@ -15135,7 +16042,7 @@ void Stk :: setRawwavePath(std::string newPath)
 
 void Stk :: swap16(unsigned char *ptr)
 {
-  unsigned char val;
+  register unsigned char val;
 
   // Swap 1st and 2nd bytes
   val = *(ptr);
@@ -15145,7 +16052,7 @@ void Stk :: swap16(unsigned char *ptr)
 
 void Stk :: swap32(unsigned char *ptr)
 {
-  unsigned char val;
+  register unsigned char val;
 
   // Swap 1st and 4th bytes
   val = *(ptr);
@@ -15161,7 +16068,7 @@ void Stk :: swap32(unsigned char *ptr)
 
 void Stk :: swap64(unsigned char *ptr)
 {
-  unsigned char val;
+  register unsigned char val;
 
   // Swap 1st and 8th bytes
   val = *(ptr);
@@ -15428,6 +16335,12 @@ TubeBell :: TubeBell()
   gains[1] = __FM_gains[76];
   gains[2] = __FM_gains[99];
   gains[3] = __FM_gains[71];
+    
+  // 1.4.1.0 (prc) REPARIATHON2021 ADDITION
+  baseGains[0] = gains[0];
+  baseGains[1] = gains[1];
+  baseGains[2] = gains[2];
+  baseGains[3] = gains[3];
 
   adsr[0]->setAllTimes( 0.005, 4.0, 0.0, 0.04);
   adsr[1]->setAllTimes( 0.005, 4.0, 0.0, 0.04);
@@ -15435,19 +16348,31 @@ TubeBell :: TubeBell()
   adsr[3]->setAllTimes( 0.004, 4.0, 0.0, 0.04);
 
   twozero->setGain( 0.5 );
+  op4Feedback = 0.5; // 1.4.1.0
   vibrato->setFrequency( 2.0 );
+    
+  bCompatible = 1; // 1.4.1.0 (prc) REPAIRATHON2021 HACK:  When created, I'm a TubeBell, that can change....
 }  
 
 TubeBell :: ~TubeBell()
 {
+    // note: waves array taken care of in FM destructor
 }
 
 void TubeBell :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 {
-  gains[0] = amplitude * __FM_gains[94];
-  gains[1] = amplitude * __FM_gains[76];
-  gains[2] = amplitude * __FM_gains[99];
-  gains[3] = amplitude * __FM_gains[71];
+  // 1.4.1.0 (prc) REPAIRATHON2021 commented out
+  // gains[0] = amplitude * __FM_gains[94]; // OLD WAY OF DOING IT
+  // gains[1] = amplitude * __FM_gains[76]; // DELETE SOMEDAY
+  // gains[2] = amplitude * __FM_gains[99];
+  // gains[3] = amplitude * __FM_gains[71];
+  
+    // 1.4.1.0 (prc) REPAIRATHON2021 added
+  gains[0] = amplitude * baseGains[0];
+  gains[1] = amplitude * baseGains[1];
+  gains[2] = amplitude * baseGains[2];
+  gains[3] = amplitude * baseGains[3];
+    
   this->setFrequency(frequency);
   this->keyOn();
 
@@ -15456,28 +16381,51 @@ void TubeBell :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 #endif
 }
 
-MY_FLOAT TubeBell :: tick()
+MY_FLOAT TubeBell :: tick() // 1.4.1.0 (prc) REPAIRATHON2021 updated
 {
-  MY_FLOAT temp, temp2;
-
-  temp = gains[1] * adsr[1]->tick() * waves[1]->tick();
-  temp = temp * control1;
-
-  waves[0]->addPhaseOffset(temp);
-  waves[3]->addPhaseOffset(twozero->lastOut());
-  temp = gains[3] * adsr[3]->tick() * waves[3]->tick();
-  twozero->tick(temp);
-
-  waves[2]->addPhaseOffset(temp);
-  temp = ( 1.0 - (control2 * 0.5)) * gains[0] * adsr[0]->tick() * waves[0]->tick();
-  temp += control2 * 0.5 * gains[2] * adsr[2]->tick() * waves[2]->tick();
-
-  // Calculate amplitude modulation and apply it to output.
-  temp2 = vibrato->tick() * modDepth;
-  temp = temp * (1.0 + temp2);
+    MY_FLOAT temp, temp2;
     
-  lastOutput = temp * 0.5;
-  return lastOutput;
+    temp2 = vibrato->tick();
+    
+    if (bCompatible) { // 1.4.1.0 (prc) REPAIRATHON COMPATIBILITY, "I'm still a TubeBell"
+        temp = gains[1] * adsr[1]->tick() * waves[1]->tick();
+        temp = temp * control1;
+        
+        waves[0]->addPhaseOffset(temp);
+        waves[3]->addPhaseOffset(twozero->lastOut());
+        temp = gains[3] * adsr[3]->tick() * waves[3]->tick();
+        twozero->tick(temp);
+        
+        waves[2]->addPhaseOffset(temp);
+        temp = ( 1.0 - (control2 * 0.5)) * gains[0] * adsr[0]->tick() * waves[0]->tick();
+        temp += control2 * 0.5 * gains[2] * adsr[2]->tick() * waves[2]->tick();
+        
+        // Calculate amplitude modulation and apply it to output.
+        temp2 *= modDepth;
+        temp = temp * (1.0 + temp2);
+    } else {
+        temp = temp2 * modDepth * 0.2;
+        for (int i = 0; i < 4; i++)  {
+            if (ratios[i] > 0.0) {
+                waves[i]->setFrequency(baseFrequency * (1.0 + temp) * ratios[i]);
+            }
+        }
+        
+        temp = (1.0 + opAMs[1]*temp2) * gains[1] * adsr[1]->tick() * waves[1]->tick();
+        temp = temp * control1;
+        
+        waves[0]->addPhaseOffset(temp);
+        waves[3]->addPhaseOffset(twozero->lastOut());
+        temp = (1.0 + opAMs[3]*temp2) * gains[3] * adsr[3]->tick() * waves[3]->tick();
+        twozero->tick(temp);
+        
+        waves[2]->addPhaseOffset(temp);
+        temp = ( 1.0 - (control2 * 0.5) + opAMs[0]*temp2) * gains[0] * adsr[0]->tick() * waves[0]->tick();
+        temp += (1.0 + opAMs[2]*temp2) * control2 * 0.5 * gains[2] * adsr[2]->tick() * waves[2]->tick();
+    }
+    
+    lastOutput = temp * 0.5;
+    return lastOutput;
 }
 
 
@@ -15813,9 +16761,9 @@ VoicForm :: ~VoicForm()
     delete onezero;
     delete onepole;
     delete noiseEnv;
-  for ( int i=0; i<4; i++ ) {
-    delete filters[i];
-  }
+    for( int i=0; i<4; i++ ) {
+        delete filters[i];
+    }
 }
 
 void VoicForm :: clear()
@@ -16024,7 +16972,7 @@ void VoicForm :: controlChange(int number, MY_FLOAT value)
     addInstrument() function. An optional channel
     number argument can be specified to the
     addInstrument() function as well (default
-    channel = 0).  The voice manager does not
+    channel = 0). The voice manager does not
     delete any instrument instances ... it is the
     responsibility of the user to allocate and
     deallocate all instruments.
@@ -16377,10 +17325,10 @@ void WaveLoop :: addPhaseOffset(MY_FLOAT anAngle)
   phaseOffset = fileSize * anAngle;
 }
 
-const MY_FLOAT *WaveLoop :: tickFrame(void)
+const MY_FLOAT * WaveLoop :: tickFrame(void)
 {
-  MY_FLOAT tyme, alpha;
-  unsigned long i, index;
+  register MY_FLOAT tyme, alpha;
+  register unsigned long i, index;
 
   // Check limits of time address ... if necessary, recalculate modulo fileSize.
   while (time < 0.0)
@@ -16735,17 +17683,27 @@ Wurley :: Wurley()
   gains[2] = __FM_gains[92];
   gains[3] = __FM_gains[68];
 
+  // 1.4.1.0 (prc) REPARIATHON2021 ADDITION
+  baseGains[0] = gains[0];
+  baseGains[1] = gains[1];
+  baseGains[2] = gains[2];
+  baseGains[3] = gains[3];
+
   adsr[0]->setAllTimes( 0.001, 1.50, 0.0, 0.04);
   adsr[1]->setAllTimes( 0.001, 1.50, 0.0, 0.04);
   adsr[2]->setAllTimes( 0.001, 0.25, 0.0, 0.04);
   adsr[3]->setAllTimes( 0.001, 0.15, 0.0, 0.04);
 
   twozero->setGain( 2.0 );
+  op4Feedback = 2.0; // 1.4.1.0
   vibrato->setFrequency( 8.0 );
-}  
+
+  bCompatible = 1; // 1.4.1.0 (prc) REPAIRATHON2021 HACK: When created, I'm a Wurley, that can change...
+}
 
 Wurley :: ~Wurley()
 {
+    // note: waves array taken care of in FM destructor
 }
 
 void Wurley :: setFrequency(MY_FLOAT frequency)
@@ -16762,10 +17720,18 @@ void Wurley :: setFrequency(MY_FLOAT frequency)
 
 void Wurley :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 {
-  gains[0] = amplitude * __FM_gains[99];
-  gains[1] = amplitude * __FM_gains[82];
-  gains[2] = amplitude * __FM_gains[82];
-  gains[3] = amplitude * __FM_gains[68];
+  // 1.4.1.0 (prc) REPAIRATHON2021 commented out
+  // gains[0] = amplitude * __FM_gains[99]; // OLD WAY OF DOING IT
+  // gains[1] = amplitude * __FM_gains[82]; // DELETE THESE SOMEDAY
+  // gains[2] = amplitude * __FM_gains[82];
+  // gains[3] = amplitude * __FM_gains[68];
+  
+  // 1.4.1.0 (prc) REPAIRATHON2021 added
+  gains[0] = amplitude * baseGains[0];
+  gains[1] = amplitude * baseGains[1];
+  gains[2] = amplitude * baseGains[2];
+  gains[3] = amplitude * baseGains[3];
+
   this->setFrequency(frequency);
   this->keyOn();
 
@@ -16774,28 +17740,50 @@ void Wurley :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 #endif
 }
 
-MY_FLOAT Wurley :: tick()
+MY_FLOAT Wurley :: tick() // 1.4.1.0 (prc) REPAIRATHON2021 updated
 {
-  MY_FLOAT temp, temp2;
-
-  temp = gains[1] * adsr[1]->tick() * waves[1]->tick();
-  temp = temp * control1;
-
-  waves[0]->addPhaseOffset(temp);
-  waves[3]->addPhaseOffset(twozero->lastOut());
-  temp = gains[3] * adsr[3]->tick() * waves[3]->tick();
-  twozero->tick(temp);
-
-  waves[2]->addPhaseOffset(temp);
-  temp = ( 1.0 - (control2 * 0.5)) * gains[0] * adsr[0]->tick() * waves[0]->tick();
-  temp += control2 * 0.5 * gains[2] * adsr[2]->tick() * waves[2]->tick();
-
-  // Calculate amplitude modulation and apply it to output.
-  temp2 = vibrato->tick() * modDepth;
-  temp = temp * (1.0 + temp2);
+    MY_FLOAT temp, temp2;
     
-  lastOutput = temp * 0.5;
-  return lastOutput;
+    temp2 = vibrato->tick();
+    
+    if (bCompatible) { // 1.4.1.0 (prc) REPAIRATHON COMPATIBILITY, "I'm still a Wurley"
+        temp = gains[1] * adsr[1]->tick() * waves[1]->tick();
+        temp = temp * control1;
+        
+        waves[0]->addPhaseOffset(temp);
+        waves[3]->addPhaseOffset(twozero->lastOut());
+        temp = gains[3] * adsr[3]->tick() * waves[3]->tick();
+        twozero->tick(temp);
+        
+        waves[2]->addPhaseOffset(temp);
+        temp = ( 1.0 - (control2 * 0.5)) * gains[0] * adsr[0]->tick() * waves[0]->tick();
+        temp += control2 * 0.5 * gains[2] * adsr[2]->tick() * waves[2]->tick();
+        
+        // Calculate amplitude modulation and apply it to output.
+        temp2 *= modDepth;
+        temp = temp * (1.0 + temp2);
+    } else { // 1.4.1.0 (prc) REPAIRATHON NEW FUNCTIONs, modDepth = vibrato, opAMs[n] = AM
+        temp = temp2 * modDepth * 0.2;
+        for (int i = 0; i < 4; i++)  {
+            if (ratios[i] > 0.0) {
+                waves[i]->setFrequency(baseFrequency * (1.0 + temp) * ratios[i]);
+            }
+        }
+        temp = (1.0 + opAMs[1] * temp2) * gains[1] * adsr[1]->tick() * waves[1]->tick();
+        temp = temp * control1;
+        
+        waves[0]->addPhaseOffset(temp);
+        waves[3]->addPhaseOffset(twozero->lastOut());
+        temp = (1.0 + opAMs[3] * temp2) * gains[3] * adsr[3]->tick() * waves[3]->tick();
+        twozero->tick(temp);
+        
+        waves[2]->addPhaseOffset(temp);
+        temp = ( 1.0 - (control2 * 0.5) + (opAMs[0] * temp2)) * gains[0] * adsr[0]->tick() * waves[0]->tick();
+        temp += (1.0 + opAMs[2] * temp2) * control2 * 0.5 * gains[2] * adsr[2]->tick() * waves[2]->tick();
+    }
+    
+    lastOutput = temp * 0.5;
+    return lastOutput;
 }
 
 // CHUCK HACK:
@@ -17593,7 +18581,7 @@ void WvIn :: readData( unsigned long index )
   bool endfile = (chunkPointer+bufferSize == fileSize);
   if ( !endfile ) length += 1;
 
-  // Read samples into data[].  Use MY_FLOAT data structure
+  // Read samples into data[]. Use MY_FLOAT data structure
   // to store samples.
   if ( dataType == STK_SINT16 ) {
     SINT16 *buf = (SINT16 *)data;
@@ -17782,7 +18770,7 @@ MY_FLOAT WvIn :: tick(void)
   return lastOut();
 }
 
-MY_FLOAT *WvIn :: tick(MY_FLOAT *vec, unsigned int vectorSize)
+MY_FLOAT * WvIn :: tick(MY_FLOAT *vec, unsigned int vectorSize)
 {
   for ( unsigned int i=0; i<vectorSize; i++ )
     vec[i] = tick();
@@ -17790,10 +18778,10 @@ MY_FLOAT *WvIn :: tick(MY_FLOAT *vec, unsigned int vectorSize)
   return vec;
 }
 
-const MY_FLOAT *WvIn :: tickFrame(void)
+const MY_FLOAT * WvIn :: tickFrame(void)
 {
-  MY_FLOAT tyme, alpha;
-  unsigned long i, index;
+  register MY_FLOAT tyme, alpha;
+  register unsigned long i, index;
 
   if (finished) return lastOutput;
 
@@ -18088,9 +19076,9 @@ void WvOut :: openFile( const char *fileName, unsigned int nChannels, WvOut::FIL
   channels = nChannels;
   fileType = type;
 
-  if ( format != STK_SINT8 && format != STK_SINT16 &&
-       format != STK_SINT32 && format != MY_FLOAT32 &&
-       format != MY_FLOAT64 ) {
+  if( format != STK_SINT8 && format != STK_SINT16 && /* STK_SINT24 && */ // 1.4.1.0 SINT24 attempt
+      format != STK_SINT32 && format != MY_FLOAT32 && format != MY_FLOAT64 )
+  {
     sprintf( msg, "[chuck](via WvOut): Unknown data type specified (%ld).", format );
     handleError(msg, StkError::FUNCTION_ARGUMENT);
   }
@@ -24048,6 +25036,170 @@ CK_DLL_PMSG( FM_pmsg )
 
 
 //-----------------------------------------------------------------------------
+// 1.4.1.0 ***** REPAIRATHON2021 NEW SET/GET ACCESSING FUNCTIONS *****
+//-----------------------------------------------------------------------------
+// name: FM_ctrl_opADSR()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( FM_ctrl_opADSR )
+{
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    t_CKINT w = GET_NEXT_INT(ARGS);
+    t_CKFLOAT a = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT d = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT s = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT r = GET_NEXT_FLOAT(ARGS);
+    fm->setADSR(w, a, d, s, r);
+    RETURN->v_int = w;
+}
+
+//-----------------------------------------------------------------------------
+// name: FM_ctrl_opGain()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( FM_ctrl_opGain )
+{
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    t_CKINT w = GET_NEXT_INT(ARGS);
+    t_CKFLOAT g = GET_NEXT_FLOAT(ARGS);
+    fm->setOpGain(w, g);
+    RETURN->v_float = g;
+}
+
+//-----------------------------------------------------------------------------
+// name: FM_cget_opGain()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( FM_cget_opGain )
+{
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    t_CKINT w = GET_NEXT_INT(ARGS);
+    RETURN->v_float = fm->getOpGain(w);
+}
+
+//-----------------------------------------------------------------------------
+// name: FM_ctrl_opAM()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( FM_ctrl_opAM )
+{
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    t_CKINT w = GET_NEXT_INT(ARGS);
+    t_CKFLOAT g = GET_NEXT_FLOAT(ARGS);
+    fm->setOpAM(w, g);
+    RETURN->v_float = g;
+}
+
+//-----------------------------------------------------------------------------
+// name: FM_cget_opAM()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( FM_cget_opAM )
+{
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    t_CKINT w = GET_NEXT_INT(ARGS);
+    RETURN->v_float = fm->getOpAM(w);
+}
+
+//-----------------------------------------------------------------------------
+// name: FM_ctrl_opWave()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( FM_ctrl_opWave )
+{
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    t_CKINT w = GET_NEXT_INT(ARGS);
+    t_CKINT w2 = GET_NEXT_INT(ARGS);
+    fm->setOpWave(w, w2);
+    RETURN->v_int = w2;
+}
+
+//-----------------------------------------------------------------------------
+// name: FM_ctrl_opRatio()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( FM_ctrl_opRatio )
+{
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    t_CKINT w = GET_NEXT_INT(ARGS);
+    t_CKFLOAT r = GET_NEXT_FLOAT(ARGS);
+    fm->setRatio(w, r);
+    RETURN->v_float = r;
+}
+
+//-----------------------------------------------------------------------------
+// name: FM_cget_opRatio()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( FM_cget_opRatio )
+{
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    t_CKINT w = GET_NEXT_INT(ARGS);
+    RETURN->v_float = fm->getRatio(w);
+}
+
+//-----------------------------------------------------------------------------
+// name: FM_ctrl_op4Feedback()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( FM_ctrl_op4Feedback )
+{
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    t_CKFLOAT r = GET_NEXT_FLOAT(ARGS);
+    fm->setOp4Feedback(r);
+    RETURN->v_float = r;
+}
+
+//-----------------------------------------------------------------------------
+// name: FM_cget_op4Feedback()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( FM_cget_op4Feedback )
+{
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    RETURN->v_float = fm->getOp4Feedback();
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: FM_cget_getFMTableGain()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( FM_cget_getFMTableGain )
+{
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    t_CKINT w = GET_NEXT_INT(ARGS);
+    RETURN->v_float = fm->getFMTableGain(w);
+}
+
+//-----------------------------------------------------------------------------
+// name: FM_cget_getFMTableTime()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( FM_cget_getFMTableTime )
+{
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    t_CKINT w = GET_NEXT_INT(ARGS);
+    RETURN->v_float = fm->getFMTableTime(w);
+}
+
+//-----------------------------------------------------------------------------
+// name: FM_cget_getFMTableSusLevel()
+// desc: CGET function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( FM_cget_getFMTableSusLevel )
+{
+    FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    t_CKINT w = GET_NEXT_INT(ARGS);
+    RETURN->v_float = fm->getFMTableSusLevel(w);
+}
+//-----------------------------------------------------------------------------
+// 1.4.1.0 ***** END BLOCK REPARIATHON2021 ****
+//-----------------------------------------------------------------------------
+
+
+//-----------------------------------------------------------------------------
 // name: FM_ctrl_modDepth()
 // desc: CTRL function ...
 //-----------------------------------------------------------------------------
@@ -24141,6 +25293,8 @@ CK_DLL_CTRL( FM_cget_control2 )
     FM * fm = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
     RETURN->v_float = fm->control2 / 2.0;
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -24369,6 +25523,145 @@ CK_DLL_PMSG( HevyMetl_pmsg )
 {
     return TRUE;
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// 1.4.1.0 (prc) REPAIRATHON2021 BRAND NEW FM INSTRUMENTS AND ALGORITHMS!!! ***
+//-----------------------------------------------------------------------------
+// name: HnkyTonk_ctor()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( HnkyTonk_ctor  )
+{
+    // initialize member object
+    OBJ_MEMBER_UINT(SELF, FM_offset_data) = (t_CKUINT) new HnkyTonk();
+}
+
+
+//-----------------------------------------------------------------------------
+// name: HnkyTonk_dtor()
+// desc: DTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_DTOR( HnkyTonk_dtor  )
+{
+    delete (HnkyTonk *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    OBJ_MEMBER_UINT(SELF, FM_offset_data) = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: HnkyTonk_tick()
+// desc: TICK function ...
+//-----------------------------------------------------------------------------
+CK_DLL_TICK( HnkyTonk_tick )
+{
+    HnkyTonk * m = (HnkyTonk *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    *out = m->tick();
+    return TRUE;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: HnkyTonk_pmsg()
+// desc: PMSG function ...
+//-----------------------------------------------------------------------------
+CK_DLL_PMSG( HnkyTonk_pmsg )
+{
+    return TRUE;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: FrencHrn_ctor()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( FrencHrn_ctor  )
+{
+    // initialize member object
+    OBJ_MEMBER_UINT(SELF, FM_offset_data) = (t_CKUINT) new FrencHrn();
+}
+
+
+//-----------------------------------------------------------------------------
+// name: FrencHrn_dtor()
+// desc: DTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_DTOR( FrencHrn_dtor  )
+{
+    delete (FrencHrn *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    OBJ_MEMBER_UINT(SELF, FM_offset_data) = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: FrencHrn_tick()
+// desc: TICK function ...
+//-----------------------------------------------------------------------------
+CK_DLL_TICK( FrencHrn_tick )
+{
+    FrencHrn * m = (FrencHrn *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    *out = m->tick();
+    return TRUE;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: FrencHrn_pmsg()
+// desc: PMSG function ...
+//-----------------------------------------------------------------------------
+CK_DLL_PMSG( FrencHrn_pmsg )
+{
+    return TRUE;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: KrstlChr_ctor()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( KrstlChr_ctor  )
+{
+    // initialize member object
+    OBJ_MEMBER_UINT(SELF, FM_offset_data) = (t_CKUINT) new KrstlChr();
+}
+
+
+//-----------------------------------------------------------------------------
+// name: KrstlChr_dtor()
+// desc: DTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_DTOR( KrstlChr_dtor  )
+{
+    delete (KrstlChr *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    OBJ_MEMBER_UINT(SELF, FM_offset_data) = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: KrstlChr_tick()
+// desc: TICK function ...
+//-----------------------------------------------------------------------------
+CK_DLL_TICK( KrstlChr_tick )
+{
+    KrstlChr * m = (KrstlChr *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    *out = m->tick();
+    return TRUE;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: KrstlChr_pmsg()
+// desc: PMSG function ...
+//-----------------------------------------------------------------------------
+CK_DLL_PMSG( KrstlChr_pmsg )
+{
+    return TRUE;
+}
+//-----------------------------------------------------------------------------
+/***** END REPAIRATHON2021 BRAND NEW FM INSTRUMENTS AND ALGORITHMS *****/
+//-----------------------------------------------------------------------------
 
 
 
@@ -25128,6 +26421,31 @@ CK_DLL_CGET( Moog_cget_filterSweepRate )
 {
     Moog * m = (Moog *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     RETURN->v_float = (t_CKFLOAT)m->filterRate * 5000;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Moog_ctrl_filterStartFreq()
+// desc: CTRL function | added 1.4.1.0 (prc) REPAIRATHON2021
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( Moog_ctrl_filterStartFreq )
+{
+    Moog * m = (Moog *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
+    t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
+    // m->filterStartFreq( f );
+    m->filterStartFreq = f;
+    RETURN->v_float = (t_CKFLOAT)  m->filterStartFreq;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Moog_cget_filterStartFreq()
+// desc: CGET function | added 1.4.1.0 (prc) REPAIRATHON2021
+//-----------------------------------------------------------------------------
+CK_DLL_CGET( Moog_cget_filterStartFreq )
+{
+    Moog * m = (Moog *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
+    RETURN->v_float = (t_CKFLOAT)  m->filterStartFreq;
 }
 
 

@@ -1,16 +1,16 @@
 1.4.1.0 (June 2021)
 ---
   - (added) static Object.apropos();
-    all ChucK objects (i.e., all non-primitive types) can now invoke 
+    All ChucK objects (i.e., all non-primitive types) can now invoke 
     .apropos(), which will dynamically generate and print to console
     the description and inheritance hierarchy of the underlying type,
-    as well as the available functions.  This can be called on any
-    object instance or on any class (without an instance):
-        // an object instance
+    as well as the available functions at runtime.  This can be called
+    on any object instance or on any class (without an instance):
+        // any object instance
         SinOsc foo;
         // print to console info about its underlying type
         foo.apropos();
-        // print to console info about the class (identical output as above)
+        // OR apropos from any class (identical output as above)
         SinOsc.apropos();
   - (added) "global" declarations for int, float, string, Object, UGen, Event;
     this can be used in-language across ChucK files (each file must first 
@@ -41,6 +41,48 @@
   - (added) examples/deep/chant.ck (by Perry Cook, 2006) -- a chant singing
     synthesizer that makes use of ChucK's strongly-time and concurrent
     programming features.
+  - (added) new STK set/get access functions in FM:
+        float op4Feedback( float value );
+            Set operator 4 feedback.
+        float op4Feedback();
+            Get operator 4 feedback.
+        float opADSR( int opNum, float a, float d, float s, float r );
+            Set operator ADSR: attack, decay, sustain, release.
+        float opAM( int opNum, float value );
+            Set operator amplitude modulation.
+        float opAM( int opNum );
+            Get operator amplitude modulation.
+        float opGain( int opNum, float value );
+            Set operator gain.
+        float opGain( int opNum );
+            Get gperator gain.
+        float opRatio( int opNum, float ratio );
+            Set operator frequency ratio.
+        float opRatio( int opNum );
+            Get operator frequency ratio.
+        float opWave( int opNum, int wave );
+            Set operator waveform [1-8].
+  - (added) new Synthesis Toolkit (STK) FM instruments from Perry!
+        HnkyTonk: STK-style Honkey Tonk Piano FM synthesis instrument.
+            (aka, Algorithm 1 of the Yamaha TX81Z DX11 FM synthesizer)
+        FrencHrn: STK-style French Horn FM synthesis instrument.
+            (aka, Algorithm 1 of the Yamaha TX81Z DX11 FM synthesizer)
+        KrstlChr: STK-style "Crystal Choir" FM synthesis instrument.
+            (aka, Algorithm 7 of the Yamaha TX81Z DX11 FM synthesizer)
+    *** for each of these, try using the new .apropos() to examine its
+    documentation and interface; e.g., HnkyTonk.apropos(); ***
+  - (added) new Moog function:
+        float filterStartFreq( float freq );
+            Set filter starting frequency.
+        float filterStartFreq();
+            Get filter starting frequency.
+  - (added) new STK examples (see examples/stk/)!
+  - (updated) tweaks to a number of STK UGens, which may result in audio
+    changes; the affected UGens are:
+        BandedWG, BeeThree, Brass, FMVoices, HevyMetl, PercFlut, Rhodey,
+        TubeBell, Wurley
+  - (fixed) issue in PluckTwo in computing delay length; this affects
+    the tuning of various plucked string models, including Mandolin.
   - (added) .frames() for SndBuf and SndBuf2; returns the number of sample
     frames in the loaded sound file. This is identical in behavior to
     .samples() -- but for stereo+, .frames() is semanitically more 
