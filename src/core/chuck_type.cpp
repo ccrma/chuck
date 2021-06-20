@@ -7051,8 +7051,8 @@ void apropos_var( std::ostringstream & sout, Chuck_Value * var, const std::strin
     sout << (var->is_static ? "static " : "");
     // print const
     sout << (var->is_const ? "const " : "");
-    // print
-    sout << (var->is_const ? "global " : "");
+    // print global
+    sout << (var->is_global ? "global " : "");
 
     // output variable type
     sout << var->type->str() << " ";
