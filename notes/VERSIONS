@@ -131,6 +131,9 @@
     the basis for Chunity.  Future Chunity releases will align with mainline
     ChucK language features. (thanks to Jack Atherton for several years of
     laying the groundwork and for ChucK in Chunity!)
+  - (internal/developement) added m_started flag to the ChucK class to avoid
+    a strange (but mostly harmless) condition when the virtual machine is
+    shutting down and ChucK::run() attempt to call ChucK::start()
   - (internal/development) Thanks to Mark Cerqueira -- migrated from old
     Travis CI (continuous integration testing) to GHA (GitHub Actions).
 
