@@ -13,11 +13,10 @@ jobs:
     steps:
     - name: Check out repository
       uses: actions/checkout@v2
-      with:
-        fetch-depth: 1
-        submodules: 'recursive'
+
     - name: Run Cppcheck
-      uses: deep5050/cppcheck-action@3.0
+      uses: deep5050/cppcheck-action@main
+
     - name: Upload report
       uses: actions/upload-artifact@v1
       with:
