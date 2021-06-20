@@ -1,9 +1,11 @@
-// name: trumpet-81ZAlgorithm3.ck
+// name: trumpet-tx81z-algo3.ck
 // desc: demo of how to turn HevyMetl (Algorithm 3) into an FM Trumpet!!
 //       now you can transcribe (somewhat) directly from a TX81 Patch!!!
 //
 // author: Perry R. Cook
 // date: June 2021, for REPAIRATHON 2021
+//       needs chuck 1.4.1.0 or above
+
 
 // patch
 HevyMetl t => NRev r => dac;
