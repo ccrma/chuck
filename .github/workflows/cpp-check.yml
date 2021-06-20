@@ -9,18 +9,19 @@ on:
 jobs:
   build:
     name: cppcheck-test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
           
-      - name: cppcheck
-        uses: deep5050/cppcheck-action@main
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN}}
-          
-        
-      - name: publish report    
-        uses: mikeal/publish-to-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH_NAME: 'main'
+    - name: Run Cppcheck
+      uses: Bedzior/cppcheck-action@v1.0
+      with:
+        enabled checks: all
+        enable inconclusive: true
+        generate report: true
+		
+    - name: Upload report
+      uses: actions/upload-artifact@v1
+      with:
+        name: report
+        path: output
