@@ -7,6 +7,9 @@
 
 // patch
 FrencHrn f => NRev r => dac;
+// turn down the volume a bit
+.5 => r.gain;
+// reverb mix
 0.07 => r.mix;
 
 // to learn more about FrencHrn, uncomment this:
