@@ -1,5 +1,17 @@
 1.4.1.0 (June 2021)
 ---
+(NOTE) chuck-1.4.1.0 is the first significant release resulting from a 
+coordinated team effort to update and improve ChucK for teaching and 
+research.  In April 2021, Perry and Ge led a ChucK "Global 
+Repair-a-thon", which identified issues and put forth a new Development 
+Roadmap. The ChucK dev team will follow this roadmap for updates, new 
+features, and new ChucK mediums (e.g., Chunity, WebChucK, FaucK, 
+ChucKTrip, and more). Many people were involved in this significant 
+release, including Jack Atherton, Mike Mulshine, Matt Wright, Rebecca 
+Fiebrink, Dan Trueman, Lloyd May, Mark Cerquiera, Mario Buoninfante, 
+Perry Cook, Spencer Salazar, and Ge Wang.  Many thanks to everyone who 
+contributed. Happy ChucKing!
+---
   - (added) static Object.apropos();
     All ChucK objects (i.e., all non-primitive types) can now invoke 
     .apropos(), which will dynamically generate and print to console
@@ -10,26 +22,14 @@
         SinOsc foo;
         // print to console info about its underlying type
         foo.apropos();
-        // OR apropos from any class (identical output as above)
+        (OR)
+        // apropos from any class (identical output as above)
         SinOsc.apropos();
-  - (added) "global" declarations for int, float, string, Object, UGen, Event;
-    this can be used in-language across ChucK files (each file must first 
-    "declare" the global value before using it). This also support usage from
-    external hosts such as Chunity. (thanks to Jack Atherton for this work!)
-  - (added) constant power panning (as controlled by the .pan parameter)
-    for all UGen_Stereo--including Pan2, stereo dac, stereo adc; this is
-    controllable using the new .panType parameter.  By default, constant
-    power panning is NOT enabled for dac and adc, whose panning behavior 
-    is unchanged (panType==0) and favors a kind of unity-gain-preserving
-    but perceptually suspect panning scheme. By contrast, Pan2 will default
-    to use constant power panning (panType==1).  This will alter exist the
-    effect of any code that uses Pan2.  Specifically, this will introduce
-    a ~3 dB reduction in the output Pan2 (it is possible to
-    restore the previous behavior by explicitly setting .panType to 0). 
-    This ~3 dB reduction corresponds to the equal-powered amplitude value
-    when pan is at center (pan=0). Mathematically, the reduction amount 
-    can be calculated using Std.lintodb(Math.cos(pi/4))
-    [To hear this new behavior, check out examples/stereo/stereo_noise.ck]
+    Intended to be a quick runtime reference / learning tool!
+  - (added) examples/apropos.ck -- show .apropos() in action
+  - (added) examples/deep/chant.ck (by Perry Cook, 2006) -- a chant singing
+    synthesizer that makes use of ChucK's strongly-time and concurrent
+    programming features.
   - (added) new Multi-channel LiSa UGens! (LiSa10 was already present)
         LiSa2 (stereo)
         LiSa4 (quad),
@@ -38,9 +38,6 @@
         LiSa16 (16-channel)
   - (fixed) LiSa playback bug; voice panning now handles the mono case;
     previously was silencing voice playback
-  - (added) examples/deep/chant.ck (by Perry Cook, 2006) -- a chant singing
-    synthesizer that makes use of ChucK's strongly-time and concurrent
-    programming features.
   - (added) new STK set/get access functions in FM:
         float op4Feedback( float value );
             Set operator 4 feedback.
@@ -76,10 +73,15 @@
             Set filter starting frequency.
         float filterStartFreq();
             Get filter starting frequency.
-  - (added) new STK examples (see examples/stk/)!
+  - (added) new STK examples:
+        examples/stk/frenchrn-algo2.ck -- FM French Horn demo
+        examples/stk/honkeytonk-algo1.ck -- FM Honkey Tonk demo
+        examples/stk/krstlchr-algo7.ck -- FM Kristal Choir demo
+        examples/stk/hevymetl-acoustic-algo3.ck -- FM HevyMetl => Nylon Guitar
+        examples/stk/hevymetl-trumpet-algo3.ck -- FM HevyMetl => Trumpet
   - (updated) tweaks to a number of STK UGens, which may result in audio
     changes; the affected UGens are:
-        BandedWG, BeeThree, Brass, FMVoices, HevyMetl, PercFlut, Rhodey,
+        BandedWG, BeeThree, FMVoices, HevyMetl, PercFlut, Rhodey,
         TubeBell, Wurley
   - (fixed) issue in PluckTwo in computing delay length; this affects
     the tuning of various plucked string models, including Mandolin.
@@ -87,6 +89,24 @@
     frames in the loaded sound file. This is identical in behavior to
     .samples() -- but for stereo+, .frames() is semanitically more 
     accurate than .samples().
+  - (added) "global" declarations for int, float, string, Object, UGen, Event;
+    this can be used in-language across ChucK files (each file must first 
+    "declare" the global value before using it). This also support usage from
+    external hosts such as Chunity. (thanks to Jack Atherton for this work!)
+  - (added) constant power panning (as controlled by the .pan parameter)
+    for all UGen_Stereo--including Pan2, stereo dac, stereo adc; this is
+    controllable using the new .panType parameter.  By default, constant
+    power panning is NOT enabled for dac and adc, whose panning behavior 
+    is unchanged (panType==0) and favors a kind of unity-gain-preserving
+    but perceptually suspect panning scheme. By contrast, Pan2 will default
+    to use constant power panning (panType==1).  This will alter exist the
+    effect of any code that uses Pan2.  Specifically, this will introduce
+    a ~3 dB reduction in the output Pan2 (it is possible to
+    restore the previous behavior by explicitly setting .panType to 0). 
+    This ~3 dB reduction corresponds to the equal-powered amplitude value
+    when pan is at center (pan=0). Mathematically, the reduction amount 
+    can be calculated using Std.lintodb(Math.cos(pi/4))
+    [To hear this new behavior, check out examples/stereo/stereo_noise.ck]
   - (BEHAVIOR CHANGED) clearly separated array.size() and array.capacity();
     for historical/compatibility reasons, array.cap() is the same as
     array.size() and generally should be avoided in favor of either .size()

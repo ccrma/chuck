@@ -1,4 +1,4 @@
-// name: nylon-guitar-algo1.ck
+// name: hevymetl-acoustic-algo3.ck
 // desc: how to turn HnkyTonk (Algorithm 3) into an acoustic guitar!!
 //       now you can transcribe almost directly from a TX81 Patch!!!
 //

@@ -7200,198 +7200,180 @@ void Bowed :: controlChange(int number, MY_FLOAT value)
 
 Brass :: Brass(MY_FLOAT lowestFrequency)
 {
-  length = (long) (Stk::sampleRate() / lowestFrequency + 1);
-  delayLine = new DelayA( 0.5 * length, length );
-
-  lipFilter = new BiQuad();
-  lipFilter->setGain( 0.03 );
-  dcBlock = new PoleZero();
-  dcBlock->setBlockZero();
-
-  adsr = new ADSR;
-  adsr->setAllTimes( 0.005, 0.001, 1.0, 0.010);
-
-  // concatenate the STK rawwave path to the rawwave file
-  vibrato = new WaveLoop( "special:sinewave", TRUE );
-  vibrato->setFrequency( 6.137 );
-  vibratoGain = 0.0;
-
-  this->clear();
-    maxPressure = (MY_FLOAT) 0.0;
-  lipTarget = 0.0;
-
-  // Necessary to initialize variables.
-  setFrequency( 220.0 );
+    length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+    delayLine = new DelayA( 0.5 * length, length );
     
-  // 1.4.1.0 (prc) REPAIRATHON2021 Hack
-  // NOTE: THIS NEEDS COMPATIBILITY REVERSE HACKING
-  gainHack = 1.0;
+    lipFilter = new BiQuad();
+    lipFilter->setGain( 0.03 );
+    dcBlock = new PoleZero();
+    dcBlock->setBlockZero();
+    
+    adsr = new ADSR;
+    adsr->setAllTimes( 0.005, 0.001, 1.0, 0.010);
+    
+    // Concatenate the STK rawwave path to the rawwave file
+    vibrato = new WaveLoop( "special:sinewave", TRUE );
+    vibrato->setFrequency( 6.137 );
+    vibratoGain = 0.0;
+    
+    this->clear();
+    maxPressure = (MY_FLOAT) 0.0;
+    lipTarget = 0.0;
+    // initialize to something | 1.4.1.0
+    slideTarget = (Stk::sampleRate() / 220 * 2.0) + 3.0;
 
-  // chuck
-  //reverse: nothing
-  m_rate = .005;
-  //reverse: I give up!
-  m_lip = 0.1; 
-  //reverse: this is a special variable... we'll just leave this be for now
-
-  // 1.4.1.0 (prc) REPAIRATHON2021 HACK No we won't !!
-  //  m_slide = length;
-  m_slide = 0.5;
-  //reverse: setVibratoFreq( norm * 12.0 );
-  m_vibratoFreq = vibrato->m_freq / 12.0;
-  //reverse: setVibratoGain(norm * 0.4)
-  m_vibratoGain = 0.0;
-  //reverse: nothing
-  m_volume = 1.0;
+    // Necessary to initialize variables.
+    setFrequency( 220.0 );
+    
+    // CHUCK
+    //reverse: nothing
+    m_rate = .005;
+    //reverse: I give up!
+    m_lip = 0.1;
+    //reverse: this is a special variable... we'll just leave this be for now
+    m_slide = length;
+    //reverse: setVibratoFreq( norm * 12.0 );
+    m_vibratoFreq = vibrato->m_freq / 12.0;
+    //reverse: setVibratoGain(norm * 0.4)
+    m_vibratoGain = 0.0;
+    //reverse: nothing
+    m_volume = 1.0;
 }
 
 Brass :: ~Brass()
 {
-  delete delayLine;
-  delete lipFilter;
-  delete dcBlock;
-  delete adsr;
-  delete vibrato;
+    delete delayLine;
+    delete lipFilter;
+    delete dcBlock;
+    delete adsr;
+    delete vibrato;
 }
 
 void Brass :: clear()
 {
-  delayLine->clear();
-  lipFilter->clear();
-  dcBlock->clear();
+    delayLine->clear();
+    lipFilter->clear();
+    dcBlock->clear();
 }
 
 void Brass :: setFrequency(MY_FLOAT frequency)
 {
-  MY_FLOAT freakency = frequency;
-  if ( frequency <= 0.0 ) {
-    CK_STDCERR << "[chuck](via STK): Brass: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
-    freakency = 220.0;
-  }
-
-  // Fudge correction for filter delays.
-  // 1.4.1.0 (prc) updated | was * 2) + 3.0;
-  slideTarget = ((Stk::sampleRate() / freakency) * 2.075);
-  delayLine->setDelay(slideTarget); // play a harmonic
-
-  lipTarget = freakency;
-  // 1.4.1.0 (prc) hell with it, near lossless lip );
-  lipFilter->setResonance( freakency, 0.9995 ); // was 0.997
-
-  // 1.4.1.0 (prc) REPAIRATHON2021
-  // NOTE: THIS NEEDS COMPATIBILITY REVERSE HACKING
-  gainHack = 0.02 + (freakency - 150.0)/1000.0; // REPAIRATHON2021 Hack
-  if (gainHack < 0.02) gainHack = 0.02;
-  if (gainHack > 2.0) gainHack = 2.0;
+    MY_FLOAT freakency = frequency;
+    if ( frequency <= 0.0 ) {
+        CK_STDCERR << "[chuck](via STK): Brass: setFrequency parameter is less than or equal to zero!" << CK_STDENDL;
+        freakency = 220.0;
+    }
     
-  // chuck
-  m_frequency = freakency;
+    // Fudge correction for filter delays.
+    slideTarget = (Stk::sampleRate() / freakency * 2.0) + 3.0;
+    delayLine->setDelay(slideTarget); // play a harmonic
+    
+    lipTarget = freakency;
+    lipFilter->setResonance( freakency, 0.997 );
+    
+    // chuck
+    m_frequency = freakency;
 }
 
 void Brass :: setLip(MY_FLOAT frequency)
 {
-  MY_FLOAT freakency = frequency;
-  if ( frequency <= 0.0 ) {
-    CK_STDCERR << "[chuck](via STK): Brass: setLip parameter is less than or equal to zero!" << CK_STDENDL;
-    freakency = 220.0;
-  }
-
-  lipFilter->setResonance( freakency, 0.9995 ); // 1.4.1.0 (prc) was 0.997 );
+    MY_FLOAT freakency = frequency;
+    if ( frequency <= 0.0 ) {
+        CK_STDCERR << "[chuck](via STK): Brass: setLip parameter is less than or equal to zero!" << CK_STDENDL;
+        freakency = 220.0;
+    }
+    
+    lipFilter->setResonance( freakency, 0.997 );
 }
 
 void Brass :: startBlowing(MY_FLOAT amplitude, MY_FLOAT rate)
 {
     adsr->setAttackRate(rate);
-    // REPAIRATHON2021 Hack | NOTE: THIS NEEDS COMPATIBILITY REVERSE HACKING
-    // maxPressure = amplitude;
-    maxPressure = amplitude*gainHack;
+    maxPressure = amplitude;
     adsr->keyOn();
 }
 
 void Brass :: stopBlowing(MY_FLOAT rate)
 {
-  adsr->setReleaseRate(rate);
-  adsr->keyOff();
+    adsr->setReleaseRate(rate);
+    adsr->keyOff();
 }
 
 void Brass :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 {
-  setFrequency(frequency);
-  this->startBlowing(amplitude, amplitude * 0.001);
-
+    setFrequency(frequency);
+    this->startBlowing(amplitude, amplitude * 0.001);
+    
 #if defined(_STK_DEBUG_)
-  CK_STDCERR << "[chuck](via STK): Brass: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
+    CK_STDCERR << "[chuck](via STK): Brass: NoteOn frequency = " << frequency << ", amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
 void Brass :: noteOff(MY_FLOAT amplitude)
 {
-  this->stopBlowing(amplitude * 0.005);
-
+    this->stopBlowing(amplitude * 0.005);
+    
 #if defined(_STK_DEBUG_)
-  CK_STDCERR << "[chuck](via STK): Brass: NoteOff amplitude = " << amplitude << CK_STDENDL;
+    CK_STDCERR << "[chuck](via STK): Brass: NoteOff amplitude = " << amplitude << CK_STDENDL;
 #endif
 }
 
 MY_FLOAT Brass :: tick()
 {
-  MY_FLOAT breathPressure = maxPressure * adsr->tick();
-  breathPressure += vibratoGain * vibrato->tick();
-
-  MY_FLOAT mouthPressure = 0.3 * breathPressure;
-  MY_FLOAT borePressure = 0.85 * delayLine->lastOut();
-  MY_FLOAT deltaPressure = mouthPressure - borePressure; // Differential pressure.
-  deltaPressure = lipFilter->tick( deltaPressure );      // Force - > position.
-  deltaPressure *= deltaPressure;                        // Basic position to area mapping.
-  if ( deltaPressure > 1.0 ) deltaPressure = 1.0;         // Non-linear saturation.
-  // The following input scattering assumes the mouthPressure = area.
-  lastOutput = deltaPressure * mouthPressure + ( 1.0 - deltaPressure) * borePressure;
-  lastOutput = delayLine->tick( dcBlock->tick( lastOutput ) );
-
-  return lastOutput/gainHack; /***** REPAIRATHON2021 Hack *****/  // NOTE:  THIS NEEDS COMPATIBILITY REVERSE HACKING
-
-  // return lastOutput;
+    MY_FLOAT breathPressure = maxPressure * adsr->tick();
+    breathPressure += vibratoGain * vibrato->tick();
+    
+    MY_FLOAT mouthPressure = 0.3 * breathPressure;
+    MY_FLOAT borePressure = 0.85 * delayLine->lastOut();
+    MY_FLOAT deltaPressure = mouthPressure - borePressure; // Differential pressure.
+    deltaPressure = lipFilter->tick( deltaPressure );      // Force - > position.
+    deltaPressure *= deltaPressure;                        // Basic position to area mapping.
+    if ( deltaPressure > 1.0 ) deltaPressure = 1.0;         // Non-linear saturation.
+    // The following input scattering assumes the mouthPressure = area.
+    lastOutput = deltaPressure * mouthPressure + ( 1.0 - deltaPressure) * borePressure;
+    lastOutput = delayLine->tick( dcBlock->tick( lastOutput ) );
+    
+    return lastOutput;
 }
 
 void Brass :: controlChange(int number, MY_FLOAT value)
 {
-  MY_FLOAT norm = value * ONE_OVER_128;
-  if ( norm < 0 ) {
-    norm = 0.0;
-    CK_STDCERR << "[chuck](via STK): Brass: Control value less than zero!" << CK_STDENDL;
-  }
-  else if ( norm > 1.0 ) {
-    norm = 1.0;
-    CK_STDCERR << "[chuck](via STK): Brass: Control value exceeds nominal range!" << CK_STDENDL;
-  }
-
-  if (number == __SK_LipTension_) { // 2
-    MY_FLOAT temp = lipTarget * pow( 4.0, (2.0 * norm) - 1.0 );
-    m_lip = norm;
-    this->setLip(temp);
-  }
-  else if (number == __SK_SlideLength_) { // 4
-    m_slide = norm;
-    delayLine->setDelay( slideTarget * (0.5 + norm) );
-  }
-  else if (number == __SK_ModFrequency_) // 11
-    setVibratoFreq( norm * 12.0 );
-  else if (number == __SK_ModWheel_ ) { // 1
-    m_vibratoGain = norm;
-    vibratoGain = norm * 0.4;
-  }
-  else if (number == __SK_AfterTouch_Cont_) { // 128
-    m_volume = norm;
-    adsr->setTarget( norm );
-  }
-  else
-    CK_STDCERR << "[chuck](via STK): Brass: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
-
+    MY_FLOAT norm = value * ONE_OVER_128;
+    if ( norm < 0 ) {
+        norm = 0.0;
+        CK_STDCERR << "[chuck](via STK): Brass: Control value less than zero!" << CK_STDENDL;
+    }
+    else if ( norm > 1.0 ) {
+        norm = 1.0;
+        CK_STDCERR << "[chuck](via STK): Brass: Control value exceeds nominal range!" << CK_STDENDL;
+    }
+    
+    if (number == __SK_LipTension_) { // 2
+        MY_FLOAT temp = lipTarget * pow( 4.0, (2.0 * norm) - 1.0 );
+        m_lip = norm;
+        this->setLip(temp);
+    }
+    else if (number == __SK_SlideLength_) { // 4
+        m_slide = norm;
+        delayLine->setDelay( slideTarget * (0.5 + norm) );
+    }
+    else if (number == __SK_ModFrequency_) // 11
+        setVibratoFreq( norm * 12.0 );
+    else if (number == __SK_ModWheel_ ) { // 1
+        m_vibratoGain = norm;
+        vibratoGain = norm * 0.4;
+    }
+    else if (number == __SK_AfterTouch_Cont_) { // 128
+        m_volume = norm;
+        adsr->setTarget( norm );
+    }
+    else
+        CK_STDCERR << "[chuck](via STK): Brass: Undefined Control Number (" << number << ")!!" << CK_STDENDL;
+    
 #if defined(_STK_DEBUG_)
-  CK_STDCERR << "[chuck](via STK): Brass: controlChange number = " << number << ", value = " << value << CK_STDENDL;
+    CK_STDCERR << "[chuck](via STK): Brass: controlChange number = " << number << ", value = " << value << CK_STDENDL;
 #endif
 }
-
 
 /***************************************************/
 /*! \class Chorus
