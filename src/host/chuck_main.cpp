@@ -1,25 +1,25 @@
 /*----------------------------------------------------------------------------
- ChucK Concurrent, On-the-fly Audio Programming Language
- Compiler and Virtual Machine
- 
- Copyright (c) 2003 Ge Wang and Perry R. Cook.  All rights reserved.
- http://chuck.stanford.edu/
- http://chuck.cs.princeton.edu/
- 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
- 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- 
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- U.S.A.
+  ChucK Concurrent, On-the-fly Audio Programming Language
+    Compiler and Virtual Machine
+
+  Copyright (c) 2003 Ge Wang and Perry R. Cook.  All rights reserved.
+    http://chuck.stanford.edu/
+    http://chuck.cs.princeton.edu/
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+  U.S.A.
  -----------------------------------------------------------------------------*/
 
 //-----------------------------------------------------------------------------
@@ -98,8 +98,8 @@ t_CKUINT g_num_vms_running = 0;
 
 // priority stuff
 #if defined(__MACOSX_CORE__)
-t_CKINT g_priority = 80;
-t_CKINT g_priority_low = 60;
+t_CKINT g_priority = XThreadUtil::get_max_priority(); // was 80
+t_CKINT g_priority_low = XThreadUtil::get_min_priority(); // was 60
 #elif defined(__PLATFORM_WIN32__) && !defined(__WINDOWS_PTHREAD__)
 t_CKINT g_priority = THREAD_PRIORITY_HIGHEST;
 t_CKINT g_priority_low = THREAD_PRIORITY_HIGHEST;
@@ -451,7 +451,7 @@ bool go( int argc, const char ** argv )
 #else
     do_watchdog = FALSE;
 #endif
-    
+
     t_CKUINT files = 0;
     t_CKUINT count = 1;
     t_CKINT i;
@@ -764,8 +764,8 @@ bool go( int argc, const char ** argv )
     buffer_size = ensurepow2( buffer_size );
     // check mode and blocking
     if( !g_enable_realtime_audio && !block ) block = TRUE;
-    // audio, boost
-    if( !set_priority && !block ) g_priority = g_priority_low;
+    // audio, boost 1.4.1.0 (ge) commented out
+    // if( !set_priority && !block ) g_priority = g_priority_low;
     if( !set_priority && !g_enable_realtime_audio ) g_priority = 0x7fffffff;
     // set priority
     XThreadUtil::our_priority = g_priority;
@@ -1057,4 +1057,3 @@ bool go( int argc, const char ** argv )
 
     return TRUE;
 }
-
