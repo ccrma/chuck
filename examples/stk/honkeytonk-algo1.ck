@@ -10,7 +10,8 @@
 HnkyTonk h[8];
 Pan2 p[8];
 Chorus c[2] => NRev r[2] => dac;
-0.5 => r[0].gain;  0.5 => r[1].gain;
+// turn volume down a bit
+0.35 => r[0].gain => r[1].gain;
 0.07 => c[0].mix;
 0.07 => c[1].mix;
 0.04 => r[0].mix;

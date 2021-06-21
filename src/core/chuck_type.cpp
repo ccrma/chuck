@@ -7113,7 +7113,7 @@ void Chuck_Type::apropos_vars( std::string & output, const std::string & PREFIX,
         }
 
         // see if we have any to print
-        if( mvars.size() > 0 | svars.size() > 0 )
+        if( mvars.size() > 0 || svars.size() > 0 )
         {
             // type name
             string name = this->str() + " " + "variables" + (inherited ? " (inherited)" : "" );
