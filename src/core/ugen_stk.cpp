@@ -9808,7 +9808,7 @@ MY_FLOAT HevyMetl :: tick() // 1.4.1.0 (prc) REPAIRATHON2021 updated
     twozero->tick(temp);
     
     temp += (1.0 + opAMs[1]*temp2) * control2 * (MY_FLOAT) 0.5 * gains[1] * adsr[1]->tick() * waves[1]->tick(); // Op2
-    // temp = temp * control1;
+    temp = temp * control1;
     
     waves[0]->addPhaseOffset(temp);
     temp = (1.0 + opAMs[0]*temp2) * gains[0] * adsr[0]->tick() * waves[0]->tick(); // Added AM // Op1
@@ -10132,8 +10132,8 @@ KrstlChr :: KrstlChr()
     
     twozero->setGain( 2.0 ); // Op4 Feedback
     op4Feedback = 2.0;
-    vibrato->setFrequency( 5.5 );
-    modDepth = 0.05;
+    vibrato->setFrequency( 3.5 );
+    modDepth = 0.02;
 }
 
 KrstlChr :: ~KrstlChr()
