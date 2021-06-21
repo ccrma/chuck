@@ -79,10 +79,10 @@ fun void doMelody()
     }
 }
 
-fun void bassLine( int thumb1, int thumb2, int thisManyTimes )
+fun void bassLine( int note1, int note2, int thisManyTimes )
 {
     // set thumb1 note
-    Std.mtof(thumb1) => h[1].freq;
+    Std.mtof(note1) => h[1].freq;
     // repeat
     repeat( thisManyTimes )
     {
@@ -93,9 +93,9 @@ fun void bassLine( int thumb1, int thumb2, int thisManyTimes )
         .75 => h[4].noteOn;
         second/2 => now;
         if (maybe*maybe) 
-            Std.mtof(thumb2) => h[0].freq;
+            Std.mtof(note2) => h[0].freq;
         else
-            Std.mtof(thumb2-12) => h[0].freq;
+            Std.mtof(note2-12) => h[0].freq;
         1 => h[0].noteOn;
         second/2 => now;
         .75 => h[2].noteOn;
