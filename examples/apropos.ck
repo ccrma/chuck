@@ -1,5 +1,5 @@
 // name: apropos.ck
-//       (available in chuck-1.4.1.0 and higher)
+//       (available in chuck-1.4.1.0 and later)
 // desc: example showing .apropos(), which can be invoked on
 //       any object or class; .apropos() dynamically generates
 //       information regarding the underlying type of an object
@@ -7,8 +7,10 @@
 //       the information includes the inheritance chain of the
 //       type in question, its functions as well as functions
 //       inherited from its parent (and its parent's parent, and
-//       so on). .apropos can be a helpful on-the-fly learning 
-//       tool.
+//       so on).
+//
+// .apropos() is designed to be a run-time teaching/learning tool
+//       and a quick referencewhile programming. It's fun, sort of!
 
 // an object/ugen instance
 SinOsc osc;
