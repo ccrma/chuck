@@ -46,7 +46,8 @@ spork ~ doPan();
 
 second/2 => dur Q; Q/2 => dur E; E/2 => dur S;
 
-while( true ) {
+while( true )
+{
     Std.mtof(72) => solo.freq; 0.8 => solo.noteOn; 2.5*Q => now;
     Std.mtof(70) => solo.freq; 0.9 => solo.noteOn; E => now;
     Std.mtof(68) => solo.freq; 0.7 => solo.noteOn; Q+S => now;

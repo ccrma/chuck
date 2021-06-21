@@ -75,10 +75,11 @@ contributed. Happy ChucKing!
             Get filter starting frequency.
   - (added) new STK examples:
         examples/stk/frenchrn-algo2.ck -- FM French Horn demo
-        examples/stk/honkeytonk-algo1.ck -- FM Honkey Tonk demo
-        examples/stk/krstlchr-algo7.ck -- FM Kristal Choir demo
+        examples/stk/honkeytonk-algo1.ck -- fun with FM Honkey Tonk
+        examples/stk/krstlchr-algo7.ck -- heavenly FM Kristal Choir
         examples/stk/hevymetl-acoustic-algo3.ck -- FM HevyMetl => Nylon Guitar
         examples/stk/hevymetl-trumpet-algo3.ck -- FM HevyMetl => Trumpet
+        examples/stk/rhodey-song.ck -- a lovely little number
   - (updated) tweaks to a number of STK UGens, which may result in audio
     changes; the affected UGens are:
         BandedWG, BeeThree, FMVoices, HevyMetl, PercFlut, Rhodey,
@@ -99,9 +100,9 @@ contributed. Happy ChucKing!
     power panning is NOT enabled for dac and adc, whose panning behavior 
     is unchanged (panType==0) and favors a kind of unity-gain-preserving
     but perceptually suspect panning scheme. By contrast, Pan2 will default
-    to use constant power panning (panType==1).  This will alter exist the
-    effect of any code that uses Pan2.  Specifically, this will introduce
-    a ~3 dB reduction in the output Pan2 (it is possible to
+    to use constant power panning (panType==1).  This change will alter the
+    effect of any existing code that uses Pan2.  Specifically, it will
+    introduce a ~3 dB reduction in the output Pan2 (it is possible to
     restore the previous behavior by explicitly setting .panType to 0). 
     This ~3 dB reduction corresponds to the equal-powered amplitude value
     when pan is at center (pan=0). Mathematically, the reduction amount 
