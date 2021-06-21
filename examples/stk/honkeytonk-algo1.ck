@@ -7,11 +7,15 @@
 // date: June 2021, for REPAIRATHON 2021
 //       needs chuck 1.4.1.0 or above
 
+// to learn more about HnkyTonk, uncomment this:
+// HnkyTonk.apropos();
+
+// ugens!
 HnkyTonk h[8];
 Pan2 p[8];
 Chorus c[2] => NRev r[2] => dac;
 // turn volume down a bit
-0.35 => r[0].gain => r[1].gain;
+0.33 => r[0].gain => r[1].gain;
 0.07 => c[0].mix;
 0.07 => c[1].mix;
 0.04 => r[0].mix;
