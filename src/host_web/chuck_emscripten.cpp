@@ -8,6 +8,7 @@
 
 
 #include "chuck_emscripten.h"
+#include "chuck_globals.h"
 
 #include <iostream>
 #include <map>
@@ -348,7 +349,7 @@ extern "C"
         msg->reply = ( ck_msg_func )NULL;
     
         // tell the VM to clear
-        chuck->vm()->globals_manager()->execute_chuck_msg_with_globals( msg );
+        chuck->globals()->execute_chuck_msg_with_globals( msg );
     
         return true;
     }
@@ -359,7 +360,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
-        return chuck_instances[chuckID]->setGlobalInt( name, val );
+        return chuck_instances[chuckID]->globals()->setGlobalInt( name, val );
     }
     
     
@@ -368,7 +369,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
-        return chuck_instances[chuckID]->vm()->globals_manager()->get_global_int_value( std::string( name ) );
+        return chuck_instances[chuckID]->globals()->get_global_int_value( std::string( name ) );
     }
     
     
@@ -377,7 +378,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
-        return chuck_instances[chuckID]->setGlobalFloat( name, val );
+        return chuck_instances[chuckID]->globals()->setGlobalFloat( name, val );
     }
     
     
@@ -386,7 +387,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
-        return chuck_instances[chuckID]->vm()->globals_manager()->get_global_float_value( std::string( name ) );
+        return chuck_instances[chuckID]->globals()->get_global_float_value( std::string( name ) );
     }
     
     
@@ -395,7 +396,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
-        return chuck_instances[chuckID]->setGlobalString( name, val );
+        return chuck_instances[chuckID]->globals()->setGlobalString( name, val );
     }
     
     
@@ -404,7 +405,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
-        return chuck_instances[chuckID]->getGlobalString( name, callback );
+        return chuck_instances[chuckID]->globals()->getGlobalString( name, callback );
     }
     
     
@@ -413,7 +414,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
-        return chuck_instances[chuckID]->signalGlobalEvent( name );
+        return chuck_instances[chuckID]->globals()->signalGlobalEvent( name );
     }
     
     
@@ -422,7 +423,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
 
-        return chuck_instances[chuckID]->broadcastGlobalEvent( name );
+        return chuck_instances[chuckID]->globals()->broadcastGlobalEvent( name );
     }
     
     
@@ -431,7 +432,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->listenForGlobalEvent(
+        return chuck_instances[chuckID]->globals()->listenForGlobalEvent(
             name, callback, FALSE );
     }
     
@@ -441,7 +442,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->listenForGlobalEvent(
+        return chuck_instances[chuckID]->globals()->listenForGlobalEvent(
             name, callback, TRUE );
     }
     
@@ -451,7 +452,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->stopListeningForGlobalEvent(
+        return chuck_instances[chuckID]->globals()->stopListeningForGlobalEvent(
             name, callback );
     }
     
@@ -461,7 +462,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        if( !chuck_instances[chuckID]->getGlobalUGenSamples(
+        if( !chuck_instances[chuckID]->globals()->getGlobalUGenSamples(
             name, buffer, numSamples ) )
         {
             // failed. fill with zeroes.
@@ -480,7 +481,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->setGlobalIntArray(
+        return chuck_instances[chuckID]->globals()->setGlobalIntArray(
             name, arrayValues, numValues );
     }
     
@@ -491,7 +492,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->getGlobalIntArray(
+        return chuck_instances[chuckID]->globals()->getGlobalIntArray(
             name, callback );
     }
     
@@ -502,7 +503,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->setGlobalIntArrayValue(
+        return chuck_instances[chuckID]->globals()->setGlobalIntArrayValue(
             name, index, value );
     }
     
@@ -514,7 +515,7 @@ extern "C"
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
         
-        return chuck_instances[chuckID]->vm()->globals_manager()->_get_global_int_array_value(
+        return chuck_instances[chuckID]->globals()->get_global_int_array_value(
             std::string( name ), index );
     }
     
@@ -525,7 +526,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->setGlobalAssociativeIntArrayValue(
+        return chuck_instances[chuckID]->globals()->setGlobalAssociativeIntArrayValue(
             name, key, value );
     }
     
@@ -536,7 +537,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->vm()->globals_manager()->_get_global_associative_int_array_value(
+        return chuck_instances[chuckID]->globals()->get_global_associative_int_array_value(
             std::string( name ), std::string( key ) );
     }
     
@@ -548,7 +549,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->setGlobalFloatArray(
+        return chuck_instances[chuckID]->globals()->setGlobalFloatArray(
             name, arrayValues, numValues );
     }
     
@@ -559,7 +560,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->getGlobalFloatArray(
+        return chuck_instances[chuckID]->globals()->getGlobalFloatArray(
             name, callback );
     }
     
@@ -570,7 +571,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->setGlobalFloatArrayValue(
+        return chuck_instances[chuckID]->globals()->setGlobalFloatArrayValue(
             name, index, value );
     }
     
@@ -581,7 +582,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->vm()->globals_manager()->_get_global_float_array_value(
+        return chuck_instances[chuckID]->globals()->get_global_float_array_value(
             std::string( name ), index );
     }
     
@@ -592,7 +593,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->setGlobalAssociativeFloatArrayValue(
+        return chuck_instances[chuckID]->globals()->setGlobalAssociativeFloatArrayValue(
             name, key, value );
     }
     
@@ -603,7 +604,7 @@ extern "C"
     {
         if( chuck_instances.count( chuckID ) == 0 ) { return false; }
         
-        return chuck_instances[chuckID]->vm()->globals_manager()->_get_global_associative_float_array_value(
+        return chuck_instances[chuckID]->globals()->get_global_associative_float_array_value(
             std::string( name) , std::string( key ) );
     }
     
