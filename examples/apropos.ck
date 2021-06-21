@@ -1,5 +1,5 @@
 // name: apropos.ck
-//       available in ChucK 1.4.1.0 and up
+//       (available in chuck-1.4.1.0 and higher)
 // desc: example showing .apropos(), which can be invoked on
 //       any object or class; .apropos() dynamically generates
 //       information regarding the underlying type of an object

@@ -2531,11 +2531,6 @@ class Brass: public Instrmnt
   MY_FLOAT slideTarget;
   MY_FLOAT vibratoGain;
   MY_FLOAT maxPressure;
-  int compatible; // 1.4.1.0 (prc) REPAIRATHON2021 compatibility addition (if
-                  // anyone ever got Brass working before, this lets old code work fine)
-  MY_FLOAT gainHack; // 1.4.1.0 (prc) REPAIRATHON2021 New Hack for
-                     // consistency over pitch range
-
 };
 
 #endif

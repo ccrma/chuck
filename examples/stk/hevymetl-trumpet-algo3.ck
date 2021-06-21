@@ -1,4 +1,4 @@
-// name: trumpet-tx81z-algo3.ck
+// name: hevymetl-trumpet-algo3.ck
 // desc: demo of how to turn HevyMetl (Algorithm 3) into an FM Trumpet!!
 //       now you can transcribe (somewhat) directly from a TX81 Patch!!!
 //
