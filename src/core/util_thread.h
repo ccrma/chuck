@@ -111,6 +111,10 @@ public:
     static t_CKBOOL set_priority( CHUCK_THREAD tid, t_CKINT priority );
     // set priority on current thread
     static t_CKBOOL set_priority( t_CKINT priority );
+    // get max allowable system priority
+    static t_CKINT get_max_priority();
+    // get min allowable system priority
+    static t_CKINT get_min_priority();
 
 public:
     // not sure what this exactly

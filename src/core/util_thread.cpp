@@ -492,20 +492,35 @@ t_CKBOOL XThreadUtil::set_priority( CHUCK_THREAD tid, t_CKINT priority )
     int policy;
     
     // log
-    EM_log( CK_LOG_FINE, "setting thread priority to: %ld...", priority );
+    EM_log( CK_LOG_INFO, "setting thread priority to: %ld...", priority );
     
     // get for thread
     if( pthread_getschedparam( tid, &policy, &param) )
         return FALSE;
     
-    // priority
-    param.sched_priority = priority;
+    // pthread_attr_t attr;
+    // pthread_attr_init( &attr );
+    // pthread_attr_setinheritsched( &attr, PTHREAD_EXPLICIT_SCHED );
+
     // policy
     policy = SCHED_RR;
+    // priority
+    param.sched_priority = priority;
     // set for thread, pthread style
     if( pthread_setschedparam( tid, policy, &param ) )
         return FALSE;
-    
+
+    // get for thread
+    if( pthread_getschedparam( tid, &policy, &param) )
+        return FALSE;
+
+    // push
+    EM_pushlog();
+    // log
+    EM_log( CK_LOG_FINE, "verifying thread priority: %ld...", param.sched_priority );
+    // pop
+    EM_poplog();
+
     return TRUE;
 }
 //-----------------------------------------------------------------------------
@@ -517,6 +532,14 @@ t_CKBOOL XThreadUtil::set_priority( t_CKINT priority )
     // pass it along with self thread
     set_priority( pthread_self(), priority );
     return TRUE;
+}
+t_CKINT XThreadUtil::get_max_priority()
+{
+    return sched_get_priority_max( SCHED_RR );
+}
+t_CKINT XThreadUtil::get_min_priority()
+{
+    return sched_get_priority_min( SCHED_RR );
 }
 #else
 //-----------------------------------------------------------------------------
@@ -547,4 +570,13 @@ t_CKBOOL XThreadUtil::set_priority( t_CKINT priority )
     set_priority( GetCurrentThread(), priority );
     return TRUE;
 }
+t_CKINT XThreadUtil::get_max_priority()
+{
+    return THREAD_PRIORITY_HIGHEST; // THREAD_PRIORITY_TIME_CRITICAL;
+}
+t_CKINT XThreadUtil::get_min_priority()
+{
+    return THREAD_PRIORITY_LOWEST;
+}
 #endif
+
