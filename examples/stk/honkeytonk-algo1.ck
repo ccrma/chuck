@@ -23,23 +23,41 @@ for (int i; i < 8; i++) {
     0.04 => h[i].lfoDepth;
 }
 
-Std.mtof(48-12) => h[0].freq;
-Std.mtof(53-12) => h[1].freq;
-Std.mtof(65-12) => h[2].freq;
-Std.mtof(69-12) => h[3].freq;
-Std.mtof(72-12) => h[4].freq;
+Std.mtof(36) => h[0].freq;
+Std.mtof(41) => h[1].freq;
+Std.mtof(53) => h[2].freq;
+Std.mtof(57) => h[3].freq;
+Std.mtof(60) => h[4].freq;
 
 [69,72,74,76,77,81] @=> int melody[];
 
+// triplets (bass 1, bass 2, repeats)
+// must contain 3-multiple of elements
+[41, 48, 4,
+ 41, 48, 4,
+ 38, 50, 2,
+ 34, 53, 2]@=> int bass[];
+
+// bass counter
+0 => int n;
+// drop amount
+0 => int drop;
 // start with bass line
-bassLine();
-// time loop
+bassLine( bass[0], bass[1], 4 );
+
+// play melody concurrently over...
+spork ~ doMelody();
+// ... the bass line
 while( true )
 {
-    // play melody concurrently over...
-    spork ~ doMelody();
-    // ... the bass line
-    bassLine();
+    // play current chord
+    bassLine( bass[n*3] + drop, bass[n*3+1], bass[n*3+2] );
+    // increment counter
+    n++;
+    // reset drop
+    0 => drop;
+    // end of cycle? (if yes, start over but with a drop)
+    if( n >= bass.size()/3 ) { 0 => n; -12 => drop; }
 }
 
 fun void doMelody()
@@ -47,34 +65,37 @@ fun void doMelody()
     while( true )
     {
         Std.mtof(melody[Math.random2(0,5)]) => h[5].freq;
-        1 => h[5].noteOn;
+        Math.random2f(.75,1) => h[5].noteOn;
         if (maybe*maybe) {
             Std.mtof(melody[Math.random2(0,5)]) => h[6].freq;
-            1 => h[6].noteOn;
+            Math.random2f(.5,.75) => h[6].noteOn;
         }
         Math.random2(1,3)*second/8 => now;
     }
 }
 
-fun void bassLine()
+fun void bassLine( int thumb1, int thumb2, int thisManyTimes )
 {
-    for( int i; i < 4; i++ )
+    // set thumb1 note
+    Std.mtof(thumb1) => h[1].freq;
+    // repeat
+    repeat( thisManyTimes )
     {
         1 => h[1].noteOn;
         second/2 => now;
-        1 => h[2].noteOn;
-        1 => h[3].noteOn;
-        1 => h[4].noteOn;
+        .75 => h[2].noteOn;
+        .75 => h[3].noteOn;
+        .75 => h[4].noteOn;
         second/2 => now;
         if (maybe*maybe) 
-            Std.mtof(48) => h[0].freq;
+            Std.mtof(thumb2) => h[0].freq;
         else
-            Std.mtof(48-12) => h[0].freq;
+            Std.mtof(thumb2-12) => h[0].freq;
         1 => h[0].noteOn;
         second/2 => now;
-        1 => h[2].noteOn;
-        1 => h[3].noteOn;
-        1 => h[4].noteOn;
+        .75 => h[2].noteOn;
+        .75 => h[3].noteOn;
+        .75 => h[4].noteOn;
         second/2 => now;
     }
 }
