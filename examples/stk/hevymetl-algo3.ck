@@ -2,7 +2,7 @@
 // desc: demo of STK FM HevyMetl (Algorithm 3)
 // 
 // name: Perry R. Cook
-// dete: June 2021, for REPAIRATHON 2021
+// date: June 2021, for REPAIRATHON 2021
 
 // patch
 HevyMetl h => NRev r => dac;
