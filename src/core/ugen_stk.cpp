@@ -9035,7 +9035,7 @@ MY_FLOAT FMVoices :: tick() // 1.4.1.0 updated (prc)
     register MY_FLOAT temp, temp2;
 
     temp2 = vibrato->tick() * modDepth * (MY_FLOAT) 0.1;
-    for (int i; i < 4; i++)  {
+    for (int i = 0; i < 4; i++)  {
         if (ratios[i] > 0.0) {
             waves[i]->setFrequency(baseFrequency * (1.0 + temp2) * ratios[i]);
         }
