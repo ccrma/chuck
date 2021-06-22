@@ -4104,10 +4104,7 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
 {
     // init as base class
     Chuck_DL_Func * func = NULL;
-    
-    // log
-    EM_log( CK_LOG_SEVERE, "class 'SerialIO'" );
-    
+
     std::string doc = "serial input/output. popularly used to communicate with systems like Arduino.";
     
     Chuck_Type * type = type_engine_import_class_begin( env, "SerialIO", "IO",
