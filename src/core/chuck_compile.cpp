@@ -647,47 +647,50 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
 #endif // __DISABLE_MIDI__
 
     // load
-    EM_log( CK_LOG_SEVERE, "module osc..." );
+    EM_log( CK_LOG_SEVERE, "module 'osc'" );
     load_module( compiler, env, osc_query, "osc", "global" );
-    EM_log( CK_LOG_SEVERE, "module xxx..." );
+    EM_log( CK_LOG_SEVERE, "module 'xxx'" );
     load_module( compiler, env, xxx_query, "xxx", "global" );
-    EM_log( CK_LOG_SEVERE, "module filter..." );
+    EM_log( CK_LOG_SEVERE, "module 'filter'" );
     load_module( compiler, env, filter_query, "filter", "global" );
-    EM_log( CK_LOG_SEVERE, "module STK..." );
+    EM_log( CK_LOG_SEVERE, "module 'STK'" );
     load_module( compiler, env, stk_query, "stk", "global" );
-    EM_log( CK_LOG_SEVERE, "module xform..." );
+    EM_log( CK_LOG_SEVERE, "module 'xform'" );
     load_module( compiler, env, xform_query, "xform", "global" );
-    EM_log( CK_LOG_SEVERE, "module extract..." );
+    EM_log( CK_LOG_SEVERE, "module 'extract'" );
     load_module( compiler, env, extract_query, "extract", "global" );
     
     // load
     #ifndef __DISABLE_OTF_SERVER__
-    EM_log( CK_LOG_SEVERE, "class 'machine'..." );
+    EM_log( CK_LOG_SEVERE, "module 'machine'" );
     if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
     machine_init( compiler, otf_process_msg );
     #endif
     
-    EM_log( CK_LOG_SEVERE, "class 'std'..." );
+    EM_log( CK_LOG_SEVERE, "module 'std'" );
     if( !load_module( compiler, env, libstd_query, "Std", "global" ) ) goto error;
-    EM_log( CK_LOG_SEVERE, "class 'math'..." );
+    EM_log( CK_LOG_SEVERE, "module 'math'" );
     if( !load_module( compiler, env, libmath_query, "Math", "global" ) ) goto error;
 
     #ifndef __DISABLE_NETWORK__
-    EM_log( CK_LOG_SEVERE, "class 'opsc'..." );
+    EM_log( CK_LOG_SEVERE, "module 'opsc'" );
     if( !load_module( compiler, env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
     #endif
     
-    EM_log( CK_LOG_SEVERE, "class 'RegEx'..." );
+    EM_log( CK_LOG_SEVERE, "module 'RegEx'" );
     if( !load_module( compiler, env, regex_query, "RegEx", "global" ) ) goto error;
     
     // Deprecated:
     // if( !load_module( compiler, env, net_query, "net", "global" ) ) goto error;
     
     #ifndef __DISABLE_HID__
+    EM_log( CK_LOG_SEVERE, "module 'HID'" );
     if( !init_class_HID( env ) ) goto error;
     #endif
   
     #ifndef __DISABLE_SERIAL__
+    // log
+    EM_log( CK_LOG_SEVERE, "module 'SerialIO'" );
     if( !init_class_serialio( env ) ) goto error;
     #endif
     
@@ -861,8 +864,11 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
     else
     {
         // log (1.3.1.2: changed to 2 lines to stay within 80 chars)
-        EM_log( CK_LOG_INFO, "unable to open directory '%s'...", directory );
-        EM_log( CK_LOG_INFO, "(ignoring for chugins...)" );
+        EM_log( CK_LOG_INFO, "unable to open directory:" );
+        EM_pushlog();
+        EM_log( CK_LOG_INFO, "'%s'", directory );
+        EM_log( CK_LOG_INFO, "ignoring for chugins..." );
+        EM_poplog();
     }
     
     return TRUE;
@@ -881,7 +887,7 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
                                 std::list<std::string> & named_dls )
 {
     // log
-    EM_log( CK_LOG_SEVERE, "loading chugins" );
+    EM_log( CK_LOG_SEVERE, "loading chugins..." );
     // push indent level
     EM_pushlog();
     
