@@ -875,7 +875,7 @@ static unsigned int __stdcall kb_loop( void * )
 #endif
 {
     t_CKINT c;
-    EM_log( CK_LOG_INFO, "starting kb loop..." );
+    // EM_log( CK_LOG_INFO, "starting kb loop..." );
 
     // go
     while( KBHitManager::the_init )
@@ -919,8 +919,10 @@ t_CKBOOL KBHitManager::init()
     the_onoff = 0;
     the_init = TRUE;
     the_thread = new XThread;
+    EM_pushlog();
+    EM_log( CK_LOG_INFO, "starting kb loop..." );
+    EM_poplog();
     the_thread->start( kb_loop, NULL );
-
 
     return TRUE;
 }
