@@ -4999,7 +4999,17 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
     {
         // special case
         if( v->func_ref )
+        {
+            // 1.4.1.0 (ge) added for new static calling convention of passing
+            // the type as the first parameter
+            if( v->func_ref->is_static )
+            {
+                // push the type pointer
+                emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)v->owner_class ) );
+            }
+            // push function pointer
             emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)v->func_ref ) );
+        }
         else if( v->is_global )
         {
             Chuck_Instr_Reg_Push_Global * instr =
