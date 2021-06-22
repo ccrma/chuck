@@ -46,9 +46,9 @@
 
 
 // major version must be the same between chuck:chugin
-#define CK_DLL_VERSION_MAJOR (0x0007)
+#define CK_DLL_VERSION_MAJOR (0x0008)
 // minor version of chugin must be less than or equal to chuck's
-#define CK_DLL_VERSION_MINOR (0x0001)
+#define CK_DLL_VERSION_MINOR (0x0000)
 #define CK_DLL_VERSION_MAKE(maj,min) ((t_CKUINT)(((maj) << 16) | (min)))
 #define CK_DLL_VERSION_GETMAJOR(v) (((v) >> 16) & 0xFFFF)
 #define CK_DLL_VERSION_GETMINOR(v) ((v) & 0xFFFF)
@@ -303,9 +303,9 @@ typedef void (CK_DLL_CALL * f_add_arg)( Chuck_DL_Query * query, const char * typ
 typedef void (CK_DLL_CALL * f_add_ugen_func)( Chuck_DL_Query * query, f_tick tick, f_pmsg pmsg, t_CKUINT num_in, t_CKUINT num_out );
 typedef void (CK_DLL_CALL * f_add_ugen_funcf)( Chuck_DL_Query * query, f_tickf tickf, f_pmsg pmsg, t_CKUINT num_in, t_CKUINT num_out );
 typedef void (CK_DLL_CALL * f_add_ugen_funcf_auto_num_channels)( Chuck_DL_Query * query, f_tickf tickf, f_pmsg psmg );
-// ** add a ugen control (not used but needed for import for now)
-typedef void (CK_DLL_CALL * f_add_ugen_ctrl)( Chuck_DL_Query * query, f_ctrl ctrl, f_cget cget,
-                                              const char * type, const char * name );
+// ** add a ugen control (not used) | 1.4.1.0 removed
+//typedef void (CK_DLL_CALL * f_add_ugen_ctrl)( Chuck_DL_Query * query, f_ctrl ctrl, f_cget cget,
+//                                              const char * type, const char * name );
 // end class/namespace - must correspondent with begin_class.  returns false on error
 typedef t_CKBOOL (CK_DLL_CALL * f_end_class)( Chuck_DL_Query * query );
 // create main thread hook- used for executing a "hook" function in the main thread of a primary chuck instance
@@ -369,7 +369,7 @@ public:
     // (ugen only) add tick and pmsg functions, specify channels by vm
     f_add_ugen_funcf_auto_num_channels add_ugen_funcf_auto_num_channels;
     // (ugen only) add ctrl parameters
-    f_add_ugen_ctrl add_ugen_ctrl;  // not used but needed for import for now
+    // f_add_ugen_ctrl add_ugen_ctrl;  // not used but needed for import for now
     // end class/namespace, compile it
     f_end_class end_class;
 

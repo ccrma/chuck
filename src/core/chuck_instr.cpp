@@ -1979,7 +1979,7 @@ void Chuck_Instr_Add_float_string_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred
 null_pointer:
     // we have a problem
     CK_FPRINTF_STDERR( 
-        "[chuck](VM): NullPointerException: (string + string) on line[%lu] in shred[id=%lu:%s]\n",
+        "[chuck](VM): NullPointerException: (float + string) on line[%lu] in shred[id=%lu:%s]\n",
         m_linepos, shred->xid, shred->name.c_str() );
     goto done;
 
@@ -4485,7 +4485,7 @@ void Chuck_Instr_Func_Call::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     t_CKUINT *& mem_sp = (t_CKUINT *&)shred->mem->sp;
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
-    // pop word
+    // pop words
     pop_( reg_sp, 2 );
     // get the function to be called as code
     Chuck_VM_Code * func = (Chuck_VM_Code *)*reg_sp;
@@ -4529,6 +4529,14 @@ void Chuck_Instr_Func_Call::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         if( func->need_this )
         {
             // copy this from end of arguments to the front
+            *mem_sp2++ = *(reg_sp2 + stack_depth - 1);
+            // one less word to copy
+            stack_depth--;
+        }
+        // static inside class | 1.4.1.0 (ge) added
+        else if( func->is_static )
+        {
+            // copy type from end of arguments to the front
             *mem_sp2++ = *(reg_sp2 + stack_depth - 1);
             // one less word to copy
             stack_depth--;
@@ -4680,17 +4688,14 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
     Chuck_DL_Return retval;
 
-    // pop word | 1.4.1.0 (ge): pop an extra element as the base_type
-    // this accompanies the introduction of TYPE to static function calls
-    pop_( reg_sp, 3 );
-    // get the base type
-    Chuck_Type * base_type = (Chuck_Type *)*reg_sp;
+    // pop code and local depth
+    pop_( reg_sp, 2 );
     // get the function to be called as code
-    Chuck_VM_Code * func = (Chuck_VM_Code *)*(reg_sp+1);
+    Chuck_VM_Code * func = (Chuck_VM_Code *)*(reg_sp);
     // get the function to be called
     f_sfun f = (f_sfun)func->native_func;
     // get the local stack depth - caller local variables
-    t_CKUINT local_depth = *(reg_sp+2);
+    t_CKUINT local_depth = *(reg_sp+1);
     // convert to number of int's (was: 4-byte words), extra partial word counts as additional word
     local_depth = ( local_depth / sz_INT ) + ( local_depth & 0x3 ? 1 : 0 ); // ISSUE: 64-bit (fixed 1.3.1.0)
     // get the stack depth of the callee function args
@@ -4699,7 +4704,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     // UNUSED: t_CKUINT prev_stack = ( *(mem_sp-1) >> 2 ) + ( *(mem_sp-1) & 0x3 ? 1 : 0 );    
     // the amount to push in 4-byte words
     t_CKUINT push = local_depth;
-    // push the mem stack passed the current function variables and arguments
+    // push the mem stack past the current function variables and arguments
     mem_sp += push;
 
     // pass args
@@ -4712,13 +4717,11 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         t_CKUINT * reg_sp2 = reg_sp;
         t_CKUINT * mem_sp2 = mem_sp;
         
-        // need this
-        if( func->need_this )
+        // need type
+        if( func->is_static )
         {
             // copy this from end of arguments to the front
             *mem_sp2++ = *(reg_sp2 + stack_depth - 1);
-            // advance reg pointer
-            reg_sp2++;
             // one less word to copy
             stack_depth--;
         }
@@ -4733,7 +4736,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     // call the function
     // (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
     // (added 1.4.1.0 -- base_type)
-    f( base_type, mem_sp, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
+    f( (Chuck_Type *)(*mem_sp), mem_sp+1, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
     // clean up memory stack
     mem_sp -= push;
 
@@ -4818,6 +4821,7 @@ void Chuck_Instr_Spork::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
     t_CKUINT this_ptr = 0;
+    t_CKUINT type_ptr = 0;
     
     // pop the stack
     pop_( reg_sp, 1 );
@@ -4839,6 +4843,14 @@ void Chuck_Instr_Spork::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // add to shred so it's ref counted, and released when shred done (1.3.1.2)
         sh->add_parent_ref( (Chuck_Object *)this_ptr );
     }
+    // need @type (for static functions) | 1.4.1.0 (ge) added
+    else if( func->is_static )
+    {
+        // pop the stack
+        pop_( reg_sp, 1 );
+        // get type info
+        type_ptr = *reg_sp;
+    }
     // copy args
     if( m_val )
     {
@@ -4851,6 +4863,11 @@ void Chuck_Instr_Spork::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( func->is_member )
     {
         push_( (t_CKUINT*&)sh->reg->sp, this_ptr );
+    }
+    // copy type info (for static functions) | 1.4.1.0 (ge) added
+    else if( func->is_static )
+    {
+        push_( (t_CKUINT*&)sh->reg->sp, type_ptr );
     }
     // copy func
     push_( (t_CKUINT*&)sh->reg->sp, (t_CKUINT)func );
@@ -6308,10 +6325,10 @@ void Chuck_Instr_Dot_Static_Func::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
     // register stack pointer
     t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
 
-    // pop the type pointer
-    // pop_( sp, 1 );
     // 1.4.1.0 (ge): leave the base type on the operand stack
-
+    // commented out: pop the type pointer
+    // pop_( sp, 1 );
+    
     // push the address
     push_( sp, (t_CKUINT)(m_func) );
 }
