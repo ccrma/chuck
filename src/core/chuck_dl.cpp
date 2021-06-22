@@ -491,13 +491,13 @@ void CK_DLL_CALL ck_add_ugen_funcf_auto_num_channels( Chuck_DL_Query * query,
 // name: ck_add_ugen_ctrl()
 // desc: (ugen only) add ctrl parameters
 //-----------------------------------------------------------------------------
-void CK_DLL_CALL ck_add_ugen_ctrl( Chuck_DL_Query * query, f_ctrl ugen_ctrl, f_cget ugen_cget,
-                                   const char * type, const char * name )
-{
-    // this is no longer used
-    EM_error2( 0, "class import: obselete ck_add_ugen_ctrl invoked..." );
-    return;
-    
+//void CK_DLL_CALL ck_add_ugen_ctrl( Chuck_DL_Query * query, f_ctrl ugen_ctrl, f_cget ugen_cget,
+//                                   const char * type, const char * name )
+//{
+//    // this is no longer used
+//    EM_error2( 0, "class import: obselete ck_add_ugen_ctrl invoked..." );
+//    return;
+//
 //    // make sure there is class
 //    if( !query->curr_class )
 //    {
@@ -515,7 +515,7 @@ void CK_DLL_CALL ck_add_ugen_ctrl( Chuck_DL_Query * query, f_ctrl ugen_ctrl, f_c
 //
 //    // set
 //    query->curr_func = NULL;
-}
+//}
 
 
 
@@ -950,7 +950,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     add_ugen_func = ck_add_ugen_func;
     add_ugen_funcf = ck_add_ugen_funcf;
     add_ugen_funcf_auto_num_channels = ck_add_ugen_funcf_auto_num_channels;
-    add_ugen_ctrl = ck_add_ugen_ctrl; // not used but needed for import for now
+    // add_ugen_ctrl = ck_add_ugen_ctrl; // not used
     end_class = ck_end_class;
     doc_class = ck_doc_class;
     doc_func = ck_doc_func;

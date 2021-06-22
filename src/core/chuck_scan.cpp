@@ -2506,6 +2506,9 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     // note whether the function is marked as member
     func->is_member = (f->static_decl != ae_key_static) && 
                       (env->class_def != NULL);
+    // note whether the function is marked as static (in class)
+    func->is_static = (f->static_decl == ae_key_static) &&
+                      (env->class_def != NULL);
     // copy the native code, for imported functions
     if( f->s_type == ae_func_builtin )
     {
@@ -2513,6 +2516,9 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         func->code = new Chuck_VM_Code;
         // whether the function needs 'this'
         func->code->need_this = func->is_member;
+        // is static inside
+        func->code->is_static = (f->static_decl == ae_key_static) &&
+                                (env->class_def != NULL);
         // set the function pointer
         func->code->native_func = (t_CKUINT)func->def->dl_func_ptr;
     }
@@ -2571,7 +2577,16 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     // count
     count = 1;
     // make room for 'this'
-    f->stack_depth = func->is_member ? sizeof(void *) : 0;
+    if( func->is_member )
+    {
+        f->stack_depth = sizeof(void *);
+    }
+    else if( func->is_static ) // 1.4.1.0 (ge) added
+    {
+        // make room for '@type' for static functions inside class def
+        f->stack_depth = sizeof(void *);
+    }
+
     // loop over arguments
     while( arg_list )
     {

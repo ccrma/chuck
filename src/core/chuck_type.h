@@ -694,7 +694,7 @@ struct Chuck_Value : public Chuck_VM_Object
     // member?
     t_CKBOOL is_member;
     // static?
-    t_CKBOOL is_static;  // do something
+    t_CKBOOL is_static; // do something
     // is context-global?
     t_CKBOOL is_context_global;
     // is decl checked
@@ -762,6 +762,8 @@ struct Chuck_Func : public Chuck_VM_Object
     // Chuck_DL_Func * dl_code;
     // member
     t_CKBOOL is_member;
+    // static (inside class)
+    t_CKBOOL is_static;
     // virtual table index
     t_CKUINT vt_index;
     // rember value
@@ -775,8 +777,9 @@ struct Chuck_Func : public Chuck_VM_Object
     std::string doc;
 
     // constructor
-    Chuck_Func() { def = NULL; code = NULL; is_member = FALSE; vt_index = 0xffffffff; 
-                   value_ref = NULL; /*dl_code = NULL;*/ next = NULL; up = NULL; }
+    Chuck_Func() { def = NULL; code = NULL; is_member = FALSE; is_static = FALSE,
+        vt_index = 0xffffffff; value_ref = NULL; /*dl_code = NULL;*/ next = NULL;
+        up = NULL; }
 
     // destructor
     virtual ~Chuck_Func()
