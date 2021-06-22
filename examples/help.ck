@@ -1,4 +1,4 @@
-// name: ah-help.ck
+// name: help.ck
 //       (available in chuck-1.4.1.0 and later)
 // desc: example showing .help(), which can be invoked on
 //       any object or class; .help() dynamically generates
