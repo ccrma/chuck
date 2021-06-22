@@ -737,13 +737,12 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
        !type_engine_add_dll2(env, dll, "global"))
     {
         EM_pushlog();
-        // EM_log(CK_LOG_SYSTEM, "error loading chugin '%s', skipping", name);
-        EM_error2( 0, "error: cannot load chugin '%s', skipping...", name );
+        EM_log(CK_LOG_SEVERE, "cannot load chugin '%s', skipping...", name);
+        // EM_error2( 0, "error: cannot load chugin '%s', skipping...", name );
         if( query_failed )
         {
-            EM_error2( 0, "issue: %s", dll->last_error() );
-            // 1.4.1.0 (ge) commented to make this error more visible
-            // EM_log( CK_LOG_SYSTEM, "error from chuck_dl: '%s'", dll->last_error() );
+            // EM_error2( 0, "%s", dll->last_error() );
+            EM_log( CK_LOG_SEVERE, "%s", dll->last_error() );
         }
         delete dll;
         EM_poplog();
@@ -896,7 +895,6 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
     type_engine_load_context( env, context );
     
     /* first load dynamic libraries explicitly named on the command line */
-    
     for(std::list<std::string>::iterator i_dl = named_dls.begin();
         i_dl != named_dls.end(); i_dl++)
     {
@@ -909,7 +907,6 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
     }
     
     /* now recurse through search paths and load any DLs or .ck files found */
-    
     for(std::list<std::string>::iterator i_sp = chugin_search_paths.begin();
         i_sp != chugin_search_paths.end(); i_sp++)
     {
