@@ -736,10 +736,17 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
     if((query_failed = !(dll->load(dl_path) && dll->query())) ||
        !type_engine_add_dll2(env, dll, "global"))
     {
-        EM_log(CK_LOG_SEVERE, "error loading chugin '%s', skipping", name);
-        if(query_failed)
-            EM_log(CK_LOG_SEVERE, "error from chuck_dl: '%s'", dll->last_error());
+        EM_pushlog();
+        // EM_log(CK_LOG_SYSTEM, "error loading chugin '%s', skipping", name);
+        EM_error2( 0, "error: cannot load chugin '%s', skipping...", name );
+        if( query_failed )
+        {
+            EM_error2( 0, "issue: %s", dll->last_error() );
+            // 1.4.1.0 (ge) commented to make this error more visible
+            // EM_log( CK_LOG_SYSTEM, "error from chuck_dl: '%s'", dll->last_error() );
+        }
         delete dll;
+        EM_poplog();
         
         return FALSE;
     }
