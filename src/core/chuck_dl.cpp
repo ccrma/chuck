@@ -756,17 +756,16 @@ const Chuck_DL_Query * Chuck_DLL::query( )
         // SPENCERTODO: do they need to be equal, or can dll_version be < ?
     {
         ostringstream oss;
-        oss << "DL version not supported: " 
+        oss << "dynamic library version mismatch in: '"
+        << m_filename << "'" << endl
+        << "ChuGin DL version: "
         << CK_DLL_VERSION_GETMAJOR(dll_version)
         << "."
         << CK_DLL_VERSION_GETMINOR(dll_version)
-        << " in '"
-        << m_filename
-        << "' (ChucK host DL version: "
+        << " vs. ChucK host DL version: "
         << CK_DLL_VERSION_MAJOR
         << "."
-        << CK_DLL_VERSION_MINOR
-        << ")";
+        << CK_DLL_VERSION_MINOR;
         
         m_last_error = oss.str();
         
