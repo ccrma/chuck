@@ -139,6 +139,8 @@ public:
     t_CKUINT stack_depth;
     // whether the function needs 'this' pointer or not
     t_CKBOOL need_this;
+    // whether the function is a static function inside class
+    t_CKBOOL is_static; // 1.4.1.0
     // native
     t_CKUINT native_func;
     // is ctor?

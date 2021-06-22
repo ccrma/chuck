@@ -294,6 +294,8 @@ Chuck_VM_Code * emit_to_code( Chuck_Code * in,
     code->stack_depth = in->stack_depth;
     // set whether code need this base pointer
     code->need_this = in->need_this;
+    // set whether static inside class | 1.4.1.0 (ge) added
+    code->is_static = in->is_static;
     // set name
     code->name = in->name;
     // set filename for me.sourceDir() (added 1.3.0.0)
@@ -3450,6 +3452,7 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     {
         emit->append( instr = new Chuck_Instr_Func_Call );
     }
+    // set line position
     instr->set_linepos(linepos);
 
     return TRUE;
@@ -4477,6 +4480,8 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     emit->code->name += func->name + "( ... )";
     // set whether need this
     emit->code->need_this = func->is_member;
+    // if static inside class | 1.4.1.0 (ge) added
+    emit->code->is_static = func->is_static;
     // keep track of full path (added 1.3.0.0)
     emit->code->filename = emit->context->full_path;
 
@@ -4496,6 +4501,19 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         {
             EM_error2( a->linepos,
                 "(emit): internal error: cannot allocate local 'this'..." );
+            return FALSE;
+        }
+    }
+    // if static function inside class def | 1.4.1.0 (ge) added
+    else if( func->is_static )
+    {
+        // get the size (for the TYPE argument)
+        emit->code->stack_depth += sizeof(t_CKUINT);
+        // create local
+        if( !emit->alloc_local( sizeof(t_CKUINT), "@type", TRUE, FALSE, FALSE ) )
+        {
+            EM_error2( a->linepos,
+                      "(emit): internal error: cannot allocate local '@type'..." );
             return FALSE;
         }
     }
@@ -4755,6 +4773,8 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     emit->code = new Chuck_Code;
     // handle need this
     emit->code->need_this = exp->ck_func->is_member;
+    // handle is static (inside class def) | 1.4.1.0 (ge) added
+    emit->code->is_static = exp->ck_func->is_static;
     // name it: e.g. spork~foo [line 5]
     std::ostringstream name;
     name << "spork~"

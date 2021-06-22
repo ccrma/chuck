@@ -86,8 +86,8 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add api()
-    func = make_new_sfun( "void", "apropos", object_apropos );
-    func->doc = "dynamically generate and output information about a class or object.";
+    func = make_new_sfun( "void", "help", object_apropos );
+    func->doc = "generate and output helpful information about a class or object.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // end the class import
