@@ -78,7 +78,9 @@
 #define CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT          "1"
 #define CHUCK_PARAM_HINT_IS_REALTIME_AUDIO_DEFAULT "0"
 #ifndef __PLATFORM_WIN32__
-#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       "/usr/local/lib/chuck"
+// 1.4.1.0 (ge) changed to ""; was "/usr/local/lib/chuck"
+// redundant with g_default_chugin_path, which already contains
+#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       ""
 #else // __PLATFORM_WIN32__
 #define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       "C:\\Program Files\\ChucK\\chugins"
 #endif // __PLATFORM_WIN32__
