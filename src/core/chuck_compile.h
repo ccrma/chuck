@@ -89,8 +89,7 @@ public: // to all
     virtual ~Chuck_Compiler();
 
     // initialize
-    t_CKBOOL initialize( std::list<std::string> & chugin_search_paths,
-                         std::list<std::string> & named_dls );
+    t_CKBOOL initialize();
     // shutdown
     void shutdown();
 
@@ -118,6 +117,11 @@ public: // replace-dac | added 1.4.1.0 (jack)
     // get the samples of the gain. this enables the creation 
     // of a new sample sucker.
     void setReplaceDac( t_CKBOOL shouldReplaceDac, const std::string & replacement );
+
+public: // chugin load | refactored 1.4.1.0 (ge)
+    t_CKBOOL load_external_modules( const char * extension,
+                                    std::list<std::string> & chugin_search_paths,
+                                    std::list<std::string> & named_dls );
 
 protected: // internal
     // do entire file
