@@ -852,6 +852,7 @@ bool go( int argc, const char ** argv )
     the_chuck->setParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, (t_CKINT)dump );
     the_chuck->setParam( CHUCK_PARAM_AUTO_DEPEND, (t_CKINT)auto_depend );
     the_chuck->setParam( CHUCK_PARAM_DEPRECATE_LEVEL, deprecate_level );
+    the_chuck->setParam( CHUCK_PARAM_CHUGIN_ENABLE, chugin_load );
     the_chuck->setParam( CHUCK_PARAM_USER_CHUGINS, named_dls );
     the_chuck->setParam( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES, dl_search_path );
     // set hint, so internally can advise things like async data writes etc.
