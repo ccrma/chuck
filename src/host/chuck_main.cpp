@@ -34,6 +34,7 @@
 #include "chuck.h"
 #include "chuck_audio.h"
 #include "chuck_console.h"
+#include "util_string.h"
 #include <signal.h>
 
 #if defined(__PLATFORM_WIN32__)
@@ -203,7 +204,7 @@ void usage()
     CK_FPRINTF_STDERR( "               srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
     CK_FPRINTF_STDERR( "               remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
     CK_FPRINTF_STDERR( "               callback|deprecate:{stop|warn|ignore}|\n" );
-    CK_FPRINTF_STDERR( "               chugin-load:{auto|off}|chugin-path:<path>|chugin:<name>\n" );
+    CK_FPRINTF_STDERR( "               chugin-load:{on|off}|chugin-path:<path>|chugin:<name>\n" );
     CK_FPRINTF_STDERR( "   [commands] = add|remove|replace|remove.all|status|time|kill\n" );
     CK_FPRINTF_STDERR( "   [+-=^] = shortcuts for add, remove, replace, status\n" );
     version();
@@ -635,7 +636,7 @@ bool go( int argc, const char ** argv )
             else if( !strncmp(argv[i], "--deprecate", 11) )
             {
                 // get the rest
-                string arg = argv[i]+11;
+                string arg = tolower(argv[i]+11);
                 if( arg == ":stop" ) deprecate_level = 0;
                 else if( arg == ":warn" ) deprecate_level = 1;
                 else if( arg == ":ignore" ) deprecate_level = 2;
@@ -651,14 +652,14 @@ bool go( int argc, const char ** argv )
             else if( !strncmp(argv[i], "--chugin-load:", sizeof("--chugin-load:")-1) )
             {
                 // get the rest
-                string arg = argv[i]+sizeof("--chugin-load:")-1;
+                string arg = tolower(argv[i]+sizeof("--chugin-load:")-1);
                 if( arg == "off" ) chugin_load = 0;
-                else if( arg == "auto" ) chugin_load = 1;
+                else if( arg == "on" || arg == "auto") chugin_load = 1;
                 else
                 {
                     // error
                     CK_FPRINTF_STDERR( "[chuck]: invalid arguments for '--chugin-load'...\n" );
-                    CK_FPRINTF_STDERR( "[chuck]: ... (looking for :auto or :off)\n" );
+                    CK_FPRINTF_STDERR( "[chuck]: ... (looking for :on or :off)\n" );
                     exit( 1 );
                 }
             }

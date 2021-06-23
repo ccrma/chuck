@@ -472,26 +472,8 @@ bool ChucK::initCompiler()
     // get compiler params
     t_CKBOOL dump = getParamInt( CHUCK_PARAM_DUMP_INSTRUCTIONS ) != 0;
     t_CKBOOL auto_depend = getParamInt( CHUCK_PARAM_AUTO_DEPEND ) != 0;
-    std::string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
-    std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
     t_CKUINT deprecate = getParamInt( CHUCK_PARAM_DEPRECATE_LEVEL );
-    
-    // list of search pathes (added 1.3.0.0)
-    std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES );
-    if( chuginDir != std::string("") )
-    {
-        dl_search_path.push_back( chuginDir );
-    }
-    // list of individually named chug-ins (added 1.3.0.0)
-    std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
-    
-    // if chugin load is off, then clear the lists (added 1.3.0.0 -- TODO: refactor)
-    if( getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) == 0 )
-    {
-        // turn off chugin load
-        dl_search_path.clear();
-        named_dls.clear();
-    }
+    std::string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
     
     // instantiate compiler
     m_carrier->compiler = new Chuck_Compiler();
@@ -499,7 +481,7 @@ bool ChucK::initCompiler()
     m_carrier->compiler->setCarrier( m_carrier );
     
     // initialize compiler
-    if( !m_carrier->compiler->initialize( dl_search_path, named_dls ) )
+    if( !m_carrier->compiler->initialize() )
     {
         CK_FPRINTF_STDERR( "[chuck]: compiler failed to initialize...\n" );
         return false;
@@ -517,7 +499,7 @@ bool ChucK::initCompiler()
         CK_FPRINTF_STDERR( "[chuck]: %s\n", m_carrier->vm->last_error() );
         return false;
     }
-    
+
     std::string cwd;
     char cstr_cwd[MAXPATHLEN];
     
@@ -532,7 +514,41 @@ bool ChucK::initCompiler()
     {
         cwd = std::string(cstr_cwd);
         cwd = normalize_directory_separator(cwd) + "/";
+
+        // 1.4.1.0 (ge) added
+        if( workingDir.length() != 0 && workingDir[0] == '/' )
+        {
+            // absolute path
+            // TODO: deal with windows absolute paths? e.g., "C:\"???
+            
+            // log it
+            EM_log( CK_LOG_INFO, "current working directory:" );
+        }
+        else
+        {
+            // update
+            workingDir = cwd + normalize_directory_separator(workingDir);
+            // check if need to add /
+            // (note if workingDir is empty string, then this leaves it alone)
+            if( workingDir.length() > 0 && (workingDir[workingDir.length()-1] != '/') )
+            {
+                // append
+                workingDir = workingDir + "/";
+            }
+            // update to current working directory
+            setParam( CHUCK_PARAM_WORKING_DIRECTORY, workingDir );
+            // log it
+            EM_log( CK_LOG_INFO, "setting current working directory:" );
+        }
+
+        // push log
+        EM_pushlog();
+        // print the working directory
+        EM_log( CK_LOG_INFO, "%s", workingDir.c_str() );
+        // pop log
+        EM_poplog();
     }
+    
 
     return true;
 }
@@ -552,8 +568,34 @@ bool ChucK::initChugins()
     // whether or not chug should be enabled (added 1.3.0.0)
     if( getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) != 0 )
     {
+        // chugin dur
+        std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
+        // list of search pathes (added 1.3.0.0)
+        std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES );
+        if( chuginDir != std::string("") )
+        {
+            dl_search_path.push_back( chuginDir );
+        }
+        // list of individually named chug-ins (added 1.3.0.0)
+        std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
+
         // log
-        EM_log( CK_LOG_SEVERE, "pre-loading ChucK libs..." );
+        EM_log( CK_LOG_SYSTEM, "loading chugins..." );
+        // push indent level
+        EM_pushlog();
+        // load external libs
+        if( !compiler()->load_external_modules( ".chug", dl_search_path, named_dls ) )
+        {
+            // pop indent level
+            EM_poplog();
+            // clean up
+            goto error;
+        }
+        // pop log
+        EM_poplog();
+
+        // log
+        EM_log( CK_LOG_SYSTEM, "pre-loading ChucK libs..." );
         EM_pushlog();
         
         // iterate over list of ck files that the compiler found
@@ -601,7 +643,7 @@ bool ChucK::initChugins()
     }
     else
     {
-        // log
+        // log | 1.4.1.0 (ge) commented out; printing earlier
         EM_log( CK_LOG_SYSTEM, "chugin system: OFF" );
     }
 
@@ -609,6 +651,10 @@ bool ChucK::initChugins()
     m_carrier->env->load_user_namespace();
 
     return true;
+
+error: // 1.4.1.0 (ge) added
+    // any cleanup goes here; none for now
+    return false;
 }
 
 
@@ -833,7 +879,7 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
     Chuck_VM_Shred * shred = NULL;
     
     // log
-    EM_log( CK_LOG_FINE, "compiling string..." );
+    EM_log( CK_LOG_FINE, "compiling code from string..." );
     // push indent
     EM_pushlog();
     
@@ -850,11 +896,13 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
         return false;
     }
     
-    // PARAM
+    // working directory
     std::string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
     
     // construct full path to be associated with the file so me.sourceDir() works
     std::string full_path = workingDir + "/compiled.code";
+    // log
+    EM_log( CK_LOG_FINE, "full path: %s...", full_path.c_str() );
     
     // parse, type-check, and emit (full_path added 1.3.0.0)
     if( !m_carrier->compiler->go( "<compiled.code>", NULL, code.c_str(), full_path ) )

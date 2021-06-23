@@ -114,8 +114,7 @@ Chuck_Compiler::~Chuck_Compiler()
 // name: initialize()
 // desc: initialize the compiler
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::initialize( std::list<std::string> & chugin_search_paths,
-                                     std::list<std::string> & named_dls )
+t_CKBOOL Chuck_Compiler::initialize()
 {
     // log
     EM_log( CK_LOG_SYSTEM, "initializing compiler..." );
@@ -138,18 +137,14 @@ t_CKBOOL Chuck_Compiler::initialize( std::list<std::string> & chugin_search_path
     if( !load_internal_modules( this ) )
         goto error;
     
-    // load external libs
-    if( !load_external_modules( this, ".chug", chugin_search_paths, named_dls ) )
-        goto error;
-    
     // pop indent
     EM_poplog();
 
     return TRUE;
 
 error:
-    // clean up
-    this->shutdown();
+    // clean up | 1.4.1.0 (ge) removed -- should be cleaned up outside
+    // this->shutdown();
 
     // pop indent
     EM_poplog();
@@ -881,18 +876,12 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
 // name: load_external_modules()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL load_external_modules( Chuck_Compiler * compiler, 
-                                const char * extension, 
-                                std::list<std::string> & chugin_search_paths,
-                                std::list<std::string> & named_dls )
+t_CKBOOL Chuck_Compiler:: load_external_modules( const char * extension,
+    std::list<std::string> & chugin_search_paths,
+    std::list<std::string> & named_dls )
 {
-    // log
-    EM_log( CK_LOG_SEVERE, "loading chugins..." );
-    // push indent level
-    EM_pushlog();
-    
     // get env
-    Chuck_Env * env = compiler->env();
+    Chuck_Env * env = this->env();
     // make context
     Chuck_Context * context = type_engine_make_context( NULL, "@[external]" );
     // reset env - not needed since we just created the env
@@ -908,7 +897,7 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
         if(!extension_matches(dl_path.c_str(), extension))
             dl_path += extension;
         
-        load_external_module_at_path(compiler, dl_path.c_str(),
+        load_external_module_at_path(this, dl_path.c_str(),
                                      dl_path.c_str());
     }
     
@@ -916,7 +905,7 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
     for(std::list<std::string>::iterator i_sp = chugin_search_paths.begin();
         i_sp != chugin_search_paths.end(); i_sp++)
     {
-        load_external_modules_in_directory(compiler, (*i_sp).c_str(), extension);
+        load_external_modules_in_directory(this, (*i_sp).c_str(), extension);
     }    
         
     // clear context
@@ -924,10 +913,7 @@ t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
     
     // commit what is in the type checker at this point
     env->global()->commit();
-    
-    // pop indent level
-    EM_poplog();
-    
+
     return TRUE;
    /* 
 error:
