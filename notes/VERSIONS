@@ -12,21 +12,21 @@ Fiebrink, Dan Trueman, Lloyd May, Mark Cerqueira, Mario Buoninfante,
 Perry Cook, Spencer Salazar, and Ge Wang.  Many thanks to everyone who 
 contributed. Happy ChucKing!
 ---
-  - (added) static Object.apropos();
+  - (added) static Object.help();
     All ChucK objects (i.e., all non-primitive types) can now invoke 
-    .apropos(), which will dynamically generate and print to console
+    .help(), which will dynamically generate and print to console
     the description and inheritance hierarchy of the underlying type,
     as well as the available functions at runtime.  This can be called
     on any object instance or on any class (without an instance):
         // any object instance
         SinOsc foo;
         // print to console info about its underlying type
-        foo.apropos();
+        foo.help();
         (OR)
-        // apropos from any class (identical output as above)
-        SinOsc.apropos();
+        // call help() from any class (identical output as above)
+        SinOsc.help();
     Intended to be a quick runtime reference / learning tool!
-  - (added) examples/apropos.ck -- show .apropos() in action
+  - (added) examples/help.ck -- show .help() in action
   - (added) examples/deep/chant.ck (by Perry Cook, 2006) -- a chant singing
     synthesizer that makes use of ChucK's strongly-time and concurrent
     programming features.
@@ -66,8 +66,8 @@ contributed. Happy ChucKing!
             (aka, Algorithm 2 of the Yamaha TX81Z DX11 FM synthesizer)
         KrstlChr: STK-style "Crystal Choir" FM synthesis instrument.
             (aka, Algorithm 7 of the Yamaha TX81Z DX11 FM synthesizer)
-    *** for each of these, try using the new .apropos() to examine its
-    documentation and interface; e.g., HnkyTonk.apropos(); ***
+    *** for each of these, try using the new .help() to examine its
+    documentation and interface; e.g., HnkyTonk.help(); ***
   - (added) new Moog function:
         float filterStartFreq( float freq );
             Set filter starting frequency.
