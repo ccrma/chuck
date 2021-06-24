@@ -6822,7 +6822,12 @@ void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
     {
         nameStr += " (";
         if( this->array_depth > 1 )
-        { nameStr += to_string(this->array_depth) + "D "; }
+        {
+            // sigh... to_string() on earlier windows / VC++ 2010
+            ostringstream num;
+            num << this->array_depth;
+            nameStr += num.str() + "D ";
+        }
         nameStr += this->name + " array)";
     }
     // print

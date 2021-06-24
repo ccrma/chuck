@@ -32,6 +32,7 @@
 // date: Spring 2004
 //-----------------------------------------------------------------------------
 #include "util_math.h"
+#include "chuck_def.h" // 1.4.1.0 (ge) for t_CKINT
 #include <math.h>
 
 
@@ -45,8 +46,8 @@
 //-----------------------------------------------------------------------------
 double round( double a )
 {
-    if( a >= 0 ) return (double)(long)( a + .5 );
-    else return (double)(long)( a - .5 );
+    if( a >= 0 ) return (double)(t_CKINT)( a + .5 );
+    else return (double)(t_CKINT)( a - .5 );
 }
 
 
@@ -60,21 +61,24 @@ double trunc( double a )
 }
 
 
-// ge: this is needed in some/earlier versions of windows
-#ifndef __WINDOWS_MODERN__
+
+
+#endif
+
+
 //-----------------------------------------------------------------------------
-// name: remainder()
+// name: ck_remainder()
 // desc: ...
 //-----------------------------------------------------------------------------
-double remainder( long a, long b )
+double ck_remainder( double a, double b )
 {
-    long div = a/b;
+#ifdef __PLATFORM_WIN32__
+    t_CKINT div = a/b;
     return a - b*div;
+#else
+	return remainder( a, b )
+#endif
 }
-#endif
-
-
-#endif
 
 
 
