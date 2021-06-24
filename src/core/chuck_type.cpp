@@ -2397,6 +2397,18 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                 // ugen
                 t = env->t_ugen;
             }
+            else if( str == "__LINE__" ) // linepos
+            {
+                // non assignable
+                exp->self->s_meta = ae_meta_value;
+                t = env->t_int;
+            }
+            else if( str == "__FILE__" ) // source filename
+            {
+                // non assignable
+                exp->self->s_meta = ae_meta_value;
+                t = env->t_string;
+            }
             else if( str == "null" || str == "NULL" ) // null / NULL
             {
                 // not assignable
