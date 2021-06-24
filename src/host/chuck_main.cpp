@@ -179,11 +179,11 @@ static void version()
 #elif defined(__MACOSX_UB__)
     platform = "mac os x : universal binary";
 #elif defined(__MACOSX_CORE__) && defined(__LITTLE_ENDIAN__)
-    platform = "mac os x : intel";
+    platform = "mac os";
 #elif defined(__MACOSX_CORE__)
     platform = "mac os x : powerpc";
 #else
-    platform = "uh... unknown";
+    platform = "unspecified platform";
 #endif
     
     CK_FPRINTF_STDERR( "   %s : %ld-bit\n", platform.c_str(), machine_intsize() );

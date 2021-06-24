@@ -90,7 +90,7 @@
 
 
 // chuck statics
-const char ChucK::VERSION[] = "1.4.1.0-rc1 (numchucks)";
+const char ChucK::VERSION[] = "1.4.1.0-rc2 (numchucks)";
 t_CKUINT ChucK::o_numVMs = 0;
 t_CKBOOL ChucK::o_isGlobalInit = FALSE;
 t_CKBOOL ChucK::enableSystemCall = FALSE;
