@@ -264,9 +264,10 @@ t_CKBOOL Chuck_Shell::init( Chuck_VM * vm, Chuck_Shell_UI * ui )
         return FALSE;
     }
     
+    // chuck shell network VM
     current_vm = cspv;
     vms.push_back( current_vm->copy() );
-
+    // chuck vm
     process_vm = vm;
     
     code_entry_active = FALSE;

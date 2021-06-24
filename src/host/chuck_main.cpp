@@ -80,6 +80,8 @@ t_CKINT g_otf_port = 8888;
 
 // the shell
 Chuck_Shell * g_shell = NULL;
+// shell shutdown flag
+t_CKBOOL g_shutdown_shell = FALSE;
 // global variables
 t_CKUINT g_sigpipe_mode = 0;
 // flag for Std.system( string )
@@ -291,11 +293,14 @@ void global_cleanup()
     // delete the chuck
     SAFE_DELETE( the_chuck );
 
+    // delete shell and set to NULL | 1.4.1.0
+    if( g_enable_shell ) SAFE_DELETE( g_shell );
+
     // wait for the shell, if it is running
     // does the VM reset its priority to normal before exiting?
-    if( g_enable_shell )
-        while( g_shell != NULL )
-            usleep(10000);
+    //if( g_enable_shell )
+    //    while( g_shell != NULL )
+    //        usleep(10000);
 
     // REFACTOR-2017 TODO: Cancel otf, le_cb threads? Does this happen in ~ChucK()?
     // things don't work so good on windows...
@@ -355,6 +360,28 @@ t_CKBOOL init_shell( Chuck_Shell * shell, Chuck_Shell_UI * ui, Chuck_VM * vm )
 
 
 //-----------------------------------------------------------------------------
+// name: check_shell_shutdown()
+// desc: check if we need to take action on shell
+//-----------------------------------------------------------------------------
+t_CKBOOL check_shell_shutdown()
+{
+    if( g_enable_shell && g_shutdown_shell )
+    {
+        // set to false so we don't do this multiple time
+        g_shutdown_shell = FALSE;
+        // cleanup
+        global_cleanup();
+        // return yes
+        return TRUE;
+    }
+    
+    return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: shell_cb
 // desc: thread routine
 //-----------------------------------------------------------------------------
@@ -367,17 +394,16 @@ void * shell_cb( void * p )
     // assuming this is absolutely necessary, an assert may be better
     assert( p != NULL );
     
-    shell = ( Chuck_Shell * ) p;
+    shell = (Chuck_Shell *) p;
     
     //atexit( wait_for_shell );
     
     // run the shell
     shell->run();
     
-    // delete and set to NULL
-    SAFE_DELETE( g_shell );
-    // perhaps let shell destructor clean up mode and ui?
-    
+    // flag to effect global shutdown from main thread
+    g_shutdown_shell = TRUE;
+
     EM_log( CK_LOG_INFO, "exiting thread routine for shell..." );
     
     return NULL;
@@ -991,6 +1017,8 @@ bool go( int argc, const char ** argv )
     // start shell on separate thread | REFACTOR-2017: per-VM?!?
     if( g_enable_shell )
     {
+        // flag
+        g_shutdown_shell = FALSE;
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
         pthread_create( &g_tid_shell, NULL, shell_cb, g_shell );
 #else
@@ -1050,12 +1078,19 @@ bool go( int argc, const char ** argv )
             // keep running as fast as possible
             the_chuck->run( input, output, buffer_size );
         }
+        
+        // shell relate activity
+        if( check_shell_shutdown() ) break;
     }
-    
-    // get main thread hook
-    Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();
-    // call it if there is one
-    if( hook ) { hook->m_quit(hook->m_bindle); }
+
+    // if chuck is still available; could have been cleaned up by shell_shutdown
+    if( the_chuck != NULL )
+    {
+        // get main thread hook
+        Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();
+        // call it if there is one
+        if( hook ) { hook->m_quit(hook->m_bindle); }
+    }
 
     return TRUE;
 }
