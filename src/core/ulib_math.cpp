@@ -536,7 +536,8 @@ CK_DLL_SFUN( exp_impl )
 // exp2
 CK_DLL_SFUN( exp2_impl )
 {
-    RETURN->v_float = ::exp2( GET_CK_FLOAT(ARGS) );
+    RETURN->v_float = ::pow( 2, GET_CK_FLOAT(ARGS) );
+    // exp2 is not in some earlier Visual C++ version, e.g., VC++ 2010
 }
 
 // log
@@ -594,7 +595,7 @@ CK_DLL_SFUN( remainder_impl )
 {
     t_CKFLOAT x = GET_CK_FLOAT(ARGS);
     t_CKFLOAT y = *((t_CKFLOAT *)ARGS + 1);
-    RETURN->v_float = remainder( x, y );
+    RETURN->v_float = ck_remainder( x, y );
 }
 
 // min
