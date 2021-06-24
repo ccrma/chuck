@@ -81,9 +81,9 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add dump()
-    func = make_new_mfun( "void", "dump", object_dump );
-    func->doc = "output current state of the object as text.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
+    // func = make_new_mfun( "void", "dump", object_dump );
+    // func->doc = "output current state of the object as text.";
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
     
     // add api()
     func = make_new_sfun( "void", "help", object_apropos );
