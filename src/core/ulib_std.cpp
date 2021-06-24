@@ -750,7 +750,6 @@ CK_DLL_SFUN( ftoi_impl )
 }
 
 // getenv
-static Chuck_String g_str; // PROBLEM: not thread friendly
 CK_DLL_SFUN( getenv_impl )
 {
     const char * v = GET_CK_STRING(ARGS)->str().c_str();
