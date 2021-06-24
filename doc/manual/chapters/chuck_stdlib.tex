@@ -76,10 +76,14 @@ converts ascii (string) to integer (int)
 converts ascii (string) to floating point value (float)
 }
 
-\chuckmultifunction{ string getenv ( string value );}{
+\chuckmultifunction{ string getenv ( string key );}{
 returns the value of an environment variable, such as of "PATH"
 }
 
+\chuckmultifunction{ string getenv ( string key, string default\_value );}{
+returns the value of an environment variable, such as of "PATH"\\
+returns the provided default string if the environment variable is unset
+}
 
 \chuckmultifunction{ int setenv ( string key, string value );}{
 sets environment variable named 'key' to 'value'
