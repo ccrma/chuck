@@ -2517,8 +2517,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         // whether the function needs 'this'
         func->code->need_this = func->is_member;
         // is static inside
-        func->code->is_static = (f->static_decl == ae_key_static) &&
-                                (env->class_def != NULL);
+        func->code->is_static = func->is_static;
         // set the function pointer
         func->code->native_func = (t_CKUINT)func->def->dl_func_ptr;
     }

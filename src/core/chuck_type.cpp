@@ -2436,8 +2436,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                             if( env->func )
                             {
                                 // if func static, v not
-                                if( env->func->def->static_decl == ae_key_static &&
-                                    v->is_member && !v->is_static )
+                                if( env->func->is_static && v->is_member && !v->is_static )
                                 {
                                     EM_error2( exp->linepos,
                                         "non-static member '%s' used from static function...", S_name(exp->var) );
@@ -3159,11 +3158,11 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
             // offset
             value->offset = env->curr->offset;
 
-            /*******************************************************************************
+            /*******************************************************************
              * spencer: added this into function to provide the same logic path
-             * for type_engine_check_exp_decl() and ck_add_mvar() when they determine
-             * offsets for mvars 
-             ******************************************************************************/
+             * for type_engine_check_exp_decl() and ck_add_mvar() when they
+             * determine offsets for mvars
+             ******************************************************************/
             // move the offset (TODO: check the size)
             env->curr->offset = type_engine_next_offset( env->curr->offset, type );
             // env->curr->offset += type->size;
@@ -4084,7 +4083,7 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
                     }*/
 
                     // see if parent function is static
-                    if( parent_func->def->static_decl == ae_key_static )
+                    if( parent_func->is_static )
                     {
                         EM_error2( f->linepos,
                             "function '%s.%s' resembles '%s.%s' but cannot override...",
@@ -6978,7 +6977,7 @@ void Chuck_Type::apropos_funcs( std::string & output, const std::string & PREFIX
             func_names[func->name] = 1;
 
             // check for static declaration
-            if( func->def->static_decl == ae_key_static ) {
+            if( func->is_static ) {
                 // append to static funcs list
                 sfuncs.push_back( func );
             } else {
