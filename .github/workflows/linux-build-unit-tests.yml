@@ -15,7 +15,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Dependencies - Linux
-      run: sudo apt-get install -y libsndfile1-dev && sudo apt-get install -y libpulse-dev && sudo apt-get install -y libasound2-dev
+      run: sudo apt update && sudo apt install --fix-missing -y libsndfile1-dev libpulse-dev libasound2-dev
 
     - name: Compile - Linux
       run: cd src/ && make linux-pulse
