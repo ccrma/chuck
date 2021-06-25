@@ -64,10 +64,9 @@ using namespace std;
 #ifdef __WINDOWS_DS__
 typedef BYTE uint8_t;
 typedef WORD uint16_t;
-typedef __int32 int32_t; // 1.4.1.0 (ge) added
-typedef unsigned __int32 uint32_t; // 1.4.1.0 (ge) added
 // ge: this needed in earlier/some versions of windows
 #ifndef __WINDOWS_MODERN__
+typedef __int32 int32_t; // 1.4.1.0 (ge) added
 typedef DWORD uint32_t;
 #endif
 #endif 
