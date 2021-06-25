@@ -82,7 +82,9 @@
 // redundant with g_default_chugin_path, which already contains
 #define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       ""
 #else // __PLATFORM_WIN32__
-#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       "C:\\Program Files\\ChucK\\chugins"
+// 1.4.1.0 (ge) changed to ""; "C:\\Program Files\\ChucK\\chugins"
+// redundant with g_default_chugin_path, which already contains
+#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       ""
 #endif // __PLATFORM_WIN32__
 #define CHUCK_PARAM_USER_CHUGINS_DEFAULT        std::list<std::string>()
 #define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT std::list<std::string>()
@@ -90,7 +92,7 @@
 
 
 // chuck statics
-const char ChucK::VERSION[] = "1.4.1.0-rc2 (numchucks)";
+const char ChucK::VERSION[] = "1.4.1.0 (numchucks)";
 t_CKUINT ChucK::o_numVMs = 0;
 t_CKBOOL ChucK::o_isGlobalInit = FALSE;
 t_CKBOOL ChucK::enableSystemCall = FALSE;

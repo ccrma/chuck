@@ -138,6 +138,13 @@ contributed. Happy ChucKing!
     for this issue report on Ubuntu Studio 64-bit; this fix addresses
     the sending of MIDI clock, stop, continue, and SysEx -- also thank 
     you mariobuoninfante for the fix.
+  - (fixed) ChucK shell can now be exited either by the "exit" command
+    or through ctrl-c.  Previously. ctrl-c sometimes failed to end the
+    the program due to logic in the global cleanup function; this has
+    been addressed.
+  - (fixed) addressed an issue where Chugins were being loaded twice.
+  - (fixed) the --chugin-load:off option is now correclty taken into
+    account and will appropriately result in no Chugins being loaded.
   - (deprecated) Chubgraph => (new) Chugraph;
     Chubgraph will continue to function, with a deprecation warning.
   - (documentation) updated embedded documentation text for all statically
