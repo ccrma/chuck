@@ -131,8 +131,11 @@ protected: // internal
     // do all excect classes
     t_CKBOOL do_all_except_classes( Chuck_Context * context );
     // do normal compile
-    t_CKBOOL do_normal( const std::string & path, FILE * fd = NULL, 
-                        const char * str_src = NULL, const std::string & full_path = "" );
+    t_CKBOOL do_normal_depend( const std::string & path, FILE * fd = NULL,
+        const char * str_src = NULL, const std::string & full_path = "" );
+    // do auto-depend compile
+    t_CKBOOL do_auto_depend( const std::string & path, FILE * fd = NULL,
+        const char * str_src = NULL, const std::string & full_path = "" );
     // look up in recent
     Chuck_Context * find_recent_path( const std::string & path );
     // look up in recent

@@ -36,8 +36,10 @@
 using namespace std;
 
 
+// max path len
+static const t_CKUINT MAX_FILENAME_LEN = 2048;
 // global
-static char g_filename[1024] = "";
+static char g_filename[MAX_FILENAME_LEN+1] = "";
 
 // external
 extern "C" { 
@@ -178,6 +180,16 @@ t_CKBOOL chuck_parse( c_constr fname, FILE * fd, c_constr code )
     }
     */
 
+    // check length | 1.4.1.0 (ge) added
+    t_CKUINT len = strlen( fname );
+    if( len > MAX_FILENAME_LEN )
+    {
+        EM_error2( 0, "filename length (%d) exceeds max (%d) set by compiler...",
+                   len, MAX_FILENAME_LEN );
+        EM_error2( 0, "filename in question: '%s'", fname );
+        EM_error2( 0, "compiler bailing out..." );
+        return FALSE;
+    }
     // remember filename
     strcpy( g_filename, fname );
         

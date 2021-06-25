@@ -275,54 +275,19 @@ t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * st
     if( !m_auto_depend )
     {
         // normal (note: full_path added 1.3.0.0)
-        ret = this->do_normal( filename, fd, str_src, full_path );
-        return ret;
+        ret = this->do_normal_depend( filename, fd, str_src, full_path );
     }
-    else // auto
+    else // auto depend
     {
-        // parse the code
-        if( !chuck_parse( filename.c_str(), fd, str_src ) )
-            return FALSE;
-
-        // make the context
-        context = type_engine_make_context( g_program, filename );
-        if( !context ) return FALSE;
-
-        // reset the env
-        env()->reset();
-
-        // load the context
-        if( !type_engine_load_context( env(), context ) )
-            return FALSE;
-
-        // do entire file
-        if( !do_entire_file( context ) )
-        { ret = FALSE; goto cleanup; }
-
-        // get the code
-        if( !(code = context->code()) )
-        {
-            ret = FALSE;
-            EM_error2( 0, "internal error: context->code() NULL!" );
-            goto cleanup;
-        }
-
-cleanup:
-
-        // commit
-        if( ret ) env()->global()->commit();
-        // or rollback
-        else env()->global()->rollback();
-
-        // unload the context from the type-checker
-        if( !type_engine_unload_context( env() ) )
-        {
-            EM_error2( 0, "internal error unloading context...\n" );
-            return FALSE;
-        }
-
-        return ret;
+        // call auto-depend compile (1.4.1.0)
+        ret = this->do_auto_depend( filename, fd, str_src, full_path );
     }
+
+    // 1.4.1.0 (ge) | added to unset the fileName reference, which determines
+    // how messages print to console (e.g., [file.ck]: or [chuck]:)
+    EM_change_file( NULL );
+    
+    return ret;
 }
 
 
@@ -469,10 +434,11 @@ t_CKBOOL Chuck_Compiler::do_all_except_classes( Chuck_Context * context )
 
 
 //-----------------------------------------------------------------------------
-// name: do_normal()
+// name: do_normal_depend()
 // desc: compile normally without auto-depend
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::do_normal( const string & filename, FILE * fd, const char * str_src, const string & full_path )
+t_CKBOOL Chuck_Compiler::do_normal_depend( const string & filename, FILE * fd,
+                                          const char * str_src, const string & full_path )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Context * context = NULL;
@@ -531,6 +497,64 @@ cleanup:
 
     return ret;
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: do_auto_depend()
+// desc: compile with auto-depend (TODO: this doesn't work yet, I don't think)
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Compiler::do_auto_depend( const string & filename, FILE * fd,
+                                         const char * str_src, const string & full_path )
+{
+    t_CKBOOL ret = TRUE;
+    Chuck_Context * context = NULL;
+    
+    // parse the code
+    if( !chuck_parse( filename.c_str(), fd, str_src ) )
+        return FALSE;
+    
+    // make the context
+    context = type_engine_make_context( g_program, filename );
+    if( !context ) return FALSE;
+    
+    // reset the env
+    env()->reset();
+    
+    // load the context
+    if( !type_engine_load_context( env(), context ) )
+        return FALSE;
+    
+    // do entire file
+    if( !do_entire_file( context ) )
+    { ret = FALSE; goto cleanup; }
+    
+    // get the code
+    if( !(code = context->code()) )
+    {
+        ret = FALSE;
+        EM_error2( 0, "internal error: context->code() NULL!" );
+        goto cleanup;
+    }
+    
+cleanup:
+    
+    // commit
+    if( ret ) env()->global()->commit();
+    // or rollback
+    else env()->global()->rollback();
+    
+    // unload the context from the type-checker
+    if( !type_engine_unload_context( env() ) )
+    {
+        EM_error2( 0, "internal error unloading context...\n" );
+        return FALSE;
+    }
+    
+    return ret;
+}
+
 
 
 
