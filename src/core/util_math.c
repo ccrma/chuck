@@ -76,7 +76,7 @@ double ck_remainder( double a, double b )
     t_CKINT div = a/b;
     return a - b*div;
 #else
-	return remainder( a, b )
+    return remainder( a, b );
 #endif
 }
 
