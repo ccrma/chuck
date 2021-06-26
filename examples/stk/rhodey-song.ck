@@ -6,8 +6,8 @@
 // date: June 2021
 // note: needs chuck 1.4.1.0 or above
 
-// to learn more about HnkyTonk, uncomment this:
-// HnkyTonk.apropos();
+// to learn more about Rhodey, uncomment this:
+// Rhodey.apropos();
 
 Rhodey r[5];
 NRev rev[2] => dac; 0.05 => rev[0].mix; 0.05 => rev[1].mix;
