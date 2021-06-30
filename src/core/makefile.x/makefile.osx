@@ -2,7 +2,7 @@
 # FORCE_M32=-m32
 
 ### combine the two updates below (1.4.1.0)
-ifneq ($(shell sw_vers -productVersion | egrep '^(10\.(6|7|8|9|10|11|12|13|14|15)(\.[0-9]+)|1[123456789])?'),)
+ifneq ($(shell sw_vers -productVersion | egrep '^(10\.([6-9]|1[0-5])|1[1-9]\.)'),)
 SDK=$(shell xcrun --show-sdk-path)
 ###
 ### update 1 (@mitchblank PR #158): fix for MacOS 11 / Big Sur
