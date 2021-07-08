@@ -526,6 +526,18 @@ bool ChucK::initCompiler()
             // log it
             EM_log( CK_LOG_INFO, "current working directory:" );
         }
+#ifdef __ANDROID__
+        else if( workingDir.rfind("jar:", 0) == 0 )
+        {
+            // if workingDir is a JAR URL, make sure it ends on /
+            if( *workingDir.rbegin() != '/' )
+            {
+                workingDir = workingDir + "/";
+            }
+            // log it
+            EM_log( CK_LOG_INFO, "setting current working directory:" );
+        }
+#endif
         else
         {
             // update
