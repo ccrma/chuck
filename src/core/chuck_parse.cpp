@@ -35,6 +35,10 @@
 #include <string.h>
 using namespace std;
 
+#ifdef __ANDROID__
+#include "util_platforms.h"
+#endif
+
 
 // max path len
 static const t_CKUINT MAX_FILENAME_LEN = 2048;
@@ -55,6 +59,19 @@ extern "C" {
 //-----------------------------------------------------------------------------
 FILE * open_cat_ck( c_str fname )
 {
+#ifdef __ANDROID__
+    if( strncmp(fname, "jar:", strlen("jar:")) == 0 )
+    {
+        int fd = 0;
+        if( !ChuckAndroid::copyJARURLFileToTemporary(fname, &fd) )
+        {
+            EM_error2( 0, "unable to download from JAR URL: %s", fname );
+            return NULL;
+        }
+        return fdopen(fd, "rb");
+    }
+#endif // __ANDROID__
+
     FILE * fd = NULL;
     if( !(fd = fopen( fname, "rb" )) )
         if( !strstr( fname, ".ck" ) && !strstr( fname, ".CK" ) )
@@ -102,8 +119,6 @@ FILE *win32_tmpfile()
 // desc: replacement for broken tmpfile() on Android
 //-----------------------------------------------------------------------------
 #ifdef __ANDROID__
-
-#include "util_platforms.h"
 
 FILE * android_tmpfile()
 {
