@@ -820,6 +820,23 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
     
     // append
     std::string theThing = path + ":" + argsTogether;
+#ifdef __ANDROID__
+    if( theThing.rfind("jar:", 0) == 0 )
+    {
+        const size_t jarPrefixLen = strlen("jar:");
+        const size_t secondColon = path.find(':', jarPrefixLen);
+        if( secondColon == std::string::npos )
+        {
+            theThing = std::string("jar\\:") + theThing.substr(jarPrefixLen);
+        }
+        else
+        {
+            theThing = std::string("jar\\:") + theThing.substr(jarPrefixLen,
+                secondColon - jarPrefixLen) + std::string("\\:") +
+                theThing.substr(secondColon + 1);
+        }
+    }
+#endif // __ANDROID__
     
     // parse out command line arguments
     if( !extract_args( theThing, filename, args ) )

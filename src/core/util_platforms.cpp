@@ -421,10 +421,14 @@ bool ChuckAndroid::copyJARURLFileToTemporary(const char * jar_url, int * fd)
         // s = input_stream.read(buffer)
         jclass input_stream_class = jni.FindClass("java/io/InputStream");
         jint s = 0;
-        do
+        while( true )
         {
             s = jni.CallIntMethod(input_stream, input_stream_class, "read",
                 "([B)I", java_buffer);
+            if( s < 0 )
+            {
+                break;
+            }
             jbyte * native_buffer = jni.GetByteArrayElements(java_buffer);
             size_t written = 0;
             while( written < s )
@@ -439,7 +443,7 @@ bool ChuckAndroid::copyJARURLFileToTemporary(const char * jar_url, int * fd)
                 written += written_now;
             }
             jni.ReleaseByteArrayElements(java_buffer, native_buffer);
-        } while( s > 0 );
+        }
 
         // jar_file.close()
         jni.CallVoidMethod(jar_file, jar_file_class, "close", "()V");
