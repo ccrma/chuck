@@ -49,6 +49,10 @@
 #endif
 #endif
 
+#ifdef __ANDROID__
+#include "util_platforms.h"
+#endif
+
 #include "ugen_xxx.h"
 #include "chuck_type.h"
 #include "chuck_ugen.h"
@@ -3344,12 +3348,27 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
     }
     else // read file
     {
-        // stat the file first
-        struct stat s;
-        if( stat( filename, &s ) )
+#ifdef __ANDROID__
+        bool is_jar_url = strstr(filename, "jar:") == filename;
+        int jar_fd = 0;
+        if( is_jar_url )
         {
-            CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot stat file '%s'...\n", filename );
-            return;
+            if( !ChuckAndroid::copyJARURLFileToTemporary(filename, &jar_fd) )
+            {
+                CK_FPRINTF_STDERR( "[chuck](via SndBuf): could not download file '%s' from JAR\n", filename );
+                return;
+            }
+        }
+        else
+#endif
+        {
+            // check if file exists
+            struct stat s;
+            if( stat( filename, &s ) )
+            {
+                CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot stat file '%s'...\n", filename );
+                return;
+            }
         }
 
         // open it
@@ -3365,7 +3384,16 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         }
 
         // open the handle
-        d->fd = sf_open( filename, SFM_READ, &info );
+#ifdef __ANDROID__
+        if( is_jar_url )
+        {
+            d->fd = sf_open_fd( jar_fd, SFM_READ, &info, 0 );
+        }
+        else
+#endif
+        {
+            d->fd = sf_open( filename, SFM_READ, &info );
+        }
         t_CKINT er = sf_error( d->fd );
         if( er )
         {
