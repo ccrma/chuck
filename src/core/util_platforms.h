@@ -42,16 +42,15 @@
 #include <jni.h>
 #include <stdio.h>
 
-
 //-----------------------------------------------------------------------------
-// name: class ChuckAndroid
+// name: namespace ChuckAndroid
 // desc: android specific ChucK utilities
 //-----------------------------------------------------------------------------
-class ChuckAndroid
+namespace ChuckAndroid
 {
-public:
-    static JavaVM * getJVM();
-    static FILE * getTemporaryFile();
+    JavaVM * getJVM();
+    FILE * getTemporaryFile() noexcept;
+    bool copyJARURLFileToTemporary(const char * jar_url, int * fd) noexcept;
 };
 
 #endif // __ANDROID__
