@@ -1,0 +1,21 @@
+name: Windows - Build and Unit Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  linux-build-unit-tests:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Compile - Windows
+      run: cd src/ && set CC=gcc && make win32
+      
+    - name: Unit Tests - Windows
+      run: cd src/ && cd test/ && python test.py
