@@ -6681,7 +6681,7 @@ const char * Chuck_Type::c_name()
 
 //-----------------------------------------------------------------------------
 // name: apropos()
-// desc: dump info to string; added 1.4.1.0 (ge)
+// desc: generate info; output to console | added 1.4.1.0 (ge)
 //       portions of this adapted from ckdoc -- thanks be to Spencer Salazar
 //-----------------------------------------------------------------------------
 void Chuck_Type::apropos( std::string & output )
@@ -6754,7 +6754,7 @@ void Chuck_Type::apropos( std::string & output )
 
 //-----------------------------------------------------------------------------
 // name: apropos()
-// desc: dump info to console
+// desc: generate info; output to console | added 1.4.1.0 (ge)
 //-----------------------------------------------------------------------------
 void Chuck_Type::apropos()
 {
@@ -6769,11 +6769,15 @@ void Chuck_Type::apropos()
 
 
 
+//-----------------------------------------------------------------------------
 // comparer
+//-----------------------------------------------------------------------------
 static bool comp_func( Chuck_Func * a, Chuck_Func * b )
 { return a->name < b->name; }
 
+//-----------------------------------------------------------------------------
 // comparer
+//-----------------------------------------------------------------------------
 static bool comp_value( Chuck_Value * a, Chuck_Value * b )
 {
     string lowerA = a->name;;
@@ -6788,7 +6792,9 @@ static bool comp_value( Chuck_Value * a, Chuck_Value * b )
     else return a->name > b->name;
 }
 
+//-----------------------------------------------------------------------------
 // capitalize first character
+//-----------------------------------------------------------------------------
 static string capitalize( const string & s )
 {
     // copy
@@ -6805,7 +6811,7 @@ static string capitalize( const string & s )
 
 //-----------------------------------------------------------------------------
 // name: apropos_top()
-// desc: dump top level info; added 1.4.1.0 (ge)
+// desc: output top level info; added 1.4.1.0 (ge)
 //-----------------------------------------------------------------------------
 void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
 {
@@ -6899,7 +6905,8 @@ void apropos_func_arg( std::ostringstream & sout, a_Arg_List arg )
 // name: apropos_func()
 // desc: helper function for outputing function
 //-----------------------------------------------------------------------------
-void apropos_func( std::ostringstream & sout, Chuck_Func * func, const std::string & PREFIX )
+void apropos_func( std::ostringstream & sout, Chuck_Func * func,
+                   const std::string & PREFIX )
 {
     // print line prefix, if any
     sout << PREFIX;
@@ -6940,9 +6947,10 @@ void apropos_func( std::ostringstream & sout, Chuck_Func * func, const std::stri
 
 //-----------------------------------------------------------------------------
 // name: apropos_funcs()
-// desc: dump info about funcs; added 1.4.1.0 (ge)
+// desc: output info about funcs; added 1.4.1.0 (ge)
 //-----------------------------------------------------------------------------
-void Chuck_Type::apropos_funcs( std::string & output, const std::string & PREFIX, t_CKBOOL inherited )
+void Chuck_Type::apropos_funcs( std::string & output,
+                                const std::string & PREFIX, t_CKBOOL inherited )
 {
     // make a string output stream
     ostringstream sout;
@@ -7047,7 +7055,8 @@ void Chuck_Type::apropos_funcs( std::string & output, const std::string & PREFIX
 // name: apropos_var()
 // desc: helper function for outputing variable
 //-----------------------------------------------------------------------------
-void apropos_var( std::ostringstream & sout, Chuck_Value * var, const std::string & PREFIX )
+void apropos_var( std::ostringstream & sout, Chuck_Value * var,
+                  const std::string & PREFIX )
 {
     // print line prefix, if any
     sout << PREFIX;
@@ -7072,9 +7081,10 @@ void apropos_var( std::ostringstream & sout, Chuck_Value * var, const std::strin
 
 //-----------------------------------------------------------------------------
 // name: apropos_vars()
-// desc: dump info about vars; added 1.4.1.0 (ge)
+// desc: output info about vars; added 1.4.1.0 (ge)
 //-----------------------------------------------------------------------------
-void Chuck_Type::apropos_vars( std::string & output, const std::string & PREFIX, t_CKBOOL inherited )
+void Chuck_Type::apropos_vars( std::string & output, const std::string & PREFIX,
+                               t_CKBOOL inherited )
 {
     // make a string output stream
     ostringstream sout;
@@ -7165,4 +7175,32 @@ void Chuck_Type::apropos_vars( std::string & output, const std::string & PREFIX,
     
     // output to string
     output = sout.str();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: dump()
+// desc: generate object state; output to console | 1.4.1.1 (ge)
+//-----------------------------------------------------------------------------
+void Chuck_Type::dump( Chuck_Object * obj )
+{
+    // the info
+    string output;
+    // get it
+    this->dump( obj, output );
+    // print it
+    CK_STDCERR << output << CK_STDENDL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: dump()
+// desc: generate object state; output to string | 1.4.1.1 (ge)
+//-----------------------------------------------------------------------------
+void Chuck_Type::dump( Chuck_Object * obj, std::string & output )
+{
 }

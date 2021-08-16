@@ -79,16 +79,16 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
     func = make_new_mfun( "string", "toString", object_toString );
     func->doc = "get a textual description of this object.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
-    // add dump()
-    // func = make_new_mfun( "void", "dump", object_dump );
-    // func->doc = "output current state of the object as text.";
-    // if( !type_engine_import_mfun( env, func ) ) goto error;
-    
-    // add api()
-    func = make_new_sfun( "void", "help", object_apropos );
+
+    // add help()
+    func = make_new_sfun( "void", "help", object_help );
     func->doc = "generate and output helpful information about a class or object.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
+
+//    // add dump()
+//    func = make_new_mfun( "void", "dump", object_dump );
+//    func->doc = "output current state of the object.";
+//    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -1071,8 +1071,8 @@ CK_DLL_MFUN( object_dump )
     me->dump();
 }
 
-// apropos
-CK_DLL_SFUN( object_apropos )
+// help
+CK_DLL_SFUN( object_help )
 {
     TYPE->apropos();
     // get object
@@ -1080,6 +1080,7 @@ CK_DLL_SFUN( object_apropos )
     // call dump
     // me->apropos();
 }
+
 
 
 
