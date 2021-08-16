@@ -656,10 +656,16 @@ protected:
     std::string ret;
 
 public: // apropos | 1.4.1.0 (ge)
-    // dump info to console
+    // generate info; output to console
     void apropos();
-    // dump info to string
+    // generate info; output to string
     void apropos( std::string & output );
+
+public: // dump | 1.4.1.1 (ge)
+    // generate object state; output to console
+    void dump( Chuck_Object * obj );
+    // generate object state; output to string
+    void dump( Chuck_Object * obj, std::string & output );
 
 protected: // apropos-related helper function
     // dump top level info
