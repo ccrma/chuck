@@ -1812,7 +1812,9 @@ public:
     // CK_FPRINTF_STDERR( "random bits - %d", rand_bits );
     setMode ( "pink" );
   } 
-  ~CNoise_Data() {}
+  ~CNoise_Data() {
+    if ( pink_array != NULL ) free(pink_array);
+  }
    
   t_CKINT fprob;
   t_CKUINT mode;
@@ -1873,7 +1875,7 @@ t_CKINT CNoise_Data::pink_tick( SAMPLE * out )
     last = 0;
     for ( t_CKINT i = 0 ; i < pink_depth ; i++ ) { pink_array[i] = rand(); last += pink_array[i]; } 
     scale = 2.0 / ((double)RAND_MAX  * ( pink_depth + 1.0 ) );
-    bias = 0.0;
+    bias = -1.0;
     // CK_FPRINTF_STDERR( "scale %f %f %d %d \n", scale, bias, RAND_MAX, pink_depth + 1 );
   }
 
