@@ -315,6 +315,16 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "dstmax" );
     QUERY->doc_func( QUERY, "scale from a source range to a destination range." );
 
+    // ABL: add assert
+    QUERY->add_sfun( QUERY, assert1_impl, "void", "assert" ); //! assert (int)
+    QUERY->add_arg( QUERY, "int", "condition" );
+    QUERY->doc_func( QUERY, "alert if test condition is false" );
+
+    QUERY->add_sfun( QUERY, assert2_impl, "void", "assert" ); //! assert (int, msg)
+    QUERY->add_arg( QUERY, "int", "condition" );
+    QUERY->add_arg( QUERY, "string", "message" );
+    QUERY->doc_func( QUERY, "alert the given message if test condition is false" );
+
     // finish class
     QUERY->end_class( QUERY );
 
@@ -857,6 +867,41 @@ CK_DLL_SFUN( scalef_impl )
 }
 
 
+void assert_impl(int test, Chuck_String* msg, Chuck_VM_Shred* SHRED) {
+    if (!test) {
+        const int linepos = SHRED->instr[SHRED->pc]->m_linepos;
+        CK_STDCERR << "[" << SHRED->code->filename << "]: [" << linepos << "] ";
+        CK_STDCERR << "ASSERTION FAILURE: " << (msg ? msg->str() : "failed") << CK_STDENDL;
+        CK_STDCERR << " test value = " << test << CK_STDENDL;
+        CK_STDCERR << " in shred " << SHRED->code->name
+                   << " (id==" << SHRED->xid << " | ptr==" << (t_CKUINT)SHRED << ")" << CK_STDENDL;
+        if (SHRED->code->name != SHRED->name) {
+            CK_STDCERR << " from "<< SHRED->name << CK_STDENDL;
+        }
+        EM_error3("[chuck]: death by assertion");
+
+        // crash the VM:
+        // *(volatile int *)0 = 0;
+
+        Chuck_VM* VM = SHRED->vm_ref;
+        VM->stop();
+    }
+}
+
+// Chuck_Type * TYPE, void * ARGS, Chuck_DL_Return * RETURN,
+// Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API
+CK_DLL_SFUN( assert1_impl )
+{
+    t_CKINT v = GET_NEXT_INT(ARGS);
+    assert_impl(v, NULL, SHRED);
+}
+
+CK_DLL_SFUN( assert2_impl )
+{
+    t_CKINT v = GET_NEXT_INT(ARGS);
+    Chuck_String* msg  = GET_NEXT_STRING(ARGS);
+    assert_impl(v, msg, SHRED);
+}
 
 
 #ifndef __DISABLE_KBHIT__

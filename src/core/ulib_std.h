@@ -67,7 +67,8 @@ CK_DLL_SFUN( clamp_impl );
 CK_DLL_SFUN( clampf_impl );
 CK_DLL_SFUN( scalef_impl );
 
-
+CK_DLL_SFUN( assert1_impl );
+CK_DLL_SFUN( assert2_impl );
 
 
 // forward reference
