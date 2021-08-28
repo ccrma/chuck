@@ -206,7 +206,12 @@ void usage()
     CK_FPRINTF_STDERR( "               srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
     CK_FPRINTF_STDERR( "               remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
     CK_FPRINTF_STDERR( "               callback|deprecate:{stop|warn|ignore}|\n" );
+#if defined(__PLATFORM_WIN32__)
     CK_FPRINTF_STDERR( "               chugin-load:{on|off}|chugin-path:<path>|chugin:<name>\n" );
+#else
+    CK_FPRINTF_STDERR( "               chugin-load:{on|off}|chugin-path:<path>|chugin:<name>|\n" );
+    CK_FPRINTF_STDERR( "               pid-file:<path>\n" );
+#endif
     CK_FPRINTF_STDERR( "   [commands] = add|remove|replace|remove.all|status|time|kill\n" );
     CK_FPRINTF_STDERR( "   [+-=^] = shortcuts for add, remove, replace, status\n" );
     version();
@@ -695,6 +700,24 @@ bool go( int argc, const char ** argv )
                 // get the rest
                 dl_search_path.push_back( argv[i]+sizeof("--chugin-path:")-1 );
             }
+#if !defined(__PLATFORM_WIN32__)
+            else if(!strncmp(argv[i], "--pid-file:", sizeof("--pid-file:") - 1))
+            {
+                unsigned int pid = getpid();
+                const char* filename = argv[i] + sizeof("--pid-file:") - 1;
+                FILE* pidfile = fopen(filename, "w");
+                if (pidfile)
+                {
+                    fprintf(pidfile, "%u", pid);
+                    fclose(pidfile);
+                    EM_error3("[chuck]: process ID %u stored in %s", pid, filename);
+                }
+                else
+                {
+                    CK_FPRINTF_STDERR( "[chuck]: failed to store process ID %u in %s\n", pid, filename);
+                }
+            }
+#endif
             // (added 1.3.0.0)
             else if( !strncmp(argv[i], "-G", sizeof("-G")-1) )
             {
