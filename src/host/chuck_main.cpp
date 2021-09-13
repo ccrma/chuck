@@ -111,7 +111,26 @@ t_CKINT g_priority = 0x7fffffff;
 t_CKINT g_priority_low = 0x7fffffff;
 #endif
 
-
+#if !defined(__PLATFORM_WIN32__)
+bool write_pid(const char* filename)
+{
+    unsigned int pid = getpid();
+    FILE* pidfile = fopen(filename, "w");
+    if (pidfile)
+    {
+        fprintf(pidfile, "%u", pid);
+        fclose(pidfile);
+        EM_error3("[chuck]: process ID %u stored in %s", pid, filename);
+        return true;
+    }
+    else
+    {
+        CK_FPRINTF_STDERR( "[chuck]: failed to store process ID %u in %s\n", pid, filename);
+        return false;
+    }
+}
+const char* g_pidfile = NULL;
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -315,6 +334,14 @@ void global_cleanup()
 #else
     // close handle
 //    if( g_tid_otf ) CloseHandle( g_tid_otf );
+#endif
+
+#if !defined(__PLATFORM_WIN32__)
+    if ( g_pidfile )
+    {
+        unlink( g_pidfile );
+        g_pidfile = NULL;
+    }
 #endif
 }
 
@@ -703,18 +730,10 @@ bool go( int argc, const char ** argv )
 #if !defined(__PLATFORM_WIN32__)
             else if(!strncmp(argv[i], "--pid-file:", sizeof("--pid-file:") - 1))
             {
-                unsigned int pid = getpid();
                 const char* filename = argv[i] + sizeof("--pid-file:") - 1;
-                FILE* pidfile = fopen(filename, "w");
-                if (pidfile)
+                if ( write_pid(filename) )
                 {
-                    fprintf(pidfile, "%u", pid);
-                    fclose(pidfile);
-                    EM_error3("[chuck]: process ID %u stored in %s", pid, filename);
-                }
-                else
-                {
-                    CK_FPRINTF_STDERR( "[chuck]: failed to store process ID %u in %s\n", pid, filename);
+                    g_pidfile = filename;
                 }
             }
 #endif
