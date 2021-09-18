@@ -31577,7 +31577,8 @@ wav_read_header	 (SF_PRIVATE *psf, int *blockalign, int *framesperblock)
 						}
 					else if (psf->filelength < RIFFsize + 2 * SIGNED_SIZEOF (dword))
 					{	psf_log_printf (psf, "RIFF : %u (should be %D)\n", RIFFsize, psf->filelength - 2 * SIGNED_SIZEOF (dword)) ;
-						RIFFsize = dword ;
+						dword = psf->filelength - 2 * sizeof (dword) ;
+                        RIFFsize = dword ;
 						}
 					else
 						psf_log_printf (psf, "RIFF : %u\n", RIFFsize) ;
