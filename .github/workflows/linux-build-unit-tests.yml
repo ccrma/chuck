@@ -12,7 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
 
     - name: Dependencies - Linux
       run: sudo apt update && sudo apt install --fix-missing -y libsndfile1-dev libpulse-dev libasound2-dev
