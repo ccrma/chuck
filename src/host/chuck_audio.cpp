@@ -137,10 +137,11 @@ static char const *apiToDriverName(RtAudio::Api api)
         "ALSA",
         "Pulse",
         "OSS",
-        "JACK",
+        "Jack",
         "MacOSXCore",
+        "WASAPI",
         "ASIO",
-        "DS",
+        "DirectSound (DS)",
         "DUMMY",
         "Invalid"
     };
