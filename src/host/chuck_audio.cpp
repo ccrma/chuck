@@ -130,6 +130,23 @@ static RtAudio::Api driverNameToApi(char const *driver)
     return api;
 }
 
+static char const *apiToDriverName(RtAudio::Api api)
+{
+    static char const *drivers[] = {
+        "unspecified",
+        "ALSA",
+        "Pulse",
+        "OSS",
+        "JACK",
+        "MacOSXCore",
+        "ASIO",
+        "DS",
+        "DUMMY",
+        "Invalid"
+    };
+    return drivers[(int) api];
+}
+
 //-----------------------------------------------------------------------------
 // name: print()
 // desc: ...
@@ -179,7 +196,8 @@ void print( const RtAudio::DeviceInfo & info )
 //-----------------------------------------------------------------------------
 void ChuckAudio::probe(char const *driver)
 {
-    RtAudio::Api api = driverNameToApi(driver);
+    RtAudio::Api api = driverNameToApi(driver); // handles driver=NULL case
+    char const *dnm = apiToDriverName(api);
     // rtaduio pointer
     RtAudio * audio = NULL;
     // device info struct
@@ -190,13 +208,13 @@ void ChuckAudio::probe(char const *driver)
     catch( RtAudioError err )
     {
         // problem finding audio devices, most likely
-        EM_error2b( 0, "%s", err.getMessage().c_str() );
+        EM_error2b( 0, "%s: %s", dnm, err.getMessage().c_str() );
         return;
     }
 
     // get count
     int devices = audio->getDeviceCount();
-    EM_error2b( 0, "found %d device(s) ...", devices );
+    EM_error2b( 0, "%s found %d device(s) ...", dnm, devices );
 
     // reset -- what does this do
     EM_reset_msg();
@@ -235,16 +253,19 @@ void ChuckAudio::probe(char const *driver)
 // desc: get device number by name; needs_dac/adc prompts further checks on
 //       requested device having > 0 channels
 //-----------------------------------------------------------------------------
-t_CKUINT ChuckAudio::device_named( const std::string & name, t_CKBOOL needs_dac,
+t_CKUINT ChuckAudio::device_named( char const *driver, 
+                                   const std::string & name, t_CKBOOL needs_dac,
                                    t_CKBOOL needs_adc )
 {
     // rtaudio pointer
     RtAudio * audio = NULL;
     // device info struct
     RtAudio::DeviceInfo info;
+    RtAudio::Api api = driverNameToApi(driver); // handles driver=NULL case
+    char const *dnm = apiToDriverName(api);
     
     // allocate RtAudio
-    try { audio = new RtAudio(); }
+    try { audio = new RtAudio(api); }
     catch( RtAudioError err )
     {
         // problem finding audio devices, most likely
@@ -469,15 +490,15 @@ t_CKBOOL ChuckAudio::watchdog_stop()
 // name: initialize()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
+t_CKBOOL ChuckAudio::initialize( char const *driver,
+                                 t_CKUINT num_dac_channels,
                                  t_CKUINT num_adc_channels,
                                  t_CKUINT sample_rate,
                                  t_CKUINT buffer_size,
                                  t_CKUINT num_buffers,
                                  f_audio_cb callback,
                                  void * data,
-                                 t_CKBOOL force_srate,
-                                 char const *driver )
+                                 t_CKBOOL force_srate )
 {
     if( m_init )
         return FALSE;
@@ -506,11 +527,12 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
 
     // allocate RtAudio
     RtAudio::Api api = driverNameToApi(driver);
+    char const *dnm = apiToDriverName(api);
     try { m_rtaudio = new RtAudio(api); }
     catch( RtAudioError err )
     {
         // problem finding audio devices, most likely
-        EM_error2( 0, "%s", err.getMessage().c_str() );
+        EM_error2( 0, "%s: %s", dnm, err.getMessage().c_str() );
         // clean up
         goto error;
     }
@@ -735,8 +757,8 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
     // open device
     try {
         // log
-        EM_log( CK_LOG_FINE, "trying %d input %d output...",
-                m_num_channels_in, m_num_channels_out );
+        EM_log( CK_LOG_FINE, "%s trying %d input %d output...",
+                dnm, m_num_channels_in, m_num_channels_out );
 
         RtAudio::StreamParameters output_parameters;
         output_parameters.deviceId = m_dac_n;
@@ -763,8 +785,8 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
             &stream_options );
     } catch( RtAudioError err ) {
         // log
-        EM_log( CK_LOG_INFO, "exception caught: '%s'...", err.getMessage().c_str() );
-        EM_error2( 0, "%s", err.getMessage().c_str() );
+        EM_log( CK_LOG_INFO, "%s exception caught: '%s'...", dnm, err.getMessage().c_str() );
+        EM_error2( 0, "%s: %s", dnm, err.getMessage().c_str() );
         SAFE_DELETE( m_rtaudio );
         // clean up
         goto error;

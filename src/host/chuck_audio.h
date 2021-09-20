@@ -89,7 +89,8 @@ extern t_CKFLOAT g_watchdog_timeout;
 class ChuckAudio
 {
 public:
-    static t_CKBOOL initialize( t_CKUINT num_dac_channels,
+    static t_CKBOOL initialize( char const *driver, // NULL means default for build
+                                t_CKUINT num_dac_channels,
                                 t_CKUINT num_adc_channels,
                                 t_CKUINT sample_rate,
                                 t_CKUINT buffer_size,
@@ -97,8 +98,7 @@ public:
                                 f_audio_cb callback,
                                 void * data,
                                 // force_srate added 1.3.1.2
-                                t_CKBOOL force_srate,
-                                char const *driver // NULL means default for build
+                                t_CKBOOL force_srate
                                 );
     static void shutdown();
     static t_CKBOOL start();
@@ -112,7 +112,8 @@ public: // device info
     // probe audio devices
     static void probe(char const *driver); // NULL means default for build
     // get device number by name?
-    static t_CKUINT device_named( const std::string & name,
+    static t_CKUINT device_named( char const *driver,
+                                  const std::string & name,
                                   t_CKBOOL needs_dac = FALSE,
                                   t_CKBOOL needs_adc = FALSE );
 
