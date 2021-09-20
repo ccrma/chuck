@@ -159,6 +159,7 @@ LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
 CXXINC_HOST+= -I${RTAUDIODIR} -I${RTAUDIODIR}/include
 CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp \
 	${RTAUDIODIR}/RtAudio.cpp
+# NB: on some windows builds, the ASIO src in RTAUDIODIR/include should be added.
 
 
 ############################ OBJECT FILE TARGETS ###############################
