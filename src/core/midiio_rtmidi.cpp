@@ -436,9 +436,10 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
     return TRUE;
 }
 
-t_CKBOOL MidiOutManager::close(MidiIn * min)
+t_CKBOOL MidiInManager::close(MidiIn * min)
 {
-    min->m_buffer->resign((Chuck_Event *)min->SELF);
+    min->m_buffer->resign(min->m_read_index);
+    return true;
 }
 
 t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, const std::string & name )
