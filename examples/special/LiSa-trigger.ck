@@ -1,15 +1,16 @@
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------
 // name: LiSa-trigger.ck
 // desc: Live sampling utilities for ChucK
 //
 // author: Dan Trueman, 2007
 //
-// based on the S.M.E.L.T. (http://smelt.cs.princeton.edu/) envelope follower
-// trigger program will trigger start and stop to one-shot LiSa buffers. a sort
-// of triggered delay line, so the delays follow the player rather than being =
-// static. Success depends on tuning the envelope follower closely to the input
-// gains on however you are getting audio into ChucK.  Mileage will vary....
-//-----------------------------------------------------------------------------
+// based on the S.M.E.L.T. (http://smelt.cs.princeton.edu/) envelope
+// follower trigger program will trigger start and stop to one-shot
+// LiSa buffers. a sort of triggered delay line, so the delays follow
+// the player rather than being static. Success depends on tuning the
+// envelope follower closely to the input gains on however you are
+// getting audio into ChucK.  Mileage will vary....
+//--------------------------------------------------------------------
 
 // patch
 adc => Gain g => OnePole p => blackhole;
@@ -32,11 +33,13 @@ adc => g;
 // LiSa stuff
 adc => LiSa lisa => dac;
 lisa.duration(25::second);
-// l.gain(0.2);
 lisa.recRamp(20::ms);
-lisa.record(1);
 
+// start recording input
+lisa.record(1);
+// voice variable
 -1 => int voice;
+// rate
 float rate;
 
 // read command line args; set rate
@@ -91,7 +94,7 @@ fun void playlast( Event on, dur starttime, dur len, float newrate, int myvoice 
     lisa.rate( myvoice, newrate );
     lisa.rampUp( myvoice, 20::ms );
 
-    Std.fabs( newrate ) => float absrate;
+    Math.fabs( newrate ) => float absrate;
     len / absrate => now;
     lisa.rampDown( myvoice, ( 250 / absrate )::ms );
     ( 250 / absrate )::ms => now;

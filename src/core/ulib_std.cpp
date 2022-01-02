@@ -171,12 +171,12 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // add abs
     QUERY->add_sfun( QUERY, abs_impl, "int", "abs" );
     QUERY->add_arg( QUERY, "int", "value" );
-    QUERY->doc_func( QUERY, "compute the absolute value of an integer." );
+    QUERY->doc_func( QUERY, "compute absolute value (integer)." );
     
     // add fabs
     QUERY->add_sfun( QUERY, fabs_impl, "float", "fabs" );
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "compute the absolute value of a float." );
+    QUERY->doc_func( QUERY, "compute absolute value (floating point)." );
 
     // add rand
     QUERY->add_sfun( QUERY, rand_impl, "int", "rand"); //! return int between 0 and RAND_MAX
@@ -206,7 +206,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // add sgn
     QUERY->add_sfun( QUERY, sgn_impl, "float", "sgn" ); //! return sign of value (-1, 0, 1)
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "compute the sign of the input as -1.0 (negative), 0 (zero), or 1.0 (positive)." );
+    QUERY->doc_func( QUERY, "get sign of value as -1 (negative), 0, or 1 (positive)." );
 
     // add system
     //! see \example std.ck
@@ -875,7 +875,7 @@ static unsigned int __stdcall kb_loop( void * )
 #endif
 {
     t_CKINT c;
-    EM_log( CK_LOG_INFO, "starting kb loop..." );
+    // EM_log( CK_LOG_INFO, "starting kb loop..." );
 
     // go
     while( KBHitManager::the_init )
@@ -919,8 +919,10 @@ t_CKBOOL KBHitManager::init()
     the_onoff = 0;
     the_init = TRUE;
     the_thread = new XThread;
+    EM_pushlog();
+    EM_log( CK_LOG_INFO, "starting kb loop..." );
+    EM_poplog();
     the_thread->start( kb_loop, NULL );
-
 
     return TRUE;
 }

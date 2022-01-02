@@ -1,0 +1,24 @@
+name: Linux - Build and Unit Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  linux-build-unit-tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Dependencies - Linux
+      run: sudo apt update && sudo apt install --fix-missing -y libsndfile1-dev libpulse-dev libasound2-dev
+
+    - name: Compile - Linux
+      run: cd src/ && make linux-pulse
+      
+    - name: Unit Tests - Linux
+      run: cd src/ && export PATH=$PATH:$(pwd) && cd test/ && python test.py

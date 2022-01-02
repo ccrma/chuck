@@ -655,11 +655,27 @@ protected:
     // this for str() and c_name() use only
     std::string ret;
 
-public:
-    // dump info to string
-    void apropos( std::string & output );
-    // dump info to console
+public: // apropos | 1.4.1.0 (ge)
+    // generate info; output to console
     void apropos();
+    // generate info; output to string
+    void apropos( std::string & output );
+
+public: // dump | 1.4.1.1 (ge)
+    // generate object state; output to console
+    void dump( Chuck_Object * obj );
+    // generate object state; output to string
+    void dump( Chuck_Object * obj, std::string & output );
+
+protected: // apropos-related helper function
+    // dump top level info
+    void apropos_top( std::string & output, const std::string & prefix );
+    // dump info about functions
+    void apropos_funcs( std::string & output, const std::string & prefix, t_CKBOOL inherited );
+    // dump info about vars
+    void apropos_vars( std::string & output, const std::string & prefix, t_CKBOOL inherited );
+    // dump info about examples
+    void apropos_examples( std::string & output, const std::string & prefix );
 };
 
 
@@ -684,7 +700,7 @@ struct Chuck_Value : public Chuck_VM_Object
     // member?
     t_CKBOOL is_member;
     // static?
-    t_CKBOOL is_static;  // do something
+    t_CKBOOL is_static; // do something
     // is context-global?
     t_CKBOOL is_context_global;
     // is decl checked
@@ -742,7 +758,7 @@ struct Chuck_Func : public Chuck_VM_Object
 {
     // name (actual in VM name, e.g., "dump@0@Object")
     std::string name;
-    // base name (without the designation, e.g., "dump"); 1.4.0.2
+    // base name (without the designation, e.g., "dump"); 1.4.1.0
     std::string base_name;
     // func def from parser
     a_Func_Def def;
@@ -752,6 +768,8 @@ struct Chuck_Func : public Chuck_VM_Object
     // Chuck_DL_Func * dl_code;
     // member
     t_CKBOOL is_member;
+    // static (inside class)
+    t_CKBOOL is_static;
     // virtual table index
     t_CKUINT vt_index;
     // rember value
@@ -765,8 +783,9 @@ struct Chuck_Func : public Chuck_VM_Object
     std::string doc;
 
     // constructor
-    Chuck_Func() { def = NULL; code = NULL; is_member = FALSE; vt_index = 0xffffffff; 
-                   value_ref = NULL; /*dl_code = NULL;*/ next = NULL; up = NULL; }
+    Chuck_Func() { def = NULL; code = NULL; is_member = FALSE; is_static = FALSE,
+        vt_index = 0xffffffff; value_ref = NULL; /*dl_code = NULL;*/ next = NULL;
+        up = NULL; }
 
     // destructor
     virtual ~Chuck_Func()
@@ -864,7 +883,10 @@ t_CKBOOL type_engine_register_deprecate( Chuck_Env * env,
 // helpers
 t_CKBOOL type_engine_check_reserved( Chuck_Env * env, const std::string & xid, int pos );
 t_CKBOOL type_engine_check_reserved( Chuck_Env * env, S_Symbol xid, int pos );
+// 1.4.1.0 (ge): abilty to toggle reserved words for special cases, such as Math.pi co-existing with pi (use with care!)
+t_CKVOID type_engine_enable_reserved( Chuck_Env * env, const std::string & xid, t_CKBOOL value );
 t_CKBOOL type_engine_check_primitive( Chuck_Env * env, Chuck_Type * type );
+t_CKBOOL type_engine_check_const( Chuck_Env * env, a_Exp e, int pos ); // TODO
 t_CKBOOL type_engine_compat_func( a_Func_Def lhs, a_Func_Def rhs, int pos, std::string & err, t_CKBOOL print = TRUE );
 t_CKBOOL type_engine_get_deprecate( Chuck_Env * env, const std::string & from, std::string & to );
 Chuck_Type  * type_engine_find_common_anc( Chuck_Type * lhs, Chuck_Type * rhs );

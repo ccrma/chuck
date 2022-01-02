@@ -264,9 +264,10 @@ t_CKBOOL Chuck_Shell::init( Chuck_VM * vm, Chuck_Shell_UI * ui )
         return FALSE;
     }
     
+    // chuck shell network VM
     current_vm = cspv;
     vms.push_back( current_vm->copy() );
-
+    // chuck vm
     process_vm = vm;
     
     code_entry_active = FALSE;
@@ -602,7 +603,8 @@ void Chuck_Shell::do_code( string & code, string & out, string command )
 #if defined(__PLATFORM_LINUX__) || defined(__MACOSX_CORE__)
     char tmp_dir[] = "/tmp";
     char * tmp_filepath = new char [32];
-    strncpy( tmp_filepath, "/tmp/chuck_file.XXXXXX", 32 );
+    // 1.4.1.0: changed chuck_file.XXXXXX to chuck_shell.XXXXXX
+    strncpy( tmp_filepath, "/tmp/chuck_shell.XXXXXX", 32 );
     int fd = mkstemp( tmp_filepath );
     if( fd == -1 )
     {

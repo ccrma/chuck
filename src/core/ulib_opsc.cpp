@@ -211,17 +211,22 @@ private:
     {
         enum Type
         {
+            NO_METHOD,
             ADD_METHOD,
             REMOVE_METHOD,
             REMOVEALL_METHODS,
         };
-        
+
         Type msg_type;
         std::string path;
         t_CKBOOL nopath;
         std::string type;
         t_CKBOOL notype;
         OscIn * obj;
+
+        // 1.4.1.0 (ge) added
+        OscInMsg()
+        : msg_type(NO_METHOD), nopath(FALSE), notype(FALSE), obj(NULL) { }
     };
     
     OscInServer(int port) :
@@ -378,6 +383,13 @@ void *OscInServer::server_cb()
         {
             switch(msg.msg_type)
             {
+                case OscInMsg::NO_METHOD: // 1.4.1.0 (ge) added
+                {
+                    // just skip
+                    continue;
+                }
+                break;
+
                 case OscInMsg::ADD_METHOD:
                 {
                     if(lo_server_add_method(m_server,
@@ -400,7 +412,7 @@ void *OscInServer::server_cb()
                         EM_error3("OscIn: error: add_method failed for %s, %s", msg.path.c_str(), msg.type.c_str());
                     }
                 }
-                    break;
+                break;
                     
                 case OscInMsg::REMOVE_METHOD:
                 {
@@ -417,9 +429,10 @@ void *OscInServer::server_cb()
                         m_methods[msg.obj].remove(m);
                     }
                 }
-                    break;
+                break;
                     
                 case OscInMsg::REMOVEALL_METHODS:
+                {
                     if(m_methods.count(msg.obj))
                     {
                         for(std::list<Method>::iterator i = m_methods[msg.obj].begin();
@@ -433,7 +446,8 @@ void *OscInServer::server_cb()
                         m_methods[msg.obj].clear();
                         m_methods.erase(msg.obj);
                     }
-                    break;
+                }
+                break;
             }
         }
         
@@ -473,22 +487,24 @@ public:
     
     t_CKBOOL setDestination(const std::string &host, int port)
     {
-        if(m_address != NULL)
+        if( m_address != NULL )
         {
             lo_address_free(m_address);
             m_address = NULL;
         }
         
         char portStr[32];
-        snprintf(portStr, 32, "%d", port);
+        snprintf( portStr, 32, "%d", port );
         
-        m_address = lo_address_new(host.c_str(), portStr);
+        // allocate address
+        m_address = lo_address_new( host.c_str(), portStr );
         
-        if(m_address == NULL)
+        // check it
+        if( m_address == NULL )
         {
-            const char *msg = lo_address_errstr(NULL);
-            EM_error3("OscOut: error: failed to set destination address '%s:%d'%s%s",
-                      host.c_str(), port, msg?": ":"", msg?msg:"");
+            const char * msg = ""; // lo_address_errstr(NULL); // 1.4.1.0 commented out
+            EM_error3( "OscOut: error: failed to set destination address '%s:%d'%s%s",
+                       host.c_str(), port, msg?": ":"", msg?msg:"");
             return FALSE;
         }
         

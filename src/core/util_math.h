@@ -40,14 +40,12 @@ extern "C" {
 #endif 
 
 #ifdef __PLATFORM_WIN32__
-
     double round( double a );
     double trunc( double a );
-#ifndef __WINDOWS_MODERN__
-    double remainder( long a, long b );
 #endif
 
-#endif
+// 1.4.1.0 (ge) need this since __WINDOWS_MODERN__ can be defined but remainder still not found (VC++ 2010)
+double ck_remainder( double a, double b );
 
 // mtof
 double mtof( double f );

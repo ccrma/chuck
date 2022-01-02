@@ -139,6 +139,8 @@ public:
     t_CKUINT stack_depth;
     // whether the function needs 'this' pointer or not
     t_CKBOOL need_this;
+    // whether the function is a static function inside class
+    t_CKBOOL is_static; // 1.4.1.0
     // native
     t_CKUINT native_func;
     // is ctor?
@@ -386,7 +388,7 @@ public:
 
 
 // forward reference
-struct Chuck_Globals_Manager; // added 1.4.0.2 (jack)
+struct Chuck_Globals_Manager; // added 1.4.1.0 (jack)
 
 
 
@@ -473,7 +475,7 @@ public:
     Chuck_Env * env() const { return m_carrier->env; }
     Chuck_IO_Chout * chout() const { return m_carrier->chout; }
     Chuck_IO_Cherr * cherr() const { return m_carrier->cherr; }
-    // 1.4.0.2 (jack): get associated globals manager
+    // 1.4.1.0 (jack): get associated globals manager
     Chuck_Globals_Manager * globals_manager() const { return m_globals_manager; }
 
 //-----------------------------------------------------------------------------
@@ -507,7 +509,7 @@ protected:
     t_CKUINT m_current_buffer_frames;
 
 public:
-    // protected, but needs to be accessible from Globals Manager (1.4.0.2)
+    // protected, but needs to be accessible from Globals Manager (1.4.1.0)
     // generally, this should not be called except by internals such as GM
     Chuck_VM_Shred * spork( Chuck_VM_Shred * shred );
 
@@ -539,7 +541,7 @@ protected:
     std::list<CBufferSimple *> m_event_buffers;
 
 protected:
-    // 1.4.0.2 (jack): manager for global variables
+    // 1.4.1.0 (jack): manager for global variables
     Chuck_Globals_Manager * m_globals_manager;
 };
 

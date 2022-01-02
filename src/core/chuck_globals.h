@@ -24,7 +24,7 @@
 
 //-----------------------------------------------------------------------------
 // file: chuck_globals.h
-// desc: system to support in-language globals; added 1.4.0.2
+// desc: system to support in-language globals; added 1.4.1.0
 //       historically, the old chuck_globals.h/cpp supported implementation
 //       globals; these files were removed during REFACTOR-2017, which moved
 //       away from a monolithic VM model to support for many VM; implementation
@@ -51,7 +51,7 @@ struct Chuck_Msg;
 
 
 
-// global variables & management -- added 1.4.0.2 (jack)
+// global variables & management -- added 1.4.1.0 (jack)
 // forward references for global messages
 struct Chuck_Set_Global_Int_Request;
 struct Chuck_Get_Global_Int_Request;
@@ -176,7 +176,7 @@ struct Chuck_Global_Request
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Globals_Manager
-// desc: manager for globals storage | added 1.4.0.2 (jack)
+// desc: manager for globals storage | added 1.4.1.0 (jack)
 //-----------------------------------------------------------------------------
 struct Chuck_Globals_Manager
 {

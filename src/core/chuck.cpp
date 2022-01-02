@@ -37,7 +37,7 @@
 #include "chuck.h"
 #include "chuck_errmsg.h"
 #include "chuck_io.h"
-#include "chuck_globals.h" // added 1.4.0.2
+#include "chuck_globals.h" // added 1.4.1.0
 
 #ifndef __DISABLE_OTF_SERVER__
 #include "chuck_otf.h"
@@ -78,9 +78,13 @@
 #define CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT          "1"
 #define CHUCK_PARAM_HINT_IS_REALTIME_AUDIO_DEFAULT "0"
 #ifndef __PLATFORM_WIN32__
-#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       "/usr/local/lib/chuck"
+// 1.4.1.0 (ge) changed to ""; was "/usr/local/lib/chuck"
+// redundant with g_default_chugin_path, which already contains
+#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       ""
 #else // __PLATFORM_WIN32__
-#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       "C:\\Program Files\\ChucK\\chugins"
+// 1.4.1.0 (ge) changed to ""; "C:\\Program Files\\ChucK\\chugins"
+// redundant with g_default_chugin_path, which already contains
+#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       ""
 #endif // __PLATFORM_WIN32__
 #define CHUCK_PARAM_USER_CHUGINS_DEFAULT        std::list<std::string>()
 #define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT std::list<std::string>()
@@ -88,7 +92,7 @@
 
 
 // chuck statics
-const char ChucK::VERSION[] = "1.4.0.2-dev (numchucks)";
+const char ChucK::VERSION[] = "1.4.1.1-dev (numchucks)";
 t_CKUINT ChucK::o_numVMs = 0;
 t_CKBOOL ChucK::o_isGlobalInit = FALSE;
 t_CKBOOL ChucK::enableSystemCall = FALSE;
@@ -138,6 +142,8 @@ ChucK::ChucK()
     initDefaultParams();
     // did user init?
     m_init = FALSE;
+    // did user start ChucK?
+    m_started = FALSE;
     // zero out the hook
     m_hook = NULL; // m_hook = nullptr
     
@@ -468,26 +474,8 @@ bool ChucK::initCompiler()
     // get compiler params
     t_CKBOOL dump = getParamInt( CHUCK_PARAM_DUMP_INSTRUCTIONS ) != 0;
     t_CKBOOL auto_depend = getParamInt( CHUCK_PARAM_AUTO_DEPEND ) != 0;
-    std::string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
-    std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
     t_CKUINT deprecate = getParamInt( CHUCK_PARAM_DEPRECATE_LEVEL );
-    
-    // list of search pathes (added 1.3.0.0)
-    std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES );
-    if( chuginDir != std::string("") )
-    {
-        dl_search_path.push_back( chuginDir );
-    }
-    // list of individually named chug-ins (added 1.3.0.0)
-    std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
-    
-    // if chugin load is off, then clear the lists (added 1.3.0.0 -- TODO: refactor)
-    if( getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) == 0 )
-    {
-        // turn off chugin load
-        dl_search_path.clear();
-        named_dls.clear();
-    }
+    std::string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
     
     // instantiate compiler
     m_carrier->compiler = new Chuck_Compiler();
@@ -495,7 +483,7 @@ bool ChucK::initCompiler()
     m_carrier->compiler->setCarrier( m_carrier );
     
     // initialize compiler
-    if( !m_carrier->compiler->initialize( dl_search_path, named_dls ) )
+    if( !m_carrier->compiler->initialize() )
     {
         CK_FPRINTF_STDERR( "[chuck]: compiler failed to initialize...\n" );
         return false;
@@ -513,7 +501,7 @@ bool ChucK::initCompiler()
         CK_FPRINTF_STDERR( "[chuck]: %s\n", m_carrier->vm->last_error() );
         return false;
     }
-    
+
     std::string cwd;
     char cstr_cwd[MAXPATHLEN];
     
@@ -528,7 +516,53 @@ bool ChucK::initCompiler()
     {
         cwd = std::string(cstr_cwd);
         cwd = normalize_directory_separator(cwd) + "/";
+
+        // 1.4.1.0 (ge) added
+        if( workingDir.length() != 0 && workingDir[0] == '/' )
+        {
+            // absolute path
+            // TODO: deal with windows absolute paths? e.g., "C:\"???
+            
+            // log it
+            EM_log( CK_LOG_INFO, "current working directory:" );
+        }
+#ifdef __ANDROID__
+        else if( workingDir.rfind("jar:", 0) == 0 )
+        {
+            // if workingDir is a JAR URL, make sure it ends on /
+            if( *workingDir.rbegin() != '/' )
+            {
+                workingDir = workingDir + "/";
+            }
+            // log it
+            EM_log( CK_LOG_INFO, "setting current working directory:" );
+        }
+#endif
+        else
+        {
+            // update
+            workingDir = cwd + normalize_directory_separator(workingDir);
+            // check if need to add /
+            // (note if workingDir is empty string, then this leaves it alone)
+            if( workingDir.length() > 0 && (workingDir[workingDir.length()-1] != '/') )
+            {
+                // append
+                workingDir = workingDir + "/";
+            }
+            // update to current working directory
+            setParam( CHUCK_PARAM_WORKING_DIRECTORY, workingDir );
+            // log it
+            EM_log( CK_LOG_INFO, "setting current working directory:" );
+        }
+
+        // push log
+        EM_pushlog();
+        // print the working directory
+        EM_log( CK_LOG_INFO, "%s", workingDir.c_str() );
+        // pop log
+        EM_poplog();
     }
+    
 
     return true;
 }
@@ -548,8 +582,34 @@ bool ChucK::initChugins()
     // whether or not chug should be enabled (added 1.3.0.0)
     if( getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) != 0 )
     {
+        // chugin dur
+        std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
+        // list of search pathes (added 1.3.0.0)
+        std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES );
+        if( chuginDir != std::string("") )
+        {
+            dl_search_path.push_back( chuginDir );
+        }
+        // list of individually named chug-ins (added 1.3.0.0)
+        std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
+
         // log
-        EM_log( CK_LOG_SEVERE, "pre-loading ChucK libs..." );
+        EM_log( CK_LOG_SYSTEM, "loading chugins..." );
+        // push indent level
+        EM_pushlog();
+        // load external libs
+        if( !compiler()->load_external_modules( ".chug", dl_search_path, named_dls ) )
+        {
+            // pop indent level
+            EM_poplog();
+            // clean up
+            goto error;
+        }
+        // pop log
+        EM_poplog();
+
+        // log
+        EM_log( CK_LOG_SYSTEM, "pre-loading ChucK libs..." );
         EM_pushlog();
         
         // iterate over list of ck files that the compiler found
@@ -597,7 +657,7 @@ bool ChucK::initChugins()
     }
     else
     {
-        // log
+        // log | 1.4.1.0 (ge) commented out; printing earlier
         EM_log( CK_LOG_SYSTEM, "chugin system: OFF" );
     }
 
@@ -605,6 +665,10 @@ bool ChucK::initChugins()
     m_carrier->env->load_user_namespace();
 
     return true;
+
+error: // 1.4.1.0 (ge) added
+    // any cleanup goes here; none for now
+    return false;
 }
 
 
@@ -664,6 +728,9 @@ bool ChucK::initOTF()
 //-----------------------------------------------------------------------------
 bool ChucK::shutdown()
 {
+    // log
+    EM_log( CK_LOG_SYSTEM, "shutting down ChucK instance..." );
+
     // stop VM
     if( m_carrier != NULL && m_carrier->vm != NULL  )
     {
@@ -685,7 +752,7 @@ bool ChucK::shutdown()
     
 #ifndef __DISABLE_OTF_SERVER__
     // cancel otf thread
-    if(m_carrier->otf_thread)
+    if( m_carrier->otf_thread )
     {
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
         pthread_cancel( m_carrier->otf_thread );
@@ -714,9 +781,11 @@ bool ChucK::shutdown()
     SAFE_DELETE( m_carrier->vm );
     SAFE_DELETE( m_carrier->compiler );
     m_carrier->env = NULL;
-    
-    // flag
+
+    // clear flag
     m_init = FALSE;
+    // clear flag
+    m_started = FALSE;
 
     // done
     return true;
@@ -751,6 +820,23 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
     
     // append
     std::string theThing = path + ":" + argsTogether;
+#ifdef __ANDROID__
+    if( theThing.rfind("jar:", 0) == 0 )
+    {
+        const size_t jarPrefixLen = strlen("jar:");
+        const size_t secondColon = path.find(':', jarPrefixLen);
+        if( secondColon == std::string::npos )
+        {
+            theThing = std::string("jar\\:") + theThing.substr(jarPrefixLen);
+        }
+        else
+        {
+            theThing = std::string("jar\\:") + theThing.substr(jarPrefixLen,
+                secondColon - jarPrefixLen) + std::string("\\:") +
+                theThing.substr(secondColon + 1);
+        }
+    }
+#endif // __ANDROID__
     
     // parse out command line arguments
     if( !extract_args( theThing, filename, args ) )
@@ -824,7 +910,7 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
     Chuck_VM_Shred * shred = NULL;
     
     // log
-    EM_log( CK_LOG_FINE, "compiling string..." );
+    EM_log( CK_LOG_FINE, "compiling code from string..." );
     // push indent
     EM_pushlog();
     
@@ -841,11 +927,13 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
         return false;
     }
     
-    // PARAM
+    // working directory
     std::string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
     
     // construct full path to be associated with the file so me.sourceDir() works
     std::string full_path = workingDir + "/compiled.code";
+    // log
+    EM_log( CK_LOG_FINE, "full path: %s...", full_path.c_str() );
     
     // parse, type-check, and emit (full_path added 1.3.0.0)
     if( !m_carrier->compiler->go( "<compiled.code>", NULL, code.c_str(), full_path ) )
@@ -898,9 +986,19 @@ bool ChucK::start()
         CK_FPRINTF_STDERR( "[chuck]: cannot start, VM not initialized...\n" );
         return false;
     }
+
+    // if already started
+    if( m_started )
+    {
+        // return VM running state
+        return m_carrier->vm->running();
+    }
     
     // start the VM!
     if( !m_carrier->vm->running() ) m_carrier->vm->start();
+
+    // set flag
+    m_started = TRUE;
 
     // return state
     return m_carrier->vm->running();
@@ -916,7 +1014,7 @@ bool ChucK::start()
 void ChucK::run( SAMPLE * input, SAMPLE * output, int numFrames )
 {
     // make sure we started...
-    if( !m_carrier->vm->running() ) this->start();
+    if( !m_started ) this->start();
     
     // call the callback
     m_carrier->vm->run( numFrames, input, output );

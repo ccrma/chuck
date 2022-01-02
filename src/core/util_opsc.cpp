@@ -59,6 +59,11 @@ using namespace std;
 #include <netdb.h>
 #endif
 
+// 1.4.1.0 (ge) added
+#if _MSC_VER
+#define snprintf _snprintf
+#endif
+
 #if defined(__MACOSX_CORE__)
 #define SOCKET int
 #define SOCKADDR_IN struct sockaddr_in

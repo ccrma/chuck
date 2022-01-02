@@ -35,9 +35,15 @@
 #include <string.h>
 using namespace std;
 
+#ifdef __ANDROID__
+#include "util_platforms.h"
+#endif
 
+
+// max path len
+static const t_CKUINT MAX_FILENAME_LEN = 2048;
 // global
-static char g_filename[1024] = "";
+static char g_filename[MAX_FILENAME_LEN+1] = "";
 
 // external
 extern "C" { 
@@ -53,6 +59,19 @@ extern "C" {
 //-----------------------------------------------------------------------------
 FILE * open_cat_ck( c_str fname )
 {
+#ifdef __ANDROID__
+    if( strncmp(fname, "jar:", strlen("jar:")) == 0 )
+    {
+        int fd = 0;
+        if( !ChuckAndroid::copyJARURLFileToTemporary(fname, &fd) )
+        {
+            EM_error2( 0, "unable to download from JAR URL: %s", fname );
+            return NULL;
+        }
+        return fdopen(fd, "rb");
+    }
+#endif // __ANDROID__
+
     FILE * fd = NULL;
     if( !(fd = fopen( fname, "rb" )) )
         if( !strstr( fname, ".ck" ) && !strstr( fname, ".CK" ) )
@@ -94,6 +113,23 @@ FILE *win32_tmpfile()
 
 
 
+
+//-----------------------------------------------------------------------------
+// name: android_tmpfile()
+// desc: replacement for broken tmpfile() on Android
+//-----------------------------------------------------------------------------
+#ifdef __ANDROID__
+
+FILE * android_tmpfile()
+{
+    return ChuckAndroid::getTemporaryFile();
+}
+
+#endif
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: chuck_parse()
 // desc: ...
@@ -118,9 +154,13 @@ t_CKBOOL chuck_parse( c_constr fname, FILE * fd, c_constr code )
         // generate temp file
 #ifdef __PLATFORM_WIN32__
         fd = win32_tmpfile();
+#elif defined (__ANDROID__)
+        fd = android_tmpfile();
 #else
         fd = tmpfile();
 #endif
+        // on some systems, tmpfile() can return NULL
+        if( !fd ) { EM_error2( 0, "unable to create temp file" ); return FALSE; }
         // flag it to close
         clo = TRUE;
         // write
@@ -155,6 +195,16 @@ t_CKBOOL chuck_parse( c_constr fname, FILE * fd, c_constr code )
     }
     */
 
+    // check length | 1.4.1.0 (ge) added
+    t_CKUINT len = strlen( fname );
+    if( len > MAX_FILENAME_LEN )
+    {
+        EM_error2( 0, "filename length (%d) exceeds max (%d) set by compiler...",
+                   len, MAX_FILENAME_LEN );
+        EM_error2( 0, "filename in question: '%s'", fname );
+        EM_error2( 0, "compiler bailing out..." );
+        return FALSE;
+    }
     // remember filename
     strcpy( g_filename, fname );
         

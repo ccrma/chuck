@@ -36,6 +36,7 @@ fun void vecho_Shred( )
         while( n-- )
         {
             old + inc => old;
+            if( old < 0 ) 0 => old;
             old => a.mix => b.mix => c.mix;
             1::ms => now;
         }

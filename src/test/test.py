@@ -8,11 +8,13 @@ import time
 
 failures = 0
 successes = 0
+skipped = 0
+skipTests = {}
 
 
 def handle_directory(dir, exe):
-    print ""
-    print ">>> Performing tests in %s <<<" % dir
+    print("")
+    print(">>> Performing tests in %s <<<" % dir)
 
     global successes
 
@@ -27,12 +29,21 @@ def handle_directory(dir, exe):
 
 def run_test(exe, path, filename, attempt):
     global successes
-    print "> %s %s" % (exe, path)
+    global skipped
+
+    print("> %s %s" % (exe, path))
+
+    if filename in skipTests:
+        skipped += 1
+        return
 
     try:
-        result = subprocess.check_output([exe, "--silent", "%s" % path], stderr=subprocess.STDOUT)
+        result = subprocess.check_output([exe, "--silent", "%s" % path], stderr=subprocess.STDOUT).decode("utf-8")
 
-        if not result.strip().endswith(("\"success\" : (string)",)):
+        if result.strip().endswith(("\"success\" : (string)",)):
+            successes += 1
+
+        else:
             if os.path.isfile(path.replace(".ck", ".txt")):
                 # print "\tChecking result with answer file: " + path.replace(".ck", ".txt")
 
@@ -45,9 +56,6 @@ def run_test(exe, path, filename, attempt):
                     successes += 1
             else:
                 handle_failure(exe, path, filename, attempt, result)
-
-        else:
-            successes += 1
     except subprocess.CalledProcessError as e:
         handle_failure(exe, path, filename, attempt, e.output)
 
@@ -61,7 +69,7 @@ def handle_failure(exe, path, filename, attempt, error_string):
 
     if attempt < retry_attempts_for_failed_tests:
         time.sleep(sleep_interval_between_runs_seconds)
-        print "Retrying test: %s %s" % (exe, path)
+        print("Retrying test: %s %s" % (exe, path))
         run_test(exe, path, filename, attempt + 1)
     else:
         fail(filename, error_string)
@@ -69,8 +77,8 @@ def handle_failure(exe, path, filename, attempt, error_string):
 
 def fail(test_name, output):
     global failures
-    print "*** Test '%s' failed: ***" % test_name
-    print output
+    print("*** Test '%s' failed: ***" % test_name)
+    print(output)
     failures += 1
 
 
@@ -85,13 +93,16 @@ def main():
 
     handle_directory(test_dir, exe)
 
-    print ""
+    print("")
+
+    if skipped > 0:
+        print("Skipped " + str(skipped) + " tests: " + str(skipTests))
 
     if failures == 0:
-        print "Success - all " + str(successes) + " tests passed!"
+        print("Success - all " + str(successes) + " tests passed!")
         sys.exit(0)
     else:
-        print "Failure - " + str(failures) + " test(s) failed"
+        print("Failure - " + str(failures) + " test(s) failed")
         sys.exit(-1)
 
 

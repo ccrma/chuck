@@ -254,6 +254,8 @@ int lo_message_add(lo_message msg, const char *types, ...)
 
     va_start(ap, types);
     ret = lo_message_add_varargs_internal(msg, types, ap, file, line);
+    // 1.4.1.0 (ge) added matching va_end
+    va_end(ap);
 
 	return ret;
 }

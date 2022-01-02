@@ -73,7 +73,7 @@ CK_DLL_MFUN( object_getType );
 CK_DLL_MFUN( object_hashCode );
 CK_DLL_MFUN( object_toString );
 CK_DLL_MFUN( object_dump );
-CK_DLL_MFUN( object_apropos );
+CK_DLL_SFUN( object_help );
 
 
 //-----------------------------------------------------------------------------

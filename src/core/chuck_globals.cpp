@@ -24,7 +24,7 @@
 
 //-----------------------------------------------------------------------------
 // file: chuck_globals.cpp
-// desc: system to support in-language globals; added 1.4.0.2
+// desc: system to support in-language globals; added 1.4.1.0
 //
 // author: Jack Atherton (lja@ccrma.stanford.edu)
 //         Ge Wang (ge@ccrma.stanford.edu)
@@ -2371,6 +2371,8 @@ t_CKBOOL Chuck_Globals_Manager::should_call_global_ctor( const std::string & nam
             m_global_objects[name]->ctor_needs_to_be_called;
             break;
     }
+
+    return FALSE;
 }
 
 

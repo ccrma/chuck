@@ -347,33 +347,26 @@ Chuck_Object::~Chuck_Object()
 // name: dump()
 // desc: output current state (can be overridden)
 //-----------------------------------------------------------------------------
-void Chuck_Object::dump() // 1.4.0.2
+void Chuck_Object::dump() // 1.4.1.1 (ge)
 {
-    // TODO: implement!
+    // need type info
+    Chuck_Type * type = this->type_ref;
+
+    // output state with type info
+    type->dump( this );
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: apropos()
-// desc: output interface (can be overriden; but probably shouldn't be)
+// name: help()
+// desc: output type info (can be overriden; but probably shouldn't be)
 //-----------------------------------------------------------------------------
-void Chuck_Object::apropos() // 1.4.0.2
+void Chuck_Object::help() // 1.4.1.0 (ge)
 {
     // type to unpack
     Chuck_Type * type = this->type_ref;
-
-    // if type is generic "@array"
-    if( type->xid == te_array )
-    {
-        // get more specific
-        Chuck_Array * arr = (Chuck_Array *)this;
-        // however, a number of chuck array allocations still do not
-        // set the m_array_type member; update to this only if it exists
-        if( arr->m_array_type != NULL )
-            type = arr->m_array_type;
-    }
 
     // unpack type and output its info
     type->apropos();
@@ -388,7 +381,7 @@ void Chuck_Object::apropos() // 1.4.0.2
 //-----------------------------------------------------------------------------
 Chuck_Array::~Chuck_Array()
 {
-    // decrement reference count; added (ge): 1.4.0.2
+    // decrement reference count; added (ge): 1.4.1.0
     SAFE_RELEASE(m_array_type);
 }
 
@@ -701,7 +694,7 @@ t_CKINT Chuck_Array4::set_capacity( t_CKINT capacity )
     // sanity check
     assert( capacity >= 0 );
 
-    // ensure size (removed 1.4.0.2 in favor of actually setting capacity)
+    // ensure size (removed 1.4.1.0 in favor of actually setting capacity)
     // set_size( capacity );
     
     // if clearing size

@@ -557,7 +557,8 @@ void *lo_server_recv_raw_stream(lo_server s, size_t *size)
 
     poll(s->sockets, s->sockets_len, -1);
 
-    for (i=(s->sockets_len-1); i >= 0; --i) {
+    for (i=(s->sockets_len-1); i >= 0; --i)
+    {
         if (s->sockets[i].revents == POLLERR
             || s->sockets[i].revents == POLLHUP)
         {
@@ -593,42 +594,42 @@ void *lo_server_recv_raw_stream(lo_server s, size_t *size)
 #endif
 #endif
 
-    if (sock == -1 || !repeat)
-        return NULL;
+            if (sock == -1 || !repeat)
+                return NULL;
 
-    /* zeroeth socket is listening for new connections */
-    if (sock == s->sockets[0].fd) {
-        sock = accept(sock, (struct sockaddr *)&addr, &addr_len);
-        i = lo_server_add_socket(s, sock);
+            /* zeroeth socket is listening for new connections */
+            if (sock == s->sockets[0].fd) {
+                sock = accept(sock, (struct sockaddr *)&addr, &addr_len);
+                i = lo_server_add_socket(s, sock);
 
-        /* only repeat this loop for sockets other than the listening
-         * socket,  (otherwise i will be wrong next time around) */
-        repeat = 0;
-    }
+                /* only repeat this loop for sockets other than the listening
+                 * socket,  (otherwise i will be wrong next time around) */
+                repeat = 0;
+            }
 
-    if (i<0) {
-        close(sock);
-        return NULL;
-    }
+            if (i<0) {
+                close(sock);
+                return NULL;
+            }
 
-    ret = recv(sock, &read_size, sizeof(read_size), 0);
-    read_size = ntohl(read_size);
-    if (read_size > LO_MAX_MSG_SIZE || ret <= 0) {
-        close(sock);
-        lo_server_del_socket(s, i, sock);
-        if (ret > 0)
-            lo_throw(s, LO_TOOBIG, "Message too large", "recv()");
-        continue;
-    }
-    ret = recv(sock, buffer, read_size, 0);
-    if (ret <= 0) {
-        close(sock);
-        lo_server_del_socket(s, i, sock);
-        continue;
-    }
- 
-    /* end of loop over sockets: successfully read data */
-    break;
+            ret = recv(sock, &read_size, sizeof(read_size), 0);
+            read_size = ntohl(read_size);
+            if (read_size > LO_MAX_MSG_SIZE || ret <= 0) {
+                close(sock);
+                lo_server_del_socket(s, i, sock);
+                if (ret > 0)
+                    lo_throw(s, LO_TOOBIG, "Message too large", "recv()");
+                continue;
+            }
+            ret = recv(sock, buffer, read_size, 0);
+            if (ret <= 0) {
+                close(sock);
+                lo_server_del_socket(s, i, sock);
+                continue;
+            }
+
+            /* end of loop over sockets: successfully read data */
+            break;
         }
     }
 
@@ -1206,12 +1207,15 @@ lo_method lo_server_add_method(lo_server s, const char *path,
 			       const char *typespec, lo_method_handler h,
 			       void *user_data)
 {
-    lo_method m = calloc(1, sizeof(struct _lo_method));
+    lo_method m;
     lo_method it;
 
     if (path && strpbrk(path, " #*,?[]{}")) {
-	return NULL;
+        return NULL;
     }
+
+    // 1.4.1.0 (ge) clean up mem leak (moving this after the above)
+    m = calloc(1, sizeof(struct _lo_method));
 
     if (path) {
 	m->path = strdup(path);
