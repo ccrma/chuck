@@ -1,8 +1,18 @@
 # uncomment the following to force 32-bit compilation
 # FORCE_M32=-m32
 
-ifneq ($(shell sw_vers -productVersion | egrep '10\.(6|7|8|9|10|11|12|13|14|15)(\.[0-9]+)?'),)
+### combine the two updates below (1.4.1.0)
+ifneq ($(shell sw_vers -productVersion | egrep '^(10\.(6|7|8|9|10|11|12|13|14|15)(\.[0-9]+)|1[123456789])?'),)
 SDK=$(shell xcrun --show-sdk-path)
+###
+### update 1 (@mitchblank PR #158): fix for MacOS 11 / Big Sur
+# ifneq ($(shell sw_vers -productVersion | egrep '^(10\.(6|7|8|9|10|11|12|13|14|15)(\.[0-9]+)|1[123456789])?'),)
+# SDK=$(shell xcodebuild -sdk macosx -version | grep '^Path:' | sed 's/Path: \(.*\)/\1/')
+### update 2 (@rnkn PR #164): remove need to use xcodebuild (only available with XCode installed)
+# ifneq ($(shell sw_vers -productVersion | egrep '10\.(6|7|8|9|10|11|12|13|14|15)(\.[0-9]+)?'),)
+# SDK=$(shell xcrun --show-sdk-path)
+###
+
 ISYSROOT=-isysroot $(SDK)
 LINK_EXTRAS=-F/System/Library/PrivateFrameworks \
     -weak_framework MultitouchSupport

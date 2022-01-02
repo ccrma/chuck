@@ -79,16 +79,16 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
     func = make_new_mfun( "string", "toString", object_toString );
     func->doc = "get a textual description of this object.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
-    // add dump()
-    func = make_new_mfun( "void", "dump", object_dump );
-    func->doc = "output current state of the object as text.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-    
-    // add api()
-    func = make_new_mfun( "void", "apropos", object_apropos );
-    func->doc = "output information about the object's type.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add help()
+    func = make_new_sfun( "void", "help", object_help );
+    func->doc = "generate and output helpful information about a class or object.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+//    // add dump()
+//    func = make_new_mfun( "void", "dump", object_dump );
+//    func->doc = "output current state of the object.";
+//    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -399,11 +399,11 @@ t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type )
     func->doc = "signal all shreds that are waiting on this event.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add wait()
-    func = make_new_mfun( "void", "wait", event_wait );
-    func->add_arg( "Shred", "me" );
-    func->doc = "(currently unsupported)";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
+    // add wait() | commented out 1.4.1.0 (ge) -- it doesn't DO anything!!!
+    // func = make_new_mfun( "void", "wait", event_wait );
+    // func->add_arg( "Shred", "me" );
+    // func->doc = "(currently unsupported; use Event => now to wait on event)";
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add can_wait()
     func = make_new_mfun( "int", "can_wait", event_can_wait );
@@ -920,7 +920,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
 
     // init as base class
     // TODO: ctor/dtor?
-    string doc = "storage construct for sequential data of the same type; can also be used as a stack or a map data structure.";
+    string doc = "storage construct for sequential data of the same type; can also be used as an associative map data structure; also can be used as a stack with << operator to append/push and popBack to pop.";
     if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc.c_str() ) )
         return FALSE;
 
@@ -955,15 +955,15 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "set the size of the array. If the new size is less than the current size, elements will be deleted from the end; if the new size is larger than the current size, 0 or null elements will be added to the end.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // note 1.4.0.2: in the future, should deprecate and encourage programmer
+    // note 1.4.1.0: in the future, should deprecate and encourage programmer
     // to explicitly use .size() OR .capacity(), depending on the context
     // ---------
     // add cap()
     func = make_new_mfun( "int", "cap", array_get_capacity_hack );
-    func->doc = "for historical/compatibilty reasons, this is the same as .size(); it is recommended to explicitly use .size() or .capacity().";
+    func->doc = "(deprecated) For historical/compatibilty reasons, .cap() is always equal to .size(); instead of using .cap(), it is recommended to explicitly use .size() or .capacity().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add capacity() // 1.4.0.2
+    // add capacity() // 1.4.1.0
     func = make_new_mfun( "int", "capacity", array_set_capacity );
     func->doc = "ensure capacity of the array (number of addressable elements).";
     func->add_arg( "int", "val" );
@@ -975,13 +975,13 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     // add find()
     func = make_new_mfun( "int", "find", array_find );
     func->add_arg( "string", "key" );
-    func->doc = "get number of elements with the specified key.";
+    func->doc = "(map only) Get number of elements with the specified key.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add erase()
     func = make_new_mfun( "int", "erase", array_erase );
     func->add_arg( "string", "key" );
-    func->doc = "erase all elements with the specified key.";
+    func->doc = "(map only) Erase all elements with the specified key.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
@@ -1077,14 +1077,16 @@ CK_DLL_MFUN( object_dump )
     me->dump();
 }
 
-// apropos
-CK_DLL_MFUN( object_apropos )
+// help
+CK_DLL_SFUN( object_help )
 {
+    TYPE->apropos();
     // get object
-    Chuck_Object * me = SELF;
+    // Chuck_Object * me = SELF;
     // call dump
-    me->apropos();
+    // me->apropos();
 }
+
 
 
 
@@ -1254,7 +1256,7 @@ CK_DLL_CTRL( ugen_connected )
     RETURN->v_int = ret;
 }
 
-// 1.4.0.2 (jack): "buffered" flag -- necessary for getUGenSamples()
+// 1.4.1.0 (jack): "buffered" flag -- necessary for getUGenSamples()
 // for global UGens
 CK_DLL_MFUN( ugen_buffered )
 {

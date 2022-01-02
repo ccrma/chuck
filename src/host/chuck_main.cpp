@@ -1,25 +1,25 @@
 /*----------------------------------------------------------------------------
- ChucK Concurrent, On-the-fly Audio Programming Language
- Compiler and Virtual Machine
- 
- Copyright (c) 2003 Ge Wang and Perry R. Cook.  All rights reserved.
- http://chuck.stanford.edu/
- http://chuck.cs.princeton.edu/
- 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
- 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- 
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- U.S.A.
+  ChucK Concurrent, On-the-fly Audio Programming Language
+    Compiler and Virtual Machine
+
+  Copyright (c) 2003 Ge Wang and Perry R. Cook.  All rights reserved.
+    http://chuck.stanford.edu/
+    http://chuck.cs.princeton.edu/
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+  U.S.A.
  -----------------------------------------------------------------------------*/
 
 //-----------------------------------------------------------------------------
@@ -34,6 +34,7 @@
 #include "chuck.h"
 #include "chuck_audio.h"
 #include "chuck_console.h"
+#include "util_string.h"
 #include <signal.h>
 
 #if defined(__PLATFORM_WIN32__)
@@ -79,6 +80,8 @@ t_CKINT g_otf_port = 8888;
 
 // the shell
 Chuck_Shell * g_shell = NULL;
+// shell shutdown flag
+t_CKBOOL g_shutdown_shell = FALSE;
 // global variables
 t_CKUINT g_sigpipe_mode = 0;
 // flag for Std.system( string )
@@ -98,8 +101,8 @@ t_CKUINT g_num_vms_running = 0;
 
 // priority stuff
 #if defined(__MACOSX_CORE__)
-t_CKINT g_priority = 80;
-t_CKINT g_priority_low = 60;
+t_CKINT g_priority = XThreadUtil::get_max_priority(); // was 80
+t_CKINT g_priority_low = XThreadUtil::get_min_priority(); // was 60
 #elif defined(__PLATFORM_WIN32__) && !defined(__WINDOWS_PTHREAD__)
 t_CKINT g_priority = THREAD_PRIORITY_HIGHEST;
 t_CKINT g_priority_low = THREAD_PRIORITY_HIGHEST;
@@ -138,7 +141,7 @@ int chuck_main( int argc, const char ** argv )
 // desc: audio callback
 //-----------------------------------------------------------------------------
 void cb( t_CKSAMPLE * in, t_CKSAMPLE * out, t_CKUINT numFrames,
-        t_CKUINT numInChans, t_CKUINT numOutChans, void * data )
+         t_CKUINT numInChans, t_CKUINT numOutChans, void * data )
 {
     // TODO: check channel numbers
     
@@ -176,11 +179,11 @@ static void version()
 #elif defined(__MACOSX_UB__)
     platform = "mac os x : universal binary";
 #elif defined(__MACOSX_CORE__) && defined(__LITTLE_ENDIAN__)
-    platform = "mac os x : intel";
+    platform = "mac os";
 #elif defined(__MACOSX_CORE__)
     platform = "mac os x : powerpc";
 #else
-    platform = "uh... unknown";
+    platform = "unspecified platform";
 #endif
     
     CK_FPRINTF_STDERR( "   %s : %ld-bit\n", platform.c_str(), machine_intsize() );
@@ -198,12 +201,12 @@ void usage()
 {
     // (note: optional colon added 1.3.0.0)
     CK_FPRINTF_STDERR( "usage: chuck --[options|commands] [+-=^] file1 file2 file3 ...\n" );
-    CK_FPRINTF_STDERR( "   [options] = halt|loop|audio|silent|dump|nodump|server|about|probe|\n" );
+    CK_FPRINTF_STDERR( "   [options] = halt|loop|audio|silent|dump|nodump|about|probe|\n" );
     CK_FPRINTF_STDERR( "               channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|\n" );
     CK_FPRINTF_STDERR( "               srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
     CK_FPRINTF_STDERR( "               remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
     CK_FPRINTF_STDERR( "               callback|deprecate:{stop|warn|ignore}|\n" );
-    CK_FPRINTF_STDERR( "               chugin-load:{auto|off}|chugin-path:<path>|chugin:<name>\n" );
+    CK_FPRINTF_STDERR( "               chugin-load:{on|off}|chugin-path:<path>|chugin:<name>\n" );
     CK_FPRINTF_STDERR( "   [commands] = add|remove|replace|remove.all|status|time|kill\n" );
     CK_FPRINTF_STDERR( "   [+-=^] = shortcuts for add, remove, replace, status\n" );
     version();
@@ -290,11 +293,14 @@ void global_cleanup()
     // delete the chuck
     SAFE_DELETE( the_chuck );
 
+    // delete shell and set to NULL | 1.4.1.0
+    if( g_enable_shell ) SAFE_DELETE( g_shell );
+
     // wait for the shell, if it is running
     // does the VM reset its priority to normal before exiting?
-    if( g_enable_shell )
-        while( g_shell != NULL )
-            usleep(10000);
+    //if( g_enable_shell )
+    //    while( g_shell != NULL )
+    //        usleep(10000);
 
     // REFACTOR-2017 TODO: Cancel otf, le_cb threads? Does this happen in ~ChucK()?
     // things don't work so good on windows...
@@ -354,6 +360,28 @@ t_CKBOOL init_shell( Chuck_Shell * shell, Chuck_Shell_UI * ui, Chuck_VM * vm )
 
 
 //-----------------------------------------------------------------------------
+// name: check_shell_shutdown()
+// desc: check if we need to take action on shell
+//-----------------------------------------------------------------------------
+t_CKBOOL check_shell_shutdown()
+{
+    if( g_enable_shell && g_shutdown_shell )
+    {
+        // set to false so we don't do this multiple time
+        g_shutdown_shell = FALSE;
+        // cleanup
+        global_cleanup();
+        // return yes
+        return TRUE;
+    }
+    
+    return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: shell_cb
 // desc: thread routine
 //-----------------------------------------------------------------------------
@@ -366,17 +394,16 @@ void * shell_cb( void * p )
     // assuming this is absolutely necessary, an assert may be better
     assert( p != NULL );
     
-    shell = ( Chuck_Shell * ) p;
+    shell = (Chuck_Shell *) p;
     
     //atexit( wait_for_shell );
     
     // run the shell
     shell->run();
     
-    // delete and set to NULL
-    SAFE_DELETE( g_shell );
-    // perhaps let shell destructor clean up mode and ui?
-    
+    // flag to effect global shutdown from main thread
+    g_shutdown_shell = TRUE;
+
     EM_log( CK_LOG_INFO, "exiting thread routine for shell..." );
     
     return NULL;
@@ -451,18 +478,11 @@ bool go( int argc, const char ** argv )
 #else
     do_watchdog = FALSE;
 #endif
-    
+
     t_CKUINT files = 0;
     t_CKUINT count = 1;
     t_CKINT i;
-    
-    // set log level
-    EM_setlog( log_level );
-    
-    // add myself to the list of Chuck_Systems that might need to be cleaned up
-    // g_systems.push_back( this );
-    
-    
+
     //------------------------- COMMAND LINE ARGUMENTS -----------------------------
     
     // parse command line args
@@ -642,7 +662,7 @@ bool go( int argc, const char ** argv )
             else if( !strncmp(argv[i], "--deprecate", 11) )
             {
                 // get the rest
-                string arg = argv[i]+11;
+                string arg = tolower(argv[i]+11);
                 if( arg == ":stop" ) deprecate_level = 0;
                 else if( arg == ":warn" ) deprecate_level = 1;
                 else if( arg == ":ignore" ) deprecate_level = 2;
@@ -658,14 +678,14 @@ bool go( int argc, const char ** argv )
             else if( !strncmp(argv[i], "--chugin-load:", sizeof("--chugin-load:")-1) )
             {
                 // get the rest
-                string arg = argv[i]+sizeof("--chugin-load:")-1;
+                string arg = tolower(argv[i]+sizeof("--chugin-load:")-1);
                 if( arg == "off" ) chugin_load = 0;
-                else if( arg == "auto" ) chugin_load = 1;
+                else if( arg == "on" || arg == "auto") chugin_load = 1;
                 else
                 {
                     // error
                     CK_FPRINTF_STDERR( "[chuck]: invalid arguments for '--chugin-load'...\n" );
-                    CK_FPRINTF_STDERR( "[chuck]: ... (looking for :auto or :off)\n" );
+                    CK_FPRINTF_STDERR( "[chuck]: ... (looking for :on or :off)\n" );
                     exit( 1 );
                 }
             }
@@ -741,10 +761,10 @@ bool go( int argc, const char ** argv )
             files++;
         }
     }
-    
-    // log level
-    EM_setlog( log_level );
-    
+
+    // log level (commented out; this is done below)
+    // EM_setlog( log_level );
+
     // probe
     if( probe )
     {
@@ -771,8 +791,8 @@ bool go( int argc, const char ** argv )
     buffer_size = ensurepow2( buffer_size );
     // check mode and blocking
     if( !g_enable_realtime_audio && !block ) block = TRUE;
-    // audio, boost
-    if( !set_priority && !block ) g_priority = g_priority_low;
+    // audio, boost 1.4.1.0 (ge) commented out
+    // if( !set_priority && !block ) g_priority = g_priority_low;
     if( !set_priority && !g_enable_realtime_audio ) g_priority = 0x7fffffff;
     // set priority
     XThreadUtil::our_priority = g_priority;
@@ -859,6 +879,7 @@ bool go( int argc, const char ** argv )
     the_chuck->setParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, (t_CKINT)dump );
     the_chuck->setParam( CHUCK_PARAM_AUTO_DEPEND, (t_CKINT)auto_depend );
     the_chuck->setParam( CHUCK_PARAM_DEPRECATE_LEVEL, deprecate_level );
+    the_chuck->setParam( CHUCK_PARAM_CHUGIN_ENABLE, chugin_load );
     the_chuck->setParam( CHUCK_PARAM_USER_CHUGINS, named_dls );
     the_chuck->setParam( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES, dl_search_path );
     // set hint, so internally can advise things like async data writes etc.
@@ -996,6 +1017,8 @@ bool go( int argc, const char ** argv )
     // start shell on separate thread | REFACTOR-2017: per-VM?!?
     if( g_enable_shell )
     {
+        // flag
+        g_shutdown_shell = FALSE;
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
         pthread_create( &g_tid_shell, NULL, shell_cb, g_shell );
 #else
@@ -1007,14 +1030,14 @@ bool go( int argc, const char ** argv )
     
     // log
     EM_log( CK_LOG_SYSTEM, "running main loop..." );
-    // push indent
-    EM_pushlog();
-    
+
     // start it!
     the_chuck->start();
     
+    // push indent
+    EM_pushlog();
     // log
-    EM_log( CK_LOG_SEVERE, "virtual machine running..." );
+    EM_log( CK_LOG_SYSTEM, "starting virtual machine..." );
     // pop indent
     EM_poplog();
     
@@ -1024,10 +1047,11 @@ bool go( int argc, const char ** argv )
     // zero out
     memset( input, 0, sizeof(SAMPLE)*buffer_size*adc_chans );
     memset( output, 0, sizeof(SAMPLE)*buffer_size*dac_chans );
-    
-    // start audio
+
+    // if real-time audio mode
     if( g_enable_realtime_audio )
     {
+        // start real-time audio I/O
         ChuckAudio::start();
     }
     
@@ -1037,23 +1061,36 @@ bool go( int argc, const char ** argv )
         // real-time audio
         if( g_enable_realtime_audio )
         {
+            // NOTE: with real-time audio, chuck VM computation
+            // is driven from the audio callback function, not
+            // on this main-thread (keep-alive) loop.
+
+            // get main thread hook, call it if there is one
             Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();
-            if (hook)
-                hook->m_hook(hook->m_bindle);
-            else
+            if( hook ) {
+                hook->m_hook( hook->m_bindle );
+            } else {
                 usleep( 10000 );
+            }
         }
         else // silent mode
         {
             // keep running as fast as possible
             the_chuck->run( input, output, buffer_size );
         }
+        
+        // shell relate activity
+        if( check_shell_shutdown() ) break;
     }
-    
-    Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();
-    if (hook)
-        hook->m_quit(hook->m_bindle);
+
+    // if chuck is still available; could have been cleaned up by shell_shutdown
+    if( the_chuck != NULL )
+    {
+        // get main thread hook
+        Chuck_DL_MainThreadHook * hook = the_chuck->getMainThreadHook();
+        // call it if there is one
+        if( hook ) { hook->m_quit(hook->m_bindle); }
+    }
 
     return TRUE;
 }
-

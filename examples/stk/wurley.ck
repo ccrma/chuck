@@ -51,7 +51,7 @@ while( true )
         0 => int pick_dir;
         0.0 => float pluck;
 
-	for( ; i < pick; i++ )
+        for( ; i < pick; i++ )
         {
             Math.random2f(.4,.6) + i*.035 => pluck;
             pluck + 0.03 * (i * pick_dir) => voc.noteOn;

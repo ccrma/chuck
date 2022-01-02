@@ -46,9 +46,9 @@
 
 
 // major version must be the same between chuck:chugin
-#define CK_DLL_VERSION_MAJOR (0x0007)
+#define CK_DLL_VERSION_MAJOR (0x0008)
 // minor version of chugin must be less than or equal to chuck's
-#define CK_DLL_VERSION_MINOR (0x0001)
+#define CK_DLL_VERSION_MINOR (0x0000)
 #define CK_DLL_VERSION_MAKE(maj,min) ((t_CKUINT)(((maj) << 16) | (min)))
 #define CK_DLL_VERSION_GETMAJOR(v) (((v) >> 16) & 0xFFFF)
 #define CK_DLL_VERSION_GETMINOR(v) ((v) & 0xFFFF)
@@ -199,8 +199,8 @@ typedef const Chuck_DL_Api::Api *CK_DL_API;
 // example: CK_DLL_MFUN(foo)
 #define CK_DLL_MFUN(name) CK_DLL_EXPORT(void) name( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API )
 // macro for defining ChucK DLL export static functions
-// example: CK_DLL_SFUN(foo)
-#define CK_DLL_SFUN(name) CK_DLL_EXPORT(void) name( void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API )
+// example: CK_DLL_SFUN(foo) | 1.4.1.0 (ge) added TYPE to static prototype
+#define CK_DLL_SFUN(name) CK_DLL_EXPORT(void) name( Chuck_Type * TYPE, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API )
 // macro for defining ChucK DLL export ugen tick functions
 // example: CK_DLL_TICK(foo)
 #define CK_DLL_TICK(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, SAMPLE in, SAMPLE * out, CK_DL_API API )
@@ -248,7 +248,8 @@ typedef Chuck_Object * (CK_DLL_CALL * f_alloc)( Chuck_VM * VM, Chuck_VM_Shred * 
 typedef t_CKVOID (CK_DLL_CALL * f_ctor)( Chuck_Object * SELF, void * ARGS, Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKVOID (CK_DLL_CALL * f_dtor)( Chuck_Object * SELF, Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API );
 typedef t_CKVOID (CK_DLL_CALL * f_mfun)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API );
-typedef t_CKVOID (CK_DLL_CALL * f_sfun)( void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API );
+// 1.4.1.0 (ge) added TYPE to static prototype
+typedef t_CKVOID (CK_DLL_CALL * f_sfun)( Chuck_Type * TYPE, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API );
 // ugen specific
 typedef t_CKBOOL (CK_DLL_CALL * f_tick)( Chuck_Object * SELF, SAMPLE in, SAMPLE * out, CK_DL_API API );
 typedef t_CKBOOL (CK_DLL_CALL * f_tickf)( Chuck_Object * SELF, SAMPLE * in, SAMPLE * out, t_CKUINT nframes, CK_DL_API API );
@@ -302,9 +303,9 @@ typedef void (CK_DLL_CALL * f_add_arg)( Chuck_DL_Query * query, const char * typ
 typedef void (CK_DLL_CALL * f_add_ugen_func)( Chuck_DL_Query * query, f_tick tick, f_pmsg pmsg, t_CKUINT num_in, t_CKUINT num_out );
 typedef void (CK_DLL_CALL * f_add_ugen_funcf)( Chuck_DL_Query * query, f_tickf tickf, f_pmsg pmsg, t_CKUINT num_in, t_CKUINT num_out );
 typedef void (CK_DLL_CALL * f_add_ugen_funcf_auto_num_channels)( Chuck_DL_Query * query, f_tickf tickf, f_pmsg psmg );
-// ** add a ugen control
-typedef void (CK_DLL_CALL * f_add_ugen_ctrl)( Chuck_DL_Query * query, f_ctrl ctrl, f_cget cget, 
-                                              const char * type, const char * name );
+// ** add a ugen control (not used) | 1.4.1.0 removed
+//typedef void (CK_DLL_CALL * f_add_ugen_ctrl)( Chuck_DL_Query * query, f_ctrl ctrl, f_cget cget,
+//                                              const char * type, const char * name );
 // end class/namespace - must correspondent with begin_class.  returns false on error
 typedef t_CKBOOL (CK_DLL_CALL * f_end_class)( Chuck_DL_Query * query );
 // create main thread hook- used for executing a "hook" function in the main thread of a primary chuck instance
@@ -368,7 +369,7 @@ public:
     // (ugen only) add tick and pmsg functions, specify channels by vm
     f_add_ugen_funcf_auto_num_channels add_ugen_funcf_auto_num_channels;
     // (ugen only) add ctrl parameters
-    f_add_ugen_ctrl add_ugen_ctrl;
+    // f_add_ugen_ctrl add_ugen_ctrl;  // not used but needed for import for now
     // end class/namespace, compile it
     f_end_class end_class;
 
@@ -674,37 +675,36 @@ public:
     struct ObjectApi
     {
         ObjectApi();
-        
     private:
+        // function pointer get_type()
         Type (* const get_type)( CK_DL_API, Chuck_VM_Shred *, std::string &name );
-
+        // function pointer create()
         Object (* const create)( CK_DL_API, Chuck_VM_Shred *, Type type );
-        
+        // function pointer create_string()
         String (* const create_string)( CK_DL_API, Chuck_VM_Shred *, std::string &value );
-        
+        // function pointers for get_mvar_*()
         t_CKBOOL (* const get_mvar_int)( CK_DL_API, Object object, std::string &name, t_CKINT &value );
         t_CKBOOL (* const get_mvar_float)( CK_DL_API, Object object, std::string &name, t_CKFLOAT &value );
         t_CKBOOL (* const get_mvar_dur)( CK_DL_API, Object object, std::string &name, t_CKDUR &value );
         t_CKBOOL (* const get_mvar_time)( CK_DL_API, Object object, std::string &name, t_CKTIME &value );
         t_CKBOOL (* const get_mvar_string)( CK_DL_API, Object object, std::string &name, String &value );
         t_CKBOOL (* const get_mvar_object)( CK_DL_API, Object object, std::string &name, Object &value );
-        
+        // function pointer for set_string()
         t_CKBOOL (* const set_string)( CK_DL_API, String string, std::string &value );
-        
     } * const object;
     
     Api() :
-    vm(new VMApi),
-    object(new ObjectApi)
-    {}
+        vm(new VMApi),
+        object(new ObjectApi)
+    { }
     
 private:
-    Api(Api &a) :
-    vm(a.vm),
-    object(a.object)
+    Api( Api & a ) :
+        vm(a.vm),
+        object(a.object)
     { assert(0); };
     
-    Api &operator=(Api &a) { assert(0); return a; }
+    Api & operator=( Api & a ) { assert(0); return a; }
 };
 }
 

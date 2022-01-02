@@ -68,19 +68,24 @@ XThread::XThread( )
 XThread::~XThread( )
 {
 #if defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__)
-	// cant terminate self
-	bool is_self_thread = (thread != pthread_self());
+	// can't self-terminate (much like the Terminator)
+	bool is_self_thread = (thread == pthread_self());
 #elif defined(__PLATFORM_WIN32__)
 	// ignore for now
 	bool is_self_thread = false;
 #endif
 
-    if( thread != 0 && !is_self_thread)
+    // if our thread not NULL and this destructor is NOT being called on it
+    if( thread != 0 && !is_self_thread )
     {
         // TODO: find an alternative for Android?
 #if defined(__PLATFORM_MACOSX__) || ( defined(__PLATFORM_LINUX__) && !defined(__ANDROID__) ) || defined(__WINDOWS_PTHREAD__)
+        // log
+        EM_log( CK_LOG_FINER, "cancelling XThread: %u on thread: %u", (t_CKUINT)thread, (t_CKUINT)pthread_self() );
         pthread_cancel(thread);
         pthread_join(thread, NULL);
+        // log
+        EM_log( CK_LOG_FINER, "joined with XThread: %u on thread: %u", (t_CKUINT)thread, (t_CKUINT)pthread_self() );
 #elif defined(__PLATFORM_WIN32__)
         TerminateThread((HANDLE)thread, 0);
 #endif
@@ -121,9 +126,11 @@ bool XThread::wait( long milliseconds, bool cancel )
     bool result = false;
     
     // TODO: find an alternative for Android?
-#if ( defined(__PLATFORM_MACOSX__) || ( defined(__PLATFORM_LINUX__) && !defined(__ANDROID__) ) || defined(__WINDOWS_PTHREAD__) )
-    if(cancel) pthread_cancel(thread);
-    pthread_join(thread, NULL);
+#if( defined(__PLATFORM_MACOSX__) || ( defined(__PLATFORM_LINUX__) && !defined(__ANDROID__) ) || defined(__WINDOWS_PTHREAD__) )
+    // cancel the thread?
+    if( cancel ) pthread_cancel( thread );
+    // wait for the thread to terminate
+    pthread_join( thread, NULL );
 #elif defined(__PLATFORM_WIN32__)
     DWORD timeout, retval;
     if( milliseconds < 0 ) timeout = INFINITE;
@@ -279,11 +286,20 @@ XWriteThread::~XWriteThread()
 //-----------------------------------------------------------------------------
 void XWriteThread::shutdown()
 {
+    // put shutdown message into message buffer
     Message msg;
     msg.operation = Message::SHUTDOWN;
     m_msg_buffer->put( msg );
     
+    // smart log push
+    SmartPushLog logPush;
+
+    // log
+    EM_log( CK_LOG_FINER, "waiting on write thread: %u", (t_CKUINT)m_thread.getThread() );
+    // wait on the thread
     m_thread.wait( -1, false );
+    // log
+    EM_log( CK_LOG_FINER, "done waiting for thread: %u", (t_CKUINT)m_thread.getThread() );
 }
 
 
@@ -476,20 +492,35 @@ t_CKBOOL XThreadUtil::set_priority( CHUCK_THREAD tid, t_CKINT priority )
     int policy;
     
     // log
-    EM_log( CK_LOG_FINE, "setting thread priority to: %ld...", priority );
+    EM_log( CK_LOG_INFO, "setting thread priority to: %ld...", priority );
     
     // get for thread
     if( pthread_getschedparam( tid, &policy, &param) )
         return FALSE;
     
-    // priority
-    param.sched_priority = priority;
+    // pthread_attr_t attr;
+    // pthread_attr_init( &attr );
+    // pthread_attr_setinheritsched( &attr, PTHREAD_EXPLICIT_SCHED );
+
     // policy
     policy = SCHED_RR;
+    // priority
+    param.sched_priority = priority;
     // set for thread, pthread style
     if( pthread_setschedparam( tid, policy, &param ) )
         return FALSE;
-    
+
+    // get for thread
+    if( pthread_getschedparam( tid, &policy, &param) )
+        return FALSE;
+
+    // push
+    EM_pushlog();
+    // log
+    EM_log( CK_LOG_FINE, "verifying thread priority: %ld...", param.sched_priority );
+    // pop
+    EM_poplog();
+
     return TRUE;
 }
 //-----------------------------------------------------------------------------
@@ -501,6 +532,14 @@ t_CKBOOL XThreadUtil::set_priority( t_CKINT priority )
     // pass it along with self thread
     set_priority( pthread_self(), priority );
     return TRUE;
+}
+t_CKINT XThreadUtil::get_max_priority()
+{
+    return sched_get_priority_max( SCHED_RR );
+}
+t_CKINT XThreadUtil::get_min_priority()
+{
+    return sched_get_priority_min( SCHED_RR );
 }
 #else
 //-----------------------------------------------------------------------------
@@ -531,4 +570,13 @@ t_CKBOOL XThreadUtil::set_priority( t_CKINT priority )
     set_priority( GetCurrentThread(), priority );
     return TRUE;
 }
+t_CKINT XThreadUtil::get_max_priority()
+{
+    return THREAD_PRIORITY_HIGHEST; // THREAD_PRIORITY_TIME_CRITICAL;
+}
+t_CKINT XThreadUtil::get_min_priority()
+{
+    return THREAD_PRIORITY_LOWEST;
+}
 #endif
+

@@ -86,7 +86,10 @@ public:
 public:
     // test for a thread cancellation request.
     static void test( );
-    
+
+    // get internal thread reference
+    THREAD_HANDLE getThread() { return thread; }
+
     // clear
     void clear() { thread = 0; }
 
@@ -108,6 +111,10 @@ public:
     static t_CKBOOL set_priority( CHUCK_THREAD tid, t_CKINT priority );
     // set priority on current thread
     static t_CKBOOL set_priority( t_CKINT priority );
+    // get max allowable system priority
+    static t_CKINT get_max_priority();
+    // get min allowable system priority
+    static t_CKINT get_min_priority();
 
 public:
     // not sure what this exactly
@@ -221,6 +228,9 @@ private:
                 int whence;
             } seek;
         };
+
+        // 1.4.1.0 (ge) added
+        Message() : file(NULL) { }
     };
 
 	// circular buffer

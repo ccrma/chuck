@@ -1,15 +1,20 @@
+design notes from 2017; cleanly separating ChucK "core" from "host", 
+making it much easier to use ChucK (core: language compiler, virtual 
+machine, and synthesis engine etc.) as a library or component within 
+another host.
+
 chuck engine files
 -----
 chuck.h
 chuck.cpp
 chuck_vm.h
 chuck_vm.cpp
-
+...
 
 chuck host files
 -----
-
-
+chuck_audio.* // real-time audio
+chuck_main.cpp
 
 TODO:
 ----
