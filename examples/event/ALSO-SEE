@@ -1,8 +1,13 @@
+See Events in action in other contexts:
+
+HID input:
 ../hid/joy.ck
 
+MIDI input:
 ../midi/gomidi.ck
 ../midi/polyfony.ck
 ../midi/polyfony2.ck
 
+Open Sound Control:
 ../osc/s.ck (Open Sound Control sender)
 ../osc/r.ck (Open Sound Control receiver)

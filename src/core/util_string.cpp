@@ -379,10 +379,17 @@ char* CreatePathByExpandingTildePath(const char* path)
         v = globbuf.gl_pathv; //list of matched pathnames
         expandedPath = v[0]; //number of matched pathnames, gl_pathc == 1
 
-        result = (char*)calloc(1, strlen(expandedPath) + 1); //the extra char is for the null-termination
+        size_t toCopy = strlen(expandedPath) + 1; //the extra char is for the null-termination
+        result = (char*)calloc(1, toCopy);
         if(result)
-            strncpy(result, expandedPath, strlen(expandedPath) + 1); //copy the null-termination as well
-
+        {
+            //copy the null-termination as well
+            memcpy(result, expandedPath, toCopy);
+            // was: strncpy(result, expandedPath,strlen(expandedPath) + 1);
+            // which was generating a warning on linux/gcc
+            // warning: ‘char* strncpy(char*, const char*, size_t)’ specified
+            // bound depends on the length of the source argument [-Wstringop-overflow=]
+        }
         globfree(&globbuf);
     }
 

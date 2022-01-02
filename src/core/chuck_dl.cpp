@@ -491,27 +491,31 @@ void CK_DLL_CALL ck_add_ugen_funcf_auto_num_channels( Chuck_DL_Query * query,
 // name: ck_add_ugen_ctrl()
 // desc: (ugen only) add ctrl parameters
 //-----------------------------------------------------------------------------
-void CK_DLL_CALL ck_add_ugen_ctrl( Chuck_DL_Query * query, f_ctrl ugen_ctrl, f_cget ugen_cget,
-                                   const char * type, const char * name )
-{
-    // make sure there is class
-    if( !query->curr_class )
-    {
-        // error
-        EM_error2( 0, "class import: add_ugen_func invoked without begin_class..." );
-        return;
-    }
-    
-    // allocate
-    Chuck_DL_Ctrl * c = new Chuck_DL_Ctrl;
-    c->name = name;
-    c->type = type;
-    c->ctrl = ugen_ctrl;
-    c->cget = ugen_cget;
-    
-    // set
-    query->curr_func = NULL;
-}
+//void CK_DLL_CALL ck_add_ugen_ctrl( Chuck_DL_Query * query, f_ctrl ugen_ctrl, f_cget ugen_cget,
+//                                   const char * type, const char * name )
+//{
+//    // this is no longer used
+//    EM_error2( 0, "class import: obselete ck_add_ugen_ctrl invoked..." );
+//    return;
+//
+//    // make sure there is class
+//    if( !query->curr_class )
+//    {
+//        // error
+//        EM_error2( 0, "class import: add_ugen_func invoked without begin_class..." );
+//        return;
+//    }
+//
+//    // allocate
+//    Chuck_DL_Ctrl * c = new Chuck_DL_Ctrl;
+//    c->name = name;
+//    c->type = type;
+//    c->ctrl = ugen_ctrl;
+//    c->cget = ugen_cget;
+//
+//    // set
+//    query->curr_func = NULL;
+//}
 
 
 
@@ -562,9 +566,9 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
 // desc: ...
 //-----------------------------------------------------------------------------
 Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query * query,
-                                                                 f_mainthreadhook hook,
-                                                                 f_mainthreadquit quit,
-                                                                 void * bindle )
+                                                                  f_mainthreadhook hook,
+                                                                  f_mainthreadquit quit,
+                                                                  void * bindle )
 {
     return new Chuck_DL_MainThreadHook( hook, quit, bindle, query->carrier() );
 }
@@ -576,12 +580,12 @@ Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query
 //-----------------------------------------------------------------------------
 t_CKBOOL CK_DLL_CALL ck_doc_class( Chuck_DL_Query * query, const char * doc )
 {
-#ifdef CK_DOC // disable unless CK_DOC
+// #ifdef CK_DOC // disable unless CK_DOC
     if(query->curr_class)
         query->curr_class->doc = doc;
     else
         return FALSE;
-#endif // CK_DOC
+// #endif // CK_DOC
     
     return TRUE;
 }
@@ -592,12 +596,12 @@ t_CKBOOL CK_DLL_CALL ck_doc_class( Chuck_DL_Query * query, const char * doc )
 //-----------------------------------------------------------------------------
 t_CKBOOL CK_DLL_CALL ck_add_example( Chuck_DL_Query * query, const char * ex )
 {
-#ifdef CK_DOC // disable unless CK_DOC
+// #ifdef CK_DOC // disable unless CK_DOC
     if(query->curr_class)
         query->curr_class->examples.push_back(ex);
     else
         return FALSE;
-#endif // CK_DOC
+// #endif // CK_DOC
     
     return TRUE;
 }
@@ -605,12 +609,12 @@ t_CKBOOL CK_DLL_CALL ck_add_example( Chuck_DL_Query * query, const char * ex )
 // set current function documentation
 t_CKBOOL CK_DLL_CALL ck_doc_func( Chuck_DL_Query * query, const char * doc )
 {
-#ifdef CK_DOC // disable unless CK_DOC
+// #ifdef CK_DOC // disable unless CK_DOC
     if(query->curr_func)
         query->curr_func->doc = doc;
     else
         return FALSE;
-#endif // CK_DOC
+// #endif // CK_DOC
     
     return TRUE;
 }
@@ -618,12 +622,12 @@ t_CKBOOL CK_DLL_CALL ck_doc_func( Chuck_DL_Query * query, const char * doc )
 // set last mvar documentation
 t_CKBOOL CK_DLL_CALL ck_doc_var( Chuck_DL_Query * query, const char * doc )
 {
-#ifdef CK_DOC // disable unless CK_DOC
+// #ifdef CK_DOC // disable unless CK_DOC
     if(query->last_var)
         query->last_var->doc = doc;
     else
         return FALSE;
-#endif // CK_DOC
+// #endif // CK_DOC
     
     return TRUE;
 }
@@ -752,13 +756,17 @@ const Chuck_DL_Query * Chuck_DLL::query( )
         // SPENCERTODO: do they need to be equal, or can dll_version be < ?
     {
         ostringstream oss;
-        oss << "DL version not supported: " 
+        oss << "chugin version mismatch:" << endl
+        << "filename: "
+        << m_filename << "'" << endl
+        << "versions: chugin: "
         << CK_DLL_VERSION_GETMAJOR(dll_version)
         << "."
         << CK_DLL_VERSION_GETMINOR(dll_version)
-        << " in '"
-        << m_filename
-        << "'";
+        << " vs. chuck host: "
+        << CK_DLL_VERSION_MAJOR
+        << "."
+        << CK_DLL_VERSION_MINOR;
         
         m_last_error = oss.str();
         
@@ -942,7 +950,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     add_ugen_func = ck_add_ugen_func;
     add_ugen_funcf = ck_add_ugen_funcf;
     add_ugen_funcf_auto_num_channels = ck_add_ugen_funcf_auto_num_channels;
-    add_ugen_ctrl = ck_add_ugen_ctrl;
+    // add_ugen_ctrl = ck_add_ugen_ctrl; // not used
     end_class = ck_end_class;
     doc_class = ck_doc_class;
     doc_func = ck_doc_func;
@@ -950,7 +958,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     create_main_thread_hook = ck_create_main_thread_hook;
     m_carrier = carrier;
     
-//    memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
+    // memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
     
     dll_name = "[noname]";
     reserved = NULL;

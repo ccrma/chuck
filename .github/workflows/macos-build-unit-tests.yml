@@ -1,0 +1,21 @@
+name: macOS - Build and Unit Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  macos-build-unit-tests:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Compile - macOS
+      run: cd src/ && make osx
+      
+    - name: Unit Tests - macOS
+      run: cd src/ && export PATH=$PATH:$(pwd) && cd test/ && python test.py

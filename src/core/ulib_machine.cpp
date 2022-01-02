@@ -64,12 +64,15 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 
     // class
     QUERY->begin_class( QUERY, "Machine", "Object" );
+    // add documentation | 1.4.1.0
+    QUERY->doc_class( QUERY, "runtime interface to the ChucK virtual machine." );
 
     // add add
     //! compile and spork a new shred from file at 'path' into the VM now
     //! returns the shred ID
     //! (see example/machine.ck)
     QUERY->add_sfun( QUERY, machine_add_impl, "int", "add" );
+    QUERY->doc_func( QUERY, "add/run a new shred from file at 'path'." );
     QUERY->add_arg( QUERY, "string", "path" );
     
     // add spork
@@ -80,32 +83,37 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     // add remove
     //! remove shred from VM by shred ID (returned by add/spork)
     QUERY->add_sfun( QUERY, machine_remove_impl, "int", "remove" );
+    QUERY->doc_func( QUERY, "remove a running shred by 'id'." );
     QUERY->add_arg( QUERY, "int", "id" );
 
     // add replace
     //! replace shred with new shred from file
     //! returns shred ID , or 0 on error 
     QUERY->add_sfun( QUERY, machine_replace_impl, "int", "replace" );
+    QUERY->doc_func( QUERY, "replace running shred by 'id' with new shred at 'path'." );
     QUERY->add_arg( QUERY, "int", "id" );
     QUERY->add_arg( QUERY, "string", "path" );
 
-    // add replace
-    //! replace shred with new shred from file
-    //! returns shred ID , or 0 on error 
+    // add crash
+    //! explicitly crash the virtual machine
     QUERY->add_sfun( QUERY, machine_crash_impl, "void", "crash" );
+    QUERY->doc_func( QUERY, "explicitly crash the virtual machine." );
 
     // add status
     //! display current status of VM
     //! (see example/status.ck)
     QUERY->add_sfun( QUERY, machine_status_impl, "int", "status" );
-    
+    QUERY->doc_func( QUERY, "display current status of virtual machine." );
+
     // add get intsize (width)
     //! get the intsize in bits (e.g., 32 or 64)
     QUERY->add_sfun( QUERY, machine_intsize_impl, "int", "intsize" );
+    QUERY->doc_func( QUERY, "get size of int in bits (e.g., 32 or 64)." );
     
     // add shreds
     //! get list of active shreds by id
     QUERY->add_sfun( QUERY, machine_shreds_impl, "int[]", "shreds" );
+    QUERY->doc_func( QUERY, "get list of active shred ids." );
 
     // end class
     QUERY->end_class( QUERY );

@@ -1,10 +1,10 @@
 // name: chugraph.ck
-// desc: "chuh-graph" -- rhymes with "subgraph"
+// desc: pronounced "chuh-graph" -- rhymes with "subgraph"
 //       create new UGens by compositing existing UGens!
-//       requires chuck-1.4.0.2 or above
+// note: (chuck-1.4.1.0 and up) "Chubgraph" deprecated; use "Chugraph"
 
 // make a plucked string
-class PluckedString extends Chugraph
+class PluckedString extends Chubgraph // Chugraph
 {
     // karplus + strong plucked string filter
     // Ge Wang (gewang@cs.princeton.edu)
@@ -57,7 +57,7 @@ while( true )
     for( int i; i < ps.size(); i++ )
     {
         // randomize pitch
-        Math.random2( 48, 72 ) => Std.mtof => ps[i].freq;
+        Math.random2( 36, 72 ) => Std.mtof => ps[i].freq;
         // spork the pluck
         spork ~ ps[i].pluck( 2*ringDur );
         // wait a bit

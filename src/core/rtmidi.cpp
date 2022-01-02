@@ -1284,12 +1284,14 @@ void RtMidiOut :: initialize( void )
   result = snd_midi_event_new( data->bufferSize, &data->coder );
   if ( result < 0 ) {
     delete data;
+    data = NULL; // 1.4.1.0 (ge)
     errorString_ = "RtMidiOut::initialize: error initializing MIDI event parser!\n\n";
     error( RtMidiError::DRIVER_ERROR );
   }
   data->buffer = (unsigned char *) malloc( data->bufferSize );
   if ( data->buffer == NULL ) {
     delete data;
+    data = NULL; // 1.4.1.0 (ge)
     errorString_ = "RtMidiOut::initialize: error allocating buffer memory!\n\n";
     error( RtMidiError::MEMORY_ERROR );
   }
@@ -1418,11 +1420,12 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
   snd_seq_ev_set_direct(&ev);
   for ( unsigned int i=0; i<nBytes; i++ ) data->buffer[i] = message->at(i);
   result = snd_midi_event_encode( data->coder, data->buffer, (long)nBytes, &ev );
-  if ( result < (int)nBytes ) {
-    errorString_ = "RtMidiOut::sendMessage: event parsing error!";
-    error( RtMidiError::WARNING );
-    return;
-  }
+  // commenting this out allows sending MIDI messages < and > 3 | 1.4.1.0 (mariobuoninfante)
+  // if( result < (int)nBytes ) {
+  //   errorString_ = "RtMidiOut::sendMessage: event parsing error!";
+  //   error( RtMidiError::WARNING );
+  //   return;
+  // }
 
   // Send the event.
   result = snd_seq_event_output(data->seq, &ev);
@@ -1871,7 +1874,7 @@ struct WinMidiData {
 
 static void CALLBACK midiInputCallback( HMIDIOUT hmin,
                                         UINT inputStatus, 
-                                        DWORD_PTR instancePtr, // 1.4.0.2 DWORD changed to DWORD_PTR | PR #157 @dbadb
+                                        DWORD_PTR instancePtr, // 1.4.1.0 DWORD changed to DWORD_PTR | PR #157 @dbadb
                                         DWORD_PTR midiMessage,
                                         DWORD_PTR timestamp )
 {
@@ -1983,7 +1986,7 @@ void RtMidiIn :: openPort( unsigned int portNumber )
   WinMidiData *data = static_cast<WinMidiData *> (apiData_);
   MMRESULT result = midiInOpen( &data->inHandle,
                                 portNumber,
-                                (DWORD_PTR)&midiInputCallback, // 1.4.0.2 DWORD changed to DWORD_PTR | PR #157 @dbadb
+                                (DWORD_PTR)&midiInputCallback, // 1.4.1.0 DWORD changed to DWORD_PTR | PR #157 @dbadb
                                 (DWORD_PTR)&inputData_,
                                 CALLBACK_FUNCTION );
   if ( result != MMSYSERR_NOERROR ) {

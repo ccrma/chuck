@@ -1,4 +1,3 @@
-
 MidiOut mout;
 mout.open(0);
 

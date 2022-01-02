@@ -34,7 +34,7 @@
 #include "chuck_vm.h"
 #include "chuck_errmsg.h"
 #include "chuck_instr.h"
-#include "chuck_globals.h" // added 1.4.0.2
+#include "chuck_globals.h" // added 1.4.1.0
 #include <sstream>
 #include <iostream>
 
@@ -227,7 +227,7 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         prog = prog->next;
     }
     
-    // 1.4.0.2 (jack): error-checking: was dac-replacement initted?
+    // 1.4.1.0 (jack): error-checking: was dac-replacement initted?
     // (see chuck_compile.h for an explanation on replacement dacs)
     if( emit->should_replace_dac )
     {
@@ -294,6 +294,8 @@ Chuck_VM_Code * emit_to_code( Chuck_Code * in,
     code->stack_depth = in->stack_depth;
     // set whether code need this base pointer
     code->need_this = in->need_this;
+    // set whether static inside class | 1.4.1.0 (ge) added
+    code->is_static = in->is_static;
     // set name
     code->name = in->name;
     // set filename for me.sourceDir() (added 1.3.0.0)
@@ -2906,7 +2908,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         }
         else if( exp->var == insert_symbol( "dac" ) )
         {
-            // 1.4.0.2 (jack): see chuck_compile.h for an explanation of
+            // 1.4.1.0 (jack): see chuck_compile.h for an explanation of
             // replacement dacs
             // should replace dac with global ugen?
             if( emit->should_replace_dac )
@@ -3450,6 +3452,7 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     {
         emit->append( instr = new Chuck_Instr_Func_Call );
     }
+    // set line position
     instr->set_linepos(linepos);
 
     return TRUE;
@@ -3817,8 +3820,10 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
         {
             // emit the type - spencer
             emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)t_base ) );
-            // get the func
-            func = t_base->info->lookup_func( member->xid, FALSE );
+            // get the func | 1.4.1.0 (ge) added looking in parent
+            value = type_engine_find_value( t_base, member->xid );
+            // get the function reference
+            func = value->func_ref;
             // make sure it's there
             assert( func != NULL );
             // emit the function
@@ -3826,8 +3831,8 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
         }
         else
         {
-            // get the value
-            value = t_base->info->lookup_value( member->xid, FALSE );
+            // get the func | 1.4.1.0 (ge) added looking in parent
+            value = type_engine_find_value( t_base, member->xid );
             // make sure it's there
             assert( value != NULL );
 
@@ -4475,6 +4480,8 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     emit->code->name += func->name + "( ... )";
     // set whether need this
     emit->code->need_this = func->is_member;
+    // if static inside class | 1.4.1.0 (ge) added
+    emit->code->is_static = func->is_static;
     // keep track of full path (added 1.3.0.0)
     emit->code->filename = emit->context->full_path;
 
@@ -4494,6 +4501,19 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         {
             EM_error2( a->linepos,
                 "(emit): internal error: cannot allocate local 'this'..." );
+            return FALSE;
+        }
+    }
+    // if static function inside class def | 1.4.1.0 (ge) added
+    else if( func->is_static )
+    {
+        // get the size (for the TYPE argument)
+        emit->code->stack_depth += sizeof(t_CKUINT);
+        // create local
+        if( !emit->alloc_local( sizeof(t_CKUINT), "@type", TRUE, FALSE, FALSE ) )
+        {
+            EM_error2( a->linepos,
+                      "(emit): internal error: cannot allocate local '@type'..." );
             return FALSE;
         }
     }
@@ -4753,6 +4773,8 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     emit->code = new Chuck_Code;
     // handle need this
     emit->code->need_this = exp->ck_func->is_member;
+    // handle is static (inside class def) | 1.4.1.0 (ge) added
+    emit->code->is_static = exp->ck_func->is_static;
     // name it: e.g. spork~foo [line 5]
     std::ostringstream name;
     name << "spork~"
@@ -4977,7 +4999,17 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
     {
         // special case
         if( v->func_ref )
+        {
+            // 1.4.1.0 (ge) added for new static calling convention of passing
+            // the type as the first parameter
+            if( v->func_ref->is_static )
+            {
+                // push the type pointer
+                emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)v->owner_class ) );
+            }
+            // push function pointer
             emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)v->func_ref ) );
+        }
         else if( v->is_global )
         {
             Chuck_Instr_Reg_Push_Global * instr =
