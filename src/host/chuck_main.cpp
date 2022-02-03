@@ -165,9 +165,9 @@ static void version()
     string platform = "";
     
 #if defined(__PLATFORM_WIN32__)
-    platform = "microsoft win32";
+    platform = "microsoft windows";
 #elif defined(__WINDOWS_DS__)
-    platform = "microsoft win32 + cygwin";
+    platform = "microsoft windows + cygwin";
 #elif defined(__LINUX_ALSA__)
     platform = "linux (alsa)";
 #elif defined(__LINUX_OSS__)
