@@ -43,7 +43,8 @@ struct S_Symbol_ { c_str name; S_Symbol next; };
 static S_Symbol mksymbol( c_constr name, S_Symbol next )
 {
     S_Symbol s = (S_Symbol)checked_malloc(sizeof(*s));
-    s->name = (c_str)checked_malloc(strlen(name)+1);
+    t_CKINT len = strlen(name) + 1;
+    s->name = (c_str)checked_malloc(len);
     strcpy(s->name, (c_str)name); s->next=next;
     return s;
 }

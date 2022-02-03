@@ -40,6 +40,8 @@
 #ifdef __PLATFORM_WIN32__
 
 
+
+#ifdef __CK_MATH_DEFINE_ROUND_TRUNC__
 //-----------------------------------------------------------------------------
 // name: round()
 // desc: ...
@@ -59,7 +61,7 @@ double trunc( double a )
 {
     return (double)(long)a;
 }
-
+#endif // #ifdef __CK_MATH_DEFINE_ROUND_TRUNC
 
 
 

@@ -13511,7 +13511,7 @@ SKINI :: SKINI(char *fileName)
   char msg[256];
 
   myFile = fopen(fileName,"r");
-  if ((long) myFile < 0) {
+  if ((t_CKUINT)myFile < 0) {
     sprintf(msg, "[chuck](via SKINI): Could not open or find file (%s).", fileName);
     handleError(msg, StkError::FILE_NOT_FOUND);
   }
@@ -19445,7 +19445,7 @@ bool WvOut :: setMatFile( const char *fileName )
   memset( hdr.heading, 0, sizeof(hdr.heading) );
   strcpy(hdr.heading,"MATLAB 5.0 MAT-file, Generated using the Synthesis ToolKit in C++ (STK). By Perry R. Cook and Gary P. Scavone, 1995-2002.");
 
-  int i;
+  t_CKINT i;
   for (i=strlen(hdr.heading);i<124;i++) hdr.heading[i] = ' ';
 
   // Header Flag Fields

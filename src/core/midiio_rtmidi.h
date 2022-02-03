@@ -399,41 +399,41 @@ public:
     // rewind to beginning
     void rewind();
     // get current top event (NO simultaneous)
-    const MidiNoteEvent * getTopEvent( long track, long offset = 0 );
+    const MidiNoteEvent * getTopEvent( t_CKINT track, t_CKINT offset = 0 );
     // get current event (YES simultaneous) + move to next
-    const MidiNoteEvent * scanEvent( long track, bool & isNewSet );
+    const MidiNoteEvent * scanEvent( t_CKINT track, bool & isNewSet );
     // advance to next event
-    bool seek( long track, long numToAdvance = 1 );
+    bool seek( t_CKINT track, t_CKINT numToAdvance = 1 );
     // advance to next note on
-    bool seekToNoteOn( long track );
+    bool seekToNoteOn( t_CKINT track );
     // get notes in a time window
-    void getEvents( long track, double startTime, double endTime, std::vector<const MidiNoteEvent *> & result,
+    void getEvents( t_CKINT track, double startTime, double endTime, std::vector<const MidiNoteEvent *> & result,
                     bool includeSimultaneous = false );
     // isDone
-    bool isDone( long track, double currTime );
+    bool isDone( t_CKINT track, double currTime );
     
     
 public:
     // get number of tracks
-    long getNumTracks() const;
+    t_CKINT getNumTracks() const;
     // get number of events per track
-    long getNumEvents( long track ) const;
+    t_CKINT getNumEvents( t_CKINT track ) const;
     // get number of tracks with more than 0 events
-    long getNumTracksNonZero() const;
+    t_CKINT getNumTracksNonZero() const;
     // get a vector of tracks indices that have more than 0 events
-    const std::vector<long> & getTracksNonZero() const;
+    const std::vector<t_CKINT> & getTracksNonZero() const;
     // get BPM
     double getBPM() const;
     // get an entire track's note events
-    const std::vector<MidiNoteEvent *> & getNoteEvents( long track );
+    const std::vector<MidiNoteEvent *> & getNoteEvents( t_CKINT track );
     // get an entire track's lyric events
-    const std::vector<MidiLyricEvent *> & getLyricEvents( long track );
+    const std::vector<MidiLyricEvent *> & getLyricEvents( t_CKINT track );
     // get count
-    long getCount( long track, const std::string & key );
+    t_CKINT getCount( t_CKINT track, const std::string & key );
     // get lowest note for a track
-    long getLowestNote( long track, const MidiNoteEvent *start );
+    t_CKINT getLowestNote( t_CKINT track, const MidiNoteEvent *start );
     // get highest note for a track
-    long getHighestNote( long track, const MidiNoteEvent *start );
+    t_CKINT getHighestNote( t_CKINT track, const MidiNoteEvent *start );
     
 public: // TODO: these may as well be a separate object
     // push a event to remember
@@ -447,22 +447,22 @@ public: // TODO: these may as well be a separate object
     
 public: // track naming
     // sets track name
-    void setTrackName( long track, const std::string & name );
+    void setTrackName( t_CKINT track, const std::string & name );
     // gets track name ("" if not present)
-    std::string getTrackName( long track );
+    std::string getTrackName( t_CKINT track );
     // gets the track with the given name (-1 if not present)
-    long getTrackForName( const std::string & name );
+    t_CKINT getTrackForName( const std::string & name );
     
 protected: // for use while loading a track
     // load a track
-    bool loadTrack( long track, std::vector<MidiNoteEvent *> & data, std::vector<MidiLyricEvent *> & lyricData );
+    bool loadTrack( t_CKINT track, std::vector<MidiNoteEvent *> & data, std::vector<MidiLyricEvent *> & lyricData );
     // apply control to existing event
-    bool applyControl( long track, long data2, long data3, MidiNoteEvent * e );
+    bool applyControl( t_CKINT track, t_CKINT data2, t_CKINT data3, MidiNoteEvent * e );
     // increment count for the given key (used for counting the number of notes, glissandi, etc)
-    void incrementCount( long track, const std::string & key );
+    void incrementCount( t_CKINT track, const std::string & key );
     // handle note events, managing m_activeNotes and setting the event's endTime
-    void handleNoteOn( MidiNoteEvent * e, long note );
-    void handleNoteOff( long note, double time );
+    void handleNoteOn( MidiNoteEvent * e, t_CKINT note );
+    void handleNoteOff( t_CKINT note, double time );
     
 protected:
     // midi
@@ -472,28 +472,28 @@ protected:
     // vector of tracks of events
     std::vector< std::vector<MidiLyricEvent *> > m_lyricEvents;
     // vector of indices
-    std::vector<unsigned long> m_indices;
+    std::vector<t_CKUINT> m_indices;
     // stack of events
     std::deque<const MidiNoteEvent *> m_queue;
     // vector of event
     std::vector<const MidiNoteEvent *> m_result;
     // search pointer
-    std::vector<unsigned long> m_searchIndices;
+    std::vector<t_CKUINT> m_searchIndices;
     // count map
-    std::vector< std::map< std::string, long > > m_countMaps;
+    std::vector< std::map< std::string, t_CKINT > > m_countMaps;
     // HACK: scale the velocity (0-1)
     float m_velocity_scale;
     // track names
-    std::map<std::string, long> m_nameToTrack;
-    std::map<long, std::string> m_trackToName;
+    std::map<std::string, t_CKINT> m_nameToTrack;
+    std::map<t_CKINT, std::string> m_trackToName;
     // number of non-zero tracks
-    long m_numNonZeroTracks;
+    t_CKINT m_numNonZeroTracks;
     // vector of indices of non-zero tracks
-    std::vector<long> m_nonZeroTrackIndices;
+    std::vector<t_CKINT> m_nonZeroTrackIndices;
     
 private: // used during track loading
     // active notes, map from MIDI note to event
-    std::map<long, MidiNoteEvent *> m_activeNotes;
+    std::map<t_CKINT, MidiNoteEvent *> m_activeNotes;
 };
 
 

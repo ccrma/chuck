@@ -39,9 +39,12 @@
 extern "C" {
 #endif 
 
+// 1.4.1.1 (ge) removed -- seems no longer needed on more modern windows
 #ifdef __PLATFORM_WIN32__
+#ifdef __CK_MATH_DEFINE_ROUND_TRUNC__
     double round( double a );
     double trunc( double a );
+#endif
 #endif
 
 // 1.4.1.0 (ge) need this since __WINDOWS_MODERN__ can be defined but remainder still not found (VC++ 2010)
@@ -67,6 +70,7 @@ unsigned long ensurepow2( unsigned long i );
 #if defined (__cplusplus) || defined(_cplusplus)  
 }
 #endif
+
 
 
 

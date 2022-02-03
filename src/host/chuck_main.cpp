@@ -738,7 +738,7 @@ bool go( int argc, const char ** argv )
                 // boost log level
                 g_otf_log = CK_LOG_CORE;
                 // flag
-                int is_otf = FALSE;
+                t_CKINT is_otf = FALSE;
                 // log level
                 EM_setlog( log_level );
                 

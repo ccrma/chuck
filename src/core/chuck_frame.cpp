@@ -108,7 +108,7 @@ void Chuck_Frame::get_scope( vector<Chuck_Local *> & out ) const
     // the local
     Chuck_Local * local = NULL;
     // the index
-    long index = this->stack.size() - 1;
+    t_CKINT index = this->stack.size() - 1;
 
     // loop
     while( index >= 0 && this->stack[index] != NULL )
