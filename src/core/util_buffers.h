@@ -43,8 +43,8 @@
 #include <queue>
 #include <iostream>
 
-#define DWORD__                unsigned long
-#define SINT__                 long
+#define DWORD__                t_CKUINT
+#define SINT__                 t_CKINT
 #define UINT__                 DWORD__
 #define BOOL__                 DWORD__
 #define BYTE__                 unsigned char

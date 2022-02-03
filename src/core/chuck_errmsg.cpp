@@ -404,7 +404,7 @@ void EM_newline(void)
 // content after rightmost '/'
 const char * mini( const char * str )
 {
-    int len = strlen( str );
+    t_CKINT len = strlen( str );
     const char * p = str + len;
     while( p != str && *p != '/' && *p != '\\' ) p--;
     return ( p == str || strlen(p+1) == 0 ? p : p+1 );

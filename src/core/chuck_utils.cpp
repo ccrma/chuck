@@ -58,7 +58,8 @@ void * checked_malloc( int len )
 
 c_str cc_str( char * s )
 {
-    c_str p = (c_str)checked_malloc( strlen(s)+1 );
+    t_CKINT len = strlen(s) + 1;
+    c_str p = (c_str)checked_malloc( len );
     strcpy( p, s );
 
     return p;

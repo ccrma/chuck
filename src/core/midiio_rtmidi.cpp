@@ -622,8 +622,8 @@ void MidiInManager::cb_midi_input( double deltatime, std::vector<unsigned char> 
     // it needs to know its device number so it can inform all VMs waiting
     // on that device number.
     // --> device num stored in userData
-    unsigned int nBytes = (unsigned int) msg->size();
-    unsigned int device_num = (unsigned int) ((unsigned long) userData);
+    t_CKUINT nBytes = (t_CKUINT)msg->size();
+    t_CKUINT device_num = (t_CKUINT)userData;
     // check if we know the bufs for that device num (we should!)
     if( device_num >= the_bufs.size() )
     {
@@ -1196,10 +1196,10 @@ void MidiScoreReader::cleanup()
         MidiNoteEvent * next = NULL;
         
         // clean up the tracks
-        for( long i = 0; i < m_midiFile->getNumberOfTracks(); i++ )
+        for( t_CKINT i = 0; i < m_midiFile->getNumberOfTracks(); i++ )
         {
             // for each track
-            for( long j = 0; j < m_events[i].size(); j++ )
+            for( t_CKINT j = 0; j < m_events[i].size(); j++ )
             {
                 // get track
                 e = m_events[i][j];
@@ -1280,7 +1280,7 @@ bool MidiScoreReader::load( const char * path, float velScale )
     m_indices.resize( m_midiFile->getNumberOfTracks() );
     m_countMaps.resize( m_midiFile->getNumberOfTracks() );
     // iterate and set
-    for( long i = 0; i < m_midiFile->getNumberOfTracks(); i++ )
+    for( t_CKINT i = 0; i < m_midiFile->getNumberOfTracks(); i++ )
     {
         // load up the arrays
         loadTrack( i, m_events[i], m_lyricEvents[i] );
@@ -1312,7 +1312,7 @@ bool MidiScoreReader::load( const char * path, float velScale )
 // name: getNumTracks()
 // desc: get the number of tracks
 //-----------------------------------------------------------------------------
-long MidiScoreReader::getNumTracks() const
+t_CKINT MidiScoreReader::getNumTracks() const
 {
     if( m_midiFile == NULL ) return 0;
     return m_midiFile->getNumberOfTracks();
@@ -1325,7 +1325,7 @@ long MidiScoreReader::getNumTracks() const
 // name: getNumTracksNonZero()
 // desc: get number of tracks with more than 0 zero
 //-----------------------------------------------------------------------------
-long MidiScoreReader::getNumTracksNonZero() const
+t_CKINT MidiScoreReader::getNumTracksNonZero() const
 {
     if( m_midiFile == NULL ) return 0;
     return m_numNonZeroTracks;
@@ -1338,7 +1338,7 @@ long MidiScoreReader::getNumTracksNonZero() const
 // name: getTracksNonZero()
 // desc: get a vector of tracks indices that have more than 0 events
 //-----------------------------------------------------------------------------
-const std::vector<long> & MidiScoreReader::getTracksNonZero() const
+const std::vector<t_CKINT> & MidiScoreReader::getTracksNonZero() const
 {
     return m_nonZeroTrackIndices;
 }
@@ -1363,7 +1363,7 @@ double MidiScoreReader::getBPM() const
 // name: getLowestNote()
 // desc: get lowest note for a track
 //-----------------------------------------------------------------------------
-long MidiScoreReader::getLowestNote( long track, const MidiNoteEvent * start )
+t_CKINT MidiScoreReader::getLowestNote( t_CKINT track, const MidiNoteEvent * start )
 {
     int lowestNote = 128;
     int startingPoint = 0;
@@ -1399,15 +1399,15 @@ long MidiScoreReader::getLowestNote( long track, const MidiNoteEvent * start )
 // name: getHighestNote()
 // desc: get highest note for a track
 //-----------------------------------------------------------------------------
-long MidiScoreReader::getHighestNote( long track, const MidiNoteEvent *start )
+t_CKINT MidiScoreReader::getHighestNote( t_CKINT track, const MidiNoteEvent *start )
 {
-    long highestNote = 0;
-    long startingPoint = 0;
+    t_CKINT highestNote = 0;
+    t_CKINT startingPoint = 0;
     
     // get the starting point
     if( start != NULL )
     {
-        for( long i = 0; i < m_events[track].size(); i++ )
+        for( t_CKINT i = 0; i < m_events[track].size(); i++ )
         {
             if( m_events[track].at(i) == start )
             {
@@ -1417,7 +1417,7 @@ long MidiScoreReader::getHighestNote( long track, const MidiNoteEvent *start )
         }
     }
     
-    for( long i = startingPoint; i < m_events[track].size(); i++ )
+    for( t_CKINT i = startingPoint; i < m_events[track].size(); i++ )
     {
         if( m_events[track].at(i)->data2 > highestNote )
             highestNote = m_events[track].at(i)->data2;
@@ -1435,7 +1435,7 @@ long MidiScoreReader::getHighestNote( long track, const MidiNoteEvent *start )
 // name: getTopEvent()
 // desc: return current (top-level) note event on track
 //-----------------------------------------------------------------------------
-const MidiNoteEvent * MidiScoreReader::getTopEvent( long track, long offset )
+const MidiNoteEvent * MidiScoreReader::getTopEvent( t_CKINT track, t_CKINT offset )
 {
     // sanity check
     if( !m_midiFile || track >= m_events.size() )
@@ -1445,7 +1445,7 @@ const MidiNoteEvent * MidiScoreReader::getTopEvent( long track, long offset )
     }
     
     // the new index
-    long index = m_indices[track] + offset;
+    t_CKINT index = m_indices[track] + offset;
     // check it
     if( index < 0 || index >= m_events[track].size() ) return NULL;
     // return it
@@ -1459,7 +1459,7 @@ const MidiNoteEvent * MidiScoreReader::getTopEvent( long track, long offset )
 // name: scanEvent()
 // desc: get the next event (respects simultaneous) + move to next
 //-----------------------------------------------------------------------------
-const MidiNoteEvent * MidiScoreReader::scanEvent( long track, bool & isNewSet )
+const MidiNoteEvent * MidiScoreReader::scanEvent( t_CKINT track, bool & isNewSet )
 {
     const MidiNoteEvent * e = NULL;
     isNewSet = false;
@@ -1492,7 +1492,7 @@ const MidiNoteEvent * MidiScoreReader::scanEvent( long track, bool & isNewSet )
 // name: seek()
 // desc: advance to an event on a track
 //-----------------------------------------------------------------------------
-bool MidiScoreReader::seek( long track, long numToAdvance )
+bool MidiScoreReader::seek( t_CKINT track, t_CKINT numToAdvance )
 {
     // sanity check
     if( !m_midiFile || track >= m_events.size() )
@@ -1502,7 +1502,7 @@ bool MidiScoreReader::seek( long track, long numToAdvance )
     }
     
     // the next index
-    long index = m_indices[track] + numToAdvance;
+    t_CKINT index = m_indices[track] + numToAdvance;
     // check it
     if( index < 0 ) index = 0;
     else if( index >= m_events[track].size() ) index = m_events[track].size();
@@ -1521,7 +1521,7 @@ bool MidiScoreReader::seek( long track, long numToAdvance )
 // name: seekToNoteOn()
 // desc: advance to an event on a track
 //-----------------------------------------------------------------------------
-bool MidiScoreReader::seekToNoteOn( long track )
+bool MidiScoreReader::seekToNoteOn( t_CKINT track )
 {
     // sanity check
     if( !m_midiFile || track >= m_events.size() )
@@ -1532,7 +1532,7 @@ bool MidiScoreReader::seekToNoteOn( long track )
     
     // event
     const MidiNoteEvent * e = NULL;
-    long index = 0;
+    t_CKINT index = 0;
     
     // go
     do {
@@ -1567,7 +1567,7 @@ void MidiScoreReader::rewind()
     if( !m_midiFile ) return;
     
     // set all indices to 0
-    for( long i = 0; i < m_midiFile->getNumberOfTracks(); i++ )
+    for( t_CKINT i = 0; i < m_midiFile->getNumberOfTracks(); i++ )
     {
         // clear
         m_indices[i] = 0;
@@ -1582,7 +1582,7 @@ void MidiScoreReader::rewind()
 // name: getEvents()
 // desc: get notes in a time window
 //-----------------------------------------------------------------------------
-void MidiScoreReader::getEvents( long track, double startTime, double endTime,
+void MidiScoreReader::getEvents( t_CKINT track, double startTime, double endTime,
                                  vector<const MidiNoteEvent *> & result,
                                  bool includeSimultaneous )
 {
@@ -1616,7 +1616,7 @@ void MidiScoreReader::getEvents( long track, double startTime, double endTime,
         return;
     
     // the index
-    unsigned long searchIndex = m_searchIndices[track];
+    t_CKUINT searchIndex = m_searchIndices[track];
     
     // scan for events within the window
     while( searchPtr )
@@ -1652,14 +1652,14 @@ void MidiScoreReader::getEvents( long track, double startTime, double endTime,
 // name: isDone()
 // desc: is done
 //-----------------------------------------------------------------------------
-bool MidiScoreReader::isDone( long track, double currTime )
+bool MidiScoreReader::isDone( t_CKINT track, double currTime )
 {
     // sanity check
     if( track < 0 || track >= m_events.size() )
         return true;
     
     // number of events on a track
-    long numEvents = m_events[track].size();
+    t_CKINT numEvents = m_events[track].size();
     // check time against last element
     if( numEvents <= 0 )
         return true;
@@ -1674,7 +1674,7 @@ bool MidiScoreReader::isDone( long track, double currTime )
 // name: applyControl()
 // desc: applies control data to an existing event
 //-----------------------------------------------------------------------------
-bool MidiScoreReader::applyControl( long track, long data2, long data3, MidiNoteEvent * e )
+bool MidiScoreReader::applyControl( t_CKINT track, t_CKINT data2, t_CKINT data3, MidiNoteEvent * e )
 {
     // sanity check
     if( !e ) return false;
@@ -1713,7 +1713,7 @@ bool MidiScoreReader::applyControl( long track, long data2, long data3, MidiNote
 // name: loadTrack()
 // desc: load a track from file
 //-----------------------------------------------------------------------------
-bool MidiScoreReader::loadTrack( long track, std::vector<MidiNoteEvent *> & data, std::vector<MidiLyricEvent *> & lyricData )
+bool MidiScoreReader::loadTrack( t_CKINT track, std::vector<MidiNoteEvent *> & data, std::vector<MidiLyricEvent *> & lyricData )
 {
     // sanity check
     if( !m_midiFile || track >= m_events.size() )
@@ -1748,7 +1748,7 @@ bool MidiScoreReader::loadTrack( long track, std::vector<MidiNoteEvent *> & data
         while( true )
         {
             // get the next MIDI event
-            unsigned long ticks = m_midiFile->getNextEvent( &shuttle, (unsigned int)track );
+            t_CKUINT ticks = m_midiFile->getNextEvent( &shuttle, (unsigned int)track );
             
             // accumulate time
             secondsAccum += ticks * m_midiFile->getTickSeconds();
@@ -1952,7 +1952,7 @@ void MidiScoreReader::enqueue_front( const MidiNoteEvent * e )
 // name: getNumEvents()
 // desc: get number of events on a track
 //-----------------------------------------------------------------------------
-long MidiScoreReader::getNumEvents( long track ) const
+t_CKINT MidiScoreReader::getNumEvents( t_CKINT track ) const
 {
     // sanity check
     if( track < 0 || track >= m_events.size() )
@@ -1970,7 +1970,7 @@ long MidiScoreReader::getNumEvents( long track ) const
 // desc: get an entire track's note events
 //-----------------------------------------------------------------------------
 static vector<MidiNoteEvent *> s_nullNoteVector;
-const vector<MidiNoteEvent *> & MidiScoreReader::getNoteEvents( long track )
+const vector<MidiNoteEvent *> & MidiScoreReader::getNoteEvents( t_CKINT track )
 {
     // sanity check
     if( track < 0 || track >= m_events.size() )
@@ -1987,7 +1987,7 @@ const vector<MidiNoteEvent *> & MidiScoreReader::getNoteEvents( long track )
 // desc: get an entire track's lyric events
 //-----------------------------------------------------------------------------
 static vector<MidiLyricEvent *> s_nullLyricVector;
-const vector<MidiLyricEvent *> & MidiScoreReader::getLyricEvents( long track )
+const vector<MidiLyricEvent *> & MidiScoreReader::getLyricEvents( t_CKINT track )
 {
     // sanity check
     if( track < 0 || track >= m_lyricEvents.size() )
@@ -2003,12 +2003,12 @@ const vector<MidiLyricEvent *> & MidiScoreReader::getLyricEvents( long track )
 // name: getCount()
 // desc: return a count associated with key
 //-----------------------------------------------------------------------------
-long MidiScoreReader::getCount( long track, const std::string & key )
+t_CKINT MidiScoreReader::getCount( t_CKINT track, const std::string & key )
 {
     // sanity check
     if( track < 0 || track >= m_events.size() ) return 0;
     // find
-    std::map< std::string, long >::iterator iter = m_countMaps[track].find( key );
+    std::map< std::string, t_CKINT >::iterator iter = m_countMaps[track].find( key );
     // not found
     if( iter == m_countMaps[track].end() ) return 0;
     // return value
@@ -2022,13 +2022,13 @@ long MidiScoreReader::getCount( long track, const std::string & key )
 // name: incrementCount()
 // desc: increment a count associated with key
 //-----------------------------------------------------------------------------
-void MidiScoreReader::incrementCount( long track, const std::string & key )
+void MidiScoreReader::incrementCount( t_CKINT track, const std::string & key )
 {
     // sanity check
     if( track < 0 || track >= m_events.size() ) return;
     
     // find
-    std::map< std::string, long >::iterator iter = m_countMaps[track].find( key );
+    std::map< std::string, t_CKINT >::iterator iter = m_countMaps[track].find( key );
     
     if( iter == m_countMaps[track].end() )
     {
@@ -2049,7 +2049,7 @@ void MidiScoreReader::incrementCount( long track, const std::string & key )
 // name: handleNoteOn()
 // desc: insert a note on into table
 //-----------------------------------------------------------------------------
-void MidiScoreReader::handleNoteOn( MidiNoteEvent * e, long note )
+void MidiScoreReader::handleNoteOn( MidiNoteEvent * e, t_CKINT note )
 {
     // sanity check
     if( !e )
@@ -2073,7 +2073,7 @@ void MidiScoreReader::handleNoteOn( MidiNoteEvent * e, long note )
 // name: handleNoteOff()
 // desc: insert a note off into table
 //-----------------------------------------------------------------------------
-void MidiScoreReader::handleNoteOff( long note, double time )
+void MidiScoreReader::handleNoteOff( t_CKINT note, double time )
 {
     // get the piano event
     MidiNoteEvent * e = m_activeNotes[note];
@@ -2095,7 +2095,7 @@ void MidiScoreReader::handleNoteOff( long note, double time )
 // name: setTrackName()
 // desc: sets track name
 //-----------------------------------------------------------------------------
-void MidiScoreReader::setTrackName( long track, const std::string & name )
+void MidiScoreReader::setTrackName( t_CKINT track, const std::string & name )
 {
     // x-map it!
     m_trackToName[track] = name;
@@ -2109,9 +2109,9 @@ void MidiScoreReader::setTrackName( long track, const std::string & name )
 // name: getTrackName()
 // desc: gets track name ("" if not present)
 //-----------------------------------------------------------------------------
-string MidiScoreReader::getTrackName( long track )
+string MidiScoreReader::getTrackName( t_CKINT track )
 {
-    map<long, string>::iterator itr = m_trackToName.find( track );
+    map<t_CKINT, string>::iterator itr = m_trackToName.find( track );
     
     if( itr == m_trackToName.end() )
         return "";
@@ -2126,10 +2126,10 @@ string MidiScoreReader::getTrackName( long track )
 // name: getTrackForName()
 // desc: gets the track with the given name (-1 if not present)
 //-----------------------------------------------------------------------------
-long MidiScoreReader::getTrackForName( const std::string & name )
+t_CKINT MidiScoreReader::getTrackForName( const std::string & name )
 {
     // look up the track index by name
-    map<string, long>::iterator itr = m_nameToTrack.find( name );
+    map<string, t_CKINT>::iterator itr = m_nameToTrack.find( name );
     
     // didn't find
     if( itr == m_nameToTrack.end() )

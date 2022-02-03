@@ -251,8 +251,8 @@ cleanup:
 // name: otf_send_file()
 // desc: ...
 //-----------------------------------------------------------------------------
-int otf_send_file( const char * fname, Net_Msg & msg, const char * op,
-                   ck_socket dest )
+t_CKINT otf_send_file( const char * fname, Net_Msg & msg, const char * op,
+                       ck_socket dest )
 {
     FILE * fd = NULL;
     struct stat fs;
@@ -355,7 +355,7 @@ int otf_send_file( const char * fname, Net_Msg & msg, const char * op,
 // name: otf_send_connect()
 // desc: ...
 //-----------------------------------------------------------------------------
-ck_socket otf_send_connect( const char * host, int port )
+ck_socket otf_send_connect( const char * host, t_CKINT port )
 {
     // log
     EM_log( CK_LOG_INFO, "otf connect: %s:%i", host, port );
@@ -389,8 +389,8 @@ ck_socket otf_send_connect( const char * host, int port )
 // name: otf_send_cmd()
 // desc: ...
 //-----------------------------------------------------------------------------
-int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, int port,
-                  int * is_otf )
+t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
+                      const char * host, t_CKINT port, t_CKINT * is_otf )
 {
     Net_Msg msg;
     // REFACTOR-2017 TODO: wat is global sigpipe mode

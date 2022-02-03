@@ -84,7 +84,7 @@ public:
 
 public:
     virtual const char * params() const
-    { static char buffer[256]; sprintf( buffer, "%ld", m_jmp ); return buffer; }
+    { static char buffer[256]; sprintf( buffer, "%ld", (long)m_jmp ); return buffer; }
 
 protected:
     t_CKUINT m_jmp;
@@ -105,7 +105,7 @@ public:
 
 public:
     virtual const char * params() const
-    { static char buffer[256]; sprintf( buffer, "%ld", m_val ); return buffer; }
+    { static char buffer[256]; sprintf( buffer, "%ld", (long)m_val ); return buffer; }
 
 protected:
     t_CKUINT m_val;
@@ -2134,7 +2134,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "src=%ld, base=%ld", m_val, base );
+      sprintf( buffer, "src=%ld, base=%ld", (long)m_val, (long)base );
       return buffer; }
 
 protected:
@@ -2159,7 +2159,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "src=%ld, base=%ld", m_val, base );
+      sprintf( buffer, "src=%ld, base=%ld", (long)m_val, (long)base );
       return buffer; }
 
 protected:
@@ -2184,7 +2184,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "src=%ld, base=%ld", m_val, base );
+      sprintf( buffer, "src=%ld, base=%ld", (long)m_val, (long)base );
       return buffer; }
 
 protected:
@@ -2209,7 +2209,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-        sprintf( buffer, "src=%ld, base=%ld", m_val, base );
+        sprintf( buffer, "src=%ld, base=%ld", (long)m_val, (long)base );
         return buffer; }
     
 protected:
@@ -2234,7 +2234,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-        sprintf( buffer, "src=%ld, base=%ld", m_val, base );
+        sprintf( buffer, "src=%ld, base=%ld", (long)m_val, (long)base );
         return buffer; }
     
 protected:
@@ -2284,7 +2284,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "src=%ld, base=%ld", m_val, base );
+      sprintf( buffer, "src=%ld, base=%ld", (long)m_val, (long)base );
       return buffer; }
 
 protected:
@@ -2369,7 +2369,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "offset=%ld, value=%ld", m_offset, m_val );
+      sprintf( buffer, "offset=%ld, value=%ld", (long)m_offset, (long)m_val );
       return buffer; }
 
 protected:
@@ -2394,7 +2394,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "offset=%ld, value=%f", m_offset, m_val );
+      sprintf( buffer, "offset=%ld, value=%f", (long)m_offset, m_val );
       return buffer; }
 
 protected:
@@ -3193,8 +3193,8 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "kind=%ld, emit_addr=%ld istr=%ld", 
-               m_kind, m_emit_addr, m_istr );
+      sprintf( buffer, "kind=%ld, emit_addr=%p istr=%ld", 
+          (long)m_kind, (void *)m_emit_addr, (long)m_istr );
       return buffer; }
 
 protected:
@@ -3220,7 +3220,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "kind=%ld, emit_addr=%ld", m_kind, m_emit_addr );
+      sprintf( buffer, "kind=%ld, emit_addr=%p", (long)m_kind, (void *)m_emit_addr );
       return buffer; }
 
 protected:
@@ -3247,7 +3247,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "depth=%ld, kind=%ld, emit_addr=%ld", m_depth, m_kind, m_emit_addr );
+      sprintf( buffer, "depth=%ld, kind=%ld, emit_addr=%p", (long)m_depth, (long)m_kind, (void *)m_emit_addr );
       return buffer; }
 
 protected:
@@ -3276,7 +3276,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "offset=%ld, kind=%ld, emit_addr=%ld", m_offset, m_kind, m_emit_addr );
+      sprintf( buffer, "offset=%ld, kind=%ld, emit_addr=%p", (long)m_offset, (long)m_kind, (void *)m_emit_addr );
       return buffer; }
 
 protected:
@@ -3302,7 +3302,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "offset=%ld", m_offset );
+      sprintf( buffer, "offset=%ld", (long)m_offset );
       return buffer; }
 
 protected:
@@ -3326,7 +3326,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-        sprintf( buffer, "native_func=%ld", m_native_func );
+        sprintf( buffer, "native_func=%p", (void *)m_native_func );
         return buffer; }
     
 protected:
@@ -3350,7 +3350,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "offset=%ld, size=%ld, kind=%ld, emit_addr=%ld", m_offset, m_size, m_kind, m_emit_addr );
+      sprintf( buffer, "offset=%ld, size=%ld, kind=%ld, emit_addr=%p", (long)m_offset, (long)m_size, (long)m_kind, (void *)m_emit_addr );
       return buffer; }
 
 protected:
@@ -3377,7 +3377,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "addr=%ld, kind=%ld, emit_addr=%ld", (t_CKUINT)m_addr, m_kind, m_emit_addr );
+      sprintf( buffer, "addr=%p, kind=%ld, emit_addr=%p", (void *)m_addr, (long)m_kind, (void *)m_emit_addr );
       return buffer; }
 
 protected:
@@ -3403,7 +3403,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "func=%ld", (t_CKUINT)m_func );
+      sprintf( buffer, "func=%p", (void *)m_func );
       return buffer; }
 
 protected:
@@ -3427,7 +3427,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "is_mem=%ld, emit_addr=%ld", m_is_mem, m_emit_addr );
+      sprintf( buffer, "is_mem=%ld, emit_addr=%p", (long)m_is_mem, (void *)m_emit_addr );
       return buffer; }
 
 protected:
@@ -3452,7 +3452,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-      sprintf( buffer, "is_mem=%ld, emit_addr=%ld", m_is_mem, m_emit_addr );
+      sprintf( buffer, "is_mem=%ld, emit_addr=%p", (long)m_is_mem, (void *)m_emit_addr );
       return buffer; }
 
 protected:
@@ -3477,7 +3477,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-        sprintf( buffer, "is_mem=%ld, emit_addr=%ld", m_is_mem, m_emit_addr );
+        sprintf( buffer, "is_mem=%ld, emit_addr=%p", (long)m_is_mem, (void *)m_emit_addr );
         return buffer; }
     
 protected:
@@ -3502,7 +3502,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[256];
-        sprintf( buffer, "is_mem=%ld, emit_addr=%ld", m_is_mem, m_emit_addr );
+        sprintf( buffer, "is_mem=%ld, emit_addr=%p", (long)m_is_mem, (void *)m_emit_addr );
         return buffer; }
     
 protected:

@@ -2851,7 +2851,7 @@ t_CKINT Chuck_IO_Serial::readInt( t_CKINT flags )
         return 0;
     }
     
-    t_CKINT i = 0;
+    long i = 0; // 1.4.1.1 (ge) changed from t_CKUINT; to clear warning for fscanf using %li
     
     if( m_flags & Chuck_IO_File::TYPE_BINARY )
     {
@@ -3015,8 +3015,8 @@ void Chuck_IO_Serial::write( const std::string & val )
     {
         start_read_thread();
         
-        int len = val.length();
-        for(int i = 0; i < len; i++)
+        t_CKUINT len = val.length();
+        for(t_CKUINT i = 0; i < len; i++)
             // TODO: efficiency
             m_writeBuffer.put(val[i]);
         
@@ -3063,13 +3063,13 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
         {
             // TODO: don't use m_tmp_buf (thread safety?)
 #ifdef WIN32
-            _snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%li", val);
+            _snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%li", (long)val);
             m_tmp_buf[m_tmp_buf_max - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
 #else
             snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%li", val);
 #endif       
-            int len = strlen((char *)m_tmp_buf);
-            for(int i = 0; i < len; i++)
+            t_CKUINT len = strlen((char *)m_tmp_buf);
+            for(t_CKUINT i = 0; i < len; i++)
                 // TODO: efficiency
                 m_writeBuffer.put(m_tmp_buf[i]);
             
@@ -3102,7 +3102,7 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
     {
         if( m_flags & Chuck_IO_File::TYPE_ASCII )
         {
-            fprintf( m_cfd, "%li", val );
+            fprintf( m_cfd, "%li", (long)val );
         }
         else
         {
@@ -3134,8 +3134,8 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
             snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%f", val);
 #endif       
             
-            int len = strlen((char *)m_tmp_buf);
-            for(int i = 0; i < len; i++)
+            t_CKUINT len = strlen((char *)m_tmp_buf);
+            for(t_CKUINT i = 0; i < len; i++)
                 // TODO: efficiency
                 m_writeBuffer.put(m_tmp_buf[i]);
             
@@ -3517,7 +3517,7 @@ t_CKINT Chuck_IO_Serial::buffer_bytes_to_tmp(t_CKINT num_bytes)
 t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
 {
     t_CKUINT len = 0;
-    Chuck_String * str;
+    Chuck_String * str = NULL;
     
     while(!m_do_exit)
     {

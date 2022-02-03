@@ -167,7 +167,7 @@ private:
         OscInServer * _this = (OscInServer *) data;
 
 #ifdef WIN32
-        return (int) _this->server_cb();
+        return (t_CKINT)_this->server_cb();
 #else
         return _this->server_cb();
 #endif
@@ -185,7 +185,7 @@ private:
                                     std::string &path, t_CKBOOL &nopath,
                                     std::string &type, t_CKBOOL &notype)
     {
-        int comma_pos = method.find(',');
+        t_CKINT comma_pos = method.find(',');
         
         if(comma_pos != method.npos)
         {
@@ -519,7 +519,7 @@ public:
     t_CKBOOL start(const std::string &method)
     {
         std::string path;
-        int comma_pos = method.find(',');
+        t_CKINT comma_pos = method.find(',');
         if(comma_pos != method.npos) m_path = method.substr(0, comma_pos);
         else m_path = method;
         
@@ -888,7 +888,7 @@ CK_DLL_MFUN(oscin_removeAllAddresses)
     
     in->removeAllMethods();
     
-error:
+// error:
     return;
 }
 
@@ -898,7 +898,7 @@ CK_DLL_MFUN(oscin_listenAll)
     
     in->addMethod("");
     
-error:
+// error:
     return;
 }
 
@@ -908,7 +908,7 @@ CK_DLL_MFUN(oscin_msg)
     
     in->removeAllMethods();
     
-error:
+// error:
     return;
 }
 

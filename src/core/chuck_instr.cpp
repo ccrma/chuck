@@ -4064,7 +4064,7 @@ const char * Chuck_Instr_Instantiate_Object::params() const
 const char * Chuck_Instr_Pre_Ctor_Array_Top::params() const
 {
     static char buffer[256];
-    sprintf( buffer, "val=%ld, type=\"%s\"", m_val, type ? type->c_name() : "[empty]" );
+    sprintf( buffer, "val=%ld, type=\"%s\"", (long)m_val, type ? type->c_name() : "[empty]" );
     return buffer;
 }
 
@@ -5015,7 +5015,7 @@ Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * t,
 
     // append length
     char buffer[16];
-    sprintf( buffer, "[%ld]", m_length );
+    sprintf( buffer, "[%ld]", (long)m_length );
     strcat( m_param_str, buffer );
 }
 

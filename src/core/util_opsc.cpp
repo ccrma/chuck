@@ -885,7 +885,7 @@ static int strlen(char *s) {
 #define STRING_ALIGN_PAD 4
 int OSC_effectiveStringLength(char *string)
 {
-    int len = strlen(string) + 1;  /* We need space for the null char. */
+    t_CKINT len = strlen(string) + 1;  /* We need space for the null char. */
     
     /* Round up len to next multiple of STRING_ALIGN_PAD to account for alignment padding */
     if((len % STRING_ALIGN_PAD) != 0) {
@@ -1168,7 +1168,7 @@ void UDP_Port_Listener::init()
     m_in->init();
 }
 
-int UDP_Port_Listener::nsubs() { return m_subscribers.size(); }
+int UDP_Port_Listener::nsubs() { return (int)m_subscribers.size(); }
 
 bool UDP_Port_Listener::add( UDP_Subscriber * sub )
 {
@@ -1485,9 +1485,9 @@ OSC_Transmitter::addMessage( char *address, char * args, ...)
    
    OSC_writeAddressAndTypes( &_osc, address, args );
 
-   int argnum = strlen(args);
-   int osc_err = 0;
-   for( int j = 1; !osc_err && j < argnum; j++ ) { 
+   t_CKINT argnum = strlen(args);
+   t_CKINT osc_err = 0;
+   for(t_CKINT j = 1; !osc_err && j < argnum; j++ ) {
       switch ( args[j] ) { 
       case 'i':
          osc_err = OSC_writeIntArg    ( &_osc, va_arg(tags, int) );
@@ -1513,7 +1513,7 @@ OSC_Transmitter::addMessage( char *address, char * args, ...)
 void
 OSC_Transmitter::startMessage( char * spec ) { 
     
-    int len = strlen( spec );
+    t_CKINT len = strlen( spec );
     
     char * comma = strchr( spec, ',');
     char * space = strchr ( spec, ' ');
@@ -1532,7 +1532,7 @@ OSC_Transmitter::startMessage( char * address, char * args )
 { 
     // OSC_writeAddressAndTypes( &_osc, address, args );
     char addrfix[512];
-    int addrlen = strlen( address );
+    t_CKINT addrlen = strlen( address );
     // int mx = strlen(address) + strlen(args) + 1; // either we need to add a comma to args,
     // or it's got junk in it. 
     // char addrfix[] = new char[mx]; // (char*) malloc( mx * sizeof( char ) );
@@ -2230,7 +2230,7 @@ OSC_Address_Space::parseSpec() {
 
 //   CK_FPRINTF_STDERR( " parsing spec- address %s :: type %s\n", _address, _type );
 
-   int n = strlen ( type );
+   t_CKINT n = strlen ( type );
    _noArgs = ( n == 0 );
    resizeData( ( n < 1 ) ? 1 : n );
    _qread = 0;
@@ -2491,7 +2491,7 @@ OSC_Address_Space::queue_mesg( OSCMesg * m )
         
         float *fp;
         int   *ip;
-        int   clen;
+        t_CKINT   clen;
         while ( *type != '\0' ) { 
             switch ( *type ) { 
             case 'f':

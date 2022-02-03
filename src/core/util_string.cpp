@@ -53,7 +53,11 @@ using namespace std;
 string itoa( t_CKINT val )
 {
     char buffer[128];
-    sprintf( buffer, "%li", val );
+#ifdef _WIN64
+    sprintf( buffer, "%lld", val );
+#else
+    sprintf( buffer, "%ld", val );
+#endif
     return string(buffer);
 }
 
@@ -68,7 +72,7 @@ string ftoa( t_CKFLOAT val, t_CKUINT precision )
     char str[32];
     char buffer[128];
     if( precision > 32 ) precision = 32;
-    sprintf( str, "%%.%lif", precision );
+    sprintf( str, "%%.%lif", (long)precision );
     sprintf( buffer, str, val );
     return string(buffer);
 }
@@ -469,7 +473,7 @@ std::string extract_filepath_dir(std::string &filepath)
 //#endif
     
     // if the last character is a slash, skip it
-    int i = filepath.rfind(path_separator);
+    t_CKINT i = filepath.rfind(path_separator);
     
     if(i == std::string::npos)
         return std::string();
@@ -556,7 +560,7 @@ std::string normalize_directory_separator(const std::string &filepath)
 {
 #ifdef __PLATFORM_WIN32__
     std::string new_filepath = filepath;
-    int len = new_filepath.size();
+    t_CKINT len = new_filepath.size();
     for(int i = 0; i < len; i++)
     {
         if(new_filepath[i] == '\\') new_filepath[i] = '/';

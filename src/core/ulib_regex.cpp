@@ -84,9 +84,8 @@ DLL_QUERY regex_query( Chuck_DL_Query * QUERY )
     
     return TRUE;
     
-error:
-    
-    return FALSE;
+//error:
+//    return FALSE;
 }
 
 

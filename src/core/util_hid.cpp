@@ -5255,7 +5255,7 @@ int Joystick_count()
 {
     if( !joysticks )
         return 0;
-    return joysticks->size();
+    return (int)joysticks->size();
 }
 
 int Joystick_open( int js )
@@ -5887,7 +5887,7 @@ int Keyboard_count()
 {
     if( !keyboards )
         return 0;
-    return keyboards->size();
+    return (int)keyboards->size();
 }
 
 int Keyboard_open( int k )
@@ -6155,7 +6155,7 @@ int Mouse_count()
 {
     if( !mice )
         return 0;
-    return mice->size();
+    return (int)mice->size();
 }
 
 int Mouse_open( int m )

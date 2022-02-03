@@ -4958,7 +4958,8 @@ psf_memset (void *s, int c, sf_count_t len)
 
 void psf_get_date_str (char *str, int maxlen)
 {	time_t		current ;
-	struct tm	timedata, *tmptr ;
+	struct tm	timedata, *tmptr = NULL;
+	memset( &timedata, 0, sizeof(struct tm) ); // 1.4.1.1 (ge) clear memory
 
 	time (&current) ;
 
