@@ -39,7 +39,7 @@
 #include <string.h>
 #include <stdlib.h>
 #ifndef __PLATFORM_WIN32__
-include <unistd.h>
+#include <unistd.h>
 #else
 #define YY_NO_UNISTD_H 1
 #include <io.h>
