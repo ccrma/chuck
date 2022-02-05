@@ -476,7 +476,7 @@ bool ChucK::initCompiler()
     t_CKBOOL auto_depend = getParamInt( CHUCK_PARAM_AUTO_DEPEND ) != 0;
     t_CKUINT deprecate = getParamInt( CHUCK_PARAM_DEPRECATE_LEVEL );
     std::string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
-    
+
     // instantiate compiler
     m_carrier->compiler = new Chuck_Compiler();
     // reference back to carrier
@@ -520,6 +520,9 @@ bool ChucK::initCompiler()
         cwd += '/';
         // deferring this step until later, and only for Windows
         // cwd = normalize_directory_separator(cwd) + "/";
+
+        // 1.4.1.1 (ge) added -- expand for things like ~
+        workingDir = expand_filepath( workingDir, FALSE );
 
         // 1.4.1.0 (ge) added -- test for absolute path
         // 1.4.1.1 (ge) deals with windows absolute paths: e.g., "C:\"

@@ -367,68 +367,94 @@ done:
 
 /* from http://developer.apple.com/library/mac/#qa/qa1549/_index.html */
 #if !defined(__PLATFORM_WIN32__) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
-#include <glob.h>
 
-
+#include <wordexp.h>
 //-----------------------------------------------------------------------------
 // name: expandTildePath()
-// desc: expand ~ path
+// desc: expand ~ path, does not care whether path is valid or not
 //-----------------------------------------------------------------------------
-//std::string expandTildePath( const std::string & path )
-//{
-//    glob_t globbuf;
-//    char ** v;
-//    char * expandedPath = NULL;
-//    // default is the original path
-//    std::string result = path;
-//
-//    // search for pathnames matching pattern
-//    if( glob(path, GLOB_TILDE, NULL, &globbuf) == 0 ) // success
-//    {
-//        // list of matched pathnames
-//        v = globbuf.gl_pathv;
-//        // number of matched pathnames, gl_pathc == 1
-//        expandedPath = v[0];
-//        // copy
-//        result = expandedPath;
-//        // free up
-//        globfree(&globbuf);
-//    }
-//
-//    // return result
-//    return result;
-//}
+std::string expandTildePath( const std::string & path )
+{
+    wordexp_t we;
+    // default is the original path
+    std::string result = path;
 
+    // search for pathnames matching pattern
+    if( wordexp(path.c_str(), &we, 0 ) == 0 ) // success
+    {
+        // check results number
+        if( we.we_wordc > 0 )
+        {
+            // number of matched pathnames
+            result = we.we_wordv[0];
+        }
+        // free up
+        wordfree( &we );
+    }
 
-char* CreatePathByExpandingTildePath(const char* path)
+    // return result
+    return result;
+}
+
+#include <glob.h>
+//-----------------------------------------------------------------------------
+// name: globTildePath()
+// desc: expand ~ path, making sure the path actually exists
+//       adapted from CreatePathByExpandingTildePath below
+//-----------------------------------------------------------------------------
+std::string globTildePath( const std::string & path )
 {
     glob_t globbuf;
-    char **v;
-    char *expandedPath = NULL, *result = NULL;
+    // default is the original path
+    std::string result = path;
 
-    assert(path != NULL);
-
-    if (glob(path, GLOB_TILDE, NULL, &globbuf) == 0) //success
+    // search for pathnames matching pattern
+    if( glob(path.c_str(), GLOB_TILDE, NULL, &globbuf) == 0 ) // success
     {
-        v = globbuf.gl_pathv; //list of matched pathnames
-        expandedPath = v[0]; //number of matched pathnames, gl_pathc == 1
-
-        size_t toCopy = strlen(expandedPath) + 1; //the extra char is for the null-termination
-        result = (char*)calloc(1, toCopy);
-        if(result)
+        // number of matched pathnames
+        if( globbuf.gl_pathc > 0 )
         {
-            //copy the null-termination as well
-            memcpy(result, expandedPath, toCopy);
-            // was: strncpy(result, expandedPath,strlen(expandedPath) + 1);
-            // which was generating a warning on linux/gcc
-            // warning: ‘char* strncpy(char*, const char*, size_t)’ specified
-            // bound depends on the length of the source argument [-Wstringop-overflow=]
+            // copy
+            result = globbuf.gl_pathv[0];
         }
+        // free up
         globfree(&globbuf);
     }
 
+    // return result
     return result;
 }
+
+// original
+//char* CreatePathByExpandingTildePath(const char* path)
+//{
+//    glob_t globbuf;
+//    char **v;
+//    char *expandedPath = NULL, *result = NULL;
+//
+//    assert(path != NULL);
+//
+//    if (glob(path, GLOB_TILDE, NULL, &globbuf) == 0) //success
+//    {
+//        v = globbuf.gl_pathv; //list of matched pathnames
+//        expandedPath = v[0]; //number of matched pathnames, gl_pathc == 1
+//
+//        size_t toCopy = strlen(expandedPath) + 1; //the extra char is for the null-termination
+//        result = (char*)calloc(1, toCopy);
+//        if(result)
+//        {
+//            //copy the null-termination as well
+//            memcpy(result, expandedPath, toCopy);
+//            // was: strncpy(result, expandedPath,strlen(expandedPath) + 1);
+//            // which was generating a warning on linux/gcc
+//            // warning: ‘char* strncpy(char*, const char*, size_t)’ specified
+//            // bound depends on the length of the source argument [-Wstringop-overflow=]
+//        }
+//        globfree(&globbuf);
+//    }
+//
+//    return result;
+//}
 #endif // __PLATFORM_WIN32__ && __EMSCRIPTEN__ && __ANDROID__
 
 
@@ -443,7 +469,6 @@ std::string get_full_path( const std::string & fp )
 #ifndef __PLATFORM_WIN32__
     
     char buf[PATH_MAX];
-    
     char * result = realpath(fp.c_str(), buf);
     
     // try with .ck extension
@@ -458,7 +483,6 @@ std::string get_full_path( const std::string & fp )
 #else //
     
 	char buf[MAX_PATH];
-
 	DWORD result = GetFullPathName(fp.c_str(), MAX_PATH, buf, NULL);
 
     // try with .ck extension
@@ -480,23 +504,17 @@ std::string get_full_path( const std::string & fp )
 // name: expand_filepath()
 // desc: if possible return expand path (e.g., from the unix ~)
 //-----------------------------------------------------------------------------
-std::string expand_filepath( std::string & fp )
+std::string expand_filepath( std::string & fp, t_CKBOOL ensurePathExists )
 {
 #if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__) || defined(__EMSCRIPTEN__) || defined(__ANDROID__)
     // no expansion in Windows systems or Emscripten or Android
     return fp;
 #else
     // expand ~ to full path
-    char * expanded_cstr = CreatePathByExpandingTildePath( fp.c_str() );
-    // check
-    if( expanded_cstr == NULL )
-        return fp;
-    // make c++ string
-    std::string expanded_stdstr = expanded_cstr;
-    // free memory
-    free(expanded_cstr);
-    // return by value
-    return expanded_stdstr;
+    if( ensurePathExists )
+        return globTildePath( fp );
+    else
+        return expandTildePath( fp );
 #endif
 }
 
