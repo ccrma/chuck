@@ -363,11 +363,41 @@ done:
 }
 
 
+
+
 /* from http://developer.apple.com/library/mac/#qa/qa1549/_index.html */
-
 #if !defined(__PLATFORM_WIN32__) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
-
 #include <glob.h>
+
+
+//-----------------------------------------------------------------------------
+// name: expandTildePath()
+// desc: expand ~ path
+//-----------------------------------------------------------------------------
+//std::string expandTildePath( const std::string & path )
+//{
+//    glob_t globbuf;
+//    char ** v;
+//    char * expandedPath = NULL;
+//    // default is the original path
+//    std::string result = path;
+//
+//    // search for pathnames matching pattern
+//    if( glob(path, GLOB_TILDE, NULL, &globbuf) == 0 ) // success
+//    {
+//        // list of matched pathnames
+//        v = globbuf.gl_pathv;
+//        // number of matched pathnames, gl_pathc == 1
+//        expandedPath = v[0];
+//        // copy
+//        result = expandedPath;
+//        // free up
+//        globfree(&globbuf);
+//    }
+//
+//    // return result
+//    return result;
+//}
 
 
 char* CreatePathByExpandingTildePath(const char* path)
@@ -399,11 +429,15 @@ char* CreatePathByExpandingTildePath(const char* path)
 
     return result;
 }
-
 #endif // __PLATFORM_WIN32__ && __EMSCRIPTEN__ && __ANDROID__
 
 
-// get full path to file
+
+
+//-----------------------------------------------------------------------------
+// name: get_full_path()
+// desc: get full path to file
+//-----------------------------------------------------------------------------
 std::string get_full_path( const std::string & fp )
 {
 #ifndef __PLATFORM_WIN32__
@@ -440,28 +474,39 @@ std::string get_full_path( const std::string & fp )
 }
 
 
+
+
+//-----------------------------------------------------------------------------
+// name: expand_filepath()
+// desc: if possible return expand path (e.g., from the unix ~)
+//-----------------------------------------------------------------------------
 std::string expand_filepath( std::string & fp )
 {
 #if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__) || defined(__EMSCRIPTEN__) || defined(__ANDROID__)
     // no expansion in Windows systems or Emscripten or Android
     return fp;
 #else
-    
+    // expand ~ to full path
     char * expanded_cstr = CreatePathByExpandingTildePath( fp.c_str() );
-    
-    if(expanded_cstr == NULL)
+    // check
+    if( expanded_cstr == NULL )
         return fp;
-    
+    // make c++ string
     std::string expanded_stdstr = expanded_cstr;
-    
+    // free memory
     free(expanded_cstr);
-    
+    // return by value
     return expanded_stdstr;
-    
 #endif
 }
 
 
+
+
+//-----------------------------------------------------------------------------
+// name: extract_filepath_dir()
+// desc: return the directory portion of a file path, excluding the filename
+//-----------------------------------------------------------------------------
 std::string extract_filepath_dir(std::string &filepath)
 {
     char path_separator = '/';
@@ -474,10 +519,9 @@ std::string extract_filepath_dir(std::string &filepath)
     
     // if the last character is a slash, skip it
     t_CKINT i = filepath.rfind(path_separator);
-    
+    // if not separator found, return empty string
     if(i == std::string::npos)
-        return std::string();
-    
+        return "";
     // skip any/all extra trailing slashes
     while( i > 0 && filepath[i-1] == path_separator )
         i--;
@@ -486,7 +530,14 @@ std::string extract_filepath_dir(std::string &filepath)
     return std::string(filepath, 0, i+1);
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// file: dir_go_up()
+// desc: return directory path 'numUp' levels up the chain
 // added: ge 1.3.2.0
+//-----------------------------------------------------------------------------
 string dir_go_up( const string & dir, t_CKINT numUp )
 {
     // separator
@@ -507,14 +558,13 @@ string dir_go_up( const string & dir, t_CKINT numUp )
     {
         // find the last slash
         pos = dir.rfind( path_separator, pos-1 );
+        // if no separator found, return empty string
+        if (pos == string::npos)
+            return "";
         // skip any extra slashes
         while( pos > 0 && dir[pos-1] == path_separator )
             pos--;
-
-        // not there
-        if( pos == string::npos )
-            return "";
-        else if( pos == 0 )
+        if( pos == 0 )
             return "/";
 
         // TODO: what about windows?
@@ -523,14 +573,16 @@ string dir_go_up( const string & dir, t_CKINT numUp )
         // decrement
         numUp--;
     }
-    
-    
+
     // otherwise
     // change spencer 2014-7-17: include trailing slash
     string str = string( dir, 0, pos );
     if( str[str.length()-1] != '/' ) str = str + "/";
     return str;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: parse_path_list()
@@ -556,26 +608,66 @@ void parse_path_list( std::string & str, std::list<std::string> & lst )
 
 
 
-std::string normalize_directory_separator(const std::string &filepath)
+
+//-----------------------------------------------------------------------------
+// name: normalize_directory_separator()
+// desc: unify directory separator to be consistent across platforms;
+//       inside chuck, we are going with the single forward slash '/'
+//       as the generic directory separator; other separators will
+//       be converted to it
+//-----------------------------------------------------------------------------
+std::string normalize_directory_separator( const std::string & filepath )
 {
 #ifdef __PLATFORM_WIN32__
     std::string new_filepath = filepath;
     t_CKINT len = new_filepath.size();
     for(int i = 0; i < len; i++)
     {
-        if(new_filepath[i] == '\\') new_filepath[i] = '/';
+        if( new_filepath[i] == '\\' ) new_filepath[i] = '/';
     }
-
     return new_filepath;
 #else
-    return std::string(filepath);
+    return filepath;
 #endif // __PLATFORM_WIN32__
 }
 
-int str_endsin(const char *str, const char *end)
+
+
+
+//-----------------------------------------------------------------------------
+// name: str_endsin()
+// desc: return true if the first string ends with the second
+//-----------------------------------------------------------------------------
+t_CKBOOL str_endsin( const char * str, const char * end )
 {
     size_t len = strlen(str);
     size_t endlen = strlen(end);
     
     return strncmp(str+(len-endlen), end, endlen) == 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: is_absolute_path()
+// desc: return true if path names an absolute path on the underlying platform
+// added: 1.4.1.1 (ge)
+//-----------------------------------------------------------------------------
+t_CKBOOL is_absolute_path( const std::string & path )
+{
+#ifdef __PLATFORM_WIN32__
+    // a little more involved in windows
+    if( path.length() >= 3 && path[1] == ':' && path[2] == '\\' )
+    {
+        // check drive letter (apparently windows limited to 26 drive letters)
+        if( (path[0] >= 'a' && path[0] <= 'z') || (path[0] >= 'A' && path[0] <= 'Z') )
+            return true;
+    }
+    // if we got here, then not absolute path
+    return false;
+#else
+    // does the path begin with '/'?
+    return( workingDir.length() != 0 && workingDir[0] == '/' );
+#endif
 }
