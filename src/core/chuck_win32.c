@@ -152,7 +152,7 @@ a_Program g_program = NULL;
 #  endif
 # endif
 
-#include "chuck.tab.h"
+#include "chuck_win32.h"
 /* Symbol kind.  */
 enum yysymbol_kind_t
 {
