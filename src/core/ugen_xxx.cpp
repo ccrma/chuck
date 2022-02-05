@@ -1880,7 +1880,7 @@ t_CKINT CNoise_Data::pink_tick( SAMPLE * out )
   t_CKINT pind = 0;
 
   //count trailing zeroes
-  while ( pind < pink_depth && ! (counter & ( 1 << pind ) ) ) pind++;
+  while ( pind < pink_depth && ! (counter & ( ((t_CKINT)1) << pind ) ) ) pind++;
 
   //  fprintf (stderr, "counter %d pink - %d \n", counter, pind );
 
@@ -1901,7 +1901,7 @@ t_CKINT CNoise_Data::xor_tick( SAMPLE * out )
   t_CKINT mask = 0;
   for ( t_CKINT i = 0; i < rand_bits ; i++ ) 
     if ( rand() <= fprob ) 
-      mask |= ( 1 << i );
+      mask |= ( ((t_CKINT)1) << i );
   last = last ^ mask;  
   *out = bias + scale * (SAMPLE)last;
   return TRUE;
@@ -1909,9 +1909,8 @@ t_CKINT CNoise_Data::xor_tick( SAMPLE * out )
 
 t_CKINT CNoise_Data::flip_tick( SAMPLE * out )
 {
-  t_CKINT ind = (t_CKINT) ( (double) rand_bits * rand() / ( RAND_MAX + 1.0 ) );
- 
-  last = last ^ ( 1 << ind );
+  t_CKINT ind = (t_CKINT)( (double)rand_bits * rand() / ( RAND_MAX + 1.0 ) ); 
+  last = last ^ ( ((t_CKINT)1) << ind );
   //  fprintf ( stderr, "ind - %d %d %f %f", ind, last, bias, scale );
   *out = bias + scale * (SAMPLE)last;
   return TRUE;
@@ -3366,7 +3365,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
             struct stat s;
             if( stat( filename, &s ) )
             {
-                CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot stat file '%s'...\n", filename );
+                CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot open file '%s'...\n", filename );
                 return;
             }
         }
@@ -3482,7 +3481,7 @@ CK_DLL_CTRL( sndbuf_ctrl_write )
     struct stat s;
     if( stat( filename, &s ) )
     {
-        CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot stat file '%s'...\n", filename );
+        CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot open file '%s'...\n", filename );
         return;
     }
     

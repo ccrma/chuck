@@ -13511,7 +13511,7 @@ SKINI :: SKINI(char *fileName)
   char msg[256];
 
   myFile = fopen(fileName,"r");
-  if ((t_CKUINT)myFile < 0) {
+  if( myFile == NULL ) { // 1.4.1.1 (ge) changed from myFile < 0, which isn't consistent with fopen return semantics
     sprintf(msg, "[chuck](via SKINI): Could not open or find file (%s).", fileName);
     handleError(msg, StkError::FILE_NOT_FOUND);
   }
@@ -16093,15 +16093,20 @@ void Stk :: sleep(unsigned long milliseconds)
 
 void Stk :: handleError( const char *message, StkError::TYPE type )
 {
-    if (type == StkError::WARNING) {
-        CK_FPRINTF_STDERR( "%s\n", message );
-    } else if (type == StkError::DEBUG_WARNING) {
+    if (type == StkError::WARNING)
+    {
+        if (strlen(message) > 0) { CK_FPRINTF_STDERR("[chuck](STK): %s\n", message); }
+    }
+    else if (type == StkError::DEBUG_WARNING)
+    {
 #if defined(_STK_DEBUG_)
-        CK_FPRINTF_STDERR( "%s\n", message );
+        if (strlen(message) > 0) { CK_FPRINTF_STDERR("[chuck](STK): %s\n", message); }
 #endif
-    } else {
+    }
+    else
+    {
         // print error message before throwing.
-        CK_FPRINTF_STDERR( "%s\n", message );
+        if (strlen(message) > 0) { CK_FPRINTF_STDERR("[chuck](STK): %s\n", message); }
         throw StkError(message, type);
     }
 }
@@ -19719,12 +19724,14 @@ MidiFileIn :: MidiFileIn( std::string fileName )
 {
     // ge: initialize
     bpm_ = 0;
-    
+    // 1.4.1.1 (ge) string buffer for error message
+    std::stringstream msg;
+
     // Attempt to open the file.
     file_.open( fileName.c_str(), std::ios::in | std::ios::binary );
     if ( !file_ ) {
-        CK_STDCOUT << "MidiFileIn: error opening or finding file (" <<  fileName << ").";
-        handleError( "", StkError::FILE_NOT_FOUND );
+        msg << "MidiFileIn: error opening or finding file (" <<  fileName << ").";
+        handleError( msg.str().c_str(), StkError::FILE_NOT_FOUND );
     }
     
     // Parse header info.
@@ -19738,8 +19745,8 @@ MidiFileIn :: MidiFileIn( std::string fileName )
 #endif
     length = (SINT32 *) &buffer;
     if ( strncmp( chunkType, "MThd", 4 ) || ( *length != 6 ) ) {
-        CK_STDCOUT << "MidiFileIn: file (" <<  fileName << ") does not appear to be a MIDI file!";
-        handleError( "", StkError::FILE_UNKNOWN_FORMAT );
+        msg << "MidiFileIn: file (" <<  fileName << ") does not appear to be a MIDI file!";
+        handleError( msg.str().c_str(), StkError::FILE_UNKNOWN_FORMAT );
     }
     
     // Read the MIDI file format.
@@ -19750,8 +19757,8 @@ MidiFileIn :: MidiFileIn( std::string fileName )
 #endif
     data = (SINT16 *) &buffer;
     if ( *data < 0 || *data > 2 ) {
-        CK_STDCOUT << "MidiFileIn: the file (" <<  fileName << ") format is invalid!";
-        handleError( "", StkError::FILE_ERROR );
+        msg << "MidiFileIn: the file (" <<  fileName << ") format is invalid!";
+        handleError( msg.str().c_str(), StkError::FILE_ERROR );
     }
     format_ = *data;
     
@@ -19761,8 +19768,8 @@ MidiFileIn :: MidiFileIn( std::string fileName )
     swap16((unsigned char *)&buffer);
 #endif
     if ( format_ == 0 && *data != 1 ) {
-        CK_STDCOUT << "MidiFileIn: invalid number of tracks (>1) for a file format = 0!";
-        handleError( "", StkError::FILE_ERROR );
+        msg << "MidiFileIn: invalid number of tracks (>1) for a file format = 0!";
+        handleError( msg.str().c_str(), StkError::FILE_ERROR );
     }
     nTracks_ = *data;
     
@@ -19854,8 +19861,8 @@ MidiFileIn :: MidiFileIn( std::string fileName )
     return;
     
 error:
-    CK_STDCOUT << "MidiFileIn: error reading from file (" <<  fileName << ").";
-    handleError( "", StkError::FILE_ERROR );
+    msg << "MidiFileIn: error reading from file (" <<  fileName << ").";
+    handleError( msg.str().c_str(), StkError::FILE_ERROR );
 }
 
 MidiFileIn :: ~MidiFileIn()
@@ -19894,10 +19901,11 @@ void MidiFileIn :: rewindTrack( unsigned int track )
 
 double MidiFileIn :: getTickSeconds( unsigned int track )
 {
+    std::stringstream msg;
     // Return the current tick value in seconds for the given track.
     if ( track >= nTracks_ ) {
-        CK_STDCOUT << "MidiFileIn::getTickSeconds: invalid track argument (" <<  track << ").";
-        handleError( "", StkError::WARNING ); return 0.0;
+        msg << "MidiFileIn::getTickSeconds: invalid track argument (" <<  track << ").";
+        handleError( msg.str().c_str(), StkError::WARNING ); return 0.0;
     }
     
     return tickSeconds_[track];
@@ -19925,10 +19933,13 @@ unsigned long MidiFileIn :: getNextEvent( std::vector<unsigned char> *event, uns
     // running sum of ticks for each track and update the tickSeconds_
     // parameter as needed based on the stored tempo map.
     
+    // 1.4.1.1 (ge) string buffer for error message
+    std::stringstream msg;
+
     event->clear();
     if ( track >= nTracks_ ) {
-        CK_STDCOUT << "MidiFileIn::getNextEvent: invalid track argument (" <<  track << ").";
-        handleError( "", StkError::WARNING ); return 0;
+        msg << "MidiFileIn::getNextEvent: invalid track argument (" <<  track << ").";
+        handleError( msg.str().c_str(), StkError::WARNING ); return 0;
     }
     
     // Check for the end of the track.
@@ -20024,19 +20035,20 @@ unsigned long MidiFileIn :: getNextEvent( std::vector<unsigned char> *event, uns
     return ticks;
     
 error:
-    CK_STDCOUT << "MidiFileIn::getNextEvent: file read error!";
-    handleError( "", StkError::FILE_ERROR );
+    msg << "MidiFileIn::getNextEvent: file read error!";
+    handleError( msg.str().c_str(), StkError::FILE_ERROR );
     return 0;
 }
 
 unsigned long MidiFileIn :: getNextMidiEvent( std::vector<unsigned char> *midiEvent, unsigned int track )
 {
+    std::stringstream msg;
     // Fill the user-provided vector with the next MIDI event in the
     // specified track (default = 0) and return the event delta time in
     // ticks. Meta-Events preceeding this event are skipped and ignored.
     if ( track >= nTracks_ ) {
-        CK_STDCOUT << "MidiFileIn::getNextMidiEvent: invalid track argument (" <<  track << ").";
-        handleError( "", StkError::WARNING ); return 0;
+        msg << "MidiFileIn::getNextMidiEvent: invalid track argument (" <<  track << ").";
+        handleError( msg.str().c_str(), StkError::WARNING ); return 0;
     }
     
     unsigned long ticks = getNextEvent( midiEvent, track );
@@ -27688,7 +27700,13 @@ CK_DLL_CTRL( WvOut_ctrl_matFilename )
         filename = buffer;
     }
     try { w->openFile( filename, 1, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
-    catch( StkError & e ) { goto done; }
+    catch( StkError & e )
+    {
+        // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+        CK_STDCERR << "[chuck]: WvOut cannot open mat file: " << filename << CK_STDENDL;
+        CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
+        goto done;
+    }
 
     // check
     if( carrier != NULL )
@@ -27730,7 +27748,15 @@ CK_DLL_CTRL( WvOut2_ctrl_matFilename )
         filename = buffer;
     }
     try { w->openFile( filename, 2, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
-    catch( StkError & e ) { goto done; }
+    catch (StkError) { goto done; }
+    //catch( StkError & e )
+    //{
+    //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+    //    CK_STDCERR << "[chuck]: WvOut2 cannot open mat file: " << filename << CK_STDENDL;
+    //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
+    //    goto done;
+    //}
+
 
     // check
     if( carrier != NULL )
@@ -27772,7 +27798,14 @@ CK_DLL_CTRL( WvOut_ctrl_sndFilename )
         filename = buffer;
     }
     try { w->openFile( filename, 1, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
-    catch( StkError & e ) { goto done; }
+    catch (StkError) { goto done; }
+    //catch( StkError & e )
+    //{
+    //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+    //    CK_STDCERR << "[chuck]: WvOut cannot open snd file: " << filename << CK_STDENDL;
+    //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
+    //    goto done;
+    //}
 
     // check
     if( carrier != NULL )
@@ -27814,7 +27847,14 @@ CK_DLL_CTRL( WvOut2_ctrl_sndFilename )
         filename = buffer;
     }
     try { w->openFile( filename, 2, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
-    catch( StkError & e ) { goto done; }
+    catch (StkError) { goto done; }
+    //catch( StkError & e )
+    //{
+    //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+    //    CK_STDCERR << "[chuck]: WvOut2 cannot open snd file: " << filename << CK_STDENDL;
+    //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
+    //    goto done;
+    //}
 
     // check
     if( carrier != NULL )
@@ -27856,11 +27896,14 @@ CK_DLL_CTRL( WvOut_ctrl_wavFilename )
         filename = buffer;
     }
     try { w->openFile( filename, 1, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
-    catch( StkError & e )
-    {
-        // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-        goto done;
-    }
+    catch (StkError) { goto done; }
+    //catch( StkError & e )
+    //{
+    //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+    //    CK_STDCERR << "[chuck]: WvOut cannot open wav file: " << filename << CK_STDENDL;
+    //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
+    //    goto done;
+    //}
 
     // check
     if( carrier != NULL )
@@ -27902,11 +27945,14 @@ CK_DLL_CTRL( WvOut2_ctrl_wavFilename )
         filename = buffer;
     }
     try { w->openFile( filename, 2, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
-    catch( StkError & e )
-    {
-        // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-        goto done;
-    }
+    catch (StkError) { goto done; }
+    //catch( StkError & e )
+    //{
+    //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+    //    CK_STDCERR << "[chuck]: WvOut2 cannot open wav file: " << filename << CK_STDENDL;
+    //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
+    //    goto done;
+    //}
 
     // check
     if( carrier != NULL )
@@ -27948,7 +27994,13 @@ CK_DLL_CTRL( WvOut_ctrl_rawFilename )
         filename = buffer;
     }
     try { w->openFile( filename, 1, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
-    catch( StkError & e ) { goto done; }
+    catch (StkError) { goto done; }
+    //catch( StkError & e )
+    //{
+    //    CK_STDCERR << "[chuck]: WvOut cannot open raw file: " << filename << CK_STDENDL;
+    //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
+    //    goto done;
+    //}
 
     // check
     if( carrier != NULL )
@@ -27990,7 +28042,13 @@ CK_DLL_CTRL( WvOut2_ctrl_rawFilename )
         filename = buffer;
     }
     try { w->openFile( filename, 2, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
-    catch( StkError & e ) { goto done; }
+    catch (StkError) { goto done; }
+    //catch( StkError & e )
+    //{
+    //    CK_STDCERR << "[chuck]: WvOut2 cannot open raw file: " << filename << CK_STDENDL;
+    //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
+    //    goto done;
+    //}
 
     // check
     if( carrier != NULL )
@@ -28032,7 +28090,13 @@ CK_DLL_CTRL( WvOut_ctrl_aifFilename )
         filename = buffer;
     }
     try { w->openFile( filename, 1, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
-    catch( StkError & e ) { goto done; }
+    catch (StkError) { goto done; }
+    //catch( StkError & e )
+    //{ 
+    //    CK_STDCERR << "[chuck]: WvOut cannot open aif file: " << filename << CK_STDENDL;
+    //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
+    //    goto done;
+    //}
 
     // check
     if( carrier != NULL )
@@ -28074,7 +28138,13 @@ CK_DLL_CTRL( WvOut2_ctrl_aifFilename )
         filename = buffer;
     }
     try { w->openFile( filename, 2, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
-    catch( StkError & e ) { goto done; }
+    catch (StkError) { goto done; }
+    //catch( StkError & e )
+    //{
+    //    CK_STDCERR << "[chuck]: WvOut2 cannot open aif file: " << filename << CK_STDENDL;
+    //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
+    //    goto done;
+    //}
 
     // check
     if( carrier != NULL )
@@ -28498,7 +28568,6 @@ CK_DLL_MFUN( MidiFileIn_open )
 {
     stk::MidiFileIn *f = (stk::MidiFileIn *) OBJ_MEMBER_UINT(SELF, MidiFileIn_offset_data);
     SAFE_DELETE(f);
-
     Chuck_String * str = GET_NEXT_STRING(ARGS);
     
     try
@@ -28507,8 +28576,10 @@ CK_DLL_MFUN( MidiFileIn_open )
         OBJ_MEMBER_UINT(SELF, MidiFileIn_offset_data) = (t_CKUINT) f;
         RETURN->v_int = 1;
     }
-    catch (StkError)
+    catch (StkError /* & e */)
     {
+        // CK_STDCERR << "[chuck]: error opening MIDI file: " << str->str() << CK_STDENDL;
+        // CK_STDCERR << "[chuck]: MidiFileIn error message '" << e.getMessage() << "'" << CK_STDENDL;
         RETURN->v_int = 0;
     }
 }

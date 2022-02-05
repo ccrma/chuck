@@ -1887,7 +1887,7 @@ tre_compile(regex_t *preg, const tre_char_t *regex, size_t n, int cflags)
   parse_ctx.mem = mem;
   parse_ctx.stack = stack;
   parse_ctx.re = regex;
-  parse_ctx.len = n;
+  parse_ctx.len = (int)n; // 1.4.1.1 (ge) added cast to get rid of win64 warning
   parse_ctx.cflags = cflags;
   parse_ctx.max_backref = -1;
   DPRINT(("tre_compile: parsing '%.*" STRF "'\n", (int)n, regex));
