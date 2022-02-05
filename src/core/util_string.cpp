@@ -506,7 +506,7 @@ std::string get_full_path( const std::string & fp )
 //-----------------------------------------------------------------------------
 std::string expand_filepath( std::string & fp, t_CKBOOL ensurePathExists )
 {
-#if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__) || defined(__EMSCRIPTEN__) || defined(__ANDROID__)
+#if defined(__PLATFORM_WIN32__) || defined(__EMSCRIPTEN__) || defined(__ANDROID__)
     // no expansion in Windows systems or Emscripten or Android
     return fp;
 #else
