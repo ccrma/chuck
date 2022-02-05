@@ -14,7 +14,7 @@ MidiMsg msg;
 // the filename
 string filename;
 // if no command line arguments provided
-if( me.args() == 0 ) me.sourceDir() + "bwv772.mid" => filename;
+if( me.args() == 0 ) me.dir() + "bwv772.mid" => filename;
 // else use that filename
 else me.arg(0) => filename;
 
