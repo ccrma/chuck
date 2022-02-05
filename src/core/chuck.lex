@@ -63,7 +63,7 @@ IS          (u|U|l|L)*
 
 // globals
 extern YYSTYPE yylval;
-int char_pos = 1;
+t_CKINT char_pos = 1;
 
 // define error handling
 #define YY_FATAL_ERROR(msg) EM_error2( 0, msg )

@@ -59,7 +59,7 @@ tre_filter_find(const unsigned char *str, size_t len, tre_filter_t *filter)
 	{
 	  DPRINT(("Found possible match at %d\n",
 		  str - str_orig));
-	  return str - str_orig;
+	  return (int)(str - str_orig); // 1.4.1.1 (ge) added cast to get rid of win64 warning
 	}
       else
 	{

@@ -1257,10 +1257,14 @@ bool MidiScoreReader::load( const char * path, float velScale )
         CK_STDCERR << "[chuck]:   | seconds / ticks = " << m_midiFile->getTickSeconds() << CK_STDENDL;
         CK_STDCERR << "[chuck]:   | BPM = " << m_midiFile->getBPM() << CK_STDENDL;
     }
-    catch ( StkError & e )
+    catch( StkError )
     {
         // you might want to do something more useful here.
-        CK_STDCERR << "[chuck]: error loading MIDI file: " << path << CK_STDENDL;
+        // CK_STDCERR << "[chuck]: error loading MIDI file: " << path << CK_STDENDL;
+
+        // 1.4.1.1 (ge) added
+        // CK_STDCERR << "[chuck]: error text: '" << e.getMessage() << "'" << CK_STDENDL;
+
         // delete
         cleanup();
         

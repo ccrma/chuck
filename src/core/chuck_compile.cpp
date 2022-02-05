@@ -838,7 +838,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
             {
                 // uhh ... 
                 EM_log( CK_LOG_INFO, 
-                        "unable to stat file '%s', ignoring for chugins", 
+                        "unable to open file '%s', ignoring for chugins", 
                         absolute_path.c_str() );
                 continue;
             }

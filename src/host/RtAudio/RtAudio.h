@@ -529,7 +529,12 @@ class RtAudio
   #include <windows.h>
   #include <process.h>
 
+#ifdef _WIN64
+  // 1.4.1.1 (ge) changed from unsigned long to unsigned long *
+  typedef unsigned long long ThreadHandle;
+#else
   typedef unsigned long ThreadHandle;
+#endif
   typedef CRITICAL_SECTION StreamMutex;
 
 #elif defined(__LINUX_ALSA__) || defined(__LINUX_PULSE__) || defined(__UNIX_JACK__) || defined(__LINUX_OSS__) || defined(__MACOSX_CORE__)

@@ -1888,7 +1888,7 @@ static void CALLBACK midiInputCallback( HMIDIOUT hmin,
   apiData->message.timeStamp = 0.0;
   if ( data->firstMessage == true ) data->firstMessage = false;
   else apiData->message.timeStamp = (double) ( timestamp - apiData->lastTime ) * 0.001;
-  apiData->lastTime = timestamp;
+  apiData->lastTime = (DWORD)timestamp; // 1.4.1.1 (ge) added (DWORD) cast to clear warning; should it be deref instead? TODO: find the context
 
   if ( inputStatus == MIM_DATA ) { // Channel or system message
 
@@ -2160,7 +2160,7 @@ RtMidiOut :: ~RtMidiOut()
 
 void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
 {
-  unsigned int nBytes = message->size();
+  size_t nBytes = message->size();
   if ( nBytes == 0 ) {
     errorString_ = "RtMidiOut::sendMessage: message argument is empty!";
     error( RtMidiError::WARNING );
@@ -2184,7 +2184,7 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
     // Create and prepare MIDIHDR structure.
     MIDIHDR sysex;
     sysex.lpData = (LPSTR) buffer;
-    sysex.dwBufferLength = nBytes;
+    sysex.dwBufferLength = (DWORD)nBytes;
     sysex.dwFlags = 0;
     result = midiOutPrepareHeader( data->outHandle,  &sysex, sizeof(MIDIHDR) ); 
     if ( result != MMSYSERR_NOERROR ) {

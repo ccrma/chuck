@@ -3784,7 +3784,7 @@ unsigned int RtApiDs :: getDeviceCount( void )
     dsDevices.erase( dsDevices.begin()-nErased );
   }
 
-  return dsDevices.size();
+  return (unsigned int)dsDevices.size();
 }
 
 RtAudio::DeviceInfo RtApiDs :: getDeviceInfo( unsigned int device )
@@ -3975,7 +3975,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     return FAILURE;
   }
 
-  unsigned int nDevices = dsDevices.size();
+  size_t nDevices = dsDevices.size();
   if ( nDevices == 0 ) {
     // This should not happen because a check is made before this function is called.
     errorText_ = "(DirectSound) no devices found!";
