@@ -668,6 +668,6 @@ t_CKBOOL is_absolute_path( const std::string & path )
     return false;
 #else
     // does the path begin with '/'?
-    return( workingDir.length() != 0 && workingDir[0] == '/' );
+    return( path.length() != 0 && path[0] == '/' );
 #endif
 }
