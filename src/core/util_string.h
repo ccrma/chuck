@@ -68,6 +68,7 @@ std::string get_full_path( const std::string & fp );
 // currently just expands ~ to HOME and ~user to user's home directory
 std::string expand_filepath( std::string & fp );
 
+// get directory portion of a filepath (minus the file itself)
 std::string extract_filepath_dir(std::string &filepath);
 
 // convert \ to / (on Windows)
@@ -75,7 +76,10 @@ std::string normalize_directory_separator(const std::string &filepath);
 
 // determine if the last characters of str match end exactly
 // e.g. to test file extension
-int str_endsin(const char *str, const char *end);
+t_CKBOOL str_endsin(const char *str, const char *end);
+
+// check if path is absolute on the underlying platform
+t_CKBOOL is_absolute_path( const std::string & path );
 
 //-----------------------------------------------------------------------------
 // name: parse_path_list()

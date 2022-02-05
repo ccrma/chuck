@@ -514,17 +514,19 @@ bool ChucK::initCompiler()
     }
     else
     {
+        // make c++ string
         cwd = std::string(cstr_cwd);
-        cwd = normalize_directory_separator(cwd) + "/";
+        // add trailing "/"
+        cwd += '/';
+        // deferring this step until later, and only for Windows
+        // cwd = normalize_directory_separator(cwd) + "/";
 
-        // 1.4.1.0 (ge) added
-        if( workingDir.length() != 0 && workingDir[0] == '/' )
+        // 1.4.1.0 (ge) added -- test for absolute path
+        // 1.4.1.1 (ge) deals with windows absolute paths: e.g., "C:\"
+        // TODO: deals with windows network paths: e.g., "\\server\"???
+        if( is_absolute_path(workingDir) )
         {
-            // absolute path
-            // TODO: deal with windows absolute paths? e.g., "C:\"???
-            
-            // log it
-            EM_log( CK_LOG_INFO, "current working directory:" );
+            // do nothing here
         }
 #ifdef __ANDROID__
         else if( workingDir.rfind("jar:", 0) == 0 )
@@ -535,25 +537,30 @@ bool ChucK::initCompiler()
                 workingDir = workingDir + "/";
             }
             // log it
-            EM_log( CK_LOG_INFO, "setting current working directory:" );
+            // EM_log( CK_LOG_INFO, "setting current working directory: " );
         }
 #endif
         else
         {
             // update
-            workingDir = cwd + normalize_directory_separator(workingDir);
-            // check if need to add /
-            // (note if workingDir is empty string, then this leaves it alone)
-            if( workingDir.length() > 0 && (workingDir[workingDir.length()-1] != '/') )
-            {
-                // append
-                workingDir = workingDir + "/";
-            }
-            // update to current working directory
-            setParam( CHUCK_PARAM_WORKING_DIRECTORY, workingDir );
-            // log it
-            EM_log( CK_LOG_INFO, "setting current working directory:" );
+            workingDir = cwd + workingDir;
         }
+
+#ifdef __PLATFORM_WIN32__
+        // normalize path separators, only for windows; in case UNIX-style paths contains actual backslashes
+        workingDir = normalize_directory_separator(workingDir);
+#endif
+        // check if need to add /
+        // (note if workingDir is empty string, then this leaves it alone)
+        if( workingDir.length() > 0 && (workingDir[workingDir.length() - 1] != '/') )
+        {
+            // append
+            workingDir = workingDir + "/";
+        }
+        // update to current working directory
+        setParam( CHUCK_PARAM_WORKING_DIRECTORY, workingDir );
+        // log it
+        EM_log( CK_LOG_INFO, "setting current working directory: " );
 
         // push log
         EM_pushlog();
@@ -562,7 +569,7 @@ bool ChucK::initCompiler()
         // pop log
         EM_poplog();
     }
-    
+
 
     return true;
 }
