@@ -113,18 +113,37 @@ static RtAudio::Api driverNameToApi(char const *driver)
         if(!strcmp(driver, "DS"))
             api = RtAudio::WINDOWS_DS;
     #endif
+    #if defined(__WINDOWS_WASAPI__)
+        if(!strcmp(driver, "WASAPI"))
+            api = RtAudio::WINDOWS_WASAPI;
+    #endif
+    #if defined(__LINUX_ALSA__)
+        if(!strcmp(driver, "ALSA")) // should match apiToDriverName
+            api = RtAudio::LINUX_ALSA;
+    #endif
+    #if defined(__LINUX_PULSE__)
+        if(!strcmp(driver, "Pulse"))
+            api = RtAudio:: LINUX_PULSE;
+    #endif
+    #if defined(__UNIX_JACK__)
+        if(!strcmp(driver, "Jack"))
+            api = RtAudio:: UNIX_JACK;
+    #endif
         // XXX: add swap between ALSA, PULSE, OSS? and JACK
         if(api == RtAudio::UNSPECIFIED) 
         {
             EM_error2( 0, "unsupported audio driver: %s", driver);
         }
     }
-    else
+
+    if(api == RtAudio::UNSPECIFIED)
     {
     #if defined(__PLATFORM_WIN32__)
         // traditional chuck default behavior:
         // DIRECT SOUND is most general albeit high-latency
         api = RtAudio::WINDOWS_DS; 
+    #elif defined(__PLATFORM_LINUX__)
+        api = RtAudio::LINUX_PULSE;
     #endif
     }
     return api;
@@ -133,7 +152,7 @@ static RtAudio::Api driverNameToApi(char const *driver)
 static char const *apiToDriverName(RtAudio::Api api)
 {
     static char const *drivers[] = {
-        "unspecified",
+        "Default driver",
         "ALSA",
         "Pulse",
         "OSS",
@@ -141,7 +160,7 @@ static char const *apiToDriverName(RtAudio::Api api)
         "MacOSXCore",
         "WASAPI",
         "ASIO",
-        "DirectSound (DS)",
+        "DS", // DirectSound
         "DUMMY",
         "Invalid"
     };
@@ -155,7 +174,7 @@ static char const *apiToDriverName(RtAudio::Api api)
 void print( const RtAudio::DeviceInfo & info )
 {
     EM_error2b( 0, "device name = \"%s\"", info.name.c_str() );
-    if (info.probed == false)
+    if (!info.probed)
         EM_error2b( 0, "probe [failed] ..." );
     else
     {
@@ -188,7 +207,14 @@ void print( const RtAudio::DeviceInfo & info )
     }
 }
 
-
+/* this is the RtAudio error handler --- */
+static void rtAudioErrorHandler(
+    RtAudioErrorType t,
+    const std::string &errorText)
+{
+    // problem finding audio devices, most likely
+    EM_error2b( 0, "%s", errorText.c_str() );
+}
 
 
 //-----------------------------------------------------------------------------
@@ -205,11 +231,10 @@ void ChuckAudio::probe(char const *driver)
     RtAudio::DeviceInfo info;
     
     // allocate RtAudio
-    try { audio = new RtAudio(api); }
-    catch( RtAudioError err )
+    audio = new RtAudio(api, rtAudioErrorHandler);
+    if(!audio)
     {
-        // problem finding audio devices, most likely
-        EM_error2b( 0, "%s: %s", dnm, err.getMessage().c_str() );
+        // error reported by our errorHandler
         return;
     }
 
@@ -223,12 +248,9 @@ void ChuckAudio::probe(char const *driver)
     // loop over devices
     for( int i = 0; i < devices; i++ )
     {
-        try { info = audio->getDeviceInfo(i); }
-        catch( RtAudioError & error )
-        {
-            error.printMessage();
+        info = audio->getDeviceInfo(i);
+        if(!info.probed) // errorHandle reports issues above
             break;
-        }
         
         // print
         EM_error2b( 0, "------( audio device: %d )---------------", i+1 );
@@ -266,13 +288,9 @@ t_CKUINT ChuckAudio::device_named( char const *driver,
     char const *dnm = apiToDriverName(api);
     
     // allocate RtAudio
-    try { audio = new RtAudio(api); }
-    catch( RtAudioError err )
-    {
-        // problem finding audio devices, most likely
-        EM_error2b( 0, "%s", err.getMessage().c_str() );
-        return -1;
-    }
+    audio = new RtAudio(api, rtAudioErrorHandler);
+    if(!audio)
+        return -1; // reporting in errorHandler
     
     // get count    
     int devices = audio->getDeviceCount();
@@ -282,10 +300,10 @@ t_CKUINT ChuckAudio::device_named( char const *driver,
     for( int i = 0; i < devices; i++ )
     {
         // get info
-        try { info = audio->getDeviceInfo(i); }
-        catch( RtAudioError & error )
+        info = audio->getDeviceInfo(i);
+        if(!info.probed)
         {
-            error.printMessage();
+            // reportError handles problem
             break;
         }
 
@@ -304,10 +322,10 @@ t_CKUINT ChuckAudio::device_named( char const *driver,
         // no exact match found; try partial match
         for( int i = 0; i < devices; i++ )
         {
-            try { info = audio->getDeviceInfo(i); }
-            catch( RtAudioError & error )
+            info = audio->getDeviceInfo(i);
+            if(!info.probed)
             {
-                error.printMessage();
+                // errorHandler reports issues
                 break;
             }
             
@@ -529,13 +547,11 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
     // allocate RtAudio
     RtAudio::Api api = driverNameToApi(driver);
     char const *dnm = apiToDriverName(api);
-    try { m_rtaudio = new RtAudio(api); }
-    catch( RtAudioError err )
+    m_rtaudio = new RtAudio(api, rtAudioErrorHandler);
+    if(!m_rtaudio)
     {
-        // problem finding audio devices, most likely
-        EM_error2( 0, "%s: %s", dnm, err.getMessage().c_str() );
-        // clean up
-        goto error;
+        // error reported above
+        goto error; // to clean up
     }
         
     // convert 1-based ordinal to 0-based ordinal (added 1.3.0.0)
@@ -784,10 +800,8 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
             CK_RTAUDIO_FORMAT, sample_rate, &bufsize,
             cb, m_cb_user_data,
             &stream_options );
-    } catch( RtAudioError err ) {
-        // log
-        EM_log( CK_LOG_INFO, "%s exception caught: '%s'...", dnm, err.getMessage().c_str() );
-        EM_error2( 0, "%s: %s", dnm, err.getMessage().c_str() );
+    } catch( RtAudioErrorType ) {
+        // RtAudio no longer throws, errors reported via errorHandler
         SAFE_DELETE( m_rtaudio );
         // clean up
         goto error;
@@ -935,8 +949,9 @@ t_CKBOOL ChuckAudio::start( )
             m_rtaudio->startStream();
         m_start = TRUE;
     }
-    catch( RtAudioError err )
+    catch( RtAudioErrorType )
     {
+        // RtAudio no longer throws, case shouldn't happen
         return FALSE;
     }
 
@@ -957,8 +972,9 @@ t_CKBOOL ChuckAudio::stop( )
             m_rtaudio->stopStream();
         m_start = FALSE;
     }
-    catch( RtAudioError err )
+    catch( RtAudioErrorType)
     {
+        // RtAudio no longer throws, case shouldn't happen
         return FALSE;
     }
     
