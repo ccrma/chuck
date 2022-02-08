@@ -522,7 +522,7 @@ bool ChucK::initCompiler()
         // cwd = normalize_directory_separator(cwd) + "/";
 
         // 1.4.1.1 (ge) added -- expand for things like ~
-        workingDir = expand_filepath( workingDir, FALSE );
+        workingDir = expand_filepath( workingDir, TRUE );
 
         // 1.4.1.0 (ge) added -- test for absolute path
         // 1.4.1.1 (ge) deals with windows absolute paths: e.g., "C:\"
