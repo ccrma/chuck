@@ -675,8 +675,8 @@ t_CKBOOL str_endsin( const char * str, const char * end )
 t_CKBOOL is_absolute_path( const std::string & path )
 {
 #ifdef __PLATFORM_WIN32__
-    // a little more involved in windows
-    if( path.length() >= 3 && path[1] == ':' && path[2] == '\\' )
+    // a little more involved in windows: [letter]:[/ or \]
+    if( path.length() >= 3 && path[1] == ':' && ( path[2] == '\\' || path[2] == '/' ) )
     {
         // check drive letter (apparently windows limited to 26 drive letters)
         if( (path[0] >= 'a' && path[0] <= 'z') || (path[0] >= 'A' && path[0] <= 'Z') )
