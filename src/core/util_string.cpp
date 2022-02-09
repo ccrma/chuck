@@ -366,7 +366,7 @@ done:
 
 
 /* from http://developer.apple.com/library/mac/#qa/qa1549/_index.html */
-#if !defined(__PLATFORM_WIN32__) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
+#if !defined(__PLATFORM_WIN32__) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !defined(__CHIP_MODE__)
 
 #include <wordexp.h>
 //-----------------------------------------------------------------------------
@@ -455,7 +455,7 @@ std::string globTildePath( const std::string & path )
 //
 //    return result;
 //}
-#endif // __PLATFORM_WIN32__ && __EMSCRIPTEN__ && __ANDROID__
+#endif // not __PLATFORM_WIN32__ && __EMSCRIPTEN__ && __ANDROID__ && __CHIP_MODE__
 
 
 
@@ -506,8 +506,8 @@ std::string get_full_path( const std::string & fp )
 //-----------------------------------------------------------------------------
 std::string expand_filepath( std::string & fp, t_CKBOOL ensurePathExists )
 {
-#if defined(__PLATFORM_WIN32__) || defined(__EMSCRIPTEN__) || defined(__ANDROID__)
-    // no expansion in Windows systems or Emscripten or Android
+#if defined(__PLATFORM_WIN32__) || defined(__EMSCRIPTEN__) || defined(__ANDROID__) || defined(__CHIP_MODE__)
+    // no expansion in Windows systems or Emscripten or Android or iOS
     return fp;
 #else
     // expand ~ to full path
