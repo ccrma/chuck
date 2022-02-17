@@ -8,7 +8,7 @@
 //--------------------------------------------------------------------
 
 // mean for normal intensity curve
-72 => float MU;
+66 => float MU;
 // standard deviation for normal intensity curve
 42 => float SIGMA;
 // normalize to 1.0 at x==MU
@@ -19,7 +19,7 @@
 1::ms => dur T;
 
 // starting pitches (in MIDI note numbers, octaves apart)
-[ 12.0, 24, 36, 48, 60, 72, 84, 96, 108, 120 ] @=> float pitches[];
+[ 12.0, 24, 36, 48, 60, 72, 84, 96, 108 ] @=> float pitches[];
 // number of tones
 pitches.size() => int N;
 // bank of tones
