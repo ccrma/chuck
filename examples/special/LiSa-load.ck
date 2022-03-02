@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------
 
 // one-stop function for creating a LiSa, loaded with the specified audio file
-load( me.dir() + "twilight-granular.aiff" ) @=> LiSa @ lisa;
+load( me.dir() + "twilight/twilight-granular.aiff" ) @=> LiSa @ lisa;
 // connect
 lisa => dac;
 
