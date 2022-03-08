@@ -12,7 +12,7 @@
 // standard deviation for normal intensity curve
 42 => float SIGMA;
 // normalize to 1.0 at x==MU
-1 / gauss(MU, MU, SIGMA) => float SCALE;
+1 / Math.gauss(MU, MU, SIGMA) => float SCALE;
 // increment per unit time (use negative for descending)
 .004 => float INC;
 // unit time (change interval)
@@ -37,7 +37,7 @@ while( true )
         // set frequency from pitch
         pitches[i] => Std.mtof => tones[i].freq;
         // compute loundess for each tone
-        gauss( pitches[i], MU, SIGMA ) * SCALE => float intensity;
+        Math.gauss( pitches[i], MU, SIGMA ) * SCALE => float intensity;
         // map intensity to amplitude
         intensity*96 => Math.dbtorms => tones[i].gain;
         // increment pitch
@@ -50,12 +50,4 @@ while( true )
     
     // advance time
     T => now;
-}
-
-// normal function for loudness curve
-// NOTE: chuck-1.3.5.3 and later: can use Math.gauss() instead
-fun float gauss( float x, float mu, float sd )
-{
-    return (1 / (sd*Math.sqrt(2*pi))) 
-           * Math.exp( -(x-mu)*(x-mu) / (2*sd*sd) );
 }
