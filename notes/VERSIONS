@@ -1,7 +1,9 @@
 1.4.1.1 (April 2022)
 ---
   - (added) Math.equal( float x, float y )
-    return whether two floats are considered equivalent
+    returns whether two floats are considered equivalent
+  - (fixed) CK_STDCERR now flushes on all output
+  - (fixed) error message display for MidiFileIn (STK)
   - (added) support for Apple Silicon (e.g., M1) as intel/apple 
     universal binary; significant performance throughput observed
     running chuck natively on Apple Silicon (up to +200% increase
@@ -25,6 +27,7 @@
     05-Global/86.ck to disable Math.isnan()
   - (fixed) fixed Lisa-load.ck to correct load sound file
     [thanks Nick Shaheed!]
+  - (updated, internal) integer types update for smoother Windows 64 bit
   - (noted) synchronization point for Chunity version x.x.x
   - (added) added to VERSIONS (this file) release dates since initial
     release in 2004
