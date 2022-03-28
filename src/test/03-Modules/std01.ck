@@ -44,7 +44,11 @@ for(int i; i < t2.size(); i++)
 
 for(int i; i < t3.size(); i++)
 {
-    if(Std.dbtolin(t3[i][0]) != t3[i][1])
+    // test for floating point equivalence
+    // alternative 1.4.1.1 or later: Math.equal()
+    if( Math.fabs( Std.dbtolin(t3[i][0]) - t3[i][1] ) > 0.000001 )
+    // (FYI 1.4.1.1 and later can use Math.isEqual())
+    // if( !Math.isEqual( Std.dbtolin(t3[i][0]), t3[i][1] ) )
     {
         <<< "failure" >>>;
         me.exit();
