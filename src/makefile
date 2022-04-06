@@ -9,7 +9,7 @@ CK_PLATFORM=
 current: 
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
-	@echo "   make osx, make cygwin, make win32, or make emscripten"
+	@echo "   make mac, make mac-ub, make cygwin, make win32, or make emscripten"
 
 
 ############################## MAKE INSTALL ####################################
@@ -66,13 +66,13 @@ host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
 
 
 ############################## MAKE INSTALL ####################################
-.PHONY: osx linux-pulse linux-jack linux-alsa cygwin osx-rl test
-osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
+.PHONY: mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl test
+mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
 
 win32:
 	make -f $(COREDIR)/makefile.x/makefile.win32
 
-CK_VERSION=1.4.1.0
+CK_VERSION=1.4.1.1
 
 
 ########################### COMPILATION TOOLS ##################################
@@ -111,8 +111,8 @@ endif
 
 
 ######################### PLATFORM-SPECIFIC THINGS #############################
-ifneq (,$(strip $(filter osx bin-dist-osx,$(MAKECMDGOALS))))
-include $(COREDIR)/makefile.x/makefile.osx
+ifneq (,$(strip $(filter mac mac-ub osx bin-dist-mac,$(MAKECMDGOALS))))
+include $(COREDIR)/makefile.x/makefile.mac
 endif
 
 ifneq (,$(strip $(filter linux-pulse,$(MAKECMDGOALS))))
@@ -155,8 +155,8 @@ LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
 
 
 ############################ CHUCK HOST TARGETS ################################
-CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp \
-	RtAudio/RtAudio.cpp
+CXXSRCS_HOST+= RtAudio/RtAudio.cpp chuck_audio.cpp chuck_console.cpp \
+	chuck_main.cpp 
 
 
 ############################ OBJECT FILE TARGETS ###############################
@@ -182,6 +182,11 @@ else
 ARCHOPTS=
 endif
 
+ifneq (,$(strip $(filter mac-ub,$(MAKECMDGOALS))))
+ARCHOPTS=-arch arm64 -arch x86_64
+ARCH_ARGS=MAC_UB=true
+CFLAGS+=-D__MACOSX_UB__
+endif
 
 ############################ DISTRIBUTION INFO #################################
 NOTES=AUTHORS DEVELOPER PROGRAMMER README TODO COPYING INSTALL QUICKSTART \
@@ -200,7 +205,7 @@ CK_SVN=https://chuck-dev.stanford.edu/svn/chuck/
 chuck-core:
 	@echo -------------
 	@echo [chuck-core]: compiling...
-	make $(MAKECMDGOALS) -C $(COREDIR)
+	make $(MAKECMDGOALS) -C $(COREDIR) $(ARCH_ARGS)
 	@echo -------------
 
 chuck: chuck-core $(COBJS_HOST) $(CXXOBJS_HOST)

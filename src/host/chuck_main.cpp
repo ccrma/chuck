@@ -163,7 +163,9 @@ static void version()
     
     // platform string
     string platform = "";
-    
+    // binary architecture string;
+    string archs = "";
+
 #if defined(__PLATFORM_WIN32__)
     platform = "microsoft windows";
 #elif defined(__WINDOWS_DS__)
@@ -176,17 +178,20 @@ static void version()
     platform = "linux (jack)";
 #elif defined(__LINUX_PULSE__)
     platform = "linux (pulse)";
-#elif defined(__MACOSX_UB__)
-    platform = "mac os x : universal binary";
 #elif defined(__MACOSX_CORE__) && defined(__LITTLE_ENDIAN__)
-    platform = "mac os";
+    platform = "macOS";
 #elif defined(__MACOSX_CORE__)
-    platform = "mac os x : powerpc";
+    platform = "macOS (powerpc)";
 #else
     platform = "unspecified platform";
 #endif
-    
-    CK_FPRINTF_STDERR( "   %s : %ld-bit\n", platform.c_str(), machine_intsize() );
+
+// check for universal binary
+#if defined(__MACOSX_UB__)
+    archs = " [universal binary]";
+#endif
+
+    CK_FPRINTF_STDERR( "   %s : %ld-bit%s\n", platform.c_str(), machine_intsize(), archs.c_str() );
     CK_FPRINTF_STDERR( "   http://chuck.cs.princeton.edu/\n" );
     CK_FPRINTF_STDERR( "   http://chuck.stanford.edu/\n\n" );
 }
