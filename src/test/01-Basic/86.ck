@@ -7,10 +7,13 @@ repeat( 20 ) n *=> n;
 // bye sanity
 0 *=> n;
 // test it
-<<< Math.isnan( n ) >>>;
+// *** disabled due to different isnan on different architecture ***
+// *** for example, the following returns 1 on Mac intel but 0 on Mac M1 ***	
+// <<< Math.isnan( n ) >>>;
 
 // more
 <<< 1.0 / 0.0 => Math.isinf >>>;
-<<< 0.0 / 0.0 => Math.isnan >>>;
+// *** disabled due to above reason ***
+// <<< 0.0 / 0.0 => Math.isnan >>>;
 <<< Math.INFINITY, -Math.INFINITY >>>;
 <<< Math.INFINITY => Math.isinf >>>;
