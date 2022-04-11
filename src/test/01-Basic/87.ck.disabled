@@ -1,3 +1,6 @@
+// *** disabled due to different isnan on different architecture ***
+// *** for example, the following isnan() returns 1 on Mac intel but 0 on Mac M1 ***
+
 // float div-by-zero
 <<< Math.isinf(1./0) >>>;
 <<< Math.isinf(1/0.) >>>;
