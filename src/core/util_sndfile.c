@@ -1596,7 +1596,7 @@ alaw_read_alaw2s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -1616,7 +1616,7 @@ alaw_read_alaw2i (SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -1639,7 +1639,7 @@ alaw_read_alaw2f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x8000) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -1661,7 +1661,7 @@ alaw_read_alaw2d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	double	normfact ;
 
 	normfact = (psf->norm_double) ? 1.0 / ((double) 0x8000) : 1.0 ;
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -1684,7 +1684,7 @@ alaw_write_s2alaw	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -1705,7 +1705,7 @@ alaw_write_i2alaw	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -1729,7 +1729,7 @@ alaw_write_f2alaw	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? (1.0 * 0x7FFF) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -1753,7 +1753,7 @@ alaw_write_d2alaw	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 	normfact = (psf->norm_double) ? (1.0 * 0x7FFF) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -2830,7 +2830,7 @@ au_g72x_read_i	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	pg72x = (G72x_DATA*) psf->fdata ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = au_g72x_read_block (psf, pg72x, sptr, readcount) ;
@@ -2862,7 +2862,7 @@ au_g72x_read_f	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x8000) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = au_g72x_read_block (psf, pg72x, sptr, readcount) ;
@@ -2893,7 +2893,7 @@ au_g72x_read_d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	normfact = (psf->norm_double == SF_TRUE) ? 1.0 / ((double) 0x8000) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = au_g72x_read_block (psf, pg72x, sptr, readcount) ;
@@ -3072,7 +3072,7 @@ au_g72x_write_i	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	pg72x = (G72x_DATA*) psf->fdata ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = ((SF_BUFFER_LEN / psf->blockwidth) * psf->blockwidth) / sizeof (short) ;
+	bufferlen = ((SF_BUFFER_LEN / psf->blockwidth) * psf->blockwidth) / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -3102,7 +3102,7 @@ au_g72x_write_f	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	normfact = (psf->norm_float == SF_TRUE) ? (1.0 * 0x8000) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = ((SF_BUFFER_LEN / psf->blockwidth) * psf->blockwidth) / sizeof (short) ;
+	bufferlen = ((SF_BUFFER_LEN / psf->blockwidth) * psf->blockwidth) / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -3133,7 +3133,7 @@ au_g72x_write_d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	normfact = (psf->norm_double == SF_TRUE) ? (1.0 * 0x8000) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = ((SF_BUFFER_LEN / psf->blockwidth) * psf->blockwidth) / sizeof (short) ;
+	bufferlen = ((SF_BUFFER_LEN / psf->blockwidth) * psf->blockwidth) / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -3605,7 +3605,7 @@ static SF_FORMAT_INFO const simple_formats [] =
 
 int
 psf_get_format_simple_count	(void)
-{	return (sizeof (simple_formats) / sizeof (SF_FORMAT_INFO)) ;
+{	return (sizeof (simple_formats) / (sizeof (SF_FORMAT_INFO))) ;
 } /* psf_get_format_simple_count */
 
 int
@@ -3653,7 +3653,7 @@ static SF_FORMAT_INFO const major_formats [] =
 
 int
 psf_get_format_major_count	(void)
-{	return (sizeof (major_formats) / sizeof (SF_FORMAT_INFO)) ;
+{	return (sizeof (major_formats) / (sizeof (SF_FORMAT_INFO))) ;
 } /* psf_get_format_major_count */
 
 int
@@ -3706,7 +3706,7 @@ static SF_FORMAT_INFO subtype_formats [] =
 
 int
 psf_get_format_subtype_count	(void)
-{	return (sizeof (subtype_formats) / sizeof (SF_FORMAT_INFO)) ;
+{	return (sizeof (subtype_formats) / (sizeof (SF_FORMAT_INFO))) ;
 } /* psf_get_format_subtype_count */
 
 int
@@ -3783,7 +3783,7 @@ psf_calc_signal_max (SF_PRIVATE *psf, int normalize)
 	position = sf_seek ((SNDFILE*) psf, 0, SEEK_CUR) ; /* Get current position in file */
 	sf_seek ((SNDFILE*) psf, 0, SEEK_SET) ;			/* Go to start of file. */
 
-	len = sizeof (psf->buffer) / sizeof (double) ;
+	len = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	data = (double*) psf->buffer ;
 
@@ -3826,7 +3826,7 @@ psf_calc_max_all_channels (SF_PRIVATE *psf, double *peaks, int normalize)
 	position = sf_seek ((SNDFILE*) psf, 0, SEEK_CUR) ; /* Get current position in file */
 	sf_seek ((SNDFILE*) psf, 0, SEEK_SET) ;			/* Go to start of file. */
 
-	len = sizeof (psf->buffer) / sizeof (double) ;
+	len = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	data = (double*) psf->buffer ;
 
@@ -5172,7 +5172,7 @@ typedef struct
 	sf_count_t	(*write_float)	(SF_PRIVATE *psf, float *ptr, sf_count_t len) ;
 	sf_count_t	(*write_double)	(SF_PRIVATE *psf, double *ptr, sf_count_t len) ;
 
-	double buffer [SF_BUFFER_LEN / sizeof (double)] ;
+	double buffer [SF_BUFFER_LEN / (sizeof (double))] ;
 } DITHER_DATA ;
 
 static sf_count_t dither_read_short		(SF_PRIVATE *psf, short *ptr, sf_count_t len) ;
@@ -5331,7 +5331,7 @@ dither_write_short	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 			return pdither->write_short (psf, ptr, len) ;
 		} ;
 
-	bufferlen = sizeof (pdither->buffer) / sizeof (short) ;
+	bufferlen = sizeof (pdither->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -5376,7 +5376,7 @@ dither_write_int	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 		} ;
 
 
-	bufferlen = sizeof (pdither->buffer) / sizeof (int) ;
+	bufferlen = sizeof (pdither->buffer) / (sizeof (int)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -5420,7 +5420,7 @@ dither_write_float	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 			return pdither->write_float (psf, ptr, len) ;
 		} ;
 
-	bufferlen = sizeof (pdither->buffer) / sizeof (float) ;
+	bufferlen = sizeof (pdither->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (float) len ;
@@ -5465,7 +5465,7 @@ dither_write_double	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 		} ;
 
 
-	bufferlen = sizeof (pdither->buffer) / sizeof (double) ;
+	bufferlen = sizeof (pdither->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (double) len ;
@@ -6118,7 +6118,7 @@ host_read_d2s	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6142,7 +6142,7 @@ host_read_d2i	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6166,7 +6166,7 @@ host_read_d2f	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6193,7 +6193,7 @@ host_read_d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	if (psf->float_endswap != SF_TRUE)
 		return psf_fread (ptr, sizeof (double), len, psf) ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6215,7 +6215,7 @@ host_write_s2d	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6243,7 +6243,7 @@ host_write_i2d	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6270,7 +6270,7 @@ host_write_f2d	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6303,7 +6303,7 @@ host_write_d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	if (psf->float_endswap != SF_TRUE)
 		return psf_fwrite (ptr, sizeof (double), len, psf) ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6380,7 +6380,7 @@ replace_read_d2s	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6406,7 +6406,7 @@ replace_read_d2i	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6432,7 +6432,7 @@ replace_read_d2f	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6460,7 +6460,7 @@ replace_read_d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	sf_count_t	total = 0 ;
 
 	/* FIXME : This is probably nowhere near optimal. */
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6487,7 +6487,7 @@ replace_write_s2d	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			writecount, bufferlen, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6516,7 +6516,7 @@ replace_write_i2d	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			writecount, bufferlen, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6545,7 +6545,7 @@ replace_write_f2d	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 {	int			writecount, bufferlen, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -6575,7 +6575,7 @@ replace_write_d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	if (psf->has_peak)
 		double64_peak_update (psf, ptr, len, 0) ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (double) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (double)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -7011,7 +7011,7 @@ dwvw_read_s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 	pdwvw = (DWVW_PRIVATE*) psf->fdata ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (int) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (int)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = dwvw_decode_data (psf, pdwvw, iptr, readcount) ;
@@ -7067,7 +7067,7 @@ dwvw_read_f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x80000000) : 1.0 ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (int) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (int)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = dwvw_decode_data (psf, pdwvw, iptr, readcount) ;
@@ -7098,7 +7098,7 @@ dwvw_read_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	normfact = (psf->norm_double == SF_TRUE) ? 1.0 / ((double) 0x80000000) : 1.0 ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (int) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (int)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = dwvw_decode_data (psf, pdwvw, iptr, readcount) ;
@@ -7378,7 +7378,7 @@ dwvw_write_s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 	pdwvw = (DWVW_PRIVATE*) psf->fdata ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (int) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (int)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -7434,7 +7434,7 @@ dwvw_write_f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	normfact = (psf->norm_float == SF_TRUE) ? (1.0 * 0x7FFFFFFF) : 1.0 ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -7465,7 +7465,7 @@ dwvw_write_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	normfact = (psf->norm_double == SF_TRUE) ? (1.0 * 0x7FFFFFFF) : 1.0 ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -9177,7 +9177,7 @@ host_read_f2s	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9202,7 +9202,7 @@ host_read_f2i	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9229,7 +9229,7 @@ host_read_f	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	if (psf->float_endswap != SF_TRUE)
 		return psf_fread (ptr, sizeof (float), len, psf) ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9251,7 +9251,7 @@ host_read_f2d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9276,7 +9276,7 @@ host_write_s2f	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9303,7 +9303,7 @@ host_write_i2f	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9336,7 +9336,7 @@ host_write_f	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	if (psf->float_endswap != SF_TRUE)
 		return psf_fwrite (ptr, sizeof (float), len, psf) ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9358,7 +9358,7 @@ host_write_d2f	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9441,7 +9441,7 @@ replace_read_f2s	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9467,7 +9467,7 @@ replace_read_f2i	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9495,7 +9495,7 @@ replace_read_f	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	/* FIX THIS */
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9522,7 +9522,7 @@ replace_read_f2d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9548,7 +9548,7 @@ replace_write_s2f	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			writecount, bufferlen, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9577,7 +9577,7 @@ replace_write_i2f	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			writecount, bufferlen, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9610,7 +9610,7 @@ replace_write_f	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	if (psf->has_peak)
 		float32_peak_update (psf, ptr, len, 0) ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -9637,7 +9637,7 @@ replace_write_d2f	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 {	int			writecount, bufferlen, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (float) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (float)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -11216,7 +11216,7 @@ gsm610_read_i	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	pgsm610 = (GSM610_PRIVATE*) psf->fdata ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = gsm610_read_block (psf, pgsm610, sptr, readcount) ;
@@ -11244,7 +11244,7 @@ gsm610_read_f	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x8000) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = gsm610_read_block (psf, pgsm610, sptr, readcount) ;
@@ -11272,7 +11272,7 @@ gsm610_read_d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	pgsm610 = (GSM610_PRIVATE*) psf->fdata ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = gsm610_read_block (psf, pgsm610, sptr, readcount) ;
@@ -11445,7 +11445,7 @@ gsm610_write_i	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	pgsm610 = (GSM610_PRIVATE*) psf->fdata ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -11473,7 +11473,7 @@ gsm610_write_f	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	normfact = (psf->norm_float == SF_TRUE) ? (1.0 * 0x7FFF) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -11501,7 +11501,7 @@ gsm610_write_d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	normfact = (psf->norm_double == SF_TRUE) ? (1.0 * 0x7FFF) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -13414,7 +13414,7 @@ ima_read_i (SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	pima = (IMA_ADPCM_PRIVATE*) psf->fdata ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
 		count = ima_read_block (psf, pima, sptr, readcount) ;
@@ -13444,7 +13444,7 @@ ima_read_f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x8000) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
 		count = ima_read_block (psf, pima, sptr, readcount) ;
@@ -13474,7 +13474,7 @@ ima_read_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	normfact = (psf->norm_double == SF_TRUE) ? 1.0 / ((double) 0x8000) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
 		count = ima_read_block (psf, pima, sptr, readcount) ;
@@ -13650,7 +13650,7 @@ ima_write_i (SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	pima = (IMA_ADPCM_PRIVATE*) psf->fdata ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -13680,7 +13680,7 @@ ima_write_f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	normfact = (psf->norm_float == SF_TRUE) ? (1.0 * 0x7FFF) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -13710,7 +13710,7 @@ ima_write_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	normfact = (psf->norm_double == SF_TRUE) ? (1.0 * 0x7FFF) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -13757,7 +13757,7 @@ ima_write_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 #define		INTERLEAVE_CHANNELS		6
 
 typedef struct
-{	double	buffer [SF_BUFFER_LEN / sizeof (double)] ;
+{	double	buffer [SF_BUFFER_LEN / (sizeof (double))] ;
 
 	sf_count_t		channel_len ;
 
@@ -17007,7 +17007,7 @@ msadpcm_read_i	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	pms = (MSADPCM_PRIVATE*) psf->fdata ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = msadpcm_read_block (psf, pms, sptr, readcount) ;
@@ -17035,7 +17035,7 @@ msadpcm_read_f	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x8000) : 1.0 ;
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = msadpcm_read_block (psf, pms, sptr, readcount) ;
@@ -17064,7 +17064,7 @@ msadpcm_read_d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	pms = (MSADPCM_PRIVATE*) psf->fdata ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = msadpcm_read_block (psf, pms, sptr, readcount) ;
@@ -17317,7 +17317,7 @@ msadpcm_write_i	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	pms = (MSADPCM_PRIVATE*) psf->fdata ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -17346,7 +17346,7 @@ msadpcm_write_f	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	normfact = (psf->norm_float == SF_TRUE) ? (1.0 * 0x7FFF) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -17375,7 +17375,7 @@ msadpcm_write_d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	pms = (MSADPCM_PRIVATE*) psf->fdata ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -18519,7 +18519,7 @@ paf24_read_s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 	ppaf24 = (PAF24_PRIVATE*) psf->fdata ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = paf24_read (psf, ppaf24, iptr, readcount) ;
@@ -18560,7 +18560,7 @@ paf24_read_f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	normfact = (psf->norm_float == SF_TRUE) ? (1.0 / 0x80000000) : (1.0 / 0x100) ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = paf24_read (psf, ppaf24, iptr, readcount) ;
@@ -18587,7 +18587,7 @@ paf24_read_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	normfact = (psf->norm_double == SF_TRUE) ? (1.0 / 0x80000000) : (1.0 / 0x100) ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = paf24_read (psf, ppaf24, iptr, readcount) ;
@@ -18685,7 +18685,7 @@ paf24_write_s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 	ppaf24 = (PAF24_PRIVATE*) psf->fdata ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -18738,7 +18738,7 @@ paf24_write_f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	normfact = (psf->norm_float == SF_TRUE) ? (1.0 * 0x7FFFFFFF) : (1.0 / 0x100) ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -18768,7 +18768,7 @@ paf24_write_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	normfact = (psf->norm_double == SF_TRUE) ? (1.0 * 0x7FFFFFFF) : (1.0 / 0x100) ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -19110,7 +19110,7 @@ pcm_read_sc2s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19130,7 +19130,7 @@ pcm_read_uc2s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (unsigned char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (unsigned char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19212,7 +19212,7 @@ pcm_read_bei2s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19232,7 +19232,7 @@ pcm_read_lei2s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19255,7 +19255,7 @@ pcm_read_sc2i (SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19275,7 +19275,7 @@ pcm_read_uc2i (SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (unsigned char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (unsigned char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19295,7 +19295,7 @@ pcm_read_bes2i (SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19315,7 +19315,7 @@ pcm_read_les2i (SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19403,7 +19403,7 @@ pcm_read_sc2f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x80) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19426,7 +19426,7 @@ pcm_read_uc2f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x80) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (unsigned char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (unsigned char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19449,7 +19449,7 @@ pcm_read_bes2f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x8000) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19472,7 +19472,7 @@ pcm_read_les2f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x8000) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19543,7 +19543,7 @@ pcm_read_bei2f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x80000000) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19566,7 +19566,7 @@ pcm_read_lei2f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x80000000) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19592,7 +19592,7 @@ pcm_read_sc2d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 	normfact = (psf->norm_double == SF_TRUE) ? 1.0 / ((double) 0x80) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19615,7 +19615,7 @@ pcm_read_uc2d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 	normfact = (psf->norm_double == SF_TRUE) ? 1.0 / ((double) 0x80) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (unsigned char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (unsigned char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19638,7 +19638,7 @@ pcm_read_bes2d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 	normfact = (psf->norm_double == SF_TRUE) ? 1.0 / ((double) 0x8000) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19661,7 +19661,7 @@ pcm_read_les2d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 	normfact = (psf->norm_double == SF_TRUE) ? 1.0 / ((double) 0x8000) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19731,7 +19731,7 @@ pcm_read_bei2d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 	normfact = (psf->norm_double == SF_TRUE) ? 1.0 / ((double) 0x80000000) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19754,7 +19754,7 @@ pcm_read_lei2d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 	normfact = (psf->norm_double == SF_TRUE) ? 1.0 / ((double) 0x80000000) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19779,7 +19779,7 @@ pcm_write_s2sc	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19799,7 +19799,7 @@ pcm_write_s2uc	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (unsigned char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (unsigned char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19823,7 +19823,7 @@ pcm_write_s2bes	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 	{	int			bufferlen, writecount, thiswrite ;
 		sf_count_t	total = 0 ;
 
-		bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+		bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 		while (len > 0)
 		{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19848,7 +19848,7 @@ pcm_write_s2les	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 	{	int			bufferlen, writecount, thiswrite ;
 		sf_count_t	total = 0 ;
 
-		bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+		bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 		while (len > 0)
 		{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19909,7 +19909,7 @@ pcm_write_s2bei	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19929,7 +19929,7 @@ pcm_write_s2lei	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19952,7 +19952,7 @@ pcm_write_i2sc	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19972,7 +19972,7 @@ pcm_write_i2uc	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (unsigned char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (unsigned char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -19992,7 +19992,7 @@ pcm_write_i2bes	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -20012,7 +20012,7 @@ pcm_write_i2les	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -20076,7 +20076,7 @@ pcm_write_i2bei	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	{	int			bufferlen, writecount, thiswrite ;
 		sf_count_t	total = 0 ;
 
-		bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+		bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 		while (len > 0)
 		{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -20101,7 +20101,7 @@ pcm_write_i2lei	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	{	int			bufferlen, writecount, thiswrite ;
 		sf_count_t	total = 0 ;
 
-		bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+		bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 		while (len > 0)
 		{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -20163,7 +20163,7 @@ pcm_write_f2sc	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	sf_count_t	total = 0 ;
 
 	convert = (psf->add_clipping) ? f2sc_clip_array : f2sc_array ;
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -20222,7 +20222,7 @@ pcm_write_f2uc	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	sf_count_t	total = 0 ;
 
 	convert = (psf->add_clipping) ? f2uc_clip_array : f2uc_array ;
-	bufferlen = sizeof (psf->buffer) / sizeof (unsigned char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (unsigned char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -20295,7 +20295,7 @@ pcm_write_f2bes	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	sf_count_t	total = 0 ;
 
 	convert = (psf->add_clipping) ? f2bes_clip_array : f2bes_array ;
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -20368,7 +20368,7 @@ pcm_write_f2les	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	sf_count_t	total = 0 ;
 
 	convert = (psf->add_clipping) ? f2les_clip_array : f2les_array ;
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -20602,7 +20602,7 @@ pcm_write_f2bei	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	sf_count_t	total = 0 ;
 
 	convert = (psf->add_clipping) ? f2bei_clip_array : f2bei_array ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -20683,7 +20683,7 @@ pcm_write_f2lei	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	sf_count_t	total = 0 ;
 
 	convert = (psf->add_clipping) ? f2lei_clip_array : f2lei_array ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -20742,7 +20742,7 @@ pcm_write_d2sc	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	sf_count_t	total = 0 ;
 
 	convert = (psf->add_clipping) ? d2sc_clip_array : d2sc_array ;
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -20802,7 +20802,7 @@ pcm_write_d2uc	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	sf_count_t	total = 0 ;
 
 	convert = (psf->add_clipping) ? d2uc_clip_array : d2uc_array ;
-	bufferlen = sizeof (psf->buffer) / sizeof (unsigned char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (unsigned char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -20875,7 +20875,7 @@ pcm_write_d2bes	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	sf_count_t	total = 0 ;
 
 	convert = (psf->add_clipping) ? d2bes_clip_array : d2bes_array ;
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -20948,7 +20948,7 @@ pcm_write_d2les	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	sf_count_t	total = 0 ;
 
 	convert = (psf->add_clipping) ? d2les_clip_array : d2les_array ;
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -21183,7 +21183,7 @@ pcm_write_d2bei	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	sf_count_t	total = 0 ;
 
 	convert = (psf->add_clipping) ? d2bei_clip_array : d2bei_array ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -21264,7 +21264,7 @@ pcm_write_d2lei	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	sf_count_t	total = 0 ;
 
 	convert = (psf->add_clipping) ? d2lei_clip_array : d2lei_array ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -23731,7 +23731,7 @@ sds_read_s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 	psds = (SDS_PRIVATE*) psf->fdata ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = sds_read (psf, psds, iptr, readcount) ;
@@ -23776,7 +23776,7 @@ sds_read_f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 		normfact = 1.0 / (1 << psds->bitwidth) ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = sds_read (psf, psds, iptr, readcount) ;
@@ -23807,7 +23807,7 @@ sds_read_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 		normfact = 1.0 / (1 << psds->bitwidth) ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : len ;
 		count = sds_read (psf, psds, iptr, readcount) ;
@@ -24058,7 +24058,7 @@ sds_write_s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 	psds = (SDS_PRIVATE*) psf->fdata ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -24103,7 +24103,7 @@ sds_write_f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 		normfact = 1.0 * (1 << psds->bitwidth) ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -24134,7 +24134,7 @@ sds_write_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 		normfact = 1.0 * (1 << psds->bitwidth) ;
 
 	iptr = (int*) psf->buffer ;
-	bufferlen = sizeof (psf->buffer) / sizeof (int) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (int)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -28344,7 +28344,7 @@ ulaw_read_ulaw2s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -28364,7 +28364,7 @@ ulaw_read_ulaw2i (SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, readcount, thisread ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -28387,7 +28387,7 @@ ulaw_read_ulaw2f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x8000) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -28409,7 +28409,7 @@ ulaw_read_ulaw2d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	double	normfact ;
 
 	normfact = (psf->norm_double) ? 1.0 / ((double) 0x8000) : 1.0 ;
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -28432,7 +28432,7 @@ ulaw_write_s2ulaw	(SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -28452,7 +28452,7 @@ ulaw_write_i2ulaw	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int			bufferlen, writecount, thiswrite ;
 	sf_count_t	total = 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -28475,7 +28475,7 @@ ulaw_write_f2ulaw	(SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? (1.0 * 0x7FFF) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -28498,7 +28498,7 @@ ulaw_write_d2ulaw	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 	normfact = (psf->norm_double) ? (1.0 * 0x7FFF) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -30507,7 +30507,7 @@ vox_read_i	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	pvox = (VOX_ADPCM_PRIVATE*) psf->fdata ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
 		count = vox_read_block (psf, pvox, sptr, readcount) ;
@@ -30537,7 +30537,7 @@ vox_read_f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x8000) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
 		count = vox_read_block (psf, pvox, sptr, readcount) ;
@@ -30567,7 +30567,7 @@ vox_read_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	normfact = (psf->norm_double == SF_TRUE) ? 1.0 / ((double) 0x8000) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
 		count = vox_read_block (psf, pvox, sptr, readcount) ;
@@ -30641,7 +30641,7 @@ vox_write_i	(SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	pvox = (VOX_ADPCM_PRIVATE*) psf->fdata ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -30671,7 +30671,7 @@ vox_write_f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	normfact = (psf->norm_float == SF_TRUE) ? (1.0 * 0x7FFF) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -30701,7 +30701,7 @@ vox_write_d	(SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	normfact = (psf->norm_double == SF_TRUE) ? (1.0 * 0x7FFF) : 1.0 ;
 
 	sptr = (short*) psf->buffer ;
-	bufferlen = SF_BUFFER_LEN / sizeof (short) ;
+	bufferlen = SF_BUFFER_LEN / (sizeof (short)) ;
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
 		for (k = 0 ; k < writecount ; k++)
@@ -32995,7 +32995,7 @@ wav_w64_format_str (int k)
 {	int lower, upper, mid ;
 
 	lower = -1 ;
-	upper = sizeof (wave_descs) / sizeof (WAV_FORMAT_DESC) ;
+	upper = sizeof (wave_descs) / (sizeof (WAV_FORMAT_DESC)) ;
 
 	/* binary search */
 	if ((wave_descs [0].ID <= k) & (k <= wave_descs [upper - 1].ID))
@@ -33399,7 +33399,7 @@ dpcm_seek (SF_PRIVATE *psf, int mode, sf_count_t offset)
 
 	if ((psf->sf.format & SF_FORMAT_SUBMASK) == SF_FORMAT_DPCM_16)
 	{	total = offset ;
-		bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+		bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 		while (total > 0)
 		{	len = (total > bufferlen) ? bufferlen : total ;
 			total -= dpcm_read_dles2s (psf, (short *) psf->buffer, len) ;
@@ -33407,7 +33407,7 @@ dpcm_seek (SF_PRIVATE *psf, int mode, sf_count_t offset)
 		}
 	else
 	{	total = offset ;
-		bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+		bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 		while (total > 0)
 		{	len = (total > bufferlen) ? bufferlen : total ;
 			total -= dpcm_read_dsc2s (psf, (short *) psf->buffer, len) ;
@@ -33638,7 +33638,7 @@ dpcm_read_dsc2s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 	if ((pxi = psf->fdata) == NULL)
 		return 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -33662,7 +33662,7 @@ dpcm_read_dsc2i (SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	if ((pxi = psf->fdata) == NULL)
 		return 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -33689,7 +33689,7 @@ dpcm_read_dsc2f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x80) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -33716,7 +33716,7 @@ dpcm_read_dsc2d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 	normfact = (psf->norm_double == SF_TRUE) ? 1.0 / ((double) 0x80) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -33743,7 +33743,7 @@ dpcm_read_dles2s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 	if ((pxi = psf->fdata) == NULL)
 		return 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -33767,7 +33767,7 @@ dpcm_read_dles2i (SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	if ((pxi = psf->fdata) == NULL)
 		return 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -33794,7 +33794,7 @@ dpcm_read_dles2f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? 1.0 / ((float) 0x8000) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -33821,7 +33821,7 @@ dpcm_read_dles2d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 	normfact = (psf->norm_double == SF_TRUE) ? 1.0 / ((double) 0x8000) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -33859,7 +33859,7 @@ dpcm_write_s2dsc (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 	if ((pxi = psf->fdata) == NULL)
 		return 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -33883,7 +33883,7 @@ dpcm_write_i2dsc (SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	if ((pxi = psf->fdata) == NULL)
 		return 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -33910,7 +33910,7 @@ dpcm_write_f2dsc (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? (1.0 * 0x7F) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -33937,7 +33937,7 @@ dpcm_write_d2dsc (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 	normfact = (psf->norm_double == SF_TRUE) ? (1.0 * 0x7F) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (signed char) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (signed char)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -33962,7 +33962,7 @@ dpcm_write_s2dles (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 	if ((pxi = psf->fdata) == NULL)
 		return 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -33986,7 +33986,7 @@ dpcm_write_i2dles (SF_PRIVATE *psf, int *ptr, sf_count_t len)
 	if ((pxi = psf->fdata) == NULL)
 		return 0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -34013,7 +34013,7 @@ dpcm_write_f2dles (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 
 	normfact = (psf->norm_float == SF_TRUE) ? (1.0 * 0x7FFF) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
@@ -34040,7 +34040,7 @@ dpcm_write_d2dles (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 
 	normfact = (psf->norm_double == SF_TRUE) ? (1.0 * 0x7FFF) : 1.0 ;
 
-	bufferlen = sizeof (psf->buffer) / sizeof (short) ;
+	bufferlen = sizeof (psf->buffer) / (sizeof (short)) ;
 
 	while (len > 0)
 	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;

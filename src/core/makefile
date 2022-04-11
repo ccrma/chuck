@@ -2,15 +2,15 @@
 current: 
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
-	@echo "   make osx, make osx-ub, make cygwin, or make win32"
+	@echo "   make mac, make mac-ub, make cygwin, or make win32"
 
-.PHONY: osx linux-pulse linux-jack linux-alsa cygwin osx-rl test
-osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck-core
+.PHONY: mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl test
+mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck-core
 
 win32:
 	make -f makefile.win32
 
-CK_VERSION=1.4.0.0
+CK_VERSION=1.4.1.1
 
 LEX=flex
 YACC=bison
@@ -43,8 +43,8 @@ ifneq ($(findstring arm,$(shell uname -m)),)
 CFLAGS+= -ffast-math
 endif
 
-ifneq (,$(strip $(filter osx bin-dist-osx,$(MAKECMDGOALS))))
-include makefile.x/makefile.osx
+ifneq (,$(strip $(filter mac mac-ub osx bin-dist-mac,$(MAKECMDGOALS))))
+include makefile.x/makefile.mac
 endif
 
 ifneq (,$(strip $(filter linux-pulse,$(MAKECMDGOALS))))
@@ -105,6 +105,11 @@ else
 ARCHOPTS=
 endif
 
+# 1.4.1.1 (ge) intel/apple silicon universal binary
+ifneq (,$(MAC_UB))
+ARCHOPTS=-arch arm64 -arch x86_64
+endif
+
 NOTES=AUTHORS DEVELOPER PROGRAMMER README TODO COPYING INSTALL QUICKSTART \
  THANKS VERSIONS
 BIN_NOTES=README.txt
@@ -153,8 +158,8 @@ clean:
 # Distribution meta-targets
 # ------------------------------------------------------------------------------
 
-.PHONY: bin-dist-osx
-bin-dist-osx: osx
+.PHONY: bin-dist-mac
+bin-dist-mac: mac-ub
 # clean out old dists
 	-rm -rf $(DIST_DIR_EXE){,.tgz,.zip}
 # create directories
@@ -215,5 +220,3 @@ src-dist:
 	cp $(addprefix ../notes/,$(NOTES)) $(DIST_DIR)
 # tar/gzip
 	tar czf $(DIST_DIR).tgz $(DIST_DIR)
-
-
