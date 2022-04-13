@@ -5744,10 +5744,25 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     t->xid = te_array;
     // set the name
     t->name = base_type->name;
-    // set the parent
-    t->parent = array_parent;
+
+    // add entire type heirarchy to t
+    Chuck_Type * base_curr = base_type->parent;
+    Chuck_Type * t_curr = t;
+
+    // 1.4.1.1 (nshaheed) added to allow declaring arrays with subclasses as elements (PR #211)
+    // example: [ new SinOsc, new Sinosc ] @=> Osc arr[]; // this previously would fail type check
+    while (base_curr != NULL) {
+      Chuck_Type * new_parent = new_array_element_type(env, base_curr, depth, owner_nspc);
+      t_curr->parent = new_parent;
+      SAFE_ADD_REF(t_curr->parent);
+
+      base_curr = base_curr->parent;
+      t_curr = t_curr->parent;
+    }
+    t_curr->parent = array_parent;
     // add reference
-    SAFE_ADD_REF(t->parent);
+    SAFE_ADD_REF(t_curr->parent);
+
     // is a ref
     t->size = array_parent->size;
     // set the array depth
@@ -5769,8 +5784,44 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     return t;
 }
 
+//-----------------------------------------------------------------------------
+// name: new_array_element_type()
+// desc: instantiate new chuck type for use in arrays (nshaheed) added
+//-----------------------------------------------------------------------------
+Chuck_Type * new_array_element_type( Chuck_Env * env, Chuck_Type * base_type,
+		       t_CKUINT depth, Chuck_Namespace * owner_nspc)
+{
+    // make new type
+    Chuck_Type * t = env->context->new_Chuck_Type( env );
 
+    // set the id
+    t->xid = te_array;
+    // set the name
+    t->name = base_type->name;
+    // set the size
+    t->size = base_type->size;
+    // set the array depth
+    t->array_depth = depth;
+    // set actual type (for equality checking)
+    t->actual_type = base_type;
+    // set the array type
+    if (base_type->array_type != NULL) {
+      t->array_type = base_type->array_type;
+      SAFE_ADD_REF(t->array_type);
+    }
+    // set the namespace
+    if (base_type->info != NULL) {
+      t->info = base_type->info;
+      SAFE_ADD_REF(t->info);
+    }
+    // set owner
+    t->owner = owner_nspc;
+    // add reference
+    SAFE_ADD_REF(t->owner);
 
+    // return the type
+    return t;
+}
 
 //-----------------------------------------------------------------------------
 // name: new_Chuck_Namespace()
@@ -6706,8 +6757,11 @@ void Chuck_Type::apropos( std::string & output )
     Chuck_Type * type = this;
     // only the first
     t_CKBOOL inherited = FALSE;
+
     // handle arrays special
-    if( this->array_type )
+    // 1.4.1.1 (ge + nshaheed) if -> while; to skip intermediate array types,
+    // which were added to handle array type-checking (see new_array_element_type())
+    while( type->array_type )
     {
         // skip current one, which extend @array to avoid printing duplicates
         type = type->parent;
