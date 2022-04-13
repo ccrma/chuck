@@ -907,7 +907,7 @@ t_CKBOOL verify_array( a_Array_Sub array );
 Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
                              t_CKUINT depth, Chuck_Type * base_type,
                              Chuck_Namespace * owner_nspc );
-// make type
+// make type | 1.4.1.1 (nshaheed) added
 Chuck_Type * new_array_element_type( Chuck_Env * env, Chuck_Type * base_type,
 		       t_CKUINT depth, Chuck_Namespace * owner_nspc);
 // conversion
