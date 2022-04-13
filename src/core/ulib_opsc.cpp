@@ -468,6 +468,8 @@ public:
     {
         m_address = NULL;
         m_message = NULL;
+        // 1.4.1.1 (ge) added
+        m_port = 0;
     }
     
     ~OscOut()
@@ -495,10 +497,14 @@ public:
         
         char portStr[32];
         snprintf( portStr, 32, "%d", port );
-        
+
+        // 1.4.1.1 (ge) remember current hostname and port
+        m_hostname = host;
+        m_port = port;
+
         // allocate address
         m_address = lo_address_new( host.c_str(), portStr );
-        
+
         // check it
         if( m_address == NULL )
         {
@@ -583,8 +589,9 @@ public:
         if(result == -1)
         {
             const char *msg = lo_address_errstr(m_address);
-            EM_error3("OscOut: error: sending OSC message%s%s",
-                      msg?": ":"", msg?msg:"");
+            // 1.4.1.1 (ge) updated to also print out hostname:port
+            EM_error3("OscOut: error: sending OSC message%s%s (%s:%d)",
+                      msg?": ":"", msg?msg:"", m_hostname.c_str(), m_port);
             return FALSE;
         }
         
@@ -595,6 +602,9 @@ private:
     lo_address m_address;
     std::string m_path;
     lo_message m_message;
+    // 1.4.1.1 (ge) added to print hostname:port in error reporting
+    std::string m_hostname;
+    int m_port;
 };
 
 
