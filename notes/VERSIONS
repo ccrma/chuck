@@ -2,6 +2,8 @@
 ---
   - (added) Math.equal( float x, float y )
     returns whether two floats are considered equivalent
+  - (added) OscOut.send() error reporting now includes the intended
+    recipient (hostname:port)
   - (fixed) CK_STDCERR now flushes on all output
   - (fixed) error message display for MidiFileIn (STK)
   - (added) support for Apple Silicon (e.g., M1) as intel/apple 
