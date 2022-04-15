@@ -1,4 +1,18 @@
-// HID
+//-----------------------------------------------------------------------------
+// name: keyboard-organ.ck
+// desc: play your computer keyboard like an organ
+//
+// note: select between keyboards by specifying the device number;
+//       to see a list of devices and their numbers, either...
+//       1) view the Device Browser window in miniAudicle (select
+//          "Human Interface Devices" in the drop-down menu)
+//       OR 2) from the command line:
+//          > chuck --probe
+//
+// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
+//-----------------------------------------------------------------------------
+
+// HID input and HID message
 Hid hi;
 HidMsg msg;
 

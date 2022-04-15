@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// name: mouse.ck
-// desc: basic mouse input (relative X and Y deltas)
-//       also see: mouse-abs.ck for absolute screen position
+// name: mouse-abs.ck
+// desc: basic mouse input (absolute normalized screen X Y coordinates)
+//       also see mouse.ck for relative X Y deltas
 //
 // note: select between mice/trackpads by specifying device number;
 //       to see a list of devices and their numbers, either...
@@ -38,14 +38,9 @@ while( true )
         // mouse motion
         if( msg.isMouseMotion() )
         {
-            if( msg.deltaX )
-            {
-                <<< "mouse motion:", msg.deltaX, "on x-axis" >>>;
-            }
-            if( msg.deltaY )
-            {
-                <<< "mouse motion:", msg.deltaY, "on y-axis" >>>;
-            }
+            // get the normalized X-Y screen cursor pofaition
+            <<< "mouse normalized position --",
+               "x:", msg.scaledCursorX, "y:", msg.scaledCursorY >>>;
         }
         
         // mouse button down

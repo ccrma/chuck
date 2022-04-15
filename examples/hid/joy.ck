@@ -1,4 +1,16 @@
-// make HidIn and HidMsg
+//-----------------------------------------------------------------------------
+// name: joy.ck
+// desc: basic joystick/gamepad input
+//
+// note: select between joysticks by specifying device number;
+//       to see a list of devices and their numbers, either...
+//       1) view the Device Browser window in miniAudicle (select
+//          "Human Interface Devices" in the drop-down menu)
+//       OR 2) from the command line:
+//          > chuck --probe
+//-----------------------------------------------------------------------------
+
+// HID input and HID message
 Hid hi;
 HidMsg msg;
 
