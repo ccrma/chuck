@@ -1,15 +1,10 @@
 1.4.1.1 (April 2022)
 ---
-  - (added) Math.equal( float x, float y )
-    returns whether two floats are considered equivalent
-  - (added) OscOut.send() error reporting now includes the intended
-    recipient (hostname:port)
-  - (fixed) CK_STDCERR now flushes on all output
-  - (fixed) error message display for MidiFileIn (STK)
-  - (added) support for Apple Silicon (e.g., M1) as intel/apple 
-    universal binary; significant performance throughput observed
-    running chuck natively on Apple Silicon (up to +200% increase
-    in performance throughput)
+  - (added) native support for Apple Silicon (e.g., M1) as intel/apple 
+    universal binary; *significant* performance throughput observed
+    running chuck natively on Apple Silicon
+  - (added) array.popOut( int index )
+    removes an array element by index [thanks chamington and nshaheed]
   - (modified) building from source, on MacOS command line:
         > make mac (compile for current architecture: arm64/x86_64)
         > make mac-ub (compile universal binary: arm64/x86_64)
@@ -21,14 +16,36 @@
           macOS : 64-bit (universal binary)
           ---
         > make osx (deprecated; use 'make mac' or 'make mac-ub')
+  - (added) Math.equal( float x, float y )
+    returns whether two floats are considered equivalent
+  - (added) OscOut.send() error reporting now includes the intended
+    recipient (hostname:port)
+  - (added) examples/hid/gametra.ck
+    boilerplate gametrak code
+  - (moved) examples/osc/1-send-recv/
+    moved s.ck and r.ck (sender and receiver) examples here
+  - (added) examples/osc/2-multi-msg/
+    examples for interleaving two OSC message types at different rates
+  - (added) examples/osc/3-one2many/
+    examples showing one sender to many receivers
+  - (added) examples/osc/4-multicast/
+    examples showing one sender using multicast to broadcast
+  - (fixed) fixed Lisa-load.ck to correct load sound file [thanks nshaheed]
+  - (fixed) CK_STDCERR now flushes on all output
+  - (fixed) error message display for MidiFileIn (STK)
+  - (fixed) array literal assignment now works as expected when
+    common ancestor type is child type of the RHS type; [thanks nshaheed]
+    --- for example ---
+    [ new SinOsc ] @=> Osc arr[]; // previously this results in a
+                                  // incompatible type error, although
+                                  // Osc is a superclass SinOsc
+    -------------------
   - (continuous integration) --  updated to use 'make mac'
   - (test) -- modified 01-Basic/86.ck; disabled 87.ck due to 
     Math.isnan() behaving differently on Apple Silicon;
     modified 03-Modules/std01.ck to handled floating point equivalence
     differently; also prompted adding Math.equal(); modified
     05-Global/86.ck to disable Math.isnan()
-  - (fixed) fixed Lisa-load.ck to correct load sound file
-    [thanks Nick Shaheed!]
   - (updated, internal) integer types update for smoother Windows 64 bit
   - (noted) synchronization point for Chunity version x.x.x
   - (added) added to VERSIONS (this file) release dates since initial
