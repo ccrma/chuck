@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
-// name: s-server.ck
-// desc: OSC example: one (server) to many (clients);
-// note: launch with any number of r-many.ck, one per machine
+// name: s-sender.ck
+// desc: OSC example: one (sender) to many (receivers);
+// note: launch with one r.ck running per receiver machine
 //
 // author: Ge Wang (https://ccrma.stanford.edu/~ge/)
 // date: spring 2022

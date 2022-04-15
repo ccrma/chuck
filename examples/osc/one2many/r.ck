@@ -1,10 +1,7 @@
 //----------------------------------------------------------------------------
-// name: r-client.ck
-// desc: OSC example: one (server) to many (clients)
-// note: launch this on each client machine
-//
-// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
-// date: spring 2022
+// name: r.ck ('r' is for "receiver")
+// desc: OpenSoundControl (OSC) receiver example
+// note: launch with s.ck (that's the sender)
 //----------------------------------------------------------------------------
 
 // the patch
