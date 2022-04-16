@@ -941,7 +941,11 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
 
     // add popOut()
     func = make_new_mfun( "void", "popOut", array_pop_out );
+<<<<<<< HEAD
     func->add_arg( "int", "position" );
+=======
+    func->add_arg("int", "position");
+>>>>>>> cf7da68 (add getKeys() array method)
     func->doc = "removes the item with position from the array";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
@@ -957,7 +961,11 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
 
     // (1.4.1.1 nshaheed) add getKeys()
     func = make_new_mfun( "void", "getKeys", array_get_keys );
+<<<<<<< HEAD
     func->add_arg( "string[]", "keys" );
+=======
+    func ->add_arg( "string[]", "keys");
+>>>>>>> cf7da68 (add getKeys() array method)
     func->doc = "return all keys found in associative array in keys";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
@@ -2478,23 +2486,19 @@ CK_DLL_MFUN( array_pop_out )
 
 }
 
-// 1.4.1.1 nshaheed (added) array.getKeys()
+// (1.4.1.1 nshaheed) array.getKeys()
 CK_DLL_MFUN( array_get_keys )
 {
-    Chuck_Array * array = (Chuck_Array *)SELF;
-    Chuck_Array4 * returned_keys = (Chuck_Array4 *) GET_NEXT_OBJECT(ARGS);
+	Chuck_Array * array = (Chuck_Array *)SELF;
+	Chuck_Array4 * returned_keys = (Chuck_Array4 *) GET_NEXT_OBJECT(ARGS);
 
-    // clear return array
-    returned_keys->set_size(0);
-    // local keys array
-    std::vector<std::string> array_keys;
-    // get the keys
-    array->get_keys( array_keys );
+	returned_keys->set_size(0);
+	std::vector<std::string> array_keys = array->get_keys();
 
-    // copy array keys into the provided string array
-    for (t_CKUINT i = 0; i < array_keys.size(); i++ ) {
-        Chuck_String * key = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
-        key->set(array_keys[i]);
-        returned_keys->push_back((t_CKUINT) key);
-    }
+	// copy array keys into the provided string array
+	for (auto const& member : array_keys) {
+	  Chuck_String * key = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
+	  key->set(member);
+	  returned_keys->push_back((t_CKUINT) key);
+	}
 }
