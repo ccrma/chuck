@@ -939,6 +939,12 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "remove the last item of the array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add popOut()
+    func = make_new_mfun( "void", "popOut", array_pop_out );
+    func->add_arg("int", "position");
+    func->doc = "Removes the item with position from the array";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add size()
     func = make_new_mfun( "int", "size", array_get_size );
     func->doc = "get the number of elements in the array.";
@@ -2448,4 +2454,20 @@ CK_DLL_MFUN( array_pop_back )
         RETURN->v_int = ((Chuck_Array16 *)array)->pop_back( );
     else
         assert( FALSE );
+}
+
+// array.pop_out
+CK_DLL_MFUN( array_pop_out )
+{
+	Chuck_Array * array = (Chuck_Array *)SELF;
+	t_CKINT position = GET_NEXT_INT(ARGS);
+	if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND)
+		RETURN->v_int = ((Chuck_Array4 *)array)->pop_out(position);
+	else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
+		RETURN->v_int = ((Chuck_Array8 *)array)->pop_out(position);
+	else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
+		RETURN->v_int = ((Chuck_Array16 *)array)->pop_out(position);
+	else
+		assert( FALSE );
+
 }

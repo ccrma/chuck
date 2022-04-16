@@ -5749,6 +5749,8 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     Chuck_Type * base_curr = base_type->parent;
     Chuck_Type * t_curr = t;
 
+    // 1.4.1.1 (nshaheed) added to allow declaring arrays with subclasses as elements (PR #211)
+    // example: [ new SinOsc, new Sinosc ] @=> Osc arr[]; // this previously would fail type check
     while (base_curr != NULL) {
       Chuck_Type * new_parent = new_array_element_type(env, base_curr, depth, owner_nspc);
       t_curr->parent = new_parent;
@@ -5784,7 +5786,7 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
 
 //-----------------------------------------------------------------------------
 // name: new_array_element_type()
-// desc: instantiate new chuck type for use in arrays (nshaheed)
+// desc: instantiate new chuck type for use in arrays (nshaheed) added
 //-----------------------------------------------------------------------------
 Chuck_Type * new_array_element_type( Chuck_Env * env, Chuck_Type * base_type,
 		       t_CKUINT depth, Chuck_Namespace * owner_nspc)
@@ -6755,8 +6757,11 @@ void Chuck_Type::apropos( std::string & output )
     Chuck_Type * type = this;
     // only the first
     t_CKBOOL inherited = FALSE;
+
     // handle arrays special
-    if( this->array_type )
+    // 1.4.1.1 (ge + nshaheed) if -> while; to skip intermediate array types,
+    // which were added to handle array type-checking (see new_array_element_type())
+    while( type->array_type )
     {
         // skip current one, which extend @array to avoid printing duplicates
         type = type->parent;

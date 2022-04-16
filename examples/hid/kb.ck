@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------
+// name: kb.ck
+// desc: open a keyboard and listen for key-down and key-up events
+//
+// note: select between keyboards by specifying the device number;
+//       to see a list of devices and their numbers, either...
+//       1) view the Device Browser window in miniAudicle (select
+//          "Human Interface Devices" in the drop-down menu)
+//       OR 2) from the command line:
+//          > chuck --probe
+//
+// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
+//-----------------------------------------------------------------------------
 Hid hi;
 HidMsg msg;
 

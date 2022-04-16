@@ -129,7 +129,7 @@ void Chuck_VM_Object::release()
     assert( m_ref_count > 0 );
     // decrement
     m_ref_count--;
-    
+
     // added 1.3.0.0
     CK_MEMMGMT_TRACK(CK_FPRINTF_STDERR( "Chuck_VM_Object::release() : 0x%08x, %s, %ulu\n", this, typeid(*this).name(), m_ref_count));
     // string n = typeid(*this).name();
@@ -151,7 +151,7 @@ void Chuck_VM_Object::release()
         // tell the object manager to set this free
         // Chuck_VM_Alloc::instance()->free_object( this );
         // REFACTOR-2017: doing this for now
-        delete this;        
+        delete this;
     }
 }
 
@@ -215,7 +215,7 @@ void Chuck_VM_Object::unlock_all()
 //        our_instance = new Chuck_VM_Alloc;
 //        assert( our_instance != NULL );
 //    }
-//    
+//
 //    return our_instance;
 //}
 
@@ -316,7 +316,7 @@ Chuck_Object::Chuck_Object()
 //-----------------------------------------------------------------------------
 Chuck_Object::~Chuck_Object()
 {
-    // added 1.3.0.0: 
+    // added 1.3.0.0:
     // call destructors, from latest descended child to oldest parent
     Chuck_Type * type = this->type_ref;
     while( type != NULL )
@@ -333,7 +333,7 @@ Chuck_Object::~Chuck_Object()
         // go up the inheritance
         type = type->parent;
     }
-    
+
     // free
     if( vtable ) { delete vtable; vtable = NULL; }
     if( type_ref ) { type_ref->release(); type_ref = NULL; }
@@ -528,7 +528,7 @@ t_CKINT Chuck_Array4::set( const string & key, t_CKUINT val )
     map<string, t_CKUINT>::iterator iter = m_map.find( key );
 
     // if obj
-    if( m_is_obj && iter != m_map.end() ) 
+    if( m_is_obj && iter != m_map.end() )
         ((Chuck_Object *)(*iter).second)->release();
 
     if( !val ) m_map.erase( key );
@@ -566,7 +566,7 @@ t_CKINT Chuck_Array4::erase( const string & key )
     t_CKINT v = iter != m_map.end();
 
     // if obj
-    if( m_is_obj && iter != m_map.end() ) 
+    if( m_is_obj && iter != m_map.end() )
         ((Chuck_Object *)(*iter).second)->release();
 
     // erase
@@ -588,7 +588,7 @@ t_CKINT Chuck_Array4::push_back( t_CKUINT val )
 
     // if obj, reference count it (added 1.3.0.0)
     if( m_is_obj && val ) ((Chuck_Object *)val)->add_ref();
-    
+
     // add to vector
     m_vector.push_back( val );
 
@@ -616,17 +616,37 @@ t_CKINT Chuck_Array4::pop_back( )
         // if not null, release
         if( v ) v->release();
     }
-    
+
     // zero
     m_vector[m_vector.size()-1] = 0;
     // add to vector
     m_vector.pop_back();
-    
+
     return 1;
 }
 
+//-----------------------------------------------------------------------------
+// name: pop_out()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array4::pop_out( t_CKUINT pos )
+{
+	// check
+	if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
+		return 0;
 
+	if( m_is_obj )
+	{
+		// get pointer
+		Chuck_Object * v = (Chuck_Object *)m_vector[pos];
+		// if not null, release
+		if( v ) v->release();
+	}
 
+	// add to vector
+	m_vector.erase(m_vector.begin()+pos);
+	return 1;
+}
 
 //-----------------------------------------------------------------------------
 // name: back()
@@ -640,7 +660,7 @@ t_CKINT Chuck_Array4::back( t_CKUINT * val ) const
 
     // get
     *val = m_vector.back();
-    
+
     return 1;
 }
 
@@ -674,19 +694,19 @@ t_CKINT Chuck_Array4::set_capacity( t_CKINT capacity )
 
     // ensure size (removed 1.4.1.0 in favor of actually setting capacity)
     // set_size( capacity );
-    
+
     // if clearing size
     if( capacity < m_vector.size() )
     {
         // zero out section
         zero( capacity, m_vector.size() );
     }
-    
+
     // what the size was
     t_CKINT capacity_prev = m_vector.capacity();
     // reserve vector
     m_vector.reserve( capacity );
-    
+
     // if clearing size
     if( m_vector.capacity() > capacity_prev )
     {
@@ -908,7 +928,7 @@ t_CKINT Chuck_Array8::set( const string & key, t_CKFLOAT val )
 
     // 1.3.5.3: removed this
     // if( !val ) m_map.erase( key ); else
-    
+
     // insert
     m_map[key] = val;
 
@@ -971,8 +991,24 @@ t_CKINT Chuck_Array8::pop_back( )
     m_vector[m_vector.size()-1] = 0.0;
     // add to vector
     m_vector.pop_back();
-    
+
     return 1;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: pop_out()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array8::pop_out( t_CKUINT pos )
+{
+        // check
+        if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
+                return 0;
+
+        // add to vector
+        m_vector.erase(m_vector.begin()+pos);
+        return 1;
 }
 
 
@@ -990,7 +1026,7 @@ t_CKINT Chuck_Array8::back( t_CKFLOAT * val ) const
 
     // get
     *val = m_vector.back();
-    
+
     return 1;
 }
 
@@ -1261,7 +1297,7 @@ t_CKINT Chuck_Array16::push_back( const t_CKCOMPLEX & val )
 {
     // add to vector
     m_vector.push_back( val );
-    
+
     return 1;
 }
 
@@ -1283,8 +1319,26 @@ t_CKINT Chuck_Array16::pop_back( )
     m_vector[m_vector.size()-1].im = 0.0;
     // add to vector
     m_vector.pop_back();
-    
+
     return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: pop_out()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_Array16::pop_out( t_CKUINT pos )
+{
+        // check
+        if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
+                return 0;
+
+        // add to vector
+        m_vector.erase(m_vector.begin()+pos);
+        return 1;
 }
 
 
@@ -1302,7 +1356,7 @@ t_CKINT Chuck_Array16::back( t_CKCOMPLEX * val ) const
 
     // get
     *val = m_vector.back();
-    
+
     return 1;
 }
 
@@ -1435,7 +1489,7 @@ t_CKUINT Chuck_Array24::addr( t_CKINT i )
     // bound check
     if( i < 0 || i >= m_vector.capacity() )
         return 0;
-    
+
     // get the addr
     return (t_CKUINT)(&m_vector[i]);
 }
@@ -1465,10 +1519,10 @@ t_CKINT Chuck_Array24::get( t_CKINT i, t_CKVEC3 * val )
     // bound check
     if( i < 0 || i >= m_vector.capacity() )
         return 0;
-    
+
     // get the value
     *val = m_vector[i];
-    
+
     // return good
     return 1;
 }
@@ -1484,17 +1538,17 @@ t_CKINT Chuck_Array24::get( const string & key, t_CKVEC3 * val )
 {
     // set to zero
     val->x = val->y = val->z = 0;
-    
+
     // iterator
     map<string, t_CKVEC3>::iterator iter = m_map.find( key );
-    
+
     // check
     if( iter != m_map.end() )
     {
         // get the value
         *val = (*iter).second;
     }
-    
+
     // return good
     return 1;
 }
@@ -1511,10 +1565,10 @@ t_CKINT Chuck_Array24::set( t_CKINT i, const t_CKVEC3 & val )
     // bound check
     if( i < 0 || i >= m_vector.capacity() )
         return 0;
-    
+
     // set the value
     m_vector[i] = val;
-    
+
     // return good
     return 1;
 }
@@ -1530,10 +1584,10 @@ t_CKINT Chuck_Array24::set( const string & key, const t_CKVEC3 & val )
 {
     // 1.3.1.1: removed this
     // map<string, t_CKVEC3>::iterator iter = m_map.find( key );
-    
+
     // insert
     m_map[key] = val;
-    
+
     // return good
     return 1;
 }
@@ -1572,7 +1626,7 @@ t_CKINT Chuck_Array24::push_back( const t_CKVEC3 & val )
 {
     // add to vector
     m_vector.push_back( val );
-    
+
     return 1;
 }
 
@@ -1588,14 +1642,14 @@ t_CKINT Chuck_Array24::pop_back( )
     // check
     if( m_vector.size() == 0 )
         return 0;
-    
+
     // zero
     m_vector[m_vector.size()-1].x = 0.0;
     m_vector[m_vector.size()-1].y = 0.0;
     m_vector[m_vector.size()-1].z = 0.0;
     // add to vector
     m_vector.pop_back();
-    
+
     return 1;
 }
 
@@ -1611,10 +1665,10 @@ t_CKINT Chuck_Array24::back( t_CKVEC3 * val ) const
     // check
     if( m_vector.size() == 0 )
         return 0;
-    
+
     // get
     *val = m_vector.back();
-    
+
     return 1;
 }
 
@@ -1629,7 +1683,7 @@ void Chuck_Array24::clear( )
 {
     // zero
     zero( 0, m_vector.size() );
-    
+
     // clear vector
     m_vector.clear();
 }
@@ -1645,10 +1699,10 @@ t_CKINT Chuck_Array24::set_capacity( t_CKINT capacity )
 {
     // sanity check
     assert( capacity >= 0 );
-    
+
     // ensure size
     set_size( capacity );
-    
+
     return m_vector.capacity();
 }
 
@@ -1663,26 +1717,26 @@ t_CKINT Chuck_Array24::set_size( t_CKINT size )
 {
     // sanity check
     assert( size >= 0 );
-    
+
     // if clearing size
     if( size < m_vector.size() )
     {
         // zero out section
         zero( size, m_vector.size() );
     }
-    
+
     // remember
     t_CKINT size2 = m_vector.size();
     // resize vector
     m_vector.resize( size );
-    
+
     // if clearing size
     if( m_vector.size() > size2 )
     {
         // zero out section
         zero( size2, m_vector.size() );
     }
-    
+
     return m_vector.size();
 }
 
@@ -1697,7 +1751,7 @@ void Chuck_Array24::zero( t_CKUINT start, t_CKUINT end )
 {
     // sanity check
     assert( start <= m_vector.capacity() && end <= m_vector.capacity() );
-    
+
     for( t_CKUINT i = start; i < end; i++ )
     {
         // zero
@@ -1748,7 +1802,7 @@ t_CKUINT Chuck_Array32::addr( t_CKINT i )
     // bound check
     if( i < 0 || i >= m_vector.capacity() )
         return 0;
-    
+
     // get the addr
     return (t_CKUINT)(&m_vector[i]);
 }
@@ -1778,10 +1832,10 @@ t_CKINT Chuck_Array32::get( t_CKINT i, t_CKVEC4 * val )
     // bound check
     if( i < 0 || i >= m_vector.capacity() )
         return 0;
-    
+
     // get the value
     *val = m_vector[i];
-    
+
     // return good
     return 1;
 }
@@ -1797,17 +1851,17 @@ t_CKINT Chuck_Array32::get( const string & key, t_CKVEC4 * val )
 {
     // set to zero
     val->x = val->y = val->z = val->w;
-    
+
     // iterator
     map<string, t_CKVEC4>::iterator iter = m_map.find( key );
-    
+
     // check
     if( iter != m_map.end() )
     {
         // get the value
         *val = (*iter).second;
     }
-    
+
     // return good
     return 1;
 }
@@ -1824,10 +1878,10 @@ t_CKINT Chuck_Array32::set( t_CKINT i, const t_CKVEC4 & val )
     // bound check
     if( i < 0 || i >= m_vector.capacity() )
         return 0;
-    
+
     // set the value
     m_vector[i] = val;
-    
+
     // return good
     return 1;
 }
@@ -1843,13 +1897,13 @@ t_CKINT Chuck_Array32::set( const string & key, const t_CKVEC4 & val )
 {
     // 1.3.1.1: removed this
     // map<string, t_CKVEC4>::iterator iter = m_map.find( key );
-    
+
     // 1.3.5.3: removed this
     // if( val.re == 0 && val.im == 0 ) m_map.erase( key ); else
 
     // insert
     m_map[key] = val;
-    
+
     // return good
     return 1;
 }
@@ -1888,7 +1942,7 @@ t_CKINT Chuck_Array32::push_back( const t_CKVEC4 & val )
 {
     // add to vector
     m_vector.push_back( val );
-    
+
     return 1;
 }
 
@@ -1904,7 +1958,7 @@ t_CKINT Chuck_Array32::pop_back( )
     // check
     if( m_vector.size() == 0 )
         return 0;
-    
+
     // zero
     m_vector[m_vector.size()-1].x = 0.0;
     m_vector[m_vector.size()-1].y = 0.0;
@@ -1912,7 +1966,7 @@ t_CKINT Chuck_Array32::pop_back( )
     m_vector[m_vector.size()-1].w = 0.0;
     // add to vector
     m_vector.pop_back();
-    
+
     return 1;
 }
 
@@ -1928,10 +1982,10 @@ t_CKINT Chuck_Array32::back( t_CKVEC4 * val ) const
     // check
     if( m_vector.size() == 0 )
         return 0;
-    
+
     // get
     *val = m_vector.back();
-    
+
     return 1;
 }
 
@@ -1946,7 +2000,7 @@ void Chuck_Array32::clear( )
 {
     // zero
     zero( 0, m_vector.size() );
-    
+
     // clear vector
     m_vector.clear();
 }
@@ -1962,10 +2016,10 @@ t_CKINT Chuck_Array32::set_capacity( t_CKINT capacity )
 {
     // sanity check
     assert( capacity >= 0 );
-    
+
     // ensure size
     set_size( capacity );
-    
+
     return m_vector.capacity();
 }
 
@@ -1980,26 +2034,26 @@ t_CKINT Chuck_Array32::set_size( t_CKINT size )
 {
     // sanity check
     assert( size >= 0 );
-    
+
     // if clearing size
     if( size < m_vector.size() )
     {
         // zero out section
         zero( size, m_vector.size() );
     }
-    
+
     // remember
     t_CKINT size2 = m_vector.size();
     // resize vector
     m_vector.resize( size );
-    
+
     // if clearing size
     if( m_vector.size() > size2 )
     {
         // zero out section
         zero( size2, m_vector.size() );
     }
-    
+
     return m_vector.size();
 }
 
@@ -2014,7 +2068,7 @@ void Chuck_Array32::zero( t_CKUINT start, t_CKUINT end )
 {
     // sanity check
     assert( start <= m_vector.capacity() && end <= m_vector.capacity() );
-    
+
     for( t_CKUINT i = start; i < end; i++ )
     {
         // zero
@@ -2136,12 +2190,12 @@ void Chuck_Event::global_listen( void (* cb)(void),
 {
     // storage
     Chuck_Global_Event_Listener new_listener;
-    
+
     // store cb and whether to listen until canceled
     new_listener.void_callback = cb;
     new_listener.listen_forever = listen_forever;
     new_listener.callback_type = ck_get_plain;
-    
+
     // store storage
     m_global_queue.push( new_listener );
 }
@@ -2158,13 +2212,13 @@ void Chuck_Event::global_listen( std::string name, void (* cb)(const char *),
 {
     // storage
     Chuck_Global_Event_Listener new_listener;
-    
+
     // store cb and whether to listen until canceled
     new_listener.named_callback = cb;
     new_listener.listen_forever = listen_forever;
     new_listener.callback_type = ck_get_name;
     new_listener.name = name;
-    
+
     // store storage
     m_global_queue.push( new_listener );
 }
@@ -2181,13 +2235,13 @@ void Chuck_Event::global_listen( t_CKINT id, void (* cb)(t_CKINT),
 {
     // storage
     Chuck_Global_Event_Listener new_listener;
-    
+
     // store cb and whether to listen until canceled
     new_listener.id_callback = cb;
     new_listener.listen_forever = listen_forever;
     new_listener.callback_type = ck_get_id;
     new_listener.id = id;
-    
+
     // store storage
     m_global_queue.push( new_listener );
 }
@@ -2339,7 +2393,7 @@ void Chuck_Event::signal_global()
     #ifndef __DISABLE_THREADS__
     m_queue_lock.acquire();
     #endif
-    
+
     if( !m_global_queue.empty() )
     {
         // get the listener on top of the queue
@@ -2374,7 +2428,7 @@ void Chuck_Event::signal_global()
             m_global_queue.push( listener );
         }
     }
-    
+
     #ifndef __DISABLE_THREADS__
     m_queue_lock.release();
     #endif
@@ -2393,7 +2447,7 @@ void Chuck_Event::broadcast_global()
     m_queue_lock.acquire();
     #endif
     std::queue< Chuck_Global_Event_Listener > call_again;
-    
+
     while( !m_global_queue.empty() )
     {
         // get the listener on top of the queue
@@ -2428,7 +2482,7 @@ void Chuck_Event::broadcast_global()
             call_again.push( listener );
         }
     }
-    
+
     // for those that should be called again, store them again
     m_global_queue = call_again;
 
@@ -2518,7 +2572,7 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
     EM_log( CK_LOG_FINE, "shred '%d' wait on event '%x'...", shred->xid, (t_CKUINT)this );
     // make sure the shred info matches the vm
     assert( shred->vm_ref == vm );
-    
+
     Chuck_DL_Return RETURN;
     // get the member function
     f_mfun canwaitplease = (f_mfun)this->vtable->funcs[our_can_wait]->code->native_func;
@@ -3027,18 +3081,18 @@ Chuck_Array4 * Chuck_IO_File::dirList()
         EM_error3( "[chuck](via FileIO): cannot read: no file open" );
         return new Chuck_String( "" );
     }
-    
+
     if (m_io.fail()) {
         EM_error3( "[chuck](via FileIO): cannot read: I/O stream failed" );
         return new Chuck_String( "" );
     }
-    
+
     if ( m_dir )
     {
         EM_error3( "[chuck](via FileIO): cannot read on a directory" );
         return new Chuck_String( "" );
     }
-    
+
     char buf[length+1];
     m_io.read( buf, length );
     buf[m_io.gcount()] = '\0';
@@ -3266,7 +3320,7 @@ t_CKBOOL Chuck_IO_File::readString( std::string & str )
 
 
 /* (ATODO: doesn't look like asynchronous reads will work)
- 
+
  THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::read_thread ) ( void *data )
  {
  // (ATODO: test this)
@@ -3282,16 +3336,16 @@ t_CKBOOL Chuck_IO_File::readString( std::string & str )
  cerr << "Woke up" << endl;
  delete args;
  cerr << "Deleted args" << endl;
- 
+
  return (THREAD_RETURN)0;
  }
- 
+
  THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::readLine_thread ) ( void *data )
  {
  // not yet implemented
  return NULL;
  }
- 
+
  THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::readInt_thread ) ( void *data )
  {
  // (ATODO: test this)
@@ -3302,10 +3356,10 @@ t_CKBOOL Chuck_IO_File::readString( std::string & str )
  args->fileio_obj->m_asyncEvent->broadcast(); // wake up
  cerr << "Called broadcast" << endl;
  delete args;
- 
+
  return (THREAD_RETURN)0;
  }
- 
+
  THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::readFloat_thread ) ( void *data )
  {
  // not yet implemented
@@ -3730,4 +3784,3 @@ void Chuck_IO_Cherr::write( t_CKFLOAT val )
 {
     m_buffer << val;
 }
-
