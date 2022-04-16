@@ -4,6 +4,7 @@ import sys
 import os
 import subprocess
 import time
+from pathlib import Path
 
 
 failures = 0
@@ -20,6 +21,8 @@ def handle_directory(dir, exe):
 
     for filename in os.listdir(dir):
         path = os.path.join(dir, filename)
+        path = Path(path).as_posix() # cast as posix path on all OS's
+
         if os.path.isfile(path):
             if os.path.splitext(filename)[1] == ".ck":
                 run_test(exe, path, filename, 0)
