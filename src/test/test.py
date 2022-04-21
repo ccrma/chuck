@@ -4,6 +4,7 @@ import sys
 import os
 import subprocess
 import time
+# 1.4.1.1 (added) nshaheed for windows CI (needs pathlib)
 from pathlib import Path
 
 
@@ -21,6 +22,7 @@ def handle_directory(dir, exe):
 
     for filename in os.listdir(dir):
         path = os.path.join(dir, filename)
+        # 1.4.1.1 (added) nshaheed (needs pathlib)
         path = Path(path).as_posix() # cast as posix path on all OS's
 
         if os.path.isfile(path):

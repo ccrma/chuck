@@ -625,6 +625,9 @@ t_CKINT Chuck_Array4::pop_back( )
     return 1;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: pop_out()
 // desc: ...
@@ -648,20 +651,26 @@ t_CKINT Chuck_Array4::pop_out( t_CKUINT pos )
 	return 1;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
-// name: get_keys()
+// name: get_keys() | 1.4.1.1 nshaheed (added)
 // desc: return vector of keys from associative array
 //-----------------------------------------------------------------------------
-std::vector<std::string> Chuck_Array4::get_keys( )
+void Chuck_Array4::get_keys( std::vector<std::string> & keys )
 {
-  std::vector<std::string> keys;
-
-  for (auto const& element : m_map) {
-    keys.push_back(element.first);
-  }
-
-  return keys;
+    // clear the return array
+    keys.clear();
+    // iterator
+    for( std::map<std::string, t_CKUINT>::iterator iter = m_map.begin(); iter !=m_map.end(); iter++ )
+    {
+        // add to list
+        keys.push_back((*iter).first);
+    }
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -1012,6 +1021,8 @@ t_CKINT Chuck_Array8::pop_back( )
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: pop_out()
 // desc: ...
@@ -1027,20 +1038,26 @@ t_CKINT Chuck_Array8::pop_out( t_CKUINT pos )
         return 1;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
-// name: get_keys()
+// name: get_keys() | 1.4.1.1 nshaheed (added)
 // desc: return vector of keys from associative array
 //-----------------------------------------------------------------------------
-std::vector<std::string> Chuck_Array8::get_keys( )
+void Chuck_Array8::get_keys( std::vector<std::string> & keys )
 {
-  std::vector<std::string> keys;
-
-  for (auto const& element : m_map) {
-    keys.push_back(element.first);
-  }
-
-  return keys;
+    // clear the return array
+    keys.clear();
+    // iterator
+    for( std::map<std::string,t_CKFLOAT>::iterator iter = m_map.begin(); iter !=m_map.end(); iter++ )
+    {
+        // add to list
+        keys.push_back((*iter).first);
+    }
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -1370,20 +1387,26 @@ t_CKINT Chuck_Array16::pop_out( t_CKUINT pos )
         return 1;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
-// name: get_keys()
+// name: get_keys() | 1.4.1.1 nshaheed (added)
 // desc: return vector of keys from associative array
 //-----------------------------------------------------------------------------
-std::vector<std::string> Chuck_Array16::get_keys( )
+void Chuck_Array16::get_keys( std::vector<std::string> & keys )
 {
-  std::vector<std::string> keys;
-
-  for (auto const& element : m_map) {
-    keys.push_back(element.first);
-  }
-
-  return keys;
+    // clear the return array
+    keys.clear();
+    // iterator
+    for( std::map<std::string,t_CKCOMPLEX>::iterator iter = m_map.begin(); iter !=m_map.end(); iter++ )
+    {
+        // add to list
+        keys.push_back((*iter).first);
+    }
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -1803,20 +1826,26 @@ void Chuck_Array24::zero( t_CKUINT start, t_CKUINT end )
     }
 }
 
+
+
+
 //-----------------------------------------------------------------------------
-// name: get_keys()
+// name: get_keys() | 1.4.1.1 nshaheed (added)
 // desc: return vector of keys from associative array
 //-----------------------------------------------------------------------------
-std::vector<std::string> Chuck_Array24::get_keys( )
+void Chuck_Array24::get_keys( std::vector<std::string> & keys )
 {
-  std::vector<std::string> keys;
-
-  for (auto const& element : m_map) {
-    keys.push_back(element.first);
-  }
-
-  return keys;
+    // clear the return array
+    keys.clear();
+    // iterator
+    for( std::map<std::string, t_CKVEC3>::iterator iter = m_map.begin(); iter !=m_map.end(); iter++ )
+    {
+        // add to list
+        keys.push_back((*iter).first);
+    }
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -2134,20 +2163,26 @@ void Chuck_Array32::zero( t_CKUINT start, t_CKUINT end )
     }
 }
 
+
+
+
 //-----------------------------------------------------------------------------
-// name: get_keys()
+// name: get_keys() | 1.4.1.1 nshaheed (added)
 // desc: return vector of keys from associative array
 //-----------------------------------------------------------------------------
-std::vector<std::string> Chuck_Array32::get_keys( )
+void Chuck_Array32::get_keys( std::vector<std::string> & keys )
 {
-  std::vector<std::string> keys;
-
-  for (auto const& element : m_map) {
-    keys.push_back(element.first);
-  }
-
-  return keys;
+    // clear the return array
+    keys.clear();
+    // iterator
+    for( std::map<std::string, t_CKVEC4>::iterator iter = m_map.begin(); iter !=m_map.end(); iter++ )
+    {
+        // add to list
+        keys.push_back((*iter).first);
+    }
 }
+
+
 
 
 // static
