@@ -561,6 +561,16 @@ t_CKBOOL Chuck_VM::compute()
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 {
+    bool wasRunning = m_frameTimer.Running();
+    if(!wasRunning)
+    {
+        m_globals_manager->setGlobalFloat("_ckLoad", 0.f);
+    }
+    else
+        m_lastFrameTime = m_frameTimer.Stop();
+
+    m_frameTimer.Reset(true/*andStart*/);
+
     // copy
     m_input_ref = input; m_output_ref = output; m_current_buffer_frames = N;
     // frame count
@@ -573,6 +583,8 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
     // TODO: once per buffer instead? (place here then)
 
     // loop it
+    Timer blockTime;
+    blockTime.Start();
     while( N )
     {
         // compute shreds
@@ -585,6 +597,14 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
             if( N > 0 ) N--;
         }
         else m_shreduler->advance_v( N, frame );
+    }
+    m_lastBlockTime = blockTime.Stop();
+    if(wasRunning)
+    {
+        // frameTime 8.9388e+06ns, .008s (125 fps), blocksize: 512
+        // assert(m_lastFrameTime.count() != 0.);
+        float avg = m_lastBlockTime / m_lastFrameTime;
+        m_globals_manager->setGlobalFloat("_ckLoadAvg", (float) avg); // initialized in chuck_type.cpp
     }
     
     // clear

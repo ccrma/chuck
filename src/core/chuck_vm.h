@@ -36,6 +36,7 @@
 #include "chuck_ugen.h"
 #include "chuck_type.h"
 #include "chuck_carrier.h"
+#include "util_timer.h"
 
 // tracking
 #ifdef __CHUCK_STAT_TRACK__
@@ -543,6 +544,12 @@ protected:
 protected:
     // 1.4.1.0 (jack): manager for global variables
     Chuck_Globals_Manager * m_globals_manager;
+
+private:
+    // 1.4.2 (dbadb): timer for 'loadavg'
+    Timer m_frameTimer;
+    Timer::t_Duration m_lastFrameTime;
+    Timer::t_Duration m_lastBlockTime;
 };
 
 
