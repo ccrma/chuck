@@ -546,10 +546,8 @@ protected:
     Chuck_Globals_Manager * m_globals_manager;
 
 private:
-    // 1.4.2 (dbadb): timer for 'loadavg'
+    // 1.4.2 (dbadb): timer for '_ckLoadAvg'
     Timer m_frameTimer;
-    Timer::t_Duration m_lastFrameTime;
-    Timer::t_Duration m_lastBlockTime;
 };
 
 

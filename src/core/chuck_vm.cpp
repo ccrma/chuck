@@ -557,18 +557,19 @@ t_CKBOOL Chuck_VM::compute()
 
 //-----------------------------------------------------------------------------
 // name: run()
-// desc: ...
+// desc: This is the main realtime callback for processing audio. The value
+//   N is determined during audio setup.  Same for the channel layout of 
+//   input and out.
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 {
+    // frameTimer is used to compute the _ckLoadAvg global variable.
     bool wasRunning = m_frameTimer.Running();
+    Timer::t_Duration frameDur;
     if(!wasRunning)
-    {
         m_globals_manager->setGlobalFloat("_ckLoad", 0.f);
-    }
     else
-        m_lastFrameTime = m_frameTimer.Stop();
-
+        frameDur = m_frameTimer.Stop();
     m_frameTimer.Reset(true/*andStart*/);
 
     // copy
@@ -583,8 +584,8 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
     // TODO: once per buffer instead? (place here then)
 
     // loop it
-    Timer blockTime;
-    blockTime.Start();
+    Timer blockTimer;
+    blockTimer.Start();
     while( N )
     {
         // compute shreds
@@ -598,13 +599,13 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
         }
         else m_shreduler->advance_v( N, frame );
     }
-    m_lastBlockTime = blockTime.Stop();
+    auto blockDur = blockTimer.Stop();
     if(wasRunning)
     {
-        // frameTime 8.9388e+06ns, .008s (125 fps), blocksize: 512
-        // assert(m_lastFrameTime.count() != 0.);
-        float avg = m_lastBlockTime / m_lastFrameTime;
-        m_globals_manager->setGlobalFloat("_ckLoadAvg", (float) avg); // initialized in chuck_type.cpp
+        // exmplaes: frameTime 8.9388e+06ns, .008s (125 fps), blocksize: 512
+        float avg = blockDur / frameDur;
+        // to use this, .ck files include 'global float _ckLoadAvg;'
+        m_globals_manager->setGlobalFloat("_ckLoadAvg", (float) avg);
     }
     
     // clear

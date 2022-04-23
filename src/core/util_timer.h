@@ -48,7 +48,8 @@ public:
 
     /**
      * @brief Stops the timer and updates the current elapsed value.
-     *  No reset occurs so that you at resume the timer at will.
+     *  No reset occurs so that you can resume the timer at will
+     *  via multiple calls to Start/Stop.
      * 
      * @return t_Duration 
      */
