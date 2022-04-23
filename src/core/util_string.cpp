@@ -529,7 +529,7 @@ std::string extract_filepath_dir(std::string &filepath)
 {
     char path_separator = '/';
     
-//#ifdef __WINDOWS_DS__
+//#ifdef __PLATFORM_WIN32__
 //    path_separator = '\\';
 //#else
 //    path_separator = '/';

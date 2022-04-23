@@ -8089,7 +8089,7 @@ psf_fseek (SF_PRIVATE *psf, sf_count_t offset, int whence)
 		} ;
 
 	lDistanceToMove = (DWORD) (offset & 0xFFFFFFFF) ;
-#ifndef __WINDOWS_DS__
+#ifndef __PLATFORM_WIN32__
 	lDistanceToMoveHigh = (DWORD) (0xFFFFFFFF & (offset >> 32)) ;
 #else
     lDistanceToMoveHigh = 0;
@@ -8330,7 +8330,7 @@ psf_ftruncate (SF_PRIVATE *psf, sf_count_t len)
 		return 1 ;
 
 	lDistanceToMoveLow = (DWORD) (len & 0xFFFFFFFF) ;
-#ifndef __WINDOWS_DS__
+#ifndef __PLATFORM_WIN32__
 	lDistanceToMoveHigh = (DWORD) ((len >> 32) & 0xFFFFFFFF) ;
 #else
     lDistanceToMoveHigh = 0;

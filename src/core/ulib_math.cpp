@@ -53,10 +53,10 @@ static t_CKCOMPLEX g_i = { 0.0, 1.0 };
 static t_CKFLOAT fzero() { return 0.0; }
 
 
-#ifdef __WINDOWS_DS__
+#ifdef __PLATFORM_WIN32__
 static long random() { return rand(); }
 static void srandom( unsigned s ) { srand( s ); }
-#endif // __WINDOWS_DS__
+#endif // __PLATFORM_WIN32__
 
 
 // query

@@ -167,9 +167,15 @@ static void version()
     string archs = "";
 
 #if defined(__PLATFORM_WIN32__)
-    platform = "microsoft windows";
-#elif defined(__WINDOWS_DS__)
-    platform = "microsoft windows + cygwin";
+    #if defined(__WINDOWS_ASIO__) && defined(__WINDOWS_DS__)
+        platform = "microsoft windows + DS + ASIO";
+    #elif defined(__WINDOWS_ASIO__)
+        platform = "microsoft windows + ASIO";
+    #elif defined(__WINDOWS_DS__)
+        platform = "microsoft windows + DS";
+    #else
+        platform = "microsoft windows (??)";
+    #endif
 #elif defined(__LINUX_ALSA__)
     platform = "linux (alsa)";
 #elif defined(__LINUX_OSS__)
@@ -453,6 +459,7 @@ bool go( int argc, const char ** argv )
     t_CKBOOL update_otf_vm = TRUE;
     string   filename = "";
     vector<string> args;
+    char const *audioDriver = NULL;
     
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path;
@@ -546,6 +553,8 @@ bool go( int argc, const char ** argv )
                 num_buffers = atoi( argv[i]+8 ) > 0 ? atoi( argv[i]+8 ) : num_buffers;
             else if( !strncmp(argv[i], "-n", 2) )
                 num_buffers = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : num_buffers;
+            else if( !strncmp(argv[i], "--driver:", 9))
+                audioDriver = argv[i]+9;
             else if( !strncmp(argv[i], "--dac:", 6) ) // (added 1.3.0.0)
             {
                 // advance pointer to beginning of argument
@@ -773,7 +782,7 @@ bool go( int argc, const char ** argv )
     // probe
     if( probe )
     {
-        ChuckAudio::probe();
+        ChuckAudio::probe(audioDriver);
         
 #ifndef __DISABLE_MIDI__
         EM_error2b( 0, "" );
@@ -913,7 +922,8 @@ bool go( int argc, const char ** argv )
         ChuckAudio::m_adc_n = adc;
         ChuckAudio::m_dac_n = dac;
         t_CKBOOL retval = ChuckAudio::initialize( dac_chans, adc_chans,
-            srate, buffer_size, num_buffers, cb, (void *)the_chuck, force_srate );
+            srate, buffer_size, num_buffers, cb, (void *)the_chuck, force_srate,
+            audioDriver );
         // check
         if( !retval )
         {

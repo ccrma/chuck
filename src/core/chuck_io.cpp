@@ -43,14 +43,14 @@
 #include "midiio_rtmidi.h"
 #endif
 
-#ifndef __WINDOWS_DS__
+#ifndef __PLATFORM_WIN32__
 #include <sys/select.h>
 #include <poll.h>
 #include <termios.h>
 #include <unistd.h>
 #else
 #include <io.h>
-#endif // __WINDOWS_DS__
+#endif // __PLATFORM_WIN32__
 #include <fcntl.h>
 #include <math.h>
 
@@ -61,7 +61,7 @@
 using namespace std;
 
 
-#ifdef __WINDOWS_DS__
+#ifdef __PLATFORM_WIN32__
 typedef BYTE uint8_t;
 typedef WORD uint16_t;
 // ge: this needed in earlier/some versions of windows
@@ -2694,7 +2694,7 @@ Chuck_IO_Serial::~Chuck_IO_Serial()
 
 t_CKBOOL Chuck_IO_Serial::ready()
 {
-#ifndef __WINDOWS_DS__
+#ifndef __PLATFORM_WIN32__
     struct pollfd pollfds;
     pollfds.fd = m_fd;
     pollfds.events = POLLIN;

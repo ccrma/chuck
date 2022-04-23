@@ -39,7 +39,7 @@
 #include <limits.h>
 #include "rtmidi.h"
 
-#if (defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__)) && !defined(__WINDOWS_PTHREAD__)
+#if (defined(__PLATFORM_WIN32__) && !defined(__WINDOWS_PTHREAD__))
   #include <windows.h>
   #include <sys/timeb.h>
 #else
@@ -99,7 +99,36 @@ f_audio_cb ChuckAudio::m_audio_cb = NULL;
 void * ChuckAudio::m_cb_user_data = NULL;
 
 
-
+static RtAudio::Api driverNameToApi(char const *driver)
+{
+    RtAudio::Api api = RtAudio::UNSPECIFIED;
+    if(driver)
+    {
+    #if defined(__WINDOWS_ASIO__)
+        if(!strcmp(driver, "ASIO"))
+            api = RtAudio::WINDOWS_ASIO;
+        else
+    #endif
+    #if defined(__WINDOWS_DS__)
+        if(!strcmp(driver, "DS"))
+            api = RtAudio::WINDOWS_DS;
+    #endif
+        // XXX: add swap between ALSA, PULSE, OSS? and JACK
+        if(api == RtAudio::UNSPECIFIED) 
+        {
+            EM_error2( 0, "unsupported audio driver: %s", driver);
+        }
+    }
+    else
+    {
+    #if defined(__PLATFORM_WIN32__)
+        // traditional chuck default behavior:
+        // DIRECT SOUND is most general albeit high-latency
+        api = RtAudio::WINDOWS_DS; 
+    #endif
+    }
+    return api;
+}
 
 //-----------------------------------------------------------------------------
 // name: print()
@@ -148,15 +177,16 @@ void print( const RtAudio::DeviceInfo & info )
 // name: probe()
 // desc: ...
 //-----------------------------------------------------------------------------
-void ChuckAudio::probe()
+void ChuckAudio::probe(char const *driver)
 {
+    RtAudio::Api api = driverNameToApi(driver);
     // rtaduio pointer
     RtAudio * audio = NULL;
     // device info struct
     RtAudio::DeviceInfo info;
     
     // allocate RtAudio
-    try { audio = new RtAudio( ); }
+    try { audio = new RtAudio(api); }
     catch( RtAudioError err )
     {
         // problem finding audio devices, most likely
@@ -435,8 +465,6 @@ t_CKBOOL ChuckAudio::watchdog_stop()
 }
 
 
-
-
 //-----------------------------------------------------------------------------
 // name: initialize()
 // desc: ...
@@ -448,7 +476,8 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
                                  t_CKUINT num_buffers,
                                  f_audio_cb callback,
                                  void * data,
-                                 t_CKBOOL force_srate )
+                                 t_CKBOOL force_srate,
+                                 char const *driver )
 {
     if( m_init )
         return FALSE;
@@ -476,7 +505,8 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
     EM_pushlog();
 
     // allocate RtAudio
-    try { m_rtaudio = new RtAudio( ); }
+    RtAudio::Api api = driverNameToApi(driver);
+    try { m_rtaudio = new RtAudio(api); }
     catch( RtAudioError err )
     {
         // problem finding audio devices, most likely

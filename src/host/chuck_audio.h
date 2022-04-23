@@ -97,7 +97,9 @@ public:
                                 f_audio_cb callback,
                                 void * data,
                                 // force_srate added 1.3.1.2
-                                t_CKBOOL force_srate );
+                                t_CKBOOL force_srate,
+                                char const *driver // NULL means default for build
+                                );
     static void shutdown();
     static t_CKBOOL start();
     static t_CKBOOL stop();
@@ -108,7 +110,7 @@ public: // watchdog stuff
 
 public: // device info
     // probe audio devices
-    static void probe();
+    static void probe(char const *driver); // NULL means default for build
     // get device number by name?
     static t_CKUINT device_named( const std::string & name,
                                   t_CKBOOL needs_dac = FALSE,
