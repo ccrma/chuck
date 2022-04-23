@@ -585,6 +585,7 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 
     // loop it
     Timer blockTimer;
+    Timer::t_Duration blockDur; // declared here to prevent goto error.
     blockTimer.Start();
     while( N )
     {
@@ -599,7 +600,7 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
         }
         else m_shreduler->advance_v( N, frame );
     }
-    auto blockDur = blockTimer.Stop();
+    blockDur = blockTimer.Stop();
     if(wasRunning)
     {
         // exmplaes: frameTime 8.9388e+06ns, .008s (125 fps), blocksize: 512
