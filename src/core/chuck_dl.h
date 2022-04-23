@@ -161,7 +161,7 @@ namespace Chuck_DL_Api { struct Api; }
 #endif 
 
 // calling convention of functions provided by chuck to the dll
-#if defined(__WINDOWS_DS__)
+#if defined(__PLATFORM_WIN32__)
   #define CK_DLL_CALL    _cdecl
 #else
   #define CK_DLL_CALL
@@ -720,7 +720,7 @@ private:
 
 #error ChucK not support on Mac OS X 10.3 or lower
 
-#elif defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__) 
+#elif defined(__PLATFORM_WIN32__)
 	 	 	 	 
           #ifdef __cplusplus 
           extern "C" { 
