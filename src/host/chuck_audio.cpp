@@ -157,7 +157,7 @@ void ChuckAudio::probe()
     
     // allocate RtAudio
     try { audio = new RtAudio( ); }
-    catch( RtError err )
+    catch( RtAudioError err )
     {
         // problem finding audio devices, most likely
         EM_error2b( 0, "%s", err.getMessage().c_str() );
@@ -175,7 +175,7 @@ void ChuckAudio::probe()
     for( int i = 0; i < devices; i++ )
     {
         try { info = audio->getDeviceInfo(i); }
-        catch( RtError & error )
+        catch( RtAudioError & error )
         {
             error.printMessage();
             break;
@@ -215,7 +215,7 @@ t_CKUINT ChuckAudio::device_named( const std::string & name, t_CKBOOL needs_dac,
     
     // allocate RtAudio
     try { audio = new RtAudio(); }
-    catch( RtError err )
+    catch( RtAudioError err )
     {
         // problem finding audio devices, most likely
         EM_error2b( 0, "%s", err.getMessage().c_str() );
@@ -231,7 +231,7 @@ t_CKUINT ChuckAudio::device_named( const std::string & name, t_CKBOOL needs_dac,
     {
         // get info
         try { info = audio->getDeviceInfo(i); }
-        catch( RtError & error )
+        catch( RtAudioError & error )
         {
             error.printMessage();
             break;
@@ -253,7 +253,7 @@ t_CKUINT ChuckAudio::device_named( const std::string & name, t_CKBOOL needs_dac,
         for( int i = 0; i < devices; i++ )
         {
             try { info = audio->getDeviceInfo(i); }
-            catch( RtError & error )
+            catch( RtAudioError & error )
             {
                 error.printMessage();
                 break;
@@ -477,7 +477,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
 
     // allocate RtAudio
     try { m_rtaudio = new RtAudio( ); }
-    catch( RtError err )
+    catch( RtAudioError err )
     {
         // problem finding audio devices, most likely
         EM_error2( 0, "%s", err.getMessage().c_str() );
@@ -731,7 +731,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
             CK_RTAUDIO_FORMAT, sample_rate, &bufsize,
             cb, m_cb_user_data,
             &stream_options );
-    } catch( RtError err ) {
+    } catch( RtAudioError err ) {
         // log
         EM_log( CK_LOG_INFO, "exception caught: '%s'...", err.getMessage().c_str() );
         EM_error2( 0, "%s", err.getMessage().c_str() );
@@ -882,7 +882,7 @@ t_CKBOOL ChuckAudio::start( )
             m_rtaudio->startStream();
         m_start = TRUE;
     }
-    catch( RtError err )
+    catch( RtAudioError err )
     {
         return FALSE;
     }
@@ -904,7 +904,7 @@ t_CKBOOL ChuckAudio::stop( )
             m_rtaudio->stopStream();
         m_start = FALSE;
     }
-    catch( RtError err )
+    catch( RtAudioError err )
     {
         return FALSE;
     }

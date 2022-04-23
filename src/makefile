@@ -2,6 +2,7 @@ DESTDIR?=/usr/local/bin
 COREDIR=core
 HOSTDIR=host
 CK_PLATFORM=
+RTAUDIODIR=./rtaudio
 
 
 ########################## DEFAULT MAKE TARGET #################################
@@ -155,8 +156,9 @@ LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
 
 
 ############################ CHUCK HOST TARGETS ################################
-CXXSRCS_HOST+= RtAudio/RtAudio.cpp chuck_audio.cpp chuck_console.cpp \
-	chuck_main.cpp 
+CXXINC_HOST+= -I${RTAUDIODIR} -I${RTAUDIODIR}/include
+CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp \
+	${RTAUDIODIR}/RtAudio.cpp
 
 
 ############################ OBJECT FILE TARGETS ###############################
@@ -208,16 +210,18 @@ chuck-core:
 	make $(MAKECMDGOALS) -C $(COREDIR) $(ARCH_ARGS)
 	@echo -------------
 
+CFLAGS_HOST= ${CFLAGS} -I${RTAUDIODIR}
+CFLAGSDEPEND_HOST=${CFLAGSDEPEND} ${CFLAGS_HOST}
 chuck: chuck-core $(COBJS_HOST) $(CXXOBJS_HOST)
 	$(LD) -o chuck $(OBJS) $(LDFLAGS) $(ARCHOPTS)
 
 $(COBJS_HOST): %.o: %.c
-	$(CC) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
-	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
+	$(CC) $(CFLAGS_HOST) $(ARCHOPTS) -c $< -o $@
+	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND_HOST) $< > $*.d
 
 $(CXXOBJS_HOST): %.o: %.cpp
-	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
-	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
+	$(CXX) $(CFLAGS_HOST) $(ARCHOPTS) -c $< -o $@
+	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND_HOST) $< > $*.d
 
 clean: 
 	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} $(OBJS) \

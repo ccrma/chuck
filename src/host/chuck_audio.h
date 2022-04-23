@@ -36,7 +36,7 @@
 
 #include "chuck_def.h"
 #include <string>
-#include "RtAudio/RtAudio.h"
+#include <RtAudio.h>
 
 
 
