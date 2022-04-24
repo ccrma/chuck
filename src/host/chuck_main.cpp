@@ -247,7 +247,8 @@ t_CKBOOL get_count( const char * arg, t_CKUINT * out )
 
 //-----------------------------------------------------------------------------
 // name: signal_int()
-// desc: ...
+// desc: handler for ctrl-c (SIGINT).  NB: on windows this is triggered
+//       in a separate thread. global_cleanup requires a mutex.
 //-----------------------------------------------------------------------------
 extern "C" void signal_int( int sig_num )
 {
@@ -287,6 +288,9 @@ extern "C" void signal_pipe( int sig_num )
 //-----------------------------------------------------------------------------
 void global_cleanup()
 {
+    static XMutex s_mutex;
+    s_mutex.acquire();
+
     // REFACTOR-2017: shut down audio system
     all_stop();
 
@@ -316,6 +320,7 @@ void global_cleanup()
     // close handle
 //    if( g_tid_otf ) CloseHandle( g_tid_otf );
 #endif
+    s_mutex.release();
 }
 
 
