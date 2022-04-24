@@ -4,8 +4,8 @@ import sys
 import os
 import subprocess
 import time
-# 1.4.1.1 (added) nshaheed for windows CI (needs pathlib)
-from pathlib import Path
+# 1.4.1.1 (added) nshaheed for windows CI
+import posixpath
 
 
 failures = 0
@@ -22,8 +22,10 @@ def handle_directory(dir, exe):
 
     for filename in os.listdir(dir):
         path = os.path.join(dir, filename)
-        # 1.4.1.1 (added) nshaheed (needs pathlib)
-        path = Path(path).as_posix() # cast as posix path on all OS's
+        # 1.4.1.1 (added) nshaheed
+        # split path into its components and then rejoin cast as a posix path
+        path_components = os.path.normpath(path).lstrip(os.path.sep).split(os.path.sep)
+        path = posixpath.join(*path_components)
 
         if os.path.isfile(path):
             if os.path.splitext(filename)[1] == ".ck":
