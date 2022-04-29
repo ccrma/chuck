@@ -1,5 +1,5 @@
 // name: interpolate.ck
-// desc: using vec3 as an non-linear, slewing interpolator
+// desc: using vec3 as a non-linear, slewing interpolator
 //       this is quite useful to making a percentage progress
 //       towards a goal, in an amount proportional to the slew
 //       and some delta time
