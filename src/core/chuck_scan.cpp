@@ -1298,13 +1298,15 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
 	std::cout << "about to compile: " << filename << endl;
 
 	ChucK* the_chuck = env->chuck();
-	the_chuck->compileFile(filename, "", 1);
+	bool result = the_chuck->compileFile(filename, "", 1);
 
         // if yes, run compileFile()
         // else, throw error below
         // resolve
-        EM_error2( decl->linepos, "... in declaration ..." );
-        return FALSE;
+	if (!result) {
+	  EM_error2( decl->linepos, "... in declaration ..." );
+	  return FALSE;
+	}
     }
 
     // loop through the variables
