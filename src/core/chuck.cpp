@@ -824,7 +824,7 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
     Chuck_VM_Shred * shred = NULL;
     
     // log
-    EM_log( CK_LOG_FINE, "compiling '%s'...", filename.c_str() );
+    EM_log( CK_LOG_FINE, "compiling '%s'...", path.c_str() );
     // push indent
     EM_pushlog();
     
