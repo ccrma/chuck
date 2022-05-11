@@ -6,3 +6,5 @@ class Foo
 {
      Bar bar;
 }
+
+<<<"success">>>;
