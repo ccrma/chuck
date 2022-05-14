@@ -6,7 +6,7 @@ CK_PLATFORM=
 
 ########################## DEFAULT MAKE TARGET #################################
 # default target: print usage message and quit
-current: 
+current:
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
 	@echo "   make mac, make mac-ub, make cygwin, make win32, or make emscripten"
@@ -156,7 +156,7 @@ LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
 
 ############################ CHUCK HOST TARGETS ################################
 CXXSRCS_HOST+= RtAudio/RtAudio.cpp chuck_audio.cpp chuck_console.cpp \
-	chuck_main.cpp 
+	chuck_main.cpp
 
 
 ############################ OBJECT FILE TARGETS ###############################
@@ -219,12 +219,12 @@ $(CXXOBJS_HOST): %.o: %.cpp
 	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
-clean: 
+clean:
 	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} $(OBJS) \
         $(patsubst %.o,%.d,$(OBJS))*~ $(COREDIR)/chuck.output \
 	$(COREDIR)/chuck.tab.h $(COREDIR)/chuck.tab.c \
         $(COREDIR)/chuck.yy.c $(DIST_DIR){,.tgz,.zip} Release Debug
-	
+
 
 ############################### RUN TEST #######################################
 test:
@@ -244,7 +244,7 @@ src-dist:
 	mkdir $(DIST_DIR) $(DIST_DIR)/src $(DIST_DIR)/examples
 # copy src
 	git archive HEAD src | tar -x -C $(DIST_DIR)
-	rm -r $(DIST_DIR)/src/test 
+	rm -r $(DIST_DIR)/src/test
 # copy examples
 	git archive HEAD examples | tar -x -C $(DIST_DIR)
 # copy notes
