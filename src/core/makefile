@@ -1,5 +1,5 @@
 # default target: print usage message and quit
-current: 
+current:
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
 	@echo "   make mac, make mac-ub, make cygwin, or make win32"
@@ -149,7 +149,7 @@ $(LO_COBJS): %.o: %.c
 	$(CC) $(CFLAGS) $(LO_CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $(LO_CFLAGS) $< > $*.d
 
-clean: 
+clean:
 	@rm -rf *.o *.d $(OBJS) \
          $(patsubst %.o,%.d,$(OBJS)) *~ chuck.output chuck.tab.h chuck.tab.c \
          chuck.yy.c $(DIST_DIR){,.tgz,.zip} Release Debug
@@ -207,7 +207,7 @@ src-dist:
 	mkdir $(DIST_DIR) $(DIST_DIR)/doc $(DIST_DIR)/src $(DIST_DIR)/examples
 # copy src
 	git archive HEAD . | tar -x -C $(DIST_DIR)/src
-	rm -r $(DIST_DIR)/src/examples $(DIST_DIR)/src/test 
+	rm -r $(DIST_DIR)/src/examples $(DIST_DIR)/src/test
 # copy manual + notes
 	cp $(addprefix ../notes/doc/,$(DOC_NOTES)) $(DIST_DIR)/doc
 # copy examples
