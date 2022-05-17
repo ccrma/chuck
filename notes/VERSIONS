@@ -30,6 +30,8 @@
     examples showing one sender to many receivers
   - (added) examples/osc/4-multicast/
     examples showing one sender using multicast to broadcast
+  - (added) examples/stk/hevymetl-dance-now.ck
+    example of power chords in sequence
   - (fixed) fixed Lisa-load.ck to correct load sound file [thanks nshaheed]
   - (fixed) CK_STDCERR now flushes on all output
   - (fixed) error message display for MidiFileIn (STK)
