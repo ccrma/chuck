@@ -229,7 +229,7 @@ public:
     virtual t_CKINT erase( const std::string & key ) = 0; // erase
     virtual void clear( ) = 0; // clear
     // get map keys | added (1.4.1.2) nshaheed
-    virtual void get_keys( std::vector<std::string> & keys );
+    virtual void get_keys( std::vector<std::string> & keys ) = 0;
 
     Chuck_Type * m_array_type;
 };
