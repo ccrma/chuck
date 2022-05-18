@@ -38,13 +38,13 @@
 
 
 // scan a program into the env - type discovery scan
-t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog, 
+t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
                                  te_HowMuch val = te_do_all );
 // scan a class definition (used by type_engine_add_dll())
 t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def def );
 
 // scan a program into the env - type resolution scan
-t_CKBOOL type_engine_scan1_prog( Chuck_Env * env, a_Program prog, 
+t_CKBOOL type_engine_scan1_prog( Chuck_Env * env, a_Program prog,
                                  te_HowMuch val = te_do_all );
 // scan a class definition (used by type_engine_add_dll())
 t_CKBOOL type_engine_scan1_class_def( Chuck_Env * env, a_Class_Def def );
@@ -62,6 +62,8 @@ t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def def );
 t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def def );
 // scan an exp decl
 t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl );
+// if there are unresolved types after the first scan, attempt to resovle them
+t_CKBOOL type_engine_handle_unresolved_types( Chuck_Env * env );
 
 // the rest is done in chuck_type
 
