@@ -51,11 +51,11 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->setname( QUERY, "Machine" );
 
     /*! \nameinfo
-      ChucK runtime interface to the virtual machine.  
-      this interface can be used to manage shreds.  
+      ChucK runtime interface to the virtual machine.
+      this interface can be used to manage shreds.
       They are similar to the <a href="otfp.html">
-      On-the-fly Programming Commands</a>, except these are 
-      invoked from within a ChucK program, and are accessible 
+      On-the-fly Programming Commands</a>, except these are
+      invoked from within a ChucK program, and are accessible
       to the timing mechanism.
     */
 
@@ -74,12 +74,12 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, machine_add_impl, "int", "add" );
     QUERY->doc_func( QUERY, "add/run a new shred from file at 'path'." );
     QUERY->add_arg( QUERY, "string", "path" );
-    
+
     // add spork
     //! same as add
     // QUERY->add_sfun( QUERY, machine_add_impl, "int", "spork" );
     // QUERY->add_arg( QUERY, "string", "path" );
-    
+
     // add remove
     //! remove shred from VM by shred ID (returned by add/spork)
     QUERY->add_sfun( QUERY, machine_remove_impl, "int", "remove" );
@@ -88,7 +88,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 
     // add replace
     //! replace shred with new shred from file
-    //! returns shred ID , or 0 on error 
+    //! returns shred ID , or 0 on error
     QUERY->add_sfun( QUERY, machine_replace_impl, "int", "replace" );
     QUERY->doc_func( QUERY, "replace running shred by 'id' with new shred at 'path'." );
     QUERY->add_arg( QUERY, "int", "id" );
@@ -109,7 +109,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     //! get the intsize in bits (e.g., 32 or 64)
     QUERY->add_sfun( QUERY, machine_intsize_impl, "int", "intsize" );
     QUERY->doc_func( QUERY, "get size of int in bits (e.g., 32 or 64)." );
-    
+
     // add shreds
     //! get list of active shreds by id
     QUERY->add_sfun( QUERY, machine_shreds_impl, "int[]", "shreds" );
@@ -176,7 +176,7 @@ CK_DLL_SFUN( machine_remove_impl )
 {
     t_CKINT v = GET_CK_INT(ARGS);
     Net_Msg msg;
-    
+
     msg.type = MSG_REMOVE;
     msg.param = v;
     RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
@@ -188,7 +188,7 @@ CK_DLL_SFUN( machine_replace_impl )
     t_CKINT v = GET_NEXT_INT(ARGS);
     const char * v2 = GET_NEXT_STRING(ARGS)->str().c_str();
     Net_Msg msg;
-    
+
     msg.type = MSG_REPLACE;
     msg.param = v;
     strcpy( msg.buffer, v2 );
@@ -199,7 +199,7 @@ CK_DLL_SFUN( machine_replace_impl )
 CK_DLL_SFUN( machine_status_impl )
 {
     Net_Msg msg;
-    
+
     msg.type = MSG_STATUS;
     RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
 }
@@ -215,14 +215,14 @@ CK_DLL_SFUN( machine_shreds_impl )
     Chuck_Array4 *array = new Chuck_Array4(FALSE);
     initialize_object(array, SHRED->vm_ref->env()->t_array);
     array->clear();
-    
+
     Chuck_VM_Status status;
     SHRED->vm_ref->shreduler()->status(&status);
-    
+
     for(int i = 0; i < status.list.size(); i++)
         array->push_back(status.list[i]->xid);
-    
+
     status.clear();
-    
+
     RETURN->v_object = array;
 }

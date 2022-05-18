@@ -50,7 +50,7 @@ struct HidMsg
     t_CKINT idata[4];    // int data
 #endif
     t_CKFLOAT fdata[4];  // float data
-    
+
 #ifdef __cplusplus
     HidMsg()
     { this->clear(); }
@@ -161,7 +161,7 @@ extern const char * Mouse_name( int m );
 extern int Mouse_buttons( int m );
 extern int Mouse_start_cursor_track();
 extern int Mouse_stop_cursor_track();
-    
+
 extern void Keyboard_init();
 extern void Keyboard_poll();
 extern void Keyboard_quit();

@@ -140,7 +140,7 @@ void Chuck_Frame::pop_scope( vector<Chuck_Local *> & out )
 
     // the local
     Chuck_Local * local = NULL;
-    
+
     // loop
     while( this->stack.size() && this->stack.back() )
     {
@@ -157,7 +157,7 @@ void Chuck_Frame::pop_scope( vector<Chuck_Local *> & out )
             out.push_back( local );
         }
     }
-    
+
     // sanity (should be at least one left)
     assert( this->stack.size() > 0 );
     // get ride of null boundary character (added 1.3.0.0)

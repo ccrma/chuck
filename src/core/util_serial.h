@@ -46,7 +46,7 @@ class SerialIOManager
 {
 public:
     static std::vector<std::string> availableSerialDevices();
-    
+
 private:
     static std::vector<std::string> s_availableSerialDevices;
 };

@@ -148,7 +148,7 @@ protected:
 //-----------------------------------------------------------------------------
 // name: XWriteThread()
 // desc: utility class for scheduling writes to be executed on a separate
-//       thread. 
+//       thread.
 //-----------------------------------------------------------------------------
 class XWriteThread
 {
@@ -161,18 +161,18 @@ public:
 public:
 	// constructor
     XWriteThread( size_t data_buffer_size = 4096, size_t msg_buffer_size = 32 );
-    
+
 public:
     size_t fwrite( const void * ptr, size_t size, size_t nitems, FILE * stream );
     int fseek( FILE * stream, long offset, int whence );
     int fflush( FILE * stream );
     int fclose( FILE * stream );
-    
+
     // DO NOT DELETE INSTANCES OF XWriteThread
     // instead call shutdown and they will be cleaned up in the background
     void shutdown();
 
-private:    
+private:
     // DO NOT DELETE INSTANCES OF XWriteThread
     // instead call shutdown and they will be cleaned up in the background
     ~XWriteThread();
@@ -210,10 +210,10 @@ private:
             CLOSE,
             SHUTDOWN
         } operation;
-        
+
 		// file pointer
         FILE * file;
-        
+
 		// size / offset
         union
         {
@@ -221,7 +221,7 @@ private:
             {
                 size_t data_size;
             } write;
-            
+
             struct
             {
                 long offset;
