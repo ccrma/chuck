@@ -218,30 +218,30 @@ string rtrim( const string & val )
 // name: extract_args()
 // desc: extract argument from format filename:arg1:arg2:etc
 //-----------------------------------------------------------------------------
-t_CKBOOL extract_args( const string & token, 
+t_CKBOOL extract_args( const string & token,
                        string & filename, vector<string> & args )
 {
     // clear vector
     args.clear();
     // clear filename
     filename = "";
-    
+
     // last : found pos
     t_CKINT prev_pos = 0;
     // curr : pos
     t_CKINT i = 0;
-    
+
     string tmp;
-    
+
     // copy and trim
     string s = trim( token );
-    
+
     // ignore second character as arg separator if its : on Windows
     t_CKBOOL ignoreSecond = FALSE;
 #ifdef __PLATFORM_WIN32__
 	ignoreSecond = TRUE;
 #endif // __PLATFORM_WIN32__
-    
+
     // detect
     t_CKBOOL scan = FALSE;
     t_CKBOOL ret = TRUE;
@@ -253,14 +253,14 @@ t_CKBOOL extract_args( const string & token,
             scan = TRUE;
             break;
         }
-    
+
     // mad...
     if( scan )
     {
         mask = new char[s.length()];
         // zero
         memset(mask, 0, s.length()*sizeof(char));
-        
+
         // loop through
         for( i = 0; i < s.length(); i++ )
         {
@@ -271,7 +271,7 @@ t_CKBOOL extract_args( const string & token,
             //     mask[i] = 1;
             //     break; // added 1.3.1.1
             // }
-            
+
             // 1.3.2.0: spencer and ge fixed this, requiring \ to escape :
             if( s[i] == '\\' && (i+1) < s.length() )
             {
@@ -318,15 +318,15 @@ t_CKBOOL extract_args( const string & token,
                 ret = FALSE;
                 goto done;
             }
-            
+
             // copy
             if( filename == "" )
                 filename = tmp;
             else
                 args.push_back( tmp );
-            
+
             tmp = "";
-            
+
             // update
             prev_pos = i + 1;
         }
@@ -334,11 +334,11 @@ t_CKBOOL extract_args( const string & token,
         {
             tmp.append(1, s[i]);
         }
-        
+
         // reset
         ignoreNext = FALSE;
     }
-    
+
     // get the remainder, if any
     if( tmp.length() )
     {
@@ -348,7 +348,7 @@ t_CKBOOL extract_args( const string & token,
         else
             args.push_back( tmp );
     }
-    
+
     // testing code - spencer 1.3.2.0
 //    CK_FPRINTF_STDERR( "INPUT: %s\n", token.c_str() );
 //    CK_FPRINTF_STDERR( "FILENAME: %s\n", filename.c_str() );
@@ -467,21 +467,21 @@ std::string globTildePath( const std::string & path )
 std::string get_full_path( const std::string & fp )
 {
 #ifndef __PLATFORM_WIN32__
-    
+
     char buf[PATH_MAX];
     char * result = realpath(fp.c_str(), buf);
-    
+
     // try with .ck extension
     if(result == NULL && !str_endsin(fp.c_str(), ".ck"))
         result = realpath((fp + ".ck").c_str(), buf);
-    
+
     if(result == NULL)
         return fp;
     else
         return buf;
-    
+
 #else //
-    
+
 	char buf[MAX_PATH];
 	DWORD result = GetFullPathName(fp.c_str(), MAX_PATH, buf, NULL);
 
@@ -528,13 +528,13 @@ std::string expand_filepath( std::string & fp, t_CKBOOL ensurePathExists )
 std::string extract_filepath_dir(std::string &filepath)
 {
     char path_separator = '/';
-    
+
 //#ifdef __WINDOWS_DS__
 //    path_separator = '\\';
 //#else
 //    path_separator = '/';
 //#endif
-    
+
     // if the last character is a slash, skip it
     t_CKINT i = filepath.rfind(path_separator);
     // if not separator found, return empty string
@@ -543,7 +543,7 @@ std::string extract_filepath_dir(std::string &filepath)
     // skip any/all extra trailing slashes
     while( i > 0 && filepath[i-1] == path_separator )
         i--;
-    
+
     // change spencer 2014-7-17: include trailing slash
     return std::string(filepath, 0, i+1);
 }
@@ -570,7 +570,7 @@ string dir_go_up( const string & dir, t_CKINT numUp )
     // skip any trailing slashes
     while( pos > 0 && dir[pos-1] == path_separator )
         pos--;
-    
+
     // loop
     while( numUp > 0 )
     {
@@ -614,13 +614,13 @@ void parse_path_list( std::string & str, std::list<std::string> & lst )
     const char separator = ':';
 #endif
     std::string::size_type i = 0, last = 0;
-    while( last < str.size() && 
+    while( last < str.size() &&
           ( i = str.find( separator, last ) ) != std::string::npos )
     {
         lst.push_back( str.substr( last, i - last ) );
         last = i + 1;
     }
-    
+
     lst.push_back( str.substr( last, str.size() - last ) );
 }
 
@@ -660,7 +660,7 @@ t_CKBOOL str_endsin( const char * str, const char * end )
 {
     size_t len = strlen(str);
     size_t endlen = strlen(end);
-    
+
     return strncmp(str+(len-endlen), end, endlen) == 0;
 }
 

@@ -172,7 +172,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, abs_impl, "int", "abs" );
     QUERY->add_arg( QUERY, "int", "value" );
     QUERY->doc_func( QUERY, "compute absolute value (integer)." );
-    
+
     // add fabs
     QUERY->add_sfun( QUERY, fabs_impl, "float", "fabs" );
     QUERY->add_arg( QUERY, "float", "value" );
@@ -184,7 +184,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 
     // add rand2
     QUERY->add_sfun( QUERY, rand2_impl, "int", "rand2" ); //! integer between [min,max]
-    QUERY->add_arg( QUERY, "int", "min" ); 
+    QUERY->add_arg( QUERY, "int", "min" );
     QUERY->add_arg( QUERY, "int", "max" );
     QUERY->doc_func( QUERY, "generate a random integer in range [min, max]. (NOTE: this is deprecated; use Math.random2())." );
 
@@ -263,7 +263,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     QUERY->doc_func( QUERY, "convert frequency (Hz) to corresponding MIDI note number." );
 
     // add powtodb
-    QUERY->add_sfun( QUERY, powtodb_impl, "float", "powtodb" ); //! linear power to decibel 
+    QUERY->add_sfun( QUERY, powtodb_impl, "float", "powtodb" ); //! linear power to decibel
     QUERY->add_arg( QUERY, "float", "value" );
     QUERY->doc_func( QUERY, "convert signal power ratio to decibels (dB)." );
 
@@ -322,7 +322,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     srand( time( NULL ) );
 
     Chuck_DL_Func * func = NULL;
-    
+
 #ifndef __DISABLE_KBHIT__
     // KBHit
     // begin class (KBHit)
@@ -569,17 +569,17 @@ error:
 
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return FALSE;
 }
 
 
 #define RAND_INV_RANGE(r) (RAND_MAX / (r))
 
-int irand_exclusive ( int max ) { 
+int irand_exclusive ( int max ) {
   int x = ::rand();
-  
-  while (x >= max * RAND_INV_RANGE (max)) 
+
+  while (x >= max * RAND_INV_RANGE (max))
     x = ::rand();
 
   x /= RAND_INV_RANGE (max);
@@ -626,22 +626,22 @@ CK_DLL_SFUN( rand2_impl ) // inclusive.
 {
     // 1.3.1.0: converted int to t_CKINT for 64-bit compatibility
     t_CKINT min = *(t_CKINT *)ARGS, max = *((t_CKINT *)ARGS + 1);
-    t_CKINT range = max - min; 
+    t_CKINT range = max - min;
     if ( range == 0 )
     {
         RETURN->v_int = min;
     }
-    //else if ( range < RAND_MAX / 2 ) { 
+    //else if ( range < RAND_MAX / 2 ) {
     //  RETURN->v_int = ( range > 0 ) ? min + irand_exclusive(1 + range) : max + irand_exclusive ( -range + 1 ) ;
     //}
     else
     {
         if( range > 0 )
-        { 
+        {
             RETURN->v_int = min + (t_CKINT)( (1.0 + range) * ( ::rand()/(RAND_MAX+1.0) ) );
         }
         else
-        { 
+        {
             RETURN->v_int = min - (t_CKINT)( (-range + 1.0) * ( ::rand()/(RAND_MAX+1.0) ) );
         }
     }
@@ -828,7 +828,7 @@ CK_DLL_SFUN( clamp_impl )
     t_CKINT v = GET_NEXT_INT(ARGS);
     t_CKINT min = GET_NEXT_INT(ARGS);
     t_CKINT max = GET_NEXT_INT(ARGS);
-    
+
     if(v < min) RETURN->v_int = min;
     else if( v > max) RETURN->v_int = max;
     else RETURN->v_int = v;
@@ -839,7 +839,7 @@ CK_DLL_SFUN( clampf_impl )
     t_CKFLOAT v = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT min = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT max = GET_NEXT_FLOAT(ARGS);
-    
+
     if(v < min) RETURN->v_float = min;
     else if( v > max) RETURN->v_float = max;
     else RETURN->v_float = v;
@@ -852,7 +852,7 @@ CK_DLL_SFUN( scalef_impl )
     t_CKFLOAT srcmax = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT dstmin = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT dstmax = GET_NEXT_FLOAT(ARGS);
-    
+
     RETURN->v_float = dstmin + (dstmax-dstmin) * ((v-srcmin)/(srcmax-srcmin));
 }
 
@@ -1232,7 +1232,7 @@ void * le_cb( void * p )
         // reset wait
         g_le_wait = TRUE;
     }
-    
+
     return NULL;
 }
 
@@ -1406,7 +1406,7 @@ void StrTok::set( const string & line )
     reset();
     m_tokens.clear();
     while( (*m_ss) >> s )
-        m_tokens.push_back( s );    
+        m_tokens.push_back( s );
 }
 
 void StrTok::reset()
@@ -1524,7 +1524,7 @@ public:
     virtual ~ColumnReader();
 
     bool init( const string & filename, long col );
-    
+
     bool reset() { if( !fin.good() ) return false; where = 0; return true; }
     bool seek( long pos ) { if( pos < 0 || pos >= values.size() ) return false; where = pos; return true; }
     bool more() { return where < values.size(); }
@@ -1564,7 +1564,7 @@ ColumnReader::ColumnReader()
 ColumnReader::~ColumnReader()
 {
     // close file
-    if( fin.good() ) 
+    if( fin.good() )
         fin.close();
 }
 
@@ -1649,7 +1649,7 @@ bool ColumnReader::get_double( double & out )
 {
     assert( column > 0 );
     long c = 1;
-    
+
     char * start = line;
     char * curr = start;
 
@@ -1678,7 +1678,7 @@ bool ColumnReader::get_double( double & out )
     *curr = '\0';
 
     out = atof( start );
-    
+
     return true;
 }
 
@@ -1687,7 +1687,7 @@ bool ColumnReader::get_str( string & out )
 {
     assert( column > 0 );
     long c = 1;
-    
+
     char * start = line;
     char * curr = start;
 
@@ -1716,7 +1716,7 @@ bool ColumnReader::get_str( string & out )
     *curr = '\0';
 
     out = start;
-    
+
     return true;
 }
 
@@ -1834,15 +1834,15 @@ t_CKBOOL Serial::open( char * port, t_CKUINT baudrate )
 							 OPEN_EXISTING,
 							 FILE_ATTRIBUTE_NORMAL,
 							 0 );
-	if( serialFile == INVALID_HANDLE_VALUE ) 
+	if( serialFile == INVALID_HANDLE_VALUE )
 	{
-		if( GetLastError() == ERROR_FILE_NOT_FOUND ) 
+		if( GetLastError() == ERROR_FILE_NOT_FOUND )
 		{
             EM_log( CK_LOG_SYSTEM, "error: cannot open serial port '%s'...", port );
 		}
         else
         {
-            EM_log( CK_LOG_SYSTEM, "error opening serial port '%s'...", port ); 
+            EM_log( CK_LOG_SYSTEM, "error opening serial port '%s'...", port );
         }
 
         return FALSE;
@@ -1851,7 +1851,7 @@ t_CKBOOL Serial::open( char * port, t_CKUINT baudrate )
 	// set params
 	DCB dcbSerialParams = {0};
 	dcbSerialParams.DCBlength = sizeof( dcbSerialParams );
-	if( !GetCommState( serialFile, &dcbSerialParams) ) 
+	if( !GetCommState( serialFile, &dcbSerialParams) )
 	{
         EM_log( CK_LOG_SYSTEM, "error getting serial state..." );
         close();

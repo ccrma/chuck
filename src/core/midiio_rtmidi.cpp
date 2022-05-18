@@ -163,7 +163,7 @@ t_CKBOOL MidiOut::open( t_CKUINT device_num )
     // close if already opened
     if( m_valid )
         this->close();
-    
+
     return m_valid = MidiOutManager::open( this, (t_CKINT)device_num );
 }
 
@@ -179,7 +179,7 @@ t_CKBOOL MidiOut::open( const std::string & name )
     // close if already opened
     if( m_valid )
         this->close();
-    
+
     return m_valid = MidiOutManager::open( this, name );
 }
 
@@ -288,7 +288,7 @@ t_CKUINT MidiOut::pitchbend( t_CKUINT channel, t_CKUINT bend_val )
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::allnotesoff( t_CKUINT channel )
 {
-    return this->send( (t_CKBYTE)(MIDI_CTRLCHANGE + channel), 
+    return this->send( (t_CKBYTE)(MIDI_CTRLCHANGE + channel),
                        (t_CKBYTE)(MIDI_ALLNOTESOFF), 0 );
 }
 
@@ -335,7 +335,7 @@ t_CKBOOL MidiIn::open( Chuck_VM * vm, t_CKUINT device_num )
     // close if already opened
     if( m_valid )
         this->close();
-    
+
     // open
     return m_valid = MidiInManager::open( this, vm, (t_CKINT)device_num );
 }
@@ -352,7 +352,7 @@ t_CKBOOL MidiIn::open( Chuck_VM * vm, const std::string & name )
     // close if already opened
     if( m_valid )
         this->close();
-    
+
     // open
     return m_valid = MidiInManager::open( this, vm, name );
 }
@@ -427,7 +427,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, t_CKINT device_num )
     min->min = the_mins[device_num];
     // found
     min->m_buffer = the_bufs[device_num][vm];
-    // get an index into your (you are min here) own buffer, 
+    // get an index into your (you are min here) own buffer,
     // and a free ticket to your own workshop
     min->m_read_index = min->m_buffer->join( (Chuck_Event *)min->SELF );
     min->m_device_num = (t_CKUINT)device_num;
@@ -445,11 +445,11 @@ t_CKBOOL MidiInManager::close(MidiIn * min)
 t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, const std::string & name )
 {
     t_CKINT device_num = -1;
-    
-    try 
+
+    try
     {
         RtMidiIn * rtmin = new RtMidiIn;
-        
+
         t_CKINT count = rtmin->getPortCount();
         for(t_CKINT i = 0; i < count; i++)
         {
@@ -460,7 +460,7 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, const std::string & n
                 break;
             }
         }
-        
+
         if( device_num == -1 )
         {
             // search by substring
@@ -487,15 +487,15 @@ t_CKBOOL MidiInManager::open( MidiIn * min, Chuck_VM * vm, const std::string & n
         }
         return FALSE;
     }
-    
+
     if(device_num == -1)
     {
         EM_error2( 0, "MidiOut: error locating MIDI port named %s", name.c_str() );
         return FALSE;
     }
-    
+
     t_CKBOOL result = open( min, vm, device_num );
-    
+
     return result;
 }
 
@@ -515,7 +515,7 @@ t_CKBOOL MidiInManager::add_vm( Chuck_VM * vm, t_CKINT device_num,
             EM_error2( 0, "MidiIn: couldn't allocate CBuffer for unopened port %i...", device_num );
         return FALSE;
     }
-    
+
     if( the_bufs[device_num].count( vm ) > 0
         && the_bufs[device_num][vm] != NULL )
     {
@@ -532,7 +532,7 @@ t_CKBOOL MidiInManager::add_vm( Chuck_VM * vm, t_CKINT device_num,
         delete cbuf;
         return FALSE;
     }
-    
+
     the_bufs[device_num][vm] = cbuf;
     return TRUE;
 }
@@ -555,9 +555,9 @@ void MidiInManager::cleanup_buffer( Chuck_VM * vm )
             delete cbuf;
             the_bufs[i].erase( vm );
         }
-        
+
     }
-    
+
     if( m_event_buffers.count( vm ) > 0 )
     {
         vm->destroy_event_buffer( m_event_buffers[vm] );
@@ -674,7 +674,7 @@ void probeMidiIn()
     t_CKUINT num = min->getPortCount();
     EM_error2b( 0, "------( chuck -- %i MIDI inputs )------", num );
     EM_reset_msg();
-    
+
     std::string s;
     for( t_CKUINT i = 0; i < num; i++ )
     {
@@ -682,7 +682,7 @@ void probeMidiIn()
         catch( RtMidiError & err )
         { err.printMessage(); return; }
         EM_error2b( 0, "    [%i] : \"%s\"", i, s.c_str() );
-        
+
         EM_reset_msg();
     }
 }
@@ -775,11 +775,11 @@ t_CKBOOL MidiOutManager::open( MidiOut * mout, t_CKINT device_num )
 t_CKBOOL MidiOutManager::open( MidiOut * mout, const std::string & name )
 {
     t_CKINT device_num = -1;
-    
-    try 
+
+    try
     {
         RtMidiOut * rtmout = new RtMidiOut;
-        
+
         t_CKINT count = rtmout->getPortCount();
         for(t_CKINT i = 0; i < count; i++)
         {
@@ -790,7 +790,7 @@ t_CKBOOL MidiOutManager::open( MidiOut * mout, const std::string & name )
                 break;
             }
         }
-        
+
         if( device_num == -1 )
         {
             // search by substring
@@ -817,15 +817,15 @@ t_CKBOOL MidiOutManager::open( MidiOut * mout, const std::string & name )
         }
         return FALSE;
     }
-    
+
     if(device_num == -1)
     {
         EM_error2( 0, "MidiOut: error locating MIDI port named %s", name.c_str() );
         return FALSE;
     }
-    
+
     t_CKBOOL result = open( mout, device_num );
-    
+
     return result;
 }
 
@@ -850,7 +850,7 @@ t_CKBOOL midirw_detach( )
         list.push_back( (*iter).second );
     for( t_CKUINT i = 0; i < list.size(); i++ )
         list[i]->close();
-    
+
     // TODO: release the MidiRW
     g_rw.clear();
 
@@ -882,7 +882,7 @@ t_CKBOOL MidiRW::close()
     if( !file ) return FALSE;
 
     t_CKBOOL value = fclose( file ) == 0;
-    
+
     // remove from hash
     std::map<MidiRW *, MidiRW *>::iterator iter;
     iter = g_rw.find( this );
@@ -899,13 +899,13 @@ t_CKBOOL MidiRW::read( MidiMsg * msg, t_CKTIME * time )
         return FALSE;
 
     // is it open? i don't know...
-    
+
     t_CKBOOL m, t;
-    
+
     // wouldn't it be cool if this worked?
     m = fread( msg, sizeof(MidiMsg), 1, file );
     t = fread( time, sizeof(t_CKTIME), 1, file );
-    
+
     return m && t;
 }
 
@@ -943,7 +943,7 @@ t_CKBOOL out_detach( )
         list.push_back( (*iter).second );
     for( t_CKUINT i = 0; i < list.size(); i++ )
         list[i]->close();
-    
+
     return TRUE;
 }
 
@@ -968,7 +968,7 @@ t_CKBOOL MidiMsgOut::close()
     if( !file ) return FALSE;
 
     t_CKBOOL value = fclose( file ) == 0;
-    
+
     // remove from hash
     std::map<MidiMsgOut *, MidiMsgOut *>::iterator iter;
     iter = g_out.find( this );
@@ -1019,7 +1019,7 @@ t_CKBOOL MidiMsgIn::close()
     if( !file ) return FALSE;
 
     t_CKBOOL value = fclose( file ) == 0;
-    
+
     file = NULL;
 
     return value;
@@ -1031,13 +1031,13 @@ t_CKBOOL MidiMsgIn::read( MidiMsg * msg, t_CKTIME * time )
         return FALSE;
 
     // is it open? i don't know...
-    
+
     t_CKBOOL m, t;
-    
+
     // wouldn't it be cool if this worked?
     m = fread( msg, sizeof(MidiMsg), 1, file );
     t = fread( time, sizeof(t_CKTIME), 1, file );
-    
+
     return m && t;
 }
 
@@ -1045,7 +1045,7 @@ t_CKBOOL MidiMsgIn::read( MidiMsg * msg, t_CKTIME * time )
 
 MidiOut::MidiOut()
 {
-    
+
 }
 
 MidiOut::~MidiOut()
@@ -1059,12 +1059,12 @@ t_CKBOOL MidiOut::open( t_CKUINT device_num )
 
 MidiIn::MidiIn()
 {
-    
+
 }
 
 MidiIn::~MidiIn()
 {
-    
+
 }
 
 t_CKBOOL MidiIn::open( t_CKUINT device_num )
@@ -1103,10 +1103,10 @@ static bool isNoteOff( std::vector<unsigned char> & shuttle )
 {
     if( shuttle.size() >= 1 && shuttle[0] >> 4 == 0x8 ) // note off event
         return true;
-    
+
     if( shuttle.size() >= 3 && shuttle[0] >> 4 == 0x9 && shuttle[2] == 0 ) // note on event with velocity 0
         return true;
-    
+
     return false;
 }
 
@@ -1121,7 +1121,7 @@ static bool isControl( std::vector<unsigned char> & shuttle )
 {
     if( shuttle.size() >= 1 && ( shuttle[0] & 0xf0 ) == 0xb0 )
         return true;
-    
+
     return false;
 }
 
@@ -1136,7 +1136,7 @@ static bool isMeta( std::vector<unsigned char> & shuttle )
 {
     if( shuttle.size() >= 1 && shuttle[0] == 0xff )
         return true;
-    
+
     return false;
 }
 
@@ -1151,7 +1151,7 @@ static bool isProgram( std::vector<unsigned char> & shuttle )
 {
     if( shuttle.size() >= 1 && ( shuttle[0] >= 0xC0 && shuttle[0] <= 0xCF ) )
         return true;
-    
+
     return false;
 }
 
@@ -1195,7 +1195,7 @@ void MidiScoreReader::cleanup()
         // pointer to event
         MidiNoteEvent * e = NULL;
         MidiNoteEvent * next = NULL;
-        
+
         // clean up the tracks
         for( t_CKINT i = 0; i < m_midiFile->getNumberOfTracks(); i++ )
         {
@@ -1215,20 +1215,20 @@ void MidiScoreReader::cleanup()
                     e = next;
                 }
             }
-            
+
             // clear the vectors
             m_events[i].clear();
         }
-        
+
         // delete midiFile
         delete m_midiFile;
         m_midiFile = NULL;
-        
+
         // clean the vector
         m_events.clear();
         m_countMaps.clear();
         m_nonZeroTrackIndices.clear();
-        
+
         // clear the queue
         while( m_queue.size() > 0 )
             m_queue.pop_front();
@@ -1246,7 +1246,7 @@ bool MidiScoreReader::load( const char * path, float velScale )
 {
     // sanity check
     if( m_midiFile ) cleanup();
-    
+
     // open midi file
     try
     {
@@ -1268,17 +1268,17 @@ bool MidiScoreReader::load( const char * path, float velScale )
 
         // delete
         cleanup();
-        
+
         return false;
     }
-    
+
     // set velocity scale
     m_velocity_scale = velScale;
     // reset
     m_numNonZeroTracks = 0;
     // clear
     m_nonZeroTrackIndices.clear();
-    
+
     // allocate element for vector
     m_events.resize( m_midiFile->getNumberOfTracks() );
     m_lyricEvents.resize( m_midiFile->getNumberOfTracks() );
@@ -1306,7 +1306,7 @@ bool MidiScoreReader::load( const char * path, float velScale )
             m_nonZeroTrackIndices.push_back( i );
         }
     }
-    
+
     return true;
 }
 
@@ -1372,7 +1372,7 @@ t_CKINT MidiScoreReader::getLowestNote( t_CKINT track, const MidiNoteEvent * sta
 {
     int lowestNote = 128;
     int startingPoint = 0;
-    
+
     // get the starting point
     if( start != NULL )
     {
@@ -1385,15 +1385,15 @@ t_CKINT MidiScoreReader::getLowestNote( t_CKINT track, const MidiNoteEvent * sta
             }
         }
     }
-    
+
     for( int i = startingPoint; i < m_events[track].size(); i++ )
     {
         if( m_events[track].at(i)->data2 < lowestNote )
             lowestNote = m_events[track].at(i)->data2;
-        
+
         if( m_events[track].at(i)->phrasemark ) break;
     }
-    
+
     return lowestNote < 128 ? lowestNote : 0;
 }
 
@@ -1408,7 +1408,7 @@ t_CKINT MidiScoreReader::getHighestNote( t_CKINT track, const MidiNoteEvent *sta
 {
     t_CKINT highestNote = 0;
     t_CKINT startingPoint = 0;
-    
+
     // get the starting point
     if( start != NULL )
     {
@@ -1421,15 +1421,15 @@ t_CKINT MidiScoreReader::getHighestNote( t_CKINT track, const MidiNoteEvent *sta
             }
         }
     }
-    
+
     for( t_CKINT i = startingPoint; i < m_events[track].size(); i++ )
     {
         if( m_events[track].at(i)->data2 > highestNote )
             highestNote = m_events[track].at(i)->data2;
-        
+
         if( m_events[track].at(i)->phrasemark ) break;
     }
-    
+
     return highestNote;
 }
 
@@ -1448,7 +1448,7 @@ const MidiNoteEvent * MidiScoreReader::getTopEvent( t_CKINT track, t_CKINT offse
         CK_STDCERR << "[chuck](MIDI file): cannot access top event data!" << CK_STDENDL;
         return NULL;
     }
-    
+
     // the new index
     t_CKINT index = m_indices[track] + offset;
     // check it
@@ -1486,7 +1486,7 @@ const MidiNoteEvent * MidiScoreReader::scanEvent( t_CKINT track, bool & isNewSet
     }
     // set the next event
     enqueue( e );
-    
+
     return e;
 }
 
@@ -1505,7 +1505,7 @@ bool MidiScoreReader::seek( t_CKINT track, t_CKINT numToAdvance )
         // CK_STDCERR << "[chuck](MIDI file): cannot seek current data!" << CK_STDENDL;
         return false;
     }
-    
+
     // the next index
     t_CKINT index = m_indices[track] + numToAdvance;
     // check it
@@ -1513,7 +1513,7 @@ bool MidiScoreReader::seek( t_CKINT track, t_CKINT numToAdvance )
     else if( index >= m_events[track].size() ) index = m_events[track].size();
     // update
     m_indices[track] = index;
-    
+
     // return
     if( index >= m_events[track].size() ) return false;
     return true;
@@ -1534,11 +1534,11 @@ bool MidiScoreReader::seekToNoteOn( t_CKINT track )
         // CK_STDCERR << "[chuck](MIDI file): cannot seek current data!" << CK_STDENDL;
         return false;
     }
-    
+
     // event
     const MidiNoteEvent * e = NULL;
     t_CKINT index = 0;
-    
+
     // go
     do {
         // the next index
@@ -1553,7 +1553,7 @@ bool MidiScoreReader::seekToNoteOn( t_CKINT track )
         // set the e
         e = m_events[track][index];
     } while( (e->data1 >> 4 != 0x9) || (e->data3 == 0) );
-    
+
     // return
     if( index >= m_events[track].size() ) return false;
     return true;
@@ -1570,7 +1570,7 @@ void MidiScoreReader::rewind()
 {
     // sanity check
     if( !m_midiFile ) return;
-    
+
     // set all indices to 0
     for( t_CKINT i = 0; i < m_midiFile->getNumberOfTracks(); i++ )
     {
@@ -1593,7 +1593,7 @@ void MidiScoreReader::getEvents( t_CKINT track, double startTime, double endTime
 {
     // clear the result
     result.clear();
-    
+
     // sanity check
     if( !m_midiFile || track >= m_events.size() )
     {
@@ -1601,28 +1601,28 @@ void MidiScoreReader::getEvents( t_CKINT track, double startTime, double endTime
         // CK_STDCERR << "[chuck](MIDI file): cannot read track: " << track << "!" << CK_STDENDL;
         return;
     }
-    
+
     // get the event
     const MidiNoteEvent * searchPtr = getTopEvent( track, m_searchIndices[track] );
-    
+
     // advance the search pointer
     while( searchPtr && searchPtr->endTime < startTime )
     {
         // TODO: this doesn't handle the case where simultaneous note ends later than parent
-        
+
         // increment index
         m_searchIndices[track]++;
         // get event
         searchPtr = getTopEvent( track, m_searchIndices[track] );
     }
-    
+
     // check
     if( searchPtr == NULL )
         return;
-    
+
     // the index
     t_CKUINT searchIndex = m_searchIndices[track];
-    
+
     // scan for events within the window
     while( searchPtr )
     {
@@ -1633,7 +1633,7 @@ void MidiScoreReader::getEvents( t_CKINT track, double startTime, double endTime
             // add to vector
             result.push_back( searchPtr );
         }
-        
+
         // check
         if( includeSimultaneous && searchPtr->simultaneous )
         {
@@ -1662,13 +1662,13 @@ bool MidiScoreReader::isDone( t_CKINT track, double currTime )
     // sanity check
     if( track < 0 || track >= m_events.size() )
         return true;
-    
+
     // number of events on a track
     t_CKINT numEvents = m_events[track].size();
     // check time against last element
     if( numEvents <= 0 )
         return true;
-    
+
     return m_events[track][numEvents-1]->endTime < currTime;
 }
 
@@ -1685,10 +1685,10 @@ bool MidiScoreReader::applyControl( t_CKINT track, t_CKINT data2, t_CKINT data3,
     if( !e ) return false;
     if( data2 < 0 || data2 > 127 ) return false;
     if( data3 < 0 || data3 > 127 ) return false;
-    
+
     // flag
     bool found = false;
-    
+
     if( data2 == 0x52 )
     {
         // gliss
@@ -1698,7 +1698,7 @@ bool MidiScoreReader::applyControl( t_CKINT track, t_CKINT data2, t_CKINT data3,
         incrementCount( track, "bend" );
         e->bendAmount = (int)data3;
     }
-    
+
     if( data2 == 0x53 )
     {
         // gliss
@@ -1707,7 +1707,7 @@ bool MidiScoreReader::applyControl( t_CKINT track, t_CKINT data2, t_CKINT data3,
         // increment
         incrementCount( track, "phrasemark" );
     }
-    
+
     return found;
 }
 
@@ -1727,7 +1727,7 @@ bool MidiScoreReader::loadTrack( t_CKINT track, std::vector<MidiNoteEvent *> & d
         CK_STDCERR << "[chuck](MIDI file): cannot read track: " << track << "!" << CK_STDENDL;
         return false;
     }
-    
+
     // clear out the vectors
     data.clear();
     // clear out active MIDI notes
@@ -1742,9 +1742,9 @@ bool MidiScoreReader::loadTrack( t_CKINT track, std::vector<MidiNoteEvent *> & d
     MidiLyricEvent * prev_le = NULL;
     // parent event
     MidiNoteEvent * parent = NULL;
-    
+
     int currentProgram = 27; // program defaults to electric gutiar (27) in case it is not set in the score
-    
+
     // load next on the track
     try {
         // seconds accum
@@ -1754,15 +1754,15 @@ bool MidiScoreReader::loadTrack( t_CKINT track, std::vector<MidiNoteEvent *> & d
         {
             // get the next MIDI event
             t_CKUINT ticks = m_midiFile->getNextEvent( &shuttle, (unsigned int)track );
-            
+
             // accumulate time
             secondsAccum += ticks * m_midiFile->getTickSeconds();
-            
+
             // MIDI message spec: http://www.srm.com/qtma/davidsmidispec.html
-            
+
             // check size (done?)
             if( shuttle.size() == 0 ) break;
-            
+
             if( isNoteOff( shuttle ) )
             {
                 // do note off
@@ -1781,7 +1781,7 @@ bool MidiScoreReader::loadTrack( t_CKINT track, std::vector<MidiNoteEvent *> & d
                 // shuttle[1]: message type
                 // shuttle[2]: number of bytes in custom data part
                 // shuttle[3]: start of custom data part
-                
+
                 switch( shuttle[1] )
                 {
                     case 1: // text
@@ -1798,26 +1798,26 @@ bool MidiScoreReader::loadTrack( t_CKINT track, std::vector<MidiNoteEvent *> & d
                     case 5: // lyric
                     {
                         string lyric = string( (char *)&shuttle[3] /* name */, shuttle[2] /* length */ );
-                        
+
                         le = new MidiLyricEvent;
                         le->lyric = lyric;
                         le->time = le->endTime = secondsAccum;
-                        
+
                         if( prev_le )
                         {
                             prev_le->endTime = secondsAccum;
                         }
-                        
+
                         lyricData.push_back( le );
-                        
+
                         prev_le = le;
-                        
+
                         break;
                     }
                 }
                 continue;
             }
-            
+
             // store a program change in an event
             else if( isProgram( shuttle ) )
             {
@@ -1825,10 +1825,10 @@ bool MidiScoreReader::loadTrack( t_CKINT track, std::vector<MidiNoteEvent *> & d
                     currentProgram = shuttle[1];
                 continue;
             }
-            
+
             // continue if it's anything but a note on
             if( shuttle[0] >> 4 != 0x9 || shuttle[2] == 0 ) continue;
-            
+
             // instantiate
             e = new MidiNoteEvent();
             // fill
@@ -1843,7 +1843,7 @@ bool MidiScoreReader::loadTrack( t_CKINT track, std::vector<MidiNoteEvent *> & d
                 // clamp
                 if( e->data3 > 127 ) e->data3 = 127;
             }
-            
+
             // fill the until next for prev
             if( prev_e ) prev_e->untilNext = e->time - prev_e->startTime;
             // advance time
@@ -1852,7 +1852,7 @@ bool MidiScoreReader::loadTrack( t_CKINT track, std::vector<MidiNoteEvent *> & d
             e->simultaneous = NULL;
             // store current program
             e->programChange = currentProgram;
-            
+
             // simultaneous or in series?
             if( prev_e != NULL && e->time == prev_e->time )
             {
@@ -1870,10 +1870,10 @@ bool MidiScoreReader::loadTrack( t_CKINT track, std::vector<MidiNoteEvent *> & d
                 // save as parent
                 parent = e->parent = e;
             }
-            
+
             // add to lookup
             handleNoteOn( e, e->data2 );
-            
+
             // update
             prev_e = e;
         }
@@ -1882,16 +1882,16 @@ bool MidiScoreReader::loadTrack( t_CKINT track, std::vector<MidiNoteEvent *> & d
     {
         // you might want to do something more useful here.
         CK_STDCERR << "[chuck](MIDI file): uh oh, error loading track!" << CK_STDENDL;
-        
+
         // clear out active MIDI notes
         m_activeNotes.clear();
-        
+
         return false;
     }
-    
+
     // clear out active MIDI notes
     m_activeNotes.clear();
-    
+
     return true;
 }
 
@@ -1962,7 +1962,7 @@ t_CKINT MidiScoreReader::getNumEvents( t_CKINT track ) const
     // sanity check
     if( track < 0 || track >= m_events.size() )
         return 0;
-    
+
     // return the number of elements
     return m_events[track].size();
 }
@@ -1980,7 +1980,7 @@ const vector<MidiNoteEvent *> & MidiScoreReader::getNoteEvents( t_CKINT track )
     // sanity check
     if( track < 0 || track >= m_events.size() )
         return s_nullNoteVector;
-    
+
     return m_events[track];
 }
 
@@ -1997,7 +1997,7 @@ const vector<MidiLyricEvent *> & MidiScoreReader::getLyricEvents( t_CKINT track 
     // sanity check
     if( track < 0 || track >= m_lyricEvents.size() )
         return s_nullLyricVector;
-    
+
     return m_lyricEvents[track];
 }
 
@@ -2031,10 +2031,10 @@ void MidiScoreReader::incrementCount( t_CKINT track, const std::string & key )
 {
     // sanity check
     if( track < 0 || track >= m_events.size() ) return;
-    
+
     // find
     std::map< std::string, t_CKINT >::iterator iter = m_countMaps[track].find( key );
-    
+
     if( iter == m_countMaps[track].end() )
     {
         // if not found, add
@@ -2059,14 +2059,14 @@ void MidiScoreReader::handleNoteOn( MidiNoteEvent * e, t_CKINT note )
     // sanity check
     if( !e )
         return;
-    
+
     // check to see if occupied
     if( m_activeNotes[note] != NULL )
     {
         // treat as a note-off for the same note
         handleNoteOff( note, e->time );
     }
-    
+
     // insert
     m_activeNotes[note] = e;
 }
@@ -2085,10 +2085,10 @@ void MidiScoreReader::handleNoteOff( t_CKINT note, double time )
     // check
     if( !e )
         return;
-    
+
     // set end time
     e->endTime = time;
-    
+
     // set
     m_activeNotes[note] = NULL;
 }
@@ -2117,10 +2117,10 @@ void MidiScoreReader::setTrackName( t_CKINT track, const std::string & name )
 string MidiScoreReader::getTrackName( t_CKINT track )
 {
     map<t_CKINT, string>::iterator itr = m_trackToName.find( track );
-    
+
     if( itr == m_trackToName.end() )
         return "";
-    
+
     return itr->second;
 }
 
@@ -2135,14 +2135,14 @@ t_CKINT MidiScoreReader::getTrackForName( const std::string & name )
 {
     // look up the track index by name
     map<string, t_CKINT>::iterator itr = m_nameToTrack.find( name );
-    
+
     // didn't find
     if( itr == m_nameToTrack.end() )
         return -1;
-    
+
     // make sure the track actually exists
     if( itr->second >= m_events.size() )
         return -1;
-    
+
     return itr->second;
 }

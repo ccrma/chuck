@@ -46,7 +46,7 @@ static const t_CKUINT MAX_FILENAME_LEN = 2048;
 static char g_filename[MAX_FILENAME_LEN+1] = "";
 
 // external
-extern "C" { 
+extern "C" {
     extern FILE *yyin;
 }
 
@@ -97,15 +97,15 @@ FILE *win32_tmpfile()
     char tmp_path[MAX_PATH];
     char file_path[MAX_PATH];
     FILE * file = NULL;
-    
+
     if(GetTempPath(256, tmp_path) == 0)
         return NULL;
-    
+
     if(GetTempFileName(tmp_path, "mA", 0, file_path) == 0)
         return NULL;
-    
+
     file = fopen(file_path, "wb+D");
-    
+
     return file;
 }
 
@@ -188,7 +188,7 @@ t_CKBOOL chuck_parse( c_constr fname, FILE * fd, c_constr code )
 
         // parse
         if( !( yyparse() == 0 ) ) goto cleanup;
-        
+
         // delete the lexer buffer
         yy_delete_buffer( ybs );
 
@@ -207,7 +207,7 @@ t_CKBOOL chuck_parse( c_constr fname, FILE * fd, c_constr code )
     }
     // remember filename
     strcpy( g_filename, fname );
-        
+
     // test it
     if( !fd ) {
         fd = open_cat_ck( g_filename );
@@ -230,13 +230,13 @@ t_CKBOOL chuck_parse( c_constr fname, FILE * fd, c_constr code )
 
     // reset yyin to fd
     yyrestart( fd );
-        
+
     // check
     if( yyin == NULL ) goto cleanup;
-        
+
     // TODO: clean g_program
     g_program = NULL;
-        
+
     // parse
     if( !(yyparse( ) == 0) ) goto cleanup;
 

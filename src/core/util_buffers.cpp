@@ -86,7 +86,7 @@ BOOL__ CBufferAdvance::initialize( UINT__ num_elem, UINT__ width, CBufferSimple 
     //m_read_offset = 0;
     m_write_offset = 0;
     m_max_elem = (SINT__)num_elem;
-    
+
     m_event_buffer = event_buffer;
 
     return true;
@@ -127,7 +127,7 @@ UINT__ CBufferAdvance::join( Chuck_Event * event )
 
     // index of new pointer that will be pushed back
     UINT__ read_offset_index;
-    
+
     // add new pointer pointing (as pointers do) to current write offset
     // (shreds don't get interrupted, so m_write_offset will always be correct, right?)
     // (uh, hope so...)
@@ -281,7 +281,7 @@ void CBufferAdvance::put( void * data, UINT__ num_elem )
 
         // move read
         m_read_offset++;
-        
+
         // catch up
         if( m_read_offset == m_write_offset )
         {
@@ -364,7 +364,7 @@ UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_ind
         // wrap
         if( m_read_offset >= m_max_elem )
             m_read_offset = 0;
-        
+
         // catch up
         if( m_read_offset == m_write_offset )
         {
@@ -508,7 +508,7 @@ UINT__ CBufferSimple::get( void * data, UINT__ num_elem )
         // Aug 2014 - spencer
         // change to fully "atomic" increment+wrap
         m_read_offset = (m_read_offset + 1) % m_max_elem;
-        
+
         // catch up
         if( m_read_offset == m_write_offset )
         {
@@ -571,7 +571,7 @@ t_CKINT AccumBuffer::resize( t_CKINT size )
         // done
         return FALSE;
     }
-    
+
     // if no current
     if( !m_data )
     {
@@ -778,7 +778,7 @@ t_CKINT DeccumBuffer::resize( t_CKINT size )
         // done
         return FALSE;
     }
-    
+
     // if no current
     if( !m_data )
     {
@@ -966,17 +966,17 @@ t_CKUINT FastCircularBuffer::initialize( t_CKUINT num_elem, t_CKUINT width )
 {
     // cleanup
     cleanup();
-    
+
     // allocate
     m_data = (t_CKBYTE *)malloc( num_elem * width );
     if( !m_data )
         return false;
-    
+
     m_data_width = width;
     m_read_offset = 0;
     m_write_offset = 0;
     m_max_elem = num_elem;
-    
+
     return true;
 }
 
@@ -991,9 +991,9 @@ void FastCircularBuffer::cleanup()
 {
     if( !m_data )
         return;
-    
+
     free( m_data );
-    
+
     m_data = NULL;
     m_data_width = m_read_offset = m_write_offset = m_max_elem = 0;
 }
@@ -1008,7 +1008,7 @@ void FastCircularBuffer::cleanup()
 t_CKUINT FastCircularBuffer::put( void * _data, t_CKUINT num_elem )
 {
     t_CKBYTE * data = (t_CKBYTE *)_data;
-    
+
     // TODO: overflow checking
     if(!(num_elem < ((m_read_offset > m_write_offset) ?
                      (m_read_offset - m_write_offset) :
@@ -1016,25 +1016,25 @@ t_CKUINT FastCircularBuffer::put( void * _data, t_CKUINT num_elem )
     {
         return 0;
     }
-    
+
     t_CKUINT elems_before_end = ck_min(num_elem, m_max_elem - m_write_offset);
     t_CKUINT elems_after_end = num_elem - elems_before_end;
-    
+
     if(elems_before_end)
         memcpy(m_data + m_write_offset * m_data_width,
                data,
                elems_before_end * m_data_width);
-    
+
     if(elems_after_end)
         memcpy(m_data,
                data + elems_before_end * m_data_width,
                elems_after_end * m_data_width);
-    
+
     if(elems_after_end)
         m_write_offset = elems_after_end;
     else
         m_write_offset += elems_before_end;
-    
+
     return elems_before_end + elems_after_end;
 }
 
@@ -1048,7 +1048,7 @@ t_CKUINT FastCircularBuffer::put( void * _data, t_CKUINT num_elem )
 t_CKUINT FastCircularBuffer::get( void * _data, t_CKUINT num_elem )
 {
     t_CKBYTE * data = (t_CKBYTE *)_data;
-    
+
     t_CKUINT elems_before_end;
     t_CKUINT elems_after_end;
     if(m_write_offset < m_read_offset)
@@ -1061,7 +1061,7 @@ t_CKUINT FastCircularBuffer::get( void * _data, t_CKUINT num_elem )
         elems_before_end = m_write_offset - m_read_offset;
         elems_after_end = 0;
     }
-    
+
     if(elems_before_end > num_elem)
     {
         elems_before_end = num_elem;
@@ -1071,25 +1071,25 @@ t_CKUINT FastCircularBuffer::get( void * _data, t_CKUINT num_elem )
     {
         elems_after_end = num_elem - elems_before_end;
     }
-    
+
     //    UInt32 elems_before_end = min(m_write_offset - m_read_offset, m_max_elem - m_read_offset);
     //    UInt32 elems_after_end = num_elem - elems_before_end;
-    
+
     if(elems_before_end)
         memcpy(data,
                m_data + m_read_offset * m_data_width,
                elems_before_end * m_data_width);
-    
+
     if(elems_after_end)
         memcpy(data + elems_before_end * m_data_width,
                m_data,
                elems_after_end * m_data_width);
-    
+
     if(elems_after_end)
         m_read_offset = elems_after_end;
     else
         m_read_offset += elems_before_end;
-    
+
     return elems_before_end + elems_after_end;
 }
 
