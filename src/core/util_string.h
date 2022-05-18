@@ -55,7 +55,7 @@ std::string ltrim( const std::string & val );
 std::string rtrim( const std::string & val );
 
 // argument extraction
-t_CKBOOL extract_args( const std::string & token, 
+t_CKBOOL extract_args( const std::string & token,
                        std::string & filename,
                        std::vector<std::string> & args );
 

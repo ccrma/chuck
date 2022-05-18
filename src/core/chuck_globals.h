@@ -164,7 +164,7 @@ struct Chuck_Global_Request
         // chuck_msg
         Chuck_Execute_Chuck_Msg_Request* executeChuckMsgRequest;
     };
-    
+
     Chuck_Global_Request()
     {
         retries = 0;
@@ -183,7 +183,7 @@ struct Chuck_Globals_Manager
 public:
     Chuck_Globals_Manager( Chuck_VM * vm );
     ~Chuck_Globals_Manager();
-    
+
 public:
     // REFACTOR-2017: externally accessible + global variables.
     // use these getters and setters from outside the audio thread
@@ -191,17 +191,17 @@ public:
     t_CKBOOL getGlobalInt( const char * name, void (*callback)(const char*, t_CKINT) );
     t_CKBOOL getGlobalInt( const char * name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKINT) );
     t_CKBOOL setGlobalInt( const char * name, t_CKINT val );
-    
+
     t_CKBOOL getGlobalFloat( const char * name, void (*callback)(t_CKFLOAT) );
     t_CKBOOL getGlobalFloat( const char * name, void (*callback)(const char*, t_CKFLOAT) );
     t_CKBOOL getGlobalFloat( const char * name, t_CKINT callbackID, void (*callback)(t_CKINT, t_CKFLOAT) );
     t_CKBOOL setGlobalFloat( const char * name, t_CKFLOAT val );
-    
+
     t_CKBOOL getGlobalString( const char * name, void (*callback)(const char*) );
     t_CKBOOL getGlobalString( const char * name, void (*callback)(const char*, const char*) );
     t_CKBOOL getGlobalString( const char * name, t_CKINT callbackID, void (*callback)(t_CKINT, const char*) );
     t_CKBOOL setGlobalString( const char * name, const char * val );
-    
+
     t_CKBOOL signalGlobalEvent( const char * name );
     t_CKBOOL broadcastGlobalEvent( const char * name );
     t_CKBOOL listenForGlobalEvent( const char * name, void (*callback)(void), t_CKBOOL listen_forever );
@@ -210,9 +210,9 @@ public:
     t_CKBOOL stopListeningForGlobalEvent( const char * name, void (*callback)(void) );
     t_CKBOOL stopListeningForGlobalEvent( const char * name, void (*callback)(const char*) );
     t_CKBOOL stopListeningForGlobalEvent( const char * name, t_CKINT callbackID, void (*callback)(t_CKINT) );
-    
+
     t_CKBOOL getGlobalUGenSamples( const char * name, SAMPLE* buffer, int numFrames );
-    
+
     t_CKBOOL setGlobalIntArray( const char * name, t_CKINT arrayValues[], t_CKUINT numValues );
     t_CKBOOL getGlobalIntArray( const char * name, void (*callback)(t_CKINT[], t_CKUINT) );
     t_CKBOOL getGlobalIntArray( const char * name, void (*callback)(const char*, t_CKINT[], t_CKUINT) );
@@ -225,7 +225,7 @@ public:
     t_CKBOOL getGlobalAssociativeIntArrayValue( const char * name, const char * key, void (*callback)(t_CKINT) );
     t_CKBOOL getGlobalAssociativeIntArrayValue( const char * name, const char * key, void (*callback)(const char*, t_CKINT) );
     t_CKBOOL getGlobalAssociativeIntArrayValue( const char * name, t_CKINT callbackID, const char * key, void (*callback)(t_CKINT, t_CKINT) );
-    
+
     t_CKBOOL setGlobalFloatArray( const char * name, t_CKFLOAT arrayValues[], t_CKUINT numValues );
     t_CKBOOL getGlobalFloatArray( const char * name, void (*callback)(t_CKFLOAT[], t_CKUINT) );
     t_CKBOOL getGlobalFloatArray( const char * name, void (*callback)(const char*, t_CKFLOAT[], t_CKUINT) );
@@ -238,11 +238,11 @@ public:
     t_CKBOOL getGlobalAssociativeFloatArrayValue( const char * name, const char * key, void (*callback)(t_CKFLOAT) );
     t_CKBOOL getGlobalAssociativeFloatArrayValue( const char * name, const char * key, void (*callback)(const char*, t_CKFLOAT) );
     t_CKBOOL getGlobalAssociativeFloatArrayValue( const char * name, t_CKINT callbackID, const char * key, void (*callback)(t_CKINT, t_CKFLOAT) );
-    
+
 public:
     // run Chuck_Msg in the globals order
     t_CKBOOL execute_chuck_msg_with_globals( Chuck_Msg* msg );
-    
+
 public:
     // REFACTOR-2017: externally accessible + global variables.
     // WARNING: these internal functions are to be used only by other
@@ -250,25 +250,25 @@ public:
     t_CKBOOL init_global_int( const std::string & name );
     t_CKINT get_global_int_value( const std::string & name );
     t_CKINT* get_ptr_to_global_int( const std::string & name );
-    
+
     t_CKBOOL init_global_float( const std::string & name );
     t_CKFLOAT get_global_float_value( const std::string & name );
     t_CKFLOAT* get_ptr_to_global_float( const std::string & name );
-    
+
     t_CKBOOL init_global_string( const std::string & name );
     Chuck_String* get_global_string( const std::string & name );
     Chuck_String** get_ptr_to_global_string( const std::string & name );
-    
+
     t_CKBOOL init_global_event( const std::string & name, Chuck_Type* type );
     Chuck_Event* get_global_event( const std::string & name );
     Chuck_Event** get_ptr_to_global_event( const std::string & name );
-    
+
     t_CKBOOL init_global_ugen( const std::string & name, Chuck_Type* type );
     t_CKBOOL is_global_ugen_init( const std::string & name );
     t_CKBOOL is_global_ugen_valid( const std::string & name );
     Chuck_UGen* get_global_ugen( const std::string & name );
     Chuck_UGen** get_ptr_to_global_ugen( const std::string & name );
-    
+
     t_CKBOOL init_global_array( const std::string & name, Chuck_Type* type, te_GlobalType arr_type );
     Chuck_Object* get_global_array( const std::string & name );
     Chuck_Object** get_ptr_to_global_array( const std::string & name );
@@ -282,24 +282,24 @@ public:
     t_CKBOOL is_global_object_valid( const std::string & name );
     Chuck_Object* get_global_object( const std::string & name );
     Chuck_Object** get_ptr_to_global_object( const std::string & name );
-    
+
     t_CKBOOL should_call_global_ctor( const std::string & name, te_GlobalType type );
     void global_ctor_was_called( const std::string & name, te_GlobalType type );
-    
+
     // global variables -- clean up
     void cleanup_global_variables();
-    
+
 public: // these should ever ONLY be called from within the VM
     // request queue: add, query for size
     t_CKBOOL add_request( Chuck_Global_Request request );
     t_CKBOOL more_requests();
     // REFACTOR-2017: execute the messages from the global queue
     void handle_global_queue_messages();
-    
+
 private:
     // ptr to my vm
     Chuck_VM * m_vm;
-    
+
     // global variables -- storage
     std::map< std::string, Chuck_Global_Int_Container* > m_global_ints;
     std::map< std::string, Chuck_Global_Float_Container* > m_global_floats;
@@ -311,7 +311,7 @@ private:
 
     // global variables -- messages for set, get, etc.
     XCircleBuffer< Chuck_Global_Request > m_global_request_queue;
-    
+
     // retry queue: sometimes a request comes through exactly 1 sample
     // before the relevant global variable is constructed
     // (e.g. signalEvent before the compileCode that would construct the event)

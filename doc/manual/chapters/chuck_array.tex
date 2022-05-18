@@ -56,7 +56,7 @@ The size method returns the total count of elements in an array. This is sometim
 Check here more information on object declaration and instantation in Chuck.
 
 The above examples are 1-dimensional arrays (or vectors). Coming up next are multi-dimensional arrays!
- 
+
 
 \section{multi-dimensional arrays}
 
@@ -72,7 +72,7 @@ Initializers work in similar ways:
     [ [1,3], [2,4] ] @=> int bar[][];
 \end{verbatim}
  In the above code, note the two [~][~] since we make a matrix.
- 
+
 
 \section{lookup}
 
@@ -151,7 +151,7 @@ a longer program: otf\_06.ck from examples:
         else .5::T => now;
     }
 \end{verbatim}
- 
+
 
 \section{associative arrays}
 
@@ -203,29 +203,49 @@ The size of an array relates only to the integer portion of it. An array with an
     <<< foo[0] >>>
 \end{verbatim}
 
+All of the currently available keys of an associate array can be retrieved using the getKeys() method.
+\begin{verbatim}
+    // declare array of 0 size
+    int foo[0];
+
+    // put something in element "here"
+    20 => foo["here"];
+    // put something in element "there"
+    30 => foo["there"];
+
+    // create an array of strings to store our keys in
+    string keys[0];
+
+    // retrieve our keys
+    foo.getKeys(keys);
+
+    // print our keys
+    <<< keys[0], keys[1] >>>;
+\end{verbatim}
+
 Note: The associative capacity of an array is not defined, so objects used in the associative namespace must be explicitly instantiated, in contrast to those in the integer namespace
 
  Accessing an uninstantiated element of the associate array will return a null reference. Please check the class documentation page for an explanation of ChucK objects and references.
 \begin{verbatim}
-    class Item { 
-       float weight; 
+    class Item {
+       float weight;
     }
-    
-    Item box[10]; 
+
+    Item box[10];
 
     // integer indices ( up to capacity ) are pre-instantiated.
-    1.2 => box[1].weight; 
+    1.2 => box[1].weight;
 
     // instantiate element "lamp";
-    new Item @=> box["lamp"]; 
+    new Item @=> box["lamp"];
 
     // access allowed to "lamp"
-    2.0 => box["lamp"].weight; 
+    2.0 => box["lamp"].weight;
 
-    // access causes a NullPointerException    
-    2.0 => box["sweater"].weight; 
+    // access causes a NullPointerException
+    2.0 => box["sweater"].weight;
 \end{verbatim}
- 
+
 
 \section{array assignment}
 
