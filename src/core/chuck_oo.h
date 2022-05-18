@@ -228,6 +228,8 @@ public:
     virtual t_CKINT find( const std::string & key ) = 0; // find
     virtual t_CKINT erase( const std::string & key ) = 0; // erase
     virtual void clear( ) = 0; // clear
+    // get map keys | added (1.4.1.2) nshaheed
+    virtual void get_keys( std::vector<std::string> & keys );
 
     Chuck_Type * m_array_type;
 };
@@ -267,6 +269,8 @@ public:
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY4_DATASIZE; }
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY4_DATAKIND; }
+    // get map keys | added (1.4.1.2) nshaheed
+    virtual void get_keys( std::vector<std::string> & keys );
 
 public:
     std::vector<t_CKUINT> m_vector;
@@ -311,6 +315,8 @@ public:
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY8_DATASIZE; }
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY8_DATAKIND; }
+    // get map keys | added (1.4.1.2) nshaheed
+    virtual void get_keys( std::vector<std::string> & keys );
 
 public:
     std::vector<t_CKFLOAT> m_vector;
@@ -354,6 +360,8 @@ public:
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY16_DATASIZE; }
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY16_DATAKIND; }
+    // get map keys | added (1.4.1.2) nshaheed
+    virtual void get_keys( std::vector<std::string> & keys );
 
 public:
     std::vector<t_CKCOMPLEX> m_vector;
@@ -397,6 +405,8 @@ public:
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY24_DATASIZE; }
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY24_DATAKIND; }
+    // get map keys | added (1.4.1.2) nshaheed
+    virtual void get_keys( std::vector<std::string> & keys );
 
 public:
     std::vector<t_CKVEC3> m_vector;
@@ -438,6 +448,8 @@ public:
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY32_DATASIZE; }
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY32_DATAKIND; }
+    // get map keys | added (1.4.1.2) nshaheed
+    virtual void get_keys( std::vector<std::string> & keys );
 
 public:
     std::vector<t_CKVEC4> m_vector;
