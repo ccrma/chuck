@@ -92,7 +92,7 @@
 
 
 // chuck statics
-const char ChucK::VERSION[] = "1.4.1.1-dev (numchucks)";
+const char ChucK::VERSION[] = "1.4.1.2-dev (numchucks)";
 t_CKUINT ChucK::o_numVMs = 0;
 t_CKBOOL ChucK::o_isGlobalInit = FALSE;
 t_CKBOOL ChucK::enableSystemCall = FALSE;
@@ -824,7 +824,7 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
     Chuck_VM_Shred * shred = NULL;
     
     // log
-    EM_log( CK_LOG_FINE, "compiling '%s'...", filename.c_str() );
+    EM_log( CK_LOG_FINE, "compiling '%s'...", path.c_str() );
     // push indent
     EM_pushlog();
     
