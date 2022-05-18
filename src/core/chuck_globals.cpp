@@ -436,7 +436,7 @@ struct Chuck_Execute_Chuck_Msg_Request
 struct Chuck_Global_Int_Container
 {
     t_CKINT val;
-    
+
     Chuck_Global_Int_Container() { val = 0; }
 };
 
@@ -450,7 +450,7 @@ struct Chuck_Global_Int_Container
 struct Chuck_Global_Float_Container
 {
     t_CKFLOAT val;
-    
+
     Chuck_Global_Float_Container() { val = 0; }
 };
 
@@ -464,7 +464,7 @@ struct Chuck_Global_Float_Container
 struct Chuck_Global_String_Container
 {
     Chuck_String * val;
-    
+
     Chuck_Global_String_Container() { val = NULL; }
 };
 
@@ -480,7 +480,7 @@ struct Chuck_Global_Event_Container
     Chuck_Event * val;
     Chuck_Type * type;
     t_CKBOOL ctor_needs_to_be_called;
-    
+
     Chuck_Global_Event_Container() { val = NULL; type = NULL;
         ctor_needs_to_be_called = TRUE; }
 };
@@ -497,7 +497,7 @@ struct Chuck_Global_UGen_Container
     Chuck_UGen * val;
     Chuck_Type * type;
     t_CKBOOL ctor_needs_to_be_called;
-    
+
     Chuck_Global_UGen_Container() { val = NULL; type = NULL;
         ctor_needs_to_be_called = TRUE; }
 };
@@ -514,7 +514,7 @@ struct Chuck_Global_Array_Container
     Chuck_Object * array;
     te_GlobalType array_type;
     t_CKBOOL ctor_needs_to_be_called;
-    
+
     Chuck_Global_Array_Container( te_GlobalType arr_type )
     {
         array = NULL;
@@ -535,7 +535,7 @@ struct Chuck_Global_Object_Container
     Chuck_Object * val;
     Chuck_Type * type;
     t_CKBOOL ctor_needs_to_be_called;
-    
+
     Chuck_Global_Object_Container() { val = NULL; type = NULL;
         ctor_needs_to_be_called = TRUE; }
 };
@@ -551,7 +551,7 @@ Chuck_Globals_Manager::Chuck_Globals_Manager( Chuck_VM * vm )
 {
     // store
     m_vm = vm;
-    
+
     // REFACTOR-2017: TODO might want to dynamically grow queue?
     m_global_request_queue.init( 16384 );
     m_global_request_retry_queue.init( 16384 );
@@ -609,13 +609,13 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalInt( const char * name,
     get_int_message->name = name;
     get_int_message->cb = callback;
     get_int_message->cb_type = ck_get_plain;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_int_request;
     r.getIntRequest = get_int_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -634,13 +634,13 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalInt( const char * name,
     get_int_message->name = name;
     get_int_message->cb_with_name = callback;
     get_int_message->cb_type = ck_get_name;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_int_request;
     r.getIntRequest = get_int_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -660,13 +660,13 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalInt( const char * name, t_CKINT id,
     get_int_message->cb_with_id = callback;
     get_int_message->id = id;
     get_int_message->cb_type = ck_get_id;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_int_request;
     r.getIntRequest = get_int_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -684,13 +684,13 @@ t_CKBOOL Chuck_Globals_Manager::setGlobalInt( const char * name, t_CKINT val )
         new Chuck_Set_Global_Int_Request;
     set_int_message->name = name;
     set_int_message->val = val;
-    
+
     Chuck_Global_Request r;
     r.type = set_global_int_request;
     r.setIntRequest = set_int_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -707,7 +707,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_int( const std::string & name )
     {
         m_global_ints[name] = new Chuck_Global_Int_Container;
     }
-    
+
     return TRUE;
 }
 
@@ -722,7 +722,7 @@ t_CKINT Chuck_Globals_Manager::get_global_int_value( const std::string & name )
 {
     // ensure exists
     init_global_int( name );
-    
+
     return m_global_ints[name]->val;
 }
 
@@ -753,13 +753,13 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalFloat( const char * name,
     get_float_message->name = name;
     get_float_message->cb = callback;
     get_float_message->cb_type = ck_get_plain;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_float_request;
     r.getFloatRequest = get_float_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -778,13 +778,13 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalFloat( const char * name,
     get_float_message->name = name;
     get_float_message->cb_with_name = callback;
     get_float_message->cb_type = ck_get_name;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_float_request;
     r.getFloatRequest = get_float_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -804,13 +804,13 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalFloat( const char * name, t_CKINT id,
     get_float_message->cb_with_id = callback;
     get_float_message->id = id;
     get_float_message->cb_type = ck_get_id;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_float_request;
     r.getFloatRequest = get_float_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -828,13 +828,13 @@ t_CKBOOL Chuck_Globals_Manager::setGlobalFloat( const char * name,
         new Chuck_Set_Global_Float_Request;
     set_float_message->name = name;
     set_float_message->val = val;
-    
+
     Chuck_Global_Request r;
     r.type = set_global_float_request;
     r.setFloatRequest = set_float_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -851,7 +851,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_float( const std::string & name )
     {
         m_global_floats[name] = new Chuck_Global_Float_Container;
     }
-    
+
     return TRUE;
 }
 
@@ -866,7 +866,7 @@ t_CKFLOAT Chuck_Globals_Manager::get_global_float_value( const std::string & nam
 {
     // ensure exists
     init_global_float( name );
-    
+
     return m_global_floats[name]->val;
 }
 
@@ -897,13 +897,13 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalString( const char * name,
     get_string_message->name = name;
     get_string_message->cb = callback;
     get_string_message->cb_type = ck_get_plain;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_string_request;
     r.getStringRequest = get_string_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -922,13 +922,13 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalString( const char * name,
     get_string_message->name = name;
     get_string_message->cb_with_name = callback;
     get_string_message->cb_type = ck_get_name;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_string_request;
     r.getStringRequest = get_string_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -948,13 +948,13 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalString( const char * name, t_CKINT id,
     get_string_message->cb_with_id = callback;
     get_string_message->id = id;
     get_string_message->cb_type = ck_get_id;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_string_request;
     r.getStringRequest = get_string_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -972,13 +972,13 @@ t_CKBOOL Chuck_Globals_Manager::setGlobalString( const char * name,
         new Chuck_Set_Global_String_Request;
     set_string_message->name = name;
     set_string_message->val = val;
-    
+
     Chuck_Global_Request r;
     r.type = set_global_string_request;
     r.setStringRequest = set_string_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -998,12 +998,12 @@ t_CKBOOL Chuck_Globals_Manager::init_global_string( const std::string & name )
         // init
         m_global_strings[name]->val = (Chuck_String *)
         instantiate_and_initialize_object( m_vm->env()->t_string, m_vm );
-        
+
         // add reference to prevent deletion
         m_global_strings[name]->val->add_ref();
-        
+
     }
-    
+
     return TRUE;
 }
 
@@ -1018,7 +1018,7 @@ Chuck_String * Chuck_Globals_Manager::get_global_string( const std::string & nam
 {
     // ensure exists
     init_global_string( name );
-    
+
     return m_global_strings[name]->val;
 }
 
@@ -1047,13 +1047,13 @@ t_CKBOOL Chuck_Globals_Manager::signalGlobalEvent( const char * name )
         new Chuck_Signal_Global_Event_Request;
     signal_event_message->name = name;
     signal_event_message->is_broadcast = FALSE;
-    
+
     Chuck_Global_Request r;
     r.type = signal_global_event_request;
     r.signalEventRequest = signal_event_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1070,15 +1070,15 @@ t_CKBOOL Chuck_Globals_Manager::broadcastGlobalEvent( const char * name )
         new Chuck_Signal_Global_Event_Request;
     signal_event_message->name = name;
     signal_event_message->is_broadcast = TRUE;
-    
+
     Chuck_Global_Request r;
     r.type = signal_global_event_request;
     r.signalEventRequest = signal_event_message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1099,15 +1099,15 @@ t_CKBOOL Chuck_Globals_Manager::listenForGlobalEvent( const char * name,
     listen_event_message->name = name;
     listen_event_message->listen_forever = listen_forever;
     listen_event_message->deregister = FALSE;
-    
+
     Chuck_Global_Request r;
     r.type = listen_for_global_event_request;
     r.listenForEventRequest = listen_event_message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1129,15 +1129,15 @@ t_CKBOOL Chuck_Globals_Manager::listenForGlobalEvent( const char * name,
     listen_event_message->name = name;
     listen_event_message->listen_forever = listen_forever;
     listen_event_message->deregister = FALSE;
-    
+
     Chuck_Global_Request r;
     r.type = listen_for_global_event_request;
     r.listenForEventRequest = listen_event_message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1161,15 +1161,15 @@ t_CKBOOL Chuck_Globals_Manager::listenForGlobalEvent( const char * name,
     listen_event_message->name = name;
     listen_event_message->listen_forever = listen_forever;
     listen_event_message->deregister = FALSE;
-    
+
     Chuck_Global_Request r;
     r.type = listen_for_global_event_request;
     r.listenForEventRequest = listen_event_message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1190,13 +1190,13 @@ t_CKBOOL Chuck_Globals_Manager::stopListeningForGlobalEvent( const char * name,
     listen_event_message->name = name;
     listen_event_message->listen_forever = FALSE;
     listen_event_message->deregister = TRUE;
-    
+
     Chuck_Global_Request r;
     r.type = listen_for_global_event_request;
     r.listenForEventRequest = listen_event_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1217,13 +1217,13 @@ t_CKBOOL Chuck_Globals_Manager::stopListeningForGlobalEvent( const char * name,
     listen_event_message->name = name;
     listen_event_message->listen_forever = FALSE;
     listen_event_message->deregister = TRUE;
-    
+
     Chuck_Global_Request r;
     r.type = listen_for_global_event_request;
     r.listenForEventRequest = listen_event_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1245,13 +1245,13 @@ t_CKBOOL Chuck_Globals_Manager::stopListeningForGlobalEvent( const char * name,
     listen_event_message->name = name;
     listen_event_message->listen_forever = FALSE;
     listen_event_message->deregister = TRUE;
-    
+
     Chuck_Global_Request r;
     r.type = listen_for_global_event_request;
     r.listenForEventRequest = listen_event_message;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1284,7 +1284,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_event( const std::string & name,
     {
         return FALSE;
     }
-    
+
     return TRUE;
 }
 
@@ -1329,10 +1329,10 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalUGenSamples( const char * name,
         // fail without doing anything
         return FALSE;
     }
-    
+
     // else, fill (if the ugen isn't buffered, then it will fill with zeroes)
     m_global_ugens[name]->val->get_buffer( buffer, numFrames );
-    
+
     return TRUE;
 }
 
@@ -1346,7 +1346,7 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalUGenSamples( const char * name,
 t_CKBOOL Chuck_Globals_Manager::init_global_ugen( const std::string & name,
                                                   Chuck_Type * type )
 {
-    
+
     // if it hasn't been initted yet
     if( m_global_ugens.count( name ) == 0 )
     {
@@ -1366,7 +1366,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_ugen( const std::string & name,
     {
         return FALSE;
     }
-    
+
     return TRUE;
 }
 
@@ -1439,15 +1439,15 @@ t_CKBOOL Chuck_Globals_Manager::setGlobalIntArray( const char * name,
     {
         message->arrayValues[i] = arrayValues[i];
     }
-    
+
     Chuck_Global_Request r;
     r.type = set_global_int_array_request;
     r.setIntArrayRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1466,15 +1466,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalIntArray( const char * name,
     message->name = name;
     message->cb = callback;
     message->cb_type = ck_get_plain;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_int_array_request;
     r.getIntArrayRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1493,15 +1493,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalIntArray( const char * name,
     message->name = name;
     message->cb_with_name = callback;
     message->cb_type = ck_get_name;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_int_array_request;
     r.getIntArrayRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1521,15 +1521,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalIntArray( const char * name,
     message->cb_with_id = callback;
     message->id = id;
     message->cb_type = ck_get_id;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_int_array_request;
     r.getIntArrayRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1548,15 +1548,15 @@ t_CKBOOL Chuck_Globals_Manager::setGlobalIntArrayValue( const char * name,
     message->name = name;
     message->index = index;
     message->value = value;
-    
+
     Chuck_Global_Request r;
     r.type = set_global_int_array_value_request;
     r.setIntArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1576,15 +1576,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalIntArrayValue( const char * name,
     message->index = index;
     message->cb = callback;
     message->cb_type = ck_get_plain;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_int_array_value_request;
     r.getIntArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1604,15 +1604,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalIntArrayValue( const char * name,
     message->index = index;
     message->cb_with_name = callback;
     message->cb_type = ck_get_name;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_int_array_value_request;
     r.getIntArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1633,15 +1633,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalIntArrayValue( const char * name,
     message->cb_with_id = callback;
     message->id = id;
     message->cb_type = ck_get_id;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_int_array_value_request;
     r.getIntArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1660,15 +1660,15 @@ t_CKBOOL Chuck_Globals_Manager::setGlobalAssociativeIntArrayValue(
     message->name = name;
     message->key = key;
     message->value = value;
-    
+
     Chuck_Global_Request r;
     r.type = set_global_associative_int_array_value_request;
     r.setAssociativeIntArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1688,15 +1688,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalAssociativeIntArrayValue(
     message->key = key;
     message->cb = callback;
     message->cb_type = ck_get_plain;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_associative_int_array_value_request;
     r.getAssociativeIntArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1716,15 +1716,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalAssociativeIntArrayValue( const char * 
     message->key = key;
     message->cb_with_name = callback;
     message->cb_type = ck_get_name;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_associative_int_array_value_request;
     r.getAssociativeIntArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1745,15 +1745,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalAssociativeIntArrayValue( const char * 
     message->cb_with_id = callback;
     message->id = id;
     message->cb_type = ck_get_id;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_associative_int_array_value_request;
     r.getAssociativeIntArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1775,15 +1775,15 @@ t_CKBOOL Chuck_Globals_Manager::setGlobalFloatArray( const char * name,
     {
         message->arrayValues[i] = arrayValues[i];
     }
-    
+
     Chuck_Global_Request r;
     r.type = set_global_float_array_request;
     r.setFloatArrayRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1802,15 +1802,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalFloatArray( const char * name,
     message->name = name;
     message->cb = callback;
     message->cb_type = ck_get_plain;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_float_array_request;
     r.getFloatArrayRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1829,15 +1829,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalFloatArray( const char * name,
     message->name = name;
     message->cb_with_name = callback;
     message->cb_type = ck_get_name;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_float_array_request;
     r.getFloatArrayRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1857,15 +1857,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalFloatArray( const char * name,
     message->cb_with_id = callback;
     message->id = id;
     message->cb_type = ck_get_id;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_float_array_request;
     r.getFloatArrayRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1884,15 +1884,15 @@ t_CKBOOL Chuck_Globals_Manager::setGlobalFloatArrayValue( const char * name,
     message->name = name;
     message->index = index;
     message->value = value;
-    
+
     Chuck_Global_Request r;
     r.type = set_global_float_array_value_request;
     r.setFloatArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1912,15 +1912,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalFloatArrayValue( const char * name,
     message->index = index;
     message->cb = callback;
     message->cb_type = ck_get_plain;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_float_array_value_request;
     r.getFloatArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1940,15 +1940,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalFloatArrayValue( const char * name,
     message->index = index;
     message->cb_with_name = callback;
     message->cb_type = ck_get_name;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_float_array_value_request;
     r.getFloatArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1969,15 +1969,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalFloatArrayValue( const char * name,
     message->cb_with_id = callback;
     message->id = id;
     message->cb_type = ck_get_id;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_float_array_value_request;
     r.getFloatArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -1996,15 +1996,15 @@ t_CKBOOL Chuck_Globals_Manager::setGlobalAssociativeFloatArrayValue( const char 
     message->name = name;
     message->key = key;
     message->value = value;
-    
+
     Chuck_Global_Request r;
     r.type = set_global_associative_float_array_value_request;
     r.setAssociativeFloatArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -2024,15 +2024,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalAssociativeFloatArrayValue( const char 
     message->key = key;
     message->cb = callback;
     message->cb_type = ck_get_plain;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_associative_float_array_value_request;
     r.getAssociativeFloatArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -2052,15 +2052,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalAssociativeFloatArrayValue( const char 
     message->key = key;
     message->cb_with_name = callback;
     message->cb_type = ck_get_name;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_associative_float_array_value_request;
     r.getAssociativeFloatArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -2082,15 +2082,15 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalAssociativeFloatArrayValue(
     message->cb_with_id = callback;
     message->id = id;
     message->cb_type = ck_get_id;
-    
+
     Chuck_Global_Request r;
     r.type = get_global_associative_float_array_value_request;
     r.getAssociativeFloatArrayValueRequest = message;
     // chuck object might not be constructed on time. retry only once
     r.retries = 1;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -2106,14 +2106,14 @@ t_CKBOOL Chuck_Globals_Manager::execute_chuck_msg_with_globals( Chuck_Msg * msg 
     Chuck_Execute_Chuck_Msg_Request * message =
         new Chuck_Execute_Chuck_Msg_Request;
     message->msg = msg;
-    
+
     Chuck_Global_Request r;
     r.type = execute_chuck_msg_request;
     r.executeChuckMsgRequest = message;
     r.retries = 0;
-    
+
     m_global_request_queue.put( r );
-    
+
     return TRUE;
 }
 
@@ -2139,7 +2139,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_array( const std::string & name, Chu
         // TODO: how to keep reference to prevent from being deleted if
         //  a script ends and takes the array with it?
     }
-    
+
     return TRUE;
 }
 
@@ -2281,7 +2281,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_object( const std::string & name,
     {
         return FALSE;
     }
-    
+
     return TRUE;
 }
 
@@ -2432,7 +2432,7 @@ void Chuck_Globals_Manager::cleanup_global_variables()
         delete (it->second);
     }
     m_global_ints.clear();
-    
+
     // floats: delete containers and clear map
     for( std::map< std::string, Chuck_Global_Float_Container * >::iterator it=
         m_global_floats.begin(); it!=m_global_floats.end(); it++ )
@@ -2440,7 +2440,7 @@ void Chuck_Globals_Manager::cleanup_global_variables()
         delete (it->second);
     }
     m_global_floats.clear();
-    
+
     // strings: release strings, delete containers, and clear map
     for( std::map< std::string, Chuck_Global_String_Container * >::iterator it=
         m_global_strings.begin(); it!=m_global_strings.end(); it++ )
@@ -2449,7 +2449,7 @@ void Chuck_Globals_Manager::cleanup_global_variables()
         delete (it->second);
     }
     m_global_strings.clear();
-    
+
     // events: release events, delete containers, and clear map
     for( std::map< std::string, Chuck_Global_Event_Container * >::iterator it=
         m_global_events.begin(); it!=m_global_events.end(); it++ )
@@ -2458,7 +2458,7 @@ void Chuck_Globals_Manager::cleanup_global_variables()
         delete (it->second);
     }
     m_global_events.clear();
-    
+
     // ugens: release ugens, delete containers, and clear map
     for( std::map< std::string, Chuck_Global_UGen_Container * >::iterator it=
         m_global_ugens.begin(); it!=m_global_ugens.end(); it++ )
@@ -2467,7 +2467,7 @@ void Chuck_Globals_Manager::cleanup_global_variables()
         delete (it->second);
     }
     m_global_ugens.clear();
-    
+
     // arrays: release arrays, delete containers, and clear map
     for( std::map< std::string, Chuck_Global_Array_Container * >::iterator it=
         m_global_arrays.begin(); it!=m_global_arrays.end(); it++ )
@@ -2479,7 +2479,7 @@ void Chuck_Globals_Manager::cleanup_global_variables()
         delete (it->second);
     }
     m_global_arrays.clear();
-    
+
     // ugens: release objects, delete containers, and clear map
     for( std::map< std::string, Chuck_Global_Object_Container * >::iterator it=
         m_global_objects.begin(); it!=m_global_objects.end(); it++ )
@@ -2500,11 +2500,11 @@ void Chuck_Globals_Manager::cleanup_global_variables()
 void Chuck_Globals_Manager::handle_global_queue_messages()
 {
     bool should_retry_this_request = false;
-    
+
     while( m_global_request_queue.more() )
     {
         should_retry_this_request = false;
-        
+
         Chuck_Global_Request message;
         if( m_global_request_queue.get( & message ) )
         {
@@ -2519,12 +2519,12 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     // clean up request storage
                     SAFE_DELETE( message.executeChuckMsgRequest );
                     break;
-                    
+
                 case spork_shred_request:
                     // spork the shred!
                     m_vm->spork( message.shred );
                     break;
-                    
+
                 case set_global_int_request:
                     // ensure the container exists
                     init_global_int( message.setIntRequest->name );
@@ -2533,7 +2533,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     // clean up request storage
                     SAFE_DELETE( message.setIntRequest );
                     break;
-                    
+
                 case get_global_int_request:
                     // ensure one of the callbacks is not null (union)
                     if( message.getIntRequest->cb != NULL )
@@ -2557,7 +2557,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     // clean up request storage
                     SAFE_DELETE( message.getIntRequest );
                     break;
-                    
+
                 case set_global_float_request:
                     // ensure the container exists
                     init_global_float( message.setFloatRequest->name );
@@ -2566,7 +2566,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     // clean up request storage
                     SAFE_DELETE( message.setFloatRequest );
                     break;
-                    
+
                 case get_global_float_request:
                     // ensure one cb is not null (union)
                     if( message.getFloatRequest->cb != NULL )
@@ -2590,7 +2590,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     // clean up request storage
                     SAFE_DELETE( message.getFloatRequest );
                     break;
-                    
+
                 case set_global_string_request:
                     // ensure the container exists
                     init_global_string( message.setStringRequest->name );
@@ -2599,7 +2599,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     // clean up request storage
                     SAFE_DELETE( message.setStringRequest );
                     break;
-                    
+
                 case get_global_string_request:
                     // ensure one callback is not null (union)
                     if( message.getStringRequest->cb != NULL )
@@ -2623,7 +2623,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     // clean up request storage
                     SAFE_DELETE( message.getStringRequest );
                     break;
-                    
+
                 case signal_global_event_request:
                     // ensure it exists and it doesn't need its ctor called
                     if( m_global_events.count( message.signalEventRequest->name ) > 0 &&
@@ -2651,7 +2651,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                             should_retry_this_request = true;
                         }
                     }
-                    
+
                     // clean up request storage
                     if( should_retry_this_request )
                     {
@@ -2662,7 +2662,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         SAFE_DELETE( message.signalEventRequest );
                     }
                     break;
-                    
+
                 case listen_for_global_event_request:
                     // ensure a callback is not null (union)
                     if( message.listenForEventRequest->cb != NULL )
@@ -2689,7 +2689,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                                                              message.listenForEventRequest->cb_with_id );
                                         break;
                                 }
-                                
+
                             }
                             else
                             {
@@ -2711,7 +2711,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                                                              message.listenForEventRequest->listen_forever );
                                         break;
                                 }
-                                
+
                             }
                         }
                         else
@@ -2733,7 +2733,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         SAFE_DELETE( message.listenForEventRequest );
                     }
                     break;
-                    
+
                 case set_global_int_array_request:
                 {
                     // replace an entire array, if it exists
@@ -2749,7 +2749,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                             // it exists! get existing array, new size
                             Chuck_Array4 * intArray = (Chuck_Array4 *) array;
                             t_CKUINT newSize = request->arrayValues.size();
-                            
+
                             // resize and copy in
                             intArray->set_size( newSize );
                             for( int i = 0; i < newSize; i++ )
@@ -2767,7 +2767,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                 }
-                    
+
                     // clean up request storage
                     if( should_retry_this_request )
                     {
@@ -2778,7 +2778,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         SAFE_DELETE( message.setIntArrayRequest );
                     }
                     break;
-                    
+
                 case get_global_int_array_request:
                 {
                     // fetch an entire array, if it exists
@@ -2828,7 +2828,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                 }
-                    
+
                     // clean up request storage
                     if( should_retry_this_request )
                     {
@@ -2839,7 +2839,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         SAFE_DELETE( message.getIntArrayRequest );
                     }
                     break;
-                    
+
                 case set_global_int_array_value_request:
                 {
                     // set a single value, if array exists and index in range
@@ -2870,7 +2870,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                 }
-                    
+
                     // clean up request storage
                     if( should_retry_this_request )
                     {
@@ -2881,7 +2881,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         SAFE_DELETE( message.setIntArrayValueRequest );
                     }
                     break;
-                    
+
                 case get_global_int_array_value_request:
                 {
                     // get a single value, if array exists and index in range
@@ -2923,7 +2923,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                 }
-                    
+
                     // clean up request storage
                     if( should_retry_this_request )
                     {
@@ -2934,7 +2934,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         SAFE_DELETE( message.getIntArrayValueRequest );
                     }
                     break;
-                    
+
                 case set_global_associative_int_array_value_request:
                 {
                     // set a single value by key, if array exists
@@ -2962,7 +2962,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                 }
-                    
+
                     // clean up request storage
                     if( should_retry_this_request )
                     {
@@ -2973,7 +2973,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         SAFE_DELETE( message.setAssociativeIntArrayValueRequest );
                     }
                     break;
-                    
+
                 case get_global_associative_int_array_value_request:
                 {
                     // get a single value by key, if array exists and key in map
@@ -3015,7 +3015,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                 }
-                    
+
                     // clean up request storage
                     if( should_retry_this_request )
                     {
@@ -3026,7 +3026,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         SAFE_DELETE( message.getAssociativeIntArrayValueRequest );
                     }
                     break;
-                    
+
                 case set_global_float_array_request:
                 {
                     // replace an entire array, if it exists
@@ -3042,7 +3042,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                             // it exists! get existing array, new size
                             Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
                             t_CKUINT newSize = request->arrayValues.size();
-                            
+
                             // resize and copy in
                             floatArray->set_size( newSize );
                             for( int i = 0; i < newSize; i++ )
@@ -3060,7 +3060,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                 }
-                    
+
                     // clean up request storage
                     if( should_retry_this_request )
                     {
@@ -3071,7 +3071,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         SAFE_DELETE( message.setFloatArrayRequest );
                     }
                     break;
-                    
+
                 case get_global_float_array_request:
                 {
                     // fetch an entire array, if it exists
@@ -3120,7 +3120,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                 }
-                    
+
                     // clean up request storage
                     if( should_retry_this_request )
                     {
@@ -3131,7 +3131,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         SAFE_DELETE( message.getFloatArrayRequest );
                     }
                     break;
-                    
+
                 case set_global_float_array_value_request:
                 {
                     // set a single value, if array exists and index in range
@@ -3162,7 +3162,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                 }
-                    
+
                     // clean up request storage
                     if( should_retry_this_request )
                     {
@@ -3173,7 +3173,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         SAFE_DELETE( message.setFloatArrayValueRequest );
                     }
                     break;
-                    
+
                 case get_global_float_array_value_request:
                 {
                     // get a single value, if array exists and index in range
@@ -3214,7 +3214,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                 }
-                    
+
                     // clean up request storage
                     if( should_retry_this_request )
                     {
@@ -3225,7 +3225,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         SAFE_DELETE( message.getFloatArrayValueRequest );
                     }
                     break;
-                    
+
                 case set_global_associative_float_array_value_request:
                 {
                     // set a single value by key, if array exists
@@ -3253,7 +3253,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                 }
-                    
+
                     // clean up request storage
                     if( should_retry_this_request )
                     {
@@ -3264,7 +3264,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         SAFE_DELETE( message.setAssociativeFloatArrayValueRequest );
                     }
                     break;
-                    
+
                 case get_global_associative_float_array_value_request:
                 {
                     // get a single value by key, if array exists and key in map
@@ -3305,7 +3305,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                 }
-                    
+
                     // clean up request storage
                     if( should_retry_this_request )
                     {
@@ -3324,7 +3324,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
             break;
         }
     }
-    
+
     // process retries
     while( m_global_request_retry_queue.more() )
     {
@@ -3338,7 +3338,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                 // trying to retry something that shouldn't be.
                 continue;
             }
-            
+
             // decrement the number of retries
             message.retries--;
             // add it back to the queue for next time
