@@ -43,7 +43,7 @@ extern "C" {
 
 typedef struct S_Symbol_ * S_Symbol;
 
-/* Make a unique symbol from a given c_str.  
+/* Make a unique symbol from a given c_str.
  *  Different calls to make_symbol("foo") will yield the same S_Symbol
  *  value, even if the "foo" c_str are at different locations. */
 S_Symbol insert_symbol( c_constr );

@@ -80,27 +80,27 @@ lo_address lo_address_new_from_url(const char *url);
 
 /**
  * \brief Free the memory used by the lo_address object
- */ 
+ */
 void lo_address_free(lo_address t);
 
 /**
  * \brief Set the Time-to-Live value for a given target address.
- * 
+ *
  * This is required for sending multicast UDP messages.  A value of 1
  * (the usual case) keeps the message within the subnet, while 255
  * means a global, unrestricted scope.
- * 
+ *
  * \param t An OSC address.
  * \param ttl An integer specifying the scope of a multicast UDP message.
- */ 
+ */
 void lo_address_set_ttl(lo_address t, int ttl);
 
 /**
  * \brief Get the Time-to-Live value for a given target address.
- * 
+ *
  * \param t An OSC address.
  * \return An integer specifying the scope of a multicast UDP message.
- */ 
+ */
 int lo_address_get_ttl(lo_address t);
 
 /**
@@ -123,12 +123,12 @@ int lo_address_get_ttl(lo_address t);
 int lo_send(lo_address targ, const char *path, const char *type, ...);
 
 /**
- * \brief Send a OSC formatted message to the address specified, 
+ * \brief Send a OSC formatted message to the address specified,
  * from the same socket as the specificied server.
  *
  * \param targ The target OSC address
  * \param from The server to send message from   (can be NULL to use new socket)
- * \param ts   The OSC timetag timestamp at which the message will be processed 
+ * \param ts   The OSC timetag timestamp at which the message will be processed
  * (can be LO_TT_IMMEDIATE if you don't want to attach a timetag)
  * \param path The OSC path the message will be delivered to
  * \param type The types of the data items in the message, types are defined in
@@ -145,7 +145,7 @@ int lo_send(lo_address targ, const char *path, const char *type, ...);
  *
  * \return on success, the number of bytes sent, or -1 on failure.
  */
-int lo_send_from(lo_address targ, lo_server from, lo_timetag ts, 
+int lo_send_from(lo_address targ, lo_server from, lo_timetag ts,
 	       		const char *path, const char *type, ...);
 
 /**
@@ -306,7 +306,7 @@ char *lo_server_thread_get_url(lo_server_thread st);
 /**
  * \brief Return the lo_server for a lo_server_thread
  *
- * This function is useful for passing a thread's lo_server 
+ * This function is useful for passing a thread's lo_server
  * to lo_send_from().
  */
 lo_server lo_server_thread_get_server(lo_server_thread st);

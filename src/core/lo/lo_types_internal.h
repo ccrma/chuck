@@ -129,7 +129,7 @@ typedef union {
     char     c;
     uint32_t nl;
 } lo_pcast32;
-    
+
 typedef union {
     int64_t    i;
     double     f;
@@ -141,5 +141,5 @@ extern struct lo_cs {
 	int udp;
 	int tcp;
 } lo_client_sockets;
-	
+
 #endif
