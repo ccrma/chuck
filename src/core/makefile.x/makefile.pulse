@@ -1,4 +1,10 @@
 
-CFLAGS+= -D__LINUX_PULSE__ -D__PLATFORM_LINUX__ -O3 -fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
-LDFLAGS+= -lasound -lstdc++ -ldl -lm -lsndfile -lpthread -lpulse-simple -lpulse
+CFLAGS+= -D__LINUX_PULSE__ -D__PLATFORM_LINUX__ -fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
 
+ifneq ($(CHUCK_DEBUG),)
+CFLAGS+= -g
+else
+CFLAGS+= -O3
+endif
+
+LDFLAGS+= -lasound -lstdc++ -ldl -lm -lsndfile -lpthread -lpulse-simple -lpulse
