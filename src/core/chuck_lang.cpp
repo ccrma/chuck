@@ -942,7 +942,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     // add popOut()
     func = make_new_mfun( "void", "popOut", array_pop_out );
     func->add_arg("int", "position");
-    func->doc = "Removes the item with position from the array";
+    func->doc = "removes the item with position from the array";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add size()
@@ -953,6 +953,12 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func = make_new_mfun( "int", "size", array_set_size );
     func->add_arg( "int", "newSize" );
     func->doc = "set the size of the array. If the new size is less than the current size, elements will be deleted from the end; if the new size is larger than the current size, 0 or null elements will be added to the end.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // (1.4.1.1 nshaheed) add getKeys()
+    func = make_new_mfun( "void", "getKeys", array_get_keys );
+    func ->add_arg( "string[]", "keys");
+    func->doc = "return all keys found in associative array in keys";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // note 1.4.1.0: in the future, should deprecate and encourage programmer
@@ -2470,4 +2476,25 @@ CK_DLL_MFUN( array_pop_out )
 	else
 		assert( FALSE );
 
+}
+
+// 1.4.1.1 nshaheed (added) array.getKeys()
+CK_DLL_MFUN( array_get_keys )
+{
+	Chuck_Array * array = (Chuck_Array *)SELF;
+	Chuck_Array4 * returned_keys = (Chuck_Array4 *) GET_NEXT_OBJECT(ARGS);
+
+    // clear return array
+	returned_keys->set_size(0);
+    // local keys array
+    std::vector<std::string> array_keys;
+    // get the keys
+    array->get_keys( array_keys );
+
+	// copy array keys into the provided string array
+    for (t_CKUINT i = 0; i < array_keys.size(); i++ ) {
+	    Chuck_String * key = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
+	    key->set(array_keys[i]);
+	    returned_keys->push_back((t_CKUINT) key);
+	}
 }
