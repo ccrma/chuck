@@ -634,21 +634,21 @@ t_CKINT Chuck_Array4::pop_back( )
 //-----------------------------------------------------------------------------
 t_CKINT Chuck_Array4::pop_out( t_CKUINT pos )
 {
-	// check
-	if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
-		return 0;
+    // check
+    if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
+        return 0;
 
-	if( m_is_obj )
-	{
-		// get pointer
-		Chuck_Object * v = (Chuck_Object *)m_vector[pos];
-		// if not null, release
-		if( v ) v->release();
-	}
+    if( m_is_obj )
+    {
+        // get pointer
+        Chuck_Object * v = (Chuck_Object *)m_vector[pos];
+        // if not null, release
+        if( v ) v->release();
+    }
 
-	// add to vector
-	m_vector.erase(m_vector.begin()+pos);
-	return 1;
+    // add to vector
+    m_vector.erase(m_vector.begin()+pos);
+    return 1;
 }
 
 

@@ -1792,22 +1792,22 @@ class Serial
 {
 public:
     // one stop bit, 8 bits, no parity
-	Serial();
-	~Serial();
+    Serial();
+    ~Serial();
 
-	unsigned read( char * buffer, unsigned numberOfBytesToRead );
-	unsigned write( char * buffer, unsigned numberOfBytesToWrite );
+    unsigned read( char * buffer, unsigned numberOfBytesToRead );
+    unsigned write( char * buffer, unsigned numberOfBytesToWrite );
 
-	void write( char c );
-	char read();
+    void write( char c );
+    char read();
 
-	unsigned available() const;
+    unsigned available() const;
 
     t_CKBOOL open( char * port, t_CKUINT baudrate );
-	void close();
+    void close();
 
 private:
-	HANDLE serialFile;
+    HANDLE serialFile;
 };
 
 
@@ -1818,7 +1818,7 @@ Serial::Serial( )
 
 Serial::~Serial( )
 {
-	close();
+    close();
 }
 
 t_CKBOOL Serial::open( char * port, t_CKUINT baudrate )
@@ -1826,62 +1826,62 @@ t_CKBOOL Serial::open( char * port, t_CKUINT baudrate )
     if( serialFile )
         close();
 
-	// open port
-	serialFile = CreateFile( port,
-							 GENERIC_READ | GENERIC_WRITE,
-							 0,
-							 0,
-							 OPEN_EXISTING,
-							 FILE_ATTRIBUTE_NORMAL,
-							 0 );
-	if( serialFile == INVALID_HANDLE_VALUE )
-	{
-		if( GetLastError() == ERROR_FILE_NOT_FOUND )
-		{
+    // open port
+    serialFile = CreateFile( port,
+                             GENERIC_READ | GENERIC_WRITE,
+                             0,
+                             0,
+                             OPEN_EXISTING,
+                             FILE_ATTRIBUTE_NORMAL,
+                             0 );
+    if( serialFile == INVALID_HANDLE_VALUE )
+    {
+        if( GetLastError() == ERROR_FILE_NOT_FOUND )
+        {
             EM_log( CK_LOG_SYSTEM, "error: cannot open serial port '%s'...", port );
-		}
+        }
         else
         {
             EM_log( CK_LOG_SYSTEM, "error opening serial port '%s'...", port );
         }
 
         return FALSE;
-	}
+    }
 
-	// set params
-	DCB dcbSerialParams = {0};
-	dcbSerialParams.DCBlength = sizeof( dcbSerialParams );
-	if( !GetCommState( serialFile, &dcbSerialParams) )
-	{
+    // set params
+    DCB dcbSerialParams = {0};
+    dcbSerialParams.DCBlength = sizeof( dcbSerialParams );
+    if( !GetCommState( serialFile, &dcbSerialParams) )
+    {
         EM_log( CK_LOG_SYSTEM, "error getting serial state..." );
         close();
         return FALSE;
-	}
+    }
 
     dcbSerialParams.BaudRate = baudrate;
-	dcbSerialParams.ByteSize = 8;
-	dcbSerialParams.StopBits = ONESTOPBIT;
-	dcbSerialParams.Parity = NOPARITY;
-	if( !SetCommState( serialFile, &dcbSerialParams ) )
-	{
+    dcbSerialParams.ByteSize = 8;
+    dcbSerialParams.StopBits = ONESTOPBIT;
+    dcbSerialParams.Parity = NOPARITY;
+    if( !SetCommState( serialFile, &dcbSerialParams ) )
+    {
         EM_log( CK_LOG_SYSTEM, "error setting serial state..." );
         close();
         return FALSE;
-	}
+    }
 
-	// SET TIMEOUTS
+    // SET TIMEOUTS
     /*
-	COMMTIMEOUTS timeouts = {0};
-	timeouts.ReadIntervalTimeout = 50;
-	timeouts.ReadTotalTimeoutConstant = 50;
-	timeouts.ReadTotalTimeoutMultiplier = 10;
-	timeouts.WriteTotalTimeoutConstant= 50;
-	timeouts.WriteTotalTimeoutMultiplier = 10;
-	if( !SetCommTimeouts( serialFile, &timeouts ) )
-	{
-		//error occureed. Inform user
-	}
-	*/
+    COMMTIMEOUTS timeouts = {0};
+    timeouts.ReadIntervalTimeout = 50;
+    timeouts.ReadTotalTimeoutConstant = 50;
+    timeouts.ReadTotalTimeoutMultiplier = 10;
+    timeouts.WriteTotalTimeoutConstant= 50;
+    timeouts.WriteTotalTimeoutMultiplier = 10;
+    if( !SetCommTimeouts( serialFile, &timeouts ) )
+    {
+        //error occureed. Inform user
+    }
+    */
 
     return TRUE;
 }
@@ -1890,32 +1890,32 @@ void Serial::close()
 {
     if( serialFile )
     {
-	    CloseHandle( serialFile );
+        CloseHandle( serialFile );
         serialFile = NULL;
     }
 }
 
 void Serial::write( char c )
 {
-	write( &c, 1 );
+    write( &c, 1 );
 }
 
 char Serial::read()
 {
-	char c = '\0';
-	read( &c, 1 );
-	return c;
+    char c = '\0';
+    read( &c, 1 );
+    return c;
 }
 
 unsigned Serial::available() const
 {
-	struct _COMSTAT status;
+    struct _COMSTAT status;
     unsigned long etat;
     memset( &status, 0, sizeof(status) );
 
     if( serialFile )
     {
-	    ClearCommError( serialFile, &etat, &status);
+        ClearCommError( serialFile, &etat, &status);
         return status.cbInQue;
     }
 
@@ -1925,19 +1925,19 @@ unsigned Serial::available() const
 // try to read numberOfBytesToRead into buffer, return how many bytes read
 unsigned Serial::read( char * buffer, unsigned numberOfBytesToRead )
 {
-	DWORD bytesRead = 0;
+    DWORD bytesRead = 0;
     if( serialFile )
-	    ReadFile( serialFile, buffer, numberOfBytesToRead, &bytesRead, NULL );
-	return bytesRead;
+        ReadFile( serialFile, buffer, numberOfBytesToRead, &bytesRead, NULL );
+    return bytesRead;
 }
 
 // try to write numberOfBytesToWrite to serial from buffer, return how many bytes written
 unsigned Serial::write( char * buffer, unsigned numberOfBytesToWrite )
 {
-	DWORD bytesWritten = 0;
+    DWORD bytesWritten = 0;
     if( serialFile )
-	    WriteFile( serialFile, buffer, numberOfBytesToWrite, &bytesWritten, NULL );
-	return bytesWritten;
+        WriteFile( serialFile, buffer, numberOfBytesToWrite, &bytesWritten, NULL );
+    return bytesWritten;
 }
 
 

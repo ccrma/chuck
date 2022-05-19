@@ -2111,13 +2111,13 @@ void OSC_Receiver::distribute_message( OSCMesg * msg )
 // public for of inherited chuck_event mfunc.
 
 const char * osc_typename_strings[] = {
-	"untyped",
-	"no arguments",
-	"integer",
-	"float",
-	"string",
-	"blob",
-	"ERROR: num types exceeded"
+    "untyped",
+    "no arguments",
+    "integer",
+    "float",
+    "string",
+    "blob",
+    "ERROR: num types exceeded"
 };
 
 
@@ -2146,7 +2146,7 @@ OSC_Address_Space::init() {
     _dataSize = 0;
     _cur_mesg = NULL;
     _queue = NULL;
-	_cur_value = 0;
+    _cur_value = 0;
     _current_data = NULL;
     _buffer_mutex = new XMutex();
 }
@@ -2197,9 +2197,9 @@ OSC_Address_Space::scanSpec() { //this allows for sloppy-ish definitions in type
                 *pwrite = ',';
                 pwrite++;
             } // otherwise, we ignore
-			else if( *pread == ' ' ) {
-				EM_log(CK_LOG_INFO, "OSC-Address-Space: spaces in OSC type tag string! ignoring");
-			}
+            else if( *pread == ' ' ) {
+                EM_log(CK_LOG_INFO, "OSC-Address-Space: spaces in OSC type tag string! ignoring");
+            }
         }
         else {
             if( pwrite != pread ) { *pwrite = *pread; }
@@ -2405,11 +2405,11 @@ bool OSC_Address_Space::next_mesg()
 
 bool OSC_Address_Space::vcheck( osc_datatype tt )
 {
-	if( !_cur_mesg )
+    if( !_cur_mesg )
     {
         EM_log( CK_LOG_SEVERE, "OscEvent: getVal(): nextMsg() must be called before reading data..." );
         return false;
-	}
+    }
     else if( _cur_value < 0 || _cur_value >= _dataSize )
     {
         EM_log( CK_LOG_SEVERE, "OscEvent: read position %d outside message ...", _cur_value );

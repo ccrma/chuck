@@ -2465,36 +2465,36 @@ CK_DLL_MFUN( array_pop_back )
 // array.pop_out
 CK_DLL_MFUN( array_pop_out )
 {
-	Chuck_Array * array = (Chuck_Array *)SELF;
-	t_CKINT position = GET_NEXT_INT(ARGS);
-	if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND)
-		RETURN->v_int = ((Chuck_Array4 *)array)->pop_out(position);
-	else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
-		RETURN->v_int = ((Chuck_Array8 *)array)->pop_out(position);
-	else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
-		RETURN->v_int = ((Chuck_Array16 *)array)->pop_out(position);
-	else
-		assert( FALSE );
+    Chuck_Array * array = (Chuck_Array *)SELF;
+    t_CKINT position = GET_NEXT_INT(ARGS);
+    if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND)
+        RETURN->v_int = ((Chuck_Array4 *)array)->pop_out(position);
+    else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
+        RETURN->v_int = ((Chuck_Array8 *)array)->pop_out(position);
+    else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
+        RETURN->v_int = ((Chuck_Array16 *)array)->pop_out(position);
+    else
+        assert( FALSE );
 
 }
 
 // 1.4.1.1 nshaheed (added) array.getKeys()
 CK_DLL_MFUN( array_get_keys )
 {
-	Chuck_Array * array = (Chuck_Array *)SELF;
-	Chuck_Array4 * returned_keys = (Chuck_Array4 *) GET_NEXT_OBJECT(ARGS);
+    Chuck_Array * array = (Chuck_Array *)SELF;
+    Chuck_Array4 * returned_keys = (Chuck_Array4 *) GET_NEXT_OBJECT(ARGS);
 
     // clear return array
-	returned_keys->set_size(0);
+    returned_keys->set_size(0);
     // local keys array
     std::vector<std::string> array_keys;
     // get the keys
     array->get_keys( array_keys );
 
-	// copy array keys into the provided string array
+    // copy array keys into the provided string array
     for (t_CKUINT i = 0; i < array_keys.size(); i++ ) {
-	    Chuck_String * key = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
-	    key->set(array_keys[i]);
-	    returned_keys->push_back((t_CKUINT) key);
-	}
+        Chuck_String * key = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
+        key->set(array_keys[i]);
+        returned_keys->push_back((t_CKUINT) key);
+    }
 }
