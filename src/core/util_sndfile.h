@@ -2580,8 +2580,8 @@ extern word gsm_FAC [8] ;
     {   int res [2] ;
 
         __asm__ __volatile__
-        (   "fctiw	%1, %1\n\t"
-            "stfd	%1, %0"
+        (   "fctiw    %1, %1\n\t"
+            "stfd    %1, %0"
             : "=m" (res)    /* Output */
             : "f" (in)      /* Input */
             : "memory"
@@ -2595,8 +2595,8 @@ extern word gsm_FAC [8] ;
     {   int res [2] ;
 
         __asm__ __volatile__
-        (   "fctiw	%1, %1\n\t"
-            "stfd	%1, %0"
+        (   "fctiw    %1, %1\n\t"
+            "stfd    %1, %0"
             : "=m" (res)    /* Output */
             : "f" (in)      /* Input */
             : "memory"

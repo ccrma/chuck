@@ -308,7 +308,7 @@ public:
     t_CKUINT t_minute;
     t_CKUINT t_hour;
     // list of shred status
-	std::vector<Chuck_VM_Shred_Status *> list;
+    std::vector<Chuck_VM_Shred_Status *> list;
 };
 
 
