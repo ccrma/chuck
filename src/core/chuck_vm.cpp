@@ -935,7 +935,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     {
         t_CKUINT n = m_shreduler->highest();
         m_shred_id = n;
-        CK_FPRINTF_STDERR( "[chuck](VM): reseting shred id to %lu...\n", m_shred_id + 1 );
+        CK_FPRINTF_STDERR( "[chuck](VM): resetting shred id to %lu...\n", m_shred_id + 1 );
     }
 
 done:
