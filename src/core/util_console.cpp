@@ -54,22 +54,22 @@ char * io_readline( const char * prompt )
 
     fputs( prompt, stdout );
 
-	result = fgets( buf, CONSOLE_INPUT_BUFFER_SIZE, stdin );
+    result = fgets( buf, CONSOLE_INPUT_BUFFER_SIZE, stdin );
 
-	if( result == NULL )
-	{
-		free( buf );
-		return NULL;
-	}
+    if( result == NULL )
+    {
+        free( buf );
+        return NULL;
+    }
 
-	for( int i=0; i < CONSOLE_INPUT_BUFFER_SIZE; i++ )
-		if(buf[i] == '\n' )
-		{
-			buf[i] = 0;
-			break;
-		}
+    for( int i=0; i < CONSOLE_INPUT_BUFFER_SIZE; i++ )
+        if(buf[i] == '\n' )
+        {
+            buf[i] = 0;
+            break;
+        }
 
-	return buf;
+    return buf;
 
 #endif
 }
@@ -78,11 +78,11 @@ void io_addhistory( const char * addme )
 {
 #ifdef __USE_READLINE__
 
-	add_history( addme );
+    add_history( addme );
 
 #else
 
-	//do nothing
+    //do nothing
 
 #endif
 }

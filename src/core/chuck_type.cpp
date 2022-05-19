@@ -5789,7 +5789,7 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
 // desc: instantiate new chuck type for use in arrays (nshaheed) added
 //-----------------------------------------------------------------------------
 Chuck_Type * new_array_element_type( Chuck_Env * env, Chuck_Type * base_type,
-		       t_CKUINT depth, Chuck_Namespace * owner_nspc)
+                                     t_CKUINT depth, Chuck_Namespace * owner_nspc)
 {
     // make new type
     Chuck_Type * t = env->context->new_Chuck_Type( env );

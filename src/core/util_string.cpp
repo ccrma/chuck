@@ -239,7 +239,7 @@ t_CKBOOL extract_args( const string & token,
     // ignore second character as arg separator if its : on Windows
     t_CKBOOL ignoreSecond = FALSE;
 #ifdef __PLATFORM_WIN32__
-	ignoreSecond = TRUE;
+    ignoreSecond = TRUE;
 #endif // __PLATFORM_WIN32__
 
     // detect
@@ -482,17 +482,17 @@ std::string get_full_path( const std::string & fp )
 
 #else //
 
-	char buf[MAX_PATH];
-	DWORD result = GetFullPathName(fp.c_str(), MAX_PATH, buf, NULL);
+    char buf[MAX_PATH];
+    DWORD result = GetFullPathName(fp.c_str(), MAX_PATH, buf, NULL);
 
     // try with .ck extension
     if(result == 0 && !str_endsin(fp.c_str(), ".ck"))
         result = GetFullPathName((fp + ".ck").c_str(), MAX_PATH, buf, NULL);
 
-	if(result == 0)
-		return fp;
-	else
-		return normalize_directory_separator(buf);
+    if(result == 0)
+        return fp;
+    else
+        return normalize_directory_separator(buf);
 
 #endif // __PLATFORM_WIN32__
 }

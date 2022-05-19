@@ -5467,10 +5467,10 @@ BandedWG :: BandedWG()
   strikeAmp = 0.0;
 
   for (int i=0; i<MAX_BANDED_MODES; i++) { /***** REPAIRATHON2021 HACK, Better for Strike Position and more *****/
-    outGains[i] = 1.0;			/***** REPAIRATHON2021 HACKS, Better for Strike Position and more *****/
+    outGains[i] = 1.0;                     /***** REPAIRATHON2021 HACKS, Better for Strike Position and more *****/
   }
 
-  modeReson = 1.0;			/***** REPAIRATHON2021 HACKS, actually allows mode resonance manipulation *****/
+  modeReson = 1.0;                         /***** REPAIRATHON2021 HACKS, actually allows mode resonance manipulation *****/
 
   // chuck
   m_frequency = freakency;
@@ -5802,7 +5802,7 @@ void BandedWG :: controlChange(int number, MY_FLOAT value)
   }
   else if (number == __SK_ModWheel_) { // 1
       // baseGain = 0.9989999999 + (0.001 * norm );  // DELETE THESE SOMEDAY
-      // baseGain = 0.8999999999999999 + (0.1 * norm);	// 1.4.1.0 REPAIRATHON2021 HACK, better modeResonance implementation
+      // baseGain = 0.8999999999999999 + (0.1 * norm);    // 1.4.1.0 REPAIRATHON2021 HACK, better modeResonance implementation
       if( norm > 1.0 ) {
           CK_STDCERR << "[chuck](via STK): BandedWG: modeResonance > 1.0!!!" << CK_STDENDL;
       }
@@ -10025,7 +10025,7 @@ MY_FLOAT FrencHrn :: tick()
         }
     }
 
-    waves[3]->addPhaseOffset(twozero->lastOut());		// Operator 4
+    waves[3]->addPhaseOffset(twozero->lastOut());        // Operator 4
     //  temp = (1.0 - (control2 * 0.5)) * gains[3] * adsr[3]->tick() * waves[3]->tick();
     temp = (1.0 + opAMs[3]*temp2) * control2 * 0.5 * gains[3] * adsr[3]->tick() * waves[3]->tick(); // ADDED AM
     twozero->tick(temp);
@@ -10033,12 +10033,12 @@ MY_FLOAT FrencHrn :: tick()
 
     temp += (1.0 + opAMs[2]*temp2) * control1 * 0.5 * gains[2] * adsr[2]->tick() * waves[2]->tick(); // Operator 3 // ADDED AM too
 
-    waves[1]->addPhaseOffset(temp);    			// Operator 2
+    waves[1]->addPhaseOffset(temp);                // Operator 2
     temp = (1.0 + opAMs[1]*temp2) * gains[1] * adsr[1]->tick() * waves[1]->tick(); // ADDED AM
     temp = temp * 0.5 * (control1 + control2);
     //  temp = temp * control1;
 
-    waves[0]->addPhaseOffset(temp);			// Operator 1
+    waves[0]->addPhaseOffset(temp);            // Operator 1
     temp = (1.0 + opAMs[0]*temp2) * gains[0] * adsr[0]->tick() * waves[0]->tick(); // ADDED AM
 
     lastOutput = temp;

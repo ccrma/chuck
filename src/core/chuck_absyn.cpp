@@ -58,12 +58,12 @@ a_Program append_program( a_Program program, a_Section section, int pos )
 
     while (1)
       {
-	if (current->next == NULL) {
-	  current->next = a;
-	  break;
-	} else {
-	  current = current->next;
-	}
+        if (current->next == NULL) {
+          current->next = a;
+          break;
+        } else {
+          current = current->next;
+        }
       }
     return program;
 }
@@ -122,7 +122,7 @@ a_Stmt_List append_stmt_list( a_Stmt_List stmt_list, a_Stmt stmt, int pos )
   while (1)
     {
       if (current->next == NULL) {
-	current->next = a;
+        current->next = a;
         break;
       } else {
         current = current->next;

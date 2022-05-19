@@ -68,11 +68,11 @@ XThread::XThread( )
 XThread::~XThread( )
 {
 #if defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__)
-	// can't self-terminate (much like the Terminator)
-	bool is_self_thread = (thread == pthread_self());
+    // can't self-terminate (much like the Terminator)
+    bool is_self_thread = (thread == pthread_self());
 #elif defined(__PLATFORM_WIN32__)
-	// ignore for now
-	bool is_self_thread = false;
+    // ignore for now
+    bool is_self_thread = false;
 #endif
 
     // if our thread not NULL and this destructor is NOT being called on it
@@ -236,11 +236,11 @@ XWriteThread * XWriteThread::shared()
 {
     // static XWriteThread s_defaultWriteThread;
 
-	// check
-	if( o_defaultWriteThread == NULL )
-		o_defaultWriteThread = new XWriteThread();
+    // check
+    if( o_defaultWriteThread == NULL )
+        o_defaultWriteThread = new XWriteThread();
 
-	return o_defaultWriteThread;
+    return o_defaultWriteThread;
 }
 
 

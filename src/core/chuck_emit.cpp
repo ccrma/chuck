@@ -2513,21 +2513,21 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_int );
             instr->set_linepos( rhs->linepos );
-	    return TRUE;
+            return TRUE;
         }
         else if( isa( right, emit->env->t_float ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_float );
             instr->set_linepos( rhs->linepos );
-	    return TRUE;
+            return TRUE;
         }
         else if( isa( right, emit->env->t_string ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_string );
             instr->set_linepos( rhs->linepos );
-	    return TRUE;
+            return TRUE;
         }
     }
 
