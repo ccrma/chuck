@@ -909,7 +909,7 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
                              Chuck_Namespace * owner_nspc );
 // make type | 1.4.1.1 (nshaheed) added
 Chuck_Type * new_array_element_type( Chuck_Env * env, Chuck_Type * base_type,
-		       t_CKUINT depth, Chuck_Namespace * owner_nspc);
+                                     t_CKUINT depth, Chuck_Namespace * owner_nspc);
 // conversion
 const char * type_path( a_Id_List path );
 a_Id_List str2list( const std::string & path );
