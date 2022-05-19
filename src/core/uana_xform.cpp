@@ -171,7 +171,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // init as base class: FFT
     //---------------------------------------------------------------------
 
-    doc = "computes the Fast Fourier Transform on incoming audio samples, and outputs the result via its UAnaBlob as both the complex spectrum and the magnitude spectrum. A buffering mechanism maintains the previous FFTsize # of samples, allowing FFT's to be taken at any point in time, on demand (via .upchuck() or by upchucking a downstream UAna. The window size (along with an arbitry window shape) is controlled via the .window method. The hop size is complete dynamic, and is throttled by how time is advanced.";
+    doc = "computes the Fast Fourier Transform on incoming audio samples, and outputs the result via its UAnaBlob as both the complex spectrum and the magnitude spectrum. A buffering mechanism maintains the previous FFTsize # of samples, allowing FFT's to be taken at any point in time, on demand (via .upchuck() or by upchucking a downstream UAna. The window size (along with an arbitrary window shape) is controlled via the .window method. The hop size is complete dynamic, and is throttled by how time is advanced.";
 
     if( !type_engine_import_uana_begin( env, "FFT", "UAna", env->global(),
                                         FFT_ctor, FFT_dtor,
@@ -224,7 +224,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // init as base class: IFFT
     //---------------------------------------------------------------------
 
-    doc = "computes the inverse Fast Fourier Transform on incoming spectral frames (on demand), and overlap-adds the results into its internal buffer, ready to be sent to other UGen's connected via =>. The window size (along with an arbitry window shape) is controlled via the .window method.";
+    doc = "computes the inverse Fast Fourier Transform on incoming spectral frames (on demand), and overlap-adds the results into its internal buffer, ready to be sent to other UGen's connected via =>. The window size (along with an arbitrary window shape) is controlled via the .window method.";
 
     if( !type_engine_import_uana_begin( env, "IFFT", "UAna", env->global(),
                                         IFFT_ctor, IFFT_dtor,
@@ -420,7 +420,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // init as base class: DCT
     //---------------------------------------------------------------------
 
-    doc = "computes the Discrete Cosine Transform on incoming audio samples, and outputs the result via its UAnaBlob as real values in the D.C. spectrum. A buffering mechanism maintains the previous DCT size # of samples, allowing DCT to be taken at any point in time, on demand (via .upchuck() or by upchucking a downstream UAna; see UAna documentation). The window size (along with an arbitry window shape) is controlled via the .window method. The hop size is complete dynamic, and is throttled by how time is advanced.";
+    doc = "computes the Discrete Cosine Transform on incoming audio samples, and outputs the result via its UAnaBlob as real values in the D.C. spectrum. A buffering mechanism maintains the previous DCT size # of samples, allowing DCT to be taken at any point in time, on demand (via .upchuck() or by upchucking a downstream UAna; see UAna documentation). The window size (along with an arbitrary window shape) is controlled via the .window method. The hop size is complete dynamic, and is throttled by how time is advanced.";
 
     if( !type_engine_import_uana_begin( env, "DCT", "UAna", env->global(),
                                         DCT_ctor, DCT_dtor,
@@ -473,7 +473,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // init as base class: IDCT
     //---------------------------------------------------------------------
 
-    doc = "computes the inverse Discrete Cosine Transform on incoming spectral frames (on demand), and overlap-adds the results into its internal buffer, ready to be sent to other UGen's connected via =>. The window size (along with an arbitry window shape) is controlled via the .window method.";
+    doc = "computes the inverse Discrete Cosine Transform on incoming spectral frames (on demand), and overlap-adds the results into its internal buffer, ready to be sent to other UGen's connected via =>. The window size (along with an arbitrary window shape) is controlled via the .window method.";
 
     if( !type_engine_import_uana_begin( env, "IDCT", "UAna", env->global(),
                                         IDCT_ctor, IDCT_dtor,
