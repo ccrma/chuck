@@ -2756,11 +2756,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "float", "stretch", StifKarp_ctrl_stretch );
     func->add_arg( "float", "value" );
-    func->doc = "set string strech, [0.0-1.0].";
+    func->doc = "set string stretch, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "stretch", StifKarp_cget_stretch );
-    func->doc = "get string strech, [0.0-1.0].";
+    func->doc = "get string stretch, [0.0-1.0].";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "sustain", StifKarp_ctrl_sustain );

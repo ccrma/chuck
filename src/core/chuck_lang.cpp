@@ -802,53 +802,53 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     // add find()
     func = make_new_mfun( "int", "find", string_find );
     func->add_arg( "int", "theChar" );
-    func->doc = "get the index of the first occurence of theChar, or -1 if theChar is not found.";
+    func->doc = "get the index of the first occurrence of theChar, or -1 if theChar is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add find()
     func = make_new_mfun( "int", "find", string_findStart );
     func->add_arg( "int", "theChar" );
     func->add_arg( "int", "start" );
-    func->doc = "get the index of the first occurence of theChar at or after the start position, or -1 if theChar is not found.";
+    func->doc = "get the index of the first occurrence of theChar at or after the start position, or -1 if theChar is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add find()
     func = make_new_mfun( "int", "find", string_findStr );
     func->add_arg( "string", "str" );
-    func->doc = "get the index of the first occurence of str, or -1 if str is not found.";
+    func->doc = "get the index of the first occurrence of str, or -1 if str is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add find()
     func = make_new_mfun( "int", "find", string_findStrStart );
     func->add_arg( "string", "str" );
     func->add_arg( "int", "start" );
-    func->doc = "get the index of the first occurence of str at or after the start position, or -1 if str is not found.";
+    func->doc = "get the index of the first occurrence of str at or after the start position, or -1 if str is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add rfind()
     func = make_new_mfun( "int", "rfind", string_rfind );
     func->add_arg( "int", "theChar" );
-    func->doc = "get the index of the last occurence of theChar, or -1 if theChar is not found.";
+    func->doc = "get the index of the last occurrence of theChar, or -1 if theChar is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add rfind()
     func = make_new_mfun( "int", "rfind", string_rfindStart );
     func->add_arg( "int", "theChar" );
     func->add_arg( "int", "start" );
-    func->doc = "get the index of the last occurence of theChar at or before the start position, or -1 if theChar is not found.";
+    func->doc = "get the index of the last occurrence of theChar at or before the start position, or -1 if theChar is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add rfind()
     func = make_new_mfun( "int", "rfind", string_rfindStr );
     func->add_arg( "string", "str" );
-    func->doc = "get the index of the last occurence of str, or -1 if str is not found.";
+    func->doc = "get the index of the last occurrence of str, or -1 if str is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add rfind()
     func = make_new_mfun( "int", "rfind", string_rfindStrStart );
     func->add_arg( "string", "str" );
     func->add_arg( "int", "start" );
-    func->doc = "get the index of the last occurence of str at or before the start position, or -1 if str is not found.";
+    func->doc = "get the index of the last occurrence of str at or before the start position, or -1 if str is not found.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add erase()
