@@ -92,14 +92,8 @@ void io_addhistory( const char * addme )
 // kb hit
 #ifndef __PLATFORM_WIN32__
   #include <string.h>
-#ifdef __PLATFORM_MACOSX__
   #include <termios.h>
   static struct termios g_save;
-#else
-  #include <termio.h>
-  static struct termio g_save;
-#endif
-
   #include <unistd.h>
   #include <sys/ioctl.h>
 #else
@@ -118,15 +112,9 @@ t_CKBOOL kb_initscr()
     if( g_init ) return FALSE;
 
 #ifndef __PLATFORM_WIN32__
-
-#ifdef __PLATFORM_MACOSX__
     struct termios term;
-    if( ioctl( 0, TIOCGETA, &term ) == -1 )
-#else
-    struct termio term;
-    if( ioctl( 0, TCGETA, &term ) == -1 )
-#endif
-    {
+    if( tcgetattr(0, &term) == -1 )
+    { 
         EM_log( CK_LOG_SEVERE, "(kbhit disabled): standard input not a tty!");
         return FALSE;
     }
@@ -142,11 +130,7 @@ t_CKBOOL kb_initscr()
     term.c_cc[VMIN] = 0;
     term.c_cc[VTIME]=0;
 
-#ifdef __PLATFORM_MACOSX__
-    ioctl( 0, TIOCSETA, &term );
-#else
-    ioctl( 0, TCSETA, &term );
-#endif
+    tcsetattr( 0, TCSADRAIN, &term );
 
 #endif
 
@@ -161,11 +145,7 @@ void kb_endwin()
     if( !g_init ) return;
 
 #ifndef __PLATFORM_WIN32__
-#ifdef __PLATFORM_MACOSX__
-    ioctl( 0, TIOCSETA, &g_save );
-#else
-    ioctl( 0, TCSETA, &g_save );
-#endif
+    tcsetattr( 0, TCSADRAIN, &g_save );
 #endif
 
     g_init = FALSE;
