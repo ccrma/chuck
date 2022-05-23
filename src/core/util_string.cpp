@@ -37,9 +37,7 @@
 #include <Windows.h>
 #endif // __PLATFORM_WIN32__
 
-#ifdef __PLATFORM_LINUX__
-#include <linux/limits.h>
-#endif // __PLATFORM_LINUX__
+#include <limits.h>
 
 #include <stdio.h>
 using namespace std;
