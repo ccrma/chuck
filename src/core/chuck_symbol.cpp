@@ -56,11 +56,11 @@ static S_Symbol hashtable[SIZE];
 static unsigned int hash(const char *s0)
 {
     unsigned int h=0; const char *s;
-    for(s=s0; *s; s++)  
+    for(s=s0; *s; s++)
         h = h*65599 + *s;
     return h;
 }
- 
+
 static int streq(c_constr a, c_constr b)
 {
     return !strcmp((char*)a,(char*)b);
@@ -77,7 +77,7 @@ S_Symbol insert_symbol(c_constr name)
         if (streq(sym->name,name)) return sym;
     sym = mksymbol(name,syms);
     hashtable[index]=sym;
-    
+
     return sym;
 }
 
@@ -86,8 +86,8 @@ c_str S_name( S_Symbol sym )
     return sym->name;
 }
 
-S_table S_empty( void ) 
-{ 
+S_table S_empty( void )
+{
     return TAB_empty();
 }
 

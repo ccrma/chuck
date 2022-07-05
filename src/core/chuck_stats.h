@@ -64,7 +64,7 @@ struct Shred_Activation
 {
     t_CKTIME when;
     t_CKUINT cycles;
-    
+
     Shred_Activation( t_CKTIME a, t_CKUINT b ) { when = a; cycles = b; }
 };
 
@@ -108,31 +108,31 @@ public:
     std::string owner;
     // source
     std::string source;
-    
+
     // ctrl rate calculation
     std::queue<t_CKDUR> diffs;
     // number of diffs
     t_CKUINT num_diffs;
     // total diffs
     t_CKDUR diff_total;
-    
+
     // exe per activation
     std::queue<t_CKUINT> act_cycles;
     // total
     t_CKUINT act_cycles_total;
     // last
     t_CKUINT last_cycles;
-    
+
     // children
     std::vector<Shred_Stat *> children;
     void get_sporked( std::vector<Shred_Stat *> & out );
 
     std::vector<Shred_Activation> activationss;
     void get_activations( std::vector<Shred_Activation> & out );
-    
+
     // mutex
     XMutex mutex;
-    
+
     // audicle info
     Shred_Data * data;
     Shred_Time * time;
@@ -161,7 +161,7 @@ public:
     static Chuck_Stats * instance();
 
 public:
-    void set_vm_ref( Chuck_VM * _vm ) { vm = _vm; } 
+    void set_vm_ref( Chuck_VM * _vm ) { vm = _vm; }
 
 public:
     void add_shred( Chuck_VM_Shred * shred );
@@ -173,16 +173,16 @@ public:
 public:
     Shred_Stat * get_shred( t_CKUINT xid )
     { mutex.acquire(); Shred_Stat * s = shreds[xid]; mutex.release(); return s; }
-    void get_shreds( std::vector<Shred_Stat *> & out, 
+    void get_shreds( std::vector<Shred_Stat *> & out,
                      std::map<Shred_Stat *, Shred_Stat *> & d );
     static t_CKBOOL activations_yes;
 
 protected:
     Chuck_Stats();
     ~Chuck_Stats();
-    
+
     static Chuck_Stats * our_instance;
-    
+
 protected:
     Chuck_VM * vm;
     std::map<t_CKUINT, Shred_Stat *> shreds;

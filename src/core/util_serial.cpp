@@ -44,12 +44,12 @@ using namespace std;
 vector<string> SerialIOManager::availableSerialDevices()
 {
     vector<string> devices;
-    
+
     io_iterator_t serialIterator = 0; // NULL;
     kern_return_t kernResult;
     mach_port_t masterPort;
     CFMutableDictionaryRef classesToMatch = NULL;
-    
+
     io_object_t serialObject;
     static char resultStr[256];
     CFStringRef calloutCFKeyName = CFStringCreateWithCString(kCFAllocatorDefault, kIOCalloutDeviceKey, kCFStringEncodingUTF8);
@@ -74,7 +74,7 @@ vector<string> SerialIOManager::availableSerialDevices()
         EM_log(CK_LOG_WARNING, "[SerialIOManager] IOServiceGetMatchingServices returned %d\n", kernResult);
         goto error;
     }
-        
+
     while((serialObject = IOIteratorNext(serialIterator)))
     {
         CFTypeRef nameCFstring;
@@ -87,8 +87,8 @@ vector<string> SerialIOManager::availableSerialDevices()
             CFRelease(nameCFstring);
             devices.push_back(string(resultStr));
         }
-        
-        // TODO: use tty name also? 
+
+        // TODO: use tty name also?
         // see: http://stuffthingsandjunk.blogspot.com/2009/03/devcu-vs-devtty-osx-serial-ports.html
 //        nameCFstring = IORegistryEntryCreateCFProperty(serialObject,
 //                                                       dialinCFKeyName,
@@ -100,17 +100,17 @@ vector<string> SerialIOManager::availableSerialDevices()
 //            devices.push_back(string(resultStr));
 //        }
     }
-    
+
     goto cleanup;
-    
+
 error:
     devices.clear();
-    
+
 cleanup:
     if(classesToMatch) { CFRelease(classesToMatch); classesToMatch = NULL; }
     if(calloutCFKeyName) { CFRelease(calloutCFKeyName); calloutCFKeyName = NULL; }
     if(dialinCFKeyName) { CFRelease(dialinCFKeyName); dialinCFKeyName = NULL; }
-    
+
     return devices;
 }
 
@@ -169,10 +169,10 @@ vector<string> SerialIOManager::availableSerialDevices()
     }
 
     goto cleanup;
-    
+
 error:
     devices.clear();
-    
+
 cleanup:
     return devices;
 }
@@ -188,7 +188,7 @@ vector<string> SerialIOManager::availableSerialDevices()
     HKEY hSERIALCOMM;
     DWORD dwMaxValueNameLen, dwMaxValueLen;
     char *name, *value;
-    
+
     DWORD dwIndex = 0;
     DWORD dwType;
     DWORD dwValueNameSize;
@@ -206,7 +206,7 @@ vector<string> SerialIOManager::availableSerialDevices()
         EM_error3("SerialIOManager: unable to query registry key info");
         goto error;
     }
-    
+
     name = new char[dwMaxValueNameLen+1];
     value = new char[dwMaxValueLen+1];
 
@@ -224,7 +224,7 @@ vector<string> SerialIOManager::availableSerialDevices()
         dwValueNameSize = dwMaxValueNameLen+1;
         dwDataSize = dwMaxValueLen+1;
     }
-    
+
     return devices;
 
 error:
@@ -238,7 +238,7 @@ error:
 vector<string> SerialIOManager::availableSerialDevices()
 {
     vector<string> devices;
-    
+
     return devices;
 }
 

@@ -150,16 +150,16 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
 {
     Chuck_Env * env = QUERY->env();
     Chuck_DL_Func * func = NULL;
-    
+
     std::string doc;
 
     //---------------------------------------------------------------------
     // init as base class: FeatureCollector
     //---------------------------------------------------------------------
-    
+
     doc = "Turns UAna input into a single feature vector, upon .upchuck()";
-    
-    if( !type_engine_import_uana_begin( env, "FeatureCollector", "UAna", env->global(), 
+
+    if( !type_engine_import_uana_begin( env, "FeatureCollector", "UAna", env->global(),
                                         NULL, NULL,
                                         FeatureCollector_tick, FeatureCollector_tock, FeatureCollector_pmsg,
                                         0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
@@ -172,10 +172,10 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: Centroid
     //---------------------------------------------------------------------
-    
+
     doc = "This UAna computes the spectral centroid from a magnitude spectrum (either from incoming UAna or manually given), and outputs one value in its blob.";
-    
-    if( !type_engine_import_uana_begin( env, "Centroid", "UAna", env->global(), 
+
+    if( !type_engine_import_uana_begin( env, "Centroid", "UAna", env->global(),
                                         NULL, NULL,
                                         Centroid_tick, Centroid_tock, Centroid_pmsg,
                                         0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
@@ -194,10 +194,10 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: Flux
     //---------------------------------------------------------------------
-    
+
     doc = "This UAna computes the spectral flux between successive magnitude spectra (via incoming UAna, or given manually), and outputs one value in its blob.";
-    
-    if( !type_engine_import_uana_begin( env, "Flux", "UAna", env->global(), 
+
+    if( !type_engine_import_uana_begin( env, "Flux", "UAna", env->global(),
                                         Flux_ctor, Flux_dtor,
                                         Flux_tick, Flux_tock, Flux_pmsg,
                                         0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
@@ -234,10 +234,10 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: RMS
     //---------------------------------------------------------------------
-    
+
     doc = "This UAna computes the RMS power mean from a magnitude spectrum (either from an incoming UAna, or given manually), and outputs one value in its blob.";
-    
-    if( !type_engine_import_uana_begin( env, "RMS", "UAna", env->global(), 
+
+    if( !type_engine_import_uana_begin( env, "RMS", "UAna", env->global(),
                                         NULL, NULL,
                                         RMS_tick, RMS_tock, RMS_pmsg,
                                         0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
@@ -256,10 +256,10 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: RollOff
     //---------------------------------------------------------------------
-    
+
     doc = "This UAna computes the spectral rolloff from a magnitude spectrum (either from incoming UAna, or given manually), and outputs one value in its blob.";
-    
-    if( !type_engine_import_uana_begin( env, "RollOff", "UAna", env->global(), 
+
+    if( !type_engine_import_uana_begin( env, "RollOff", "UAna", env->global(),
                                         RollOff_ctor, RollOff_dtor,
                                         RollOff_tick, RollOff_tock, RollOff_pmsg,
                                         0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
@@ -294,7 +294,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: AutoCorr
     //---------------------------------------------------------------------
-    if( !type_engine_import_uana_begin( env, "AutoCorr", "UAna", env->global(), 
+    if( !type_engine_import_uana_begin( env, "AutoCorr", "UAna", env->global(),
                                         AutoCorr_ctor, AutoCorr_dtor,
                                         AutoCorr_tick, AutoCorr_tock, AutoCorr_pmsg ) )
         return FALSE;
@@ -325,7 +325,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: XCorr
     //---------------------------------------------------------------------
-    if( !type_engine_import_uana_begin( env, "XCorr", "UAna", env->global(), 
+    if( !type_engine_import_uana_begin( env, "XCorr", "UAna", env->global(),
                                         XCorr_ctor, XCorr_dtor,
                                         XCorr_tick, XCorr_tock, XCorr_pmsg ) )
         return FALSE;
@@ -357,10 +357,10 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: zerox
     //---------------------------------------------------------------------
-    
+
     doc = "Zero crossing detector.";
-    
-    if( !type_engine_import_uana_begin( env, "ZeroX", "UAna", env->global(), 
+
+    if( !type_engine_import_uana_begin( env, "ZeroX", "UAna", env->global(),
                                         ZeroX_ctor, ZeroX_dtor,
                                         ZeroX_tick, ZeroX_tock, NULL,
                                         0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
@@ -402,12 +402,12 @@ CK_DLL_TICK( FeatureCollector_tick )
 // TODO: Stick complex features in Blob, too? But what about fft? (don't want duplication)
 CK_DLL_TOCK( FeatureCollector_tock )
 {
-    //t_CKFLOAT * features; 
+    //t_CKFLOAT * features;
     t_CKINT num_feats = 0;
     t_CKINT num_incoming = UANA->numIncomingUAnae();
     t_CKINT i, j;
-    
-    
+
+
     // Get all incoming features and agglomerate into one vector
     if( num_incoming > 0 )
     {
@@ -442,7 +442,7 @@ CK_DLL_TOCK( FeatureCollector_tock )
                 fvals.set( next_index, v);
                 next_index++;
             }
-        } 
+        }
     } else {
         // no input to collect
         BLOB->fvals().set_size(0);
@@ -475,7 +475,7 @@ static t_CKFLOAT compute_centroid( Chuck_Array8 & buffer, t_CKUINT size )
 
     if( m0 != 0.0 )
         centroid = m1 / m0;
-    else 
+    else
         centroid = size / 2.0; // Perfectly balanced
 
     return centroid / size;
@@ -579,19 +579,19 @@ static void compute_norm_rms( Chuck_Array8 & curr, Chuck_Array8 & norm )
     }
 
     // check energy
-    if (energy == 0.0) 
+    if (energy == 0.0)
     {
         // all zeros
         norm.zero( 0, norm.size() );
         return;
     }
-    else 
+    else
         energy = ::sqrt( energy );
-    
+
     for( i = 0; i < curr.size(); i++ )
     {
         curr.get( i, & v );
-        if( v > 0.0) 
+        if( v > 0.0)
             norm.set( i, v / energy );
         else
             norm.set( i, 0.0 );
@@ -1046,7 +1046,7 @@ struct Corr_Object
         // TODO: default
         resize( 512, 512 );
     }
-    
+
     // destructor
     ~Corr_Object()
     {
@@ -1138,7 +1138,7 @@ struct Corr_Object
 Corr_Object * Corr_Object::ourCorr = NULL;
 
 // compute correlation
-static void compute_corr( Corr_Object * corr, Chuck_Array8 & f, t_CKINT fs, 
+static void compute_corr( Corr_Object * corr, Chuck_Array8 & f, t_CKINT fs,
                           Chuck_Array8 & g, t_CKINT gs, Chuck_Array8 & buffy )
 {
     t_CKINT i;
@@ -1464,7 +1464,7 @@ CK_DLL_TICK( ZeroX_tick )
     *out = __SGN(in) != __SGN(*d);
     *out *= __SGN(in);
     *d = in;
-    
+
     return TRUE;
 }
 
