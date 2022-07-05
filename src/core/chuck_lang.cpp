@@ -537,6 +537,11 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     func->doc = "get the enclosing directory, the specified number of parent directories up.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add realtime() (added 1.4.1.3, nshaheed)
+    func = make_new_mfun( "int", "realtime", shred_realtime );
+    func->doc = "return true if the shred is in realtime mode, false if it's in silent mode (i.e. --silent is enabled)";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -1893,6 +1898,11 @@ CK_DLL_MFUN( shred_sourceDir2 ) // added 1.3.2.0
     str->set( dir_go_up( str->str(), i ) );
 
     RETURN->v_string = str;
+}
+
+CK_DLL_MFUN( shred_realtime ) // added 1.4.1.3 (nshaheed)
+{
+    RETURN->v_int = SHRED->vm_ref->env()->is_realtime_audio();
 }
 
 

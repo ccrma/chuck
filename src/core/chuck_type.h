@@ -511,6 +511,9 @@ public:
     t_CKBOOL is_global()
     { return class_def == NULL && func == NULL && class_scope == 0; }
 
+    t_CKBOOL is_realtime_audio()
+    { return m_carrier->hintIsRealtimeAudio(); }
+
 public:
     // REFACTOR-2017: public types
     Chuck_Type * t_void;
