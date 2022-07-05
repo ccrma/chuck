@@ -1,8 +1,8 @@
 /*
  * dirent.h - dirent API for Microsoft Visual Studio
- * 
+ *
  * Copyright (C) 2006 Toni Ronkko
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * ``Software''), to deal in the Software without restriction, including
@@ -10,10 +10,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included
  * in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -33,13 +33,13 @@
  * Bug fix: due to the strncpy_s() function this file only compiled in
  * Visual Studio 2005.  Using the new string functions only when the
  * compiler version allows.
- * 
+ *
  * Nov  2, 2006, Toni Ronkko
  * Major update: removed support for Watcom C, MS-DOS and Turbo C to
  * simplify the file, updated the code to compile cleanly on Visual
  * Studio 2005 with both unicode and multi-byte character strings,
  * removed rewinddir() as it had a bug.
- * 
+ *
  * Aug 20, 2006, Toni Ronkko
  * Removed all remarks about MSVC 1.0, which is antiqued now.  Simplified
  * comments by removing SGML tags.
@@ -115,11 +115,11 @@ opendir(
   dirp = (DIR*) malloc (sizeof (struct DIR));
   if (dirp != NULL) {
     char *p;
-    
+
     /* take directory name... */
     STRNCPY (dirp->patt, dirname, sizeof(dirp->patt));
     dirp->patt[MAX_PATH] = '\0';
-    
+
     /* ... and append search pattern to it */
     p = strchr (dirp->patt, '\0');
     if (dirp->patt < p  &&  *(p-1) != '\\'  &&  *(p-1) != ':') {
@@ -138,7 +138,7 @@ opendir(
 
     /* there is an un-processed directory entry in memory now */
     dirp->cached = 1;
-    
+
   }
   return dirp;
 }
@@ -167,13 +167,13 @@ rewinddir(
     dirp->cached = 1;
 }
 
- 
+
 /*
  * Read a directory entry, and return a pointer to a dirent structure
  * containing the name of the entry in d_name field.  Individual directory
  * entries returned by this very function include regular files,
  * sub-directories, pseudo-directories "." and "..", but also volume labels,
- * hidden files and system files may be returned.  
+ * hidden files and system files may be returned.
  */
 static struct dirent *
 readdir(
@@ -203,7 +203,7 @@ readdir(
   /* copy as a multibyte character string */
   STRNCPY (dirp->current.d_name, dirp->current.data.cFileName, sizeof(dirp->current.d_name));
   dirp->current.d_name[MAX_PATH] = '\0';
-  
+
   return &dirp->current;
 }
 
@@ -218,7 +218,7 @@ closedir(
     DIR *dirp)
 {
   assert (dirp != NULL);
- 
+
   /* release search handle */
   if (dirp->search_handle != INVALID_HANDLE_VALUE) {
     FindClose (dirp->search_handle);

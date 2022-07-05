@@ -1,23 +1,39 @@
-1.4.1.1 (April 2022)
+1.4.1.2
+---
+  - (added) nshaheed: all associative arrays now have a new method:
+        void getKeys( string[] keys );
+        Return all keys found in associative array in keys
+  - (dev) extraneous white spaces removed throughout src/core
+    ** thank you nshaheed for this soul-restoring measure **
+  - (dev) nshaheed: linux makefiles now correctly inserts Debug (-g)
+    build flag when Debug build is enabled (default builds for Release)
+    
+
+1.4.1.1 (May 2022)
 ---
   - (added) native support for Apple Silicon (e.g., M1) as intel/apple 
     universal binary; *significant* performance throughput observed
     running chuck natively on Apple Silicon
-  - (added) array.popOut( int index )
-    removes an array element by index [thanks chamington and nshaheed]
   - (modified) building from source, on MacOS command line:
         > make mac (compile for current architecture: arm64/x86_64)
-        > make mac-ub (compile universal binary: arm64/x86_64)
+        > make mac-ub (compile universal binary: arm64+x86_64)
         > lipo -archs ./chuck (checks architectures)
         > ./chuck --about (prints out compiled platform...
           ...and if compiled as universal binary):
           ---
           chuck version: 1.4.1.1 (numchucks)
-          macOS : 64-bit (universal binary)
+          macOS : 64-bit [universal binary]
           ---
         > make osx (deprecated; use 'make mac' or 'make mac-ub')
+  - (updated, pre-built executables, MacOS) both command line chuck and
+    miniAudicle are now built as universal binaries to support both
+    intel(x86_64) and Apple silicion/M1(arm64) architectures
+  - (updated, pre-built executables, MacOS) all packaged chugins are
+    now also built as universal binaries
   - (added) Math.equal( float x, float y )
     returns whether two floats are considered equivalent
+  - (added) array.popOut( int index )
+    removes an array element by index [thanks chamington and nshaheed]
   - (added) OscOut.send() error reporting now includes the intended
     recipient (hostname:port)
   - (added) examples/hid/gametra.ck
@@ -30,6 +46,8 @@
     examples showing one sender to many receivers
   - (added) examples/osc/4-multicast/
     examples showing one sender using multicast to broadcast
+  - (added) examples/stk/hevymetl-dance-now.ck
+    example of power chords in sequence
   - (fixed) fixed Lisa-load.ck to correct load sound file [thanks nshaheed]
   - (fixed) CK_STDCERR now flushes on all output
   - (fixed) error message display for MidiFileIn (STK)
@@ -309,7 +327,7 @@ contributed. Happy ChucKing!
   - (fixed) repeat statement now worked correctly for shreds
   - (fixed) crash with --adaptive:N and ugens that used tickf e.g. WvOut2
   - (fixed) SndBuf occasional crash at end of file
-  - (fixed)(Win) install issue where chugins and/or example files were missing
+  - (fixed) (windows) install issue where chugins and/or example files were missing
   - (removed) --blocking functionality; callback only for real-time audio
   - (internal) refactored VM to be more friendly for integration
 

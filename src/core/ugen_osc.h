@@ -66,11 +66,11 @@ CK_DLL_TICK( pulseosc_tick );
 // triosc
 CK_DLL_TICK( triosc_tick );
 
-// sawosc 
+// sawosc
 CK_DLL_CTOR( sawosc_ctor );
 CK_DLL_CTRL( sawosc_ctrl_width );
 
-// sqrosc 
+// sqrosc
 CK_DLL_CTOR( sqrosc_ctor );
 CK_DLL_CTRL( sqrosc_ctrl_width );
 

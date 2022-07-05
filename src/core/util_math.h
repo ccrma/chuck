@@ -35,9 +35,9 @@
 
 #include <math.h>
 
-#if defined (__cplusplus) || defined(_cplusplus)  
+#if defined (__cplusplus) || defined(_cplusplus)
 extern "C" {
-#endif 
+#endif
 
 // 1.4.1.1 (ge) removed -- seems no longer needed on more modern windows
 #ifdef __PLATFORM_WIN32__
@@ -67,11 +67,11 @@ unsigned long nextpow2( unsigned long i );
 // ensurepow2
 unsigned long ensurepow2( unsigned long i );
 
-#if defined (__cplusplus) || defined(_cplusplus)  
+#if defined (__cplusplus) || defined(_cplusplus)
 }
 #endif
 
 
 
 
-#endif 
+#endif

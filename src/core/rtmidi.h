@@ -38,11 +38,11 @@
 /************************************************************************/
 /*! \class RtMidiError
  \brief Exception handling class for RtAudio & RtMidi.
- 
+
  The RtMidiError class is quite simple but it does allow errors to be
  "caught" by RtMidiError::Type. See the RtAudio and RtMidi
  documentation to know which methods can throw an RtMidiError.
- 
+
  */
 /************************************************************************/
 
@@ -70,26 +70,26 @@ public:
         SYSTEM_ERROR,      /*!< A system error occured. */
         THREAD_ERROR       /*!< A thread error occured. */
     };
-    
+
     //! The constructor.
     RtMidiError( const std::string& message, Type type = RtMidiError::UNSPECIFIED )
         throw() : message_(message), type_(type) {}
-    
+
     //! The destructor.
     virtual ~RtMidiError( void ) throw() {}
-    
+
     //! Prints thrown error message to stderr.
     virtual void printMessage( void ) const throw() { std::cerr << '\n' << message_ << "\n\n"; }
 
     //! Returns the thrown error message type.
     virtual const Type& getType(void) const throw() { return type_; }
-    
+
     //! Returns the thrown error message string.
     virtual const std::string& getMessage(void) const throw() { return message_; }
-    
+
     //! Returns the thrown error message as a c-style string.
     virtual const char* what( void ) const throw() { return message_.c_str(); }
-        
+
 protected:
     std::string message_;
     Type type_;
@@ -253,8 +253,8 @@ class RtMidiIn : public RtMidi
 
   // A MIDI structure used internally by the class to store incoming
   // messages.  Each message represents one and only one MIDI message.
-  struct MidiMessage { 
-    std::vector<unsigned char> bytes; 
+  struct MidiMessage {
+    std::vector<unsigned char> bytes;
     double timeStamp;
 
     // Default constructor.

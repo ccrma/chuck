@@ -59,9 +59,9 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     g_srate = QUERY->srate;
     // set radians per sample
     g_radians_per_sample = TWO_PI / (t_CKFLOAT)g_srate;
-    
+
     std::string doc;
-    
+
     Chuck_Env * env = QUERY->env();
 
     Chuck_DL_Func * func = NULL;
@@ -81,7 +81,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // init as base class: FilterBasic
     //---------------------------------------------------------------------
     doc = "base class for basic filters with a notion of center/cutoff frequency and Q.";
-    if( !type_engine_import_ugen_begin( env, "FilterBasic", "UGen", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "FilterBasic", "UGen", env->global(),
                                         FilterBasic_ctor, FilterBasic_dtor,
                                         FilterBasic_tick, FilterBasic_pmsg,
                                         doc.c_str() ) )
@@ -167,7 +167,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
         return FALSE;
 
     type_engine_import_add_ex(env, "filter/bp.ck");
-    
+
     // freq
     func = make_new_mfun( "float", "freq", BPF_ctrl_freq );
     func->add_arg( "float", "val" );
@@ -204,7 +204,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "BRF", "FilterBasic", env->global(),
                                         BRF_ctor, NULL, BRF_tick, BRF_pmsg, doc.c_str() ) )
         return FALSE;
-    
+
     type_engine_import_add_ex(env, "filter/br.ck");
 
     // freq
@@ -234,7 +234,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
 
     // end the class import
     type_engine_import_class_end( env );
-    
+
 
     //---------------------------------------------------------------------
     // init class: RLPF
@@ -243,7 +243,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "LPF", "FilterBasic", env->global(),
                                         RLPF_ctor, NULL, RLPF_tick, RLPF_pmsg, doc.c_str() ) )
         return FALSE;
-    
+
     type_engine_import_add_ex(env, "filter/lp.ck");
 
     // freq
@@ -282,7 +282,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "HPF", "FilterBasic", env->global(),
                                         RHPF_ctor, NULL, RHPF_tick, RHPF_pmsg, doc.c_str() ) )
         return FALSE;
-    
+
     type_engine_import_add_ex(env, "filter/hp.ck");
 
     // freq
@@ -323,7 +323,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
         return FALSE;
 
     type_engine_import_add_ex(env, "filter/resonz.ck");
-    
+
     // freq
     func = make_new_mfun( "float", "freq", ResonZ_ctrl_freq );
     func->add_arg( "float", "val" );
@@ -357,7 +357,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // init as base class: BiQuad
     //---------------------------------------------------------------------
     doc = "a BiQuad (two-pole, two-zero) filter section from STK. A method is provided for creating a resonance in the frequency response while maintaining a constant filter gain.";
-    if( !type_engine_import_ugen_begin( env, "BiQuad", "UGen", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "BiQuad", "UGen", env->global(),
                                         biquad_ctor, biquad_dtor, biquad_tick, NULL, doc.c_str() ) )
         return FALSE;
 
@@ -369,7 +369,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun ( "float", "pfreq", biquad_ctrl_pfreq );
     func->add_arg ( "float", "freq" );
     func->doc = "set resonance frequency (poles).";
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun ( "float", "pfreq", biquad_cget_pfreq );
     func->doc = "get resonance frequency (poles).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -378,7 +378,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun ( "float", "prad", biquad_ctrl_prad );
     func->add_arg ( "float", "value" );
     func->doc = "set Pole radius (values greater than 1 will be unstable).";
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun ( "float", "prad", biquad_cget_prad );
     func->doc = "get pole radius.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -387,7 +387,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun ( "float", "zfreq", biquad_ctrl_zfreq );
     func->add_arg ( "float", "freq" );
     func->doc = "set notch frequency.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun ( "float", "zfreq", biquad_cget_zfreq );
     func->doc = "get notch frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -396,7 +396,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun ( "float", "zrad", biquad_ctrl_zrad );
     func->add_arg ( "float", "value" );
     func->doc = "set zero radius.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun ( "float", "zrad", biquad_cget_zrad );
     func->doc = "get zero radius.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -405,7 +405,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun ( "int", "norm", biquad_ctrl_norm );
     func->add_arg ( "int", "value" );
     func->doc = "toggle normalization.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun ( "int", "norm", biquad_cget_norm );
     func->doc = "get normalization setting.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -429,7 +429,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun ( "float", "b0", biquad_ctrl_b0 );
     func->add_arg ( "float", "value" );
     func->doc = "set filter coefficient.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun ( "float", "b0", biquad_cget_b0 );
     func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -481,7 +481,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
 
     // end the class import
     type_engine_import_class_end( env );
-	
+
 	 //---------------------------------------------------------------------
     // init class: Teabox
     //---------------------------------------------------------------------
@@ -493,7 +493,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "float", "analog", teabox_cget_analog );
 	func->add_arg( "int", "which" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-	
+
 	// digital
     func = make_new_mfun( "float", "digital", teabox_cget_digital );
 	func->add_arg( "int", "which" );
@@ -501,7 +501,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
 
     // end the class import
     type_engine_import_class_end( env );
-	
+
     /*
     //----------------------------------
     // begin onepole ugen
@@ -511,7 +511,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // ctrl func
     func = make_new_mfun ( "float", "pole", onepole_ctrl_pole );
     func->add_arg ( "float", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -525,7 +525,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // ctrl func
     func = make_new_mfun ( "float", "zero", onezero_ctrl_zero );
     func->add_arg ( "float", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
     // end the class import
@@ -540,15 +540,15 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // ctrl func
     func = make_new_mfun ( "float", "freq", twopole_ctrl_freq );
     func->add_arg ( "float", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun ( "float", "rad", twopole_ctrl_rad );
     func->add_arg ( "float", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun ( "int", "norm", twopole_ctrl_norm );
     func->add_arg ( "int", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -562,11 +562,11 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // ctrl func
     func = make_new_mfun ( "float", "freq", twozero_ctrl_freq );
     func->add_arg ( "float", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun ( "float", "rad",  twozero_ctrl_rad );
     func->add_arg ( "float", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -581,11 +581,11 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // ctrl func
     func = make_new_mfun ( "float", "delay", delay_ctrl_delay );
     func->add_arg ( "float", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun ( "float", "max", delay_ctrl_max );
     func->add_arg ( "float", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
     // QUERY->ugen_ctrl( QUERY, delay_ctrl_energy, NULL,"int", "energy" );
@@ -603,13 +603,13 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
                                          delayA_ctor, delayA_tick, NULL ) ) return FALSE;
 
     // ctrl func
-    func = make_new_mfun ( "float", "delay", delayA_ctrl_delay ); 
+    func = make_new_mfun ( "float", "delay", delayA_ctrl_delay );
     func->add_arg ( "float", "length" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun ( "float", "max", delayA_ctrl_max );
     func->add_arg ( "float", "max" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
     // end the class import
@@ -624,11 +624,11 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // ctrl func
     func = make_new_mfun ( "float", "delay", delayL_ctrl_delay );
     func->add_arg ( "float", "length" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun ( "float", "max", delayL_ctrl_max );
     func->add_arg ( "float", "max" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -659,14 +659,14 @@ struct Filter_data
     SAMPLE * a;
     SAMPLE * input;
     SAMPLE * output;
-    
+
     Filter_data()
     {
         a = b = NULL;
         alloc( 1, 1 );
         a[0] = b[0] = 1.0f;
     }
-    
+
     void alloc( t_CKUINT _b, t_CKUINT _a )
     {
         nB = _b; nA = _a;
@@ -679,7 +679,7 @@ struct Filter_data
         input = new SAMPLE[nB];
         output = new SAMPLE[nA];
     }
-    
+
     inline SAMPLE tick( SAMPLE in )
     {
         t_CKUINT i;
@@ -726,7 +726,7 @@ struct FilterBasic_data
     inline SAMPLE tick_lpf( SAMPLE in )
     {
         SAMPLE y0, result;
-        
+
         // go: adapted from SC3's LPF
         y0 = in + m_b1 * m_y1 + m_b2 * m_y2;
         result = m_a0 * (y0 + 2 * m_y1 + m_y2);
@@ -744,7 +744,7 @@ struct FilterBasic_data
     inline SAMPLE tick_hpf( SAMPLE in )
     {
         SAMPLE y0, result;
-        
+
         // go: adapted from SC3's HPF
         y0 = in + m_b1 * m_y1 + m_b2 * m_y2;
         result = m_a0 * (y0 - 2 * m_y1 + m_y2);
@@ -781,7 +781,7 @@ struct FilterBasic_data
     inline SAMPLE tick_bpf( SAMPLE in )
     {
         SAMPLE y0, result;
-        
+
         // go: adapted from SC3's LPF
         y0 = in + m_b1 * m_y1 + m_b2 * m_y2;
         result = m_a0 * (y0 - m_y2);
@@ -818,7 +818,7 @@ struct FilterBasic_data
     inline SAMPLE tick_brf( SAMPLE in )
     {
         SAMPLE y0, result;
-        
+
         // go: adapted from SC3's HPF
         // b1 is actually a1
         y0 = in - m_b1 * m_y1 - m_b2 * m_y2;
@@ -955,12 +955,12 @@ struct Teabox_data
 	t_CKINT		teabox_counter;
 	t_CKFLOAT	teabox_data[9];		// one container for the data from each sensor
 	t_CKFLOAT	teabox_hw_version;	// version number (major.minor) of the connected Teabox
-	t_CKFLOAT	teabox_last_value;	
+	t_CKFLOAT	teabox_last_value;
 	t_CKINT		teabox_bitmask;
 	//tick for teabox
 	inline SAMPLE teabox_tick( SAMPLE in )
 	{
-	
+
 		if(in < 0.0 || teabox_counter > 9){			// If the sample is the start flag...
 			if(teabox_last_value < 0.0)					// Actually - if all 16 toggles on the Teabox digital inputs
 				teabox_data[8] = teabox_last_value;			//	are high, it will look identical to the start flag - so
@@ -968,14 +968,14 @@ struct Teabox_data
 			teabox_counter = 0;
 		}
 		else if(teabox_counter == 0){					// if the sample is hardware version number...
-			teabox_hw_version = in * 8.0;							
+			teabox_hw_version = in * 8.0;
 			teabox_counter++;
-		}	
+		}
 		else{
 			teabox_data[teabox_counter - 1] = in * 8.0;	// Normalize the range
 			teabox_counter++;
 		}
-		
+
 		// POST-PROCESS TOGGLE INPUT BITMASK
 		if(teabox_data[8] < 0){
 			teabox_bitmask = (t_CKINT)(teabox_data[8] * 32768);			// 4096 = 32768 / 8 (we already multiplied by 8)
@@ -984,13 +984,13 @@ struct Teabox_data
 		}
 		else
 			teabox_bitmask = (t_CKINT)(teabox_data[8] * 4096);			// 4096 = 32768 / 8 (we already multiplied by 8)
-		
+
 		teabox_last_value = in;						// store the input value for the next time around
 
 		return in;
-		
+
 	}
-	
+
 };
 
 //-----------------------------------------------------------------------------
@@ -1121,7 +1121,7 @@ CK_DLL_CTRL( LPF_ctrl_freq )
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
 	t_CKFLOAT pfreq = freq * g_radians_per_sample * 0.5;
-	
+
     t_CKFLOAT C = 1.0 / ::tan(pfreq);
 	t_CKFLOAT C2 = C * C;
 	t_CKFLOAT sqrt2C = C * SQRT2;
@@ -1197,7 +1197,7 @@ CK_DLL_CTRL( HPF_ctrl_freq )
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
 	t_CKFLOAT pfreq = freq * g_radians_per_sample * 0.5;
-	
+
     t_CKFLOAT C = ::tan(pfreq);
 	t_CKFLOAT C2 = C * C;
 	t_CKFLOAT sqrt2C = C * SQRT2;
@@ -1272,10 +1272,10 @@ CK_DLL_CTRL( BPF_ctrl_freq )
     // implementation: adapted from SC3's BPF
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
-    
+
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException", 
+        throw_exception(SHRED, "NegativeFrequencyException",
                                "freq value for BPF is negative");
     }
 
@@ -1312,7 +1312,7 @@ CK_DLL_CTRL( BPF_ctrl_Q )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException", 
+        throw_exception(SHRED, "NegativeQException",
                                "Q value for BPF is negative");
     }
 
@@ -1350,11 +1350,11 @@ CK_DLL_CTRL( BPF_ctrl_set )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException", 
+        throw_exception(SHRED, "NegativeFrequencyException",
                                "freq value for BPF is negative");
     }
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException", 
+        throw_exception(SHRED, "NegativeQException",
                                "Q value for BPF is negative");
     }
 
@@ -1411,7 +1411,7 @@ CK_DLL_CTRL( BRF_ctrl_freq )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException", 
+        throw_exception(SHRED, "NegativeFrequencyException",
                                "freq value for BRF is negative");
     }
 
@@ -1448,7 +1448,7 @@ CK_DLL_CTRL( BRF_ctrl_Q )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException", 
+        throw_exception(SHRED, "NegativeQException",
                                "Q value for BRF is negative");
     }
 
@@ -1486,11 +1486,11 @@ CK_DLL_CTRL( BRF_ctrl_set )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException", 
+        throw_exception(SHRED, "NegativeFrequencyException",
                                "freq value for BRF is negative");
     }
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException", 
+        throw_exception(SHRED, "NegativeQException",
                                "Q value for BRF is negative");
     }
 
@@ -1548,7 +1548,7 @@ CK_DLL_CTRL( RLPF_ctrl_freq )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException", 
+        throw_exception(SHRED, "NegativeFrequencyException",
                                "freq value for LPF is negative");
     }
 
@@ -1584,7 +1584,7 @@ CK_DLL_CTRL( RLPF_ctrl_Q )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException", 
+        throw_exception(SHRED, "NegativeQException",
                                "Q value for LPF is negative");
     }
 
@@ -1622,11 +1622,11 @@ CK_DLL_CTRL( RLPF_ctrl_set )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException", 
+        throw_exception(SHRED, "NegativeFrequencyException",
                                "freq value for LPF is negative");
     }
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException", 
+        throw_exception(SHRED, "NegativeQException",
                                "Q value for LPF is negative");
     }
 
@@ -1830,7 +1830,7 @@ CK_DLL_CTRL( RHPF_ctrl_freq )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException", 
+        throw_exception(SHRED, "NegativeFrequencyException",
                                "freq value for HPF is negative");
     }
 
@@ -1866,7 +1866,7 @@ CK_DLL_CTRL( RHPF_ctrl_Q )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException", 
+        throw_exception(SHRED, "NegativeQException",
                                "Q value for HPF is negative");
     }
 
@@ -1904,11 +1904,11 @@ CK_DLL_CTRL( RHPF_ctrl_set )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException", 
+        throw_exception(SHRED, "NegativeFrequencyException",
                                "freq value for LPF is negative");
     }
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException", 
+        throw_exception(SHRED, "NegativeQException",
                                "Q value for LPF is negative");
     }
 
@@ -1937,7 +1937,7 @@ CK_DLL_CTOR( teabox_ctor )
     Teabox_data * f =  new Teabox_data;
     memset( f, 0, sizeof(Teabox_data) );
 	f->teabox_hw_version = 0.;		// version number (major.minor) of the connected Teabox
-	f->teabox_last_value = 0.;	
+	f->teabox_last_value = 0.;
     OBJ_MEMBER_UINT(SELF, Teabox_offset_data) = (t_CKUINT)f;
 }
 
@@ -1961,13 +1961,13 @@ CK_DLL_CGET( teabox_cget_analog )
 {
 	t_CKINT which_in;
     Teabox_data * d = (Teabox_data *)OBJ_MEMBER_UINT(SELF, Teabox_offset_data);
-	
+
 	which_in = GET_CK_INT(ARGS);
-	
+
 	//constrain
 	if(which_in < 0) which_in = 0;
 	if(which_in > 7) which_in = 7;
-	
+
     // return
     RETURN->v_float = d->teabox_data[which_in];
 }
@@ -1977,11 +1977,11 @@ CK_DLL_CGET( teabox_cget_digital )
 	t_CKINT which_in;
 	t_CKFLOAT out_val;
 	t_CKINT which_pow;
-	
+
     Teabox_data * d = (Teabox_data *)OBJ_MEMBER_UINT(SELF, Teabox_offset_data);
-	
+
 	which_in = GET_CK_INT(ARGS);
-	
+
 	//constrain
 	if(which_in < 0) which_in = 0;
 	if(which_in > 15) which_in = 15;
@@ -1990,7 +1990,7 @@ CK_DLL_CGET( teabox_cget_digital )
     // which_pow = (t_CKINT)(::pow( 2, which_in ));
     which_pow = 1 >> which_in;
 	out_val = ( d->teabox_bitmask & which_pow ) > 0;
-	
+
     // return
     RETURN->v_float = out_val;
 }
@@ -2013,7 +2013,7 @@ struct biquad_data
 {
     SAMPLE m_a0, m_a1, m_a2;
     SAMPLE m_b0, m_b1, m_b2;
-    
+
     SAMPLE m_input0, m_input1, m_input2;
     SAMPLE m_output0, m_output1, m_output2;
 
@@ -2046,7 +2046,7 @@ struct biquad_data
 // desc: CTOR function ...
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( biquad_ctor )
-{    
+{
     biquad_data* d = new biquad_data;
     OBJ_MEMBER_UINT( SELF, biquad_offset_data ) = (t_CKUINT)d;
 }
@@ -2056,7 +2056,7 @@ CK_DLL_CTOR( biquad_ctor )
 // desc: DTOR function ...
 //-----------------------------------------------------------------------------
 CK_DLL_DTOR( biquad_dtor )
-{    
+{
     biquad_data * d = (biquad_data *)OBJ_MEMBER_UINT(SELF, biquad_offset_data );
     SAFE_DELETE( d );
     OBJ_MEMBER_UINT(SELF, biquad_offset_data) = 0;
@@ -2069,7 +2069,7 @@ CK_DLL_DTOR( biquad_dtor )
 CK_DLL_TICK( biquad_tick )
 {
     biquad_data * d = (biquad_data *)OBJ_MEMBER_UINT(SELF, biquad_offset_data );
-    
+
     d->m_input0 = d->m_a0 * in;
     d->m_output0 = d->m_b0 * d->m_input0 + d->m_b1 * d->m_input1 + d->m_b2 * d->m_input2;
     d->m_output0 -= d->m_a2 * d->m_output2 + d->m_a1 * d->m_output1;
@@ -2097,7 +2097,7 @@ void biquad_set_reson( biquad_data * d )
         d->m_b0= 0.5f - 0.5f * d->m_a2;
         d->m_b1 = -1.0f;
         d->m_b2 = -d->m_b0;
-    }    
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -2108,7 +2108,7 @@ CK_DLL_CTRL( biquad_ctrl_pfreq )
 {
     biquad_data * d = (biquad_data *)OBJ_MEMBER_UINT(SELF, biquad_offset_data );
     d->pfreq = GET_CK_FLOAT(ARGS);
-    biquad_set_reson( d ); 
+    biquad_set_reson( d );
     RETURN->v_float = d->pfreq;
 }
 
@@ -2411,7 +2411,7 @@ CK_DLL_CTRL( onepole_ctrl_pole )
 {
     float f = (float)GET_CK_FLOAT(ARGS);
     biquad_data * d = (biquad_data *)OBJ_MEMBER_UINT(SELF, biquad_offset_data );
-    
+
     if( f > 0.0f )
         d->m_b0 = 1.0f - f;
     else
@@ -2435,7 +2435,7 @@ CK_DLL_CTRL( onepole_ctrl_pole )
 CK_DLL_TICK( onezero_tick )
 {
     biquad_data * d = (biquad_data *)OBJ_MEMBER_UINT(SELF, biquad_offset_data );
-    
+
     d->m_input0 = in;
     d->m_output0 = d->m_b1 * d->m_input1 + d->m_b0 * d->m_input0;
     d->m_input1 = d->m_input0;
@@ -2453,12 +2453,12 @@ CK_DLL_CTRL( onezero_ctrl_zero )
 {
     float f = (float)GET_CK_FLOAT(ARGS);
     biquad_data * d = (biquad_data *)OBJ_MEMBER_UINT(SELF, biquad_offset_data );
-    
+
     if( f > 0.0f )
         d->m_b0 = 1.0f / ( 1.0f + f );
     else
         d->m_b0 = 1.0f / ( 1.0f - f );
-        
+
     d->m_b1 = -f * d->m_b0;
 }
 
@@ -2477,7 +2477,7 @@ CK_DLL_CTRL( onezero_ctrl_zero )
 CK_DLL_TICK( twopole_tick )
 {
     biquad_data * d = (biquad_data *)OBJ_MEMBER_UINT(SELF, biquad_offset_data );
-    
+
     d->m_input0 = in;
     d->m_output0 = d->m_b0 * d->m_input0 - d->m_a2 * d->m_output2 - d->m_a1 * d->m_output1;
     d->m_output2 = d->m_output1;
@@ -2497,7 +2497,7 @@ CK_DLL_CTRL( twopole_ctrl_freq )
     biquad_data * d = (biquad_data *)OBJ_MEMBER_UINT(SELF, biquad_offset_data );
     d->pfreq = (float)GET_CK_FLOAT(ARGS);
     biquad_set_reson( d );
-    
+
     if( d->norm )
     {
         // Normalize the filter gain ... not terribly efficient.
@@ -2516,7 +2516,7 @@ CK_DLL_CTRL( twopole_ctrl_rad )
     biquad_data * d = (biquad_data *)OBJ_MEMBER_UINT(SELF, biquad_offset_data );
     d->prad = (float)GET_CK_FLOAT(ARGS);
     biquad_set_reson( d );
-    
+
     if( d->norm )
     {
         // Normalize the filter gain ... not terrbly efficient
@@ -2534,7 +2534,7 @@ CK_DLL_CTRL( twopole_ctrl_norm )
 {
     biquad_data * d = (biquad_data *)OBJ_MEMBER_UINT(SELF, biquad_offset_data );
     d->norm = *(t_CKBOOL *)ARGS;
-    
+
     if( d->norm )
     {
         // Normalize the filter gain ... not terribly efficient
@@ -2559,14 +2559,14 @@ CK_DLL_CTRL( twopole_ctrl_norm )
 CK_DLL_TICK( twozero_tick )
 {
     biquad_data * d = (biquad_data *)OBJ_MEMBER_UINT(SELF, biquad_offset_data );
-    
+
     d->m_input0 = in;
     d->m_output0 = d->m_b0 * d->m_input0 + d->m_b1 * d->m_input1 + d->m_b2 * d->m_input2;
     d->m_input2 = d->m_input1;
     d->m_input1 = d->m_input0;
 
     *out = d->m_output0;
-    
+
     return TRUE;
 }
 
@@ -2579,7 +2579,7 @@ CK_DLL_CTRL( twozero_ctrl_freq )
     biquad_data * d = (biquad_data *)OBJ_MEMBER_UINT(SELF, biquad_offset_data );
     d->zfreq = (float)GET_CK_FLOAT(ARGS);
     biquad_set_notch( d );
-    
+
     // normalize the filter gain
     if( d->m_b1 > 0.0f )
         d->m_b0 = 1.0f / (1.0f+d->m_b1+d->m_b2);
@@ -2605,7 +2605,7 @@ CK_DLL_CTRL( twozero_ctrl_rad )
     else
         d->m_b0 = 1.0f / (1.0f-d->m_b1+d->m_b2);
     d->m_b1 *= d->m_b0;
-    d->m_b2 *= d->m_b0;    
+    d->m_b2 *= d->m_b0;
 }
 
 
