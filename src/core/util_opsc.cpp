@@ -2364,7 +2364,6 @@ bool OSC_Address_Space::next_mesg()
     // lock
     _buffer_mutex->acquire();
 
-    // TODO: ge uhhhh should release mutex?
     if( has_mesg() )
     {
         // move qread forward
@@ -2381,26 +2380,6 @@ bool OSC_Address_Space::next_mesg()
     // release
     _buffer_mutex->release();
     return false;
-
-//    if( has_mesg() )
-//    {
-//        _buffer_mutex->acquire();
-//
-//        // TODO: ge uhhhh should release mutex?
-//        if( !has_mesg() ) return false;
-//
-//        // move qread forward
-//        _qread = ( _qread + 1 ) % _queueSize;
-//        memcpy( _current_data, _queue + _qread * _dataSize, _dataSize * sizeof( opsc_data ) );
-//        _cur_mesg = _current_data;
-//        _cur_value = 0;
-//
-//        _buffer_mutex->release();
-//
-//        return true;
-//    }
-//
-//    return false;
 }
 
 bool OSC_Address_Space::vcheck( osc_datatype tt )
