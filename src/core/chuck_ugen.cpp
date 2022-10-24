@@ -194,7 +194,7 @@ void Chuck_UGen::init()
     m_num_dest = 0;
     m_num_uana_src = 0;
     m_num_uana_dest = 0;
-    m_max_src = 0xffffffff;
+    m_max_src = CK_NO_VALUE;
     m_time = 0;
     m_valid = TRUE;
     m_sum = 0.0f;

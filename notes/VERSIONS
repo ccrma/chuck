@@ -1,5 +1,7 @@
 1.4.1.2
 ---
+  - (improved) .help() now more accurately prints ("unit analyzer")
+    for UAna types
   - (added) nshaheed: all associative arrays now have a new method:
         void getKeys( string[] keys );
         Return all keys found in associative array in keys

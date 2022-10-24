@@ -123,7 +123,7 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
     type->ugen_info->num_ins = 1;
     type->ugen_info->num_outs = 1;
 
-    const char * doc = "base class for all unit generator (UGen) types in ChucK.";
+    const char * doc = "base class for all unit generator (UGen) types.";
 
     // init as base class
     // TODO: ctor/dtor, ugen's sometimes created internally?
@@ -225,7 +225,7 @@ t_CKBOOL init_class_uana( Chuck_Env * env, Chuck_Type * type )
     type->ugen_info->num_ins = 1;
     type->ugen_info->num_outs = 1;
 
-    const char * doc = "base class from which all unit analyzer (UAna) type inherit; UAnae (note plural form) can be interconnected using => (standard chuck operator) or using =^ (upchuck operator), specify the the types of and when data is passed between UAnae and UGens.  When .upchuck() is invoked on a given UAna, the UAna-chain (UAnae connected via =^) is traversed backwards from the upchucked UAna, and analysis is performed at each UAna along the chain; the updated analysis results are stored in UAnaBlobs.";
+    const char * doc = "base class from which all unit analyzer (UAna) types inherit; UAnae (note plural form) can be interconnected using => (chuck operator for synthesis; all UAnae are also UGens) or using =^ (upchuck operator for analysis) -- the operator used will determine how data is passed. When .upchuck() is invoked on a given UAna, the UAna-chain (i.e., UAnae connected via =^) is traversed upstream from the upchucked UAna, and analysis is performed at each UAna along the chain; the analysis results are returned in UAnaBlobs.";
 
     // init as base class, type should already know the parent type
     // TODO: ctor/dtor, ugen's sometimes created internally?
@@ -309,7 +309,7 @@ t_CKBOOL init_class_blob( Chuck_Env * env, Chuck_Type * type )
     // log
     EM_log( CK_LOG_SEVERE, "class 'UAnaBlob'" );
 
-    const char * doc = "contains results associated with UAna analysis. There is a UAnaBlob associated with every UAna. As a UAna is upchucked, the result is stored in the UAnaBlob's floating point vector and/or complex vector. The intended interpretation of the results depends on the specific UAna.";
+    const char * doc = "a data structure that contains results associated with UAna analysis. There is a UAnaBlob associated with every UAna. As a UAna is upchucked (using .upchuck()), the result is stored in the UAnaBlob's floating point vector and/or complex vector. The interpretation of the results depends on the specific UAna.";
 
     // init class
     // TODO: ctor/dtor

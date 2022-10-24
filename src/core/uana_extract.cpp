@@ -162,7 +162,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_uana_begin( env, "FeatureCollector", "UAna", env->global(),
                                         NULL, NULL,
                                         FeatureCollector_tick, FeatureCollector_tock, FeatureCollector_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -173,12 +173,12 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: Centroid
     //---------------------------------------------------------------------
 
-    doc = "This UAna computes the spectral centroid from a magnitude spectrum (either from incoming UAna or manually given), and outputs one value in its blob.";
+    doc = "A unit analyzer that computes the spectral centroid from a magnitude spectrum (either from incoming UAna or manually given), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "Centroid", "UAna", env->global(),
                                         NULL, NULL,
                                         Centroid_tick, Centroid_tock, Centroid_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -195,12 +195,12 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: Flux
     //---------------------------------------------------------------------
 
-    doc = "This UAna computes the spectral flux between successive magnitude spectra (via incoming UAna, or given manually), and outputs one value in its blob.";
+    doc = "A unit analyzer that computes the spectral flux between successive magnitude spectra (via incoming UAna, or given manually), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "Flux", "UAna", env->global(),
                                         Flux_ctor, Flux_dtor,
                                         Flux_tick, Flux_tock, Flux_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -235,12 +235,12 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: RMS
     //---------------------------------------------------------------------
 
-    doc = "This UAna computes the RMS power mean from a magnitude spectrum (either from an incoming UAna, or given manually), and outputs one value in its blob.";
+    doc = "A unit analyzer that computes the RMS power mean from a magnitude spectrum (either from an incoming UAna, or given manually), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "RMS", "UAna", env->global(),
                                         NULL, NULL,
                                         RMS_tick, RMS_tock, RMS_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -257,12 +257,12 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: RollOff
     //---------------------------------------------------------------------
 
-    doc = "This UAna computes the spectral rolloff from a magnitude spectrum (either from incoming UAna, or given manually), and outputs one value in its blob.";
+    doc = "A unit analyzer that computes the spectral rolloff from a magnitude spectrum (either from incoming UAna, or given manually), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "RollOff", "UAna", env->global(),
                                         RollOff_ctor, RollOff_dtor,
                                         RollOff_tick, RollOff_tock, RollOff_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -363,7 +363,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_uana_begin( env, "ZeroX", "UAna", env->global(),
                                         ZeroX_ctor, ZeroX_dtor,
                                         ZeroX_tick, ZeroX_tock, NULL,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 

@@ -781,7 +781,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     }
     else if( msg->type == MSG_REMOVE )
     {
-        if( msg->param == 0xffffffff )
+        if( msg->param == CK_NO_VALUE )
         {
             if( !this->m_num_shreds)
             {
