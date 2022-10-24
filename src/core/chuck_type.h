@@ -784,7 +784,7 @@ struct Chuck_Func : public Chuck_VM_Object
 
     // constructor
     Chuck_Func() { def = NULL; code = NULL; is_member = FALSE; is_static = FALSE,
-        vt_index = 0xffffffff; value_ref = NULL; /*dl_code = NULL;*/ next = NULL;
+        vt_index = CK_NO_VALUE; value_ref = NULL; /*dl_code = NULL;*/ next = NULL;
         up = NULL; }
 
     // destructor
@@ -849,12 +849,14 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, const char * name,
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
                                             f_tick tick, f_tickf tickf, f_pmsg pmsg,  // (tickf added 1.3.0.0)
-                                            t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff,
+                                            t_CKUINT num_ins = CK_NO_VALUE,
+                                            t_CKUINT num_outs = CK_NO_VALUE,
                                             const char * doc = NULL );
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
                                             f_tick tick, f_pmsg pmsg,
-                                            t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff,
+                                            t_CKUINT num_ins = CK_NO_VALUE,
+                                            t_CKUINT num_outs = CK_NO_VALUE,
                                             const char * doc = NULL );
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
@@ -862,8 +864,10 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, 
 Chuck_Type * type_engine_import_uana_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
                                             f_tick tick, f_tock tock, f_pmsg pmsg,
-                                            t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff,
-                                            t_CKUINT num_ins_ana = 0xffffffff, t_CKUINT num_outs_ana = 0xffffffff,
+                                            t_CKUINT num_ins = CK_NO_VALUE,
+                                            t_CKUINT num_outs = CK_NO_VALUE,
+                                            t_CKUINT num_ins_ana = CK_NO_VALUE,
+                                            t_CKUINT num_outs_ana = CK_NO_VALUE,
                                             const char * doc = NULL );
 t_CKBOOL type_engine_import_mfun( Chuck_Env * env, Chuck_DL_Func * mfun );
 t_CKBOOL type_engine_import_sfun( Chuck_Env * env, Chuck_DL_Func * sfun );

@@ -5258,8 +5258,8 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
     if( tick ) info->tick = tick;
     if( tickf ) { info->tickf = tickf; info->tick = NULL; } // added 1.3.0.0
     if( pmsg ) info->pmsg = pmsg;
-    if( num_ins != 0xffffffff ) info->num_ins = num_ins;
-    if( num_outs != 0xffffffff ) info->num_outs = num_outs;
+    if( num_ins != CK_NO_VALUE ) info->num_ins = num_ins;
+    if( num_outs != CK_NO_VALUE ) info->num_outs = num_outs;
     // set in type
     type->ugen_info = info;
 
@@ -5281,8 +5281,8 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
                                            const char * doc )
 {
     return type_engine_import_ugen_begin( env, name, parent, where,
-                                         pre_ctor, dtor, tick, NULL, pmsg,
-                                         num_ins, num_outs, doc );
+                                          pre_ctor, dtor, tick, NULL, pmsg,
+                                          num_ins, num_outs, doc );
 }
 
 
@@ -5300,7 +5300,7 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
 {
     return type_engine_import_ugen_begin( env, name, parent, where,
                                           pre_ctor, dtor, tick, NULL, pmsg,
-                                          0xffffffff, 0xffffffff, doc );
+                                          CK_NO_VALUE, CK_NO_VALUE, doc );
 }
 
 
@@ -5343,8 +5343,8 @@ Chuck_Type * type_engine_import_uana_begin( Chuck_Env * env, const char * name,
     assert( info != NULL );
     // set
     if( tock ) info->tock = tock;
-    if( num_ins_ana != 0xffffffff ) info->num_ins_ana = num_ins_ana;
-    if( num_outs_ana != 0xffffffff ) info->num_outs_ana = num_outs_ana;
+    if( num_ins_ana != CK_NO_VALUE ) info->num_ins_ana = num_ins_ana;
+    if( num_outs_ana != CK_NO_VALUE ) info->num_outs_ana = num_outs_ana;
 
     return type;
 }
@@ -6875,8 +6875,17 @@ void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
     Chuck_Type * type = this;
     // name str
     string nameStr = "* " + str();
-    // check if ugen
-    if( this->ugen_info ) nameStr += " (unit generator)";
+    // check ugen info (note: all uanae are also ugens)
+    if( this->ugen_info )
+    {
+        // check if uana | 1.4.1.2 (ge)
+        if( this->ugen_info->tock ) nameStr += " (unit analyzer)";
+        // check if UAna base class, which has no tock() | 1.4.1.2 (ge)
+        else if( this->xid == te_uana ) nameStr += " (unit analyzer)";
+        // otherwise
+        else nameStr += " (unit generator)";
+    }
+ 
     // check if array
     if( this->array_depth > 0 )
     {
