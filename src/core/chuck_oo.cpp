@@ -321,7 +321,7 @@ Chuck_Object::~Chuck_Object()
     Chuck_Type * type = this->type_ref;
     while( type != NULL )
     {
-        // SPENCERTODO: HACK! is there a better way to call the dtor?
+        // SPENCER TODO: HACK! is there a better way to call the dtor?
         if( type->has_destructor )
         {
             // sanity check
@@ -382,7 +382,7 @@ void Chuck_Object::help() // 1.4.1.0 (ge)
 Chuck_Array::~Chuck_Array()
 {
     // decrement reference count; added (ge): 1.4.1.0
-    SAFE_RELEASE(m_array_type);
+    SAFE_RELEASE( m_array_type );
 }
 
 
@@ -414,7 +414,8 @@ Chuck_Array4::Chuck_Array4( t_CKBOOL is_obj, t_CKINT capacity )
 //-----------------------------------------------------------------------------
 Chuck_Array4::~Chuck_Array4()
 {
-    // do nothing
+    // 1.4.1.2 (ge) | added, which should cascade to nested array objects
+    clear();
 }
 
 
@@ -841,6 +842,7 @@ Chuck_Array8::Chuck_Array8( t_CKINT capacity )
 Chuck_Array8::~Chuck_Array8()
 {
     // do nothing
+    clear();
 }
 
 

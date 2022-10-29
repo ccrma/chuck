@@ -1,0 +1,1 @@
+[114.ck]:line(2): cannot '=>' from/to a multi-variable declaration

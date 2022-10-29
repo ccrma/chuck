@@ -3145,6 +3145,7 @@ protected:
     Chuck_Type * m_type_ref;
     t_CKINT m_length;
     t_CKBOOL m_is_obj;
+    t_CKBOOL m_is_float;
     char * m_param_str;
 };
 
