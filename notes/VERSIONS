@@ -1,10 +1,28 @@
 1.4.1.2
 ---
-  - (improved) .help() now more accurately prints ("unit analyzer")
-    for UAna types
-  - (added) nshaheed: all associative arrays now have a new method:
+  - (added) all associative arrays now have a new method [thanks nshaheed]
         void getKeys( string[] keys );
         Return all keys found in associative array in keys
+  - (fixed) .help() now more accurately prints ("unit analyzer")
+    for UAna types
+  - (fixed) multi-variable array declaration; the following should
+    now work:
+        int x[1], y[2];
+        int x, y[3];
+  - (fixed) resolved an issue with multi-dimensional arrays pre-maturely
+    releasing internal type data structure -- e.g., causing an assertion 
+    failure in the second function call
+        fun void test()
+        {
+            [ [1,2,3], [1,2,3] ] @=> int arr[][];
+        }
+        test();
+        test();
+  - (fixed) internal array storage now (more) correctly differentiate
+    between int and float, on systems where the two are the same size
+    (e.g., both 32-bit or both 64-bit)
+  - (dev) added test examples in 01-Basic related to multi-var array
+    declarations
   - (dev) extraneous white spaces removed throughout src/core
     ** thank you nshaheed for this soul-restoring measure **
   - (dev) nshaheed: linux makefiles now correctly inserts Debug (-g)

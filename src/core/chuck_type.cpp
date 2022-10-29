@@ -3139,6 +3139,7 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         is_obj = isobj( env, type );
         // is ref
         is_ref = decl->type->ref;
+        // 1.4.1.2 (ge) should it be this?? is_ref = var_decl->ref;
 
         // if array, then check to see if empty []
         if( var_decl->array && var_decl->array->exp_list != NULL )
@@ -3192,7 +3193,7 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
                 EM_error2( var_decl->linepos,
                     "cannot declare static non-primitive objects (yet)..." );
                 EM_error2( var_decl->linepos,
-                    "...(hint: declare as ref (@) & initialize outside for now)" );
+                    "...(hint: declare as reference (@) & initialize outside class for now)" );
                 return FALSE;
             }
         }
@@ -5740,6 +5741,8 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
 {
     // make new type
     Chuck_Type * t = env->context->new_Chuck_Type( env );
+    // 1.4.1.2 (ge) | added
+    SAFE_ADD_REF(t);
     // set the id
     t->xid = te_array;
     // set the name
@@ -5747,18 +5750,20 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
 
     // add entire type heirarchy to t
     Chuck_Type * base_curr = base_type->parent;
-    Chuck_Type * t_curr = t;
 
     // 1.4.1.1 (nshaheed) added to allow declaring arrays with subclasses as elements (PR #211)
     // example: [ new SinOsc, new Sinosc ] @=> Osc arr[]; // this previously would fail type check
-    while (base_curr != NULL) {
-      Chuck_Type * new_parent = new_array_element_type(env, base_curr, depth, owner_nspc);
-      t_curr->parent = new_parent;
-      SAFE_ADD_REF(t_curr->parent);
+    Chuck_Type * t_curr = t;
+    while( base_curr != NULL )
+    {
+        Chuck_Type * new_parent = new_array_element_type( env, base_curr, depth, owner_nspc );
+        t_curr->parent = new_parent;
+        SAFE_ADD_REF(t_curr->parent );
 
-      base_curr = base_curr->parent;
-      t_curr = t_curr->parent;
+        base_curr = base_curr->parent;
+        t_curr = t_curr->parent;
     }
+    // ???
     t_curr->parent = array_parent;
     // add reference
     SAFE_ADD_REF(t_curr->parent);
@@ -5783,6 +5788,9 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     // return the type
     return t;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: new_array_element_type()
