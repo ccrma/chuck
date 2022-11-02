@@ -46,8 +46,6 @@
 //-----------------------------------------------------------------------------
 #define NUM_CHANNELS_DEFAULT         2       // number of channels
 #define NUM_BUFFERS_DEFAULT          8       // number buffers
-#define DEVICE_NUM_OUT_DEFAULT       0
-#define DEVICE_NUM_IN_DEFAULT        0
 // sample rate defaults by platform
 #if defined(__PLATFORM_LINUX__)
   #define SAMPLE_RATE_DEFAULT      48000
