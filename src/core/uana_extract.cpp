@@ -1127,7 +1127,7 @@ struct MFCC_Object
             {
                 for (int j=0; j<this->num_filters; j++)
                 {
-                    this->dct[i*num_filters + j] = sqrt(2.0 / this->num_filters) * cos(M_PI * i * (j + 0.5) / this->num_filters);
+                    this->dct[i*num_filters + j] = sqrt(2.0 / this->num_filters) * cos(ONE_PI * i * (j + 0.5) / this->num_filters);
                 }
             }
         }
