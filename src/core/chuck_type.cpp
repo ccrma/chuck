@@ -3109,6 +3109,7 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
     Chuck_Value * value = NULL;
     t_CKBOOL is_obj = FALSE;
     t_CKBOOL is_ref = FALSE;
+    t_CKBOOL is_ref2 = FALSE;
 
     // loop through the variables
     while( list != NULL )
@@ -3138,8 +3139,10 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         // is object
         is_obj = isobj( env, type );
         // is ref
-        is_ref = decl->type->ref;
-        // 1.4.1.2 (ge) should it be this?? is_ref = var_decl->ref;
+        is_ref = var_decl->ref;
+        // 1.4.1.2 (ge) should it be this?? is_ref = var_decl->ref; (and not decl->type->ref?)
+        // 1.4.1.2 (ge, later) yes, it should be var_decl->ref, because var_decl is per declaration...
+        // e.g., float a[], b -- the entire line is a decl whereas a and b are individual var_decls
 
         // if array, then check to see if empty []
         if( var_decl->array && var_decl->array->exp_list != NULL )
