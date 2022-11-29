@@ -36,7 +36,7 @@
 // but ONLY when compiling this file, and NOT when compiling liblo .c files
 // so, set a flag | REFACTOR-2017
 #ifdef __PLATFORM_WIN32__
-#define ULIB_OPSC_CPP 
+#define ULIB_OPSC_CPP
 #endif
 
 #ifdef __UNITY_FLAT__

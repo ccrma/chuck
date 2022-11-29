@@ -8566,8 +8566,8 @@ void RtApi :: convertBuffer( char *outBuffer, char *inBuffer, ConvertInfo &info 
 
 void RtApi :: byteSwapBuffer( char *buffer, unsigned int samples, RtAudioFormat format )
 {
-  register char val;
-  register char *ptr;
+  /* register */ char val;
+  /* register */ char *ptr;
 
   ptr = buffer;
   if ( format == RTAUDIO_SINT16 ) {
