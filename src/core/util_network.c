@@ -40,7 +40,8 @@
 #include <stdio.h>
 
 #if defined(__PLATFORM_WIN32__)
-#include <winsock.h>
+// 2022 QTSIN changed from winsock.h to winsock2.h
+#include <winsock2.h>
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
