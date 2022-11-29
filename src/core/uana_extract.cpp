@@ -80,9 +80,19 @@ CK_DLL_MFUN( MFCC_ctrl_num_filters );
 CK_DLL_MFUN( MFCC_cget_num_filters );
 CK_DLL_MFUN( MFCC_ctrl_num_coeffs );
 CK_DLL_MFUN( MFCC_cget_num_coeffs );
-
 // offset
 static t_CKUINT MFCC_offset_data = 0;
+
+// SVM | 1.4.1.2 (yikai) added
+CK_DLL_CTOR( SVM_ctor );
+CK_DLL_DTOR( SVM_dtor );
+CK_DLL_TICK( SVM_tick );
+CK_DLL_TOCK( SVM_tock );
+CK_DLL_PMSG( SVM_pmsg );
+CK_DLL_MFUN( SVM_fit );
+CK_DLL_MFUN( SVM_test );
+// offset
+static t_CKUINT SVM_offset_data = 0;
 
 // RollOff
 CK_DLL_CTOR( RollOff_ctor );
@@ -338,6 +348,43 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     type_engine_import_class_end( env );
 
     //---------------------------------------------------------------------
+    // init as base class: SVM
+    //---------------------------------------------------------------------
+
+    doc = "TODO:";
+
+    // 1.4.1.2 (yikai) | added
+    if( !type_engine_import_uana_begin( env, "SVM", "UAna", env->global(),
+                                        SVM_ctor, SVM_dtor,
+                                        SVM_tick, SVM_tock, SVM_pmsg,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
+                                        doc.c_str()) )
+        return FALSE;
+
+    // data offset
+    SVM_offset_data = type_engine_import_mvar( env, "float", "@SVM_data", FALSE );
+    if( SVM_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // fit
+    func = make_new_mfun( "float", "test", SVM_test );
+    func->add_arg( "float[][]", "x" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // fit
+    func = make_new_mfun( "float", "fit", SVM_fit );
+    func->add_arg( "int", "numSamples");
+    func->add_arg( "int", "xDim");
+    func->add_arg( "int", "yDim");
+    func->add_arg( "float[]", "x" );
+    func->add_arg( "float[]", "y" );
+    func->add_arg( "float[]", "w" );
+    func->doc = "Manually fit SVM, and stores the results in the output array.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    //---------------------------------------------------------------------
     // init as base class: RollOff
     //---------------------------------------------------------------------
 
@@ -576,7 +623,7 @@ CK_DLL_TOCK( Centroid_tock )
 {
     t_CKFLOAT result = 0.0;
 
-    // TODO: get buffer from stream, and set in ifft
+    // TODO: get buffer from stream, and set in SVM
     if( UANA->numIncomingUAnae() > 0 )
     {
         // get first
@@ -779,7 +826,7 @@ CK_DLL_TOCK( Flux_tock )
     // get state
     StateOfFlux * state = (StateOfFlux *)OBJ_MEMBER_UINT( SELF, Flux_offset_data );
 
-    // TODO: get buffer from stream, and set in ifft
+    // TODO: get buffer from stream, and set in SVM
     if( UANA->numIncomingUAnae() > 0 )
     {
         // get first
@@ -916,7 +963,7 @@ CK_DLL_TOCK( RMS_tock )
 {
     t_CKFLOAT result = 0.0;
 
-    // TODO: get buffer from stream, and set in ifft
+    // TODO: get buffer from stream, and set in SVM
     if( UANA->numIncomingUAnae() > 0 )
     {
         // get first
@@ -1247,7 +1294,7 @@ CK_DLL_TOCK( MFCC_tock )
     // get object
     MFCC_Object * mfcc = (MFCC_Object *)OBJ_MEMBER_UINT(SELF, MFCC_offset_data);
 
-    // TODO: get buffer from stream, and set in ifft
+    // TODO: get buffer from stream, and set in SVM
     if( UANA->numIncomingUAnae() > 0 )
     {
         // get first
@@ -1345,6 +1392,233 @@ CK_DLL_MFUN( MFCC_compute )
     compute_mfcc( mfcc, *input, input->size(), *output );
 }
 
+// 1.4.1.2 (yikai) | SVM implementation
+// Yikai Li, Fall 2022
+struct SVM_Object
+{
+
+    // static svm instance
+    static SVM_Object * ourSVM;
+
+    // constructor
+    SVM_Object()
+    {
+    }
+
+    // destructor
+    ~SVM_Object()
+    {
+        // done
+        this->reset();
+    }
+
+    // reset
+    void reset()
+    {
+    }
+
+    // clear
+    void clear()
+    {
+    }
+
+    // get our singleton
+//    static SVM_Object * getOurObject()
+//    {
+//        // instantiate, if needed
+//        if (ourSVM == NULL)
+//        {
+//            ourSVM = new SVM_Object();
+//            assert(ourSVM != NULL);
+//        }
+//
+//        // return new instance
+//        return ourSVM;
+//    }
+};
+
+// static initialization
+SVM_Object * SVM_Object::ourSVM = NULL;
+
+static void fit_svm( SVM_Object * svm, t_CKINT n_data, t_CKINT x_dim, t_CKINT y_dim, Chuck_Array8 & x_flat, Chuck_Array8 & y_flat, Chuck_Array8 & w_flat )
+{
+    t_CKFLOAT x[n_data][x_dim];
+    t_CKFLOAT y[n_data][y_dim];
+    // copy
+    for( t_CKINT i = 0; i < n_data; i++ )
+    {
+        for( t_CKINT j = 0; j < x_dim; j++ )
+        {
+            x_flat.get( i*x_dim + j, &x[i][j] );
+        }
+        for( t_CKINT j = 0; j < y_dim; j++ )
+        {
+            y_flat.get( i*y_dim + j, &y[i][j] );
+        }
+    }
+    // compute svm
+    t_CKFLOAT xtx[x_dim][x_dim];
+    for (int i = 0; i < x_dim; i++)
+    {
+        for (int j = 0; j < x_dim; j++)
+        {
+            xtx[i][j] = 0.0;
+            for (int k = 0; k < n_data; k++)
+            {
+                xtx[i][j] += x[k][i] * x[k][j];
+            }
+        }
+    }
+    // inverse matrix
+    t_CKFLOAT xtx_inv[x_dim][x_dim];
+    for (int i = 0; i < x_dim; i++)
+    {
+        for (int j = 0; j < x_dim; j++)
+        {
+            xtx_inv[i][j] = 0.0;
+            if (i == j)
+            {
+                xtx_inv[i][j] = 1.0;
+            }
+        }
+    }
+    for (int i = 0; i < x_dim; i++)
+    {
+        t_CKFLOAT pivot = xtx[i][i];
+        for (int j = 0; j < x_dim; j++)
+        {
+            xtx[i][j] /= pivot;
+            xtx_inv[i][j] /= pivot;
+        }
+        for (int j = 0; j < x_dim; j++)
+        {
+            if (i != j)
+            {
+                t_CKFLOAT factor = xtx[j][i];
+                for (int k = 0; k < x_dim; k++)
+                {
+                    xtx[j][k] -= factor * xtx[i][k];
+                    xtx_inv[j][k] -= factor * xtx_inv[i][k];
+                }
+            }
+        }
+    }
+    // compute w
+    t_CKFLOAT w[x_dim][y_dim];
+    for (int i = 0; i < x_dim; i++)
+    {
+        for (int j = 0; j < y_dim; j++)
+        {
+            w[i][j] = 0.0;
+            for (int k = 0; k < x_dim; k++)
+            {
+                for (int l = 0; l < n_data; l++)
+                {
+                    w[i][j] += xtx_inv[i][k] * x[l][k] * y[l][j];
+                }
+            }
+        }
+    }
+    // compute b
+    t_CKFLOAT b[y_dim];
+    for (int i = 0; i < y_dim; i++)
+    {
+        b[i] = 0.0;
+        for (int j = 0; j < n_data; j++)
+        {
+            b[i] += y[j][i];
+            for (int k = 0; k < x_dim; k++)
+            {
+                b[i] -= w[k][i] * x[j][k];
+            }
+        }
+        b[i] /= n_data;
+    }
+    // copy
+    for( t_CKINT i = 0; i < x_dim; i++ )
+    {
+        for( t_CKINT j = 0; j < y_dim; j++ )
+        {
+            w_flat.set( i*y_dim + j, w[i][j] );
+        }
+    }
+    for( t_CKINT i = 0; i < y_dim; i++ )
+    {
+        w_flat.set( x_dim*y_dim + i, b[i] );
+    }
+}
+
+// SVM
+CK_DLL_CTOR( SVM_ctor )
+{
+    SVM_Object * svm = new SVM_Object();
+    OBJ_MEMBER_UINT(SELF, SVM_offset_data) = (t_CKUINT)svm;
+}
+
+CK_DLL_DTOR( SVM_dtor )
+{
+    SVM_Object * svm = (SVM_Object *)OBJ_MEMBER_UINT(SELF, SVM_offset_data);
+    SAFE_DELETE( svm );
+    OBJ_MEMBER_UINT(SELF, SVM_offset_data) = 0;
+}
+
+
+CK_DLL_TICK( SVM_tick )
+{
+    // do nothing
+    return TRUE;
+}
+
+CK_DLL_TOCK( SVM_tock )
+{
+    return TRUE;
+}
+
+CK_DLL_PMSG( SVM_pmsg )
+{
+    // do nothing
+    return TRUE;
+}
+
+CK_DLL_MFUN( SVM_test )
+{
+    // get object
+    SVM_Object * svm = (SVM_Object *)OBJ_MEMBER_UINT( SELF, SVM_offset_data );
+    // get x
+    Chuck_Array4 * x = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
+    
+    // get number of elements
+    int n = x->size();
+    // std::cerr << "SHITSHOW 1: " << n << std::endl;
+
+    for( int i = 0; i < n; i++ )
+    {
+        t_CKUINT val;
+        x->get(i, &val);
+        Chuck_Array8 * y = (Chuck_Array8 *)val;
+        std::cerr << "SHITSHOW 2: " << y->size() << std::endl;
+    }
+}
+
+CK_DLL_MFUN( SVM_fit )
+{
+    // get object
+    SVM_Object * svm = (SVM_Object *)OBJ_MEMBER_UINT( SELF, SVM_offset_data );
+    // get sample nr
+    t_CKINT n_data = GET_NEXT_INT(ARGS);
+    // get x dim
+    t_CKINT x_dim = GET_NEXT_INT(ARGS);
+    // get y dim
+    t_CKINT y_dim = GET_NEXT_INT(ARGS);
+    // get x
+    Chuck_Array8 * x = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    // get y
+    Chuck_Array8 * y = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    // get w
+    Chuck_Array8 * w = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    // fit svm
+    fit_svm( svm, n_data, x_dim, y_dim, *x, *y, *w );
+}
 
 static t_CKFLOAT compute_rolloff( Chuck_Array8 & buffer, t_CKUINT size, t_CKFLOAT percent )
 {
@@ -1399,7 +1673,7 @@ CK_DLL_TOCK( RollOff_tock )
     // get percent
     t_CKFLOAT percent = OBJ_MEMBER_FLOAT( SELF, RollOff_offset_percent );
 
-    // TODO: get buffer from stream, and set in ifft
+    // TODO: get buffer from stream, and set in SVM
     if( UANA->numIncomingUAnae() > 0 )
     {
         // get first
@@ -1932,7 +2206,7 @@ CK_DLL_TOCK( ZeroX_tock )
 {
     t_CKFLOAT result = 0.0;
 
-    // TODO: get buffer from stream, and set in ifft
+    // TODO: get buffer from stream, and set in SVM
     if( UANA->numIncomingUAnae() > 0 )
     {
         // get first
