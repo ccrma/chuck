@@ -90,7 +90,6 @@ CK_DLL_TICK( SVM_tick );
 CK_DLL_TOCK( SVM_tock );
 CK_DLL_PMSG( SVM_pmsg );
 CK_DLL_MFUN( SVM_fit );
-CK_DLL_MFUN( SVM_test );
 // offset
 static t_CKUINT SVM_offset_data = 0;
 
@@ -351,7 +350,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: SVM
     //---------------------------------------------------------------------
 
-    doc = "TODO:";
+    doc = "A unit analyzer for support vector machine (SVM) that takes training data as input, and outputs the weights of the model.";
 
     // 1.4.1.2 (yikai) | added
     if( !type_engine_import_uana_begin( env, "SVM", "UAna", env->global(),
@@ -366,19 +365,11 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     if( SVM_offset_data == CK_INVALID_OFFSET ) goto error;
 
     // fit
-    func = make_new_mfun( "float", "test", SVM_test );
-    func->add_arg( "float[][]", "x" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    // fit
     func = make_new_mfun( "float", "fit", SVM_fit );
-    func->add_arg( "int", "numSamples");
-    func->add_arg( "int", "xDim");
-    func->add_arg( "int", "yDim");
-    func->add_arg( "float[]", "x" );
-    func->add_arg( "float[]", "y" );
-    func->add_arg( "float[]", "w" );
-    func->doc = "Manually fit SVM, and stores the results in the output array.";
+    func->add_arg( "float[][]", "x" );
+    func->add_arg( "float[][]", "y" );
+    func->add_arg( "float[][]", "w" );
+    func->doc = "Manually fit SVM from input 'x' and ouput 'y'; compute and return weights in output array 'w'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -515,7 +506,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
 
     return TRUE;
 
-error:
+    error:
 
     // end the class import
     type_engine_import_class_end( env );
@@ -635,7 +626,7 @@ CK_DLL_TOCK( Centroid_tock )
         // compute centroid
         result = compute_centroid( mag, mag.size() );
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // no input!
@@ -838,7 +829,7 @@ CK_DLL_TOCK( Flux_tock )
         // compute flux
         result = compute_flux( mag, *state );
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // no input!
@@ -975,7 +966,7 @@ CK_DLL_TOCK( RMS_tock )
         // compute RMS
         result = compute_rms( mag, mag.size() );
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // no input!
@@ -1117,9 +1108,9 @@ struct MFCC_Object
     void prepare(t_CKINT size)
     {
         if ( this->size == size
-        && this->sample_rate == this->curr_sample_rate
-        && this->num_filters == this->curr_num_filters
-        && this->num_coeffs == this->curr_num_coeffs )
+             && this->sample_rate == this->curr_sample_rate
+             && this->num_filters == this->curr_num_filters
+             && this->num_coeffs == this->curr_num_coeffs )
             return;
 
         this->size = size;
@@ -1308,7 +1299,7 @@ CK_DLL_TOCK( MFCC_tock )
         // compute MFCC
         compute_mfcc(mfcc, mag, mag.size(), fvals);
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // get fvals of output BLOB
@@ -1423,37 +1414,51 @@ struct SVM_Object
     }
 
     // get our singleton
-//    static SVM_Object * getOurObject()
-//    {
-//        // instantiate, if needed
-//        if (ourSVM == NULL)
-//        {
-//            ourSVM = new SVM_Object();
-//            assert(ourSVM != NULL);
-//        }
-//
-//        // return new instance
-//        return ourSVM;
-//    }
+    static SVM_Object * getOurObject()
+    {
+        // instantiate, if needed
+        if (ourSVM == NULL)
+        {
+            ourSVM = new SVM_Object();
+            assert(ourSVM != NULL);
+        }
+
+        // return new instance
+        return ourSVM;
+    }
 };
 
 // static initialization
 SVM_Object * SVM_Object::ourSVM = NULL;
 
-static void fit_svm( SVM_Object * svm, t_CKINT n_data, t_CKINT x_dim, t_CKINT y_dim, Chuck_Array8 & x_flat, Chuck_Array8 & y_flat, Chuck_Array8 & w_flat )
+// SVM.fit() | added 1.4.1.2 (yikai)
+static void fit_svm( SVM_Object * svm, Chuck_Array4 & x_, Chuck_Array4 & y_, Chuck_Array4 & w_ )
 {
+    // init
+    t_CKINT n_data = x_.size();
+    t_CKUINT v;
+    x_.get(0, &v);
+    Chuck_Array8 * x_i = (Chuck_Array8 *)v;
+    t_CKINT x_dim = x_i->size();
+    y_.get(0, &v);
+    Chuck_Array8 * y_i = (Chuck_Array8 *)v;
+    t_CKINT y_dim = y_i->size();
     t_CKFLOAT x[n_data][x_dim];
     t_CKFLOAT y[n_data][y_dim];
     // copy
     for( t_CKINT i = 0; i < n_data; i++ )
     {
+        x_.get(i, &v);
+        x_i = (Chuck_Array8 *)v;
         for( t_CKINT j = 0; j < x_dim; j++ )
         {
-            x_flat.get( i*x_dim + j, &x[i][j] );
+            x_i->get( j, &x[i][j] );
         }
+        y_.get(i, &v);
+        y_i = (Chuck_Array8 *)v;
         for( t_CKINT j = 0; j < y_dim; j++ )
         {
-            y_flat.get( i*y_dim + j, &y[i][j] );
+            y_i->get( j, &y[i][j] );
         }
     }
     // compute svm
@@ -1535,16 +1540,21 @@ static void fit_svm( SVM_Object * svm, t_CKINT n_data, t_CKINT x_dim, t_CKINT y_
         b[i] /= n_data;
     }
     // copy
+    Chuck_Array8 * w_i;
     for( t_CKINT i = 0; i < x_dim; i++ )
     {
+        w_.get(i, &v);
+        w_i = (Chuck_Array8 *)v;
         for( t_CKINT j = 0; j < y_dim; j++ )
         {
-            w_flat.set( i*y_dim + j, w[i][j] );
+            w_i->set( j, w[i][j] );
         }
     }
-    for( t_CKINT i = 0; i < y_dim; i++ )
+    w_.get(x_dim * y_dim, &v);
+    w_i = (Chuck_Array8 *)v;
+    for( t_CKINT j = 0; j < y_dim; j++ )
     {
-        w_flat.set( x_dim*y_dim + i, b[i] );
+        w_i->set( j, b[j] );
     }
 }
 
@@ -1580,44 +1590,18 @@ CK_DLL_PMSG( SVM_pmsg )
     return TRUE;
 }
 
-CK_DLL_MFUN( SVM_test )
+CK_DLL_MFUN( SVM_fit )
 {
     // get object
     SVM_Object * svm = (SVM_Object *)OBJ_MEMBER_UINT( SELF, SVM_offset_data );
     // get x
     Chuck_Array4 * x = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
-    
-    // get number of elements
-    int n = x->size();
-    // std::cerr << "SHITSHOW 1: " << n << std::endl;
-
-    for( int i = 0; i < n; i++ )
-    {
-        t_CKUINT val;
-        x->get(i, &val);
-        Chuck_Array8 * y = (Chuck_Array8 *)val;
-        std::cerr << "SHITSHOW 2: " << y->size() << std::endl;
-    }
-}
-
-CK_DLL_MFUN( SVM_fit )
-{
-    // get object
-    SVM_Object * svm = (SVM_Object *)OBJ_MEMBER_UINT( SELF, SVM_offset_data );
-    // get sample nr
-    t_CKINT n_data = GET_NEXT_INT(ARGS);
-    // get x dim
-    t_CKINT x_dim = GET_NEXT_INT(ARGS);
-    // get y dim
-    t_CKINT y_dim = GET_NEXT_INT(ARGS);
-    // get x
-    Chuck_Array8 * x = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
     // get y
-    Chuck_Array8 * y = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_Array4 * y = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
     // get w
-    Chuck_Array8 * w = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_Array4 * w = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
     // fit svm
-    fit_svm( svm, n_data, x_dim, y_dim, *x, *y, *w );
+    fit_svm( svm, *x, *y, *w );
 }
 
 static t_CKFLOAT compute_rolloff( Chuck_Array8 & buffer, t_CKUINT size, t_CKFLOAT percent )
@@ -1685,7 +1669,7 @@ CK_DLL_TOCK( RollOff_tock )
         // compute rolloff
         result = compute_rolloff( mag, mag.size(), percent );
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // no input!
@@ -1840,7 +1824,7 @@ struct Corr_Object
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: Corr failed to allocate %ld-element buffer(s)...",
-                mincap );
+                               mincap );
             // clean up
             this->reset();
             // done
@@ -1903,7 +1887,7 @@ static void compute_corr( Corr_Object * corr, Chuck_Array8 & f, t_CKINT fs,
     {
         // normalize
         xcorr_normalize( corr->buffy, corr->bufcap,
-            corr->fbuf, corr->fcap, corr->gbuf, corr->gcap );
+                         corr->fbuf, corr->fcap, corr->gbuf, corr->gcap );
     }
 
     // copy into result
@@ -2003,7 +1987,7 @@ CK_DLL_SFUN( AutoCorr_compute )
     Corr_Object::getOurObject()->normalize = normalize;
     // compute autocrr
     compute_corr( Corr_Object::getOurObject(), *input, input->size(),
-        *input, input->size(), *output );
+                  *input, input->size(), *output );
 }
 
 
@@ -2049,7 +2033,7 @@ CK_DLL_TOCK( XCorr_tock )
         // compute xcorr
         compute_corr( xc, mag_f, mag_f.size(), mag_g, mag_g.size(), fvals );
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // get fvals of output BLOB
@@ -2099,7 +2083,7 @@ CK_DLL_SFUN( XCorr_compute )
     Corr_Object::getOurObject()->normalize = normalize;
     // compute autocrr
     compute_corr( Corr_Object::getOurObject(), *f, f->size(),
-        *g, g->size(), *output );
+                  *g, g->size(), *output );
 }
 
 
@@ -2218,7 +2202,7 @@ CK_DLL_TOCK( ZeroX_tock )
         // compute ZeroX
         result = (t_CKFLOAT)( compute_zerox( mag, mag.size() ) + .5 );
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // no input!
