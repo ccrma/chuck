@@ -1,13 +1,28 @@
 1.4.1.2
 ---
-  - (added) all associative arrays now have a new method [thanks nshaheed]
-        void getKeys( string[] keys );
-        Return all keys found in associative array in keys
+(NOTE) chuck-1.4.1.2 builds on the Unit Analyzer (UAna) framework to begin 
+supporting a set of functionalities for interactive machine learning and 
+artful, humanistic design of music and artificial intelligence;
+
+This effort marks a beginning of ChAI => ChucK for AI, and coincides with 
+the new "Music and AI" course at Stanford University, designed and taught 
+by Ge Wang with teaching assistant and Ph.D. advisee Yikai Li.
+---
   - (added) MFCC unit analyzer (thanks Yikai Li)
         |- A unit analyzer that computes Mel-frequency Cepstral Coefficients
            (MFCCs), and outputs a vector of coefficients.
         |- (inheritance) MFCC -> UAna -> UGen -> Object
   - (added) examples: analysis/features/mfcc.ck
+  - (added) SVM unit analyzer (thanks Yikai Li)
+        |- A unit analyzer for support vector machine (SVM) that takes 
+           training data as input, and outputs the weights of the model.
+        |- (inheritance) SVM => UAna -> UGen -> Object 
+        ...
+        NOTE: SVM currently only functions through the static method
+           SVM.fit();
+  - (added) all associative arrays now have a new method [thanks nshaheed]
+        void getKeys( string[] keys );
+        Return all keys found in associative array in keys
   - (fixed) .help() now more accurately prints ("unit analyzer")
     for UAna types
   - (fixed) multi-variable array declaration; the following should
