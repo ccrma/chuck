@@ -619,7 +619,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
             // check if input channels > 0
             if( device_info.inputChannels < m_num_channels_in )
             {
-                // 1.4.1.2 (ge) | added: a specific but possible common case
+                // 1.4.2.0 (ge) | added: a specific but possible common case
                 // for systems that have a 1-channel default input audio device -- e.g., some MacOS systems
                 if( m_num_channels_in == 2 && device_info.inputChannels == 1 )
                 {
@@ -644,7 +644,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
                             // insufficient channels (e.g., 1 on MacOS), finds secondary device
                             // (e.g., ZoomAudioDevice on MacOS) that has enough channels
                             // but does not support the desired sample rate
-                            // amended 1.4.1.2 -- the behavior is modified above, where chuck
+                            // amended 1.4.2.0 -- the behavior is modified above, where chuck
                             // will first check if the default input device has only 1 channel
                             // while we are requesting 2 channels
                             bool isMatch = false;
@@ -674,7 +674,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
 
                     // added 1.4.0.1 (ge) -- special case if no other matching device found...
                     // for systems that have default mono audio device e.g., some MacOS systems
-                    // (commented out due to 1.4.1.2 changes above to look mono default input first)
+                    // (commented out due to 1.4.2.0 changes above to look mono default input first)
                     //if( m_adc_n == -1 )
                     //{
                     //    // get default input device

@@ -1137,7 +1137,7 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
             }
         }
 
-        // 1.4.1.2 (ge) added: var_decl->ck_type = t;
+        // 1.4.2.0 (ge) added: var_decl->ck_type = t;
         SAFE_REF_ASSIGN( var_decl->ck_type, t );
 
         // the next var decl
@@ -2189,14 +2189,14 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
     // loop through the variables
     while( list != NULL )
     {
-        // 1.4.1.2 (ge) | reset the type variable to the lead type in the decl
+        // 1.4.2.0 (ge) | reset the type variable to the lead type in the decl
         // e.g., for cases like int x[2], y;
         // ...this is so y would not be associated with x's array type
         type = decl->ck_type;
 
         // get the decl
         var_decl = list->var_decl;
-        // 1.4.1.2 (ge) | by default, copy the decl type reference bit
+        // 1.4.2.0 (ge) | by default, copy the decl type reference bit
         // this could be overwritten later as appropriate, e.g., by array vars
         var_decl->ref = decl->type->ref;
 
@@ -2224,9 +2224,9 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
             if( !verify_array( var_decl->array ) )
                 return FALSE;
 
-            // 1.4.1.2 (ge) was: decl->type->ref;
+            // 1.4.2.0 (ge) was: decl->type->ref;
             var_decl->ref = ( var_decl->array->exp_list == NULL );
-            // the declaration type | 1.4.1.2 (ge) fixed for multiple decl (e.g., int x[1], y[2];)
+            // the declaration type | 1.4.2.0 (ge) fixed for multiple decl (e.g., int x[1], y[2];)
             Chuck_Type * t2 = decl->ck_type; // was: type, which won't work if more than one var declared
             // may be partial and empty []
             if( var_decl->array->exp_list )
@@ -2248,14 +2248,14 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
                 env->curr  // the owner namespace
             );
 
-            // 1.4.1.2 (ge) | assign new array type to current var decl
+            // 1.4.2.0 (ge) | assign new array type to current var decl
             // for handling the following kind of multi-var declarations
             //   int x[1], y[2];
             //   int x, y[1];
             // set reference : var_decl->ck_type = type;
             SAFE_REF_ASSIGN( var_decl->ck_type, type );
 
-            // 1.4.1.2 (ge) | if one and only one variable, then update decl->ck_type
+            // 1.4.2.0 (ge) | if one and only one variable, then update decl->ck_type
             // otherwise, the variables could have different array depths, and therefore different types
             // also note: cannot => to a multi-variable declaration (e.g., 5 => int x, y;)
             // this is to support array initialization (e.g., [ [1,2], [3,4] ] @=> int x[][];)
@@ -2289,7 +2289,7 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
 
         // the next var decl
         list = list->next;
-        // 1.4.1.2 (ge) | added
+        // 1.4.2.0 (ge) | added
         is_first_in_list = FALSE;
     }
 

@@ -47,6 +47,7 @@
 #include "ulib_machine.h"
 #endif
 
+#include "ulib_ai.h"
 #include "ulib_math.h"
 #include "ulib_std.h"
 
@@ -666,18 +667,24 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
 #endif // __DISABLE_MIDI__
 
     // load
+    EM_log( CK_LOG_SEVERE, "module 'math'" );
+    if( !load_module( compiler, env, libmath_query, "Math", "global" ) ) goto error;
     EM_log( CK_LOG_SEVERE, "module 'osc'" );
     load_module( compiler, env, osc_query, "osc", "global" );
-    EM_log( CK_LOG_SEVERE, "module 'xxx'" );
-    load_module( compiler, env, xxx_query, "xxx", "global" );
+    EM_log( CK_LOG_SEVERE, "module 'ai'" );
+    if( !load_module( compiler, env, libai_query, "AI", "global" ) ) goto error;
+    EM_log( CK_LOG_SEVERE, "module 'extract'" );
+    load_module( compiler, env, extract_query, "extract", "global" );
     EM_log( CK_LOG_SEVERE, "module 'filter'" );
     load_module( compiler, env, filter_query, "filter", "global" );
     EM_log( CK_LOG_SEVERE, "module 'STK'" );
     load_module( compiler, env, stk_query, "stk", "global" );
     EM_log( CK_LOG_SEVERE, "module 'xform'" );
     load_module( compiler, env, xform_query, "xform", "global" );
-    EM_log( CK_LOG_SEVERE, "module 'extract'" );
-    load_module( compiler, env, extract_query, "extract", "global" );
+    EM_log( CK_LOG_SEVERE, "module 'xxx'" );
+    load_module( compiler, env, xxx_query, "xxx", "global" );
+    EM_log( CK_LOG_SEVERE, "module 'std'" );
+    if( !load_module( compiler, env, libstd_query, "Std", "global" ) ) goto error;
 
     // load
     #ifndef __DISABLE_OTF_SERVER__
@@ -685,11 +692,6 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
     machine_init( compiler, otf_process_msg );
     #endif
-
-    EM_log( CK_LOG_SEVERE, "module 'std'" );
-    if( !load_module( compiler, env, libstd_query, "Std", "global" ) ) goto error;
-    EM_log( CK_LOG_SEVERE, "module 'math'" );
-    if( !load_module( compiler, env, libmath_query, "Math", "global" ) ) goto error;
 
     #ifndef __DISABLE_NETWORK__
     EM_log( CK_LOG_SEVERE, "module 'opsc'" );

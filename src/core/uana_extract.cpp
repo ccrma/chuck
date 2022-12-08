@@ -67,7 +67,7 @@ CK_DLL_TOCK( RMS_tock );
 CK_DLL_PMSG( RMS_pmsg );
 CK_DLL_SFUN( RMS_compute );
 
-// MFCC | 1.4.1.2 (yikai) added
+// MFCC | 1.4.2.0 (yikai) added
 CK_DLL_CTOR( MFCC_ctor );
 CK_DLL_DTOR( MFCC_dtor );
 CK_DLL_TICK( MFCC_tick );
@@ -82,16 +82,6 @@ CK_DLL_MFUN( MFCC_ctrl_num_coeffs );
 CK_DLL_MFUN( MFCC_cget_num_coeffs );
 // offset
 static t_CKUINT MFCC_offset_data = 0;
-
-// SVM | 1.4.1.2 (yikai) added
-CK_DLL_CTOR( SVM_ctor );
-CK_DLL_DTOR( SVM_dtor );
-CK_DLL_TICK( SVM_tick );
-CK_DLL_TOCK( SVM_tock );
-CK_DLL_PMSG( SVM_pmsg );
-CK_DLL_MFUN( SVM_fit );
-// offset
-static t_CKUINT SVM_offset_data = 0;
 
 // RollOff
 CK_DLL_CTOR( RollOff_ctor );
@@ -166,7 +156,7 @@ void xcorr_fft( SAMPLE * f, t_CKINT fs, SAMPLE * g, t_CKINT gs, SAMPLE * buffer,
 void xcorr_normalize( SAMPLE * buffy, t_CKINT bs, SAMPLE * f, t_CKINT fs, SAMPLE * g, t_CKINT gs );
 
 
-// 1.4.1.2 (ge) | local global sample rate variable (e.g., for MFCC)
+// 1.4.2.0 (ge) | local global sample rate variable (e.g., for MFCC)
 static t_CKUINT g_srate = 0;
 
 
@@ -180,7 +170,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     Chuck_Env * env = QUERY->env();
     Chuck_DL_Func * func = NULL;
 
-    // 1.4.1.2 (ge) | store sample rate
+    // 1.4.2.0 (ge) | store sample rate
     g_srate = QUERY->srate;
 
     std::string doc;
@@ -291,7 +281,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
 
     doc = "A unit analyzer that computes Mel-frequency Cepstral Coefficients (MFCCs), and outputs a vector of coefficients.";
 
-    // 1.4.1.2 (yikai) | added
+    // 1.4.2.0 (yikai) | added
     if( !type_engine_import_uana_begin( env, "MFCC", "UAna", env->global(),
                                         MFCC_ctor, MFCC_dtor,
                                         MFCC_tick, MFCC_tock, MFCC_pmsg,
@@ -341,35 +331,6 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "input" );
     func->add_arg( "float[]", "output" );
     func->doc = "Manually computes the MFCC of the input (an FFT spectrum), and stores the results in the output array (MFCC coefficients).";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    // end the class import
-    type_engine_import_class_end( env );
-
-    //---------------------------------------------------------------------
-    // init as base class: SVM
-    //---------------------------------------------------------------------
-
-    doc = "A unit analyzer for support vector machine (SVM) that takes training data as input, and outputs the weights of the model.";
-
-    // 1.4.1.2 (yikai) | added
-    if( !type_engine_import_uana_begin( env, "SVM", "UAna", env->global(),
-                                        SVM_ctor, SVM_dtor,
-                                        SVM_tick, SVM_tock, SVM_pmsg,
-                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
-                                        doc.c_str()) )
-        return FALSE;
-
-    // data offset
-    SVM_offset_data = type_engine_import_mvar( env, "float", "@SVM_data", FALSE );
-    if( SVM_offset_data == CK_INVALID_OFFSET ) goto error;
-
-    // fit
-    func = make_new_mfun( "float", "fit", SVM_fit );
-    func->add_arg( "float[][]", "x" );
-    func->add_arg( "float[][]", "y" );
-    func->add_arg( "float[][]", "w" );
-    func->doc = "Manually fit SVM from input 'x' and ouput 'y'; compute and return weights in output array 'w'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -1010,7 +971,7 @@ CK_DLL_SFUN( RMS_compute )
 
 
 
-// 1.4.1.2 (yikai) | MFCC implementation
+// 1.4.2.0 (yikai) | MFCC implementation
 // Yikai Li, Fall 2022
 struct MFCC_Object
 {
@@ -1381,227 +1342,6 @@ CK_DLL_MFUN( MFCC_compute )
     Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
     // compute mfcc
     compute_mfcc( mfcc, *input, input->size(), *output );
-}
-
-// 1.4.1.2 (yikai) | SVM implementation
-// Yikai Li, Fall 2022
-struct SVM_Object
-{
-
-    // static svm instance
-    static SVM_Object * ourSVM;
-
-    // constructor
-    SVM_Object()
-    {
-    }
-
-    // destructor
-    ~SVM_Object()
-    {
-        // done
-        this->reset();
-    }
-
-    // reset
-    void reset()
-    {
-    }
-
-    // clear
-    void clear()
-    {
-    }
-
-    // get our singleton
-    static SVM_Object * getOurObject()
-    {
-        // instantiate, if needed
-        if (ourSVM == NULL)
-        {
-            ourSVM = new SVM_Object();
-            assert(ourSVM != NULL);
-        }
-
-        // return new instance
-        return ourSVM;
-    }
-};
-
-// static initialization
-SVM_Object * SVM_Object::ourSVM = NULL;
-
-// SVM.fit() | added 1.4.1.2 (yikai)
-static void fit_svm( SVM_Object * svm, Chuck_Array4 & x_, Chuck_Array4 & y_, Chuck_Array4 & w_ )
-{
-    // init
-    t_CKINT n_data = x_.size();
-    t_CKUINT v;
-    x_.get(0, &v);
-    Chuck_Array8 * x_i = (Chuck_Array8 *)v;
-    t_CKINT x_dim = x_i->size();
-    y_.get(0, &v);
-    Chuck_Array8 * y_i = (Chuck_Array8 *)v;
-    t_CKINT y_dim = y_i->size();
-    t_CKFLOAT x[n_data][x_dim];
-    t_CKFLOAT y[n_data][y_dim];
-    // copy
-    for( t_CKINT i = 0; i < n_data; i++ )
-    {
-        x_.get(i, &v);
-        x_i = (Chuck_Array8 *)v;
-        for( t_CKINT j = 0; j < x_dim; j++ )
-        {
-            x_i->get( j, &x[i][j] );
-        }
-        y_.get(i, &v);
-        y_i = (Chuck_Array8 *)v;
-        for( t_CKINT j = 0; j < y_dim; j++ )
-        {
-            y_i->get( j, &y[i][j] );
-        }
-    }
-    // compute svm
-    t_CKFLOAT xtx[x_dim][x_dim];
-    for (int i = 0; i < x_dim; i++)
-    {
-        for (int j = 0; j < x_dim; j++)
-        {
-            xtx[i][j] = 0.0;
-            for (int k = 0; k < n_data; k++)
-            {
-                xtx[i][j] += x[k][i] * x[k][j];
-            }
-        }
-    }
-    // inverse matrix
-    t_CKFLOAT xtx_inv[x_dim][x_dim];
-    for (int i = 0; i < x_dim; i++)
-    {
-        for (int j = 0; j < x_dim; j++)
-        {
-            xtx_inv[i][j] = 0.0;
-            if (i == j)
-            {
-                xtx_inv[i][j] = 1.0;
-            }
-        }
-    }
-    for (int i = 0; i < x_dim; i++)
-    {
-        t_CKFLOAT pivot = xtx[i][i];
-        for (int j = 0; j < x_dim; j++)
-        {
-            xtx[i][j] /= pivot;
-            xtx_inv[i][j] /= pivot;
-        }
-        for (int j = 0; j < x_dim; j++)
-        {
-            if (i != j)
-            {
-                t_CKFLOAT factor = xtx[j][i];
-                for (int k = 0; k < x_dim; k++)
-                {
-                    xtx[j][k] -= factor * xtx[i][k];
-                    xtx_inv[j][k] -= factor * xtx_inv[i][k];
-                }
-            }
-        }
-    }
-    // compute w
-    t_CKFLOAT w[x_dim][y_dim];
-    for (int i = 0; i < x_dim; i++)
-    {
-        for (int j = 0; j < y_dim; j++)
-        {
-            w[i][j] = 0.0;
-            for (int k = 0; k < x_dim; k++)
-            {
-                for (int l = 0; l < n_data; l++)
-                {
-                    w[i][j] += xtx_inv[i][k] * x[l][k] * y[l][j];
-                }
-            }
-        }
-    }
-    // compute b
-    t_CKFLOAT b[y_dim];
-    for (int i = 0; i < y_dim; i++)
-    {
-        b[i] = 0.0;
-        for (int j = 0; j < n_data; j++)
-        {
-            b[i] += y[j][i];
-            for (int k = 0; k < x_dim; k++)
-            {
-                b[i] -= w[k][i] * x[j][k];
-            }
-        }
-        b[i] /= n_data;
-    }
-    // copy
-    Chuck_Array8 * w_i;
-    for( t_CKINT i = 0; i < x_dim; i++ )
-    {
-        w_.get(i, &v);
-        w_i = (Chuck_Array8 *)v;
-        for( t_CKINT j = 0; j < y_dim; j++ )
-        {
-            w_i->set( j, w[i][j] );
-        }
-    }
-    w_.get(x_dim * y_dim, &v);
-    w_i = (Chuck_Array8 *)v;
-    for( t_CKINT j = 0; j < y_dim; j++ )
-    {
-        w_i->set( j, b[j] );
-    }
-}
-
-// SVM
-CK_DLL_CTOR( SVM_ctor )
-{
-    SVM_Object * svm = new SVM_Object();
-    OBJ_MEMBER_UINT(SELF, SVM_offset_data) = (t_CKUINT)svm;
-}
-
-CK_DLL_DTOR( SVM_dtor )
-{
-    SVM_Object * svm = (SVM_Object *)OBJ_MEMBER_UINT(SELF, SVM_offset_data);
-    SAFE_DELETE( svm );
-    OBJ_MEMBER_UINT(SELF, SVM_offset_data) = 0;
-}
-
-
-CK_DLL_TICK( SVM_tick )
-{
-    // do nothing
-    return TRUE;
-}
-
-CK_DLL_TOCK( SVM_tock )
-{
-    return TRUE;
-}
-
-CK_DLL_PMSG( SVM_pmsg )
-{
-    // do nothing
-    return TRUE;
-}
-
-CK_DLL_MFUN( SVM_fit )
-{
-    // get object
-    SVM_Object * svm = (SVM_Object *)OBJ_MEMBER_UINT( SELF, SVM_offset_data );
-    // get x
-    Chuck_Array4 * x = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
-    // get y
-    Chuck_Array4 * y = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
-    // get w
-    Chuck_Array4 * w = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
-    // fit svm
-    fit_svm( svm, *x, *y, *w );
 }
 
 static t_CKFLOAT compute_rolloff( Chuck_Array8 & buffer, t_CKUINT size, t_CKFLOAT percent )

@@ -140,7 +140,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #define FALSE                       0
 #endif
 
-// special non-zero value to denote "no value" | added 1.4.1.2 (ge)
+// special non-zero value to denote "no value" | added 1.4.2.0 (ge)
 #define CK_NO_VALUE                 0xffffffff
 
 // 3.1415926535897932384626433832795028841971693993751058209749445...
