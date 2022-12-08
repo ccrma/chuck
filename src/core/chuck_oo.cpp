@@ -414,7 +414,7 @@ Chuck_Array4::Chuck_Array4( t_CKBOOL is_obj, t_CKINT capacity )
 //-----------------------------------------------------------------------------
 Chuck_Array4::~Chuck_Array4()
 {
-    // 1.4.1.2 (ge) | added, which should cascade to nested array objects
+    // 1.4.2.0 (ge) | added, which should cascade to nested array objects
     clear();
 }
 

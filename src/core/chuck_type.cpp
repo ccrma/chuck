@@ -3140,8 +3140,8 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         is_obj = isobj( env, type );
         // is ref
         is_ref = var_decl->ref;
-        // 1.4.1.2 (ge) should it be this?? is_ref = var_decl->ref; (and not decl->type->ref?)
-        // 1.4.1.2 (ge, later) yes, it should be var_decl->ref, because var_decl is per declaration...
+        // 1.4.2.0 (ge) should it be this?? is_ref = var_decl->ref; (and not decl->type->ref?)
+        // 1.4.2.0 (ge, later) yes, it should be var_decl->ref, because var_decl is per declaration...
         // e.g., float a[], b -- the entire line is a decl whereas a and b are individual var_decls
 
         // if array, then check to see if empty []
@@ -5744,7 +5744,7 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
 {
     // make new type
     Chuck_Type * t = env->context->new_Chuck_Type( env );
-    // 1.4.1.2 (ge) | added
+    // 1.4.2.0 (ge) | added
     SAFE_ADD_REF(t);
     // set the id
     t->xid = te_array;
@@ -6889,9 +6889,9 @@ void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
     // check ugen info (note: all uanae are also ugens)
     if( this->ugen_info )
     {
-        // check if uana | 1.4.1.2 (ge)
+        // check if uana | 1.4.2.0 (ge)
         if( this->ugen_info->tock ) nameStr += " (unit analyzer)";
-        // check if UAna base class, which has no tock() | 1.4.1.2 (ge)
+        // check if UAna base class, which has no tock() | 1.4.2.0 (ge)
         else if( this->xid == te_uana ) nameStr += " (unit analyzer)";
         // otherwise
         else nameStr += " (unit generator)";

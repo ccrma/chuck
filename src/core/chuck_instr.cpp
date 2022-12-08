@@ -5002,7 +5002,7 @@ Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * t,
     m_param_str = new char[64];
     // obj | REFACTOR-2017: added env
     m_is_obj = isobj( env, m_type_ref );
-    // float | 1.4.1.2 (ge) added to differentiate between int and float arrays
+    // float | 1.4.2.0 (ge) added to differentiate between int and float arrays
     // -- in situations where they are the same size
     m_is_float = isa( t, env->t_float );
 
@@ -5054,7 +5054,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
     // allocate the array
-    // 1.4.1.2 (ge) | added: check for float explicitly
+    // 1.4.2.0 (ge) | added: check for float explicitly
     if( m_type_ref->size == sz_INT && !m_is_float ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // TODO: look at size and treat Chuck_Array4 as ChuckArrayInt
