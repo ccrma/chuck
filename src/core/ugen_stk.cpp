@@ -5926,7 +5926,7 @@ void BeeThree :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT BeeThree :: tick()
 {
-    register MY_FLOAT temp, temp2;
+    /* register */ MY_FLOAT temp, temp2;
     // save for AM later
     // 1.4.1.0 (prc) REPAIRATHON2021 ADDITION, allow for tremelo or vibrato
     temp2 = vibrato->tick();
@@ -7780,19 +7780,19 @@ MY_FLOAT Delay :: getDelay(void) const
 MY_FLOAT Delay :: energy(void) const
 {
   int i;
-  register MY_FLOAT e = 0;
+  /* register */ MY_FLOAT e = 0;
   if (inPoint >= outPoint) {
     for (i=outPoint; i<inPoint; i++) {
-      register MY_FLOAT t = inputs[i];
+      /* register */ MY_FLOAT t = inputs[i];
       e += t*t;
     }
   } else {
     for (i=outPoint; i<length; i++) {
-      register MY_FLOAT t = inputs[i];
+      /* register */ MY_FLOAT t = inputs[i];
       e += t*t;
     }
     for (i=0; i<inPoint; i++) {
-      register MY_FLOAT t = inputs[i];
+      /* register */ MY_FLOAT t = inputs[i];
       e += t*t;
     }
   }
@@ -9014,7 +9014,7 @@ void FMVoices :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT FMVoices :: tick() // 1.4.1.0 updated (prc)
 {
-    register MY_FLOAT temp, temp2;
+    /* register */ MY_FLOAT temp, temp2;
 
     temp2 = vibrato->tick() * modDepth * (MY_FLOAT) 0.1;
     for (int i = 0; i < 4; i++)  {
@@ -9766,7 +9766,7 @@ void HevyMetl :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT HevyMetl :: tick() // 1.4.1.0 (prc) REPAIRATHON2021 updated
 {
-    register MY_FLOAT temp, temp2;
+    /* register */ MY_FLOAT temp, temp2;
 
     temp2 = vibrato->tick();  // save for AM later /*****2021 REPAIRATHON ADDITION *****/
     temp =  temp2 * modDepth * 0.2;
@@ -9896,7 +9896,7 @@ void HnkyTonk :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT HnkyTonk :: tick()  /***** REPAIRATHON2021  NEED TO FIX THIS!!! */
 {
-    register MY_FLOAT temp, temp2;
+    /* register */ MY_FLOAT temp, temp2;
 
     temp2 = vibrato->tick();
 
@@ -10014,7 +10014,7 @@ void FrencHrn :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT FrencHrn :: tick()
 {
-    register MY_FLOAT temp, temp2;
+    /* register */ MY_FLOAT temp, temp2;
 
     temp2 = vibrato->tick();  // save for AM /***** REPAIRATHON2021 HACK *****/
 
@@ -10140,7 +10140,7 @@ void KrstlChr :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT KrstlChr :: tick()
 {
-    register MY_FLOAT temp, temp2;
+    /* register */ MY_FLOAT temp, temp2;
 
     temp2 = vibrato->tick() * modDepth * 0.2; // Save for AM
 
@@ -12287,7 +12287,7 @@ void PercFlut :: noteOn(MY_FLOAT frequency, MY_FLOAT amplitude)
 
 MY_FLOAT PercFlut :: tick() // 1.4.1.0 (prc) REPAIRATHON2021 updated
 {
-  register MY_FLOAT temp, temp2;
+  /* register */ MY_FLOAT temp, temp2;
 
   // save for AM later /***** REPAIRATHON2021 ADDITION *****/
   temp2 = vibrato->tick();
@@ -16024,7 +16024,7 @@ void Stk :: setRawwavePath(std::string newPath)
 
 void Stk :: swap16(unsigned char *ptr)
 {
-  register unsigned char val;
+  /* register */ unsigned char val;
 
   // Swap 1st and 2nd bytes
   val = *(ptr);
@@ -16034,7 +16034,7 @@ void Stk :: swap16(unsigned char *ptr)
 
 void Stk :: swap32(unsigned char *ptr)
 {
-  register unsigned char val;
+  /* register */ unsigned char val;
 
   // Swap 1st and 4th bytes
   val = *(ptr);
@@ -16050,7 +16050,7 @@ void Stk :: swap32(unsigned char *ptr)
 
 void Stk :: swap64(unsigned char *ptr)
 {
-  register unsigned char val;
+  /* register */ unsigned char val;
 
   // Swap 1st and 8th bytes
   val = *(ptr);
@@ -17314,8 +17314,8 @@ void WaveLoop :: addPhaseOffset(MY_FLOAT anAngle)
 
 const MY_FLOAT * WaveLoop :: tickFrame(void)
 {
-  register MY_FLOAT tyme, alpha;
-  register unsigned long i, index;
+  /* register */ MY_FLOAT tyme, alpha;
+  /* register */ unsigned long i, index;
 
   // Check limits of time address ... if necessary, recalculate modulo fileSize.
   while (time < 0.0)
@@ -18767,8 +18767,8 @@ MY_FLOAT * WvIn :: tick(MY_FLOAT *vec, unsigned int vectorSize)
 
 const MY_FLOAT * WvIn :: tickFrame(void)
 {
-  register MY_FLOAT tyme, alpha;
-  register unsigned long i, index;
+  /* register */ MY_FLOAT tyme, alpha;
+  /* register */ unsigned long i, index;
 
   if (finished) return lastOutput;
 
@@ -19605,9 +19605,9 @@ void WvOut :: writeData( unsigned long frames )
   }
   else if ( dataType == STK_SINT32 ) {
     for ( unsigned long k=0; k<frames*channels; k++ ) {
-      float float_sample = data[k] * 32767.0;
-      if(float_sample < -2147483647) float_sample = (float)-2147483647;
-      if(float_sample > 2147483647) float_sample = (float)2147483647;
+      double float_sample = data[k] * 32767.0; // 1.4.2.0 (ge) | change datetype to double from float for precision
+      if(float_sample < -2147483647.0 ) float_sample = -2147483647.0; // 1.4.2.0 (ge) | using float literal, instead of conversion from int
+      if(float_sample > 2147483647.0 ) float_sample = 2147483647.0; // 1.4.2.0 (ge) | using float literal, instead of conversion from int
       SINT32 sample = (SINT32) float_sample;
 
       if ( byteswap ) swap32( (unsigned char *)&sample );
