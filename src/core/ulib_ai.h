@@ -42,9 +42,6 @@
 // query
 DLL_QUERY libai_query( Chuck_DL_Query * QUERY );
 
-
-
-
 //-----------------------------------------------------------------------------
 // name: class ChaiMatrixFast | 1.4.2.0 (ge) added
 // desc: a templated fast access but not bound-checked 2D matrix
@@ -52,7 +49,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY );
 //       to be allocated locally, e.g., int matrix[xDim][yDim] -- which is not
 //       valid syntax with some compilers.
 //-----------------------------------------------------------------------------
-template <class T>
+template<class T>
 class ChaiMatrixFast
 {
 public:
@@ -63,7 +60,7 @@ public:
         // zero out
         m_xDim = m_yDim = 0;
     }
-    
+
     ChaiMatrixFast( t_CKINT xDim, t_CKINT yDim )
     {
         // zero out
@@ -82,7 +79,7 @@ public:
     {
         // delete if necessary
         if( m_matrix != NULL ) cleanup();
-        
+
         // allocate
         m_matrix = new T[xDim * yDim];
         // check
@@ -90,18 +87,18 @@ public:
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: ChaiMatrixFast allocation failure: %s, %d x %d...",
-                               typeid(T).name(), xDim, yDim );
+                               typeid( T ).name(), xDim, yDim );
             // bail
             return FALSE;
         }
         // remember
         m_xDim = xDim;
         m_yDim = yDim;
-        
+
         // done
         return TRUE;
     }
-    
+
     // get element value
     T & v( t_CKINT x, t_CKINT y )
     {
@@ -110,21 +107,27 @@ public:
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: ChaiMatrixFast out of bound: %s[%d][%d]...",
-                               typeid(T).name(), x, y );
+                               typeid( T ).name(), x, y );
             // halt
             // TODO: this should throw (a shred-level, probably) exception
             assert( FALSE );
         }
-        
+
         // NOTE: this is NOT bound-checked!!!
         // NOTE: yet, this is arguably no worse than using c 2d arrays
-        return m_matrix[x*m_yDim+y];
+        return m_matrix[x * m_yDim + y];
     }
-    
+
+    // get dimensions
+    t_CKINT xDim() const
+    { return m_xDim; }
+    t_CKINT yDim() const
+    { return m_yDim; }
+
     void cleanup()
     {
         // reclaim array memory and zero the pointer
-        SAFE_DELETE_ARRAY(m_matrix);
+        SAFE_DELETE_ARRAY( m_matrix );
         // zero out
         m_xDim = m_yDim = 0;
     }
@@ -135,9 +138,6 @@ protected:
     t_CKINT m_yDim;
 };
 
-
-
-
 //-----------------------------------------------------------------------------
 // name: class ChaiVectorFast | 1.4.2.0 (ge) added
 // desc: a templated fast access but not bound-checked 1D array
@@ -145,7 +145,7 @@ protected:
 //       to be allocated locally, e.g., int array[dim] -- which is not
 //       valid syntax with some compilers.
 //-----------------------------------------------------------------------------
-template <class T>
+template<class T>
 class ChaiVectorFast
 {
 public:
@@ -156,7 +156,7 @@ public:
         // zero out
         m_length = 0;
     }
-    
+
     ChaiVectorFast( t_CKINT length )
     {
         // zero out
@@ -175,7 +175,7 @@ public:
     {
         // delete if necessary
         if( m_vector != NULL ) cleanup();
-        
+
         // allocate
         m_vector = new T[length];
         // check
@@ -183,17 +183,20 @@ public:
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: ChaiVectorFast allocation failure: %s[%d]...",
-                               typeid(T).name(), length );
+                               typeid( T ).name(), length );
             // bail
             return FALSE;
         }
         // remember
         m_length = length;
-        
+
         // done
         return TRUE;
     }
-    
+
+    t_CKUINT length()
+    { return m_length; }
+
     // get element value
     T & v( t_CKINT i )
     {
@@ -202,20 +205,20 @@ public:
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: ChaiVectorFast out of bound: %s[%d]...",
-                               typeid(T).name(), i );
+                               typeid( T ).name(), i );
             // TODO: this should throw (a shred-level, probably) exception
             assert( FALSE );
         }
-        
+
         // NOTE: this is NOT bound-checked!!!
         // NOTE: yet, this is arguably no worse than using c arrays
         return m_vector[i];
     }
-    
+
     void cleanup()
     {
         // reclaim array memory and zero the pointer
-        SAFE_DELETE_ARRAY(m_vector);
+        SAFE_DELETE_ARRAY( m_vector );
         // zero out
         m_length = 0;
     }
@@ -224,8 +227,5 @@ protected:
     T * m_vector;
     t_CKINT m_length;
 };
-
-
-
 
 #endif

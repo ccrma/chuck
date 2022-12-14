@@ -941,7 +941,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
 
     // add popOut()
     func = make_new_mfun( "void", "popOut", array_pop_out );
-    func->add_arg("int", "position");
+    func->add_arg( "int", "position" );
     func->doc = "removes the item with position from the array";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
@@ -957,7 +957,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
 
     // (1.4.1.1 nshaheed) add getKeys()
     func = make_new_mfun( "void", "getKeys", array_get_keys );
-    func ->add_arg( "string[]", "keys");
+    func->add_arg( "string[]", "keys" );
     func->doc = "return all keys found in associative array in keys";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
