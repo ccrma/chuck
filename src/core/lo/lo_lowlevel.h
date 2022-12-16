@@ -332,7 +332,7 @@ size_t lo_message_length(lo_message m, const char *path);
  * having the correct endianess and bit-packed structure.
  */
 void *lo_message_serialise(lo_message m, const char *path, void *to,
-			   size_t *size);
+                           size_t *size);
 
 /**
  * \brief  Deserialise a raw OSC message and return a new lo_message object.

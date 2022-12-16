@@ -1545,8 +1545,8 @@ t_CKBOOL Chuck_UAna::system_tock( t_CKTIME now )
         // REFACTOR-2017: remove NULL shred
         if( tock ) m_valid = tock( this, this, blobProxy(), Chuck_DL_Api::Api::instance() );
         if( !m_valid ) { /* clear out blob? */ }
-		// timestamp the blob
-		blobProxy()->when() = now;
+        // timestamp the blob
+        blobProxy()->when() = now;
         // TODO: set current_blob to out_blob
         // TODO: set last_blob to current
         return m_valid;

@@ -3806,9 +3806,9 @@ void Chuck_IO_Serial::read_cb()
 
     m_write_thread = new XThread;
 #ifdef WIN32
-        m_read_thread->start((unsigned int (__stdcall *)(void*))shell_write_cb, this);
+    m_read_thread->start((unsigned int (__stdcall *)(void*))shell_write_cb, this);
 #else
-	m_write_thread->start(shell_write_cb, this);
+    m_write_thread->start(shell_write_cb, this);
 #endif
 
     while(m_do_read_thread && !m_do_exit)

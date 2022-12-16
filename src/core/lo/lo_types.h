@@ -133,8 +133,8 @@ typedef void (*lo_err_handler)(int num, const char *msg, const char *where);
  * lo_server_thread_add_method.
  */
 typedef int (*lo_method_handler)(const char *path, const char *types,
-				 lo_arg **argv, int argc, lo_message msg,
-				 void *user_data);
+                                 lo_arg **argv, int argc, lo_message msg,
+                                 void *user_data);
 
 #ifdef __cplusplus
 }
