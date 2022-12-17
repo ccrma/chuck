@@ -105,15 +105,23 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, machine_status_impl, "int", "status" );
     QUERY->doc_func( QUERY, "display current status of virtual machine." );
 
+    // add shreds
+    //! get list of active shreds by id
+    QUERY->add_sfun( QUERY, machine_shreds_impl, "int[]", "shreds" );
+    QUERY->doc_func( QUERY, "get list of active shred ids." );
+
     // add get intsize (width)
     //! get the intsize in bits (e.g., 32 or 64)
     QUERY->add_sfun( QUERY, machine_intsize_impl, "int", "intsize" );
     QUERY->doc_func( QUERY, "get size of int in bits (e.g., 32 or 64)." );
 
-    // add shreds
-    //! get list of active shreds by id
-    QUERY->add_sfun( QUERY, machine_shreds_impl, "int[]", "shreds" );
-    QUERY->doc_func( QUERY, "get list of active shred ids." );
+    // add check for silent (or realtime audio) | adapted from nshaheed PR #230
+    QUERY->add_sfun( QUERY, machine_silent_impl, "int", "silent" );
+    QUERY->doc_func( QUERY, "return false if the shred is in realtime mode, true if it's in silent mode (i.e. --silent is enabled)" );
+
+    // add check for realtime (always opposite of silent()) | adapted from nshaheed PR #230
+    QUERY->add_sfun( QUERY, machine_realtime_impl, "int", "realtime" );
+    QUERY->doc_func( QUERY, "return true if the shred is in realtime mode, false if it's in silent mode (i.e. --silent is enabled)" );
 
     // end class
     QUERY->end_class( QUERY );
@@ -148,6 +156,18 @@ t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func proc_msg )
 t_CKUINT machine_intsize()
 {
     return sizeof(t_CKINT) * 8;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: machine_realtime()
+// desc: return whether chuck is in realtime mode, or silent mode (--silent is enabled)
+//-----------------------------------------------------------------------------
+t_CKUINT machine_realtime( Chuck_VM * vm )
+{
+    return vm->carrier()->hintIsRealtimeAudio();
 }
 
 
@@ -208,6 +228,18 @@ CK_DLL_SFUN( machine_status_impl )
 CK_DLL_SFUN( machine_intsize_impl )
 {
     RETURN->v_int = machine_intsize();
+}
+
+// realtime
+CK_DLL_SFUN( machine_realtime_impl )
+{
+    RETURN->v_int = machine_realtime( SHRED->vm_ref );
+}
+
+// silent
+CK_DLL_SFUN( machine_silent_impl )
+{
+    RETURN->v_int = !machine_realtime( SHRED->vm_ref );
 }
 
 CK_DLL_SFUN( machine_shreds_impl )
