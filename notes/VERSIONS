@@ -18,6 +18,12 @@ by Ge Wang with Ph.D. candidate Yikai Li.
   - (added) all associative arrays now have a new method [thanks nshaheed]
         void getKeys( string[] keys );
         Return all keys found in associative array in keys
+  - (added) Machine.realtime(): "return true if the shred is in realtime 
+        mode, false if it's in silent mode (i.e. --silent is enabled)"
+        -- thanks nshaheed --
+  - (added) Machine.silent(): "return false if the shred is in realtime 
+        mode, true if it's in silent mode (i.e. --silent is enabled)"
+        -- thanks nshaheed --
   - (fixed) .help() now more accurately prints ("unit analyzer")
     for UAna types
   - (fixed) multi-variable array declaration; the following should
@@ -44,6 +50,8 @@ by Ge Wang with Ph.D. candidate Yikai Li.
   - (dev) added test examples in 01-Basic related to multi-var array
     declarations
   - (dev) extraneous white spaces removed throughout src/core
+    ** thank you nshaheed for this soul-restoring measure **
+  - (dev) all tabs replaced with 4 spaces, now consistent across project
     ** thank you nshaheed for this soul-restoring measure **
   - (dev) nshaheed: linux makefiles now correctly inserts Debug (-g)
     build flag when Debug build is enabled (default builds for Release)
