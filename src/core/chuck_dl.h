@@ -675,7 +675,7 @@ public:
     struct ObjectApi
     {
         ObjectApi();
-    private:
+    public:
         // function pointer get_type()
         Type (* const get_type)( CK_DL_API, Chuck_VM_Shred *, std::string &name );
         // function pointer create()
