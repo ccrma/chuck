@@ -42,12 +42,6 @@
 // query
 DLL_QUERY libai_query( Chuck_DL_Query * QUERY );
 
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
 //-----------------------------------------------------------------------------
 // name: class ChaiMatrixFast | 1.4.2.0 (ge) added
 // desc: a templated fast access but not bound-checked 2D matrix
@@ -55,11 +49,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY );
 //       to be allocated locally, e.g., int matrix[xDim][yDim] -- which is not
 //       valid syntax with some compilers.
 //-----------------------------------------------------------------------------
-<<<<<<< HEAD
 template<class T>
-=======
-template <class T>
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
 class ChaiMatrixFast
 {
 public:
@@ -70,11 +60,7 @@ public:
         // zero out
         m_xDim = m_yDim = 0;
     }
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
     ChaiMatrixFast( t_CKINT xDim, t_CKINT yDim )
     {
         // zero out
@@ -93,11 +79,7 @@ public:
     {
         // delete if necessary
         if( m_matrix != NULL ) cleanup();
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
         // allocate
         m_matrix = new T[xDim * yDim];
         // check
@@ -105,30 +87,18 @@ public:
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: ChaiMatrixFast allocation failure: %s, %d x %d...",
-<<<<<<< HEAD
                                typeid( T ).name(), xDim, yDim );
-=======
-                               typeid(T).name(), xDim, yDim );
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
             // bail
             return FALSE;
         }
         // remember
         m_xDim = xDim;
         m_yDim = yDim;
-<<<<<<< HEAD
 
         // done
         return TRUE;
     }
 
-=======
-        
-        // done
-        return TRUE;
-    }
-    
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
     // get element value
     T & v( t_CKINT x, t_CKINT y )
     {
@@ -137,16 +107,11 @@ public:
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: ChaiMatrixFast out of bound: %s[%d][%d]...",
-<<<<<<< HEAD
                                typeid( T ).name(), x, y );
-=======
-                               typeid(T).name(), x, y );
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
             // halt
             // TODO: this should throw (a shred-level, probably) exception
             assert( FALSE );
         }
-<<<<<<< HEAD
 
         // NOTE: this is NOT bound-checked!!!
         // NOTE: yet, this is arguably no worse than using c 2d arrays
@@ -163,18 +128,6 @@ public:
     {
         // reclaim array memory and zero the pointer
         SAFE_DELETE_ARRAY( m_matrix );
-=======
-        
-        // NOTE: this is NOT bound-checked!!!
-        // NOTE: yet, this is arguably no worse than using c 2d arrays
-        return m_matrix[x*m_yDim+y];
-    }
-    
-    void cleanup()
-    {
-        // reclaim array memory and zero the pointer
-        SAFE_DELETE_ARRAY(m_matrix);
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
         // zero out
         m_xDim = m_yDim = 0;
     }
@@ -185,12 +138,6 @@ protected:
     t_CKINT m_yDim;
 };
 
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
 //-----------------------------------------------------------------------------
 // name: class ChaiVectorFast | 1.4.2.0 (ge) added
 // desc: a templated fast access but not bound-checked 1D array
@@ -198,11 +145,7 @@ protected:
 //       to be allocated locally, e.g., int array[dim] -- which is not
 //       valid syntax with some compilers.
 //-----------------------------------------------------------------------------
-<<<<<<< HEAD
 template<class T>
-=======
-template <class T>
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
 class ChaiVectorFast
 {
 public:
@@ -213,11 +156,7 @@ public:
         // zero out
         m_length = 0;
     }
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
     ChaiVectorFast( t_CKINT length )
     {
         // zero out
@@ -236,11 +175,7 @@ public:
     {
         // delete if necessary
         if( m_vector != NULL ) cleanup();
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
         // allocate
         m_vector = new T[length];
         // check
@@ -248,17 +183,12 @@ public:
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: ChaiVectorFast allocation failure: %s[%d]...",
-<<<<<<< HEAD
                                typeid( T ).name(), length );
-=======
-                               typeid(T).name(), length );
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
             // bail
             return FALSE;
         }
         // remember
         m_length = length;
-<<<<<<< HEAD
 
         // done
         return TRUE;
@@ -267,13 +197,6 @@ public:
     t_CKUINT length()
     { return m_length; }
 
-=======
-        
-        // done
-        return TRUE;
-    }
-    
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
     // get element value
     T & v( t_CKINT i )
     {
@@ -282,36 +205,20 @@ public:
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: ChaiVectorFast out of bound: %s[%d]...",
-<<<<<<< HEAD
                                typeid( T ).name(), i );
             // TODO: this should throw (a shred-level, probably) exception
             assert( FALSE );
         }
 
-=======
-                               typeid(T).name(), i );
-            // TODO: this should throw (a shred-level, probably) exception
-            assert( FALSE );
-        }
-        
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
         // NOTE: this is NOT bound-checked!!!
         // NOTE: yet, this is arguably no worse than using c arrays
         return m_vector[i];
     }
-<<<<<<< HEAD
 
     void cleanup()
     {
         // reclaim array memory and zero the pointer
         SAFE_DELETE_ARRAY( m_vector );
-=======
-    
-    void cleanup()
-    {
-        // reclaim array memory and zero the pointer
-        SAFE_DELETE_ARRAY(m_vector);
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
         // zero out
         m_length = 0;
     }
@@ -321,10 +228,4 @@ protected:
     t_CKINT m_length;
 };
 
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> aab1c2c (paving road to ChAI: ubli_ai.*, refactored SVM, bumping version to 1.4.2.0)
 #endif
