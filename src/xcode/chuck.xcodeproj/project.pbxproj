@@ -87,6 +87,7 @@
 		0982F19A2021871C005B1521 /* chuck_carrier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0982F1992021871C005B1521 /* chuck_carrier.cpp */; };
 		8615DFF9264D9AE20084EF86 /* chuck_globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8615DFF7264D9AE20084EF86 /* chuck_globals.cpp */; };
 		8615DFFA264D9AE20084EF86 /* chuck_globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8615DFF7264D9AE20084EF86 /* chuck_globals.cpp */; };
+		86D8F47429419EBB00954EF4 /* ulib_ai.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 86D8F47329419EBB00954EF4 /* ulib_ai.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -95,6 +96,8 @@
 			compilerSpec = com.apple.compilers.lex;
 			filePatterns = "*.lex";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 			);
@@ -104,6 +107,8 @@
 			compilerSpec = com.apple.compilers.lex;
 			filePatterns = "*.lex";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 			);
@@ -430,6 +435,8 @@
 		8615DFF6264CD96B0084EF86 /* chuck_carrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chuck_carrier.h; path = ../core/chuck_carrier.h; sourceTree = "<group>"; };
 		8615DFF7264D9AE20084EF86 /* chuck_globals.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = chuck_globals.cpp; path = ../core/chuck_globals.cpp; sourceTree = "<group>"; };
 		8615DFF8264D9AE20084EF86 /* chuck_globals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chuck_globals.h; path = ../core/chuck_globals.h; sourceTree = "<group>"; };
+		86D8F47229419EBB00954EF4 /* ulib_ai.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ulib_ai.h; path = ../core/ulib_ai.h; sourceTree = "<group>"; };
+		86D8F47329419EBB00954EF4 /* ulib_ai.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ulib_ai.cpp; path = ../core/ulib_ai.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -910,6 +917,8 @@
 				09812B990C6E394A00D1D68C /* uana_extract.h */,
 				090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */,
 				090B4B1B0C4F038E00DF5577 /* uana_xform.h */,
+				86D8F47329419EBB00954EF4 /* ulib_ai.cpp */,
+				86D8F47229419EBB00954EF4 /* ulib_ai.h */,
 				09A40B4A0A9A54DA007604EA /* ulib_machine.cpp */,
 				09A40B4B0A9A54DA007604EA /* ulib_machine.h */,
 				09A40B4C0A9A54DA007604EA /* ulib_math.cpp */,
@@ -1106,6 +1115,7 @@
 				091677111F7CAD1100248F78 /* chuck_instr.cpp in Sources */,
 				091677121F7CAD1100248F78 /* chuck_lang.cpp in Sources */,
 				091677131F7CAD1100248F78 /* server_thread.c in Sources */,
+				86D8F47429419EBB00954EF4 /* ulib_ai.cpp in Sources */,
 				091677141F7CAD1100248F78 /* chuck_oo.cpp in Sources */,
 				091677151F7CAD1100248F78 /* chuck_otf.cpp in Sources */,
 				091677161F7CAD1100248F78 /* chuck_parse.cpp in Sources */,
@@ -1313,7 +1323,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					/usr/local/include,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				SDKROOT = macosx;
 				YACC_GENERATED_FILE_STEM = InputFileStem;
 			};
@@ -1333,7 +1343,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					/usr/local/include,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				SDKROOT = macosx;
 				YACC_GENERATED_FILE_STEM = InputFileStem;
 			};

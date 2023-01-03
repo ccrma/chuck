@@ -112,6 +112,9 @@
     <ClCompile Include="..\core\ugen_xxx.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="..\core\ulib_ai.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClCompile Include="..\core\ulib_machine.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -370,6 +373,9 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="..\core\ugen_xxx.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\ulib_ai.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="..\core\ulib_machine.h">

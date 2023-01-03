@@ -67,6 +67,22 @@ CK_DLL_TOCK( RMS_tock );
 CK_DLL_PMSG( RMS_pmsg );
 CK_DLL_SFUN( RMS_compute );
 
+// MFCC | 1.4.2.0 (yikai) added
+CK_DLL_CTOR( MFCC_ctor );
+CK_DLL_DTOR( MFCC_dtor );
+CK_DLL_TICK( MFCC_tick );
+CK_DLL_TOCK( MFCC_tock );
+CK_DLL_PMSG( MFCC_pmsg );
+CK_DLL_MFUN( MFCC_compute );
+CK_DLL_MFUN( MFCC_ctrl_sample_rate );
+CK_DLL_MFUN( MFCC_cget_sample_rate );
+CK_DLL_MFUN( MFCC_ctrl_num_filters );
+CK_DLL_MFUN( MFCC_cget_num_filters );
+CK_DLL_MFUN( MFCC_ctrl_num_coeffs );
+CK_DLL_MFUN( MFCC_cget_num_coeffs );
+// offset
+static t_CKUINT MFCC_offset_data = 0;
+
 // RollOff
 CK_DLL_CTOR( RollOff_ctor );
 CK_DLL_DTOR( RollOff_dtor );
@@ -140,6 +156,9 @@ void xcorr_fft( SAMPLE * f, t_CKINT fs, SAMPLE * g, t_CKINT gs, SAMPLE * buffer,
 void xcorr_normalize( SAMPLE * buffy, t_CKINT bs, SAMPLE * f, t_CKINT fs, SAMPLE * g, t_CKINT gs );
 
 
+// 1.4.2.0 (ge) | local global sample rate variable (e.g., for MFCC)
+static t_CKUINT g_srate = 0;
+
 
 
 //-----------------------------------------------------------------------------
@@ -150,6 +169,9 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
 {
     Chuck_Env * env = QUERY->env();
     Chuck_DL_Func * func = NULL;
+
+    // 1.4.2.0 (ge) | store sample rate
+    g_srate = QUERY->srate;
 
     std::string doc;
 
@@ -162,7 +184,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_uana_begin( env, "FeatureCollector", "UAna", env->global(),
                                         NULL, NULL,
                                         FeatureCollector_tick, FeatureCollector_tock, FeatureCollector_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -173,12 +195,12 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: Centroid
     //---------------------------------------------------------------------
 
-    doc = "This UAna computes the spectral centroid from a magnitude spectrum (either from incoming UAna or manually given), and outputs one value in its blob.";
+    doc = "A unit analyzer that computes the spectral centroid from a magnitude spectrum (either from incoming UAna or manually given), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "Centroid", "UAna", env->global(),
                                         NULL, NULL,
                                         Centroid_tick, Centroid_tock, Centroid_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -195,12 +217,12 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: Flux
     //---------------------------------------------------------------------
 
-    doc = "This UAna computes the spectral flux between successive magnitude spectra (via incoming UAna, or given manually), and outputs one value in its blob.";
+    doc = "A unit analyzer that computes the spectral flux between successive magnitude spectra (via incoming UAna, or given manually), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "Flux", "UAna", env->global(),
                                         Flux_ctor, Flux_dtor,
                                         Flux_tick, Flux_tock, Flux_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -235,12 +257,12 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: RMS
     //---------------------------------------------------------------------
 
-    doc = "This UAna computes the RMS power mean from a magnitude spectrum (either from an incoming UAna, or given manually), and outputs one value in its blob.";
+    doc = "A unit analyzer that computes the RMS power mean from a magnitude spectrum (either from an incoming UAna, or given manually), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "RMS", "UAna", env->global(),
                                         NULL, NULL,
                                         RMS_tick, RMS_tock, RMS_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -254,15 +276,76 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     type_engine_import_class_end( env );
 
     //---------------------------------------------------------------------
+    // init as base class: MFCC
+    //---------------------------------------------------------------------
+
+    doc = "A unit analyzer that computes Mel-frequency Cepstral Coefficients (MFCCs), and outputs a vector of coefficients.";
+
+    // 1.4.2.0 (yikai) | added
+    if( !type_engine_import_uana_begin( env, "MFCC", "UAna", env->global(),
+                                        MFCC_ctor, MFCC_dtor,
+                                        MFCC_tick, MFCC_tock, MFCC_pmsg,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
+                                        doc.c_str()) )
+        return FALSE;
+
+    // data offset
+    MFCC_offset_data = type_engine_import_mvar( env, "float", "@MFCC_data", FALSE );
+    if( MFCC_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // sample rate
+    func = make_new_mfun( "int", "sampleRate", MFCC_ctrl_sample_rate );
+    func->add_arg( "int", "sr" );
+    func->doc = "Set the sample rate for MFCC analysis; NOTE: by default this is set to current ChucK sample rate.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // sample rate
+    func = make_new_mfun( "int", "sampleRate", MFCC_cget_sample_rate );
+    func->doc = "Get the sample rate for MFCC analysis.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // num filters
+    func = make_new_mfun( "int", "numFilters", MFCC_ctrl_num_filters );
+    func->doc = "Set the number of linearly spaced filters in MEL space.";
+    func->add_arg( "int", "n" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // num filters
+    func = make_new_mfun( "int", "numFilters", MFCC_cget_num_filters );
+    func->doc = "Get the number of linearly spaced filters in MEL space.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // num coeffs
+    func = make_new_mfun( "int", "numCoeffs", MFCC_ctrl_num_coeffs );
+    func->add_arg( "int", "n" );
+    func->doc = "Set the number of MFCC coefficients to compute.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // num coeffs
+    func = make_new_mfun( "int", "numCoeffs", MFCC_cget_num_coeffs );
+    func->doc = "Get the number of MFCC coefficients to compute.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // compute (manual alternative to calling upchuck())
+    func = make_new_mfun( "float", "compute", MFCC_compute );
+    func->add_arg( "float[]", "input" );
+    func->add_arg( "float[]", "output" );
+    func->doc = "Manually computes the MFCC of the input (an FFT spectrum), and stores the results in the output array (MFCC coefficients).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    //---------------------------------------------------------------------
     // init as base class: RollOff
     //---------------------------------------------------------------------
 
-    doc = "This UAna computes the spectral rolloff from a magnitude spectrum (either from incoming UAna, or given manually), and outputs one value in its blob.";
+    doc = "A unit analyzer that computes the spectral rolloff from a magnitude spectrum (either from incoming UAna, or given manually), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "RollOff", "UAna", env->global(),
                                         RollOff_ctor, RollOff_dtor,
                                         RollOff_tick, RollOff_tock, RollOff_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -363,7 +446,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_uana_begin( env, "ZeroX", "UAna", env->global(),
                                         ZeroX_ctor, ZeroX_dtor,
                                         ZeroX_tick, ZeroX_tock, NULL,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -384,7 +467,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
 
     return TRUE;
 
-error:
+    error:
 
     // end the class import
     type_engine_import_class_end( env );
@@ -492,7 +575,7 @@ CK_DLL_TOCK( Centroid_tock )
 {
     t_CKFLOAT result = 0.0;
 
-    // TODO: get buffer from stream, and set in ifft
+    // TODO: get buffer from stream, and set in SVM
     if( UANA->numIncomingUAnae() > 0 )
     {
         // get first
@@ -504,7 +587,7 @@ CK_DLL_TOCK( Centroid_tock )
         // compute centroid
         result = compute_centroid( mag, mag.size() );
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // no input!
@@ -695,7 +778,7 @@ CK_DLL_TOCK( Flux_tock )
     // get state
     StateOfFlux * state = (StateOfFlux *)OBJ_MEMBER_UINT( SELF, Flux_offset_data );
 
-    // TODO: get buffer from stream, and set in ifft
+    // TODO: get buffer from stream, and set in SVM
     if( UANA->numIncomingUAnae() > 0 )
     {
         // get first
@@ -707,7 +790,7 @@ CK_DLL_TOCK( Flux_tock )
         // compute flux
         result = compute_flux( mag, *state );
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // no input!
@@ -832,7 +915,7 @@ CK_DLL_TOCK( RMS_tock )
 {
     t_CKFLOAT result = 0.0;
 
-    // TODO: get buffer from stream, and set in ifft
+    // TODO: get buffer from stream, and set in SVM
     if( UANA->numIncomingUAnae() > 0 )
     {
         // get first
@@ -844,7 +927,7 @@ CK_DLL_TOCK( RMS_tock )
         // compute RMS
         result = compute_rms( mag, mag.size() );
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // no input!
@@ -885,6 +968,381 @@ CK_DLL_SFUN( RMS_compute )
     }
 }
 
+
+
+
+// 1.4.2.0 (yikai) | MFCC implementation
+// Yikai Li, Fall 2022
+struct MFCC_Object
+{
+    t_CKINT size;
+    t_CKINT sample_rate;
+    t_CKINT num_filters;
+    t_CKINT num_coeffs;
+    t_CKINT curr_sample_rate;
+    t_CKINT curr_num_filters;
+    t_CKINT curr_num_coeffs;
+
+    t_CKFLOAT * filterbank;
+    t_CKINT * filterpoints;
+    t_CKFLOAT * filterfreqs;
+    t_CKFLOAT * dct;
+
+    t_CKFLOAT * spectrum;
+    t_CKFLOAT * filtered;
+    t_CKFLOAT * result;
+
+    // static mfcc instance
+    static MFCC_Object * ourMFCC;
+
+    // constructor
+    MFCC_Object()
+    {
+        size = 1024;
+        sample_rate = g_srate;
+        num_filters = 10;
+        num_coeffs = 40;
+        curr_sample_rate = 0.0;
+        curr_num_filters = 0;
+        curr_num_coeffs = 0;
+        filterbank = NULL;
+        filterpoints = NULL;
+        filterfreqs = NULL;
+        dct = NULL;
+        spectrum = NULL;
+        filtered = NULL;
+        result = NULL;
+        this->prepare(size);
+    }
+
+    // destructor
+    ~MFCC_Object()
+    {
+        // done
+        this->reset();
+    }
+
+    // reset
+    void reset()
+    {
+        // delete
+        SAFE_DELETE_ARRAY( filterbank );
+        SAFE_DELETE_ARRAY( filterpoints );
+        SAFE_DELETE_ARRAY( filterfreqs );
+        SAFE_DELETE_ARRAY( dct );
+        SAFE_DELETE_ARRAY( spectrum );
+        SAFE_DELETE_ARRAY( filtered );
+        SAFE_DELETE_ARRAY( result );
+        // zero out
+        size = 0;
+        sample_rate = 0.0;
+        num_filters = 0;
+        num_coeffs = 0;
+        curr_sample_rate = 0.0;
+        curr_num_filters = 0;
+        curr_num_coeffs = 0;
+    }
+
+    // clear
+    void clear()
+    {
+        if (spectrum) memset(spectrum, 0, sizeof(t_CKFLOAT) * size);
+        if (filtered) memset(filtered, 0, sizeof(t_CKFLOAT) * num_filters);
+        if (result) memset(result, 0, sizeof(t_CKFLOAT) * num_coeffs);
+        if (filterbank) memset(filterbank, 0, sizeof(t_CKFLOAT) * num_filters * size);
+        if (filterpoints) memset(filterpoints, 0, sizeof(t_CKINT) * num_filters);
+        if (filterfreqs) memset(filterfreqs, 0, sizeof(t_CKFLOAT) * num_filters);
+        if (dct) memset(dct, 0, sizeof(t_CKFLOAT) * num_filters * num_coeffs);
+    }
+
+    static t_CKFLOAT freq2mel( t_CKFLOAT freq )
+    {
+        return 1127.01048 * ::log( 1.0 + freq / 700.0 );
+    }
+
+    static t_CKFLOAT mel2freq( t_CKFLOAT mel )
+    {
+        return 700.0 * ( ::exp( mel / 1127.01048 ) - 1.0 );
+    }
+
+    // prepare filterband and dct
+    void prepare(t_CKINT size)
+    {
+        if ( this->size == size
+             && this->sample_rate == this->curr_sample_rate
+             && this->num_filters == this->curr_num_filters
+             && this->num_coeffs == this->curr_num_coeffs )
+            return;
+
+        this->size = size;
+        this->curr_sample_rate = this->sample_rate;
+        this->curr_num_filters = this->num_filters;
+        this->curr_num_coeffs = this->num_coeffs;
+
+        // filter bank
+        SAFE_DELETE_ARRAY( this->filterbank );
+        this->filterbank = new t_CKFLOAT[num_filters * size];
+        memset(this->filterbank, 0, sizeof(t_CKFLOAT) * num_filters * size);
+
+        SAFE_DELETE_ARRAY(this->filterpoints);
+        this->filterpoints = new t_CKINT[num_filters + 2];
+        SAFE_DELETE_ARRAY(this->filterfreqs);
+        this->filterfreqs = new t_CKFLOAT[num_filters + 2];
+
+        t_CKFLOAT filterwidth = this->freq2mel(this->sample_rate / 2.0) / (this->num_filters + 1.0);
+        for (int i=0; i<this->num_filters + 2; i++)
+        {
+            this->filterfreqs[i] = this->mel2freq(i * filterwidth);
+            this->filterpoints[i] = (t_CKINT) (this->filterfreqs[i] / this->sample_rate * this->size);
+        }
+
+        t_CKFLOAT energy;
+        for (int i=0; i<this->num_filters; i++)
+        {
+            energy = 2.0 / (this->filterfreqs[i+2] - this->filterfreqs[i]);
+            for (int j=this->filterpoints[i]; j<this->filterpoints[i+1]; j++)
+            {
+                this->filterbank[i*size + j] = energy * (j - this->filterpoints[i]) / (this->filterpoints[i+1] - this->filterpoints[i]);
+            }
+            for (int j=this->filterpoints[i+1]; j<this->filterpoints[i+2]; j++)
+            {
+                this->filterbank[i*size + j] = energy * (this->filterpoints[i+2] - j) / (this->filterpoints[i+2] - this->filterpoints[i+1]);
+            }
+        }
+
+        // dct
+        SAFE_DELETE_ARRAY(this->dct);
+        this->dct = new t_CKFLOAT[num_coeffs * num_filters];
+        for (int i=0; i<this->num_coeffs; i++)
+        {
+            if (i == 0)
+            {
+                for (int j=0; j<this->num_filters; j++)
+                {
+                    this->dct[i*num_filters + j] = 1.0 / sqrt(this->num_filters);
+                }
+            }
+            else
+            {
+                for (int j=0; j<this->num_filters; j++)
+                {
+                    this->dct[i*num_filters + j] = sqrt(2.0 / this->num_filters) * cos(ONE_PI * i * (j + 0.5) / this->num_filters);
+                }
+            }
+        }
+
+        // spectrum
+        SAFE_DELETE_ARRAY(this->spectrum);
+        this->spectrum = new t_CKFLOAT[size];
+
+        // filtered
+        SAFE_DELETE_ARRAY(this->filtered);
+        this->filtered = new t_CKFLOAT[num_filters];
+
+        // result
+        SAFE_DELETE_ARRAY(this->result);
+        this->result = new t_CKFLOAT[num_coeffs];
+    }
+
+    // compute
+    void compute()
+    {
+        // compute spectrum
+        for (int i=0; i<this->size; i++)
+        {
+            this->spectrum[i] = this->spectrum[i] * this->spectrum[i];
+        }
+
+        // compute filterbank
+        for (int i=0; i<this->num_filters; i++)
+        {
+            this->filtered[i] = 0.0;
+            for (int j=0; j<this->size; j++)
+            {
+                this->filtered[i] += this->spectrum[j] * this->filterbank[i*this->size + j];
+            }
+        }
+
+        // compute dct
+        for (int i=0; i<this->num_coeffs; i++)
+        {
+            this->result[i] = 0.0;
+            for (int j=0; j<this->num_filters; j++)
+            {
+                this->result[i] += this->filtered[j] * this->dct[i*this->num_filters + j];
+            }
+        }
+    }
+
+    // get our singleton
+//    static MFCC_Object * getOurObject()
+//    {
+//        // instantiate, if needed
+//        if (ourMFCC == NULL)
+//        {
+//            ourMFCC = new MFCC_Object();
+//            assert(ourMFCC != NULL);
+//        }
+//
+//        // return new instance
+//        return ourMFCC;
+//    }
+};
+
+// static initialization
+MFCC_Object * MFCC_Object::ourMFCC = NULL;
+
+// compute mfcc
+static void compute_mfcc( MFCC_Object * mfcc, Chuck_Array8 & f, t_CKUINT fs, Chuck_Array8 & buffy )
+{
+    t_CKUINT i;
+    t_CKFLOAT v;
+    t_CKINT size;
+
+    mfcc->prepare(fs);
+
+    // copy into buffers
+    for( i = 0; i < fs; i++ )
+    {
+        f.get( i, &v );
+        mfcc->spectrum[i] = v;
+    }
+
+    // compute
+    mfcc->compute();
+
+    // copy into result
+    size = mfcc->num_coeffs;
+    buffy.set_size( size );
+    for( i = 0; i < size; i++ )
+    {
+        buffy.set( i, mfcc->result[i] );
+    }
+}
+
+// MFCC
+CK_DLL_CTOR( MFCC_ctor )
+{
+    MFCC_Object * mfcc = new MFCC_Object();
+    OBJ_MEMBER_UINT(SELF, MFCC_offset_data) = (t_CKUINT)mfcc;
+}
+
+CK_DLL_DTOR( MFCC_dtor )
+{
+    MFCC_Object * mfcc = (MFCC_Object *)OBJ_MEMBER_UINT(SELF, MFCC_offset_data);
+    SAFE_DELETE( mfcc );
+    OBJ_MEMBER_UINT(SELF, MFCC_offset_data) = 0;
+}
+
+
+CK_DLL_TICK( MFCC_tick )
+{
+    // do nothing
+    return TRUE;
+}
+
+CK_DLL_TOCK( MFCC_tock )
+{
+    // get object
+    MFCC_Object * mfcc = (MFCC_Object *)OBJ_MEMBER_UINT(SELF, MFCC_offset_data);
+
+    // TODO: get buffer from stream, and set in SVM
+    if( UANA->numIncomingUAnae() > 0 )
+    {
+        // get first
+        Chuck_UAnaBlobProxy * BLOB_IN = UANA->getIncomingBlob( 0 );
+        // sanity check
+        assert( BLOB_IN != NULL );
+        // get the array
+        Chuck_Array8 & mag = BLOB_IN->fvals();
+        // get fvals of output BLOB
+        Chuck_Array8 & fvals = BLOB->fvals();
+        // compute MFCC
+        compute_mfcc(mfcc, mag, mag.size(), fvals);
+    }
+        // otherwise zero out
+    else
+    {
+        // get fvals of output BLOB
+        Chuck_Array8 & fvals = BLOB->fvals();
+        // resize
+        fvals.set_size( 0 );
+    }
+
+    return TRUE;
+}
+
+CK_DLL_PMSG( MFCC_pmsg )
+{
+    // do nothing
+    return TRUE;
+}
+
+CK_DLL_CTRL( MFCC_ctrl_sample_rate )
+{
+    // get object
+    MFCC_Object * mfcc = (MFCC_Object *)OBJ_MEMBER_UINT( SELF, MFCC_offset_data );
+    // get sample_rate
+    mfcc->sample_rate = GET_NEXT_INT(ARGS);
+    // return it
+    RETURN->v_float = mfcc->sample_rate;
+}
+
+CK_DLL_CGET( MFCC_cget_sample_rate )
+{
+    // get object
+    MFCC_Object * mfcc = (MFCC_Object *)OBJ_MEMBER_UINT( SELF, MFCC_offset_data );
+    // return it
+    RETURN->v_float = mfcc->sample_rate;
+}
+
+CK_DLL_CTRL( MFCC_ctrl_num_filters )
+{
+    // get object
+    MFCC_Object * mfcc = (MFCC_Object *)OBJ_MEMBER_UINT( SELF, MFCC_offset_data );
+    // get num_filters
+    mfcc->num_filters = GET_NEXT_INT(ARGS);
+    // return it
+    RETURN->v_int = mfcc->num_filters;
+}
+
+CK_DLL_CGET( MFCC_cget_num_filters )
+{
+    // get object
+    MFCC_Object * mfcc = (MFCC_Object *)OBJ_MEMBER_UINT( SELF, MFCC_offset_data );
+    // return it
+    RETURN->v_int = mfcc->num_filters;
+}
+
+CK_DLL_CTRL( MFCC_ctrl_num_coeffs )
+{
+    // get object
+    MFCC_Object * mfcc = (MFCC_Object *)OBJ_MEMBER_UINT( SELF, MFCC_offset_data );
+    // get num_coeffs
+    mfcc->num_coeffs = GET_NEXT_INT(ARGS);
+    // return it
+    RETURN->v_int = mfcc->num_coeffs;
+}
+
+CK_DLL_CGET( MFCC_cget_num_coeffs )
+{
+    // get object
+    MFCC_Object * mfcc = (MFCC_Object *)OBJ_MEMBER_UINT( SELF, MFCC_offset_data );
+    // return it
+    RETURN->v_int = mfcc->num_coeffs;
+}
+
+CK_DLL_MFUN( MFCC_compute )
+{
+    // get object
+    MFCC_Object * mfcc = (MFCC_Object *)OBJ_MEMBER_UINT( SELF, MFCC_offset_data );
+    // get input
+    Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    // get output
+    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    // compute mfcc
+    compute_mfcc( mfcc, *input, input->size(), *output );
+}
 
 static t_CKFLOAT compute_rolloff( Chuck_Array8 & buffer, t_CKUINT size, t_CKFLOAT percent )
 {
@@ -939,7 +1397,7 @@ CK_DLL_TOCK( RollOff_tock )
     // get percent
     t_CKFLOAT percent = OBJ_MEMBER_FLOAT( SELF, RollOff_offset_percent );
 
-    // TODO: get buffer from stream, and set in ifft
+    // TODO: get buffer from stream, and set in SVM
     if( UANA->numIncomingUAnae() > 0 )
     {
         // get first
@@ -951,7 +1409,7 @@ CK_DLL_TOCK( RollOff_tock )
         // compute rolloff
         result = compute_rolloff( mag, mag.size(), percent );
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // no input!
@@ -1106,7 +1564,7 @@ struct Corr_Object
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: Corr failed to allocate %ld-element buffer(s)...",
-                mincap );
+                               mincap );
             // clean up
             this->reset();
             // done
@@ -1169,7 +1627,7 @@ static void compute_corr( Corr_Object * corr, Chuck_Array8 & f, t_CKINT fs,
     {
         // normalize
         xcorr_normalize( corr->buffy, corr->bufcap,
-            corr->fbuf, corr->fcap, corr->gbuf, corr->gcap );
+                         corr->fbuf, corr->fcap, corr->gbuf, corr->gcap );
     }
 
     // copy into result
@@ -1269,7 +1727,7 @@ CK_DLL_SFUN( AutoCorr_compute )
     Corr_Object::getOurObject()->normalize = normalize;
     // compute autocrr
     compute_corr( Corr_Object::getOurObject(), *input, input->size(),
-        *input, input->size(), *output );
+                  *input, input->size(), *output );
 }
 
 
@@ -1315,7 +1773,7 @@ CK_DLL_TOCK( XCorr_tock )
         // compute xcorr
         compute_corr( xc, mag_f, mag_f.size(), mag_g, mag_g.size(), fvals );
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // get fvals of output BLOB
@@ -1365,7 +1823,7 @@ CK_DLL_SFUN( XCorr_compute )
     Corr_Object::getOurObject()->normalize = normalize;
     // compute autocrr
     compute_corr( Corr_Object::getOurObject(), *f, f->size(),
-        *g, g->size(), *output );
+                  *g, g->size(), *output );
 }
 
 
@@ -1472,7 +1930,7 @@ CK_DLL_TOCK( ZeroX_tock )
 {
     t_CKFLOAT result = 0.0;
 
-    // TODO: get buffer from stream, and set in ifft
+    // TODO: get buffer from stream, and set in SVM
     if( UANA->numIncomingUAnae() > 0 )
     {
         // get first
@@ -1484,7 +1942,7 @@ CK_DLL_TOCK( ZeroX_tock )
         // compute ZeroX
         result = (t_CKFLOAT)( compute_zerox( mag, mag.size() ) + .5 );
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // no input!

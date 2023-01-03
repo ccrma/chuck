@@ -146,7 +146,7 @@ int lo_send(lo_address targ, const char *path, const char *type, ...);
  * \return on success, the number of bytes sent, or -1 on failure.
  */
 int lo_send_from(lo_address targ, lo_server from, lo_timetag ts,
-	       		const char *path, const char *type, ...);
+                 const char *path, const char *type, ...);
 
 /**
  * \brief Send a OSC formatted message to the address specified, scheduled to
@@ -170,7 +170,7 @@ int lo_send_from(lo_address targ, lo_server from, lo_timetag ts,
  * \return on success, the number of bytes sent, or -1 on failure.
  */
 int lo_send_timestamped(lo_address targ, lo_timetag ts, const char *path,
-	       		const char *type, ...);
+                        const char *type, ...);
 
 /**
  * \brief Return the error number from the last failed lo_send() or
@@ -238,7 +238,7 @@ lo_server_thread lo_server_thread_new_multicast(const char *group, const char *p
  * raised. The function prototype is defined in lo_types.h
  */
 lo_server_thread lo_server_thread_new_with_proto(const char *port, int proto,
-				   lo_err_handler err_h);
+                                                 lo_err_handler err_h);
 
 /**
  * \brief Free memory taken by a server thread
@@ -262,8 +262,8 @@ void lo_server_thread_free(lo_server_thread st);
  * when its invoked matching from this method.
  */
 lo_method lo_server_thread_add_method(lo_server_thread st, const char *path,
-                               const char *typespec, lo_method_handler h,
-                               void *user_data);
+                                      const char *typespec, lo_method_handler h,
+                                      void *user_data);
 /**
  * \brief Delete an OSC method from the specifed server thread.
  *
@@ -273,7 +273,7 @@ lo_method lo_server_thread_add_method(lo_server_thread st, const char *path,
  * \param typespec The typespec the method accepts.
  */
 void lo_server_thread_del_method(lo_server_thread st, const char *path,
-				 const char *typespec);
+                                 const char *typespec);
 
 /**
  * \brief Start the server thread

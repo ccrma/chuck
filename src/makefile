@@ -38,8 +38,8 @@ EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
     core/chuck_ugen.cpp core/chuck_utils.cpp core/chuck_vm.cpp \
     core/uana_extract.cpp core/uana_xform.cpp core/ugen_filter.cpp \
     core/ugen_osc.cpp core/ugen_stk.cpp core/ugen_xxx.cpp \
-    core/ulib_math.cpp core/ulib_regex.cpp core/ulib_std.cpp \
-    core/util_buffers.cpp core/util_math.c core/util_raw.c \
+    core/ulib_ai.cpp core/ulib_math.cpp core/ulib_regex.cpp \
+    core/ulib_std.cpp core/util_buffers.cpp core/util_math.c core/util_raw.c \
     core/util_string.cpp core/util_xforms.c core/chuck_win32.c \
     core/util_sndfile.c
 
@@ -146,8 +146,8 @@ CXXOBJS_CORE+= chuck.o chuck_absyn.o chuck_parse.o chuck_errmsg.o \
 	chuck_otf.o chuck_stats.o chuck_shell.o chuck_io.o \
 	chuck_carrier.o chuck_globals.o \
 	hidio_sdl.o midiio_rtmidi.o rtmidi.o ugen_osc.o ugen_filter.o \
-	ugen_stk.o ugen_xxx.o ulib_machine.o ulib_math.o ulib_std.o \
-	ulib_opsc.o ulib_regex.o util_buffers.o util_console.o \
+	ugen_stk.o ugen_xxx.o ulib_ai.o ulib_machine.o ulib_math.o \
+	ulib_std.o ulib_opsc.o ulib_regex.o util_buffers.o util_console.o \
 	util_string.o util_thread.o util_opsc.o util_serial.o \
 	util_hid.o uana_xform.o uana_extract.o
 LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \

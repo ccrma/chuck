@@ -578,12 +578,16 @@ CK_DLL_SFUN( ceil_impl )
 // round
 CK_DLL_SFUN( round_impl )
 {
+    // for older windows version (and miniAudicle windows build)
+    // enable this in the build __CK_MATH_DEFINE_ROUND_TRUNC__
     RETURN->v_float = round( GET_CK_FLOAT(ARGS) );
 }
 
 // trunc
 CK_DLL_SFUN( trunc_impl )
 {
+    // for older windows version (and miniAudicle windows build)
+    // enable this in the build __CK_MATH_DEFINE_ROUND_TRUNC__
     RETURN->v_float = trunc( GET_CK_FLOAT(ARGS) );
 }
 
