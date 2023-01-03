@@ -104,12 +104,12 @@ typedef struct { t_CKUINT N ; t_CKFLOAT * values ; } t_CKVECTOR;
 
 // kinds (added 1.3.1.0 to faciliate 64-bit support)
 // to differentiate in case int and float have same size
-#define kindof_VOID                0
-#define kindof_INT                 1
-#define kindof_FLOAT               2
-#define kindof_COMPLEX             3
-#define kindof_VEC3                4
-#define kindof_VEC4                5
+#define kindof_VOID                 0
+#define kindof_INT                  1
+#define kindof_FLOAT                2
+#define kindof_COMPLEX              3
+#define kindof_VEC3                 4
+#define kindof_VEC4                 5
 
 typedef char *                      c_str;
 typedef const char *                c_constr;
@@ -139,6 +139,9 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #define TRUE                        1
 #define FALSE                       0
 #endif
+
+// special non-zero value to denote "no value" | added 1.4.2.0 (ge)
+#define CK_NO_VALUE                 0xffffffff
 
 // 3.1415926535897932384626433832795028841971693993751058209749445...
 #define ONE_PI (3.14159265358979323846)

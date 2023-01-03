@@ -123,7 +123,7 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
     type->ugen_info->num_ins = 1;
     type->ugen_info->num_outs = 1;
 
-    const char * doc = "base class for all unit generator (UGen) types in ChucK.";
+    const char * doc = "base class for all unit generator (UGen) types.";
 
     // init as base class
     // TODO: ctor/dtor, ugen's sometimes created internally?
@@ -225,7 +225,7 @@ t_CKBOOL init_class_uana( Chuck_Env * env, Chuck_Type * type )
     type->ugen_info->num_ins = 1;
     type->ugen_info->num_outs = 1;
 
-    const char * doc = "base class from which all unit analyzer (UAna) type inherit; UAnae (note plural form) can be interconnected using => (standard chuck operator) or using =^ (upchuck operator), specify the the types of and when data is passed between UAnae and UGens.  When .upchuck() is invoked on a given UAna, the UAna-chain (UAnae connected via =^) is traversed backwards from the upchucked UAna, and analysis is performed at each UAna along the chain; the updated analysis results are stored in UAnaBlobs.";
+    const char * doc = "base class from which all unit analyzer (UAna) types inherit; UAnae (note plural form) can be interconnected using => (chuck operator for synthesis; all UAnae are also UGens) or using =^ (upchuck operator for analysis) -- the operator used will determine how data is passed. When .upchuck() is invoked on a given UAna, the UAna-chain (i.e., UAnae connected via =^) is traversed upstream from the upchucked UAna, and analysis is performed at each UAna along the chain; the analysis results are returned in UAnaBlobs.";
 
     // init as base class, type should already know the parent type
     // TODO: ctor/dtor, ugen's sometimes created internally?
@@ -309,7 +309,7 @@ t_CKBOOL init_class_blob( Chuck_Env * env, Chuck_Type * type )
     // log
     EM_log( CK_LOG_SEVERE, "class 'UAnaBlob'" );
 
-    const char * doc = "contains results associated with UAna analysis. There is a UAnaBlob associated with every UAna. As a UAna is upchucked, the result is stored in the UAnaBlob's floating point vector and/or complex vector. The intended interpretation of the results depends on the specific UAna.";
+    const char * doc = "a data structure that contains results associated with UAna analysis. There is a UAnaBlob associated with every UAna. As a UAna is upchucked (using .upchuck()), the result is stored in the UAnaBlob's floating point vector and/or complex vector. The interpretation of the results depends on the specific UAna.";
 
     // init class
     // TODO: ctor/dtor
@@ -941,7 +941,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
 
     // add popOut()
     func = make_new_mfun( "void", "popOut", array_pop_out );
-    func->add_arg("int", "position");
+    func->add_arg( "int", "position" );
     func->doc = "removes the item with position from the array";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
@@ -957,7 +957,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
 
     // (1.4.1.1 nshaheed) add getKeys()
     func = make_new_mfun( "void", "getKeys", array_get_keys );
-    func ->add_arg( "string[]", "keys");
+    func->add_arg( "string[]", "keys" );
     func->doc = "return all keys found in associative array in keys";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
@@ -2465,36 +2465,36 @@ CK_DLL_MFUN( array_pop_back )
 // array.pop_out
 CK_DLL_MFUN( array_pop_out )
 {
-	Chuck_Array * array = (Chuck_Array *)SELF;
-	t_CKINT position = GET_NEXT_INT(ARGS);
-	if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND)
-		RETURN->v_int = ((Chuck_Array4 *)array)->pop_out(position);
-	else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
-		RETURN->v_int = ((Chuck_Array8 *)array)->pop_out(position);
-	else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
-		RETURN->v_int = ((Chuck_Array16 *)array)->pop_out(position);
-	else
-		assert( FALSE );
+    Chuck_Array * array = (Chuck_Array *)SELF;
+    t_CKINT position = GET_NEXT_INT(ARGS);
+    if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND)
+        RETURN->v_int = ((Chuck_Array4 *)array)->pop_out(position);
+    else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
+        RETURN->v_int = ((Chuck_Array8 *)array)->pop_out(position);
+    else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
+        RETURN->v_int = ((Chuck_Array16 *)array)->pop_out(position);
+    else
+        assert( FALSE );
 
 }
 
 // 1.4.1.1 nshaheed (added) array.getKeys()
 CK_DLL_MFUN( array_get_keys )
 {
-	Chuck_Array * array = (Chuck_Array *)SELF;
-	Chuck_Array4 * returned_keys = (Chuck_Array4 *) GET_NEXT_OBJECT(ARGS);
+    Chuck_Array * array = (Chuck_Array *)SELF;
+    Chuck_Array4 * returned_keys = (Chuck_Array4 *) GET_NEXT_OBJECT(ARGS);
 
     // clear return array
-	returned_keys->set_size(0);
+    returned_keys->set_size(0);
     // local keys array
     std::vector<std::string> array_keys;
     // get the keys
     array->get_keys( array_keys );
 
-	// copy array keys into the provided string array
+    // copy array keys into the provided string array
     for (t_CKUINT i = 0; i < array_keys.size(); i++ ) {
-	    Chuck_String * key = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
-	    key->set(array_keys[i]);
-	    returned_keys->push_back((t_CKUINT) key);
-	}
+        Chuck_String * key = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
+        key->set(array_keys[i]);
+        returned_keys->push_back((t_CKUINT) key);
+    }
 }

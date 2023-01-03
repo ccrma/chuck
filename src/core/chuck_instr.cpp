@@ -5002,6 +5002,11 @@ Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * t,
     m_param_str = new char[64];
     // obj | REFACTOR-2017: added env
     m_is_obj = isobj( env, m_type_ref );
+    // float | 1.4.2.0 (ge) added to differentiate between int and float arrays
+    // -- in situations where they are the same size
+    m_is_float = isa( t, env->t_float );
+
+    // copy type name
     const char * str = m_type_ref->c_name();
     t_CKUINT len = strlen( str );
     // copy
@@ -5049,7 +5054,8 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
     // allocate the array
-    if( m_type_ref->size == sz_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    // 1.4.2.0 (ge) | added: check for float explicitly
+    if( m_type_ref->size == sz_INT && !m_is_float ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // TODO: look at size and treat Chuck_Array4 as ChuckArrayInt
         // pop the values
@@ -5059,6 +5065,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // problem
         if( !array ) goto out_of_memory;
         // initialize object
+        // TODO: should it be this??? initialize_object( array, m_type_ref );
         initialize_object( array, vm->env()->t_array );
         // set array type
         array->m_array_type = m_type_ref;
@@ -5163,7 +5170,13 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // push the pointer
         push_( reg_sp, (t_CKUINT)array );
     }
-    else assert( FALSE );
+    else
+    {
+        // we have a problem
+        CK_FPRINTF_STDERR(
+            "[chuck](VM): InvalidArrayTypeInfo: while initializing arrays on line[%lu]\n", m_linepos );
+        assert( FALSE );
+    }
 
     return;
 

@@ -568,6 +568,19 @@ SOURCE=.\ugen_xxx.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ulib_ai.cpp
+
+!IF  "$(CFG)" == "chuck_win32 - Win32 Release"
+
+# ADD CPP /D "HAVE_CONFIG_H"
+
+!ELSEIF  "$(CFG)" == "chuck_win32 - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\ulib_machine.cpp
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
@@ -948,6 +961,10 @@ SOURCE=.\ugen_stk.h
 # Begin Source File
 
 SOURCE=.\ugen_xxx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ulib_ai.h
 # End Source File
 # Begin Source File
 

@@ -176,7 +176,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_uana_begin( env, "FFT", "UAna", env->global(),
                                         FFT_ctor, FFT_dtor,
                                         FFT_tick, FFT_tock, FFT_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -229,7 +229,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_uana_begin( env, "IFFT", "UAna", env->global(),
                                         IFFT_ctor, IFFT_dtor,
                                         IFFT_tick, IFFT_tock, IFFT_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -320,7 +320,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_uana_begin( env, "Flip", "UAna", env->global(),
                                         Flip_ctor, Flip_dtor,
                                         Flip_tick, Flip_tock, Flip_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -373,7 +373,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_uana_begin( env, "pilF", "UAna", env->global(),
                                         UnFlip_ctor, UnFlip_dtor,
                                         UnFlip_tick, UnFlip_tock, UnFlip_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -425,7 +425,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_uana_begin( env, "DCT", "UAna", env->global(),
                                         DCT_ctor, DCT_dtor,
                                         DCT_tick, DCT_tock, DCT_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -478,7 +478,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_uana_begin( env, "IDCT", "UAna", env->global(),
                                         IDCT_ctor, IDCT_dtor,
                                         IDCT_tick, IDCT_tock, IDCT_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 

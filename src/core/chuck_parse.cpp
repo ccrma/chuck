@@ -136,7 +136,7 @@ FILE * android_tmpfile()
 //-----------------------------------------------------------------------------
 t_CKBOOL chuck_parse( c_constr fname, FILE * fd, c_constr code )
 {
-	t_CKBOOL clo = FALSE;
+    t_CKBOOL clo = FALSE;
     t_CKBOOL ret = FALSE;
 
     // sanity check
@@ -246,7 +246,7 @@ t_CKBOOL chuck_parse( c_constr fname, FILE * fd, c_constr code )
 cleanup:
 
     // done
-	if( clo ) fclose( fd );
+    if( clo ) fclose( fd );
 
     return ret;
 }

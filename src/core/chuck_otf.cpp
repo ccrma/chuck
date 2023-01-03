@@ -453,7 +453,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         EM_pushlog();
         // log
         EM_log( CK_LOG_INFO, "requesting removal of last shred..." );
-        msg.param = 0xffffffff;
+        msg.param = CK_NO_VALUE;
         msg.type = MSG_REMOVE;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
@@ -469,7 +469,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         }
 
         if( i <= 0 )
-            msg.param = 0xffffffff;
+            msg.param = CK_NO_VALUE;
         else
             msg.param = atoi( argv[i] );
 
