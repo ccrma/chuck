@@ -633,7 +633,7 @@ t_CKINT Chuck_Array4::pop_back( )
 // name: pop_out()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array4::pop_out( t_CKUINT pos )
+t_CKINT Chuck_Array4::pop_out( t_CKINT pos )
 {
     // check
     if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
@@ -1029,7 +1029,7 @@ t_CKINT Chuck_Array8::pop_back( )
 // name: pop_out()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array8::pop_out( t_CKUINT pos )
+t_CKINT Chuck_Array8::pop_out( t_CKINT pos )
 {
         // check
         if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
@@ -1378,7 +1378,7 @@ t_CKINT Chuck_Array16::pop_back( )
 // name: pop_out()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::pop_out( t_CKUINT pos )
+t_CKINT Chuck_Array16::pop_out( t_CKINT pos )
 {
         // check
         if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
