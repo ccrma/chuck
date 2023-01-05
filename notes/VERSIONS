@@ -1,20 +1,57 @@
 1.4.2.0
 ---
-(NOTE) chuck-1.4.2.0 marks a beginning of ChAI => ChucK for AI:
-a set of functionalities for interactive machine learning and artful, 
+(NOTE) chuck-1.4.2.0 marks a beginning (in BETA) of ChAI => ChucK for AI 
+-- a set of functionalities for interactive machine learning and artful, 
 humanistic design of music and artificial intelligence; it coincides with 
 the new "Music and AI" course at Stanford University, designed and taught 
 by Ge Wang with Ph.D. candidate Yikai Li.
----
+-----------------------
+(BETA) ChAI-related additions: please note this is in Beta, meaning that 
+APIs may change in the near future
+-----------------------
+  - (added) SVM object (thanks Yikai Li)
+        |- a support vector machine (SVM) utility trains a model and 
+           predicts output based on new input
+        |- (inheritance) SVM -> Object
+        |- methods:
+           int predict( float[] x, float[] y );
+               Predict the output 'y' given the input 'x'.
+           int train( float[][] x, float[][] y );
+               Train the SVM model with the given samples 'x' and 'y'.
+  - (added) KNN object (thanks Yikai Li)
+        |- A k-nearest neighbor (KNN) utility that predicts the output of 
+           a given input based on the training data
+        |- (inheritance) KNN -> Object
+        |- methods:
+           int predict( int k, float[] x, float[] prob );
+               Predict the output probabilities (in 'prob') given new input
+               'x' based on 'k' nearing neighbors.
+           int train( float[][] x, int[] y );
+               Train the KNN model with the given samples 'x' and 
+           corresponding labels 'y'.
+  - (added) HMM object (thanks Yikai Li)
+        |- A hidden markov model (HMM) utility that generates a sequence 
+           of observations based on the training data
+        |- (inheritance) SVM -> Object
+        |- methods:
+           int load( float[] initiailDistribution,
+                     float[][] transitionMatrix, 
+                     float[][] emissionMatrix );
+               Initialize the HMM model with the given initial state 
+               distribution, transition matrix, and emission matrix.
+           int train( int numStates, int numEmissions,
+               int[] observations );
+           Train the HMM model with the given observations.
+           int generate( int length, int[] output );
+               Generate a sequence of observations of the given length.
+-----------------------
+(BETA) end CHAI additions
+-----------------------
   - (added) MFCC unit analyzer (thanks Yikai Li)
         |- A unit analyzer that computes Mel-frequency Cepstral Coefficients
            (MFCCs), and outputs a vector of coefficients.
         |- (inheritance) MFCC -> UAna -> UGen -> Object
   - (added) examples: analysis/features/mfcc.ck
-  - (added) SVM unit analyzer (thanks Yikai Li)
-        |- A unit analyzer for support vector machine (SVM) that takes 
-           training data as input, and outputs the weights of the model.
-        |- (inheritance) SVM -> Object 
   - (added) all associative arrays now have a new method [thanks nshaheed]
         void getKeys( string[] keys );
         Return all keys found in associative array in keys

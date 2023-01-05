@@ -53,10 +53,13 @@ static t_CKCOMPLEX g_i = { 0.0, 1.0 };
 static t_CKFLOAT fzero() { return 0.0; }
 
 
-#ifdef __WINDOWS_DS__
-static long random() { return rand(); }
-static void srandom( unsigned s ) { srand( s ); }
-#endif // __WINDOWS_DS__
+#ifndef __WINDOWS_DS__
+long ck_random() { return ::random(); }
+void ck_srandom( unsigned s ) { srandom( s ); }
+#else // __WINDOWS_DS__
+long ck_random() { return ::rand(); }
+void ck_srandom( unsigned s ) { srand( s ); }
+#endif
 
 
 // query
@@ -368,7 +371,8 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->doc_func( QUERY, "seed the random nubmer generator." );
 
     // go ahead and seed (the code can seed again for repeatability; 1.3.1.0)
-    srandom( time( NULL ) );
+    // updated to use ck_srandom() wrapper | 1.4.2.0 (ge)
+    ck_srandom( (unsigned)time( NULL ) );
 
     // add gauss (ge: added 1.3.5.3)
     QUERY->add_sfun( QUERY, gauss_impl, "float", "gauss" ); //! Gaussian function
@@ -827,14 +831,16 @@ CK_DLL_SFUN( ptor_impl )
 // random (added 1.3.1.0)
 CK_DLL_SFUN( random_impl )
 {
-    RETURN->v_int = ::random();
+    // 1.4.2.0 (ge) | updated to use ck_random() wrapper
+    RETURN->v_int = ck_random();
 }
 
 
 // randomf (added 1.3.1.0)
 CK_DLL_SFUN( randomf_impl )
 {
-    RETURN->v_float = ( ::random() / (t_CKFLOAT)CK_RANDOM_MAX );
+    // 1.4.2.0 (ge) | updated to use ck_random() wrapper
+    RETURN->v_float = ( ck_random() / (t_CKFLOAT)CK_RANDOM_MAX );
 }
 
 
@@ -842,7 +848,8 @@ CK_DLL_SFUN( randomf_impl )
 CK_DLL_SFUN( random2f_impl )
 {
     t_CKFLOAT min = GET_CK_FLOAT(ARGS), max = *((t_CKFLOAT *)ARGS + 1);
-    t_CKFLOAT normRand = ((t_CKFLOAT)::random()*1.0/(t_CKFLOAT)CK_RANDOM_MAX);
+    // 1.4.2.0 (ge) | updated to use ck_random() wrapper
+    t_CKFLOAT normRand = ck_random() / (t_CKFLOAT)CK_RANDOM_MAX;
     //CK_FPRINTF_STDERR( "[chuck random2f]: %G --> %G, %G\n", normRand, min, max );
     RETURN->v_float = min + (max-min)* normRand;
 }
@@ -865,11 +872,13 @@ CK_DLL_SFUN( random2_impl ) // inclusive.
     {
         if( range > 0 )
         {
-            RETURN->v_int = min + (t_CKINT)( (1.0 + range) * ( ::random()/(CK_RANDOM_MAX+1.0) ) );
+            // 1.4.2.0 (ge) | updated to use ck_random() wrapper
+            RETURN->v_int = min + (t_CKINT)( (1.0 + range) * ( ck_random()/(CK_RANDOM_MAX+1.0) ) );
         }
         else
         {
-            RETURN->v_int = min - (t_CKINT)( (-range + 1.0) * ( ::random()/(CK_RANDOM_MAX+1.0) ) );
+            // 1.4.2.0 (ge) | updated to use ck_random() wrapper
+            RETURN->v_int = min - (t_CKINT)( (-range + 1.0) * ( ck_random()/(CK_RANDOM_MAX+1.0) ) );
         }
     }
 }
@@ -879,7 +888,8 @@ CK_DLL_SFUN( random2_impl ) // inclusive.
 CK_DLL_SFUN( srandom_impl )
 {
     t_CKINT seed = GET_CK_INT(ARGS);
-    ::srandom( seed );
+    // 1.4.2.0 (ge) | updated to use ck_srandom() wrapper
+    ck_srandom( (unsigned)seed );
 }
 
 
