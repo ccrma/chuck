@@ -3849,7 +3849,7 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
                     "cannot extend incomplete type '%s'",
                     t_parent->c_name() );
                 EM_error2( class_def->ext->linepos,
-                    "...(note: the parent's declaration must preceed child's)" );
+                    "...(note: the parent's declaration must precede child's)" );
                 return FALSE;
             }
         }
@@ -6497,7 +6497,7 @@ t_CKBOOL escape_str( char * str_lit, int linepos )
             // make sure next char
             if( *str_lit == '\0' )
             {
-                EM_error2( linepos, "invalid: string ends with escape charactor '\\'" );
+                EM_error2( linepos, "invalid: string ends with escape character '\\'" );
                 return FALSE;
             }
 

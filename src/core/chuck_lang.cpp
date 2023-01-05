@@ -860,7 +860,7 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
 
     // add toInt()
     func = make_new_mfun( "int", "toInt", string_toInt );
-    func->doc = "attemp to convert the contents of the string to an integer and return the result, or 0 if conversion failed.";
+    func->doc = "attempt to convert the contents of the string to an integer and return the result, or 0 if conversion failed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add toFloat()
