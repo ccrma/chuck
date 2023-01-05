@@ -268,7 +268,7 @@ void Chuck_Compiler::set_auto_depend( t_CKBOOL v )
 t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * str_src, const string & full_path )
 {
     t_CKBOOL ret = TRUE;
-    Chuck_Context * context = NULL;
+    // Chuck_Context * context = NULL;
 
     EM_reset_msg();
 

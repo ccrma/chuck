@@ -564,7 +564,7 @@ void Chuck_Shell::continue_code( string & in )
 #ifndef __PLATFORM_WIN32__
         snprintf( buf, 16, "code %2d> ", (int)scope );
 #else
-        sprintf( buf, "code %2ld> ", (long)scope);
+        snprintf( buf, 16, "code %2ld> ", (long)scope);
 #endif
         prompt = buf;
     }
@@ -577,7 +577,7 @@ void Chuck_Shell::continue_code( string & in )
 #ifndef __PLATFORM_WIN32__
         snprintf( buf, 16, "code %2d> ", (int)scope );
 #else
-        sprintf( buf, "code %2ld> ", (long)scope);
+        snprintf( buf, 16, "code %2ld> ", (long)scope);
 #endif
         prompt = buf;
     }
@@ -1005,7 +1005,7 @@ t_CKBOOL Chuck_Shell_Network_VM::kill( string & out )
 string Chuck_Shell_Network_VM::fullname()
 {
     char buf[16];
-    sprintf( buf, ":%u", (int)port );
+    snprintf( buf, 16, ":%u", (int)port );
 
     return hostname + buf;
 }
@@ -1388,7 +1388,7 @@ t_CKINT Chuck_Shell::Command_Ls::execute( vector< string > & argv,
         return 0;
     }
 
-    int i, len = argv.size();
+    t_CKINT i, len = argv.size();
     t_CKBOOL print_parent_name = len > 1 ? TRUE : FALSE;
 
     for( i = 0; i < len; i++ )
@@ -1889,7 +1889,7 @@ t_CKINT Chuck_Shell::Command_VMAdd::execute( vector< string > & argv,
 #ifndef __PLATFORM_WIN32__
     snprintf( buf, 16, "%lu", caller->vms.size() - 1 );
 #else
-    sprintf( buf, "%lu", (long)caller->vms.size() - 1 );
+    snprintf( buf, 16, "%lu", (long)caller->vms.size() - 1 );
 #endif // __PLATFORM_WIN32__
 
     out += caller->current_vm->fullname() + " saved as VM " + buf + "\n";
@@ -1987,7 +1987,7 @@ t_CKINT Chuck_Shell::Command_VMList::execute( vector< string > & argv,
 #ifndef __PLATFORM_WIN32__
             snprintf( buf, 16, "%lu", i );
 #else
-            sprintf( buf, "%lu", (long)i );
+            snprintf( buf, 16, "%lu", (long)i );
 #endif // __PLATFORM_WIN32__
             out += string( "VM " ) + buf + ": " +
                    caller->vms[i]->fullname() + "\n";

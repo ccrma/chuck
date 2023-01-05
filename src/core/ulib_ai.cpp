@@ -32,8 +32,7 @@
 //-----------------------------------------------------------------------------
 #include "ulib_ai.h"
 #include "chuck_type.h"
-#include "ulib_math.h"
-
+#include "util_math.h"
 #include <math.h>
 
 // 1.4.2.0 (yikai) added SVM

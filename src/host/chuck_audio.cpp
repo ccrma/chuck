@@ -205,7 +205,7 @@ void ChuckAudio::probe()
 // desc: get device number by name; needs_dac/adc prompts further checks on
 //       requested device having > 0 channels
 //-----------------------------------------------------------------------------
-t_CKUINT ChuckAudio::device_named( const std::string & name, t_CKBOOL needs_dac,
+t_CKINT ChuckAudio::device_named( const std::string & name, t_CKBOOL needs_dac,
                                    t_CKBOOL needs_adc )
 {
     // rtaudio pointer
@@ -468,7 +468,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
     m_cb_user_data = data;
 
     // variable to pass by reference into RtAudio
-    unsigned int bufsize = m_buffer_size;
+    unsigned int bufsize = (unsigned int)m_buffer_size;
 
     // log
     EM_log( CK_LOG_FINE, "initializing RtAudio..." );
@@ -503,7 +503,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
         }
 
         // get device info
-        RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo(m_dac_n);
+        RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo((unsigned int)m_dac_n);
         
         // ensure correct channel count if default device is requested
         if( useDefault )
@@ -614,7 +614,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
             m_adc_n = m_rtaudio->getDefaultInputDevice();
             
             // ensure correct channel count if default device is requested
-            RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo(m_adc_n);
+            RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo((unsigned int)m_adc_n);
             
             // check if input channels > 0
             if( device_info.inputChannels < m_num_channels_in )
@@ -727,18 +727,18 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
                 m_num_channels_in, m_num_channels_out );
 
         RtAudio::StreamParameters output_parameters;
-        output_parameters.deviceId = m_dac_n;
-        output_parameters.nChannels = m_num_channels_out;
+        output_parameters.deviceId = (unsigned int)m_dac_n;
+        output_parameters.nChannels = (unsigned int)m_num_channels_out;
         output_parameters.firstChannel = 0;
         
         RtAudio::StreamParameters input_parameters;
-        input_parameters.deviceId = m_adc_n;
-        input_parameters.nChannels = m_expand_in_mono2stereo ? 1 : m_num_channels_in;
+        input_parameters.deviceId = (unsigned int)m_adc_n;
+        input_parameters.nChannels = (unsigned int)(m_expand_in_mono2stereo ? 1 : m_num_channels_in);
         input_parameters.firstChannel = 0;
         
         RtAudio::StreamOptions stream_options;
         stream_options.flags = 0;
-        stream_options.numberOfBuffers = num_buffers;
+        stream_options.numberOfBuffers = (unsigned int)num_buffers;
         stream_options.streamName = "ChucK";
         stream_options.priority = 0;
             
@@ -746,7 +746,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT num_dac_channels,
         m_rtaudio->openStream(
             m_num_channels_out > 0 ? &output_parameters : NULL,
             m_num_channels_in > 0 ? &input_parameters : NULL,
-            CK_RTAUDIO_FORMAT, sample_rate, &bufsize,
+            CK_RTAUDIO_FORMAT, (unsigned int)sample_rate, &bufsize,
             cb, m_cb_user_data,
             &stream_options );
     } catch( RtError err ) {

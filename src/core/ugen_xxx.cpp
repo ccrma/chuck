@@ -59,6 +59,7 @@
 #include "chuck_vm.h"
 #include "chuck_compile.h"
 #include "chuck_instr.h"
+#include "util_math.h"
 
 #include <fstream>
 using namespace std;
@@ -1770,6 +1771,8 @@ CK_DLL_CTOR( pan2_ctor )
 CK_DLL_TICK( noise_tick )
 {
     *out = -1.0 + 2.0 * (SAMPLE)rand() / RAND_MAX;
+    // for now keep synthesis using rand() instead of ck_random()
+    // *out = -1.0 + 2.0 * (SAMPLE)ck_random() / CK_RANDOM_MAX;
     return TRUE;
 }
 
@@ -3157,8 +3160,8 @@ CK_DLL_TICKF( sndbuf_tickf )
         // ruh roh
     }
 
-    unsigned int frame_idx;
-    unsigned int nchans = ugen->m_num_outs;
+    t_CKUINT frame_idx;
+    t_CKUINT nchans = ugen->m_num_outs;
     for(frame_idx = 0; frame_idx < nframes && (d->loop || d->curf < d->num_frames); frame_idx++)
     {
         for(unsigned int chan_idx = 0; chan_idx < nchans; chan_idx++)
@@ -3192,7 +3195,7 @@ CK_DLL_TICKF( sndbuf_tickf )
 
     for(; frame_idx < nframes; frame_idx++)
     {
-        for(unsigned int chan_idx = 0; chan_idx < nchans; chan_idx++)
+        for(t_CKUINT chan_idx = 0; chan_idx < nchans; chan_idx++)
         {
             out[frame_idx*nchans+chan_idx] = 0;
         }
@@ -3654,7 +3657,7 @@ public:
   t_CKFLOAT rt;
   t_CKFLOAT at;
   t_CKFLOAT xd; //sidechain
-  int externalSideInput; // use input signal or a ctrl signal for env
+  t_CKINT externalSideInput; // use input signal or a ctrl signal for env
   t_CKFLOAT sideInput;   // the ctrl signal for the envelope
 
   int count; //diagnostic
@@ -4946,7 +4949,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_sample )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     SAMPLE sample_in = (SAMPLE)GET_NEXT_FLOAT(ARGS);
-    int index_in = (t_CKINT)GET_NEXT_DUR(ARGS);
+    t_CKINT index_in = (t_CKINT)GET_NEXT_DUR(ARGS);
 
     d->pokeSample( sample_in, index_in );
 

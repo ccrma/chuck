@@ -176,7 +176,7 @@ void kb_endwin()
 t_CKINT kb_hit()
 {
 #ifndef __PLATFORM_WIN32__
-    int ifkeyin;
+    long ifkeyin;
     char c;
     ifkeyin = read( 0, &c, 1 );
     g_c = (t_CKINT)c;

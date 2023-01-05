@@ -3109,7 +3109,7 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
     Chuck_Value * value = NULL;
     t_CKBOOL is_obj = FALSE;
     t_CKBOOL is_ref = FALSE;
-    t_CKBOOL is_ref2 = FALSE;
+    // t_CKBOOL is_ref2 = FALSE;
 
     // loop through the variables
     while( list != NULL )

@@ -318,8 +318,9 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // finish class
     QUERY->end_class( QUERY );
 
-    // seed the rand
-    srand( time( NULL ) );
+    // seed rand()
+    // (NOTE: ck_srandom(time(NULL)) is invoked in ulib_math.cpp)
+    srand( (unsigned)time( NULL ) );
 
     Chuck_DL_Func * func = NULL;
 
@@ -574,17 +575,17 @@ error:
 }
 
 
-#define RAND_INV_RANGE(r) (RAND_MAX / (r))
-
-int irand_exclusive ( int max ) {
-  int x = ::rand();
-
-  while (x >= max * RAND_INV_RANGE (max))
-    x = ::rand();
-
-  x /= RAND_INV_RANGE (max);
-  return x;
-}
+//#define RAND_INV_RANGE(r) (RAND_MAX / (r))
+//
+//int irand_exclusive ( int max ) {
+//  int x = ::rand();
+//
+//  while (x >= max * RAND_INV_RANGE (max))
+//    x = ::rand();
+//
+//  x /= RAND_INV_RANGE (max);
+//  return x;
+//}
 
 
 // abs
@@ -651,7 +652,7 @@ CK_DLL_SFUN( rand2_impl ) // inclusive.
 CK_DLL_SFUN( srand_impl )
 {
     t_CKINT seed = GET_CK_INT(ARGS);
-    ::srand( seed );
+    srand( (unsigned)seed );
 }
 
 // sgn

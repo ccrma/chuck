@@ -23,8 +23,8 @@
  -----------------------------------------------------------------------------*/
 
 //-----------------------------------------------------------------------------
-// file: chuck.h
-// desc: chuck engine header; VM + compiler + state; no audio I/O
+// file: chuck.cpp
+// desc: chuck engine chasis; VM + compiler + state; independent of audio I/O
 //       REFACTOR-2017
 //
 // author: Ge Wang (https://ccrma.stanford.edu/~ge/)
@@ -702,7 +702,7 @@ bool ChucK::initOTF()
         // start tcp server
         m_carrier->otf_socket = ck_tcp_create( 1 );
         if( !m_carrier->otf_socket ||
-            !ck_bind( m_carrier->otf_socket, m_carrier->otf_port ) ||
+            !ck_bind( m_carrier->otf_socket, (int)m_carrier->otf_port ) ||
             !ck_listen( m_carrier->otf_socket, 10 ) )
         {
             CK_FPRINTF_STDERR( "[chuck]: cannot bind to tcp port %li...\n", m_carrier->otf_port );
@@ -808,7 +808,7 @@ bool ChucK::shutdown()
 // name: compileFile()
 // desc: compile a file (can be called anytime)
 //-----------------------------------------------------------------------------
-bool ChucK::compileFile( const std::string & path, const std::string & argsTogether, int count )
+bool ChucK::compileFile( const std::string & path, const std::string & argsTogether, t_CKINT count )
 {
     // sanity check
     if( !m_carrier->compiler )
@@ -905,7 +905,7 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
 // name: compileCode()
 // desc: compile code directly
 //-----------------------------------------------------------------------------
-bool ChucK::compileCode( const std::string & code, const std::string & argsTogether, int count)
+bool ChucK::compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count)
 {
     // sanity check
     if( !m_carrier->compiler )
@@ -1021,7 +1021,7 @@ bool ChucK::start()
 // name: run()
 // desc: run engine (call from host callback)
 //-----------------------------------------------------------------------------
-void ChucK::run( SAMPLE * input, SAMPLE * output, int numFrames )
+void ChucK::run( SAMPLE * input, SAMPLE * output, t_CKINT numFrames )
 {
     // make sure we started...
     if( !m_started ) this->start();
