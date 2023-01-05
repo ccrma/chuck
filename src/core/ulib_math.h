@@ -97,6 +97,9 @@ CK_DLL_SFUN( gauss_impl );
 #define CK_RANDOM_MAX 0x7fffffff
 #endif
 
+// chuck random wrapper
+long ck_random();
+void ck_random( unsigned seed );
 
 
 #endif

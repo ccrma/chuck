@@ -197,6 +197,9 @@ public:
     t_CKUINT length()
     { return m_length; }
 
+    t_CKINT size()
+    { return m_length; }
+
     // get element value
     T & v( t_CKINT i )
     {
