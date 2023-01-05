@@ -116,7 +116,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     // 1.4.1.2 added by Yikai Li, Fall 2022
     //---------------------------------------------------------------------
     // doc string
-    doc = "a supervised learning utility that predicts probability of class membership, taking into account the distances from a test input to its k nearest neighbors.";
+    doc = "a supervised learning utility that predicts probabilities of class membership based on distances from a test input to its k nearest neighbors.";
 
     // begin class definition
     if( !type_engine_import_class_begin( env, "KNN", "Object", env->global(), KNN_ctor, KNN_dtor, doc.c_str() ) )
@@ -138,7 +138,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int", "k" );
     func->add_arg( "float[]", "x" );
     func->add_arg( "float[]", "prob" );
-    func->doc = "Predict the output probabilities ('prob') given unlabeled test input 'x' based on 'k' nearest neighbors.";
+    func->doc = "Predict the output probabilities ('prob') given unlabeled test input 'x' based on distances to 'k' nearest neighbors.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
