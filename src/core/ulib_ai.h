@@ -24,9 +24,9 @@
 
 //-----------------------------------------------------------------------------
 // file: ulib_ai.h
-// desc: class library for 'AI' as part of ChAI (ChucK for AI)
+// desc: class library for libAI -- part of ChAI (ChucK for AI)
 //
-// author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
+// author: Ge Wang (ge@ccrma.stanford.edu)
 //         Yikai Li (yikaili@stanford.edu)
 // date: Fall 2022
 //-----------------------------------------------------------------------------
@@ -137,6 +137,9 @@ protected:
     t_CKINT m_xDim;
     t_CKINT m_yDim;
 };
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: class ChaiVectorFast | 1.4.2.0 (ge) added

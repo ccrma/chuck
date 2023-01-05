@@ -24,7 +24,7 @@
 
 //-----------------------------------------------------------------------------
 // file: ulib_ai.cpp
-// desc: class library for 'libAI' -- part of ChAI (ChucK for AI)
+// desc: class library for libAI -- part of ChAI (ChucK for AI)
 //
 // author: Ge Wang (ge@ccrma.stanford.edu)
 //         Yikai Li (yikaili@stanford.edu)
@@ -221,6 +221,9 @@ ChaiVectorFast<t_CKFLOAT> * chuck2chai( Chuck_Array8 & array )
     return vector;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: struct SVM_Object
 // desc: SVM implementation | added 1.4.2.0 (yikai)
@@ -397,7 +400,6 @@ private:
 //-----------------------------------------------------------------------------
 // SVM c++ hooks
 //-----------------------------------------------------------------------------
-
 CK_DLL_CTOR( SVM_ctor )
 {
     SVM_Object * svm = new SVM_Object();
@@ -432,6 +434,9 @@ CK_DLL_MFUN( SVM_predict )
     // add
     svm->predict( *x, *y );
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: struct KNN_Object
@@ -541,7 +546,6 @@ private:
 //-----------------------------------------------------------------------------
 // KNN c++ hooks
 //-----------------------------------------------------------------------------
-
 CK_DLL_CTOR( KNN_ctor )
 {
     KNN_Object * knn = new KNN_Object();
@@ -578,6 +582,9 @@ CK_DLL_MFUN( KNN_predict )
     knn->predict( k, *x, *y );
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: struct HMM_Object
 // desc: hidden markov model implementation | added 1.4.2.0 (yikai)
@@ -587,8 +594,7 @@ struct HMM_Object
 public:
     // constructor
     HMM_Object()
-    {
-    }
+    { }
 
     // destructor
     ~HMM_Object()
@@ -616,7 +622,7 @@ public:
 
     void filter( ChaiVectorFast<t_CKINT> & y, ChaiMatrixFast<t_CKFLOAT> & phi, ChaiVectorFast<t_CKFLOAT> & c )
     {
-        t_CKINT i, j, t, n = y.size(), N = emission->xDim(), M = emission->yDim();
+        t_CKINT i, j, t, n = y.size(), N = emission->xDim(); // M = emission->yDim();
         ChaiVectorFast<t_CKFLOAT> z( N );
         c.v( 0 ) = 0;
         for( j = 0; j < N; j++ )
@@ -643,7 +649,7 @@ public:
 
     void smoother( ChaiVectorFast<t_CKINT> & y, ChaiVectorFast<t_CKFLOAT> & c, ChaiMatrixFast<t_CKFLOAT> & beta )
     {
-        t_CKINT i, j, t, n = y.size(), N = emission->xDim(), M = emission->yDim();
+        t_CKINT i, j, t, n = y.size(), N = emission->xDim(); // M = emission->yDim();
         for( j = 0; j < N; j++ )
             beta.v( n - 1, j ) = 1;
         for( t = n - 2; t >= 0; t-- )
@@ -835,7 +841,6 @@ private:
 //-----------------------------------------------------------------------------
 // HMM c++ hooks
 //-----------------------------------------------------------------------------
-
 CK_DLL_CTOR( HMM_ctor )
 {
     HMM_Object * hmm = new HMM_Object();
