@@ -1197,7 +1197,8 @@ const char * dlerror( void )
 {
     int error = GetLastError();
     if( error == 0 ) return NULL;
-    sprintf( dlerror_buffer, "%i", error );
+    // 1.4.2.0 (ge) | changed to snprintf
+    snprintf( dlerror_buffer, DLERROR_BUFFER_LENGTH, "%i", error );
     return dlerror_buffer;
 }
 }

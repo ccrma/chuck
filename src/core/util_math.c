@@ -69,6 +69,21 @@ double trunc( double a )
 
 
 //-----------------------------------------------------------------------------
+// name: ck_random() and ck_srandom()
+// desc: chuck wrappers for random number generators | 1.4.2.0 (ge)
+//-----------------------------------------------------------------------------
+#ifndef __WINDOWS_DS__
+long ck_random() { return random(); }
+void ck_srandom( unsigned s ) { srandom( s ); }
+#else // __WINDOWS_DS__
+long ck_random() { return rand(); }
+void ck_srandom( unsigned s ) { srand( s ); }
+#endif
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_remainder()
 // desc: ...
 //-----------------------------------------------------------------------------

@@ -3070,7 +3070,7 @@ t_CKINT Chuck_IO_File::size()
     // have to seek to end, report position
     FILE * stream = fopen( m_path.c_str(), "r" );
     fseek( stream, 0L, SEEK_END );
-    int endPos = ftell( stream );
+    long endPos = ftell( stream );
     fclose( stream );
     return endPos;
 }

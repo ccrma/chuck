@@ -54,9 +54,9 @@ string itoa( t_CKINT val )
 {
     char buffer[128];
 #ifdef _WIN64
-    sprintf( buffer, "%lld", val );
+    snprintf( buffer, 128, "%lld", val );
 #else
-    sprintf( buffer, "%ld", val );
+    snprintf( buffer, 128, "%ld", val );
 #endif
     return string(buffer);
 }
@@ -72,8 +72,8 @@ string ftoa( t_CKFLOAT val, t_CKUINT precision )
     char str[32];
     char buffer[128];
     if( precision > 32 ) precision = 32;
-    sprintf( str, "%%.%lif", (long)precision );
-    sprintf( buffer, str, val );
+    snprintf( str, 32, "%%.%lif", (long)precision );
+    snprintf( buffer, 128, str, val );
     return string(buffer);
 }
 

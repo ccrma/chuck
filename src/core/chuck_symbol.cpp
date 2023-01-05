@@ -44,7 +44,7 @@ static S_Symbol mksymbol( c_constr name, S_Symbol next )
 {
     S_Symbol s = (S_Symbol)checked_malloc(sizeof(*s));
     t_CKINT len = strlen(name) + 1;
-    s->name = (c_str)checked_malloc(len);
+    s->name = (c_str)checked_malloc((int)len);
     strcpy(s->name, (c_str)name); s->next=next;
     return s;
 }

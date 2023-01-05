@@ -329,7 +329,7 @@ void Chuck_UGen::alloc_multi_chan( t_CKUINT num_ins, t_CKUINT num_outs )
     {
         // m_max_block_size needs to be set via alloc_v() first (added 1.3.0.0)
         assert(m_max_block_size >= 0);
-        int block_size = m_max_block_size == 0 ? 1 : m_max_block_size;
+        t_CKINT block_size = m_max_block_size == 0 ? 1 : m_max_block_size;
 
         SAFE_DELETE_ARRAY(m_multi_in_v);
         SAFE_DELETE_ARRAY(m_multi_out_v);

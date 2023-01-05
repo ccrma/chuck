@@ -53,15 +53,6 @@ static t_CKCOMPLEX g_i = { 0.0, 1.0 };
 static t_CKFLOAT fzero() { return 0.0; }
 
 
-#ifndef __WINDOWS_DS__
-long ck_random() { return ::random(); }
-void ck_srandom( unsigned s ) { srandom( s ); }
-#else // __WINDOWS_DS__
-long ck_random() { return ::rand(); }
-void ck_srandom( unsigned s ) { srand( s ); }
-#endif
-
-
 // query
 DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
 {

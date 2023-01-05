@@ -1100,11 +1100,11 @@ struct MFCC_Object
         for (int i=0; i<this->num_filters; i++)
         {
             energy = 2.0 / (this->filterfreqs[i+2] - this->filterfreqs[i]);
-            for (int j=this->filterpoints[i]; j<this->filterpoints[i+1]; j++)
+            for (t_CKINT j=this->filterpoints[i]; j<this->filterpoints[i+1]; j++)
             {
                 this->filterbank[i*size + j] = energy * (j - this->filterpoints[i]) / (this->filterpoints[i+1] - this->filterpoints[i]);
             }
-            for (int j=this->filterpoints[i+1]; j<this->filterpoints[i+2]; j++)
+            for (t_CKINT j=this->filterpoints[i+1]; j<this->filterpoints[i+2]; j++)
             {
                 this->filterbank[i*size + j] = energy * (this->filterpoints[i+2] - j) / (this->filterpoints[i+2] - this->filterpoints[i+1]);
             }

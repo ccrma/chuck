@@ -505,7 +505,7 @@ t_CKBOOL XThreadUtil::set_priority( CHUCK_THREAD tid, t_CKINT priority )
     // policy
     policy = SCHED_RR;
     // priority
-    param.sched_priority = priority;
+    param.sched_priority = (int)priority;
     // set for thread, pthread style
     if( pthread_setschedparam( tid, policy, &param ) )
         return FALSE;

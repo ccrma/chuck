@@ -47,9 +47,6 @@ struct Chuck_Carrier;
 DLL_QUERY stk_query( Chuck_DL_Query * QUERY );
 t_CKBOOL  stk_detach( Chuck_Carrier * carrier );
 
-
-
-
 // this determines STK float type and de-denormal method
 #ifndef __STK_USE_SINGLE_PRECISION__
 #define MY_FLOAT double
@@ -58,6 +55,9 @@ t_CKBOOL  stk_detach( Chuck_Carrier * carrier );
 #define MY_FLOAT float
 #define CK_STK_DDN CK_DDN_SINGLE
 #endif
+
+// 1.4.2.0 (ge) | added as part of switch to snprintf()
+#define STK_MSG_BUF_LENGTH 256
 
 
 
@@ -126,7 +126,7 @@ public:
   };
 
 public: // SWAP formerly protected
-  char message[256];
+  char message[STK_MSG_BUF_LENGTH];
   TYPE type;
 
 public:
@@ -1255,8 +1255,8 @@ public: // SWAP formerly protected
   // Get MAT-file header information.
   bool getMatInfo( const char *fileName );
 
-  char msg[256];
-  // char m_filename[256]; // chuck data
+  char msg[STK_MSG_BUF_LENGTH];
+  // char m_filename[STK_MSG_BUF_LENGTH]; // chuck data
   Chuck_String str_filename; // chuck data
   FILE *fd;
   MY_FLOAT *data;
@@ -5275,7 +5275,7 @@ class Socket : public Stk
 
  public: // SWAP formerly protected
 
-  char msg[256];
+  char msg[STK_MSG_BUF_LENGTH];
   int soket;
   int poort;
   bool server;
@@ -5716,7 +5716,7 @@ class WvOut : public Stk
   // Close MAT-file, updating the header.
   void closeMatFile( void );
 
-  char msg[256];
+  char msg[STK_MSG_BUF_LENGTH];
   FILE *fd;
   MY_FLOAT *data;
   FILE_TYPE fileType;
