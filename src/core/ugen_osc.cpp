@@ -261,7 +261,7 @@ struct Osc_Data
 {
     t_CKFLOAT num;
     t_CKFLOAT freq;
-    int    sync;
+    t_CKINT    sync;
     t_CKUINT srate;
     t_CKFLOAT width;
 

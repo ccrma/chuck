@@ -3513,7 +3513,7 @@ void Gsm_Coder (
 		 *			( dpp, e + 5, dp );
 		 */
 
-		{ register int i;
+		{ /* register */ int i;
 		  for (i = 0; i <= 39; i++)
 			dp[ i ] = GSM_ADD( State->e[5 + i], dpp[i] );
 		}
@@ -5053,11 +5053,11 @@ u_bitwidth_to_subformat (int bits)
 
 static void Postprocessing (
 	struct gsm_state	* S,
-	register word 		* s)
+	/* register */ word 		* s)
 {
-	register int		k;
-	register word		msr = S->msr;
-	register word		tmp;
+	/* register */ int		k;
+	/* register */ word		msr = S->msr;
+	/* register */ word		tmp;
 
 	for (k = 160; k--; s++) {
 		tmp = GSM_MULT_R( msr, 28180 );
@@ -14409,13 +14409,13 @@ static void Cut_Calculation_of_the_LTP_parameters (
 
 	struct gsm_state * st,
 
-	register word	* d,		/* [0..39]	IN	*/
-	register word	* dp,		/* [-120..-1]	IN	*/
+	/* register */ word	* d,		/* [0..39]	IN	*/
+	/* register */ word	* dp,		/* [-120..-1]	IN	*/
 	word		* bc_out,	/* 		OUT	*/
 	word		* Nc_out	/* 		OUT	*/
 )
 {
-	register int  	k, lambda;
+	/* register */ int  	k, lambda;
 	word		Nc, bc;
 	word		wt[40];
 
@@ -14424,7 +14424,7 @@ static void Cut_Calculation_of_the_LTP_parameters (
 	word		R, S, dmax, scal, best_k;
 	word		ltp_cut;
 
-	register word	temp, wt_k;
+	/* register */ word	temp, wt_k;
 
 	/*  Search of the optimum scaling of d[0..39].
 	 */
@@ -14476,7 +14476,7 @@ static void Cut_Calculation_of_the_LTP_parameters (
 	L_power = 0;
 	for (k = 0; k <= 39; k++) {
 
-		register longword L_temp;
+		/* register */ longword L_temp;
 
 		L_temp   = SASR_W( dp[k - Nc], 3 );
 		L_power += L_temp * L_temp;
@@ -14513,19 +14513,19 @@ static void Cut_Calculation_of_the_LTP_parameters (
 #endif 	/* LTP_CUT */
 
 static void Calculation_of_the_LTP_parameters (
-	register word	* d,		/* [0..39]	IN	*/
-	register word	* dp,		/* [-120..-1]	IN	*/
+	/* register */ word	* d,		/* [0..39]	IN	*/
+	/* register */ word	* dp,		/* [-120..-1]	IN	*/
 	word		* bc_out,	/* 		OUT	*/
 	word		* Nc_out	/* 		OUT	*/
 )
 {
-	register int  	k, lambda;
+	/* register */ int  	k, lambda;
 	word		Nc, bc;
 	word		wt[40];
 
 	longword	L_max, L_power;
 	word		R, S, dmax, scal;
-	register word	temp;
+	/* register */ word	temp;
 
 	/*  Search of the optimum scaling of d[0..39].
 	 */
@@ -14564,7 +14564,7 @@ static void Calculation_of_the_LTP_parameters (
 # undef long_termSTEP
 #		define long_termSTEP(k) 	(longword)wt[k] * dp[k - lambda]
 
-		register longword L_result;
+		/* register */ longword L_result;
 
 		L_result  = long_termSTEP(0)  ; L_result += long_termSTEP(1) ;
 		L_result += long_termSTEP(2)  ; L_result += long_termSTEP(3) ;
@@ -14611,7 +14611,7 @@ static void Calculation_of_the_LTP_parameters (
 	L_power = 0;
 	for (k = 0; k <= 39; k++) {
 
-		register longword L_temp;
+		/* register */ longword L_temp;
 
 		L_temp   = SASR_W( dp[k - Nc], 3 );
 		L_power += L_temp * L_temp;
@@ -14651,13 +14651,13 @@ static void Calculation_of_the_LTP_parameters (
 
 static void Cut_Calculation_of_the_LTP_parameters (
 	struct gsm_state * st,		/*              IN 	*/
-	register word	* d,		/* [0..39]	IN	*/
-	register word	* dp,		/* [-120..-1]	IN	*/
+	/* register */ word	* d,		/* [0..39]	IN	*/
+	/* register */ word	* dp,		/* [-120..-1]	IN	*/
 	word		* bc_out,	/* 		OUT	*/
 	word		* Nc_out	/* 		OUT	*/
 )
 {
-	register int  	k, lambda;
+	/* register */ int  	k, lambda;
 	word		Nc, bc;
 	word		ltp_cut;
 
@@ -14666,7 +14666,7 @@ static void Cut_Calculation_of_the_LTP_parameters (
 
 	longword	L_max, L_power;
 	word		R, S, dmax, scal;
-	register word	temp;
+	/* register */ word	temp;
 
 	/*  Search of the optimum scaling of d[0..39].
 	 */
@@ -14696,7 +14696,7 @@ static void Cut_Calculation_of_the_LTP_parameters (
 	 */
 
 	for (k = 0; k < 40; k++) {
-		register word w = SASR_W( d[k], scal );
+		/* register */ word w = SASR_W( d[k], scal );
 		if (w < 0 ? w > -ltp_cut : w < ltp_cut) {
 			wt_float[k] = 0.0;
 		}
@@ -14715,14 +14715,14 @@ static void Cut_Calculation_of_the_LTP_parameters (
 
 		/*  Calculate L_result for l = lambda .. lambda + 9.
 		 */
-		register float *lp = dp_float - lambda;
+		/* register */ float *lp = dp_float - lambda;
 
-		register float	W;
-		register float	a = lp[-8], b = lp[-7], c = lp[-6],
+		/* register */ float	W;
+		/* register */ float	a = lp[-8], b = lp[-7], c = lp[-6],
 				d = lp[-5], e = lp[-4], f = lp[-3],
 				g = lp[-2], h = lp[-1];
-		register float  E; 
-		register float  S0 = 0, S1 = 0, S2 = 0, S3 = 0, S4 = 0,
+		/* register */ float  E;
+		/* register */ float  S0 = 0, S1 = 0, S2 = 0, S3 = 0, S4 = 0,
 				S5 = 0, S6 = 0, S7 = 0, S8 = 0;
 
 #		undef long_termSTEP
@@ -14791,7 +14791,7 @@ static void Cut_Calculation_of_the_LTP_parameters (
 	L_power = 0;
 	for (k = 0; k <= 39; k++) {
 
-		register longword L_temp;
+		/* register */ longword L_temp;
 
 		L_temp   = SASR_W( dp[k - Nc], 3 );
 		L_power += L_temp * L_temp;
@@ -14828,13 +14828,13 @@ static void Cut_Calculation_of_the_LTP_parameters (
 #endif /* LTP_CUT */
 
 static void Calculation_of_the_LTP_parameters (
-	register word	* din,		/* [0..39]	IN	*/
-	register word	* dp,		/* [-120..-1]	IN	*/
+	/* register */ word	* din,		/* [0..39]	IN	*/
+	/* register */ word	* dp,		/* [-120..-1]	IN	*/
 	word		* bc_out,	/* 		OUT	*/
 	word		* Nc_out	/* 		OUT	*/
 )
 {
-	register int  	k, lambda;
+	/* register */ int  	k, lambda;
 	word		Nc, bc;
 
 	float		wt_float[40];
@@ -14842,7 +14842,7 @@ static void Calculation_of_the_LTP_parameters (
 
 	longword	L_max, L_power;
 	word		R, S, dmax, scal;
-	register word	temp;
+	/* register */ word	temp;
 
 	/*  Search of the optimum scaling of d[0..39].
 	 */
@@ -14881,14 +14881,14 @@ static void Calculation_of_the_LTP_parameters (
 
 		/*  Calculate L_result for l = lambda .. lambda + 9.
 		 */
-		register float *lp = dp_float - lambda;
+		/* register */ float *lp = dp_float - lambda;
 
-		register float	W;
-		register float	a = lp[-8], b = lp[-7], c = lp[-6],
+		/* register */ float	W;
+		/* register */ float	a = lp[-8], b = lp[-7], c = lp[-6],
 				d = lp[-5], e = lp[-4], f = lp[-3],
 				g = lp[-2], h = lp[-1];
-		register float  E; 
-		register float  S0 = 0, S1 = 0, S2 = 0, S3 = 0, S4 = 0,
+		/* register */ float  E;
+		/* register */ float  S0 = 0, S1 = 0, S2 = 0, S3 = 0, S4 = 0,
 				S5 = 0, S6 = 0, S7 = 0, S8 = 0;
 
 #		undef long_termSTEP
@@ -14956,7 +14956,7 @@ static void Calculation_of_the_LTP_parameters (
 	L_power = 0;
 	for (k = 0; k <= 39; k++) {
 
-		register longword L_temp;
+		/* register */ longword L_temp;
 
 		L_temp   = SASR_W( dp[k - Nc], 3 );
 		L_power += L_temp * L_temp;
@@ -14995,20 +14995,20 @@ static void Calculation_of_the_LTP_parameters (
 
 static void Cut_Fast_Calculation_of_the_LTP_parameters (
 	struct gsm_state * st,		/*              IN	*/
-	register word	* d,		/* [0..39]	IN	*/
-	register word	* dp,		/* [-120..-1]	IN	*/
+	/* register */ word	* d,		/* [0..39]	IN	*/
+	/* register */ word	* dp,		/* [-120..-1]	IN	*/
 	word		* bc_out,	/* 		OUT	*/
 	word		* Nc_out	/* 		OUT	*/
 )
 {
-	register int  	k, lambda;
-	register float	wt_float;
+	/* register */ int  	k, lambda;
+	/* register */ float	wt_float;
 	word		Nc, bc;
 	word		wt_max, best_k, ltp_cut;
 
 	float		dp_float_base[120], * dp_float = dp_float_base + 120;
 
-	register float	L_result, L_max, L_power;
+	/* register */ float	L_result, L_max, L_power;
 
 	wt_max = 0;
 
@@ -15047,7 +15047,7 @@ static void Cut_Fast_Calculation_of_the_LTP_parameters (
 	dp_float -= Nc;
 	L_power = 0;
 	for (k = 0; k < 40; ++k) {
-		register float f = dp_float[k];
+		/* register */ float f = dp_float[k];
 		L_power += f * f;
 	}
 
@@ -15068,19 +15068,19 @@ static void Cut_Fast_Calculation_of_the_LTP_parameters (
 #endif /* LTP_CUT */
 
 static void Fast_Calculation_of_the_LTP_parameters (
-	register word	* din,		/* [0..39]	IN	*/
-	register word	* dp,		/* [-120..-1]	IN	*/
+	/* register */ word	* din,		/* [0..39]	IN	*/
+	/* register */ word	* dp,		/* [-120..-1]	IN	*/
 	word		* bc_out,	/* 		OUT	*/
 	word		* Nc_out	/* 		OUT	*/
 )
 {
-	register int  	k, lambda;
+	/* register */ int  	k, lambda;
 	word		Nc, bc;
 
 	float		wt_float[40];
 	float		dp_float_base[120], * dp_float = dp_float_base + 120;
 
-	register float	L_max, L_power;
+	/* register */ float	L_max, L_power;
 
 	for (k = 0; k < 40; ++k) wt_float[k] = (float) din [k] ;
 	for (k = -120; k < 0; ++k) dp_float[k] = (float) dp [k] ;
@@ -15094,14 +15094,14 @@ static void Fast_Calculation_of_the_LTP_parameters (
 
 		/*  Calculate L_result for l = lambda .. lambda + 9.
 		 */
-		register float *lp = dp_float - lambda;
+		/* register */ float *lp = dp_float - lambda;
 
-		register float	W;
-		register float	a = lp[-8], b = lp[-7], c = lp[-6],
+		/* register */ float	W;
+		/* register */ float	a = lp[-8], b = lp[-7], c = lp[-6],
 				d = lp[-5], e = lp[-4], f = lp[-3],
 				g = lp[-2], h = lp[-1];
-		register float  E; 
-		register float  S0 = 0, S1 = 0, S2 = 0, S3 = 0, S4 = 0,
+		/* register */ float  E;
+		/* register */ float  S0 = 0, S1 = 0, S2 = 0, S3 = 0, S4 = 0,
 				S5 = 0, S6 = 0, S7 = 0, S8 = 0;
 
 #		undef long_termSTEP
@@ -15165,7 +15165,7 @@ static void Fast_Calculation_of_the_LTP_parameters (
 	dp_float -= Nc;
 	L_power = 0;
 	for (k = 0; k < 40; ++k) {
-		register float f = dp_float[k];
+		/* register */ float f = dp_float[k];
 		L_power += f * f;
 	}
 
@@ -15192,10 +15192,10 @@ static void Fast_Calculation_of_the_LTP_parameters (
 static void Long_term_analysis_filtering (
 	word		bc,	/* 					IN  */
 	word		Nc,	/* 					IN  */
-	register word	* dp,	/* previous d	[-120..-1]		IN  */
-	register word	* d,	/* d		[0..39]			IN  */
-	register word	* dpp,	/* estimate	[0..39]			OUT */
-	register word	* e	/* long term res. signal [0..39]	OUT */
+	/* register */ word	* dp,	/* previous d	[-120..-1]		IN  */
+	/* register */ word	* d,	/* d		[0..39]			IN  */
+	/* register */ word	* dpp,	/* estimate	[0..39]			OUT */
+	/* register */ word	* e	/* long term res. signal [0..39]	OUT */
 )
 /*
  *  In this part, we have to decode the bc parameter to compute
@@ -15204,7 +15204,7 @@ static void Long_term_analysis_filtering (
  *  is then calculated to be fed to the RPE encoding section.
  */
 {
-	register int      k;
+	/* register */ int      k;
 
 #	undef long_termSTEP
 #	define long_termSTEP(BP)					\
@@ -15264,8 +15264,8 @@ void Gsm_Long_Term_Synthesis_Filtering (
 
 	word			Ncr,
 	word			bcr,
-	register word		* erp,	   /* [0..39]		  	 IN */
-	register word		* drp	   /* [-120..-1] IN, [-120..40] OUT */
+	/* register */ word		* erp,	   /* [0..39]		  	 IN */
+	/* register */ word		* drp	   /* [-120..-1] IN, [-120..40] OUT */
 )
 /*
  *  This procedure uses the bcr and Ncr parameter to realize the
@@ -15273,7 +15273,7 @@ void Gsm_Long_Term_Synthesis_Filtering (
  *  table 4.3b.
  */
 {
-	register int 		k;
+	/* register */ int 		k;
 	word			brp, drpp, Nr;
 
 	/*  Check the limits of Nr.
@@ -15337,7 +15337,7 @@ static void Autocorrelation (
  *  be scaled in order to avoid an overflow situation.
  */
 {
-	register int	k, i;
+	/* register */ int	k, i;
 
 	word		temp, smax, scalauto;
 
@@ -15398,8 +15398,8 @@ static void Autocorrelation (
 	 */
 	{
 # ifdef	USE_FLOAT_MUL
-		register float * sp = float_s;
-		register float   sl = *sp;
+		/* register */ float * sp = float_s;
+		/* register */ float   sl = *sp;
 
 #		define lpcSTEP(k)	 L_ACF[k] += (longword)(sl * sp[ -(k) ]);
 # else
@@ -15456,21 +15456,22 @@ static void Fast_Autocorrelation (
 	word * s,		/* [0..159]	IN/OUT  */
  	longword * L_ACF)	/* [0..8]	OUT     */
 {
-	register int	k, i;
+	/* register */ int	k, i;
 	float f_L_ACF[9];
 	float scale;
 
 	float          s_f[160];
-	register float *sf = s_f;
+	/* register */ float *sf = s_f;
 
 	for (i = 0; i < 160; ++i) sf[i] = s[i];
 	for (k = 0; k <= 8; k++) {
-		register float L_temp2 = 0;
-		register float *sfl = sf - k;
+		/* register */ float L_temp2 = 0;
+		/* register */ float *sfl = sf - k;
 		for (i = k; i < 160; ++i) L_temp2 += sf[i] * sfl[i];
 		f_L_ACF[k] = L_temp2;
 	}
-	scale = MAX_LONGWORD / f_L_ACF[0];
+    // 1.4.2.0 (ge) | added explicit cast to MAX_LONGWORD to remove compiler warning
+	scale = (float)MAX_LONGWORD / f_L_ACF[0];
 
 	for (k = 0; k <= 8; k++) {
 		L_ACF[k] = f_L_ACF[k] * scale;
@@ -15482,11 +15483,11 @@ static void Fast_Autocorrelation (
 
 static void Reflection_coefficients (
 	longword	* L_ACF,		/* 0...8	IN	*/
-	register word	* r			/* 0...7	OUT 	*/
+	/* register */ word	* r			/* 0...7	OUT 	*/
 )
 {
-	register int	i, m, n;
-	register word	temp;
+	/* register */ int	i, m, n;
+	/* register */ word	temp;
 	word		ACF[9];	/* 0..8 */
 	word		P[  9];	/* 0..8 */
 	word		K[  9]; /* 2..8 */
@@ -15549,7 +15550,7 @@ static void Reflection_coefficients (
 /* 4.2.6 */
 
 static void Transformation_to_Log_Area_Ratios (
-	register word	* r 			/* 0..7	   IN/OUT */
+	/* register */ word	* r 			/* 0..7	   IN/OUT */
 )
 /*
  *  The following scaling for r[..] and LAR[..] has been used:
@@ -15559,8 +15560,8 @@ static void Transformation_to_Log_Area_Ratios (
  *  with -1.625 <= real_LAR <= 1.625
  */
 {
-	register word	temp;
-	register int	i;
+	/* register */ word	temp;
+	/* register */ int	i;
 
 
 	/* Computation of the LAR[0..7] from the r[0..7]
@@ -15590,10 +15591,10 @@ static void Transformation_to_Log_Area_Ratios (
 /* 4.2.7 */
 
 static void Quantization_and_coding (
-	register word * LAR    	/* [0..7]	IN/OUT	*/
+	/* register */ word * LAR    	/* [0..7]	IN/OUT	*/
 )
 {
-	register word	temp;
+	/* register */ word	temp;
 
 	/*  This procedure needs four tables; the following equations
 	 *  give the optimum scaling for the constants:
@@ -21819,7 +21820,7 @@ void Gsm_Preprocess (
 	word		msp, lsp;
 	word		SO;
 
-	register int		k = 160;
+	/* register */ int		k = 160;
 
 	while (k--) {
 
@@ -22205,7 +22206,7 @@ raw_open	(SF_PRIVATE *psf)
 /* 4.2.13 */
 
 static void Weighting_filter (
-	register word	* e,		/* signal [-5..0.39.44]	IN  */
+	/* register */ word	* e,		/* signal [-5..0.39.44]	IN  */
 	word		* x		/* signal [0..39]	OUT */
 )
 /*
@@ -22217,8 +22218,8 @@ static void Weighting_filter (
 {
 	/* word			wt[ 50 ]; */
 
-	register longword	L_result;
-	register int		k /* , i */ ;
+	/* register */ longword	L_result;
+	/* register */ int		k /* , i */ ;
 
 	/*  Initialization of a temporary working array wt[0...49]
 	 */
@@ -22309,8 +22310,8 @@ static void RPE_grid_selection (
  */
 {
 	/* register word	temp1;	*/
-	register int		/* m, */  i;
-	register longword	L_result, L_temp;
+	/* register */ int		/* m, */  i;
+	/* register */ longword	L_result, L_temp;
 	longword		EM;	/* xxx should be L_EM? */
 	word			Mc;
 
@@ -22531,10 +22532,10 @@ static void APCM_quantization (
 /* 4.2.16 */
 
 static void APCM_inverse_quantization (
-	register word	* xMc,	/* [0..12]			IN 	*/
+	/* register */ word	* xMc,	/* [0..12]			IN 	*/
 	word		mant,
 	word		expon,
-	register word	* xMp)	/* [0..12]			OUT 	*/
+	/* register */ word	* xMp)	/* [0..12]			OUT 	*/
 /* 
  *  This part is for decoding the RPE sequence of coded xMc[0..12]
  *  samples to obtain the xMp[0..12] array.  Table 4.6 is used to get
@@ -22569,8 +22570,8 @@ static void APCM_inverse_quantization (
 
 static void RPE_grid_positioning (
 	word		Mc,		/* grid position	IN	*/
-	register word	* xMp,		/* [0..12]		IN	*/
-	register word	* ep		/* [0..39]		OUT	*/
+	/* register */ word	* xMp,		/* [0..12]		IN	*/
+	/* register */ word	* ep		/* [0..39]		OUT	*/
 )
 /*
  *  This procedure computes the reconstructed long term residual signal
@@ -24388,7 +24389,7 @@ static void Decoding_of_the_coded_Log_Area_Ratios (
 	word 	* LARc,		/* coded log area ratio	[0..7] 	IN	*/
 	word	* LARpp)	/* out: decoded ..			*/
 {
-	register word	temp1 /* , temp2 */;
+	/* register */ word	temp1 /* , temp2 */;
 
 	/*  This procedure requires for efficient implementation
 	 *  two tables.
@@ -24455,11 +24456,11 @@ static void Decoding_of_the_coded_Log_Area_Ratios (
  */
 
 static void Coefficients_0_12 (
-	register word * LARpp_j_1,
-	register word * LARpp_j,
-	register word * LARp)
+	/* register */ word * LARpp_j_1,
+	/* register */ word * LARpp_j,
+	/* register */ word * LARp)
 {
-	register int 	i;
+	/* register */ int 	i;
 
 	for (i = 1; i <= 8; i++, LARp++, LARpp_j_1++, LARpp_j++) {
 		*LARp = GSM_ADD( SASR_W( *LARpp_j_1, 2 ), SASR_W( *LARpp_j, 2 ));
@@ -24468,22 +24469,22 @@ static void Coefficients_0_12 (
 }
 
 static void Coefficients_13_26 (
-	register word * LARpp_j_1,
-	register word * LARpp_j,
-	register word * LARp)
+	/* register */ word * LARpp_j_1,
+	/* register */ word * LARpp_j,
+	/* register */ word * LARp)
 {
-	register int i;
+	/* register */ int i;
 	for (i = 1; i <= 8; i++, LARpp_j_1++, LARpp_j++, LARp++) {
 		*LARp = GSM_ADD( SASR_W( *LARpp_j_1, 1), SASR_W( *LARpp_j, 1 ));
 	}
 }
 
 static void Coefficients_27_39 (
-	register word * LARpp_j_1,
-	register word * LARpp_j,
-	register word * LARp)
+	/* register */ word * LARpp_j_1,
+	/* register */ word * LARpp_j,
+	/* register */ word * LARp)
 {
-	register int i;
+	/* register */ int i;
 
 	for (i = 1; i <= 8; i++, LARpp_j_1++, LARpp_j++, LARp++) {
 		*LARp = GSM_ADD( SASR_W( *LARpp_j_1, 2 ), SASR_W( *LARpp_j, 2 ));
@@ -24493,10 +24494,10 @@ static void Coefficients_27_39 (
 
 
 static void Coefficients_40_159 (
-	register word * LARpp_j,
-	register word * LARp)
+	/* register */ word * LARpp_j,
+	/* register */ word * LARp)
 {
-	register int i;
+	/* register */ int i;
 
 	for (i = 1; i <= 8; i++, LARp++, LARpp_j++)
 		*LARp = *LARpp_j;
@@ -24505,15 +24506,15 @@ static void Coefficients_40_159 (
 /* 4.2.9.2 */
 
 static void LARp_to_rp (
-	register word * LARp)	/* [0..7] IN/OUT  */
+	/* register */ word * LARp)	/* [0..7] IN/OUT  */
 /*
  *  The input of this procedure is the interpolated LARp[0..7] array.
  *  The reflection coefficients, rp[i], are used in the analysis
  *  filter and in the synthesis filter.
  */
 {
-	register int 		i;
-	register word		temp;
+	/* register */ int 		i;
+	/* register */ word		temp;
 
 	for (i = 1; i <= 8; i++, LARp++) {
 
@@ -24544,9 +24545,9 @@ static void LARp_to_rp (
 /* 4.2.10 */
 static void Short_term_analysis_filtering (
 	struct gsm_state * S,
-	register word	* rp,	/* [0..7]	IN	*/
-	register int 	k_n, 	/*   k_end - k_start	*/
-	register word	* s	/* [0..n-1]	IN/OUT	*/
+	/* register */ word	* rp,	/* [0..7]	IN	*/
+	/* register */ int 	k_n, 	/*   k_end - k_start	*/
+	/* register */ word	* s	/* [0..n-1]	IN/OUT	*/
 )
 /*
  *  This procedure computes the short term residual signal d[..] to be fed
@@ -24559,9 +24560,9 @@ static void Short_term_analysis_filtering (
  *  needs to keep the array u[0..7] in memory for each call.
  */
 {
-	register word		* u = S->u;
-	register int		i;
-	register word		di, zzz, ui, sav, rpi;
+	/* register */ word		* u = S->u;
+	/* register */ int		i;
+	/* register */ word		di, zzz, ui, sav, rpi;
 
 	for (; k_n--; s++) {
 
@@ -24588,19 +24589,19 @@ static void Short_term_analysis_filtering (
 
 static void Fast_Short_term_analysis_filtering (
 	struct gsm_state * S,
-	register word	* rp,	/* [0..7]	IN	*/
-	register int 	k_n, 	/*   k_end - k_start	*/
-	register word	* s	/* [0..n-1]	IN/OUT	*/
+	/* register */ word	* rp,	/* [0..7]	IN	*/
+	/* register */ int 	k_n, 	/*   k_end - k_start	*/
+	/* register */ word	* s	/* [0..n-1]	IN/OUT	*/
 )
 {
-	register word		* u = S->u;
-	register int		i;
+	/* register */ word		* u = S->u;
+	/* register */ int		i;
 
 	float 	  uf[8],
 		 rpf[8];
 
-	register float scalef = 3.0517578125e-5;
-	register float		sav, di, temp;
+	/* register */ float scalef = 3.0517578125e-5;
+	/* register */ float		sav, di, temp;
 
 	for (i = 0; i < 8; ++i) {
 		uf[i]  = u[i];
@@ -24609,8 +24610,8 @@ static void Fast_Short_term_analysis_filtering (
 	for (; k_n--; s++) {
 		sav = di = *s;
 		for (i = 0; i < 8; ++i) {
-			register float rpfi = rpf[i];
-			register float ufi  = uf[i];
+			/* register */ float rpfi = rpf[i];
+			/* register */ float ufi  = uf[i];
 
 			uf[i] = sav;
 			temp  = rpfi * di + ufi;
@@ -24625,15 +24626,15 @@ static void Fast_Short_term_analysis_filtering (
 
 static void Short_term_synthesis_filtering (
 	struct gsm_state * S,
-	register word	* rrp,	/* [0..7]	IN	*/
-	register int	k,	/* k_end - k_start	*/
-	register word	* wt,	/* [0..k-1]	IN	*/
-	register word	* sr	/* [0..k-1]	OUT	*/
+	/* register */ word	* rrp,	/* [0..7]	IN	*/
+	/* register */ int	k,	/* k_end - k_start	*/
+	/* register */ word	* wt,	/* [0..k-1]	IN	*/
+	/* register */ word	* sr	/* [0..k-1]	OUT	*/
 )
 {
-	register word		* v = S->v;
-	register int		i;
-	register word		sri, tmp1, tmp2;
+	/* register */ word		* v = S->v;
+	/* register */ int		i;
+	/* register */ word		sri, tmp1, tmp2;
 
 	while (k--) {
 		sri = *wt++;
@@ -24668,24 +24669,24 @@ static void Short_term_synthesis_filtering (
 
 static void Fast_Short_term_synthesis_filtering (
 	struct gsm_state * S,
-	register word	* rrp,	/* [0..7]	IN	*/
-	register int	k,	/* k_end - k_start	*/
-	register word	* wt,	/* [0..k-1]	IN	*/
-	register word	* sr	/* [0..k-1]	OUT	*/
+	/* register */ word	* rrp,	/* [0..7]	IN	*/
+	/* register */ int	k,	/* k_end - k_start	*/
+	/* register */ word	* wt,	/* [0..k-1]	IN	*/
+	/* register */ word	* sr	/* [0..k-1]	OUT	*/
 )
 {
-	register word		* v = S->v;
-	register int		i;
+	/* register */ word		* v = S->v;
+	/* register */ int		i;
 
 	float va[9], rrpa[8];
-	register float scalef = 3.0517578125e-5, temp;
+	/* register */ float scalef = 3.0517578125e-5, temp;
 
 	for (i = 0; i < 8; ++i) {
 		va[i]   = v[i];
 		rrpa[i] = (float)rrp[i] * scalef;
 	}
 	while (k--) {
-		register float sri = *wt++;
+		/* register */ float sri = *wt++;
 		for (i = 8; i--;) {
 			sri -= rrpa[i] * va[i];
 			if     (sri < -32768.) sri = -32768.;

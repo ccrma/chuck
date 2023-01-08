@@ -256,7 +256,7 @@ public:
     t_CKINT set( const std::string & key, t_CKUINT val );
     t_CKINT push_back( t_CKUINT val );
     t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKUINT pos );
+    t_CKINT pop_out( t_CKINT pos );
     t_CKINT back( t_CKUINT * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
 
@@ -302,7 +302,7 @@ public:
     t_CKINT set( const std::string & key, t_CKFLOAT val );
     t_CKINT push_back( t_CKFLOAT val );
     t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKUINT pos );
+    t_CKINT pop_out( t_CKINT pos );
     t_CKINT back( t_CKFLOAT * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
 
@@ -347,7 +347,7 @@ public:
     t_CKINT set( const std::string & key, const t_CKCOMPLEX & val );
     t_CKINT push_back( const t_CKCOMPLEX & val );
     t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKUINT pos );
+    t_CKINT pop_out( t_CKINT pos );
     t_CKINT back( t_CKCOMPLEX * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
 

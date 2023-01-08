@@ -3192,7 +3192,7 @@ void Chuck_IO_Serial::writeBytes( Chuck_Array4 * arr )
     {
         start_read_thread();
 
-        int len = arr->size();
+        t_CKINT len = arr->size();
         for(int i = 0; i < len; i++)
         {
             // TODO: efficiency
@@ -3211,7 +3211,7 @@ void Chuck_IO_Serial::writeBytes( Chuck_Array4 * arr )
     }
     else if( m_iomode == MODE_SYNC )
     {
-        int len = arr->size();
+        t_CKINT len = arr->size();
         for(int i = 0; i < len; i++)
         {
             // TODO: efficiency
@@ -3597,7 +3597,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_ascii(Chuck_IO_Serial::Request & r)
                 break;
 
             // TODO: '\r'?
-            int c = peek_buffer();
+            int c = (int)peek_buffer();
 
             if(isdigit(c) || c=='.' || (len==0 && (c=='-' || c=='+')))
             {
@@ -3647,7 +3647,7 @@ t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Request & r)
             if(peek_buffer() == -1)
                 break;
 
-            int c = pull_buffer();
+            int c = (int)pull_buffer();
 
             if(isdigit(c) || (len==0 && (c=='-' || c=='+')))
             {

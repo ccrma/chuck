@@ -90,12 +90,6 @@ CK_DLL_SFUN( srandom_impl );
 
 CK_DLL_SFUN( gauss_impl );
 
-// max for random functions
-#ifdef __WINDOWS_DS__
-#define CK_RANDOM_MAX RAND_MAX
-#else
-#define CK_RANDOM_MAX 0x7fffffff
-#endif
 
 
 

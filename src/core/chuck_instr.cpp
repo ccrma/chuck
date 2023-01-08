@@ -41,6 +41,7 @@
 #include "chuck_errmsg.h"
 #include "chuck_globals.h" // added 1.4.1.0
 
+#include "util_math.h"
 #include "util_string.h"
 
 #include <typeinfo>
@@ -2157,7 +2158,7 @@ void Chuck_Instr_Reg_Push_Maybe::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
     t_CKINT *& reg_sp = (t_CKINT *&)shred->reg->sp;
 
     // push val into reg stack
-    float num = (float)rand() / (float)RAND_MAX;
+    t_CKFLOAT num = ck_random()/(t_CKFLOAT)CK_RANDOM_MAX;
     push_( reg_sp, num > .5 );
 }
 
@@ -4049,8 +4050,8 @@ void Chuck_Instr_Instantiate_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 //-----------------------------------------------------------------------------
 const char * Chuck_Instr_Instantiate_Object::params() const
 {
-    static char buffer[256];
-    sprintf( buffer, "%s", this->type->c_name() );
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "%s", this->type->c_name() );
     return buffer;
 }
 
@@ -4063,8 +4064,8 @@ const char * Chuck_Instr_Instantiate_Object::params() const
 //-----------------------------------------------------------------------------
 const char * Chuck_Instr_Pre_Ctor_Array_Top::params() const
 {
-    static char buffer[256];
-    sprintf( buffer, "val=%ld, type=\"%s\"", (long)m_val, type ? type->c_name() : "[empty]" );
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "val=%ld, type=\"%s\"", (long)m_val, type ? type->c_name() : "[empty]" );
     return buffer;
 }
 
@@ -5020,7 +5021,7 @@ Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * t,
 
     // append length
     char buffer[16];
-    sprintf( buffer, "[%ld]", (long)m_length );
+    snprintf( buffer, 16, "[%ld]", (long)m_length );
     strcat( m_param_str, buffer );
 }
 
@@ -7520,8 +7521,8 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 const char * Chuck_Instr_Hack::params() const
 {
-    static char buffer[256];
-    sprintf( buffer, "(%s)", m_type_ref->c_name() );
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "(%s)", m_type_ref->c_name() );
     return buffer;
 }
 
@@ -7649,8 +7650,8 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 const char * Chuck_Instr_Gack::params() const
 {
-    static char buffer[256];
-    sprintf( buffer, "( many types )" );
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "( many types )" );
     return buffer;
 }
 
