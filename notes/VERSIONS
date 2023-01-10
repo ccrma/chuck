@@ -54,7 +54,7 @@ listed at the end ***
     build flag when Debug build is enabled (default builds for Release)
 -----------------------
 (BETA) ChAI-related additions: please note this is in Beta, meaning that 
-APIs may change in the near future
+APIs may change in the near future; many additions are in the works
 -----------------------
   - (added) SVM object (thanks Yikai Li)
         |- a support vector machine (SVM) utility trains a model and 
@@ -91,6 +91,11 @@ APIs may change in the near future
            Train the HMM model with the given observations.
            int generate( int length, int[] output );
                Generate a sequence of observations of the given length.
+  - (added) basic usage examples in examples/ai/ folder
+        |- also can use the built-in help() function
+           KNN.help(); // this will print KNN type info and API
+           SVM.help(); // this will print SVM type info and API
+           HMM.help(); // this will print HMM type info and API
 -----------------------
 (BETA) end CHAI additions
 -----------------------
