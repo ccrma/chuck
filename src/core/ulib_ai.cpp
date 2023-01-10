@@ -593,7 +593,7 @@ struct HMM_Object
 {
 public:
     // constructor
-    HMM_Object()
+    HMM_Object() : initial(NULL), transition(NULL), emission(NULL)
     { }
 
     // destructor
