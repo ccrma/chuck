@@ -1119,7 +1119,7 @@ struct MFCC_Object
             {
                 for (int j=0; j<this->num_filters; j++)
                 {
-                    this->dct[i*num_filters + j] = 1.0 / sqrt(this->num_filters);
+                    this->dct[i*num_filters + j] = 1.0 / sqrt((t_CKFLOAT)this->num_filters);
                 }
             }
             else
