@@ -5,7 +5,7 @@
 //       categories are given respective locations in a 2D feature space.
 //
 // version: need chuck version 1.4.2.0 or higher
-// sorting: part of ChAI (ChucK for AI)
+// sorting: part of ChAI (ChucK for AI) [BETA]
 //
 // uncomment the next line to learn more about the KNN object:
 // KNN.help();
