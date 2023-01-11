@@ -35,6 +35,15 @@
 #include "util_math.h"
 #include <math.h>
 
+#include <string>
+#include <vector>
+#include <map>
+using namespace std;
+
+
+
+
+
 // 1.4.2.0 (yikai) added SVM
 CK_DLL_CTOR( SVM_ctor );
 CK_DLL_DTOR( SVM_dtor );
@@ -59,6 +68,18 @@ CK_DLL_MFUN( HMM_train );
 CK_DLL_MFUN( HMM_generate );
 // offset
 static t_CKUINT HMM_offset_data = 0;
+
+// 1.4.2.1 (yikai) added Word2Vec
+CK_DLL_CTOR( Word2Vec_ctor );
+CK_DLL_DTOR( Word2Vec_dtor );
+CK_DLL_MFUN( Word2Vec_load );
+CK_DLL_MFUN( Word2Vec_getMostSimilar );
+CK_DLL_MFUN( Word2Vec_getByVector );
+CK_DLL_MFUN( Word2Vec_getVector );
+CK_DLL_MFUN( Word2Vec_getDictionarySize );
+CK_DLL_MFUN( Word2Vec_getDictionaryDim );
+// offset
+static t_CKUINT Word2Vec_offset_data = 0;
 
 
 
@@ -115,7 +136,8 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     // 1.4.1.2 added by Yikai Li, Fall 2022
     //---------------------------------------------------------------------
     // doc string
-    doc = "a supervised learning utility that predicts probabilities of class membership based on distances from a test input to its k nearest neighbors.";
+    doc =
+        "a supervised learning utility that predicts probabilities of class membership based on distances from a test input to its k nearest neighbors.";
 
     // begin class definition
     if( !type_engine_import_class_begin( env, "KNN", "Object", env->global(), KNN_ctor, KNN_dtor, doc.c_str() ) )
@@ -137,7 +159,8 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int", "k" );
     func->add_arg( "float[]", "x" );
     func->add_arg( "float[]", "prob" );
-    func->doc = "Predict the output probabilities ('prob') given unlabeled test input 'x' based on distances to 'k' nearest neighbors.";
+    func->doc =
+        "Predict the output probabilities ('prob') given unlabeled test input 'x' based on distances to 'k' nearest neighbors.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -163,7 +186,8 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "initiailDistribution" );
     func->add_arg( "float[][]", "transitionMatrix" );
     func->add_arg( "float[][]", "emissionMatrix" );
-    func->doc = "Initialize the HMM model with the given initial state distribution, transition matrix, and emission matrix.";
+    func->doc =
+        "Initialize the HMM model with the given initial state distribution, transition matrix, and emission matrix.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // train
@@ -184,6 +208,69 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     // end the class import
     type_engine_import_class_end( env );
 
+    //---------------------------------------------------------------------
+    // init as base class: Word2Vec
+    // 1.4.2.1 added by Yikai Li, Spring 2023
+    //---------------------------------------------------------------------
+    // doc string
+    doc = "a word embeddings utility that maps words to vectors; can load a model and perform similiarity retrieval.";
+
+    // begin class definition
+    if( !type_engine_import_class_begin( env,
+                                         "Word2Vec",
+                                         "Object",
+                                         env->global(),
+                                         Word2Vec_ctor,
+                                         Word2Vec_dtor,
+                                         doc.c_str() ) )
+        return FALSE;
+
+    // data offset
+    Word2Vec_offset_data = type_engine_import_mvar( env, "float", "@Word2Vec_data", FALSE );
+    if( Word2Vec_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // load
+    func = make_new_mfun( "int", "load", Word2Vec_load );
+    func->add_arg( "string", "path" );
+    func->doc = "Load pre-trained word embedding model from the given path.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // getMostSimilar
+    func = make_new_mfun( "void", "similar", Word2Vec_getMostSimilar );
+    func->add_arg( "string", "word" );
+    func->add_arg( "int", "k" );
+    func->add_arg( "string[]", "output" );
+    func->doc = "Get the k most similar words to the given word.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // getByVector
+    func = make_new_mfun( "void", "similar", Word2Vec_getByVector );
+    func->add_arg( "float[]", "vec" );
+    func->add_arg( "int", "k" );
+    func->add_arg( "string[]", "output" );
+    func->doc = "Get the k most similar words to the given vector.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // getVector
+    func = make_new_mfun( "void", "getVector", Word2Vec_getVector );
+    func->add_arg( "string", "word" );
+    func->add_arg( "float[]", "output" );
+    func->doc = "Get the vector of the given word.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // size
+    func = make_new_mfun( "int", "size", Word2Vec_getDictionarySize );
+    func->doc = "Get number of words in dictionary.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // dim
+    func = make_new_mfun( "int", "dim", Word2Vec_getDictionaryDim );
+    func->doc = "Get number of dimensions for word embedding.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
     return TRUE;
 
     error:
@@ -193,6 +280,11 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     return FALSE;
 }
 
+
+//-----------------------------------------------------------------------------
+// name: chuck2chai()
+// desc: chuck array (assuming float[][]) conversion to new chai matrix
+//-----------------------------------------------------------------------------
 ChaiMatrixFast<t_CKFLOAT> * chuck2chai( Chuck_Array4 & array )
 {
     t_CKINT rows = array.size();
@@ -210,6 +302,11 @@ ChaiMatrixFast<t_CKFLOAT> * chuck2chai( Chuck_Array4 & array )
     return matrix;
 }
 
+
+//-----------------------------------------------------------------------------
+// name: chuck2chai()
+// desc: chuck array (float []) conversion to new chai vector
+//-----------------------------------------------------------------------------
 ChaiVectorFast<t_CKFLOAT> * chuck2chai( Chuck_Array8 & array )
 {
     t_CKINT size = array.size();
@@ -439,6 +536,106 @@ CK_DLL_MFUN( SVM_predict )
 
 
 //-----------------------------------------------------------------------------
+// name: struct KDTree
+// desc: kd-tree implementation | added 1.4.2.0 (yikai)
+//-----------------------------------------------------------------------------
+struct kd_node_t
+{
+    ChaiVectorFast<t_CKFLOAT> * x;
+    struct kd_node_t * left, * right;
+};
+
+struct KDTree
+{
+public:
+    inline t_CKFLOAT dist( struct kd_node_t * a, struct kd_node_t * b )
+    {
+        t_CKFLOAT t, d = 0.0;
+        for( t_CKINT i = 0; i < a->x->size(); i++ )
+        {
+            t = a->x->v( i ) - b->x->v( i );
+            d += t * t;
+        }
+        return d;
+    }
+
+    inline void swap( struct kd_node_t * x, struct kd_node_t * y )
+    {
+        ChaiVectorFast<t_CKFLOAT> * t = x->x;
+        x->x = y->x;
+        y->x = t;
+    }
+
+    struct kd_node_t * find_median( struct kd_node_t * start, struct kd_node_t * end, t_CKINT idx )
+    {
+        if( end <= start ) return NULL;
+        if( end == start + 1 ) return start;
+        struct kd_node_t * p, * store, * md = start + ( end - start ) / 2;
+        t_CKFLOAT pivot;
+        while( 1 )
+        {
+            pivot = md->x->v( idx );
+            swap( md, end - 1 );
+            for( store = p = start; p < end; p++ )
+            {
+                if( p->x->v( idx ) < pivot )
+                {
+                    if( p != store )
+                        swap( p, store );
+                    store++;
+                }
+            }
+            swap( store, end - 1 );
+            if( store->x->v( idx ) == md->x->v( idx ) ) return md;
+            if( store > md ) end = store;
+            else start = store;
+        }
+    }
+
+    struct kd_node_t * make_tree( struct kd_node_t * t, t_CKINT len, t_CKINT i, t_CKINT dim )
+    {
+        struct kd_node_t * n;
+        if( !len ) return 0;
+        if( ( n = find_median( t, t + len, i ) ) )
+        {
+            i = ( i + 1 ) % dim;
+            n->left = make_tree( t, n - t, i, dim );
+            n->right = make_tree( n + 1, t + len - ( n + 1 ), i, dim );
+        }
+        return n;
+    }
+
+    void nearest( struct kd_node_t * root,
+                  struct kd_node_t * nd,
+                  t_CKINT i,
+                  t_CKINT dim,
+                  struct kd_node_t ** best,
+                  t_CKFLOAT * best_dist )
+    {
+        t_CKFLOAT d, dx, dx2;
+        if( !root ) return;
+        d = dist( nd, root );
+        dx = nd->x->v( i ) - root->x->v( i );
+        dx2 = dx * dx;
+        if( !*best || d < *best_dist )
+        {
+            *best_dist = d;
+            *best = root;
+        }
+        if( !*best_dist ) return;
+        if( ++i >= dim ) i = 0;
+        nearest( dx > 0 ? root->right : root->left, nd, i, dim, best, best_dist );
+        if( dx2 >= *best_dist ) return;
+        nearest( dx > 0 ? root->left : root->right, nd, i, dim, best, best_dist );
+    }
+
+private:
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct KNN_Object
 // desc: k-nearest neighbor implementation | added 1.4.2.0 (yikai)
 //-----------------------------------------------------------------------------
@@ -593,7 +790,7 @@ struct HMM_Object
 {
 public:
     // constructor
-    HMM_Object() : initial(NULL), transition(NULL), emission(NULL)
+    HMM_Object() : initial( NULL ), transition( NULL ), emission( NULL )
     { }
 
     // destructor
@@ -887,4 +1084,322 @@ CK_DLL_MFUN( HMM_generate )
     Chuck_Array4 * output = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
     // generate
     hmm->generate( length, *output );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct W2V_Dictionary
+// desc: struct for caching Word2Vec | added 1.4.2.1 (ge)
+//-----------------------------------------------------------------------------
+struct W2V_Dictionary
+{
+    t_CKINT dictionarySize, vectorLength;
+    std::map<std::string, t_CKUINT> * key_to_index;
+    ChaiVectorFast<std::string> * index_to_key;
+    ChaiMatrixFast<t_CKFLOAT> * word_vectors;
+    
+    W2V_Dictionary() : key_to_index(NULL), index_to_key(NULL), word_vectors(NULL), dictionarySize(0), vectorLength(0)
+    { }
+    
+    // clear
+    void clear()
+    {
+        dictionarySize = 0;
+        vectorLength = 0;
+        SAFE_DELETE( key_to_index );
+        SAFE_DELETE( index_to_key );
+        SAFE_DELETE( word_vectors );
+    }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Word2Vec_Object
+// desc: Word2Vec implementation | added 1.4.2.1 (yikai)
+//-----------------------------------------------------------------------------
+struct Word2Vec_Object
+{
+private:
+    // static (shared) cache | added (ge) 1.4.2.1
+    static map<string, W2V_Dictionary *> o_cache;
+    
+private:
+    // pointer to dictionary
+    W2V_Dictionary * dictionary;
+
+public:
+    // constructor
+    Word2Vec_Object()
+        : dictionary(NULL)
+    { }
+
+    // destructor
+    ~Word2Vec_Object()
+    {
+        clear();
+    }
+
+    // clear
+    void clear()
+    {
+        // just zero the pointer (no delete since we are caching)
+        dictionary = NULL;
+    }
+    
+    // get dictionary size
+    t_CKINT getDictionarySize() const
+    {
+        return dictionary != NULL ? dictionary->dictionarySize : 0;
+    }
+
+    // get dictionary dimensions
+    t_CKINT getDictionaryDim() const
+    {
+        return dictionary != NULL ? dictionary->vectorLength : 0;
+    }
+
+    // load
+    t_CKINT load( Chuck_String & path )
+    {
+        // clear
+        clear();
+        
+        // check cache
+        if( o_cache.find(path.str()) != o_cache.end() )
+        {
+            // retrieve from cache
+            dictionary = o_cache[path.str()];
+            // done
+            return true;
+        }
+        
+        // open file
+        std::ifstream fin( path.str() );
+        if( !fin.is_open() )
+            return false;
+        
+        // instantiate dictionary
+        dictionary = new W2V_Dictionary();
+        // read header
+        fin >> dictionary->dictionarySize >> dictionary->vectorLength;
+        // allocate
+        dictionary->key_to_index = new std::map<std::string, t_CKUINT>();
+        dictionary->index_to_key = new ChaiVectorFast<std::string>( dictionary->dictionarySize );
+        dictionary->word_vectors = new ChaiMatrixFast<t_CKFLOAT>( dictionary->dictionarySize, dictionary->vectorLength );
+        // read vectors
+        std::string key;
+        t_CKFLOAT value;
+        for( t_CKINT i = 0; i < dictionary->dictionarySize; i++ )
+        {
+            fin >> key;
+            dictionary->index_to_key->v( i ) = key;
+            (*(dictionary->key_to_index))[key] = i;
+            for( t_CKINT j = 0; j < dictionary->vectorLength; j++ )
+            {
+                fin >> value;
+                dictionary->word_vectors->v( i, j ) = value;
+            }
+        }
+        
+        // close file
+        fin.close();
+        // add to cache
+        o_cache[path.str()] = dictionary;
+        
+        return true;
+    }
+
+    // get nearest neighbors
+    void getNearestNeighbors( ChaiVectorFast<t_CKFLOAT> & vector, t_CKINT topn, ChaiVectorFast<t_CKINT> & indices )
+    {
+        // allocate
+        ChaiVectorFast<t_CKFLOAT> top_distances( topn );
+        ChaiVectorFast<t_CKINT> top_indices( topn );
+        // initialize
+        for( t_CKINT i = 0; i < topn; i++ )
+        {
+            top_distances.v( i ) = 1e10;
+            top_indices.v( i ) = 0;
+        }
+        // compute distances
+        t_CKFLOAT distance, diff;
+        for( t_CKINT i = 0; i < dictionary->dictionarySize; i++ )
+        {
+            distance = 0;
+            for( t_CKINT j = 0; j < dictionary->vectorLength; j++ )
+            {
+                diff = vector.v( j ) - dictionary->word_vectors->v( i, j );
+                distance += diff * diff;
+            }
+            for( t_CKINT j = 0; j < topn; j++ )
+            {
+                if( distance < top_distances.v( j ) )
+                {
+                    for( t_CKINT k = topn - 1; k > j; k-- )
+                    {
+                        top_distances.v( k ) = top_distances.v( k - 1 );
+                        top_indices.v( k ) = top_indices.v( k - 1 );
+                    }
+                    top_distances.v( j ) = distance;
+                    top_indices.v( j ) = i;
+                    break;
+                }
+            }
+        }
+        // copy
+        for( t_CKINT i = 0; i < topn; i++ )
+        {
+            indices.v( i ) = top_indices.v( i );
+        }
+    }
+
+    // getMostSimilar
+    void getMostSimilar( Chuck_String & word, t_CKINT topn, Chuck_Array4 & output_ )
+    {
+        // get index
+        t_CKINT index = (*(dictionary->key_to_index))[word.str()];
+        // get vector
+        ChaiVectorFast<t_CKFLOAT> vector( dictionary->vectorLength );
+        for( t_CKINT i = 0; i < dictionary->vectorLength; i++ )
+            vector.v( i ) = dictionary->word_vectors->v( index, i );
+        // get nearest neighbors
+        ChaiVectorFast<t_CKINT> top_indices( topn );
+        getNearestNeighbors( vector, topn, top_indices );
+        // copy
+        for( t_CKINT i = 0; i < topn; i++ )
+        {
+            ( (Chuck_String *)output_.m_vector[i] )->set( dictionary->index_to_key->v( top_indices.v( i ) ) );
+        }
+    }
+
+    // getByVector
+    void getByVector( Chuck_Array8 & vec_, t_CKINT topn, Chuck_Array4 & output_ )
+    {
+        // get vector
+        ChaiVectorFast<t_CKFLOAT> vector( dictionary->vectorLength );
+        for( t_CKINT i = 0; i < dictionary->vectorLength; i++ )
+            vector.v( i ) = vec_.m_vector[i];
+        // get nearest neighbors
+        ChaiVectorFast<t_CKINT> top_indices( topn );
+        getNearestNeighbors( vector, topn, top_indices );
+        // copy
+        for( t_CKINT i = 0; i < topn; i++ )
+        {
+            ( (Chuck_String *)output_.m_vector[i] )->set( dictionary->index_to_key->v( top_indices.v( i ) ) );
+        }
+    }
+
+    // getVector
+    void getVector( Chuck_String & word, Chuck_Array8 & output_ )
+    {
+        // get index
+        t_CKINT index = (*(dictionary->key_to_index) )[word.str()];
+        // copy
+        for( t_CKINT i = 0; i < dictionary->vectorLength; i++ )
+        {
+            output_.m_vector[i] = dictionary->word_vectors->v( index, i );
+        }
+    }
+
+    // print
+    void print()
+    {
+        // TODO
+    }
+
+};
+
+// static instantiation | added (ge) 1.4.2.1
+map<string, W2V_Dictionary *> Word2Vec_Object::o_cache;
+
+
+
+
+//-----------------------------------------------------------------------------
+// Word2Vec c++ hooks
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Word2Vec_ctor )
+{
+    Word2Vec_Object * word2vec = new Word2Vec_Object();
+    OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data ) = (t_CKUINT)word2vec;
+}
+
+CK_DLL_DTOR( Word2Vec_dtor )
+{
+    Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
+    SAFE_DELETE( word2vec );
+    OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data ) = 0;
+}
+
+CK_DLL_MFUN( Word2Vec_load )
+{
+    // get object
+    Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
+    // get args
+    Chuck_String * path = GET_NEXT_STRING( ARGS );
+    // load
+    RETURN->v_int = word2vec->load( *path );
+}
+
+CK_DLL_MFUN( Word2Vec_getMostSimilar )
+{
+    // get object
+    Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
+    // get args
+    Chuck_String * word = GET_NEXT_STRING( ARGS );
+    t_CKINT topn = GET_NEXT_INT( ARGS );
+    Chuck_Array4 * output = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    // getMostSimilar
+    word2vec->getMostSimilar( *word, topn, *output );
+}
+
+CK_DLL_MFUN( Word2Vec_getByVector )
+{
+    // get object
+    Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
+    // get args
+    Chuck_Array8 * vec = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    t_CKINT topn = GET_NEXT_INT( ARGS );
+    Chuck_Array4 * output = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    // getByVector
+    word2vec->getByVector( *vec, topn, *output );
+}
+
+CK_DLL_MFUN( Word2Vec_getVector )
+{
+    // get object
+    Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
+    // get args
+    Chuck_String * word = GET_NEXT_STRING( ARGS );
+    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // getVector
+    word2vec->getVector( *word, *output );
+}
+
+CK_DLL_MFUN( Word2Vec_getDictionarySize )
+{
+    // get object
+    Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
+    // get size
+    RETURN->v_int = word2vec->getDictionarySize();
+}
+
+CK_DLL_MFUN( Word2Vec_getDictionaryDim )
+{
+    // get object
+    Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
+    // get dim
+    RETURN->v_int = word2vec->getDictionaryDim();
+}
+
+CK_DLL_MFUN( Word2Vec_print )
+{
+    // get object
+    Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
+    // print
+    word2vec->print();
 }
