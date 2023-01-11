@@ -90,7 +90,7 @@ CK_DLL_SFUN( srandom_impl );
 
 CK_DLL_SFUN( gauss_impl );
 
-
+CK_DLL_SFUN( cossim_impl );
 
 
 #endif

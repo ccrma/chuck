@@ -40,6 +40,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <vector> // 1.4.2.1 (ge) | added
+
 
 static double g_pi = ONE_PI;
 static double g_twopi = TWO_PI;
@@ -371,6 +373,12 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "mean" );
     QUERY->add_arg( QUERY, "float", "sd" );
     QUERY->doc_func( QUERY, "compute gaussian function at x, given mean and SD." );
+
+    // add cosSim (ge: added 1.4.2.1)
+    QUERY->add_sfun( QUERY, cossim_impl, "float", "cossim" ); //! cosine similarity
+    QUERY->add_arg( QUERY, "float", "a[]" );
+    QUERY->add_arg( QUERY, "float", "b[]" );
+    QUERY->doc_func( QUERY, "compute the cosine similarity between arrays a and b." );
 
     // pi
     //! see \example math.ck
@@ -893,4 +901,50 @@ CK_DLL_SFUN( gauss_impl )
 
     // compute gaussian
     RETURN->v_float = (1.0 / (sd*::sqrt(TWO_PI))) * ::exp( -(x-mu)*(x-mu) / (2*sd*sd) );
+}
+
+// cossim (ge) | added 1.4.2.0
+CK_DLL_SFUN( cossim_impl )
+{
+    Chuck_Array8 * a = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array8 * b = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    t_CKINT size = 0;
+
+    // in case of error
+    RETURN->v_float = 0.0;
+
+    // if either is NULL, go to error
+    if( a == NULL || b == NULL )
+    {
+        // log
+        EM_log( CK_LOG_WARNING, "Math.cossim( ... ) was given one or more NULL arrays..." );
+        // error out
+        return;
+    }
+
+    // take either if equal, or the smaller if different
+    size = a->size() < b->size() ? a->size() : b->size();
+    // if either is size 0
+    if( size == 0 )
+    {
+        // log
+        EM_log( CK_LOG_WARNING, "Math.cossim( ... ) was given one or more 0-length arrays..." );
+        // error out
+        return;
+    }
+
+    // get the vecs
+    std::vector<t_CKFLOAT> & v1 = a->m_vector;
+    std::vector<t_CKFLOAT> & v2 = b->m_vector;
+
+    t_CKFLOAT sum = 0.0, norm1 = 0.0, norm2 = 0.0;
+    for( t_CKINT i = 0; i < size; i++ )
+    {
+        sum += v1[i] * v2[i];
+        norm1 += v1[i] * v1[i];
+        norm2 += v2[i] * v2[i];
+    }
+
+    // set return value
+    RETURN->v_float = sum / (::sqrt(norm1) * ::sqrt(norm2));
 }
