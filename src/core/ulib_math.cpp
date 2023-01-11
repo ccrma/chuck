@@ -374,11 +374,41 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "sd" );
     QUERY->doc_func( QUERY, "compute gaussian function at x, given mean and SD." );
 
-    // add cosSim (ge: added 1.4.2.1)
+    // add cossim (ge: added 1.4.2.1)
     QUERY->add_sfun( QUERY, cossim_impl, "float", "cossim" ); //! cosine similarity
     QUERY->add_arg( QUERY, "float", "a[]" );
     QUERY->add_arg( QUERY, "float", "b[]" );
     QUERY->doc_func( QUERY, "compute the cosine similarity between arrays a and b." );
+
+    // add cossim (ge: added 1.4.2.1)
+    QUERY->add_sfun( QUERY, cossim3d_impl, "float", "cossim" ); //! cosine similarity
+    QUERY->add_arg( QUERY, "vec3", "a" );
+    QUERY->add_arg( QUERY, "vec3", "b" );
+    QUERY->doc_func( QUERY, "compute the cosine similarity between 3D vectors a and b." );
+
+    // add cossim (ge: added 1.4.2.1)
+    QUERY->add_sfun( QUERY, cossim4d_impl, "float", "cossim" ); //! cosine similarity
+    QUERY->add_arg( QUERY, "vec4", "a" );
+    QUERY->add_arg( QUERY, "vec4", "b" );
+    QUERY->doc_func( QUERY, "compute the cosine similarity between 4D vectors a and b." );
+
+    // add euclean (ge: added 1.4.2.1)
+    QUERY->add_sfun( QUERY, euclidean_impl, "float", "euclidean" ); //! euclidean similarity
+    QUERY->add_arg( QUERY, "float", "a[]" );
+    QUERY->add_arg( QUERY, "float", "b[]" );
+    QUERY->doc_func( QUERY, "compute the euclidean distance between arrays a and b." );
+
+    // add euclean (ge: added 1.4.2.1)
+    QUERY->add_sfun( QUERY, euclidean3d_impl, "float", "euclidean" ); //! euclidean similarity
+    QUERY->add_arg( QUERY, "vec3", "a" );
+    QUERY->add_arg( QUERY, "vec3", "b" );
+    QUERY->doc_func( QUERY, "compute the euclidean distance between 3D vectors a and b." );
+
+    // add euclean (ge: added 1.4.2.1)
+    QUERY->add_sfun( QUERY, euclidean4d_impl, "float", "euclidean" ); //! euclidean similarity
+    QUERY->add_arg( QUERY, "vec4", "a" );
+    QUERY->add_arg( QUERY, "vec4", "b" );
+    QUERY->doc_func( QUERY, "compute the euclidean distance between 4D vectors a and b." );
 
     // pi
     //! see \example math.ck
@@ -903,7 +933,8 @@ CK_DLL_SFUN( gauss_impl )
     RETURN->v_float = (1.0 / (sd*::sqrt(TWO_PI))) * ::exp( -(x-mu)*(x-mu) / (2*sd*sd) );
 }
 
-// cossim (ge) | added 1.4.2.0
+
+// cossim (ge) | added 1.4.2.1
 CK_DLL_SFUN( cossim_impl )
 {
     Chuck_Array8 * a = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
@@ -947,4 +978,173 @@ CK_DLL_SFUN( cossim_impl )
 
     // set return value
     RETURN->v_float = sum / (::sqrt(norm1) * ::sqrt(norm2));
+}
+
+
+// cossim (ge) | added 1.4.2.1
+CK_DLL_SFUN( cossim3d_impl )
+{
+    t_CKVEC3 a = GET_NEXT_VEC3( ARGS );
+    t_CKVEC3 b = GET_NEXT_VEC3( ARGS );
+
+    // in case of error
+    RETURN->v_float = 0.0;
+
+    t_CKFLOAT sum = 0.0, norm1 = 0.0, norm2 = 0.0;
+
+    // x
+    sum += a.x * b.x;
+    norm1 += a.x * a.x;
+    norm2 += b.x * b.x;
+    // y
+    sum += a.y * b.y;
+    norm1 += a.y * a.y;
+    norm2 += b.y * b.y;
+    // z
+    sum += a.z * b.z;
+    norm1 += a.z * a.z;
+    norm2 += b.z * b.z;
+
+    // if either norm1 or norm2 is 0
+    if( norm1 == 0 || norm2 == 0 )
+    {
+        // log
+        EM_log( CK_LOG_WARNING, "Math.cossim( ... ) zero in denominator..." );
+        // error out
+        return;
+    }
+
+    // set return value
+    RETURN->v_float = sum / (::sqrt(norm1) * ::sqrt(norm2));
+}
+
+
+// euclidean4d (ge) | added 1.4.2.1
+CK_DLL_SFUN( cossim4d_impl )
+{
+    t_CKVEC4 a = GET_NEXT_VEC4( ARGS );
+    t_CKVEC4 b = GET_NEXT_VEC4( ARGS );
+
+    // in case of error
+    RETURN->v_float = 0.0;
+
+    t_CKFLOAT sum = 0.0, norm1 = 0.0, norm2 = 0.0;
+
+    // x
+    sum += a.x * b.x;
+    norm1 += a.x * a.x;
+    norm2 += b.x * b.x;
+    // y
+    sum += a.y * b.y;
+    norm1 += a.y * a.y;
+    norm2 += b.y * b.y;
+    // z
+    sum += a.z * b.z;
+    norm1 += a.z * a.z;
+    norm2 += b.z * b.z;
+    // 2
+    sum += a.w * b.w;
+    norm1 += a.w * a.w;
+    norm2 += b.w * b.w;
+
+    // if either norm1 or norm2 is 0
+    if( norm1 == 0 || norm2 == 0 )
+    {
+        // log
+        EM_log( CK_LOG_WARNING, "Math.cossim( ... ) zero in denominator..." );
+        // error out
+        return;
+    }
+
+    // set return value
+    RETURN->v_float = sum / (::sqrt(norm1) * ::sqrt(norm2));
+}
+
+
+
+// euclidean (ge) | added 1.4.2.1
+CK_DLL_SFUN( euclidean_impl )
+{
+    Chuck_Array8 * a = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array8 * b = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    t_CKINT size = 0;
+
+    // in case of error
+    RETURN->v_float = 0.0;
+
+    // if either is NULL, go to error
+    if( a == NULL || b == NULL )
+    {
+        // log
+        EM_log( CK_LOG_WARNING, "Math.cossim( ... ) was given one or more NULL arrays..." );
+        // error out
+        return;
+    }
+
+    // take either if equal, or the smaller if different
+    size = a->size() < b->size() ? a->size() : b->size();
+    // if either is size 0
+    if( size == 0 )
+    {
+        // log
+        EM_log( CK_LOG_WARNING, "Math.cossim( ... ) was given one or more 0-length arrays..." );
+        // error out
+        return;
+    }
+
+    // get the vecs
+    std::vector<t_CKFLOAT> & v1 = a->m_vector;
+    std::vector<t_CKFLOAT> & v2 = b->m_vector;
+
+    t_CKFLOAT d;
+    t_CKFLOAT sum = 0.0;
+    for( t_CKINT i = 0; i < size; i++ )
+    {
+        d = v1[i] - v2[i];
+        sum += d*d;
+    }
+
+    // set return value
+    RETURN->v_float = ::sqrt(sum);
+}
+
+
+// euclidean (ge) | added 1.4.2.1
+CK_DLL_SFUN( euclidean3d_impl )
+{
+    t_CKVEC3 a = GET_NEXT_VEC3( ARGS );
+    t_CKVEC3 b = GET_NEXT_VEC3( ARGS );
+
+    // in case of error
+    RETURN->v_float = 0.0;
+
+    t_CKFLOAT d;
+    t_CKFLOAT sum = 0.0;
+    d = a.x - b.x; sum += d*d;
+    d = a.y - b.y; sum += d*d;
+    d = a.z - b.z; sum += d*d;
+
+    // set return value
+    RETURN->v_float = ::sqrt(sum);
+}
+
+
+// euclidean (ge) | added 1.4.2.1
+CK_DLL_SFUN( euclidean4d_impl )
+{
+    t_CKVEC4 a = GET_NEXT_VEC4( ARGS );
+    t_CKVEC4 b = GET_NEXT_VEC4( ARGS );
+
+    // in case of error
+    RETURN->v_float = 0.0;
+
+    t_CKFLOAT d;
+    t_CKFLOAT sum = 0.0;
+    d = a.x - b.x; sum += d*d;
+    d = a.y - b.y; sum += d*d;
+    d = a.z - b.z; sum += d*d;
+    d = a.w - b.w; sum += d*d;
+
+    // set return value
+    RETURN->v_float = ::sqrt(sum);
 }
