@@ -55,7 +55,7 @@ chout <= IO.newline();
 // get similar words via vector
 <<< "10 words closest to the vector of 'stanford' are:", "" >>>;
 string words[10];
-model.similar(vector, words.size(), words);
+model.getSimilar(vector, words.size(), words);
 for( int i; i < words.size(); i++ )
 {
     <<< words[i], "" >>>;
@@ -65,7 +65,7 @@ for( int i; i < words.size(); i++ )
 
 // get most similar by word
 <<< "10 words most similar to 'cat' are:", "" >>>;
-model.similar("cat", words.size(), words);
+model.getSimilar("cat", words.size(), words);
 for( int i; i < words.size(); i++ )
 {
     <<< words[i], "" >>>;
