@@ -210,8 +210,8 @@ public:
         if( i < 0 || i >= m_length )
         {
             // error
-            CK_FPRINTF_STDERR( "[chuck]: ChaiVectorFast out of bound: %s[%d]...\n",
-                               typeid( T ).name(), i );
+            CK_FPRINTF_STDERR( "[chuck]: ChaiVectorFast out of bound: %s[%d] (capacity=%d)...\n",
+                               typeid( T ).name(), i, m_length );
             // TODO: this should throw (a shred-level, probably) exception
             assert( FALSE );
         }
