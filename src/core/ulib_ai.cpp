@@ -1267,7 +1267,8 @@ public:
         kdtree_knn_search( dictionary->tree, vector.m_vector, topn );
         struct knn_list * p = dictionary->tree->knn_list_head.next;
         t_CKINT i = 0;
-        while( p != &dictionary->tree->knn_list_head )
+        // TODO: check this -- ge: add index check to prevent out of bounds
+        while( p != &dictionary->tree->knn_list_head && i < indices.length() )
         {
             indices.v( i++ ) = p->node->coord_index;
             p = p->next;
