@@ -138,9 +138,6 @@ protected:
     t_CKINT m_yDim;
 };
 
-
-
-
 //-----------------------------------------------------------------------------
 // name: class ChaiVectorFast | 1.4.2.0 (ge) added
 // desc: a templated fast access but not bound-checked 1D array
@@ -229,9 +226,58 @@ public:
         m_length = 0;
     }
 
-protected:
+public:
     T * m_vector;
     t_CKINT m_length;
 };
 
 #endif
+
+#ifndef _KD_TREE_H
+#define _KD_TREE_H
+
+#define KDTREE_MAX_LEVEL 64
+#define KDTREE_LEFT_INDEX 0
+#define KDTREE_RIGHT_INDEX 1
+#define DBL_EPSILON 2.2204460492503131e-16
+
+typedef struct knn_list
+{
+    struct kdnode * node;
+    double distance;
+    struct knn_list * prev;
+    struct knn_list * next;
+} knn_list_t;
+
+typedef struct kdnode
+{
+    long coord_index;
+    double * coord;
+    struct kdnode * left;
+    struct kdnode * right;
+    t_CKINT r;
+} kdnode_t;
+
+typedef struct kdtree
+{
+    struct kdnode * root;
+    size_t count;
+    size_t capacity;
+    double * coords;
+    double ** coord_table;
+    long * coord_indexes;
+    unsigned char * coord_deleted;
+    unsigned char * coord_passed;
+    struct knn_list knn_list_head;
+    t_CKINT dim;
+    t_CKINT knn_num;
+} kdtree_t;
+
+struct kdtree * kdtree_init( t_CKINT dim );
+void kdtree_insert( struct kdtree * tree, double * coord );
+void kdtree_rebuild( struct kdtree * tree );
+void kdtree_knn_search( struct kdtree * tree, double * coord, t_CKINT k );
+void kdtree_destroy( struct kdtree * tree );
+void kdtree_dump( struct kdtree * tree );
+
+#endif /* _KD_TREE_H */

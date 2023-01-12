@@ -32,14 +32,12 @@
 //-----------------------------------------------------------------------------
 #include "ulib_ai.h"
 #include "chuck_type.h"
+#include "chuck_errmsg.h"
 #include "util_math.h"
 #include <math.h>
 
-#include <string>
-#include <vector>
-#include <map>
+#include <iostream>
 using namespace std;
-
 
 
 
@@ -73,11 +71,13 @@ static t_CKUINT HMM_offset_data = 0;
 CK_DLL_CTOR( Word2Vec_ctor );
 CK_DLL_DTOR( Word2Vec_dtor );
 CK_DLL_MFUN( Word2Vec_load );
-CK_DLL_MFUN( Word2Vec_getMostSimilar );
-CK_DLL_MFUN( Word2Vec_getByVector );
+CK_DLL_MFUN( Word2Vec_load2 );
+CK_DLL_MFUN( Word2Vec_getMostSimilarByWord );
+CK_DLL_MFUN( Word2Vec_getMostSimilarByVector );
 CK_DLL_MFUN( Word2Vec_getVector );
 CK_DLL_MFUN( Word2Vec_getDictionarySize );
 CK_DLL_MFUN( Word2Vec_getDictionaryDim );
+CK_DLL_MFUN( Word2Vec_getUseKDTree );
 // offset
 static t_CKUINT Word2Vec_offset_data = 0;
 
@@ -235,8 +235,15 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->doc = "Load pre-trained word embedding model from the given path.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // load
+    func = make_new_mfun( "int", "load", Word2Vec_load2 );
+    func->add_arg( "string", "path" );
+    func->add_arg( "int", "useKDTreeDim" );
+    func->doc = "Load pre-trained word embedding model from the given path; will use KDTree for similarity searches if the data dimension is less than or equal to 'useKDTreeDim'. Set 'useKDTreeDim' to 0 to use linear (brute force) similarity search; set 'useKDTreeDim' to less than 0 to always use KDTree.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // getMostSimilar
-    func = make_new_mfun( "void", "similar", Word2Vec_getMostSimilar );
+    func = make_new_mfun( "void", "similar", Word2Vec_getMostSimilarByWord );
     func->add_arg( "string", "word" );
     func->add_arg( "int", "k" );
     func->add_arg( "string[]", "output" );
@@ -244,7 +251,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // getByVector
-    func = make_new_mfun( "void", "similar", Word2Vec_getByVector );
+    func = make_new_mfun( "void", "similar", Word2Vec_getMostSimilarByVector );
     func->add_arg( "float[]", "vec" );
     func->add_arg( "int", "k" );
     func->add_arg( "string[]", "output" );
@@ -268,6 +275,11 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->doc = "Get number of dimensions for word embedding.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // dim
+    func = make_new_mfun( "int", "useKDTree", Word2Vec_getUseKDTree );
+    func->doc = "Get whether a KDTree is used for similarity search.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -279,7 +291,6 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
 
     return FALSE;
 }
-
 
 //-----------------------------------------------------------------------------
 // name: chuck2chai()
@@ -302,7 +313,6 @@ ChaiMatrixFast<t_CKFLOAT> * chuck2chai( Chuck_Array4 & array )
     return matrix;
 }
 
-
 //-----------------------------------------------------------------------------
 // name: chuck2chai()
 // desc: chuck array (float []) conversion to new chai vector
@@ -317,9 +327,6 @@ ChaiVectorFast<t_CKFLOAT> * chuck2chai( Chuck_Array8 & array )
     }
     return vector;
 }
-
-
-
 
 //-----------------------------------------------------------------------------
 // name: struct SVM_Object
@@ -532,109 +539,6 @@ CK_DLL_MFUN( SVM_predict )
     svm->predict( *x, *y );
 }
 
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct KDTree
-// desc: kd-tree implementation | added 1.4.2.0 (yikai)
-//-----------------------------------------------------------------------------
-struct kd_node_t
-{
-    ChaiVectorFast<t_CKFLOAT> * x;
-    struct kd_node_t * left, * right;
-};
-
-struct KDTree
-{
-public:
-    inline t_CKFLOAT dist( struct kd_node_t * a, struct kd_node_t * b )
-    {
-        t_CKFLOAT t, d = 0.0;
-        for( t_CKINT i = 0; i < a->x->size(); i++ )
-        {
-            t = a->x->v( i ) - b->x->v( i );
-            d += t * t;
-        }
-        return d;
-    }
-
-    inline void swap( struct kd_node_t * x, struct kd_node_t * y )
-    {
-        ChaiVectorFast<t_CKFLOAT> * t = x->x;
-        x->x = y->x;
-        y->x = t;
-    }
-
-    struct kd_node_t * find_median( struct kd_node_t * start, struct kd_node_t * end, t_CKINT idx )
-    {
-        if( end <= start ) return NULL;
-        if( end == start + 1 ) return start;
-        struct kd_node_t * p, * store, * md = start + ( end - start ) / 2;
-        t_CKFLOAT pivot;
-        while( 1 )
-        {
-            pivot = md->x->v( idx );
-            swap( md, end - 1 );
-            for( store = p = start; p < end; p++ )
-            {
-                if( p->x->v( idx ) < pivot )
-                {
-                    if( p != store )
-                        swap( p, store );
-                    store++;
-                }
-            }
-            swap( store, end - 1 );
-            if( store->x->v( idx ) == md->x->v( idx ) ) return md;
-            if( store > md ) end = store;
-            else start = store;
-        }
-    }
-
-    struct kd_node_t * make_tree( struct kd_node_t * t, t_CKINT len, t_CKINT i, t_CKINT dim )
-    {
-        struct kd_node_t * n;
-        if( !len ) return 0;
-        if( ( n = find_median( t, t + len, i ) ) )
-        {
-            i = ( i + 1 ) % dim;
-            n->left = make_tree( t, n - t, i, dim );
-            n->right = make_tree( n + 1, t + len - ( n + 1 ), i, dim );
-        }
-        return n;
-    }
-
-    void nearest( struct kd_node_t * root,
-                  struct kd_node_t * nd,
-                  t_CKINT i,
-                  t_CKINT dim,
-                  struct kd_node_t ** best,
-                  t_CKFLOAT * best_dist )
-    {
-        t_CKFLOAT d, dx, dx2;
-        if( !root ) return;
-        d = dist( nd, root );
-        dx = nd->x->v( i ) - root->x->v( i );
-        dx2 = dx * dx;
-        if( !*best || d < *best_dist )
-        {
-            *best_dist = d;
-            *best = root;
-        }
-        if( !*best_dist ) return;
-        if( ++i >= dim ) i = 0;
-        nearest( dx > 0 ? root->right : root->left, nd, i, dim, best, best_dist );
-        if( dx2 >= *best_dist ) return;
-        nearest( dx > 0 ? root->left : root->right, nd, i, dim, best, best_dist );
-    }
-
-private:
-};
-
-
-
-
 //-----------------------------------------------------------------------------
 // name: struct KNN_Object
 // desc: k-nearest neighbor implementation | added 1.4.2.0 (yikai)
@@ -778,9 +682,6 @@ CK_DLL_MFUN( KNN_predict )
     // predict
     knn->predict( k, *x, *y );
 }
-
-
-
 
 //-----------------------------------------------------------------------------
 // name: struct HMM_Object
@@ -1086,9 +987,6 @@ CK_DLL_MFUN( HMM_generate )
     hmm->generate( length, *output );
 }
 
-
-
-
 //-----------------------------------------------------------------------------
 // name: struct W2V_Dictionary
 // desc: struct for caching Word2Vec | added 1.4.2.1 (ge)
@@ -1099,10 +997,17 @@ struct W2V_Dictionary
     std::map<std::string, t_CKUINT> * key_to_index;
     ChaiVectorFast<std::string> * index_to_key;
     ChaiMatrixFast<t_CKFLOAT> * word_vectors;
-    
-    W2V_Dictionary() : key_to_index(NULL), index_to_key(NULL), word_vectors(NULL), dictionarySize(0), vectorLength(0)
+    struct kdtree * tree;
+
+    W2V_Dictionary()
+        : key_to_index( NULL ),
+          index_to_key( NULL ),
+          word_vectors( NULL ),
+          dictionarySize( 0 ),
+          vectorLength( 0 ),
+          tree( NULL )
     { }
-    
+
     // clear
     void clear()
     {
@@ -1111,10 +1016,9 @@ struct W2V_Dictionary
         SAFE_DELETE( key_to_index );
         SAFE_DELETE( index_to_key );
         SAFE_DELETE( word_vectors );
+        kdtree_destroy( tree );
     }
 };
-
-
 
 
 //-----------------------------------------------------------------------------
@@ -1126,7 +1030,7 @@ struct Word2Vec_Object
 private:
     // static (shared) cache | added (ge) 1.4.2.1
     static map<string, W2V_Dictionary *> o_cache;
-    
+
 private:
     // pointer to dictionary
     W2V_Dictionary * dictionary;
@@ -1134,7 +1038,7 @@ private:
 public:
     // constructor
     Word2Vec_Object()
-        : dictionary(NULL)
+        : dictionary( NULL )
     { }
 
     // destructor
@@ -1149,7 +1053,7 @@ public:
         // just zero the pointer (no delete since we are caching)
         dictionary = NULL;
     }
-    
+
     // get dictionary size
     t_CKINT getDictionarySize() const
     {
@@ -1162,59 +1066,98 @@ public:
         return dictionary != NULL ? dictionary->vectorLength : 0;
     }
 
+    // get dictionary dimensions
+    t_CKBOOL getUseKDTree() const
+    {
+        return dictionary != NULL ? dictionary->tree != NULL : 0;
+    }
+    
     // load
-    t_CKINT load( Chuck_String & path )
+    t_CKINT load( Chuck_String & path, t_CKINT useKDTreeIfDimLEQtoThis )
     {
         // clear
         clear();
         
         // check cache
-        if( o_cache.find(path.str()) != o_cache.end() )
+        if( o_cache.find( path.str() ) != o_cache.end() )
         {
             // retrieve from cache
             dictionary = o_cache[path.str()];
             // done
             return true;
         }
-        
+
         // open file
         std::ifstream fin( path.str() );
         if( !fin.is_open() )
             return false;
-        
+
         // instantiate dictionary
         dictionary = new W2V_Dictionary();
+
         // read header
         fin >> dictionary->dictionarySize >> dictionary->vectorLength;
+
         // allocate
         dictionary->key_to_index = new std::map<std::string, t_CKUINT>();
         dictionary->index_to_key = new ChaiVectorFast<std::string>( dictionary->dictionarySize );
-        dictionary->word_vectors = new ChaiMatrixFast<t_CKFLOAT>( dictionary->dictionarySize, dictionary->vectorLength );
-        // read vectors
-        std::string key;
-        t_CKFLOAT value;
-        for( t_CKINT i = 0; i < dictionary->dictionarySize; i++ )
+        
+        // check if using kdtree
+        if( useKDTreeIfDimLEQtoThis < 0 || dictionary->vectorLength <= useKDTreeIfDimLEQtoThis )
         {
-            fin >> key;
-            dictionary->index_to_key->v( i ) = key;
-            (*(dictionary->key_to_index))[key] = i;
-            for( t_CKINT j = 0; j < dictionary->vectorLength; j++ )
+            // read vectors and build kd-tree
+            dictionary->tree = kdtree_init( dictionary->vectorLength );
+            std::string key;
+            t_CKFLOAT value;
+            ChaiVectorFast<t_CKFLOAT> vector( dictionary->vectorLength );
+            for( t_CKINT i = 0; i < dictionary->dictionarySize; i++ )
             {
-                fin >> value;
-                dictionary->word_vectors->v( i, j ) = value;
+                fin >> key;
+                dictionary->index_to_key->v( i ) = key;
+                ( *( dictionary->key_to_index ) )[key] = i;
+                for( t_CKINT j = 0; j < dictionary->vectorLength; j++ )
+                {
+                    fin >> value;
+                    vector.v( j ) = value;
+                }
+                kdtree_insert( dictionary->tree, vector.m_vector );
+            }
+
+            // rebuild kdtree
+            kdtree_rebuild( dictionary->tree );
+        }
+        else
+        {
+            // allocate word vectors
+            dictionary->word_vectors = new ChaiMatrixFast<t_CKFLOAT>( dictionary->dictionarySize, dictionary->vectorLength );
+            
+            // read vectors
+            std::string key;
+            t_CKFLOAT value;
+            for( t_CKINT i = 0; i < dictionary->dictionarySize; i++ )
+            {
+                fin >> key;
+                dictionary->index_to_key->v( i ) = key;
+                ( *(dictionary->key_to_index) )[key] = i;
+                for( t_CKINT j = 0; j < dictionary->vectorLength; j++ )
+                {
+                    fin >> value;
+                    dictionary->word_vectors->v( i, j ) = value;
+                }
             }
         }
         
         // close file
         fin.close();
+        
         // add to cache
         o_cache[path.str()] = dictionary;
-        
+
         return true;
     }
 
-    // get nearest neighbors
-    void getNearestNeighbors( ChaiVectorFast<t_CKFLOAT> & vector, t_CKINT topn, ChaiVectorFast<t_CKINT> & indices )
+    // get nearest neighbors (brute force)
+    void getNearestNeighborsBF( ChaiVectorFast<t_CKFLOAT> & vector, t_CKINT topn, ChaiVectorFast<t_CKINT> & indices )
     {
         // allocate
         ChaiVectorFast<t_CKFLOAT> top_distances( topn );
@@ -1257,28 +1200,91 @@ public:
         }
     }
 
-    // getMostSimilar
-    void getMostSimilar( Chuck_String & word, t_CKINT topn, Chuck_Array4 & output_ )
+    // get nearest neighbors
+    void getNearestNeighborsKDTree( ChaiVectorFast<t_CKFLOAT> & vector, t_CKINT topn, ChaiVectorFast<t_CKINT> & indices )
     {
-        // get index
-        t_CKINT index = (*(dictionary->key_to_index))[word.str()];
-        // get vector
-        ChaiVectorFast<t_CKFLOAT> vector( dictionary->vectorLength );
-        for( t_CKINT i = 0; i < dictionary->vectorLength; i++ )
-            vector.v( i ) = dictionary->word_vectors->v( index, i );
-        // get nearest neighbors
-        ChaiVectorFast<t_CKINT> top_indices( topn );
-        getNearestNeighbors( vector, topn, top_indices );
-        // copy
-        for( t_CKINT i = 0; i < topn; i++ )
+        kdtree_knn_search( dictionary->tree, vector.m_vector, topn );
+        struct knn_list * p = dictionary->tree->knn_list_head.next;
+        t_CKINT i = 0;
+        while( p != &dictionary->tree->knn_list_head )
         {
-            ( (Chuck_String *)output_.m_vector[i] )->set( dictionary->index_to_key->v( top_indices.v( i ) ) );
+            indices.v( i++ ) = p->node->coord_index;
+            p = p->next;
+        }
+    }
+    
+    // get nearest neighbors
+    void getNearestNeighbors( ChaiVectorFast<t_CKFLOAT> & vector, t_CKINT topn, ChaiVectorFast<t_CKINT> & indices )
+    {
+        // check
+        if( dictionary == NULL )
+        {
+            EM_error3( "Word2Vec: no model loaded..." );
+            return;
+        }
+
+        // check if using kdtree
+        if( dictionary->tree != NULL ) return getNearestNeighborsKDTree( vector, topn, indices );
+        else return getNearestNeighborsBF( vector, topn, indices );
+    }
+
+    // getMostSimilar
+    void getMostSimilarByWord( Chuck_String & word, t_CKINT topn, Chuck_Array4 & output_ )
+    {
+        // check
+        if( dictionary == NULL )
+        {
+            EM_error3( "Word2Vec: no model loaded..." );
+            return;
+        }
+
+        // use tree?
+        if( dictionary->tree != NULL )
+        {
+            // get index
+            t_CKINT index = ( *( dictionary->key_to_index ) )[word.str()];
+            // get vector
+            ChaiVectorFast<t_CKFLOAT> vector( dictionary->vectorLength );
+            for( t_CKINT i = 0; i < dictionary->vectorLength; i++ )
+                vector.v( i ) = dictionary->tree->coord_table[index][i];
+            // get nearest neighbors
+            ChaiVectorFast<t_CKINT> top_indices( topn );
+            getNearestNeighbors( vector, topn, top_indices );
+            // copy
+            for( t_CKINT i = 0; i < topn; i++ )
+            {
+                ( (Chuck_String *)output_.m_vector[i] )->set( dictionary->index_to_key->v( top_indices.v( i ) ) );
+            }
+        }
+        else
+        {
+            // get index
+            t_CKINT index = ( *(dictionary->key_to_index) )[word.str()];
+            // get vector
+            ChaiVectorFast<t_CKFLOAT> vector( dictionary->vectorLength );
+            for( t_CKINT i = 0; i < dictionary->vectorLength; i++ )
+              vector.v( i ) = dictionary->word_vectors->v( index, i );
+            // get nearest neighbors
+            ChaiVectorFast<t_CKINT> top_indices( topn );
+            getNearestNeighbors( vector, topn, top_indices );
+            // copy
+            for( t_CKINT i = 0; i < topn; i++ )
+            {
+              ( (Chuck_String *)output_.m_vector[i] )->set( dictionary->index_to_key->v( top_indices.v( i ) ) );
+            }
         }
     }
 
     // getByVector
-    void getByVector( Chuck_Array8 & vec_, t_CKINT topn, Chuck_Array4 & output_ )
+    void getMostSimilarByVector( Chuck_Array8 & vec_, t_CKINT topn, Chuck_Array4 & output_ )
     {
+        // check
+        if( dictionary == NULL )
+        {
+            EM_error3( "Word2Vec: no model loaded..." );
+            return;
+        }
+
         // get vector
         ChaiVectorFast<t_CKFLOAT> vector( dictionary->vectorLength );
         for( t_CKINT i = 0; i < dictionary->vectorLength; i++ )
@@ -1296,21 +1302,34 @@ public:
     // getVector
     void getVector( Chuck_String & word, Chuck_Array8 & output_ )
     {
-        // get index
-        t_CKINT index = (*(dictionary->key_to_index) )[word.str()];
-        // copy
-        for( t_CKINT i = 0; i < dictionary->vectorLength; i++ )
+        // check
+        if( dictionary == NULL )
         {
-            output_.m_vector[i] = dictionary->word_vectors->v( index, i );
+            EM_error3( "Word2Vec: no model loaded..." );
+            return;
+        }
+        
+        // get index
+        t_CKINT index = ( *( dictionary->key_to_index ) )[word.str()];
+
+        // whether we are using
+        if( dictionary->tree != NULL )
+        {
+            // copy
+            for( t_CKINT i = 0; i < dictionary->vectorLength; i++ )
+            {
+                output_.m_vector[i] = dictionary->tree->coord_table[index][i];
+            }
+        }
+        else
+        {
+            // copy
+            for( t_CKINT i = 0; i < dictionary->vectorLength; i++ )
+            {
+                output_.m_vector[i] = dictionary->word_vectors->v( index, i );
+            }
         }
     }
-
-    // print
-    void print()
-    {
-        // TODO
-    }
-
 };
 
 // static instantiation | added (ge) 1.4.2.1
@@ -1342,10 +1361,21 @@ CK_DLL_MFUN( Word2Vec_load )
     // get args
     Chuck_String * path = GET_NEXT_STRING( ARGS );
     // load
-    RETURN->v_int = word2vec->load( *path );
+    RETURN->v_int = word2vec->load( *path, -1 );
 }
 
-CK_DLL_MFUN( Word2Vec_getMostSimilar )
+CK_DLL_MFUN( Word2Vec_load2 )
+{
+    // get object
+    Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
+    // get args
+    Chuck_String * path = GET_NEXT_STRING( ARGS );
+    t_CKINT useKDTreeDim = GET_NEXT_INT( ARGS );
+    // load
+    RETURN->v_int = word2vec->load( *path, useKDTreeDim );
+}
+
+CK_DLL_MFUN( Word2Vec_getMostSimilarByWord )
 {
     // get object
     Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
@@ -1354,10 +1384,10 @@ CK_DLL_MFUN( Word2Vec_getMostSimilar )
     t_CKINT topn = GET_NEXT_INT( ARGS );
     Chuck_Array4 * output = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
     // getMostSimilar
-    word2vec->getMostSimilar( *word, topn, *output );
+    word2vec->getMostSimilarByWord( *word, topn, *output );
 }
 
-CK_DLL_MFUN( Word2Vec_getByVector )
+CK_DLL_MFUN( Word2Vec_getMostSimilarByVector )
 {
     // get object
     Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
@@ -1366,7 +1396,7 @@ CK_DLL_MFUN( Word2Vec_getByVector )
     t_CKINT topn = GET_NEXT_INT( ARGS );
     Chuck_Array4 * output = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
     // getByVector
-    word2vec->getByVector( *vec, topn, *output );
+    word2vec->getMostSimilarByVector( *vec, topn, *output );
 }
 
 CK_DLL_MFUN( Word2Vec_getVector )
@@ -1396,10 +1426,558 @@ CK_DLL_MFUN( Word2Vec_getDictionaryDim )
     RETURN->v_int = word2vec->getDictionaryDim();
 }
 
-CK_DLL_MFUN( Word2Vec_print )
+CK_DLL_MFUN( Word2Vec_getUseKDTree )
 {
     // get object
     Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
-    // print
-    word2vec->print();
+    // get dim
+    RETURN->v_int = word2vec->getUseKDTree();
+}
+
+
+//-----------------------------------------------------------------------------
+// KDTree implementation
+//-----------------------------------------------------------------------------
+static inline t_CKINT is_leaf( struct kdnode * node )
+{
+    return node->left == node->right;
+}
+
+static inline void swap( long * a, long * b )
+{
+    long tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+static inline double square( double d )
+{
+    return d * d;
+}
+
+static inline double distance( double * c1, double * c2, t_CKINT dim )
+{
+    double distance = 0;
+    while( dim-- > 0 )
+    {
+        distance += square( *c1++ - *c2++ );
+    }
+    return distance;
+}
+
+static inline double knn_max( struct kdtree * tree )
+{
+    return tree->knn_list_head.prev->distance;
+}
+
+static inline double D( struct kdtree * tree, long index, t_CKINT r )
+{
+    return tree->coord_table[index][r];
+}
+
+static inline t_CKINT kdnode_passed( struct kdtree * tree, struct kdnode * node )
+{
+    return node != NULL ? tree->coord_passed[node->coord_index] : 1;
+}
+
+static inline t_CKINT knn_search_on( struct kdtree * tree, t_CKINT k, double value, double target )
+{
+    return tree->knn_num < k || square( target - value ) < knn_max( tree );
+}
+
+static inline void coord_index_reset( struct kdtree * tree )
+{
+    long i;
+    for( i = 0; i < tree->capacity; i++ )
+    {
+        tree->coord_indexes[i] = i;
+    }
+}
+
+static inline void coord_table_reset( struct kdtree * tree )
+{
+    long i;
+    for( i = 0; i < tree->capacity; i++ )
+    {
+        tree->coord_table[i] = tree->coords + i * tree->dim;
+    }
+}
+
+static inline void coord_deleted_reset( struct kdtree * tree )
+{
+    memset( tree->coord_deleted, 0, tree->capacity );
+}
+
+static inline void coord_passed_reset( struct kdtree * tree )
+{
+    memset( tree->coord_passed, 0, tree->capacity );
+}
+
+static void coord_dump_all( struct kdtree * tree )
+{
+    long i, j;
+    for( i = 0; i < tree->count; i++ )
+    {
+        long index = tree->coord_indexes[i];
+        double * coord = tree->coord_table[index];
+        printf( "(" );
+        for( j = 0; j < tree->dim; j++ )
+        {
+            if( j != tree->dim - 1 )
+            {
+                printf( "%.2f,", coord[j] );
+            }
+            else
+            {
+                printf( "%.2f)\n", coord[j] );
+            }
+        }
+    }
+}
+
+static void coord_dump_by_indexes( struct kdtree * tree, long low, long high, t_CKINT r )
+{
+    long i;
+    printf( "r=%d:", (int)r );
+    for( i = 0; i <= high; i++ )
+    {
+        if( i < low )
+        {
+            printf( "%8s", " " );
+        }
+        else
+        {
+            long index = tree->coord_indexes[i];
+            printf( "%8.2f", tree->coord_table[index][r] );
+        }
+    }
+    printf( "\n" );
+}
+
+static void quicksort( struct kdtree * tree, long lo, long hi, t_CKINT r )
+{
+    long i, j, pivot, * indexes;
+    double * p;
+
+    if( lo >= hi )
+    {
+        return;
+    }
+
+    i = lo;
+    j = hi;
+    indexes = tree->coord_indexes;
+    pivot = indexes[lo];
+
+    while( i < j )
+    {
+        while( i < j && D( tree, indexes[j], r ) >= D( tree, pivot, r ) ) j--;
+        /* Loop invariant: nums[j] > pivot or i == j */
+        indexes[i] = indexes[j];
+        while( i < j && D( tree, indexes[i], r ) <= D( tree, pivot, r ) ) i++;
+        /* Loop invariant: nums[i] < pivot or i == j */
+        indexes[j] = indexes[i];
+    }
+    /* Loop invariant: i == j */
+    indexes[i] = pivot;
+
+    quicksort( tree, lo, i - 1, r );
+    quicksort( tree, i + 1, hi, r );
+}
+
+static struct kdnode * kdnode_alloc( double * coord, long index, t_CKINT r )
+{
+    struct kdnode * node = (struct kdnode *)malloc( sizeof( *node ) );
+    if( node != NULL )
+    {
+        memset( node, 0, sizeof( *node ) );
+        node->coord = coord;
+        node->coord_index = index;
+        node->r = r;
+    }
+    return node;
+}
+
+static void kdnode_free( struct kdnode * node )
+{
+    free( node );
+}
+
+static t_CKINT coord_cmp( double * c1, double * c2, t_CKINT dim )
+{
+    t_CKINT i;
+    double ret;
+    for( i = 0; i < dim; i++ )
+    {
+        ret = *c1++ - *c2++;
+        if( fabs( ret ) >= DBL_EPSILON )
+        {
+            return ret > 0 ? 1 : -1;
+        }
+    }
+
+    if( fabs( ret ) < DBL_EPSILON )
+    {
+        return 0;
+    }
+    else
+    {
+        return ret > 0 ? 1 : -1;
+    }
+}
+
+static void knn_list_add( struct kdtree * tree, struct kdnode * node, double distance )
+{
+    if( node == NULL ) return;
+
+    struct knn_list * head = &tree->knn_list_head;
+    struct knn_list * p = head->prev;
+    if( tree->knn_num == 1 )
+    {
+        if( p->distance > distance )
+        {
+            p = p->prev;
+        }
+    }
+    else
+    {
+        while( p != head && p->distance > distance )
+        {
+            p = p->prev;
+        }
+    }
+
+    if( p == head || coord_cmp( p->node->coord, node->coord, tree->dim ) )
+    {
+        struct knn_list * log = (struct knn_list *)malloc( sizeof( *log ) );
+        if( log != NULL )
+        {
+            log->node = node;
+            log->distance = distance;
+            log->prev = p;
+            log->next = p->next;
+            p->next->prev = log;
+            p->next = log;
+            tree->knn_num++;
+        }
+    }
+}
+
+static void knn_list_adjust( struct kdtree * tree, struct kdnode * node, double distance )
+{
+    if( node == NULL ) return;
+
+    struct knn_list * head = &tree->knn_list_head;
+    struct knn_list * p = head->prev;
+    if( tree->knn_num == 1 )
+    {
+        if( p->distance > distance )
+        {
+            p = p->prev;
+        }
+    }
+    else
+    {
+        while( p != head && p->distance > distance )
+        {
+            p = p->prev;
+        }
+    }
+
+    if( p == head || coord_cmp( p->node->coord, node->coord, tree->dim ) )
+    {
+        struct knn_list * log = head->prev;
+        /* Replace the original max one */
+        log->node = node;
+        log->distance = distance;
+        /* Remove from the max position */
+        head->prev = log->prev;
+        log->prev->next = head;
+        /* insert as a new one */
+        log->prev = p;
+        log->next = p->next;
+        p->next->prev = log;
+        p->next = log;
+    }
+}
+
+static void knn_list_clear( struct kdtree * tree )
+{
+    struct knn_list * head = &tree->knn_list_head;
+    struct knn_list * p = head->next;
+    while( p != head )
+    {
+        struct knn_list * prev = p;
+        p = p->next;
+        free( prev );
+    }
+    tree->knn_num = 0;
+}
+
+static void resize( struct kdtree * tree )
+{
+    tree->capacity *= 2;
+    tree->coords = (double *)realloc( tree->coords, tree->dim * sizeof( double ) * tree->capacity );
+    tree->coord_table = (double **)realloc( tree->coord_table, sizeof( double * ) * tree->capacity );
+    tree->coord_indexes = (long *)realloc( tree->coord_indexes, sizeof( long ) * tree->capacity );
+    tree->coord_deleted = (unsigned char *)realloc( tree->coord_deleted, sizeof( char ) * tree->capacity );
+    tree->coord_passed = (unsigned char *)realloc( tree->coord_passed, sizeof( char ) * tree->capacity );
+    coord_table_reset( tree );
+    coord_index_reset( tree );
+    coord_deleted_reset( tree );
+    coord_passed_reset( tree );
+}
+
+static void kdnode_dump( struct kdnode * node, t_CKINT dim )
+{
+    t_CKINT i;
+    if( node->coord != NULL )
+    {
+        printf( "(" );
+        for( i = 0; i < dim; i++ )
+        {
+            if( i != dim - 1 )
+            {
+                printf( "%.2f,", node->coord[i] );
+            }
+            else
+            {
+                printf( "%.2f)\n", node->coord[i] );
+            }
+        }
+    }
+    else
+    {
+        printf( "(none)\n" );
+    }
+}
+
+void kdtree_insert( struct kdtree * tree, double * coord )
+{
+    if( tree->count + 1 > tree->capacity )
+    {
+        resize( tree );
+    }
+    memcpy( tree->coord_table[tree->count++], coord, tree->dim * sizeof( double ) );
+}
+
+static void knn_pickup( struct kdtree * tree, struct kdnode * node, double * target, t_CKINT k )
+{
+    double dist = distance( node->coord, target, tree->dim );
+    if( tree->knn_num < k )
+    {
+        knn_list_add( tree, node, dist );
+    }
+    else
+    {
+        if( dist < knn_max( tree ) )
+        {
+            knn_list_adjust( tree, node, dist );
+        }
+        else if( fabs( dist - knn_max( tree ) ) < DBL_EPSILON )
+        {
+            knn_list_add( tree, node, dist );
+        }
+    }
+}
+
+static void kdtree_search_recursive( struct kdtree * tree, struct kdnode * node, double * target, t_CKINT k, t_CKINT * pickup )
+{
+    if( node == NULL || kdnode_passed( tree, node ) )
+    {
+        return;
+    }
+
+    t_CKINT r = node->r;
+    if( !knn_search_on( tree, k, node->coord[r], target[r] ) )
+    {
+        return;
+    }
+
+    if( is_leaf( node ) )
+    {
+        *pickup = 1;
+    }
+    else
+    {
+        if( target[r] <= node->coord[r] )
+        {
+            kdtree_search_recursive( tree, node->left, target, k, pickup );
+            if( *pickup || node->left == NULL )
+            {
+                kdtree_search_recursive( tree, node->right, target, k, pickup );
+            }
+        }
+        else
+        {
+            kdtree_search_recursive( tree, node->right, target, k, pickup );
+            if( *pickup || node->right == NULL )
+            {
+                kdtree_search_recursive( tree, node->left, target, k, pickup );
+            }
+        }
+    }
+
+    /* back track and pick up  */
+    if( *pickup )
+    {
+        tree->coord_passed[node->coord_index] = 1;
+        knn_pickup( tree, node, target, k );
+    }
+}
+
+void kdtree_knn_search( struct kdtree * tree, double * target, t_CKINT k )
+{
+    if( k > 0 )
+    {
+        t_CKINT pickup = 0;
+        kdtree_search_recursive( tree, tree->root, target, k, &pickup );
+    }
+}
+
+void kdtree_delete( struct kdtree * tree, double * coord )
+{
+    t_CKINT r = 0;
+    struct kdnode * node = tree->root;
+    struct kdnode * parent = node;
+
+    while( node != NULL )
+    {
+        if( node->coord == NULL )
+        {
+            if( parent->right->coord == NULL )
+            {
+                break;
+            }
+            else
+            {
+                node = parent->right;
+                continue;
+            }
+        }
+
+        if( coord[r] < node->coord[r] )
+        {
+            parent = node;
+            node = node->left;
+        }
+        else if( coord[r] > node->coord[r] )
+        {
+            parent = node;
+            node = node->right;
+        }
+        else
+        {
+            t_CKINT ret = coord_cmp( coord, node->coord, tree->dim );
+            if( ret < 0 )
+            {
+                parent = node;
+                node = node->left;
+            }
+            else if( ret > 0 )
+            {
+                parent = node;
+                node = node->right;
+            }
+            else
+            {
+                node->coord = NULL;
+                break;
+            }
+        }
+        r = ( r + 1 ) % tree->dim;
+    }
+}
+
+static void kdnode_build( struct kdtree * tree, struct kdnode ** nptr, t_CKINT r, long low, long high )
+{
+    if( low == high )
+    {
+        long index = tree->coord_indexes[low];
+        *nptr = kdnode_alloc( tree->coord_table[index], index, r );
+    }
+    else if( low < high )
+    {
+        /* Sort and fetch the median to build a balanced BST */
+        quicksort( tree, low, high, r );
+        long median = low + ( high - low ) / 2;
+        long median_index = tree->coord_indexes[median];
+        struct kdnode * node = *nptr = kdnode_alloc( tree->coord_table[median_index], median_index, r );
+        r = ( r + 1 ) % tree->dim;
+        kdnode_build( tree, &node->left, r, low, median - 1 );
+        kdnode_build( tree, &node->right, r, median + 1, high );
+    }
+}
+
+static void kdtree_build( struct kdtree * tree )
+{
+    kdnode_build( tree, &tree->root, 0, 0, tree->count - 1 );
+}
+
+void kdtree_rebuild( struct kdtree * tree )
+{
+    long i, j;
+    size_t size_of_coord = tree->dim * sizeof( double );
+    for( i = 0, j = 0; j < tree->count; i++, j++ )
+    {
+        while( j < tree->count && tree->coord_deleted[j] )
+        {
+            j++;
+        }
+        if( i != j && j < tree->count )
+        {
+            memcpy( tree->coord_table[i], tree->coord_table[j], size_of_coord );
+            tree->coord_deleted[i] = 0;
+        }
+    }
+    tree->count = i;
+    coord_index_reset( tree );
+    kdtree_build( tree );
+}
+
+struct kdtree * kdtree_init( t_CKINT dim )
+{
+    struct kdtree * tree = (struct kdtree *)malloc( sizeof( *tree ) );
+    if( tree != NULL )
+    {
+        tree->root = NULL;
+        tree->dim = dim;
+        tree->count = 0;
+        tree->capacity = 65536;
+        tree->knn_list_head.next = &tree->knn_list_head;
+        tree->knn_list_head.prev = &tree->knn_list_head;
+        tree->knn_list_head.node = NULL;
+        tree->knn_list_head.distance = 0;
+        tree->knn_num = 0;
+        tree->coords = (double *)malloc( dim * sizeof( double ) * tree->capacity );
+        tree->coord_table = (double **)malloc( sizeof( double * ) * tree->capacity );
+        tree->coord_indexes = (long *)malloc( sizeof( long ) * tree->capacity );
+        tree->coord_deleted = (unsigned char *)malloc( sizeof( char ) * tree->capacity );
+        tree->coord_passed = (unsigned char *)malloc( sizeof( char ) * tree->capacity );
+        coord_index_reset( tree );
+        coord_table_reset( tree );
+        coord_deleted_reset( tree );
+        coord_passed_reset( tree );
+    }
+    return tree;
+}
+
+static void kdnode_destroy( struct kdnode * node )
+{
+    if( node == NULL ) return;
+    kdnode_destroy( node->left );
+    kdnode_destroy( node->right );
+    kdnode_free( node );
+}
+
+void kdtree_destroy( struct kdtree * tree )
+{
+    kdnode_destroy( tree->root );
+    knn_list_clear( tree );
+    free( tree->coords );
+    free( tree->coord_table );
+    free( tree->coord_indexes );
+    free( tree->coord_deleted );
+    free( tree->coord_passed );
+    free( tree );
 }
