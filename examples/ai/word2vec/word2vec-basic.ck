@@ -39,6 +39,7 @@ if( !model.load( me.dir() + filepath ) )
 // print info
 <<< "dictionary size:", model.size() >>>;
 <<< "embedding dimensions:", model.dim() >>>;
+<<< "using KDTree for search:", model.useKDTree() ? "YES" : "NO" >>>;
 <<< "=========================================================", "" >>>;
 
 // get vector
