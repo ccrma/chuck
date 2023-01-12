@@ -242,10 +242,12 @@ public:
 #ifndef _KD_TREE_H
 #define _KD_TREE_H
 
+#include <float.h>
+// #define DBL_EPSILON 2.2204460492503131e-16
+
 #define KDTREE_MAX_LEVEL 64
 #define KDTREE_LEFT_INDEX 0
 #define KDTREE_RIGHT_INDEX 1
-#define DBL_EPSILON 2.2204460492503131e-16
 
 typedef struct knn_list
 {

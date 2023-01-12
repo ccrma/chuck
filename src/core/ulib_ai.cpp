@@ -1630,7 +1630,7 @@ static void coord_dump_by_indexes( struct kdtree * tree, long low, long high, t_
 static void quicksort( struct kdtree * tree, long lo, long hi, t_CKINT r )
 {
     long i, j, pivot, * indexes;
-    double * p;
+    // double * p;
 
     if( lo >= hi )
     {
