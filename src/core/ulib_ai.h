@@ -86,7 +86,7 @@ public:
         if( !m_matrix )
         {
             // error
-            CK_FPRINTF_STDERR( "[chuck]: ChaiMatrixFast allocation failure: %s, %d x %d...",
+            CK_FPRINTF_STDERR( "[chuck]: ChaiMatrixFast allocation failure: %s, %d x %d...\n",
                                typeid( T ).name(), xDim, yDim );
             // bail
             return FALSE;
@@ -106,7 +106,7 @@ public:
         if( x < 0 || x >= m_xDim || y < 0 || y >= m_yDim )
         {
             // error
-            CK_FPRINTF_STDERR( "[chuck]: ChaiMatrixFast out of bound: %s[%d][%d]...",
+            CK_FPRINTF_STDERR( "[chuck]: ChaiMatrixFast out of bound: %s[%d][%d]...\n",
                                typeid( T ).name(), x, y );
             // halt
             // TODO: this should throw (a shred-level, probably) exception
@@ -185,7 +185,7 @@ public:
         if( !m_vector )
         {
             // error
-            CK_FPRINTF_STDERR( "[chuck]: ChaiVectorFast allocation failure: %s[%d]...",
+            CK_FPRINTF_STDERR( "[chuck]: ChaiVectorFast allocation failure: %s[%d]...\n",
                                typeid( T ).name(), length );
             // bail
             return FALSE;
@@ -210,7 +210,7 @@ public:
         if( i < 0 || i >= m_length )
         {
             // error
-            CK_FPRINTF_STDERR( "[chuck]: ChaiVectorFast out of bound: %s[%d]...",
+            CK_FPRINTF_STDERR( "[chuck]: ChaiVectorFast out of bound: %s[%d]...\n",
                                typeid( T ).name(), i );
             // TODO: this should throw (a shred-level, probably) exception
             assert( FALSE );

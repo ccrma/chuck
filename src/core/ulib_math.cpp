@@ -1168,15 +1168,14 @@ CK_DLL_SFUN( remap_impl )
     t_CKFLOAT x2 = GET_NEXT_FLOAT( ARGS );
     t_CKFLOAT y2 = GET_NEXT_FLOAT( ARGS );
 
-    t_CKFLOAT swap;
-    // re-order if needed
-    if( x1 > y1 ) { swap = x1; x1 = y1; y1 = swap; }
-    if( x2 > y2 ) { swap = x2; x2 = y2; y2 = swap; }
+    t_CKFLOAT min1 = x1 < y1 ? x1 : y1;
+    t_CKFLOAT max1 = x1 > y1 ? x1 : y1;
 
     // clamp v in [x1, y1]
-    if( v < x1 ) v = x1;
-    else if( v > y1 ) v = y1;
+    if( v < min1 ) v = min1;
+    else if( v > max1 ) v = max1;
 
+    // std::cerr << v << " " << x1 << " " << y1 << " " << x2 << " " << y2 << std::endl;
     // remap
-    RETURN->v_float = x2 + (v-x1)/(y1-x1) * (y2-x2);
+    RETURN->v_float = x2 + (v-x1)/(y1-x1)*(y2-x2);
 }
