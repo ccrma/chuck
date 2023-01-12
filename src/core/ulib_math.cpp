@@ -410,6 +410,15 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "vec4", "b" );
     QUERY->doc_func( QUERY, "compute the euclidean distance between 4D vectors a and b." );
 
+    // add euclean (ge: added 1.4.2.1)
+    QUERY->add_sfun( QUERY, remap_impl, "float", "remap" ); //! map
+    QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->add_arg( QUERY, "float", "x1" );
+    QUERY->add_arg( QUERY, "float", "y1" );
+    QUERY->add_arg( QUERY, "float", "x2" );
+    QUERY->add_arg( QUERY, "float", "y2" );
+    QUERY->doc_func( QUERY, "map 'value' from range [x1,y1] into range [x2,y2]; value will be clamped to [x1,y1] if outside range." );
+
     // pi
     //! see \example math.ck
     QUERY->add_svar( QUERY, "float", "PI", TRUE, &g_pi );
@@ -1147,4 +1156,27 @@ CK_DLL_SFUN( euclidean4d_impl )
 
     // set return value
     RETURN->v_float = ::sqrt(sum);
+}
+
+
+// remap (ge) | added 1.4.2.1
+CK_DLL_SFUN( remap_impl )
+{
+    t_CKFLOAT v = GET_NEXT_FLOAT( ARGS );
+    t_CKFLOAT x1 = GET_NEXT_FLOAT( ARGS );
+    t_CKFLOAT y1 = GET_NEXT_FLOAT( ARGS );
+    t_CKFLOAT x2 = GET_NEXT_FLOAT( ARGS );
+    t_CKFLOAT y2 = GET_NEXT_FLOAT( ARGS );
+
+    t_CKFLOAT swap;
+    // re-order if needed
+    if( x1 > y1 ) { swap = x1; x1 = y1; y1 = swap; }
+    if( x2 > y2 ) { swap = x2; x2 = y2; y2 = swap; }
+
+    // clamp v in [x1, y1]
+    if( v < x1 ) v = x1;
+    else if( v > y1 ) v = y1;
+
+    // remap
+    RETURN->v_float = x2 + (v-x1)/(y1-x1) * (y2-x2);
 }

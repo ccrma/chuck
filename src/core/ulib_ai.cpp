@@ -78,6 +78,7 @@ CK_DLL_MFUN( Word2Vec_getVector );
 CK_DLL_MFUN( Word2Vec_getDictionarySize );
 CK_DLL_MFUN( Word2Vec_getDictionaryDim );
 CK_DLL_MFUN( Word2Vec_getUseKDTree );
+CK_DLL_MFUN( Word2Vec_getDimMinMax );
 // offset
 static t_CKUINT Word2Vec_offset_data = 0;
 
@@ -243,7 +244,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // getMostSimilar
-    func = make_new_mfun( "void", "similar", Word2Vec_getMostSimilarByWord );
+    func = make_new_mfun( "void", "getSimilar", Word2Vec_getMostSimilarByWord );
     func->add_arg( "string", "word" );
     func->add_arg( "int", "k" );
     func->add_arg( "string[]", "output" );
@@ -251,7 +252,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // getByVector
-    func = make_new_mfun( "void", "similar", Word2Vec_getMostSimilarByVector );
+    func = make_new_mfun( "void", "getSimilar", Word2Vec_getMostSimilarByVector );
     func->add_arg( "float[]", "vec" );
     func->add_arg( "int", "k" );
     func->add_arg( "string[]", "output" );
@@ -268,6 +269,18 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     // size
     func = make_new_mfun( "int", "size", Word2Vec_getDictionarySize );
     func->doc = "Get number of words in dictionary.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // dim
+    func = make_new_mfun( "int", "dim", Word2Vec_getDictionaryDim );
+    func->doc = "Get number of dimensions for word embedding.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // dim
+    func = make_new_mfun( "void", "minMax", Word2Vec_getDimMinMax );
+    func->add_arg( "float[]", "mins" );
+    func->add_arg( "float[]", "maxs" );
+    func->doc = "Retrieve the minimums and maximums for each dimension.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // dim
@@ -998,6 +1011,9 @@ struct W2V_Dictionary
     ChaiVectorFast<std::string> * index_to_key;
     ChaiMatrixFast<t_CKFLOAT> * word_vectors;
     struct kdtree * tree;
+    // bounds for each dimension
+    ChaiVectorFast<t_CKFLOAT> mins;
+    ChaiVectorFast<t_CKFLOAT> maxs;
 
     W2V_Dictionary()
         : key_to_index( NULL ),
@@ -1066,6 +1082,35 @@ public:
         return dictionary != NULL ? dictionary->vectorLength : 0;
     }
 
+    // get dim mins and maxs
+    void getDimMinMaxs( Chuck_Array8 * mins, Chuck_Array8 * maxs )
+    {
+        // get dim
+        t_CKINT dims = getDictionaryDim();
+        // allocate
+        if( dims == 0 ) return;
+
+        // if not null
+        if( mins != NULL )
+        {
+            // set size
+            mins->set_size( dims );
+            // copy minimums
+            for( int i = 0; i < dims; i++ )
+            { mins->set( i, dictionary->mins.v(i) ); }
+        }
+
+        // if not null
+        if( maxs != NULL )
+        {
+            // set size
+            maxs->set_size( dims );
+            // copy minimums
+            for( int i = 0; i < dims; i++ )
+            { maxs->set( i, dictionary->maxs.v(i) ); }
+        }
+    }
+
     // get dictionary dimensions
     t_CKBOOL getUseKDTree() const
     {
@@ -1101,7 +1146,15 @@ public:
         // allocate
         dictionary->key_to_index = new std::map<std::string, t_CKUINT>();
         dictionary->index_to_key = new ChaiVectorFast<std::string>( dictionary->dictionarySize );
-        
+        dictionary->mins.allocate( dictionary->vectorLength );
+        dictionary->maxs.allocate( dictionary->vectorLength );
+        for( int i = 0; i < dictionary->vectorLength; i++ )
+        {
+            // initialize
+            dictionary->mins.v(i) = 1e10;
+            dictionary->maxs.v(i) = -1e10;
+        }
+
         // check if using kdtree
         if( useKDTreeIfDimLEQtoThis < 0 || dictionary->vectorLength <= useKDTreeIfDimLEQtoThis )
         {
@@ -1119,6 +1172,10 @@ public:
                 {
                     fin >> value;
                     vector.v( j ) = value;
+
+                    // find min/max
+                    if( value < dictionary->mins.v(j) ) dictionary->mins.v(j) = value;
+                    else if( value > dictionary->maxs.v(j) ) dictionary->maxs.v(j) = value;
                 }
                 kdtree_insert( dictionary->tree, vector.m_vector );
             }
@@ -1143,6 +1200,10 @@ public:
                 {
                     fin >> value;
                     dictionary->word_vectors->v( i, j ) = value;
+
+                    // find min/max
+                    if( value < dictionary->mins.v(j) ) dictionary->mins.v(j) = value;
+                    else if( value > dictionary->maxs.v(j) ) dictionary->maxs.v(j) = value;
                 }
             }
         }
@@ -1361,7 +1422,7 @@ CK_DLL_MFUN( Word2Vec_load )
     // get args
     Chuck_String * path = GET_NEXT_STRING( ARGS );
     // load
-    RETURN->v_int = word2vec->load( *path, -1 );
+    RETURN->v_int = word2vec->load( *path, 8 );
 }
 
 CK_DLL_MFUN( Word2Vec_load2 )
@@ -1424,6 +1485,18 @@ CK_DLL_MFUN( Word2Vec_getDictionaryDim )
     Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
     // get dim
     RETURN->v_int = word2vec->getDictionaryDim();
+}
+
+CK_DLL_MFUN( Word2Vec_getDimMinMax )
+{
+    // get object
+    Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
+    // get chuck arrays
+    Chuck_Array8 * mins = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array8 * maxs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+
+    // get it
+    word2vec->getDimMinMaxs( mins, maxs );
 }
 
 CK_DLL_MFUN( Word2Vec_getUseKDTree )

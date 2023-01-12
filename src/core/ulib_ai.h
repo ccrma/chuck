@@ -138,6 +138,9 @@ protected:
     t_CKINT m_yDim;
 };
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: class ChaiVectorFast | 1.4.2.0 (ge) added
 // desc: a templated fast access but not bound-checked 1D array
@@ -232,6 +235,9 @@ public:
 };
 
 #endif
+
+
+
 
 #ifndef _KD_TREE_H
 #define _KD_TREE_H
