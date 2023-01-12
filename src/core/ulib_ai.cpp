@@ -1263,7 +1263,7 @@ public:
             // get vector
             ChaiVectorFast<t_CKFLOAT> vector( dictionary->vectorLength );
             for( t_CKINT i = 0; i < dictionary->vectorLength; i++ )
-              vector.v( i ) = dictionary->word_vectors->v( index, i );
+                vector.v( i ) = dictionary->word_vectors->v( index, i );
             // get nearest neighbors
             ChaiVectorFast<t_CKINT> top_indices( topn );
             getNearestNeighbors( vector, topn, top_indices );
@@ -1831,9 +1831,27 @@ void kdtree_knn_search( struct kdtree * tree, double * target, t_CKINT k )
     if( k > 0 )
     {
         t_CKINT pickup = 0;
+        // HACK: reset for each new search
+        coord_passed_reset( tree );
+        struct knn_list * p = tree->knn_list_head.next;
+        while( p != &tree->knn_list_head )
+        {
+            p->distance = 1e10;
+            p = p->next;
+        }
+        // END HACK
         kdtree_search_recursive( tree, tree->root, target, k, &pickup );
     }
 }
+
+//void kdtree_knn_search( struct kdtree * tree, double * target, t_CKINT k )
+//{
+//    if( k > 0 )
+//    {
+//        t_CKINT pickup = 0;
+//        kdtree_search_recursive( tree, tree->root, target, k, &pickup );
+//    }
+//}
 
 void kdtree_delete( struct kdtree * tree, double * coord )
 {

@@ -17,7 +17,7 @@
 Word2Vec model;
 
 // pre-trained model to load
-"glove-wiki-gigaword-50.txt" => string filepath;
+"glove-wiki-gigaword-50-pca-3.txt" => string filepath;
 
 <<< "loading model:", filepath >>>;
 // NOTE: while loading can take a long time initially; this is internally cached;
@@ -40,44 +40,35 @@ if( !model.load( me.dir() + filepath ) )
 <<< "dictionary size:", model.size() >>>;
 <<< "embedding dimensions:", model.dim() >>>;
 <<< "using KDTree for search:", model.useKDTree() ? "YES" : "NO" >>>;
+
 <<< "=========================================================", "" >>>;
 
 // get vector
-<<< "vector of the word 'stanford' is:", "" >>>;
-float vector[50];
+<<< "vector associated with the word 'stanford' is:", "" >>>;
+float vector[model.dim()];
 model.getVector("stanford", vector);
-for (0 => int i; i < vector.cap(); i++)
-{
-    chout <= vector[i] <= " ";
-}
+for( int i; i < vector.size(); i++ ) { chout <= vector[i] <= " "; }
 chout <= IO.newline();
-<<< "=========================================================", "" >>>;
 
-// get similar words via word
-<<< "10 words closest to 'stanford' are:", "" >>>;
-string words1[10];
-model.similar("stanford", 10, words1);
-for (0 => int i; i < words1.cap(); i++)
-{
-    <<< words1[i], "" >>>;
-}
 <<< "=========================================================", "" >>>;
 
 // get similar words via vector
-<<< "10 words closest to 'stanford's vector are:", "" >>>;
-string words2[10];
-model.similar(vector, 10, words2);
-for (0 => int i; i < words2.cap(); i++)
+<<< "10 words closest to the vector of 'stanford' are:", "" >>>;
+string words[10];
+model.similar(vector, words.size(), words);
+for( int i; i < words.size(); i++ )
 {
-    <<< words2[i], "" >>>;
+    <<< words[i], "" >>>;
 }
+
 <<< "=========================================================", "" >>>;
 
-//// expr
-//<<< "similar words to expression 'rome - italy + china' are:", "" >>>;
-//model.eval("rome - italy + china", 10) @=> string words3[];
-//for (0 => int i; i < words3.cap(); i++)
-//{
-//    <<< words3[i], "" >>>;
-//}
-//<<< "=========================================================", "" >>>;
+// get most similar by word
+<<< "10 words most similar to 'cat' are:", "" >>>;
+model.similar("cat", words.size(), words);
+for( int i; i < words.size(); i++ )
+{
+    <<< words[i], "" >>>;
+}
+
+<<< "=========================================================", "" >>>;
