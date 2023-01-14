@@ -3,7 +3,7 @@
 // desc: a really bad poem of sound and time, made with ChAI and word2vec
 //
 // "Random Walk"
-// -- a stream of unconsciousness poem generator by Ge Wang
+// -- a stream of unconsciousness poem generator
 //
 // NOTE: need a pre-trained word vector model, e.g., from
 //       https://chuck.stanford.edu/chai/datasets/glove/
@@ -58,7 +58,6 @@ if( !model.load( me.dir() + filepath ) )
 float mins[0], maxs[0];
 // get bounds for each dimension
 model.minMax( mins, maxs );
-
 // print info
 // print( model );
 
@@ -69,11 +68,13 @@ ModalBar bar => NRev reverb => dac;
 // which preset
 7 => bar.preset;
 
-// curret word
+// current word
 STARTING_WORD => string word;
 // word vector
 float vec[model.dim()];
+// similarity search results from word2vec
 string words[K_NEAREST];
+// used for scaling up word timing to word length
 dur addTime;
 
 // line break
@@ -90,12 +91,13 @@ for( int s; s < NUM_STANZAS; s++ )
         {
             // print the word, with a space
             chout <= word <= " "; chout.flush();
-            // get word vector
+            // get word vector (for sonification)
             model.getVector( word, vec );
-            // sonify from word vector (see mapping possibilities of modal bar)
+            // sonify from word vector (see mapping possibilities of ModalBar)
             // https://chuck.stanford.edu/doc/program/ugen_full.html#ModalBar
+            // feel free to experiement with what parameters to control with the vector
             Math.remap( vec[0], mins[0], maxs[0], 24, 84 ) => Std.mtof => bar.freq;
-            // use pow to expand/compress
+            // use pow to expand/compress the dimensions to affect mapping sensitivity
             Math.pow(Math.remap( vec[1], mins[1], maxs[1],0,1), 1.1) => bar.stickHardness;
             // ding!
             Math.random2f(.5,1) => bar.noteOn;
@@ -126,9 +128,7 @@ chout <= "\"Random Walk\"" <= IO.newline();
 chout <= "-- a stream of unconsciousness poem" <= IO.newline();
 chout.flush();
 
-// done!
-
-// print info
+// print info (for fun and debugging)
 fun void print( Word2Vec @ m )
 {
     <<< "dictionary size:", m.size() >>>;

@@ -3,7 +3,7 @@
 // desc: another really bad poem of sound and time, using ChAI and word2vec
 //
 // "Spew"
-// -- another stream of unconsciousness poem generator by Ge Wang
+// -- another stream of unconsciousness poem generator
 //
 // NOTE: need a pre-trained word vector model, e.g., from
 //       https://chuck.stanford.edu/chai/datasets/glove/
@@ -62,11 +62,11 @@ ModalBar bar => NRev reverb => dac;
 // which preset
 7 => bar.preset;
 
-// curret word
+// current word
 STARTING_WORD => string word;
 // word vector
 float vec[model.dim()];
-// search results
+// similarity search results from word2vec
 string words[K_NEAREST];
 // total number of words spewed
 0 => int spew;
@@ -90,10 +90,11 @@ while( spew < TOTAL_WORDS )
     chout <= word <= " "; chout.flush();
     // get word vector
     model.getVector( word, vec );
-    // sonify from word vector (see mapping possibilities of modal bar)
+    // sonify from word vector (see mapping possibilities of ModalBar)
     // https://chuck.stanford.edu/doc/program/ugen_full.html#ModalBar
+    // feel free to experiement with what parameters to control with the vector
     Math.remap( vec[0], mins[0], maxs[0], 24, 96 ) => Std.mtof => bar.freq;
-    // use pow to expand/compress
+    // use pow to expand/compress the dimensions to affect mapping sensitivity
     Math.pow(Math.remap( vec[1], mins[1], maxs[1], 0, 1), .72) => bar.stickHardness;
     // ding!
     Math.random2f(.5,1) => bar.noteOn;
@@ -115,9 +116,7 @@ chout <= "\"Spew\"" <= IO.newline();
 chout <= "-- another stream of unconsciousness poem" <= IO.newline();
 chout.flush();
 
-// done!
-
-// print info (for debugging)
+// print info (for fun and debugging)
 fun void print( Word2Vec @ m )
 {
     <<< "dictionary size:", m.size() >>>;

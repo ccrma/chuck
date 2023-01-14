@@ -2003,7 +2003,7 @@ static void kdnode_build( struct kdtree * tree, struct kdnode ** nptr, t_CKINT r
 
 static void kdtree_build( struct kdtree * tree )
 {
-    kdnode_build( tree, &tree->root, 0, 0, tree->count - 1 );
+    kdnode_build( tree, &tree->root, 0, 0, (long)(tree->count - 1) );
 }
 
 void kdtree_rebuild( struct kdtree * tree )
