@@ -1,10 +1,70 @@
+1.4.2.0
+---
+(NOTE) ChAI, first started in chuck-1.4.2.0, will continue to be in BETA
+for some time, as we add more and teach it "Music and AI" at Stanford.
+The new additions to ChAI will be designated [chAI] and may be subject
+to change in the near future.
+---
+ - (added) Word2Vec [chAI]
+      |- A word embeddings utility that maps words to vectors; can load a 
+         model and perform similiarity retrieval.
+      |- (inheritance) Word2Vec -> Object
+    ------------------
+    int dim();
+       Get number of dimensions for word embedding.
+    int dim();
+       Get number of dimensions for word embedding.
+    void getSimilar( string word, int k, string[] output );
+       Get the k most similar words to the given word.
+    void getSimilar( float[] vec, int k, string[] output );
+       Get the k most similar words to the given vector.
+    void getVector( string word, float[] output );
+       Get the vector of the given word.
+    int load( string path );
+       Load pre-trained word embedding model from the given path.
+    int load( string path, int useKDTreeDim );
+       Load pre-trained word embedding model from the given path; will use 
+       KDTree for similarity searches if the data dimension is less than 
+       or equal to 'useKDTreeDim'. Set 'useKDTreeDim' to 0 to use linear 
+       (brute force) similarity search; set 'useKDTreeDim' to less than 0 
+       to always use KDTree.
+    void minMax( float[] mins, float[] maxs );
+       Retrieve the minimums and maximums for each dimension.
+    int size();
+       Get number of words in dictionary.
+    int useKDTree();
+       Get whether a KDTree is used for similarity search.
+ - (added) new examples in ai/word2vec [chAI]
+      |- poem-randomwalk.ck -- a stream of unconsciousness poem generator
+      |- poem-spew.ck -- another stream of unconsciousness poem generator
+      |- word2vec-basic.ck -- demos load(), getVector(), getSimilar()
+      |- word2vec-prompt.ck -- command line interactive tool
+         (need to use command line chuck)
+ - (added) float Math.remap( float value, float x1, float y1,
+                                          float x2, float y2 );
+      Map 'value' from range [x1,y1] into range [x2,y2]; value will be 
+      clamped to [x1,y1] if outside range.
+ - (added) Math functions
+      float cossim( float[] a[], float[] b[] );
+        Compute the cosine similarity between arrays a and b.
+      float cossim( vec3 a, vec3 b );
+        Compute the cosine similarity between 3D vectors a and b.
+      float cossim( vec4 a, vec4 b );
+        Compute the cosine similarity between 4D vectors a and b.
+      float euclidean( float[] a[], float[] b[] );
+        Compute the euclidean distance between arrays a and b.
+      float euclidean( vec3 a, vec3 b );
+        Compute the euclidean distance between 3D vectors a and b.
+      float euclidean( vec4 a, vec4 b );
+        Compute the euclidean distance between 4D vectors a and b.
+
 1.4.2.0 (January 2023)
 ---
-(NOTE) chuck-1.4.2.0 marks a beginning (in BETA) of ChAI => ChucK for AI 
+(NOTE) chuck-1.4.2.0 marks a beginning (in BETA) of chAI => ChucK for AI 
 -- a set of functionalities for interactive machine learning and artful, 
 humanistic design of music and artificial intelligence; it coincides with 
 the new "Music and AI" course at Stanford University, designed and taught 
-by Ge Wang with Ph.D. candidate Yikai Li. *** ChAI (Beta) additions are 
+by Ge Wang with Ph.D. candidate Yikai Li. *** chAI (Beta) additions are 
 listed at the end ***
 ---
   - (added) MFCC unit analyzer (thanks Yikai Li)
@@ -53,7 +113,7 @@ listed at the end ***
   - (dev) nshaheed: linux makefiles now correctly inserts Debug (-g)
     build flag when Debug build is enabled (default builds for Release)
 -----------------------
-(BETA) ChAI-related additions: please note this is in Beta, meaning that 
+(BETA) chAI-related additions: please note this is in Beta, meaning that 
 APIs may change in the near future; many additions are in the works
 -----------------------
   - (added) SVM object (thanks Yikai Li)
@@ -97,7 +157,7 @@ APIs may change in the near future; many additions are in the works
            SVM.help(); // this will print SVM type info and API
            HMM.help(); // this will print HMM type info and API
 -----------------------
-(BETA) end CHAI additions
+(BETA) end chAI additions
 -----------------------
     
 
