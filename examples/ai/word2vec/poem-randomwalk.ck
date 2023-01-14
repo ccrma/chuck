@@ -1,16 +1,16 @@
 //------------------------------------------------------------------------------
 // name: poem-randomwalk.ck
-// desc: a really bad poem of sound and time, made with ChAI and word2vec
+// desc: another sus poem made with chAI and word2vec
+// sorting: part of chAI (ChucK for AI)
 //
 // "Random Walk"
-// -- a stream of unconsciousness poem generator
+// -- another stream of unconsciousness poem generator
 //
 // NOTE: need a pre-trained word vector model, e.g., from
 //       https://chuck.stanford.edu/chai/datasets/glove/
 //       glove-wiki-gigaword-50.txt (400000 words x 50 dimensions)
 //       glove-wiki-gigaword-50-pca-3.txt (400000 words x 3 dimensions)
 //       glove-wiki-gigaword-50-tsne-2.txt (400000 words x 2 dimensions)
-// sorting: part of ChAI (ChucK for AI) [BETA]
 //
 // author: Ge Wang
 // date: Spring 2023
@@ -23,6 +23,18 @@ if( me.args() > 0 ) me.arg(0) => STARTING_WORD;
 
 // random seed (if set, sequence can be reproduce)
 // Math.srandom( 515 );
+
+// instantiate
+Word2Vec model;
+// pre-trained model to load
+me.dir() + "glove-wiki-gigaword-50-tsne-2.txt" => string filepath;
+// load a pre-trained model (see URLs above for download)
+// this could take a few seconds, depending on model size
+if( !model.load( filepath ) )
+{
+    <<< "cannot load model:", filepath >>>;
+    me.exit();
+}
 
 // conditions
 7 => int WORDS_PER_LINE;
@@ -39,27 +51,10 @@ false => int shouldScaleTimeToWordLength; // longer words take longer?
 250::ms => dur T_LINE_PAUSE; // a little pause after each line
 750::ms => dur T_STANZA_PAUSE; // pause after each stanza
 
-// instantiate
-Word2Vec model;
-// pre-trained model to load
-"glove-wiki-gigaword-50-tsne-2.txt" => string filepath;
-
-// <<< "loading model:", filepath >>>;
-// <<< "(this could take a few seconds)...", "" >>>;
-
-// load a pre-trained model (see URLs above for download)
-if( !model.load( me.dir() + filepath ) )
-{
-    <<< "cannot load model:", filepath >>>;
-    me.exit();
-}
-
 // ranges for each dimension (for sound mapping)
 float mins[0], maxs[0];
 // get bounds for each dimension
 model.minMax( mins, maxs );
-// print info
-// print( model );
 
 // sound
 ModalBar bar => NRev reverb => dac;
@@ -127,19 +122,3 @@ for( int s; s < NUM_STANZAS; s++ )
 chout <= "\"Random Walk\"" <= IO.newline();
 chout <= "-- a stream of unconsciousness poem" <= IO.newline();
 chout.flush();
-
-// print info (for fun and debugging)
-fun void print( Word2Vec @ m )
-{
-    <<< "dictionary size:", m.size() >>>;
-    <<< "embedding dimensions:", m.dim() >>>;
-    <<< "using KDTree for search:", m.useKDTree() ? "YES" : "NO" >>>;
-    // ranges for each dimension (for sound mapping)
-    float mins[0], maxs[0];
-    // get bounds for each dimension
-    model.minMax( mins, maxs );
-    // print the min/max for each dimension
-    for( int i; i < m.dim(); i++ )
-    { cherr <= "dimension " <= i <= ": [" <= mins[i]
-    <= " <-range-> " <= maxs[i] <= "]" <= IO.newline(); }
-}
