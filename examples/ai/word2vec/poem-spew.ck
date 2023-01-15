@@ -8,8 +8,6 @@
 //
 // NOTE: need a pre-trained word vector model, e.g., from
 //       https://chuck.stanford.edu/chai/datasets/glove/
-//       glove-wiki-gigaword-50.txt (400000 words x 50 dimensions)
-//       glove-wiki-gigaword-50-pca-3.txt (400000 words x 3 dimensions)
 //       glove-wiki-gigaword-50-tsne-2.txt (400000 words x 2 dimensions)
 //
 // author: Ge Wang
@@ -24,14 +22,6 @@ if( me.args() > 0 ) me.arg(0) => STARTING_WORD;
 // random seed (if set, sequence can be reproduce)
 // Math.srandom( 515 );
 
-// conditions
-2500 => int TOTAL_WORDS; // to spew
-1000 => int K_NEAREST; // number of nearest words to retrieve for each word
-
-// timing
-40::ms => dur T_WORD; // duration per word
-40::ms => dur T_LINE_PAUSE; // a little pause after each line
-
 // instantiate
 Word2Vec model;
 // pre-trained model to load
@@ -43,6 +33,14 @@ if( !model.load( filepath ) )
     <<< "cannot load model:", filepath >>>;
     me.exit();
 }
+
+// conditions
+2500 => int TOTAL_WORDS; // to spew
+1000 => int K_NEAREST; // number of nearest words to retrieve for each word
+
+// timing
+40::ms => dur T_WORD; // duration per word
+40::ms => dur T_LINE_PAUSE; // a little pause after each line
 
 // ranges for each dimension (for sound mapping)
 float mins[0], maxs[0];
