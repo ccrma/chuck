@@ -214,7 +214,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     // 1.4.2.1 added by Yikai Li, Spring 2023
     //---------------------------------------------------------------------
     // doc string
-    doc = "a word embeddings utility that maps words to vectors; can load a model and perform similiarity retrieval.";
+    doc = "a word embeddings utility that maps words to vectors; can load a model and perform similarity retrieval.";
 
     // begin class definition
     if( !type_engine_import_class_begin( env,

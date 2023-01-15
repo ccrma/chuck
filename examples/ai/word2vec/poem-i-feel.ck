@@ -8,8 +8,6 @@
 //
 // NOTE: need a pre-trained word vector model, e.g., from
 //       https://chuck.stanford.edu/chai/datasets/glove/
-//       glove-wiki-gigaword-50.txt (400000 words x 50 dimensions)
-//       glove-wiki-gigaword-50-pca-3.txt (400000 words x 3 dimensions)
 //       glove-wiki-gigaword-50-tsne-2.txt (400000 words x 2 dimensions)
 //
 // author: Ge Wang
