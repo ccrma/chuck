@@ -4,7 +4,7 @@
 //
 // NOTE: this requires ConsoleInput which needs command line chuck
 // NOTE: download pre-trained word vector model from:
-//       https://chuck.stanford.edu/chai/datasets/glove/
+//       https://chuck.stanford.edu/chai/data/glove/
 //         | (can use any of these)
 //       glove-wiki-gigaword-50.txt (400000 words x 50 dimensions)
 //       glove-wiki-gigaword-50-pca-3.txt (400000 words x 3 dimensions)
