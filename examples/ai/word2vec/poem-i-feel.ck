@@ -7,7 +7,7 @@
 // -- a stream of unconsciousness poem generator
 //
 // NOTE: need a pre-trained word vector model, e.g., from
-//       https://chuck.stanford.edu/chai/datasets/glove/
+//       https://chuck.stanford.edu/chai/data/glove/
 //       glove-wiki-gigaword-50-tsne-2.txt (400000 words x 2 dimensions)
 //
 // author: Ge Wang
