@@ -47,7 +47,7 @@ fun void print( Word2Vec model )
     float mins[0], maxs[0];
     model.minMax( mins, maxs );
     for( int i; i < model.dim(); i++ )
-    { cherr <= "dimension " <= i <= ": [" <= mins[i] <= ","
+    { cherr <= "dimension " <= i <= " range: [" <= mins[i] <= ", "
             <= maxs[i] <= "]" <= IO.newline(); }
 }
 
@@ -80,6 +80,7 @@ while( true )
         }
     }
 }
+
 
 fun int execute( string line[] )
 {
@@ -234,34 +235,20 @@ fun int execute( string line[] )
             model.getVector(line[1], coord1);
             model.getVector(line[2], coord2);
             
-            // print
-            //cherr <= line[1] <= ": ";
-            //for( int i; i < coord1.size(); i++ ) { cherr <= coord1[i] <= " "; }
-            //cherr <= IO.newline();
-            // print
-            //cherr <= line[2] <= ": ";
-            //for( int i; i < coord2.size(); i++ ) { cherr <= coord2[i] <= " "; }
-            //cherr <= IO.newline();
+            // print coordinate 1
+            // cherr <= line[1] <= ": ";
+            // for( int i; i < coord1.size(); i++ ) { cherr <= coord1[i] <= " "; }
+            // cherr <= IO.newline();
+
+            // print coordinate 2
+            // cherr <= line[2] <= ": ";
+            // for( int i; i < coord2.size(); i++ ) { cherr <= coord2[i] <= " "; }
+            // cherr <= IO.newline();
+
             // walk
             1 => int k;
             if( line.size() > 5 ) Std.atoi(line[5]) => k;
             go( line[1], line[2], Std.atof(line[3])::second, Std.atoi(line[4]), k );
-        }
-    }
-    else if( command == "randomwalk" || command == "w" )
-    {
-        if( line.size() < 5 )
-        {
-            <<< "usage: walk [word/start] [word/end] [second] [steps]", "" >>>;
-        }
-        else
-        {
-            float vector[model.dim()];
-            model.getVector( line[1], vector );
-            // print
-            cherr <= line[1] <= ": ";
-            for( int i; i < vector.size(); i++ ) { cherr <= vector[i] <= " "; }
-            cherr <= IO.newline();
         }
     }
     else
@@ -272,6 +259,7 @@ fun int execute( string line[] )
     
     return 0; // 0 is good
 }
+
 
 fun void sonifyDoh( float params[], float vstart[], float vend[] )
 {
@@ -286,12 +274,14 @@ fun void sonifyDoh( float params[], float vstart[], float vend[] )
     // use param 2 for rate
     Math.remap(params[1], vstart[1], vend[1], 1, 1.5 ) => doh.rate;
 
-    // <<< "sonifyDoh:", params[0], params[1], doh.gain(), doh.rate() >>>;
-
     // trigger from beginning
     0 => doh.pos;
 }
 
+
+// this goes from one word to another word
+// > go fun disaster 5 30 1
+// > go technology famine 4 20
 fun void go( string start, string end, dur T, int steps, int k )
 {
     float vstart[model.dim()], vend[model.dim()];
@@ -301,7 +291,8 @@ fun void go( string start, string end, dur T, int steps, int k )
     // get bounds for mapping
     float mins[0], maxs[0];
     model.minMax( mins, maxs );
-    
+
+    // duplicate    
     W2V.dup( vend ) @=> float vdiff[];
     W2V.dup( vstart ) @=> float v[];
     
@@ -309,7 +300,6 @@ fun void go( string start, string end, dur T, int steps, int k )
     for( int i; i < vend.size(); i++ ) { cherr <= vend[i] <= " "; } cherr <= IO.newline();
 
     W2V.minus( vdiff, vstart );
-    // cherr <= "vdiff:"; for( int i; i < vdiff.size(); i++ ) { cherr <= vdiff[i] <= " "; } cherr <= IO.newline();
     
     // increment
     1.0 / steps => float inc;
@@ -318,10 +308,11 @@ fun void go( string start, string end, dur T, int steps, int k )
     // scale
     0 => float factor;
 
-    string results[20];
+    string results[k];
     float coord[model.dim()];
 
-    for( int i; i < steps; i++ )
+    // take the steps
+    for( int i; i < steps+1; i++ )
     {
         // scale difference vector
         W2V.scale( v, vdiff, factor );
@@ -332,7 +323,11 @@ fun void go( string start, string end, dur T, int steps, int k )
         model.getSimilar( v, k, results);
         results[Math.random2(0,k-1)] => string word;
         model.getVector( word, coord );
-        <<< i+1, "->", word >>>;
+
+        // print
+        <<< i, "->", word >>>;
+        
+        // sonify
         sonifyDoh( coord, vstart, vend);
         // for( int i; i < v.size(); i++ ) { cherr <= v[i] <= " "; }
         // cherr <= IO.newline();
