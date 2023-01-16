@@ -34,6 +34,7 @@
 #include "chuck_type.h"
 #include "chuck_errmsg.h"
 #include "util_math.h"
+#include "util_string.h"
 #include <math.h>
 
 #include <iostream>
@@ -1050,11 +1051,13 @@ private:
 private:
     // pointer to dictionary
     W2V_Dictionary * dictionary;
+    // line number for parsing error reporting
+    t_CKINT m_lineNum;
 
 public:
     // constructor
     Word2Vec_Object()
-        : dictionary( NULL )
+    : dictionary(NULL), m_lineNum(0)
     { }
 
     // destructor
@@ -1068,6 +1071,8 @@ public:
     {
         // just zero the pointer (no delete since we are caching)
         dictionary = NULL;
+        // zero out line number
+        m_lineNum = 0;
     }
 
     // get dictionary size
@@ -1117,6 +1122,22 @@ public:
         return dictionary != NULL ? dictionary->tree != NULL : 0;
     }
     
+    // read next non-empty or commented line
+    t_CKBOOL nextline( std::ifstream & fin, string & line, t_CKBOOL commentIsHash )
+    {
+        // skip over empty lines and commented lines (starts with #)
+        do {
+            // increment line number
+            m_lineNum++;
+            // get line
+            if( !std::getline( fin, line ) ) { line = ""; return FALSE; }
+            // ltrim leading white spaces
+            line = ltrim( line );
+        } while( line == "" || (commentIsHash && line[0] == '#') );
+
+        return TRUE;
+    }
+
     // load
     t_CKINT load( Chuck_String & path, t_CKINT useKDTreeIfDimLEQtoThis )
     {
@@ -1139,9 +1160,20 @@ public:
 
         // instantiate dictionary
         dictionary = new W2V_Dictionary();
+        // string to hold the line
+        string line;
 
+        // get next non-empty, non-commented # line
+        if( !nextline( fin, line, TRUE ) )
+        {
+            EM_error3( "Word2Vec: error parsing model on line: %d", m_lineNum );
+            return false;
+        }
+
+        // string stream
+        istringstream strin( line );
         // read header
-        fin >> dictionary->dictionarySize >> dictionary->vectorLength;
+        strin >> dictionary->dictionarySize >> dictionary->vectorLength;
 
         // allocate
         dictionary->key_to_index = new std::map<std::string, t_CKUINT>();
@@ -1165,12 +1197,19 @@ public:
             ChaiVectorFast<t_CKFLOAT> vector( dictionary->vectorLength );
             for( t_CKINT i = 0; i < dictionary->dictionarySize; i++ )
             {
-                fin >> key;
+                // get next non-empty line
+                if( !nextline( fin, line, FALSE ) )
+                { EM_error3( "Word2Vec: error parsing model on line: %d", m_lineNum ); return false; }
+                // set into string stream
+                strin.str( line ); strin.clear();
+
+                // get the word
+                strin >> key;
                 dictionary->index_to_key->v( i ) = key;
                 ( *( dictionary->key_to_index ) )[key] = i;
                 for( t_CKINT j = 0; j < dictionary->vectorLength; j++ )
                 {
-                    fin >> value;
+                    strin >> value;
                     vector.v( j ) = value;
 
                     // find min/max
@@ -1193,12 +1232,18 @@ public:
             t_CKFLOAT value;
             for( t_CKINT i = 0; i < dictionary->dictionarySize; i++ )
             {
-                fin >> key;
+                // get next non-empty line
+                if( !nextline( fin, line, FALSE ) )
+                { EM_error3( "Word2Vec: error parsing model on line: %d", m_lineNum ); return false; }
+                // set into string stream
+                strin.str( line ); strin.clear();
+
+                strin >> key;
                 dictionary->index_to_key->v( i ) = key;
                 ( *(dictionary->key_to_index) )[key] = i;
                 for( t_CKINT j = 0; j < dictionary->vectorLength; j++ )
                 {
-                    fin >> value;
+                    strin >> value;
                     dictionary->word_vectors->v( i, j ) = value;
 
                     // find min/max
