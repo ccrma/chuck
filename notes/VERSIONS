@@ -35,8 +35,11 @@ to change in the near future.
     int useKDTree();
        Get whether a KDTree is used for similarity search.
  - (added) new examples in ai/word2vec [chAI]
-      |- poem-randomwalk.ck -- a stream of unconsciousness poem generator
-      |- poem-spew.ck -- another stream of unconsciousness poem generator
+      |- poem-i-feel.ck -- a stream of unconsciousness poem generator
+      |- poem-randomwalk.ck -- another stream of unconsciousness generator
+      |- poem-spew.ck -- yet another stream of unconsciousness generator
+      |- poem-ungenerate.ck -- interactive prompt un/de-generator
+         (need to use command line chuck)
       |- word2vec-basic.ck -- demos load(), getVector(), getSimilar()
       |- word2vec-prompt.ck -- command line interactive tool
          (need to use command line chuck)
@@ -57,6 +60,8 @@ to change in the near future.
         Compute the euclidean distance between 3D vectors a and b.
       float euclidean( vec4 a, vec4 b );
         Compute the euclidean distance between 4D vectors a and b.
+  - (updated) IO.newline() or a solitary "\n" now automatically flushes
+      chout
 
 1.4.2.0 (January 2023)
 ---
