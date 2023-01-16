@@ -1707,6 +1707,9 @@ CK_DLL_MFUN( chout_writestring )
 
     Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->write( val );
+
+    // 1.4.2.1 | (ge) added a single newline -> trigger chout flush
+    if( val == "\n" ) c->flush();
 }
 
 CK_DLL_MFUN( chout_writeint )
