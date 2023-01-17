@@ -43,6 +43,7 @@
 #include "chuck_lang.h"
 #include "chuck_io.h"
 #include "chuck_carrier.h"
+#include "chuck_errmsg.h"
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -10189,6 +10190,7 @@ MY_FLOAT KrstlChr :: tick()
 
 Instrmnt :: Instrmnt()
 {
+    lastOutput = 0;
     m_frequency = 0;
 }
 
@@ -10198,7 +10200,7 @@ Instrmnt :: ~Instrmnt()
 
 void Instrmnt :: setFrequency(MY_FLOAT frequency)
 {
-  CK_STDCERR << "[chuck](via STK): Instrmnt: virtual setFrequency function call!" << CK_STDENDL;
+  CK_STDCERR << "[chuck](via STK): StkInstrument is abstract and cannot be used directly!" << CK_STDENDL;
   // m_frequency = frequency;
 }
 
@@ -20136,7 +20138,6 @@ CK_DLL_CTOR( Instrmnt_ctor )
 {
     // initialize member object
     OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data) = (t_CKUINT)0;
-    // CK_FPRINTF_STDERR( "[chuck](via STK): error : StkInstrument is virtual!\n");
 }
 
 
@@ -20157,8 +20158,25 @@ CK_DLL_DTOR( Instrmnt_dtor )
 CK_DLL_TICK( Instrmnt_tick )
 {
     Instrmnt * i = (Instrmnt *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    if( !out ) CK_FPRINTF_STDERR( "[chuck](via STK): we warned you...\n");
-    *out = i->tick();
+
+    // generally, we should not get here -- but is possible since there are
+    // abstract classes, such as this one, but currently chuck has no
+    // provisions for marking classes as abstract... this is a workaround
+    // 1.4.2.1 | (ge) changed CK_FPRINTF_STDERR to EM_log; allow program to proceed
+    EM_log( CK_LOG_WARNING, "(STK) error -- StkInstrmnt.tick() is abstract!" );
+    EM_log( CK_LOG_WARNING, "(STK)  |- likely StkInstrmnt was declared/used directly," );
+    EM_log( CK_LOG_WARNING, "(STK)  |- instead of a subclass of StkInstrmnt" );
+
+    // TODO: type system should not allow direct declaration of abstract classes
+    // TODO: should detect, give a compiler error, with a short explanation and
+    // TODO: suggestion on what to do: e.g.,
+    // TODO: "XXX cannot be instantiated directly (use '@' to declare a reference)"
+
+    // 1.4.2.1 | (ge) commented out to avoid a potentially confusing crash
+    // *out = i->tick();
+    // instead we will return silence
+    *out = 0;
+
     return TRUE;
 }
 
@@ -24991,7 +25009,6 @@ CK_DLL_CGET( PoleZero_cget_blockZero )
 CK_DLL_CTOR( FM_ctor  )
 {
     OBJ_MEMBER_UINT(SELF, FM_offset_data) = 0;
-    // CK_FPRINTF_STDERR( "[chuck](via STK): error -- FM is virtual!\n" );
 }
 
 
@@ -25002,19 +25019,37 @@ CK_DLL_CTOR( FM_ctor  )
 CK_DLL_DTOR( FM_dtor  )
 {
     // delete (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
-    // CK_FPRINTF_STDERR( "error -- FM is virtual!\n" );
 }
 
 
+// 1.4.2.1 | (ge) added for error report
 //-----------------------------------------------------------------------------
 // name: FM_tick()
 // desc: TICK function ...
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( FM_tick )
 {
+    // FM should be NULL
     FM * m = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
-    CK_FPRINTF_STDERR( "[chuck](via STK): error -- FM tick is virtual!\n" );
-    *out = m->tick();
+
+    // generally, we should not get here -- but is possible since there are
+    // abstract classes, such as this one, but currently chuck has no
+    // provisions for marking classes as abstract... this is a workaround
+    // 1.4.2.1 | (ge) changed CK_FPRINTF_STDERR to EM_log; allow program to proceed
+    EM_log( CK_LOG_WARNING, "(STK) error -- FM.tick() is abstract!" );
+    EM_log( CK_LOG_WARNING, "(STK)  |- likely FM was declared/used directly," );
+    EM_log( CK_LOG_WARNING, "(STK)  |- instead of a subclass of FM" );
+
+    // TODO: type system should not allow direct declaration of abstract classes
+    // TODO: should detect, give a compiler error, with a short explanation and
+    // TODO: suggestion on what to do: e.g.,
+    // TODO: "XXX cannot be instantiated directly (use '@' to declare a reference)"
+
+    // 1.4.2.1 | (ge) commented out to avoid a potentially confusing crash
+    // *out = m->tick();
+    // instead we will return silence
+    *out = 0;
+
     return TRUE;
 }
 
@@ -28282,7 +28317,19 @@ CK_DLL_DTOR( BLT_dtor )
 
 CK_DLL_TICK( BLT_tick )
 {
-    CK_FPRINTF_STDERR( "BLT is virtual!\n" );
+    // 1.4.2.1 | (ge) changed CK_FPRINTF_STDERR to EM_log; allow program to proceed;
+    EM_log( CK_LOG_WARNING, "(STK) error -- BLT.tick() is abstract!" );
+    EM_log( CK_LOG_WARNING, "(STK)  |- likely BLT was declared/used directly," );
+    EM_log( CK_LOG_WARNING, "(STK)  |- instead of a subclass of BLT" );
+
+    // TODO: type system should not allow direct declaration of abstract classes
+    // TODO: should detect, give a compiler error, with a short explanation and
+    // TODO: suggestion on what to do: e.g.,
+    // TODO: "XXX cannot be instantiated directly (use '@' to declare a reference)"
+
+    // 1.4.2.1 (ge) | added return silence
+    *out = 0;
+
     return TRUE;
 }
 
