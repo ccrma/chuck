@@ -103,6 +103,7 @@ fun int execute( string line[] )
         <<< "       analog / a-- query a logical analogy", "" >>>;
         <<< "       vector / v -- display vector associated with a word", "" >>>;
         <<< "       go / g -- from a word to another across a duration", "" >>>;
+        <<< "       similar / s -- from a vector (model size) return similar words", "" >>>;
         <<< "       print / p -- print model info", "" >>>;
         <<< "       help / h -- print this message", "" >>>;
         <<< "       exit / quit -- exit from word2vec2chuck", "" >>>;
@@ -249,6 +250,19 @@ fun int execute( string line[] )
             1 => int k;
             if( line.size() > 5 ) Std.atoi(line[5]) => k;
             go( line[1], line[2], Std.atof(line[3])::second, Std.atoi(line[4]), k );
+        }
+    }
+    else if( command == "similar" || command == "s" )
+    {
+        if( line.size() != model.dim()+1)
+        {
+            <<< "usage: similar [float] [float] ... model dimension", "" >>>;
+        }
+        else 
+        {
+            string results[10];
+            model.getSimilar( [Std.atof(line[1]),Std.atof(line[2])], 10, results );
+            for( int i; i < results.size(); i++ )<<< results[i]>>>;
         }
     }
     else
