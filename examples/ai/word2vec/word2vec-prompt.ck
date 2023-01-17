@@ -95,7 +95,7 @@ fun int execute( string line[] )
         // exit shred
         me.exit();
     }
-    else if( command == "help" )
+    else if( command == "help" || command == "h" )
     {
         <<< "    available word2vec2chuck commands:", "" >>>;
         <<< "       load / l-- load a pre-trained model", "" >>>;
@@ -110,7 +110,7 @@ fun int execute( string line[] )
         <<< "       load-3 -- load PCA 3D model (glove-wiki-gigaword-50-pca-3)", "" >>>;
         <<< "       load-2 -- load t-SNE 2D model (glove-wiki-gigaword-50-tsne-2)", "" >>>;
     }
-    else if( command == "load" || command == "load" )
+    else if( command == "load" || command == "l" )
     {
         if( line.size() < 2 )
         {
