@@ -497,10 +497,9 @@ class Instrmnt : public Stk
   virtual void controlChange(int number, MY_FLOAT value);
 
 public: // SWAP formerly protected
+  MY_FLOAT lastOutput;
   // chuck
   t_CKFLOAT m_frequency;
-
-  MY_FLOAT lastOutput;
 };
 
 
@@ -1587,7 +1586,6 @@ class FM : public Instrmnt
   MY_FLOAT __FM_gains[100];
   MY_FLOAT __FM_susLevels[16];
   MY_FLOAT __FM_attTimes[32];
-
 };
 
 #endif

@@ -62,8 +62,14 @@ to change in the near future.
         Compute the euclidean distance between 4D vectors a and b.
   - (updated) IO.newline() or a solitary "\n" now automatically flushes
       chout
+  - (updated) built-in abstract classes FM, StkInstrmnt, BLT, and
+      FilterBasic, when used directly, issues a WARNING level log
+      message in their respective synthesis tick functions (set log
+      level in chuck or miniAudicle to WARNING or higher to enable
+      printing), and allows program to procede silently. (Example that
+      previously crashed: 'FM fm => dac; 1::second => now;')
 
-1.4.2.0 (January 2023)
+01.4.2.0 (January 2023)
 ---
 (NOTE) chuck-1.4.2.0 marks a beginning (in BETA) of chAI => ChucK for AI 
 -- a set of functionalities for interactive machine learning and artful, 

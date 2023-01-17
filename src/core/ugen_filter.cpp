@@ -1025,7 +1025,19 @@ CK_DLL_DTOR( FilterBasic_dtor )
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( FilterBasic_tick )
 {
-    CK_FPRINTF_STDERR( "FilterBasic.tick() --> FitlerBasic is virtual!\n" );
+    // 1.4.2.1 (ge) | changed CK_FPRINTF_STDERR to EM_log; allow program to proceed
+    EM_log( CK_LOG_WARNING, "warning -- FilterBasic is an abstract class!" );
+    EM_log( CK_LOG_WARNING, "  |- likely FilterBasic declared/used directly," );
+    EM_log( CK_LOG_WARNING, "  | instead of a subclass of FilterBasic" );
+
+    // TODO: type system should not allow direct declaration of abstract classes
+    // TODO: should detect, give a compiler error, with a short explanation and
+    // TODO: suggestion on what to do: e.g.,
+    // TODO: "XXX cannot be instantiated directly (use '@' to declare a reference)"
+
+    // silence
+    *out = 0.0;
+
     return TRUE;
 }
 
