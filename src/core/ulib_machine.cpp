@@ -192,6 +192,9 @@ t_CKUINT machine_realtime( Chuck_VM * vm )
     return vm->carrier()->hintIsRealtimeAudio();
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: machine_eval()
 // desc: evaluate a string as ChucK code, compiling it and adding it to the the virtual machine
