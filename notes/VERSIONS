@@ -62,6 +62,8 @@ to be in BETA for some time (as we add more and also teach using chAI in
         Compute the euclidean distance between 4D vectors a and b.
   - (fixed) MFCC -- added (back) a missing and crucial log10() to
       to the MFCC computation
+  - (fixed) FileIO.seek() previously fails if EOF is reached in reading
+      a file; FileIO.seek() now functions after EOF is reached.
   - (updated) IO.newline() or a solitary "\n" now automatically flushes
       chout
   - (updated) built-in abstract classes FM, StkInstrmnt, BLT, and
