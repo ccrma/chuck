@@ -1,9 +1,9 @@
 1.4.2.0
 ---
-(NOTE) ChAI, first started in chuck-1.4.2.0, will continue to be in BETA
-for some time, as we add more and teach it "Music and AI" at Stanford.
-The new additions to ChAI will be designated [chAI] and may be subject
-to change in the near future.
+(NOTE) ChAI (ChucK + AI), first started in chuck-1.4.2.0, will continue 
+to be in BETA for some time (as we add more and also teach using chAI in 
+"Music and AI" at Stanford). The new additions to ChAI will be designated 
+[chAI] and may be subject to change in the near future.
 ---
  - (added) Word2Vec [chAI]
       |- A word embeddings utility that maps words to vectors; can load a 
@@ -60,6 +60,8 @@ to change in the near future.
         Compute the euclidean distance between 3D vectors a and b.
       float euclidean( vec4 a, vec4 b );
         Compute the euclidean distance between 4D vectors a and b.
+  - (fixed) MFCC -- added (back) a missing and crucial log10() to
+      to the MFCC computation
   - (updated) IO.newline() or a solitary "\n" now automatically flushes
       chout
   - (updated) built-in abstract classes FM, StkInstrmnt, BLT, and
