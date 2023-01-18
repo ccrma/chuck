@@ -998,7 +998,7 @@ struct MFCC_Object
     // constructor
     MFCC_Object()
     {
-        size = 1024;
+        size = 512; // match the default for FFT/DCT; user can override, of course
         sample_rate = g_srate;
         num_filters = 10;
         num_coeffs = 40;
@@ -1066,12 +1066,12 @@ struct MFCC_Object
     }
 
     // prepare filterband and dct
-    void prepare(t_CKINT size)
+    void prepare( t_CKINT size )
     {
-        if ( this->size == size
-             && this->sample_rate == this->curr_sample_rate
-             && this->num_filters == this->curr_num_filters
-             && this->num_coeffs == this->curr_num_coeffs )
+        if( this->size == size
+            && this->sample_rate == this->curr_sample_rate
+            && this->num_filters == this->curr_num_filters
+            && this->num_coeffs == this->curr_num_coeffs )
             return;
 
         this->size = size;
@@ -1161,6 +1161,7 @@ struct MFCC_Object
             {
                 this->filtered[i] += this->spectrum[j] * this->filterbank[i*this->size + j];
             }
+            this->filtered[i] = 10 * ::log10(filtered[i]);
         }
 
         // compute dct
