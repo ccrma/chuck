@@ -60,6 +60,9 @@ CK_DLL_SFUN( machine_intsize_impl );
 CK_DLL_SFUN( machine_shreds_impl );
 CK_DLL_SFUN( machine_realtime_impl );
 CK_DLL_SFUN( machine_silent_impl );
+CK_DLL_SFUN( machine_eval_impl );
+CK_DLL_SFUN( machine_eval2_impl );
+CK_DLL_SFUN( machine_eval3_impl );
 
 
 #endif

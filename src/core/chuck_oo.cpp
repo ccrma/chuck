@@ -3235,7 +3235,14 @@ Chuck_String * Chuck_IO_File::readLine()
 
     string s;
     getline( m_io, s );
-    return new Chuck_String( s );
+
+    // chuck str
+    Chuck_String * str = new Chuck_String( s );
+    // initialize | 1.4.2.1 (ge) | added initialize_object
+    initialize_object( str, m_vmRef->env()->t_string );
+
+    // note this chuck string still needs to be initialized
+    return str;
 }
 
 
