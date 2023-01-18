@@ -35,6 +35,7 @@
 #include "chuck_compile.h"
 #include "chuck_errmsg.h"
 #include "chuck_instr.h"
+#include "chuck.h"
 
 
 
@@ -110,6 +111,27 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, machine_shreds_impl, "int[]", "shreds" );
     QUERY->doc_func( QUERY, "get list of active shred ids." );
 
+    // add eval
+    //! evaluate a string as ChucK code, compiling it and adding it to the the virtual machine
+    QUERY->add_sfun( QUERY, machine_eval_impl, "int", "eval" );
+    QUERY->doc_func( QUERY, "evaluate a string as ChucK code, compiling it and spork it as a child shred of the current shred." );
+    QUERY->add_arg( QUERY, "string", "code" );
+
+    // add eval
+    //! evaluate a string as ChucK code, compiling it and adding it to the the virtual machine
+    QUERY->add_sfun( QUERY, machine_eval2_impl, "int", "eval" );
+    QUERY->doc_func( QUERY, "evaluate a string as ChucK code, with optional arguments (bundled in 'args' as \"ARG1:ARG2:...\", compiling it and spork it as a child shred of the current shred." );
+    QUERY->add_arg( QUERY, "string", "code" );
+    QUERY->add_arg( QUERY, "string", "args" );
+
+    // add eval
+    //! evaluate a string as ChucK code, compiling it and adding it to the the virtual machine
+    QUERY->add_sfun( QUERY, machine_eval3_impl, "int", "eval" );
+    QUERY->doc_func( QUERY, "evaluate a string as ChucK code, with optional arguments (bundled in 'args' as \"ARG1:ARG2:...\", compiling it and sporking 'count' instances as a child shreds of the current shred." );
+    QUERY->add_arg( QUERY, "string", "code" );
+    QUERY->add_arg( QUERY, "string", "args" );
+    QUERY->add_arg( QUERY, "int", "count" );
+
     // add get intsize (width)
     //! get the intsize in bits (e.g., 32 or 64)
     QUERY->add_sfun( QUERY, machine_intsize_impl, "int", "intsize" );
@@ -168,6 +190,26 @@ t_CKUINT machine_intsize()
 t_CKUINT machine_realtime( Chuck_VM * vm )
 {
     return vm->carrier()->hintIsRealtimeAudio();
+}
+
+//-----------------------------------------------------------------------------
+// name: machine_eval()
+// desc: evaluate a string as ChucK code, compiling it and adding it to the the virtual machine
+//-----------------------------------------------------------------------------
+t_CKUINT machine_eval( Chuck_String * codeStr, Chuck_String * argsTogether,
+                       t_CKINT count, Chuck_VM * vm )
+{
+    // check if null
+    if( codeStr == NULL ) return FALSE;
+
+    // get ChucK instance
+    ChucK * chuck = vm->carrier()->chuck;
+    // get code as string
+    string code = codeStr->str();
+    // get args, if there
+    string args = argsTogether ? argsTogether->str() : "";
+
+    return chuck->compileCode( code, args, count );
 }
 
 
@@ -257,4 +299,31 @@ CK_DLL_SFUN( machine_shreds_impl )
     status.clear();
 
     RETURN->v_object = array;
+}
+
+CK_DLL_SFUN( machine_eval_impl )
+{
+    // get arguments
+    Chuck_String * code = GET_NEXT_STRING(ARGS);
+
+    RETURN->v_int = machine_eval( code, NULL, 1, VM );
+}
+
+CK_DLL_SFUN( machine_eval2_impl )
+{
+    // get arguments
+    Chuck_String * code = GET_NEXT_STRING(ARGS);
+    Chuck_String * argsTogether = GET_NEXT_STRING(ARGS);
+
+    RETURN->v_int = machine_eval( code, argsTogether, 1, VM );
+}
+
+CK_DLL_SFUN( machine_eval3_impl )
+{
+    // get arguments
+    Chuck_String * code = GET_NEXT_STRING(ARGS);
+    Chuck_String * argsTogether = GET_NEXT_STRING(ARGS);
+    t_CKINT count = GET_NEXT_INT(ARGS);
+
+    RETURN->v_int = machine_eval( code, argsTogether, count, VM );
 }

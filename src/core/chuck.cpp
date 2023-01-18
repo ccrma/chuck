@@ -875,7 +875,7 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
            count == 1 ? "instance" : "instances" );
 
     // spork it
-    while( count-- )
+    while( count > 0 ) // 1.4.2.1 (ge) | added changed to check for > 0, in case of negative count
     {
         #ifndef __EMSCRIPTEN__
         // spork (for now, spork_immediate arg is always false)
@@ -887,6 +887,8 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
 
         // add args
         shred->args = args;
+        // decrement count
+        count--;
     }
 
     // pop indent

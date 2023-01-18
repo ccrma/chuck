@@ -2974,8 +2974,7 @@ Chuck_String * Chuck_IO_Serial::readLine()
         return NULL;
     }
 
-
-    if(!fgets((char *)m_tmp_buf, m_tmp_buf_max, m_cfd))
+    if(!fgets((char *)m_tmp_buf, (int)m_tmp_buf_max, m_cfd))
     {
         EM_log(CK_LOG_WARNING, "(Serial.readLine): error: from fgets");
         return NULL;
