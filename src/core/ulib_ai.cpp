@@ -249,15 +249,15 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // getMostSimilar
-    func = make_new_mfun( "void", "getSimilar", Word2Vec_getMostSimilarByWord );
+    func = make_new_mfun( "int", "getSimilar", Word2Vec_getMostSimilarByWord );
     func->add_arg( "string", "word" );
     func->add_arg( "int", "k" );
     func->add_arg( "string[]", "output" );
-    func->doc = "Get the k most similar words to the given word.";
+    func->doc = "Get the k most similar words to the given word; return false if 'word' is not in model.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // getByVector
-    func = make_new_mfun( "void", "getSimilar", Word2Vec_getMostSimilarByVector );
+    func = make_new_mfun( "int", "getSimilar", Word2Vec_getMostSimilarByVector );
     func->add_arg( "float[]", "vec" );
     func->add_arg( "int", "k" );
     func->add_arg( "string[]", "output" );
@@ -268,7 +268,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "int", "getVector", Word2Vec_getVector );
     func->add_arg( "string", "word" );
     func->add_arg( "float[]", "output" );
-    func->doc = "Get the vector of the given word; return false if word not found";
+    func->doc = "Get the vector of the given word; returns false if 'word' is not in model.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // contains
@@ -1346,19 +1346,36 @@ public:
     }
 
     // getMostSimilar
-    void getMostSimilarByWord( Chuck_String & word, t_CKINT topn, Chuck_Array4 & output_ )
+    t_CKBOOL getMostSimilarByWord( const string & word, t_CKINT topn, Chuck_Array4 & output_ )
     {
+        // error flag
+        t_CKBOOL hasError = FALSE;
+        // clear
+        for( t_CKINT i = 0; i < output_.size(); i++ )
+        { ((Chuck_String *)output_.m_vector[i])->set( "" ); }
+
         // check
         if( dictionary == NULL )
         {
             EM_error3( "Word2Vec: no model loaded..." );
-            return;
+            return false;
         }
 
-        // check if
+        // check
+        if( output_.size() < topn )
+        {
+            EM_error3( "Word2Vec.getSimilar() results array insufficient size %d (expecting %d)...", output_.size(), topn );
+            // reduce k and do our best
+            topn = output_.size();
+            // but mark error to return false (since we won't fully fulfill our function)
+            hasError = TRUE;
+        }
+
+        // see if word is there
+        if( !contains( word ) ) { return false; }
 
         // get index
-        t_CKINT index = ( *( dictionary->key_to_index ) )[word.str()];
+        t_CKINT index = ( *( dictionary->key_to_index ) )[word];
         // get vector
         ChaiVectorFast<t_CKFLOAT> vector( dictionary->vectorLength );
 
@@ -1389,16 +1406,34 @@ public:
                 ( (Chuck_String *)output_.m_vector[i] )->set( dictionary->index_to_key->v( top_indices.v( i ) ) );
             }
         }
+
+        return !hasError;
     }
 
     // getByVector
-    void getMostSimilarByVector( Chuck_Array8 & vec_, t_CKINT topn, Chuck_Array4 & output_ )
+    t_CKBOOL getMostSimilarByVector( Chuck_Array8 & vec_, t_CKINT topn, Chuck_Array4 & output_ )
     {
+        // error flag
+        t_CKBOOL hasError = FALSE;
+        // clear
+        for( t_CKINT i = 0; i < output_.size(); i++ )
+        { ((Chuck_String *)output_.m_vector[i])->set( "" ); }
+
         // check
         if( dictionary == NULL )
         {
             EM_error3( "Word2Vec: no model loaded..." );
-            return;
+            return false;
+        }
+
+        // check
+        if( output_.size() < topn )
+        {
+            EM_error3( "Word2Vec.getSimilar() results array insufficient size %d (expecting %d)...", output_.size(), topn );
+            // reduce k and do our best
+            topn = output_.size();
+            // but mark error to return false (since we won't fully fulfill our function)
+            hasError = TRUE;
         }
 
         // get vector
@@ -1413,6 +1448,8 @@ public:
         {
             ( (Chuck_String *)output_.m_vector[i] )->set( dictionary->index_to_key->v( top_indices.v( i ) ) );
         }
+
+        return !hasError;
     }
 
     // contains
@@ -1519,8 +1556,16 @@ CK_DLL_MFUN( Word2Vec_getMostSimilarByWord )
     Chuck_String * word = GET_NEXT_STRING( ARGS );
     t_CKINT topn = GET_NEXT_INT( ARGS );
     Chuck_Array4 * output = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    // getMostSimilar
-    word2vec->getMostSimilarByWord( *word, topn, *output );
+
+    // check for NULL
+    if( word == NULL || output == NULL )
+    {
+        RETURN->v_int = FALSE;
+        return;
+    }
+
+    // get by word
+    RETURN->v_int = word2vec->getMostSimilarByWord( word->str(), topn, *output );
 }
 
 CK_DLL_MFUN( Word2Vec_getMostSimilarByVector )
@@ -1531,8 +1576,16 @@ CK_DLL_MFUN( Word2Vec_getMostSimilarByVector )
     Chuck_Array8 * vec = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
     t_CKINT topn = GET_NEXT_INT( ARGS );
     Chuck_Array4 * output = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    // getByVector
-    word2vec->getMostSimilarByVector( *vec, topn, *output );
+
+    // check for NULL
+    if( vec == NULL || output == NULL )
+    {
+        RETURN->v_int = FALSE;
+        return;
+    }
+
+    // get by vector
+    RETURN->v_int = word2vec->getMostSimilarByVector( *vec, topn, *output );
 }
 
 CK_DLL_MFUN( Word2Vec_getVector )
