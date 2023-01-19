@@ -37,6 +37,9 @@
 #include "util_string.h"
 #include <math.h>
 
+#include <string>
+#include <vector>
+#include <map>
 #include <iostream>
 using namespace std;
 
@@ -80,6 +83,7 @@ CK_DLL_MFUN( Word2Vec_getDictionarySize );
 CK_DLL_MFUN( Word2Vec_getDictionaryDim );
 CK_DLL_MFUN( Word2Vec_getUseKDTree );
 CK_DLL_MFUN( Word2Vec_getDimMinMax );
+CK_DLL_MFUN( Word2Vec_contains );
 // offset
 static t_CKUINT Word2Vec_offset_data = 0;
 
@@ -261,10 +265,16 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // getVector
-    func = make_new_mfun( "void", "getVector", Word2Vec_getVector );
+    func = make_new_mfun( "int", "getVector", Word2Vec_getVector );
     func->add_arg( "string", "word" );
     func->add_arg( "float[]", "output" );
-    func->doc = "Get the vector of the given word.";
+    func->doc = "Get the vector of the given word; return false if word not found";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // contains
+    func = make_new_mfun( "int", "contains", Word2Vec_contains );
+    func->add_arg( "string", "word" );
+    func->doc = "Query if 'word' is in the current model.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // size
@@ -1345,13 +1355,16 @@ public:
             return;
         }
 
+        // check if
+
+        // get index
+        t_CKINT index = ( *( dictionary->key_to_index ) )[word.str()];
+        // get vector
+        ChaiVectorFast<t_CKFLOAT> vector( dictionary->vectorLength );
+
         // use tree?
         if( dictionary->tree != NULL )
         {
-            // get index
-            t_CKINT index = ( *( dictionary->key_to_index ) )[word.str()];
-            // get vector
-            ChaiVectorFast<t_CKFLOAT> vector( dictionary->vectorLength );
             for( t_CKINT i = 0; i < dictionary->vectorLength; i++ )
                 vector.v( i ) = dictionary->tree->coord_table[index][i];
             // get nearest neighbors
@@ -1365,10 +1378,6 @@ public:
         }
         else
         {
-            // get index
-            t_CKINT index = ( *(dictionary->key_to_index) )[word.str()];
-            // get vector
-            ChaiVectorFast<t_CKFLOAT> vector( dictionary->vectorLength );
             for( t_CKINT i = 0; i < dictionary->vectorLength; i++ )
                 vector.v( i ) = dictionary->word_vectors->v( index, i );
             // get nearest neighbors
@@ -1377,7 +1386,7 @@ public:
             // copy
             for( t_CKINT i = 0; i < topn; i++ )
             {
-              ( (Chuck_String *)output_.m_vector[i] )->set( dictionary->index_to_key->v( top_indices.v( i ) ) );
+                ( (Chuck_String *)output_.m_vector[i] )->set( dictionary->index_to_key->v( top_indices.v( i ) ) );
             }
         }
     }
@@ -1406,18 +1415,35 @@ public:
         }
     }
 
+    // contains
+    t_CKBOOL contains( const string & word )
+    {
+        // see if word is there
+        std::map<string, t_CKUINT> & key2index = *( dictionary->key_to_index );
+        return key2index.find( word ) != key2index.end();
+    }
+
     // getVector
-    void getVector( Chuck_String & word, Chuck_Array8 & output_ )
+    t_CKBOOL getVector( const string & word, Chuck_Array8 & output_ )
     {
         // check
         if( dictionary == NULL )
         {
             EM_error3( "Word2Vec: no model loaded..." );
-            return;
+            return false;
         }
-        
+
+        // ensure length
+        if( output_.size() < dictionary->vectorLength )
+        { output_.set_size( dictionary->vectorLength ); }
+        // zero out
+        output_.zero( 0, output_.size() );
+        // see if word is there
+        if( !contains( word ) ) { return false; }
+
         // get index
-        t_CKINT index = ( *( dictionary->key_to_index ) )[word.str()];
+        std::map<string, t_CKUINT> & key2index = *( dictionary->key_to_index );
+        t_CKINT index = key2index[word];
 
         // whether we are using
         if( dictionary->tree != NULL )
@@ -1436,6 +1462,9 @@ public:
                 output_.m_vector[i] = dictionary->word_vectors->v( index, i );
             }
         }
+
+        // done
+        return true;
     }
 };
 
@@ -1513,8 +1542,34 @@ CK_DLL_MFUN( Word2Vec_getVector )
     // get args
     Chuck_String * word = GET_NEXT_STRING( ARGS );
     Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+
+    // check for NULL
+    if( word == NULL || output == NULL )
+    {
+        RETURN->v_int = FALSE;
+        return;
+    }
+
     // getVector
-    word2vec->getVector( *word, *output );
+    RETURN->v_int = word2vec->getVector( word->str(), *output );
+}
+
+CK_DLL_MFUN( Word2Vec_contains )
+{
+    // get object
+    Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
+    // get args
+    Chuck_String * word = GET_NEXT_STRING( ARGS );
+
+    // check for NULL
+    if( word == NULL )
+    {
+        RETURN->v_int = FALSE;
+        return;
+    }
+
+    // contains
+    RETURN->v_int = word2vec->contains( word->str() );
 }
 
 CK_DLL_MFUN( Word2Vec_getDictionarySize )
