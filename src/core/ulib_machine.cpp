@@ -37,6 +37,9 @@
 #include "chuck_instr.h"
 #include "chuck.h"
 
+#include <string>
+using namespace std;
+
 
 
 
@@ -68,6 +71,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     // add documentation | 1.4.1.0
     QUERY->doc_class( QUERY, "runtime interface to the ChucK virtual machine." );
 
+#ifndef __DISABLE_OTF_SERVER__
     // add add
     //! compile and spork a new shred from file at 'path' into the VM now
     //! returns the shred ID
@@ -105,6 +109,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     //! (see example/status.ck)
     QUERY->add_sfun( QUERY, machine_status_impl, "int", "status" );
     QUERY->doc_func( QUERY, "display current status of virtual machine." );
+#endif // __DISABLE_OTF_SERVER__
 
     // add shreds
     //! get list of active shreds by id
@@ -145,25 +150,12 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, machine_realtime_impl, "int", "realtime" );
     QUERY->doc_func( QUERY, "return true if the shred is in realtime mode, false if it's in silent mode (i.e. --silent is enabled)" );
 
+    // get version string
+    QUERY->add_sfun( QUERY, machine_version_impl, "string", "version" );
+    QUERY->doc_func( QUERY, "return version string" );
+
     // end class
     QUERY->end_class( QUERY );
-
-    return TRUE;
-}
-
-
-
-
-static Chuck_Compiler * the_compiler = NULL;
-static proc_msg_func the_func = NULL;
-//-----------------------------------------------------------------------------
-// name: machine_init()
-// desc: ...
-//-----------------------------------------------------------------------------
-t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func proc_msg )
-{
-    the_compiler = compiler;
-    the_func = proc_msg;
 
     return TRUE;
 }
@@ -218,6 +210,24 @@ t_CKUINT machine_eval( Chuck_String * codeStr, Chuck_String * argsTogether,
 
 
 
+
+
+#ifndef __DISABLE_OTF_SERVER__
+static Chuck_Compiler * the_compiler = NULL;
+static proc_msg_func the_func = NULL;
+//-----------------------------------------------------------------------------
+// name: machine_init()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func proc_msg )
+{
+    the_compiler = compiler;
+    the_func = proc_msg;
+
+    return TRUE;
+}
+
+
 // add
 CK_DLL_SFUN( machine_crash_impl )
 {
@@ -268,6 +278,8 @@ CK_DLL_SFUN( machine_status_impl )
     msg.type = MSG_STATUS;
     RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
 }
+
+#endif // __DISABLE_OTF_SERVER__
 
 // intsize
 CK_DLL_SFUN( machine_intsize_impl )
@@ -329,4 +341,16 @@ CK_DLL_SFUN( machine_eval3_impl )
     t_CKINT count = GET_NEXT_INT(ARGS);
 
     RETURN->v_int = machine_eval( code, argsTogether, count, VM );
+}
+
+CK_DLL_SFUN( machine_version_impl )
+{
+    // get version string
+    string vs = VM->carrier()->chuck->version();
+    // make chuck string
+    Chuck_String * s = new Chuck_String( vs );
+    // initialize
+    initialize_object(s, VM->carrier()->env->t_string );
+    // return
+    RETURN->v_string = s;
 }
