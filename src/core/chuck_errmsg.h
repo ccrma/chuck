@@ -53,7 +53,7 @@ extern t_CKINT EM_extLineNum;
 void EM_newline( );
 
 // levels
-#define CK_LOG_CRAZY            10 // set this to log everything
+#define CK_LOG_ALL              10 // set this to log everything
 #define CK_LOG_FINEST           9
 #define CK_LOG_FINER            8
 #define CK_LOG_FINE             7

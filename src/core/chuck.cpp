@@ -112,7 +112,6 @@ const char * ChucK::version()
 
 
 
-#ifndef __DISABLE_OTF_SERVER__
 //-----------------------------------------------------------------------------
 // name: intSize()
 // desc: get chuck int size (in bits)
@@ -121,7 +120,6 @@ t_CKUINT ChucK::intSize()
 {
     return machine_intsize();
 }
-#endif
 
 
 

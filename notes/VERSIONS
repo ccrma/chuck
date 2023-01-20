@@ -1,4 +1,4 @@
-1.4.2.0
+1.4.2.1 (January 2023)
 ---
 (NOTE) ChAI (ChucK + AI), first started in chuck-1.4.2.0, will continue 
 to be in BETA for some time (as we add more and also teach using chAI in 
@@ -10,8 +10,8 @@ to be in BETA for some time (as we add more and also teach using chAI in
          model and perform similiarity retrieval.
       |- (inheritance) Word2Vec -> Object
     ------------------
-    int dim();
-       Get number of dimensions for word embedding.
+    int contains( string word );
+       Query if 'word' is in the current model.
     int dim();
        Get number of dimensions for word embedding.
     void getSimilar( string word, int k, string[] output );
@@ -43,11 +43,15 @@ to be in BETA for some time (as we add more and also teach using chAI in
       |- word2vec-basic.ck -- demos load(), getVector(), getSimilar()
       |- word2vec-prompt.ck -- command line interactive tool
          (need to use command line chuck)
- - (added) float Math.remap( float value, float x1, float y1,
-                                          float x2, float y2 );
-      Map 'value' from range [x1,y1] into range [x2,y2]; value will be 
-      clamped to [x1,y1] if outside range.
- - (added) Math functions
+ - (added) Math functions 
+      float map( float value, float x1, float y1,
+                              float x2, float y2 );
+        Map 'value' from range [x1,y1] into range [x2,y2];
+        'value' will be clamped to [x1,y1] if outside range.
+      float clamp( int value, int min, int max );
+        Clamp integer 'value' to range [min, max].
+      float clampf( float value, float min, float max );
+        Clamp float 'value' to range [min, max].
       float cossim( float[] a[], float[] b[] );
         Compute the cosine similarity between arrays a and b.
       float cossim( vec3 a, vec3 b );
@@ -60,6 +64,9 @@ to be in BETA for some time (as we add more and also teach using chAI in
         Compute the euclidean distance between 3D vectors a and b.
       float euclidean( vec4 a, vec4 b );
         Compute the euclidean distance between 4D vectors a and b.
+  - (added) examples/math
+       |- map.ck -- shows mapping using Math.map() and Math.map2()
+       |- math-help.ck -- just prints Math API using Math.help();
   - (added) Machine functions
       int eval( string code );
         Evaluate a string as ChucK code, compiling it and spork it as a child 
@@ -72,6 +79,21 @@ to be in BETA for some time (as we add more and also teach using chAI in
         Evaluate a string as ChucK code, with optional arguments (bundled in 
         'args' as "ARG1:ARG2:...", compiling it and sporking 'count' instances as 
         a child shreds of the current shred.
+      int loglevel( int level );
+        Set log level
+          |- 0: NONE
+          |- 1: CORE
+          |- 2: SYSTEM
+          |- 3: SEVERE
+          |- 4: WARNING
+          |- 5: INFO
+          |- 6: CONFIG
+          |- 7: FINE
+          |- 8: FINER
+          |- 9: FINEST
+          |- 10: ALL
+      static int loglevel();
+        Get log level
   - (added) examples in machine
        |- eval.ck -- demonstrate Machine.eval(), noting its behavior wrt 
           to schreduler

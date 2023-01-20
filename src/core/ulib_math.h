@@ -98,7 +98,8 @@ CK_DLL_SFUN( euclidean_impl );
 CK_DLL_SFUN( euclidean3d_impl );
 CK_DLL_SFUN( euclidean4d_impl );
 
-CK_DLL_SFUN( remap_impl );
+CK_DLL_SFUN( map_impl );
+CK_DLL_SFUN( map2_impl );
 
 
 

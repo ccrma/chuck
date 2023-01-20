@@ -154,6 +154,26 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, machine_version_impl, "string", "version" );
     QUERY->doc_func( QUERY, "return version string" );
 
+    // get version string
+    QUERY->add_sfun( QUERY, machine_setloglevel_impl, "int", "loglevel" );
+    QUERY->add_arg( QUERY, "int", "level" );
+    QUERY->doc_func( QUERY, "set log level\n"
+                     "       |- 0: NONE\n"
+                     "       |- 1: CORE\n"
+                     "       |- 2: SYSTEM\n"
+                     "       |- 3: SEVERE\n"
+                     "       |- 4: WARNING\n"
+                     "       |- 5: INFO\n"
+                     "       |- 6: CONFIG\n"
+                     "       |- 7: FINE\n"
+                     "       |- 8: FINER\n"
+                     "       |- 9: FINEST\n"
+                     "       |- 10: ALL" );
+
+    // get version string
+    QUERY->add_sfun( QUERY, machine_getloglevel_impl, "int", "loglevel" );
+    QUERY->doc_func( QUERY, "get log level." );
+
     // end class
     QUERY->end_class( QUERY );
 
@@ -353,4 +373,29 @@ CK_DLL_SFUN( machine_version_impl )
     initialize_object(s, VM->carrier()->env->t_string );
     // return
     RETURN->v_string = s;
+}
+
+CK_DLL_SFUN( machine_setloglevel_impl )
+{
+    // arg
+    t_CKINT level = GET_NEXT_INT(ARGS);
+    // get current log
+    t_CKINT current = VM->carrier()->chuck->getLogLevel();
+    // clamp compare
+    if( level < CK_LOG_NONE ) level = CK_LOG_NONE;
+    else if( level > CK_LOG_ALL ) level = CK_LOG_ALL;
+    // compare
+    if( level != current )
+    {
+        EM_log( CK_LOG_NONE, "updating log level from %d to %d..." );
+        VM->carrier()->chuck->setLogLevel( level );
+    }
+    // return
+    RETURN->v_int = level;
+}
+
+CK_DLL_SFUN( machine_getloglevel_impl )
+{
+    // return
+    RETURN->v_int = VM->carrier()->chuck->getLogLevel();
 }

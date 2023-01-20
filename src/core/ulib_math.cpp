@@ -410,14 +410,46 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "vec4", "b" );
     QUERY->doc_func( QUERY, "compute the euclidean distance between 4D vectors a and b." );
 
-    // add euclean (ge: added 1.4.2.1)
-    QUERY->add_sfun( QUERY, remap_impl, "float", "remap" ); //! map
+    // add map (ge: added 1.4.2.1)
+    QUERY->add_sfun( QUERY, map_impl, "float", "map" ); //! map
     QUERY->add_arg( QUERY, "float", "value" );
     QUERY->add_arg( QUERY, "float", "x1" );
     QUERY->add_arg( QUERY, "float", "y1" );
     QUERY->add_arg( QUERY, "float", "x2" );
     QUERY->add_arg( QUERY, "float", "y2" );
-    QUERY->doc_func( QUERY, "map 'value' from range [x1,y1] into range [x2,y2]; value will be clamped to [x1,y1] if outside range." );
+    QUERY->doc_func( QUERY, "map 'value' from range [x1,y1] into range [x2,y2]; 'value' can be outside range[x1,y1] (see also: Math.map2())" );
+
+    // add map (ge: added 1.4.2.1)
+    QUERY->add_sfun( QUERY, map2_impl, "float", "map2" ); //! map
+    QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->add_arg( QUERY, "float", "x1" );
+    QUERY->add_arg( QUERY, "float", "y1" );
+    QUERY->add_arg( QUERY, "float", "x2" );
+    QUERY->add_arg( QUERY, "float", "y2" );
+    QUERY->doc_func( QUERY, "map 'value' from range [x1,y1] into range [x2,y2]; 'value' will be clamped to [x1,y1] if outside range (see also: Math.map())." );
+
+    // add remap (ge: added 1.4.2.1)
+    QUERY->add_sfun( QUERY, map2_impl, "float", "remap" ); //! remap
+    QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->add_arg( QUERY, "float", "x1" );
+    QUERY->add_arg( QUERY, "float", "y1" );
+    QUERY->add_arg( QUERY, "float", "x2" );
+    QUERY->add_arg( QUERY, "float", "y2" );
+    QUERY->doc_func( QUERY, "same as Math.map2()" );
+
+    // add clamp (ge: added 1.4.2.1 -- actually migrated from Std)
+    QUERY->add_sfun( QUERY, clamp_impl, "int", "clamp" ); //! clamp to range (int)
+    QUERY->add_arg( QUERY, "int", "value" );
+    QUERY->add_arg( QUERY, "int", "min" );
+    QUERY->add_arg( QUERY, "int", "max" );
+    QUERY->doc_func( QUERY, "clamp an integer to range [min,max]." );
+
+    // add clampf (ge: added 1.4.2.1 -- actually migrated from Std)
+    QUERY->add_sfun( QUERY, clampf_impl, "float", "clampf" ); //! clamp to range (float)
+    QUERY->add_arg( QUERY, "float", "value" );
+    QUERY->add_arg( QUERY, "float", "min" );
+    QUERY->add_arg( QUERY, "float", "max" );
+    QUERY->doc_func( QUERY, "clamp a float to range [min,max]." );
 
     // pi
     //! see \example math.ck
@@ -1158,9 +1190,25 @@ CK_DLL_SFUN( euclidean4d_impl )
     RETURN->v_float = ::sqrt(sum);
 }
 
+// map (ge) | added 1.4.2.1
+CK_DLL_SFUN( map_impl )
+{
+    t_CKFLOAT v = GET_NEXT_FLOAT( ARGS );
+    t_CKFLOAT x1 = GET_NEXT_FLOAT( ARGS );
+    t_CKFLOAT y1 = GET_NEXT_FLOAT( ARGS );
+    t_CKFLOAT x2 = GET_NEXT_FLOAT( ARGS );
+    t_CKFLOAT y2 = GET_NEXT_FLOAT( ARGS );
 
-// remap (ge) | added 1.4.2.1
-CK_DLL_SFUN( remap_impl )
+    t_CKFLOAT min1 = x1 < y1 ? x1 : y1;
+    t_CKFLOAT max1 = x1 > y1 ? x1 : y1;
+
+    // std::cerr << v << " " << x1 << " " << y1 << " " << x2 << " " << y2 << std::endl;
+    // remap
+    RETURN->v_float = x2 + (v-x1)/(y1-x1)*(y2-x2);
+}
+
+// map2 (ge) | added 1.4.2.1
+CK_DLL_SFUN( map2_impl )
 {
     t_CKFLOAT v = GET_NEXT_FLOAT( ARGS );
     t_CKFLOAT x1 = GET_NEXT_FLOAT( ARGS );
