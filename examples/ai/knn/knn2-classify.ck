@@ -1,21 +1,21 @@
 //------------------------------------------------------------------------------
-// name: knn-classify.ck
-// desc: basic k-nearest-neighbor (k-NN) classification example; it simulates a 
+// name: knn2-classify.ck
+// desc: k-nearest-neighbor (k-NN) classification example; it simulates a 
 //       simplified musical genre classification task where three labeled
 //       categories are given respective locations in a 2D feature space.
 //
-// version: need chuck version 1.4.2.0 or higher
+// version: need chuck version 1.4.2.1 or higher
 // sorting: part of ChAI (ChucK for AI) [BETA]
 //
-// uncomment the next line to learn more about the KNN object:
-// KNN.help();
+// uncomment the next line to learn more about the KNN2 object:
+// KNN2.help();
 //
 // author: Yikai Li and Ge Wang
 // date: Spring 2023
 //------------------------------------------------------------------------------
 
 // create a k-NN classifier
-KNN knn;
+KNN2 knn;
 
 // prepare data: labels
 ["classical", "pop", "rock"] @=> string labelNames[];
@@ -49,7 +49,7 @@ fun void predict( float query[], int k )
     float prob[NUM_LABELS];
 
     // predict with k nearest neighbors
-    knn.predict( k, query, prob );
+    knn.predict( query, k, prob );
     // print
     chout <= "query=(" + query[0] + "," + query[1] + "); k=" + k + ":" <= IO.newline();
     for( 0 => int i; i < 3; i++ )
