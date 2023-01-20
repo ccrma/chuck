@@ -48,7 +48,7 @@ to be in BETA for some time (as we add more and also teach using chAI in
                               float x2, float y2 );
         Map 'value' from range [x1,y1] into range [x2,y2];
         'value' will be clamped to [x1,y1] if outside range.
-      float clamp( int value, int min, int max );
+      float clampi( int value, int min, int max );
         Clamp integer 'value' to range [min, max].
       float clampf( float value, float min, float max );
         Clamp float 'value' to range [min, max].

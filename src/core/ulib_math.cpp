@@ -438,7 +438,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->doc_func( QUERY, "same as Math.map2()" );
 
     // add clamp (ge: added 1.4.2.1 -- actually migrated from Std)
-    QUERY->add_sfun( QUERY, clamp_impl, "int", "clamp" ); //! clamp to range (int)
+    QUERY->add_sfun( QUERY, clamp_impl, "int", "clampi" ); //! clamp to range (int)
     QUERY->add_arg( QUERY, "int", "value" );
     QUERY->add_arg( QUERY, "int", "min" );
     QUERY->add_arg( QUERY, "int", "max" );
