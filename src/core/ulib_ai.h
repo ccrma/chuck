@@ -113,8 +113,6 @@ public:
             assert( FALSE );
         }
 
-        // NOTE: this is NOT bound-checked!!!
-        // NOTE: yet, this is arguably no worse than using c 2d arrays
         return m_matrix[x * m_yDim + y];
     }
 
@@ -203,8 +201,20 @@ public:
     t_CKINT size()
     { return m_length; }
 
-    // get element value
-    T & v( t_CKINT i )
+    T max()
+    {
+        T max = m_vector[0];
+        for( t_CKINT i = 1; i < m_length; i++ )
+        {
+            if( m_vector[i] > max )
+            {
+                max = m_vector[i];
+            }
+        }
+        return max;
+    }
+
+    T & operator[]( t_CKINT i )
     {
         // at least do a check
         if( i < 0 || i >= m_length )
@@ -216,9 +226,13 @@ public:
             assert( FALSE );
         }
 
-        // NOTE: this is NOT bound-checked!!!
-        // NOTE: yet, this is arguably no worse than using c arrays
         return m_vector[i];
+    }
+
+    // get element value
+    T & v( t_CKINT i )
+    {
+        return (*this)[i];
     }
 
     void cleanup()
