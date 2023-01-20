@@ -367,11 +367,6 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // dim
-    func = make_new_mfun( "int", "dim", Word2Vec_getDictionaryDim );
-    func->doc = "Get number of dimensions for word embedding.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    // dim
     func = make_new_mfun( "int", "useKDTree", Word2Vec_getUseKDTree );
     func->doc = "Get whether a KDTree is used for similarity search.";
     if( !type_engine_import_mfun( env, func ) ) goto error;

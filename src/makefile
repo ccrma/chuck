@@ -9,7 +9,7 @@ CK_PLATFORM=
 current:
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
-	@echo "   make mac, make mac-ub, make cygwin, make win32, or make emscripten"
+	@echo "   make mac, make mac-ub, make cygwin, make win32, or make web"
 
 
 ############################## MAKE INSTALL ####################################
@@ -44,8 +44,9 @@ EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
     core/util_xforms.c core/chuck_win32.c core/util_sndfile.c
 
 
-.PHONY: emscripten
+.PHONY: emscripten web
 emscripten: host_web/webchuck/js/webchuck.js
+web: host_web/webchuck/js/webchuck.js
 
 host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
 	emcc -O3 -s DISABLE_EXCEPTION_CATCHING=0 \
