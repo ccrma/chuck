@@ -43,10 +43,7 @@
 #include "uana_xform.h"
 #include "uana_extract.h"
 
-#ifndef __DISABLE_OTF_SERVER__
 #include "ulib_machine.h"
-#endif
-
 #include "ulib_ai.h"
 #include "ulib_math.h"
 #include "ulib_std.h"
@@ -687,9 +684,9 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     if( !load_module( compiler, env, libstd_query, "Std", "global" ) ) goto error;
 
     // load
-    #ifndef __DISABLE_OTF_SERVER__
     EM_log( CK_LOG_SEVERE, "module 'machine'" );
     if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
+    #ifndef __DISABLE_OTF_SERVER__
     machine_init( compiler, otf_process_msg );
     #endif
 
