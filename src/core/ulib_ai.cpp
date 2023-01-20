@@ -58,9 +58,18 @@ static t_CKUINT SVM_offset_data = 0;
 CK_DLL_CTOR( KNN_ctor );
 CK_DLL_DTOR( KNN_dtor );
 CK_DLL_MFUN( KNN_train );
-CK_DLL_MFUN( KNN_predict );
+CK_DLL_MFUN( KNN_search );
+// 1.4.2.1 (yikai) added KNN2
+CK_DLL_CTOR( KNN2_ctor );
+CK_DLL_DTOR( KNN2_dtor );
+CK_DLL_MFUN( KNN2_train );
+CK_DLL_MFUN( KNN2_predict );
+CK_DLL_MFUN( KNN2_search );
+CK_DLL_MFUN( KNN2_search2 );
+CK_DLL_MFUN( KNN2_search3 );
 // offset
 static t_CKUINT KNN_offset_data = 0;
+static t_CKUINT KNN2_offset_data = 0;
 
 // 1.4.2.0 (yikai) added HMM
 CK_DLL_CTOR( HMM_ctor );
@@ -143,7 +152,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // doc string
     doc =
-        "a supervised learning utility that predicts probabilities of class membership based on distances from a test input to its k nearest neighbors.";
+        "a basic k-NN utility that returns the indices of k nearest neighbors. (also see KNN2)";
 
     // begin class definition
     if( !type_engine_import_class_begin( env, "KNN", "Object", env->global(), KNN_ctor, KNN_dtor, doc.c_str() ) )
@@ -156,17 +165,79 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     // train
     func = make_new_mfun( "int", "train", KNN_train );
     func->add_arg( "float[][]", "x" );
+    func->doc = "Train the KNN model with the given samples vectors 'x'";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // search
+    func = make_new_mfun( "void", "search", KNN_search );
+    func->add_arg( "float[]", "query" );
+    func->add_arg( "int", "k" );
+    func->add_arg( "int[]", "indices" );
+    func->doc = "Search for the 'k' nearest neighbors of 'query' and return their respective indices.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    //---------------------------------------------------------------------
+    // init as base class: KNN2
+    // 1.4.1.2 added by Yikai Li, Fall 2022
+    //---------------------------------------------------------------------
+    // doc string
+    doc =
+        "a k-NN utility that predicts probabilities of class membership based on distances from a test input to its k nearest neighbors. (also see KNN)";
+
+    // begin class definition
+    if( !type_engine_import_class_begin( env, "KNN2", "Object", env->global(), KNN2_ctor, KNN2_dtor, doc.c_str() ) )
+        return FALSE;
+
+    // data offset
+    KNN_offset_data = type_engine_import_mvar( env, "float", "@KNN2_data", FALSE );
+    if( KNN_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // train
+    func = make_new_mfun( "int", "train", KNN2_train );
+    func->add_arg( "float[][]", "x" );
     func->add_arg( "int[]", "y" );
     func->doc = "Train the KNN model with the given samples 'x' and corresponding labels 'y'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // predict
-    func = make_new_mfun( "int", "predict", KNN_predict );
+    func = make_new_mfun( "int", "predict", KNN2_predict );
+    func->add_arg( "float[]", "query" );
     func->add_arg( "int", "k" );
-    func->add_arg( "float[]", "x" );
     func->add_arg( "float[]", "prob" );
     func->doc =
-        "Predict the output probabilities ('prob') given unlabeled test input 'x' based on distances to 'k' nearest neighbors.";
+        "Predict the output probabilities ('prob') given unlabeled test input 'query' based on distances to 'k' nearest neighbors.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // search
+    func = make_new_mfun( "void", "search", KNN2_search );
+    func->add_arg( "float[]", "query" );
+    func->add_arg( "int", "k" );
+    func->add_arg( "int[]", "labels" );
+    func->doc = "Search for the 'k' nearest neighbors of 'query' and return their labels.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // search
+    func = make_new_mfun( "void", "search", KNN2_search2 );
+    func->add_arg( "float[]", "query" );
+    func->add_arg( "int", "k" );
+    func->add_arg( "int[]", "labels" );
+    func->add_arg( "int[]", "indices" );
+    func->doc =
+        "Search for the 'k' nearest neighbors of 'query' and return their labels and indices.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // search
+    func = make_new_mfun( "void", "search", KNN2_search3 );
+    func->add_arg( "float[]", "query" );
+    func->add_arg( "int", "k" );
+    func->add_arg( "int[]", "labels" );
+    func->add_arg( "int[]", "indices" );
+    func->add_arg( "float[][]", "features" );
+    func->doc =
+        "Search for the 'k' nearest neighbors of 'query' and return their labels, indices, and feature vectors.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -245,7 +316,8 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "int", "load", Word2Vec_load2 );
     func->add_arg( "string", "path" );
     func->add_arg( "int", "useKDTreeDim" );
-    func->doc = "Load pre-trained word embedding model from the given path; will use KDTree for similarity searches if the data dimension is less than or equal to 'useKDTreeDim'. Set 'useKDTreeDim' to 0 to use linear (brute force) similarity search; set 'useKDTreeDim' to less than 0 to always use KDTree.";
+    func->doc =
+        "Load pre-trained word embedding model from the given path; will use KDTree for similarity searches if the data dimension is less than or equal to 'useKDTreeDim'. Set 'useKDTreeDim' to 0 to use linear (brute force) similarity search; set 'useKDTreeDim' to less than 0 to always use KDTree.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // getMostSimilar
@@ -585,7 +657,7 @@ public:
     }
 
     // train
-    t_CKINT train( Chuck_Array4 & x_, Chuck_Array4 & y_ )
+    t_CKINT train( Chuck_Array4 & x_ )
     {
         // init
         t_CKINT n_sample = x_.size();
@@ -593,6 +665,29 @@ public:
         x_.get( 0, &v );
         Chuck_Array8 * x_i = (Chuck_Array8 *)v;
         t_CKINT x_dim = x_i->size();
+        X->allocate( n_sample, x_dim );
+        // copy
+        for( t_CKINT i = 0; i < n_sample; i++ )
+        {
+            x_.get( i, &v );
+            x_i = (Chuck_Array8 *)v;
+            for( t_CKINT j = 0; j < x_dim; j++ )
+            {
+                x_i->get( j, &X->v( i, j ) );
+            }
+        }
+        return 0;
+    }
+
+    // train
+    t_CKINT train( Chuck_Array4 & x_, Chuck_Array4 & y_ )
+    {
+        // init
+        t_CKINT n_sample = x_.size();
+        t_CKUINT v;
+        x_.get( 0, &v );
+        Chuck_Array8 * x_i = (Chuck_Array8 *)v;
+        t_CKUINT x_dim = x_i->size();
         X->allocate( n_sample, x_dim );
         Y->allocate( n_sample );
         // copy
@@ -609,55 +704,153 @@ public:
         return 0;
     }
 
-    // predict
-    t_CKINT predict( t_CKINT k, Chuck_Array8 & x_, Chuck_Array8 & prob_ )
+    void getNearestNeighbors( ChaiVectorFast<t_CKFLOAT> & query, t_CKINT k, ChaiVectorFast<t_CKINT> & indices )
     {
-        // init
-        t_CKINT n_sample = Y->length();
-        t_CKINT n_label = prob_.size();
-        t_CKINT x_dim = x_.size();
-        ChaiVectorFast<t_CKFLOAT> x( x_dim );
-        ChaiVectorFast<t_CKFLOAT> dist( n_sample );
-        ChaiVectorFast<t_CKFLOAT> prob( n_label );
-        // copy
-        for( t_CKINT i = 0; i < x_dim; i++ )
-        {
-            x_.get( i, &x.v( i ) );
-        }
-        // compute
-        for( t_CKINT i = 0; i < n_sample; i++ )
-        {
-            dist.v( i ) = 0.0;
-            for( t_CKINT j = 0; j < x_dim; j++ )
-            {
-                dist.v( i ) += pow( x.v( j ) - X->v( i, j ), 2 );
-            }
-        }
-        for( t_CKINT i = 0; i < n_label; i++ )
-        {
-            prob.v( i ) = 0.0;
-        }
+        // allocate
+        ChaiVectorFast<t_CKFLOAT> top_distances( k );
+        ChaiVectorFast<t_CKINT> top_indices( k );
+        // initialize
         for( t_CKINT i = 0; i < k; i++ )
         {
-            t_CKINT min_idx = 0;
-            t_CKFLOAT min_dist = dist.v( 0 );
-            for( t_CKINT j = 1; j < n_sample; j++ )
+            top_distances.v( i ) = 1e10;
+            top_indices.v( i ) = 0;
+        }
+        // compute distances
+        t_CKFLOAT distance, diff;
+        for( t_CKINT i = 0; i < X->xDim(); i++ )
+        {
+            distance = 0.0;
+            for( t_CKINT j = 0; j < X->yDim(); j++ )
             {
-                if( dist.v( j ) < min_dist )
+                diff = query.v( j ) - X->v( i, j );
+                distance += diff * diff;
+            }
+            // check
+            for( t_CKINT j = 0; j < k; j++ )
+            {
+                if( distance < top_distances.v( j ) )
                 {
-                    min_idx = j;
-                    min_dist = dist.v( j );
+                    for( t_CKINT l = k - 1; l > j; l-- )
+                    {
+                        top_distances.v( l ) = top_distances.v( l - 1 );
+                        top_indices.v( l ) = top_indices.v( l - 1 );
+                    }
+                    top_distances.v( j ) = distance;
+                    top_indices.v( j ) = i;
+                    break;
                 }
             }
-            prob.v( Y->v( min_idx ) ) += 1.0;
-            dist.v( min_idx ) = 1e10;
         }
-        for( t_CKINT i = 0; i < n_label; i++ )
+        // copy
+        for( t_CKINT i = 0; i < k; i++ )
         {
-            prob.v( i ) /= (t_CKFLOAT)k;
-            prob_.set( i, prob.v( i ) );
+            indices.v( i ) = top_indices.v( i );
         }
-        return 0;
+    }
+
+    // search; returns indices
+    void search0( Chuck_Array8 & query_, t_CKINT k, Chuck_Array4 & indices_ )
+    {
+        // init
+        ChaiVectorFast<t_CKFLOAT> * query = chuck2chai( query_ );
+        ChaiVectorFast<t_CKINT> indices( k );
+        // search
+        getNearestNeighbors( *query, k, indices );
+        // resize
+        indices_.set_size( k );
+        // copy
+        for( t_CKINT i = 0; i < k; i++ )
+        {
+            indices_.m_vector[i] = indices[i];
+        }
+    }
+
+    // search; returns labels
+    void search1( Chuck_Array8 & query_, t_CKINT k, Chuck_Array4 & labels_ )
+    {
+        // init
+        ChaiVectorFast<t_CKFLOAT> * query = chuck2chai( query_ );
+        ChaiVectorFast<t_CKINT> indices( k );
+        // search
+        getNearestNeighbors( *query, k, indices );
+        // resize
+        labels_.set_size( k );
+        // copy
+        for( t_CKINT i = 0; i < k; i++ )
+        {
+            labels_.m_vector[i] = Y->v( indices.v( i ) );
+        }
+    }
+
+    // search; returns labels and indices
+    void search2( Chuck_Array8 & query_, t_CKINT k, Chuck_Array4 & labels_, Chuck_Array4 & indices_ )
+    {
+        // init
+        ChaiVectorFast<t_CKFLOAT> * query = chuck2chai( query_ );
+        ChaiVectorFast<t_CKINT> indices( k );
+        // search
+        getNearestNeighbors( *query, k, indices );
+        // resize
+        labels_.set_size( k );
+        indices_.set_size( k );
+        for( t_CKINT i = 0; i < k; i++ )
+        {
+            labels_.m_vector[i] = Y->v( indices.v( i ) );
+            indices_.m_vector[i] = indices[i];
+        }
+    }
+
+    // search; returns labels, indices, and feature vectors
+    void search3( Chuck_Array8 & query_, t_CKINT k, Chuck_Array4 & labels_, Chuck_Array4 & indices_, Chuck_Array4 & features_ )
+    {
+        // init
+        ChaiVectorFast<t_CKFLOAT> * query = chuck2chai( query_ );
+        ChaiVectorFast<t_CKINT> indices( k );
+        // search
+        getNearestNeighbors( *query, k, indices );
+        // resize
+        labels_.set_size( k );
+        indices_.set_size( k );
+        // check dimensions
+        if( features_.size() < k )
+        {
+            Chuck_Array8 * x_i = features_.size() ? (Chuck_Array8 *)features_.m_vector[0] : NULL;
+            EM_error3( "KNN2: insufficient 'features' matrix provided: %dx%d (expecting %dx%d)",
+                       features_.size(), x_i != NULL ? x_i->m_vector.size() : 0, k, this->X->xDim() );
+            return;
+        }
+        // copy
+        Chuck_Array8 * x_i;
+        for( t_CKINT i = 0; i < k; i++ )
+        {
+            labels_.m_vector[i] = Y->v( indices.v( i ) );
+            indices_.m_vector[i] = indices[i];
+            x_i = (Chuck_Array8 *)features_.m_vector[i];
+            for( t_CKINT j = 0; j < X->yDim(); j++ )
+            {
+                x_i->m_vector[j] = X->v( indices.v( i ), j );
+            }
+        }
+    }
+
+    // predict
+    void predict( Chuck_Array8 & query_, t_CKINT k, Chuck_Array8 & prob_ )
+    {
+        // init
+        ChaiVectorFast<t_CKFLOAT> * query = chuck2chai( query_ );
+        ChaiVectorFast<t_CKINT> indices( k );
+        // search
+        getNearestNeighbors( *query, k, indices );
+        // copy
+        prob_.set_size( Y->max() + 1 );
+        for( t_CKINT i = 0; i < k; i++ )
+        {
+            prob_.m_vector[Y->v( indices.v( i ) )] += 1.0;
+        }
+        for( t_CKINT i = 0; i < prob_.size(); i++ )
+        {
+            prob_.m_vector[i] /= k;
+        }
     }
 
 private:
@@ -690,21 +883,157 @@ CK_DLL_MFUN( KNN_train )
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN_offset_data );
     // get args
     Chuck_Array4 * x = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array4 * y = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+
+    // check for NULL
+    if( x == NULL  )
+    {
+        EM_error3( "KNN.train(): NULL input encountered...");
+        return;
+    }
+
     // train
-    knn->train( *x, *y );
+    knn->train( *x );
 }
 
-CK_DLL_MFUN( KNN_predict )
+CK_DLL_MFUN( KNN_search )
 {
     // get object
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN_offset_data );
     // get args
+    Chuck_Array8 * query = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
     t_CKINT k = GET_NEXT_INT( ARGS );
-    Chuck_Array8 * x = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * y = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array4 * indices = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+
+    // check for NULL
+    if( query == NULL || indices == NULL )
+    {
+        EM_error3( "KNN.search(): NULL input encountered...");
+        return;
+    }
+
+    // search0
+    knn->search0( *query, k, *indices );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// KNN2 c++ hooks
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( KNN2_ctor )
+{
+    KNN_Object * knn = new KNN_Object();
+    OBJ_MEMBER_UINT( SELF, KNN2_offset_data ) = (t_CKUINT)knn;
+}
+
+CK_DLL_DTOR( KNN2_dtor )
+{
+    KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
+    SAFE_DELETE( knn );
+    OBJ_MEMBER_UINT( SELF, KNN2_offset_data ) = 0;
+}
+
+CK_DLL_MFUN( KNN2_train )
+{
+    // get object
+    KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
+    // get args
+    Chuck_Array4 * x = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array4 * y = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+
+    // check for NULL
+    if( x == NULL || y == NULL )
+    {
+        EM_error3( "KNN2.train(): NULL input encountered...");
+        return;
+    }
+
+    // train
+    knn->train( *x, *y );
+}
+
+CK_DLL_MFUN( KNN2_predict )
+{
+    // get object
+    KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
+    // get args
+    Chuck_Array8 * query = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    t_CKINT k = GET_NEXT_INT( ARGS );
+    Chuck_Array8 * prob = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+
+    // check for NULL
+    if( query == NULL || prob == NULL )
+    {
+        EM_error3( "KNN2.predict(): NULL input encountered...");
+        return;
+    }
+
     // predict
-    knn->predict( k, *x, *y );
+    knn->predict( *query, k, *prob );
+}
+
+CK_DLL_MFUN( KNN2_search )
+{
+    // get object
+    KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
+    // get args
+    Chuck_Array8 * query = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    t_CKINT k = GET_NEXT_INT( ARGS );
+    Chuck_Array4 * labels = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+
+    // check for NULL
+    if( query == NULL || labels == NULL )
+    {
+        EM_error3( "KNN2.search(): NULL input encountered...");
+        return;
+    }
+
+    // search1
+    knn->search1( *query, k, *labels );
+}
+
+CK_DLL_MFUN( KNN2_search2 )
+{
+    // get object
+    KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
+    // get args
+    Chuck_Array8 * query = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    t_CKINT k = GET_NEXT_INT( ARGS );
+    Chuck_Array4 * labels = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array4 * indices = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+
+    // check for NULL
+    if( query == NULL || labels == NULL || indices == NULL )
+    {
+        EM_error3( "KNN2.search(): NULL input encountered...");
+        return;
+    }
+
+    // search2
+    knn->search2( *query, k, *labels, *indices );
+}
+
+CK_DLL_MFUN( KNN2_search3 )
+{
+    // get object
+    KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
+    // get args
+    Chuck_Array8 * query = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    t_CKINT k = GET_NEXT_INT( ARGS );
+    Chuck_Array4 * labels = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array4 * indices = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array4 * features = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+
+    // check for NULL
+    if( query == NULL || labels == NULL || indices == NULL || features == NULL )
+    {
+        EM_error3( "KNN2.search(): NULL input encountered...");
+        return;
+    }
+
+    // search3
+    knn->search3( *query, k, *labels, *indices, *features );
 }
 
 //-----------------------------------------------------------------------------
@@ -1047,7 +1376,6 @@ struct W2V_Dictionary
     }
 };
 
-
 //-----------------------------------------------------------------------------
 // name: struct Word2Vec_Object
 // desc: Word2Vec implementation | added 1.4.2.1 (yikai)
@@ -1067,7 +1395,7 @@ private:
 public:
     // constructor
     Word2Vec_Object()
-    : dictionary(NULL), m_lineNum(0)
+        : dictionary( NULL ), m_lineNum( 0 )
     { }
 
     // destructor
@@ -1112,7 +1440,7 @@ public:
             mins->set_size( dims );
             // copy minimums
             for( int i = 0; i < dims; i++ )
-            { mins->set( i, dictionary->mins.v(i) ); }
+            { mins->set( i, dictionary->mins.v( i ) ); }
         }
 
         // if not null
@@ -1122,7 +1450,7 @@ public:
             maxs->set_size( dims );
             // copy minimums
             for( int i = 0; i < dims; i++ )
-            { maxs->set( i, dictionary->maxs.v(i) ); }
+            { maxs->set( i, dictionary->maxs.v( i ) ); }
         }
     }
 
@@ -1131,19 +1459,24 @@ public:
     {
         return dictionary != NULL ? dictionary->tree != NULL : 0;
     }
-    
+
     // read next non-empty or commented line
     t_CKBOOL nextline( std::ifstream & fin, string & line, t_CKBOOL commentIsHash )
     {
         // skip over empty lines and commented lines (starts with #)
-        do {
+        do
+        {
             // increment line number
             m_lineNum++;
             // get line
-            if( !std::getline( fin, line ) ) { line = ""; return FALSE; }
+            if( !std::getline( fin, line ) )
+            {
+                line = "";
+                return FALSE;
+            }
             // ltrim leading white spaces
             line = ltrim( line );
-        } while( line == "" || (commentIsHash && line[0] == '#') );
+        } while( line == "" || ( commentIsHash && line[0] == '#' ) );
 
         return TRUE;
     }
@@ -1153,7 +1486,7 @@ public:
     {
         // clear
         clear();
-        
+
         // check cache
         if( o_cache.find( path.str() ) != o_cache.end() )
         {
@@ -1193,8 +1526,8 @@ public:
         for( int i = 0; i < dictionary->vectorLength; i++ )
         {
             // initialize
-            dictionary->mins.v(i) = 1e10;
-            dictionary->maxs.v(i) = -1e10;
+            dictionary->mins.v( i ) = 1e10;
+            dictionary->maxs.v( i ) = -1e10;
         }
 
         // check if using kdtree
@@ -1209,9 +1542,13 @@ public:
             {
                 // get next non-empty line
                 if( !nextline( fin, line, FALSE ) )
-                { EM_error3( "Word2Vec: error parsing model on line: %d", m_lineNum ); return false; }
+                {
+                    EM_error3( "Word2Vec: error parsing model on line: %d", m_lineNum );
+                    return false;
+                }
                 // set into string stream
-                strin.str( line ); strin.clear();
+                strin.str( line );
+                strin.clear();
 
                 // get the word
                 strin >> key;
@@ -1223,8 +1560,8 @@ public:
                     vector.v( j ) = value;
 
                     // find min/max
-                    if( value < dictionary->mins.v(j) ) dictionary->mins.v(j) = value;
-                    else if( value > dictionary->maxs.v(j) ) dictionary->maxs.v(j) = value;
+                    if( value < dictionary->mins.v( j ) ) dictionary->mins.v( j ) = value;
+                    else if( value > dictionary->maxs.v( j ) ) dictionary->maxs.v( j ) = value;
                 }
                 kdtree_insert( dictionary->tree, vector.m_vector );
             }
@@ -1235,8 +1572,9 @@ public:
         else
         {
             // allocate word vectors
-            dictionary->word_vectors = new ChaiMatrixFast<t_CKFLOAT>( dictionary->dictionarySize, dictionary->vectorLength );
-            
+            dictionary->word_vectors =
+                new ChaiMatrixFast<t_CKFLOAT>( dictionary->dictionarySize, dictionary->vectorLength );
+
             // read vectors
             std::string key;
             t_CKFLOAT value;
@@ -1244,28 +1582,32 @@ public:
             {
                 // get next non-empty line
                 if( !nextline( fin, line, FALSE ) )
-                { EM_error3( "Word2Vec: error parsing model on line: %d", m_lineNum ); return false; }
+                {
+                    EM_error3( "Word2Vec: error parsing model on line: %d", m_lineNum );
+                    return false;
+                }
                 // set into string stream
-                strin.str( line ); strin.clear();
+                strin.str( line );
+                strin.clear();
 
                 strin >> key;
                 dictionary->index_to_key->v( i ) = key;
-                ( *(dictionary->key_to_index) )[key] = i;
+                ( *( dictionary->key_to_index ) )[key] = i;
                 for( t_CKINT j = 0; j < dictionary->vectorLength; j++ )
                 {
                     strin >> value;
                     dictionary->word_vectors->v( i, j ) = value;
 
                     // find min/max
-                    if( value < dictionary->mins.v(j) ) dictionary->mins.v(j) = value;
-                    else if( value > dictionary->maxs.v(j) ) dictionary->maxs.v(j) = value;
+                    if( value < dictionary->mins.v( j ) ) dictionary->mins.v( j ) = value;
+                    else if( value > dictionary->maxs.v( j ) ) dictionary->maxs.v( j ) = value;
                 }
             }
         }
-        
+
         // close file
         fin.close();
-        
+
         // add to cache
         o_cache[path.str()] = dictionary;
 
@@ -1317,7 +1659,9 @@ public:
     }
 
     // get nearest neighbors
-    void getNearestNeighborsKDTree( ChaiVectorFast<t_CKFLOAT> & vector, t_CKINT topn, ChaiVectorFast<t_CKINT> & indices )
+    void getNearestNeighborsKDTree( ChaiVectorFast<t_CKFLOAT> & vector,
+                                    t_CKINT topn,
+                                    ChaiVectorFast<t_CKINT> & indices )
     {
         kdtree_knn_search( dictionary->tree, vector.m_vector, topn );
         struct knn_list * p = dictionary->tree->knn_list_head.next;
@@ -1329,7 +1673,7 @@ public:
             p = p->next;
         }
     }
-    
+
     // get nearest neighbors
     void getNearestNeighbors( ChaiVectorFast<t_CKFLOAT> & vector, t_CKINT topn, ChaiVectorFast<t_CKINT> & indices )
     {
@@ -1352,7 +1696,7 @@ public:
         t_CKBOOL hasError = FALSE;
         // clear
         for( t_CKINT i = 0; i < output_.size(); i++ )
-        { ((Chuck_String *)output_.m_vector[i])->set( "" ); }
+        { ( (Chuck_String *)output_.m_vector[i] )->set( "" ); }
 
         // check
         if( dictionary == NULL )
@@ -1364,7 +1708,9 @@ public:
         // check
         if( output_.size() < topn )
         {
-            EM_error3( "Word2Vec.getSimilar() results array insufficient size %d (expecting %d)...", output_.size(), topn );
+            EM_error3( "Word2Vec.getSimilar() results array insufficient size %d (expecting %d)...",
+                       output_.size(),
+                       topn );
             // reduce k and do our best
             topn = output_.size();
             // but mark error to return false (since we won't fully fulfill our function)
@@ -1372,7 +1718,8 @@ public:
         }
 
         // see if word is there
-        if( !contains( word ) ) { return false; }
+        if( !contains( word ) )
+        { return false; }
 
         // get index
         t_CKINT index = ( *( dictionary->key_to_index ) )[word];
@@ -1417,7 +1764,7 @@ public:
         t_CKBOOL hasError = FALSE;
         // clear
         for( t_CKINT i = 0; i < output_.size(); i++ )
-        { ((Chuck_String *)output_.m_vector[i])->set( "" ); }
+        { ( (Chuck_String *)output_.m_vector[i] )->set( "" ); }
 
         // check
         if( dictionary == NULL )
@@ -1429,7 +1776,9 @@ public:
         // check
         if( output_.size() < topn )
         {
-            EM_error3( "Word2Vec.getSimilar() results array insufficient size %d (expecting %d)...", output_.size(), topn );
+            EM_error3( "Word2Vec.getSimilar() results array insufficient size %d (expecting %d)...",
+                       output_.size(),
+                       topn );
             // reduce k and do our best
             topn = output_.size();
             // but mark error to return false (since we won't fully fulfill our function)
@@ -1476,7 +1825,8 @@ public:
         // zero out
         output_.zero( 0, output_.size() );
         // see if word is there
-        if( !contains( word ) ) { return false; }
+        if( !contains( word ) )
+        { return false; }
 
         // get index
         std::map<string, t_CKUINT> & key2index = *( dictionary->key_to_index );
@@ -1660,7 +2010,6 @@ CK_DLL_MFUN( Word2Vec_getUseKDTree )
     // get dim
     RETURN->v_int = word2vec->getUseKDTree();
 }
-
 
 //-----------------------------------------------------------------------------
 // KDTree implementation
@@ -2008,7 +2357,11 @@ static void knn_pickup( struct kdtree * tree, struct kdnode * node, double * tar
     }
 }
 
-static void kdtree_search_recursive( struct kdtree * tree, struct kdnode * node, double * target, t_CKINT k, t_CKINT * pickup )
+static void kdtree_search_recursive( struct kdtree * tree,
+                                     struct kdnode * node,
+                                     double * target,
+                                     t_CKINT k,
+                                     t_CKINT * pickup )
 {
     if( node == NULL || kdnode_passed( tree, node ) )
     {
@@ -2156,7 +2509,7 @@ static void kdnode_build( struct kdtree * tree, struct kdnode ** nptr, t_CKINT r
 
 static void kdtree_build( struct kdtree * tree )
 {
-    kdnode_build( tree, &tree->root, 0, 0, (long)(tree->count - 1) );
+    kdnode_build( tree, &tree->root, 0, 0, (long)( tree->count - 1 ) );
 }
 
 void kdtree_rebuild( struct kdtree * tree )

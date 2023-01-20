@@ -276,6 +276,9 @@ public:
     std::vector<t_CKUINT> m_vector;
     std::map<std::string, t_CKUINT> m_map;
     t_CKBOOL m_is_obj;
+
+    // TODO: may need additional information here for set_size, if this is part of a multi-dim array
+
     // t_CKINT m_size;
     // t_CKINT m_capacity;
 };
