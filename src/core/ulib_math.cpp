@@ -417,7 +417,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "y1" );
     QUERY->add_arg( QUERY, "float", "x2" );
     QUERY->add_arg( QUERY, "float", "y2" );
-    QUERY->doc_func( QUERY, "map 'value' from range [x1,y1] into range [x2,y2]; 'value' can be outside range[x1,y1] (see also: Math.map2())" );
+    QUERY->doc_func( QUERY, "map 'value' from range [x1,y1] into range [x2,y2]; 'value' can be outside range[x1,y1]. (see also: Math.map2())" );
 
     // add map (ge: added 1.4.2.1)
     QUERY->add_sfun( QUERY, map2_impl, "float", "map2" ); //! map
@@ -426,7 +426,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "y1" );
     QUERY->add_arg( QUERY, "float", "x2" );
     QUERY->add_arg( QUERY, "float", "y2" );
-    QUERY->doc_func( QUERY, "map 'value' from range [x1,y1] into range [x2,y2]; 'value' will be clamped to [x1,y1] if outside range (see also: Math.map())." );
+    QUERY->doc_func( QUERY, "map 'value' from range [x1,y1] into range [x2,y2]; 'value' will be clamped to [x1,y1] if outside range. (see also: Math.map())" );
 
     // add remap (ge: added 1.4.2.1)
     QUERY->add_sfun( QUERY, map2_impl, "float", "remap" ); //! remap
@@ -435,7 +435,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "y1" );
     QUERY->add_arg( QUERY, "float", "x2" );
     QUERY->add_arg( QUERY, "float", "y2" );
-    QUERY->doc_func( QUERY, "same as Math.map2()" );
+    QUERY->doc_func( QUERY, "same as Math.map2()." );
 
     // add clamp (ge: added 1.4.2.1 -- actually migrated from Std)
     QUERY->add_sfun( QUERY, clamp_impl, "int", "clampi" ); //! clamp to range (int)
