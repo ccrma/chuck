@@ -699,8 +699,16 @@ public:
         return 0;
     }
 
-    void getNearestNeighbors( ChaiVectorFast<t_CKFLOAT> & query, t_CKINT k, ChaiVectorFast<t_CKINT> & indices )
+    void getNearestNeighbors( const vector<t_CKFLOAT> & query, t_CKINT k, ChaiVectorFast<t_CKINT> & indices )
     {
+        // check query dimension against training dimensions
+        if( query.size() < X->yDim() )
+        {
+            // warning
+            EM_error3( "k-NN query dimension %d less than training dimension %d; zero-padding...",
+                       query.size(), X->yDim() );
+        }
+
         // allocate
         ChaiVectorFast<t_CKFLOAT> top_distances( k );
         ChaiVectorFast<t_CKINT> top_indices( k );
@@ -717,7 +725,8 @@ public:
             distance = 0.0;
             for( t_CKINT j = 0; j < X->yDim(); j++ )
             {
-                diff = query.v( j ) - X->v( i, j );
+                // extra check in case query less than training dimensions
+                diff = (j < query.size() ? query[j] : 0.0) - X->v( i, j );
                 distance += diff * diff;
             }
             // check
@@ -744,13 +753,12 @@ public:
     }
 
     // search; returns indices
-    void search0( Chuck_Array8 & query_, t_CKINT k, Chuck_Array4 & indices_ )
+    void search0( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_Array4 & indices_ )
     {
         // init
-        ChaiVectorFast<t_CKFLOAT> * query = chuck2chai( query_ );
         ChaiVectorFast<t_CKINT> indices( k );
         // search
-        getNearestNeighbors( *query, k, indices );
+        getNearestNeighbors( query, k, indices );
         // resize
         indices_.set_size( k );
         // copy
@@ -761,13 +769,12 @@ public:
     }
 
     // search; returns labels
-    void search1( Chuck_Array8 & query_, t_CKINT k, Chuck_Array4 & labels_ )
+    void search1( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_Array4 & labels_ )
     {
         // init
-        ChaiVectorFast<t_CKFLOAT> * query = chuck2chai( query_ );
         ChaiVectorFast<t_CKINT> indices( k );
         // search
-        getNearestNeighbors( *query, k, indices );
+        getNearestNeighbors( query, k, indices );
         // resize
         labels_.set_size( k );
         // copy
@@ -778,13 +785,12 @@ public:
     }
 
     // search; returns labels and indices
-    void search2( Chuck_Array8 & query_, t_CKINT k, Chuck_Array4 & labels_, Chuck_Array4 & indices_ )
+    void search2( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_Array4 & labels_, Chuck_Array4 & indices_ )
     {
         // init
-        ChaiVectorFast<t_CKFLOAT> * query = chuck2chai( query_ );
         ChaiVectorFast<t_CKINT> indices( k );
         // search
-        getNearestNeighbors( *query, k, indices );
+        getNearestNeighbors( query, k, indices );
         // resize
         labels_.set_size( k );
         indices_.set_size( k );
@@ -796,13 +802,12 @@ public:
     }
 
     // search; returns labels, indices, and feature vectors
-    void search3( Chuck_Array8 & query_, t_CKINT k, Chuck_Array4 & labels_, Chuck_Array4 & indices_, Chuck_Array4 & features_ )
+    void search3( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_Array4 & labels_, Chuck_Array4 & indices_, Chuck_Array4 & features_ )
     {
         // init
-        ChaiVectorFast<t_CKFLOAT> * query = chuck2chai( query_ );
         ChaiVectorFast<t_CKINT> indices( k );
         // search
-        getNearestNeighbors( *query, k, indices );
+        getNearestNeighbors( query, k, indices );
         // resize
         labels_.set_size( k );
         indices_.set_size( k );
@@ -829,15 +834,16 @@ public:
     }
 
     // predict
-    void predict( Chuck_Array8 & query_, t_CKINT k, Chuck_Array8 & prob_ )
+    void predict( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_Array8 & prob_ )
     {
         // init
-        ChaiVectorFast<t_CKFLOAT> * query = chuck2chai( query_ );
         ChaiVectorFast<t_CKINT> indices( k );
         // search
-        getNearestNeighbors( *query, k, indices );
+        getNearestNeighbors( query, k, indices );
         // copy
         prob_.set_size( Y->max() + 1 );
+        // zero out
+        prob_.zero( 0, prob_.size() );
         for( t_CKINT i = 0; i < k; i++ )
         {
             prob_.m_vector[Y->v( indices.v( i ) )] += 1.0;
@@ -907,7 +913,7 @@ CK_DLL_MFUN( KNN_search )
     }
 
     // search0
-    knn->search0( *query, k, *indices );
+    knn->search0( query->m_vector, k, *indices );
 }
 
 
@@ -965,7 +971,7 @@ CK_DLL_MFUN( KNN2_predict )
     }
 
     // predict
-    knn->predict( *query, k, *prob );
+    knn->predict( query->m_vector, k, *prob );
 }
 
 CK_DLL_MFUN( KNN2_search )
@@ -985,7 +991,7 @@ CK_DLL_MFUN( KNN2_search )
     }
 
     // search1
-    knn->search1( *query, k, *labels );
+    knn->search1( query->m_vector, k, *labels );
 }
 
 CK_DLL_MFUN( KNN2_search2 )
@@ -1006,7 +1012,7 @@ CK_DLL_MFUN( KNN2_search2 )
     }
 
     // search2
-    knn->search2( *query, k, *labels, *indices );
+    knn->search2( query->m_vector, k, *labels, *indices );
 }
 
 CK_DLL_MFUN( KNN2_search3 )
@@ -1028,8 +1034,11 @@ CK_DLL_MFUN( KNN2_search3 )
     }
 
     // search3
-    knn->search3( *query, k, *labels, *indices, *features );
+    knn->search3( query->m_vector, k, *labels, *indices, *features );
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: struct HMM_Object
