@@ -1,9 +1,13 @@
 //---------------------------------------------------------------------
-// name: mfcc.ck
+// name: mfcc-mean.ck
 // desc: mel-frequency cepstral coefficients
+//       this example aggregates multiple MFCC frames; compute mean
 //
-// author: Yikai Li
-// date: Fall 2022
+// to see API, uncomment:
+// MFCC.help();
+
+// author: Yikai Li and Ge Wang
+// date: Spring 2023
 //---------------------------------------------------------------------
 
 // analysis patch

@@ -575,7 +575,7 @@ CK_DLL_TOCK( Centroid_tock )
 {
     t_CKFLOAT result = 0.0;
 
-    // TODO: get buffer from stream, and set in SVM
+    // check if there are any incoming UAna (e.g., connected using =^)
     if( UANA->numIncomingUAnae() > 0 )
     {
         // get first
@@ -587,7 +587,7 @@ CK_DLL_TOCK( Centroid_tock )
         // compute centroid
         result = compute_centroid( mag, mag.size() );
     }
-        // otherwise zero out
+    // otherwise zero out
     else
     {
         // no input!

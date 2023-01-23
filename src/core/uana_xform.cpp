@@ -736,8 +736,14 @@ void FFT_object::transform()
         return;
     }
 
-    // sanity
-    assert( m_window_size <= m_size );
+    // just checking | 1.4.2.1 (ge) | added
+    if( m_window_size > m_size )
+    {
+        // out of memory
+        CK_FPRINTF_STDERR( "[chuck]: FFT window size > FFT size (bailing out)...\n" );
+        // bye
+        return;
+    }
 
     // apply window, if there is one
     if( m_window )
