@@ -1,9 +1,9 @@
 //---------------------------------------------------------------------
 // name: mfcc-basic.ck
 // desc: mel-frequency cepstral coefficients
-//       basic usage of the MFCC unit analyzer
+//       basic MFCC feature extractor
 //
-// to see API, uncomment:
+// uncomment for MFCC API:
 // MFCC.help();
 //
 // author: Ge Wang (https://ccrma.stanford.edu/~ge/)
@@ -13,11 +13,11 @@
 // synthesis / analysis network
 adc => FFT fft =^ MFCC mfcc => blackhole;
 
-// set number of mel filters in MFCC
-10 => mfcc.numFilters;
 // set number of coefficients in MFCC (how many we get out)
 // 13 is a commonly used value; using less here for printing
 7 => mfcc.numCoeffs;
+// set number of mel filters in MFCC
+10 => mfcc.numFilters;
 
 // set FFT size
 2048 => fft.size;
@@ -31,7 +31,10 @@ fft.size()::samp => now;
 // control loop
 while( true )
 {
-    // upchuck() computes MFCC (and dependencies, e.g., FFT)
+    //----------------------------------------------------------------
+    // upchuck() computes our MFCC, automatically computing upstream
+    // dependencies connected to it using =^ (e.g., FFT)
+    //----------------------------------------------------------------
     mfcc.upchuck();
     // print
     cherr <= "MFCC: ";
