@@ -206,7 +206,7 @@ CK_SVN=https://chuck-dev.stanford.edu/svn/chuck/
 chuck-core:
 	@echo -------------
 	@echo [chuck-core]: compiling...
-	make $(MAKECMDGOALS) -C $(COREDIR) $(ARCH_ARGS)
+	$(MAKE) $(MAKECMDGOALS) -C $(COREDIR) $(ARCH_ARGS)
 	@echo -------------
 
 chuck: chuck-core $(COBJS_HOST) $(CXXOBJS_HOST)
