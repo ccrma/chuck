@@ -929,6 +929,11 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "clear the contents of the array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add zero() | 1.4.2.1 (ge) added
+    func = make_new_mfun( "void", "zero", array_zero );
+    func->doc = "zero out the contents of the array; size is unchanged.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add reset()
     func = make_new_mfun( "void", "reset", array_reset );
     func->doc = "reset array size to 0, set capacity to (at least) 8.";
@@ -2382,6 +2387,13 @@ CK_DLL_MFUN( array_reset )
     array->set_size( 8 );
     // clear the array
     array->clear();
+}
+
+// array.zero() | 1.4.2.1 (ge) added
+CK_DLL_MFUN( array_zero )
+{
+    Chuck_Array * array = (Chuck_Array *)SELF;
+    array->zero();
 }
 
 // array.cap()

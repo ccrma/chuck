@@ -43,6 +43,13 @@ to be in BETA for some time (as we add more and also teach using chAI in
       |- word2vec-basic.ck -- demos load(), getVector(), getSimilar()
       |- word2vec-prompt.ck -- command line interactive tool
          (need to use command line chuck)
+ - (moved) examples/analysis/features => examples/ai/features
+ - (added) new examples in examples/ai/features
+      |- features-combined -- real-time extraction of multiple features
+      |- mfcc-basic.ck -- shows basic MFCC feature extraction
+      |- mfcc-mean.ck -- aggregated MFCC feature extration
+ - (added) array.zero()
+      |- zero out the contents of the array; size is unchanged.
  - (added) Math functions 
       float map( float value, float x1, float y1,
                               float x2, float y2 );
