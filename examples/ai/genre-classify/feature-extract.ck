@@ -31,6 +31,17 @@
 // get from arguments
 if( me.args() > 0 ) me.arg(0) => OUTPUT_FILE;
 
+// check
+if( Machine.silent() == false )
+{
+    // print helpful message
+    <<< "-----------------", "" >>>;
+    <<< "[feature-extract]: chuck is currently running in REAL-TIME mode;", "" >>>;
+    <<< "[feature-extract]: this step has no audio; may run much faster in SILENT mode!", "" >>>;
+    <<< "[feature-extract]: to run in SILENT mode, restart chuck with --silent flag", "" >>>;
+    <<< "-----------------", "" >>>;
+}
+
 
 //---------------------------------------------------------------------
 // analysis network -- this determines which feature will be extracted
