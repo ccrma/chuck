@@ -39,6 +39,7 @@
 #include "chuck_errmsg.h"
 #include "util_math.h"
 #include "util_xforms.h"
+#include <iostream>
 
 
 
@@ -82,6 +83,41 @@ CK_DLL_MFUN( MFCC_ctrl_num_coeffs );
 CK_DLL_MFUN( MFCC_cget_num_coeffs );
 // offset
 static t_CKUINT MFCC_offset_data = 0;
+
+// Kurtosis
+CK_DLL_TICK( Kurtosis_tick );
+CK_DLL_TOCK( Kurtosis_tock );
+CK_DLL_PMSG( Kurtosis_pmsg );
+CK_DLL_SFUN( Kurtosis_compute );
+
+// SFM | 1.4.2.1 (yikai) added
+CK_DLL_CTOR( SFM_ctor );
+CK_DLL_DTOR( SFM_dtor );
+CK_DLL_TICK( SFM_tick );
+CK_DLL_TOCK( SFM_tock );
+CK_DLL_PMSG( SFM_pmsg );
+CK_DLL_MFUN( SFM_compute );
+CK_DLL_MFUN( SFM_ctrl_nr_bands );
+CK_DLL_MFUN( SFM_cget_nr_bands );
+// offset
+static t_CKUINT SFM_offset_data = 0;
+
+
+// Chroma | 1.4.2.1 (yikai) added
+CK_DLL_CTOR( Chroma_ctor );
+CK_DLL_DTOR( Chroma_dtor );
+CK_DLL_TICK( Chroma_tick );
+CK_DLL_TOCK( Chroma_tock );
+CK_DLL_PMSG( Chroma_pmsg );
+CK_DLL_MFUN( Chroma_compute );
+CK_DLL_MFUN( Chroma_ctrl_sample_rate );
+CK_DLL_MFUN( Chroma_cget_sample_rate );
+CK_DLL_MFUN( Chroma_ctrl_low_oct_num );
+CK_DLL_MFUN( Chroma_cget_low_oct_num );
+CK_DLL_MFUN( Chroma_ctrl_high_oct_num );
+CK_DLL_MFUN( Chroma_cget_high_oct_num );
+// offset
+static t_CKUINT Chroma_offset_data = 0;
 
 // RollOff
 CK_DLL_CTOR( RollOff_ctor );
@@ -194,7 +230,8 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: Centroid
     //---------------------------------------------------------------------
 
-    doc = "A unit analyzer that computes the spectral centroid from a magnitude spectrum (either from incoming UAna or manually given), and outputs a single number.";
+    doc =
+        "A unit analyzer that computes the spectral centroid from a magnitude spectrum (either from incoming UAna or manually given), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "Centroid", "UAna", env->global(),
                                         NULL, NULL,
@@ -216,7 +253,8 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: Flux
     //---------------------------------------------------------------------
 
-    doc = "A unit analyzer that computes the spectral flux between successive magnitude spectra (via incoming UAna, or given manually), and outputs a single number.";
+    doc =
+        "A unit analyzer that computes the spectral flux between successive magnitude spectra (via incoming UAna, or given manually), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "Flux", "UAna", env->global(),
                                         Flux_ctor, Flux_dtor,
@@ -256,7 +294,8 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: RMS
     //---------------------------------------------------------------------
 
-    doc = "A unit analyzer that computes the RMS power mean from a magnitude spectrum (either from an incoming UAna, or given manually), and outputs a single number.";
+    doc =
+        "A unit analyzer that computes the RMS power mean from a magnitude spectrum (either from an incoming UAna, or given manually), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "RMS", "UAna", env->global(),
                                         NULL, NULL,
@@ -278,7 +317,8 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: MFCC
     //---------------------------------------------------------------------
 
-    doc = "A unit analyzer that computes Mel-frequency Cepstral Coefficients (MFCCs), and outputs a vector of coefficients.";
+    doc =
+        "A unit analyzer that computes Mel-frequency Cepstral Coefficients (MFCCs), and outputs a vector of coefficients.";
 
     // 1.4.2.0 (yikai) | added
     if( !type_engine_import_uana_begin( env, "MFCC", "UAna", env->global(),
@@ -337,10 +377,136 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     type_engine_import_class_end( env );
 
     //---------------------------------------------------------------------
+    // init as base class: Kurtosis
+    //---------------------------------------------------------------------
+
+    doc =
+        "A unit analyzer that computes the kurtosis of a given input array, and outputs a single number.";
+
+    if( !type_engine_import_uana_begin( env, "Kurtosis", "UAna", env->global(),
+                                        NULL, NULL,
+                                        Kurtosis_tick, Kurtosis_tock, Kurtosis_pmsg,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
+                                        doc.c_str() ) )
+        return FALSE;
+
+    // compute
+    func = make_new_sfun( "float", "compute", Kurtosis_compute );
+    func->add_arg( "float[]", "input" );
+    func->doc = "Manually computes the kurtosis of a given input array.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    //---------------------------------------------------------------------
+    // init as base class: SFM
+    //---------------------------------------------------------------------
+
+    doc =
+        "A unit analyzer that computes the Spectral Flatness Measure (SFM) from a magnitude spectrum (either from an incoming UAna, or given manually), and outputs a single number.";
+
+    if( !type_engine_import_uana_begin( env, "SFM", "UAna", env->global(),
+                                        SFM_ctor, SFM_dtor,
+                                        SFM_tick, SFM_tock, SFM_pmsg,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
+                                        doc.c_str() ) )
+        return FALSE;
+
+    // data offset
+    SFM_offset_data = type_engine_import_mvar( env, "float", "@SFM_data", FALSE );
+    if( SFM_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // nr_bands
+    func = make_new_mfun( "int", "nrBands", SFM_ctrl_nr_bands );
+    func->add_arg( "int", "nr_bands" );
+    func->doc = "Set the number of frequency bands to use for SFM analysis.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // nr_bands
+    func = make_new_mfun( "int", "nrBands", SFM_cget_nr_bands );
+    func->doc = "Get the number of frequency bands to use for SFM analysis.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // compute (manual alternative to calling upchuck())
+    func = make_new_mfun( "float", "compute", SFM_compute );
+    func->add_arg( "float[]", "input" );
+    func->add_arg( "float[]", "output" );
+    func->doc =
+        "Manually computes the SFM of the input (an FFT spectrum), and stores the results in the output array (SFM coefficients).";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    //---------------------------------------------------------------------
+    // init as base class: Chroma
+    //---------------------------------------------------------------------
+
+    doc =
+        "A unit analyzer that computes the Chroma features from a magnitude spectrum (either from an incoming UAna, or given manually), and outputs a vector of coefficients.";
+
+    if( !type_engine_import_uana_begin( env, "Chroma", "UAna", env->global(),
+                                        Chroma_ctor, Chroma_dtor,
+                                        Chroma_tick, Chroma_tock, Chroma_pmsg,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
+                                        doc.c_str() ) )
+        return FALSE;
+
+    // data offset
+    Chroma_offset_data = type_engine_import_mvar( env, "float", "@Chroma_data", FALSE );
+    if( Chroma_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // sample_rate
+    func = make_new_mfun( "float", "sampleRate", Chroma_ctrl_sample_rate );
+    func->add_arg( "float", "sample_rate" );
+    func->doc = "Set the sample rate for Chroma analysis.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // sample_rate
+    func = make_new_mfun( "float", "sampleRate", Chroma_cget_sample_rate );
+    func->doc = "Get the sample rate for Chroma analysis.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // low_oct_num
+    func = make_new_mfun( "int", "lowOctNum", Chroma_ctrl_low_oct_num );
+    func->add_arg( "int", "low_oct_num" );
+    func->doc = "Set the lowest octave number for Chroma analysis.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // low_oct_num
+    func = make_new_mfun( "int", "lowOctNum", Chroma_cget_low_oct_num );
+    func->doc = "Get the lowest octave number for Chroma analysis.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // high_oct_num
+    func = make_new_mfun( "int", "highOctNum", Chroma_ctrl_high_oct_num );
+    func->add_arg( "int", "high_oct_num" );
+    func->doc = "Set the highest octave number for Chroma analysis.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // high_oct_num
+    func = make_new_mfun( "int", "highOctNum", Chroma_cget_high_oct_num );
+    func->doc = "Get the highest octave number for Chroma analysis.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // compute (manual alternative to calling upchuck())
+    func = make_new_mfun( "float", "compute", Chroma_compute );
+    func->add_arg( "float[]", "input" );
+    func->add_arg( "float[]", "output" );
+    func->doc =
+        "Manually computes the Chroma of the input (an FFT spectrum), and stores the results in the output array (Chroma coefficients).";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    //---------------------------------------------------------------------
     // init as base class: RollOff
     //---------------------------------------------------------------------
 
-    doc = "A unit analyzer that computes the spectral rolloff from a magnitude spectrum (either from incoming UAna, or given manually), and outputs a single number.";
+    doc =
+        "A unit analyzer that computes the spectral rolloff from a magnitude spectrum (either from incoming UAna, or given manually), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "RollOff", "UAna", env->global(),
                                         RollOff_ctor, RollOff_dtor,
@@ -587,7 +753,7 @@ CK_DLL_TOCK( Centroid_tock )
         // compute centroid
         result = compute_centroid( mag, mag.size() );
     }
-    // otherwise zero out
+        // otherwise zero out
     else
     {
         // no input!
@@ -1282,7 +1448,7 @@ CK_DLL_CTRL( MFCC_ctrl_sample_rate )
     // get object
     MFCC_Object * mfcc = (MFCC_Object *)OBJ_MEMBER_UINT( SELF, MFCC_offset_data );
     // get sample_rate
-    mfcc->sample_rate = GET_NEXT_INT( ARGS );
+    mfcc->sample_rate = GET_NEXT_FLOAT( ARGS );
     // return it
     RETURN->v_float = mfcc->sample_rate;
 }
@@ -1341,6 +1507,637 @@ CK_DLL_MFUN( MFCC_compute )
     Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
     // compute mfcc
     compute_mfcc( mfcc, *input, input->size(), *output );
+}
+
+static t_CKFLOAT compute_kurtosis( Chuck_Array8 & input )
+{
+    t_CKINT i;
+    t_CKFLOAT z = 0.0, mean = 0.0, b, q;
+    for( i = 0; i < input.size(); i++ )
+    {
+        mean += input.m_vector[i];
+    }
+    mean /= input.size();
+    for( i = 0; i < input.size(); i++ )
+    {
+        input.m_vector[i] -= mean;
+        b = input.m_vector[i];
+
+        z += ( b * b * b * b );
+        q += ( b * b );
+    }
+    q = q * q;
+    q = q / input.size();
+
+    if( ( z < 1.0e-45 ) || ( q < 1.0e-45 ) )
+        return 0.5;
+    else
+    {
+        return ( z / q ) - 3.0;
+    }
+}
+
+CK_DLL_TICK( Kurtosis_tick )
+{
+    // do nothing
+    return TRUE;
+}
+
+CK_DLL_TOCK( Kurtosis_tock )
+{
+    t_CKFLOAT result = 0.0;
+
+    // TODO: get buffer from stream, and set in SVM
+    if( UANA->numIncomingUAnae() > 0 )
+    {
+        // get first
+        Chuck_UAnaBlobProxy * BLOB_IN = UANA->getIncomingBlob( 0 );
+        // sanity check
+        assert( BLOB_IN != NULL );
+        // get the array
+        Chuck_Array8 & mag = BLOB_IN->fvals();
+        // compute Kurtosis
+        result = compute_kurtosis( mag );
+    }
+        // otherwise zero out
+    else
+    {
+        // no input!
+        result = 0.0;
+    }
+
+    // get fvals of output BLOB
+    Chuck_Array8 & fvals = BLOB->fvals();
+    // ensure size == resulting size
+    if( fvals.size() != 1 )
+        fvals.set_size( 1 );
+    // copy the result in
+    fvals.set( 0, result );
+
+    return TRUE;
+}
+
+CK_DLL_PMSG( Kurtosis_pmsg )
+{
+    // do nothing
+    return TRUE;
+}
+
+CK_DLL_SFUN( Kurtosis_compute )
+{
+    // get array
+    Chuck_Array8 * array = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // sanity check
+    if( !array )
+    {
+        // no Kurtosis
+        RETURN->v_float = 0.0;
+    }
+    else
+    {
+        // do it
+        RETURN->v_float = compute_kurtosis( *array );
+    }
+}
+
+// 1.4.2.1 (yikai) | SFM implementation
+// Yikai Li, Winter 2023
+struct SFM_Object
+{
+    t_CKINT size;
+    t_CKFLOAT sample_rate;
+    t_CKINT nr_bands;
+    t_CKINT nr_valid_bands;
+
+    t_CKFLOAT * edge;
+    t_CKFLOAT * bandLoEdge;
+    t_CKFLOAT * bandHiEdge;
+    t_CKINT * il;
+    t_CKINT * ih;
+
+    // static sfm instance
+    static SFM_Object * ourSFM;
+
+    // constructor
+    SFM_Object()
+    {
+        size = 0;
+        sample_rate = g_srate;
+        nr_bands = 0;
+        nr_valid_bands = 0;
+        edge = NULL;
+        bandLoEdge = NULL;
+        bandHiEdge = NULL;
+        il = NULL;
+        ih = NULL;
+        this->update( size );
+    }
+
+    // destructor
+    ~SFM_Object()
+    {
+        size = 0;
+        sample_rate = 0;
+        nr_bands = 0;
+        nr_valid_bands = 0;
+        SAFE_DELETE_ARRAY( edge );
+        SAFE_DELETE_ARRAY( bandLoEdge );
+        SAFE_DELETE_ARRAY( bandHiEdge );
+        SAFE_DELETE_ARRAY( il );
+        SAFE_DELETE_ARRAY( ih );
+    }
+
+    // update
+    void update( t_CKINT size )
+    {
+        if( size == this->size ) return;
+
+        //MPEG-7 audio standard:
+        //assumes an 1/4 octave frequency resolution,
+        //resulting in 24 frequency bands between 250Hz and 16kHz.
+        //If the signal under analysis does not contain frequencies
+        //above a determined value (e.g. due to signal sampling rate or
+        //bandwidth limitations), the nr of bands should be reduced.
+
+        t_CKINT i;
+
+        this->nr_bands = 24;
+        this->nr_valid_bands = this->nr_bands;
+
+        SAFE_DELETE_ARRAY( edge );
+        edge = new t_CKFLOAT[nr_bands + 1];
+        SAFE_DELETE( bandLoEdge );
+        bandLoEdge = new t_CKFLOAT[nr_bands];
+        SAFE_DELETE( bandHiEdge );
+        bandHiEdge = new t_CKFLOAT[nr_bands];
+
+        //nominal band edges (Hz)
+        for( i = 0; i < this->nr_bands + 1; ++i )
+        {
+            edge[i] = 1000.0 * ::pow( 2.0, ( 0.25 * ( i - 8 ) ) ); // 1/4 octave resolution (MPEG7)
+        }
+        // overlapped low and high band edges (Hz)
+        for( i = 0; i < this->nr_bands; ++i )
+        {
+            bandLoEdge[i] = edge[i] * 0.95f; //band overlapping (MPEG7)
+            bandHiEdge[i] = edge[i + 1] * 1.05f; //band overlapping (MPEG7)
+        }
+
+        // spectrum sampling rate - not audio TODO: check this
+        // this->sample_rate = ctrl_israte_->to<t_CKFLOAT>();
+        t_CKFLOAT df = this->sample_rate / size;
+
+        //calculate FFT bin indexes for each band's edges
+        il = new t_CKINT[nr_bands];
+        ih = new t_CKINT[nr_bands];
+        for( i = 0; i < this->nr_bands; ++i )
+        {
+
+            il[i] = (t_CKINT)( bandLoEdge[i] / df + 0.5f ); //round to nearest int (MPEG7)
+            ih[i] = (t_CKINT)( bandHiEdge[i] / df + 0.5f ); //round to nearest int (MPEG7)
+
+            //must verify if sampling rate is enough
+            //for the specified nr of bands. If not,
+            //reduce nr of valid freq. bands
+            if( ih[i] >= size ) //if ih[i] >= N/2+1 = spectrumSize_ = inObservations ...
+            {
+                this->nr_valid_bands = i;
+                break;
+            }
+        }
+    }
+};
+
+// static initialization
+SFM_Object * SFM_Object::ourSFM = NULL;
+
+// compute sfm
+static void compute_sfm( SFM_Object * sfm, Chuck_Array8 & input, Chuck_Array8 & output )
+{
+    // update
+    sfm->update( input.size() );
+    t_CKINT i, k, bandwidth;
+    t_CKFLOAT c, geoMean, aritMean;
+
+    //default SFM value = 1.0; (MPEG7 defines SFM=1.0 for silence)
+    output.set_size( sfm->nr_valid_bands );
+    for( i = 0; i < sfm->nr_valid_bands; ++i )
+    {
+        output.m_vector[i] = 1.0;
+    }
+
+    //MPEG7 defines a grouping mechanism for the frequency bands above 1KHz
+    //in order to reduce computational effort of the following calculation.
+    //For now such grouping mechanism is not implemented...
+    for( i = 0; i < sfm->nr_valid_bands; ++i )
+    {
+        geoMean = 1.0;
+        aritMean = 0.0;
+        bandwidth = sfm->ih[i] - sfm->il[i] + 1;
+
+        for( k = sfm->il[i]; k <= sfm->ih[i]; k++ )
+        {
+            c = input.m_vector[k];  //power spectrum coeff
+            aritMean += c / bandwidth;
+            geoMean *= ::pow( c, (t_CKFLOAT)1.0 / bandwidth );
+        }
+        if( aritMean != 0.0 )
+        {
+            output.m_vector[i] = geoMean / aritMean;
+        }
+        //else //mean power = 0 => silence...
+        //  out(i) = 1.0; //MPEG-7
+    }
+
+    //for freq bands above the nyquist freq
+    //return SFM value defined in MPEG7 for silence
+    //for(i = nrValidBands_; i < this->nr_bands; ++i)
+    //	out(i) = 1.0;
+}
+
+
+// SFM
+CK_DLL_CTOR( SFM_ctor )
+{
+    SFM_Object * sfm = new SFM_Object();
+    OBJ_MEMBER_UINT( SELF, SFM_offset_data ) = (t_CKUINT)sfm;
+}
+
+CK_DLL_DTOR( SFM_dtor )
+{
+    SFM_Object * sfm = (SFM_Object *)OBJ_MEMBER_UINT( SELF, SFM_offset_data );
+    SAFE_DELETE( sfm );
+    OBJ_MEMBER_UINT( SELF, SFM_offset_data ) = 0;
+}
+
+CK_DLL_TICK( SFM_tick )
+{
+    // do nothing
+    return TRUE;
+}
+
+CK_DLL_TOCK( SFM_tock )
+{
+    // get object
+    SFM_Object * sfm = (SFM_Object *)OBJ_MEMBER_UINT( SELF, SFM_offset_data );
+
+    if( UANA->numIncomingUAnae() > 0 )
+    {
+        // get first
+        Chuck_UAnaBlobProxy * BLOB_IN = UANA->getIncomingBlob( 0 );
+        // sanity check
+        assert( BLOB_IN != NULL );
+        // get the array
+        Chuck_Array8 & mag = BLOB_IN->fvals();
+        // get fvals of output BLOB
+        Chuck_Array8 & fvals = BLOB->fvals();
+        // compute SFM
+        compute_sfm( sfm, mag, fvals );
+    }
+        // otherwise zero out
+    else
+    {
+        // get fvals of output BLOB
+        Chuck_Array8 & fvals = BLOB->fvals();
+        // resize
+        fvals.set_size( 0 );
+    }
+
+    return TRUE;
+}
+
+
+CK_DLL_PMSG( SFM_pmsg )
+{
+    // do nothing
+    return TRUE;
+}
+CK_DLL_CTRL( SFM_ctrl_nr_bands )
+{
+    // get object
+    SFM_Object * sfm = (SFM_Object *)OBJ_MEMBER_UINT( SELF, SFM_offset_data );
+    // get nr_bands
+    sfm->nr_bands = GET_NEXT_INT( ARGS );
+    // return it
+    RETURN->v_int = sfm->nr_bands;
+}
+
+CK_DLL_CGET( SFM_cget_nr_bands )
+{
+    // get object
+    SFM_Object * sfm = (SFM_Object *)OBJ_MEMBER_UINT( SELF, SFM_offset_data );
+    // return it
+    RETURN->v_int = sfm->nr_bands;
+}
+
+CK_DLL_MFUN( SFM_compute )
+{
+    // get object
+    SFM_Object * sfm = (SFM_Object *)OBJ_MEMBER_UINT( SELF, SFM_offset_data );
+    // get input
+    Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // get output
+    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // compute sfm
+    compute_sfm( sfm, *input, *output );
+}
+
+// 1.4.2.1 (yikai) | Chroma implementation
+// Yikai Li, Winter 2023
+struct Chroma_Object
+{
+    t_CKINT size;
+    t_CKFLOAT sample_rate;
+    t_CKINT low_oct_num;
+    t_CKINT high_oct_num;
+    t_CKFLOAT curr_sample_rate;
+    t_CKINT curr_low_oct_num;
+    t_CKINT curr_high_oct_num;
+
+    t_CKFLOAT * m;
+    t_CKFLOAT * freq;
+    t_CKFLOAT * filter;
+    t_CKFLOAT * chord;
+
+    // static chroma instance
+    static Chroma_Object * ourChroma;
+
+    // constructor
+    Chroma_Object()
+    {
+        size = 1024;
+        sample_rate = g_srate;
+        low_oct_num = 0;
+        high_oct_num = 8;
+        curr_sample_rate = 0;
+        curr_high_oct_num = 0;
+        curr_low_oct_num = 0;
+        m = NULL;
+        freq = NULL;
+        filter = NULL;
+        chord = NULL;
+        this->update( size );
+    }
+
+    // destructor
+    ~Chroma_Object()
+    {
+        // delete
+        SAFE_DELETE_ARRAY( m );
+        SAFE_DELETE_ARRAY( freq );
+        SAFE_DELETE_ARRAY( filter );
+        SAFE_DELETE_ARRAY( chord );
+        // zero out
+        size = 0;
+        sample_rate = 0;
+        low_oct_num = 0;
+        high_oct_num = 0;
+        curr_sample_rate = 0;
+        curr_high_oct_num = 0;
+        curr_low_oct_num = 0;
+    }
+
+    // update
+    void update( t_CKINT size )
+    {
+        if( this->size == size
+            && this->curr_sample_rate == this->sample_rate
+            && this->curr_low_oct_num == this->low_oct_num
+            && this->curr_high_oct_num == this->high_oct_num )
+            return;
+
+        this->size = size;
+        this->curr_sample_rate = this->sample_rate;
+        this->curr_low_oct_num = this->low_oct_num;
+        this->curr_high_oct_num = this->high_oct_num;
+
+        t_CKINT i, j, k;
+        t_CKFLOAT tmp;
+
+        // memory allocation and initialization
+        SAFE_DELETE_ARRAY( m );
+        m = new t_CKFLOAT[9];
+        SAFE_DELETE_ARRAY( freq );
+        freq = new t_CKFLOAT[size];
+        SAFE_DELETE_ARRAY( filter );
+        filter = new t_CKFLOAT[14 * size];
+        SAFE_DELETE_ARRAY( chord );
+        chord = new t_CKFLOAT[14];
+        chord[1] = 261.625565; // C4
+        chord[2] = 277.182630; // C♯/D♭4
+        chord[3] = 293.664747; // D4
+        chord[4] = 311.126983; // D♯/E♭4
+        chord[5] = 329.627556; // E4
+        chord[6] = 349.228231; // F4
+        chord[7] = 369.994422; // F♯/G♭4
+        chord[8] = 391.995435; // G4
+        chord[9] = 415.304697; // G♯/A♭4
+        chord[10] = 440.000000; // A4
+        chord[11] = 466.163761; // A♯/B♭4
+        chord[12] = 493.883301; // B4
+        chord[0] = 0.5 * chord[12];
+        chord[13] = 2.0 * chord[1];
+
+        for( i = 0; i < 9; ++i )
+        {
+            m[i] = ::pow( 2.0, (t_CKFLOAT)i - 3.0 );
+        }
+        for( i = 0; i < size; ++i )
+        {
+            freq[i] =
+                this->sample_rate * (t_CKFLOAT)i / ( 2.0 * (t_CKFLOAT)( size - 1 ) );
+        }
+
+        // create filter
+        for( i = 1; i < 13; ++i )
+        {
+            for( k = 0; k < size - 1; k++ )
+            {
+                for( j = this->low_oct_num; j < this->high_oct_num + 1; j++ )
+                {
+                    if( freq[k] < m[j] * chord[i] && freq[k + 1] >= m[j] * chord[i] )
+                    {
+                        filter[i * size + k] += ( freq[k + 1] - m[j] * chord[i] ) / ( freq[k + 1] - freq[k] );
+                        filter[i * size + k + 1] += ( m[j] * chord[i] - freq[k] ) / ( freq[k + 1] - freq[k] );
+                    }
+                    if( ( m[j] * chord[i] + m[j] * chord[i - 1] ) / 2.0 < freq[k]
+                        && freq[k] <= ( m[j] * chord[i + 1] + m[j] * chord[i] ) / 2.0 )
+                    {
+                        filter[i * size + k] += 1.0;
+                    }
+                }
+            }
+        }
+
+        for( k = 0; k < size; k++ )
+        {
+            tmp = 0.0;
+            for( i = 1; i < 13; ++i )
+            {
+                tmp += filter[i * size + k];
+            }
+            if( tmp > 0 )
+            {
+                for( i = 1; i < 13; ++i )
+                {
+                    filter[i * size + k] /= tmp;
+                }
+            }
+        }
+
+    }
+};
+
+// static initialization
+Chroma_Object * Chroma_Object::ourChroma = NULL;
+
+// compute chroma
+static void compute_chroma( Chroma_Object * chroma, Chuck_Array8 & input, Chuck_Array8 & output )
+{
+    // prepare
+    chroma->update( input.size() );
+    // compute
+    output.set_size( 12 );
+    for( t_CKINT i = 0; i < 12; ++i )
+    {
+        output.m_vector[i] = 0.0;
+        for( t_CKINT j = 0; j < input.size(); ++j )
+        {
+            output.m_vector[i] += input.m_vector[j] * chroma->filter[( i + 1 ) * input.size() + j];
+        }
+    }
+}
+
+
+// Chroma
+CK_DLL_CTOR( Chroma_ctor )
+{
+    Chroma_Object * chroma = new Chroma_Object();
+    OBJ_MEMBER_UINT( SELF, Chroma_offset_data ) = (t_CKUINT)chroma;
+}
+
+CK_DLL_DTOR( Chroma_dtor )
+{
+    Chroma_Object * chroma = (Chroma_Object *)OBJ_MEMBER_UINT( SELF, Chroma_offset_data );
+    SAFE_DELETE( chroma );
+    OBJ_MEMBER_UINT( SELF, Chroma_offset_data ) = 0;
+}
+
+CK_DLL_TICK( Chroma_tick )
+{
+    // do nothing
+    return TRUE;
+}
+
+CK_DLL_TOCK( Chroma_tock )
+{
+    // get object
+    Chroma_Object * chroma = (Chroma_Object *)OBJ_MEMBER_UINT( SELF, Chroma_offset_data );
+
+    if( UANA->numIncomingUAnae() > 0 )
+    {
+        // get first
+        Chuck_UAnaBlobProxy * BLOB_IN = UANA->getIncomingBlob( 0 );
+        // sanity check
+        assert( BLOB_IN != NULL );
+        // get the array
+        Chuck_Array8 & mag = BLOB_IN->fvals();
+        // get fvals of output BLOB
+        Chuck_Array8 & fvals = BLOB->fvals();
+        // compute Chroma
+        compute_chroma( chroma, mag, fvals );
+    }
+        // otherwise zero out
+    else
+    {
+        // get fvals of output BLOB
+        Chuck_Array8 & fvals = BLOB->fvals();
+        // resize
+        fvals.set_size( 0 );
+    }
+
+    return TRUE;
+}
+
+
+CK_DLL_PMSG( Chroma_pmsg )
+{
+    // do nothing
+    return TRUE;
+}
+CK_DLL_CTRL( Chroma_ctrl_sample_rate )
+{
+    // get object
+    Chroma_Object * chroma = (Chroma_Object *)OBJ_MEMBER_UINT( SELF, Chroma_offset_data );
+    // get sample_rate
+    chroma->sample_rate = GET_NEXT_FLOAT( ARGS );
+    RETURN->v_float = chroma->sample_rate;
+}
+
+CK_DLL_CGET( Chroma_cget_sample_rate )
+{
+    // get object
+    Chroma_Object * chroma = (Chroma_Object *)OBJ_MEMBER_UINT( SELF, Chroma_offset_data );
+    // return it
+    RETURN->v_float = chroma->sample_rate;
+}
+
+CK_DLL_CTRL( Chroma_ctrl_low_oct_num )
+{
+    // get object
+    Chroma_Object * chroma = (Chroma_Object *)OBJ_MEMBER_UINT( SELF, Chroma_offset_data );
+    // get low_oct_num
+    t_CKINT low_oct_num = GET_NEXT_INT( ARGS );
+    if( low_oct_num < 0 )
+    {
+        low_oct_num = 0;
+    }
+    chroma->low_oct_num = low_oct_num;
+    // return it
+    RETURN->v_int = chroma->low_oct_num;
+}
+
+CK_DLL_CGET( Chroma_cget_low_oct_num )
+{
+    // get object
+    Chroma_Object * chroma = (Chroma_Object *)OBJ_MEMBER_UINT( SELF, Chroma_offset_data );
+    // return it
+    RETURN->v_int = chroma->low_oct_num;
+}
+
+CK_DLL_CTRL( Chroma_ctrl_high_oct_num )
+{
+    // get object
+    Chroma_Object * chroma = (Chroma_Object *)OBJ_MEMBER_UINT( SELF, Chroma_offset_data );
+    // get high_oct_num
+    t_CKINT high_oct_num = GET_NEXT_INT( ARGS );
+    if( high_oct_num > 8 )
+    {
+        high_oct_num = 8;
+    }
+    chroma->high_oct_num = high_oct_num;
+    // return it
+    RETURN->v_int = chroma->high_oct_num;
+}
+
+CK_DLL_CGET( Chroma_cget_high_oct_num )
+{
+    // get object
+    Chroma_Object * chroma = (Chroma_Object *)OBJ_MEMBER_UINT( SELF, Chroma_offset_data );
+    // return it
+    RETURN->v_int = chroma->high_oct_num;
+}
+
+CK_DLL_MFUN( Chroma_compute )
+{
+    // get object
+    Chroma_Object * chroma = (Chroma_Object *)OBJ_MEMBER_UINT( SELF, Chroma_offset_data );
+    // get input
+    Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // get output
+    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // compute chroma
+    compute_chroma( chroma, *input, *output );
 }
 
 static t_CKFLOAT compute_rolloff( Chuck_Array8 & buffer, t_CKUINT size, t_CKFLOAT percent )
