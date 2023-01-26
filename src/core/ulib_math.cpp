@@ -361,7 +361,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     // add srandom (1.3.1.0)
     QUERY->add_sfun( QUERY, srandom_impl, "void", "srandom" );
     QUERY->add_arg( QUERY, "int", "seed" );
-    QUERY->doc_func( QUERY, "seed the random nubmer generator." );
+    QUERY->doc_func( QUERY, "seed the random number generator." );
 
     // go ahead and seed (the code can seed again for repeatability; 1.3.1.0)
     // updated to use ck_srandom() wrapper | 1.4.2.0 (ge)

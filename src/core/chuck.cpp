@@ -55,10 +55,8 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <sys/param.h>   // added 1.3.0.0
 #else
 #include <direct.h>      // added 1.3.0.0
-#define MAXPATHLEN (255) // addec 1.3.0.0
 #endif // #ifndef __PLATFORM_WIN32__
 
 
@@ -501,11 +499,13 @@ bool ChucK::initCompiler()
     }
 
     std::string cwd;
-    char cstr_cwd[MAXPATHLEN];
+    char * cstr_cwd = NULL; // 1.4.2.1 (barak) | was: char cstr_cwd[MAXPATHLEN];
 
     // figure out current working directory (added 1.3.0.0)
     // is this needed for current path to work correctly?!
-    if( getcwd(cstr_cwd, MAXPATHLEN) == NULL )
+    // was: if( getcwd(cstr_cwd, MAXPATHLEN) == NULL )
+    // let getcwd allocate memory | 1.4.2.1 (barak)
+    if( (cstr_cwd = getcwd(NULL, 0)) == NULL )
     {
         // uh...
         EM_log( CK_LOG_SEVERE, "error: unable to determine current working directory!" );
@@ -514,6 +514,8 @@ bool ChucK::initCompiler()
     {
         // make c++ string
         cwd = std::string(cstr_cwd);
+        // reclaim memory from getcwd
+        SAFE_FREE(cstr_cwd);
         // add trailing "/"
         cwd += '/';
         // deferring this step until later, and only for Windows
