@@ -201,7 +201,7 @@ public:
     t_CKINT size()
     { return m_length; }
 
-    T max()
+    T getMax()
     {
         T max = m_vector[0];
         for( t_CKINT i = 1; i < m_length; i++ )

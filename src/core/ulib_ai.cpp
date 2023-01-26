@@ -841,7 +841,7 @@ public:
         // search
         getNearestNeighbors( query, k, indices );
         // copy
-        prob_.set_size( Y->max() + 1 );
+        prob_.set_size( Y->getMax() + 1 );
         // zero out
         prob_.zero( 0, prob_.size() );
         for( t_CKINT i = 0; i < k; i++ )
