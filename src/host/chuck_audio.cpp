@@ -328,7 +328,7 @@ static unsigned int __stdcall watch_dog( void * )
     t_CKUINT priority = XThreadUtil::our_priority;
 
     // log
-    EM_log( CK_LOG_SEVERE, "starting real-time watch dog processs..." );
+    EM_log( CK_LOG_SEVERE, "starting real-time watch dog process..." );
     // push log
     EM_pushlog();
     EM_log( CK_LOG_INFO, "watchdog timeout: %f::second", g_watchdog_timeout );
