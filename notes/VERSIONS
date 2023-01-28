@@ -127,9 +127,15 @@ development of this version. https://chuck.stanford.edu/webchuck/
   - (modified) MFCC -- added (back) a missing and crucial log10() to
       to the MFCC computation and updated implementation; output
       range magnitudes now in the hundreds
+  - (enhanced) overloaded functions with non-matching return types now
+      provide additional information in the compiler error message
+  - (fixed) overloaded functions with identical arguments now will
+      correctly result in a compiler error
   - (fixed) SndBuf assertation failure if SndBuf.chunks was set AFTER
-    loading a file; now .chunks will ONLY take effect for the next
-    SndBuf.read
+      loading a file; now .chunks will ONLY take effect for the next
+      SndBuf.read
+  - (renamed) int LiSa.loop0(int) and int LiSa.loop0(); previously these
+      were incorrectly overloaded as "loop()" and was unavailable
   - (fixed) FileIO.seek() previously fails if EOF is reached in reading
       a file; FileIO.seek() now functions after EOF is reached.
   - (updated) IO.newline() or a solitary "\n" now automatically flushes
