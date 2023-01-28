@@ -2689,6 +2689,8 @@ struct sndbuf_data
     t_CKUINT chunks_read;
     t_CKUINT chunk_num;
     SAMPLE ** chunk_map;
+    // 1.4.2.1 (ge) added (chunks will only affect next .read)
+    t_CKUINT chunks_on_next_load;
 
     SAMPLE * eob;
     //SAMPLE * curr;
@@ -2736,6 +2738,7 @@ struct sndbuf_data
         current_val = 0.0;
         chunk_map = NULL;
         chunk_num = 0;
+        chunks_on_next_load = 0;
 
         sinc_table_built = false;
         sinc_use_table = USE_TABLE;
@@ -3236,6 +3239,9 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
 
     // log
     EM_log( CK_LOG_INFO, "(sndbuf): reading '%s'...", filename );
+    
+    // copy in the chunks size | 1.4.2.1 (ge)
+    d->chunks = d->chunks_on_next_load;
 
     // built in
     if( strstr(filename, "special:") )
