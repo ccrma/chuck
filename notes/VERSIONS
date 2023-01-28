@@ -1,9 +1,12 @@
-1.4.2.1 (January 2023)
+1.4.2.1 (February 2023)
 ---
 (NOTE) ChAI (ChucK + AI), first started in chuck-1.4.2.0, will continue 
 to be in BETA for some time (as we add more and also teach using chAI in 
 "Music and AI" at Stanford). The new additions to ChAI will be designated 
 [chAI] and may be subject to change in the near future.
+---
+(NOTE) WebChucK (ChucK on browsers) [beta] was released during the 
+development of this version. https://chuck.stanford.edu/webchuck/
 ---
  - (added) Word2Vec [chAI]
       |- A word embeddings utility that maps words to vectors; can load a 
@@ -43,11 +46,23 @@ to be in BETA for some time (as we add more and also teach using chAI in
       |- word2vec-basic.ck -- demos load(), getVector(), getSimilar()
       |- word2vec-prompt.ck -- command line interactive tool
          (need to use command line chuck)
+  - (added) Chroma unit analyzer (thanks Yikai Li)
+        |- A unit analyzer that computes pitch chroma
+        |- see examples/ai/features/chroma.ck
+  - (added) Kurtosis unit analyzer (thanks Yikai Li)
+        |- A unit analyzer that computes kurtosis
+        |- see examples/ai/features/kurtosis.ck
+  - (added) SFM unit analyzer (thanks Yikai Li)
+        |- A unit analyzer that computes spetral flatness measure
+        |- see examples/ai/features/sfm.ck
  - (moved) examples/analysis/features => examples/ai/features
  - (added) new examples in examples/ai/features
       |- features-combined -- real-time extraction of multiple features
-      |- mfcc-basic.ck -- shows basic MFCC feature extraction
-      |- mfcc-mean.ck -- aggregated MFCC feature extration
+      |- mfcc-basic.ck -- shows MFCC unit analyzer / feature extractor
+      |- mfcc-mean.ck -- averaged MFCC feature extraction
+      |- chroma.ck -- shows Chroma unit analyzer
+      |- kurtosis.ck -- shows Kurtosis unit analyzer
+      |- sfm.ck -- shows SFM (spectral flatness measure) unit analyzer
  - (added) array.zero()
       |- zero out the contents of the array; size is unchanged.
  - (added) Math functions 
@@ -112,6 +127,9 @@ to be in BETA for some time (as we add more and also teach using chAI in
   - (modified) MFCC -- added (back) a missing and crucial log10() to
       to the MFCC computation and updated implementation; output
       range magnitudes now in the hundreds
+  - (fixed) SndBuf assertation failure if SndBuf.chunks was set AFTER
+    loading a file; now .chunks will ONLY take effect for the next
+    SndBuf.read
   - (fixed) FileIO.seek() previously fails if EOF is reached in reading
       a file; FileIO.seek() now functions after EOF is reached.
   - (updated) IO.newline() or a solitary "\n" now automatically flushes
