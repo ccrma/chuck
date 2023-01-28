@@ -1118,13 +1118,16 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int", "voice" );
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
     func = make_new_mfun( "int", "loop", LiSaMulti_cget_loop);
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    func = make_new_mfun( "int", "loop", LiSaMulti_ctrl_loop0 );
+
+    func = make_new_mfun( "int", "loop0", LiSaMulti_ctrl_loop0 );
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    func = make_new_mfun( "int", "loop", LiSaMulti_cget_loop0);
+
+    func = make_new_mfun( "int", "loop0", LiSaMulti_cget_loop0);
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // bidirectional looping
