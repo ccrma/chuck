@@ -6606,6 +6606,60 @@ t_CKINT str2char( const char * c, int linepos )
 
 
 //-----------------------------------------------------------------------------
+// name: same_arg_lists()
+// desc: compare two argument lists to see if they are the same
+//       added 1.4.2.1 (ge) to catch duplicate functions
+//-----------------------------------------------------------------------------
+t_CKBOOL same_arg_lists( a_Arg_List lhs, a_Arg_List rhs )
+{
+    // go down the list
+    while( lhs )
+    {
+        // if out of arguments, then argument lists are different
+        if( !rhs ) return FALSE;
+        // if any arguments are different, then argument lists are different
+        if( (*lhs->type) != (*rhs->type) ) return FALSE;
+        // TODO: if either is a subclass of the other: okay iff there are other differentiating arguments
+
+        // advance
+        lhs = lhs->next;
+        rhs = rhs->next;
+    }
+
+    // at this point, lists are same if rhs is NULL
+    return (rhs == NULL);
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: arglist2string()
+// desc: generate a string from an argument list (types only)
+//       1.4.2.1 (ge) added
+//-----------------------------------------------------------------------------
+string arglist2string( a_Arg_List list )
+{
+    // return value
+    string s = "";
+
+    // go down the list
+    while( list )
+    {
+        // concatenate
+        s += list->type->name;
+        // check
+        if( list->next ) s += ", ";
+        // advance
+        list = list->next;
+    }
+
+    return s;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_Type()
 // desc: constructor
 //-----------------------------------------------------------------------------

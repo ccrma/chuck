@@ -2448,59 +2448,6 @@ t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def )
 
 
 
-//-----------------------------------------------------------------------------
-// name: type_engine_compare_arg_lists()
-// desc: compare two argument lists to see if they are the same
-//       added 1.4.2.1 (ge) to catch duplicate functions
-//-----------------------------------------------------------------------------
-t_CKBOOL type_engine_same_arg_lists( a_Arg_List lhs, a_Arg_List rhs )
-{
-    // go down the list
-    while( lhs )
-    {
-        // if out of arguments, then argument lists are different
-        if( !rhs ) return FALSE;
-        // if any arguments are different, then argument lists are different
-        if( (*lhs->type) != (*rhs->type) ) return FALSE;
-        // TODO: if either is a subclass of the other: okay iff there are other differentiating arguments
-
-        // advance
-        lhs = lhs->next;
-        rhs = rhs->next;
-    }
-
-    // at this point, lists are same if rhs is NULL
-    return (rhs == NULL);
-}
-
-
-
-//-----------------------------------------------------------------------------
-// name: arglist2string()
-// desc: generate a string of an argument list (types only)
-//       1.4.2.1 (ge) added
-//-----------------------------------------------------------------------------
-string arglist2string( a_Arg_List list )
-{
-    // return value
-    string s = "";
-
-    // go down the list
-    while( list )
-    {
-        // concatenate
-        s += list->type->name;
-        // check
-        if( list->next ) s += ", ";
-        // advance
-        list = list->next;
-    }
-
-    return s;
-}
-
-
-
 
 //-----------------------------------------------------------------------------
 // name: type_engine_scan2_func_def()
@@ -2813,7 +2760,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
                 a_Arg_List lhs = func->def->arg_list;
                 a_Arg_List rhs = overfunc->def->arg_list;
                 // check
-                if( type_engine_same_arg_lists(lhs, rhs) )
+                if( same_arg_lists(lhs, rhs) )
                 {
                     EM_error2( f->linepos, "cannot overload functions with identical arguments..." );
                     if( env->class_def )
