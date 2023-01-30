@@ -116,6 +116,12 @@ public:
         return m_matrix[x * m_yDim + y];
     }
 
+    // overloaded operator
+    T & operator()( t_CKINT x, t_CKINT y )
+    {
+        return v( x, y );
+    }
+
     // get dimensions
     t_CKINT xDim() const
     { return m_xDim; }
@@ -135,9 +141,6 @@ protected:
     t_CKINT m_xDim;
     t_CKINT m_yDim;
 };
-
-
-
 
 //-----------------------------------------------------------------------------
 // name: class ChaiVectorFast | 1.4.2.0 (ge) added
@@ -232,7 +235,7 @@ public:
     // get element value
     T & v( t_CKINT i )
     {
-        return (*this)[i];
+        return ( *this )[i];
     }
 
     void cleanup()
@@ -249,9 +252,6 @@ public:
 };
 
 #endif
-
-
-
 
 #ifndef _KD_TREE_H
 #define _KD_TREE_H
