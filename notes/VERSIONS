@@ -8,7 +8,7 @@ to be in BETA for some time (as we add more and also teach using chAI in
 (NOTE) WebChucK (ChucK on browsers) [beta] was released during the 
 development of this version. https://chuck.stanford.edu/webchuck/
 ---
- - (added) Word2Vec [chAI]
+ - (added) Word2Vec [ChAI]
       |- A word embeddings utility that maps words to vectors; can load a 
          model and perform similiarity retrieval.
       |- (inheritance) Word2Vec -> Object
@@ -37,7 +37,7 @@ development of this version. https://chuck.stanford.edu/webchuck/
        Get number of words in dictionary.
     int useKDTree();
        Get whether a KDTree is used for similarity search.
- - (added) new examples in ai/word2vec [chAI]
+ - (added) new examples in ai/word2vec [ChAI]
       |- poem-i-feel.ck -- a stream of unconsciousness poem generator
       |- poem-randomwalk.ck -- another stream of unconsciousness generator
       |- poem-spew.ck -- yet another stream of unconsciousness generator
@@ -47,14 +47,14 @@ development of this version. https://chuck.stanford.edu/webchuck/
       |- word2vec-prompt.ck -- command line interactive tool
          (need to use command line chuck)
   - (added) Chroma unit analyzer (thanks Yikai Li)
-        |- A unit analyzer that computes pitch chroma
-        |- see examples/ai/features/chroma.ck
+      |- A unit analyzer that computes pitch chroma
+      |- see examples/ai/features/chroma.ck
   - (added) Kurtosis unit analyzer (thanks Yikai Li)
-        |- A unit analyzer that computes kurtosis
-        |- see examples/ai/features/kurtosis.ck
+      |- A unit analyzer that computes kurtosis
+      |- see examples/ai/features/kurtosis.ck
   - (added) SFM unit analyzer (thanks Yikai Li)
-        |- A unit analyzer that computes spetral flatness measure
-        |- see examples/ai/features/sfm.ck
+      |- A unit analyzer that computes spetral flatness measure
+      |- see examples/ai/features/sfm.ck
  - (moved) examples/analysis/features => examples/ai/features
  - (added) new examples in examples/ai/features
       |- features-combined -- real-time extraction of multiple features
@@ -63,6 +63,14 @@ development of this version. https://chuck.stanford.edu/webchuck/
       |- chroma.ck -- shows Chroma unit analyzer
       |- kurtosis.ck -- shows Kurtosis unit analyzer
       |- sfm.ck -- shows SFM (spectral flatness measure) unit analyzer
+ - (added) PCA [ChAI] (thanks Yikai Li)
+      |- A principle component analysis (PCA) utility, commonly used for dimensionality reduction.
+      |- (inheritance) PCA -> Object
+   -------------------
+      static void reduce( float[][] input, int D, float[][] output );
+        Dimension-reduce 'input' (NxM) to 'output' (NxD) as the projection
+        of the input data onto its first 'D' principle components
+ - (added) examples/ai/pca/pca.ck
  - (added) array.zero()
       |- zero out the contents of the array; size is unchanged.
  - (added) Math functions 
