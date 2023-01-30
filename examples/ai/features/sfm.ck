@@ -5,8 +5,8 @@
 // uncomment for SFM API:
 // SFM.help();
 //
-// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
-//         Yikai Li
+// author: Yikai Li
+//         Ge Wang
 // date: Winter 2023
 //---------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ fft.size()::samp => now;
 while( true )
 {
     //----------------------------------------------------------------
-    // upchuck() computes our MFCC, automatically computing upstream
+    // upchuck() computes SFM, automatically computing upstream
     // dependencies connected to it using =^ (e.g., FFT)
     //----------------------------------------------------------------
     sfm.upchuck();
