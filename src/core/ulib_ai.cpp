@@ -96,6 +96,13 @@ CK_DLL_MFUN( Word2Vec_contains );
 // offset
 static t_CKUINT Word2Vec_offset_data = 0;
 
+// 1.4.2.0 (yikai) added PCA
+CK_DLL_CTOR( PCA_ctor );
+CK_DLL_DTOR( PCA_dtor );
+CK_DLL_SFUN( PCA_reduce );
+// offset
+static t_CKUINT PCA_offset_data = 0;
+
 
 
 
@@ -370,6 +377,32 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "int", "useKDTree", Word2Vec_getUseKDTree );
     func->doc = "Get whether a KDTree is used for similarity search.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    //---------------------------------------------------------------------
+    // init as base class: PCA
+    // 1.4.1.2 added by Yikai Li, Fall 2022
+    //---------------------------------------------------------------------
+    // doc string
+    doc = "a principle component analysis (PCA) utility, commonly used for dimensionality reduction.";
+
+    // begin class definition
+    if( !type_engine_import_class_begin( env, "PCA", "Object", env->global(), PCA_ctor, PCA_dtor, doc.c_str() ) )
+        return FALSE;
+
+    // data offset
+    PCA_offset_data = type_engine_import_mvar( env, "float", "@PCA_data", FALSE );
+    if( PCA_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // transform
+    func = make_new_sfun( "void", "reduce", PCA_reduce );
+    func->add_arg( "float[][]", "input" );
+    func->add_arg( "int", "D" );
+    func->add_arg( "float[][]", "output" );
+    func->doc = "dimension-reduce 'input' (NxM) to 'output' (NxD) as the projection of the input data onto its first 'D' principle components";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -726,7 +759,7 @@ public:
             for( t_CKINT j = 0; j < X->yDim(); j++ )
             {
                 // extra check in case query less than training dimensions
-                diff = (j < query.size() ? query[j] : 0.0) - X->v( i, j );
+                diff = ( j < query.size() ? query[j] : 0.0 ) - X->v( i, j );
                 distance += diff * diff;
             }
             // check
@@ -802,7 +835,11 @@ public:
     }
 
     // search; returns labels, indices, and feature vectors
-    void search3( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_Array4 & labels_, Chuck_Array4 & indices_, Chuck_Array4 & features_ )
+    void search3( const vector<t_CKFLOAT> & query,
+                  t_CKINT k,
+                  Chuck_Array4 & labels_,
+                  Chuck_Array4 & indices_,
+                  Chuck_Array4 & features_ )
     {
         // init
         ChaiVectorFast<t_CKINT> indices( k );
@@ -886,9 +923,9 @@ CK_DLL_MFUN( KNN_train )
     Chuck_Array4 * x = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
 
     // check for NULL
-    if( x == NULL  )
+    if( x == NULL )
     {
-        EM_error3( "KNN.train(): NULL input encountered...");
+        EM_error3( "KNN.train(): NULL input encountered..." );
         return;
     }
 
@@ -908,7 +945,7 @@ CK_DLL_MFUN( KNN_search )
     // check for NULL
     if( query == NULL || indices == NULL )
     {
-        EM_error3( "KNN.search(): NULL input encountered...");
+        EM_error3( "KNN.search(): NULL input encountered..." );
         return;
     }
 
@@ -946,7 +983,7 @@ CK_DLL_MFUN( KNN2_train )
     // check for NULL
     if( x == NULL || y == NULL )
     {
-        EM_error3( "KNN2.train(): NULL input encountered...");
+        EM_error3( "KNN2.train(): NULL input encountered..." );
         return;
     }
 
@@ -966,7 +1003,7 @@ CK_DLL_MFUN( KNN2_predict )
     // check for NULL
     if( query == NULL || prob == NULL )
     {
-        EM_error3( "KNN2.predict(): NULL input encountered...");
+        EM_error3( "KNN2.predict(): NULL input encountered..." );
         return;
     }
 
@@ -986,7 +1023,7 @@ CK_DLL_MFUN( KNN2_search )
     // check for NULL
     if( query == NULL || labels == NULL )
     {
-        EM_error3( "KNN2.search(): NULL input encountered...");
+        EM_error3( "KNN2.search(): NULL input encountered..." );
         return;
     }
 
@@ -1007,7 +1044,7 @@ CK_DLL_MFUN( KNN2_search2 )
     // check for NULL
     if( query == NULL || labels == NULL || indices == NULL )
     {
-        EM_error3( "KNN2.search(): NULL input encountered...");
+        EM_error3( "KNN2.search(): NULL input encountered..." );
         return;
     }
 
@@ -1029,16 +1066,13 @@ CK_DLL_MFUN( KNN2_search3 )
     // check for NULL
     if( query == NULL || labels == NULL || indices == NULL || features == NULL )
     {
-        EM_error3( "KNN2.search(): NULL input encountered...");
+        EM_error3( "KNN2.search(): NULL input encountered..." );
         return;
     }
 
     // search3
     knn->search3( query->m_vector, k, *labels, *indices, *features );
 }
-
-
-
 
 //-----------------------------------------------------------------------------
 // name: struct HMM_Object
@@ -2013,6 +2047,303 @@ CK_DLL_MFUN( Word2Vec_getUseKDTree )
     Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
     // get dim
     RETURN->v_int = word2vec->getUseKDTree();
+}
+
+//-----------------------------------------------------------------------------
+// name: struct PCA_Object
+// desc: TODO | added 1.4.2.0 (yikai)
+//-----------------------------------------------------------------------------
+struct PCA_Object
+{
+public:
+    // constructor
+    PCA_Object()
+    { }
+
+    // destructor
+    ~PCA_Object()
+    { }
+
+    /*  Reduce a real, symmetric matrix to a symmetric, tridiag. matrix. */
+    static void tred2( ChaiMatrixFast<t_CKFLOAT> & a, t_CKINT m, ChaiVectorFast<t_CKFLOAT> & d, ChaiVectorFast<t_CKFLOAT> & e )
+    /* Householder reductiom of matrix a to tridiagomal form.
+    Algorithm: Martim et al., Num. Math. 11, 181-195, 1968.
+    Ref: Smith et al., Matrix Eigemsystem Routimes -- EISPACK Guide
+    Sprimger-Verlag, 1976, pp. 489-494.
+    W H Press et al., Numerical Recipes im C, Cambridge U P,
+    1988, pp. 373-374.
+    Source code adapted from F. Murtagh, Munich, 6 June 1989
+    http://astro.u-strasbg.fr/~fmurtagh/mda-sw/pca.c
+    */
+    {
+        t_CKINT l, k, j, i;
+        t_CKFLOAT scale, hh, h, g, f;
+
+        for( i = m - 1; i > 0; i-- )
+        {
+            l = i - 1;
+            h = scale = 0.0;
+            if( l > 0 )
+            {
+                for( k = 0; k <= l; k++ )
+                    scale += fabs( a( i, k ) );
+                if( scale == 0.0 )
+                    e[i] = a( i, l );
+                else
+                {
+                    for( k = 0; k <= l; k++ )
+                    {
+                        a( i, k ) /= scale;
+                        h += a( i, k ) * a( i, k );
+                    }
+                    f = a( i, l );
+                    g = f > 0 ? -sqrt( h ) : sqrt( h );
+                    e[i] = scale * g;
+
+                    h -= f * g;
+                    a( i, l ) = f - g;
+                    f = 0.0;
+                    for( j = 0; j <= l; j++ )
+                    {
+                        a( j, i ) = a( i, j ) / h;
+                        g = 0.0;
+                        for( k = 0; k <= j; k++ )
+                            g += a( j, k ) * a( i, k );
+                        for( k = j + 1; k <= l; k++ )
+                            g += a( k, j ) * a( i, k );
+                        e[j] = g / h;
+                        f += e[j] * a( i, j );
+                    }
+                    hh = f / ( h + h );
+                    for( j = 0; j <= l; j++ )
+                    {
+                        f = a( i, j );
+                        e[j] = g = e[j] - hh * f;
+                        for( k = 0; k <= j; k++ )
+                            a( j, k ) -= ( f * e[k] + g * a( i, k ) );
+                    }
+                }
+            }
+            else
+                e[i] = a( i, l );
+            d[i] = h;
+        }
+        d[0] = 0.0;
+        e[0] = 0.0;
+        for( i = 0; i < m; ++i )
+        {
+            l = i - 1;
+            if( d[i] )
+            {
+                for( j = 0; j <= l; j++ )
+                {
+                    g = 0.0;
+                    for( k = 0; k <= l; k++ )
+                        g += a( i, k ) * a( k, j );
+                    for( k = 0; k <= l; k++ )
+                        a( k, j ) -= g * a( k, i );
+                }
+            }
+            d[i] = a( i, i );
+            a( i, i ) = 1.0;
+
+            for( j = 0; j <= l; j++ )
+                a( j, i ) = a( i, j ) = 0.0;
+        }
+    }
+
+    /*  Tridiagonal QL algorithm -- Implicit  */
+    static void tqli( ChaiVectorFast<t_CKFLOAT> & d, ChaiVectorFast<t_CKFLOAT> & e, t_CKINT m, ChaiMatrixFast<t_CKFLOAT> & z )
+    /*
+     Source code adapted from F. Murtagh, Munich, 6 June 1989
+     http://astro.u-strasbg.fr/~fmurtagh/mda-sw/pca.c
+    */
+    {
+        t_CKINT n, l, i, k;
+        t_CKFLOAT s, r, p, g, f, dd, c, b;
+
+        for( i = 1; i < m; ++i )
+            e[i - 1] = e[i];
+        e[m - 1] = 0.0;
+        for( l = 0; l < m; l++ )
+        {
+            do
+            {
+                for( n = l; n < m - 1; n++ )
+                {
+                    dd = fabs( d[n] ) + fabs( d[n + 1] );
+                    if( fabs( e[n] ) + dd == dd ) break;
+                }
+                if( n != l )
+                {
+                    g = ( d[l + 1] - d[l] ) / ( 2.0 * e[l] );
+                    r = sqrt( ( g * g ) + 1.0 );
+                    g = d[n] - d[l] + e[l] / ( g + ( ( g ) < 0 ? -fabs( r ) : fabs( r ) ) );
+                    s = c = 1.0;
+                    p = 0.0;
+                    for( i = n - 1; i >= l; i-- )
+                    {
+                        f = s * e[i];
+                        b = c * e[i];
+                        if( fabs( f ) >= fabs( g ) )
+                        {
+                            c = g / f;
+                            r = sqrt( ( c * c ) + 1.0 );
+                            e[i + 1] = f * r;
+                            c *= ( s = 1.0 / r );
+                        }
+                        else
+                        {
+                            s = f / g;
+                            r = sqrt( ( s * s ) + 1.0 );
+                            e[i + 1] = g * r;
+                            s *= ( c = 1.0 / r );
+                        }
+                        g = d[i + 1] - p;
+                        r = ( d[i] - g ) * s + 2.0 * c * b;
+                        p = s * r;
+                        d[i + 1] = g + p;
+                        g = c * r - b;
+                        for( k = 0; k < m; k++ )
+                        {
+                            f = z( k, i + 1 );
+                            z( k, i + 1 ) = s * z( k, i ) + c * f;
+                            z( k, i ) = c * z( k, i ) - s * f;
+                        }
+                    }
+                    d[l] = d[l] - p;
+                    e[l] = g;
+                    e[n] = 0.0;
+                }
+            } while( n != l );
+        }
+    }
+
+    // transform
+    static void transform( Chuck_Array4 & input_, t_CKINT npc, Chuck_Array4 & output_ )
+    {
+        ChaiMatrixFast<t_CKFLOAT> * input = chuck2chai( input_ );
+
+        t_CKINT t, o;
+        t_CKINT o1, o2;
+        t_CKINT n = input->xDim(), d = input->yDim();
+
+        ChaiMatrixFast<t_CKFLOAT> temp_matrix( d, n );
+        for( t = 0; t < n; t++ )
+        {
+            for( o = 0; o < d; o++ )
+            {
+                temp_matrix( o, t ) = input->v( t, o );
+            }
+        }
+
+        ChaiVectorFast<t_CKFLOAT> means( d );
+        ChaiVectorFast<t_CKFLOAT> stds( d );
+        for( o = 0; o < d; o++ )
+        {
+            means[o] = 0;
+            for( t = 0; t < n; t++ )
+            {
+                means[o] += temp_matrix( o, t );
+            }
+            means[o] /= n;
+            stds[o] = 0;
+            for( t = 0; t < n; t++ )
+            {
+                stds[o] += pow( temp_matrix( o, t ) - means[o], 2 );
+            }
+            stds[o] = sqrt( stds[o] / n );
+        }
+
+        // Adjust data : ( X - means(X) ) / ( sqrt(n) * stds(X) )
+        for( o = 0; o < d; o++ )
+            for( t = 0; t < n; t++ )
+                temp_matrix( o, t ) =
+                    ( temp_matrix( o, t ) - means[o] ) / ( sqrt( (t_CKFLOAT)n ) * stds[o] );
+
+        ChaiMatrixFast<t_CKFLOAT> corr_matrix( d, d );
+        // Calculate the correlation matrix
+        for( o1 = 0; o1 < d; o1++ )
+        {
+            corr_matrix( o1, o1 ) = 1.0;
+            for( o2 = o1; o2 < d; o2++ )
+            {
+                corr_matrix( o1, o2 ) = 0.0;
+                for( t = 0; t < n; t++ )
+                    corr_matrix( o1, o2 ) += temp_matrix( o1, t ) * temp_matrix( o2, t );
+                corr_matrix( o2, o1 ) = corr_matrix( o1, o2 );
+            }
+        }
+        corr_matrix( d - 1, d - 1 ) = 1.0;
+
+        ChaiVectorFast<t_CKFLOAT> evals( d );
+        ChaiVectorFast<t_CKFLOAT> interm( d );
+
+        // Triangular decomposition
+        tred2( corr_matrix, d, evals, interm );
+
+        // Reduction of symmetric tridiagonal matrix
+        tqli( evals, interm, d, corr_matrix );
+
+//        t_CKFLOAT percent_eig = 0.0;
+//        t_CKFLOAT sum_eig = 0.0;
+//        for( t_CKINT m = d - 2; m >= 0; m-- )
+//            sum_eig += evals[m];
+//
+//        for( t_CKINT m = d - 2; m >= 0; m-- )
+//        {
+//            percent_eig += evals[m];
+//            std::cout << evals[m] / sum_eig << "\t";
+//            std::cout << percent_eig / sum_eig << std::endl;
+//        }
+
+        /* evals now contains the eigenvalues,
+           corr_matrix now contains the associated eigenvectors. */
+
+        /* Project row data onto the top "npc_" principal components. */
+        Chuck_Array8 * vi;
+        for( t = 0; t < n; t++ )
+        {
+            vi = (Chuck_Array8 *)output_.m_vector[t];
+            for( o = 0; o < npc; o++ )
+            {
+                vi->m_vector[o] = 0.0;
+                for( o1 = 0; o1 < d; o1++ )
+                    vi->m_vector[o] += input->v( t, o1 ) * corr_matrix( o1, d - 1 - o );
+            }
+        }
+
+        // clean up
+        SAFE_DELETE( input );
+    }
+
+private:
+};
+
+//-----------------------------------------------------------------------------
+// PCA c++ hooks
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( PCA_ctor )
+{
+    PCA_Object * pca = new PCA_Object();
+    OBJ_MEMBER_UINT( SELF, PCA_offset_data ) = (t_CKUINT)pca;
+}
+
+CK_DLL_DTOR( PCA_dtor )
+{
+    PCA_Object * pca = (PCA_Object *)OBJ_MEMBER_UINT( SELF, PCA_offset_data );
+    SAFE_DELETE( pca );
+    OBJ_MEMBER_UINT( SELF, PCA_offset_data ) = 0;
+}
+
+CK_DLL_SFUN( PCA_reduce )
+{
+    // get args
+    Chuck_Array4 * input = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    t_CKINT n_components = GET_NEXT_INT( ARGS );
+    Chuck_Array4 * output = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    // transform
+    PCA_Object::transform( *input, n_components, *output );
 }
 
 //-----------------------------------------------------------------------------
