@@ -6,8 +6,8 @@
 // uncomment for Chroma API:
 // Chroma.help();
 //
-// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
-//         Yikai Li
+// author: Yikai Li
+//         Ge Wang (https://ccrma.stanford.edu/~ge/)
 // date: Winter 2023
 //---------------------------------------------------------------------
 
@@ -50,13 +50,12 @@ for( 0 => int i; i < freqs.size(); i++ )
 
     // print features
     cherr <= freqs[i] <= ": ";
-    for( int i; i < chroma.fvals().size(); i++ )
+    for( 0 => int j; j < chroma.fvals().size(); j++ )
     {
-        Math.round(chroma.fval(i) * 100) => float tmp;
+        Math.round(chroma.fval(j) * 100) => float tmp;
         cherr <= (tmp < 10 ? " ":"") <= tmp <= " ";
     }
     cherr <= IO.newline();
-
 
     // advance time
     HOP => now;

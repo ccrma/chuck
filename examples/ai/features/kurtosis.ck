@@ -5,8 +5,8 @@
 // uncomment for Chroma API:
 // Kurtosis.help();
 //
-// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
-//         Yikai Li
+// author: Yikai Li
+//         Ge Wang (https://ccrma.stanford.edu/~ge/)
 // date: Winter 2023
 //---------------------------------------------------------------------'
 
