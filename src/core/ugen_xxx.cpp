@@ -3097,7 +3097,9 @@ CK_DLL_TICK( sndbuf_tick )
     }
 #endif /* CK_SNDBUF_MEMORY_BUFFER */
 
-    if( !( d->buffer || d->chunk_map ) )
+    // check if we have data to work with
+    // 1.4.2.1 (ge) modified for clarity; was: if( !(d->buffer || d->chunk_map) ) { ... }
+    if( d->buffer == NULL && d->chunk_map == NULL )
     {
         *out = 0;
         return TRUE;
@@ -3410,7 +3412,11 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         {
             CK_FPRINTF_STDERR( "[chuck](via SndBuf): sndfile error '%li' opening '%s'...\n", er, filename );
             CK_FPRINTF_STDERR( "[chuck](via SndBuf): (reason: %s)\n", sf_strerror( d->fd ) );
-            if( d->fd ) sf_close( d->fd );
+            if( d->fd )
+            {
+                sf_close( d->fd );
+                d->fd = NULL; // 1.4.2.1 (ge) added
+            }
             // escape
             return;
         }
