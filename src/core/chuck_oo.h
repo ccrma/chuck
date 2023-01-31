@@ -228,6 +228,8 @@ public:
     virtual t_CKINT find( const std::string & key ) = 0; // find
     virtual t_CKINT erase( const std::string & key ) = 0; // erase
     virtual void clear( ) = 0; // clear
+    virtual void zero( t_CKUINT start, t_CKUINT end ) = 0; // zero
+    virtual void zero() = 0; // zero (all)
     // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys ) = 0;
 
@@ -259,6 +261,7 @@ public:
     t_CKINT pop_out( t_CKINT pos );
     t_CKINT back( t_CKUINT * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
+    void    zero() { this->zero(0, m_vector.size()); }
 
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }
@@ -276,6 +279,9 @@ public:
     std::vector<t_CKUINT> m_vector;
     std::map<std::string, t_CKUINT> m_map;
     t_CKBOOL m_is_obj;
+
+    // TODO: may need additional information here for set_size, if this is part of a multi-dim array
+
     // t_CKINT m_size;
     // t_CKINT m_capacity;
 };
@@ -305,6 +311,7 @@ public:
     t_CKINT pop_out( t_CKINT pos );
     t_CKINT back( t_CKFLOAT * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
+    void    zero() { this->zero(0, m_vector.size()); }
 
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }
@@ -350,6 +357,7 @@ public:
     t_CKINT pop_out( t_CKINT pos );
     t_CKINT back( t_CKCOMPLEX * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
+    void    zero() { this->zero(0, m_vector.size()); }
 
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }
@@ -395,6 +403,7 @@ public:
     t_CKINT pop_out( t_CKUINT pos );
     t_CKINT back( t_CKVEC3 * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
+    void    zero() { this->zero(0, m_vector.size()); }
 
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }
@@ -438,6 +447,7 @@ public:
     t_CKINT pop_out( t_CKUINT pos );
     t_CKINT back( t_CKVEC4 * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
+    void    zero() { this->zero(0, m_vector.size()); }
 
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }

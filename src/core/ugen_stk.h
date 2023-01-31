@@ -497,10 +497,9 @@ class Instrmnt : public Stk
   virtual void controlChange(int number, MY_FLOAT value);
 
 public: // SWAP formerly protected
+  MY_FLOAT lastOutput;
   // chuck
   t_CKFLOAT m_frequency;
-
-  MY_FLOAT lastOutput;
 };
 
 
@@ -1587,7 +1586,6 @@ class FM : public Instrmnt
   MY_FLOAT __FM_gains[100];
   MY_FLOAT __FM_susLevels[16];
   MY_FLOAT __FM_attTimes[32];
-
 };
 
 #endif
@@ -5195,7 +5193,7 @@ class Sitar : public Instrmnt
     The user is responsible for checking the values
     returned by the read/write methods.  Values
     less than or equal to zero indicate a closed
-    or lost connection or the occurence of an error.
+    or lost connection or the occurrence of an error.
 
     by Perry R. Cook and Gary P. Scavone, 1995 - 2002.
 */

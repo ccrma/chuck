@@ -42,12 +42,16 @@ struct Chuck_Compiler;
 
 // query
 DLL_QUERY machine_query( Chuck_DL_Query * QUERY );
+
+#ifndef __DISABLE_OTF_SERVER__
 typedef t_CKUINT (* proc_msg_func)( Chuck_VM *, Chuck_Compiler *,
                                     Net_Msg *, t_CKBOOL, void * );
 t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func func );
 // 1.4.0.1: TODO: refactor out of ulib machine; not all platforms have OTF
-t_CKUINT machine_intsize();
+#endif // __DISABLE_OTF_SERVER__
 
+// machine exports
+t_CKUINT machine_intsize();
 
 // exports
 CK_DLL_SFUN( machine_crash_impl );
@@ -60,6 +64,12 @@ CK_DLL_SFUN( machine_intsize_impl );
 CK_DLL_SFUN( machine_shreds_impl );
 CK_DLL_SFUN( machine_realtime_impl );
 CK_DLL_SFUN( machine_silent_impl );
+CK_DLL_SFUN( machine_eval_impl );
+CK_DLL_SFUN( machine_eval2_impl );
+CK_DLL_SFUN( machine_eval3_impl );
+CK_DLL_SFUN( machine_version_impl );
+CK_DLL_SFUN( machine_setloglevel_impl );
+CK_DLL_SFUN( machine_getloglevel_impl );
 
 
 #endif

@@ -154,6 +154,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #define SAFE_RELEASE(x)             do { if(x){ x->release(); x = NULL; } } while(0)
 #define SAFE_ADD_REF(x)             do { if(x){ x->add_ref(); } } while(0)
 #define SAFE_REF_ASSIGN(lhs,rhs)    do { SAFE_RELEASE(lhs); (lhs) = (rhs); SAFE_ADD_REF(lhs); } while(0)
+#define SAFE_FREE(x)                do { if(x){ free(x); x = NULL; } } while(0)
 #endif
 
 // max + min
@@ -191,7 +192,12 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 
 #ifdef __PLATFORM_WIN32__
 #ifndef usleep
-#define usleep(x) Sleep( (x / 1000 <= 0 ? 1 : x / 1000) )
+  #define usleep(x) Sleep( (x / 1000 <= 0 ? 1 : x / 1000) )
+#endif
+// 1.4.2.0 (ge and spencer) | added for legacy windows, as part of switch to snprintf
+// https://stackoverflow.com/questions/2915672/snprintf-and-visual-studio-2010
+#if defined(_MSC_VER) && _MSC_VER < 1900
+  #define snprintf(buf,len, format,...) _snprintf_s(buf, len,len, format, __VA_ARGS__)
 #endif
 #pragma warning (disable : 4996)  // stdio deprecation
 #pragma warning (disable : 4786)  // stl debug info

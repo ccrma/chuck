@@ -229,10 +229,10 @@ void Chuck_VM_Object::unlock_all()
 //void Chuck_VM_Alloc::add_object( Chuck_VM_Object * obj )
 //{
 //    // do log
-//    if( DO_LOG( CK_LOG_CRAZY ) )
+//    if( DO_LOG( CK_LOG_ALL ) )
 //    {
 //        // log it
-//        EM_log( CK_LOG_CRAZY, "adding '%s' (0x%lx)...",
+//        EM_log( CK_LOG_ALL, "adding '%s' (0x%lx)...",
 //            mini_type( typeid(*obj).name() ), obj );
 //    }
 //
@@ -3094,6 +3094,8 @@ void Chuck_IO_File::seek( t_CKINT pos )
         EM_error3( "[chuck](via FileIO): cannot seek on a directory" );
         return;
     }
+    // 1.4.2.1 (ge) | added since seekg fails if EOF already reached
+    m_io.clear();
     m_io.seekg( pos );
     m_io.seekp( pos );
 }
@@ -3233,7 +3235,14 @@ Chuck_String * Chuck_IO_File::readLine()
 
     string s;
     getline( m_io, s );
-    return new Chuck_String( s );
+
+    // chuck str
+    Chuck_String * str = new Chuck_String( s );
+    // initialize | 1.4.2.1 (ge) | added initialize_object
+    initialize_object( str, m_vmRef->env()->t_string );
+
+    // note this chuck string still needs to be initialized
+    return str;
 }
 
 

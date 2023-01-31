@@ -90,6 +90,17 @@ CK_DLL_SFUN( srandom_impl );
 
 CK_DLL_SFUN( gauss_impl );
 
+CK_DLL_SFUN( cossim_impl );
+CK_DLL_SFUN( cossim3d_impl );
+CK_DLL_SFUN( cossim4d_impl );
+
+CK_DLL_SFUN( euclidean_impl );
+CK_DLL_SFUN( euclidean3d_impl );
+CK_DLL_SFUN( euclidean4d_impl );
+
+CK_DLL_SFUN( map_impl );
+CK_DLL_SFUN( map2_impl );
+
 
 
 

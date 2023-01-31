@@ -1118,13 +1118,16 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int", "voice" );
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
     func = make_new_mfun( "int", "loop", LiSaMulti_cget_loop);
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    func = make_new_mfun( "int", "loop", LiSaMulti_ctrl_loop0 );
+
+    func = make_new_mfun( "int", "loop0", LiSaMulti_ctrl_loop0 );
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    func = make_new_mfun( "int", "loop", LiSaMulti_cget_loop0);
+
+    func = make_new_mfun( "int", "loop0", LiSaMulti_cget_loop0);
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // bidirectional looping
@@ -2689,6 +2692,8 @@ struct sndbuf_data
     t_CKUINT chunks_read;
     t_CKUINT chunk_num;
     SAMPLE ** chunk_map;
+    // 1.4.2.1 (ge) added (chunks will only affect next .read)
+    t_CKUINT chunks_on_next_load;
 
     SAMPLE * eob;
     //SAMPLE * curr;
@@ -2736,6 +2741,7 @@ struct sndbuf_data
         current_val = 0.0;
         chunk_map = NULL;
         chunk_num = 0;
+        chunks_on_next_load = chunks; // whatever chunks default is
 
         sinc_table_built = false;
         sinc_use_table = USE_TABLE;
@@ -2856,7 +2862,8 @@ inline t_CKINT sndbuf_load( sndbuf_data * d, t_CKUINT sample )
 
 inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
 {
-    if( !(d->buffer || d->chunk_map) ) return;
+    // if no buffer allocate (nothing read)
+    if( d->buffer == NULL && d->chunk_map == NULL ) return;
 
     d->curf = frame_pos;
 
@@ -2874,9 +2881,9 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
             d->current_val = 0;  // 1.4.1.0 (ge) added to avoid DC
             return; // 1.4.1.0 (ge) added
         }
-        else if( d->curf > d->num_frames )
+        else if( d->curf >= d->num_frames ) // 1.4.2.1 (ge) | changed from > to >=
         {
-            d->curf = d->num_frames; // 1.4.1.0 (ge) added back the -1
+            d->curf = d->num_frames;
             d->current_val = 0;
             return;
         }
@@ -2903,9 +2910,12 @@ inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT frame_pos, t_CKINT arg_c
         while( frame_pos <  0 ) frame_pos += nf;
     }
     else {
-        if( frame_pos >= nf ) frame_pos = nf-1;
+        if( frame_pos >= nf ) frame_pos = nf; // 1.4.2.1 (ge) | set frame_pos to nf, instead of nf-1
         if( frame_pos < 0 ) frame_pos = 0;
     }
+
+    // 1.4.2.1 (ge) | added check
+    if( frame_pos == nf ) return 0;
 
     // if specific channel was requested, use that one
     t_CKUINT chan = 0;
@@ -2928,7 +2938,8 @@ inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT frame_pos, t_CKINT arg_c
 
 inline double sndbuf_getpos( sndbuf_data * d )
 {
-    if( !(d->buffer || d->chunk_map) ) return 0;
+    // if no buffer allocated (nothing read)
+    if( d->buffer == NULL && d->chunk_map == NULL ) return 0;
     return floor(d->curf);
 }
 
@@ -3091,7 +3102,11 @@ CK_DLL_TICK( sndbuf_tick )
     }
 #endif /* CK_SNDBUF_MEMORY_BUFFER */
 
-    if( !( d->buffer || d->chunk_map ) )
+    // check if we have data to work with
+    // 1.4.2.1 (ge) modified for clarity;
+    // was: if( !(d->buffer || d->chunk_map) ) { ... }
+    // if no buffer allocated; nothing read
+    if( d->buffer == NULL && d->chunk_map == NULL )
     {
         *out = 0;
         return TRUE;
@@ -3137,7 +3152,8 @@ CK_DLL_TICKF( sndbuf_tickf )
 
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
 
-    if( !( d->buffer || d->chunk_map ) ) return FALSE;
+    // if no buffer allocated, nothing read
+    if( d->buffer == NULL && d->chunk_map == NULL ) return FALSE;
 
     // we're ticking once per sample ( system )
     // curf in samples;
@@ -3236,6 +3252,9 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
 
     // log
     EM_log( CK_LOG_INFO, "(sndbuf): reading '%s'...", filename );
+    
+    // copy in the chunks size | 1.4.2.1 (ge)
+    d->chunks = d->chunks_on_next_load;
 
     // built in
     if( strstr(filename, "special:") )
@@ -3401,7 +3420,11 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         {
             CK_FPRINTF_STDERR( "[chuck](via SndBuf): sndfile error '%li' opening '%s'...\n", er, filename );
             CK_FPRINTF_STDERR( "[chuck](via SndBuf): (reason: %s)\n", sf_strerror( d->fd ) );
-            if( d->fd ) sf_close( d->fd );
+            if( d->fd )
+            {
+                sf_close( d->fd );
+                d->fd = NULL; // 1.4.2.1 (ge) added
+            }
             // escape
             return;
         }
@@ -3411,7 +3434,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         if(d->chunks)
         {
             // split into small allocations
-            d->chunk_num = ceilf(((t_CKFLOAT) size) / ((t_CKFLOAT) d->chunks));
+            d->chunk_num = ceil(((t_CKFLOAT) size) / ((t_CKFLOAT) d->chunks)); // 1.4.2.1 (ge) | ceilf => ceil
             d->buffer = NULL;
             d->chunk_map = new SAMPLE*[d->chunk_num];
             memset(d->chunk_map, 0, d->chunk_num * sizeof(SAMPLE *));
@@ -3594,14 +3617,19 @@ CK_DLL_CTRL( sndbuf_ctrl_chunks )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     t_CKINT frames = GET_NEXT_INT(ARGS);
-    d->chunks = frames >= 0 ? frames : 0;
+    // 1.4.2.1 (ge) | modified to set chunks_on_next_load
+    // setting chunks after load violates some assumptions
+    d->chunks_on_next_load = frames >= 0 ? frames : 0;
+    // d->chunks = frames >= 0 ? frames : 0;
     RETURN->v_int = d->chunks;
 }
 
 CK_DLL_CGET( sndbuf_cget_chunks )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
-    RETURN->v_int = d->chunks;
+    // 1.4.2.1 (ge) | retuns d->chunks_on_next_load
+    RETURN->v_int = d->chunks_on_next_load;
+    // RETURN->v_int = d->chunks;
 }
 
 CK_DLL_CTRL( sndbuf_ctrl_phase_offset )
@@ -3639,7 +3667,8 @@ CK_DLL_CGET( sndbuf_cget_valueAt )
     t_CKINT frame, channel;
     d->sampleIndex2FrameIndexAndChannel(sample, &frame, &channel);
     if( d->fd ) sndbuf_load( d, sample );
-    RETURN->v_float = ( frame > d->num_frames || frame < 0 ) ? 0 : sndbuf_sampleAt(d, frame, channel);
+    // 1.4.2.1 (ge) 'frame >' => 'frame >='
+    RETURN->v_float = ( frame >= d->num_frames || frame < 0 ) ? 0 : sndbuf_sampleAt(d, frame, channel);
 }
 
 #endif // __DISABLE_SNDBUF__

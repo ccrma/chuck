@@ -1,9 +1,13 @@
 //---------------------------------------------------------------------
-// name: mfcc.ck
+// name: mfcc-mean.ck
 // desc: mel-frequency cepstral coefficients
+//       this example aggregates multiple MFCC frames; compute mean
 //
-// author: Yikai Li
-// date: Fall 2022
+// to see API, uncomment:
+// MFCC.help();
+
+// author: Yikai Li and Ge Wang
+// date: Spring 2023
 //---------------------------------------------------------------------
 
 // analysis patch
@@ -18,7 +22,7 @@ adc => FFT fft =^ MFCC mfcc => blackhole;
 // number of MFCC coefficients to compute per frame
 13 => mfcc.numCoeffs => int nCoeffs;
 // used to compute the frame size
-.25::second => dur aggregateTime;
+.1::second => dur aggregateTime;
 // set FFT window
 Windowing.hamming(fft.size()) => fft.window;
 // current sample sample
@@ -28,7 +32,7 @@ second / samp => float sampleRate;
 // sampleRate => mfcc.sampleRate;
 
 // calculate the number of frames
-(aggregateTime/second * sampleRate / hopSize) $ int => int nFrames;
+(aggregateTime/second * sampleRate / hopSize + .5) $ int => int nFrames;
 
 // print out
 chout <= IO.newline();
@@ -41,9 +45,12 @@ chout <= IO.newline();
 chout <= IO.newline();
 
 // per-frame MFCC coefficients
-float mfccs [nFrames][nCoeffs];
+float mfccs[nFrames][nCoeffs];
 // average of MFCC coefficients across all frames
 float mfccMean [nCoeffs];
+
+// let one FFTsize of time pass
+fft.size()::samp => now;
 
 // analysis loop
 while( true )

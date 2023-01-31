@@ -1707,6 +1707,9 @@ CK_DLL_MFUN( chout_writestring )
 
     Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->write( val );
+
+    // 1.4.2.1 | (ge) added a single newline -> trigger chout flush
+    if( val == "\n" ) c->flush();
 }
 
 CK_DLL_MFUN( chout_writeint )
@@ -2971,8 +2974,7 @@ Chuck_String * Chuck_IO_Serial::readLine()
         return NULL;
     }
 
-
-    if(!fgets((char *)m_tmp_buf, m_tmp_buf_max, m_cfd))
+    if(!fgets((char *)m_tmp_buf, (int)m_tmp_buf_max, m_cfd))
     {
         EM_log(CK_LOG_WARNING, "(Serial.readLine): error: from fgets");
         return NULL;

@@ -175,12 +175,10 @@ protected:
 public: // static functions
     // chuck version
     static const char * version();
-    #ifndef __DISABLE_OTF_SERVER__
     // chuck int size (in bits)
-    // (this depends on machine, which depends on OTF, so
-    //  disable it if we don't have OTF)
+    // (this depends on machine, which depends on OTF, so disable it if we don't have OTF)
+    // 1.4.2.1 (ge) | reinstated for non-OTF, along with parts of machine
     static t_CKUINT intSize();
-    #endif
     // number of ChucK's
     static t_CKUINT numVMs() { return o_numVMs; };
     // --poop compatibilty
