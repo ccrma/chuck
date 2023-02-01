@@ -33,12 +33,16 @@
 #include "chuck_parse.h"
 #include "chuck_errmsg.h"
 #include <string.h>
-using namespace std;
 
 #ifdef __ANDROID__
 #include "util_platforms.h"
 #endif
 
+#ifdef __PLATFORM_WIN32__
+#include <windows.h> // for win32_tmpfile()
+#endif
+
+using namespace std;
 
 // max path len
 static const t_CKUINT MAX_FILENAME_LEN = 2048;
