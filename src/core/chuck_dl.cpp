@@ -1080,10 +1080,10 @@ static t_CKUINT ck_get_srate(CK_DL_API api, Chuck_VM_Shred * shred)
     return shred->vm_ref->srate();
 }
 
-static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM_Shred * shred, std::string & name )
+static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM_Shred * shred, const char * name )
 {
     Chuck_Env * env = shred->vm_ref->env();
-    a_Id_List list = new_id_list( name.c_str(), 0 ); // TODO: nested types
+    a_Id_List list = new_id_list( name, 0 ); // TODO: nested types
 
     Chuck_Type * t = type_engine_find_type( env, list );
 
@@ -1102,50 +1102,50 @@ static Chuck_DL_Api::Object ck_create( CK_DL_API api, Chuck_VM_Shred * shred, Ch
     return ( Chuck_DL_Api::Object ) o;
 }
 
-static Chuck_DL_Api::String ck_create_string( CK_DL_API api, Chuck_VM_Shred * shred, std::string & str )
+static Chuck_DL_Api::String ck_create_string( CK_DL_API api, Chuck_VM_Shred * shred, const char * cstr )
 {
     Chuck_String * string = ( Chuck_String * ) instantiate_and_initialize_object( shred->vm_ref->env()->t_string, shred->vm_ref );
 
-    string->set( str );
+    string->set( cstr );
 
     return ( Chuck_DL_Api::String ) string;
 }
 
-static t_CKBOOL ck_get_mvar_int( CK_DL_API api, Chuck_DL_Api::Object, std::string &, t_CKINT & )
+static t_CKBOOL ck_get_mvar_int( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, t_CKINT & value )
 {
     return TRUE;
 }
 
-static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object, std::string &, t_CKFLOAT & )
+static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, t_CKFLOAT & value )
 {
     return TRUE;
 }
 
-static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object, std::string &, t_CKDUR & )
+static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, t_CKDUR & value )
 {
     return TRUE;
 }
 
-static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object, std::string &, t_CKTIME & )
+static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, t_CKTIME & value )
 {
     return TRUE;
 }
 
-static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object, std::string &, Chuck_DL_Api::String & )
+static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::String & str )
 {
     return TRUE;
 }
 
-static t_CKBOOL ck_get_mvar_object( CK_DL_API api, Chuck_DL_Api::Object, std::string &, Chuck_DL_Api::Object & )
+static t_CKBOOL ck_get_mvar_object( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::Object & object )
 {
     return TRUE;
 }
 
-static t_CKBOOL ck_set_string( CK_DL_API api, Chuck_DL_Api::String s, std::string & str )
+static t_CKBOOL ck_set_string( CK_DL_API api, Chuck_DL_Api::String s, const char * str )
 {
     assert( s != NULL );
 
-    Chuck_String * string = ( Chuck_String * ) s;
+    Chuck_String * string = (Chuck_String *) s;
     string->set( str );
 
     return TRUE;
