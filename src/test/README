@@ -13,3 +13,11 @@ the text file. If they match, the test passes.
 
 The simplest way to capture an answer is:  chuck 9001_sporks.ck 2> 
 9001_sporks.txt
+
+
+Run tests like this:
+
+```
+python test.py <chuck_executable>
+```
+i.e. your globally installed chuck would be `chuck`, but your built chuck would be `../chuck`
