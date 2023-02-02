@@ -1666,10 +1666,13 @@ struct SFM_Object
 
         SAFE_DELETE_ARRAY( edge );
         edge = new t_CKFLOAT[nr_bands + 1];
+        memset( edge, 0, sizeof( t_CKFLOAT ) * ( nr_bands + 1 ) );
         SAFE_DELETE( bandLoEdge );
         bandLoEdge = new t_CKFLOAT[nr_bands];
+        memset( bandLoEdge, 0, sizeof( t_CKFLOAT ) * nr_bands );
         SAFE_DELETE( bandHiEdge );
         bandHiEdge = new t_CKFLOAT[nr_bands];
+        memset( bandHiEdge, 0, sizeof( t_CKFLOAT ) * nr_bands );
 
         //nominal band edges (Hz)
         for( i = 0; i < this->nr_bands + 1; ++i )
@@ -1688,8 +1691,12 @@ struct SFM_Object
         t_CKFLOAT df = this->sample_rate / size;
 
         //calculate FFT bin indexes for each band's edges
+        SAFE_DELETE( il );
         il = new t_CKINT[nr_bands];
+        memset( il, 0, sizeof( t_CKINT ) * nr_bands );
+        SAFE_DELETE( ih );
         ih = new t_CKINT[nr_bands];
+        memset( ih, 0, sizeof( t_CKINT ) * nr_bands );
         for( i = 0; i < this->nr_bands; ++i )
         {
 
@@ -1917,12 +1924,16 @@ struct Chroma_Object
         // memory allocation and initialization
         SAFE_DELETE_ARRAY( m );
         m = new t_CKFLOAT[9];
+        memset( m, 0, sizeof( t_CKFLOAT ) * 9 );
         SAFE_DELETE_ARRAY( freq );
         freq = new t_CKFLOAT[size];
+        memset( freq, 0, sizeof( t_CKFLOAT ) * size );
         SAFE_DELETE_ARRAY( filter );
         filter = new t_CKFLOAT[14 * size];
+        memset( filter, 0, sizeof( t_CKFLOAT ) * 14 * size );
         SAFE_DELETE_ARRAY( chord );
         chord = new t_CKFLOAT[14];
+        memset( chord, 0, sizeof( t_CKFLOAT ) * 14 );
         chord[1] = 261.625565; // C4
         chord[2] = 277.182630; // C♯/D♭4
         chord[3] = 293.664747; // D4
