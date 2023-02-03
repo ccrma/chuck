@@ -1115,8 +1115,9 @@ static Chuck_DL_Api::String ck_create_string( CK_DL_API api, Chuck_VM_Shred * sh
 // name: ck_get_mvar()
 // desc: retrieve a class's member variable offset
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_get_mvar(Chuck_DL_Api::Object o, std::string& mvar, te_Type basic_type, t_CKINT& offset)
+static t_CKBOOL ck_get_mvar(Chuck_DL_Api::Object o, const char* name, te_Type basic_type, t_CKINT& offset)
 {
+    std::string mvar(name);
     Chuck_Object* obj = (Chuck_Object*)o;
     Chuck_Type* type = obj->type_ref;
 
@@ -1168,11 +1169,11 @@ static t_CKBOOL ck_get_mvar_int(CK_DL_API api, Chuck_DL_Api::Object obj, const c
     assert(o != NULL);
     t_CKINT offset;
 
-    t_CKBOOL success = ck_get_mvar(o, mvar, te_int, offset);
+    t_CKBOOL success = ck_get_mvar(obj, name, te_int, offset);
 
     if (success)
     {
-        Chuck_Object* obj = (Chuck_Object*)o;
+        Chuck_Object* obj = (Chuck_Object*)obj;
         m_int = OBJ_MEMBER_INT(obj, offset); // get offset
     }
     return success;
@@ -1187,11 +1188,11 @@ static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object obj, cons
     assert(o != NULL);
     t_CKINT offset;
 
-    t_CKBOOL success = ck_get_mvar(o, mvar, te_float, offset);
+    t_CKBOOL success = ck_get_mvar(obj, name, te_float, offset);
 
     if (success)
     {
-        Chuck_Object* obj = (Chuck_Object*)o;
+        Chuck_Object* obj = (Chuck_Object*)obj;
         m_float = OBJ_MEMBER_FLOAT(obj, offset); // get offset
     }
     return success;
@@ -1206,12 +1207,12 @@ static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object obj, const 
     assert(o != NULL);
     t_CKINT offset;
 
-    t_CKBOOL success = ck_get_mvar(obj, value, te_dur, offset);
+    t_CKBOOL success = ck_get_mvar(obj, name, te_dur, offset);
 
     if (success)
     {
-        Chuck_Object* obj = (Chuck_Object*)o;
-        m_dur = OBJ_MEMBER_DUR(obj, offset); // get offset
+        Chuck_Object* obj = (Chuck_Object*)obj;
+        value = OBJ_MEMBER_DUR(obj, offset); // get offset
     }
     return success;
 }
@@ -1225,12 +1226,12 @@ static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object obj, const
     assert(o != NULL);
     t_CKINT offset;
 
-    t_CKBOOL success = ck_get_mvar(o, mvar, te_time, offset);
+    t_CKBOOL success = ck_get_mvar(obj, name, te_time, offset);
 
     if (success)
     {
-        Chuck_Object* obj = (Chuck_Object*)o;
-        m_time = OBJ_MEMBER_TIME(obj, offset); // get offset
+        Chuck_Object* obj = (Chuck_Object*)obj;
+        value = OBJ_MEMBER_TIME(obj, offset); // get offset
     }
     return success;
 }
@@ -1244,12 +1245,12 @@ static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object obj, con
     assert(o != NULL);
     t_CKINT offset;
 
-    t_CKBOOL success = ck_get_mvar(o, mvar, te_string, offset);
+    t_CKBOOL success = ck_get_mvar(obj, name, te_string, offset);
 
     if (success)
     {
-        Chuck_Object* obj = (Chuck_Object*)o;
-        m_string = OBJ_MEMBER_STRING(obj, offset); // get offset
+        Chuck_Object* obj = (Chuck_Object*)obj;
+        str = OBJ_MEMBER_STRING(obj, offset); // get offset
     }
     return success;
 }
@@ -1264,12 +1265,12 @@ static t_CKBOOL ck_get_mvar_object( CK_DL_API api, Chuck_DL_Api::Object obj, con
     t_CKINT offset;
 
     // TODO how to do this?
-    t_CKBOOL success = ck_get_mvar(o, mvar, te_object, offset);
+    t_CKBOOL success = ck_get_mvar(obj, name, te_object, offset);
 
     if (success)
     {
-        Chuck_Object* obj = (Chuck_Object*)o;
-        m_obj = OBJ_MEMBER_OBJECT(obj, offset); // get offset
+        Chuck_Object* obj = (Chuck_Object*)obj;
+        object = OBJ_MEMBER_OBJECT(obj, offset); // get offset
     }
     return success;
 }
