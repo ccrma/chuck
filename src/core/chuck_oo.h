@@ -624,7 +624,7 @@ public:
 
 
 
-#ifndef __DISABLE_FILEIO__
+// #ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // name: Chuck_IO_File
 // desc: Chuck File IO class
@@ -708,7 +708,7 @@ protected:
     // vm and shred
     Chuck_VM * m_vmRef;
 };
-#endif // __DISABLE_FILEIO__
+// #endif // __DISABLE_FILEIO__
 
 
 

@@ -61,14 +61,14 @@ const t_CKINT Chuck_IO::MODE_ASYNC = 1;
 const t_CKINT Chuck_IO::MODE_SYNC = 1;
 const t_CKINT Chuck_IO::MODE_ASYNC = 0;
 #endif
-#ifndef __DISABLE_FILEIO__
+// #ifndef __DISABLE_FILEIO__
 const t_CKINT Chuck_IO_File::FLAG_READ_WRITE = 0x8;
 const t_CKINT Chuck_IO_File::FLAG_READONLY = 0x10;
 const t_CKINT Chuck_IO_File::FLAG_WRITEONLY = 0x20;
 const t_CKINT Chuck_IO_File::FLAG_APPEND = 0x40;
 const t_CKINT Chuck_IO_File::TYPE_ASCII = 0x80;
 const t_CKINT Chuck_IO_File::TYPE_BINARY = 0x100;
-#endif
+// #endif // __DISABLE_FILEIO__
 
 
 
@@ -2744,7 +2744,7 @@ Chuck_IO::~Chuck_IO()
 
 
 
-#ifndef __DISABLE_FILEIO__
+// #ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // name: Chuck_IO_File()
 // desc: constructor
@@ -3694,7 +3694,7 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
     return (THREAD_RETURN)0;
 }
 #endif // __DISABLE_THREADS__
-#endif // __DISABLE_FILEIO__
+// #endif // __DISABLE_FILEIO__
 
 
 
