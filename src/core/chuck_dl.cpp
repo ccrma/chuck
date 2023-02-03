@@ -1166,7 +1166,7 @@ static t_CKBOOL ck_get_mvar(Chuck_DL_Api::Object o, const char* name, te_Type ba
 //-----------------------------------------------------------------------------
 static t_CKBOOL ck_get_mvar_int(CK_DL_API api, Chuck_DL_Api::Object obj, const char* name, t_CKINT & m_int)
 {
-    assert(o != NULL);
+    assert(obj != NULL);
     t_CKINT offset;
 
     t_CKBOOL success = ck_get_mvar(obj, name, te_int, offset);
@@ -1185,7 +1185,7 @@ static t_CKBOOL ck_get_mvar_int(CK_DL_API api, Chuck_DL_Api::Object obj, const c
 //-----------------------------------------------------------------------------
 static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object obj, const char* name, t_CKFLOAT & m_float )
 {
-    assert(o != NULL);
+    assert(obj != NULL);
     t_CKINT offset;
 
     t_CKBOOL success = ck_get_mvar(obj, name, te_float, offset);
@@ -1223,7 +1223,7 @@ static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object obj, const 
 //-----------------------------------------------------------------------------
 static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, t_CKTIME & value )
 {
-    assert(o != NULL);
+    assert(obj != NULL);
     t_CKINT offset;
 
     t_CKBOOL success = ck_get_mvar(obj, name, te_time, offset);
@@ -1242,7 +1242,7 @@ static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object obj, const
 //-----------------------------------------------------------------------------
 static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::String & str )
 {
-    assert(o != NULL);
+    assert(obj != NULL);
     t_CKINT offset;
 
     t_CKBOOL success = ck_get_mvar(obj, name, te_string, offset);
@@ -1261,7 +1261,7 @@ static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object obj, con
 //-----------------------------------------------------------------------------
 static t_CKBOOL ck_get_mvar_object( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::Object & object )
 {
-    assert(o != NULL);
+    assert(obj != NULL);
     t_CKINT offset;
 
     // TODO how to do this?
