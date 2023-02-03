@@ -200,9 +200,11 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_svar( env, "int", "MODE_SYNC",
                                  TRUE, (t_CKUINT)&Chuck_IO::MODE_SYNC ) ) goto error;
 
+#ifndef __DISABLE_FILEIO__
     // add MODE_ASYNC
     if( !type_engine_import_svar( env, "int", "MODE_ASYNC",
                                  TRUE, (t_CKUINT)&Chuck_IO::MODE_ASYNC ) ) goto error;
+#endif
 
     // end the class import
     type_engine_import_class_end( env );
@@ -220,7 +222,7 @@ error:
 
 
 
-#ifndef __DISABLE_FILEIO__
+// #ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // name: init_class_fileio()
 // desc: ...
@@ -379,7 +381,7 @@ error:
 
     return FALSE;
 }
-#endif // __DISABLE_FILEIO__
+// #endif // __DISABLE_FILEIO__
 
 
 
@@ -1298,7 +1300,7 @@ CK_DLL_SFUN( io_newline )
 }
 
 
-#ifndef __DISABLE_FILEIO__
+// #ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // FileIO API
 //-----------------------------------------------------------------------------
@@ -1417,29 +1419,32 @@ CK_DLL_MFUN( fileio_readint )
     t_CKINT defaultflags = Chuck_IO::INT32;
 
     /* (ATODO: doesn't look like asynchronous reading will work)
-     if (f->mode() == Chuck_IO::MODE_ASYNC)
-     {
-     // set up arguments
-     Chuck_IO::async_args *args = new Chuck_IO::async_args;
-     args->RETURN = (void *)RETURN;
-     args->fileio_obj = f;
-     args->intArg = defaultflags;
-     // set shred to wait for I/O completion
-     f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
-     // start thread
-     bool ret = f->m_thread->start( f->readInt_thread, (void *)args );
-     if (!ret) {
-     cerr << "m_thread->start failed; recreating m_thread" << endl;
-     delete f->m_thread;
-     f->m_thread = new XThread;
-     ret = f->m_thread->start( f->readInt_thread, (void *)args );
-     if (!ret) {
-     EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
-     }
-     }
-     } else {*/
+    if (f->mode() == Chuck_IO::MODE_ASYNC)
+    {
+        // set up arguments
+        Chuck_IO::async_args *args = new Chuck_IO::async_args;
+        args->RETURN = (void *)RETURN;
+        args->fileio_obj = f;
+        args->intArg = defaultflags;
+        // set shred to wait for I/O completion
+        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
+        // start thread
+        bool ret = f->m_thread->start( f->readInt_thread, (void *)args );
+        if (!ret)
+        {
+            cerr << "m_thread->start failed; recreating m_thread" << endl;
+            delete f->m_thread;
+            f->m_thread = new XThread;
+            ret = f->m_thread->start( f->readInt_thread, (void *)args );
+            if (!ret) {
+                EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
+            }
+        }
+    } else {*/
+
     t_CKINT ret = f->readInt( defaultflags );
     RETURN->v_int = ret;
+
     //}
     // ATODO: Debug
     //sleep(1);
@@ -1449,10 +1454,8 @@ CK_DLL_MFUN( fileio_readint )
 CK_DLL_MFUN( fileio_readintflags )
 {
     t_CKINT flags = GET_NEXT_INT(ARGS);
-
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
     t_CKINT ret = f->readInt( flags );
-
     RETURN->v_int = ret;
 }
 
@@ -1480,8 +1483,9 @@ CK_DLL_MFUN( fileio_more )
 CK_DLL_MFUN( fileio_writestring )
 {
     std::string val = GET_NEXT_STRING(ARGS)->str();
-
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+
+#ifndef __DISABLE_FILEIO__ // 1.4.2.1 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -1507,13 +1511,17 @@ CK_DLL_MFUN( fileio_writestring )
     } else {
         f->write(val);
     }
+#else
+    f->write(val);
+#endif // __DISABLE_FILEIO__
 }
 
 CK_DLL_MFUN( fileio_writeint )
 {
     t_CKINT val = GET_NEXT_INT(ARGS);
-
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+
+#ifndef __DISABLE_FILEIO__ // 1.4.2.1 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -1539,14 +1547,18 @@ CK_DLL_MFUN( fileio_writeint )
     } else {
         f->write(val);
     }
+#else
+    f->write(val);
+#endif // __DISABLE_FILEIO__
 }
 
 CK_DLL_MFUN( fileio_writeintflags )
 {
     t_CKINT val = GET_NEXT_INT(ARGS);
     t_CKINT flags = GET_NEXT_INT(ARGS);
-
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+
+#ifndef __DISABLE_FILEIO__  // 1.4.2.1 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // TODO: pass flags in args
@@ -1573,13 +1585,18 @@ CK_DLL_MFUN( fileio_writeintflags )
     } else {
         f->write(val, flags);
     }
+#else
+    f->write(val, flags);
+#endif // __DISABLE_FILEIO__
+
 }
 
 CK_DLL_MFUN( fileio_writefloat )
 {
     t_CKFLOAT val = GET_NEXT_FLOAT(ARGS);
-
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+
+#ifndef __DISABLE_FILEIO__  // 1.4.2.1 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -1605,8 +1622,14 @@ CK_DLL_MFUN( fileio_writefloat )
     } else {
         f->write(val);
     }
+#else
+    f->write(val);
+#endif //__DISABLE_FILEIO__
 }
-#endif // __DISABLE_FILEIO__
+
+// #endif // __DISABLE_FILEIO__
+
+
 
 
 //-----------------------------------------------------------------------------
