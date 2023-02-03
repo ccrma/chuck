@@ -30,6 +30,10 @@ KNN2 knn;
 labels.size() => int NUM_LABELS;
 // train the model
 knn.train( features, labels );
+// optional: weigh the feature dimensions
+[1.0, 1.0] @=> float weights[];
+// optional: set the weights across feature dimensions
+knn.weigh( weights );
 
 // provide an unlabled test query
 [0.5, 0.5] @=> float q[];
