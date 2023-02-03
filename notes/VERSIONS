@@ -64,13 +64,62 @@ development of this version. https://chuck.stanford.edu/webchuck/
       |- kurtosis.ck -- shows Kurtosis unit analyzer
       |- sfm.ck -- shows SFM (spectral flatness measure) unit analyzer
  - (added) PCA [ChAI] (thanks Yikai Li)
-      |- A principle component analysis (PCA) utility, commonly used for dimensionality reduction.
+      |- A principle component analysis (PCA) utility, commonly used
+         for dimensionality reduction.
       |- (inheritance) PCA -> Object
-   -------------------
+      -------------------
       static void reduce( float[][] input, int D, float[][] output );
         Dimension-reduce 'input' (NxM) to 'output' (NxD) as the projection
         of the input data onto its first 'D' principle components
- - (added) examples/ai/pca/pca.ck
+ - (added) example: ai/pca/pca.ck
+ - (reworked) KNN [ChAI]
+      |- A basic k-NN utility that searches for k nearest
+         neighbors from a set of observations / feature
+         vectors. (Also see KNN2. The differrence between KNN
+         and KNN2 is that KNN does not deal with labels whereas
+         KNN2 is designed to work with labels.)
+      |- (inheritance) KNN -> Object
+      -------------------
+      int train( float[][] x );
+          Train the KNN model with the given observations 'x'
+      void search( float[] query, int k, int[] indices );
+          Search for the 'k' nearest neighbors of 'query' and
+          return their corresponding indices.
+      void search( float[] query, int k, int[] indices,
+                   float[][] observations );
+          Search for the 'k' nearest neighbors of 'query' and
+          return their corresponding indices and observations
+      void weigh( float[] weights );
+          Set the weights for each dimension in the data.
+  - (added) KNN2 [ChAI] (thanks Yikai Li)
+       |- A k-NN utility that predicts probabilities of class
+          membership based on distances from a test input to its
+          k nearest neighbors. (Also see KNN. The differrence
+          between KNN and KNN2 is that KNN does not deal with
+          labels whereas KNN2 is designed to work with labels.)
+       |- (inheritance) KNN2 -> Object
+      -------------------
+      int train( float[][] x, int[] labels );
+          Train the KNN model with the given samples 'x' and
+          corresponding labels.
+      int predict( float[] query, int k, float[] prob );
+          Predict the output probabilities 'prob' given unlabeled test
+          input 'query' based on distances to 'k' nearest neighbors.
+      void search( float[] query, int k, int[] labels );
+          Search for the 'k' nearest neighbors of 'query' and return
+          their labels.
+      void search( float[] query, int k, int[] labels, int[] indices );
+          Search for the 'k' nearest neighbors of 'query' and return
+          their labels and indices.
+      void search( float[] query, int k, int[] labels, int[] indices,
+                   float[][] observations);
+          Search for the 'k' nearest neighbors of 'query' and return
+          their labels, indices, and observations.
+      void weigh( float[] weights );
+          Set the weights for each dimension in the data.
+ - (added) example: ai/knn/knn-search.ck
+ - (added) example: ai/knn/knn2-classify.ck
+ - (added) example: ai/knn/knn2-search.ck
  - (added) array.zero()
       |- zero out the contents of the array; size is unchanged.
  - (added) Math functions 
@@ -160,6 +209,8 @@ development of this version. https://chuck.stanford.edu/webchuck/
       level in chuck or miniAudicle to WARNING or higher to enable
       printing), and allows program to procede silently. (Example that
       previously crashed: 'FM fm => dac; 1::second => now;')
+  - (developer) Chugin API clients in C++ now able to create
+      strings and access member variables (thanks Nick Shaheed!)
 
 01.4.2.0 (January 2023)
 ---

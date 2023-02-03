@@ -59,6 +59,7 @@ CK_DLL_CTOR( KNN_ctor );
 CK_DLL_DTOR( KNN_dtor );
 CK_DLL_MFUN( KNN_train );
 CK_DLL_MFUN( KNN_search );
+CK_DLL_MFUN( KNN_search2 );
 CK_DLL_MFUN( KNN_weigh );
 // 1.4.2.1 (yikai) added KNN2
 CK_DLL_CTOR( KNN2_ctor );
@@ -161,7 +162,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // doc string
     doc =
-        "a basic k-NN utility that returns the indices of k nearest neighbors. (also see KNN2)";
+        "a basic k-NN utility that searches for k nearest neighbors from a set of observations / feature vectors. (Also see KNN2. The differrence between KNN and KNN2 is that KNN does not deal with labels whereas KNN2 is designed to work with labels.)";
 
     // begin class definition
     if( !type_engine_import_class_begin( env, "KNN", "Object", env->global(), KNN_ctor, KNN_dtor, doc.c_str() ) )
@@ -174,7 +175,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     // train
     func = make_new_mfun( "int", "train", KNN_train );
     func->add_arg( "float[][]", "x" );
-    func->doc = "Train the KNN model with the given samples vectors 'x'";
+    func->doc = "Train the KNN model with the given observations 'x'";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // search
@@ -182,13 +183,22 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "query" );
     func->add_arg( "int", "k" );
     func->add_arg( "int[]", "indices" );
-    func->doc = "Search for the 'k' nearest neighbors of 'query' and return their respective indices.";
+    func->doc = "Search for the 'k' nearest neighbors of 'query' and return their corresponding indices.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // search
+    func = make_new_mfun( "void", "search", KNN_search2 );
+    func->add_arg( "float[]", "query" );
+    func->add_arg( "int", "k" );
+    func->add_arg( "int[]", "indices" );
+    func->add_arg( "float[][]", "observations" );
+    func->doc = "Search for the 'k' nearest neighbors of 'query' and return their corresponding indices and observations";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // weigh
     func = make_new_mfun( "void", "weigh", KNN_weigh );
     func->add_arg( "float[]", "weights" );
-    func->doc = "Set the weights for each dimension of the input vectors.";
+    func->doc = "Set the weights for each dimension in the data.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -200,7 +210,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // doc string
     doc =
-        "a k-NN utility that predicts probabilities of class membership based on distances from a test input to its k nearest neighbors. (also see KNN)";
+        "a k-NN utility that predicts probabilities of class membership based on distances from a test input to its k nearest neighbors. (Also see KNN. The differrence between KNN and KNN2 is that KNN does not deal with labels whereas KNN2 is designed to work with labels.)";
 
     // begin class definition
     if( !type_engine_import_class_begin( env, "KNN2", "Object", env->global(), KNN2_ctor, KNN2_dtor, doc.c_str() ) )
@@ -213,8 +223,8 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     // train
     func = make_new_mfun( "int", "train", KNN2_train );
     func->add_arg( "float[][]", "x" );
-    func->add_arg( "int[]", "y" );
-    func->doc = "Train the KNN model with the given samples 'x' and corresponding labels 'y'.";
+    func->add_arg( "int[]", "labels" );
+    func->doc = "Train the KNN model with the given observations 'x' and corresponding labels.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // predict
@@ -223,7 +233,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int", "k" );
     func->add_arg( "float[]", "prob" );
     func->doc =
-        "Predict the output probabilities ('prob') given unlabeled test input 'query' based on distances to 'k' nearest neighbors.";
+        "Predict the output probabilities 'prob' given unlabeled test input 'query' based on distances to 'k' nearest neighbors.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // search
@@ -250,15 +260,15 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int", "k" );
     func->add_arg( "int[]", "labels" );
     func->add_arg( "int[]", "indices" );
-    func->add_arg( "float[][]", "features" );
+    func->add_arg( "float[][]", "observations" );
     func->doc =
-        "Search for the 'k' nearest neighbors of 'query' and return their labels, indices, and feature vectors.";
+        "Search for the 'k' nearest neighbors of 'query' and return their labels, indices, and observations.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // weigh
     func = make_new_mfun( "void", "weigh", KNN2_weigh );
     func->add_arg( "float[]", "weights" );
-    func->doc = "Set the weights for each dimension of the input vectors.";
+    func->doc = "Set the weights for each dimension in the data.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -907,6 +917,39 @@ public:
         }
     }
 
+    // search; returns labels, indices, and feature vectors
+    void search3b( const vector<t_CKFLOAT> & query,
+                  t_CKINT k,
+                  Chuck_Array4 & indices_,
+                  Chuck_Array4 & features_ )
+    {
+        // init
+        ChaiVectorFast<t_CKINT> indices( k );
+        // search
+        getNearestNeighbors( query, k, indices );
+        // resize
+        indices_.set_size( k );
+        // check dimensions
+        if( features_.size() < k )
+        {
+            Chuck_Array8 * x_i = features_.size() ? (Chuck_Array8 *)features_.m_vector[0] : NULL;
+            EM_error3( "KNN: insufficient 'features' matrix provided: %dx%d (expecting %dx%d)",
+                       features_.size(), x_i != NULL ? x_i->m_vector.size() : 0, k, this->X->xDim() );
+            return;
+        }
+        // copy
+        Chuck_Array8 * x_i;
+        for( t_CKINT i = 0; i < k; i++ )
+        {
+            indices_.m_vector[i] = indices[i];
+            x_i = (Chuck_Array8 *)features_.m_vector[i];
+            for( t_CKINT j = 0; j < X->yDim(); j++ )
+            {
+                x_i->m_vector[j] = X->v( indices.v( i ), j );
+            }
+        }
+    }
+
     // predict
     void predict( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_Array8 & prob_ )
     {
@@ -1012,6 +1055,28 @@ CK_DLL_MFUN( KNN_search )
     // search0
     knn->search0( query->m_vector, k, *indices );
 }
+
+CK_DLL_MFUN( KNN_search2 )
+{
+    // get object
+    KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
+    // get args
+    Chuck_Array8 * query = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    t_CKINT k = GET_NEXT_INT( ARGS );
+    Chuck_Array4 * indices = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array4 * features = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+
+    // check for NULL
+    if( query == NULL || indices == NULL || features == NULL )
+    {
+        EM_error3( "KNN2.search(): NULL input encountered..." );
+        return;
+    }
+
+    // search3
+    knn->search3b( query->m_vector, k, *indices, *features );
+}
+
 
 CK_DLL_MFUN( KNN_weigh )
 {
