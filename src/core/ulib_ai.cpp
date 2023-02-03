@@ -59,6 +59,7 @@ CK_DLL_CTOR( KNN_ctor );
 CK_DLL_DTOR( KNN_dtor );
 CK_DLL_MFUN( KNN_train );
 CK_DLL_MFUN( KNN_search );
+CK_DLL_MFUN( KNN_weigh );
 // 1.4.2.1 (yikai) added KNN2
 CK_DLL_CTOR( KNN2_ctor );
 CK_DLL_DTOR( KNN2_dtor );
@@ -67,6 +68,7 @@ CK_DLL_MFUN( KNN2_predict );
 CK_DLL_MFUN( KNN2_search );
 CK_DLL_MFUN( KNN2_search2 );
 CK_DLL_MFUN( KNN2_search3 );
+CK_DLL_MFUN( KNN2_weigh );
 // offset
 static t_CKUINT KNN_offset_data = 0;
 static t_CKUINT KNN2_offset_data = 0;
@@ -133,7 +135,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
         return FALSE;
 
     // data offset
-    SVM_offset_data = type_engine_import_mvar( env, "float", "@SVM_data", FALSE );
+    SVM_offset_data = type_engine_import_mvar( env, "int", "@SVM_data", FALSE );
     if( SVM_offset_data == CK_INVALID_OFFSET ) goto error;
 
     // train
@@ -166,7 +168,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
         return FALSE;
 
     // data offset
-    KNN_offset_data = type_engine_import_mvar( env, "float", "@KNN_data", FALSE );
+    KNN_offset_data = type_engine_import_mvar( env, "int", "@KNN_data", FALSE );
     if( KNN_offset_data == CK_INVALID_OFFSET ) goto error;
 
     // train
@@ -181,6 +183,12 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int", "k" );
     func->add_arg( "int[]", "indices" );
     func->doc = "Search for the 'k' nearest neighbors of 'query' and return their respective indices.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // weigh
+    func = make_new_mfun( "void", "weigh", KNN_weigh );
+    func->add_arg( "float[]", "weights" );
+    func->doc = "Set the weights for each dimension of the input vectors.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -199,7 +207,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
         return FALSE;
 
     // data offset
-    KNN_offset_data = type_engine_import_mvar( env, "float", "@KNN2_data", FALSE );
+    KNN_offset_data = type_engine_import_mvar( env, "int", "@KNN2_data", FALSE );
     if( KNN_offset_data == CK_INVALID_OFFSET ) goto error;
 
     // train
@@ -247,6 +255,12 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
         "Search for the 'k' nearest neighbors of 'query' and return their labels, indices, and feature vectors.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // weigh
+    func = make_new_mfun( "void", "weigh", KNN2_weigh );
+    func->add_arg( "float[]", "weights" );
+    func->doc = "Set the weights for each dimension of the input vectors.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -262,7 +276,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
         return FALSE;
 
     // data offset
-    HMM_offset_data = type_engine_import_mvar( env, "float", "@HMM_data", FALSE );
+    HMM_offset_data = type_engine_import_mvar( env, "int", "@HMM_data", FALSE );
     if( HMM_offset_data == CK_INVALID_OFFSET ) goto error;
 
     // init
@@ -310,7 +324,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
         return FALSE;
 
     // data offset
-    Word2Vec_offset_data = type_engine_import_mvar( env, "float", "@Word2Vec_data", FALSE );
+    Word2Vec_offset_data = type_engine_import_mvar( env, "int", "@Word2Vec_data", FALSE );
     if( Word2Vec_offset_data == CK_INVALID_OFFSET ) goto error;
 
     // load
@@ -393,7 +407,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
         return FALSE;
 
     // data offset
-    PCA_offset_data = type_engine_import_mvar( env, "float", "@PCA_data", FALSE );
+    PCA_offset_data = type_engine_import_mvar( env, "int", "@PCA_data", FALSE );
     if( PCA_offset_data == CK_INVALID_OFFSET ) goto error;
 
     // transform
@@ -401,7 +415,8 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[][]", "input" );
     func->add_arg( "int", "D" );
     func->add_arg( "float[][]", "output" );
-    func->doc = "dimension-reduce 'input' (NxM) to 'output' (NxD) as the projection of the input data onto its first 'D' principle components";
+    func->doc =
+        "dimension-reduce 'input' (NxM) to 'output' (NxD) as the projection of the input data onto its first 'D' principle components";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // end the class import
@@ -673,27 +688,37 @@ public:
     // constructor
     KNN_Object()
     {
-        X = new ChaiMatrixFast<t_CKFLOAT>();
-        Y = new ChaiVectorFast<t_CKUINT>();
+        X = NULL;
+        Y = NULL;
+        weights = NULL;
     }
 
     // destructor
     ~KNN_Object()
     {
+        clear();
+    }
+
+    // clear
+    void clear()
+    {
         SAFE_DELETE( X );
         SAFE_DELETE( Y );
+        SAFE_DELETE( weights );
     }
 
     // train
     t_CKINT train( Chuck_Array4 & x_ )
     {
+        clear();
         // init
         t_CKINT n_sample = x_.size();
         t_CKUINT v;
         x_.get( 0, &v );
         Chuck_Array8 * x_i = (Chuck_Array8 *)v;
         t_CKINT x_dim = x_i->size();
-        X->allocate( n_sample, x_dim );
+        X = new ChaiMatrixFast<t_CKFLOAT>( n_sample, x_dim );
+        weights = new ChaiVectorFast<t_CKFLOAT>( x_dim );
         // copy
         for( t_CKINT i = 0; i < n_sample; i++ )
         {
@@ -704,20 +729,27 @@ public:
                 x_i->get( j, &X->v( i, j ) );
             }
         }
+        // init weights
+        for( t_CKINT i = 0; i < x_dim; i++ )
+        {
+            weights->v( i ) = 1.0;
+        }
         return 0;
     }
 
     // train
     t_CKINT train( Chuck_Array4 & x_, Chuck_Array4 & y_ )
     {
+        clear();
         // init
         t_CKINT n_sample = x_.size();
         t_CKUINT v;
         x_.get( 0, &v );
         Chuck_Array8 * x_i = (Chuck_Array8 *)v;
         t_CKUINT x_dim = x_i->size();
-        X->allocate( n_sample, x_dim );
-        Y->allocate( n_sample );
+        X = new ChaiMatrixFast<t_CKFLOAT>( n_sample, x_dim );
+        Y = new ChaiVectorFast<t_CKUINT>( n_sample );
+        weights = new ChaiVectorFast<t_CKFLOAT>( x_dim );
         // copy
         for( t_CKINT i = 0; i < n_sample; i++ )
         {
@@ -728,6 +760,11 @@ public:
                 x_i->get( j, &X->v( i, j ) );
             }
             y_.get( i, &Y->v( i ) );
+        }
+        // init weights
+        for( t_CKINT i = 0; i < x_dim; i++ )
+        {
+            weights->v( i ) = 1.0;
         }
         return 0;
     }
@@ -760,7 +797,7 @@ public:
             {
                 // extra check in case query less than training dimensions
                 diff = ( j < query.size() ? query[j] : 0.0 ) - X->v( i, j );
-                distance += diff * diff;
+                distance += diff * diff * weights->v( j );
             }
             // check
             for( t_CKINT j = 0; j < k; j++ )
@@ -891,9 +928,32 @@ public:
         }
     }
 
+    // weigh
+    void weigh( const vector<t_CKFLOAT> & weights_ )
+    {
+        // sanity check
+        if( X == NULL )
+        {
+            EM_error3( "KNN: cannot weigh without training data" );
+            return;
+        }
+        if( weights_.size() != X->yDim() )
+        {
+            EM_error3( "KNN: invalid 'weights' vector provided: %d (expecting %d)",
+                       weights_.size(), X->yDim() );
+            return;
+        }
+        // copy
+        for( t_CKINT i = 0; i < weights_.size(); i++ )
+        {
+            weights->v( i ) = weights_[i];
+        }
+    }
+
 private:
     ChaiMatrixFast<t_CKFLOAT> * X;
     ChaiVectorFast<t_CKUINT> * Y;
+    ChaiVectorFast<t_CKFLOAT> * weights;
 };
 
 
@@ -951,6 +1011,16 @@ CK_DLL_MFUN( KNN_search )
 
     // search0
     knn->search0( query->m_vector, k, *indices );
+}
+
+CK_DLL_MFUN( KNN_weigh )
+{
+    // get object
+    KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN_offset_data );
+    // get args
+    Chuck_Array8 * weights = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // weigh
+    knn->weigh( weights->m_vector );
 }
 
 
@@ -1072,6 +1142,16 @@ CK_DLL_MFUN( KNN2_search3 )
 
     // search3
     knn->search3( query->m_vector, k, *labels, *indices, *features );
+}
+
+CK_DLL_MFUN( KNN2_weigh )
+{
+    // get object
+    KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
+    // get args
+    Chuck_Array8 * weights = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // weigh
+    knn->weigh( weights->m_vector );
 }
 
 //-----------------------------------------------------------------------------
@@ -2065,7 +2145,10 @@ public:
     { }
 
     /*  Reduce a real, symmetric matrix to a symmetric, tridiag. matrix. */
-    static void tred2( ChaiMatrixFast<t_CKFLOAT> & a, t_CKINT m, ChaiVectorFast<t_CKFLOAT> & d, ChaiVectorFast<t_CKFLOAT> & e )
+    static void tred2( ChaiMatrixFast<t_CKFLOAT> & a,
+                       t_CKINT m,
+                       ChaiVectorFast<t_CKFLOAT> & d,
+                       ChaiVectorFast<t_CKFLOAT> & e )
     /* Householder reductiom of matrix a to tridiagomal form.
     Algorithm: Martim et al., Num. Math. 11, 181-195, 1968.
     Ref: Smith et al., Matrix Eigemsystem Routimes -- EISPACK Guide
@@ -2153,7 +2236,10 @@ public:
     }
 
     /*  Tridiagonal QL algorithm -- Implicit  */
-    static void tqli( ChaiVectorFast<t_CKFLOAT> & d, ChaiVectorFast<t_CKFLOAT> & e, t_CKINT m, ChaiMatrixFast<t_CKFLOAT> & z )
+    static void tqli( ChaiVectorFast<t_CKFLOAT> & d,
+                      ChaiVectorFast<t_CKFLOAT> & e,
+                      t_CKINT m,
+                      ChaiMatrixFast<t_CKFLOAT> & z )
     /*
      Source code adapted from F. Murtagh, Munich, 6 June 1989
      http://astro.u-strasbg.fr/~fmurtagh/mda-sw/pca.c

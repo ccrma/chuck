@@ -22,6 +22,10 @@ KNN knn;
  [2.0, 2.0]] @=> float features[][];
 // train the model
 knn.train( features );
+// optional: weigh feature dimensions
+[1.0, 1.0] @=> float weights[];
+// optional: set the weights across dimensions
+knn.weigh( weights );
 
 // provide a test query
 [0.5, 0.5] @=> float q[];
