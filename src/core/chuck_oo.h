@@ -228,7 +228,9 @@ public:
     virtual t_CKINT find( const std::string & key ) = 0; // find
     virtual t_CKINT erase( const std::string & key ) = 0; // erase
     virtual void clear( ) = 0; // clear
-    // get map keys | added (1.4.1.2) nshaheed
+    virtual void zero( t_CKUINT start, t_CKUINT end ) = 0; // zero
+    virtual void zero() = 0; // zero (all)
+    // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys ) = 0;
 
     Chuck_Type * m_array_type;
@@ -256,9 +258,10 @@ public:
     t_CKINT set( const std::string & key, t_CKUINT val );
     t_CKINT push_back( t_CKUINT val );
     t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKUINT pos );
+    t_CKINT pop_out( t_CKINT pos );
     t_CKINT back( t_CKUINT * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
+    void    zero() { this->zero(0, m_vector.size()); }
 
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }
@@ -269,13 +272,16 @@ public:
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY4_DATASIZE; }
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY4_DATAKIND; }
-    // get map keys | added (1.4.1.2) nshaheed
+    // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
 
 public:
     std::vector<t_CKUINT> m_vector;
     std::map<std::string, t_CKUINT> m_map;
     t_CKBOOL m_is_obj;
+
+    // TODO: may need additional information here for set_size, if this is part of a multi-dim array
+
     // t_CKINT m_size;
     // t_CKINT m_capacity;
 };
@@ -302,9 +308,10 @@ public:
     t_CKINT set( const std::string & key, t_CKFLOAT val );
     t_CKINT push_back( t_CKFLOAT val );
     t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKUINT pos );
+    t_CKINT pop_out( t_CKINT pos );
     t_CKINT back( t_CKFLOAT * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
+    void    zero() { this->zero(0, m_vector.size()); }
 
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }
@@ -315,7 +322,7 @@ public:
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY8_DATASIZE; }
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY8_DATAKIND; }
-    // get map keys | added (1.4.1.2) nshaheed
+    // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
 
 public:
@@ -347,9 +354,10 @@ public:
     t_CKINT set( const std::string & key, const t_CKCOMPLEX & val );
     t_CKINT push_back( const t_CKCOMPLEX & val );
     t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKUINT pos );
+    t_CKINT pop_out( t_CKINT pos );
     t_CKINT back( t_CKCOMPLEX * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
+    void    zero() { this->zero(0, m_vector.size()); }
 
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }
@@ -360,7 +368,7 @@ public:
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY16_DATASIZE; }
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY16_DATAKIND; }
-    // get map keys | added (1.4.1.2) nshaheed
+    // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
 
 public:
@@ -395,6 +403,7 @@ public:
     t_CKINT pop_out( t_CKUINT pos );
     t_CKINT back( t_CKVEC3 * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
+    void    zero() { this->zero(0, m_vector.size()); }
 
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }
@@ -405,7 +414,7 @@ public:
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY24_DATASIZE; }
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY24_DATAKIND; }
-    // get map keys | added (1.4.1.2) nshaheed
+    // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
 
 public:
@@ -438,6 +447,7 @@ public:
     t_CKINT pop_out( t_CKUINT pos );
     t_CKINT back( t_CKVEC4 * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
+    void    zero() { this->zero(0, m_vector.size()); }
 
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }

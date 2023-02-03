@@ -261,7 +261,7 @@ struct Osc_Data
 {
     t_CKFLOAT num;
     t_CKFLOAT freq;
-    int    sync;
+    t_CKINT    sync;
     t_CKUINT srate;
     t_CKFLOAT width;
 
@@ -598,7 +598,7 @@ CK_DLL_TICK( pulseosc_tick )
         d->phase += d->num;
         // keep the phase between 0 and 1
         if( d->phase > 1.0 ) d->phase -= 1.0;
-		else if( d->phase < 0.0 ) d->phase += 1.0;
+        else if( d->phase < 0.0 ) d->phase += 1.0;
     }
 
     return TRUE;

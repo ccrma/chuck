@@ -1080,10 +1080,10 @@ static t_CKUINT ck_get_srate(CK_DL_API api, Chuck_VM_Shred * shred)
     return shred->vm_ref->srate();
 }
 
-static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM_Shred * shred, std::string & name )
+static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM_Shred * shred, const char * name )
 {
     Chuck_Env * env = shred->vm_ref->env();
-    a_Id_List list = new_id_list( name.c_str(), 0 ); // TODO: nested types
+    a_Id_List list = new_id_list( name, 0 ); // TODO: nested types
 
     Chuck_Type * t = type_engine_find_type( env, list );
 
@@ -1102,11 +1102,11 @@ static Chuck_DL_Api::Object ck_create( CK_DL_API api, Chuck_VM_Shred * shred, Ch
     return ( Chuck_DL_Api::Object ) o;
 }
 
-static Chuck_DL_Api::String ck_create_string( CK_DL_API api, Chuck_VM_Shred * shred, std::string & str )
+static Chuck_DL_Api::String ck_create_string( CK_DL_API api, Chuck_VM_Shred * shred, const char * cstr )
 {
     Chuck_String * string = ( Chuck_String * ) instantiate_and_initialize_object( shred->vm_ref->env()->t_string, shred->vm_ref );
 
-    string->set( str );
+    string->set( cstr );
 
     return ( Chuck_DL_Api::String ) string;
 }
@@ -1163,7 +1163,7 @@ static t_CKBOOL ck_get_mvar(Chuck_DL_Api::Object o, std::string& mvar, te_Type b
 // name: ck_get_mvar_int()
 // desc: retrieve a class's member variable of type int
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_get_mvar_int( CK_DL_API api, Chuck_DL_Api::Object o, std::string & mvar, t_CKINT & m_int )
+static t_CKBOOL ck_get_mvar_int(CK_DL_API api, Chuck_DL_Api::Object obj, const char* name, t_CKINT & m_int)
 {
     assert(o != NULL);
     t_CKINT offset;
@@ -1182,7 +1182,7 @@ static t_CKBOOL ck_get_mvar_int( CK_DL_API api, Chuck_DL_Api::Object o, std::str
 // name: ck_get_mvar_float()
 // desc: retrieve a class's member variable of type float
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object o, std::string & mvar, t_CKFLOAT & m_float )
+static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object obj, const char* name, t_CKFLOAT & m_float )
 {
     assert(o != NULL);
     t_CKINT offset;
@@ -1201,12 +1201,12 @@ static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object o, std::s
 // name: ck_get_mvar_dur()
 // desc: retrieve a class's member variable of type dur
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object o, std::string & mvar, t_CKDUR & m_dur )
+static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, t_CKDUR & value )
 {
     assert(o != NULL);
     t_CKINT offset;
 
-    t_CKBOOL success = ck_get_mvar(o, mvar, te_dur, offset);
+    t_CKBOOL success = ck_get_mvar(obj, value, te_dur, offset);
 
     if (success)
     {
@@ -1220,7 +1220,7 @@ static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object o, std::str
 // name: ck_get_mvar_time()
 // desc: retrieve a class's member variable of type time
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object o, std::string & mvar, t_CKTIME & m_time )
+static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, t_CKTIME & value )
 {
     assert(o != NULL);
     t_CKINT offset;
@@ -1239,7 +1239,7 @@ static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object o, std::st
 // name: ck_get_mvar_string()
 // desc: retrieve a class's member variable of type string
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object o, std::string & mvar, Chuck_DL_Api::String & m_string)
+static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::String & str )
 {
     assert(o != NULL);
     t_CKINT offset;
@@ -1258,11 +1258,11 @@ static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object o, std::
 // name: ck_get_mvar_object()
 // desc: retrieve a class's member variable of type object
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_get_mvar_object( CK_DL_API api, Chuck_DL_Api::Object o, std::string & mvar, Chuck_DL_Api::Object & m_obj )
+static t_CKBOOL ck_get_mvar_object( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::Object & object )
 {
     assert(o != NULL);
     t_CKINT offset;
-    
+
     // TODO how to do this?
     t_CKBOOL success = ck_get_mvar(o, mvar, te_object, offset);
 
@@ -1278,11 +1278,11 @@ static t_CKBOOL ck_get_mvar_object( CK_DL_API api, Chuck_DL_Api::Object o, std::
 // name: ck_set_string()
 // desc: set a class's member string
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_set_string( CK_DL_API api, Chuck_DL_Api::String s, std::string & str )
+static t_CKBOOL ck_set_string( CK_DL_API api, Chuck_DL_Api::String s, const char * str )
 {
     assert( s != NULL );
 
-    Chuck_String * string = ( Chuck_String * ) s;
+    Chuck_String * string = (Chuck_String *) s;
     string->set( str );
 
     return TRUE;
@@ -1334,7 +1334,8 @@ const char * dlerror( void )
 {
     int error = GetLastError();
     if( error == 0 ) return NULL;
-    sprintf( dlerror_buffer, "%i", error );
+    // 1.4.2.0 (ge) | changed to snprintf
+    snprintf( dlerror_buffer, DLERROR_BUFFER_LENGTH, "%i", error );
     return dlerror_buffer;
 }
 }

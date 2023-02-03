@@ -37,9 +37,7 @@
 #include <Windows.h>
 #endif // __PLATFORM_WIN32__
 
-#ifdef __PLATFORM_LINUX__
-#include <linux/limits.h>
-#endif // __PLATFORM_LINUX__
+#include <limits.h>
 
 #include <stdio.h>
 using namespace std;
@@ -54,9 +52,9 @@ string itoa( t_CKINT val )
 {
     char buffer[128];
 #ifdef _WIN64
-    sprintf( buffer, "%lld", val );
+    snprintf( buffer, 128, "%lld", val );
 #else
-    sprintf( buffer, "%ld", val );
+    snprintf( buffer, 128, "%ld", val );
 #endif
     return string(buffer);
 }
@@ -72,8 +70,8 @@ string ftoa( t_CKFLOAT val, t_CKUINT precision )
     char str[32];
     char buffer[128];
     if( precision > 32 ) precision = 32;
-    sprintf( str, "%%.%lif", (long)precision );
-    sprintf( buffer, str, val );
+    snprintf( str, 32, "%%.%lif", (long)precision );
+    snprintf( buffer, 128, str, val );
     return string(buffer);
 }
 
@@ -239,7 +237,7 @@ t_CKBOOL extract_args( const string & token,
     // ignore second character as arg separator if its : on Windows
     t_CKBOOL ignoreSecond = FALSE;
 #ifdef __PLATFORM_WIN32__
-	ignoreSecond = TRUE;
+    ignoreSecond = TRUE;
 #endif // __PLATFORM_WIN32__
 
     // detect
@@ -482,17 +480,17 @@ std::string get_full_path( const std::string & fp )
 
 #else //
 
-	char buf[MAX_PATH];
-	DWORD result = GetFullPathName(fp.c_str(), MAX_PATH, buf, NULL);
+    char buf[MAX_PATH];
+    DWORD result = GetFullPathName(fp.c_str(), MAX_PATH, buf, NULL);
 
     // try with .ck extension
     if(result == 0 && !str_endsin(fp.c_str(), ".ck"))
         result = GetFullPathName((fp + ".ck").c_str(), MAX_PATH, buf, NULL);
 
-	if(result == 0)
-		return fp;
-	else
-		return normalize_directory_separator(buf);
+    if(result == 0)
+        return fp;
+    else
+        return normalize_directory_separator(buf);
 
 #endif // __PLATFORM_WIN32__
 }

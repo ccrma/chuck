@@ -35,6 +35,7 @@
 #include "chuck_vm.h"
 #include "util_string.h"
 
+#include <string>
 using namespace std;
 
 
@@ -1137,6 +1138,9 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
             }
         }
 
+        // 1.4.2.0 (ge) added: var_decl->ck_type = t;
+        SAFE_REF_ASSIGN( var_decl->ck_type, t );
+
         // the next var decl
         list = list->next;
     }
@@ -2141,6 +2145,7 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
     Chuck_Type * type = NULL;
     Chuck_Value * value = NULL;
     t_CKBOOL do_alloc = TRUE;
+    t_CKBOOL is_first_in_list = TRUE;
 
     // retrieve the type
     type = decl->ck_type;
@@ -2185,8 +2190,16 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
     // loop through the variables
     while( list != NULL )
     {
+        // 1.4.2.0 (ge) | reset the type variable to the lead type in the decl
+        // e.g., for cases like int x[2], y;
+        // ...this is so y would not be associated with x's array type
+        type = decl->ck_type;
+
         // get the decl
         var_decl = list->var_decl;
+        // 1.4.2.0 (ge) | by default, copy the decl type reference bit
+        // this could be overwritten later as appropriate, e.g., by array vars
+        var_decl->ref = decl->type->ref;
 
         // check if reserved
         if( type_engine_check_reserved( env, var_decl->xid, var_decl->linepos ) )
@@ -2212,7 +2225,10 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
             if( !verify_array( var_decl->array ) )
                 return FALSE;
 
-            Chuck_Type * t2 = type;
+            // 1.4.2.0 (ge) was: decl->type->ref;
+            var_decl->ref = ( var_decl->array->exp_list == NULL );
+            // the declaration type | 1.4.2.0 (ge) fixed for multiple decl (e.g., int x[1], y[2];)
+            Chuck_Type * t2 = decl->ck_type; // was: type, which won't work if more than one var declared
             // may be partial and empty []
             if( var_decl->array->exp_list )
             {
@@ -2233,12 +2249,22 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
                 env->curr  // the owner namespace
             );
 
-            // set ref
-            if( !var_decl->array->exp_list )
-                decl->type->ref = TRUE;
+            // 1.4.2.0 (ge) | assign new array type to current var decl
+            // for handling the following kind of multi-var declarations
+            //   int x[1], y[2];
+            //   int x, y[1];
+            // set reference : var_decl->ck_type = type;
+            SAFE_REF_ASSIGN( var_decl->ck_type, type );
 
-            // set reference : decl->ck_type = type;
-            SAFE_REF_ASSIGN( decl->ck_type, type );
+            // 1.4.2.0 (ge) | if one and only one variable, then update decl->ck_type
+            // otherwise, the variables could have different array depths, and therefore different types
+            // also note: cannot => to a multi-variable declaration (e.g., 5 => int x, y;)
+            // this is to support array initialization (e.g., [ [1,2], [3,4] ] @=> int x[][];)
+            if( is_first_in_list && list->next == NULL )
+            {
+                // set reference : var_decl->ck_type = type;
+                SAFE_REF_ASSIGN( decl->ck_type, type );
+            }
         }
 
         // enter into value binding
@@ -2264,6 +2290,8 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
 
         // the next var decl
         list = list->next;
+        // 1.4.2.0 (ge) | added
+        is_first_in_list = FALSE;
     }
 
     return TRUE;
@@ -2443,6 +2471,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     vector<Chuck_Value *> values;
     vector<a_Arg_List> symbols;
     t_CKUINT count = 0;
+    Chuck_Func * overfunc = NULL;
     // t_CKBOOL has_code = FALSE;  // use this for both user and imported
 
     // see if we are already in a function definition
@@ -2688,6 +2717,71 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         arg_list = arg_list->next;
     }
 
+    // if overloading
+    if( overload != NULL )
+    {
+        // -----------------------
+        // make sure return types match
+        // 1.4.2.1 (ge) more precise error reporting
+        // -----------------------
+        if( *(f->ret_type) != *(overload->func_ref->def->ret_type) )
+        {
+            EM_error2( f->linepos, "overloaded functions require matching return types..." );
+            // check if in class definition
+            if( env->class_def )
+            {
+                EM_error3( "    |- function in question: %s %s.%s(...)",
+                           func->def->ret_type->name.c_str(), env->class_def->c_name(), S_name(f->name) );
+                EM_error3( "    |- previous defined as: %s %s.%s(...)",
+                           overload->func_ref->def->ret_type->name.c_str(), env->class_def->c_name(), S_name(f->name) );
+            }
+            else
+            {
+                EM_error3( "    |- function in question: %s %s(...)",
+                           func->def->ret_type->name.c_str(), S_name(f->name) );
+                EM_error3( "    |- previous defined as: %s %s(...)",
+                           overload->func_ref->def->ret_type->name.c_str(), S_name(f->name) );
+            }
+            goto error;
+        }
+
+        // -----------------------
+        // make sure not duplicate
+        // 1.4.2.1 (ge) added
+        // -----------------------
+        overfunc = overload->func_ref;
+        // loop over overloaded functions
+        while( overfunc != NULL )
+        {
+            // one of these could this newly defined function
+            if( func != overfunc )
+            {
+                // compare argument lists
+                a_Arg_List lhs = func->def->arg_list;
+                a_Arg_List rhs = overfunc->def->arg_list;
+                // check
+                if( same_arg_lists(lhs, rhs) )
+                {
+                    EM_error2( f->linepos, "cannot overload functions with identical arguments..." );
+                    if( env->class_def )
+                    {
+                        EM_error3( "    |- '%s %s.%s( %s )' already defined elsewhere",
+                                   func->def->ret_type->name.c_str(), env->class_def->c_name(),
+                                   orig_name.c_str(), arglist2string(func->def->arg_list).c_str() );
+                    }
+                    else
+                    {
+                        EM_error3( "    |- '%s %s( %s )' already defined elsewhere",
+                                   func->def->ret_type->name.c_str(), orig_name.c_str(), arglist2string(func->def->arg_list).c_str() );
+                    }
+                    goto error;
+                }
+            }
+            // next overloaded function
+            overfunc = overfunc->next;
+        }
+    }
+
     // add as value
     env->curr->value.add( value->name, value );
     // enter the name into the function table
@@ -2698,19 +2792,6 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     {
         env->curr->value.add( orig_name, value );
         env->curr->func.add( orig_name, func );
-    }
-    else // if overload (changed from separate if statement 1.4.1.0)
-    {
-        // make sure returns are equal
-        if( *(f->ret_type) != *(overload->func_ref->def->ret_type) )
-        {
-            EM_error2( f->linepos, "function signatures differ in return type..." );
-            EM_error2( f->linepos,
-                "function '%s.%s' matches '%s.%s' but cannot overload...",
-                env->class_def->c_name(), S_name(f->name),
-                value->owner_class->c_name(), S_name(f->name) );
-            goto error;
-        }
     }
 
     // set the current function to this
@@ -2739,7 +2820,7 @@ error:
     if( func )
     {
         env->func = NULL;
-        func->release();
+        SAFE_RELEASE(func);
     }
 
     return FALSE;

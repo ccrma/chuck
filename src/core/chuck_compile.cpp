@@ -43,10 +43,8 @@
 #include "uana_xform.h"
 #include "uana_extract.h"
 
-#ifndef __DISABLE_OTF_SERVER__
 #include "ulib_machine.h"
-#endif
-
+#include "ulib_ai.h"
 #include "ulib_math.h"
 #include "ulib_std.h"
 
@@ -267,7 +265,7 @@ void Chuck_Compiler::set_auto_depend( t_CKBOOL v )
 t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * str_src, const string & full_path )
 {
     t_CKBOOL ret = TRUE;
-    Chuck_Context * context = NULL;
+    // Chuck_Context * context = NULL;
 
     EM_reset_msg();
 
@@ -666,30 +664,31 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
 #endif // __DISABLE_MIDI__
 
     // load
+    EM_log( CK_LOG_SEVERE, "module 'math'" );
+    if( !load_module( compiler, env, libmath_query, "Math", "global" ) ) goto error;
     EM_log( CK_LOG_SEVERE, "module 'osc'" );
     load_module( compiler, env, osc_query, "osc", "global" );
-    EM_log( CK_LOG_SEVERE, "module 'xxx'" );
-    load_module( compiler, env, xxx_query, "xxx", "global" );
+    EM_log( CK_LOG_SEVERE, "module 'ai'" );
+    if( !load_module( compiler, env, libai_query, "AI", "global" ) ) goto error;
+    EM_log( CK_LOG_SEVERE, "module 'extract'" );
+    load_module( compiler, env, extract_query, "extract", "global" );
     EM_log( CK_LOG_SEVERE, "module 'filter'" );
     load_module( compiler, env, filter_query, "filter", "global" );
     EM_log( CK_LOG_SEVERE, "module 'STK'" );
     load_module( compiler, env, stk_query, "stk", "global" );
     EM_log( CK_LOG_SEVERE, "module 'xform'" );
     load_module( compiler, env, xform_query, "xform", "global" );
-    EM_log( CK_LOG_SEVERE, "module 'extract'" );
-    load_module( compiler, env, extract_query, "extract", "global" );
-
-    // load
-    #ifndef __DISABLE_OTF_SERVER__
-    EM_log( CK_LOG_SEVERE, "module 'machine'" );
-    if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
-    machine_init( compiler, otf_process_msg );
-    #endif
-
+    EM_log( CK_LOG_SEVERE, "module 'xxx'" );
+    load_module( compiler, env, xxx_query, "xxx", "global" );
     EM_log( CK_LOG_SEVERE, "module 'std'" );
     if( !load_module( compiler, env, libstd_query, "Std", "global" ) ) goto error;
-    EM_log( CK_LOG_SEVERE, "module 'math'" );
-    if( !load_module( compiler, env, libmath_query, "Math", "global" ) ) goto error;
+
+    // load
+    EM_log( CK_LOG_SEVERE, "module 'machine'" );
+    if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
+    #ifndef __DISABLE_OTF_SERVER__
+    machine_init( compiler, otf_process_msg );
+    #endif
 
     #ifndef __DISABLE_NETWORK__
     EM_log( CK_LOG_SEVERE, "module 'opsc'" );
@@ -952,6 +951,5 @@ error:
     EM_poplog();
 
     return FALSE;
-	*/
+   */
 }
-

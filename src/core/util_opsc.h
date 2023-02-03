@@ -474,12 +474,12 @@ protected:
     // int            _mesglen;
 
 protected:
-	void onReceive( char * mesg, int mesgLen);
-	int & port();
+    void onReceive( char * mesg, int mesgLen);
+    int & port();
 
 protected:
-	int			   _port;
-	int			   _tmp_port;
+    int               _port;
+    int               _tmp_port;
     XMutex *        _io_mutex;
     XMutex *        _address_mutex;
     // XThread *       _io_thread;
@@ -511,9 +511,9 @@ public:
 
     void recv_mesg();
 
-	bool listen( int port );
+    bool listen( int port );
     bool listen();
-	void stopListening(); //unsubscribe;
+    void stopListening(); //unsubscribe;
 
     void parse(char *, int len);
     void handle_mesg(char *, int len);
@@ -544,11 +544,11 @@ struct opsc_data
     osc_datatype t;
     OSCTimeTag timetag;
 
-	union {
-		int4byte i;  // gewang: changed from int
-		unsigned long u;  // gewang: changed from unsigned int
-		float f;
-	};
+    union {
+        int4byte i;  // gewang: changed from int
+        unsigned long u;  // gewang: changed from unsigned int
+        float f;
+    };
 
     char * s;
 
@@ -590,7 +590,7 @@ protected:
     void resizeData(int n);
     void resizeQueue(int n);
     void parseSpec();
-	void scanSpec();
+    void scanSpec();
 
 public:
     Chuck_Object * SELF;

@@ -53,7 +53,7 @@ extern t_CKINT EM_extLineNum;
 void EM_newline( );
 
 // levels
-#define CK_LOG_CRAZY            10 // set this to log everything
+#define CK_LOG_ALL              10 // set this to log everything
 #define CK_LOG_FINEST           9
 #define CK_LOG_FINER            8
 #define CK_LOG_FINE             7
@@ -155,9 +155,9 @@ extern t_CKINT g_loglevel;
 // macro to compare
 #define DO_LOG(x) ( x <= g_loglevel )
 
-void EM_error( int, c_constr, ... );
-void EM_error2( int, c_constr, ... );
-void EM_error2b( int, c_constr, ... );
+void EM_error( t_CKINT, c_constr, ... );
+void EM_error2( t_CKINT, c_constr, ... );
+void EM_error2b( t_CKINT, c_constr, ... );
 void EM_error3( c_constr, ... );
 void EM_impossible( c_constr, ... );
 t_CKBOOL EM_reset( c_constr filename, FILE * fd );

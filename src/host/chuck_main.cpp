@@ -844,7 +844,7 @@ bool go( int argc, const char ** argv )
     if( dac_name.size() > 0 )
     {
         // check with RtAudio
-        int dev = ChuckAudio::device_named( dac_name, TRUE, FALSE );
+        t_CKINT dev = ChuckAudio::device_named( dac_name, TRUE, FALSE );
         if( dev >= 0 )
         {
             dac = dev;
@@ -861,7 +861,7 @@ bool go( int argc, const char ** argv )
     if( adc_name.size() > 0 )
     {
         // check with RtAudio
-        int dev = ChuckAudio::device_named( adc_name, FALSE, TRUE );
+        t_CKINT dev = ChuckAudio::device_named( adc_name, FALSE, TRUE );
         if( dev >= 0 )
         {
             adc = dev;

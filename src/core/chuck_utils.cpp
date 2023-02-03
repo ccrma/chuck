@@ -39,7 +39,7 @@
 
 
 
-void * checked_malloc( int len )
+void * checked_malloc( t_CKINT len )
 {
     if( !len ) return NULL;
 

@@ -23,8 +23,8 @@
  -----------------------------------------------------------------------------*/
 
 //-----------------------------------------------------------------------------
-// file: chuck.h
-// desc: chuck engine header; VM + compiler + state; no audio I/O
+// file: chuck.cpp
+// desc: chuck engine chasis; VM + compiler + state; independent of audio I/O
 //       REFACTOR-2017
 //
 // author: Ge Wang (https://ccrma.stanford.edu/~ge/)
@@ -55,10 +55,8 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <sys/param.h>   // added 1.3.0.0
 #else
 #include <direct.h>      // added 1.3.0.0
-#define MAXPATHLEN (255) // addec 1.3.0.0
 #endif // #ifndef __PLATFORM_WIN32__
 
 
@@ -92,7 +90,7 @@
 
 
 // chuck statics
-const char ChucK::VERSION[] = "1.4.1.2-dev (numchucks)";
+const char ChucK::VERSION[] = "1.4.2.1-bleed-2023.02.01 (numchucks)";
 t_CKUINT ChucK::o_numVMs = 0;
 t_CKBOOL ChucK::o_isGlobalInit = FALSE;
 t_CKBOOL ChucK::enableSystemCall = FALSE;
@@ -112,7 +110,6 @@ const char * ChucK::version()
 
 
 
-#ifndef __DISABLE_OTF_SERVER__
 //-----------------------------------------------------------------------------
 // name: intSize()
 // desc: get chuck int size (in bits)
@@ -121,7 +118,6 @@ t_CKUINT ChucK::intSize()
 {
     return machine_intsize();
 }
-#endif
 
 
 
@@ -503,11 +499,13 @@ bool ChucK::initCompiler()
     }
 
     std::string cwd;
-    char cstr_cwd[MAXPATHLEN];
+    char * cstr_cwd = NULL; // 1.4.2.1 (barak) | was: char cstr_cwd[MAXPATHLEN];
 
     // figure out current working directory (added 1.3.0.0)
     // is this needed for current path to work correctly?!
-    if( getcwd(cstr_cwd, MAXPATHLEN) == NULL )
+    // was: if( getcwd(cstr_cwd, MAXPATHLEN) == NULL )
+    // let getcwd allocate memory | 1.4.2.1 (barak)
+    if( (cstr_cwd = getcwd(NULL, 0)) == NULL )
     {
         // uh...
         EM_log( CK_LOG_SEVERE, "error: unable to determine current working directory!" );
@@ -516,6 +514,8 @@ bool ChucK::initCompiler()
     {
         // make c++ string
         cwd = std::string(cstr_cwd);
+        // reclaim memory from getcwd
+        SAFE_FREE(cstr_cwd);
         // add trailing "/"
         cwd += '/';
         // deferring this step until later, and only for Windows
@@ -702,7 +702,7 @@ bool ChucK::initOTF()
         // start tcp server
         m_carrier->otf_socket = ck_tcp_create( 1 );
         if( !m_carrier->otf_socket ||
-            !ck_bind( m_carrier->otf_socket, m_carrier->otf_port ) ||
+            !ck_bind( m_carrier->otf_socket, (int)m_carrier->otf_port ) ||
             !ck_listen( m_carrier->otf_socket, 10 ) )
         {
             CK_FPRINTF_STDERR( "[chuck]: cannot bind to tcp port %li...\n", m_carrier->otf_port );
@@ -808,7 +808,7 @@ bool ChucK::shutdown()
 // name: compileFile()
 // desc: compile a file (can be called anytime)
 //-----------------------------------------------------------------------------
-bool ChucK::compileFile( const std::string & path, const std::string & argsTogether, int count )
+bool ChucK::compileFile( const std::string & path, const std::string & argsTogether, t_CKINT count )
 {
     // sanity check
     if( !m_carrier->compiler )
@@ -875,7 +875,7 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
            count == 1 ? "instance" : "instances" );
 
     // spork it
-    while( count-- )
+    while( count > 0 ) // 1.4.2.1 (ge) | added changed to check for > 0, in case of negative count
     {
         #ifndef __EMSCRIPTEN__
         // spork (for now, spork_immediate arg is always false)
@@ -887,6 +887,8 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
 
         // add args
         shred->args = args;
+        // decrement count
+        count--;
     }
 
     // pop indent
@@ -905,7 +907,7 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
 // name: compileCode()
 // desc: compile code directly
 //-----------------------------------------------------------------------------
-bool ChucK::compileCode( const std::string & code, const std::string & argsTogether, int count)
+bool ChucK::compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count)
 {
     // sanity check
     if( !m_carrier->compiler )
@@ -1021,7 +1023,7 @@ bool ChucK::start()
 // name: run()
 // desc: run engine (call from host callback)
 //-----------------------------------------------------------------------------
-void ChucK::run( SAMPLE * input, SAMPLE * output, int numFrames )
+void ChucK::run( SAMPLE * input, SAMPLE * output, t_CKINT numFrames )
 {
     // make sure we started...
     if( !m_started ) this->start();

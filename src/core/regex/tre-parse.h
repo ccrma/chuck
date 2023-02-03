@@ -11,7 +11,7 @@
 
 /* Parse context. */
 typedef struct {
-  /* Memory allocator.	The AST is allocated using this. */
+  /* Memory allocator.    The AST is allocated using this. */
   tre_mem_t mem;
   /* Stack used for keeping track of regexp syntax. */
   tre_stack_t *stack;

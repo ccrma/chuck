@@ -3109,6 +3109,7 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
     Chuck_Value * value = NULL;
     t_CKBOOL is_obj = FALSE;
     t_CKBOOL is_ref = FALSE;
+    // t_CKBOOL is_ref2 = FALSE;
 
     // loop through the variables
     while( list != NULL )
@@ -3138,7 +3139,10 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         // is object
         is_obj = isobj( env, type );
         // is ref
-        is_ref = decl->type->ref;
+        is_ref = var_decl->ref;
+        // 1.4.2.0 (ge) should it be this?? is_ref = var_decl->ref; (and not decl->type->ref?)
+        // 1.4.2.0 (ge, later) yes, it should be var_decl->ref, because var_decl is per declaration...
+        // e.g., float a[], b -- the entire line is a decl whereas a and b are individual var_decls
 
         // if array, then check to see if empty []
         if( var_decl->array && var_decl->array->exp_list != NULL )
@@ -3192,7 +3196,7 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
                 EM_error2( var_decl->linepos,
                     "cannot declare static non-primitive objects (yet)..." );
                 EM_error2( var_decl->linepos,
-                    "...(hint: declare as ref (@) & initialize outside for now)" );
+                    "...(hint: declare as reference (@) & initialize outside class for now)" );
                 return FALSE;
             }
         }
@@ -3845,7 +3849,7 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
                     "cannot extend incomplete type '%s'",
                     t_parent->c_name() );
                 EM_error2( class_def->ext->linepos,
-                    "...(note: the parent's declaration must preceed child's)" );
+                    "...(note: the parent's declaration must precede child's)" );
                 return FALSE;
             }
         }
@@ -5258,8 +5262,8 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
     if( tick ) info->tick = tick;
     if( tickf ) { info->tickf = tickf; info->tick = NULL; } // added 1.3.0.0
     if( pmsg ) info->pmsg = pmsg;
-    if( num_ins != 0xffffffff ) info->num_ins = num_ins;
-    if( num_outs != 0xffffffff ) info->num_outs = num_outs;
+    if( num_ins != CK_NO_VALUE ) info->num_ins = num_ins;
+    if( num_outs != CK_NO_VALUE ) info->num_outs = num_outs;
     // set in type
     type->ugen_info = info;
 
@@ -5281,8 +5285,8 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
                                            const char * doc )
 {
     return type_engine_import_ugen_begin( env, name, parent, where,
-                                         pre_ctor, dtor, tick, NULL, pmsg,
-                                         num_ins, num_outs, doc );
+                                          pre_ctor, dtor, tick, NULL, pmsg,
+                                          num_ins, num_outs, doc );
 }
 
 
@@ -5300,7 +5304,7 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
 {
     return type_engine_import_ugen_begin( env, name, parent, where,
                                           pre_ctor, dtor, tick, NULL, pmsg,
-                                          0xffffffff, 0xffffffff, doc );
+                                          CK_NO_VALUE, CK_NO_VALUE, doc );
 }
 
 
@@ -5343,8 +5347,8 @@ Chuck_Type * type_engine_import_uana_begin( Chuck_Env * env, const char * name,
     assert( info != NULL );
     // set
     if( tock ) info->tock = tock;
-    if( num_ins_ana != 0xffffffff ) info->num_ins_ana = num_ins_ana;
-    if( num_outs_ana != 0xffffffff ) info->num_outs_ana = num_outs_ana;
+    if( num_ins_ana != CK_NO_VALUE ) info->num_ins_ana = num_ins_ana;
+    if( num_outs_ana != CK_NO_VALUE ) info->num_outs_ana = num_outs_ana;
 
     return type;
 }
@@ -5740,6 +5744,8 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
 {
     // make new type
     Chuck_Type * t = env->context->new_Chuck_Type( env );
+    // 1.4.2.0 (ge) | added
+    SAFE_ADD_REF(t);
     // set the id
     t->xid = te_array;
     // set the name
@@ -5747,18 +5753,20 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
 
     // add entire type heirarchy to t
     Chuck_Type * base_curr = base_type->parent;
-    Chuck_Type * t_curr = t;
 
     // 1.4.1.1 (nshaheed) added to allow declaring arrays with subclasses as elements (PR #211)
     // example: [ new SinOsc, new Sinosc ] @=> Osc arr[]; // this previously would fail type check
-    while (base_curr != NULL) {
-      Chuck_Type * new_parent = new_array_element_type(env, base_curr, depth, owner_nspc);
-      t_curr->parent = new_parent;
-      SAFE_ADD_REF(t_curr->parent);
+    Chuck_Type * t_curr = t;
+    while( base_curr != NULL )
+    {
+        Chuck_Type * new_parent = new_array_element_type( env, base_curr, depth, owner_nspc );
+        t_curr->parent = new_parent;
+        SAFE_ADD_REF(t_curr->parent );
 
-      base_curr = base_curr->parent;
-      t_curr = t_curr->parent;
+        base_curr = base_curr->parent;
+        t_curr = t_curr->parent;
     }
+    // ???
     t_curr->parent = array_parent;
     // add reference
     SAFE_ADD_REF(t_curr->parent);
@@ -5784,12 +5792,15 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     return t;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: new_array_element_type()
 // desc: instantiate new chuck type for use in arrays (nshaheed) added
 //-----------------------------------------------------------------------------
 Chuck_Type * new_array_element_type( Chuck_Env * env, Chuck_Type * base_type,
-		       t_CKUINT depth, Chuck_Namespace * owner_nspc)
+                                     t_CKUINT depth, Chuck_Namespace * owner_nspc)
 {
     // make new type
     Chuck_Type * t = env->context->new_Chuck_Type( env );
@@ -6486,7 +6497,7 @@ t_CKBOOL escape_str( char * str_lit, int linepos )
             // make sure next char
             if( *str_lit == '\0' )
             {
-                EM_error2( linepos, "invalid: string ends with escape charactor '\\'" );
+                EM_error2( linepos, "invalid: string ends with escape character '\\'" );
                 return FALSE;
             }
 
@@ -6589,6 +6600,60 @@ t_CKINT str2char( const char * c, int linepos )
     {
         return c[0];
     }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: same_arg_lists()
+// desc: compare two argument lists to see if they are the same
+//       added 1.4.2.1 (ge) to catch duplicate functions
+//-----------------------------------------------------------------------------
+t_CKBOOL same_arg_lists( a_Arg_List lhs, a_Arg_List rhs )
+{
+    // go down the list
+    while( lhs )
+    {
+        // if out of arguments, then argument lists are different
+        if( !rhs ) return FALSE;
+        // if any arguments are different, then argument lists are different
+        if( (*lhs->type) != (*rhs->type) ) return FALSE;
+        // TODO: if either is a subclass of the other: okay iff there are other differentiating arguments
+
+        // advance
+        lhs = lhs->next;
+        rhs = rhs->next;
+    }
+
+    // at this point, lists are same if rhs is NULL
+    return (rhs == NULL);
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: arglist2string()
+// desc: generate a string from an argument list (types only)
+//       1.4.2.1 (ge) added
+//-----------------------------------------------------------------------------
+string arglist2string( a_Arg_List list )
+{
+    // return value
+    string s = "";
+
+    // go down the list
+    while( list )
+    {
+        // concatenate
+        s += list->type->name;
+        // check
+        if( list->next ) s += ", ";
+        // advance
+        list = list->next;
+    }
+
+    return s;
 }
 
 
@@ -6875,8 +6940,17 @@ void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
     Chuck_Type * type = this;
     // name str
     string nameStr = "* " + str();
-    // check if ugen
-    if( this->ugen_info ) nameStr += " (unit generator)";
+    // check ugen info (note: all uanae are also ugens)
+    if( this->ugen_info )
+    {
+        // check if uana | 1.4.2.0 (ge)
+        if( this->ugen_info->tock ) nameStr += " (unit analyzer)";
+        // check if UAna base class, which has no tock() | 1.4.2.0 (ge)
+        else if( this->xid == te_uana ) nameStr += " (unit analyzer)";
+        // otherwise
+        else nameStr += " (unit generator)";
+    }
+ 
     // check if array
     if( this->array_depth > 0 )
     {
