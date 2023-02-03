@@ -1,12 +1,267 @@
-1.4.1.2
+1.4.2.1 (February 2023)
 ---
-  - (added) nshaheed: all associative arrays now have a new method:
+(NOTE) ChAI (ChucK + AI), first started in chuck-1.4.2.0, will continue 
+to be in BETA for some time (as we add more and also teach using chAI in 
+"Music and AI" at Stanford). The new additions to ChAI will be designated 
+[chAI] and may be subject to change in the near future.
+---
+(NOTE) WebChucK (ChucK on browsers) [beta] was released during the 
+development of this version. https://chuck.stanford.edu/webchuck/
+---
+ - (added) Word2Vec [ChAI]
+      |- A word embeddings utility that maps words to vectors; can load a 
+         model and perform similiarity retrieval.
+      |- (inheritance) Word2Vec -> Object
+    ------------------
+    int contains( string word );
+       Query if 'word' is in the current model.
+    int dim();
+       Get number of dimensions for word embedding.
+    void getSimilar( string word, int k, string[] output );
+       Get the k most similar words to the given word.
+    void getSimilar( float[] vec, int k, string[] output );
+       Get the k most similar words to the given vector.
+    void getVector( string word, float[] output );
+       Get the vector of the given word.
+    int load( string path );
+       Load pre-trained word embedding model from the given path.
+    int load( string path, int useKDTreeDim );
+       Load pre-trained word embedding model from the given path; will use 
+       KDTree for similarity searches if the data dimension is less than 
+       or equal to 'useKDTreeDim'. Set 'useKDTreeDim' to 0 to use linear 
+       (brute force) similarity search; set 'useKDTreeDim' to less than 0 
+       to always use KDTree.
+    void minMax( float[] mins, float[] maxs );
+       Retrieve the minimums and maximums for each dimension.
+    int size();
+       Get number of words in dictionary.
+    int useKDTree();
+       Get whether a KDTree is used for similarity search.
+ - (added) new examples in ai/word2vec [ChAI]
+      |- poem-i-feel.ck -- a stream of unconsciousness poem generator
+      |- poem-randomwalk.ck -- another stream of unconsciousness generator
+      |- poem-spew.ck -- yet another stream of unconsciousness generator
+      |- poem-ungenerate.ck -- interactive prompt un/de-generator
+         (need to use command line chuck)
+      |- word2vec-basic.ck -- demos load(), getVector(), getSimilar()
+      |- word2vec-prompt.ck -- command line interactive tool
+         (need to use command line chuck)
+  - (added) Chroma unit analyzer (thanks Yikai Li)
+      |- A unit analyzer that computes pitch chroma
+      |- see examples/ai/features/chroma.ck
+  - (added) Kurtosis unit analyzer (thanks Yikai Li)
+      |- A unit analyzer that computes kurtosis
+      |- see examples/ai/features/kurtosis.ck
+  - (added) SFM unit analyzer (thanks Yikai Li)
+      |- A unit analyzer that computes spetral flatness measure
+      |- see examples/ai/features/sfm.ck
+ - (moved) examples/analysis/features => examples/ai/features
+ - (added) new examples in examples/ai/features
+      |- features-combined -- real-time extraction of multiple features
+      |- mfcc-basic.ck -- shows MFCC unit analyzer / feature extractor
+      |- mfcc-mean.ck -- averaged MFCC feature extraction
+      |- chroma.ck -- shows Chroma unit analyzer
+      |- kurtosis.ck -- shows Kurtosis unit analyzer
+      |- sfm.ck -- shows SFM (spectral flatness measure) unit analyzer
+ - (added) PCA [ChAI] (thanks Yikai Li)
+      |- A principle component analysis (PCA) utility, commonly used for dimensionality reduction.
+      |- (inheritance) PCA -> Object
+   -------------------
+      static void reduce( float[][] input, int D, float[][] output );
+        Dimension-reduce 'input' (NxM) to 'output' (NxD) as the projection
+        of the input data onto its first 'D' principle components
+ - (added) examples/ai/pca/pca.ck
+ - (added) array.zero()
+      |- zero out the contents of the array; size is unchanged.
+ - (added) Math functions 
+      float map( float value, float x1, float y1,
+                              float x2, float y2 );
+        Map 'value' from range [x1,y1] into range [x2,y2]; 'value'
+        can be outside range[x1,y1].
+      float map2( float value, float x1, float y1,
+                               float x2, float y2 );
+        Map 'value' from range [x1,y1] into range [x2,y2]; 'value'
+        will be clamped to [x1,y1] if outside range.
+        (Math.remap() is the same as Math.map2())
+      float clampi( int value, int min, int max );
+        Clamp integer 'value' to range [min, max].
+      float clampf( float value, float min, float max );
+        Clamp float 'value' to range [min, max].
+      float cossim( float[] a[], float[] b[] );
+        Compute the cosine similarity between arrays a and b.
+      float cossim( vec3 a, vec3 b );
+        Compute the cosine similarity between 3D vectors a and b.
+      float cossim( vec4 a, vec4 b );
+        Compute the cosine similarity between 4D vectors a and b.
+      float euclidean( float[] a[], float[] b[] );
+        Compute the euclidean distance between arrays a and b.
+      float euclidean( vec3 a, vec3 b );
+        Compute the euclidean distance between 3D vectors a and b.
+      float euclidean( vec4 a, vec4 b );
+        Compute the euclidean distance between 4D vectors a and b.
+  - (added) examples/math
+       |- map.ck -- shows mapping using Math.map() and Math.map2()
+       |- math-help.ck -- just prints Math API using Math.help();
+  - (added) Machine functions
+      int eval( string code );
+        Evaluate a string as ChucK code, compiling it and spork it as a child 
+        shred of the current shred.
+      int eval( string code, string args );
+        Evaluate a string as ChucK code, with optional arguments (bundled in 
+        'args' as "ARG1:ARG2:...", compiling it and spork it as a child shred of 
+        the current shred.
+      int eval( string code, string args, int count );
+        Evaluate a string as ChucK code, with optional arguments (bundled in 
+        'args' as "ARG1:ARG2:...", compiling it and sporking 'count' instances as 
+        a child shreds of the current shred.
+      int loglevel( int level );
+        Set log level
+          |- 0: NONE
+          |- 1: CORE
+          |- 2: SYSTEM
+          |- 3: SEVERE
+          |- 4: WARNING
+          |- 5: INFO
+          |- 6: CONFIG
+          |- 7: FINE
+          |- 8: FINER
+          |- 9: FINEST
+          |- 10: ALL
+      static int loglevel();
+        Get log level
+  - (added) examples in machine
+       |- eval.ck -- demonstrate Machine.eval(), noting its behavior wrt 
+          to schreduler
+  - (modified) MFCC -- added (back) a missing and crucial log10() to
+      to the MFCC computation and updated implementation; output
+      range magnitudes now in the hundreds
+  - (enhanced) overloaded functions with non-matching return types now
+      provide additional information in the compiler error message
+  - (fixed) overloaded functions with identical arguments now will
+      correctly result in a compiler error
+  - (fixed) SndBuf crash in cases where file size is integer multiple
+      of .chunks and .chunks > 0 and reaching the end of the file
+  - (fixed) SndBuf.valueAt(n) for n == file size in samples now returns 0;
+      previously this special case returned .valueAt(n-1) 
+  - (fixed) SndBuf assertation failure if SndBuf.chunks was set AFTER
+      loading a file; now .chunks will ONLY take effect for the next
+      SndBuf.read
+  - (renamed) int LiSa.loop0(int) and int LiSa.loop0(); previously these
+      were incorrectly overloaded as "loop()" and was unavailable
+  - (fixed) FileIO.seek() previously fails if EOF is reached in reading
+      a file; FileIO.seek() now functions after EOF is reached.
+  - (updated) IO.newline() or a solitary "\n" now automatically flushes
+      chout
+  - (added) examples in io
+       |- seek.ck -- shows FileIO.seek usage for rewind a file read
+  - (updated) built-in abstract classes FM, StkInstrmnt, BLT, and
+      FilterBasic, when used directly, issues a WARNING level log
+      message in their respective synthesis tick functions (set log
+      level in chuck or miniAudicle to WARNING or higher to enable
+      printing), and allows program to procede silently. (Example that
+      previously crashed: 'FM fm => dac; 1::second => now;')
+
+01.4.2.0 (January 2023)
+---
+(NOTE) chuck-1.4.2.0 marks a beginning (in BETA) of chAI => ChucK for AI 
+-- a set of functionalities for interactive machine learning and artful, 
+humanistic design of music and artificial intelligence; it coincides with 
+the new "Music and AI" course at Stanford University, designed and taught 
+by Ge Wang with Ph.D. candidate Yikai Li. *** chAI (Beta) additions are 
+listed at the end ***
+---
+  - (added) MFCC unit analyzer (thanks Yikai Li)
+        |- A unit analyzer that computes Mel-frequency Cepstral Coefficients
+           (MFCCs), and outputs a vector of coefficients.
+        |- (inheritance) MFCC -> UAna -> UGen -> Object
+  - (added) examples: analysis/features/mfcc.ck
+  - (added) all associative arrays now have a new method [thanks nshaheed]
         void getKeys( string[] keys );
         Return all keys found in associative array in keys
+  - (added) Machine.realtime(): "return true if the shred is in realtime 
+        mode, false if it's in silent mode (i.e. --silent is enabled)"
+        -- thanks nshaheed --
+  - (added) Machine.silent(): "return false if the shred is in realtime 
+        mode, true if it's in silent mode (i.e. --silent is enabled)"
+        -- thanks nshaheed --
+  - (fixed) .help() now more accurately prints ("unit analyzer")
+    for UAna types
+  - (fixed) multi-variable array declaration; the following should
+    now work:
+        int x[1], y[2];
+        int x, y[3];
+  - (fixed) resolved an issue with multi-dimensional arrays pre-maturely
+    releasing internal type data structure -- e.g., causing an assertion 
+    failure in the second function call
+        fun void test()
+        {
+            [ [1,2,3], [1,2,3] ] @=> int arr[][];
+        }
+        test();
+        test();
+  - (fixed) internal array storage now (more) correctly differentiate
+    between int and float, on systems where the two are the same size
+    (e.g., both 32-bit or both 64-bit)
+  - (fixed) command line chuck: when opening default input audio device
+        (e.g., Microphone), check for mono devices (the case on some MacOS
+        systems) now happens earlier, before searching other 2-channel input
+        audio devices; this preempts chuck using virtual audio input devices
+        such as ZoomAudioDevice as the input device
+  - (dev) added test examples in 01-Basic related to multi-var array
+    declarations
   - (dev) extraneous white spaces removed throughout src/core
+    ** thank you nshaheed for this soul-restoring measure **
+  - (dev) all tabs replaced with 4 spaces, now consistent across project
     ** thank you nshaheed for this soul-restoring measure **
   - (dev) nshaheed: linux makefiles now correctly inserts Debug (-g)
     build flag when Debug build is enabled (default builds for Release)
+-----------------------
+(BETA) chAI-related additions: please note this is in Beta, meaning that 
+APIs may change in the near future; many additions are in the works
+-----------------------
+  - (added) SVM object (thanks Yikai Li)
+        |- a support vector machine (SVM) utility trains a model and 
+           predicts output based on new input
+        |- (inheritance) SVM -> Object
+        |- methods:
+           int predict( float[] x, float[] y );
+               Predict the output 'y' given the input 'x'.
+           int train( float[][] x, float[][] y );
+               Train the SVM model with the given samples 'x' and 'y'.
+  - (added) KNN object (thanks Yikai Li)
+        |- A k-nearest neighbor (KNN) utility that predicts the output of 
+           a given input based on the training data
+        |- (inheritance) KNN -> Object
+        |- methods:
+           int predict( int k, float[] x, float[] prob );
+               Predict the output probabilities (in 'prob') given new input
+               'x' based on 'k' nearing neighbors.
+           int train( float[][] x, int[] y );
+               Train the KNN model with the given samples 'x' and 
+           corresponding labels 'y'.
+  - (added) HMM object (thanks Yikai Li)
+        |- A hidden markov model (HMM) utility that generates a sequence 
+           of observations based on the training data
+        |- (inheritance) SVM -> Object
+        |- methods:
+           int load( float[] initiailDistribution,
+                     float[][] transitionMatrix, 
+                     float[][] emissionMatrix );
+               Initialize the HMM model with the given initial state 
+               distribution, transition matrix, and emission matrix.
+           int train( int numStates, int numEmissions,
+               int[] observations );
+           Train the HMM model with the given observations.
+           int generate( int length, int[] output );
+               Generate a sequence of observations of the given length.
+  - (added) basic usage examples in examples/ai/ folder
+        |- also can use the built-in help() function
+           KNN.help(); // this will print KNN type info and API
+           SVM.help(); // this will print SVM type info and API
+           HMM.help(); // this will print HMM type info and API
+-----------------------
+(BETA) end chAI additions
+-----------------------
     
 
 1.4.1.1 (May 2022)

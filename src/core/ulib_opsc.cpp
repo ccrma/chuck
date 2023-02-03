@@ -1329,7 +1329,7 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     func->add_arg( "string" , "type" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-	type_engine_import_class_end( env );
+    type_engine_import_class_end( env );
     return TRUE;
 
 error:
@@ -1601,7 +1601,7 @@ CK_DLL_MFUN( osc_recv_listen_port )
 CK_DLL_MFUN( osc_recv_listen_stop )
 {
     OSC_Receiver * recv = (OSC_Receiver *)OBJ_MEMBER_INT(SELF, osc_recv_offset_data);
-	recv->stopListening();
+    recv->stopListening();
 }
 
 //----------------------------------------------

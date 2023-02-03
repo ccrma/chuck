@@ -2513,21 +2513,21 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_int );
             instr->set_linepos( rhs->linepos );
-	    return TRUE;
+            return TRUE;
         }
         else if( isa( right, emit->env->t_float ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_float );
             instr->set_linepos( rhs->linepos );
-	    return TRUE;
+            return TRUE;
         }
         else if( isa( right, emit->env->t_string ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_string );
             instr->set_linepos( rhs->linepos );
-	    return TRUE;
+            return TRUE;
         }
     }
 
@@ -4118,20 +4118,21 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         if( is_obj )
         {
             // if this is an array, ...
-            if( list->var_decl->array )
+            if( var_decl->array )
             {
+                // mark as true
                 is_array = TRUE;
-
                 // ... then check to see if empty []
-                // and only instantiate if NOT empty
+                is_ref = ( var_decl->array->exp_list == NULL );
+                // ...and only instantiate if NOT empty
                 // REFACTOR-2017 TODO: do we want to
                 //  avoid doing this if the array is global?
-                if( list->var_decl->array->exp_list )
+                if( !is_ref )
                 {
                     // set
                     is_init = TRUE;
                     // instantiate object, including array
-                    if( !emit_engine_instantiate_object( emit, type, list->var_decl->array, is_ref ) )
+                    if( !emit_engine_instantiate_object( emit, type, var_decl->array, is_ref ) )
                         return FALSE;
                 }
             }
@@ -4145,7 +4146,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     // set
                     is_init = TRUE;
                     // instantiate object (not array)
-                    if( !emit_engine_instantiate_object( emit, type, list->var_decl->array, is_ref ) )
+                    if( !emit_engine_instantiate_object( emit, type, var_decl->array, is_ref ) )
                         return FALSE;
                 }
             }

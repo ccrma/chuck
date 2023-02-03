@@ -229,10 +229,10 @@ void Chuck_VM_Object::unlock_all()
 //void Chuck_VM_Alloc::add_object( Chuck_VM_Object * obj )
 //{
 //    // do log
-//    if( DO_LOG( CK_LOG_CRAZY ) )
+//    if( DO_LOG( CK_LOG_ALL ) )
 //    {
 //        // log it
-//        EM_log( CK_LOG_CRAZY, "adding '%s' (0x%lx)...",
+//        EM_log( CK_LOG_ALL, "adding '%s' (0x%lx)...",
 //            mini_type( typeid(*obj).name() ), obj );
 //    }
 //
@@ -321,7 +321,7 @@ Chuck_Object::~Chuck_Object()
     Chuck_Type * type = this->type_ref;
     while( type != NULL )
     {
-        // SPENCERTODO: HACK! is there a better way to call the dtor?
+        // SPENCER TODO: HACK! is there a better way to call the dtor?
         if( type->has_destructor )
         {
             // sanity check
@@ -382,7 +382,7 @@ void Chuck_Object::help() // 1.4.1.0 (ge)
 Chuck_Array::~Chuck_Array()
 {
     // decrement reference count; added (ge): 1.4.1.0
-    SAFE_RELEASE(m_array_type);
+    SAFE_RELEASE( m_array_type );
 }
 
 
@@ -414,7 +414,8 @@ Chuck_Array4::Chuck_Array4( t_CKBOOL is_obj, t_CKINT capacity )
 //-----------------------------------------------------------------------------
 Chuck_Array4::~Chuck_Array4()
 {
-    // do nothing
+    // 1.4.2.0 (ge) | added, which should cascade to nested array objects
+    clear();
 }
 
 
@@ -632,23 +633,23 @@ t_CKINT Chuck_Array4::pop_back( )
 // name: pop_out()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array4::pop_out( t_CKUINT pos )
+t_CKINT Chuck_Array4::pop_out( t_CKINT pos )
 {
-	// check
-	if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
-		return 0;
+    // check
+    if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
+        return 0;
 
-	if( m_is_obj )
-	{
-		// get pointer
-		Chuck_Object * v = (Chuck_Object *)m_vector[pos];
-		// if not null, release
-		if( v ) v->release();
-	}
+    if( m_is_obj )
+    {
+        // get pointer
+        Chuck_Object * v = (Chuck_Object *)m_vector[pos];
+        // if not null, release
+        if( v ) v->release();
+    }
 
-	// add to vector
-	m_vector.erase(m_vector.begin()+pos);
-	return 1;
+    // add to vector
+    m_vector.erase(m_vector.begin()+pos);
+    return 1;
 }
 
 
@@ -841,6 +842,7 @@ Chuck_Array8::Chuck_Array8( t_CKINT capacity )
 Chuck_Array8::~Chuck_Array8()
 {
     // do nothing
+    clear();
 }
 
 
@@ -1027,7 +1029,7 @@ t_CKINT Chuck_Array8::pop_back( )
 // name: pop_out()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array8::pop_out( t_CKUINT pos )
+t_CKINT Chuck_Array8::pop_out( t_CKINT pos )
 {
         // check
         if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
@@ -1376,7 +1378,7 @@ t_CKINT Chuck_Array16::pop_back( )
 // name: pop_out()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::pop_out( t_CKUINT pos )
+t_CKINT Chuck_Array16::pop_out( t_CKINT pos )
 {
         // check
         if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
@@ -3068,7 +3070,7 @@ t_CKINT Chuck_IO_File::size()
     // have to seek to end, report position
     FILE * stream = fopen( m_path.c_str(), "r" );
     fseek( stream, 0L, SEEK_END );
-    int endPos = ftell( stream );
+    long endPos = ftell( stream );
     fclose( stream );
     return endPos;
 }
@@ -3092,6 +3094,8 @@ void Chuck_IO_File::seek( t_CKINT pos )
         EM_error3( "[chuck](via FileIO): cannot seek on a directory" );
         return;
     }
+    // 1.4.2.1 (ge) | added since seekg fails if EOF already reached
+    m_io.clear();
     m_io.seekg( pos );
     m_io.seekp( pos );
 }
@@ -3231,7 +3235,14 @@ Chuck_String * Chuck_IO_File::readLine()
 
     string s;
     getline( m_io, s );
-    return new Chuck_String( s );
+
+    // chuck str
+    Chuck_String * str = new Chuck_String( s );
+    // initialize | 1.4.2.1 (ge) | added initialize_object
+    initialize_object( str, m_vmRef->env()->t_string );
+
+    // note this chuck string still needs to be initialized
+    return str;
 }
 
 

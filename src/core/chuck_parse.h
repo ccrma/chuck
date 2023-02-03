@@ -133,9 +133,9 @@ struct SyntaxTokenList
         for( std::vector<SyntaxToken>::size_type i = 0; i < howmany; i++ )
             list[i] = rhs.list[i];
     }
-	SyntaxTokenList() {
-		howmany = 0;
-	}
+    SyntaxTokenList() {
+        howmany = 0;
+    }
 };
 
 

@@ -169,7 +169,7 @@ t_CKBOOL ck_connect2( ck_socket sock, const struct sockaddr * addr, int size )
 //-----------------------------------------------------------------------------
 t_CKBOOL ck_connect( ck_socket sock, const char * hostname, int port )
 {
-    int ret;
+    t_CKINT ret;
     struct hostent * host;
 
 #ifdef __PLATFORM_WIN32__

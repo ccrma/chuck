@@ -1707,6 +1707,9 @@ CK_DLL_MFUN( chout_writestring )
 
     Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->write( val );
+
+    // 1.4.2.1 | (ge) added a single newline -> trigger chout flush
+    if( val == "\n" ) c->flush();
 }
 
 CK_DLL_MFUN( chout_writeint )
@@ -2971,8 +2974,7 @@ Chuck_String * Chuck_IO_Serial::readLine()
         return NULL;
     }
 
-
-    if(!fgets((char *)m_tmp_buf, m_tmp_buf_max, m_cfd))
+    if(!fgets((char *)m_tmp_buf, (int)m_tmp_buf_max, m_cfd))
     {
         EM_log(CK_LOG_WARNING, "(Serial.readLine): error: from fgets");
         return NULL;
@@ -3192,7 +3194,7 @@ void Chuck_IO_Serial::writeBytes( Chuck_Array4 * arr )
     {
         start_read_thread();
 
-        int len = arr->size();
+        t_CKINT len = arr->size();
         for(int i = 0; i < len; i++)
         {
             // TODO: efficiency
@@ -3211,7 +3213,7 @@ void Chuck_IO_Serial::writeBytes( Chuck_Array4 * arr )
     }
     else if( m_iomode == MODE_SYNC )
     {
-        int len = arr->size();
+        t_CKINT len = arr->size();
         for(int i = 0; i < len; i++)
         {
             // TODO: efficiency
@@ -3597,7 +3599,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_ascii(Chuck_IO_Serial::Request & r)
                 break;
 
             // TODO: '\r'?
-            int c = peek_buffer();
+            int c = (int)peek_buffer();
 
             if(isdigit(c) || c=='.' || (len==0 && (c=='-' || c=='+')))
             {
@@ -3647,7 +3649,7 @@ t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Request & r)
             if(peek_buffer() == -1)
                 break;
 
-            int c = pull_buffer();
+            int c = (int)pull_buffer();
 
             if(isdigit(c) || (len==0 && (c=='-' || c=='+')))
             {
@@ -3806,9 +3808,9 @@ void Chuck_IO_Serial::read_cb()
 
     m_write_thread = new XThread;
 #ifdef WIN32
-        m_read_thread->start((unsigned int (__stdcall *)(void*))shell_write_cb, this);
+    m_read_thread->start((unsigned int (__stdcall *)(void*))shell_write_cb, this);
 #else
-	m_write_thread->start(shell_write_cb, this);
+    m_write_thread->start(shell_write_cb, this);
 #endif
 
     while(m_do_read_thread && !m_do_exit)

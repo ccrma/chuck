@@ -24,10 +24,10 @@
 
 //-----------------------------------------------------------------------------
 // file: chuck.h
-// desc: chuck engine header; VM + compiler + state; no audio I/O
+// desc: chuck engine header; VM + compiler + state; independent of audio I/O
 //       REFACTOR-2017
 //
-// author: Ge Wang (http://www.gewang.com/)
+// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
 // date: fall 2017
 //
 // additional authors:
@@ -115,9 +115,9 @@ public:
 
 public:
     // compile a file (can be called anytime)
-    bool compileFile( const std::string & path, const std::string & argsTogether, int count = 1 );
+    bool compileFile( const std::string & path, const std::string & argsTogether, t_CKINT count = 1 );
     // compile code directly
-    bool compileCode( const std::string & code, const std::string & argsTogether, int count = 1 );
+    bool compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count = 1 );
 
 public:
     // initialize ChucK (using params)
@@ -127,7 +127,7 @@ public:
 
 public:
     // run engine (call from callback)
-    void run( SAMPLE * input, SAMPLE * output, int numFrames );
+    void run( SAMPLE * input, SAMPLE * output, t_CKINT numFrames );
 
 public:
     // is initialized
@@ -175,12 +175,10 @@ protected:
 public: // static functions
     // chuck version
     static const char * version();
-    #ifndef __DISABLE_OTF_SERVER__
     // chuck int size (in bits)
-    // (this depends on machine, which depends on OTF, so
-    //  disable it if we don't have OTF)
+    // (this depends on machine, which depends on OTF, so disable it if we don't have OTF)
+    // 1.4.2.1 (ge) | reinstated for non-OTF, along with parts of machine
     static t_CKUINT intSize();
-    #endif
     // number of ChucK's
     static t_CKUINT numVMs() { return o_numVMs; };
     // --poop compatibilty

@@ -80,22 +80,22 @@ public: // HACK-GE: these were moved from protected for win32
     map < string, Command * > commands;
     vector < Command * > allocated_commands;
 
-	map < string, string > saved_code;
+    map < string, string > saved_code;
 
     string code;
 
-	// helper functions
-	t_CKBOOL do_glob( const string &, string &, vector < string > & );
+    // helper functions
+    t_CKBOOL do_glob( const string &, string &, vector < string > & );
     void do_code( string &, string &, string command = "+ " );
     void do_code_context( string & );
 
 protected:
-	// helper functions
-	void do_aliases();
-	void do_variables();
+    // helper functions
+    void do_aliases();
+    void do_variables();
 
-	// code helper functions
-	void start_code();
+    // code helper functions
+    void start_code();
     void continue_code( string & );
     void string_hash( string &, string & );
 
@@ -127,8 +127,8 @@ public: // HACK-GE: moved from protected for win32
     public:
         virtual t_CKBOOL init( Chuck_Shell * );
         virtual t_CKINT execute( vector< string > &, string & ) = 0;
-		virtual string usage();
-		virtual string long_usage();
+        virtual string usage();
+        virtual string long_usage();
 
     protected:
         Chuck_Shell * caller;
@@ -144,7 +144,7 @@ public: // HACK-GE: moved from protected for win32
         ~Command_VM();
         t_CKBOOL init( Chuck_Shell * );
         t_CKINT execute( vector< string > &, string & );
-		string usage();
+        string usage();
 
     protected:
         map < string, Command * > commands;
@@ -219,7 +219,7 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector < string > &, string & );
-		string usage();
+        string usage();
     };
 
 //-----------------------------------------------------------------------------
@@ -230,7 +230,7 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector < string > &, string & );
-		string usage();
+        string usage();
     };
 
 //-----------------------------------------------------------------------------
@@ -241,10 +241,10 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector < string > &, string & );
-		string usage();
+        string usage();
     };
 
-	//-----------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Removeall
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -252,7 +252,7 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		string usage();
+        string usage();
     };
 
 //-----------------------------------------------------------------------------
@@ -263,7 +263,7 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		string usage();
+        string usage();
     };
 
 //-----------------------------------------------------------------------------
@@ -274,7 +274,7 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		string usage();
+        string usage();
     };
 
 //-----------------------------------------------------------------------------
@@ -285,7 +285,7 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		//string usage();
+        //string usage();
     };
 
 //-----------------------------------------------------------------------------
@@ -296,7 +296,7 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		//string usage();
+        //string usage();
     };
 
 //-----------------------------------------------------------------------------
@@ -307,7 +307,7 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		//string usage();
+        //string usage();
     };
 
 //-----------------------------------------------------------------------------
@@ -318,7 +318,7 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		//string usage();
+        //string usage();
     };
 
 //-----------------------------------------------------------------------------
@@ -329,7 +329,7 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		//string usage();
+        //string usage();
     };
 
 //-----------------------------------------------------------------------------
@@ -382,7 +382,7 @@ public: // HACK-GE: moved from protected for win32
         ~Command_Code();
         t_CKBOOL init( Chuck_Shell * );
         t_CKINT execute( vector< string > &, string & );
-		string usage();
+        string usage();
 
     private:
         map < string, Command * > commands;
@@ -413,7 +413,7 @@ public: // HACK-GE: moved from protected for win32
 // name: class Chuck_Shell::Command_CodeDelete
 // desc: ...
 //-----------------------------------------------------------------------------
-	class Command_CodeDelete : public Command
+    class Command_CodeDelete : public Command
     {
     public:
         t_CKINT execute( vector< string > &, string & );
@@ -425,7 +425,7 @@ public: // HACK-GE: moved from protected for win32
 //-----------------------------------------------------------------------------
     class Command_CodeAdd : public Command
     {
-	public:
+    public:
         t_CKINT execute( vector< string > &, string & );
     };
 
@@ -492,7 +492,7 @@ public:
     virtual ~Chuck_Shell_VM() {}
 
 public:
-	virtual Chuck_Shell_VM * copy()=0;
+    virtual Chuck_Shell_VM * copy()=0;
     virtual t_CKBOOL add_shred( const vector< string > &, string & )=0;
     virtual t_CKBOOL remove_shred( const vector< string > &, string & )=0;
     virtual t_CKBOOL remove_all( string & )=0;
@@ -513,7 +513,7 @@ public:
     virtual ~Chuck_Shell_Network_VM() {}
 
 public:
-	Chuck_Shell_VM * copy();
+    Chuck_Shell_VM * copy();
     t_CKBOOL init( const string &, t_CKINT );
     t_CKBOOL add_shred( const vector< string > &, string & );
     t_CKBOOL remove_shred( const vector< string > &, string & );
@@ -525,7 +525,7 @@ public:
     string fullname();
 
 private:
-		string hostname;
+        string hostname;
     t_CKINT port;
 };
 /*
@@ -539,7 +539,7 @@ public:
     virtual ~Chuck_Shell_Process_VM() {}
 
 public:
-	Chuck_Shell_VM * copy();
+    Chuck_Shell_VM * copy();
     t_CKBOOL init( const string &, t_CKINT );
     t_CKBOOL add_shred( const vector< string > &, string & );
     t_CKBOOL remove_shred( const vector< string > &, string & );
@@ -550,11 +550,11 @@ public:
     t_CKBOOL kill( string & );
     string fullname();
 
-	t_CKUINT last_shred_id();
+    t_CKUINT last_shred_id();
 
 private:
-	Chuck_VM * vm;
-	Chuck_Compiler * compiler;
+    Chuck_VM * vm;
+    Chuck_Compiler * compiler;
 };
 */
 //-----------------------------------------------------------------------------

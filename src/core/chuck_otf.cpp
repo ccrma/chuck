@@ -32,6 +32,7 @@
 #include "chuck_otf.h"
 #include "chuck_compile.h"
 #include "chuck_errmsg.h"
+#include "util_math.h"
 #include "util_thread.h"
 #include "util_string.h"
 
@@ -370,7 +371,7 @@ ck_socket otf_send_connect( const char * host, t_CKINT port )
     if( strcmp( host, "127.0.0.1" ) )
         EM_log( g_otf_log, "connecting to %s on port %i via TCP...", host, port );
 
-    if( !ck_connect( sock, host, port ) )
+    if( !ck_connect( sock, host, (int)port ) )
     {
         CK_FPRINTF_STDERR( "cannot open TCP socket on %s:%i...\n", host, port );
         ck_close( sock );
@@ -453,7 +454,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         EM_pushlog();
         // log
         EM_log( CK_LOG_INFO, "requesting removal of last shred..." );
-        msg.param = 0xffffffff;
+        msg.param = CK_NO_VALUE;
         msg.type = MSG_REMOVE;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
@@ -469,7 +470,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         }
 
         if( i <= 0 )
-            msg.param = 0xffffffff;
+            msg.param = CK_NO_VALUE;
         else
             msg.param = atoi( argv[i] );
 
@@ -724,13 +725,13 @@ const char * poop[] = {
     "[chuck]: confused by earlier errors, bailing out...",
     "[chuck]: lack of destructors have led to the unrecoverable mass build-up of trash\n"
     "         the chuck garbage collector will now run, deleting all files (bye.)",
-    "[chuck]: calling machine.crash()...",
-    "[chuck]: an unknown fatal error has occurred.  please restart your computer...",
-    "[chuck]: an unknown fatal error has occurred.  please reinstall your OS...",
-    "[chuck]: an unknown fatal error has occurred.  please update to chuck-3.0",
+    "[chuck]: calling Machine.crash()...",
+    "[chuck]: an unknown fatal error has occurred. please restart your computer...",
+    "[chuck]: an unknown fatal error has occurred. please reinstall something...",
+    "[chuck]: an unknown fatal error has occurred. please update to chuck-3.0",
     "[chuck]: internal error: unknown error",
-    "[chuck]: page fault!!!",
-    "[chuck]: error printing error message.  cannot continue 2#%%HGAFf9a0x"
+    "[chuck]: internal error: too many errors!!!",
+    "[chuck]: error printing error message. cannot continue 2#%%HGAFf9a0x"
 };
 
 long poop_size = sizeof( poop ) / sizeof( char * );
@@ -744,11 +745,11 @@ long poop_size = sizeof( poop ) / sizeof( char * );
 //-----------------------------------------------------------------------------
 void uh( )
 {
-    srand( time( NULL ) );
+    ck_srandom( (unsigned)time( NULL ) );
     while( true )
     {
-        int n = (int)(rand() / (float)RAND_MAX * poop_size);
+        int n = (int)(ck_random() / (float)CK_RANDOM_MAX * poop_size);
         printf( "%s\n", poop[n] );
-        usleep( (unsigned long)(rand() / (float)RAND_MAX * 2000000) / 10 );
+        usleep( (unsigned int)(ck_random() / (float)CK_RANDOM_MAX * 2000000) / 10 );
     }
 }

@@ -10,7 +10,7 @@ mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck-core
 win32:
 	make -f makefile.win32
 
-CK_VERSION=1.4.1.1
+CK_VERSION=1.4.2.0
 
 LEX=flex
 YACC=bison
@@ -75,10 +75,11 @@ CXXSRCS_CORE+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	chuck_vm.cpp chuck_instr.cpp chuck_scan.cpp chuck_type.cpp \
 	chuck_emit.cpp chuck_compile.cpp chuck_dl.cpp chuck_oo.cpp \
 	chuck_lang.cpp chuck_ugen.cpp chuck_otf.cpp chuck_stats.cpp \
-	chuck_shell.cpp chuck_io.cpp hidio_sdl.cpp chuck.cpp \
+	chuck_shell.cpp chuck_io.cpp chuck.cpp \
 	chuck_carrier.cpp chuck_globals.cpp \
-	midiio_rtmidi.cpp rtmidi.cpp ugen_osc.cpp ugen_filter.cpp \
-	ugen_stk.cpp ugen_xxx.cpp ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
+	midiio_rtmidi.cpp rtmidi.cpp hidio_sdl.cpp \
+	ugen_osc.cpp ugen_filter.cpp ugen_stk.cpp ugen_xxx.cpp \
+	ulib_ai.cpp ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
 	ulib_opsc.cpp ulib_regex.cpp util_buffers.cpp util_console.cpp \
 	util_string.cpp util_thread.cpp util_opsc.cpp util_serial.cpp \
 	util_hid.cpp uana_xform.cpp uana_extract.cpp

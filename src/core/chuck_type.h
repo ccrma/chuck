@@ -784,7 +784,7 @@ struct Chuck_Func : public Chuck_VM_Object
 
     // constructor
     Chuck_Func() { def = NULL; code = NULL; is_member = FALSE; is_static = FALSE,
-        vt_index = 0xffffffff; value_ref = NULL; /*dl_code = NULL;*/ next = NULL;
+        vt_index = CK_NO_VALUE; value_ref = NULL; /*dl_code = NULL;*/ next = NULL;
         up = NULL; }
 
     // destructor
@@ -839,7 +839,10 @@ t_CKBOOL isfunc( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL iskindofint( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: this includes int + pointers
 t_CKUINT getkindof( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: to get the kindof a type
 
+
+//-----------------------------------------------------------------------------
 // import
+//-----------------------------------------------------------------------------
 Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
                                              Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor = NULL,
                                              const char * doc = NULL );
@@ -849,12 +852,14 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, const char * name,
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
                                             f_tick tick, f_tickf tickf, f_pmsg pmsg,  // (tickf added 1.3.0.0)
-                                            t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff,
+                                            t_CKUINT num_ins = CK_NO_VALUE,
+                                            t_CKUINT num_outs = CK_NO_VALUE,
                                             const char * doc = NULL );
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
                                             f_tick tick, f_pmsg pmsg,
-                                            t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff,
+                                            t_CKUINT num_ins = CK_NO_VALUE,
+                                            t_CKUINT num_outs = CK_NO_VALUE,
                                             const char * doc = NULL );
 Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
@@ -862,8 +867,10 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name, 
 Chuck_Type * type_engine_import_uana_begin( Chuck_Env * env, const char * name, const char * parent,
                                             Chuck_Namespace * where, f_ctor pre_ctor, f_dtor dtor,
                                             f_tick tick, f_tock tock, f_pmsg pmsg,
-                                            t_CKUINT num_ins = 0xffffffff, t_CKUINT num_outs = 0xffffffff,
-                                            t_CKUINT num_ins_ana = 0xffffffff, t_CKUINT num_outs_ana = 0xffffffff,
+                                            t_CKUINT num_ins = CK_NO_VALUE,
+                                            t_CKUINT num_outs = CK_NO_VALUE,
+                                            t_CKUINT num_ins_ana = CK_NO_VALUE,
+                                            t_CKUINT num_outs_ana = CK_NO_VALUE,
                                             const char * doc = NULL );
 t_CKBOOL type_engine_import_mfun( Chuck_Env * env, Chuck_DL_Func * mfun );
 t_CKBOOL type_engine_import_sfun( Chuck_Env * env, Chuck_DL_Func * sfun );
@@ -880,7 +887,10 @@ t_CKBOOL type_engine_import_class_end( Chuck_Env * env );
 t_CKBOOL type_engine_register_deprecate( Chuck_Env * env,
                                          const std::string & former, const std::string & latter );
 
-// helpers
+
+//-----------------------------------------------------------------------------
+// helper functions
+//-----------------------------------------------------------------------------
 t_CKBOOL type_engine_check_reserved( Chuck_Env * env, const std::string & xid, int pos );
 t_CKBOOL type_engine_check_reserved( Chuck_Env * env, S_Symbol xid, int pos );
 // 1.4.1.0 (ge): abilty to toggle reserved words for special cases, such as Math.pi co-existing with pi (use with care!)
@@ -895,11 +905,13 @@ Chuck_Value * type_engine_find_value( Chuck_Type * type, const std::string & xid
 Chuck_Value * type_engine_find_value( Chuck_Type * type, S_Symbol xid );
 Chuck_Value * type_engine_find_value( Chuck_Env * env, const std::string & xid, t_CKBOOL climb, int linepos = 0 );
 Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List path );
-/*******************************************************************************
- * spencer: added this into function to provide the same logic path
- * for type_engine_check_exp_decl() and ck_add_mvar() when they determine
- * offsets for mvars -- added 1.3.0.0
- ******************************************************************************/
+
+
+//-----------------------------------------------------------------------------
+// spencer: added this into function to provide the same logic path
+// for type_engine_check_exp_decl() and ck_add_mvar() when they determine
+// offsets for mvars -- added 1.3.0.0
+//-----------------------------------------------------------------------------
 t_CKUINT type_engine_next_offset( t_CKUINT current_offset, Chuck_Type * type );
 // array verify
 t_CKBOOL verify_array( a_Array_Sub array );
@@ -909,8 +921,12 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
                              Chuck_Namespace * owner_nspc );
 // make type | 1.4.1.1 (nshaheed) added
 Chuck_Type * new_array_element_type( Chuck_Env * env, Chuck_Type * base_type,
-		       t_CKUINT depth, Chuck_Namespace * owner_nspc);
+                                     t_CKUINT depth, Chuck_Namespace * owner_nspc);
+
+
+//-----------------------------------------------------------------------------
 // conversion
+//-----------------------------------------------------------------------------
 const char * type_path( a_Id_List path );
 a_Id_List str2list( const std::string & path );
 a_Id_List str2list( const std::string & path, t_CKBOOL & is_array );
@@ -918,7 +934,19 @@ const char * howmuch2str( te_HowMuch how_much );
 t_CKBOOL escape_str( char * str_lit, int linepos );
 t_CKINT str2char( const char * char_lit, int linepos );
 
+
+//-----------------------------------------------------------------------------
+// more helper functions for type scan and checking | 1.4.2.1 (ge) added
+//-----------------------------------------------------------------------------
+// compare two argument lists to see if they are the same (sequence of types)
+t_CKBOOL same_arg_lists( a_Arg_List lhs, a_Arg_List rhs );
+// generate a string from an argument list (types only)
+std::string arglist2string( a_Arg_List list );
+
+
+//-----------------------------------------------------------------------------
 // REFACTOR-2017: exile! these default types now stored in env
+//-----------------------------------------------------------------------------
 //extern Chuck_Type t_void;
 //extern Chuck_Type t_int;
 //extern Chuck_Type t_float;
