@@ -1204,7 +1204,7 @@ static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object obj, cons
 //-----------------------------------------------------------------------------
 static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, t_CKDUR & value )
 {
-    assert(o != NULL);
+    assert(obj != NULL);
     t_CKINT offset;
 
     t_CKBOOL success = ck_get_mvar(obj, name, te_dur, offset);
