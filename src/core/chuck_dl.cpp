@@ -1173,8 +1173,8 @@ static t_CKBOOL ck_get_mvar_int(CK_DL_API api, Chuck_DL_Api::Object obj, const c
 
     if (success)
     {
-        Chuck_Object* obj = (Chuck_Object*)obj;
-        m_int = OBJ_MEMBER_INT(obj, offset); // get offset
+        Chuck_Object* ck_obj = (Chuck_Object*)obj;
+        m_int = OBJ_MEMBER_INT(ck_obj, offset); // get offset
     }
     return success;
 }
@@ -1192,8 +1192,8 @@ static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object obj, cons
 
     if (success)
     {
-        Chuck_Object* obj = (Chuck_Object*)obj;
-        m_float = OBJ_MEMBER_FLOAT(obj, offset); // get offset
+        Chuck_Object* ck_obj = (Chuck_Object*)obj;
+        m_float = OBJ_MEMBER_FLOAT(ck_obj, offset); // get offset
     }
     return success;
 }
@@ -1211,8 +1211,8 @@ static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object obj, const 
 
     if (success)
     {
-        Chuck_Object* obj = (Chuck_Object*)obj;
-        value = OBJ_MEMBER_DUR(obj, offset); // get offset
+        Chuck_Object* ck_obj = (Chuck_Object*)obj;
+        value = OBJ_MEMBER_DUR(ck_obj, offset); // get offset
     }
     return success;
 }
@@ -1230,8 +1230,8 @@ static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object obj, const
 
     if (success)
     {
-        Chuck_Object* obj = (Chuck_Object*)obj;
-        value = OBJ_MEMBER_TIME(obj, offset); // get offset
+        Chuck_Object* ck_obj = (Chuck_Object*)obj;
+        value = OBJ_MEMBER_TIME(ck_obj, offset); // get offset
     }
     return success;
 }
@@ -1249,8 +1249,8 @@ static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object obj, con
 
     if (success)
     {
-        Chuck_Object* obj = (Chuck_Object*)obj;
-        str = OBJ_MEMBER_STRING(obj, offset); // get offset
+        Chuck_Object* ck_obj = (Chuck_Object*)obj;
+        str = OBJ_MEMBER_STRING(ck_obj, offset); // get offset
     }
     return success;
 }
@@ -1269,8 +1269,8 @@ static t_CKBOOL ck_get_mvar_object( CK_DL_API api, Chuck_DL_Api::Object obj, con
 
     if (success)
     {
-        Chuck_Object* obj = (Chuck_Object*)obj;
-        object = OBJ_MEMBER_OBJECT(obj, offset); // get offset
+        Chuck_Object* ck_obj = (Chuck_Object*)obj;
+        object = OBJ_MEMBER_OBJECT(ck_obj, offset); // get offset
     }
     return success;
 }
