@@ -4565,15 +4565,20 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     if( !emit_engine_emit_stmt( emit, func_def->code, FALSE ) )
         return FALSE;
 
-    // added by spencer June 2014 (1.3.5.0)
-    // ensure return
+    // added by spencer June 2014 (1.3.5.0) | ensure return
     if( func_def->ret_type && func_def->ret_type != emit->env->t_void )
     {
-        emit->append( new Chuck_Instr_Reg_Push_Imm(0) );
+        // 1.4.2.1 (ge) | account for differences in return type size
+        // push 0 for the width of the return type in question
+        emit->append( new Chuck_Instr_Reg_Push_Zero( func_def->ret_type->size ) );
+        // previously this pushed 0 as int, regardless of return type size
+        // emit->append( new Chuck_Instr_Reg_Push_Imm(0) );
 
-        Chuck_Instr_Goto * instr = new Chuck_Instr_Goto( 0 );
-        emit->append( instr );
-        emit->code->stack_return.push_back( instr );
+        // 1.4.2.1 (ge) | commented out this goto...
+        // (okay as long as the next instruction is Chuck_Instr_Func_Return...)
+        // Chuck_Instr_Goto * instr = new Chuck_Instr_Goto( 0 );
+        // emit->append( instr );
+        // emit->code->stack_return.push_back( instr );
     }
 
     // ge: pop scope (2012 april | added 1.3.0.0)

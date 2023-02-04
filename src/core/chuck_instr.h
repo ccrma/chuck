@@ -2018,6 +2018,23 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Push_Zero
+// desc: push immediate value 0 to reg stack with specific width
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Push_Zero : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Reg_Push_Zero( t_CKUINT sizeInBytes )
+    { this->set( sizeInBytes ); }
+
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Reg_Dup_Last
 // desc: duplicate last value on reg stack
 //-----------------------------------------------------------------------------
