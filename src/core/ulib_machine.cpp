@@ -40,6 +40,25 @@
 #include <string>
 using namespace std;
 
+// exports
+CK_DLL_SFUN( machine_crash_impl );
+CK_DLL_SFUN( machine_add_impl );
+CK_DLL_SFUN( machine_spork_impl );
+CK_DLL_SFUN( machine_remove_impl );
+CK_DLL_SFUN( machine_replace_impl );
+CK_DLL_SFUN( machine_status_impl );
+CK_DLL_SFUN( machine_intsize_impl );
+CK_DLL_SFUN( machine_shreds_impl );
+CK_DLL_SFUN( machine_realtime_impl );
+CK_DLL_SFUN( machine_silent_impl );
+CK_DLL_SFUN( machine_eval_impl );
+CK_DLL_SFUN( machine_eval2_impl );
+CK_DLL_SFUN( machine_eval3_impl );
+CK_DLL_SFUN( machine_version_impl );
+CK_DLL_SFUN( machine_setloglevel_impl );
+CK_DLL_SFUN( machine_getloglevel_impl );
+CK_DLL_SFUN( machine_refcount_impl);
+
 
 
 
@@ -154,7 +173,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, machine_version_impl, "string", "version" );
     QUERY->doc_func( QUERY, "return version string" );
 
-    // get version string
+    // get set loglevel
     QUERY->add_sfun( QUERY, machine_setloglevel_impl, "int", "loglevel" );
     QUERY->add_arg( QUERY, "int", "level" );
     QUERY->doc_func( QUERY, "set log level\n"
@@ -170,9 +189,14 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
                      "       |- 9: FINEST\n"
                      "       |- 10: ALL" );
 
-    // get version string
+    // get log level
     QUERY->add_sfun( QUERY, machine_getloglevel_impl, "int", "loglevel" );
     QUERY->doc_func( QUERY, "get log level." );
+
+    // get reference count for any object
+    QUERY->add_sfun( QUERY, machine_refcount_impl, "int", "refcount" );
+    QUERY->add_arg( QUERY, "Object", "obj" );
+    QUERY->doc_func( QUERY, "get an object's current internal reference count; this is intended for testing or curiosity; NOTE: this function intentionally does not take into account any reference counting related to the calling of this function (normally all functions increments the reference count for objects passed as arguments and decrements upon returning)" );
 
     // end class
     QUERY->end_class( QUERY );
@@ -398,4 +422,12 @@ CK_DLL_SFUN( machine_getloglevel_impl )
 {
     // return
     RETURN->v_int = VM->carrier()->chuck->getLogLevel();
+}
+
+CK_DLL_SFUN( machine_refcount_impl )
+{
+    // get the argument
+    Chuck_Object * obj = (Chuck_Object *)GET_NEXT_OBJECT(ARGS);
+    // return (-1 to account for the extra refcount as part of calling this function!)
+    RETURN->v_int = obj != NULL ? obj->m_ref_count-1 : 0;
 }

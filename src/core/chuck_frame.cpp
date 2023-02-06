@@ -100,7 +100,7 @@ void Chuck_Frame::push_scope( )
 // name: get_scope()
 // desc: get current scope (added 1.3.0.0)
 //-----------------------------------------------------------------------------
-void Chuck_Frame::get_scope( vector<Chuck_Local *> & out ) const
+void Chuck_Frame::get_scope( vector<Chuck_Local *> & out, bool localOnly ) const
 {
     // sanity
     assert( this->stack.size() > 0 );
@@ -111,8 +111,13 @@ void Chuck_Frame::get_scope( vector<Chuck_Local *> & out ) const
     t_CKINT index = this->stack.size() - 1;
 
     // loop
-    while( index >= 0 && this->stack[index] != NULL )
+    while( index >= 0 )
     {
+        // did we hit a stack boundary (delineated by NULL)
+        // localOnly option added 1.4.2.1 (ge) -- to get all scope in the frame
+        if( localOnly && this->stack[index] != NULL )
+            break;
+
         // last thing
         local = stack[index];
         // move

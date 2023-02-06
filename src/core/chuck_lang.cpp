@@ -1062,13 +1062,18 @@ CK_DLL_MFUN( object_toString )
             RETURN->v_object = NULL;
             return;
         }
+        // 1.4.2.1 (ge) assign to object
+        OBJ_MEMBER_UINT(SELF, Object_offset_string) = (t_CKUINT)str;
+        // 1.4.2.1 (ge) | add ref
+        str->add_ref();
+
         // set it
         ostringstream strout( ostringstream::out );
         // get the type
         Chuck_Type * type = SELF->type_ref;
         // write
         strout.setf( ios::hex, ios::basefield );
-        strout << ((type != NULL) ? type->c_name() : "[VOID]") << ":" << (t_CKUINT)SELF;
+        strout << ((type != NULL) ? type->c_name() : "[VOID]") << ":" << (t_CKUINT)SELF << " (refcount=" << SELF->m_ref_count << ")";
         strout.flush();
 
         // done

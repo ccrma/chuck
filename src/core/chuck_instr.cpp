@@ -3777,7 +3777,7 @@ error:
 
 
 static Chuck_Instr_Func_Call g_func_call;
-static Chuck_Instr_Func_Call_Member g_func_call_member( 0 );
+static Chuck_Instr_Func_Call_Member g_func_call_member( 0, NULL );
 //-----------------------------------------------------------------------------
 // name: call_pre_constructor()
 // desc: ...
@@ -3796,6 +3796,10 @@ inline void call_pre_constructor( Chuck_VM * vm, Chuck_VM_Shred * shred,
     push_( reg_sp, (t_CKUINT)pre_ctor );
     // push the stack offset
     push_( reg_sp, stack_offset );
+
+    // NOTE (1.4.2.1): pre-constructors by their nature have no arguments...
+    // if they did, they would need to clean up argument list, in the built-in/native
+    // func case, by setting g_func_call_member.m_func_ref with the appropriate func
 
     // call the function
     if( pre_ctor->native_func != 0 )
@@ -4399,11 +4403,16 @@ void Chuck_Instr_AddRef_Object2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: add one reference on object (added 1.3.0.0)
+// desc: ref-count increment the top of the register stack (added 1.3.0.0)
+//       1.4.2.1 (ge) additional notes...
+//       this is used to keep objects referenced while on stack;
+//       relevant for cases like `return obj;` where obj may need to
+//       released for the local stack AND need to be kept on the stack
+//       to be return; in this case, we need this additional add_ref();
+//       releasing obj from stack is responsibility of the caller
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Reg_AddRef_Object3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
-    // ISSUE: 64-bit?
     // NOTE: this pointer is NOT a reference pointer
     t_CKUINT * reg_sp = (t_CKUINT *&)shred->reg->sp;
     Chuck_VM_Object * obj = NULL;
@@ -4415,7 +4424,7 @@ void Chuck_Instr_Reg_AddRef_Object3::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     // ge (2012 april): check for NULL (added 1.3.0.0)
     if( obj != NULL )
     {
-        // release
+        // add reference
         obj->add_ref();
     }
 }
@@ -4470,13 +4479,70 @@ void Chuck_Instr_Release_Object2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 
 
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: release object reference + pop from reg stack | 1.4.2.1 (ge) added
+//       the variant assumes object pointer directly on stack (not offset)
+//       used to release returned object pointer after a function call;
+//       FYI the return value is conveyed on the reg stack; this undoes
+//       the addref before the return; see Chuck_Instr_Reg_AddRef_Object3
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Release_Object3_Pop_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+    Chuck_VM_Object * obj = NULL;
+
+    // pop
+    pop_( reg_sp, 1 );
+    // copy popped value into mem stack
+    obj = *( (Chuck_VM_Object **)(reg_sp) );
+    // ge (2012 april): check for NULL (added 1.3.0.0)
+    if( obj != NULL )
+    {
+        // release
+        obj->release();
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: release object reference from reg stack | 1.4.2.1 (ge) added
+//       the variant assumes object pointer directly on stack (not offset)
+//       used to release objects on function arguments, specifically for
+//       built-in / imported (chugins) functions; code-defined functions
+//       do their own argument cleanup
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Release_Object4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // NOTE: this pointer is NOT a reference pointer
+    t_CKBYTE * mem_sp = (t_CKBYTE *&)shred->mem->sp;
+    Chuck_VM_Object * obj = NULL;
+
+    // move it
+    mem_sp += m_val;
+    // copy popped value into mem stack
+    obj = *( (Chuck_VM_Object **)(mem_sp) );
+    if( obj != NULL )
+    {
+        // release
+        obj->release();
+    }
+}
+
+
+
+
 #pragma mark === Function Calls ===
 
 
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: converts, in place on operand stack, a Func to its Code (instructions)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Func_To_Code::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -4489,6 +4555,57 @@ void Chuck_Instr_Func_To_Code::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     assert( func != NULL );
     // code
     *(reg_sp-1) = (t_CKUINT)func->code;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: func_release_args() | 1.4.2.1 (ge) added
+// desc: helper function to release objects an function arg list
+//       input: VM, args list, mem stack pointer
+//       context: this is designed for builtin/imported functions
+//                functions defined in chuck code do their own arg list cleanup
+//-----------------------------------------------------------------------------
+t_CKBOOL func_release_args( Chuck_VM * vm, a_Arg_List args, t_CKUINT * mem_sp )
+{
+    // keep track of offset
+    t_CKUINT offset = 0;
+    // the type in question
+    Chuck_Type * type = NULL;
+    // object pointer
+    Chuck_VM_Object * object = NULL;
+
+    // loop over
+    while( args )
+    {
+        // get the type
+        type = args->type;
+        // check we have one!
+        if( type != NULL )
+        {
+            // is an object?
+            if( isobj( vm->env(), args->type) )
+            {
+                // get the object pointer
+                object = (Chuck_VM_Object *)(*(mem_sp+offset));
+                // check
+                if( object != NULL )
+                {
+                    // release it
+                    object->release();
+                }
+            }
+
+            // advance offset
+            offset += args->type->size;
+        }
+
+        // go
+        args = args->next;
+    }
+
+    return TRUE;
 }
 
 
@@ -4648,6 +4765,16 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // call the function (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
         f( (Chuck_Object *)(*mem_sp), mem_sp + 1, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
     }
+
+    // if we have a func def | 1.4.2.1 (ge) added
+    if( m_func_ref != NULL )
+    {
+        // cleanup / release objects on the arg list
+        // context: this should be done here for builtin/import functions
+        //          user-defined functions do their own arg list cleanup
+        func_release_args( vm, m_func_ref->def->arg_list, mem_sp+1 );
+    }
+
     // pop (TODO: check if this is right)
     mem_sp -= push;
 
@@ -4657,6 +4784,25 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     {
         // push the return args
         push_( reg_sp, retval.v_uint );
+
+        // 1.4.2.1 (ge) | added -- ensure ref count
+        if( m_func_ref && isobj(vm->env(), m_func_ref->def->ret_type) )
+        {
+            Chuck_VM_Object * obj = (Chuck_VM_Object *) retval.v_uint;
+            if( obj )
+            {
+                // check if refcount is 0
+                if( obj->m_ref_count == 0 )
+                {
+                    EM_log( CK_LOG_FINE, "%s(...) returned object with refcount==0", S_name(m_func_ref->def->name) );
+                    EM_pushlog();
+                    EM_log( CK_LOG_FINE, "auto-incrementing object refcount to 1..." );
+                    EM_poplog();
+                }
+                // always add reference to returned objects (should release outside)
+                obj->add_ref();
+            }
+        }
     }
     else if( m_val == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
@@ -4755,7 +4901,15 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     // (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
     // (added 1.4.1.0 -- base_type)
     f( (Chuck_Type *)(*mem_sp), mem_sp+1, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
-    // clean up memory stack
+    // if we have a func def | 1.4.2.1 (ge) added
+    if( m_func_ref != NULL )
+    {
+        // cleanup / release objects on the arg list
+        // context: this should be done here for builtin/import functions
+        //          user-defined functions do their own arg list cleanup
+        func_release_args( vm, m_func_ref->def->arg_list, mem_sp+1 );
+    }
+    // pop memory stack pointer
     mem_sp -= push;
 
     // push the return
@@ -4764,6 +4918,26 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     {
         // push the return args
         push_( reg_sp, retval.v_uint );
+
+        // 1.4.2.1 (ge) | added -- ensure ref count
+        if( m_func_ref && isobj(vm->env(), m_func_ref->def->ret_type) )
+        {
+            // get as object pointer
+            Chuck_VM_Object * obj = (Chuck_VM_Object *) retval.v_uint;
+            if( obj )
+            {
+                // check if refcount is 0
+                if( obj->m_ref_count == 0 )
+                {
+                    EM_log( CK_LOG_FINE, "%s(...) returned object with refcount==0", S_name(m_func_ref->def->name) );
+                    EM_pushlog();
+                    EM_log( CK_LOG_FINE, "auto-incrementing object refcount to 1..." );
+                    EM_poplog();
+                }
+                // always add reference to returned objects (should release outside)
+                obj->add_ref();
+            }
+        }
     }
     else if( m_val == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
@@ -7461,17 +7635,27 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( m_type_ref->size == sz_INT && iskindofint(vm->env(), m_type_ref) ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         t_CKINT * sp = (t_CKINT *)shred->reg->sp;
-        if( !isa( m_type_ref, vm->env()->t_string ) ||  *(sp-1) == 0 )
+        Chuck_Object * obj = ((Chuck_Object *)*(sp-1));
+        if( !isa( m_type_ref, vm->env()->t_string ) || *(sp-1) == 0 )
         {
             // print it
-            if( *(sp-1) == 0 && isa( m_type_ref, vm->env()->t_object ) )
-                CK_FPRINTF_STDERR( "null :(%s)\n", m_type_ref->c_name() );
+            if( isa( m_type_ref, vm->env()->t_object ) )
+            {
+                if( obj == NULL )
+                {
+                    CK_FPRINTF_STDERR( "null :(%s)\n", m_type_ref->c_name() );
+                }
+                else
+                {
+                    CK_FPRINTF_STDERR( "0x%lx :(%s|refcount=%d)\n", *(sp-1), m_type_ref->c_name(), obj->m_ref_count );
+                }
+            }
             else
-                CK_FPRINTF_STDERR( "%ld :(%s)\n", *(sp-1), m_type_ref->c_name() );
+                CK_FPRINTF_STDERR( "%d :(%s)\n", *(sp-1), m_type_ref->c_name() );
         }
         else
         {
-            CK_FPRINTF_STDERR( "\"%s\" : (%s)\n", ((Chuck_String *)*(sp-1))->str().c_str(), m_type_ref->c_name() );
+            CK_FPRINTF_STDERR( "\"%s\" :(%s)\n", ((Chuck_String *)obj)->str().c_str(), m_type_ref->c_name() );
         }
     }
     else if( m_type_ref->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -7593,11 +7777,12 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             {
                 if( isa( type, vm->env()->t_object ) )
                 {
+                    Chuck_Object * obj = ((Chuck_Object *)(*sp));
                     // print it
                     if( *(sp) == 0 )
                         CK_FPRINTF_STDERR( "null " );
                     else
-                        CK_FPRINTF_STDERR( "0x%lx ", *(sp) );
+                        CK_FPRINTF_STDERR( "0x%lx (refcount=%d)", *(sp), obj->m_ref_count );
                 }
                 else
                 {

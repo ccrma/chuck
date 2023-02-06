@@ -53,23 +53,7 @@ t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func func );
 // machine exports
 t_CKUINT machine_intsize();
 
-// exports
-CK_DLL_SFUN( machine_crash_impl );
-CK_DLL_SFUN( machine_add_impl );
-CK_DLL_SFUN( machine_spork_impl );
-CK_DLL_SFUN( machine_remove_impl );
-CK_DLL_SFUN( machine_replace_impl );
-CK_DLL_SFUN( machine_status_impl );
-CK_DLL_SFUN( machine_intsize_impl );
-CK_DLL_SFUN( machine_shreds_impl );
-CK_DLL_SFUN( machine_realtime_impl );
-CK_DLL_SFUN( machine_silent_impl );
-CK_DLL_SFUN( machine_eval_impl );
-CK_DLL_SFUN( machine_eval2_impl );
-CK_DLL_SFUN( machine_eval3_impl );
-CK_DLL_SFUN( machine_version_impl );
-CK_DLL_SFUN( machine_setloglevel_impl );
-CK_DLL_SFUN( machine_getloglevel_impl );
+
 
 
 #endif

@@ -125,8 +125,14 @@ void Chuck_VM_Object::add_ref()
 //-----------------------------------------------------------------------------
 void Chuck_VM_Object::release()
 {
-    // make sure there is at least one reference
-    assert( m_ref_count > 0 );
+    // check
+    if( m_ref_count <= 0 )
+    {
+        // print error
+        EM_error3( "[chuck]: internal error: Object.release() refcount == %d", m_ref_count );
+        // make sure there is at least one reference
+        assert( m_ref_count > 0 );
+    }
     // decrement
     m_ref_count--;
 
@@ -147,6 +153,9 @@ void Chuck_VM_Object::release()
             // in case assert is disabled
             *(int *)0 = 1;
         }
+
+        // log | 1.4.2.1 (ge) added
+        EM_log( CK_LOG_FINEST, "reclaiming %s: 0x%08x", typeid(*this).name(), this );
 
         // tell the object manager to set this free
         // Chuck_VM_Alloc::instance()->free_object( this );

@@ -63,6 +63,8 @@ t_CKBOOL chuck_parse( c_constr fname, FILE * fd = NULL, c_constr code = NULL );
 // reset the parser
 void reset_parse( );
 
+// convert abstract syntax expression to string
+std::string absyn2str( a_Exp exp );
 
 // syntax highlighting tools
 #include <vector>
