@@ -2977,6 +2977,7 @@ public:
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Reg_AddRef_Object3
 // desc: added 1.3.0.0 -- does the ref add in-place
+//       operates on top of the register stack
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Reg_AddRef_Object3 : public Chuck_Instr
 {
@@ -2989,7 +2990,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Release_Object
-// desc: ...
+// desc: release object on stack by its offset
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Release_Object : public Chuck_Instr
 {
@@ -3009,6 +3010,38 @@ struct Chuck_Instr_Release_Object2 : public Chuck_Instr_Unary_Op
 {
 public:
     Chuck_Instr_Release_Object2( t_CKUINT offset )
+    { this->set( offset ); }
+
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Release_Object3_Pop_Word
+// desc: release object reference + pop from reg stack | 1.4.2.1 (ge) added
+//       the variant assumes object pointer directly on stack (not offset)
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Release_Object3_Pop_Word : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Release_Object4
+// desc: release object reference from reg stack (no pop) | 1.4.2.1 (ge) added
+//       the variant assumes object pointer directly on stack (not offset)
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Release_Object4 : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Release_Object4( t_CKUINT offset )
     { this->set( offset ); }
 
 public:
@@ -3051,11 +3084,14 @@ public:
 struct Chuck_Instr_Func_Call_Member : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Func_Call_Member( t_CKUINT ret_size )
-    { this->set( ret_size ); }
+    Chuck_Instr_Func_Call_Member( t_CKUINT ret_size, Chuck_Func * func_ref )
+    { this->set( ret_size ); m_func_ref = func_ref; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+
+public:
+    Chuck_Func * m_func_ref; // 1.4.2.1 (ge) | added for arg list cleanup
 };
 
 
@@ -3068,11 +3104,14 @@ public:
 struct Chuck_Instr_Func_Call_Static : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Func_Call_Static( t_CKUINT ret_size )
-    { this->set( ret_size ); }
+    Chuck_Instr_Func_Call_Static( t_CKUINT ret_size, Chuck_Func * func_ref )
+    { this->set( ret_size ); m_func_ref = func_ref; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+
+public:
+    Chuck_Func * m_func_ref; // 1.4.2.1 (ge) | added for arg list cleanup
 };
 
 

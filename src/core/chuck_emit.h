@@ -148,7 +148,9 @@ struct Chuck_Emitter : public Chuck_VM_Object
     // add references to locals on current scope (added 1.3.0.0)
     void addref_on_scope();
     // pop scope
-    void pop_scope( );
+    void pop_scope();
+    // traverse scope on jumps such as 'return' 'break' 'continue' | 1.4.2.1 (ge)
+    void traverse_scope_on_jump();
 
     // default durations
     t_CKBOOL find_dur( const std::string & name, t_CKDUR * out );

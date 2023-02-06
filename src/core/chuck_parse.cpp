@@ -278,3 +278,407 @@ t_CKBOOL SyntaxQuery::parseLine( const std::string & line, SyntaxTokenList & tok
 
     return TRUE;
 }
+
+
+
+
+
+//-----------------------------------------------------------------------------
+// absyn to string functions
+//-----------------------------------------------------------------------------
+#include "chuck_type.h"
+string absyn_exp2str( a_Exp exp, t_CKBOOL iterate = true );
+string absyn_binary2str( a_Exp_Binary binary );
+string absyn_unary2str( a_Exp_Unary unary );
+string absyn_op2str( ae_Operator op );
+string absyn_cast2str( a_Exp_Cast cast );
+string absyn_postfix2str( a_Exp_Postfix postfix );
+string absyn_dur2str( a_Exp_Dur dur );
+string absyn_primary2str( a_Exp_Primary primary );
+string absyn_array2str( a_Exp_Array array );
+string absyn_func_call2str( a_Exp_Func_Call func_call );
+string absyn_dot_member2str( a_Exp_Dot_Member dot_member );
+string absyn_exp_if2str( a_Exp_If exp_if );
+string absyn_decl2str( a_Exp_Decl decl );
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn2str()
+// desc: convert abstract syntax exp to string
+//-----------------------------------------------------------------------------
+string absyn2str( a_Exp exp )
+{
+    return absyn_exp2str( exp ) + ";";
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_exp2str()
+// desc: convert abstract syntax exp to string
+//-----------------------------------------------------------------------------
+string absyn_exp2str( a_Exp exp, t_CKBOOL iterate )
+{
+    string str = "";
+
+    // loop over
+    while( exp )
+    {
+        switch( exp->s_type )
+        {
+        case ae_exp_binary:
+            str += absyn_binary2str( &exp->binary );
+            break;
+
+        case ae_exp_unary:
+            str += absyn_unary2str( &exp->unary );
+            break;
+
+        case ae_exp_cast:
+            str += absyn_cast2str( &exp->cast );
+            break;
+
+        case ae_exp_postfix:
+            str += absyn_postfix2str( &exp->postfix );
+            break;
+
+        case ae_exp_dur:
+            str += absyn_dur2str( &exp->dur );
+            break;
+
+        case ae_exp_primary:
+                str += absyn_primary2str( &exp->primary );
+            break;
+
+        case ae_exp_array:
+                str += absyn_array2str( &exp->array );
+            break;
+
+        case ae_exp_func_call:
+                str += absyn_func_call2str( &exp->func_call );
+            break;
+
+        case ae_exp_dot_member:
+                str += absyn_dot_member2str( &exp->dot_member );
+            break;
+
+        case ae_exp_if:
+                str += absyn_exp_if2str( &exp->exp_if );
+            break;
+
+        case ae_exp_decl:
+                str += absyn_decl2str( &exp->decl );
+            break;
+
+        default:
+            return "";
+        }
+
+        // implicit cast
+        if( exp->cast_to != NULL )
+            break;
+
+        // break
+        if( !iterate ) break;
+
+        // next
+        exp = exp->next;
+        // if more
+        if( exp ) str += ", ";
+    }
+
+    return str;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_op2str()
+// desc: convert abstract syntax operator to string
+//-----------------------------------------------------------------------------
+string absyn_op2str( ae_Operator op )
+{
+    string str;
+    // get operation string
+    switch( op )
+    {
+        case ae_op_plus: str = "+"; break;
+        case ae_op_plus_chuck: str = "+=>"; break;
+        case ae_op_minus: str = "-"; break;
+        case ae_op_minus_chuck: str = "-=>"; break;
+        case ae_op_times: str = "*"; break;
+        case ae_op_times_chuck: str = "*=>"; break;
+        case ae_op_divide: str = "/"; break;
+        case ae_op_divide_chuck: str = "/=>"; break;
+        case ae_op_s_or: str = "|"; break;
+        case ae_op_s_or_chuck: str = "|=>"; break;
+        case ae_op_s_and: str = "&"; break;
+        case ae_op_s_and_chuck: str = "&=>"; break;
+        case ae_op_shift_left: str = "<<"; break;
+        case ae_op_shift_left_chuck: str = "<<=>"; break;
+        case ae_op_shift_right: str = ">>"; break;
+        case ae_op_shift_right_chuck: str = ">>=>"; break;
+        case ae_op_percent: str = "%"; break;
+        case ae_op_percent_chuck: str = "%=>"; break;
+        case ae_op_s_xor: str = "^"; break;
+        case ae_op_s_xor_chuck: str = "^=>"; break;
+        case ae_op_chuck: str = "=>"; break;
+        case ae_op_unchuck: str = "=<"; break;
+        case ae_op_upchuck: str = "=^"; break;
+        case ae_op_at_chuck: str = "@=>"; break;
+        case ae_op_s_chuck: str = ""; break;
+        case ae_op_eq: str = "=="; break;
+        case ae_op_neq: str = "!="; break;
+        case ae_op_lt: str = "<"; break;
+        case ae_op_le: str = "<="; break;
+        case ae_op_gt: str = ">"; break;
+        case ae_op_ge: str = ">="; break;
+        case ae_op_and: str = "&&"; break;
+        case ae_op_or: str = "||"; break;
+        case ae_op_arrow_left: str = "<-"; break;
+        case ae_op_arrow_right: str = "->"; break;
+
+        // unary
+        case ae_op_plusplus: str = "++"; break;
+        case ae_op_minusminus: str = "--"; break;
+        case ae_op_tilda: str = "~"; break;
+        case ae_op_exclamation: str = "!"; break;
+        case ae_op_spork: str = "spork ~"; break;
+        case ae_op_new: str = "new"; break;
+
+        // not used
+        case ae_op_typeof: str = "typeof"; break;
+        case ae_op_sizeof: str = "sizeof"; break;
+        default: str = "[OP]"; break;
+    }
+    return str;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_binary2str()
+// desc: convert abstract syntax binary to string
+//-----------------------------------------------------------------------------
+string absyn_binary2str( a_Exp_Binary binary )
+{
+    // (lhs OP rhs)
+    return "(" + absyn_exp2str(binary->lhs)
+               + absyn_op2str(binary->op)
+               + absyn_exp2str(binary->rhs) + ")";
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_unary2str()
+// desc: convert abstract syntax unary to string
+//-----------------------------------------------------------------------------
+string absyn_unary2str( a_Exp_Unary unary )
+{
+    return absyn_op2str(unary->op) + " " + absyn_exp2str(unary->exp);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_cast2str()
+// desc: convert abstract syntax cast to string
+//-----------------------------------------------------------------------------
+string absyn_cast2str( a_Exp_Cast cast )
+{
+    Chuck_Type * to = cast->self->type;
+    return "$ " + to->name;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_cast2str()
+// desc: convert abstract syntax cast to string
+//-----------------------------------------------------------------------------
+string absyn_postfix2str( a_Exp_Postfix postfix )
+{
+    return absyn_exp2str( postfix->exp ) + absyn_op2str( postfix->op );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_dur2str()
+// desc: convert abstract syntax dur to string
+//-----------------------------------------------------------------------------
+string absyn_dur2str( a_Exp_Dur dur )
+{
+    return absyn_exp2str(dur->base) + "::" + absyn_exp2str(dur->unit);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_primary2str()
+// desc: convert abstract syntax primary to string
+//-----------------------------------------------------------------------------
+string absyn_primary2str( a_Exp_Primary primary )
+{
+    string str;
+
+    // find out exp
+    switch( primary->s_type )
+    {
+        case ae_primary_var: str = S_name(primary->var); break;
+        case ae_primary_num: str = to_string(primary->num); break;
+        case ae_primary_float: str = primary->fnum; break;
+        case ae_primary_str: str = primary->str; break;
+        case ae_primary_char: str = primary->chr; break;
+        case ae_primary_array: str = "["+absyn_exp2str(primary->array->exp_list)+"]"; break;
+        case ae_primary_complex: str = "#("+absyn_exp2str(primary->complex->re)+")"; break;
+        case ae_primary_polar: str = "%("+absyn_exp2str(primary->polar->mod)+")"; break;
+        case ae_primary_vec: str = "@("+absyn_exp2str(primary->vec->args)+")"; break;
+        case ae_primary_exp: str = absyn_exp2str(primary->exp); break;
+        case ae_primary_hack: str = "<<< " + absyn_exp2str(primary->exp) + " >>>"; break;
+        case ae_primary_nil: str = "null"; break;
+        default: str ="[PRIMARY]"; break;
+    }
+
+    return str;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_array2str()
+// desc: convert abstract syntax array to string
+//-----------------------------------------------------------------------------
+string absyn_array2str( a_Exp_Array array )
+{
+    string str;
+
+    t_CKUINT depth = 0;
+    a_Array_Sub sub = NULL;
+    t_CKBOOL is_str = FALSE;
+
+    // get the sub
+    sub = array->indices;
+    // expressions
+    a_Exp e = sub->exp_list;
+
+    // base of the array
+    str = absyn_exp2str(array->base);
+
+    // loop over
+    while( e )
+    {
+        // each index
+        str += "[" + absyn_exp2str(e,false) + "]";
+        // advance
+        e = e->next;
+    }
+
+    return str;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_func_call2str()
+// desc: convert abstract syntax func_call to string
+//-----------------------------------------------------------------------------
+string absyn_func_call2str( a_Exp_Func_Call func_call )
+{
+    string str;
+    // function name
+    str = absyn_exp2str( func_call->func );
+    // args
+    str += "(" + absyn_exp2str( func_call->args ) + ")";
+    // done
+    return str;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_dot_member2str()
+// desc: convert abstract syntax dot_member to string
+//-----------------------------------------------------------------------------
+string absyn_dot_member2str( a_Exp_Dot_Member dot_member )
+{
+    return absyn_exp2str(dot_member->base) + "." + S_name(dot_member->xid);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_exp_if2str()
+// desc: convert abstract syntax exp_if to string
+//-----------------------------------------------------------------------------
+string absyn_exp_if2str( a_Exp_If exp_if )
+{
+    return "("+absyn_exp2str(exp_if->cond) + "?" + absyn_exp2str(exp_if->if_exp)
+           + ":" + absyn_exp2str(exp_if->else_exp)+")";
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_decl2str()
+// desc: convert abstract syntax decl to string
+//-----------------------------------------------------------------------------
+string absyn_decl2str( a_Exp_Decl decl )
+{
+    a_Var_Decl_List list = decl->var_decl_list;
+    string str;
+    a_Exp e = NULL;
+
+    if( decl->is_global ) str += "global ";
+    else if( decl->is_static ) str += "static ";
+
+    while( list )
+    {
+        // type
+        str += list->var_decl->value->type->name + " " + (decl->type->ref ? "@" : "") + list->var_decl->value->name;
+        // array?
+        if( list->var_decl->array )
+        {
+            e = list->var_decl->array->exp_list;
+            if( e )
+            {
+                // loop over
+                while( e )
+                {
+                    // each index
+                    str += "[" + absyn_exp2str(e,false) + "]";
+                    // advance
+                    e = e->next;
+                }
+            }
+            else
+            {
+                for( t_CKINT i = 0; i < list->var_decl->value->type->array_depth; i++ )
+                {
+                    str += "[]";
+                }
+            }
+        }
+
+        list = list->next;
+        if( list ) str += ",";
+    }
+
+    return str;
+}
