@@ -2,6 +2,9 @@
 // name: pca.ck
 // desc: principle component analysis utility
 //
+// version: need chuck version 1.4.2.1 or higher
+// sorting: part of ChAI (ChucK for AI)
+//
 // uncomment for PCA API:
 // PCA.help();
 //
@@ -22,8 +25,8 @@ for( 0 => int i; i < 10; i++ )
 }
 
 // dimension reduce input (e.g., 10x10) to output (e.g., 10x3)
-// PCA.transform() is a static method...
-// and can be called with or without PCA instance
+// PCA.reduce() is a static method...
+// can be called with or without PCA instance
 PCA.reduce( input, 3, output );
 
 // print

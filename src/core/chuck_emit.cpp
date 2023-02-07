@@ -315,8 +315,17 @@ Chuck_VM_Code * emit_to_code( Chuck_Code * in,
         // uh
         EM_error2( 0, "-------" );
         for( t_CKUINT i = 0; i < code->num_instr; i++ )
+        {
+            // check code str | 1.4.2.1 (ge) added
+            if( code->instr[i]->m_codestr )
+            {
+                // print the reconstructed code str
+                EM_error2( 0, "%s", code->instr[i]->m_codestr->c_str() );
+            }
+            // print the instruction
             EM_error2( 0, "[%i] %s( %s )", i,
-               code->instr[i]->name(), code->instr[i]->params() );
+                       code->instr[i]->name(), code->instr[i]->params() );
+        }
         EM_error2( 0, "-------\n" );
     }
 
@@ -378,18 +387,24 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
 
     // return
     t_CKBOOL ret = TRUE;
+    // next index
+    t_CKUINT nextIndex = 0;
+    // expression string
+    string codestr;
 
     // loop over statements
     switch( stmt->s_type )
     {
         case ae_stmt_exp:  // expression statement
+            // get str
+            codestr = absyn2str( stmt->stmt_exp );
+            // get next index | 1.4.2.1 (ge) added
+            nextIndex = emit->next_index();
+
             // emit it
             ret = emit_engine_emit_exp( emit, stmt->stmt_exp );
             if( !ret )
                 return FALSE;
-
-            // 1.4.2.1
-            // cerr << absyn2str( stmt->stmt_exp ) << endl;
 
             // need to pop the final value from stack
             if( ret && pop && stmt->stmt_exp->type->size > 0 )
@@ -441,6 +456,13 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                     // go
                     exp = exp->next;
                 }
+            }
+
+            // see if we added at least one instruction
+            if( nextIndex < emit->next_index() )
+            {
+                // set codestr (for instruction dump)
+                emit->code->code[nextIndex]->set_codestr( codestr );
             }
             break;
 
