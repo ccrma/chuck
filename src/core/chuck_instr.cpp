@@ -54,9 +54,12 @@ using namespace std;
 // name: Chuck_Instr()
 // desc: base class constructor
 //-----------------------------------------------------------------------------
-Chuck_Instr::Chuck_Instr() {
+Chuck_Instr::Chuck_Instr()
+{
     // set linepos to 0 so we can tell later whether it has been set properly
     m_linepos = 0;
+    // default codestr
+    m_codestr = NULL;
 }
 
 
@@ -75,10 +78,27 @@ const char * Chuck_Instr::name() const
 
 
 //-----------------------------------------------------------------------------
+// name: set_codestr()
+// desc: set codestr associated with this instruction
+//       only certain instructions (e.g., start of stmts) have this
+//-----------------------------------------------------------------------------
+void Chuck_Instr::set_codestr( const string & str )
+{
+    // cleanup
+    SAFE_DELETE( m_codestr );
+    // allocate
+    m_codestr = new string( str );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: set_linepos()
 // desc: store line position for error messages
 //-----------------------------------------------------------------------------
-void Chuck_Instr::set_linepos(t_CKUINT linepos) {
+void Chuck_Instr::set_linepos(t_CKUINT linepos)
+{
     m_linepos = linepos;
 }
 

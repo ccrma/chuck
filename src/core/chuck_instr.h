@@ -58,7 +58,7 @@ struct Chuck_Instr
 {
 public:
     Chuck_Instr();
-    virtual ~Chuck_Instr() { }
+    virtual ~Chuck_Instr() { SAFE_DELETE(m_codestr); }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred ) = 0;
@@ -69,8 +69,14 @@ public:
     { return ""; }
 
 public:
+    // store line position for error messages
     void set_linepos( t_CKUINT linepos );
     t_CKUINT m_linepos;
+
+    // set codestr associated with this instruction
+    void set_codestr( const std::string & str );
+    // (used in instruction dump) | 1.4.2.1 (ge) added
+    std::string * m_codestr;
 };
 
 

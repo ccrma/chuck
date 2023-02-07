@@ -317,6 +317,22 @@ string absyn2str( a_Exp exp )
 
 
 //-----------------------------------------------------------------------------
+// name: name_demangle()
+// desc: demangle chuck function names
+//       e.g., input: "version@0@Machine" output: "version"
+//-----------------------------------------------------------------------------
+string name_demangle( const string & name )
+{
+    // find the first @
+    size_t pos = name.find_first_of('@');
+    // if found, substring
+    return ( pos != string::npos ) ? name.substr(0,pos) : name;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: absyn_exp2str()
 // desc: convert abstract syntax exp to string
 //-----------------------------------------------------------------------------
@@ -387,7 +403,7 @@ string absyn_exp2str( a_Exp exp, t_CKBOOL iterate )
         // next
         exp = exp->next;
         // if more
-        if( exp ) str += ", ";
+        if( exp ) str += ",";
     }
 
     return str;
@@ -467,10 +483,48 @@ string absyn_op2str( ae_Operator op )
 //-----------------------------------------------------------------------------
 string absyn_binary2str( a_Exp_Binary binary )
 {
+    string lhs = absyn_exp2str(binary->lhs);
+    string op = absyn_op2str(binary->op);
+    string rhs = absyn_exp2str(binary->rhs);
+
+    // use paren?
+    bool paren = false;
+    // spacing?
+    bool spacing = false;
+
+    switch(binary->op)
+    {
+        case ae_op_plus_chuck:
+        case ae_op_minus_chuck:
+        case ae_op_times_chuck:
+        case ae_op_divide_chuck:
+        case ae_op_s_or_chuck:
+        case ae_op_s_and_chuck:
+        case ae_op_shift_left_chuck:
+        case ae_op_shift_right_chuck:
+        case ae_op_percent_chuck:
+        case ae_op_s_xor_chuck:
+        case ae_op_chuck:
+        case ae_op_unchuck:
+        case ae_op_upchuck:
+        case ae_op_lt:
+        case ae_op_gt:
+        case ae_op_le:
+        case ae_op_ge:
+        case ae_op_at_chuck:
+            paren = false;
+            spacing = true;
+            break;
+        default:
+            paren = true;
+            spacing = false;
+            break;
+    }
+
     // (lhs OP rhs)
-    return "(" + absyn_exp2str(binary->lhs)
-               + absyn_op2str(binary->op)
-               + absyn_exp2str(binary->rhs) + ")";
+    string str = string(paren?"(":"") + lhs + (spacing?" ":"") + op + (spacing?" ":"") + rhs + (paren?")":"");
+    // return
+    return str;
 }
 
 
@@ -495,7 +549,7 @@ string absyn_unary2str( a_Exp_Unary unary )
 string absyn_cast2str( a_Exp_Cast cast )
 {
     Chuck_Type * to = cast->self->type;
-    return "$ " + to->name;
+    return absyn_exp2str(cast->exp) + "$" + to->name;
 }
 
 
@@ -538,9 +592,9 @@ string absyn_primary2str( a_Exp_Primary primary )
     {
         case ae_primary_var: str = S_name(primary->var); break;
         case ae_primary_num: str = to_string(primary->num); break;
-        case ae_primary_float: str = primary->fnum; break;
-        case ae_primary_str: str = primary->str; break;
-        case ae_primary_char: str = primary->chr; break;
+        case ae_primary_float: str = to_string(primary->fnum); break;
+        case ae_primary_str: str = string("\"") + primary->str + "\""; break;
+        case ae_primary_char: str = string("'") + primary->chr + "'"; break;
         case ae_primary_array: str = "["+absyn_exp2str(primary->array->exp_list)+"]"; break;
         case ae_primary_complex: str = "#("+absyn_exp2str(primary->complex->re)+")"; break;
         case ae_primary_polar: str = "%("+absyn_exp2str(primary->polar->mod)+")"; break;
@@ -564,10 +618,7 @@ string absyn_primary2str( a_Exp_Primary primary )
 string absyn_array2str( a_Exp_Array array )
 {
     string str;
-
-    t_CKUINT depth = 0;
     a_Array_Sub sub = NULL;
-    t_CKBOOL is_str = FALSE;
 
     // get the sub
     sub = array->indices;
@@ -600,7 +651,7 @@ string absyn_func_call2str( a_Exp_Func_Call func_call )
 {
     string str;
     // function name
-    str = absyn_exp2str( func_call->func );
+    str = name_demangle( absyn_exp2str( func_call->func ) );
     // args
     str += "(" + absyn_exp2str( func_call->args ) + ")";
     // done
@@ -616,7 +667,8 @@ string absyn_func_call2str( a_Exp_Func_Call func_call )
 //-----------------------------------------------------------------------------
 string absyn_dot_member2str( a_Exp_Dot_Member dot_member )
 {
-    return absyn_exp2str(dot_member->base) + "." + S_name(dot_member->xid);
+    // return
+    return absyn_exp2str(dot_member->base) + "." + name_demangle(S_name(dot_member->xid));
 }
 
 
@@ -651,7 +703,7 @@ string absyn_decl2str( a_Exp_Decl decl )
     while( list )
     {
         // type
-        str += list->var_decl->value->type->name + " " + (decl->type->ref ? "@" : "") + list->var_decl->value->name;
+        str += list->var_decl->value->type->name + " " + (decl->type->ref && !list->var_decl->array ? "@ " : "") + list->var_decl->value->name;
         // array?
         if( list->var_decl->array )
         {
