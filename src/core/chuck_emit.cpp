@@ -74,7 +74,7 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
 t_CKBOOL emit_engine_emit_exp_dur( Chuck_Emitter * emit, a_Exp_Dur dur );
 t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array );
 t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit, Chuck_Func * func,
-                                         a_Exp args, Chuck_Type * type, int linepos, t_CKBOOL spork = FALSE );
+                                         Chuck_Type * type, int linepos, t_CKBOOL spork = FALSE );
 t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit, a_Exp_Func_Call func_call,
                                          t_CKBOOL spork = FALSE );
 t_CKBOOL emit_engine_emit_func_args( Chuck_Emitter * emit, a_Exp_Func_Call func_call );
@@ -2565,7 +2565,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
         assert( binary->ck_func != NULL );
 
         // emit
-        return emit_engine_emit_exp_func_call( emit, binary->ck_func, binary->lhs, binary->self->type, binary->linepos );
+        return emit_engine_emit_exp_func_call( emit, binary->ck_func, binary->self->type, binary->linepos );
     }
 
     // assignment or something else
@@ -3429,7 +3429,6 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
                                          Chuck_Func * func,
-                                         a_Exp args,
                                          Chuck_Type * type,
                                          int linepos,
                                          t_CKBOOL spork )
@@ -3531,7 +3530,7 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     }
 
     // the rest
-    return emit_engine_emit_exp_func_call( emit, func_call->ck_func, func_call->args,
+    return emit_engine_emit_exp_func_call( emit, func_call->ck_func,
                                            func_call->ret_type, func_call->linepos, spork );
 }
 
@@ -4819,7 +4818,6 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     // call the func on sporkee shred
     if( !emit_engine_emit_exp_func_call( emit,
                                          exp->ck_func,
-                                         exp->args,
                                          exp->ret_type,
                                          exp->linepos,
                                          TRUE ) ) return FALSE;
@@ -5142,16 +5140,12 @@ void Chuck_Emitter::traverse_scope_on_jump( )
         // skip scope boundary (denoted by NULL)
         if( !local ) continue;
 
-        // CK_STDCERR << "local: " << local->offset << " " << local->is_obj << CK_STDENDL;
-        // check to see if it's an object
-        if( local->is_obj )
+        // check to see if it's an object (but not global)
+        // (REFACTOR-2017: don't release global objects)
+        if( local->is_obj && !local->is_global )
         {
-            // (REFACTOR-2017: don't release global objects)
-            if( !local->is_global )
-            {
-                // emit instruction to release the object
-                this->append( new Chuck_Instr_Release_Object2( local->offset ) );
-            }
+            // emit instruction to release the object
+            this->append( new Chuck_Instr_Release_Object2( local->offset ) );
         }
     }
 
