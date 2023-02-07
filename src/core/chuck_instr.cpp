@@ -4788,17 +4788,10 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // 1.4.2.1 (ge) | added -- ensure ref count
         if( m_func_ref && isobj(vm->env(), m_func_ref->def->ret_type) )
         {
+            // get return value as object reference
             Chuck_VM_Object * obj = (Chuck_VM_Object *) retval.v_uint;
             if( obj )
             {
-                // check if refcount is 0
-                if( obj->m_ref_count == 0 )
-                {
-                    EM_log( CK_LOG_FINE, "%s(...) returned object with refcount==0", S_name(m_func_ref->def->name) );
-                    EM_pushlog();
-                    EM_log( CK_LOG_FINE, "auto-incrementing object refcount to 1..." );
-                    EM_poplog();
-                }
                 // always add reference to returned objects (should release outside)
                 obj->add_ref();
             }
@@ -4922,18 +4915,10 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // 1.4.2.1 (ge) | added -- ensure ref count
         if( m_func_ref && isobj(vm->env(), m_func_ref->def->ret_type) )
         {
-            // get as object pointer
+            // get return value as object reference
             Chuck_VM_Object * obj = (Chuck_VM_Object *) retval.v_uint;
             if( obj )
             {
-                // check if refcount is 0
-                if( obj->m_ref_count == 0 )
-                {
-                    EM_log( CK_LOG_FINE, "%s(...) returned object with refcount==0", S_name(m_func_ref->def->name) );
-                    EM_pushlog();
-                    EM_log( CK_LOG_FINE, "auto-incrementing object refcount to 1..." );
-                    EM_poplog();
-                }
                 // always add reference to returned objects (should release outside)
                 obj->add_ref();
             }
