@@ -4786,18 +4786,6 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         f( (Chuck_Object *)(*mem_sp), mem_sp + 1, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
     }
 
-    // if we have a func def | 1.4.2.1 (ge) added
-    if( m_func_ref != NULL )
-    {
-        // cleanup / release objects on the arg list
-        // context: this should be done here for builtin/import functions
-        //          user-defined functions do their own arg list cleanup
-        func_release_args( vm, m_func_ref->def->arg_list, mem_sp+1 );
-    }
-
-    // pop (TODO: check if this is right)
-    mem_sp -= push;
-
     // push the return
     // 1.3.1.0: check type to use kind instead of size
     if( m_val == kindof_INT ) // ISSUE: 64-bit (fixed: 1.3.1.0)
@@ -4844,6 +4832,22 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     }
     else if( m_val == kindof_VOID ) { }
     else assert( FALSE );
+
+    // if we have a func def | 1.4.2.1 (ge) added
+    if( m_func_ref != NULL )
+    {
+        // cleanup / release objects on the arg list
+        // context: this should be done here for builtin/import functions
+        //          user-defined functions do their own arg list cleanup
+        // note: this is done after pushing the return value, in case the
+        //       return value is one of these args being released;
+        //          e.g., functions that pass through args;
+        //          e.g., string Sndbuf.read(string)
+        func_release_args( vm, m_func_ref->def->arg_list, mem_sp+1 );
+    }
+
+    // pop the stack pointer
+    mem_sp -= push;
 
     return;
 
@@ -4914,16 +4918,6 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     // (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
     // (added 1.4.1.0 -- base_type)
     f( (Chuck_Type *)(*mem_sp), mem_sp+1, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
-    // if we have a func def | 1.4.2.1 (ge) added
-    if( m_func_ref != NULL )
-    {
-        // cleanup / release objects on the arg list
-        // context: this should be done here for builtin/import functions
-        //          user-defined functions do their own arg list cleanup
-        func_release_args( vm, m_func_ref->def->arg_list, mem_sp+1 );
-    }
-    // pop memory stack pointer
-    mem_sp -= push;
 
     // push the return
     // 1.3.1.0: check type to use kind instead of size
@@ -4971,6 +4965,22 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     }
     else if( m_val == kindof_VOID ) { }
     else assert( FALSE );
+
+    // if we have a func def | 1.4.2.1 (ge) added
+    if( m_func_ref != NULL )
+    {
+        // cleanup / release objects on the arg list
+        // context: this should be done here for builtin/import functions
+        //          user-defined functions do their own arg list cleanup
+        // note: this is done after pushing the return value, in case the
+        //       return value is one of these args being released;
+        //          e.g., functions that pass through args;
+        //          e.g., string Sndbuf.read(string)
+        func_release_args( vm, m_func_ref->def->arg_list, mem_sp+1 );
+    }
+
+    // pop the stack pointer
+    mem_sp -= push;
 
     return;
 
