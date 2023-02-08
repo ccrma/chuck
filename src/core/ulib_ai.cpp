@@ -33,7 +33,6 @@
 #include "ulib_ai.h"
 #include "chuck_type.h"
 #include "chuck_errmsg.h"
-#include "util_math.h"
 #include "util_string.h"
 #include <math.h>
 
@@ -106,6 +105,27 @@ CK_DLL_SFUN( PCA_reduce );
 // offset
 static t_CKUINT PCA_offset_data = 0;
 
+// 1.4.2.0 (yikai) added Wekinator
+CK_DLL_CTOR( Wekinator_ctor );
+CK_DLL_DTOR( Wekinator_dtor );
+CK_DLL_MFUN( Wekinator_input );
+CK_DLL_MFUN( Wekinator_output );
+CK_DLL_MFUN( Wekinator_add );
+CK_DLL_MFUN( Wekinator_train );
+CK_DLL_MFUN( Wekinator_clear );
+CK_DLL_MFUN( Wekinator_predict );
+// offset
+static t_CKUINT Wekinator_offset_data = 0;
+
+// 1.4.2.0 (yikai) added MLP
+CK_DLL_CTOR( MLP_ctor );
+CK_DLL_DTOR( MLP_dtor );
+CK_DLL_MFUN( MLP_init );
+CK_DLL_MFUN( MLP_train );
+CK_DLL_MFUN( MLP_train2 );
+CK_DLL_MFUN( MLP_predict );
+// offset
+static t_CKUINT MLP_offset_data = 0;
 
 
 
@@ -192,7 +212,8 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int", "k" );
     func->add_arg( "int[]", "indices" );
     func->add_arg( "float[][]", "observations" );
-    func->doc = "Search for the 'k' nearest neighbors of 'query' and return their corresponding indices and observations";
+    func->doc =
+        "Search for the 'k' nearest neighbors of 'query' and return their corresponding indices and observations";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // weigh
@@ -432,6 +453,113 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     // end the class import
     type_engine_import_class_end( env );
 
+    //---------------------------------------------------------------------
+    // init as base class: Wekinator
+    // 1.4.1.2 added by Yikai Li, Fall 2022
+    //---------------------------------------------------------------------
+    // doc string
+    doc =
+        "a Wekinator utility that maps input vectors to output vectors, commonly used for interactive machine learing combining human-computer interacvtion and machine learning. Based on Rebecca Fiebrink's Wekinator framework and system.";
+
+    // begin class definition
+    if( !type_engine_import_class_begin( env,
+                                         "Wekinator",
+                                         "Object",
+                                         env->global(),
+                                         Wekinator_ctor,
+                                         Wekinator_dtor,
+                                         doc.c_str() ) )
+        return FALSE;
+
+    // data offset
+    Wekinator_offset_data = type_engine_import_mvar( env, "float", "@Wekinator_data", FALSE );
+    if( Wekinator_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // input
+    func = make_new_mfun( "void", "input", Wekinator_input );
+    func->add_arg( "float[]", "vec" );
+    func->doc = "Set the input vector.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // output
+    func = make_new_mfun( "void", "output", Wekinator_output );
+    func->add_arg( "float[]", "vec" );
+    func->doc = "Set the output vector.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add
+    func = make_new_mfun( "void", "add", Wekinator_add );
+    func->doc = "Add the current input and output vectors to the training set.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // train
+    func = make_new_mfun( "void", "train", Wekinator_train );
+    func->doc = "Train the model.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // clear
+    func = make_new_mfun( "void", "clear", Wekinator_clear );
+    func->doc = "Clear the training set.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // predict
+    func = make_new_mfun( "void", "predict", Wekinator_predict );
+    func->add_arg( "float[]", "input" );
+    func->add_arg( "float[]", "output" );
+    func->doc = "Predict the output vector from the input vector.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    //---------------------------------------------------------------------
+    // init as base class: MLP
+    // 1.4.1.2 added by Yikai Li, Fall 2022
+    //---------------------------------------------------------------------
+    // doc string
+    doc =
+        "a multi-layer perceptron (MLP; a.k.a. vanilla neural network) that maps input vectors to output vectors, commonly used for regression.";
+
+    // begin class definition
+    if( !type_engine_import_class_begin( env, "MLP", "Object", env->global(), MLP_ctor, MLP_dtor, doc.c_str() ) )
+        return FALSE;
+
+    // data offset
+    MLP_offset_data = type_engine_import_mvar( env, "float", "@MLP_data", FALSE );
+    if( MLP_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // init
+    func = make_new_mfun( "void", "init", MLP_init );
+    func->add_arg( "int[]", "unitsPerLayer" );
+    func->doc = "Initialize the MLP with the given number of units per layer.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // train
+    func = make_new_mfun( "void", "train", MLP_train );
+    func->add_arg( "float[][]", "inputs" );
+    func->add_arg( "float[][]", "outputs" );
+    func->doc = "Train the MLP with the given input and output vectors.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // train2
+    func = make_new_mfun( "void", "train", MLP_train2 );
+    func->add_arg( "float[][]", "inputs" );
+    func->add_arg( "float[][]", "outputs" );
+    func->add_arg( "float", "learningRate" );
+    func->add_arg( "int", "maxIterations" );
+    func->doc = "Train the MLP with the given input and output vectors and the given learning rate and maximum number of iterations.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // predict
+    func = make_new_mfun( "void", "predict", MLP_predict );
+    func->add_arg( "float[]", "input" );
+    func->add_arg( "float[]", "output" );
+    func->doc = "Predict the output vector from the input vector.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    // end the class import
+    type_engine_import_class_end( env );
+
     return TRUE;
 
     error:
@@ -440,6 +568,9 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
 
     return FALSE;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: chuck2chai()
@@ -462,6 +593,9 @@ ChaiMatrixFast<t_CKFLOAT> * chuck2chai( Chuck_Array4 & array )
     return matrix;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: chuck2chai()
 // desc: chuck array (float []) conversion to new chai vector
@@ -476,6 +610,9 @@ ChaiVectorFast<t_CKFLOAT> * chuck2chai( Chuck_Array8 & array )
     }
     return vector;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: struct SVM_Object
@@ -687,6 +824,9 @@ CK_DLL_MFUN( SVM_predict )
     // add
     svm->predict( *x, *y );
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: struct KNN_Object
@@ -919,9 +1059,9 @@ public:
 
     // search; returns labels, indices, and feature vectors
     void search3b( const vector<t_CKFLOAT> & query,
-                  t_CKINT k,
-                  Chuck_Array4 & indices_,
-                  Chuck_Array4 & features_ )
+                   t_CKINT k,
+                   Chuck_Array4 & indices_,
+                   Chuck_Array4 & features_ )
     {
         // init
         ChaiVectorFast<t_CKINT> indices( k );
@@ -2196,7 +2336,7 @@ CK_DLL_MFUN( Word2Vec_getUseKDTree )
 
 //-----------------------------------------------------------------------------
 // name: struct PCA_Object
-// desc: TODO | added 1.4.2.0 (yikai)
+// desc: Principal Component Analysis Implementation | added 1.4.2.1 (yikai)
 //-----------------------------------------------------------------------------
 struct PCA_Object
 {
@@ -2495,6 +2635,455 @@ CK_DLL_SFUN( PCA_reduce )
     Chuck_Array4 * output = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
     // transform
     PCA_Object::transform( *input, n_components, *output );
+}
+
+//-----------------------------------------------------------------------------
+// name: struct MLP_Object
+// desc: Multilayer Perceptron Implementation | added 1.4.2.1 (yikai)
+//-----------------------------------------------------------------------------
+struct MLP_Object
+{
+private:
+    vector<t_CKINT> units_per_layer;
+    vector<ChaiMatrixFast<t_CKFLOAT> *> weights;
+    vector<ChaiVectorFast<t_CKFLOAT> *> biases;
+    vector<ChaiVectorFast<t_CKFLOAT> *> activations;
+    vector<ChaiVectorFast<t_CKFLOAT> *> errors;
+public:
+    // constructor
+    MLP_Object()
+    { }
+
+    // destructor
+    ~MLP_Object()
+    {
+        clear();
+    }
+
+    // clear
+    void clear()
+    {
+        for( t_CKINT i = 0; i < weights.size(); i++ )
+            SAFE_DELETE( weights[i] );
+        for( t_CKINT i = 0; i < biases.size(); i++ )
+            SAFE_DELETE( biases[i] );
+        for( t_CKINT i = 0; i < activations.size(); i++ )
+            SAFE_DELETE( activations[i] );
+        for( t_CKINT i = 0; i < errors.size(); i++ )
+            SAFE_DELETE( errors[i] );
+        units_per_layer.clear();
+        weights.clear();
+        biases.clear();
+        activations.clear();
+        errors.clear();
+    }
+
+    // init
+    void init( const vector<t_CKUINT> & units_per_layer_ )
+    {
+        // clear
+        clear();
+        // get units per layer
+        for( t_CKINT i = 0; i < units_per_layer_.size(); i++ )
+            units_per_layer.push_back( units_per_layer_[i] );
+        // allocate
+        for( t_CKINT i = 0; i < units_per_layer.size(); i++ )
+        {
+            activations.push_back( new ChaiVectorFast<t_CKFLOAT>( units_per_layer[i] ) );
+            errors.push_back( new ChaiVectorFast<t_CKFLOAT>( units_per_layer[i] ) );
+        }
+        for( t_CKINT i = 0; i < units_per_layer.size() - 1; i++ )
+        {
+            weights.push_back( new ChaiMatrixFast<t_CKFLOAT>( units_per_layer[i + 1], units_per_layer[i] ) );
+            biases.push_back( new ChaiVectorFast<t_CKFLOAT>( units_per_layer[i + 1] ) );
+        }
+        // random
+        for( t_CKINT i = 0; i < weights.size(); i++ )
+            for( t_CKINT j = 0; j < weights[i]->xDim(); j++ )
+                for( t_CKINT k = 0; k < weights[i]->yDim(); k++ )
+                    weights[i]->v( j, k ) = ck_random() / (t_CKFLOAT)CK_RANDOM_MAX;
+        for( t_CKINT i = 0; i < biases.size(); i++ )
+            for( t_CKINT j = 0; j < biases[i]->size(); j++ )
+                biases[i]->v( j ) = ck_random() / (t_CKFLOAT)CK_RANDOM_MAX;
+    }
+
+    // forward
+    void forward( ChaiVectorFast<t_CKFLOAT> & input )
+    {
+        // copy
+        for( t_CKINT i = 0; i < input.size(); i++ )
+            activations[0]->v( i ) = input[i];
+        // forward
+        t_CKFLOAT v;
+        for( t_CKINT i = 0; i < weights.size(); i++ )
+        {
+            for( t_CKINT j = 0; j < weights[i]->xDim(); j++ )
+            {
+                v = 0.0;
+                for( t_CKINT k = 0; k < weights[i]->yDim(); k++ )
+                    v += weights[i]->v( j, k ) * activations[i]->v( k );
+                v += biases[i]->v( j );
+                v = 1.0 / ( 1.0 + exp( -v ) );
+                activations[i + 1]->v( j ) = v;
+            }
+        }
+    }
+
+    // backprop
+    void backprop( ChaiVectorFast<t_CKFLOAT> & output, t_CKFLOAT lr )
+    {
+        // error
+        for( t_CKINT i = 0; i < output.size(); i++ )
+            errors.back()->v( i ) = output[i] - activations.back()->v( i );
+
+        // backprop
+        t_CKFLOAT v;
+        for( t_CKINT i = weights.size() - 1; i >= 0; i-- )
+        {
+            // gradient
+            for( t_CKINT j = 0; j < weights[i]->xDim(); j++ )
+            {
+                v = activations[i + 1]->v( j );
+                v = v * ( 1.0 - v ) * errors[i + 1]->v( j ) * lr;
+                for( t_CKINT k = 0; k < weights[i]->yDim(); k++ )
+                    weights[i]->v( j, k ) += v * activations[i]->v( k );
+                biases[i]->v( j ) += v;
+            }
+            // prev error
+            for( t_CKINT j = 0; j < weights[i]->yDim(); j++ )
+            {
+                v = 0.0;
+                for( t_CKINT k = 0; k < weights[i]->xDim(); k++ )
+                    v += weights[i]->v( k, j ) * errors[i + 1]->v( k );
+                errors[i]->v( j ) = v;
+            }
+        }
+    }
+
+    // train
+    void train( ChaiMatrixFast<t_CKFLOAT> & X,
+                ChaiMatrixFast<t_CKFLOAT> & Y,
+                t_CKINT size,
+                t_CKFLOAT lr,
+                t_CKINT epochs )
+    {
+        ChaiVectorFast<t_CKFLOAT> x( X.yDim() );
+        ChaiVectorFast<t_CKFLOAT> y( Y.yDim() );
+        ChaiVectorFast<t_CKINT> indices( size );
+        for( t_CKINT i = 0; i < size; i++ )
+            indices[i] = i;
+        for( t_CKINT i = 0; i < epochs; i++ )
+        {
+            indices.shuffle();
+            for( t_CKINT j = 0; j < size; j++ )
+            {
+                for( t_CKINT k = 0; k < X.yDim(); k++ )
+                    x[k] = X.v( indices[j], k );
+                forward( x );
+                for( t_CKINT k = 0; k < Y.yDim(); k++ )
+                    y[k] = Y.v( indices[j], k );
+                backprop( y, lr );
+            }
+        }
+    }
+
+    // train
+    void train( Chuck_Array4 & inputs_, Chuck_Array4 & outputs_ )
+    {
+        ChaiMatrixFast<t_CKFLOAT> * X = chuck2chai( inputs_ );
+        ChaiMatrixFast<t_CKFLOAT> * Y = chuck2chai( outputs_ );
+        train( *X, *Y, X->xDim(), 1e-3, 100 );
+        SAFE_DELETE( X );
+        SAFE_DELETE( Y );
+    }
+
+    // train2
+    void train( Chuck_Array4 & inputs_, Chuck_Array4 & outputs_, t_CKFLOAT learning_rate, t_CKINT max_iterations )
+    {
+        ChaiMatrixFast<t_CKFLOAT> * X = chuck2chai( inputs_ );
+        ChaiMatrixFast<t_CKFLOAT> * Y = chuck2chai( outputs_ );
+        train( *X, *Y, X->xDim(), learning_rate, max_iterations );
+        SAFE_DELETE( X );
+        SAFE_DELETE( Y );
+    }
+
+    // predict
+    void predict( Chuck_Array8 & input_, Chuck_Array8 & output_ )
+    {
+        ChaiVectorFast<t_CKFLOAT> * input = chuck2chai( input_ );
+        forward( *input );
+        output_.set_size( units_per_layer.back() );
+        for( t_CKINT i = 0; i < units_per_layer.back(); i++ )
+            output_.m_vector[i] = activations.back()->v( i );
+        SAFE_DELETE( input );
+    }
+};
+
+//-----------------------------------------------------------------------------
+// MLP c++ hooks
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( MLP_ctor )
+{
+    MLP_Object * mlp = new MLP_Object();
+    OBJ_MEMBER_UINT( SELF, MLP_offset_data ) = (t_CKUINT)mlp;
+}
+
+CK_DLL_DTOR( MLP_dtor )
+{
+    MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
+    SAFE_DELETE( mlp );
+    OBJ_MEMBER_UINT( SELF, MLP_offset_data ) = 0;
+}
+
+CK_DLL_MFUN( MLP_init )
+{
+    // get object
+    MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
+    // get args
+    Chuck_Array4 * units_per_layer = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    // init
+    mlp->init( units_per_layer->m_vector );
+}
+
+CK_DLL_MFUN( MLP_train )
+{
+    // get object
+    MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
+    // get args
+    Chuck_Array4 * inputs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array4 * outputs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    // train
+    mlp->train( *inputs, *outputs );
+}
+
+CK_DLL_MFUN( MLP_train2 )
+{
+    // get object
+    MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
+    // get args
+    Chuck_Array4 * inputs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array4 * outputs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    t_CKFLOAT learning_rate = GET_NEXT_FLOAT( ARGS );
+    t_CKINT max_iterations = GET_NEXT_INT( ARGS );
+    // train2
+    mlp->train( *inputs, *outputs, learning_rate, max_iterations );
+}
+
+CK_DLL_MFUN( MLP_predict )
+{
+    // get object
+    MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
+    // get args
+    Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // predict
+    mlp->predict( *input, *output );
+}
+
+//-----------------------------------------------------------------------------
+// name: struct Wekinator_Object
+// desc: Wekinator Implementation | added 1.4.2.1 (yikai)
+//-----------------------------------------------------------------------------
+struct Wekinator_Object
+{
+private:
+    ChaiVectorFast<t_CKFLOAT> * x;
+    ChaiVectorFast<t_CKFLOAT> * y;
+    ChaiMatrixFast<t_CKFLOAT> * X;
+    ChaiMatrixFast<t_CKFLOAT> * Y;
+    t_CKINT Xi;
+    MLP_Object * mlp;
+public:
+    // constructor
+    Wekinator_Object()
+    {
+        x = NULL;
+        y = NULL;
+        X = NULL;
+        Y = NULL;
+        Xi = 0;
+        mlp = NULL;
+    }
+
+    // destructor
+    ~Wekinator_Object()
+    {
+        clear();
+    }
+
+    // input
+    void input( Chuck_Array8 & vec_ )
+    {
+        // check
+        if( !x )
+        {
+            x = new ChaiVectorFast<t_CKFLOAT>( vec_.size() );
+        }
+        else if( x->size() != vec_.size() )
+        {
+            EM_error3( "Wekinator: input vector size mismatch: %d != %d",
+                       x->size(), vec_.size() );
+        }
+        // copy
+        for( t_CKINT i = 0; i < vec_.size(); i++ )
+            x->v( i ) = vec_.m_vector[i];
+    }
+
+    // output
+    void output( Chuck_Array8 & vec_ )
+    {
+        // check
+        if( !y )
+        {
+            y = new ChaiVectorFast<t_CKFLOAT>( vec_.size() );
+        }
+        else if( y->size() != vec_.size() )
+        {
+            EM_error3( "Wekinator: output vector size mismatch: %d != %d",
+                       y->size(), vec_.size() );
+        }
+        // copy
+        for( t_CKINT i = 0; i < vec_.size(); i++ )
+            y->v( i ) = vec_.m_vector[i];
+    }
+
+    // add
+    void add()
+    {
+        // check
+        if( !X )
+        {
+            X = new ChaiMatrixFast<t_CKFLOAT>( 100, x->size() );
+            Y = new ChaiMatrixFast<t_CKFLOAT>( 100, y->size() );
+        }
+        else if( X->xDim() == Xi )
+        {
+            ChaiMatrixFast<t_CKFLOAT> * X_ = new ChaiMatrixFast<t_CKFLOAT>( Xi * 2, x->size() );
+            ChaiMatrixFast<t_CKFLOAT> * Y_ = new ChaiMatrixFast<t_CKFLOAT>( Xi * 2, y->size() );
+            for( t_CKINT i = 0; i < Xi; i++ )
+            {
+                for( t_CKINT j = 0; j < x->size(); j++ )
+                    X_->v( i, j ) = X->v( i, j );
+                for( t_CKINT j = 0; j < y->size(); j++ )
+                    Y_->v( i, j ) = Y->v( i, j );
+            }
+            SAFE_DELETE( X );
+            SAFE_DELETE( Y );
+            X = X_;
+            Y = Y_;
+        }
+        // copy
+        for( t_CKINT i = 0; i < x->size(); i++ )
+            X->v( Xi, i ) = x->v( i );
+        for( t_CKINT i = 0; i < y->size(); i++ )
+            Y->v( Xi, i ) = y->v( i );
+        // increment
+        Xi++;
+    }
+
+    // train
+    void train()
+    {
+        // clear
+        SAFE_DELETE( mlp );
+        mlp = new MLP_Object();
+        // init
+        vector<t_CKUINT> units_per_layer( 3 );
+        units_per_layer[0] = x->size();
+        units_per_layer[1] = 10;
+        units_per_layer[2] = y->size();
+        mlp->init( units_per_layer );
+        // train
+        mlp->train( *X, *Y, Xi, 1e-3, 100 );
+    }
+
+    // clear
+    void clear()
+    {
+        SAFE_DELETE( x );
+        SAFE_DELETE( y );
+        SAFE_DELETE( X );
+        SAFE_DELETE( Y );
+        Xi = 0;
+        SAFE_DELETE( mlp );
+    }
+
+    // predict
+    void predict( Chuck_Array8 & input_, Chuck_Array8 & output_ )
+    {
+        mlp->predict( input_, output_ );
+    }
+};
+
+//-----------------------------------------------------------------------------
+// Wekinator c++ hooks
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Wekinator_ctor )
+{
+    Wekinator_Object * wekinator = new Wekinator_Object();
+    OBJ_MEMBER_UINT( SELF, Wekinator_offset_data ) = (t_CKUINT)wekinator;
+}
+
+CK_DLL_DTOR( Wekinator_dtor )
+{
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    SAFE_DELETE( wekinator );
+    OBJ_MEMBER_UINT( SELF, Wekinator_offset_data ) = 0;
+}
+
+CK_DLL_MFUN( Wekinator_input )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_Array8 * vec = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // input
+    wekinator->input( *vec );
+}
+
+CK_DLL_MFUN( Wekinator_output )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_Array8 * vec = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // output
+    wekinator->output( *vec );
+}
+
+CK_DLL_MFUN( Wekinator_add )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // add
+    wekinator->add();
+}
+
+CK_DLL_MFUN( Wekinator_train )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // train
+    wekinator->train();
+}
+
+CK_DLL_MFUN( Wekinator_clear )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // clear
+    wekinator->clear();
+}
+
+CK_DLL_MFUN( Wekinator_predict )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // predict
+    wekinator->predict( *input, *output );
 }
 
 //-----------------------------------------------------------------------------

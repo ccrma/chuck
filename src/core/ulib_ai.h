@@ -35,6 +35,7 @@
 
 #include "chuck_dl.h"
 #include "chuck_errmsg.h"
+#include "util_math.h"
 
 
 
@@ -198,6 +199,19 @@ public:
         return TRUE;
     }
 
+    void shuffle()
+    {
+        T temp;
+        t_CKINT j;
+        for( t_CKINT i = m_length - 1; i > 0; i-- )
+        {
+            j = ck_random() % ( i + 1 );
+            temp = m_vector[i];
+            m_vector[i] = m_vector[j];
+            m_vector[j] = temp;
+        }
+    }
+
     t_CKUINT length()
     { return m_length; }
 
@@ -251,8 +265,18 @@ public:
     t_CKINT m_length;
 };
 
-#endif
 
+
+
+#endif // __ULIB_AI_H__
+
+
+
+
+
+//-----------------------------------------------------------------------------
+// _KD_TREE_H
+//-----------------------------------------------------------------------------
 #ifndef _KD_TREE_H
 #define _KD_TREE_H
 
@@ -301,5 +325,8 @@ void kdtree_rebuild( struct kdtree * tree );
 void kdtree_knn_search( struct kdtree * tree, double * coord, t_CKINT k );
 void kdtree_destroy( struct kdtree * tree );
 void kdtree_dump( struct kdtree * tree );
+
+
+
 
 #endif /* _KD_TREE_H */
