@@ -740,6 +740,8 @@ bool ChucK::shutdown()
 {
     // log
     EM_log( CK_LOG_SYSTEM, "shutting down ChucK instance..." );
+    // push
+    EM_pushlog();
 
     // stop VM
     if( m_carrier != NULL && m_carrier->vm != NULL  )
@@ -796,6 +798,11 @@ bool ChucK::shutdown()
     m_init = FALSE;
     // clear flag
     m_started = FALSE;
+
+    // log
+    EM_log( CK_LOG_SYSTEM, "ChucK instance shutdown complete." );
+    // pop
+    EM_poplog();
 
     // done
     return true;

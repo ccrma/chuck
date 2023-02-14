@@ -288,8 +288,25 @@ extern "C" void signal_pipe( int sig_num )
 //-----------------------------------------------------------------------------
 void global_cleanup()
 {
-    static XMutex s_mutex;
-    s_mutex.acquire();
+    // make sure we don't double clean
+    static bool s_already_cleaning = false;
+
+    // check | 1.4.2.1 (ge) added
+    if( s_already_cleaning )
+    {
+        // log | 1.4.2.1 (ge) added
+        EM_log( CK_LOG_INFO, "additional global cleanup not needed..." );
+        // done
+        return;
+    }
+
+    // log | 1.4.2.1 (ge) added
+    EM_log( CK_LOG_SYSTEM, "global cleanup initiating..." );
+    // set flag
+    s_already_cleaning = true;
+
+    // static XMutex s_mutex;
+    // s_mutex.acquire();
 
     // REFACTOR-2017: shut down audio system
     all_stop();
@@ -320,7 +337,9 @@ void global_cleanup()
     // close handle
 //    if( g_tid_otf ) CloseHandle( g_tid_otf );
 #endif
-    s_mutex.release();
+
+    // 1.4.2.1 (ge) | commented
+    // s_mutex.release();
 }
 
 

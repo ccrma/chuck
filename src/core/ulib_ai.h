@@ -265,18 +265,8 @@ public:
     t_CKINT m_length;
 };
 
+#endif
 
-
-
-#endif // __ULIB_AI_H__
-
-
-
-
-
-//-----------------------------------------------------------------------------
-// _KD_TREE_H
-//-----------------------------------------------------------------------------
 #ifndef _KD_TREE_H
 #define _KD_TREE_H
 
@@ -325,8 +315,5 @@ void kdtree_rebuild( struct kdtree * tree );
 void kdtree_knn_search( struct kdtree * tree, double * coord, t_CKINT k );
 void kdtree_destroy( struct kdtree * tree );
 void kdtree_dump( struct kdtree * tree );
-
-
-
 
 #endif /* _KD_TREE_H */
