@@ -8,7 +8,73 @@ to be in BETA for some time (as we add more and also teach using chAI in
 (NOTE) WebChucK (ChucK on browsers) [beta] was released during the 
 development of this version. https://chuck.stanford.edu/webchuck/
 ---
- - (added) Word2Vec [ChAI]
+- (added) Wekinator [ChAI] (thanks Rebecca Fiebrink and Yikai Li)
+    |- A Wekinator utility that maps input vectors to output vectors,
+       commonly used for interactive machine learning combining
+       human-computer interaction and ML. Based on Rebecca Fiebrink's
+       Wekinator framework.
+    |- (inheritance) Wekinator -> Object
+    -------------------
+    void add();
+        Add the current input and output vectors to the training set.
+    void clear();
+        Clear the training set.
+    void input( float[] vec );
+        Set the current input vector.
+    int modelType( int type );
+        Set the model type. Possible values: AI.MLP (default), AI.KNN, AI.SVM.
+    int modelType();
+        Get the model type. Possible values: AI.MLP (default), AI.KNN, AI.SVM.
+    void output( float[] vec );
+        Set the current output vector.
+    void predict( float[] input, float[] output );
+        Predict the output vector from the input vector.
+    void train();
+        Train the model with the current training set.
+ - (added) new examples in ai/wekinator [ChAI]
+      |- wekinator.ck -- example of basic Wekinator usage
+- (added) MLP [ChAI] (thanks Yikai Li)
+    |- A multi-layer perceptron (MLP; a basic artificial neural network) that
+       maps an input layer to an output layer, across a specified number of
+       fully-connected hidden layers. This  implemention can be trained either
+       1) by using one of the comprehensive .train() functions OR 2) by 'manually'
+       iterating over calls to .forward() and .backprop() for each input-output
+       observation, and using .shuffle() for each epoch. Commonly used for
+       regression or classification.
+    |- (inheritance) MLP -> Object
+    -------------
+    void backprop( float[] output, float learningRate );
+        (Manually) backpropagate from the output layer, for a single input-output
+        observation; compute the gradient of the loss function with respect to
+        the weights in the network, one layer at a time.
+    void forward( float[] input );
+        (Manually) forward-propagate the input vector through the network.
+    void getActivations( int layer, float[] activations );
+        Get the activations of the given layer, after a manual .forward().
+    void getBiases( int layer, float[] biases );
+        Get the biases of the given layer.
+    void getGradients( int layer, float[] gradients );
+        Get the gradients of the given layer, after a manual .backprop().
+    void getWeights( int layer, float[][] weights );
+        Get the weights of the given layer.
+    void init( int[] unitsPerLayer );
+        Initialize the MLP with the given number of neurons per layer, as
+        specified in 'unitsPerLayer'.
+    void predict( float[] input, float[] output );
+        Predict the output layer from an input layer.
+    void train( float[][] inputs, float[][] outputs );
+        Train the MLP with the given input and output observations with default
+        learning rate=.001 and epochs=100.
+        (Also see MLP.train(inputs,outputs,learningRate,epochs).)
+    void train( float[][] inputs, float[][] outputs, float learningRate, int epochs );
+        Train the MLP with the given input and output observations, the learning
+        rate, and number of epochs.
+    static void shuffle( float[][] X, float[][] Y );
+        (Manually) shuffle the given input and output vectors.
+ - (added) new examples in ai/mlp [ChAI]
+      |- mlp.ck -- example training a vanilla neural net
+      |- mlp-manual.ck -- example of more manually calling training functions
+ - (added) Word2Vec [ChAI] (thanks Yikai Li)
       |- A word embeddings utility that maps words to vectors; can load a 
          model and perform similiarity retrieval.
       |- (inheritance) Word2Vec -> Object
@@ -72,7 +138,7 @@ development of this version. https://chuck.stanford.edu/webchuck/
         Dimension-reduce 'input' (NxM) to 'output' (NxD) as the projection
         of the input data onto its first 'D' principle components
  - (added) example: ai/pca/pca.ck
- - (reworked) KNN [ChAI]
+ - (reworked) KNN [ChAI] (thanks Yikai Li)
       |- A basic k-NN utility that searches for k nearest
          neighbors from a set of observations / feature
          vectors. (Also see KNN2. The differrence between KNN
@@ -203,6 +269,13 @@ development of this version. https://chuck.stanford.edu/webchuck/
       chout
   - (added) examples in io
        |- seek.ck -- shows FileIO.seek usage for rewind a file read
+  - (added) absyn tree printing for instruction dumping abysn2str()
+  - (added) Machine.refcount() and refcount printing for object references
+  - (updated and fixed) memory system upgrade (part 1); scope-sensitive
+      cleanup for each return statement; clarified reference counting
+      semantics; function argument release for builtin functions; improved
+      post-function call object cleanup; auto-reference-increment on
+      returned objects from all builtin/imported functions;
   - (updated) built-in abstract classes FM, StkInstrmnt, BLT, and
       FilterBasic, when used directly, issues a WARNING level log
       message in their respective synthesis tick functions (set log
