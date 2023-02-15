@@ -20,6 +20,12 @@ MLP mlp;
 [3, 5, 2] @=> int unitsPerLayer[];
 // initialize with the units per layer
 mlp.init( unitsPerLayer );
+// (ALTERNATE #1) change activation function; default is AI.Sigmoid
+// mlp.init( unitsPerLayer, AI.ReLU );
+// (ALTERNATE #2) specify activation function per layer
+// [AI.ReLU, AI.Tanh, AI.Softmax] @=> int activationPerLayer[];
+// (ALTERNATE #2) initialize with activation function per layer
+// mlp.init( unitsPerLayer, activationPerLayer );
 
 // input observations
 [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]] @=> float X[][];
