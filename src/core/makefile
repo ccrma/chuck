@@ -128,6 +128,7 @@ chuck-core: $(OBJS)
 chuck.tab.c chuck.tab.h: chuck.y
 	$(YACC) -dv -b chuck chuck.y
 
+chuck.lex: chuck.tab.h
 chuck.yy.c: chuck.lex
 	$(LEX) -ochuck.yy.c chuck.lex
 
