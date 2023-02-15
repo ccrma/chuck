@@ -1331,7 +1331,7 @@ t_CKBOOL emit_engine_emit_return( Chuck_Emitter * emit, a_Stmt_Return stmt )
         return FALSE;
 
     // if return is an object type
-    if( isobj( emit->env, stmt->val->type ) )
+    if( stmt->val && isobj( emit->env, stmt->val->type ) )
     {
         // add reference (to be released by the function caller)
         emit->append( new Chuck_Instr_Reg_AddRef_Object3 );
