@@ -1,7 +1,9 @@
 //---------------------------------------------------------------------
 // name: wekinator.ck
 // desc: basic example using the Wekinator example in ChucK,
-//       based on Rebecca Fiebrink's Wekinator framework
+//       based on Rebecca Fiebrink's Wekinator framework;
+//       This example adds two groups of 5 observations each,
+//       trains, and predicts output based on a new input
 //
 // version: need chuck version 1.4.2.1 or higher
 // sorting: part of ChAI (ChucK for AI)
@@ -20,14 +22,31 @@ global Wekinator wek;
 // clear training set
 wek.clear();
 
+// print
+cherr <= "adding group 1"; cherr.flush();
 // input and output (could be set in another file)
-wek.input( [0.1, 0.2, 0.3] );
-wek.output( [0.4, 0.5] );
+wek.input( [0.1, 0.1, 0.1] );
+wek.output( [48.0, 60.0] );
+// collect data
+for( int i; i < 5; i++ )
+{
+    // print
+    cherr <= "."; cherr.flush();
+    // add current input and output (typically these are different)
+    wek.add();
+    // advance time
+    50::ms => now;
+}
+// print
+cherr <= IO.newline();
 
 // print
-cherr <= "adding"; cherr.flush();
+cherr <= "adding group 2"; cherr.flush();
+// input and output (could be set in another file)
+wek.input( [0.5, 0.5, 0.5] );
+wek.output( [5.0, 8.0] );
 // collect data
-for( int i; i < 10; i++ )
+for( int i; i < 5; i++ )
 {
     // print
     cherr <= "."; cherr.flush();
@@ -47,7 +66,7 @@ AI.MLP => wek.modelType;
 wek.train();
 
 // input
-[0.4, 0.5, 0.6] @=> float x[];
+[0.3, 0.25, 0.4] @=> float x[];
 // output
 float y[2];
 // predict output based on input
