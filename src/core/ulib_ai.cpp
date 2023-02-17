@@ -603,8 +603,8 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
 
     // init
     func = make_new_mfun( "void", "init", MLP_init );
-    func->add_arg( "int[]", "unitsPerLayer" );
-    func->doc = "Initialize the MLP with the given number of neurons per layer, as specified in 'unitsPerLayer'.";
+    func->add_arg( "int[]", "neuronsPerLayer" );
+    func->doc = "Initialize the MLP with the given number of neurons per layer.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // init2
