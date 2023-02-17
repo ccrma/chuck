@@ -18,10 +18,13 @@ MLP mlp;
 
 // units per layer: input, [hidden layer(s)], output 
 [3, 5, 2] @=> int unitsPerLayer[];
-// initialize with the units per layer
-mlp.init( unitsPerLayer );
-// (ALTERNATE #1) change activation function; default is AI.Sigmoid
-// mlp.init( unitsPerLayer, AI.ReLU );
+// initialize with the units per layer with default activation function
+// default: AI.Sigmoid for all layers except output layer;
+// default: AI.Linear for output layer
+// mlp.init( unitsPerLayer );
+
+// (ALTERNATE #1) initialize with activation function
+// mlp.init( unitsPerLayer, AI.Sigmoid );
 // (ALTERNATE #2) specify activation function per layer
 // [AI.ReLU, AI.Tanh, AI.Softmax] @=> int activationPerLayer[];
 // (ALTERNATE #2) initialize with activation function per layer
