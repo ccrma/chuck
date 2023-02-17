@@ -2855,16 +2855,17 @@ public:
         {
             activations.push_back( new ChaiVectorFast<t_CKFLOAT>( units_per_layer[i] ) );
             gradients.push_back( new ChaiVectorFast<t_CKFLOAT>( units_per_layer[i] ) );
-            activation_per_layer.push_back( g_at_sigmoid ); // default to sigmoid...
         }
-        // set output layer activation function to linear by default
-        activation_per_layer.back() = g_at_linear;
 
         for( t_CKINT i = 0; i < units_per_layer.size() - 1; i++ )
         {
             weights.push_back( new ChaiMatrixFast<t_CKFLOAT>( units_per_layer[i + 1], units_per_layer[i] ) );
             biases.push_back( new ChaiVectorFast<t_CKFLOAT>( units_per_layer[i + 1] ) );
+            activation_per_layer.push_back( g_at_sigmoid ); // default to sigmoid...
         }
+        // set output layer activation function to linear by default
+        activation_per_layer.back() = g_at_linear;
+
         // random
         for( t_CKINT i = 0; i < weights.size(); i++ )
             for( t_CKINT j = 0; j < weights[i]->xDim(); j++ )
@@ -3445,9 +3446,9 @@ public:
             mlp = new MLP_Object();
             // init
             vector<t_CKUINT> units_per_layer( 3 );
-            units_per_layer[0] = x->size();
-            units_per_layer[1] = 10;
-            units_per_layer[2] = y->size();
+            units_per_layer[0] = x->size(); // input layer
+            units_per_layer[1] = x->size(); // hidden layer: same number of nodes as input layer
+            units_per_layer[2] = y->size(); // output layer
             mlp->init( units_per_layer );
             // train
             mlp->train( *X, *Y, Xi, 1e-3, 100 );
