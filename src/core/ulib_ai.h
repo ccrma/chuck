@@ -231,6 +231,16 @@ public:
         return max;
     }
 
+    void setAll( T value )
+    {
+        // iterate
+        for( t_CKINT i = 0; i < m_length; i++ )
+        {
+            // set to value
+            m_vector[i] = value;
+        }
+    }
+
     T & operator[]( t_CKINT i )
     {
         // at least do a check

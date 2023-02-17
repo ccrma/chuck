@@ -40,6 +40,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <fstream>
 using namespace std;
 
 // global model type
@@ -149,6 +150,8 @@ CK_DLL_MFUN( MLP_get_gradients );
 CK_DLL_MFUN( MLP_get_activations );
 CK_DLL_MFUN( MLP_forward );
 CK_DLL_MFUN( MLP_backprop );
+CK_DLL_MFUN( MLP_save );
+CK_DLL_MFUN( MLP_load );
 CK_DLL_SFUN( MLP_shuffle );
 // offset
 static t_CKUINT MLP_offset_data = 0;
@@ -693,6 +696,18 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->doc = "(Manually) shuffle the given input and output vectors.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
+    // save
+    func = make_new_mfun( "void", "save", MLP_save );
+    func->add_arg( "string", "filename" );
+    func->doc = "Save the MLP to a file.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // load
+    func = make_new_mfun( "void", "load", MLP_load );
+    func->add_arg( "string", "filename" );
+    func->doc = "Load the MLP from a file.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -910,6 +925,25 @@ public:
         for( t_CKINT i = 0; i < y_dim; i++ )
         {
             y_.set( i, y.v( i ) );
+        }
+        return 0;
+    }
+
+    // predict
+    t_CKINT predict( ChaiVectorFast<t_CKFLOAT> & x_, ChaiVectorFast<t_CKFLOAT> & y_ )
+    {
+        // init
+        t_CKINT x_dim = x_.size();
+        t_CKINT y_dim = y_.size();
+        // compute
+        for( int i = 0; i < y_dim; i++ )
+        {
+            y_.v( i ) = 0.0;
+            for( int j = 0; j < x_dim; j++ )
+            {
+                y_.v( i ) += w->v( j, i ) * x_.v( j );
+            }
+            y_.v( i ) += w->v( x_dim, i );
         }
         return 0;
     }
@@ -3069,6 +3103,14 @@ public:
         SAFE_DELETE( input );
     }
 
+    // predict2
+    void predict( ChaiVectorFast<t_CKFLOAT> & input_, ChaiVectorFast<t_CKFLOAT> & output_ )
+    {
+        forward( input_ );
+        for( t_CKINT i = 0; i < units_per_layer.back(); i++ )
+            output_.v( i ) = activations.back()->v( i );
+    }
+
     // get_weights
     void get_weights( t_CKINT layer, Chuck_Array4 & weights_ )
     {
@@ -3168,6 +3210,101 @@ public:
         ChaiVectorFast<t_CKFLOAT> * output = chuck2chai( output_ );
         backprop( *output, learning_rate );
         SAFE_DELETE( output );
+    }
+
+    // save
+    void save( const string & filename )
+    {
+        ofstream fout( filename.c_str() );
+
+        fout << "# layers" << endl;
+        // fout << units_per_layer.size() << endl;
+        for( t_CKINT i = 0; i < units_per_layer.size(); i++ )
+            fout << units_per_layer[i] << " ";
+        fout << endl;
+
+        fout << "# activation functions (0=Linear, 1=Sigmoid, 2=ReLU, 3=Tanh, 4=Softmax)" << endl;
+        for( t_CKINT i = 0; i < activation_per_layer.size(); i++ )
+            fout << activation_per_layer[i] << " ";
+        fout << endl;
+
+        fout << "# weights" << endl;
+        for( t_CKINT i = 0; i < weights.size(); i++ )
+        {
+            for( t_CKINT j = 0; j < weights[i]->xDim(); j++ )
+            {
+                for( t_CKINT k = 0; k < weights[i]->yDim(); k++ )
+                    fout << weights[i]->v( j, k ) << " ";
+                fout << endl;
+            }
+        }
+
+        fout << "# biases" << endl;
+        for( t_CKINT i = 0; i < biases.size(); i++ )
+        {
+            for( t_CKINT j = 0; j < biases[i]->size(); j++ )
+                fout << biases[i]->v( j ) << " ";
+            fout << endl;
+        }
+    }
+
+    // load
+    void load( const string & filename )
+    {
+        // fin
+        ifstream fin( filename.c_str() );
+        string line;
+        t_CKINT num;
+
+        getline( fin, line ); // "# layers"
+
+        vector<t_CKUINT> units_per_layer_;
+        getline( fin, line ); // get nodes per layer
+        istringstream strin( line );
+
+        // tokenize
+        while( strin >> num )
+        {
+            units_per_layer_.push_back( num );
+        }
+        t_CKINT num_layers = units_per_layer_.size();
+
+        // initialize
+        init( units_per_layer_ );
+
+        getline( fin, line ); // "# activation functions"
+        strin.clear();
+        getline( fin, line );
+        strin.str( line );
+        for( t_CKINT i = 0; i < num_layers - 1; i++ )
+            strin >> activation_per_layer[i];
+
+        getline( fin, line ); // "# weights"
+        weights.resize( num_layers - 1 );
+        for( t_CKINT i = 0; i < num_layers - 1; i++ )
+        {
+            weights[i] = new ChaiMatrixFast<t_CKFLOAT>( units_per_layer[i + 1], units_per_layer[i] );
+            for( t_CKINT j = 0; j < units_per_layer[i + 1]; j++ )
+            {
+                strin.clear();
+                getline( fin, line );
+                strin.str( line );
+                for( t_CKINT k = 0; k < units_per_layer[i]; k++ )
+                    strin >> weights[i]->v( j, k );
+            }
+        }
+
+        getline( fin, line ); // "# biases"
+        biases.resize( num_layers - 1 );
+        for( t_CKINT i = 0; i < num_layers - 1; i++ )
+        {
+            biases[i] = new ChaiVectorFast<t_CKFLOAT>( units_per_layer[i + 1] );
+            strin.clear();
+            getline( fin, line );
+            strin.str( line );
+            for( t_CKINT j = 0; j < units_per_layer[i + 1]; j++ )
+                strin >> biases[i]->v( j );
+        }
     }
 };
 
@@ -3320,6 +3457,26 @@ CK_DLL_MFUN( MLP_backprop )
     mlp->backprop( *output, learning_rate );
 }
 
+CK_DLL_MFUN( MLP_save )
+{
+    // get object
+    MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
+    // get args
+    Chuck_String * filename = GET_NEXT_STRING( ARGS );
+    // save
+    mlp->save( filename->str() );
+}
+
+CK_DLL_MFUN( MLP_load )
+{
+    // get object
+    MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
+    // get args
+    Chuck_String * filename = GET_NEXT_STRING( ARGS );
+    // load
+    mlp->load( filename->str() );
+}
+
 CK_DLL_SFUN( MLP_shuffle )
 {
     // get args
@@ -3341,9 +3498,49 @@ private:
     ChaiMatrixFast<t_CKFLOAT> * X;
     ChaiMatrixFast<t_CKFLOAT> * Y;
     t_CKINT Xi;
-    MLP_Object * mlp;
-    KNN_Object * knn;
-    SVM_Object * svm;
+
+    // vector to do multi-target regression (see below)
+    vector<MLP_Object *> mlps;
+    vector<KNN_Object *> knns;
+    vector<SVM_Object *> svms;
+
+    //-------------------------------------------------------------------------
+    // whether to train a separate model for each output dimension
+    // t_CKBOOL trainModelPerOutput;
+    /* looool thanks chatGPT; sounds astoundingly competent
+    Ge: in working with multi-layer perceptrons, what is the difference
+       between having all output dimensions in one network, versus having a
+       separate network trained on each dimension of the output?
+
+    chatGPT: In multi-layer perceptrons (MLPs), the number of output dimensions
+       represents the number of distinct classes or values that the model can predict.
+
+    Having all output dimensions in one network means that the MLP outputs
+       vector with multiple dimensions, each representing a distinct class
+       or value that the model can predict. This approach is often used in
+       multi-class classification problems or in problems where the output
+       is a vector of continuous values (e.g., regression problems). The
+       advantage of this approach is that the model can learn complex relationships
+       between input features and output classes/values, and it can capture
+       dependencies between different output dimensions.
+
+    On the other hand, having a separate network trained on each dimension of
+       the output means that multiple MLPs are trained, each one responsible
+       for predicting a single dimension of the output. This approach is often
+       used in problems where the output dimensions are independent of each
+       other (e.g., multi-target regression problems). The advantage of this
+       approach is that it can be easier to train and optimize each individual
+       MLP, and it can also be more computationally efficient than training a
+       single MLP with multiple output dimensions.
+
+    In general, whether to use a single MLP with multiple output dimensions or
+       multiple MLPs depends on the specific problem and the nature of the
+       output variables. It's worth noting that some architectures, such as the
+       encoder-decoder architecture, combine both approaches by using a single
+       etwork to encode input features and separate networks to decode the
+       output into multiple dimensions. */
+    //-------------------------------------------------------------------------
+
 public:
     t_CKINT model_type;
     // constructor
@@ -3354,9 +3551,6 @@ public:
         X = NULL;
         Y = NULL;
         Xi = 0;
-        mlp = NULL;
-        knn = NULL;
-        svm = NULL;
         model_type = 0;
     }
 
@@ -3442,28 +3636,52 @@ public:
         // train
         if( model_type == g_mt_mlp )
         {
-            SAFE_DELETE( mlp );
-            mlp = new MLP_Object();
-            // init
-            vector<t_CKUINT> units_per_layer( 3 );
-            units_per_layer[0] = x->size(); // input layer
-            units_per_layer[1] = x->size(); // hidden layer: same number of nodes as input layer
-            units_per_layer[2] = y->size(); // output layer
-            mlp->init( units_per_layer );
-            // train
-            mlp->train( *X, *Y, Xi, 1e-3, 100 );
+            for( t_CKINT i = 0; i < mlps.size(); i++ )
+                SAFE_DELETE( mlps[i] );
+            mlps.clear();
+
+            for( t_CKINT i = 0; i < y->size(); i++ )
+            {
+                mlps.push_back( new MLP_Object() );
+                // init
+                vector<t_CKUINT> units_per_layer( 3 );
+                units_per_layer[0] = x->size(); // input layer
+                units_per_layer[1] = x->size(); // hidden layer: same number of nodes as input layer
+                units_per_layer[2] = 1; // output layer
+                mlps[i]->init( units_per_layer );
+                // slice Y
+                ChaiMatrixFast<t_CKFLOAT> Y_( Y->xDim(), 1 );
+                for( t_CKINT j = 0; j < Y->xDim(); j++ )
+                    Y_.v( j, 0 ) = Y->v( j, i );
+                // train
+                mlps[i]->train( *X, Y_, Xi, 1e-3, 100 );
+            }
         }
         else if( model_type == g_mt_knn )
         {
-            SAFE_DELETE( knn );
-            knn = new KNN_Object();
-            knn->train( *X, Xi );
+            for( t_CKINT i = 0; i < knns.size(); i++ )
+                SAFE_DELETE( knns[i] );
+            knns.clear();
+
+            knns.push_back( new KNN_Object() );
+            knns[0]->train( *X, Xi );
         }
         else if( model_type == g_mt_svm )
         {
-            SAFE_DELETE( svm );
-            svm = new SVM_Object();
-            svm->train( *X, *Y, Xi );
+            for( t_CKINT i = 0; i < svms.size(); i++ )
+                SAFE_DELETE( svms[i] );
+            svms.clear();
+
+            for( t_CKINT i = 0; i < y->size(); i++ )
+            {
+                svms.push_back( new SVM_Object() );
+                // slice Y
+                ChaiMatrixFast<t_CKFLOAT> Y_( Y->xDim(), 1 );
+                for( t_CKINT j = 0; j < Y->xDim(); j++ )
+                    Y_.v( j, 0 ) = Y->v( j, i );
+                // train
+                svms[i]->train( *X, Y_, Xi );
+            }
         }
     }
 
@@ -3475,9 +3693,15 @@ public:
         SAFE_DELETE( X );
         SAFE_DELETE( Y );
         Xi = 0;
-        SAFE_DELETE( mlp );
-        SAFE_DELETE( knn );
-        SAFE_DELETE( svm );
+        for( t_CKINT i = 0; i < mlps.size(); i++ )
+            SAFE_DELETE( mlps[i] );
+        for( t_CKINT i = 0; i < knns.size(); i++ )
+            SAFE_DELETE( knns[i] );
+        for( t_CKINT i = 0; i < svms.size(); i++ )
+            SAFE_DELETE( svms[i] );
+        mlps.clear();
+        knns.clear();
+        svms.clear();
         model_type = 0;
     }
 
@@ -3485,11 +3709,21 @@ public:
     void predict( Chuck_Array8 & input_, Chuck_Array8 & output_ )
     {
         if( model_type == 0 )
-            mlp->predict( input_, output_ );
+        {
+            ChaiVectorFast<t_CKFLOAT> * input = chuck2chai( input_ );
+            ChaiVectorFast<t_CKFLOAT> * output = new ChaiVectorFast<t_CKFLOAT>( 1 );
+            for( t_CKINT i = 0; i < mlps.size(); i++ )
+            {
+                mlps[i]->predict( *input, *output );
+                output_.m_vector[i] = output->v( 0 );
+            }
+            SAFE_DELETE( input );
+            SAFE_DELETE( output );
+        }
         else if( model_type == 1 )
         {
             ChaiVectorFast<t_CKINT> indices( 10 );
-            knn->getNearestNeighbors( input_.m_vector, 10, indices );
+            knns[0]->getNearestNeighbors( input_.m_vector, 10, indices );
             output_.set_size( Y->yDim() );
             for( t_CKINT i = 0; i < Y->yDim(); i++ )
             {
@@ -3504,7 +3738,15 @@ public:
         }
         else if( model_type == 2 )
         {
-            svm->predict( input_, output_ );
+            ChaiVectorFast<t_CKFLOAT> * input = chuck2chai( input_ );
+            ChaiVectorFast<t_CKFLOAT> * output = new ChaiVectorFast<t_CKFLOAT>( 1 );
+            for( t_CKINT i = 0; i < svms.size(); i++ )
+            {
+                svms[i]->predict( *input, *output );
+                output_.m_vector[i] = output->v( 0 );
+            }
+            SAFE_DELETE( input );
+            SAFE_DELETE( output );
         }
     }
 };
