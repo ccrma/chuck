@@ -1,6 +1,8 @@
 //---------------------------------------------------------------------
-// name: mlp.ck
-// desc: training a basic artificial neural network
+// name: model-save.ck
+// desc: training a basic artificial neural network and save the
+//       parameters to a model file, which can later be loaded
+//       using MLP.load()
 //
 // version: need chuck version 1.4.2.1 or higher
 // sorting: part of ChAI (ChucK for AI)
@@ -43,8 +45,8 @@ mlp.train( X, Y, learningRate, epochs );
 // ALTERNATE: train with default learning_rate=0.001, epochs=100
 // mlp.train(X, Y);
 
-// save the network into a model file
-// mlp.save( me.dir() + "model.txt" );
+// save the network
+mlp.save( me.dir() + "model2.txt" );
 
 // predict given a new input
 [0.7, 0.8, 0.9] @=> float x[];
