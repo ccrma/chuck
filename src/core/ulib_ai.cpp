@@ -52,10 +52,11 @@ static t_CKINT g_mt_dt = 5;
 static t_CKINT g_mt_boost = 6;
 static t_CKINT g_mt_naivebayes = 7;
 // global activation type
-static t_CKINT g_at_sigmoid = 0;
-static t_CKINT g_at_relu = 1;
-static t_CKINT g_at_tanh = 2;
-static t_CKINT g_at_softmax = 3;
+static t_CKINT g_at_linear = 0;
+static t_CKINT g_at_sigmoid = 1;
+static t_CKINT g_at_relu = 2;
+static t_CKINT g_at_tanh = 3;
+static t_CKINT g_at_softmax = 4;
 
 
 
@@ -194,6 +195,8 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     QUERY->doc_var( QUERY, "Activation type: Tanh" );
     QUERY->add_svar( QUERY, "int", "Softmax", TRUE, &g_at_softmax );
     QUERY->doc_var( QUERY, "Activation type: Softmax" );
+    QUERY->add_svar( QUERY, "int", "Linear", TRUE, &g_at_linear );
+    QUERY->doc_var( QUERY, "Activation type: Linear" );
     // done
     QUERY->end_class( QUERY );
 
@@ -2832,10 +2835,18 @@ public:
     }
 
     // init
-    void init( const vector<t_CKUINT> & units_per_layer_ )
+    bool init( const vector<t_CKUINT> & units_per_layer_ )
     {
         // clear
         clear();
+
+        // check
+        if( units_per_layer_.size() == 0 )
+        {
+            EM_error3( "MLP.init(): empty array 'unitsPerLayer'" );
+            return false;
+        }
+
         // get units per layer
         for( t_CKINT i = 0; i < units_per_layer_.size(); i++ )
             units_per_layer.push_back( units_per_layer_[i] );
@@ -2844,8 +2855,11 @@ public:
         {
             activations.push_back( new ChaiVectorFast<t_CKFLOAT>( units_per_layer[i] ) );
             gradients.push_back( new ChaiVectorFast<t_CKFLOAT>( units_per_layer[i] ) );
-            activation_per_layer.push_back( 0 ); // default to sigmoid
+            activation_per_layer.push_back( g_at_sigmoid ); // default to sigmoid...
         }
+        // set output layer activation function to linear by default
+        activation_per_layer.back() = g_at_linear;
+
         for( t_CKINT i = 0; i < units_per_layer.size() - 1; i++ )
         {
             weights.push_back( new ChaiMatrixFast<t_CKFLOAT>( units_per_layer[i + 1], units_per_layer[i] ) );
@@ -2859,27 +2873,41 @@ public:
         for( t_CKINT i = 0; i < biases.size(); i++ )
             for( t_CKINT j = 0; j < biases[i]->size(); j++ )
                 biases[i]->v( j ) = ck_random() / (t_CKFLOAT)CK_RANDOM_MAX;
+
+        // done
+        return true;
     }
 
     // init2
     void init( const vector<t_CKUINT> & units_per_layer_, const vector<t_CKUINT> & activation_per_layer_ )
     {
-        init( units_per_layer_ );
-        for( t_CKINT i = 0; i < activation_per_layer_.size(); i++ )
-            activation_per_layer.push_back( activation_per_layer_[i] );
+        if( init( units_per_layer_ ) )
+        {
+            for( t_CKINT i = 0; i < activation_per_layer_.size(); i++ )
+                activation_per_layer.push_back( activation_per_layer_[i] );
+        }
     }
 
     // init3
     void init( const vector<t_CKUINT> & units_per_layer_, t_CKINT activation_function_ )
     {
-        init( units_per_layer_ );
-        for( t_CKINT i = 0; i < units_per_layer_.size(); i++ )
-            activation_per_layer.push_back( activation_function_ );
+        if( init( units_per_layer_ ) )
+        {
+            for( t_CKINT i = 0; i < units_per_layer_.size(); i++ )
+                activation_per_layer.push_back( activation_function_ );
+        }
     }
 
     // forward
     void forward( ChaiVectorFast<t_CKFLOAT> & input )
     {
+        // sanity check
+        if( units_per_layer.size() == 0 )
+        {
+            EM_error3( "MLP.forward(): network not initialized" );
+            return;
+        }
+
         // copy
         for( t_CKINT i = 0; i < input.size(); i++ )
             activations[0]->v( i ) = input[i];
@@ -2901,6 +2929,8 @@ public:
                     v = v > 0.0 ? v : 0.0;
                 else if( activation_per_layer[i] == g_at_softmax )
                     v = exp( v );
+                else if( activation_per_layer[i] == g_at_linear )
+                    v = v;
                 activations[i + 1]->v( j ) = v;
             }
             if( activation_per_layer[i] == g_at_softmax )
@@ -2917,6 +2947,12 @@ public:
     // backprop
     void backprop( ChaiVectorFast<t_CKFLOAT> & output, t_CKFLOAT lr )
     {
+        // sanity check
+        if( units_per_layer.size() == 0 )
+        {
+            EM_error3( "MLP.backprop(): network not initialized" );
+            return;
+        }
         // error
         for( t_CKINT i = 0; i < output.size(); i++ )
             gradients.back()->v( i ) = output[i] - activations.back()->v( i );
@@ -2945,6 +2981,8 @@ public:
                     v = v > 0.0 ? 1.0 : 0.0;
                 else if( activation_per_layer[i] == g_at_softmax )
                     v = v * ( 1.0 - v );
+                else if( activation_per_layer[i] == g_at_linear )
+                    v = 1.0;
                 v = v * gradients[i + 1]->v( j ) * lr;
                 for( t_CKINT k = 0; k < weights[i]->yDim(); k++ )
                     weights[i]->v( j, k ) += v * activations[i]->v( k );
@@ -2961,6 +2999,13 @@ public:
                 t_CKFLOAT lr,
                 t_CKINT epochs )
     {
+        // sanity check
+        if( units_per_layer.size() == 0 )
+        {
+            EM_error3( "MLP.train(): network not initialized" );
+            return;
+        }
+
         ChaiVectorFast<t_CKFLOAT> x( X.yDim() );
         ChaiVectorFast<t_CKFLOAT> y( Y.yDim() );
         ChaiVectorFast<t_CKINT> indices( size );
@@ -3004,6 +3049,17 @@ public:
     // predict
     void predict( Chuck_Array8 & input_, Chuck_Array8 & output_ )
     {
+        // sanity check
+        if( units_per_layer.size() == 0 )
+        {
+            // error message
+            EM_error3( "MLP.predict(): network not initialized" );
+            // zero out
+            output_.zero();
+            // done
+            return;
+        }
+
         ChaiVectorFast<t_CKFLOAT> * input = chuck2chai( input_ );
         forward( *input );
         output_.set_size( units_per_layer.back() );
@@ -3015,7 +3071,23 @@ public:
     // get_weights
     void get_weights( t_CKINT layer, Chuck_Array4 & weights_ )
     {
-        Chuck_Array8 * wi;
+        // sanity check
+        if( units_per_layer.size() == 0 )
+        {
+            // error
+            EM_error3( "MLP.getWeights(): network not initialized" );
+            // courtesy clear the array
+            Chuck_Array8 * wi = NULL;
+            for( t_CKINT i = 0; i < weights_.size(); i++ )
+            {
+                wi = (Chuck_Array8 *)weights_.m_vector[i];
+                for( t_CKINT j = 0; j < wi->size(); j++ )
+                    wi->m_vector[j] = 0.0;
+            }
+            return;
+        }
+
+        Chuck_Array8 * wi = NULL;
         for( t_CKINT i = 0; i < weights_.size(); i++ )
         {
             wi = (Chuck_Array8 *)weights_.m_vector[i];
@@ -3027,6 +3099,17 @@ public:
     // get_biases
     void get_biases( t_CKINT layer, Chuck_Array8 & biases_ )
     {
+        // sanity check
+        if( units_per_layer.size() == 0 )
+        {
+            // error
+            EM_error3( "MLP.getBiases(): network not initialized" );
+            // clear
+            biases_.clear();
+            // done
+            return;
+        }
+
         biases_.set_size( biases[layer]->size() );
         for( t_CKINT i = 0; i < biases_.size(); i++ )
             biases_.m_vector[i] = biases[layer]->v( i );
@@ -3035,6 +3118,17 @@ public:
     // get_gradients
     void get_gradients( t_CKINT layer, Chuck_Array8 & gradients_ )
     {
+        // sanity check
+        if( units_per_layer.size() == 0 )
+        {
+            // error
+            EM_error3( "MLP.getGradients(): network not initialized" );
+            // clear
+            gradients_.clear();
+            // done
+            return;
+        }
+
         gradients_.set_size( gradients[layer]->size() );
         for( t_CKINT i = 0; i < gradients_.size(); i++ )
             gradients_.m_vector[i] = gradients[layer]->v( i );
@@ -3043,6 +3137,17 @@ public:
     // get_activations
     void get_activations( t_CKINT layer, Chuck_Array8 & activations_ )
     {
+        // sanity check
+        if( units_per_layer.size() == 0 )
+        {
+            // error
+            EM_error3( "MLP.getActivations(): network not initialized" );
+            // clear
+            activations_.clear();
+            // done
+            return;
+        }
+
         activations_.set_size( activations[layer]->size() );
         for( t_CKINT i = 0; i < activations_.size(); i++ )
             activations_.m_vector[i] = activations[layer]->v( i );
