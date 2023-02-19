@@ -16,17 +16,16 @@
 // date: Winter 2023
 //---------------------------------------------------------------------
 
-// instantiate a global Wekinator, so other files can easily use
+// instantiate a global Wekinator, so other files can access
 global Wekinator wek;
 
-// clear training set
+// clear training observations
 wek.clear();
 
 // print
 cherr <= "adding group 1"; cherr.flush();
 // input and output (could be set in another file)
-wek.input( [0.1, 0.1, 0.1] );
-wek.output( [48.0, 60.0] );
+wek.input( [0.1, 0.1, 0.1] ); wek.output( [48.0, 60.0] );
 // collect data
 for( int i; i < 5; i++ )
 {
@@ -43,8 +42,7 @@ cherr <= IO.newline();
 // print
 cherr <= "adding group 2"; cherr.flush();
 // input and output (could be set in another file)
-wek.input( [0.5, 0.5, 0.5] );
-wek.output( [5.0, 8.0] );
+wek.input( [0.5, 0.5, 0.5] ); wek.output( [5.0, 8.0] );
 // collect data
 for( int i; i < 5; i++ )
 {
@@ -61,17 +59,17 @@ cherr <= IO.newline();
 // (optional) save the observations for loading later
 wek.saveData( me.dir() + "currentData.arff" );
 
+// new input
+[0.3, 0.25, 0.4] @=> float x[];
+// to hold predicted output
+float y[2];
+
 // model type
 <<< "model type: ", "MLP" >>>;
 // set model type
 AI.MLP => wek.modelType;
 // train using current training set
 wek.train();
-
-// input
-[0.3, 0.25, 0.4] @=> float x[];
-// output
-float y[2];
 // predict output based on input
 wek.predict(x, y);
 // print
@@ -83,7 +81,6 @@ wek.predict(x, y);
 AI.KNN => wek.modelType;
 // train
 wek.train();
-
 // predict output based on input
 wek.predict(x, y);
 // print
@@ -95,7 +92,6 @@ wek.predict(x, y);
 AI.SVM => wek.modelType;
 // train
 wek.train();
-
 // predict
 wek.predict(x, y);
 // print

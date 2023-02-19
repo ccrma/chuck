@@ -36,8 +36,10 @@ wek.train();
 // input (dimensions should match inputDims)
 [0.3, 0.25, 0.4] @=> float x[];
 // output (dimensions should match outputDims)
-float y[2];
+float y[wek.outputDims()];
 // predict output based on input
-wek.predict(x, y);
+wek.predict( x, y );
+
 // print
-<<< y[0], y[1] >>>;
+for( int i; i < y.size(); i++ ) { cherr <= y[i] <= " "; }
+cherr <= IO.newline();
