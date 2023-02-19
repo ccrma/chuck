@@ -132,6 +132,11 @@ CK_DLL_MFUN( Wekinator_clear );
 CK_DLL_MFUN( Wekinator_predict );
 CK_DLL_MFUN( Wekinator_ctrl_model_type );
 CK_DLL_MFUN( Wekinator_cget_model_type );
+CK_DLL_MFUN( Wekinator_save_data );
+CK_DLL_MFUN( Wekinator_load_data );
+CK_DLL_MFUN( Wekinator_cget_input_dims );
+CK_DLL_MFUN( Wekinator_cget_output_dims );
+CK_DLL_MFUN( Wekinator_cget_num_obs );
 // offset
 static t_CKUINT Wekinator_offset_data = 0;
 
@@ -585,13 +590,40 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->doc = "Get the model type. Possible values: AI.MLP (default), AI.KNN, AI.SVM.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // save data
+    func = make_new_mfun( "void", "saveData", Wekinator_save_data );
+    func->add_arg( "string", "filename" );
+    func->doc = "Save the training data to a file.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // load data
+    func = make_new_mfun( "void", "loadData", Wekinator_load_data );
+    func->add_arg( "string", "filename" );
+    func->doc = "Load the training data from a file.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // input dims
+    func = make_new_mfun( "int", "inputDims", Wekinator_cget_input_dims );
+    func->doc = "Get the number of input dimensions.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // output dims
+    func = make_new_mfun( "int", "outputDims", Wekinator_cget_output_dims );
+    func->doc = "Get the number of output dimensions.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // num obs
+    func = make_new_mfun( "int", "numObs", Wekinator_cget_num_obs );
+    func->doc = "Get the number of observations in the training set.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     //---------------------------------------------------------------------
     // init as base class: MLP
     // 1.4.1.2 added by Yikai Li, Fall 2022
     //---------------------------------------------------------------------
     // doc string
     doc =
-        "a multi-layer perceptron (MLP; a basic artificial neural network) that maps an input layer to an output layer, across a specified number of fully-connected hidden layers. This  implemention can be trained either 1) by using one of the comprehensive .train() functions OR 2) by 'manually' iterating over calls to .forward() and .backprop() for each input-output observation, and using .shuffle() for each epoch. Commonly used for regression or classification.";
+        "a multilayer perceptron (MLP; a basic artificial neural network) that maps an input layer to an output layer, across a specified number of fully-connected hidden layers. This  implemention can be trained either 1) by using one of the comprehensive .train() functions OR 2) by 'manually' iterating over calls to .forward() and .backprop() for each input-output observation, and using .shuffle() for each epoch. Commonly used for regression or classification.";
 
     // begin class definition
     if( !type_engine_import_class_begin( env, "MLP", "Object", env->global(), MLP_ctor, MLP_dtor, doc.c_str() ) )
@@ -603,24 +635,24 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
 
     // init
     func = make_new_mfun( "void", "init", MLP_init );
-    func->add_arg( "int[]", "neuronsPerLayer" );
-    func->doc = "Initialize the MLP with the given number of neurons per layer.";
+    func->add_arg( "int[]", "nodesPerLayer" );
+    func->doc = "Initialize the MLP with the given number of nodes per layer.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // init2
     func = make_new_mfun( "void", "init", MLP_init2 );
-    func->add_arg( "int[]", "unitsPerLayer" );
+    func->add_arg( "int[]", "nodesPerLayer" );
     func->add_arg( "int[]", "activationPerLayer" );
     func->doc =
-        "Initialize the MLP with the given number of neurons per layer, as specified in 'unitsPerLayer', and the given activation function per layer, as specified in 'activationPerLayer'.";
+        "Initialize the MLP with the given number of nodes per layer and the given activation function per layer, as specified in 'activationPerLayer' (options: AI.Linear, AI.Sigmoid, AI.ReLU, AI.Tanh, or AI.Softmax).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // init3
     func = make_new_mfun( "void", "init", MLP_init3 );
-    func->add_arg( "int[]", "unitsPerLayer" );
+    func->add_arg( "int[]", "nodesPerLayer" );
     func->add_arg( "int", "activationFunction" );
     func->doc =
-        "Initialize the MLP with the given number of neurons per layer, as specified in 'unitsPerLayer', and the given activation function for all layers.";
+        "Initialize the MLP with the given number of nodes per layer and the given activation function for all layers (options: AI.Linear, AI.Sigmoid, AI.ReLU, AI.Tanh, or AI.Softmax).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // train
@@ -3094,6 +3126,15 @@ public:
             // done
             return;
         }
+        if( input_.size() != units_per_layer.front() )
+        {
+            // error message
+            EM_error3( "MLP.predict(): input size mismatch" );
+            // zero out
+            output_.zero();
+            // done
+            return;
+        }
 
         ChaiVectorFast<t_CKFLOAT> * input = chuck2chai( input_ );
         forward( *input );
@@ -3248,6 +3289,25 @@ public:
         }
     }
 
+    // read next non-empty or commented line
+    t_CKBOOL nextline( std::ifstream & fin, string & line, t_CKBOOL commentIsHash )
+    {
+        // skip over empty lines and commented lines (starts with #)
+        do
+        {
+            // get line
+            if( !std::getline( fin, line ) )
+            {
+                line = "";
+                return FALSE;
+            }
+            // ltrim leading white spaces
+            line = ltrim( line );
+        } while( line == "" || ( commentIsHash && line[0] == '#' ) );
+
+        return TRUE;
+    }
+
     // load
     void load( const string & filename )
     {
@@ -3256,10 +3316,8 @@ public:
         string line;
         t_CKINT num;
 
-        getline( fin, line ); // "# layers"
-
         vector<t_CKUINT> units_per_layer_;
-        getline( fin, line ); // get nodes per layer
+        nextline( fin, line, TRUE ); // get nodes per layer
         istringstream strin( line );
 
         // tokenize
@@ -3272,14 +3330,12 @@ public:
         // initialize
         init( units_per_layer_ );
 
-        getline( fin, line ); // "# activation functions"
         strin.clear();
-        getline( fin, line );
+        nextline( fin, line, TRUE );
         strin.str( line );
         for( t_CKINT i = 0; i < num_layers - 1; i++ )
             strin >> activation_per_layer[i];
 
-        getline( fin, line ); // "# weights"
         weights.resize( num_layers - 1 );
         for( t_CKINT i = 0; i < num_layers - 1; i++ )
         {
@@ -3287,20 +3343,19 @@ public:
             for( t_CKINT j = 0; j < units_per_layer[i + 1]; j++ )
             {
                 strin.clear();
-                getline( fin, line );
+                nextline( fin, line, TRUE );
                 strin.str( line );
                 for( t_CKINT k = 0; k < units_per_layer[i]; k++ )
                     strin >> weights[i]->v( j, k );
             }
         }
 
-        getline( fin, line ); // "# biases"
         biases.resize( num_layers - 1 );
         for( t_CKINT i = 0; i < num_layers - 1; i++ )
         {
             biases[i] = new ChaiVectorFast<t_CKFLOAT>( units_per_layer[i + 1] );
             strin.clear();
-            getline( fin, line );
+            nextline( fin, line, TRUE );
             strin.str( line );
             for( t_CKINT j = 0; j < units_per_layer[i + 1]; j++ )
                 strin >> biases[i]->v( j );
@@ -3749,6 +3804,116 @@ public:
             SAFE_DELETE( output );
         }
     }
+
+    // save
+    void save_data( const string & filename )
+    {
+        ofstream fout( filename.c_str() );
+
+        string header = "@relation dataset"
+                        "\n"
+                        "@attribute ID numeric"
+                        "@attribute Time date 'yyyy/MM/dd HH:mm:ss:SSS'"
+                        "@attribute 'Training round' numeric";
+        fout << header << endl;
+
+        for( t_CKINT i = 0; i < x->size(); i++ )
+        {
+            fout << "@attribute inputs-" << i << " numeric" << endl;
+        }
+        for( t_CKINT i = 0; i < y->size(); i++ )
+        {
+            fout << "@attribute outputs-" << i << " numeric" << endl;
+        }
+
+        fout << "\n@data" << endl;
+        for( t_CKINT i = 0; i < Xi; i++ )
+        {
+            fout << i << ", 2023/01/01 00:00:00:000, 1";
+            for( t_CKINT j = 0; j < x->size(); j++ )
+            {
+                fout << ", " << X->v( i, j );
+            }
+            for( t_CKINT j = 0; j < y->size(); j++ )
+            {
+                fout << ", " << Y->v( i, j );
+            }
+            fout << endl;
+        }
+    }
+
+    // load
+    void load_data( const string & filename )
+    {
+        // clear
+        clear();
+        // init
+        t_CKINT x_size = 0, y_size = 0;
+        ifstream fin( filename.c_str() );
+        string line;
+        while( getline( fin, line ) )
+        {
+            if( line.find( "@attribute" ) != string::npos )
+            {
+                if( line.find( "inputs" ) != string::npos )
+                {
+                    x_size++;
+                }
+                else if( line.find( "outputs" ) != string::npos )
+                {
+                    y_size++;
+                }
+            }
+            else if( line.find( "@data" ) != string::npos )
+            {
+                break;
+            }
+        }
+        x = new ChaiVectorFast<t_CKFLOAT>( x_size );
+        y = new ChaiVectorFast<t_CKFLOAT>( y_size );
+
+        // load
+        stringstream ss;
+        string token;
+        vector<string> tokens;
+        while( getline( fin, line ) )
+        {
+            ss.clear();
+            ss.str( line );
+            tokens.clear();
+            while( getline( ss, token, ',' ) )
+            {
+                tokens.push_back( token );
+            }
+            for( t_CKINT i = 0; i < x_size; i++ )
+            {
+                x->v( i ) = atof( tokens[i + 3].c_str() );
+            }
+            for( t_CKINT i = 0; i < y_size; i++ )
+            {
+                y->v( i ) = atof( tokens[i + x_size + 3].c_str() );
+            }
+            add();
+        }
+
+        // don't retrain here; should be called explicitly
+        // train();
+    }
+
+    t_CKINT get_input_dims()
+    {
+        return x == NULL ? 0 : x->size();
+    }
+
+    t_CKINT get_output_dims()
+    {
+        return y == NULL ? 0 : y->size();
+    }
+
+    t_CKINT get_num_obs()
+    {
+        return Xi;
+    }
 };
 
 //-----------------------------------------------------------------------------
@@ -3840,6 +4005,50 @@ CK_DLL_CGET( Wekinator_cget_model_type )
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // get
     RETURN->v_int = wekinator->model_type;
+}
+
+CK_DLL_MFUN( Wekinator_save_data )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_String * filename = (Chuck_String *)GET_NEXT_OBJECT( ARGS );
+    // save
+    wekinator->save_data( filename->str() );
+}
+
+CK_DLL_MFUN( Wekinator_load_data )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_String * filename = (Chuck_String *)GET_NEXT_OBJECT( ARGS );
+    // load
+    wekinator->load_data( filename->str() );
+}
+
+CK_DLL_CGET( Wekinator_cget_input_dims )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get
+    RETURN->v_int = wekinator->get_input_dims();
+}
+
+CK_DLL_CGET( Wekinator_cget_output_dims )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get
+    RETURN->v_int = wekinator->get_output_dims();
+}
+
+CK_DLL_CGET( Wekinator_cget_num_obs )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get
+    RETURN->v_int = wekinator->get_num_obs();
 }
 
 //-----------------------------------------------------------------------------
