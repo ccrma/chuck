@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------
-// name: wekinator.ck
-// desc: basic example using the Wekinator example in ChucK,
+// name: wekinator-basic.ck
+// desc: basic example using the built-in Wekinator object in ChucK,
 //       based on Rebecca Fiebrink's Wekinator framework;
-//       This example adds two groups of 5 observations each,
+//       This example adds two groups of 5 input-output observations,
 //       trains, and predicts output based on a new input
 //
 // version: need chuck version 1.4.2.1 or higher
@@ -11,8 +11,9 @@
 // uncomment for Wekinator API:
 // Wekinator.help();
 //
-// author: Yikai Li
-//         Ge Wang (https://ccrma.stanford.edu/~ge/)
+// authors: Yikai Li
+//          Ge Wang (https://ccrma.stanford.edu/~ge/)
+//          Rebecca Fiebrink (original Wekinator framework)
 // date: Winter 2023
 //---------------------------------------------------------------------
 
