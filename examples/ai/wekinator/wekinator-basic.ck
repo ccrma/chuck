@@ -58,6 +58,9 @@ for( int i; i < 5; i++ )
 // print
 cherr <= IO.newline();
 
+// (optional) save the observations for loading later
+wek.saveData( me.dir() + "currentData.arff" );
+
 // model type
 <<< "model type: ", "MLP" >>>;
 // set model type
