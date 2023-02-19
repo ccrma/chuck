@@ -21,18 +21,28 @@ development of this version. https://chuck.stanford.edu/webchuck/
         Clear the training set.
     void input( float[] vec );
         Set the current input vector.
+    int inputDims();
+        Get the number of input dimensions.
+    int loadData( string filename );
+        Load the training data from a file (format: .arff).
     int modelType( int type );
         Set the model type. Possible values: AI.MLP (default), AI.KNN, AI.SVM.
     int modelType();
         Get the model type. Possible values: AI.MLP (default), AI.KNN, AI.SVM.
+    int numObs();
+        Get the number of observations in the training set.
     void output( float[] vec );
         Set the current output vector.
-    void predict( float[] input, float[] output );
+    int outputDims();
+        Get the number of output dimensions.
+    int predict( float[] input, float[] output );
         Predict the output vector from the input vector.
+    int saveData( string filename );
+        Save the training data to a file (format: .arff).
     void train();
         Train the model with the current training set.
  - (added) new examples in ai/wekinator [ChAI]
-      |- wekinator.ck -- example of basic Wekinator usage
+      |- wekinator-basic.ck -- example of basic Wekinator usage
 - (added) MLP [ChAI] (thanks Yikai Li)
     |- A multi-layer perceptron (MLP; a basic artificial neural network) that
        maps an input layer to an output layer, across a specified number of
@@ -60,8 +70,20 @@ development of this version. https://chuck.stanford.edu/webchuck/
     void init( int[] unitsPerLayer );
         Initialize the MLP with the given number of neurons per layer, as
         specified in 'unitsPerLayer'.
-    void predict( float[] input, float[] output );
+    void init( int[] nodesPerLayer, int[] activationPerLayer );
+        Initialize the MLP with the given number of nodes per layer and the given
+        ctivation function per layer, as specified in 'activationPerLayer'
+        (options: AI.Linear, AI.Sigmoid, AI.ReLU, AI.Tanh, or AI.Softmax).
+    void init( int[] nodesPerLayer, int activationFunction );
+        Initialize the MLP with the given number of nodes per layer and the given
+        activation function for all layers (options: AI.Linear, AI.Sigmoid, 
+        I.ReLU, AI.Tanh, or AI.Softmax).
+    int load( string filename );
+        Load a MLP model from file.
+    int predict( float[] input, float[] output );
         Predict the output layer from an input layer.
+    int save( string filename );
+        Save the MLP model to file.
     void train( float[][] inputs, float[][] outputs );
         Train the MLP with the given input and output observations with default
         learning rate=.001 and epochs=100.
@@ -72,8 +94,11 @@ development of this version. https://chuck.stanford.edu/webchuck/
     static void shuffle( float[][] X, float[][] Y );
         (Manually) shuffle the given input and output vectors.
  - (added) new examples in ai/mlp [ChAI]
-      |- mlp.ck -- example training a vanilla neural net
-      |- mlp-manual.ck -- example of more manually calling training functions
+      |- mlp.ck -- example training a basic artificial neural network
+      |- mlp-manual.ck -- example of step-by-step training an MLP, printing each stage
+      |- mlp-load.ck -- loading a saved MLP model from file
+      |- mlp-save.ck -- saving the MLP model to file'
+      |- model.txt -- an example model file
  - (added) Word2Vec [ChAI] (thanks Yikai Li)
       |- A word embeddings utility that maps words to vectors; can load a 
          model and perform similiarity retrieval.
@@ -146,8 +171,6 @@ development of this version. https://chuck.stanford.edu/webchuck/
          KNN2 is designed to work with labels.)
       |- (inheritance) KNN -> Object
       -------------------
-      int train( float[][] x );
-          Train the KNN model with the given observations 'x'
       void search( float[] query, int k, int[] indices );
           Search for the 'k' nearest neighbors of 'query' and
           return their corresponding indices.
@@ -155,6 +178,8 @@ development of this version. https://chuck.stanford.edu/webchuck/
                    float[][] observations );
           Search for the 'k' nearest neighbors of 'query' and
           return their corresponding indices and observations
+      int train( float[][] x );
+          Train the KNN model with the given observations 'x'
       void weigh( float[] weights );
           Set the weights for each dimension in the data.
   - (added) KNN2 [ChAI] (thanks Yikai Li)
@@ -165,9 +190,6 @@ development of this version. https://chuck.stanford.edu/webchuck/
           labels whereas KNN2 is designed to work with labels.)
        |- (inheritance) KNN2 -> Object
       -------------------
-      int train( float[][] x, int[] labels );
-          Train the KNN model with the given samples 'x' and
-          corresponding labels.
       int predict( float[] query, int k, float[] prob );
           Predict the output probabilities 'prob' given unlabeled test
           input 'query' based on distances to 'k' nearest neighbors.
@@ -181,6 +203,9 @@ development of this version. https://chuck.stanford.edu/webchuck/
                    float[][] observations);
           Search for the 'k' nearest neighbors of 'query' and return
           their labels, indices, and observations.
+      int train( float[][] x, int[] labels );
+          Train the KNN model with the given samples 'x' and
+          corresponding labels.
       void weigh( float[] weights );
           Set the weights for each dimension in the data.
  - (added) example: ai/knn/knn-search.ck

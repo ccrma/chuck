@@ -593,13 +593,13 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     // save data
     func = make_new_mfun( "void", "saveData", Wekinator_save_data );
     func->add_arg( "string", "filename" );
-    func->doc = "Save the training data to a file.";
+    func->doc = "Save the training data to file (format: .arff).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // load data
     func = make_new_mfun( "void", "loadData", Wekinator_load_data );
     func->add_arg( "string", "filename" );
-    func->doc = "Load the training data from a file.";
+    func->doc = "Load the training data from file (format: .arff).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // input dims
@@ -731,13 +731,13 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     // save
     func = make_new_mfun( "int", "save", MLP_save );
     func->add_arg( "string", "filename" );
-    func->doc = "Save the MLP to a file.";
+    func->doc = "Save the MLP model to file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // load
     func = make_new_mfun( "int", "load", MLP_load );
     func->add_arg( "string", "filename" );
-    func->doc = "Load the MLP from a file.";
+    func->doc = "Load a MLP model from file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
