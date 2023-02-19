@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------
-// name: wekinator.ck
-// desc: basic example using the Wekinator example in ChucK,
-//       based on Rebecca Fiebrink's Wekinator framework;
-//       This example adds two groups of 5 observations each,
-//       trains, and predicts output based on a new input
+// name: wekinator-load.ck
+// desc: this examples uses the built-in Wekinator object and loads
+//       training data from an .arff file, which can be saved either
+//       from the Wekinator app or using Wekinator.saveData().
 //
 // version: need chuck version 1.4.2.1 or higher
 // sorting: part of ChAI (ChucK for AI)
@@ -11,8 +10,9 @@
 // uncomment for Wekinator API:
 // Wekinator.help();
 //
-// author: Yikai Li
-//         Ge Wang (https://ccrma.stanford.edu/~ge/)
+// authors: Yikai Li
+//          Ge Wang (https://ccrma.stanford.edu/~ge/)
+//          Rebecca Fiebrink (original Wekinator framework)
 // date: Winter 2023
 //---------------------------------------------------------------------
 
@@ -23,12 +23,15 @@ global Wekinator wek;
 cherr <= "loading observations from file..." <= IO.newline();
 // load an ARFF data file containing input-output observations
 // (generated either from Wekinator.save() or Wekinator app)
+// NOTE: Wekinator.loadData() clears existing training data,
+//       and uses the inputDims and outputDims inferred from file
+// NOTE: it is possible to add additional observations after
 wek.loadData( me.dir() + "currentData.arff" );
 
 // print what we loaded
 cherr <= "inputDims: " <= wek.inputDims() <= " "
-      <= "outputDims: " <= wek.outputDims() <= " "
-      <= "numObs: " <= wek.numObs() <= IO.newline();
+<= "outputDims: " <= wek.outputDims() <= " "
+<= "numObs: " <= wek.numObs() <= IO.newline();
 
 // train using current observations
 wek.train();
