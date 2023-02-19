@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------
 // name: mlp.ck
-// desc: training a multi-layer perception (MLP):
+// desc: training a multilayer perception (MLP),
 //       a basic artificial neural network
 //       (for a step-by-step example, see mlp-manual.ck)
 //
@@ -15,31 +15,35 @@
 // date: Winter 2023
 //---------------------------------------------------------------------
 
-// instantiate a multi-layer perception
+// instantiate a multilayer perception
 MLP mlp;
 // learning rate
 0.001 => float learningRate;
 // number of epochs
 100 => int epochs;
 
-// neurons per layer: input, [hidden layer(s)], output
-[3, 5, 5, 2] @=> int neuronsPerLayer[];
+// nodes per layer: input, [hidden layer(s)], output
+[3, 5, 5, 2] @=> int nodesPerLayer[];
 
 // initialize with the units per layer with default activation function
 // default: AI.Sigmoid for all layers except output layer;
 // default: AI.Linear for output layer
-mlp.init( neuronsPerLayer );
+mlp.init( nodesPerLayer );
+
 // (ALTERNATE #1) initialize with activation function
-// mlp.init( unitsPerLayer, AI.Sigmoid );
+// mlp.init( nodesPerLayer, AI.Sigmoid );
+
 // (ALTERNATE #2) specify activation function per layer
 // [AI.ReLU, AI.Tanh, AI.Softmax] @=> int activationPerLayer[];
 // (ALTERNATE #2) initialize with activation function per layer
-// mlp.init( unitsPerLayer, activationPerLayer );
+// mlp.init( nodesPerLayer, activationPerLayer );
 
 // input observations
 [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]] @=> float X[][];
 // output observations
 [[0.1, 0.2], [0.3, 0.4]] @=> float Y[][];
+// print
+<<< "training model...", "" >>>;
 // train the network
 mlp.train( X, Y, learningRate, epochs );
 // ALTERNATE: train with default learning_rate=0.001, epochs=100
@@ -55,4 +59,4 @@ float y[2];
 // predict output given input
 mlp.predict(x, y);
 // print the output
-<<< y[0], y[1] >>>;
+<<< "predicted output:", y[0], y[1] >>>;

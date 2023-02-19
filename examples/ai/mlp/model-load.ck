@@ -13,10 +13,15 @@
 // date: Winter 2023
 //---------------------------------------------------------------------
 
-// instantiate a multi-layer perception
+// instantiate a multilayer perception
 MLP mlp;
+
+// file name
+"model.txt" => string filename;
+// print
+<<< "loading model from file:", filename >>>;
 // load the model into network (created by MLP.save() elsewhere)
-mlp.load( me.dir() + "model.txt");
+if( !mlp.load( me.dir() + filename ) ) me.exit();
 
 // predict given a new input
 [0.7, 0.8, 0.9] @=> float x[];

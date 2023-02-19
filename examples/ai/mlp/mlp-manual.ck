@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------
 // name: mlp-manual.ck
-// desc: training (step-by-step) a multi-layer perception (MLP):
+// desc: training (step-by-step) a multilayer perception (MLP):
 //       (for a less manaul example, see mlp.ck)
 //
 // version: need chuck version 1.4.2.1 or higher
@@ -21,13 +21,13 @@
 // number of epochs
 100 => int epochs;
 
-// instantiate a multi-layer perception (a basic neural network)
+// instantiate a multilayer perception (a basic neural network)
 MLP mlp;
 
 // neurons per layer: input, [hidden layer(s)], output
-[3, 5, 5, 2] @=> int neuronsPerLayer[];
+[3, 5, 5, 2] @=> int nodesPerLayer[];
 // initialize with the # of neurons per layer
-mlp.init( neuronsPerLayer );
+mlp.init( nodesPerLayer );
 
 // input observations
 [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]] @=> float X[][];
@@ -97,13 +97,13 @@ chout <= IO.newline();
 fun void visActivations()
 {
     // chout <= "[activations]" <= IO.newline();
-    for ( 0 => int k; k < neuronsPerLayer.size(); k++ )
+    for ( 0 => int k; k < nodesPerLayer.size(); k++ )
     {
         // activations
         chout <= "layer " <= k <= " ACTIVATIONS" <= IO.newline();
-        float a[neuronsPerLayer[k]];
+        float a[nodesPerLayer[k]];
         mlp.getActivations(k, a);
-        for ( 0 => int l; l < neuronsPerLayer[k]; l++ )
+        for ( 0 => int l; l < nodesPerLayer[k]; l++ )
             chout <= a[l] <= " ";
         chout <= IO.newline();
     }
@@ -116,15 +116,15 @@ fun void visActivations()
 fun void visWeightsBiases()
 {
     // chout <= "[weights]" <= IO.newline();
-    for ( 0 => int k; k < neuronsPerLayer.size() - 1; k++ )
+    for ( 0 => int k; k < nodesPerLayer.size() - 1; k++ )
     {
         // weights
         chout <= "layer " <= k <= " WEIGHTS" <= IO.newline();
-        float w[neuronsPerLayer[k]][neuronsPerLayer[k+1]];
+        float w[nodesPerLayer[k]][nodesPerLayer[k+1]];
         mlp.getWeights(k, w);
-        for ( 0 => int l; l < neuronsPerLayer[k]; l++ )
+        for ( 0 => int l; l < nodesPerLayer[k]; l++ )
         {
-            for ( 0 => int m; m < neuronsPerLayer[k+1]; m++ )
+            for ( 0 => int m; m < nodesPerLayer[k+1]; m++ )
                 chout <= w[l][m] <= " ";
             chout <= IO.newline();
         }
@@ -132,13 +132,13 @@ fun void visWeightsBiases()
     
     chout <= "---" <= IO.newline();
     // chout <= "[biases]" <= IO.newline();
-    for ( 0 => int k; k < neuronsPerLayer.size() - 1; k++ )
+    for ( 0 => int k; k < nodesPerLayer.size() - 1; k++ )
     {
         // biases
         chout <= "layer " <= k <= " BIASES" <= IO.newline();
-        float b[neuronsPerLayer[k+1]];
+        float b[nodesPerLayer[k+1]];
         mlp.getBiases(k, b);
-        for ( 0 => int l; l < neuronsPerLayer[k+1]; l++ )
+        for ( 0 => int l; l < nodesPerLayer[k+1]; l++ )
             chout <= b[l] <= " ";
         chout <= IO.newline();
     }
@@ -151,13 +151,13 @@ fun void visWeightsBiases()
 fun void visGradients()
 {
     // chout <= "[gradients]" <= IO.newline();
-    for ( 0 => int k; k < neuronsPerLayer.size(); k++ )
+    for ( 0 => int k; k < nodesPerLayer.size(); k++ )
     {
         // gradients
         chout <= "layer " <= k <= " GRADIENTS" <= IO.newline();
-        float g[neuronsPerLayer[k]];
+        float g[nodesPerLayer[k]];
         mlp.getGradients(k, g);
-        for ( 0 => int l; l < neuronsPerLayer[k]; l++ )
+        for ( 0 => int l; l < nodesPerLayer[k]; l++ )
             chout <= g[l] <= " ";
         chout <= IO.newline();
     }
