@@ -573,7 +573,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // predict
-    func = make_new_mfun( "void", "predict", Wekinator_predict );
+    func = make_new_mfun( "int", "predict", Wekinator_predict );
     func->add_arg( "float[]", "input" );
     func->add_arg( "float[]", "output" );
     func->doc = "Predict the output vector from the input vector.";
@@ -673,7 +673,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // predict
-    func = make_new_mfun( "void", "predict", MLP_predict );
+    func = make_new_mfun( "int", "predict", MLP_predict );
     func->add_arg( "float[]", "input" );
     func->add_arg( "float[]", "output" );
     func->doc = "Predict the output layer from an input layer.";
@@ -729,13 +729,13 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // save
-    func = make_new_mfun( "void", "save", MLP_save );
+    func = make_new_mfun( "int", "save", MLP_save );
     func->add_arg( "string", "filename" );
     func->doc = "Save the MLP to a file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // load
-    func = make_new_mfun( "void", "load", MLP_load );
+    func = make_new_mfun( "int", "load", MLP_load );
     func->add_arg( "string", "filename" );
     func->doc = "Load the MLP from a file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -931,7 +931,7 @@ public:
     }
 
     // predict
-    t_CKINT predict( Chuck_Array8 & x_, Chuck_Array8 & y_ )
+    t_CKBOOL predict( Chuck_Array8 & x_, Chuck_Array8 & y_ )
     {
         // init
         t_CKINT x_dim = x_.size();
@@ -958,11 +958,12 @@ public:
         {
             y_.set( i, y.v( i ) );
         }
-        return 0;
+
+        return TRUE;
     }
 
     // predict
-    t_CKINT predict( ChaiVectorFast<t_CKFLOAT> & x_, ChaiVectorFast<t_CKFLOAT> & y_ )
+    t_CKBOOL predict( ChaiVectorFast<t_CKFLOAT> & x_, ChaiVectorFast<t_CKFLOAT> & y_ )
     {
         // init
         t_CKINT x_dim = x_.size();
@@ -977,7 +978,8 @@ public:
             }
             y_.v( i ) += w->v( x_dim, i );
         }
-        return 0;
+
+        return TRUE;
     }
 
 private:
@@ -1022,7 +1024,7 @@ CK_DLL_MFUN( SVM_predict )
     Chuck_Array8 * x = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
     Chuck_Array8 * y = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
     // add
-    svm->predict( *x, *y );
+    RETURN->v_int = svm->predict( *x, *y );
 }
 
 //-----------------------------------------------------------------------------
@@ -1311,8 +1313,9 @@ public:
     }
 
     // predict
-    void predict( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_Array8 & prob_ )
+    t_CKBOOL predict( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_Array8 & prob_ )
     {
+        // TODO: check if model initialized
         // init
         ChaiVectorFast<t_CKINT> indices( k );
         // search
@@ -1329,6 +1332,7 @@ public:
         {
             prob_.m_vector[i] /= k;
         }
+        return TRUE;
     }
 
     // weigh
@@ -1503,7 +1507,7 @@ CK_DLL_MFUN( KNN2_predict )
     }
 
     // predict
-    knn->predict( query->m_vector, k, *prob );
+    RETURN->v_int = knn->predict( query->m_vector, k, *prob );
 }
 
 CK_DLL_MFUN( KNN2_search )
@@ -2946,23 +2950,27 @@ public:
     }
 
     // init2
-    void init( const vector<t_CKUINT> & units_per_layer_, const vector<t_CKUINT> & activation_per_layer_ )
+    t_CKBOOL init( const vector<t_CKUINT> & units_per_layer_, const vector<t_CKUINT> & activation_per_layer_ )
     {
-        if( init( units_per_layer_ ) )
+        t_CKBOOL retval = init( units_per_layer_ );
+        if( retval )
         {
             for( t_CKINT i = 0; i < activation_per_layer_.size(); i++ )
                 activation_per_layer.push_back( activation_per_layer_[i] );
         }
+        return retval;
     }
 
     // init3
-    void init( const vector<t_CKUINT> & units_per_layer_, t_CKINT activation_function_ )
+    t_CKBOOL init( const vector<t_CKUINT> & units_per_layer_, t_CKINT activation_function_ )
     {
-        if( init( units_per_layer_ ) )
+        t_CKBOOL retval = init( units_per_layer_ );
+        if( retval )
         {
             for( t_CKINT i = 0; i < units_per_layer_.size(); i++ )
                 activation_per_layer.push_back( activation_function_ );
         }
+        return retval;
     }
 
     // forward
@@ -3114,7 +3122,7 @@ public:
     }
 
     // predict
-    void predict( Chuck_Array8 & input_, Chuck_Array8 & output_ )
+    t_CKBOOL predict( Chuck_Array8 & input_, Chuck_Array8 & output_ )
     {
         // sanity check
         if( units_per_layer.size() == 0 )
@@ -3124,7 +3132,7 @@ public:
             // zero out
             output_.zero();
             // done
-            return;
+            return FALSE;
         }
         if( input_.size() != units_per_layer.front() )
         {
@@ -3133,7 +3141,7 @@ public:
             // zero out
             output_.zero();
             // done
-            return;
+            return FALSE;
         }
 
         ChaiVectorFast<t_CKFLOAT> * input = chuck2chai( input_ );
@@ -3142,6 +3150,8 @@ public:
         for( t_CKINT i = 0; i < units_per_layer.back(); i++ )
             output_.m_vector[i] = activations.back()->v( i );
         SAFE_DELETE( input );
+
+        return TRUE;
     }
 
     // predict2
@@ -3254,9 +3264,16 @@ public:
     }
 
     // save
-    void save( const string & filename )
+    t_CKBOOL save( const string & filename )
     {
+        // open file
         ofstream fout( filename.c_str() );
+        // check
+        if( !fout.good() )
+        {
+            EM_error3( "MLP.save(): cannot open file for output:\n  |- %s", filename.c_str() );
+            return FALSE;
+        }
 
         fout << "# layers" << endl;
         // fout << units_per_layer.size() << endl;
@@ -3287,6 +3304,8 @@ public:
                 fout << biases[i]->v( j ) << " ";
             fout << endl;
         }
+
+        return TRUE;
     }
 
     // read next non-empty or commented line
@@ -3309,10 +3328,17 @@ public:
     }
 
     // load
-    void load( const string & filename )
+    t_CKBOOL load( const string & filename )
     {
         // fin
         ifstream fin( filename.c_str() );
+        // check
+        if( !fin.good() )
+        {
+            EM_error3( "MLP.load(): cannot open file:\n  |- %s", filename.c_str() );
+            return FALSE;
+        }
+
         string line;
         t_CKINT num;
 
@@ -3328,7 +3354,11 @@ public:
         t_CKINT num_layers = units_per_layer_.size();
 
         // initialize
-        init( units_per_layer_ );
+        if( !init( units_per_layer_ ) )
+        {
+            EM_error3( "MLP.load(): cannot initialize model from file:\n  |- %s", filename.c_str() );
+            return FALSE;
+        }
 
         strin.clear();
         nextline( fin, line, TRUE );
@@ -3360,6 +3390,8 @@ public:
             for( t_CKINT j = 0; j < units_per_layer[i + 1]; j++ )
                 strin >> biases[i]->v( j );
         }
+
+        return TRUE;
     }
 };
 
@@ -3444,7 +3476,7 @@ CK_DLL_MFUN( MLP_predict )
     Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
     Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
     // predict
-    mlp->predict( *input, *output );
+    RETURN->v_int = mlp->predict( *input, *output );
 }
 
 CK_DLL_MFUN( MLP_get_weights )
@@ -3519,7 +3551,7 @@ CK_DLL_MFUN( MLP_save )
     // get args
     Chuck_String * filename = GET_NEXT_STRING( ARGS );
     // save
-    mlp->save( filename->str() );
+    RETURN->v_int = mlp->save( filename->str() );
 }
 
 CK_DLL_MFUN( MLP_load )
@@ -3529,7 +3561,7 @@ CK_DLL_MFUN( MLP_load )
     // get args
     Chuck_String * filename = GET_NEXT_STRING( ARGS );
     // load
-    mlp->load( filename->str() );
+    RETURN->v_int = mlp->load( filename->str() );
 }
 
 CK_DLL_SFUN( MLP_shuffle )
@@ -3761,7 +3793,7 @@ public:
     }
 
     // predict
-    void predict( Chuck_Array8 & input_, Chuck_Array8 & output_ )
+    t_CKBOOL predict( Chuck_Array8 & input_, Chuck_Array8 & output_ )
     {
         if( model_type == 0 )
         {
@@ -3803,6 +3835,8 @@ public:
             SAFE_DELETE( input );
             SAFE_DELETE( output );
         }
+
+        return TRUE;
     }
 
     // save
@@ -3984,7 +4018,7 @@ CK_DLL_MFUN( Wekinator_predict )
     Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
     Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
     // predict
-    wekinator->predict( *input, *output );
+    RETURN->v_int = wekinator->predict( *input, *output );
 }
 
 CK_DLL_CTRL( Wekinator_ctrl_model_type )
