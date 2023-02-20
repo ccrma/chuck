@@ -11964,9 +11964,14 @@ int gsm_decode (gsm s, gsm_byte * c, gsm_signal * target)
 #	include	<stdlib.h>
 #else
 #	ifdef	HAS_MALLOC_H
-#		include 	<malloc.h>
+#       include <malloc.h>
 #	else
-		extern void free();
+        /* extern void free(); */
+        extern void free(void *);
+        /* 1.4.2.1 (ge) added explicit void * argument to avoid non-prototype function deprecation warning
+           https://stackoverflow.com/questions/42125/warning-error-function-declaration-isnt-a-prototype
+           "In C int foo() and int foo(void) are different functions. int foo() accepts an arbitrary number
+           of arguments, while int foo(void) accepts 0 arguments. In C++ they mean the same thing." */
 #	endif
 #endif
 
