@@ -12,7 +12,7 @@
 // synthesis / analysis network
 SinOsc foo => FFT fft =^ Centroid centroid => blackhole;
 // set sine frequency
-440 => s.freq;
+440 => foo.freq;
 
 // set FFT size
 1024 => fft.size;
