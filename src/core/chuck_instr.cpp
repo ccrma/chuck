@@ -5701,11 +5701,23 @@ error:
 }
 
 
-t_CKINT normalize_index(t_CKINT i, t_CKINT len) {
-    if (i >= 0) return i; // a normal array index
 
-    return len + i; // start with len-1 and keep going down
+
+//-----------------------------------------------------------------------------
+// name: normalize_index()
+// desc: normalize index to allow for negative array indexing
+//       1.4.2.1 (nshaheed) added
+//-----------------------------------------------------------------------------
+static t_CKINT normalize_index( t_CKINT i, t_CKINT len )
+{
+    // a normal array index
+    if( i >= 0 ) return i;
+    // start with len-1 and keep going down
+    return len + i;
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: execute()
@@ -5717,6 +5729,7 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
     // UNUSED: t_CKUINT *& reg_sp = sp;
     t_CKINT i = 0;
+    t_CKINT ni = 0; // normalized
     t_CKUINT val = 0;
     t_CKFLOAT fval = 0;
     t_CKCOMPLEX cval;
@@ -5739,18 +5752,19 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         Chuck_Array4 * arr = (Chuck_Array4 *)(*sp);
         // get index
         i = (t_CKINT)(*(sp+1));
-        i = normalize_index(i, arr->size());
+        // normalize index to allow for negative indexing | 1.4.2.1 (nshaheed) added
+        ni = normalize_index( i, arr->size() );
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( i );
+            val = arr->addr( ni );
             // exception
             if( !val ) goto array_out_of_bound;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( i, &val ) )
+            if( !arr->get( ni, &val ) )
                 goto array_out_of_bound;
             // push the value
             push_( sp, val );
@@ -5762,18 +5776,19 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         Chuck_Array8 * arr = (Chuck_Array8 *)(*sp);
         // get index
         i = (t_CKINT)(*(sp+1));
-        i = normalize_index(i, arr->size());
+        // normalize index to allow for negative indexing
+        ni = normalize_index( i, arr->size() );
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( i );
+            val = arr->addr( ni );
             // exception
             if( !val ) goto array_out_of_bound;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( i, &fval ) )
+            if( !arr->get( ni, &fval ) )
                 goto array_out_of_bound;
             // push the value
             push_( ((t_CKFLOAT *&)sp), fval );
@@ -5785,18 +5800,19 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         Chuck_Array16 * arr = (Chuck_Array16 *)(*sp);
         // get index
         i = (t_CKINT)(*(sp+1));
-        i = normalize_index(i, arr->size());
+        // normalize index to allow for negative indexing
+        ni = normalize_index( i, arr->size() );
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( i );
+            val = arr->addr( ni );
             // exception
             if( !val ) goto array_out_of_bound;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( i, &cval ) )
+            if( !arr->get( ni, &cval ) )
                 goto array_out_of_bound;
             // push the value
             push_( ((t_CKCOMPLEX *&)sp), cval );
@@ -5808,18 +5824,19 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         Chuck_Array24 * arr = (Chuck_Array24 *)(*sp);
         // get index
         i = (t_CKINT)(*(sp + 1));
-        i = normalize_index(i, arr->size());
+        // normalize index to allow for negative indexing
+        ni = normalize_index( i, arr->size() );
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( i );
+            val = arr->addr( ni );
             // exception
             if( !val ) goto array_out_of_bound;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( i, &v3 ) )
+            if( !arr->get( ni, &v3 ) )
                 goto array_out_of_bound;
             // push the value
             push_( ((t_CKVEC3 *&)sp), v3 );
@@ -5831,18 +5848,19 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         Chuck_Array32 * arr = (Chuck_Array32 *)(*sp);
         // get index
         i = (t_CKINT)(*(sp+1));
-        i = normalize_index(i, arr->size());
+        // normalize index to allow for negative indexing
+        ni = normalize_index( i, arr->size() );
         // check if writing
         if( m_emit_addr ) {
             // get the addr
-            val = arr->addr( i );
+            val = arr->addr( ni );
             // exception
             if( !val ) goto array_out_of_bound;
             // push the addr
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( i, &v4 ) )
+            if( !arr->get( ni, &v4 ) )
                 goto array_out_of_bound;
             // push the value
             push_( ((t_CKVEC4 *&)sp), v4 );
