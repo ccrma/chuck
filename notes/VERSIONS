@@ -1,9 +1,9 @@
 1.4.2.1 (February 2023)
 ---
 (NOTE) ChAI (ChucK + AI), first started in chuck-1.4.2.0, will continue 
-to be in BETA for some time (as we add more and also teach using chAI in 
-"Music and AI" at Stanford). The new additions to ChAI will be designated 
-[chAI] and may be subject to change in the near future.
+to be in BETA (as we add more and also teach using chAI in "Music and AI"
+at Stanford). The new additions to ChAI will be designated [ChAI] and is
+be subject to change in the near future.
 ---
 (NOTE) WebChucK (ChucK on browsers) [beta] was released during the 
 development of this version. https://chuck.stanford.edu/webchuck/
@@ -44,13 +44,13 @@ development of this version. https://chuck.stanford.edu/webchuck/
  - (added) new examples in ai/wekinator [ChAI]
       |- wekinator-basic.ck -- example of basic Wekinator usage
 - (added) MLP [ChAI] (thanks Yikai Li)
-    |- A multi-layer perceptron (MLP; a basic artificial neural network) that
-       maps an input layer to an output layer, across a specified number of
-       fully-connected hidden layers. This  implemention can be trained either
-       1) by using one of the comprehensive .train() functions OR 2) by 'manually'
-       iterating over calls to .forward() and .backprop() for each input-output
-       observation, and using .shuffle() for each epoch. Commonly used for
-       regression or classification.
+    |- a multilayer perceptron (MLP)--a basic artificial neural 
+       network--that maps an input layer to an output layer across a 
+       number of fully-connected hidden layers. This implemention can be 
+       trained either 1) by using one of the comprehensive .train() 
+       functions OR 2) by iteratively calling .forward() and .backprop() 
+       for each input-output observation, and using .shuffle() for each 
+       epoch. Commonly used for regression or classification.
     |- (inheritance) MLP -> Object
     -------------
     void backprop( float[] output, float learningRate );
