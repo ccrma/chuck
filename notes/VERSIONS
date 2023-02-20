@@ -213,6 +213,9 @@ development of this version. https://chuck.stanford.edu/webchuck/
  - (added) example: ai/knn/knn2-search.ck
  - (added) array.zero()
       |- zero out the contents of the array; size is unchanged.
+ - (added) negative indexing for arrays (thanks nshaheed)
+      |- [1,2,3,4] @=> int a[]; a[-1]; // evaluates to 4
+ - (added) example: array/array_negative.ck
  - (added) Math functions 
       float map( float value, float x1, float y1,
                               float x2, float y2 );
