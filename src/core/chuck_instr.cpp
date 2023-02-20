@@ -4587,7 +4587,7 @@ void Chuck_Instr_Func_To_Code::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 //       context: this is designed for builtin/imported functions
 //                functions defined in chuck code do their own arg list cleanup
 //-----------------------------------------------------------------------------
-t_CKBOOL func_release_args( Chuck_VM * vm, a_Arg_List args, t_CKUINT * mem_sp )
+t_CKBOOL func_release_args( Chuck_VM * vm, a_Arg_List args, t_CKBYTE * mem_sp )
 {
     // keep track of offset
     t_CKUINT offset = 0;
@@ -4608,7 +4608,7 @@ t_CKBOOL func_release_args( Chuck_VM * vm, a_Arg_List args, t_CKUINT * mem_sp )
             if( isobj( vm->env(), args->type) )
             {
                 // get the object pointer
-                object = (Chuck_VM_Object *)(*(mem_sp+offset));
+                object = (Chuck_VM_Object *)(*(t_CKUINT *)(mem_sp+offset));
                 // check
                 if( object != NULL )
                 {
@@ -4843,7 +4843,7 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         //       return value is one of these args being released;
         //          e.g., functions that pass through args;
         //          e.g., string Sndbuf.read(string)
-        func_release_args( vm, m_func_ref->def->arg_list, mem_sp+1 );
+        func_release_args( vm, m_func_ref->def->arg_list, (t_CKBYTE *)(mem_sp+1) );
     }
 
     // pop the stack pointer
@@ -4976,7 +4976,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         //       return value is one of these args being released;
         //          e.g., functions that pass through args;
         //          e.g., string Sndbuf.read(string)
-        func_release_args( vm, m_func_ref->def->arg_list, mem_sp+1 );
+        func_release_args( vm, m_func_ref->def->arg_list, (t_CKBYTE *)(mem_sp+1) );
     }
 
     // pop the stack pointer

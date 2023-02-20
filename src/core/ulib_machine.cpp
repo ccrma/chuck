@@ -411,7 +411,7 @@ CK_DLL_SFUN( machine_setloglevel_impl )
     // compare
     if( level != current )
     {
-        EM_log( CK_LOG_NONE, "updating log level from %d to %d..." );
+        EM_log( CK_LOG_NONE, "updating log level from %d to %d...", current, level );
         VM->carrier()->chuck->setLogLevel( level );
     }
     // return
