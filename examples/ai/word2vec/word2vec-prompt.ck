@@ -28,7 +28,13 @@ Word2Vec model;
 // loading any default here
 "glove-wiki-gigaword-50-tsne-2.txt" => string filepath;
 <<< "loading 2D model:", filepath, "..." >>>;
-model.load( filepath );
+// load model
+if( !model.load( me.dir() + filepath ) )
+{
+    <<< "cannot load model file...", "" >>>;
+    me.exit();
+}
+// print info about model
 print( model );
 
 ModalBar bar => NRev reverb => dac;
