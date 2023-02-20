@@ -58,7 +58,7 @@ host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
         -D__CHUCK_USE_PLANAR_BUFFERS__ \
 	-Wformat=0 \
         $(EMSCRIPTENSRCS) -o host_web/webchuck/js/webchuck.js \
-        -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8"]' \
+        -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8"]' \
         -s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"' \
         -s ALLOW_MEMORY_GROWTH=1 \
         -s --extern-post-js host_web/chucknode-postjs.js \
