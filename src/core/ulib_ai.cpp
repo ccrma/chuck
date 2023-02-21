@@ -43,11 +43,11 @@
 // creation of ChAI. Additionally, ChAI benefitted from the teaching
 // and design philosophy of Perry R. Cook (Ph.D. advisor to Rebecca and Ge
 // at Princeton, and ChucK co-author), who argued for real-time human interaction,
-// parameteric sound synthesis, and play in the design of musical tools.
+// parametric sound synthesis, and play in the design of musical tools.
 //
 // [1] Fiebrink, Rebecca. 2011. /Real-time Human Interaction With Supervised
 // Learning Algorithms for Music Composition and Performance/ Ph.D. Thesis.
-// Princeton University.
+// Princeton University. https://www.cs.princeton.edu/techreports/2010/891.pdf
 //
 // [2] http://www.wekinator.org/
 // Wekinator | Software for real-time, interactive machine learning
@@ -57,18 +57,19 @@
 //
 // [4] Fiebrink, R., G. Wang, P. R. Cook. 2008. "Foundations for On-the-fly
 // Learning in the ChucK Programming Language." /International Computer Music
-// Conference/.
+// Conference/. https://mcd.stanford.edu/publish/files/2008-icmc-learning.pdf
 //
 // [5] Fiebrink, R., G. Wang, P. R. Cook. 2008. "Support for Music Information
 // Retrieval in the ChucK Programming Language." /International Conference
 // on Music Information Retrieval/ (ISMIR).
+// https://mcd.stanford.edu/publish/files/2008-ismir-proto.pdf
 //
 // [6] http://smirk.cs.princeton.edu/
 // sMIRk | Small Music Information Retrieval toolKit
 //
 // [7] Wang, G., R. Fiebrink, P. R. Cook. 2007. "Combining Analysis and
 // Synthesis in the ChucK Programming Language." /International Computer
-// Music Conference/.
+// Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
 //-----------------------------------------------------------------------------
 #include "ulib_ai.h"
 #include "chuck_type.h"
