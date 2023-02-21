@@ -97,7 +97,7 @@ fun void getgrain(int which, dur grainlen, dur rampup, dur rampdown, float rate)
     // get an available voice
     lisa[which].getVoice() => int newvoice;
     
-    // make sure we got a valid voice   
+    // make sure we got a valid voice
     if( newvoice > -1 )
     {
         // set play rate
