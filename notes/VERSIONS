@@ -1,9 +1,11 @@
 1.4.2.1 (February 2023)
 ---
-(NOTE) ChAI (ChucK + AI), first started in chuck-1.4.2.0, will continue 
+(NOTE) ChAI (ChucK + AI), first appeared in chuck-1.4.2.0, will continue
 to be in BETA (as we add more and also teach using chAI in "Music and AI"
 at Stanford). The new additions to ChAI will be designated [ChAI] and is
 be subject to change in the near future.
+
+(also see HISTORICAL NOTE in 1.4.2.0)
 ---
 (NOTE) WebChucK (ChucK on browsers) [beta] was released during the 
 development of this version. https://chuck.stanford.edu/webchuck/
@@ -313,14 +315,48 @@ development of this version. https://chuck.stanford.edu/webchuck/
   - (developer) Chugin API clients in C++ now able to create
       strings and access member variables (thanks Nick Shaheed!)
 
+
 01.4.2.0 (January 2023)
 ---
 (NOTE) chuck-1.4.2.0 marks a beginning (in BETA) of chAI => ChucK for AI 
 -- a set of functionalities for interactive machine learning and artful, 
 humanistic design of music and artificial intelligence; it coincides with 
 the new "Music and AI" course at Stanford University, designed and taught 
-by Ge Wang with Ph.D. candidate Yikai Li. *** chAI (Beta) additions are 
-listed at the end ***
+by Ge Wang with Ph.D. candidate Yikai Li.
+
+(HISTORICAL NOTE)
+Much of ChAI and its ways of thinking and doing can be foundationally
+attributed to the work of Dr. Rebecca Fiebrink, her landmark Ph.D. Thesis,
+/Real-time Human Interaction With Supervised Learning Algorithms for Music
+Composition and Performance/ (2011) [1], the Wekinator framework [2], her
+teaching at the intersections of AI, HCI, and Music [3], as well as earlier
+collaborations between Rebecca and Ge [4,5] including SMIRK [6] (Small Musical
+Information Retrieval toolKit; 2008; early efforts in on-the-fly learning),
+the unit analyzer framework [7] (2007; afford real-time audio feature
+extraction). All of these have directly or indirectly contributed the
+creation of ChAI. Additionally, ChAI benefitted from the teaching
+and design philosophy of Perry R. Cook (Ph.D. advisor to Rebecca and Ge
+at Princeton, and ChucK co-author), who argued for real-time human interaction,
+parameteric sound synthesis, and play in the design of musical tools.
+
+[1] Fiebrink, Rebecca. 2011. /Real-time Human Interaction With Supervised
+Learning Algorithms for Music Composition and Performance/ Ph.D. Thesis.
+Princeton University.
+[2] http://www.wekinator.org/
+Wekinator | Software for real-time, interactive machine learning
+[3] Fiebrink, Rebecca. "Machine Learning for Musicians and Artists" MOOC
+https://www.kadenze.com/courses/machine-learning-for-musicians-and-artists/info
+[4] Fiebrink, R., G. Wang, P. R. Cook. 2008. "Foundations for On-the-fly
+Learning in the ChucK Programming Language." /International Computer Music
+Conference/.
+[5] Fiebrink, R., G. Wang, P. R. Cook. 2008. "Support for Music Information
+Retrieval in the ChucK Programming Language." /International Conference
+on Music Information Retrieval/ (ISMIR).
+[6] http://smirk.cs.princeton.edu/
+sMIRk | Small Music Information Retrieval toolKit
+[7] Wang, G., R. Fiebrink, P. R. Cook. 2007. "Combining Analysis and
+Synthesis in the ChucK Programming Language." /International Computer
+Music Conference/.
 ---
   - (added) MFCC unit analyzer (thanks Yikai Li)
         |- A unit analyzer that computes Mel-frequency Cepstral Coefficients

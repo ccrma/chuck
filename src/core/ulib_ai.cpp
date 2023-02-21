@@ -24,11 +24,51 @@
 
 //-----------------------------------------------------------------------------
 // file: ulib_ai.cpp
-// desc: class library for libAI -- part of ChAI (ChucK for AI)
+// desc: Music and AI class library; part of ChAI (ChucK for AI)
 //
-// author: Ge Wang (ge@ccrma.stanford.edu)
-//         Yikai Li (yikaili@stanford.edu)
-// date: Fall 2022
+// date: Fall 2022 -- present
+// authors: Ge Wang (ge@ccrma.stanford.edu)
+//          Yikai Li (yikaili@stanford.edu)
+//
+// (HISTORICAL NOTE)
+// Much of ChAI and its ways of thinking and doing can be foundationally
+// attributed to the work of Dr. Rebecca Fiebrink, her landmark Ph.D. Thesis,
+// /Real-time Human Interaction With Supervised Learning Algorithms for Music
+// Composition and Performance/ (2011) [1], the Wekinator framework [2], her
+// teaching at the intersections of AI, HCI, and Music [3], as well as earlier
+// collaborations between Rebecca and Ge [4,5] including SMIRK [6] (Small Musical
+// Information Retrieval toolKit; 2008; early efforts in on-the-fly learning),
+// the unit analyzer framework [7] (2007; afford real-time audio feature
+// extraction). All of these have directly or indirectly contributed the
+// creation of ChAI. Additionally, ChAI benefitted from the teaching
+// and design philosophy of Perry R. Cook (Ph.D. advisor to Rebecca and Ge
+// at Princeton, and ChucK co-author), who argued for real-time human interaction,
+// parameteric sound synthesis, and play in the design of musical tools.
+//
+// [1] Fiebrink, Rebecca. 2011. /Real-time Human Interaction With Supervised
+// Learning Algorithms for Music Composition and Performance/ Ph.D. Thesis.
+// Princeton University.
+//
+// [2] http://www.wekinator.org/
+// Wekinator | Software for real-time, interactive machine learning
+//
+// [3] Fiebrink, Rebecca. "Machine Learning for Musicians and Artists" MOOC
+// https://www.kadenze.com/courses/machine-learning-for-musicians-and-artists/info
+//
+// [4] Fiebrink, R., G. Wang, P. R. Cook. 2008. "Foundations for On-the-fly
+// Learning in the ChucK Programming Language." /International Computer Music
+// Conference/.
+//
+// [5] Fiebrink, R., G. Wang, P. R. Cook. 2008. "Support for Music Information
+// Retrieval in the ChucK Programming Language." /International Conference
+// on Music Information Retrieval/ (ISMIR).
+//
+// [6] http://smirk.cs.princeton.edu/
+// sMIRk | Small Music Information Retrieval toolKit
+//
+// [7] Wang, G., R. Fiebrink, P. R. Cook. 2007. "Combining Analysis and
+// Synthesis in the ChucK Programming Language." /International Computer
+// Music Conference/.
 //-----------------------------------------------------------------------------
 #include "ulib_ai.h"
 #include "chuck_type.h"
