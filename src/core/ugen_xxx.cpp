@@ -3229,13 +3229,14 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     Chuck_String * ckfilename = GET_CK_STRING(ARGS);
-    const char * filename = ckfilename->str().c_str();
+    const char * filename = NULL;
 
-    // return filename
+    // set return value
     RETURN->v_string = ckfilename;
 
+    // cleanup
     SAFE_DELETE_ARRAY(d->buffer);
-
+    // clean up chunk map
     if( d->chunk_map )
     {
         for(int i = 0; i < d->chunk_num; i++)
@@ -3243,12 +3244,21 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         SAFE_DELETE_ARRAY(d->chunk_map);
         d->chunk_num = 0;
     }
-
+    // close file descriptor
     if( d->fd )
     {
         sf_close( d->fd );
         d->fd = NULL;
     }
+
+    // check | 1.4.2.1 (ge) added check to avert crash on null argument
+    if( !ckfilename )
+    {
+        CK_FPRINTF_STDERR( "[chuck] SndBuf.read() given null argument; nothing read...\n" );
+        return;
+    }
+    // get filename c string
+    filename = ckfilename->str().c_str();
 
     // log
     EM_log( CK_LOG_INFO, "(sndbuf): reading '%s'...", filename );
