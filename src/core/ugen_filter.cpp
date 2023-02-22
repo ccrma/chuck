@@ -722,6 +722,21 @@ struct FilterBasic_data
     t_CKFLOAT m_Q;
     t_CKFLOAT m_db;
 
+    // desperation debug tools
+    /*
+    bool blowup;
+    t_CKFLOAT XQ;
+    t_CKFLOAT Xpbw;
+    t_CKFLOAT Xqres;
+    t_CKFLOAT Xpfreq;
+    t_CKFLOAT XD;
+    t_CKFLOAT XC;
+    t_CKFLOAT Xcosf;
+    t_CKFLOAT Xnext_b1;
+    t_CKFLOAT Xnext_b2;
+    t_CKFLOAT Xnext_a0;
+    */
+
     // tick_lpf
     inline SAMPLE tick_lpf( SAMPLE in )
     {
@@ -836,6 +851,9 @@ struct FilterBasic_data
     // set_rlpf
     inline void set_rlpf( t_CKFLOAT freq, t_CKFLOAT Q )
     {
+        // 1.4.2.1 (ge) | added bounds to hopefully prevent any more blow-ups
+        freq = ck_max( 1, freq );
+
         t_CKFLOAT qres = ck_max( .001, 1.0/Q );
         t_CKFLOAT pfreq = freq * g_radians_per_sample;
 
@@ -851,6 +869,19 @@ struct FilterBasic_data
         m_a0 = (SAMPLE)next_a0;
         m_b1 = (SAMPLE)next_b1;
         m_b2 = (SAMPLE)next_b2;
+
+        // desperation debug measure part 1
+        /*
+        XQ = Q;
+        Xqres = qres;
+        Xpfreq = pfreq;
+        XD = D;
+        XC = C;
+        Xcosf = cosf;
+        Xnext_b1 = next_b1;
+        Xnext_b2 = next_b2;
+        Xnext_a0 = next_a0;
+        */
     }
 
     // tick_rlpf
@@ -868,12 +899,36 @@ struct FilterBasic_data
         CK_DDN(m_y1);
         CK_DDN(m_y2);
 
+        // desperation debug measure part 2
+        // --> finding: LPF and HPF seen to be blow up when freq < 1
+        /*
+        if( fabs(result) > 1 )
+        {
+            std::cerr << "blow up: " << result << " " << m_freq << " " << m_Q << std::endl;
+            blowup = true;
+
+            std::cerr
+            << " Q: " << XQ
+            << " qres: " << Xqres
+            << " pfreq: " << Xpfreq
+            << " D: " << XD
+            << " C: " << XC
+            << " cosf: " << Xcosf
+            << " next_b1: " << Xnext_b1
+            << " next_b2: " << Xnext_b2
+            << " next_a0: " << Xnext_a0 << std::endl;
+        }
+        */
+
         return result;
     }
 
     // set_rhpf
     inline void set_rhpf( t_CKFLOAT freq, t_CKFLOAT Q )
     {
+        // 1.4.2.1 (ge) | added bounds to hopefully prevent any more blow-ups
+        freq = ck_max( 1, freq );
+
         t_CKFLOAT qres = ck_max( .001, 1.0/Q );
         t_CKFLOAT pfreq = freq * g_radians_per_sample;
 

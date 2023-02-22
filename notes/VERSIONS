@@ -284,6 +284,9 @@ development of this version. https://chuck.stanford.edu/webchuck/
       provide additional information in the compiler error message
   - (fixed) overloaded functions with identical arguments now will
       correctly result in a compiler error
+  - (fixed, hopefully) LPF and HPF filter explosion for small values of
+    .freq (<.2); now LPF.freq and HPF .freq are internally clamped to
+    never drop below 1.
   - (fixed) SndBuf crash in cases where file size is integer multiple
       of .chunks and .chunks > 0 and reaching the end of the file
   - (fixed) SndBuf.valueAt(n) for n == file size in samples now returns 0;
@@ -295,6 +298,7 @@ development of this version. https://chuck.stanford.edu/webchuck/
       were incorrectly overloaded as "loop()" and was unavailable
   - (fixed) FileIO.seek() previously fails if EOF is reached in reading
       a file; FileIO.seek() now functions after EOF is reached.
+  - (updated) all cherr prints now flushes immediately
   - (updated) IO.newline() or a solitary "\n" now automatically flushes
       chout
   - (added) examples in io
