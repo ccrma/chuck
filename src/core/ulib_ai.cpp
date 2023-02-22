@@ -658,6 +658,9 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->doc = "Get the number of observations in the training set.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // end the class import
+    type_engine_import_class_end( env );
+
     //---------------------------------------------------------------------
     // init as base class: MLP
     // 1.4.2.1 added by Yikai Li, Winter 2023
@@ -784,12 +787,9 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     // end the class import
     type_engine_import_class_end( env );
 
-    // end the class import
-    type_engine_import_class_end( env );
-
     return TRUE;
 
-    error:
+error:
     // end the class import
     type_engine_import_class_end( env );
 
