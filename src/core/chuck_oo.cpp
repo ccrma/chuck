@@ -3890,20 +3890,24 @@ t_CKBOOL Chuck_IO_Cherr::eof()
 void Chuck_IO_Cherr::write( const std::string & val )
 {
     m_buffer << val;
-    if( val == "\n" ) flush();
+    flush(); // always flush for cerr | 1.4.2.1 (ge) added
+    // if( val == "\n" ) flush();
 }
 
 void Chuck_IO_Cherr::write( t_CKINT val )
 {
     m_buffer << val;
+    flush(); // always flush for cerr | 1.4.2.1 (ge) added
 }
 
 void Chuck_IO_Cherr::write( t_CKINT val, t_CKINT flags )
 {
     m_buffer << val;
+    flush(); // always flush for cerr | 1.4.2.1 (ge) added
 }
 
 void Chuck_IO_Cherr::write( t_CKFLOAT val )
 {
     m_buffer << val;
+    flush(); // always flush for cerr | 1.4.2.1 (ge) added
 }
