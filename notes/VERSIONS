@@ -292,9 +292,10 @@ development of this version. https://chuck.stanford.edu/webchuck/
       provide additional information in the compiler error message
   - (fixed) overloaded functions with identical arguments now will
       correctly result in a compiler error
-  - (fixed, hopefully) LPF and HPF filter explosion for small values of
-    .freq (<.2); now LPF.freq and HPF .freq are internally clamped to
-    never drop below 1.
+  - (fixed, hopefully) no more LPF and HPF filter explosion for small 
+      values of .freq (<.2), large values of .freq (>Nyquist frequency), 
+      or Q < 1 with high frequency below Nyquist; now LPF.freq and HPF .Q 
+      are internally clamped to values between [1,SRATE/2];
   - (fixed) SndBuf crash in cases where file size is integer multiple
       of .chunks and .chunks > 0 and reaching the end of the file
   - (fixed) SndBuf.valueAt(n) for n == file size in samples now returns 0;

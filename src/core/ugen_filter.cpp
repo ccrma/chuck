@@ -853,6 +853,8 @@ struct FilterBasic_data
     {
         // 1.4.2.1 (ge) | added bounds to hopefully prevent any more blow-ups
         freq = ck_max( 1, freq );
+        freq = ck_min( g_srate/2, freq );
+        Q = ck_max( 1, Q );
 
         t_CKFLOAT qres = ck_max( .001, 1.0/Q );
         t_CKFLOAT pfreq = freq * g_radians_per_sample;
@@ -928,6 +930,8 @@ struct FilterBasic_data
     {
         // 1.4.2.1 (ge) | added bounds to hopefully prevent any more blow-ups
         freq = ck_max( 1, freq );
+        freq = ck_min( g_srate/2, freq );
+        Q = ck_max( 1, Q );
 
         t_CKFLOAT qres = ck_max( .001, 1.0/Q );
         t_CKFLOAT pfreq = freq * g_radians_per_sample;
@@ -1584,10 +1588,13 @@ CK_DLL_PMSG( BRF_pmsg )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( RLPF_ctor )
 {
+    // instantiate
     FilterBasic_data * f =  new FilterBasic_data;
+    // zero out data
     memset( f, 0, sizeof(FilterBasic_data) );
-    // default
-    f->m_Q = 1.0;
+    // default | 1.4.2.1.(ge) added
+    f->set_rlpf( 1000, 1 );
+    // set in chuck object
     OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data) = (t_CKUINT)f;
 }
 
@@ -1866,10 +1873,13 @@ CK_DLL_PMSG( ResonZ_pmsg )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( RHPF_ctor )
 {
+    // instantiate
     FilterBasic_data * f =  new FilterBasic_data;
+    // zero out the data
     memset( f, 0, sizeof(FilterBasic_data) );
-    // default
-    f->m_Q = 1.0;
+    // default | 1.4.2.1.(ge) added
+    f->set_rhpf( 1000, 1 );
+    // set in chuck object
     OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data) = (t_CKUINT)f;
 }
 
