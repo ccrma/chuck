@@ -1512,7 +1512,7 @@ CK_DLL_MFUN( MFCC_compute )
 static t_CKFLOAT compute_kurtosis( Chuck_Array8 & input )
 {
     t_CKINT i;
-    t_CKFLOAT z = 0.0, mean = 0.0, b, q;
+    t_CKFLOAT z = 0.0, mean = 0.0, q = 0.0, b;
     for( i = 0; i < input.size(); i++ )
     {
         mean += input.m_vector[i];
