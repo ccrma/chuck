@@ -94,7 +94,7 @@ wek.predict(x, y);
 // set model type
 AI.KNN => wek.modelType;
 // set model properties
-wek.setProperty( AI.KNN, "k", 3 );
+wek.setProperty( AI.KNN, "k", 10 );
 <<< wek.getPropertyInt( AI.KNN, "k" ) >>>;
 // train
 wek.train();
