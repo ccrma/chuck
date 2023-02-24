@@ -67,6 +67,10 @@ development of this version. https://chuck.stanford.edu/webchuck/
         Get the biases of the given layer.
     void getGradients( int layer, float[] gradients );
         Get the gradients of the given layer, after a manual .backprop().
+    int getPropertyInt( int modelType, string key );
+        Get int property of name 'key' for the given model type (options: AI.MLP, AI.KNN, AI.SVM).
+    float getPropertyFloat( int modelType, string key );
+        Get float property of name 'key' for the given model type (options: AI.MLP, AI.KNN, AI.SVM).
     void getWeights( int layer, float[][] weights );
         Get the weights of the given layer.
     void init( int[] unitsPerLayer );
@@ -84,6 +88,10 @@ development of this version. https://chuck.stanford.edu/webchuck/
         Load a MLP model from file.
     int predict( float[] input, float[] output );
         Predict the output layer from an input layer.
+    void setProperty( int modelType, string key, int value );
+        Set int property of name 'key' for the given model type (options: AI.MLP, AI.KNN, AI.SVM).
+    void setProperty( int modelType, string key, float value );
+        Set float property of name 'key' for the given model type (options: AI.MLP, AI.KNN, AI.SVM).
     int save( string filename );
         Save the MLP model to file.
     void train( float[][] inputs, float[][] outputs );

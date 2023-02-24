@@ -178,6 +178,10 @@ CK_DLL_MFUN( Wekinator_load_data );
 CK_DLL_MFUN( Wekinator_cget_input_dims );
 CK_DLL_MFUN( Wekinator_cget_output_dims );
 CK_DLL_MFUN( Wekinator_cget_num_obs );
+CK_DLL_MFUN( Wekinator_set_property_int );
+CK_DLL_MFUN( Wekinator_set_property_float );
+CK_DLL_MFUN( Wekinator_get_property_int );
+CK_DLL_MFUN( Wekinator_get_property_float );
 // offset
 static t_CKUINT Wekinator_offset_data = 0;
 
@@ -658,6 +662,36 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->doc = "Get the number of observations in the training set.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // set_property_int
+    func = make_new_mfun( "void", "setProperty", Wekinator_set_property_int );
+    func->add_arg( "int", "modelType" );
+    func->add_arg( "string", "key" );
+    func->add_arg( "int", "value" );
+    func->doc = "Set an integer property of the model.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set_property_float
+    func = make_new_mfun( "void", "setProperty", Wekinator_set_property_float );
+    func->add_arg( "int", "modelType" );
+    func->add_arg( "string", "key" );
+    func->add_arg( "float", "value" );
+    func->doc = "Set a float property of the model.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_property_int
+    func = make_new_mfun( "int", "getPropertyInt", Wekinator_get_property_int );
+    func->add_arg( "int", "modelType" );
+    func->add_arg( "string", "key" );
+    func->doc = "Get an integer property of the model.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_property_float
+    func = make_new_mfun( "float", "getPropertyFloat", Wekinator_get_property_float );
+    func->add_arg( "int", "modelType" );
+    func->add_arg( "string", "key" );
+    func->doc = "Get a float property of the model.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -789,7 +823,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
 
     return TRUE;
 
-error:
+    error:
     // end the class import
     type_engine_import_class_end( env );
 
@@ -3632,6 +3666,13 @@ private:
     vector<KNN_Object *> knns;
     vector<SVM_Object *> svms;
 
+    // properties
+    t_CKINT mlp_hidden_layers;
+    t_CKINT mlp_nodes_per_hidden_layer;
+    t_CKINT mlp_epochs;
+    t_CKFLOAT mlp_learning_rate;
+    t_CKINT knn_k;
+
     //-------------------------------------------------------------------------
     // whether to train a separate model for each output dimension
     // t_CKBOOL trainModelPerOutput;
@@ -3680,12 +3721,21 @@ public:
         Y = NULL;
         Xi = 0;
         model_type = 0;
+        mlp_hidden_layers = 1;
+        mlp_nodes_per_hidden_layer = 0;
+        mlp_learning_rate = 0.3;
+        mlp_epochs = 500;
+        knn_k = 1;
     }
 
     // destructor
     ~Wekinator_Object()
     {
         clear();
+        mlp_hidden_layers = 0;
+        mlp_learning_rate = 0.0;
+        mlp_epochs = 0;
+        knn_k = 0;
     }
 
     // input
@@ -3772,17 +3822,20 @@ public:
             {
                 mlps.push_back( new MLP_Object() );
                 // init
-                vector<t_CKUINT> units_per_layer( 3 );
-                units_per_layer[0] = x->size(); // input layer
-                units_per_layer[1] = x->size(); // hidden layer: same number of nodes as input layer
-                units_per_layer[2] = 1; // output layer
+                vector<t_CKUINT> units_per_layer;
+                units_per_layer.push_back( x->size() ); // input layer
+                t_CKINT
+                    nodes_per_hidden_layer = mlp_nodes_per_hidden_layer == 0 ? x->size() : mlp_nodes_per_hidden_layer;
+                for( t_CKINT j = 0; j < mlp_hidden_layers; j++ )
+                    units_per_layer.push_back( nodes_per_hidden_layer ); // hidden layer: same number of nodes as input layer
+                units_per_layer.push_back( 1 ); // output layer
                 mlps[i]->init( units_per_layer );
                 // slice Y
                 ChaiMatrixFast<t_CKFLOAT> Y_( Y->xDim(), 1 );
                 for( t_CKINT j = 0; j < Y->xDim(); j++ )
                     Y_.v( j, 0 ) = Y->v( j, i );
                 // train
-                mlps[i]->train( *X, Y_, Xi, 1e-3, 100 );
+                mlps[i]->train( *X, Y_, Xi, mlp_learning_rate, mlp_epochs );
             }
         }
         else if( model_type == g_mt_knn )
@@ -3831,6 +3884,7 @@ public:
         knns.clear();
         svms.clear();
         model_type = 0;
+        mlp_nodes_per_hidden_layer = 0;
     }
 
     // predict
@@ -3850,18 +3904,18 @@ public:
         }
         else if( model_type == 1 )
         {
-            ChaiVectorFast<t_CKINT> indices( 10 );
-            knns[0]->getNearestNeighbors( input_.m_vector, 10, indices );
+            ChaiVectorFast<t_CKINT> indices( knn_k );
+            knns[0]->getNearestNeighbors( input_.m_vector, knn_k, indices );
             output_.set_size( Y->yDim() );
             for( t_CKINT i = 0; i < Y->yDim(); i++ )
             {
                 output_.m_vector[i] = 0;
                 t_CKFLOAT sum = 0;
-                for( t_CKINT j = 0; j < 10; j++ )
+                for( t_CKINT j = 0; j < knn_k; j++ )
                 {
                     sum += Y->v( indices.v( j ), i );
                 }
-                output_.m_vector[i] = sum / 10;
+                output_.m_vector[i] = sum / knn_k;
             }
         }
         else if( model_type == 2 )
@@ -3988,6 +4042,90 @@ public:
     t_CKINT get_num_obs()
     {
         return Xi;
+    }
+
+    // set_property_int
+    void set_property( t_CKINT model_type, const string & key_, t_CKINT value )
+    {
+        // lower the key
+        string key = tolower( key_ );
+        // set
+        if( model_type == g_mt_mlp )
+        {
+            if( key == "hiddenlayers" )
+                mlp_hidden_layers = value;
+            else if( key == "nodesperhiddenlayer" )
+                mlp_nodes_per_hidden_layer = value;
+            else if( key == "epochs" )
+                mlp_epochs = value;
+            else
+                EM_error3( "Wekinator: unknown property '%s' for MLP", key.c_str() );
+        }
+        else if( model_type == g_mt_knn )
+        {
+            if( key == "k" )
+                knn_k = value;
+            else
+                EM_error3( "Wekinator: unknown property '%s' for KNN", key.c_str() );
+        }
+    }
+
+    // set_property_float
+    void set_property( t_CKINT model_type, const string & key_, t_CKFLOAT value )
+    {
+        // lower the key
+        string key = tolower( key_ );
+        // set
+        if( model_type == g_mt_mlp )
+        {
+            if( key == "learningrate" )
+                mlp_learning_rate = value;
+            else
+                EM_error3( "Wekinator: unknown property '%s' for MLP", key.c_str() );
+        }
+    }
+
+    // get_property_int
+    t_CKINT get_property_int( t_CKINT model_type, const string & key_ )
+    {
+        // lower the key
+        string key = tolower( key_ );
+        // get
+        if( model_type == g_mt_mlp )
+        {
+            if( key == "hiddenlayers" )
+                return mlp_hidden_layers;
+            else if( key == "nodesperhiddenlayer" )
+                return mlp_nodes_per_hidden_layer == 0 ? x == NULL ? 0 : x->size() : mlp_nodes_per_hidden_layer;
+            else if( key == "epochs" )
+                return mlp_epochs;
+            else
+                EM_error3( "Wekinator: unknown property '%s' for MLP", key.c_str() );
+        }
+        else if( model_type == g_mt_knn )
+        {
+            if( key == "k" )
+                return knn_k;
+            else
+                EM_error3( "Wekinator: unknown property '%s' for KNN", key.c_str() );
+        }
+        return 0;
+    }
+
+    // get_property_float
+    t_CKFLOAT get_property_float( t_CKINT model_type, const string & key_ )
+    {
+        // lower the key
+        string key = tolower( key_ );
+        // get
+        if( model_type == g_mt_mlp )
+        {
+            if( key == "learningrate" )
+                return mlp_learning_rate;
+            else
+                EM_error3( "Wekinator: unknown property '%s' for MLP", key.c_str() );
+        }
+        return 0;
     }
 };
 
@@ -4124,6 +4262,52 @@ CK_DLL_CGET( Wekinator_cget_num_obs )
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // get
     RETURN->v_int = wekinator->get_num_obs();
+}
+
+CK_DLL_MFUN( Wekinator_set_property_int )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT model_type = GET_NEXT_INT( ARGS );
+    Chuck_String * key = GET_NEXT_STRING( ARGS );
+    t_CKINT value = GET_NEXT_INT( ARGS );
+    // set_property
+    wekinator->set_property( model_type, key->str(), value );
+}
+
+CK_DLL_MFUN( Wekinator_set_property_float )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT model_type = GET_NEXT_INT( ARGS );
+    Chuck_String * key = GET_NEXT_STRING( ARGS );
+    t_CKFLOAT value = GET_NEXT_FLOAT( ARGS );
+    // set_property
+    wekinator->set_property( model_type, key->str(), value );
+}
+
+CK_DLL_MFUN( Wekinator_get_property_int )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT model_type = GET_NEXT_INT( ARGS );
+    Chuck_String * key = GET_NEXT_STRING( ARGS );
+    // get_property
+    RETURN->v_int = wekinator->get_property_int( model_type, key->str() );
+}
+
+CK_DLL_MFUN( Wekinator_get_property_float )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT model_type = GET_NEXT_INT( ARGS );
+    Chuck_String * key = GET_NEXT_STRING( ARGS );
+    // get_property
+    RETURN->v_float = wekinator->get_property_float( model_type, key->str() );
 }
 
 //-----------------------------------------------------------------------------

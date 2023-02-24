@@ -25,6 +25,7 @@ wek.clear();
 
 // print
 cherr <= "adding group 1"; cherr.flush();
+
 // input and output (could be set in another file)
 wek.input( [0.1, 0.1, 0.1] ); wek.output( [48.0, 60.0] );
 // collect data
@@ -69,6 +70,18 @@ float y[2];
 <<< "model type: ", "MLP" >>>;
 // set model type
 AI.MLP => wek.modelType;
+// set model properties
+<<< "Wekinator MLP hiddenLayers:", wek.getPropertyInt( AI.MLP, "hiddenLayers" ) >>>;
+<<< "Wekinator MLP nodesPerHiddenLayer:", wek.getPropertyInt( AI.MLP, "nodesPerHiddenLayer" ) >>>;
+<<< "Wekinator MLP learningRate", wek.getPropertyFloat( AI.MLP, "learningRate" ) >>>;
+<<< "Wekinator MLP epochs:", wek.getPropertyInt( AI.MLP, "epochs" ) >>>;
+<<< "changing Wekinator MLP properties...", "" >>>;
+// (optional) set this to your like
+wek.setProperty( AI.MLP, "hiddenLayers", 1 );
+wek.setProperty( AI.MLP, "nodesPerHiddenLayer", 5 );
+wek.setProperty( AI.MLP, "learningRate", 0.001 );
+wek.setProperty( AI.MLP, "epochs", 100 );
+
 // train using current training set
 wek.train();
 // predict output based on input
@@ -80,6 +93,9 @@ wek.predict(x, y);
 <<< "Model type: ", "KNN" >>>;
 // set model type
 AI.KNN => wek.modelType;
+// set model properties
+wek.setProperty( AI.KNN, "k", 3 );
+<<< wek.getPropertyInt( AI.KNN, "k" ) >>>;
 // train
 wek.train();
 // predict output based on input
