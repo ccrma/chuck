@@ -72,15 +72,17 @@ float y[2];
 AI.MLP => wek.modelType;
 // set model properties
 <<< "Wekinator MLP hiddenLayers:", wek.getPropertyInt( AI.MLP, "hiddenLayers" ) >>>;
+// 0 nodesPerHiddenLayer means "same as input layer"
 <<< "Wekinator MLP nodesPerHiddenLayer:", wek.getPropertyInt( AI.MLP, "nodesPerHiddenLayer" ) >>>;
 <<< "Wekinator MLP learningRate", wek.getPropertyFloat( AI.MLP, "learningRate" ) >>>;
 <<< "Wekinator MLP epochs:", wek.getPropertyInt( AI.MLP, "epochs" ) >>>;
-<<< "changing Wekinator MLP properties...", "" >>>;
-// (optional) set this to your like
-wek.setProperty( AI.MLP, "hiddenLayers", 1 );
-wek.setProperty( AI.MLP, "nodesPerHiddenLayer", 5 );
-wek.setProperty( AI.MLP, "learningRate", 0.001 );
-wek.setProperty( AI.MLP, "epochs", 100 );
+
+// (optional) set properties to your like
+// <<< "changing Wekinator MLP properties...", "" >>>;
+// wek.setProperty( AI.MLP, "hiddenLayers", 1 );
+// wek.setProperty( AI.MLP, "nodesPerHiddenLayer", 0 );
+// wek.setProperty( AI.MLP, "learningRate", 0.3 );
+// wek.setProperty( AI.MLP, "epochs", 500 );
 
 // train using current training set
 wek.train();
