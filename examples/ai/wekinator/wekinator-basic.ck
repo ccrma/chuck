@@ -95,9 +95,8 @@ wek.predict(x, y);
 <<< "Model type: ", "KNN" >>>;
 // set model type
 AI.KNN => wek.modelType;
-// set model properties
+// set model properties: set k=10
 wek.setProperty( AI.KNN, "k", 10 );
-<<< wek.getPropertyInt( AI.KNN, "k" ) >>>;
 // train
 wek.train();
 // predict output based on input
