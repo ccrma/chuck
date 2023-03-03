@@ -29,21 +29,19 @@
 // author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
 // date: Autumn 2002
 //-----------------------------------------------------------------------------
-#include <math.h>
-#include <limits.h>
-
+#include "chuck_instr.h"
 #include "chuck_type.h"
 #include "chuck_lang.h"
-#include "chuck_instr.h"
 #include "chuck_vm.h"
 #include "chuck_ugen.h"
 #include "chuck_dl.h"
 #include "chuck_errmsg.h"
 #include "chuck_globals.h" // added 1.4.1.0
-
 #include "util_math.h"
 #include "util_string.h"
 
+#include <math.h>
+#include <limits.h>
 #include <typeinfo>
 using namespace std;
 
@@ -3859,9 +3857,9 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
     // copy the object's virtual table
     object->vtable->funcs = type->info->obj_v_table.funcs;
     // set the type reference
-    // TODO: reference count
     object->type_ref = type;
-    object->type_ref->add_ref();
+    // reference count
+    SAFE_ADD_REF(object->type_ref);
     // get the size
     object->size = type->obj_size;
     // allocate memory
@@ -3985,6 +3983,8 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
             object = new Chuck_VM_Shred;
             ((Chuck_VM_Shred * )object)->vm_ref = vm; // REFACTOR-2017
         }
+        // 1.4.2.1 (ge) added -- here my feeble brain starts leaking out of my eyeballs
+        else if( isa( type, vm->env()->t_class ) ) object = new Chuck_Type( vm->env(), te_class, type->name, type, type->size );
         // TODO: is this ok?
         else object = new Chuck_Object;
     }
@@ -5203,8 +5203,8 @@ Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * t,
     m_length = length;
     // copy
     m_type_ref = t;
-    // TODO: do this? remember?
-    // m_type_ref->add_ref();
+    // add reference
+    m_type_ref->add_ref();
     // type
     m_param_str = new char[64];
     // obj | REFACTOR-2017: added env
@@ -5244,8 +5244,7 @@ Chuck_Instr_Array_Init::~Chuck_Instr_Array_Init()
     delete [] m_param_str;
     m_param_str = NULL;
     // release
-    //m_type_ref->release();
-    m_type_ref = NULL;
+    SAFE_RELEASE( m_type_ref );
 }
 
 
@@ -5403,26 +5402,35 @@ out_of_memory:
 
 //-----------------------------------------------------------------------------
 // name: Chuck_Instr_Array_Alloc()
-// desc: ...
+// desc: allocate a chuck array
 //-----------------------------------------------------------------------------
-Chuck_Instr_Array_Alloc::Chuck_Instr_Array_Alloc( Chuck_Env * env, t_CKUINT depth, Chuck_Type * t,
-                                                  t_CKUINT offset, t_CKBOOL is_ref )
+Chuck_Instr_Array_Alloc::Chuck_Instr_Array_Alloc( Chuck_Env * env, t_CKUINT depth, Chuck_Type * contentType,
+                                                  t_CKUINT offset, t_CKBOOL is_ref, Chuck_Type * arrayType )
 {
     // set
     m_depth = depth;
-    // copy
-    m_type_ref = t;
+
+    // 1.4.2.1 (ge) now maintains two Chuck_Types: one for the array content;
+    // one for the array itself (which has depth > 0); the latter is so that
+    // array object can have a reference to the array type itself
+
+    // copy array content type, e.g., int
+    m_type_ref_content = contentType;
     // remember
-    // m_type_ref->add_ref();
-    // type
+    SAFE_ADD_REF( m_type_ref_content );
+    // remember the type of the array itself, e.g., int[][]
+    m_type_ref_array = arrayType;
+    SAFE_ADD_REF( m_type_ref_array );
+
+    // parameter string
     m_param_str = new char[64];
     // obj | REFACTOR-2017: added env
-    m_is_obj = isobj( env, m_type_ref );
+    m_is_obj = isobj( env, m_type_ref_content );
     // offset for pre constructor
     m_stack_offset = offset;
     // is object ref
     m_is_ref = is_ref;
-    const char * str = m_type_ref->c_name();
+    const char * str = m_type_ref_content->c_name();
     t_CKUINT len = strlen( str );
     // copy
     if( len < 64 )
@@ -5443,12 +5451,11 @@ Chuck_Instr_Array_Alloc::Chuck_Instr_Array_Alloc( Chuck_Env * env, t_CKUINT dept
 //-----------------------------------------------------------------------------
 Chuck_Instr_Array_Alloc::~Chuck_Instr_Array_Alloc()
 {
-    // delete
-    delete [] m_param_str;
-    m_param_str = NULL;
-    // release
-    //m_type_ref->release();
-    m_type_ref = NULL;
+    // delete | 1.4.2.1 (ge) convert to macro
+    SAFE_DELETE_ARRAY( m_param_str );
+    // release | 1.4.2.1 (ge) added
+    SAFE_RELEASE(m_type_ref_content);
+    SAFE_RELEASE(m_type_ref_array);
 }
 
 
@@ -5461,11 +5468,13 @@ Chuck_Instr_Array_Alloc::~Chuck_Instr_Array_Alloc()
 Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
                                t_CKINT * capacity, const t_CKINT * top,
                                t_CKUINT kind, t_CKBOOL is_obj,
-                               t_CKUINT * objs, t_CKINT & index )
+                               t_CKUINT * objs, t_CKINT & index,
+                               Chuck_Type * type )
 {
     // not top level
     Chuck_Array4 * base = NULL;
     Chuck_Object * next = NULL;
+    Chuck_Type * typeNext = NULL;
     t_CKINT i = 0;
 
     // capacity
@@ -5492,8 +5501,10 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
                 }
             }
 
-            // initialize object
-            initialize_object( base, vm->env()->t_array );
+            // initialize object | 1.4.2.1 (ge) use array type instead of base t_array
+            // for the object->type_ref to contain more specific information
+            initialize_object( base, type );
+            // initialize_object( base, vm->env()->t_array );
             return base;
         }
         else if( kind == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -5501,8 +5512,10 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             Chuck_Array8 * base = new Chuck_Array8( *capacity );
             if( !base ) goto out_of_memory;
 
-            // initialize object
-            initialize_object( base, vm->env()->t_array );
+            // initialize object | 1.4.2.1 (ge) use array type instead of base t_array
+            // for the object->type_ref to contain more specific information
+            initialize_object( base, type );
+            // initialize_object( base, vm->env()->t_array );
             return base;
         }
         else if( kind == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -5510,8 +5523,10 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             Chuck_Array16 * base = new Chuck_Array16( *capacity );
             if( !base ) goto out_of_memory;
 
-            // initialize object
-            initialize_object( base, vm->env()->t_array );
+            // initialize object | 1.4.2.1 (ge) use array type instead of base t_array
+            // for the object->type_ref to contain more specific information
+            initialize_object( base, type );
+            // initialize_object( base, vm->env()->t_array );
             return base;
         }
         else if( kind == kindof_VEC3 ) // 1.3.5.3
@@ -5519,8 +5534,10 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             Chuck_Array24 * base = new Chuck_Array24( *capacity );
             if( !base ) goto out_of_memory;
 
-            // initialize object
-            initialize_object( base, vm->env()->t_array );
+            // initialize object | 1.4.2.1 (ge) use array type instead of base t_array
+            // for the object->type_ref to contain more specific information
+            initialize_object( base, type );
+            // initialize_object( base, vm->env()->t_array );
             return base;
         }
         else if( kind == kindof_VEC4 ) // 1.3.5.3
@@ -5528,8 +5545,10 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             Chuck_Array32 * base = new Chuck_Array32( *capacity );
             if( !base ) goto out_of_memory;
 
-            // initialize object
-            initialize_object( base, vm->env()->t_array );
+            // initialize object | 1.4.2.1 (ge) use array type instead of base t_array
+            // for the object->type_ref to contain more specific information
+            initialize_object( base, type );
+            // initialize_object( base, vm->env()->t_array );
             return base;
         }
 
@@ -5541,20 +5560,36 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
     base = new Chuck_Array4( TRUE, *capacity );
     if( !base ) goto out_of_memory;
 
+    // construct type for next array level | 1.4.2.1 (ge) added
+    typeNext = type->copy( vm->env() );
+    // check
+    if( typeNext->array_depth == 0 ) goto internal_error_array_depth;
+    // minus the depth
+    typeNext->array_depth--;
+
     // allocate the next level
     for( i = 0; i < *capacity; i++ )
     {
         // the next | REFACTOR-2017: added vm
-        next = do_alloc_array( vm, capacity+1, top, kind, is_obj, objs, index );
+        next = do_alloc_array( vm, capacity+1, top, kind, is_obj, objs, index, typeNext );
         // error if NULL
         if( !next ) goto error;
         // set that, with ref count
         base->set( i, (t_CKUINT)next );
     }
 
-    // initialize object
-    initialize_object( base, vm->env()->t_array );
+    // initialize object | 1.4.2.1 (ge) use array type instead of base t_array
+    // for the object->type_ref to contain more specific information
+    initialize_object( base, type );
+    // initialize_object( base, vm->env()->t_array );
+
     return base;
+
+internal_error_array_depth:
+    // we have a big problem
+    CK_FPRINTF_STDERR(
+        "[chuck](VM): internal error: multi-dimensional array depth mismatch while allocating arrays...\n" );
+    goto error;
 
 out_of_memory:
     // we have a problem
@@ -5647,9 +5682,8 @@ void Chuck_Instr_Array_Alloc::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     ref = (t_CKUINT)do_alloc_array( vm,
         (t_CKINT *)(reg_sp - m_depth),
         (t_CKINT *)(reg_sp - 1),
-        getkindof(vm->env(), m_type_ref), // 1.3.1.0: changed; was 'm_type_ref->size'
-        m_is_obj,
-        obj_array, index
+        getkindof(vm->env(), m_type_ref_content), // 1.3.1.0: changed; was 'm_type_ref->size'
+        m_is_obj, obj_array, index, m_type_ref_array // 1.4.2.1: added m_type_ref_array
     );
 
     // pop the indices - this protects the contents of the stack

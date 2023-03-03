@@ -34,6 +34,7 @@
 #define __UTIL_MATH_H__
 
 #include <math.h>
+#include "chuck_def.h" // 1.4.1.0 (ge) for t_CKINT
 
 #if defined (__cplusplus) || defined(_cplusplus)
 extern "C" {

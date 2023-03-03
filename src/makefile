@@ -105,10 +105,13 @@ ifneq ($(CHUCK_STRICT),)
 CFLAGS+= -Wall
 endif
 
-ifneq ($(findstring arm,$(shell uname -m)),)
+# ifneq ($(findstring arm,$(shell uname -m)),)
 # some sort of arm platform- enable aggressive optimizations
-CFLAGS+= -ffast-math
-endif
+# CFLAGS+= -ffast-math
+# endif
+# ge: commenting out; breaks Math.isinf() since it assumes all finite
+# https://stackoverflow.com/questions/7420665/what-does-gccs-ffast-math-actually-do
+# https://simonbyrne.github.io/notes/fastmath/
 
 
 ######################### PLATFORM-SPECIFIC THINGS #############################

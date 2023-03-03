@@ -31,6 +31,7 @@
 //-----------------------------------------------------------------------------
 #include "util_console.h"
 #include "chuck_errmsg.h"
+
 #include <stdio.h>
 #ifdef __USE_READLINE__
  #include <readline/readline.h>

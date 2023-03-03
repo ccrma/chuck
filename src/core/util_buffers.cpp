@@ -32,9 +32,9 @@
 // date: Spring 2004
 //       Summer 2005 - allow multiple readers
 //-----------------------------------------------------------------------------
-#include <stdlib.h>
 #include "util_buffers.h"
 #include "chuck_errmsg.h"
+#include <stdlib.h>
 
 
 #ifndef CALLBACK

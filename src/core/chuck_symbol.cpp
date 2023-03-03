@@ -30,11 +30,11 @@
 // adapted from: Andrew Appel (appel@cs.princeton.edu)
 // date: Autumn 2002
 //-----------------------------------------------------------------------------
+#include "chuck_symbol.h"
+#include "chuck_utils.h"
+#include "chuck_table.h"
 #include <stdio.h>
 #include <string.h>
-#include "chuck_utils.h"
-#include "chuck_symbol.h"
-#include "chuck_table.h"
 
 
 // S_Symbol

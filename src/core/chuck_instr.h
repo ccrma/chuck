@@ -3224,8 +3224,9 @@ protected:
 struct Chuck_Instr_Array_Alloc : public Chuck_Instr
 {
 public: // REFACTOR-2017: added env
-    Chuck_Instr_Array_Alloc( Chuck_Env * env, t_CKUINT depth, Chuck_Type * the_type,
-        t_CKUINT offset, t_CKBOOL ref );
+    Chuck_Instr_Array_Alloc( Chuck_Env * env, t_CKUINT depth,
+        Chuck_Type * contentType, t_CKUINT offset, t_CKBOOL ref,
+        Chuck_Type * arrayType );
     virtual ~Chuck_Instr_Array_Alloc();
 
 public:
@@ -3234,7 +3235,8 @@ public:
 
 protected:
     t_CKUINT m_depth;
-    Chuck_Type * m_type_ref;
+    Chuck_Type * m_type_ref_content;
+    Chuck_Type * m_type_ref_array; // 1.4.2.1 (ge) added
     t_CKBOOL m_is_obj;
     char * m_param_str;
     t_CKUINT m_stack_offset;

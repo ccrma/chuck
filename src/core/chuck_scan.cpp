@@ -29,9 +29,10 @@
 // author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
 // date: Summer 2005 - original
 //-----------------------------------------------------------------------------
-#include "chuck_type.h"
 #include "chuck_scan.h"
 #include "chuck_errmsg.h"
+#include "chuck_instr.h"
+#include "chuck_type.h"
 #include "chuck_vm.h"
 #include "util_string.h"
 
@@ -311,7 +312,6 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
         body = body->next;
     }
 
-
     // pop the class
     env->class_def = env->class_stack.back();
     env->class_stack.pop_back();
@@ -353,6 +353,9 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
         // set curr as home
         class_def->home = env->curr;
     }
+
+    // initialize the Type info object | 1.4.2.1 (ge) added
+    initialize_object( the_class, env->t_class );
 
 done:
 
@@ -2567,7 +2570,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     value->owner = env->curr;
     value->owner_class = env->class_def;
     value->is_member = func->is_member;
-    // is global context
+       // is global context
     value->is_context_global = env->class_def == NULL;
     // remember the func
     value->func_ref = func; func->add_ref(); // add reference TODO: break cycle?

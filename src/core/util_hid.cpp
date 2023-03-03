@@ -29,16 +29,13 @@
 // author: Spencer Salazar (spencer@ccrma.stanford.edu)
 // date: summer 2006
 //-----------------------------------------------------------------------------
-
-#include "chuck_def.h"
-#include "chuck_errmsg.h"
 #include "util_hid.h"
+#include "chuck_errmsg.h"
 #include "hidio_sdl.h"
 
 #include <limits.h>
 #include <vector>
 #include <map>
-
 using namespace std;
 
 /* device types */

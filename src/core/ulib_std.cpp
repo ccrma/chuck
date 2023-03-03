@@ -30,9 +30,6 @@
 // date: Spring 2004
 //-----------------------------------------------------------------------------
 #include "ulib_std.h"
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
 #include "util_buffers.h"
 #ifndef __DISABLE_PROMPTER__
 #include "util_console.h"
@@ -46,6 +43,10 @@
 #include "chuck_type.h"
 #include "chuck_compile.h"
 #include "chuck_instr.h"
+
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
 
 #if defined(__PLATFORM_WIN32__)
 

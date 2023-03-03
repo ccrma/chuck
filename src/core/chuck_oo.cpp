@@ -180,6 +180,18 @@ void Chuck_VM_Object::lock()
 
 
 //-----------------------------------------------------------------------------
+// name: unlock()
+// desc: unlock to allow deleting
+//-----------------------------------------------------------------------------
+void Chuck_VM_Object::unlock()
+{
+    m_locked = FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: lock_all()
 // desc: disallow deletion of locked objects
 //-----------------------------------------------------------------------------
@@ -331,7 +343,7 @@ Chuck_Object::~Chuck_Object()
     while( type != NULL )
     {
         // SPENCER TODO: HACK! is there a better way to call the dtor?
-        if( type->has_destructor )
+        if( type->info && type->has_destructor ) // 1.4.2.1 (ge) added type->info check
         {
             // sanity check
             assert( type->info->dtor && type->info->dtor->native_func );
@@ -344,9 +356,12 @@ Chuck_Object::~Chuck_Object()
     }
 
     // free
-    if( vtable ) { delete vtable; vtable = NULL; }
-    if( type_ref ) { type_ref->release(); type_ref = NULL; }
-    if( data ) { delete [] data; size = 0; data = NULL; }
+    SAFE_DELETE( vtable );
+    SAFE_RELEASE( type_ref );
+    SAFE_DELETE_ARRAY( data );
+    // if( vtable ) { delete vtable; vtable = NULL; }
+    // if( type_ref ) { type_ref->release(); type_ref = NULL; }
+    // if( data ) { delete [] data; size = 0; data = NULL; }
 }
 
 

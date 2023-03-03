@@ -9,7 +9,7 @@
 //       type of underlying subclass.
 //
 //       philosophically, polymorphism in programming amounts to
-//       a structured way to "break" the contract established between
+//       a structured way to "break" the established contract between
 //       a type system and the programmer, allowing objects of
 //       apparently the same type to exhibit different behaviors.
 //
@@ -65,7 +65,7 @@ while( true )
     // advance time
     300::ms => now;
 
-    // increment and wrap
+    // cycle which / print divider every cycel
     which++; if( which >= motifs.size() )
     { 0 => which; cherr <= "--" <= IO.newline(); }    
 }
