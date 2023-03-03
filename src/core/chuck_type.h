@@ -85,6 +85,22 @@ typedef enum {
 
 
 //-----------------------------------------------------------------------------
+// name: enum te_Origin | 1.4.2.1 (ge) added
+// desc: where something (e.g., a Type) originates
+//-----------------------------------------------------------------------------
+typedef enum {
+    te_originUnknown = 0,
+    te_originBuiltin, // in core
+    te_originChugin, // in imported chugin
+    te_originImport, // library CK code
+    te_originUserDefined, // in user chuck code
+    te_originGenerated // generated (e.g., array types like int[][][][])
+} te_Origin;
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Scope
 // desc: scoping structure
 //-----------------------------------------------------------------------------
@@ -199,8 +215,15 @@ public:
         return (T)val;
     }
 
+    // test if a name has been "mangled", e.g., "toString@0@Object"
+    static t_CKBOOL is_mangled( const std::string & name )
+    {
+        // check for @ in the name, which would not be possible for names in language
+        return ( name.find("@") != std::string::npos );
+    }
+
     // get list of top level
-    void get_toplevel( std::vector<Chuck_VM_Object *> & out )
+    void get_toplevel( std::vector<Chuck_VM_Object *> & out, t_CKBOOL includeMangled = TRUE )
     {
         assert( scope.size() != 0 );
         std::map<S_Symbol, Chuck_VM_Object *>::iterator iter;
@@ -213,13 +236,16 @@ public:
         // go through map
         for( iter = m->begin(); iter != m->end(); iter++ )
         {
+            // check mangled name
+            if( !includeMangled && is_mangled( std::string(S_name((*iter).first))) )
+                continue;
             // add
             out.push_back( (*iter).second );
         }
     }
 
     // get list of top level
-    void get_level( int level, std::vector<Chuck_VM_Object *> & out )
+    void get_level( int level, std::vector<Chuck_VM_Object *> & out, t_CKBOOL includeMangled = TRUE )
     {
         assert( scope.size() >= level );
         std::map<S_Symbol, Chuck_VM_Object *>::iterator iter;
@@ -232,11 +258,14 @@ public:
         // go through map
         for( iter = m->begin(); iter != m->end(); iter++ )
         {
+            // check mangled name
+            if( !includeMangled && is_mangled( std::string(S_name((*iter).first))) )
+                continue;
+
             // add
             out.push_back( (*iter).second );
         }
     }
-
 
 protected:
     std::vector<std::map<S_Symbol, Chuck_VM_Object *> *> scope;
@@ -324,7 +353,7 @@ struct Chuck_Namespace : public Chuck_VM_Object
     // get top level values
     void get_values( std::vector<Chuck_Value *> & out );
     // get top level functions
-    void get_funcs( std::vector<Chuck_Func *> & out );
+    void get_funcs( std::vector<Chuck_Func *> & out, t_CKBOOL includeManged = TRUE );
 };
 
 
@@ -398,10 +427,15 @@ public:
     // constructor
     Chuck_Env();
 
+public:
+    // initialize
+    t_CKBOOL init();
+
 // REFACTOR-2017: carrier and accessors
 public:
     void set_carrier( Chuck_Carrier * carrier ) { m_carrier = carrier; }
-    Chuck_VM * vm() { return m_carrier->vm; }
+    Chuck_VM * vm() { return m_carrier ? m_carrier->vm : NULL; }
+    Chuck_Compiler * compiler() { return m_carrier ? m_carrier->compiler : NULL; }
 
 protected:
     Chuck_Carrier * m_carrier;
@@ -533,12 +567,10 @@ public:
     Chuck_Type * t_uanablob;
     Chuck_Type * t_shred;
     Chuck_Type * t_io;
-// #ifndef __DISABLE_FILEIO__
     Chuck_Type * t_fileio;
-// #endif
     Chuck_Type * t_chout;
     Chuck_Type * t_cherr;
-    Chuck_Type * t_thread;
+    // Chuck_Type * t_thread;
     Chuck_Type * t_class;
     Chuck_Type * t_dac;
     Chuck_Type * t_adc;
@@ -583,8 +615,9 @@ struct Chuck_UGen_Info : public Chuck_VM_Object
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Type
 // desc: class containing information about a type
-//-----------------------------------------------------------------------------_id
-struct Chuck_Type : public Chuck_VM_Object
+// note: 1.4.2.1 (ge) Chuck_VM_Object -> Chuck_Object
+//-----------------------------------------------------------------------------
+struct Chuck_Type : public Chuck_Object
 {
     // type id
     te_Type xid;
@@ -620,6 +653,8 @@ struct Chuck_Type : public Chuck_VM_Object
     t_CKBOOL has_destructor;
     // custom allocator
     f_alloc allocator;
+    // origin hint
+    te_Origin originHint;
 
     // documentation
     std::string doc;
@@ -899,8 +934,10 @@ t_CKBOOL type_engine_check_primitive( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL type_engine_check_const( Chuck_Env * env, a_Exp e, int pos ); // TODO
 t_CKBOOL type_engine_compat_func( a_Func_Def lhs, a_Func_Def rhs, int pos, std::string & err, t_CKBOOL print = TRUE );
 t_CKBOOL type_engine_get_deprecate( Chuck_Env * env, const std::string & from, std::string & to );
+t_CKBOOL type_engine_is_base_static( Chuck_Env * env, Chuck_Type * baseType ); // 1.4.2.1 (ge) added
 Chuck_Type  * type_engine_find_common_anc( Chuck_Type * lhs, Chuck_Type * rhs );
 Chuck_Type  * type_engine_find_type( Chuck_Env * env, a_Id_List path );
+Chuck_Type  * type_engine_find_type( Chuck_Env * env, const std::string & name ); // 1.4.2.1 (ge) added
 Chuck_Value * type_engine_find_value( Chuck_Type * type, const std::string & xid );
 Chuck_Value * type_engine_find_value( Chuck_Type * type, S_Symbol xid );
 Chuck_Value * type_engine_find_value( Chuck_Env * env, const std::string & xid, t_CKBOOL climb, int linepos = 0 );

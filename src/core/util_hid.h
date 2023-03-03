@@ -32,6 +32,8 @@
 #ifndef __UTIL_HID_H__
 #define __UTIL_HID_H__
 
+#include "chuck_def.h"
+
 
 
 

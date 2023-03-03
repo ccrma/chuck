@@ -32,7 +32,6 @@
 // date: Spring 2004
 //-----------------------------------------------------------------------------
 #include "util_math.h"
-#include "chuck_def.h" // 1.4.1.0 (ge) for t_CKINT
 #include <math.h>
 
 

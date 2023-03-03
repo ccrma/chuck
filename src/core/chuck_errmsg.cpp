@@ -31,16 +31,17 @@
 // based on code by: Andrew Appel (appel@cs.princeton.edu)
 // date: Summer 2002
 //-----------------------------------------------------------------------------
+#include "chuck_errmsg.h"
+#include "chuck_utils.h"
+#ifndef __DISABLE_THREADS__
+#include "util_thread.h"
+#endif
+
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <sstream>
 #include <iostream>
-#include "chuck_utils.h"
-#include "chuck_errmsg.h"
-#ifndef __DISABLE_THREADS__
-#include "util_thread.h"
-#endif
 
 // global
 t_CKINT EM_tokPos = 0;

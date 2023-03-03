@@ -29,11 +29,11 @@
 // author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
 // date: Spring 2004
 //-----------------------------------------------------------------------------
+#include "ulib_math.h"
+#include "ulib_std.h"
 #include "chuck_type.h"
 #include "chuck_compile.h"
-#include "ulib_math.h"
 #include "util_math.h"
-#include "ulib_std.h"
 
 #include <limits.h>
 #include <float.h>

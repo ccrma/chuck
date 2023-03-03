@@ -37,10 +37,10 @@
 // modified: Ge Wang (gewang@cs.princeton.edu)
 // date: Autumn 2002
 //-----------------------------------------------------------------------------
-#include <stdio.h>
-#include <string.h>
 #include "chuck_table.h"
 #include "chuck_utils.h"
+#include <stdio.h>
+#include <string.h>
 
 #define TABSIZE 65437
 

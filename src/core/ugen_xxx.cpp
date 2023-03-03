@@ -34,6 +34,14 @@
 // date: Spring 2004
 //       Summer 2005 - updated
 //-----------------------------------------------------------------------------
+#include "ugen_xxx.h"
+#include "chuck_type.h"
+#include "chuck_ugen.h"
+#include "chuck_vm.h"
+#include "chuck_compile.h"
+#include "chuck_instr.h"
+#include "util_math.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,14 +60,6 @@
 #ifdef __ANDROID__
 #include "util_platforms.h"
 #endif
-
-#include "ugen_xxx.h"
-#include "chuck_type.h"
-#include "chuck_ugen.h"
-#include "chuck_vm.h"
-#include "chuck_compile.h"
-#include "chuck_instr.h"
-#include "util_math.h"
 
 #include <fstream>
 using namespace std;

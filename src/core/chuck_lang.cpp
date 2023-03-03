@@ -56,7 +56,7 @@ static t_CKUINT Object_offset_string = 0;
 
 //-----------------------------------------------------------------------------
 // name: init_class_object()
-// desc: ...
+// desc: initialize the base Object class
 //-----------------------------------------------------------------------------
 t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
 {
@@ -82,7 +82,12 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
 
     // add help()
     func = make_new_sfun( "void", "help", object_help );
-    func->doc = "generate and output helpful information about a class or object.";
+    func->doc = "output helpful information about a class or an instance thereof.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add getType() // 1.4.2.1
+    func = make_new_sfun( "Type", "typeOf", object_typeInfo );
+    func->doc = "get the type of this object (or class).";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
 //    // add dump()
@@ -1005,6 +1010,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_add_ex( env, "array/array_storage.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_sub_assign.ck" ) ) goto error;
 
+    // end import
     type_engine_import_class_end( env );
 
     return TRUE;
@@ -1020,11 +1026,242 @@ error:
 
 
 
+//-----------------------------------------------------------------------------
+// name: init_class_type()
+// desc: initialize the Type class | 1.4.2.1 (ge) added
+//-----------------------------------------------------------------------------
+t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type )
+{
+    Chuck_DL_Func * func = NULL;
+
+    // log
+    EM_log( CK_LOG_SEVERE, "class 'Type'" );
+    const char * doc = "a representation of a ChucK type.";
+
+    // init as base class
+    if( !type_engine_import_class_begin( env, type, env->global(), type_ctor, type_dtor, doc ) )
+        return FALSE;
+
+    // add equals()
+    func = make_new_mfun( "int", "equals", type_equals );
+    func->add_arg( "Type", "another" );
+    func->doc = "return whether this Type is same as 'another'.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add isa()
+    func = make_new_mfun( "int", "isa", type_isa );
+    func->add_arg( "Type", "another" );
+    func->doc = "return whether this Type is a kind of 'another'.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add isa()
+    func = make_new_mfun( "int", "isa", type_isa_str );
+    func->add_arg( "string", "another" );
+    func->doc = "return whether this Type is a kind of 'another'.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add name()
+    func = make_new_mfun( "string", "name", type_name );
+    func->doc = "return the name of this Type.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add parent()
+    func = make_new_mfun( "Type", "parent", type_parent );
+    func->doc = "return this Type's parent Type; returns null if this Type is 'Object'.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add kids()
+    func = make_new_mfun( "void", "children", type_children );
+    func->add_arg( "Type[]", "kids" );
+    func->doc = "retrieve this Type's children Types in the array 'kids'.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add isPrimitive()
+    func = make_new_mfun( "int", "isPrimitive", type_isPrimitive );
+    func->doc = "return whether this is a primitive Type (e.g., 'int' and 'dur' are primitives types; 'Object' and its children Types are not).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add isArray()
+    func = make_new_mfun( "int", "isArray", type_isArray );
+    func->doc = "return whether this Type is some kind of an array.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add arrayDims()
+    func = make_new_mfun( "int", "arrayDepth", type_arrayDims );
+    func->doc = "return the number of array dimensions associated with this Type (e.g., 'int[][]' has 2; 'int' has 0).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add origin()
+    func = make_new_mfun( "string", "origin", type_origin );
+    func->doc = "return a string decribing where this Type was defined (e.g., \"builtin\", \"chugin\", \"user\").";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add find()
+    func = make_new_sfun( "Type", "find", type_findString );
+    func->add_arg( "string", "typeName" );
+    func->doc = "find and return the Type associated with 'typeName'; returns null if no Types currently in the VM with that name.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add typeOf()
+    func = make_new_sfun( "Type", "of", type_typeOf_obj );
+    func->add_arg( "Object", "obj" );
+    func->doc = "return the Type of 'obj'";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add typeOf()
+    func = make_new_sfun( "Type", "of", type_typeOf_int );
+    func->add_arg( "int", "val" );
+    func->doc = "return the Type associated with 'int'.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add typeOf()
+    func = make_new_sfun( "Type", "of", type_typeOf_float );
+    func->add_arg( "float", "val" );
+    func->doc = "return the Type associated with 'float'.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add typeOf()
+    func = make_new_sfun( "Type", "of", type_typeOf_time );
+    func->add_arg( "time", "val" );
+    func->doc = "return the Type associated with 'time'.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add typeOf()
+    func = make_new_sfun( "Type", "of", type_typeOf_dur );
+    func->add_arg( "dur", "val" );
+    func->doc = "return the Type associated with 'dur'.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add typeOf()
+    func = make_new_sfun( "Type", "of", type_typeOf_complex );
+    func->add_arg( "complex", "val" );
+    func->doc = "return the Type associated with 'complex'.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add typeOf()
+    func = make_new_sfun( "Type", "of", type_typeOf_polar );
+    func->add_arg( "polar", "val" );
+    func->doc = "return the Type associated with 'polar'.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add typeOf()
+    func = make_new_sfun( "Type", "of", type_typeOf_vec3 );
+    func->add_arg( "vec3", "val" );
+    func->doc = "return the Type associated with 'vec3'.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add typeOf()
+    func = make_new_sfun( "Type", "of", type_typeOf_vec4 );
+    func->add_arg( "vec4", "val" );
+    func->doc = "return the Type associated with 'vec4'.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add getTypes()
+    func = make_new_sfun( "void", "getTypes", type_getTypes );
+    func->add_arg( "Type[]", "types" );
+    func->add_arg( "int", "includeObjects" );
+    func->add_arg( "int", "includePrimitives" );
+    func->add_arg( "int", "includeSpecial" );
+    func->add_arg( "int", "includeBuiltin" );
+    func->add_arg( "int", "includeChugins" );
+    func->add_arg( "int", "includeImports" );
+    func->add_arg( "int", "includeUserDefined" );
+    func->doc = "retrieves in the array 'types' all top-level Types currently in the ChucK runtime type system; 'includeObjects'--include all Objects? 'includePrimitives'--include primitive types suchs as 'int' and 'dur'? 'includeSpecial'--include special types such as '@array' and '@function'? The results are further filtered by 'includeBuiltin'--include builtin types? 'includeChugins'--include types imported from chugins? 'includeImports'--include types imported from CK files in library path? 'includeUserDefined'--include types defined in ChucK code? ";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add getTypesAll()
+    func = make_new_sfun( "void", "getTypes", type_getTypesAll );
+    func->add_arg( "Type[]", "types" );
+    func->doc = "retrieves in the array 'types' all top-level Types currently in the ChucK VM's type system; 'includeObjects' indicated whether to include all Objects; 'includePrimitives' indicates whether to include primitive types suchs as 'int' and 'dur'.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    return TRUE;
+
+error:
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    return FALSE;
+}
+
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: init_primitive_types() | 1.4.2.1 (ge)
+// desc: initialize all primitive Type types
+//-----------------------------------------------------------------------------
+t_CKBOOL init_primitive_types( Chuck_Env * env )
+{
+    //-----------------------------------------------------------------------------
+    // init void
+    //-----------------------------------------------------------------------------
+    if( !type_engine_import_class_begin( env, env->t_void, env->global(), NULL, NULL,
+        "the type of nothingness, or the lack of a type.") ) return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+
+    //-----------------------------------------------------------------------------
+    // init int
+    //-----------------------------------------------------------------------------
+    if( !type_engine_import_class_begin( env, env->t_int, env->global(), NULL, NULL,
+        "the primitive integer type.") ) return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+
+    //-----------------------------------------------------------------------------
+    // init float
+    //-----------------------------------------------------------------------------
+    if( !type_engine_import_class_begin( env, env->t_float, env->global(), NULL, NULL,
+        "the primitive floating point type.") ) return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+
+    //-----------------------------------------------------------------------------
+    // init time
+    //-----------------------------------------------------------------------------
+    if( !type_engine_import_class_begin( env, env->t_time, env->global(), NULL, NULL,
+        "the primitive type of a point in time.") ) return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+
+    //-----------------------------------------------------------------------------
+    // init dur
+    //-----------------------------------------------------------------------------
+    if( !type_engine_import_class_begin( env, env->t_dur, env->global(), NULL, NULL,
+        "the primitive type of a length of time.") ) return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+
+    //-----------------------------------------------------------------------------
+    // init complex
+    //-----------------------------------------------------------------------------
+    if( !type_engine_import_class_begin( env, env->t_complex, env->global(), NULL, NULL,
+        "the primitive type of a complex pair #(re,im).") ) return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+
+    //-----------------------------------------------------------------------------
+    // init polar
+    //-----------------------------------------------------------------------------
+    if( !type_engine_import_class_begin( env, env->t_polar, env->global(), NULL, NULL,
+        "the primitive type of a polar value %(mag,phase)") ) return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+
+    return TRUE;
+}
+
 // Object ctor
 CK_DLL_CTOR( object_ctor )
 {
     // log
-    // EM_log( CK_LOG_FINEST, "Object constructor..." );
+    EM_log( CK_LOG_ALL, "Object constructor..." );
 
     // initialize
     OBJ_MEMBER_UINT(SELF, Object_offset_string) = 0;
@@ -1035,7 +1272,7 @@ CK_DLL_CTOR( object_ctor )
 CK_DLL_DTOR( object_dtor )
 {
     // log
-    // EM_log( CK_LOG_FINEST, "Object destructor..." );
+    EM_log( CK_LOG_ALL, "Object destructor..." );
 
     // get the string
     Chuck_String * str = (Chuck_String *)OBJ_MEMBER_UINT(SELF, Object_offset_string);
@@ -1103,7 +1340,23 @@ CK_DLL_SFUN( object_help )
     // me->apropos();
 }
 
+// get the type info
+CK_DLL_SFUN( object_typeInfo )
+{
+    // default is to return the type...
+    RETURN->v_object = TYPE;
 
+    // if actual type is indicated...
+    if( TYPE->actual_type )
+    {
+        // what we return depends on if TYPE is an array type or not
+        if( TYPE->array_depth == 0 )
+        {
+            // for cases like X.typeInfo() where X is a class
+            RETURN->v_object = TYPE->actual_type;
+        }
+    }
+}
 
 
 // ctor
@@ -1305,8 +1558,16 @@ CK_DLL_CTOR( uana_ctor )
 {
     // make an actual blob
     Chuck_Object * blob = instantiate_and_initialize_object( SHRED->vm_ref->env()->t_uanablob, SHRED );
-    // TODO: check out of memory
-    assert( blob != NULL );
+    // check
+    if( blob == NULL )
+    {
+        // error message
+        EM_error3( "UAna constructor unable to instantiate UAnaBlob; bailing out!" );
+        // everything has gone to poop
+        assert( FALSE );
+        // not even gonna get here
+        return;
+    }
     // make a blob proxy
     Chuck_UAnaBlobProxy * proxy = new Chuck_UAnaBlobProxy( blob );
     // remember it
@@ -1317,7 +1578,12 @@ CK_DLL_CTOR( uana_ctor )
 
 CK_DLL_DTOR( uana_dtor )
 {
-    // TODO: GC should release the blob!
+    // get the blob
+    Chuck_UAnaBlobProxy * blob = (Chuck_UAnaBlobProxy *)OBJ_MEMBER_INT(SELF, uana_offset_blob);
+    // delete the blob proxy | 1.4.2.1 (ge) added
+    SAFE_DELETE( blob ); // this should also clean up actual blob reference
+    // zero out
+    OBJ_MEMBER_INT(SELF, uana_offset_blob) = 0;
 }
 
 CK_DLL_MFUN( uana_upchuck )
@@ -1487,16 +1753,16 @@ CK_DLL_CTOR( uanablob_ctor )
 {
     // when
     OBJ_MEMBER_TIME(SELF, uanablob_offset_when) = 0;
+
     // fvals
     Chuck_Array8 * arr8 = new Chuck_Array8( 8 );
     initialize_object( arr8, SHRED->vm_ref->env()->t_array );
-    // TODO: check out of memory
     arr8->add_ref();
     OBJ_MEMBER_INT(SELF, uanablob_offset_fvals) = (t_CKINT)arr8;
+
     // cvals
     Chuck_Array16 * arr16 = new Chuck_Array16( 8 );
     initialize_object( arr16, SHRED->vm_ref->env()->t_array );
-    // TODO: check out of memory
     arr16->add_ref();
     OBJ_MEMBER_INT(SELF, uanablob_offset_cvals) = (t_CKINT)arr16;
 }
@@ -2514,4 +2780,292 @@ CK_DLL_MFUN( array_get_keys )
         key->set(array_keys[i]);
         returned_keys->push_back((t_CKUINT) key);
     }
+}
+
+
+
+//-----------------------------------------------------------------------------
+// Type implementation
+// 1.4.2.1 (ge) added
+//-----------------------------------------------------------------------------
+static void typeGetTypes(
+    Chuck_VM * vm,
+    Chuck_Array4 * ret,
+    t_CKBOOL isObj,
+    t_CKBOOL isPrim,
+    t_CKBOOL isSpecial,
+    t_CKBOOL isBuiltin,
+    t_CKBOOL isChug,
+    t_CKBOOL isImport,
+    t_CKBOOL isUser )
+{
+    // results
+    vector<Chuck_Type *> types;
+    // get types
+    vm->env()->nspc_top()->get_types( types );
+    // clear
+    ret->m_vector.clear();
+    // iterate
+    for( t_CKINT i = 0; i < types.size(); i++ )
+    {
+        // check special
+        t_CKBOOL special = (types[i]->name.length()>0 && types[i]->name[0] == '@');
+        // if not match
+        if( special != isSpecial ) continue;
+        // check origin
+        te_Origin origin = types[i]->originHint;
+
+        // filter level 1
+        if( (isObj && isobj(vm->env(), types[i])) ||
+            (isPrim && isprim(vm->env(), types[i])) )
+        {
+            // filter level 2
+            if( (isBuiltin && (origin == te_originBuiltin)) ||
+                (isChug && (origin == te_originChugin)) ||
+                (isImport && (origin == te_originImport)) ||
+                (isUser && (origin == te_originUserDefined)) )
+            {
+                // copy
+                ret->m_vector.push_back( (t_CKINT)types[i] );
+                // add reference
+                SAFE_ADD_REF( types[i] );
+            }
+        }
+    }
+}
+
+CK_DLL_CTOR( type_ctor )
+{
+}
+
+CK_DLL_DTOR( type_dtor )
+{
+}
+
+CK_DLL_MFUN( type_equals )
+{
+    // get self as type
+    Chuck_Type * lhs = (Chuck_Type *)SELF;
+    // get arg
+    Chuck_Type * rhs = (Chuck_Type *)GET_NEXT_OBJECT(ARGS);
+    // check
+    if( rhs == NULL )
+    {
+        RETURN->v_int = FALSE;
+        return;
+    }
+    // query
+    RETURN->v_int = equals( lhs, rhs );
+}
+
+CK_DLL_MFUN( type_isa )
+{
+    // get self as type
+    Chuck_Type * lhs = (Chuck_Type *)SELF;
+    // get arg
+    Chuck_Type * rhs = (Chuck_Type *)GET_NEXT_OBJECT(ARGS);
+    // check
+    if( rhs == NULL )
+    {
+        RETURN->v_int = FALSE;
+        return;
+    }
+    // query
+    RETURN->v_int = isa( lhs, rhs );
+}
+
+CK_DLL_MFUN( type_isa_str )
+{
+    // get self as type
+    Chuck_Type * lhs = (Chuck_Type *)SELF;
+    // get arg
+    Chuck_String * another = GET_NEXT_STRING(ARGS);
+    // default
+    RETURN->v_int = FALSE;
+
+    // check
+    if( another == NULL ) return;
+    // get the type
+    Chuck_Type * rhs = type_engine_find_type( VM->env(), another->str() );
+    // check
+    if( rhs == NULL ) return;
+    // check
+    RETURN->v_int = isa( lhs, rhs );
+}
+
+CK_DLL_MFUN( type_name )
+{
+    // get self as type
+    Chuck_Type * type = (Chuck_Type *)SELF;
+    // new it
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    // set
+    str->set( type->name );
+    // return
+    RETURN->v_object = str;
+}
+
+CK_DLL_MFUN( type_parent )
+{
+    // get self as type
+    Chuck_Type * type = (Chuck_Type *)SELF;
+    // get parent type
+    RETURN->v_object = type->parent;
+}
+
+CK_DLL_MFUN( type_children )
+{
+    // get me
+    Chuck_Type * me = (Chuck_Type *)SELF;
+    // name
+    string name = me->name;
+    // get argument
+    Chuck_Array4 * ret = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
+    // check
+    if( ret == NULL ) return;
+    // results
+    vector<Chuck_Type *> types;
+    // get types
+    VM->env()->nspc_top()->get_types( types );
+    // clear
+    ret->m_vector.clear();
+    // iterate
+    for( t_CKINT i = 0; i < types.size(); i++ )
+    {
+        // skip me
+        if( equals( types[i], me ) ) continue;
+        // skip if not a subclass of me
+        if( !isa( types[i], me ) ) continue;
+        // copy
+        ret->m_vector.push_back( (t_CKINT)types[i] );
+        // add reference
+        SAFE_ADD_REF( types[i] );
+    }
+}
+
+CK_DLL_MFUN( type_origin )
+{
+    Chuck_Type * type = (Chuck_Type *)SELF;
+    RETURN->v_int = type->originHint;
+}
+
+CK_DLL_MFUN( type_isPrimitive )
+{
+    Chuck_Type * type = (Chuck_Type *)SELF;
+    RETURN->v_int = isprim( VM->env(), type );
+}
+
+CK_DLL_MFUN( type_isObject )
+{
+    Chuck_Type * type = (Chuck_Type *)SELF;
+    RETURN->v_int = isobj( VM->env(), type );
+}
+
+CK_DLL_MFUN( type_isArray )
+{
+    Chuck_Type * type = (Chuck_Type *)SELF;
+    RETURN->v_int = type->array_depth > 0;
+}
+
+CK_DLL_MFUN( type_arrayDims )
+{
+    Chuck_Type * type = (Chuck_Type *)SELF;
+    RETURN->v_int = type->array_depth;
+}
+
+CK_DLL_SFUN( type_findString )
+{
+    // get arg
+    Chuck_String * another = GET_NEXT_STRING(ARGS);
+    // check
+    if( another == NULL )
+    {
+        RETURN->v_object = NULL;
+        return;
+    }
+    // get the type
+    RETURN->v_object = type_engine_find_type( VM->env(), another->str() );
+}
+
+CK_DLL_SFUN( type_typeOf_obj )
+{
+    // get arg
+    Chuck_Object * obj = GET_NEXT_OBJECT(ARGS);
+    // check
+    if( obj == NULL )
+    {
+        RETURN->v_object = NULL;
+        return;
+    }
+    // get type
+    RETURN->v_object = obj->type_ref;
+}
+
+CK_DLL_SFUN( type_typeOf_int )
+{
+    RETURN->v_object = VM->env()->t_int;
+}
+
+CK_DLL_SFUN( type_typeOf_float )
+{
+    RETURN->v_object = VM->env()->t_float;
+}
+
+CK_DLL_SFUN( type_typeOf_time )
+{
+    RETURN->v_object = VM->env()->t_time;
+}
+
+CK_DLL_SFUN( type_typeOf_dur )
+{
+    RETURN->v_object = VM->env()->t_dur;
+}
+
+CK_DLL_SFUN( type_typeOf_complex )
+{
+    RETURN->v_object = VM->env()->t_complex;
+}
+
+CK_DLL_SFUN( type_typeOf_polar )
+{
+    RETURN->v_object = VM->env()->t_polar;
+}
+
+CK_DLL_SFUN( type_typeOf_vec3 )
+{
+    RETURN->v_object = VM->env()->t_vec3;
+}
+
+CK_DLL_SFUN( type_typeOf_vec4 )
+{
+    RETURN->v_object = VM->env()->t_vec4;
+}
+
+CK_DLL_SFUN( type_getTypes )
+{
+    // get argument
+    Chuck_Array4 * ret = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
+    // check
+    if( ret == NULL ) return;
+    // get args
+    t_CKBOOL objs = GET_NEXT_INT(ARGS);
+    t_CKBOOL prim = GET_NEXT_INT(ARGS);
+    t_CKBOOL special = GET_NEXT_INT(ARGS);
+    t_CKBOOL builtin = GET_NEXT_INT(ARGS);
+    t_CKBOOL chugins = GET_NEXT_INT(ARGS);
+    t_CKBOOL imports = GET_NEXT_INT(ARGS);
+    t_CKBOOL user = GET_NEXT_INT(ARGS);
+
+    // get types with the flags
+    typeGetTypes( VM, ret, objs, prim, special, builtin, chugins, imports, user );
+}
+
+CK_DLL_SFUN( type_getTypesAll )
+{
+    // get argument
+    Chuck_Array4 * ret = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
+    // check
+    if( ret == NULL ) return;
+    // get all types
+    typeGetTypes( VM, ret, true, true, true, true, true, true, true );
 }

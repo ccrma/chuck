@@ -67,7 +67,6 @@ public: // get protected data
     // set carrier
     t_CKBOOL setCarrier( Chuck_Carrier * c ) { m_carrier = c; return TRUE; }
 
-
 public: // data
     // emitter
     Chuck_Emitter * emitter;
@@ -79,8 +78,14 @@ public: // data
     // recent map
     std::map<std::string, Chuck_Context *> m_recent;
 
+    // chugins
     std::list<Chuck_DLL *> m_dlls;
+    // libraries (ck code) to import
     std::list<std::string> m_cklibs_to_preload;
+
+    // origin hint; this flag is set to different te_Origin values
+    // to denote where new entities originate | 1.4.2.1 (ge) added
+    te_Origin m_originHint;
 
 public: // to all
     // contructor

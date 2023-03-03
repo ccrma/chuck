@@ -603,6 +603,10 @@ bool ChucK::initChugins()
         // list of individually named chug-ins (added 1.3.0.0)
         std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
 
+        //---------------------------------------------------------------------
+        // set origin hint | 1.4.2.1 (ge) added
+        m_carrier->compiler->m_originHint = te_originChugin;
+        //---------------------------------------------------------------------
         // log
         EM_log( CK_LOG_SYSTEM, "loading chugins..." );
         // push indent level
@@ -618,6 +622,10 @@ bool ChucK::initChugins()
         // pop log
         EM_poplog();
 
+        //---------------------------------------------------------------------
+        // set origin hint | 1.4.2.1 (ge) added
+        m_carrier->compiler->m_originHint = te_originImport;
+        //---------------------------------------------------------------------
         // log
         EM_log( CK_LOG_SYSTEM, "pre-loading ChucK libs..." );
         EM_pushlog();
@@ -674,10 +682,16 @@ bool ChucK::initChugins()
     // load user namespace
     m_carrier->env->load_user_namespace();
 
+    // unset origin hint | 1.4.2.1 (ge) added
+    m_carrier->compiler->m_originHint = te_originUnknown;
+
     return true;
 
 error: // 1.4.1.0 (ge) added
-    // any cleanup goes here; none for now
+
+    // unset origin hint | 1.4.2.1 (ge) added
+    m_carrier->compiler->m_originHint = te_originUnknown;
+
     return false;
 }
 
@@ -829,6 +843,12 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
     std::vector<std::string> args;
     Chuck_VM_Code * code = NULL;
     Chuck_VM_Shred * shred = NULL;
+    std::string full_path;
+
+    //-------------------------------------------------------------------------
+    // set origin hint | 1.4.2.1 (ge) added
+    m_carrier->compiler->m_originHint = te_originUserDefined;
+    //-------------------------------------------------------------------------
 
     // log
     EM_log( CK_LOG_FINE, "compiling '%s'...", path.c_str() );
@@ -861,16 +881,16 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
         // error
         CK_FPRINTF_STDERR( "[chuck]: malformed filename with argument list...\n" );
         CK_FPRINTF_STDERR( "    -->  '%s'", theThing.c_str() );
-        return false;
+        goto error;
     }
 
     // construct full path to be associated with the file so me.sourceDir() works
     // (added 1.3.0.0)
-    std::string full_path = get_full_path(filename);
+    full_path = get_full_path(filename);
 
     // parse, type-check, and emit (full_path added 1.3.0.0)
     if( !m_carrier->compiler->go( filename, NULL, NULL, full_path ) )
-        return false;
+        goto error;
 
     // get the code
     code = m_carrier->compiler->output();
@@ -904,7 +924,17 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
     // reset the parser
     reset_parse();
 
+    // unset origin hint | 1.4.2.1 (ge) added
+    m_carrier->compiler->m_originHint = te_originUnknown;
+
     return true;
+
+error: // 1.4.2.1 (ge) added
+
+    // unset origin hint | 1.4.2.1 (ge) added
+    m_carrier->compiler->m_originHint = te_originUnknown;
+
+    return false;
 }
 
 
@@ -927,6 +957,13 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
     std::vector<std::string> args;
     Chuck_VM_Code * vm_code = NULL;
     Chuck_VM_Shred * shred = NULL;
+    std::string workingDir;
+    std::string full_path;
+
+    //-------------------------------------------------------------------------
+    // set origin hint | 1.4.2.1 (ge) added
+    m_carrier->compiler->m_originHint = te_originUserDefined;
+    //-------------------------------------------------------------------------
 
     // log
     EM_log( CK_LOG_FINE, "compiling code from string..." );
@@ -943,20 +980,20 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
         // error
         CK_FPRINTF_STDERR( "[chuck]: malformed filename with argument list...\n" );
         CK_FPRINTF_STDERR( "    -->  '%s'", theThing.c_str() );
-        return false;
+        goto error;
     }
 
     // working directory
-    std::string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
+    workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
 
     // construct full path to be associated with the file so me.sourceDir() works
-    std::string full_path = workingDir + "/compiled.code";
+    full_path = workingDir + "/compiled.code";
     // log
     EM_log( CK_LOG_FINE, "full path: %s...", full_path.c_str() );
 
     // parse, type-check, and emit (full_path added 1.3.0.0)
     if( !m_carrier->compiler->go( "<compiled.code>", NULL, code.c_str(), full_path ) )
-        return false;
+       goto error;
 
     // get the code
     vm_code = m_carrier->compiler->output();
@@ -970,13 +1007,13 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
     // spork it
     while( count-- )
     {
-        #ifndef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN__
         // spork (for now, spork_immediate arg is always false)
         shred = m_carrier->vm->spork( vm_code, NULL, FALSE );
-        #else
+#else
         // spork (in emscripten, need to spork immediately so can get shred id)
         shred = m_carrier->vm->spork( vm_code, NULL, TRUE );
-        #endif
+#endif
         // add args
         shred->args = args;
     }
@@ -987,7 +1024,17 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
     // reset the parser
     reset_parse();
 
+    // unset origin hint | 1.4.2.1 (ge) added
+    m_carrier->compiler->m_originHint = te_originUnknown;
+
     return true;
+
+error: // 1.4.2.1 (ge) added
+
+    // unset origin hint | 1.4.2.1 (ge) added
+    m_carrier->compiler->m_originHint = te_originUnknown;
+
+    return false;
 }
 
 

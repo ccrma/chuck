@@ -1,14 +1,59 @@
-1.4.2.1 (February 2023)
+1.5.0.0 (March 2023; was originally 1.4.2.1)
 ---
-(NOTE) ChAI (ChucK + AI), first appeared in chuck-1.4.2.0, will continue
-to be in BETA (as we add more and also teach using chAI in "Music and AI"
-at Stanford). The new additions to ChAI will be designated [ChAI] and is
-be subject to change in the near future.
-
-(also see HISTORICAL NOTE in 1.4.2.0)
+***************************************************************************
+* chuck-1.5.0.0 (chai)
+***************************************************************************
+* significant addition: ChAI (Chuck + AI)
+* significant update: WebChucK (chuck on browsers)
+* also: new features, new bug fixes, and new bugs!
+***************************************************************************
 ---
 (NOTE) WebChucK (ChucK on browsers) [beta] was released during the 
 development of this version. https://chuck.stanford.edu/webchuck/
+---
+(NOTE) ChAI (ChucK + AI), first appeared in beta as part of chuck-1.4.2.0;
+ChAI was used in the course Music 356 / CS 470 "Music and AI" [*] at
+Stanford University, taught by Ge Wang and Yikai Li (TA); Many thanks to
+the immensely creative students of "Music and AI". The v1.0 version of the
+ChAI API and modules is hereby released, with new additions on the way.
+
+[*] "Music and AI" (Winter 2023 Stanford University)
+https://ccrma.stanford.edu/courses/356-winter-2023/
+---
+(HISTORICAL NOTE for ChAI)
+Much of ChAI and its ways of thinking and doing can be foundationally
+attributed to the work of Dr. Rebecca Fiebrink, her landmark Ph.D. Thesis,
+/Real-time Human Interaction With Supervised Learning Algorithms for Music
+Composition and Performance/ (2011) [1], the Wekinator framework [2], her
+teaching at the intersections of AI, HCI, and Music [3], as well as earlier
+collaborations between Rebecca and Ge [4,5] including SMIRK [6] (Small Musical
+Information Retrieval toolKit; 2008; early efforts in on-the-fly learning),
+the unit analyzer framework [7] (2007; afford real-time audio feature
+extraction). All of these have directly or indirectly contributed the
+creation of ChAI. Additionally, ChAI benefitted from the teaching
+and design philosophy of Perry R. Cook (Ph.D. advisor to Rebecca and Ge
+at Princeton, and ChucK co-author), who argued for real-time human interaction,
+parametric sound synthesis, and playfulness in the design of musical tools.
+
+[1] Fiebrink, Rebecca. 2011. /Real-time Human Interaction With Supervised
+Learning Algorithms for Music Composition and Performance/ Ph.D. Thesis.
+Princeton University. https://www.cs.princeton.edu/techreports/2010/891.pdf
+[2] http://www.wekinator.org/
+Wekinator | Software for real-time, interactive machine learning
+[3] Fiebrink, Rebecca. "Machine Learning for Musicians and Artists" MOOC
+https://www.kadenze.com/courses/machine-learning-for-musicians-and-artists/info
+[4] Fiebrink, R., G. Wang, P. R. Cook. 2008. "Foundations for On-the-fly
+Learning in the ChucK Programming Language." /International Computer Music
+Conference/. https://mcd.stanford.edu/publish/files/2008-icmc-learning.pdf
+[5] Fiebrink, R., G. Wang, P. R. Cook. 2008. "Support for Music Information
+Retrieval in the ChucK Programming Language." /International Conference
+on Music Information Retrieval/ (ISMIR).
+https://mcd.stanford.edu/publish/files/2008-ismir-proto.pdf
+[6] http://smirk.cs.princeton.edu/
+sMIRk | Small Music Information Retrieval toolKit
+[7] Wang, G., R. Fiebrink, P. R. Cook. 2007. "Combining Analysis and
+Synthesis in the ChucK Programming Language." /International Computer
+Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
 ---
 - (added) Wekinator [ChAI] (thanks Rebecca Fiebrink and Yikai Li)
     |- A Wekinator utility that maps input vectors to output vectors,
@@ -43,8 +88,9 @@ development of this version. https://chuck.stanford.edu/webchuck/
         Save the training data to a file (format: .arff).
     void train();
         Train the model with the current training set.
- - (added) new examples in ai/wekinator [ChAI]
-      |- wekinator-basic.ck -- example of basic Wekinator usage
+- (added) new examples in ai/wekinator [ChAI]
+    |- wekinator-basic.ck -- example of basic Wekinator usage
+    |- wekinator-custom.ck -- more extensive customization for Wekinator
 - (added) MLP [ChAI] (thanks Yikai Li)
     |- a multilayer perceptron (MLP)--a basic artificial neural 
        network--that maps an input layer to an output layer across a 
@@ -103,171 +149,225 @@ development of this version. https://chuck.stanford.edu/webchuck/
         rate, and number of epochs.
     static void shuffle( float[][] X, float[][] Y );
         (Manually) shuffle the given input and output vectors.
- - (added) new examples in ai/mlp [ChAI]
-      |- mlp.ck -- example training a basic artificial neural network
-      |- mlp-manual.ck -- example of step-by-step training an MLP, printing each stage
-      |- mlp-load.ck -- loading a saved MLP model from file
-      |- mlp-save.ck -- saving the MLP model to file'
-      |- model.txt -- an example model file
- - (added) Word2Vec [ChAI] (thanks Yikai Li)
-      |- A word embeddings utility that maps words to vectors; can load a 
-         model and perform similiarity retrieval.
-      |- (inheritance) Word2Vec -> Object
+- (added) new examples in ai/mlp [ChAI]
+    |- mlp.ck -- example training a basic artificial neural network
+    |- mlp-manual.ck -- example of step-by-step training an MLP, printing each stage
+    |- mlp-load.ck -- loading a saved MLP model from file
+    |- mlp-save.ck -- saving the MLP model to file'
+    |- model.txt -- an example model file
+- (added) Word2Vec [ChAI] (thanks Yikai Li)
+    |- A word embeddings utility that maps words to vectors; can load a 
+       model and perform similiarity retrieval.
+    |- (inheritance) Word2Vec -> Object
     ------------------
     int contains( string word );
-       Query if 'word' is in the current model.
+        Query if 'word' is in the current model.
     int dim();
-       Get number of dimensions for word embedding.
+        Get number of dimensions for word embedding.
     void getSimilar( string word, int k, string[] output );
-       Get the k most similar words to the given word.
+        Get the k most similar words to the given word.
     void getSimilar( float[] vec, int k, string[] output );
-       Get the k most similar words to the given vector.
+        Get the k most similar words to the given vector.
     void getVector( string word, float[] output );
-       Get the vector of the given word.
+        Get the vector of the given word.
     int load( string path );
-       Load pre-trained word embedding model from the given path.
+        Load pre-trained word embedding model from the given path.
     int load( string path, int useKDTreeDim );
-       Load pre-trained word embedding model from the given path; will use 
-       KDTree for similarity searches if the data dimension is less than 
-       or equal to 'useKDTreeDim'. Set 'useKDTreeDim' to 0 to use linear 
-       (brute force) similarity search; set 'useKDTreeDim' to less than 0 
-       to always use KDTree.
+        Load pre-trained word embedding model from the given path; will use 
+        KDTree for similarity searches if the data dimension is less than 
+        or equal to 'useKDTreeDim'. Set 'useKDTreeDim' to 0 to use linear 
+        (brute force) similarity search; set 'useKDTreeDim' to less than 0 
+        to always use KDTree.
     void minMax( float[] mins, float[] maxs );
-       Retrieve the minimums and maximums for each dimension.
+        Retrieve the minimums and maximums for each dimension.
     int size();
-       Get number of words in dictionary.
+        Get number of words in dictionary.
     int useKDTree();
-       Get whether a KDTree is used for similarity search.
- - (added) new examples in ai/word2vec [ChAI]
-      |- poem-i-feel.ck -- a stream of unconsciousness poem generator
-      |- poem-randomwalk.ck -- another stream of unconsciousness generator
-      |- poem-spew.ck -- yet another stream of unconsciousness generator
-      |- poem-ungenerate.ck -- interactive prompt un/de-generator
-         (need to use command line chuck)
-      |- word2vec-basic.ck -- demos load(), getVector(), getSimilar()
-      |- word2vec-prompt.ck -- command line interactive tool
-         (need to use command line chuck)
-  - (added) Chroma unit analyzer (thanks Yikai Li)
-      |- A unit analyzer that computes pitch chroma
-      |- see examples/ai/features/chroma.ck
-  - (added) Kurtosis unit analyzer (thanks Yikai Li)
-      |- A unit analyzer that computes kurtosis
-      |- see examples/ai/features/kurtosis.ck
-  - (added) SFM unit analyzer (thanks Yikai Li)
-      |- A unit analyzer that computes spetral flatness measure
-      |- see examples/ai/features/sfm.ck
- - (moved) examples/analysis/features => examples/ai/features
- - (added) new examples in examples/ai/features
-      |- features-combined -- real-time extraction of multiple features
-      |- mfcc-basic.ck -- shows MFCC unit analyzer / feature extractor
-      |- mfcc-mean.ck -- averaged MFCC feature extraction
-      |- chroma.ck -- shows Chroma unit analyzer
-      |- kurtosis.ck -- shows Kurtosis unit analyzer
-      |- sfm.ck -- shows SFM (spectral flatness measure) unit analyzer
- - (added) PCA [ChAI] (thanks Yikai Li)
-      |- A principle component analysis (PCA) utility, commonly used
-         for dimensionality reduction.
-      |- (inheritance) PCA -> Object
-      -------------------
-      static void reduce( float[][] input, int D, float[][] output );
+        Get whether a KDTree is used for similarity search.
+- (added) new examples in ai/word2vec [ChAI]
+    |- poem-i-feel.ck -- a stream of unconsciousness poem generator
+    |- poem-randomwalk.ck -- another stream of unconsciousness generator
+    |- poem-spew.ck -- yet another stream of unconsciousness generator
+    |- poem-ungenerate.ck -- interactive prompt un/de-generator
+       (need to use command line chuck)
+    |- word2vec-basic.ck -- demos load(), getVector(), getSimilar()
+    |- word2vec-prompt.ck -- command line interactive tool
+       (need to use command line chuck)
+- (added) Chroma unit analyzer (thanks Yikai Li)
+    |- A unit analyzer that computes pitch chroma
+    |- see examples/ai/features/chroma.ck
+- (added) Kurtosis unit analyzer (thanks Yikai Li)
+    |- A unit analyzer that computes kurtosis
+    |- see examples/ai/features/kurtosis.ck
+- (added) SFM unit analyzer (thanks Yikai Li)
+    |- A unit analyzer that computes spetral flatness measure
+    |- see examples/ai/features/sfm.ck
+- (moved) examples/analysis/features => examples/ai/features
+- (added) new examples in examples/ai/features
+    |- features-combined -- real-time extraction of multiple features
+    |- mfcc-basic.ck -- shows MFCC unit analyzer / feature extractor
+    |- mfcc-mean.ck -- averaged MFCC feature extraction
+    |- chroma.ck -- shows Chroma unit analyzer
+    |- kurtosis.ck -- shows Kurtosis unit analyzer
+    |- sfm.ck -- shows SFM (spectral flatness measure) unit analyzer
+- (added) PCA [ChAI] (thanks Yikai Li)
+    |- A principle component analysis (PCA) utility, commonly used
+       for dimensionality reduction.
+    |- (inheritance) PCA -> Object
+    -------------------
+    static void reduce( float[][] input, int D, float[][] output );
         Dimension-reduce 'input' (NxM) to 'output' (NxD) as the projection
         of the input data onto its first 'D' principle components
- - (added) example: ai/pca/pca.ck
- - (reworked) KNN [ChAI] (thanks Yikai Li)
-      |- A basic k-NN utility that searches for k nearest
-         neighbors from a set of observations / feature
-         vectors. (Also see KNN2. The differrence between KNN
-         and KNN2 is that KNN does not deal with labels whereas
-         KNN2 is designed to work with labels.)
-      |- (inheritance) KNN -> Object
-      -------------------
-      void search( float[] query, int k, int[] indices );
-          Search for the 'k' nearest neighbors of 'query' and
-          return their corresponding indices.
-      void search( float[] query, int k, int[] indices,
-                   float[][] observations );
-          Search for the 'k' nearest neighbors of 'query' and
-          return their corresponding indices and observations
-      int train( float[][] x );
-          Train the KNN model with the given observations 'x'
-      void weigh( float[] weights );
-          Set the weights for each dimension in the data.
-  - (added) KNN2 [ChAI] (thanks Yikai Li)
-       |- A k-NN utility that predicts probabilities of class
-          membership based on distances from a test input to its
-          k nearest neighbors. (Also see KNN. The differrence
-          between KNN and KNN2 is that KNN does not deal with
-          labels whereas KNN2 is designed to work with labels.)
-       |- (inheritance) KNN2 -> Object
-      -------------------
-      int predict( float[] query, int k, float[] prob );
-          Predict the output probabilities 'prob' given unlabeled test
-          input 'query' based on distances to 'k' nearest neighbors.
-      void search( float[] query, int k, int[] labels );
-          Search for the 'k' nearest neighbors of 'query' and return
-          their labels.
-      void search( float[] query, int k, int[] labels, int[] indices );
-          Search for the 'k' nearest neighbors of 'query' and return
-          their labels and indices.
-      void search( float[] query, int k, int[] labels, int[] indices,
-                   float[][] observations);
-          Search for the 'k' nearest neighbors of 'query' and return
-          their labels, indices, and observations.
-      int train( float[][] x, int[] labels );
-          Train the KNN model with the given samples 'x' and
-          corresponding labels.
-      void weigh( float[] weights );
-          Set the weights for each dimension in the data.
- - (added) example: ai/knn/knn-search.ck
- - (added) example: ai/knn/knn2-classify.ck
- - (added) example: ai/knn/knn2-search.ck
- - (added) array.zero()
-      |- zero out the contents of the array; size is unchanged.
- - (added) negative indexing for arrays (thanks nshaheed)
-      |- [1,2,3,4] @=> int a[]; a[-1]; // evaluates to 4
- - (added) example: array/array_negative.ck
- - (added) Math functions 
-      float map( float value, float x1, float y1,
-                              float x2, float y2 );
+- (added) example: ai/pca/pca.ck
+- (reworked) KNN [ChAI] (thanks Yikai Li)
+    |- A basic k-NN utility that searches for k nearest
+       neighbors from a set of observations / feature
+       vectors. (Also see KNN2. The differrence between KNN
+       and KNN2 is that KNN does not deal with labels whereas
+       KNN2 is designed to work with labels.)
+    |- (inheritance) KNN -> Object
+    -------------------
+    void search( float[] query, int k, int[] indices );
+        Search for the 'k' nearest neighbors of 'query' and
+        return their corresponding indices.
+    void search( float[] query, int k, int[] indices,
+                 float[][] observations );
+        Search for the 'k' nearest neighbors of 'query' and
+        return their corresponding indices and observations
+    int train( float[][] x );
+        Train the KNN model with the given observations 'x'
+    void weigh( float[] weights );
+        Set the weights for each dimension in the data.
+- (added) KNN2 [ChAI] (thanks Yikai Li)
+    |- A k-NN utility that predicts probabilities of class
+       membership based on distances from a test input to its
+       k nearest neighbors. (Also see KNN. The differrence
+       between KNN and KNN2 is that KNN does not deal with
+       labels whereas KNN2 is designed to work with labels.)
+    |- (inheritance) KNN2 -> Object
+    -------------------
+    int predict( float[] query, int k, float[] prob );
+        Predict the output probabilities 'prob' given unlabeled test
+        input 'query' based on distances to 'k' nearest neighbors.
+    void search( float[] query, int k, int[] labels );
+        Search for the 'k' nearest neighbors of 'query' and return
+        their labels.
+    void search( float[] query, int k, int[] labels, int[] indices );
+        Search for the 'k' nearest neighbors of 'query' and return
+        their labels and indices.
+    void search( float[] query, int k, int[] labels, int[] indices,
+                 float[][] observations);
+        Search for the 'k' nearest neighbors of 'query' and return
+        their labels, indices, and observations.
+    int train( float[][] x, int[] labels );
+        Train the KNN model with the given samples 'x' and
+        corresponding labels.
+    void weigh( float[] weights );
+        Set the weights for each dimension in the data.
+- (added) example: ai/knn/knn-search.ck
+- (added) example: ai/knn/knn2-classify.ck
+- (added) example: ai/knn/knn2-search.ck
+- (added) new static method for all Objects
+      Type Object.typeOf()
+          Get the type of this object (or class).
+- (added) new Type type
+    |- A representation of a ChucK type.
+    |- (inheritance) Type -> Object
+    --------------
+    int arrayDepth();
+        Return the number of array dimensions associated with this Type (e.g., 'int[][]' has 2; 'int' has 0).
+	void children( Type[] kids );
+	    Retrieve this Type's children Types in the array 'kids'.
+	int equals( Type another );
+	    Return whether this Type is same as 'another'.
+	int isArray();
+	    Return whether this Type is some kind of an array.
+	int isPrimitive();
+	    Return whether this is a primitive Type (e.g., 'int' and 'dur' are primitives types; 'Object' and its children Types are not).
+	int isa( Type another );
+	    Return whether this Type is a kind of 'another'.
+	int isa( string another );
+	    Return whether this Type is a kind of 'another'.
+	string name();
+	    Return the name of this Type.
+	string origin();
+	    Return a string decribing where this Type was defined (e.g., "builtin", "chugin", "user").
+	Type parent();
+	    Return this Type's parent Type; returns null if this Type is 'Object'.
+	static Type find( string typeName );
+	    Find and return the Type associated with 'typeName'; returns null if no Types currently in the VM with that name.
+	static void getTypes( Type[] types, int includeObjects, int includePrimitives, int includeSpecial, int includeBuiltin, int includeChugins, int includeImports, int includeUserDefined );
+	    Retrieves in the array 'types' all top-level Types currently in the ChucK runtime type system; 'includeObjects'--include all Objects? 'includePrimitives'--include primitive types suchs as 'int' and 'dur'? 'includeSpecial'--include special types such as '@array' and '@function'? The results are further filtered by 'includeBuiltin'--include builtin types? 'includeChugins'--include types imported from chugins? 'includeImports'--include types imported from CK files in library path? 'includeUserDefined'--include types defined in ChucK code? 
+	static void getTypes( Type[] types );
+	    Retrieves in the array 'types' all top-level Types currently in the ChucK VM's type system; 'includeObjects' indicated whether to include all Objects; 'includePrimitives' indicates whether to include primitive types suchs as 'int' and 'dur'.
+	static Type of( Object obj );
+	    Return the Type of 'obj'
+	static Type of( int val );
+	    Return the Type associated with 'int'.
+	static Type of( float val );
+	    Return the Type associated with 'float'.
+	static Type of( time val );
+	    Return the Type associated with 'time'.
+	static Type of( dur val );
+	    Return the Type associated with 'dur'.
+	static Type of( complex val );
+	    Return the Type associated with 'complex'.
+	static Type of( polar val );
+	    Return the Type associated with 'polar'.
+	static Type of( vec3 val );
+	    Return the Type associated with 'vec3'.
+	static Type of( vec4 val );
+	    Return the Type associated with 'vec4'.
+- (added) new examples in ai/type
+    |- type_query.ck -- querying for a list of types from the ChucK runtime type system
+    |- type_type.ck -- example showing some functionalities of the Type type
+- (added) array.zero()
+    |- zero out the contents of the array; size is unchanged.
+- (added) negative indexing for arrays (thanks nshaheed)
+    |- [1,2,3,4] @=> int a[]; a[-1]; // evaluates to 4
+- (added) example: array/array_negative.ck
+- (added) Math functions
+    float map( float value, float x1, float y1,
+                            float x2, float y2 );
         Map 'value' from range [x1,y1] into range [x2,y2]; 'value'
         can be outside range[x1,y1].
-      float map2( float value, float x1, float y1,
-                               float x2, float y2 );
+    float map2( float value, float x1, float y1,
+                             float x2, float y2 );
         Map 'value' from range [x1,y1] into range [x2,y2]; 'value'
         will be clamped to [x1,y1] if outside range.
         (Math.remap() is the same as Math.map2())
-      float clampi( int value, int min, int max );
+    float clampi( int value, int min, int max );
         Clamp integer 'value' to range [min, max].
-      float clampf( float value, float min, float max );
+    float clampf( float value, float min, float max );
         Clamp float 'value' to range [min, max].
-      float cossim( float[] a[], float[] b[] );
+    float cossim( float[] a[], float[] b[] );
         Compute the cosine similarity between arrays a and b.
-      float cossim( vec3 a, vec3 b );
+    float cossim( vec3 a, vec3 b );
         Compute the cosine similarity between 3D vectors a and b.
-      float cossim( vec4 a, vec4 b );
+    float cossim( vec4 a, vec4 b );
         Compute the cosine similarity between 4D vectors a and b.
-      float euclidean( float[] a[], float[] b[] );
+    float euclidean( float[] a[], float[] b[] );
         Compute the euclidean distance between arrays a and b.
-      float euclidean( vec3 a, vec3 b );
+    float euclidean( vec3 a, vec3 b );
         Compute the euclidean distance between 3D vectors a and b.
-      float euclidean( vec4 a, vec4 b );
+    float euclidean( vec4 a, vec4 b );
         Compute the euclidean distance between 4D vectors a and b.
-  - (added) examples/math
-       |- map.ck -- shows mapping using Math.map() and Math.map2()
-       |- math-help.ck -- just prints Math API using Math.help();
-  - (added) Machine functions
-      int eval( string code );
+- (added) examples/math
+    |- map.ck -- shows mapping using Math.map() and Math.map2()
+    |- math-help.ck -- just prints Math API using Math.help();
+- (added) Machine functions
+    int eval( string code );
         Evaluate a string as ChucK code, compiling it and spork it as a child 
         shred of the current shred.
-      int eval( string code, string args );
+    int eval( string code, string args );
         Evaluate a string as ChucK code, with optional arguments (bundled in 
         'args' as "ARG1:ARG2:...", compiling it and spork it as a child shred of 
         the current shred.
-      int eval( string code, string args, int count );
+    int eval( string code, string args, int count );
         Evaluate a string as ChucK code, with optional arguments (bundled in 
         'args' as "ARG1:ARG2:...", compiling it and sporking 'count' instances as 
         a child shreds of the current shred.
-      int loglevel( int level );
+    int loglevel( int level );
         Set log level
           |- 0: NONE
           |- 1: CORE
@@ -280,53 +380,53 @@ development of this version. https://chuck.stanford.edu/webchuck/
           |- 8: FINER
           |- 9: FINEST
           |- 10: ALL
-      static int loglevel();
+    static int loglevel();
         Get log level
-  - (added) examples in machine
-       |- eval.ck -- demonstrate Machine.eval(), noting its behavior wrt 
-          to schreduler
-  - (modified) MFCC -- added (back) a missing and crucial log10() to
-      to the MFCC computation and updated implementation; output
-      range magnitudes now in the hundreds
-  - (enhanced) overloaded functions with non-matching return types now
-      provide additional information in the compiler error message
-  - (fixed) overloaded functions with identical arguments now will
-      correctly result in a compiler error
-  - (fixed, hopefully) no more LPF and HPF filter explosion for small 
-      values of .freq (<.2), large values of .freq (>Nyquist frequency), 
-      or Q < 1 with high frequency below Nyquist; now LPF.freq and HPF .Q 
-      are internally clamped to values between [1,SRATE/2];
-  - (fixed) SndBuf crash in cases where file size is integer multiple
-      of .chunks and .chunks > 0 and reaching the end of the file
-  - (fixed) SndBuf.valueAt(n) for n == file size in samples now returns 0;
-      previously this special case returned .valueAt(n-1) 
-  - (fixed) SndBuf assertation failure if SndBuf.chunks was set AFTER
-      loading a file; now .chunks will ONLY take effect for the next
-      SndBuf.read
-  - (renamed) int LiSa.loop0(int) and int LiSa.loop0(); previously these
-      were incorrectly overloaded as "loop()" and was unavailable
-  - (fixed) FileIO.seek() previously fails if EOF is reached in reading
-      a file; FileIO.seek() now functions after EOF is reached.
-  - (updated) all cherr prints now flushes immediately
-  - (updated) IO.newline() or a solitary "\n" now automatically flushes
-      chout
-  - (added) examples in io
-       |- seek.ck -- shows FileIO.seek usage for rewind a file read
-  - (added) absyn tree printing for instruction dumping abysn2str()
-  - (added) Machine.refcount() and refcount printing for object references
-  - (updated and fixed) memory system upgrade (part 1); scope-sensitive
-      cleanup for each return statement; clarified reference counting
-      semantics; function argument release for builtin functions; improved
-      post-function call object cleanup; auto-reference-increment on
-      returned objects from all builtin/imported functions;
-  - (updated) built-in abstract classes FM, StkInstrmnt, BLT, and
-      FilterBasic, when used directly, issues a WARNING level log
-      message in their respective synthesis tick functions (set log
-      level in chuck or miniAudicle to WARNING or higher to enable
-      printing), and allows program to procede silently. (Example that
-      previously crashed: 'FM fm => dac; 1::second => now;')
-  - (developer) Chugin API clients in C++ now able to create
-      strings and access member variables (thanks Nick Shaheed!)
+- (added) examples in machine
+    |- eval.ck -- demonstrate Machine.eval(), noting its behavior wrt 
+       to schreduler
+- (modified) MFCC -- added (back) a missing and crucial log10() to
+    to the MFCC computation and updated implementation; output
+    range magnitudes now in the hundreds
+- (enhanced) overloaded functions with non-matching return types now
+    provide additional information in the compiler error message
+- (fixed) overloaded functions with identical arguments now will
+    correctly result in a compiler error
+- (fixed, hopefully) no more LPF and HPF filter explosion for small 
+    values of .freq (<.2), large values of .freq (>Nyquist frequency), 
+    or Q < 1 with high frequency below Nyquist; now LPF.freq and HPF .Q 
+    are internally clamped to values between [1,SRATE/2];
+- (fixed) SndBuf crash in cases where file size is integer multiple
+    of .chunks and .chunks > 0 and reaching the end of the file
+- (fixed) SndBuf.valueAt(n) for n == file size in samples now returns 0;
+    previously this special case returned .valueAt(n-1) 
+- (fixed) SndBuf assertation failure if SndBuf.chunks was set AFTER
+    loading a file; now .chunks will ONLY take effect for the next
+    SndBuf.read
+- (renamed) int LiSa.loop0(int) and int LiSa.loop0(); previously these
+    were incorrectly overloaded as "loop()" and was unavailable
+- (fixed) FileIO.seek() previously fails if EOF is reached in reading
+    a file; FileIO.seek() now functions after EOF is reached.
+- (updated) all cherr prints now flushes immediately
+- (updated) IO.newline() or a solitary "\n" now automatically flushes
+    chout
+- (added) examples in io
+     |- seek.ck -- shows FileIO.seek usage for rewind a file read
+- (added) absyn tree printing for instruction dumping abysn2str()
+- (added) Machine.refcount() and refcount printing for object references
+- (updated and fixed) memory system upgrade (part 1); scope-sensitive
+    cleanup for each return statement; clarified reference counting
+    semantics; function argument release for builtin functions; improved
+    post-function call object cleanup; auto-reference-increment on
+    returned objects from all builtin/imported functions;
+- (updated) built-in abstract classes FM, StkInstrmnt, BLT, and
+    FilterBasic, when used directly, issues a WARNING level log
+    message in their respective synthesis tick functions (set log
+    level in chuck or miniAudicle to WARNING or higher to enable
+    printing), and allows program to procede silently. (Example that
+    previously crashed: 'FM fm => dac; 1::second => now;')
+- (developer) Chugin API clients in C++ now able to create
+    strings and access member variables (thanks Nick Shaheed!)
 
 
 01.4.2.0 (January 2023)
@@ -337,40 +437,6 @@ humanistic design of music and artificial intelligence; it coincides with
 the new "Music and AI" course at Stanford University, designed and taught 
 by Ge Wang with Ph.D. candidate Yikai Li.
 
-(HISTORICAL NOTE)
-Much of ChAI and its ways of thinking and doing can be foundationally
-attributed to the work of Dr. Rebecca Fiebrink, her landmark Ph.D. Thesis,
-/Real-time Human Interaction With Supervised Learning Algorithms for Music
-Composition and Performance/ (2011) [1], the Wekinator framework [2], her
-teaching at the intersections of AI, HCI, and Music [3], as well as earlier
-collaborations between Rebecca and Ge [4,5] including SMIRK [6] (Small Musical
-Information Retrieval toolKit; 2008; early efforts in on-the-fly learning),
-the unit analyzer framework [7] (2007; afford real-time audio feature
-extraction). All of these have directly or indirectly contributed the
-creation of ChAI. Additionally, ChAI benefitted from the teaching
-and design philosophy of Perry R. Cook (Ph.D. advisor to Rebecca and Ge
-at Princeton, and ChucK co-author), who argued for real-time human interaction,
-parametric sound synthesis, and play in the design of musical tools.
-
-[1] Fiebrink, Rebecca. 2011. /Real-time Human Interaction With Supervised
-Learning Algorithms for Music Composition and Performance/ Ph.D. Thesis.
-Princeton University. https://www.cs.princeton.edu/techreports/2010/891.pdf
-[2] http://www.wekinator.org/
-Wekinator | Software for real-time, interactive machine learning
-[3] Fiebrink, Rebecca. "Machine Learning for Musicians and Artists" MOOC
-https://www.kadenze.com/courses/machine-learning-for-musicians-and-artists/info
-[4] Fiebrink, R., G. Wang, P. R. Cook. 2008. "Foundations for On-the-fly
-Learning in the ChucK Programming Language." /International Computer Music
-Conference/. https://mcd.stanford.edu/publish/files/2008-icmc-learning.pdf
-[5] Fiebrink, R., G. Wang, P. R. Cook. 2008. "Support for Music Information
-Retrieval in the ChucK Programming Language." /International Conference
-on Music Information Retrieval/ (ISMIR).
-https://mcd.stanford.edu/publish/files/2008-ismir-proto.pdf
-[6] http://smirk.cs.princeton.edu/
-sMIRk | Small Music Information Retrieval toolKit
-[7] Wang, G., R. Fiebrink, P. R. Cook. 2007. "Combining Analysis and
-Synthesis in the ChucK Programming Language." /International Computer
-Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
 ---
   - (added) MFCC unit analyzer (thanks Yikai Li)
         |- A unit analyzer that computes Mel-frequency Cepstral Coefficients

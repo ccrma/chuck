@@ -90,6 +90,9 @@ Chuck_Compiler::Chuck_Compiler()
 
     // REFACTOR-2017: add carrier
     m_carrier = NULL;
+
+    // origin hint | 1.4.2.1 (ge) added
+    m_originHint = te_originUnknown;
 }
 
 
@@ -119,6 +122,9 @@ t_CKBOOL Chuck_Compiler::initialize()
     // push indent level
     EM_pushlog();
 
+    // set origin hint
+    m_originHint = te_originBuiltin;
+
     // allocate the type checker
     Chuck_Env * env = type_engine_init( m_carrier );
     // add reference
@@ -134,6 +140,9 @@ t_CKBOOL Chuck_Compiler::initialize()
     // load internal libs
     if( !load_internal_modules( this ) )
         goto error;
+
+    // unset origin hint
+    m_originHint = te_originUnknown;
 
     // pop indent
     EM_poplog();
@@ -686,9 +695,7 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     // load
     EM_log( CK_LOG_SEVERE, "module 'machine'" );
     if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
-    #ifndef __DISABLE_OTF_SERVER__
     machine_init( compiler, otf_process_msg );
-    #endif
 
     #ifndef __DISABLE_NETWORK__
     EM_log( CK_LOG_SEVERE, "module 'opsc'" );
@@ -698,7 +705,7 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     EM_log( CK_LOG_SEVERE, "module 'RegEx'" );
     if( !load_module( compiler, env, regex_query, "RegEx", "global" ) ) goto error;
 
-    // Deprecated:
+    // deprecated:
     // if( !load_module( compiler, env, net_query, "net", "global" ) ) goto error;
 
     #ifndef __DISABLE_HID__
@@ -707,7 +714,6 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     #endif
 
     #ifndef __DISABLE_SERIAL__
-    // log
     EM_log( CK_LOG_SEVERE, "module 'SerialIO'" );
     if( !init_class_serialio( env ) ) goto error;
     #endif

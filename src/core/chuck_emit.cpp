@@ -418,9 +418,20 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                 if( exp->s_type == ae_exp_primary && exp->primary.s_type == ae_primary_hack )
                     exp = exp->primary.exp;
 
-                // loop over the expression that is the statement (prior to 1.4.2.1 comment: "HACK" hmmm...)
+                // need to pop in reverse order
+                vector<a_Exp> pxe;
+                // go
                 while( exp )
                 {
+                    pxe.push_back( exp );
+                    exp = exp->next;
+                }
+
+                // loop over the expression that is the statement (prior to 1.4.2.1 comment: "HACK" hmmm...)
+                for( t_CKINT i = pxe.size()-1; i >= 0; i-- )
+                // for( t_CKINT i = 0; i < pxe.size(); i++ )
+                {
+                    exp = pxe[i];
                     // if decl, then expect only one word per var
                     // added 1.3.1.0: iskindofint -- since on some 64-bit systems sz_INT == sz_FLOAT
                     if( exp->s_type == ae_exp_decl )
@@ -452,9 +463,6 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                                    exp->type->size );
                         return FALSE;
                     }
-
-                    // go
-                    exp = exp->next;
                 }
             }
 
@@ -3674,7 +3682,8 @@ check_func:
     // the type of the base
     Chuck_Type * t_base = member->t_base;
     // is the base a class/namespace or a variable
-    t_CKBOOL base_static = isa( member->t_base, emit->env->t_class );
+    t_CKBOOL base_static = type_engine_is_base_static( emit->env, member->t_base );
+    // t_CKBOOL base_static = isa( member->t_base, emit->env->t_class );
     // a function
     Chuck_Func * func = NULL;
     // a non-function value
@@ -3743,8 +3752,9 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
     Chuck_Type * t_base = NULL;
     // whether to emit addr or value
     t_CKBOOL emit_addr = member->self->emit_var;
-    // is the base a class/namespace or a variable
-    t_CKBOOL base_static = isa( member->t_base, emit->env->t_class );
+    // is the base a class/namespace or a variable | 1.4.2.1 (ge) modified to func call
+    t_CKBOOL base_static = type_engine_is_base_static( emit->env, member->t_base );
+    // t_CKBOOL base_static = isa( member->t_base, emit->env->t_class );
     // a function
     Chuck_Func * func = NULL;
     // a non-function value
@@ -4049,7 +4059,7 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
         Chuck_Instr * instr = NULL;
         emit->append( instr = new Chuck_Instr_Array_Alloc( emit->env,
             type->array_depth, type->array_type, emit->code->frame->curr_offset,
-            is_ref ) );
+            is_ref, type ) );
         instr->set_linepos( array->linepos );
 
         // handle constructor

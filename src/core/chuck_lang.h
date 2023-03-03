@@ -58,7 +58,8 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
 t_CKBOOL init_class_vec4( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
-
+t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type ); // 1.4.2.1
+t_CKBOOL init_primitive_types( Chuck_Env * env ); // 1.4.2.1
 
 
 
@@ -69,11 +70,11 @@ t_CKBOOL init_class_vec4( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
 CK_DLL_CTOR( object_ctor );
 CK_DLL_DTOR( object_dtor );
 CK_DLL_MFUN( object_equals );
-CK_DLL_MFUN( object_getType );
 CK_DLL_MFUN( object_hashCode );
 CK_DLL_MFUN( object_toString );
 CK_DLL_MFUN( object_dump );
 CK_DLL_SFUN( object_help );
+CK_DLL_SFUN( object_typeInfo );
 
 
 //-----------------------------------------------------------------------------
@@ -255,6 +256,37 @@ CK_DLL_MFUN( vec4_set );
 CK_DLL_MFUN( vec4_setAll );
 CK_DLL_MFUN( vec4_magnitude );
 CK_DLL_MFUN( vec4_normalize );
+
+
+//-----------------------------------------------------------------------------
+// type API | 1.4.2.1 (ge) added
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( type_ctor );
+CK_DLL_DTOR( type_dtor );
+CK_DLL_MFUN( type_equals );
+CK_DLL_MFUN( type_isa );
+CK_DLL_MFUN( type_isa_str );
+CK_DLL_MFUN( type_name );
+CK_DLL_MFUN( type_parent ); // return parent Type
+CK_DLL_MFUN( type_children ); // return children Types
+CK_DLL_MFUN( type_origin ); // built-in, chugin, defined in chuck
+CK_DLL_MFUN( type_isPrimitive );
+CK_DLL_MFUN( type_isArray );
+CK_DLL_MFUN( type_arrayDims );
+CK_DLL_SFUN( type_findString );
+CK_DLL_SFUN( type_typeOf_obj ); // Type.typeOf( Object )
+CK_DLL_SFUN( type_typeOf_int ); // Type.typeOf( int )
+CK_DLL_SFUN( type_typeOf_float ); // Type.typeOf( float )
+CK_DLL_SFUN( type_typeOf_time ); // Type.typeOf( time )
+CK_DLL_SFUN( type_typeOf_dur ); // Type.typeOf( dur )
+CK_DLL_SFUN( type_typeOf_complex ); // Type.typeOf( complex )
+CK_DLL_SFUN( type_typeOf_polar ); // Type.typeOf( polar )
+CK_DLL_SFUN( type_typeOf_vec3 ); // Type.typeOf( vec3 )
+CK_DLL_SFUN( type_typeOf_vec4 ); // Type.typeOf( vec4 )
+CK_DLL_SFUN( type_getTypes );
+CK_DLL_SFUN( type_getTypesAll );
+
+
 
 
 //-----------------------------------------------------------------------------

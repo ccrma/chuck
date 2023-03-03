@@ -29,7 +29,6 @@
 // author: Spencer Salazar (spencer@ccrma.stanford.edu)
 // date: Summer 2012
 //-----------------------------------------------------------------------------
-#include "chuck_def.h"
 #include "util_serial.h"
 #include "chuck_errmsg.h"
 using namespace std;
@@ -244,4 +243,3 @@ vector<string> SerialIOManager::availableSerialDevices()
 
 
 #endif /* __MACOSX_CORE__ */
-

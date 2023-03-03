@@ -29,11 +29,11 @@
 // author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
 // date: Autumn 2002
 //-----------------------------------------------------------------------------
-#include <stdlib.h>
-#include <stdio.h>
 #include "chuck_absyn.h"
 #include "chuck_utils.h"
 #include "chuck_errmsg.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 
 a_Program new_program( a_Section section, int pos )

@@ -98,6 +98,8 @@ public:
     virtual void release();
     // lock
     virtual void lock();
+    // unlock | 1.4.2.1 (ge) added
+    virtual void unlock();
 
     // NOTE: be careful when overriding these, should always
     // explicitly call up to ChucK_VM_Object (ge: 2013)
