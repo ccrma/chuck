@@ -17,7 +17,7 @@
 // (or run with --silent for no print delay)
 100::ms => dur T_PRINT;
 // learning rate
-0.001 => float learningRate;
+0.01 => float learningRate;
 // number of epochs
 100 => int epochs;
 

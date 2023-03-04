@@ -18,7 +18,7 @@
 // instantiate a multilayer perception
 MLP mlp;
 // learning rate
-0.001 => float learningRate;
+0.01 => float learningRate;
 // number of epochs
 100 => int epochs;
 
@@ -46,7 +46,7 @@ mlp.init( nodesPerLayer );
 <<< "training model...", "" >>>;
 // train the network
 mlp.train( X, Y, learningRate, epochs );
-// ALTERNATE: train with default learning_rate=0.001, epochs=100
+// ALTERNATE: train with default learning_rate=0.01, epochs=100
 // mlp.train(X, Y);
 
 // save the network into a model file, which can loaded later
