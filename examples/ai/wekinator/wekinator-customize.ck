@@ -39,10 +39,8 @@ wek.outputDims(3);
 // set the type of task for Wekinator to do
 // current options: AI.Classification, AI.Regression
 wek.taskType( AI.Regression );
-// get the name of the task type
-string name; wek.taskTypeName(name);
-// print
-<<< "task ID:", wek.taskType(), "==", name >>>;
+// print including taskType name
+<<< "task ID:", wek.taskType(), "==", wek.taskTypeName() >>>;
 
 // set regression-related attributes
 wek.setProperty( AI.Regression, "min", 0 );
@@ -77,10 +75,8 @@ wek.setProperty(AI.KNN, "k", 5);
 // options: AI.Regression: AI.MLP, AI.LR (currently not implemented)
 // options: AI.Classification: AI.KNN, AI.SVM, AI.DT (current not implemented)
 wek.modelType(AI.MLP);
-// get name of model type
-wek.modelTypeName(name);
-// print
-<<< "modelType ID:", wek.modelType(), "==", name >>>;
+// print including modelType name
+<<< "modelType ID:", wek.modelType(), "==", wek.modelTypeName() >>>;
 
 // set any output channel-specific attributes, which locally
 // overrides the global attributes set in wek.setProperty()
