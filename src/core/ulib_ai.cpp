@@ -99,6 +99,9 @@ static t_CKINT g_at_sigmoid = 1;
 static t_CKINT g_at_relu = 2;
 static t_CKINT g_at_tanh = 3;
 static t_CKINT g_at_softmax = 4;
+// global task type
+static t_CKINT g_tt_regression = -1;
+static t_CKINT g_tt_classification = -2;
 
 
 
@@ -162,26 +165,64 @@ CK_DLL_SFUN( PCA_reduce );
 // offset
 static t_CKUINT PCA_offset_data = 0;
 
-// 1.4.2.0 (yikai) added Wekinator
+// 1.4.2.1 (yikai) added Wekinator
 CK_DLL_CTOR( Wekinator_ctor );
 CK_DLL_DTOR( Wekinator_dtor );
-CK_DLL_MFUN( Wekinator_input );
-CK_DLL_MFUN( Wekinator_output );
-CK_DLL_MFUN( Wekinator_add );
-CK_DLL_MFUN( Wekinator_train );
-CK_DLL_MFUN( Wekinator_clear );
-CK_DLL_MFUN( Wekinator_predict );
-CK_DLL_MFUN( Wekinator_ctrl_model_type );
-CK_DLL_MFUN( Wekinator_cget_model_type );
-CK_DLL_MFUN( Wekinator_save_data );
-CK_DLL_MFUN( Wekinator_load_data );
-CK_DLL_MFUN( Wekinator_cget_input_dims );
-CK_DLL_MFUN( Wekinator_cget_output_dims );
-CK_DLL_MFUN( Wekinator_cget_num_obs );
-CK_DLL_MFUN( Wekinator_set_property_int );
-CK_DLL_MFUN( Wekinator_set_property_float );
+CK_DLL_MFUN( Wekinator_set_num_inputs );
+CK_DLL_MFUN( Wekinator_get_num_inputs );
+CK_DLL_MFUN( Wekinator_set_num_outputs );
+CK_DLL_MFUN( Wekinator_get_num_outputs );
+CK_DLL_MFUN( Wekinator_set_task_type );
+CK_DLL_MFUN( Wekinator_get_task_type );
+CK_DLL_MFUN( Wekinator_get_task_type_name );
+CK_DLL_MFUN( Wekinator_set_property );
+CK_DLL_MFUN( Wekinator_set_property1 );
 CK_DLL_MFUN( Wekinator_get_property_int );
 CK_DLL_MFUN( Wekinator_get_property_float );
+CK_DLL_MFUN( Wekinator_set_model_type );
+CK_DLL_MFUN( Wekinator_get_model_type );
+CK_DLL_MFUN( Wekinator_get_model_type_name );
+CK_DLL_MFUN( Wekinator_set_output_property );
+CK_DLL_MFUN( Wekinator_get_output_property_int );
+CK_DLL_MFUN( Wekinator_set_output_property1 );
+CK_DLL_MFUN( Wekinator_set_output_property2 );
+CK_DLL_MFUN( Wekinator_get_output_property_int1 );
+CK_DLL_MFUN( Wekinator_get_output_property_float );
+CK_DLL_MFUN( Wekinator_set_output_property3 );
+CK_DLL_MFUN( Wekinator_get_output_property );
+CK_DLL_MFUN( Wekinator_set_inputs );
+CK_DLL_MFUN( Wekinator_set_outputs );
+CK_DLL_MFUN( Wekinator_randomize_outputs );
+CK_DLL_MFUN( Wekinator_get_num_obs );
+CK_DLL_MFUN( Wekinator_get_num_obs1 );
+CK_DLL_MFUN( Wekinator_get_obs );
+CK_DLL_MFUN( Wekinator_get_obs1 );
+CK_DLL_MFUN( Wekinator_clear_obs );
+CK_DLL_MFUN( Wekinator_clear_obs1 );
+CK_DLL_MFUN( Wekinator_save );
+CK_DLL_MFUN( Wekinator_load );
+CK_DLL_MFUN( Wekinator_export_obs );
+CK_DLL_MFUN( Wekinator_export_obs1 );
+CK_DLL_MFUN( Wekinator_import_obs );
+CK_DLL_MFUN( Wekinator_clear_all_obs );
+CK_DLL_MFUN( Wekinator_clear_all_obs1 );
+CK_DLL_MFUN( Wekinator_set_all_record_status );
+CK_DLL_MFUN( Wekinator_set_output_record_status );
+CK_DLL_MFUN( Wekinator_get_output_record_status );
+CK_DLL_MFUN( Wekinator_set_all_run_status );
+CK_DLL_MFUN( Wekinator_set_output_run_status );
+CK_DLL_MFUN( Wekinator_get_output_run_status );
+CK_DLL_MFUN( Wekinator_add );
+CK_DLL_MFUN( Wekinator_add1 );
+CK_DLL_MFUN( Wekinator_add2 );
+CK_DLL_MFUN( Wekinator_next_round );
+CK_DLL_MFUN( Wekinator_train );
+CK_DLL_MFUN( Wekinator_predict );
+CK_DLL_MFUN( Wekinator_delete_last_round );
+CK_DLL_MFUN( Wekinator_clear );
+CK_DLL_MFUN( Wekinator_get_round );
+CK_DLL_MFUN( Wekinator_get_all_record_status );
+CK_DLL_MFUN( Wekinator_get_all_run_status );
 // offset
 static t_CKUINT Wekinator_offset_data = 0;
 
@@ -250,6 +291,10 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     QUERY->doc_var( QUERY, "Activation type: Softmax" );
     QUERY->add_svar( QUERY, "int", "Linear", TRUE, &g_at_linear );
     QUERY->doc_var( QUERY, "Activation type: Linear" );
+    QUERY->add_svar( QUERY, "int", "Regression", TRUE, &g_tt_regression );
+    QUERY->doc_var( QUERY, "Task type: Regression" );
+    QUERY->add_svar( QUERY, "int", "Classification", TRUE, &g_tt_classification );
+    QUERY->doc_var( QUERY, "Task type: Classification" );
     // done
     QUERY->end_class( QUERY );
 
@@ -570,7 +615,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
 
     //---------------------------------------------------------------------
     // init as base class: Wekinator
-    // 1.4.1.2 added by Yikai Li, Fall 2022
+    // 1.4.2.1 added by Yikai Li, Winter 2023
     //---------------------------------------------------------------------
     // doc string
     doc =
@@ -590,106 +635,354 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     Wekinator_offset_data = type_engine_import_mvar( env, "float", "@Wekinator_data", FALSE );
     if( Wekinator_offset_data == CK_INVALID_OFFSET ) goto error;
 
-    // input
-    func = make_new_mfun( "void", "input", Wekinator_input );
-    func->add_arg( "float[]", "vec" );
-    func->doc = "Set the current input vector.";
+    // set_num_inputs
+    func = make_new_mfun( "int", "inputDims", Wekinator_set_num_inputs );
+    func->add_arg( "int", "n" );
+    func->doc = "Set the number of input dimensions to Wekinator.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // output
-    func = make_new_mfun( "void", "output", Wekinator_output );
-    func->add_arg( "float[]", "vec" );
-    func->doc = "Set the current output vector.";
+    // get_num_inputs
+    func = make_new_mfun( "int", "inputDims", Wekinator_get_num_inputs );
+    func->doc = "Get the number of input dimensions to Wekinator.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add
-    func = make_new_mfun( "void", "add", Wekinator_add );
-    func->doc = "Add the current input and output vectors to the training set.";
+    // set_num_outputs
+    func = make_new_mfun( "int", "outputDims", Wekinator_set_num_outputs );
+    func->add_arg( "int", "n" );
+    func->doc = "Set the number of output dimensions to Wekinator.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // train
-    func = make_new_mfun( "void", "train", Wekinator_train );
-    func->doc = "Train the model with the current training set.";
+    // get_num_outputs
+    func = make_new_mfun( "int", "outputDims", Wekinator_get_num_outputs );
+    func->doc = "Get the number of output dimensions to Wekinator.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // clear
-    func = make_new_mfun( "void", "clear", Wekinator_clear );
-    func->doc = "Clear the training set.";
+    // set_task_type
+    func = make_new_mfun( "int", "taskType", Wekinator_set_task_type );
+    func->add_arg( "int", "task_type" );
+    func->doc = "Set the task type of the Wekinator. Options: AI.Regression, AI.Classification";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // predict
-    func = make_new_mfun( "int", "predict", Wekinator_predict );
-    func->add_arg( "float[]", "input" );
-    func->add_arg( "float[]", "output" );
-    func->doc = "Predict the output vector from the input vector.";
+    // get_task_type
+    func = make_new_mfun( "int", "taskType", Wekinator_get_task_type );
+    func->doc = "Get the task type id of the Wekinator.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // model type
-    func = make_new_mfun( "int", "modelType", Wekinator_ctrl_model_type );
-    func->add_arg( "int", "type" );
-    func->doc = "Set the model type. Possible values: AI.MLP (default), AI.KNN, AI.SVM.";
+    // get_task_type_name
+    func = make_new_mfun( "void", "taskTypeName", Wekinator_get_task_type_name );
+    func->add_arg( "string", "name" );
+    func->doc = "Get the task type name of the Wekinator.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // model type
-    func = make_new_mfun( "int", "modelType", Wekinator_cget_model_type );
-    func->doc = "Get the model type. Possible values: AI.MLP (default), AI.KNN, AI.SVM.";
+    // set_property
+    func = make_new_mfun( "void", "setProperty", Wekinator_set_property );
+    func->add_arg( "int", "property_type" );
+    func->add_arg( "string", "property_name" );
+    func->add_arg( "int", "property_value" );
+    func->doc = "Set the property of the Wekinator. See the Wekinator documentation for more information.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // save data
-    func = make_new_mfun( "void", "saveData", Wekinator_save_data );
-    func->add_arg( "string", "filename" );
-    func->doc = "Save the training data to file (format: .arff).";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    // load data
-    func = make_new_mfun( "void", "loadData", Wekinator_load_data );
-    func->add_arg( "string", "filename" );
-    func->doc = "Load the training data from file (format: .arff).";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    // input dims
-    func = make_new_mfun( "int", "inputDims", Wekinator_cget_input_dims );
-    func->doc = "Get the number of input dimensions.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    // output dims
-    func = make_new_mfun( "int", "outputDims", Wekinator_cget_output_dims );
-    func->doc = "Get the number of output dimensions.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    // num obs
-    func = make_new_mfun( "int", "numObs", Wekinator_cget_num_obs );
-    func->doc = "Get the number of observations in the training set.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    // set_property_int
-    func = make_new_mfun( "void", "setProperty", Wekinator_set_property_int );
-    func->add_arg( "int", "modelType" );
-    func->add_arg( "string", "key" );
-    func->add_arg( "int", "value" );
-    func->doc = "Set an integer property of the model.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    // set_property_float
-    func = make_new_mfun( "void", "setProperty", Wekinator_set_property_float );
-    func->add_arg( "int", "modelType" );
-    func->add_arg( "string", "key" );
-    func->add_arg( "float", "value" );
-    func->doc = "Set a float property of the model.";
+    // set_property1
+    func = make_new_mfun( "void", "setProperty", Wekinator_set_property1 );
+    func->add_arg( "int", "property_type" );
+    func->add_arg( "string", "property_name" );
+    func->add_arg( "float", "property_value" );
+    func->doc = "Set the property of the Wekinator. See the Wekinator documentation for more information.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // get_property_int
     func = make_new_mfun( "int", "getPropertyInt", Wekinator_get_property_int );
-    func->add_arg( "int", "modelType" );
-    func->add_arg( "string", "key" );
-    func->doc = "Get an integer property of the model.";
+    func->add_arg( "int", "property_type" );
+    func->add_arg( "string", "property_name" );
+    func->doc = "Get the property of the Wekinator. See the Wekinator documentation for more information.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // get_property_float
     func = make_new_mfun( "float", "getPropertyFloat", Wekinator_get_property_float );
-    func->add_arg( "int", "modelType" );
-    func->add_arg( "string", "key" );
-    func->doc = "Get a float property of the model.";
+    func->add_arg( "int", "property_type" );
+    func->add_arg( "string", "property_name" );
+    func->doc = "Get the property of the Wekinator. See the Wekinator documentation for more information.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set_model_type
+    func = make_new_mfun( "int", "modelType", Wekinator_set_model_type );
+    func->add_arg( "int", "model_type" );
+    func->doc =
+        "Set the model type of the Wekinator. Options: AI.Regression: AI.MLP, AI.LR, AI.Classification: AI.KNN, AI.SVM, AI.DT";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_model_type
+    func = make_new_mfun( "int", "modelType", Wekinator_get_model_type );
+    func->doc = "Get the model type id of the Wekinator.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_model_type_name
+    func = make_new_mfun( "void", "modelTypeName", Wekinator_get_model_type_name );
+    func->add_arg( "string", "name" );
+    func->doc = "Get the model type name of the Wekinator.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set_output_property
+    func = make_new_mfun( "void", "setOutputProperty", Wekinator_set_output_property );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "string", "property_name" );
+    func->add_arg( "int", "property_value" );
+    func->doc = "Set the output property of the Wekinator. See the Wekinator documentation for more information.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_output_property_int
+    func = make_new_mfun( "int", "getOutputPropertyInt", Wekinator_get_output_property_int );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "string", "property_name" );
+    func->doc = "Get the output property of the Wekinator. See the Wekinator documentation for more information.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set_output_property1
+    func = make_new_mfun( "void", "setOutputProperty", Wekinator_set_output_property1 );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "int", "property_type" );
+    func->add_arg( "string", "property_name" );
+    func->add_arg( "int", "property_value" );
+    func->doc = "Set the output property of the Wekinator. See the Wekinator documentation for more information.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set_output_property2
+    func = make_new_mfun( "void", "setOutputProperty", Wekinator_set_output_property2 );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "int", "property_type" );
+    func->add_arg( "string", "property_name" );
+    func->add_arg( "float", "property_value" );
+    func->doc = "Set the output property of the Wekinator. See the Wekinator documentation for more information.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_output_property_int1
+    func = make_new_mfun( "int", "getOutputPropertyInt", Wekinator_get_output_property_int1 );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "int", "property_type" );
+    func->add_arg( "string", "property_name" );
+    func->doc = "Get the output property of the Wekinator. See the Wekinator documentation for more information.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_output_property_float
+    func = make_new_mfun( "float", "getOutputPropertyFloat", Wekinator_get_output_property_float );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "int", "property_type" );
+    func->add_arg( "string", "property_name" );
+    func->doc = "Get the output property of the Wekinator. See the Wekinator documentation for more information.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set_output_property3
+    func = make_new_mfun( "void", "setOutputProperty", Wekinator_set_output_property3 );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "string", "property_name" );
+    func->add_arg( "int[]", "property_value" );
+    func->doc = "Set the output property of the Wekinator. See the Wekinator documentation for more information.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_output_property
+    func = make_new_mfun( "void", "getOutputProperty", Wekinator_get_output_property );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "string", "property_name" );
+    func->add_arg( "int[]", "property_value" );
+    func->doc = "Get the output property of the Wekinator. See the Wekinator documentation for more information.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set_inputs
+    func = make_new_mfun( "void", "input", Wekinator_set_inputs );
+    func->add_arg( "float[]", "inputs" );
+    func->doc = "Set the inputs of the Wekinator.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set_outputs
+    func = make_new_mfun( "void", "output", Wekinator_set_outputs );
+    func->add_arg( "float[]", "outputs" );
+    func->doc = "Set the outputs of the Wekinator.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // randomize_outputs
+    func = make_new_mfun( "void", "randomizeOutputs", Wekinator_randomize_outputs );
+    func->doc = "Randomize the outputs of the Wekinator.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_num_obs
+    func = make_new_mfun( "int", "numObs", Wekinator_get_num_obs );
+    func->doc = "Get the number of observations in the Wekinator.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_num_obs1
+    func = make_new_mfun( "int", "numObs", Wekinator_get_num_obs1 );
+    func->add_arg( "int", "output_index" );
+    func->doc = "Get the number of observations for the specified output in the Wekinator.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_obs
+    func = make_new_mfun( "void", "getObs", Wekinator_get_obs );
+    func->add_arg( "float[][]", "obs" );
+    func->doc = "Get the observations in the Wekinator.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_obs1
+    func = make_new_mfun( "void", "getObs", Wekinator_get_obs1 );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "float[][]", "obs" );
+    func->doc = "Get the observations for the specified output in the Wekinator.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // clear_obs
+    func = make_new_mfun( "void", "clearObs", Wekinator_clear_obs );
+    func->add_arg( "int", "lo" );
+    func->add_arg( "int", "hi" );
+    func->doc = "Clear the observations by id range.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // clear_obs1
+    func = make_new_mfun( "void", "clearObs", Wekinator_clear_obs1 );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "int", "lo" );
+    func->add_arg( "int", "hi" );
+    func->doc = "Clear the observations by id range for the specified output.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // save
+    func = make_new_mfun( "void", "save", Wekinator_save );
+    func->add_arg( "string", "filename" );
+    func->doc = "Save the Wekinator to a file.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // load
+    func = make_new_mfun( "void", "load", Wekinator_load );
+    func->add_arg( "string", "filename" );
+    func->doc = "Load the Wekinator from a file.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // export_obs
+    func = make_new_mfun( "void", "exportObs", Wekinator_export_obs );
+    func->add_arg( "string", "filename" );
+    func->doc = "Export the observations to a file.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // export_obs1
+    func = make_new_mfun( "void", "exportObs", Wekinator_export_obs1 );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "string", "filename" );
+    func->doc = "Export the observations for the specified output to a file.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // import_obs
+    func = make_new_mfun( "void", "importObs", Wekinator_import_obs );
+    func->add_arg( "string", "filename" );
+    func->doc = "Import the observations from a file.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // clear_all_obs
+    func = make_new_mfun( "void", "clearAllObs", Wekinator_clear_all_obs );
+    func->doc = "Clear all observations.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // clear_all_obs1
+    func = make_new_mfun( "void", "clearAllObs", Wekinator_clear_all_obs1 );
+    func->add_arg( "int", "output_index" );
+    func->doc = "Clear all observations for the specified output.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set_all_record_status
+    func = make_new_mfun( "void", "setAllRecordStatus", Wekinator_set_all_record_status );
+    func->add_arg( "int", "status" );
+    func->doc = "Set the record status for all outputs.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set_output_record_status
+    func = make_new_mfun( "void", "setOutputRecordStatus", Wekinator_set_output_record_status );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "int", "status" );
+    func->doc = "Set the record status for the specified output.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_output_record_status
+    func = make_new_mfun( "int", "getOutputRecordStatus", Wekinator_get_output_record_status );
+    func->add_arg( "int", "output_index" );
+    func->doc = "Get the record status for the specified output.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set_all_run_status
+    func = make_new_mfun( "void", "setAllRunStatus", Wekinator_set_all_run_status );
+    func->add_arg( "int", "status" );
+    func->doc = "Set the run status for all outputs.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set_output_run_status
+    func = make_new_mfun( "void", "setOutputRunStatus", Wekinator_set_output_run_status );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "int", "status" );
+    func->doc = "Set the run status for the specified output.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_output_run_status
+    func = make_new_mfun( "int", "getOutputRunStatus", Wekinator_get_output_run_status );
+    func->add_arg( "int", "output_index" );
+    func->doc = "Get the run status for the specified output.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add
+    func = make_new_mfun( "void", "add", Wekinator_add );
+    func->doc = "Add current inputs and outputs to the observations.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add1
+    func = make_new_mfun( "void", "add", Wekinator_add1 );
+    func->add_arg( "float[]", "inputs" );
+    func->add_arg( "float[]", "outputs" );
+    func->doc = "Add given inputs and outputs to the observations.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add2
+    func = make_new_mfun( "void", "add", Wekinator_add2 );
+    func->add_arg( "int", "output_index" );
+    func->add_arg( "float[]", "inputs" );
+    func->add_arg( "float[]", "outputs" );
+    func->doc = "Add given inputs and outputs to the observations for the specified output.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // next_round
+    func = make_new_mfun( "void", "nextRound", Wekinator_next_round );
+    func->doc = "Bump the recording round.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // train
+    func = make_new_mfun( "void", "train", Wekinator_train );
+    func->doc = "Train models for all outputs.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // predict
+    func = make_new_mfun( "void", "predict", Wekinator_predict );
+    func->add_arg( "float[]", "inputs" );
+    func->add_arg( "float[]", "outputs" );
+    func->doc = "Predict outputs for the given inputs.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // delete_last_round
+    func = make_new_mfun( "void", "deleteLastRound", Wekinator_delete_last_round );
+    func->doc = "Delete the last round of observations.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // clear
+    func = make_new_mfun( "void", "clear", Wekinator_clear );
+    func->doc = "Clear everything except the global properties.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_round
+    func = make_new_mfun( "int", "getRound", Wekinator_get_round );
+    func->doc = "Get the current recording round.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_all_record_status
+    func = make_new_mfun( "int", "getAllRecordStatus", Wekinator_get_all_record_status );
+    func->doc = "Get the record status for all outputs.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // get_all_run_status
+    func = make_new_mfun( "int", "getAllRunStatus", Wekinator_get_all_run_status );
+    func->doc = "Get the run status for all outputs.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -738,7 +1031,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[][]", "inputs" );
     func->add_arg( "float[][]", "outputs" );
     func->doc =
-        "Train the MLP with the given input and output observations with default learning rate=.001 and epochs=100. (Also see MLP.train(inputs,outputs,learningRate,epochs).)";
+        "Train the MLP with the given input and output observations with default learning rate=.01 and epochs=100. (Also see MLP.train(inputs,outputs,learningRate,epochs).)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // train2
@@ -883,6 +1176,27 @@ void shuffle( Chuck_Array4 & X, Chuck_Array4 & Y )
         Y.m_vector[i] = Y.m_vector[j];
         Y.m_vector[j] = temp;
     }
+}
+//-----------------------------------------------------------------------------
+// name: nextline()
+// desc: read next non-empty or commented line
+//-----------------------------------------------------------------------------
+t_CKBOOL nextline( std::ifstream & fin, string & line, t_CKBOOL commentIsHash )
+{
+    // skip over empty lines and commented lines (starts with #)
+    do
+    {
+        // get line
+        if( !std::getline( fin, line ) )
+        {
+            line = "";
+            return FALSE;
+        }
+        // ltrim leading white spaces
+        line = ltrim( line );
+    } while( line == "" || ( commentIsHash && line[0] == '#' ) );
+
+    return TRUE;
 }
 
 //-----------------------------------------------------------------------------
@@ -3339,17 +3653,8 @@ public:
     }
 
     // save
-    t_CKBOOL save( const string & filename )
+    t_CKBOOL save( ofstream & fout )
     {
-        // open file
-        ofstream fout( filename.c_str() );
-        // check
-        if( !fout.good() )
-        {
-            EM_error3( "MLP.save(): cannot open file for output:\n  |- %s", filename.c_str() );
-            return FALSE;
-        }
-
         fout << "# layers" << endl;
         // fout << units_per_layer.size() << endl;
         for( t_CKINT i = 0; i < units_per_layer.size(); i++ )
@@ -3379,41 +3684,27 @@ public:
                 fout << biases[i]->v( j ) << " ";
             fout << endl;
         }
-
         return TRUE;
     }
 
-    // read next non-empty or commented line
-    t_CKBOOL nextline( std::ifstream & fin, string & line, t_CKBOOL commentIsHash )
+    // save
+    t_CKBOOL save( const string & filename )
     {
-        // skip over empty lines and commented lines (starts with #)
-        do
-        {
-            // get line
-            if( !std::getline( fin, line ) )
-            {
-                line = "";
-                return FALSE;
-            }
-            // ltrim leading white spaces
-            line = ltrim( line );
-        } while( line == "" || ( commentIsHash && line[0] == '#' ) );
-
-        return TRUE;
-    }
-
-    // load
-    t_CKBOOL load( const string & filename )
-    {
-        // fin
-        ifstream fin( filename.c_str() );
+        // open file
+        ofstream fout( filename.c_str() );
         // check
-        if( !fin.good() )
+        if( !fout.good() )
         {
-            EM_error3( "MLP.load(): cannot open file:\n  |- %s", filename.c_str() );
+            EM_error3( "MLP.save(): cannot open file for output:\n  |- %s", filename.c_str() );
             return FALSE;
         }
 
+        return save( fout );
+    }
+
+    // load
+    t_CKBOOL load( ifstream & fin )
+    {
         string line;
         t_CKINT num;
 
@@ -3431,7 +3722,7 @@ public:
         // initialize
         if( !init( units_per_layer_ ) )
         {
-            EM_error3( "MLP.load(): cannot initialize model from file:\n  |- %s", filename.c_str() );
+            EM_error3( "MLP.load(): cannot initialize model from file" );
             return FALSE;
         }
 
@@ -3465,8 +3756,21 @@ public:
             for( t_CKINT j = 0; j < units_per_layer[i + 1]; j++ )
                 strin >> biases[i]->v( j );
         }
-
         return TRUE;
+    }
+
+    // load
+    t_CKBOOL load( const string & filename )
+    {
+        // fin
+        ifstream fin( filename.c_str() );
+        // check
+        if( !fin.good() )
+        {
+            EM_error3( "MLP.load(): cannot open file:\n  |- %s", filename.c_str() );
+            return FALSE;
+        }
+        return load( fin );
     }
 };
 
@@ -3527,7 +3831,7 @@ CK_DLL_MFUN( MLP_train )
     Chuck_Array4 * inputs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
     Chuck_Array4 * outputs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
     // train, with defaults
-    mlp->train( *inputs, *outputs, 1e-3, 100 );
+    mlp->train( *inputs, *outputs, .01, 100 );
 }
 
 CK_DLL_MFUN( MLP_train2 )
@@ -3649,41 +3953,363 @@ CK_DLL_SFUN( MLP_shuffle )
 }
 
 //-----------------------------------------------------------------------------
+// name: struct Wekinator_Model
+// desc: Wekinator model implementation | added 1.4.2.1 (yikai)
+//-----------------------------------------------------------------------------
+struct Wekinator_Model
+{
+public:
+    // data
+    vector<t_CKINT> example_ids;
+
+    // model
+    MLP_Object * mlp;
+    KNN_Object * knn;
+    SVM_Object * svm;
+
+    // -- properties --
+    t_CKINT task_type; // AI.Regression, AI.Classification
+    t_CKINT model_type; // AI.Regression: AI.MLP, AI.LR; AI.Classification: AI.KNN, AI.SVM, AI.DT
+    // AI.Classification
+    t_CKINT classification_classes;
+    // AI.Regression
+    t_CKFLOAT regression_min;
+    t_CKFLOAT regression_max;
+    t_CKBOOL regression_limit;
+    // AI.MLP
+    t_CKINT mlp_hidden_layers;
+    t_CKINT mlp_nodes_per_hidden_layer;
+    t_CKFLOAT mlp_learning_rate;
+    t_CKINT mlp_epochs;
+    // AI.KNN
+    t_CKINT knn_k;
+    // system
+    t_CKBOOL record_status;
+    t_CKBOOL run_status;
+    t_CKBOOL train_status;
+    vector<t_CKINT> connected_inputs;
+
+public:
+    Wekinator_Model()
+    {
+        // model
+        mlp = NULL;
+        knn = NULL;
+        svm = NULL;
+        // -- properties --
+        task_type = g_tt_regression;
+        model_type = g_mt_mlp;
+        // AI.Classification
+        classification_classes = 0;
+        // AI.Regression
+        regression_min = 0.0;
+        regression_max = 1.0;
+        regression_limit = FALSE;
+        // AI.MLP
+        mlp_hidden_layers = 1;
+        mlp_nodes_per_hidden_layer = 0;
+        mlp_learning_rate = 0.01;
+        mlp_epochs = 100;
+        // AI.KNN
+        knn_k = 1;
+        // system
+        record_status = TRUE;
+        run_status = TRUE;
+        train_status = FALSE;
+    }
+
+    Wekinator_Model( const Wekinator_Model & other )
+    {
+        // model
+        mlp = NULL;
+        knn = NULL;
+        svm = NULL;
+        // -- properties --
+        task_type = other.task_type;
+        model_type = other.model_type;
+        // AI.Classification
+        classification_classes = other.classification_classes;
+        // AI.Regression
+        regression_min = other.regression_min;
+        regression_max = other.regression_max;
+        regression_limit = other.regression_limit;
+        // AI.MLP
+        mlp_hidden_layers = other.mlp_hidden_layers;
+        mlp_nodes_per_hidden_layer = other.mlp_nodes_per_hidden_layer;
+        mlp_learning_rate = other.mlp_learning_rate;
+        mlp_epochs = other.mlp_epochs;
+        // AI.KNN
+        knn_k = other.knn_k;
+        // system
+        record_status = other.record_status;
+        run_status = other.run_status;
+        train_status = FALSE;
+        connected_inputs = other.connected_inputs;
+    }
+
+    ~Wekinator_Model()
+    {
+        clear();
+    }
+
+    void clear()
+    {
+        // data
+        example_ids.clear();
+        // model
+        SAFE_DELETE( mlp );
+        SAFE_DELETE( knn );
+        SAFE_DELETE( svm );
+        // system
+        connected_inputs.clear();
+    }
+
+    void reset_connected_inputs( t_CKINT num_inputs )
+    {
+        connected_inputs.resize( num_inputs );
+        for( t_CKINT i = 0; i < num_inputs; i++ )
+            connected_inputs[i] = i;
+    }
+
+    void clear_obs( t_CKINT lo, t_CKINT hi )
+    {
+        // sanity check
+        if( lo > hi )
+        {
+            EM_error3( "Wekinator.clear_obs: invalid range: %d, %d", lo, hi );
+        }
+        // erase
+        t_CKINT start = 0, end = 0;
+        for( t_CKINT i = 0; i < example_ids.size(); i++ )
+        {
+            if( example_ids[i] < lo )
+                ++start;
+            if( example_ids[i] <= hi )
+                ++end;
+        }
+        if( start < end )
+            example_ids.erase( example_ids.begin() + start, example_ids.begin() + end );
+    }
+
+    // save
+    void save( ofstream & fout )
+    {
+        fout << "# obs_ids" << endl;
+        fout << example_ids.size() << endl;
+        for( t_CKINT i = 0; i < example_ids.size(); i++ )
+            fout << example_ids[i] << " ";
+        fout << endl;
+        fout << "# connected_inputs" << endl;
+        fout << connected_inputs.size() << endl;
+        for( t_CKINT i = 0; i < connected_inputs.size(); i++ )
+            fout << connected_inputs[i] << " ";
+        fout << endl;
+
+        fout << "# task_type" << endl;
+        fout << task_type << endl;
+        fout << "# model_type" << endl;
+        fout << model_type << endl;
+        fout << "# classification_classes" << endl;
+        fout << classification_classes << endl;
+        fout << "# regression_min" << endl;
+        fout << regression_min << endl;
+        fout << "# regression_max" << endl;
+        fout << regression_max << endl;
+        fout << "# regression_limit" << endl;
+        fout << regression_limit << endl;
+        fout << "# mlp_hidden_layers" << endl;
+        fout << mlp_hidden_layers << endl;
+        fout << "# mlp_nodes_per_hidden_layer" << endl;
+        fout << mlp_nodes_per_hidden_layer << endl;
+        fout << "# mlp_learning_rate" << endl;
+        fout << mlp_learning_rate << endl;
+        fout << "# mlp_epochs" << endl;
+        fout << mlp_epochs << endl;
+        fout << "# knn_k" << endl;
+        fout << knn_k << endl;
+        fout << "# record_status" << endl;
+        fout << record_status << endl;
+        fout << "# run_status" << endl;
+        fout << run_status << endl;
+        fout << "# train_status" << endl;
+        fout << train_status << endl;
+
+        if( train_status )
+        {
+            if( model_type == g_mt_mlp )
+            {
+                fout << "# mlp" << endl;
+                mlp->save( fout );
+            }
+        }
+    }
+
+    // load
+    void load( ifstream & fin )
+    {
+        // clear
+        clear();
+
+        t_CKINT num;
+        string line;
+        istringstream strin;
+
+        // obs_ids
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> num;
+        if (num > 0)
+        {
+            nextline( fin, line, TRUE );
+            strin.clear();
+            strin.str( line );
+            example_ids.resize( num );
+            for( t_CKINT i = 0; i < num; i++ )
+                strin >> example_ids[i];
+        }
+
+        // connected_inputs
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> num;
+        if (num > 0)
+        {
+            nextline( fin, line, TRUE );
+            strin.clear();
+            strin.str( line );
+            connected_inputs.resize( num );
+            for( t_CKINT i = 0; i < num; i++ )
+                strin >> connected_inputs[i];
+        }
+
+        // task_type
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> task_type;
+
+        // model_type
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> model_type;
+
+        // classification_classes
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> classification_classes;
+
+        // regression_min
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> regression_min;
+
+        // regression_max
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> regression_max;
+
+        // regression_limit
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> regression_limit;
+
+        // mlp_hidden_layers
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> mlp_hidden_layers;
+
+        // mlp_nodes_per_hidden_layer
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> mlp_nodes_per_hidden_layer;
+
+        // mlp_learning_rate
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> mlp_learning_rate;
+
+        // mlp_epochs
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> mlp_epochs;
+
+        // knn_k
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> knn_k;
+
+        // record_status
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> record_status;
+
+        // run_status
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> run_status;
+
+        // train_status
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> train_status;
+
+        if( train_status )
+        {
+            if( model_type == g_mt_mlp )
+            {
+                mlp = new MLP_Object();
+                mlp->load( fin );
+            }
+        }
+    }
+};
+
+//-----------------------------------------------------------------------------
 // name: struct Wekinator_Object
-// desc: Wekinator Implementation | added 1.4.2.1 (yikai)
+// desc: Wekinator implementation | 1.4.2.1 (yikai) added
+//       adapted from Rebecca Fiebrink's Wekinator java/Weka implementation
 //-----------------------------------------------------------------------------
 struct Wekinator_Object
 {
 private:
-    ChaiVectorFast<t_CKFLOAT> * x;
-    ChaiVectorFast<t_CKFLOAT> * y;
-    ChaiMatrixFast<t_CKFLOAT> * X;
-    ChaiMatrixFast<t_CKFLOAT> * Y;
-    t_CKINT Xi;
-
-    // vector to do multi-target regression (see below)
-    vector<MLP_Object *> mlps;
-    vector<KNN_Object *> knns;
-    vector<SVM_Object *> svms;
-
-    // properties
-    t_CKINT mlp_hidden_layers;
-    t_CKINT mlp_nodes_per_hidden_layer;
-    t_CKINT mlp_epochs;
-    t_CKFLOAT mlp_learning_rate;
-    t_CKINT knn_k;
+    // input
+    t_CKINT num_inputs;
+    vector<t_CKFLOAT> inputs;
+    vector<string> inputs_names;
+    // output
+    t_CKINT num_outputs;
+    vector<t_CKFLOAT> outputs;
+    vector<string> outputs_names;
+    // model
+    Wekinator_Model dummy_model;
+    vector<Wekinator_Model> models;
+    // data
+    vector<vector<t_CKFLOAT> > examples;
+    t_CKINT recording_round;
 
     //-------------------------------------------------------------------------
-    // whether to train a separate model for each output dimension
-    // t_CKBOOL trainModelPerOutput;
-    /* looool thanks chatGPT; sounds astoundingly competent
+    // why train a separate model for each output channel?
+    /* let's ask chatGPT (a stochastic parrot that hallucinates -M.S.)
     Ge: in working with multi-layer perceptrons, what is the difference
        between having all output dimensions in one network, versus having a
        separate network trained on each dimension of the output?
-
     chatGPT: In multi-layer perceptrons (MLPs), the number of output dimensions
        represents the number of distinct classes or values that the model can predict.
-
     Having all output dimensions in one network means that the MLP outputs
        vector with multiple dimensions, each representing a distinct class
        or value that the model can predict. This approach is often used in
@@ -3692,7 +4318,6 @@ private:
        advantage of this approach is that the model can learn complex relationships
        between input features and output classes/values, and it can capture
        dependencies between different output dimensions.
-
     On the other hand, having a separate network trained on each dimension of
        the output means that multiple MLPs are trained, each one responsible
        for predicting a single dimension of the output. This approach is often
@@ -3701,7 +4326,6 @@ private:
        approach is that it can be easier to train and optimize each individual
        MLP, and it can also be more computationally efficient than training a
        single MLP with multiple output dimensions.
-
     In general, whether to use a single MLP with multiple output dimensions or
        multiple MLPs depends on the specific problem and the nature of the
        output variables. It's worth noting that some architectures, such as the
@@ -3711,233 +4335,1141 @@ private:
     //-------------------------------------------------------------------------
 
 public:
-    t_CKINT model_type;
     // constructor
     Wekinator_Object()
     {
-        x = NULL;
-        y = NULL;
-        X = NULL;
-        Y = NULL;
-        Xi = 0;
-        model_type = 0;
-        mlp_hidden_layers = 1;
-        mlp_nodes_per_hidden_layer = 0;
-        mlp_learning_rate = 0.3;
-        mlp_epochs = 500;
-        knn_k = 1;
+        num_inputs = 0;
+        num_outputs = 0;
+        recording_round = 0;
     }
 
     // destructor
     ~Wekinator_Object()
     {
-        clear();
-        mlp_hidden_layers = 0;
-        mlp_learning_rate = 0.0;
-        mlp_epochs = 0;
-        knn_k = 0;
+        inputs.clear();
+        inputs_names.clear();
+        outputs.clear();
+        outputs_names.clear();
+        examples.clear();
+        models.clear();
     }
 
-    // input
-    void input( Chuck_Array8 & vec_ )
+    // clear_all_obs
+    void clear_all_obs()
     {
-        // check
-        if( !x )
-        {
-            x = new ChaiVectorFast<t_CKFLOAT>( vec_.size() );
-        }
-        else if( x->size() != vec_.size() )
-        {
-            EM_error3( "Wekinator: input vector size mismatch: %d != %d",
-                       x->size(), vec_.size() );
-        }
-        // copy
-        for( t_CKINT i = 0; i < vec_.size(); i++ )
-            x->v( i ) = vec_.m_vector[i];
+        examples.clear();
+        for( t_CKINT i = 0; i < models.size(); i++ )
+            models[i].example_ids.clear();
+        recording_round = 0;
     }
 
-    // output
-    void output( Chuck_Array8 & vec_ )
+    // set_num_inputs
+    void set_num_inputs( t_CKINT num_inputs_ )
     {
-        // check
-        if( !y )
+        if( num_inputs_ < 0 )
         {
-            y = new ChaiVectorFast<t_CKFLOAT>( vec_.size() );
+            EM_error3( "Wekinator.set_num_inputs: number of inputs must be positive." );
+            return;
         }
-        else if( y->size() != vec_.size() )
-        {
-            EM_error3( "Wekinator: output vector size mismatch: %d != %d",
-                       y->size(), vec_.size() );
-        }
-        // copy
-        for( t_CKINT i = 0; i < vec_.size(); i++ )
-            y->v( i ) = vec_.m_vector[i];
+        if( num_inputs_ == num_inputs )
+            return;
+
+        num_inputs = num_inputs_;
+
+        inputs.resize( num_inputs );
+
+        inputs_names.resize( num_inputs );
+        for( t_CKINT i = 0; i < num_inputs; i++ )
+            inputs_names[i] = "input-" + to_string( i );
+
+        dummy_model.reset_connected_inputs( num_inputs );
+        for( t_CKINT i = 0; i < models.size(); i++ )
+            models[i].reset_connected_inputs( num_inputs );
+
+        clear_all_obs();
     }
 
-    // add
-    void add()
+    // set_num_outputs
+    void set_num_outputs( t_CKINT num_outputs_ )
     {
-        // check
-        if( !X )
+        if( num_outputs_ < 0 )
         {
-            X = new ChaiMatrixFast<t_CKFLOAT>( 100, x->size() );
-            Y = new ChaiMatrixFast<t_CKFLOAT>( 100, y->size() );
+            EM_error3( "Wekinator.set_num_outputs: number of outputs must be positive." );
+            return;
         }
-        else if( X->xDim() == Xi )
+        if( num_outputs_ == num_outputs )
+            return;
+
+        num_outputs = num_outputs_;
+
+        outputs.resize( num_outputs );
+
+        outputs_names.resize( num_outputs );
+        for( t_CKINT i = 0; i < num_outputs; i++ )
+            outputs_names[i] = "output-" + to_string( i );
+
+        models.clear();
+        for( t_CKINT i = 0; i < num_outputs; i++ )
+            models.push_back( dummy_model );
+
+        clear_all_obs();
+    }
+
+    // set_inputs
+    void set_inputs( Chuck_Array8 & inputs_ )
+    {
+        if( num_inputs == 0 )
+            set_num_inputs( inputs_.size() );
+        else if( inputs_.size() != num_inputs )
         {
-            ChaiMatrixFast<t_CKFLOAT> * X_ = new ChaiMatrixFast<t_CKFLOAT>( Xi * 2, x->size() );
-            ChaiMatrixFast<t_CKFLOAT> * Y_ = new ChaiMatrixFast<t_CKFLOAT>( Xi * 2, y->size() );
-            for( t_CKINT i = 0; i < Xi; i++ )
-            {
-                for( t_CKINT j = 0; j < x->size(); j++ )
-                    X_->v( i, j ) = X->v( i, j );
-                for( t_CKINT j = 0; j < y->size(); j++ )
-                    Y_->v( i, j ) = Y->v( i, j );
-            }
-            SAFE_DELETE( X );
-            SAFE_DELETE( Y );
-            X = X_;
-            Y = Y_;
+            EM_error3( "Wekinator.set_inputs: number of inputs does not match." );
+            return;
         }
-        // copy
-        for( t_CKINT i = 0; i < x->size(); i++ )
-            X->v( Xi, i ) = x->v( i );
-        for( t_CKINT i = 0; i < y->size(); i++ )
-            Y->v( Xi, i ) = y->v( i );
-        // increment
-        Xi++;
+        inputs = inputs_.m_vector;
+    }
+
+    // set_outputs
+    void set_outputs( Chuck_Array8 & outputs_ )
+    {
+        if( num_outputs == 0 )
+            set_num_outputs( outputs_.size() );
+        else if( outputs_.size() != num_outputs )
+        {
+            EM_error3( "Wekinator.set_outputs: number of outputs does not match." );
+            return;
+        }
+        outputs = outputs_.m_vector;
     }
 
     // train
     void train()
     {
-        // train
-        if( model_type == g_mt_mlp )
+        ChaiMatrixFast<t_CKFLOAT> X;
+        ChaiMatrixFast<t_CKFLOAT> Y;
+        t_CKINT n, d, r;
+        for( t_CKINT i = 0; i < num_outputs; i++ )
         {
-            for( t_CKINT i = 0; i < mlps.size(); i++ )
-                SAFE_DELETE( mlps[i] );
-            mlps.clear();
-
-            for( t_CKINT i = 0; i < y->size(); i++ )
+            // prepare data
+            n = models[i].example_ids.size();
+            d = models[i].connected_inputs.size();
+            X.allocate( n, d );
+            Y.allocate( n, 1 );
+            for( t_CKINT j = 0; j < n; j++ )
             {
-                mlps.push_back( new MLP_Object() );
-                // init
-                vector<t_CKUINT> units_per_layer;
-                units_per_layer.push_back( x->size() ); // input layer
-                t_CKINT
-                    nodes_per_hidden_layer = mlp_nodes_per_hidden_layer == 0 ? x->size() : mlp_nodes_per_hidden_layer;
-                for( t_CKINT j = 0; j < mlp_hidden_layers; j++ )
-                    units_per_layer.push_back( nodes_per_hidden_layer ); // hidden layer: same number of nodes as input layer
-                units_per_layer.push_back( 1 ); // output layer
-                mlps[i]->init( units_per_layer );
-                // slice Y
-                ChaiMatrixFast<t_CKFLOAT> Y_( Y->xDim(), 1 );
-                for( t_CKINT j = 0; j < Y->xDim(); j++ )
-                    Y_.v( j, 0 ) = Y->v( j, i );
-                // train
-                mlps[i]->train( *X, Y_, Xi, mlp_learning_rate, mlp_epochs );
+                r = models[i].example_ids[j];
+                for( t_CKINT k = 0; k < d; k++ )
+                    X( j, k ) = examples[r][3 + models[i].connected_inputs[k]];
+                Y( j, 0 ) = examples[r][3 + num_inputs + i];
+            }
+            // prepare model
+            if( models[i].task_type == g_tt_regression )
+            {
+                if( models[i].model_type == g_mt_mlp )
+                {
+                    SAFE_DELETE( models[i].mlp );
+                    models[i].mlp = new MLP_Object();
+                    // init
+                    vector<t_CKUINT> units_per_layer;
+                    units_per_layer.push_back( d );
+                    t_CKINT nodes_per_hidden_layer =
+                        models[i].mlp_nodes_per_hidden_layer == 0 ? d : models[i].mlp_nodes_per_hidden_layer;
+                    for( t_CKINT j = 0; j < models[i].mlp_hidden_layers; j++ )
+                        units_per_layer.push_back( nodes_per_hidden_layer );
+                    units_per_layer.push_back( 1 );
+                    models[i].mlp->init( units_per_layer );
+                    // train
+                    models[i].mlp->train( X, Y, n, models[i].mlp_learning_rate, models[i].mlp_epochs );
+                }
+                else
+                {
+                    EM_error3( "Wekinator.train: unknown regression model_type." );
+                    return;
+                }
+            }
+            else if( models[i].task_type == g_tt_classification )
+            {
+                EM_error3( "Wekinator.train: classification not implemented yet." );
+                return;
+            }
+            // set status
+            models[i].train_status = TRUE;
+        }
+    }
+
+    // set_property
+    void set_property( t_CKINT property_type, Chuck_String & property_name, t_CKINT property_value )
+    {
+        string key = tolower( property_name.str() );
+
+        if( property_type == g_tt_classification )
+        {
+            if( key == "classes" )
+            {
+                dummy_model.classification_classes = property_value;
+                for( t_CKINT i = 0; i < models.size(); i++ )
+                    models[i].classification_classes = property_value;
+            }
+            else
+            {
+                EM_error3( "Wekinator.set_property: unknown classification property." );
+                return;
             }
         }
-        else if( model_type == g_mt_knn )
+        else if( property_type == g_tt_regression )
         {
-            for( t_CKINT i = 0; i < knns.size(); i++ )
-                SAFE_DELETE( knns[i] );
-            knns.clear();
-
-            knns.push_back( new KNN_Object() );
-            knns[0]->train( *X, Xi );
-        }
-        else if( model_type == g_mt_svm )
-        {
-            for( t_CKINT i = 0; i < svms.size(); i++ )
-                SAFE_DELETE( svms[i] );
-            svms.clear();
-
-            for( t_CKINT i = 0; i < y->size(); i++ )
+            if( key == "limit" )
             {
-                svms.push_back( new SVM_Object() );
-                // slice Y
-                ChaiMatrixFast<t_CKFLOAT> Y_( Y->xDim(), 1 );
-                for( t_CKINT j = 0; j < Y->xDim(); j++ )
-                    Y_.v( j, 0 ) = Y->v( j, i );
-                // train
-                svms[i]->train( *X, Y_, Xi );
+                if( property_value != 0 && property_value != 1 )
+                {
+                    EM_error3( "Wekinator.set_property: regression limit must be true or false." );
+                    return;
+                }
+                dummy_model.regression_limit = property_value;
+                for( t_CKINT i = 0; i < models.size(); i++ )
+                    models[i].regression_limit = property_value;
+            }
+            else if( key == "min" )
+            {
+                dummy_model.regression_min = property_value;
+                for( t_CKINT i = 0; i < models.size(); i++ )
+                    models[i].regression_min = property_value;
+            }
+            else if( key == "max" )
+            {
+                dummy_model.regression_max = property_value;
+                for( t_CKINT i = 0; i < models.size(); i++ )
+                    models[i].regression_max = property_value;
+            }
+            else
+            {
+                EM_error3( "Wekinator.set_property: unknown regression property." );
+                return;
+            }
+        }
+
+        if( property_type == g_mt_knn )
+        {
+            if( key == "k" )
+            {
+                dummy_model.knn_k = property_value;
+                for( t_CKINT i = 0; i < models.size(); i++ )
+                    models[i].knn_k = property_value;
+            }
+            else
+            {
+                EM_error3( "Wekinator.set_property: unknown kNN property." );
+                return;
+            }
+        }
+        else if( property_type == g_mt_mlp )
+        {
+            if( key == "hiddenlayers" )
+            {
+                dummy_model.mlp_hidden_layers = property_value;
+                for( t_CKINT i = 0; i < models.size(); i++ )
+                    models[i].mlp_hidden_layers = property_value;
+            }
+            else if( key == "nodesperhiddenlayer" )
+            {
+                dummy_model.mlp_nodes_per_hidden_layer = property_value;
+                for( t_CKINT i = 0; i < models.size(); i++ )
+                    models[i].mlp_nodes_per_hidden_layer = property_value;
+            }
+            else if( key == "epochs" )
+            {
+                dummy_model.mlp_epochs = property_value;
+                for( t_CKINT i = 0; i < models.size(); i++ )
+                    models[i].mlp_epochs = property_value;
+            }
+            else
+            {
+                EM_error3( "Wekinator.set_property: unknown MLP property." );
+                return;
             }
         }
     }
 
-    // clear
-    void clear()
+    // set_property
+    void set_property( t_CKINT property_type, Chuck_String & property_name, t_CKFLOAT property_value )
     {
-        SAFE_DELETE( x );
-        SAFE_DELETE( y );
-        SAFE_DELETE( X );
-        SAFE_DELETE( Y );
-        Xi = 0;
-        for( t_CKINT i = 0; i < mlps.size(); i++ )
-            SAFE_DELETE( mlps[i] );
-        for( t_CKINT i = 0; i < knns.size(); i++ )
-            SAFE_DELETE( knns[i] );
-        for( t_CKINT i = 0; i < svms.size(); i++ )
-            SAFE_DELETE( svms[i] );
-        mlps.clear();
-        knns.clear();
-        svms.clear();
-        model_type = 0;
-        mlp_nodes_per_hidden_layer = 0;
+        string key = tolower( property_name.str() );
+
+        if( property_type == g_tt_regression )
+        {
+            if( key == "min" )
+            {
+                dummy_model.regression_min = property_value;
+                for( t_CKINT i = 0; i < models.size(); i++ )
+                    models[i].regression_min = property_value;
+            }
+            else if( key == "max" )
+            {
+                dummy_model.regression_max = property_value;
+                for( t_CKINT i = 0; i < models.size(); i++ )
+                    models[i].regression_max = property_value;
+            }
+            else
+            {
+                EM_error3( "Wekinator.set_property: unknown regression property." );
+                return;
+            }
+        }
+
+        if( property_type == g_mt_mlp )
+        {
+            if( key == "learningrate" )
+            {
+                dummy_model.mlp_learning_rate = property_value;
+                for( t_CKINT i = 0; i < models.size(); i++ )
+                    models[i].mlp_learning_rate = property_value;
+            }
+            else
+            {
+                EM_error3( "Wekinator.set_property: unknown MLP property." );
+                return;
+            }
+        }
+    }
+
+    // get_property_int
+    t_CKINT get_property_int( t_CKINT property_type, Chuck_String & property_name )
+    {
+        string key = tolower( property_name.str() );
+
+        if( property_type == g_tt_classification )
+        {
+            if( key == "classes" )
+                return dummy_model.classification_classes;
+            else
+            {
+                EM_error3( "Wekinator.get_property: unknown classification property." );
+                return 0;
+            }
+        }
+        else if( property_type == g_tt_regression )
+        {
+            if( key == "limit" )
+                return dummy_model.regression_limit;
+            else
+            {
+                EM_error3( "Wekinator.get_property: unknown regression property." );
+                return 0;
+            }
+        }
+
+        if( property_type == g_mt_knn )
+        {
+            if( key == "k" )
+                return dummy_model.knn_k;
+            else
+            {
+                EM_error3( "Wekinator.get_property: unknown kNN property." );
+                return 0;
+            }
+        }
+        else if( property_type == g_mt_mlp )
+        {
+            if( key == "hiddenlayers" )
+                return dummy_model.mlp_hidden_layers;
+            else if( key == "nodesperhiddenlayer" )
+                return dummy_model.mlp_nodes_per_hidden_layer == 0 ? num_inputs
+                                                                   : dummy_model.mlp_nodes_per_hidden_layer;
+            else if( key == "epochs" )
+                return dummy_model.mlp_epochs;
+            else
+            {
+                EM_error3( "Wekinator.get_property: unknown MLP property." );
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    // get_property_float
+    t_CKFLOAT get_property_float( t_CKINT property_type, Chuck_String & property_name )
+    {
+        string key = tolower( property_name.str() );
+
+        if( property_type == g_tt_regression )
+        {
+            if( key == "min" )
+                return dummy_model.regression_min;
+            else if( key == "max" )
+                return dummy_model.regression_max;
+            else
+            {
+                EM_error3( "Wekinator.get_property: unknown regression property." );
+                return 0;
+            }
+        }
+
+        if( property_type == g_mt_mlp )
+        {
+            if( key == "learningrate" )
+                return dummy_model.mlp_learning_rate;
+            else
+            {
+                EM_error3( "Wekinator.get_property: unknown MLP property." );
+                return 0;
+            }
+        }
+
+        return 0;
+    }
+
+    // set_output_property
+    void set_output_property( t_CKINT output_index, Chuck_String & property_name, t_CKINT property_value )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.set_output_property: output index out of range." );
+            return;
+        }
+
+        string key = tolower( property_name.str() );
+
+        if( key == "tasktype" )
+        {
+            if( property_value == g_tt_classification || property_value == g_tt_regression )
+            {
+                models[output_index].task_type = property_value;
+            }
+            else
+            {
+                EM_error3( "Wekinator.set_output_property: unknown output task_type." );
+                return;
+            }
+        }
+        else if( key == "modeltype" )
+        {
+            if( models[output_index].task_type == g_tt_classification )
+            {
+                if( property_value == g_mt_knn )
+                {
+                    models[output_index].model_type = property_value;
+                }
+                else
+                {
+                    EM_error3( "Wekinator.set_output_property: unknown classification model_type." );
+                    return;
+                }
+            }
+            else if( models[output_index].task_type == g_tt_regression )
+            {
+                if( property_value == g_mt_mlp )
+                {
+                    models[output_index].model_type = property_value;
+                }
+                else
+                {
+                    EM_error3( "Wekinator.set_output_property: unknown regression model_type." );
+                    return;
+                }
+            }
+        }
+        else
+        {
+            EM_error3( "Wekinator.set_output_property: unknown output property." );
+            return;
+        }
+    }
+
+    // set_output_property
+    void set_output_property( t_CKINT output_index,
+                              t_CKINT property_type,
+                              Chuck_String & property_name,
+                              t_CKINT property_value )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.set_output_property: output index out of range." );
+            return;
+        }
+
+        string key = tolower( property_name.str() );
+
+        if( property_type == g_tt_classification )
+        {
+            if( key == "classes" )
+            {
+                models[output_index].classification_classes = property_value;
+            }
+            else
+            {
+                EM_error3( "Wekinator.set_output_property: unknown classification property." );
+                return;
+            }
+        }
+        else if( property_type == g_tt_regression )
+        {
+            if( key == "limit" )
+            {
+                if( property_value != 0 && property_value != 1 )
+                {
+                    EM_error3( "Wekinator.set_output_property: regression limit must be true or false." );
+                    return;
+                }
+                models[output_index].regression_limit = property_value;
+            }
+            else if( key == "min" )
+            {
+                models[output_index].regression_min = property_value;
+            }
+            else if( key == "max" )
+            {
+                models[output_index].regression_max = property_value;
+            }
+            else
+            {
+                EM_error3( "Wekinator.set_output_property: unknown regression property." );
+                return;
+            }
+        }
+
+        if( property_type == g_mt_knn )
+        {
+            if( key == "k" )
+            {
+                models[output_index].knn_k = property_value;
+            }
+            else
+            {
+                EM_error3( "Wekinator.set_output_property: unknown kNN property." );
+                return;
+            }
+        }
+        else if( property_type == g_mt_mlp )
+        {
+            if( key == "hiddenlayers" )
+            {
+                models[output_index].mlp_hidden_layers = property_value;
+            }
+            else if( key == "nodesperhiddenlayer" )
+            {
+                models[output_index].mlp_nodes_per_hidden_layer = property_value;
+            }
+            else if( key == "epochs" )
+            {
+                models[output_index].mlp_epochs = property_value;
+            }
+            else
+            {
+                EM_error3( "Wekinator.set_output_property: unknown MLP property." );
+                return;
+            }
+        }
+    }
+
+    // set_output_property
+    void set_output_property( t_CKINT output_index,
+                              t_CKINT property_type,
+                              Chuck_String & property_name,
+                              t_CKFLOAT property_value )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.set_output_property: output index out of range." );
+            return;
+        }
+
+        string key = tolower( property_name.str() );
+
+        if( property_type == g_mt_mlp )
+        {
+            if( key == "learningrate" )
+            {
+                models[output_index].mlp_learning_rate = property_value;
+            }
+            else
+            {
+                EM_error3( "Wekinator.set_output_property: unknown MLP property." );
+                return;
+            }
+        }
+    }
+
+    // get_output_property_int
+    t_CKINT get_output_property_int( t_CKINT output_index, Chuck_String & property_name )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.get_output_property: output index out of range." );
+            return 0;
+        }
+
+        string key = tolower( property_name.str() );
+
+        if( key == "tasktype" )
+        {
+            return models[output_index].task_type;
+        }
+        else if( key == "modeltype" )
+        {
+            return models[output_index].model_type;
+        }
+        else
+        {
+            EM_error3( "Wekinator.get_output_property: unknown output property." );
+            return 0;
+        }
+    }
+
+    // get_output_property_float
+    t_CKFLOAT get_output_property_float( t_CKINT output_index, Chuck_String & property_name )
+    {
+        EM_error3( "Wekinator.get_output_property: unknown output property." );
+        return 0;
+    }
+
+    // get_output_property_int1
+    t_CKINT get_output_property_int( t_CKINT output_index, t_CKINT property_type, Chuck_String & property_name )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.get_output_property: output index out of range." );
+            return 0;
+        }
+
+        string key = tolower( property_name.str() );
+
+        if( property_type == g_tt_classification )
+        {
+            if( key == "classes" )
+            {
+                return models[output_index].classification_classes;
+            }
+            else
+            {
+                EM_error3( "Wekinator.get_output_property: unknown classification property." );
+                return 0;
+            }
+        }
+        else if( property_type == g_tt_regression )
+        {
+            if( key == "limit" )
+            {
+                return models[output_index].regression_limit;
+            }
+            else
+            {
+                EM_error3( "Wekinator.get_output_property: unknown regression property." );
+                return 0;
+            }
+        }
+
+        if( property_type == g_mt_knn )
+        {
+            if( key == "k" )
+            {
+                return models[output_index].knn_k;
+            }
+            else
+            {
+                EM_error3( "Wekinator.get_output_property: unknown kNN property." );
+                return 0;
+            }
+        }
+        else if( property_type == g_mt_mlp )
+        {
+            if( key == "hiddenlayers" )
+            {
+                return models[output_index].mlp_hidden_layers;
+            }
+            else if( key == "nodesperhiddenlayer" )
+            {
+                return models[output_index].mlp_nodes_per_hidden_layer == 0 ? num_inputs
+                                                                            : models[output_index].mlp_nodes_per_hidden_layer;
+            }
+            else if( key == "epochs" )
+            {
+                return models[output_index].mlp_epochs;
+            }
+            else
+            {
+                EM_error3( "Wekinator.get_output_property: unknown MLP property." );
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    // get_output_property_float1
+    t_CKFLOAT get_output_property_float( t_CKINT output_index, t_CKINT property_type, Chuck_String & property_name )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.get_output_property: output index out of range." );
+            return 0;
+        }
+
+        string key = tolower( property_name.str() );
+
+        if( property_type == g_tt_regression )
+        {
+            if( key == "min" )
+            {
+                return models[output_index].regression_min;
+            }
+            else if( key == "max" )
+            {
+                return models[output_index].regression_max;
+            }
+            else
+            {
+                EM_error3( "Wekinator.get_output_property: unknown regression property." );
+                return 0;
+            }
+        }
+
+        if( property_type == g_mt_mlp )
+        {
+            if( key == "learningrate" )
+            {
+                return models[output_index].mlp_learning_rate;
+            }
+            else
+            {
+                EM_error3( "Wekinator.get_output_property: unknown MLP property." );
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    // set_output_property3
+    void set_output_property( t_CKINT output_index, Chuck_String & property_name, Chuck_Array4 & property_value_ )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.set_output_property: output index out of range." );
+            return;
+        }
+        // set
+        string key = tolower( property_name.str() );
+        t_CKINT value;
+
+        if( key == "connectedinputs" )
+        {
+            models[output_index].connected_inputs.clear();
+            for( t_CKINT i = 0; i < property_value_.size(); i++ )
+            {
+                value = property_value_.m_vector[i];
+                // sanity check
+                if( value < 0 || value >= num_inputs )
+                {
+                    EM_error3( "Wekinator.set_output_property: input index out of range." );
+                    return;
+                }
+                models[output_index].connected_inputs.push_back( value );
+            }
+        }
+        else
+        {
+            EM_error3( "Wekinator.set_output_property: unknown output property." );
+            return;
+        }
+    }
+
+    // get_output_property
+    void get_output_property( t_CKINT output_index, Chuck_String & property_name, Chuck_Array4 & property_value_ )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.get_output_property: output index out of range." );
+            return;
+        }
+        // get
+        string key = tolower( property_name.str() );
+
+        if( key == "connectedinputs" )
+        {
+            property_value_.set_size( models[output_index].connected_inputs.size() );
+            for( t_CKINT i = 0; i < models[output_index].connected_inputs.size(); i++ )
+            {
+                property_value_.m_vector[i] = models[output_index].connected_inputs[i];
+            }
+        }
+        else
+        {
+            EM_error3( "Wekinator.get_output_property: unknown output property." );
+            return;
+        }
+    }
+
+    // get_num_inputs
+    t_CKINT get_num_inputs()
+    {
+        return num_inputs;
+    }
+
+    // get_num_outputs
+    t_CKINT get_num_outputs()
+    {
+        return num_outputs;
+    }
+
+    // push back inputs and outputs
+    void push_back_example( const vector<t_CKFLOAT> & inputs_, const vector<t_CKFLOAT> & outputs_ )
+    {
+        vector<t_CKFLOAT> example( 3 + num_inputs + num_outputs );
+        example[0] = examples.size();
+        example[1] = 0;
+        example[2] = recording_round;
+        for( t_CKINT i = 0; i < num_inputs; i++ )
+            example[3 + i] = inputs_[i];
+        for( t_CKINT i = 0; i < num_outputs; i++ )
+            example[3 + num_inputs + i] = outputs_[i];
+
+        examples.push_back( example );
+    }
+
+    // add
+    void add()
+    {
+        push_back_example( inputs, outputs );
+        if( dummy_model.record_status )
+            dummy_model.example_ids.push_back( examples.size() - 1 );
+        for( t_CKINT i = 0; i < num_outputs; i++ )
+            if( models[i].record_status )
+                models[i].example_ids.push_back( examples.size() - 1 );
     }
 
     // predict
-    t_CKBOOL predict( Chuck_Array8 & input_, Chuck_Array8 & output_ )
+    void predict( Chuck_Array8 & inputs_, Chuck_Array8 & outputs_ )
     {
-        if( model_type == 0 )
+        // sanity check
+        if( inputs_.size() != num_inputs )
         {
-            ChaiVectorFast<t_CKFLOAT> * input = chuck2chai( input_ );
-            ChaiVectorFast<t_CKFLOAT> * output = new ChaiVectorFast<t_CKFLOAT>( 1 );
-            for( t_CKINT i = 0; i < mlps.size(); i++ )
-            {
-                mlps[i]->predict( *input, *output );
-                output_.m_vector[i] = output->v( 0 );
-            }
-            SAFE_DELETE( input );
-            SAFE_DELETE( output );
+            EM_error3( "Wekinator.predict: input array size mismatch." );
+            return;
         }
-        else if( model_type == 1 )
+        outputs_.set_size( num_outputs );
+        outputs_.zero();
+        for( t_CKINT i = 0; i < num_outputs; i++ )
         {
-            ChaiVectorFast<t_CKINT> indices( knn_k );
-            knns[0]->getNearestNeighbors( input_.m_vector, knn_k, indices );
-            output_.set_size( Y->yDim() );
-            for( t_CKINT i = 0; i < Y->yDim(); i++ )
+            if( !models[i].train_status )
             {
-                output_.m_vector[i] = 0;
-                t_CKFLOAT sum = 0;
-                for( t_CKINT j = 0; j < knn_k; j++ )
+                EM_error3( "Wekinator.run: model not trained." );
+                return;
+            }
+            if( !models[i].run_status )
+                continue;
+            // prepare data
+            ChaiVectorFast<t_CKFLOAT> x( models[i].connected_inputs.size() );
+            ChaiVectorFast<t_CKFLOAT> y( 1 );
+            for( t_CKINT j = 0; j < x.size(); j++ )
+                x[j] = inputs_.m_vector[models[i].connected_inputs[j]];
+            // predict
+            if( models[i].task_type == g_tt_regression )
+            {
+                if( models[i].model_type == g_mt_mlp )
                 {
-                    sum += Y->v( indices.v( j ), i );
+                    models[i].mlp->predict( x, y );
+                    outputs_.m_vector[i] = y[0];
                 }
-                output_.m_vector[i] = sum / knn_k;
+                else
+                {
+                    EM_error3( "Wekinator.predict: unknown regression model_type." );
+                    return;
+                }
+                if( models[i].regression_limit )
+                {
+                    if( outputs_.m_vector[i] < models[i].regression_min )
+                        outputs_.m_vector[i] = models[i].regression_min;
+                    else if( outputs_.m_vector[i] > models[i].regression_max )
+                        outputs_.m_vector[i] = models[i].regression_max;
+                }
             }
-        }
-        else if( model_type == 2 )
-        {
-            ChaiVectorFast<t_CKFLOAT> * input = chuck2chai( input_ );
-            ChaiVectorFast<t_CKFLOAT> * output = new ChaiVectorFast<t_CKFLOAT>( 1 );
-            for( t_CKINT i = 0; i < svms.size(); i++ )
+            else if( models[i].task_type == g_tt_classification )
             {
-                svms[i]->predict( *input, *output );
-                output_.m_vector[i] = output->v( 0 );
+                EM_error3( "Wekinator.predict: classification not implemented." );
+                return;
             }
-            SAFE_DELETE( input );
-            SAFE_DELETE( output );
         }
+    }
 
-        return TRUE;
+    // set_task_type
+    void set_task_type( t_CKINT task_type )
+    {
+        if( task_type != g_tt_regression && task_type != g_tt_classification )
+        {
+            EM_error3( "Wekinator.set_task_type: unknown task_type." );
+            return;
+        }
+        dummy_model.task_type = task_type;
+        for( t_CKINT i = 0; i < models.size(); i++ )
+            models[i].task_type = task_type;
+    }
+
+    // get_task_type
+    t_CKINT get_task_type()
+    {
+        return dummy_model.task_type;
+    }
+
+    // get_task_type_name
+    void get_task_type_name( Chuck_String & name )
+    {
+        if( dummy_model.task_type == g_tt_regression )
+            name.set( "AI.Regression" );
+        else if( dummy_model.task_type == g_tt_classification )
+            name.set( "AI.Classification" );
+    }
+
+    // set_model_type
+    void set_model_type( t_CKINT model_type )
+    {
+        if( dummy_model.task_type == g_tt_classification )
+        {
+            if( model_type != g_mt_knn )
+            {
+                EM_error3( "Wekinator.set_model_type: unknown model_type for classification. Available: AI.KNN." );
+                return;
+            }
+            dummy_model.model_type = model_type;
+            for( t_CKINT i = 0; i < models.size(); i++ )
+                models[i].model_type = model_type;
+        }
+        else if( dummy_model.task_type == g_tt_regression )
+        {
+            if( model_type != g_mt_mlp )
+            {
+                EM_error3( "Wekinator.set_model_type: unknown model_type for regression. Available: AI.MLP" );
+                return;
+            }
+            dummy_model.model_type = model_type;
+            for( t_CKINT i = 0; i < models.size(); i++ )
+                models[i].model_type = model_type;
+        }
+    }
+
+    // get_model_type
+    t_CKINT get_model_type()
+    {
+        return dummy_model.model_type;
+    }
+
+    // get_model_type_name
+    void get_model_type_name( Chuck_String & name )
+    {
+        if( dummy_model.model_type == g_mt_mlp )
+            name.set( "AI.MLP" );
+        else if( dummy_model.model_type == g_mt_svm )
+            name.set( "AI.SVM" );
+        else if( dummy_model.model_type == g_mt_knn )
+            name.set( "AI.KNN" );
+    }
+
+    // randomize_outputs
+    void randomize_outputs()
+    {
+        t_CKFLOAT random_min, random_max;
+        for( t_CKINT i = 0; i < num_outputs; i++ )
+        {
+            random_min = models[i].regression_min;
+            random_max = models[i].regression_max;
+            outputs[i] = ck_random() / (t_CKFLOAT)CK_RANDOM_MAX * ( random_max - random_min ) + random_min;
+        }
+    }
+
+    // get_num_obs
+    t_CKINT get_num_obs()
+    {
+        return dummy_model.example_ids.size();
+    }
+
+    // get_num_obs1
+    t_CKINT get_num_obs1( t_CKINT output_index )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.get_num_obs: output_index out of range." );
+            return 0;
+        }
+        return models[output_index].example_ids.size();
+    }
+
+    // get_obs
+    void get_obs( Chuck_Array4 & obs_ )
+    {
+        // sanity check
+        if( obs_.size() < dummy_model.example_ids.size() )
+        {
+            EM_error3( "Wekinator.get_obs: input array too small." );
+            return;
+        }
+        Chuck_Array8 * row;
+        t_CKINT dim = 3 + num_inputs + num_outputs;
+        // copy
+        for( t_CKINT i = 0; i < dummy_model.example_ids.size(); i++ )
+        {
+            row = (Chuck_Array8 *)obs_.m_vector[i];
+            row->set_size( dim );
+            row->m_vector = examples[dummy_model.example_ids[i]];
+        }
+    }
+
+    // get_obs1
+    void get_obs1( t_CKINT output_index, Chuck_Array4 & obs_ )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.get_obs1: output_index out of range." );
+            return;
+        }
+        if( obs_.size() < models[output_index].example_ids.size() )
+        {
+            EM_error3( "Wekinator.get_obs1: input array too small." );
+            return;
+        }
+        Chuck_Array8 * row;
+        t_CKINT dim = 3 + num_inputs + num_outputs;
+        // copy
+        for( t_CKINT i = 0; i < models[output_index].example_ids.size(); i++ )
+        {
+            row = (Chuck_Array8 *)obs_.m_vector[i];
+            row->set_size( dim );
+            row->m_vector = examples[models[output_index].example_ids[i]];
+        }
+    }
+
+    // clear_obs
+    void clear_obs( t_CKINT lo, t_CKINT hi )
+    {
+        dummy_model.clear_obs( lo, hi );
+        for( t_CKINT i = 0; i < num_outputs; i++ )
+            models[i].clear_obs( lo, hi );
+    }
+
+    // clear_obs1
+    void clear_obs1( t_CKINT output_index, t_CKINT lo, t_CKINT hi )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.clear_obs1: output_index out of range." );
+            return;
+        }
+        models[output_index].clear_obs( lo, hi );
     }
 
     // save
-    void save_data( const string & filename )
+    t_CKBOOL save( Chuck_String & filename )
+    {
+        ofstream fout( filename.str().c_str() );
+        // check
+        if( !fout.good() )
+        {
+            EM_error3( "Wekinator.save: could not open file '%s' for writing.", filename.str().c_str() );
+            return FALSE;
+        }
+
+        // data
+        fout << "## data" << endl;
+        fout << "# num_inputs" << endl;
+        fout << num_inputs << endl;
+        fout << "# num_outputs" << endl;
+        fout << num_outputs << endl;
+        fout << "# num_obs" << endl;
+        t_CKINT num_obs = dummy_model.example_ids.size(), dim = 3 + num_inputs + num_outputs;
+        fout << num_obs << endl;
+        fout << "# obs" << endl;
+        for( t_CKINT i = 0; i < num_obs; i++ )
+        {
+            for( t_CKINT j = 0; j < dim; j++ )
+                fout << examples[dummy_model.example_ids[i]][j] << " ";
+            fout << endl;
+        }
+        // model
+        fout << "## models" << endl;
+        for( t_CKINT i = 0; i < num_outputs; i++ )
+        {
+            fout << "# output-" << i << endl;
+            models[i].save( fout );
+        }
+        return TRUE;
+    }
+
+    // load
+    t_CKBOOL load( Chuck_String & filename )
+    {
+        ifstream fin( filename.str().c_str() );
+        // check
+        if( !fin.good() )
+        {
+            EM_error3( "Wekinator.load: could not open file '%s' for reading.", filename.str().c_str() );
+            return FALSE;
+        }
+
+        t_CKINT num;
+        string line;
+        istringstream strin;
+
+        // num_inputs
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> num;
+        set_num_inputs( num );
+        // num_outputs
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> num;
+        set_num_outputs( num );
+
+        t_CKINT dim = 3 + num_inputs + num_outputs, id = 0, target;
+        vector<t_CKFLOAT> example( dim );
+        // num_obs
+        nextline( fin, line, TRUE );
+        strin.clear();
+        strin.str( line );
+        strin >> num;
+        // obs
+        for( t_CKINT i = 0; i < num; i++ )
+        {
+            nextline( fin, line, TRUE );
+            strin.clear();
+            strin.str( line );
+            for( t_CKINT j = 0; j < dim; j++ )
+                strin >> example[j];
+            target = (t_CKINT)( example[0] + 0.5 );
+            while( id <= target )
+            {
+                examples.push_back( example );
+                id++;
+            }
+            dummy_model.example_ids.push_back( target );
+        }
+
+        // models
+        for( t_CKINT i = 0; i < num_outputs; i++ )
+        {
+            models[i].load( fin );
+        }
+        return TRUE;
+    }
+
+    // save_obs_as_arff
+    void save_obs_as_arff( const string & filename, const vector<t_CKINT> example_ids_ )
     {
         ofstream fout( filename.c_str() );
+        // check
+        if( !fout.good() )
+        {
+            EM_error3( "Wekinator.export_obs: could not open file '%s' for writing.", filename.c_str() );
+            return;
+        }
 
         string header = "@relation dataset"
                         "\n"
@@ -3946,39 +5478,54 @@ public:
                         "@attribute 'Training round' numeric";
         fout << header << endl;
 
-        for( t_CKINT i = 0; i < x->size(); i++ )
+        for( t_CKINT i = 0; i < num_inputs; i++ )
         {
-            fout << "@attribute inputs-" << i << " numeric" << endl;
+            fout << "@attribute inputs-" << i + 1 << " numeric" << endl;
         }
-        for( t_CKINT i = 0; i < y->size(); i++ )
+        for( t_CKINT i = 0; i < num_outputs; i++ )
         {
-            fout << "@attribute outputs-" << i << " numeric" << endl;
+            fout << "@attribute outputs-" << i + 1 << " numeric" << endl;
         }
 
+        t_CKINT index, dim = num_inputs + num_outputs;
         fout << "\n@data" << endl;
-        for( t_CKINT i = 0; i < Xi; i++ )
+        for( t_CKINT i = 0; i < example_ids_.size(); i++ )
         {
-            fout << i << ", 2023/01/01 00:00:00:000, 1";
-            for( t_CKINT j = 0; j < x->size(); j++ )
+            index = example_ids_[i];
+            fout << index << ", 2023/01/01 00:00:00:000, " << (t_CKINT)( examples[index][2] + 0.5 );
+            for( t_CKINT j = 0; j < dim; j++ )
             {
-                fout << ", " << X->v( i, j );
-            }
-            for( t_CKINT j = 0; j < y->size(); j++ )
-            {
-                fout << ", " << Y->v( i, j );
+                fout << ", " << examples[index][3 + j];
             }
             fout << endl;
         }
     }
 
-    // load
-    void load_data( const string & filename )
+    // export_obs
+    void export_obs( Chuck_String & filename )
     {
-        // clear
-        clear();
+        save_obs_as_arff( filename.str(), dummy_model.example_ids );
+    }
+
+    // export_obs1
+    void export_obs1( t_CKINT output_index, Chuck_String & filename )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.export_obs: output_index out of range." );
+            return;
+        }
+        // export
+        save_obs_as_arff( filename.str(), models[output_index].example_ids );
+    }
+
+    // import_obs
+    void import_obs( Chuck_String & filename )
+    {
         // init
         t_CKINT x_size = 0, y_size = 0;
-        ifstream fin( filename.c_str() );
+        ifstream fin( filename.str().c_str() );
         string line;
         while( getline( fin, line ) )
         {
@@ -3998,134 +5545,231 @@ public:
                 break;
             }
         }
-        x = new ChaiVectorFast<t_CKFLOAT>( x_size );
-        y = new ChaiVectorFast<t_CKFLOAT>( y_size );
+        set_num_inputs( x_size );
+        set_num_outputs( y_size );
 
         // load
         stringstream ss;
         string token;
-        vector<string> tokens;
+        t_CKINT index, size = 3 + x_size + y_size;
+        vector<t_CKFLOAT> example( size );
         while( getline( fin, line ) )
         {
             ss.clear();
             ss.str( line );
-            tokens.clear();
+            index = 0;
             while( getline( ss, token, ',' ) )
             {
-                tokens.push_back( token );
+                if( index == size )
+                    break;
+                else if( index == 1 )
+                    example[1] = 0;
+                else
+                {
+                    example[index] = atof( token.c_str() );
+                }
+                ++index;
             }
-            for( t_CKINT i = 0; i < x_size; i++ )
-            {
-                x->v( i ) = atof( tokens[i + 3].c_str() );
-            }
-            for( t_CKINT i = 0; i < y_size; i++ )
-            {
-                y->v( i ) = atof( tokens[i + x_size + 3].c_str() );
-            }
-            add();
+            examples.push_back( example );
+            dummy_model.example_ids.push_back( examples.size() - 1 );
+            for( t_CKINT i = 0; i < models.size(); i++ )
+                models[i].example_ids.push_back( examples.size() - 1 );
         }
-
-        // don't retrain here; should be called explicitly
-        // train();
     }
 
-    t_CKINT get_input_dims()
+    // clear_all_obs1
+    void clear_all_obs1( t_CKINT output_index )
     {
-        return x == NULL ? 0 : x->size();
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.clear_all_obs1: output_index out of range." );
+            return;
+        }
+        // clear
+        models[output_index].example_ids.clear();
     }
 
-    t_CKINT get_output_dims()
+    // set_all_record_status
+    void set_all_record_status( t_CKINT status )
     {
-        return y == NULL ? 0 : y->size();
+        if( status != 0 && status != 1 )
+        {
+            EM_error3( "Wekinator.set_all_record_status: status must be true or false." );
+            return;
+        }
+        dummy_model.record_status = status;
+        for( t_CKINT i = 0; i < num_outputs; i++ )
+            models[i].record_status = status;
     }
 
-    t_CKINT get_num_obs()
+    // set_output_record_status
+    void set_output_record_status( t_CKINT output_index, t_CKINT status )
     {
-        return Xi;
-    }
-
-    // set_property_int
-    void set_property( t_CKINT model_type, const string & key_, t_CKINT value )
-    {
-        // lower the key
-        string key = tolower( key_ );
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.set_output_record_status: output_index out of range." );
+            return;
+        }
+        if( status != 0 && status != 1 )
+        {
+            EM_error3( "Wekinator.set_output_record_status: status must be true or false." );
+            return;
+        }
         // set
-        if( model_type == g_mt_mlp )
-        {
-            if( key == "hiddenlayers" )
-                mlp_hidden_layers = value;
-            else if( key == "nodesperhiddenlayer" )
-                mlp_nodes_per_hidden_layer = value;
-            else if( key == "epochs" )
-                mlp_epochs = value;
-            else
-                EM_error3( "Wekinator: unknown property '%s' for MLP", key.c_str() );
-        }
-        else if( model_type == g_mt_knn )
-        {
-            if( key == "k" )
-                knn_k = value;
-            else
-                EM_error3( "Wekinator: unknown property '%s' for KNN", key.c_str() );
-        }
+        models[output_index].record_status = status;
     }
 
-    // set_property_float
-    void set_property( t_CKINT model_type, const string & key_, t_CKFLOAT value )
+    // get_output_record_status
+    t_CKINT get_output_record_status( t_CKINT output_index )
     {
-        // lower the key
-        string key = tolower( key_ );
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.get_output_record_status: output_index out of range." );
+            return 0;
+        }
+        // get
+        return models[output_index].record_status;
+    }
+
+    // set_all_run_status
+    void set_all_run_status( t_CKINT status )
+    {
+        if( status != 0 && status != 1 )
+        {
+            EM_error3( "Wekinator.set_all_run_status: status must be true or false." );
+            return;
+        }
+        dummy_model.run_status = status;
+        for( t_CKINT i = 0; i < num_outputs; i++ )
+            models[i].run_status = status;
+    }
+
+    // set_output_run_status
+    void set_output_run_status( t_CKINT output_index, t_CKINT status )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.set_output_run_status: output_index out of range." );
+            return;
+        }
+        if( status != 0 && status != 1 )
+        {
+            EM_error3( "Wekinator.set_output_run_status: status must be true or false." );
+            return;
+        }
         // set
-        if( model_type == g_mt_mlp )
-        {
-            if( key == "learningrate" )
-                mlp_learning_rate = value;
-            else
-                EM_error3( "Wekinator: unknown property '%s' for MLP", key.c_str() );
-        }
+        models[output_index].run_status = status;
     }
 
-    // get_property_int
-    t_CKINT get_property_int( t_CKINT model_type, const string & key_ )
+    // get_output_run_status
+    t_CKINT get_output_run_status( t_CKINT output_index )
     {
-        // lower the key
-        string key = tolower( key_ );
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.get_output_run_status: output_index out of range." );
+            return 0;
+        }
         // get
-        if( model_type == g_mt_mlp )
-        {
-            if( key == "hiddenlayers" )
-                return mlp_hidden_layers;
-            else if( key == "nodesperhiddenlayer" )
-                return mlp_nodes_per_hidden_layer == 0 ? x == NULL ? 0 : x->size() : mlp_nodes_per_hidden_layer;
-            else if( key == "epochs" )
-                return mlp_epochs;
-            else
-                EM_error3( "Wekinator: unknown property '%s' for MLP", key.c_str() );
-        }
-        else if( model_type == g_mt_knn )
-        {
-            if( key == "k" )
-                return knn_k;
-            else
-                EM_error3( "Wekinator: unknown property '%s' for KNN", key.c_str() );
-        }
-        return 0;
+        return models[output_index].run_status;
     }
 
-    // get_property_float
-    t_CKFLOAT get_property_float( t_CKINT model_type, const string & key_ )
+    // add1
+    void add1( Chuck_Array8 & inputs_, Chuck_Array8 & outputs_ )
     {
-        // lower the key
-        string key = tolower( key_ );
-        // get
-        if( model_type == g_mt_mlp )
+        // sanity check
+        if( inputs_.size() != num_inputs )
         {
-            if( key == "learningrate" )
-                return mlp_learning_rate;
-            else
-                EM_error3( "Wekinator: unknown property '%s' for MLP", key.c_str() );
+            EM_error3( "Wekinator.add1: inputs array size does not match number of inputs." );
+            return;
         }
-        return 0;
+        if( outputs_.size() != num_outputs )
+        {
+            EM_error3( "Wekinator.add1: outputs array size does not match number of outputs." );
+            return;
+        }
+        push_back_example( inputs_.m_vector, outputs_.m_vector );
+        if( dummy_model.record_status )
+            dummy_model.example_ids.push_back( examples.size() - 1 );
+        for( t_CKINT i = 0; i < num_outputs; i++ )
+            if( models[i].record_status )
+                models[i].example_ids.push_back( examples.size() - 1 );
+    }
+
+    // add2
+    void add2( t_CKINT output_index, Chuck_Array8 & inputs_, Chuck_Array8 & outputs_ )
+    {
+        // sanity check
+        if( output_index < 0 || output_index >= num_outputs )
+        {
+            EM_error3( "Wekinator.add2: output_index out of range." );
+            return;
+        }
+        if( inputs_.size() != num_inputs )
+        {
+            EM_error3( "Wekinator.add2: inputs array size does not match number of inputs." );
+            return;
+        }
+        if( outputs_.size() != num_outputs )
+        {
+            EM_error3( "Wekinator.add2: outputs array size does not match number of outputs." );
+            return;
+        }
+        push_back_example( inputs_.m_vector, outputs_.m_vector );
+        dummy_model.example_ids.push_back( examples.size() - 1 );
+        models[output_index].example_ids.push_back( examples.size() - 1 );
+    }
+
+    // next_round
+    void next_round()
+    {
+        ++recording_round;
+    }
+
+    // delete_last_round
+    void delete_last_round()
+    {
+        t_CKINT start = 0, end = examples.size();
+        for( t_CKINT i = 0; i < end; i++ )
+        {
+            if( recording_round == (t_CKINT)( examples[i][2] + 0.5 ) )
+            {
+                start = i;
+                break;
+            }
+        }
+        clear_obs( start, end );
+    }
+
+    // clear
+    void clear()
+    {
+        clear_all_obs();
+        set_num_inputs( 0 );
+        set_num_outputs( 0 );
+        recording_round = 0;
+    }
+
+    // get_round
+    t_CKINT get_round()
+    {
+        return recording_round;
+    }
+
+    // get_all_record_status
+    t_CKINT get_all_record_status()
+    {
+        return dummy_model.record_status;
+    }
+
+    // get_all_run_status
+    t_CKINT get_all_run_status()
+    {
+        return dummy_model.run_status;
     }
 };
 
@@ -4145,24 +5789,464 @@ CK_DLL_DTOR( Wekinator_dtor )
     OBJ_MEMBER_UINT( SELF, Wekinator_offset_data ) = 0;
 }
 
-CK_DLL_MFUN( Wekinator_input )
+CK_DLL_MFUN( Wekinator_set_num_inputs )
 {
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // get args
-    Chuck_Array8 * vec = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    // input
-    wekinator->input( *vec );
+    t_CKINT num_inputs = GET_NEXT_INT( ARGS );
+    // set_num_inputs
+    wekinator->set_num_inputs( num_inputs );
+    // pass through
+    RETURN->v_int = num_inputs;
 }
 
-CK_DLL_MFUN( Wekinator_output )
+CK_DLL_MFUN( Wekinator_get_num_inputs )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get_num_inputs
+    RETURN->v_int = wekinator->get_num_inputs();
+}
+
+CK_DLL_MFUN( Wekinator_set_num_outputs )
 {
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // get args
-    Chuck_Array8 * vec = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    // output
-    wekinator->output( *vec );
+    t_CKINT num_outputs = GET_NEXT_INT( ARGS );
+    // set_num_outputs
+    wekinator->set_num_outputs( num_outputs );
+    // pass throught
+    RETURN->v_int = num_outputs;
+}
+
+CK_DLL_MFUN( Wekinator_get_num_outputs )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get_num_outputs
+    RETURN->v_int = wekinator->get_num_outputs();
+}
+
+CK_DLL_MFUN( Wekinator_set_task_type )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT task_type = GET_NEXT_INT( ARGS );
+    // set_task_type
+    wekinator->set_task_type( task_type );
+}
+
+CK_DLL_MFUN( Wekinator_get_task_type )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get_task_type
+    RETURN->v_int = wekinator->get_task_type();
+}
+
+CK_DLL_MFUN( Wekinator_get_task_type_name )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_String * name = GET_NEXT_STRING( ARGS );
+    // get_task_type_name
+    wekinator->get_task_type_name( *name );
+}
+
+CK_DLL_MFUN( Wekinator_set_property )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT property_type = GET_NEXT_INT( ARGS );
+    Chuck_String * property_name = GET_NEXT_STRING( ARGS );
+    t_CKINT property_value = GET_NEXT_INT( ARGS );
+    // set_property
+    wekinator->set_property( property_type, *property_name, property_value );
+}
+
+CK_DLL_MFUN( Wekinator_set_property1 )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT property_type = GET_NEXT_INT( ARGS );
+    Chuck_String * property_name = GET_NEXT_STRING( ARGS );
+    t_CKFLOAT property_value = GET_NEXT_FLOAT( ARGS );
+    // set_property1
+    wekinator->set_property( property_type, *property_name, property_value );
+}
+
+CK_DLL_MFUN( Wekinator_get_property_int )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT property_type = GET_NEXT_INT( ARGS );
+    Chuck_String * property_name = GET_NEXT_STRING( ARGS );
+    // get_property_int
+    RETURN->v_int = wekinator->get_property_int( property_type, *property_name );
+}
+
+CK_DLL_MFUN( Wekinator_get_property_float )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT property_type = GET_NEXT_INT( ARGS );
+    Chuck_String * property_name = GET_NEXT_STRING( ARGS );
+    // get_property_float
+    RETURN->v_float = wekinator->get_property_float( property_type, *property_name );
+}
+
+CK_DLL_MFUN( Wekinator_set_model_type )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT model_type = GET_NEXT_INT( ARGS );
+    // set_model_type
+    wekinator->set_model_type( model_type );
+}
+
+CK_DLL_MFUN( Wekinator_get_model_type )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get_model_type
+    RETURN->v_int = wekinator->get_model_type();
+}
+
+CK_DLL_MFUN( Wekinator_get_model_type_name )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_String * name = GET_NEXT_STRING( ARGS );
+    // get_model_type_name
+    wekinator->get_model_type_name( *name );
+}
+
+CK_DLL_MFUN( Wekinator_set_output_property )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    Chuck_String * property_name = GET_NEXT_STRING( ARGS );
+    t_CKINT property_value = GET_NEXT_INT( ARGS );
+    // set_output_property
+    wekinator->set_output_property( output_index, *property_name, property_value );
+}
+
+CK_DLL_MFUN( Wekinator_get_output_property_int )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    Chuck_String * property_name = GET_NEXT_STRING( ARGS );
+    // get_output_property_int
+    RETURN->v_int = wekinator->get_output_property_int( output_index, *property_name );
+}
+
+CK_DLL_MFUN( Wekinator_set_output_property1 )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    t_CKINT property_type = GET_NEXT_INT( ARGS );
+    Chuck_String * property_name = GET_NEXT_STRING( ARGS );
+    t_CKINT property_value = GET_NEXT_INT( ARGS );
+    // set_output_property1
+    wekinator->set_output_property( output_index, property_type, *property_name, property_value );
+}
+
+CK_DLL_MFUN( Wekinator_set_output_property2 )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    t_CKINT property_type = GET_NEXT_INT( ARGS );
+    Chuck_String * property_name = GET_NEXT_STRING( ARGS );
+    t_CKFLOAT property_value = GET_NEXT_FLOAT( ARGS );
+    // set_output_property2
+    wekinator->set_output_property( output_index, property_type, *property_name, property_value );
+}
+
+CK_DLL_MFUN( Wekinator_get_output_property_int1 )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    t_CKINT property_type = GET_NEXT_INT( ARGS );
+    Chuck_String * property_name = GET_NEXT_STRING( ARGS );
+    // get_output_property_int1
+    RETURN->v_int = wekinator->get_output_property_int( output_index, property_type, *property_name );
+}
+
+CK_DLL_MFUN( Wekinator_get_output_property_float )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    t_CKINT property_type = GET_NEXT_INT( ARGS );
+    Chuck_String * property_name = GET_NEXT_STRING( ARGS );
+    // get_output_property_float
+    RETURN->v_float = wekinator->get_output_property_float( output_index, property_type, *property_name );
+}
+
+CK_DLL_MFUN( Wekinator_set_output_property3 )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    Chuck_String * property_name = GET_NEXT_STRING( ARGS );
+    Chuck_Array4 * property_value = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    // set_output_property3
+    wekinator->set_output_property( output_index, *property_name, *property_value );
+}
+
+CK_DLL_MFUN( Wekinator_get_output_property )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    Chuck_String * property_name = GET_NEXT_STRING( ARGS );
+    Chuck_Array4 * property_value = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    // get_output_property
+    wekinator->get_output_property( output_index, *property_name, *property_value );
+}
+
+CK_DLL_MFUN( Wekinator_set_inputs )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_Array8 * inputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // set_inputs
+    wekinator->set_inputs( *inputs );
+}
+
+CK_DLL_MFUN( Wekinator_set_outputs )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_Array8 * outputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // set_outputs
+    wekinator->set_outputs( *outputs );
+}
+
+CK_DLL_MFUN( Wekinator_randomize_outputs )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // randomize_outputs
+    wekinator->randomize_outputs();
+}
+
+CK_DLL_MFUN( Wekinator_get_num_obs )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get_num_obs
+    RETURN->v_int = wekinator->get_num_obs();
+}
+
+CK_DLL_MFUN( Wekinator_get_num_obs1 )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    // get_num_obs1
+    RETURN->v_int = wekinator->get_num_obs1( output_index );
+}
+
+CK_DLL_MFUN( Wekinator_get_obs )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_Array4 * obs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    // get_obs
+    wekinator->get_obs( *obs );
+}
+
+CK_DLL_MFUN( Wekinator_get_obs1 )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    Chuck_Array4 * obs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    // get_obs1
+    wekinator->get_obs1( output_index, *obs );
+}
+
+CK_DLL_MFUN( Wekinator_clear_obs )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT lo = GET_NEXT_INT( ARGS );
+    t_CKINT hi = GET_NEXT_INT( ARGS );
+    // clear_obs
+    wekinator->clear_obs( lo, hi );
+}
+
+CK_DLL_MFUN( Wekinator_clear_obs1 )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    t_CKINT lo = GET_NEXT_INT( ARGS );
+    t_CKINT hi = GET_NEXT_INT( ARGS );
+    // clear_obs1
+    wekinator->clear_obs1( output_index, lo, hi );
+}
+
+CK_DLL_MFUN( Wekinator_save )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_String * filename = GET_NEXT_STRING( ARGS );
+    // save
+    wekinator->save( *filename );
+}
+
+CK_DLL_MFUN( Wekinator_load )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_String * filename = GET_NEXT_STRING( ARGS );
+    // load
+    wekinator->load( *filename );
+}
+
+CK_DLL_MFUN( Wekinator_export_obs )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_String * filename = GET_NEXT_STRING( ARGS );
+    // export_obs
+    wekinator->export_obs( *filename );
+}
+
+CK_DLL_MFUN( Wekinator_export_obs1 )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    Chuck_String * filename = GET_NEXT_STRING( ARGS );
+    // export_obs1
+    wekinator->export_obs1( output_index, *filename );
+}
+
+CK_DLL_MFUN( Wekinator_import_obs )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_String * filename = GET_NEXT_STRING( ARGS );
+    // import_obs
+    wekinator->import_obs( *filename );
+}
+
+CK_DLL_MFUN( Wekinator_clear_all_obs )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // clear_all_obs
+    wekinator->clear_all_obs();
+}
+
+CK_DLL_MFUN( Wekinator_clear_all_obs1 )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    // clear_all_obs1
+    wekinator->clear_all_obs1( output_index );
+}
+
+CK_DLL_MFUN( Wekinator_set_all_record_status )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT status = GET_NEXT_INT( ARGS );
+    // set_all_record_status
+    wekinator->set_all_record_status( status );
+}
+
+CK_DLL_MFUN( Wekinator_set_output_record_status )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    t_CKINT status = GET_NEXT_INT( ARGS );
+    // set_output_record_status
+    wekinator->set_output_record_status( output_index, status );
+}
+
+CK_DLL_MFUN( Wekinator_get_output_record_status )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    // get_output_record_status
+    RETURN->v_int = wekinator->get_output_record_status( output_index );
+}
+
+CK_DLL_MFUN( Wekinator_set_all_run_status )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT status = GET_NEXT_INT( ARGS );
+    // set_all_run_status
+    wekinator->set_all_run_status( status );
+}
+
+CK_DLL_MFUN( Wekinator_set_output_run_status )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    t_CKINT status = GET_NEXT_INT( ARGS );
+    // set_output_run_status
+    wekinator->set_output_run_status( output_index, status );
+}
+
+CK_DLL_MFUN( Wekinator_get_output_run_status )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    // get_output_run_status
+    RETURN->v_int = wekinator->get_output_run_status( output_index );
 }
 
 CK_DLL_MFUN( Wekinator_add )
@@ -4173,12 +6257,62 @@ CK_DLL_MFUN( Wekinator_add )
     wekinator->add();
 }
 
+CK_DLL_MFUN( Wekinator_add1 )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_Array8 * inputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array8 * outputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // add1
+    wekinator->add1( *inputs, *outputs );
+}
+
+CK_DLL_MFUN( Wekinator_add2 )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    t_CKINT output_index = GET_NEXT_INT( ARGS );
+    Chuck_Array8 * inputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array8 * outputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // add2
+    wekinator->add2( output_index, *inputs, *outputs );
+}
+
+CK_DLL_MFUN( Wekinator_next_round )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // next_round
+    wekinator->next_round();
+}
+
 CK_DLL_MFUN( Wekinator_train )
 {
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // train
     wekinator->train();
+}
+
+CK_DLL_MFUN( Wekinator_predict )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // get args
+    Chuck_Array8 * inputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_Array8 * outputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    // predict
+    wekinator->predict( *inputs, *outputs );
+}
+
+CK_DLL_MFUN( Wekinator_delete_last_round )
+{
+    // get object
+    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
+    // delete_last_round
+    wekinator->delete_last_round();
 }
 
 CK_DLL_MFUN( Wekinator_clear )
@@ -4189,125 +6323,28 @@ CK_DLL_MFUN( Wekinator_clear )
     wekinator->clear();
 }
 
-CK_DLL_MFUN( Wekinator_predict )
+CK_DLL_MFUN( Wekinator_get_round )
 {
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get args
-    Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    // predict
-    RETURN->v_int = wekinator->predict( *input, *output );
+    // get_round
+    RETURN->v_int = wekinator->get_round();
 }
 
-CK_DLL_CTRL( Wekinator_ctrl_model_type )
+CK_DLL_MFUN( Wekinator_get_all_record_status )
 {
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get args
-    t_CKINT model_type = GET_NEXT_INT( ARGS );
-    // set
-    wekinator->model_type = model_type;
-    // pass through
-    RETURN->v_int = model_type;
+    // get_all_record_status
+    RETURN->v_int = wekinator->get_all_record_status();
 }
 
-CK_DLL_CGET( Wekinator_cget_model_type )
+CK_DLL_MFUN( Wekinator_get_all_run_status )
 {
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get
-    RETURN->v_int = wekinator->model_type;
-}
-
-CK_DLL_MFUN( Wekinator_save_data )
-{
-    // get object
-    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get args
-    Chuck_String * filename = (Chuck_String *)GET_NEXT_OBJECT( ARGS );
-    // save
-    wekinator->save_data( filename->str() );
-}
-
-CK_DLL_MFUN( Wekinator_load_data )
-{
-    // get object
-    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get args
-    Chuck_String * filename = (Chuck_String *)GET_NEXT_OBJECT( ARGS );
-    // load
-    wekinator->load_data( filename->str() );
-}
-
-CK_DLL_CGET( Wekinator_cget_input_dims )
-{
-    // get object
-    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get
-    RETURN->v_int = wekinator->get_input_dims();
-}
-
-CK_DLL_CGET( Wekinator_cget_output_dims )
-{
-    // get object
-    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get
-    RETURN->v_int = wekinator->get_output_dims();
-}
-
-CK_DLL_CGET( Wekinator_cget_num_obs )
-{
-    // get object
-    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get
-    RETURN->v_int = wekinator->get_num_obs();
-}
-
-CK_DLL_MFUN( Wekinator_set_property_int )
-{
-    // get object
-    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get args
-    t_CKINT model_type = GET_NEXT_INT( ARGS );
-    Chuck_String * key = GET_NEXT_STRING( ARGS );
-    t_CKINT value = GET_NEXT_INT( ARGS );
-    // set_property
-    wekinator->set_property( model_type, key->str(), value );
-}
-
-CK_DLL_MFUN( Wekinator_set_property_float )
-{
-    // get object
-    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get args
-    t_CKINT model_type = GET_NEXT_INT( ARGS );
-    Chuck_String * key = GET_NEXT_STRING( ARGS );
-    t_CKFLOAT value = GET_NEXT_FLOAT( ARGS );
-    // set_property
-    wekinator->set_property( model_type, key->str(), value );
-}
-
-CK_DLL_MFUN( Wekinator_get_property_int )
-{
-    // get object
-    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get args
-    t_CKINT model_type = GET_NEXT_INT( ARGS );
-    Chuck_String * key = GET_NEXT_STRING( ARGS );
-    // get_property
-    RETURN->v_int = wekinator->get_property_int( model_type, key->str() );
-}
-
-CK_DLL_MFUN( Wekinator_get_property_float )
-{
-    // get object
-    Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get args
-    t_CKINT model_type = GET_NEXT_INT( ARGS );
-    Chuck_String * key = GET_NEXT_STRING( ARGS );
-    // get_property
-    RETURN->v_float = wekinator->get_property_float( model_type, key->str() );
+    // get_all_run_status
+    RETURN->v_int = wekinator->get_all_run_status();
 }
 
 //-----------------------------------------------------------------------------

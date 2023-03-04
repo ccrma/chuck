@@ -22,11 +22,11 @@ global Wekinator wek;
 // print
 cherr <= "loading observations from file..." <= IO.newline();
 // load an ARFF data file containing input-output observations
-// (generated either from Wekinator.save() or Wekinator app)
-// NOTE: Wekinator.loadData() clears existing training data,
+// (generated either from Wekinator.exportObs() or Wekinator app)
+// NOTE: Wekinator.importObs() clears existing training data,
 //       and uses the inputDims and outputDims inferred from file
 // NOTE: it is possible to add additional observations after
-wek.loadData( me.dir() + "currentData.arff" );
+wek.importObs( me.dir() + "currentData.arff" );
 
 // print what we loaded
 cherr <= "inputDims: " <= wek.inputDims() <= " "
