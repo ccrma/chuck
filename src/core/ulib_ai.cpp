@@ -73,6 +73,8 @@
 //-----------------------------------------------------------------------------
 #include "ulib_ai.h"
 #include "chuck_type.h"
+#include "chuck_instr.h"
+#include "chuck_vm.h"
 #include "chuck_errmsg.h"
 #include "util_string.h"
 #include <math.h>
@@ -669,8 +671,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // get_task_type_name
-    func = make_new_mfun( "void", "taskTypeName", Wekinator_get_task_type_name );
-    func->add_arg( "string", "name" );
+    func = make_new_mfun( "string", "taskTypeName", Wekinator_get_task_type_name );
     func->doc = "Get the task type name of the Wekinator.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
@@ -717,8 +718,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // get_model_type_name
-    func = make_new_mfun( "void", "modelTypeName", Wekinator_get_model_type_name );
-    func->add_arg( "string", "name" );
+    func = make_new_mfun( "string", "modelTypeName", Wekinator_get_model_type_name );
     func->doc = "Get the model type name of the Wekinator.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
@@ -5851,10 +5851,12 @@ CK_DLL_MFUN( Wekinator_get_task_type_name )
 {
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get args
-    Chuck_String * name = GET_NEXT_STRING( ARGS );
+    // make a new chuck string
+    Chuck_String * name = (Chuck_String *)instantiate_and_initialize_object( VM->env()->t_string, SHRED );
     // get_task_type_name
     wekinator->get_task_type_name( *name );
+    // return
+    RETURN->v_object = name;
 }
 
 CK_DLL_MFUN( Wekinator_set_property )
@@ -5925,10 +5927,12 @@ CK_DLL_MFUN( Wekinator_get_model_type_name )
 {
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    // get args
-    Chuck_String * name = GET_NEXT_STRING( ARGS );
+    // make a chuck string
+    Chuck_String * name = (Chuck_String *)instantiate_and_initialize_object( VM->env()->t_string, SHRED );
     // get_model_type_name
     wekinator->get_model_type_name( *name );
+    // return it
+    RETURN->v_object = name;
 }
 
 CK_DLL_MFUN( Wekinator_set_output_property )
