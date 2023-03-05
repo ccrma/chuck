@@ -2,8 +2,8 @@
 // name: wekinator-basic.ck
 // desc: basic example using the built-in Wekinator object in ChucK,
 //       based on Rebecca Fiebrink's Wekinator framework;
-//       This example adds two groups of 3-2 input-output observations,
-//       trains, and predicts output based on new input
+//       This example adds two groups of 3-2 input-output
+//       observations, trains, and predicts output based on new input.
 //       default task: regression
 //       default model: MLPs (one hidden layer with same # of nodes as input)
 //
@@ -28,15 +28,20 @@ wek.clear();
 // group count
 1 => int groupNum;
 
+cherr <= "-----------" <= IO.newline();
 // add a group of data
 addGroup( [0.1, 0.1, 0.1], [48.0, 60.0], 20 );
 addGroup( [0.4, 0.4, 0.4], [5.0, 8.0], 20 );
 addGroup( [0.8, 0.0, 0.4], [30.0, 30.0], 20 );
+cherr <= "-----------" <= IO.newline();
 
-// model type
-<<< "model type: ", "MLP" >>>;
-// set model type
-AI.MLP => wek.modelType;
+// (optional) set model type; MLP is default
+// AI.MLP => wek.modelType;
+// (optional) set task type; regression is default
+AI.Regression => wek.taskType;
+// print
+<<< "modelType:", wek.modelTypeName(),
+    "| taskType:", wek.taskTypeName() >>>;
 
 // (optional) set properties to your liking
 // <<< "changing Wekinator MLP properties...", "" >>>;
@@ -54,6 +59,10 @@ AI.MLP => wek.modelType;
 // (optional) save the observations for loading later
 // wek.exportObs( me.dir() + "currentData.arff" );
 
+// print
+cherr <= "-----------" <= IO.newline();
+cherr <= "training..." <= IO.newline();
+cherr <= "-----------" <= IO.newline();
 // train using current training set
 wek.train();
 
@@ -62,6 +71,7 @@ float x[];
 // to hold predicted output
 float y[2];
 
+cherr <= "given new input, predict output..." <= IO.newline();
 // predict and print
 predict( [0.101, 0.1, 0.1], y );
 predict( [0.401, 0.4, 0.4], y );
@@ -93,8 +103,8 @@ fun void addGroup( float inputs[], float outputs[], int N )
         wek.add();
         // print
         cherr <= ".";
-        // advance time (just for effect)
-        (300/N)::ms => now;
+        // advance time (delay on purpose to visualize the process)
+        (300.0/N)::ms => now;
     }
     // print
     cherr <= IO.newline();

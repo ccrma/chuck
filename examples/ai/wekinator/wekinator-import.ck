@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------
-// name: wekinator-load.ck
-// desc: this examples uses the built-in Wekinator object and loads
-//       training data from an .arff file, which can be saved either
-//       from the Wekinator app or using Wekinator.saveData().
+// name: wekinator-import.ck
+// desc: this examples imports training data from an .arff file,
+//       (which can be saved either from the Wekinator app or
+//       using Wekinator.exportObs())
 //
 // version: need chuck version 1.4.2.1 or higher
 // sorting: part of ChAI (ChucK for AI)

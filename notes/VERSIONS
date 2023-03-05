@@ -62,35 +62,120 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
        Wekinator framework.
     |- (inheritance) Wekinator -> Object
     -------------------
-    void add();
-        Add the current input and output vectors to the training set.
-    void clear();
-        Clear the training set.
-    void input( float[] vec );
-        Set the current input vector.
-    int inputDims();
-        Get the number of input dimensions.
-    int loadData( string filename );
-        Load the training data from a file (format: .arff).
-    int modelType( int type );
-        Set the model type. Possible values: AI.MLP (default), AI.KNN, AI.SVM.
-    int modelType();
-        Get the model type. Possible values: AI.MLP (default), AI.KNN, AI.SVM.
-    int numObs();
-        Get the number of observations in the training set.
-    void output( float[] vec );
-        Set the current output vector.
-    int outputDims();
-        Get the number of output dimensions.
-    int predict( float[] input, float[] output );
-        Predict the output vector from the input vector.
-    int saveData( string filename );
-        Save the training data to a file (format: .arff).
-    void train();
-        Train the model with the current training set.
+	void add();
+	    Add current inputs and outputs to the observations.
+	void add( float[] inputs, float[] outputs );
+	    Add given inputs and outputs to the observations.
+	void add( int output_index, float[] inputs, float[] outputs );
+	    Add given inputs and outputs to the observations for the specified output.
+	void clear();
+	    Clear everything except the global properties.
+	void clearAllObs();
+	    Clear all observations.
+	void clearAllObs( int output_index );
+	    Clear all observations for the specified output.
+	void clearObs( int lo, int hi );
+	    Clear the observations by id range.
+	void clearObs( int output_index, int lo, int hi );
+	    Clear the observations by id range for the specified output.
+	void deleteLastRound();
+	    Delete the last round of observations.
+	void exportObs( string filename );
+	    Export the observations to a file.
+	void exportObs( int output_index, string filename );
+	    Export the observations for the specified output to a file.
+	int getAllRecordStatus();
+	    Get the record status for all outputs.
+	int getAllRunStatus();
+	    Get the run status for all outputs.
+	void getObs( float[][] obs );
+	    Get the observations in the Wekinator.
+	void getObs( int output_index, float[][] obs );
+	    Get the observations for the specified output in the Wekinator.
+	void getOutputProperty( int output_index, string property_name, int[] property_value );
+	    Get the output property of the Wekinator. See the Wekinator documentation for more information.
+	float getOutputPropertyFloat( int output_index, int property_type, string property_name );
+	    Get the output property of the Wekinator. See the Wekinator documentation for more information.
+	int getOutputPropertyInt( int output_index, string property_name );
+	    Get the output property of the Wekinator. See the Wekinator documentation for more information.
+	int getOutputPropertyInt( int output_index, int property_type, string property_name );
+	    Get the output property of the Wekinator. See the Wekinator documentation for more information.
+	int getOutputRecordStatus( int output_index );
+	    Get the record status for the specified output.
+	int getOutputRunStatus( int output_index );
+	    Get the run status for the specified output.
+	float getPropertyFloat( int property_type, string property_name );
+	    Get the property of the Wekinator. See the Wekinator documentation for more information.
+	int getPropertyInt( int property_type, string property_name );
+	    Get the property of the Wekinator. See the Wekinator documentation for more information.
+	int getRound();
+	    Get the current recording round.
+	void importObs( string filename );
+	    Import the observations from a file.
+	void input( float[] inputs );
+	    Set the inputs of the Wekinator.
+	int inputDims( int n );
+	    Set the number of input dimensions to Wekinator.
+	int inputDims();
+	    Get the number of input dimensions to Wekinator.
+	void load( string filename );
+	    Load the Wekinator from a file.
+	int modelType( int model_type );
+	    Set the model type of the Wekinator. Options: AI.Regression: AI.MLP, AI.LR, AI.Classification: AI.KNN, AI.SVM, AI.DT
+	int modelType();
+	    Get the model type id of the Wekinator.
+	string modelTypeName();
+	    Get the model type name of the Wekinator.
+	void nextRound();
+	    Bump the recording round.
+	int numObs();
+	    Get the number of observations in the Wekinator.
+	int numObs( int output_index );
+	    Get the number of observations for the specified output in the Wekinator.
+	void output( float[] outputs );
+	    Set the outputs of the Wekinator.
+	int outputDims( int n );
+	    Set the number of output dimensions to Wekinator.
+	int outputDims();
+	    Get the number of output dimensions to Wekinator.
+	void predict( float[] inputs, float[] outputs );
+	    Predict outputs for the given inputs.
+	void randomizeOutputs();
+	    Randomize the outputs of the Wekinator.
+	void save( string filename );
+	    Save the Wekinator to a file.
+	void setAllRecordStatus( int status );
+	    Set the record status for all outputs.
+	void setAllRunStatus( int status );
+	    Set the run status for all outputs.
+	void setOutputProperty( int output_index, string property_name, int property_value );
+	    Set the output property of the Wekinator. See the Wekinator documentation for more information.
+	void setOutputProperty( int output_index, int property_type, string property_name, int property_value );
+	    Set the output property of the Wekinator. See the Wekinator documentation for more information.
+	void setOutputProperty( int output_index, int property_type, string property_name, float property_value );
+	    Set the output property of the Wekinator. See the Wekinator documentation for more information.
+	void setOutputProperty( int output_index, string property_name, int[] property_value );
+	    Set the output property of the Wekinator. See the Wekinator documentation for more information.
+	void setOutputRecordStatus( int output_index, int status );
+	    Set the record status for the specified output.
+	void setOutputRunStatus( int output_index, int status );
+	    Set the run status for the specified output.
+	void setProperty( int property_type, string property_name, int property_value );
+	    Set the property of the Wekinator. See the Wekinator documentation for more information.
+	void setProperty( int property_type, string property_name, float property_value );
+	    Set the property of the Wekinator. See the Wekinator documentation for more information.
+	int taskType( int task_type );
+	    Set the task type of the Wekinator. Options: AI.Regression, AI.Classification
+	int taskType();
+	    Get the task type id of the Wekinator.
+	string taskTypeName();
+	    Get the task type name of the Wekinator.
+	void train();
+	    Train models for all outputs.
 - (added) new examples in ai/wekinator [ChAI]
     |- wekinator-basic.ck -- example of basic Wekinator usage
     |- wekinator-custom.ck -- more extensive customization for Wekinator
+    |- wekinator-import.ck -- example of importing observations from file
 - (added) MLP [ChAI] (thanks Yikai Li)
     |- a multilayer perceptron (MLP)--a basic artificial neural 
        network--that maps an input layer to an output layer across a 
@@ -318,7 +403,8 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
 	    Return the Type associated with 'vec3'.
 	static Type of( vec4 val );
 	    Return the Type associated with 'vec4'.
-- (added) new examples in ai/type
+- (added) new examples in examples/type
+    |- polymorph.ck -- an example of polymorphism in ChucK
     |- type_query.ck -- querying for a list of types from the ChucK runtime type system
     |- type_type.ck -- example showing some functionalities of the Type type
 - (added) array.zero()
@@ -407,11 +493,19 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
     were incorrectly overloaded as "loop()" and was unavailable
 - (fixed) FileIO.seek() previously fails if EOF is reached in reading
     a file; FileIO.seek() now functions after EOF is reached.
+- (fixed) FileIO.more() now looks ahead for EOF
 - (updated) all cherr prints now flushes immediately
 - (updated) IO.newline() or a solitary "\n" now automatically flushes
     chout
-- (added) examples in io
+- (added) examples in examples/io
+     |- read-byte.ck -- reading raw bytes from file in binary mode
+     |- read-float.ck -- reading floats from file (in ASCII mode)
      |- seek.ck -- shows FileIO.seek usage for rewind a file read
+     |- write-byte.ck -- writing raw bytes to file in binary mode
+- (added) examples in examples/events
+     |- event-x-bpm-1.ck -- example using custom Events to synchronize
+        multiple shreds to a common clock
+     |- event-x-bpm-2.ck -- same as event-x-bpm-2.ck but using arrays
 - (added) absyn tree printing for instruction dumping abysn2str()
 - (added) Machine.refcount() and refcount printing for object references
 - (updated and fixed) memory system upgrade (part 1); scope-sensitive

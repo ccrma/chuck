@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------
 // name: event-x-bpm-2.ck
-// desc: this is the same as event-x-bpm-1.ck, but one() uses array lookup
-//       (instead of if/else) to figure out what to play per tick
+// desc: this is the same as event-x-bpm-1.ck, but one() uses array
+//       lookup (instead of if/else) to figure out what to play on tick
 //---------------------------------------------------------------------
 
 // sometimes it's helpful to define a custom kind of Event
