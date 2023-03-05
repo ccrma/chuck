@@ -51,9 +51,18 @@ using namespace std;
 
 // initialize
 t_CKBOOL Chuck_VM_Object::our_locks_in_effect = TRUE;
-const t_CKINT Chuck_IO::INT32 = 0x1;
-const t_CKINT Chuck_IO::INT16 = 0x2;
-const t_CKINT Chuck_IO::INT8 = 0x4;
+
+// constants
+const t_CKINT Chuck_IO::TYPE_ASCII = 0x1;
+const t_CKINT Chuck_IO::TYPE_BINARY = 0x2;
+const t_CKINT Chuck_IO::INT8 = 0x10;
+const t_CKINT Chuck_IO::INT16 = 0x20;
+const t_CKINT Chuck_IO::INT32 = 0x40;
+const t_CKINT Chuck_IO::FLAG_READ_WRITE = 0x100;
+const t_CKINT Chuck_IO::FLAG_READONLY = 0x200;
+const t_CKINT Chuck_IO::FLAG_WRITEONLY = 0x400;
+const t_CKINT Chuck_IO::FLAG_APPEND = 0x800;
+
 #ifndef __DISABLE_THREADS__
 const t_CKINT Chuck_IO::MODE_SYNC = 0;
 const t_CKINT Chuck_IO::MODE_ASYNC = 1;
@@ -61,14 +70,6 @@ const t_CKINT Chuck_IO::MODE_ASYNC = 1;
 const t_CKINT Chuck_IO::MODE_SYNC = 1;
 const t_CKINT Chuck_IO::MODE_ASYNC = 0;
 #endif
-// #ifndef __DISABLE_FILEIO__
-const t_CKINT Chuck_IO_File::FLAG_READ_WRITE = 0x8;
-const t_CKINT Chuck_IO_File::FLAG_READONLY = 0x10;
-const t_CKINT Chuck_IO_File::FLAG_WRITEONLY = 0x20;
-const t_CKINT Chuck_IO_File::FLAG_APPEND = 0x40;
-const t_CKINT Chuck_IO_File::TYPE_ASCII = 0x80;
-const t_CKINT Chuck_IO_File::TYPE_BINARY = 0x100;
-// #endif // __DISABLE_FILEIO__
 
 
 
@@ -3279,38 +3280,42 @@ Chuck_String * Chuck_IO_File::readLine()
 t_CKINT Chuck_IO_File::readInt( t_CKINT flags )
 {
     // sanity
-    if (!(m_io.is_open())) {
+    if( !(m_io.is_open()) ) {
         EM_error3( "[chuck](via FileIO): cannot readInt: no file open" );
         return 0;
     }
 
-    if (m_io.eof()) {
+    if( m_io.eof() ) {
         EM_error3( "[chuck](via FileIO): cannot readInt: EOF reached" );
         return 0;
     }
 
-    if ( m_dir )
+    if( m_dir )
     {
         EM_error3( "[chuck](via FileIO): cannot read on directory" );
         return 0;
     }
 
-    if (m_io.fail()) {
+    if( m_io.fail() ) {
         EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
         return 0;
     }
 
-    if (m_flags & TYPE_ASCII) {
+    // check mode ASCII vs. binary
+    if( m_flags & TYPE_ASCII )
+    {
         // ASCII
         t_CKINT val = 0;
         m_io >> val;
         // if (m_io.fail())
         //     EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
         return val;
-
-    } else if (m_flags & TYPE_BINARY) {
+    }
+    else if( m_flags & TYPE_BINARY )
+    {
         // binary
-        if (flags & Chuck_IO::INT32) {
+        if( flags & Chuck_IO::INT32 )
+        {
             // 32-bit
             t_CKINT i;
             m_io.read( (char *)&i, 4 );
@@ -3319,34 +3324,41 @@ t_CKINT Chuck_IO_File::readInt( t_CKINT flags )
             else if (m_io.fail())
                 EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
             return i;
-        } else if (flags & Chuck_IO::INT16) {
+        }
+        else if( flags & Chuck_IO::INT16 )
+        {
             // 16-bit
             // int16_t i;
             // issue: 64-bit
             short i;
             m_io.read( (char *)&i, 2 );
-            if (m_io.gcount() != 2)
+            if( m_io.gcount() != 2 )
                 EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
             else if (m_io.fail())
                 EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
             return (t_CKINT) i;
-        } else if (flags & Chuck_IO::INT8) {
+        }
+        else if( flags & Chuck_IO::INT8 )
+        {
             // 8-bit
             // int8_t i;
             // issue: 64-bit
-            char i;
+            unsigned char i;
             m_io.read( (char *)&i, 1 );
-            if (m_io.gcount() != 1)
+            if( m_io.gcount() != 1 )
                 EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
-            else if (m_io.fail())
+            else if( m_io.fail() )
                 EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
-            return (t_CKINT) i;
-        } else {
+            return (t_CKINT)i;
+        }
+        else
+        {
             EM_error3( "[chuck](via FileIO): readInt error: invalid int size flag" );
             return 0;
         }
-
-    } else {
+    }
+    else
+    {
         EM_error3( "[chuck](via FileIO): readInt error: invalid ASCII/binary flag" );
         return 0;
     }
@@ -3522,7 +3534,10 @@ t_CKBOOL Chuck_IO_File::eof()
         return TRUE;
     }
 
-    return m_io.eof() || m_io.fail();
+    // return EOF conditions (1.4.2.1: peek() was added since eof() is set
+    // ONLY AFTER an effort is made to read and no more data is left)
+    // https://stackoverflow.com/questions/4533063/how-does-ifstreams-eof-work
+    return m_io.eof() || m_io.fail() || m_io.peek() == EOF;
 }
 
 

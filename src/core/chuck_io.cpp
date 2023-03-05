@@ -172,39 +172,50 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
     initialize_object( g_newline, env->t_string );
     g_newline->set( "\n" );
 
-    // add READ_INT32
-    if( !type_engine_import_svar( env, "int", "READ_INT32",
-                                 TRUE, (t_CKUINT)&Chuck_IO::INT32 ) ) goto error;
-
-    // add READ_INT16
-    if( !type_engine_import_svar( env, "int", "READ_INT16",
-                                 TRUE, (t_CKUINT)&Chuck_IO::INT16 ) ) goto error;
-
-    // add READ_INT8
-    if( !type_engine_import_svar( env, "int", "READ_INT8",
-                                 TRUE, (t_CKUINT)&Chuck_IO::INT8 ) ) goto error;
-
-    // add INT32
-    if( !type_engine_import_svar( env, "int", "INT32",
-                                 TRUE, (t_CKUINT)&Chuck_IO::INT32 ) ) goto error;
-
-    // add INT16
-    if( !type_engine_import_svar( env, "int", "INT16",
-                                 TRUE, (t_CKUINT)&Chuck_IO::INT16 ) ) goto error;
-
+    // add TYPE_ASCII
+    if( !type_engine_import_svar( env, "int", "ASCII",
+                                 TRUE, (t_CKUINT)&Chuck_IO::TYPE_ASCII ) ) goto error;
+    // add TYPE_BINARY
+    if( !type_engine_import_svar( env, "int", "BINARY",
+                                 TRUE, (t_CKUINT)&Chuck_IO::TYPE_BINARY ) ) goto error;
     // add INT8
     if( !type_engine_import_svar( env, "int", "INT8",
                                  TRUE, (t_CKUINT)&Chuck_IO::INT8 ) ) goto error;
-
+    // add INT16
+    if( !type_engine_import_svar( env, "int", "INT16",
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT16 ) ) goto error;
+    // add INT32
+    if( !type_engine_import_svar( env, "int", "INT32",
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT32 ) ) goto error;
+    // add READ_INT8
+    if( !type_engine_import_svar( env, "int", "READ_INT8",
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT8 ) ) goto error;
+    // add READ_INT16
+    if( !type_engine_import_svar( env, "int", "READ_INT16",
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT16 ) ) goto error;
+    // add READ_INT32
+    if( !type_engine_import_svar( env, "int", "READ_INT32",
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT32 ) ) goto error;
     // add MODE_SYNC
     if( !type_engine_import_svar( env, "int", "MODE_SYNC",
                                  TRUE, (t_CKUINT)&Chuck_IO::MODE_SYNC ) ) goto error;
-
 #ifndef __DISABLE_FILEIO__
     // add MODE_ASYNC
     if( !type_engine_import_svar( env, "int", "MODE_ASYNC",
                                  TRUE, (t_CKUINT)&Chuck_IO::MODE_ASYNC ) ) goto error;
 #endif
+    // add FLAG_READONLY
+    if( !type_engine_import_svar( env, "int", "READ",
+                                  TRUE, (t_CKUINT)&Chuck_IO::FLAG_READONLY ) ) goto error;
+    // add FLAG_WRITEONLY
+    if( !type_engine_import_svar( env, "int", "WRITE",
+                                  TRUE, (t_CKUINT)&Chuck_IO::FLAG_WRITEONLY ) ) goto error;
+    // add FLAG_APPEND
+    if( !type_engine_import_svar( env, "int", "APPEND",
+                                  TRUE, (t_CKUINT)&Chuck_IO::FLAG_APPEND ) ) goto error;
+    // add FLAG_READ_WRITE
+    if( !type_engine_import_svar( env, "int", "READ_WRITE",
+                                  TRUE, (t_CKUINT)&Chuck_IO::FLAG_READ_WRITE ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -345,30 +356,17 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add FLAG_READ_WRITE
-    if( !type_engine_import_svar( env, "int", "READ_WRITE",
-                                 TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_READ_WRITE ) ) goto error;
-
-    // add FLAG_READONLY
-    if( !type_engine_import_svar( env, "int", "READ",
-                                 TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_READONLY ) ) goto error;
-
-    // add FLAG_WRITEONLY
-    if( !type_engine_import_svar( env, "int", "WRITE",
-                                 TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_WRITEONLY ) ) goto error;
-
-    // add FLAG_APPEND
-    if( !type_engine_import_svar( env, "int", "APPEND",
-                                 TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_APPEND ) ) goto error;
-
-    // add TYPE_ASCII
-    if( !type_engine_import_svar( env, "int", "ASCII",
-                                 TRUE, (t_CKUINT)&Chuck_IO_File::TYPE_ASCII ) ) goto error;
-
-    // add TYPE_BINARY
-    if( !type_engine_import_svar( env, "int", "BINARY",
-                                 TRUE, (t_CKUINT)&Chuck_IO_File::TYPE_BINARY ) ) goto error;
-
+    if( !type_engine_import_add_ex( env, "io/chout.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-byte.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-float.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-int.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-line.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-str.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-tokens.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/seek.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/write-byte.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/write.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/write2.ck" ) ) goto error;
     // end the class import
     type_engine_import_class_end( env );
 
@@ -1315,7 +1313,7 @@ CK_DLL_MFUN( fileio_open )
     std::string filename = GET_NEXT_STRING(ARGS)->str();
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
     t_CKINT default_flags =
-    Chuck_IO_File::FLAG_READ_WRITE | Chuck_IO_File::TYPE_ASCII;
+    Chuck_IO::FLAG_READ_WRITE | Chuck_IO::TYPE_ASCII;
 
     RETURN->v_int = f->open(filename, default_flags);
 }
@@ -2757,18 +2755,18 @@ t_CKBOOL Chuck_IO_Serial::open( const t_CKUINT i, t_CKINT flags, t_CKUINT baud )
 
 t_CKBOOL Chuck_IO_Serial::open( const std::string & path, t_CKINT flags, t_CKUINT baud )
 {
-    if( flags & Chuck_IO_File::TYPE_BINARY )
+    if( flags & Chuck_IO::TYPE_BINARY )
     {
-        m_flags = Chuck_IO_File::TYPE_BINARY;
+        m_flags = Chuck_IO::TYPE_BINARY;
     }
-    else if( flags & Chuck_IO_File::TYPE_ASCII )
+    else if( flags & Chuck_IO::TYPE_ASCII )
     {
-        m_flags = Chuck_IO_File::TYPE_ASCII;
+        m_flags = Chuck_IO::TYPE_ASCII;
     }
     else
     {
         EM_log(CK_LOG_WARNING, "(Serial.open): warning: invalid binary/ASCII flag requested, defaulting to ASCII");
-        m_flags = Chuck_IO_File::TYPE_ASCII;
+        m_flags = Chuck_IO::TYPE_ASCII;
     }
 
     int fd = ::open( path.c_str(), O_RDWR );
@@ -2879,7 +2877,7 @@ t_CKINT Chuck_IO_Serial::readInt( t_CKINT flags )
 
     long i = 0; // 1.4.1.1 (ge) changed from t_CKUINT; to clear warning for fscanf using %li
 
-    if( m_flags & Chuck_IO_File::TYPE_BINARY )
+    if( m_flags & Chuck_IO::TYPE_BINARY )
     {
         if( flags & INT8 )
         {
@@ -2931,7 +2929,7 @@ t_CKFLOAT Chuck_IO_Serial::readFloat()
 
     t_CKFLOAT f = 0;
 
-    if( m_flags & Chuck_IO_File::TYPE_BINARY )
+    if( m_flags & Chuck_IO::TYPE_BINARY )
     {
         if(!fread(&f, 4, 1, m_cfd))
             EM_log(CK_LOG_WARNING, "(Serial.readFloat): error: read failed");
@@ -2959,7 +2957,7 @@ t_CKBOOL Chuck_IO_Serial::readString( std::string & str )
         return FALSE;
     }
 
-    if( m_flags & Chuck_IO_File::TYPE_BINARY )
+    if( m_flags & Chuck_IO::TYPE_BINARY )
     {
         EM_log(CK_LOG_WARNING, "(Serial.readString): warning: cannot read string from binary file");
         return FALSE;
@@ -2991,7 +2989,7 @@ Chuck_String * Chuck_IO_Serial::readLine()
         return NULL;
     }
 
-    if( m_flags & Chuck_IO_File::TYPE_BINARY )
+    if( m_flags & Chuck_IO::TYPE_BINARY )
     {
         EM_log(CK_LOG_WARNING, "(Serial.readLine): warning: cannot read line from binary file");
         return NULL;
@@ -3084,7 +3082,7 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
     {
         start_read_thread();
 
-        if( m_flags & Chuck_IO_File::TYPE_ASCII )
+        if( m_flags & Chuck_IO::TYPE_ASCII )
         {
             // TODO: don't use m_tmp_buf (thread safety?)
 #ifdef WIN32
@@ -3125,7 +3123,7 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
     }
     else if( m_iomode == MODE_SYNC )
     {
-        if( m_flags & Chuck_IO_File::TYPE_ASCII )
+        if( m_flags & Chuck_IO::TYPE_ASCII )
         {
             fprintf( m_cfd, "%li", (long)val );
         }
@@ -3150,7 +3148,7 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
     {
         start_read_thread();
 
-        if( m_flags & Chuck_IO_File::TYPE_ASCII )
+        if( m_flags & Chuck_IO::TYPE_ASCII )
         {
 #ifdef WIN32
             _snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%f", val);
@@ -3191,7 +3189,7 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
     }
     else if( m_iomode == MODE_SYNC )
     {
-        if( m_flags & Chuck_IO_File::TYPE_ASCII )
+        if( m_flags & Chuck_IO::TYPE_ASCII )
         {
             fprintf( m_cfd, "%f", val );
         }
@@ -3849,7 +3847,7 @@ void Chuck_IO_Serial::read_cb()
                 continue;
             }
 
-            if(m_flags & Chuck_IO_File::TYPE_ASCII)
+            if(m_flags & Chuck_IO::TYPE_ASCII)
             {
                 switch(r.m_type)
                 {
@@ -4246,6 +4244,10 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     // func->doc = "";
     // if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add file modes (moved into IO | 1.4.2.1 (ge))
+    // type_engine_import_svar(env, "int", "BINARY", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_BINARY, "Binary mode");
+    // type_engine_import_svar(env, "int", "ASCII", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_ASCII, "ASCII mode");
+
     // add baud rate constants
     type_engine_import_svar(env, "int", "B2400",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_2400, "2400 baud");
     type_engine_import_svar(env, "int", "B4800",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_4800, "4800 baud");
@@ -4259,9 +4261,6 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     type_engine_import_svar(env, "int", "B76800",  TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_76800, "76800 baud");
     type_engine_import_svar(env, "int", "B115200", TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_115200, "115200 baud");
     type_engine_import_svar(env, "int", "B230400", TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_230400, "230400 baud");
-
-    type_engine_import_svar(env, "int", "BINARY", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_BINARY, "Binary mode");
-    type_engine_import_svar(env, "int", "ASCII", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_ASCII, "ASCII mode");
 
     // add examples
     if( !type_engine_import_add_ex( env, "serial/byte.ck" ) ) goto error;

@@ -1,10 +1,10 @@
 //---------------------------------------------------------------------
-// name: read-line.ck
-// desc: basic example of reading a line of text using FileIO
+// name: read-float.ck
+// desc: basic example of reading floats using FileIO
 //---------------------------------------------------------------------
 
 // default file
-me.dir() + "read-line.txt" => string filename;
+me.dir() + "read-float.txt" => string filename;
 
 // look at command line
 if( me.args() > 0 ) me.arg(0) => filename;
@@ -23,8 +23,11 @@ if( !fio.good() )
     me.exit();
 }
 
+// variable to read into
+float val;
+
 // loop until end
-while( fio.more() )
+while( fio => val )
 {
-    chout <= fio.readLine() <= IO.newline();
+    cherr <= val <= IO.newline();
 }

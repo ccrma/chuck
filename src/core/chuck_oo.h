@@ -601,15 +601,23 @@ public:
     virtual void write( t_CKINT val, t_CKINT flags ) = 0;
     virtual void write( t_CKFLOAT val ) = 0;
 
-    // constants
 public:
+    // type | moved to IO in 1.4.2.1 (ge)
+    static const t_CKINT TYPE_ASCII;
+    static const t_CKINT TYPE_BINARY;
+    // datatype
     static const t_CKINT INT32;
     static const t_CKINT INT16;
     static const t_CKINT INT8;
-
+    // flags | moved to IO in 1.4.2.1 (ge)
+    static const t_CKINT FLAG_READ_WRITE;
+    static const t_CKINT FLAG_READONLY;
+    static const t_CKINT FLAG_WRITEONLY;
+    static const t_CKINT FLAG_APPEND;
     // asynchronous I/O members
     static const t_CKINT MODE_SYNC;
     static const t_CKINT MODE_ASYNC;
+
     Chuck_Event * m_asyncEvent;
     #ifndef __DISABLE_THREADS__
     XThread * m_thread;
@@ -684,15 +692,6 @@ public:
     static THREAD_RETURN ( THREAD_TYPE writeInt_thread ) ( void *data );
     static THREAD_RETURN ( THREAD_TYPE writeFloat_thread ) ( void *data );
     #endif
-
-public:
-    // constants
-    static const t_CKINT FLAG_READ_WRITE;
-    static const t_CKINT FLAG_READONLY;
-    static const t_CKINT FLAG_WRITEONLY;
-    static const t_CKINT FLAG_APPEND;
-    static const t_CKINT TYPE_ASCII;
-    static const t_CKINT TYPE_BINARY;
 
 protected:
     // open flags

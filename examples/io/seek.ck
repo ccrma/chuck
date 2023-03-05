@@ -26,7 +26,9 @@ while( fio.more() )
     chout <= fio.readLine() <= IO.newline();
 }
 
+<<< "\n------------", "" >>>;
 <<< "rewinding...", "" >>>;
+<<< "------------\n", "" >>>;
 fio.seek( 0 );
 
 // loop until end

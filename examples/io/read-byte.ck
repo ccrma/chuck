@@ -1,20 +1,18 @@
 //---------------------------------------------------------------------
-// name: read-int.ck
-// desc: basic example of reading int using FileIO
+// name: read-byte.ck
+// desc: example of reading raw bytes from file
+// NOTE: file must be opened in BINARY mode for this to work
 //---------------------------------------------------------------------
 
-// default file
-me.dir() + "read-int.txt" => string filename;
-
+// default filepath
+me.dir() + "read-byte.txt" => string filename;
 // look at command line
 if( me.args() > 0 ) me.arg(0) => filename;
 
 // instantiate
 FileIO fio;
-
-// open a file
-fio.open( filename, FileIO.READ );
-
+// open a file (in BINARY mode)
+fio.open( filename, FileIO.READ | FileIO.BINARY );
 // ensure it's ok
 if( !fio.good() )
 {
@@ -27,7 +25,12 @@ if( !fio.good() )
 int val;
 
 // loop until end
-while( fio => val )
+while( fio.more() )
 {
+    // read the next byte
+    // (other options include IO.INT16 and IO.INT32)
+    fio.readInt( IO.INT8 ) => val;
+
+    // print the value
     cherr <= val <= IO.newline();
 }
