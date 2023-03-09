@@ -47,6 +47,9 @@ using namespace std;
 // FROM PLATFORM.H -UDP TRANSMITTER / RECEIVER
 
 #if defined(__PLATFORM_WIN32__)
+// 2022 QTSIN added winsock2.h and wsw2tcpip.h
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <windows.h>
 #else
 #include <sys/types.h>
