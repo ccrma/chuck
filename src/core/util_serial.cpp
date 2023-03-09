@@ -31,7 +31,6 @@
 //-----------------------------------------------------------------------------
 #include "util_serial.h"
 #include "chuck_errmsg.h"
-using namespace std;
 
 #if defined(__MACOSX_CORE__) && !defined(__CHIP_MODE__)
 
@@ -39,6 +38,8 @@ using namespace std;
 #include <IOKit/IOKitLib.h>
 #include <IOKit/serial/IOSerialKeys.h>
 #include <IOKit/IOBSD.h>
+
+using namespace std;
 
 vector<string> SerialIOManager::availableSerialDevices()
 {
@@ -120,6 +121,7 @@ cleanup:
 #include <dirent.h>
 #include <unistd.h>
 
+using namespace std;
 
 vector<string> SerialIOManager::availableSerialDevices()
 {
@@ -179,6 +181,8 @@ cleanup:
 #elif defined(__WINDOWS_DS__)
 
 #include <windows.h>
+
+using namespace std;
 
 vector<string> SerialIOManager::availableSerialDevices()
 {

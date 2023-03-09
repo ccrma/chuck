@@ -41,6 +41,7 @@
 
 // the included files were from the CNMAT OSC-Kit distrib.
 #ifdef __PLATFORM_WIN32__
+#define _WINSOCKAPI_
 #include <windows.h>
 #endif
 

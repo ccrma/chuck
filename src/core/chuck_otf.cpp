@@ -45,6 +45,10 @@
 
 #ifndef __PLATFORM_WIN32__
 #include <unistd.h>
+#else // 2022 QTSIN
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <windows.h>
 #endif
 
 using namespace std;
