@@ -32,6 +32,7 @@
 #include "chuck_otf.h"
 #include "chuck_compile.h"
 #include "chuck_errmsg.h"
+#include "util_math.h"
 #include "util_thread.h"
 #include "util_string.h"
 
@@ -101,7 +102,7 @@ void otf_ntoh( Net_Msg * msg )
 FILE * recv_file( const Net_Msg & msg, ck_socket sock )
 {
     Net_Msg buf;
-    
+
     // what is left
     // t_CKUINT left = msg.param2;
     // make a temp file
@@ -124,7 +125,7 @@ FILE * recv_file( const Net_Msg & msg, ck_socket sock )
         // done
         goto error;
     }
-    
+
     return fd;
 
 error:
@@ -140,7 +141,7 @@ error:
 // name: otf_process_msg()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler, 
+t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
                           Net_Msg * msg, t_CKBOOL immediate, void * data )
 {
     Chuck_Msg * cmd = new Chuck_Msg;
@@ -373,14 +374,14 @@ ck_socket otf_send_connect( const char * host, t_CKINT port )
 
     if( strcmp( host, "127.0.0.1" ) )
         EM_log( g_otf_log, "connecting to %s on port %i via TCP...", host, port );
-    
-    if( !ck_connect( sock, host, port ) )
+
+    if( !ck_connect( sock, host, (int)port ) )
     {
         CK_FPRINTF_STDERR( "cannot open TCP socket on %s:%i...\n", host, port );
         ck_close( sock );
         return NULL;
     }
-    
+
     ck_send_timeout( sock, 0, 2000000 );
 
     return sock;
@@ -457,7 +458,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         EM_pushlog();
         // log
         EM_log( CK_LOG_INFO, "requesting removal of last shred..." );
-        msg.param = 0xffffffff;
+        msg.param = CK_NO_VALUE;
         msg.type = MSG_REMOVE;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
@@ -473,7 +474,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         }
 
         if( i <= 0 )
-            msg.param = 0xffffffff;
+            msg.param = CK_NO_VALUE;
         else
             msg.param = atoi( argv[i] );
 
@@ -562,7 +563,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         if( is_otf ) *is_otf = FALSE;
         return 0;
     }
-        
+
     // send
     msg.type = MSG_DONE;
     otf_hton( &msg );
@@ -581,7 +582,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         if( !msg.param )
         {
             CK_FPRINTF_STDERR( "[chuck(remote)]:operation failed (sorry)" );
-            CK_FPRINTF_STDERR( "...(reason: %s)\n", 
+            CK_FPRINTF_STDERR( "...(reason: %s)\n",
                 ( strstr( (char *)msg.buffer, ":" ) ? strstr( (char *)msg.buffer, ":" ) + 1 : (char *)msg.buffer ) );
         }
         else
@@ -595,14 +596,14 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
     }
     // close the sock
     ck_close( dest );
-    
+
     // exit
     // exit( msg.param );
 
     return 1;
-    
+
 error:
-    
+
     // if sock was opened
     if( dest )
     {
@@ -611,7 +612,7 @@ error:
         ck_send( dest, (char *)&msg, sizeof(msg) );
         ck_close( dest );
     }
-    
+
     // exit( 1 );
 
     return 0;
@@ -630,7 +631,7 @@ void * otf_cb( void * p )
     Net_Msg ret;
     ck_socket client;
     int n;
-    
+
     // REFACTOR-2017: get per-VM carrier
     Chuck_Carrier * carrier = (Chuck_Carrier *)p;
 
@@ -648,7 +649,7 @@ void * otf_cb( void * p )
         client = ck_accept( carrier->otf_socket );
 
         // check for thread shutdown, potentially occured during ck_accept
-        if(!carrier->otf_thread) 
+        if(!carrier->otf_thread)
             break;
 
         if( !client )
@@ -671,7 +672,7 @@ void * otf_cb( void * p )
             ck_close( client );
             continue;
         }
-        
+
         if( msg.header != NET_HEADER )
         {
             CK_FPRINTF_STDERR( "[chuck]: header mismatch - possible endian lunacy...\n" );
@@ -707,12 +708,12 @@ void * otf_cb( void * p )
                 usleep( 10000 );
             }
         }
-        
+
         otf_hton( &ret );
         ck_send( client, (char *)&ret, sizeof(ret) );
         ck_close( client );
     }
-    
+
     return NULL;
 }
 
@@ -728,13 +729,13 @@ const char * poop[] = {
     "[chuck]: confused by earlier errors, bailing out...",
     "[chuck]: lack of destructors have led to the unrecoverable mass build-up of trash\n"
     "         the chuck garbage collector will now run, deleting all files (bye.)",
-    "[chuck]: calling machine.crash()...",
-    "[chuck]: an unknown fatal error has occurred.  please restart your computer...",
-    "[chuck]: an unknown fatal error has occurred.  please reinstall your OS...",
-    "[chuck]: an unknown fatal error has occurred.  please update to chuck-3.0",
+    "[chuck]: calling Machine.crash()...",
+    "[chuck]: an unknown fatal error has occurred. please restart your computer...",
+    "[chuck]: an unknown fatal error has occurred. please reinstall something...",
+    "[chuck]: an unknown fatal error has occurred. please update to chuck-3.0",
     "[chuck]: internal error: unknown error",
-    "[chuck]: page fault!!!",
-    "[chuck]: error printing error message.  cannot continue 2#%%HGAFf9a0x"
+    "[chuck]: internal error: too many errors!!!",
+    "[chuck]: error printing error message. cannot continue 2#%%HGAFf9a0x"
 };
 
 long poop_size = sizeof( poop ) / sizeof( char * );
@@ -748,11 +749,11 @@ long poop_size = sizeof( poop ) / sizeof( char * );
 //-----------------------------------------------------------------------------
 void uh( )
 {
-    srand( time( NULL ) );
+    ck_srandom( (unsigned)time( NULL ) );
     while( true )
     {
-        int n = (int)(rand() / (float)RAND_MAX * poop_size);
+        int n = (int)(ck_random() / (float)CK_RANDOM_MAX * poop_size);
         printf( "%s\n", poop[n] );
-        usleep( (unsigned long)(rand() / (float)RAND_MAX * 2000000) / 10 );
+        usleep( (unsigned int)(ck_random() / (float)CK_RANDOM_MAX * 2000000) / 10 );
     }
 }

@@ -79,7 +79,7 @@ int lo_send_message(lo_address targ, const char *path, lo_message msg);
  * \param path The path to send the message to
  * \param msg  The bundle itself
  */
-int lo_send_message_from(lo_address targ, lo_server serv, 
+int lo_send_message_from(lo_address targ, lo_server serv,
      const char *path, lo_message msg);
 
 /**
@@ -97,7 +97,7 @@ int lo_send_bundle(lo_address targ, lo_bundle b);
  * lo_bundle_new() and lo_bundle_add_message() functions.
  *
  * \param targ The address to send the bundle to
- * \param serv The server socket to send the bundle from 
+ * \param serv The server socket to send the bundle from
  *              (can be NULL to use new socket)
  * \param b    The bundle itself
  */
@@ -332,7 +332,7 @@ size_t lo_message_length(lo_message m, const char *path);
  * having the correct endianess and bit-packed structure.
  */
 void *lo_message_serialise(lo_message m, const char *path, void *to,
-			   size_t *size);
+                           size_t *size);
 
 /**
  * \brief  Deserialise a raw OSC message and return a new lo_message object.
@@ -398,22 +398,22 @@ char *lo_address_get_url(lo_address a);
 
 /**
  * \brief Set the Time-to-Live value for a given target address.
- * 
+ *
  * This is required for sending multicast UDP messages.  A value of 1
  * (the usual case) keeps the message within the subnet, while 255
  * means a global, unrestricted scope.
- * 
+ *
  * \param t An OSC address.
  * \param ttl An integer specifying the scope of a multicast UDP message.
- */ 
+ */
 void lo_address_set_ttl(lo_address t, int ttl);
 
 /**
  * \brief Get the Time-to-Live value for a given target address.
- * 
+ *
  * \param t An OSC address.
  * \return An integer specifying the scope of a multicast UDP message.
- */ 
+ */
 int lo_address_get_ttl(lo_address t);
 
 /**
@@ -555,7 +555,7 @@ lo_server lo_server_new_with_proto(const char *port, int proto,
 
 /**
  * \brief Create a new server instance, and join a UDP multicast group.
- * 
+ *
  * \param group The multicast group to join.  See documentation on IP
  * multicast for the acceptable address range; e.g., http://tldp.org/HOWTO/Multicast-HOWTO-2.html
  * \param port If using UDP then NULL may be passed to find an unused port.
@@ -672,13 +672,13 @@ int lo_server_get_protocol(lo_server s);
  */
 char *lo_server_get_url(lo_server s);
 
-/** 
- * \brief Return true if there are scheduled events (eg. from bundles) 
+/**
+ * \brief Return true if there are scheduled events (eg. from bundles)
  * waiting to be dispatched by the server
  */
 int lo_server_events_pending(lo_server s);
 
-/** 
+/**
  * \brief Return the time in seconds until the next scheduled event.
  *
  * If the delay is greater than 100 seconds then it will return 100.0.
@@ -762,8 +762,8 @@ int lo_send_internal(lo_address t, const char *file, const int line,
 int lo_send_timestamped_internal(lo_address t, const char *file, const int line,
      lo_timetag ts, const char *path, const char *types, ...);
 /** \internal \brief the real lo_send_from() function (don't call directly) */
-int lo_send_from_internal(lo_address targ, lo_server from, const char *file, 
-     const int line, const lo_timetag ts, 
+int lo_send_from_internal(lo_address targ, lo_server from, const char *file,
+     const int line, const lo_timetag ts,
      const char *path, const char *types, ...);
 
 

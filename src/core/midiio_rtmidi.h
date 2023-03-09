@@ -92,7 +92,7 @@ public:
     t_CKBOOL close();
     t_CKBOOL good() { return m_valid; }
     t_CKINT  num() { return m_valid ? (t_CKINT)m_device_num : -1; }
-    
+
 public:
     void     set_suppress( t_CKBOOL print_or_not )
     { m_suppress_output = print_or_not; }
@@ -187,7 +187,7 @@ public:
 protected:
     MidiInManager();
     ~MidiInManager();
-    
+
     static t_CKBOOL add_vm( Chuck_VM * vm, t_CKINT device_num, t_CKBOOL suppress_output );
 
     static std::vector<RtMidiIn *> the_mins;
@@ -333,7 +333,7 @@ struct MidiNoteEvent
     MidiNoteEvent * simultaneous;
     // link to parent (could be self)
     MidiNoteEvent * parent;
-    
+
     // more data
     double startTime;
     double endTime;
@@ -341,12 +341,12 @@ struct MidiNoteEvent
     int bendAmount;
     int programChange;
     bool phrasemark;
-    
+
     // constructor
     MidiNoteEvent() : data1(0), data2(0), data3(0), time(0.0), untilNext(0.0),
     simultaneous(NULL), parent(NULL), startTime(0), endTime(0), shouldBend(false),
     bendAmount(0), programChange(0), phrasemark(false) { }
-    
+
     // type of message
     int type() const { return data1 & 0x70; }
     // channel
@@ -367,7 +367,7 @@ struct MidiLyricEvent
     // time data
     double time;
     double endTime;
-    
+
     // constructor
     MidiLyricEvent() : time(0), endTime(0) { }
 };
@@ -390,11 +390,11 @@ class MidiScoreReader
 public:
     MidiScoreReader();
     ~MidiScoreReader();
-    
+
 public:
     bool load( const char * filename, float velScale = 0.0f );
     void cleanup();
-    
+
 public:
     // rewind to beginning
     void rewind();
@@ -411,8 +411,8 @@ public:
                     bool includeSimultaneous = false );
     // isDone
     bool isDone( t_CKINT track, double currTime );
-    
-    
+
+
 public:
     // get number of tracks
     t_CKINT getNumTracks() const;
@@ -434,7 +434,7 @@ public:
     t_CKINT getLowestNote( t_CKINT track, const MidiNoteEvent *start );
     // get highest note for a track
     t_CKINT getHighestNote( t_CKINT track, const MidiNoteEvent *start );
-    
+
 public: // TODO: these may as well be a separate object
     // push a event to remember
     void enqueue( const MidiNoteEvent * event );
@@ -444,7 +444,7 @@ public: // TODO: these may as well be a separate object
     void dequeue();
     // push to front
     void enqueue_front( const MidiNoteEvent * event );
-    
+
 public: // track naming
     // sets track name
     void setTrackName( t_CKINT track, const std::string & name );
@@ -452,7 +452,7 @@ public: // track naming
     std::string getTrackName( t_CKINT track );
     // gets the track with the given name (-1 if not present)
     t_CKINT getTrackForName( const std::string & name );
-    
+
 protected: // for use while loading a track
     // load a track
     bool loadTrack( t_CKINT track, std::vector<MidiNoteEvent *> & data, std::vector<MidiLyricEvent *> & lyricData );
@@ -463,7 +463,7 @@ protected: // for use while loading a track
     // handle note events, managing m_activeNotes and setting the event's endTime
     void handleNoteOn( MidiNoteEvent * e, t_CKINT note );
     void handleNoteOff( t_CKINT note, double time );
-    
+
 protected:
     // midi
     stk::MidiFileIn * m_midiFile;
@@ -490,7 +490,7 @@ protected:
     t_CKINT m_numNonZeroTracks;
     // vector of indices of non-zero tracks
     std::vector<t_CKINT> m_nonZeroTrackIndices;
-    
+
 private: // used during track loading
     // active notes, map from MIDI note to event
     std::map<t_CKINT, MidiNoteEvent *> m_activeNotes;

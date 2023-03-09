@@ -22,4 +22,3 @@ while( true )
     // remove
     Machine.remove( wind );
 }
-

@@ -29,7 +29,7 @@ fun void onNotes()
     // use port 6449 (or whatever)
     6449 => oin.port;
     // create an address in the receiver, expect an int and a float
-    oin.addAddress( "/foo/notes, i f" );
+    oin.addAddress( "/foo/notes, if" );
     
     // infinite event loop
     while( true )
@@ -87,4 +87,3 @@ fun void onHarmonics()
         }
     }
 }
-

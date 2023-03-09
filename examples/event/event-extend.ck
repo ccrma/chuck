@@ -1,4 +1,7 @@
-// creating custom event objects
+//---------------------------------------------------------------------
+// name: event-extend.ck
+// desc: defining and using a custom Event
+//---------------------------------------------------------------------
 
 // new event class
 class TheEvent extends Event

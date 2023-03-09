@@ -80,7 +80,7 @@ public: // src
     t_CKBOOL alloc_v( t_CKUINT size );
     t_CKBOOL set_is_buffered( t_CKBOOL buffered );
     void get_buffer( SAMPLE * buffer, t_CKINT num_elem );
-    
+
     Chuck_UGen *src_chan( t_CKUINT chan );
     Chuck_UGen *dst_for_src_chan( t_CKUINT chan );
 
@@ -133,17 +133,17 @@ public: // data
     SAMPLE m_pan;
     t_CKINT m_op;
     t_CKINT m_max_block_size;
-    
+
     // SPENCERTODO: combine with block processing (added 1.3.0.0)
     SAMPLE * m_multi_in_v;
     SAMPLE * m_multi_out_v;
-    
+
     // SPENCERTODO: better way to handle this (added 1.3.0.0)
     t_CKBOOL m_is_subgraph;
     Chuck_UGen * m_inlet, * m_outlet;
     Chuck_UGen * inlet();
     Chuck_UGen * outlet();
-    
+
     // block processing
     SAMPLE * m_sum_v;
     SAMPLE * m_current_v;
@@ -154,10 +154,10 @@ public: // data
     Chuck_VM * vm;
     // owner
     Chuck_UGen * owner;
-    
+
     // what a hack!
     t_CKBOOL m_is_uana;
-    
+
     // what a hack! (added some time after REFACTOR-2017)
     t_CKBOOL m_is_buffered;
     AccumBuffer m_buffer;

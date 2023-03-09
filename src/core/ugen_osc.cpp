@@ -67,12 +67,12 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     type_engine_register_deprecate( env, "sqrosc", "SqrOsc" );
 
     std::string doc;
-    
+
     //---------------------------------------------------------------------
     // init as base class: osc
     //---------------------------------------------------------------------
     doc = "base class for simple oscillator unit generators.";
-    if( !type_engine_import_ugen_begin( env, "Osc", "UGen", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "Osc", "UGen", env->global(),
                                         osc_ctor, osc_dtor, osc_tick, osc_pmsg,
                                         doc.c_str() ) )
         return FALSE;
@@ -98,8 +98,8 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "dur", "period", osc_cget_period );
     func->doc = "get period of oscillator (inverse of frequency).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
-    // add ctrl: sfreq ( == freq ) 
+
+    // add ctrl: sfreq ( == freq )
     func = make_new_mfun( "float", "sfreq", osc_ctrl_freq );
     func->add_arg( "float", "hz" );
     func->doc = "set frequency of oscillator in Hertz; resets phase to 0.";
@@ -131,14 +131,14 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     // phasor
     //---------------------------------------------------------------------
     doc = "a phasor oscillator; linearly rises from 0 to 1; can be used as a phase control.";
-    if( !type_engine_import_ugen_begin( env, "Phasor", "Osc", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "Phasor", "Osc", env->global(),
                                         NULL, NULL, osc_tick, NULL,
                                         doc.c_str() ) )
         return FALSE;
 
     // end the class import
     type_engine_import_class_end( env );
-    
+
     //---------------------------------------------------------------------
     // sinosc
     //---------------------------------------------------------------------
@@ -147,7 +147,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
                                         NULL, NULL, sinosc_tick, NULL,
                                         doc.c_str() ) )
         return FALSE;
-    
+
     type_engine_import_add_ex( env, "basic/whirl.ck" );
 
     // end the class import
@@ -162,7 +162,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
                                         NULL, NULL, triosc_tick, NULL,
                                         doc.c_str() ) )
         return FALSE;
-    
+
     func = make_new_mfun( "float", "width", osc_ctrl_width );
     func->add_arg( "float", "width" );
     func->doc = "set width of triangle wave (ratio of rise time to fall time).";
@@ -210,7 +210,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "float", "width", osc_ctrl_width );
     func->add_arg( "float", "width" );
     func->doc = "set width of duty cycle [0,1).";
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "width", osc_cget_width );
     func->doc = "get width of duty cycle [0,1)/";
@@ -221,17 +221,17 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
 
 
     //---------------------------------------------------------------------
-    // sqrosc - square_wave oscillator ( 0.5 pulse ) 
+    // sqrosc - square_wave oscillator ( 0.5 pulse )
     //---------------------------------------------------------------------
     doc = "a square wave oscillator (same as PulseOsc with 0.5 duty cycle).";
     if( !type_engine_import_ugen_begin( env, "SqrOsc", "PulseOsc", env->global(),
                                         sqrosc_ctor, NULL, NULL, NULL,
                                         doc.c_str() ) )
         return FALSE;
-    
+
     func = make_new_mfun( "float", "width", sqrosc_ctrl_width );
     func->doc = "set width of duty cycle (always 0.5).";
-    if( !type_engine_import_mfun( env, func ) ) goto error;    
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -246,7 +246,7 @@ error:
 
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return FALSE;
 }
 
@@ -261,17 +261,17 @@ struct Osc_Data
 {
     t_CKFLOAT num;
     t_CKFLOAT freq;
-    int    sync; 
+    t_CKINT    sync;
     t_CKUINT srate;
     t_CKFLOAT width;
-    
+
     t_CKFLOAT phase;
-    
+
     Osc_Data()
     {
         num = 0.0;
         freq = 220.0;
-        sync = 0; // internal 
+        sync = 0; // internal
         width = 0.5;
         srate = g_srate;
         phase = 0.0;
@@ -318,7 +318,7 @@ CK_DLL_DTOR( osc_dtor )
 // name: osc_tick()
 // desc: ...
 //
-// basic osx is a phasor... 
+// basic osx is a phasor...
 // we use a duty-cycle rep ( 0 - 1 ) rather than angular ( 0 - TWOPI )
 // sinusoidal oscillators are special
 //
@@ -326,8 +326,8 @@ CK_DLL_DTOR( osc_dtor )
 // so that we can have a smooth change back to internal control -pld
 //
 // technically this should happen even with external phase control
-// that we'd be in the right place when translating back to internal... 
-// this was decidely inefficient and nit-picky.  -pld 
+// that we'd be in the right place when translating back to internal...
+// this was decidely inefficient and nit-picky.  -pld
 //
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( osc_tick )
@@ -380,7 +380,7 @@ CK_DLL_TICK( osc_tick )
 
     // set output to current phase
     *out = (SAMPLE)d->phase;
-    
+
     // check
     if( inc_phase )
     {
@@ -519,7 +519,7 @@ CK_DLL_TICK( triosc_tick )
 
     // compute
     t_CKFLOAT phase = d->phase + .25; if( phase > 1.0 ) phase -= 1.0;
-    if( phase < d->width ) *out = (SAMPLE) (d->width == 0.0) ? 1.0 : -1.0 + 2.0 * phase / d->width; 
+    if( phase < d->width ) *out = (SAMPLE) (d->width == 0.0) ? 1.0 : -1.0 + 2.0 * phase / d->width;
     else *out = (SAMPLE) (d->width == 1.0) ? 0 : 1.0 - 2.0 * (phase - d->width) / (1.0 - d->width);
 
     // advance internal phase
@@ -535,7 +535,7 @@ CK_DLL_TICK( triosc_tick )
 }
 
 
-// sawosc_tick is tri_osc tick with width=0.0 or width=1.0  -pld 
+// sawosc_tick is tri_osc tick with width=0.0 or width=1.0  -pld
 
 
 //-----------------------------------------------------------------------------
@@ -598,7 +598,7 @@ CK_DLL_TICK( pulseosc_tick )
         d->phase += d->num;
         // keep the phase between 0 and 1
         if( d->phase > 1.0 ) d->phase -= 1.0;
-		else if( d->phase < 0.0 ) d->phase += 1.0;
+        else if( d->phase < 0.0 ) d->phase += 1.0;
     }
 
     return TRUE;
@@ -697,7 +697,7 @@ CK_DLL_CTRL( osc_ctrl_phase )
     Osc_Data * d = (Osc_Data *)OBJ_MEMBER_UINT(SELF, osc_offset_data );
     // set freq
     d->phase = GET_CK_FLOAT(ARGS);
-    //bound ( this could be set arbitrarily high or low ) 
+    //bound ( this could be set arbitrarily high or low )
     if ( d->phase >= 1.0 || d->phase < 0.0 ) d->phase -= floor( d->num );
     // return
     RETURN->v_float = (t_CKFLOAT)d->phase;
@@ -731,7 +731,7 @@ CK_DLL_CTRL( osc_ctrl_width )
     Osc_Data * d = (Osc_Data *)OBJ_MEMBER_UINT(SELF, osc_offset_data );
     // set freq
     d->width = GET_CK_FLOAT(ARGS);
-    //bound ( this could be set arbitrarily high or low ) 
+    //bound ( this could be set arbitrarily high or low )
     d->width = ck_max( 0.0, ck_min( 1.0, d->width ) );
     // return
     RETURN->v_float = (t_CKFLOAT)d->width;
@@ -778,7 +778,7 @@ CK_DLL_CTRL( sqrosc_ctrl_width )
     // get data
     Osc_Data * d = (Osc_Data *)OBJ_MEMBER_UINT(SELF, osc_offset_data );
     // force value
-    d->width = 0.5; 
+    d->width = 0.5;
     // return
     RETURN->v_float = (t_CKFLOAT)d->width;
 }
@@ -802,7 +802,7 @@ CK_DLL_CTOR( sawosc_ctor )
 
 //-----------------------------------------------------------------------------
 // name: sawosc_ctrl_width()
-// force width to 0.0 ( falling ) or 1.0 ( rising ) 
+// force width to 0.0 ( falling ) or 1.0 ( rising )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( sawosc_ctrl_width )
 {
@@ -810,7 +810,7 @@ CK_DLL_CTRL( sawosc_ctrl_width )
     Osc_Data * d = (Osc_Data *)OBJ_MEMBER_UINT(SELF, osc_offset_data );
     // set freq
     d->width = GET_CK_FLOAT(ARGS);
-    // bound ( this could be set arbitrarily high or low ) 
+    // bound ( this could be set arbitrarily high or low )
     d->width = ( d->width < 0.5 ) ? 0.0 : 1.0;  //rising or falling
     // return
     RETURN->v_float = (t_CKFLOAT)d->width;
@@ -831,14 +831,14 @@ CK_DLL_CTRL( osc_ctrl_sync )
     t_CKINT psync = d->sync;
     d->sync = GET_CK_INT(ARGS);
 
-    // bound ( this could be set arbitrarily high or low ) 
+    // bound ( this could be set arbitrarily high or low )
     if( d->sync < 0 || d->sync > 2 )
         d->sync = 0;
 
     if( d->sync == 0 && psync != d->sync )
     {
         // if we are switching to internal tick
-        // we need to pre-advance the phase... 
+        // we need to pre-advance the phase...
         // this is probably stupid.  -pld
         d->phase += d->num;
         // keep the phase between 0 and 1
@@ -878,7 +878,7 @@ CK_DLL_PMSG( osc_pmsg )
         CK_FPRINTF_STDOUT( "SinOsc: (freq=%f)", d->freq );
         return TRUE;
     }
-    
+
     // didn't handle
     return FALSE;
 }
@@ -899,7 +899,7 @@ CK_DLL_PMSG( osc_pmsg )
 // for member data offset
 static t_CKUINT genX_offset_data = 0;
 // for internal usage
-static void _transition( t_CKDOUBLE a, t_CKDOUBLE alpha, t_CKDOUBLE b, 
+static void _transition( t_CKDOUBLE a, t_CKDOUBLE alpha, t_CKDOUBLE b,
                          t_CKINT n, t_CKDOUBLE * output );
 
 
@@ -916,7 +916,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     Chuck_Env * env = QUERY->env();
     std::string doc;
     Chuck_DL_Func * func = NULL;
-    
+
     doc = "ported from rtcmix. See <a href=\"http://www.music.columbia.edu/cmix/makegens.html\">\
     http://www.music.columbia.edu/cmix/makegens.html</a> \
     for more information on the GenX family of UGens. Currently coefficients past \
@@ -926,11 +926,11 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     table with an input UGen, typically a Phasor. For an input signal between \
     [ -1, 1 ], using the absolute value for [ -1, 0 ), GenX will output the \
     table value indexed by the current input.";
-    
+
     //---------------------------------------------------------------------
     // init as base class: genX
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "GenX", "UGen", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "GenX", "UGen", env->global(),
                                         genX_ctor, genX_dtor, genX_tick, genX_pmsg,
                                         doc.c_str() ) )
         return FALSE;
@@ -938,7 +938,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     // add member variable
     genX_offset_data = type_engine_import_mvar( env, "int", "@GenX_data", FALSE );
     if( genX_offset_data == CK_INVALID_OFFSET ) goto error;
-        
+
     func = make_new_mfun( "float", "lookup", genX_lookup ); //lookup table value
     func->add_arg( "float", "which" );
     func->doc = "get lookup table value at index i [ -1, 1 ]; absolute value is used in the range [ -1, 0 )";
@@ -963,11 +963,11 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     "If an even number of coefficients is specified, behavior is undefined. "
     "The sum of xn for 0 &le; n < N must be 1. yn = 0 is approximated as 0.000001 "
     "to avoid strange results arising from the nature of exponential curves.";
-    
+
     if( !type_engine_import_ugen_begin( env, "Gen5", "GenX", env->global(),
                                         NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
-    
+
     func = make_new_mfun( "float[]", "coefs", gen5_coeffs ); //load table
     func->add_arg( "float", "v[]" );
     func->doc = "set lookup table coefficients.";
@@ -999,7 +999,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
 
     // end the class import
     type_engine_import_class_end( env );
-    
+
 
     //---------------------------------------------------------------------
     // gen9
@@ -1008,11 +1008,11 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     "phases, and harmonic ratios to the fundamental. "
     "Coefficients are specified in triplets of [ ratio, amplitude, phase ] "
     "arranged in a single linear array.";
-    
+
     if( !type_engine_import_ugen_begin( env, "Gen9", "GenX", env->global(),
                                         NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
-        
+
     func = make_new_mfun( "float[]", "coefs", gen9_coeffs ); //load table
     func->add_arg( "float", "v[]" );
     func->doc = "set lookup table coefficients.";
@@ -1020,7 +1020,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
 
     // end the class import
     type_engine_import_class_end( env );
-    
+
 
 
     //---------------------------------------------------------------------
@@ -1033,7 +1033,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Gen10", "GenX", env->global(),
                                         NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
-        
+
     func = make_new_mfun( "float[]", "coefs", gen10_coeffs ); //load table
     func->add_arg( "float", "v[]" );
     func->doc = "set lookup table coefficients.";
@@ -1058,7 +1058,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Gen17", "GenX", env->global(),
                                         NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
-        
+
     func = make_new_mfun( "float[]", "coefs", gen17_coeffs ); //load table
     func->add_arg( "float", "v[]" );
     func->doc = "set lookup table coefficients.";
@@ -1066,7 +1066,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
 
     // end the class import
     type_engine_import_class_end( env );
-    
+
     //---------------------------------------------------------------------
     // Curve
     //---------------------------------------------------------------------
@@ -1081,7 +1081,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "CurveTable", "GenX", env->global(),
                                         NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
-        
+
     func = make_new_mfun( "float[]", "coefs", curve_coeffs ); //load table
     func->add_arg( "float", "v[]" );
     func->doc = "set lookup table coefficients.";
@@ -1089,7 +1089,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
 
     // end the class import
     type_engine_import_class_end( env );
-    
+
     //---------------------------------------------------------------------
     // Warp
     //---------------------------------------------------------------------
@@ -1098,7 +1098,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "WarpTable", "GenX", env->global(),
                                         NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
-        
+
     func = make_new_mfun( "float[]", "coefs", warp_coeffs ); //load table
     func->add_arg( "float", "v[]" );
     func->doc = "set lookup table coefficients.";
@@ -1113,7 +1113,7 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
 
     // end the class import
     type_engine_import_class_end( env );
-    
+
 
     return TRUE;
 
@@ -1121,7 +1121,7 @@ error:
 
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return FALSE;
 }
 
@@ -1136,11 +1136,11 @@ error:
 #define genX_MAX_COEFFS 100
 
 struct genX_Data
-{    
+{
     t_CKUINT genX_type;
     t_CKDOUBLE genX_table[genX_tableSize];
     // gewang: was int
-    t_CKINT sync; 
+    t_CKINT sync;
     t_CKUINT srate;
     t_CKFLOAT xtemp;
     t_CKDOUBLE coeffs[genX_MAX_COEFFS];
@@ -1203,7 +1203,7 @@ CK_DLL_TICK( genX_tick )
     genX_Data * d = (genX_Data *)OBJ_MEMBER_UINT(SELF, genX_offset_data );
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
 //    t_CKBOOL inc_phase = TRUE;
-    
+
     t_CKDOUBLE in_index = 0.0;
     t_CKDOUBLE scaled_index = 0.0;
     t_CKDOUBLE alpha = 0.0, omAlpha = 0.0;
@@ -1220,23 +1220,23 @@ CK_DLL_TICK( genX_tick )
     } else {
         scaled_index = 0.;
     }
-        
+
     // set up interpolation parameters
     lowIndex = (t_CKUINT)scaled_index;
     hiIndex = lowIndex + 1;
     alpha = scaled_index - lowIndex;
     omAlpha = 1. - alpha;
-    
+
     // check table index ranges
-    while(lowIndex >= genX_tableSize) lowIndex -= genX_tableSize; 
-    while(hiIndex >= genX_tableSize) hiIndex -= genX_tableSize; 
+    while(lowIndex >= genX_tableSize) lowIndex -= genX_tableSize;
+    while(hiIndex >= genX_tableSize) hiIndex -= genX_tableSize;
 
     // could just call
     // outvalue = genX_lookup(in_index);?
-    
+
     // calculate output value with linear interpolation
     outvalue = d->genX_table[lowIndex]*omAlpha + d->genX_table[hiIndex]*alpha;
-    
+
     // set output
     *out = (SAMPLE)outvalue;
 
@@ -1252,7 +1252,7 @@ CK_DLL_CTRL( genX_lookup )
 {
     // get the data
     genX_Data * d = (genX_Data *)OBJ_MEMBER_UINT(SELF, genX_offset_data );
-    
+
     t_CKFLOAT in_index;
     t_CKFLOAT scaled_index;
     t_CKFLOAT alpha, omAlpha;
@@ -1270,14 +1270,14 @@ CK_DLL_CTRL( genX_lookup )
     hiIndex = lowIndex + 1;
     alpha = scaled_index - lowIndex;
     omAlpha = 1. - alpha;
-    
+
     //check table index ranges
-    while(lowIndex >= genX_tableSize) lowIndex -= genX_tableSize; 
-    while(hiIndex >= genX_tableSize) hiIndex -= genX_tableSize; 
-    
+    while(lowIndex >= genX_tableSize) lowIndex -= genX_tableSize;
+    while(hiIndex >= genX_tableSize) hiIndex -= genX_tableSize;
+
     //calculate output value with linear interpolation
     outvalue = d->genX_table[lowIndex]*omAlpha + d->genX_table[hiIndex]*alpha;
-    
+
     RETURN->v_float = (t_CKFLOAT)outvalue;
 
 }
@@ -1293,14 +1293,14 @@ CK_DLL_CTRL( gen5_coeffs )
     genX_Data * d = (genX_Data *)OBJ_MEMBER_UINT(SELF, genX_offset_data);
     t_CKINT i = 0, j, k, l, size;
     t_CKFLOAT wmax, xmax=0.0, c, amp2, amp1, coeffs[genX_MAX_COEFFS];
-    
+
     Chuck_Array8 * in_args = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
-    
+
     // CK_FPRINTF_STDOUT( "calling gen10coeffs, %d\n", weights );
     if(in_args == 0) return;
     size = in_args->size();
     if(size >= genX_MAX_COEFFS) size = genX_MAX_COEFFS - 1;
-    
+
     t_CKFLOAT v;
     for(t_CKUINT ii = 0; ii<size; ii++) {
         in_args->get(ii, &v);
@@ -1323,7 +1323,7 @@ CK_DLL_CTRL( gen5_coeffs )
                 d->genX_table[l] = d->genX_table[l-1] * c;
             }
         }
-   
+
     for(j = 0; j < genX_tableSize; j++) {
         if ((wmax = fabs(d->genX_table[j])) > xmax) xmax = wmax;
         // CK_FPRINTF_STDOUT( "table current = %f\n", wmax);
@@ -1348,21 +1348,21 @@ CK_DLL_CTRL( gen7_coeffs )
     genX_Data * d = (genX_Data *)OBJ_MEMBER_UINT(SELF, genX_offset_data);
     t_CKINT i=0, j, k, l, size;
     t_CKFLOAT wmax, xmax = 0.0, amp2, amp1, coeffs[genX_MAX_COEFFS];
-    
+
     Chuck_Array8 * in_args = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
-    
+
     // CK_FPRINTF_STDOUT( "calling gen10coeffs, %d\n", weights );
     if(in_args == 0) return;
     size = in_args->size();
     if(size >= genX_MAX_COEFFS) size = genX_MAX_COEFFS - 1;
-    
+
     t_CKFLOAT v;
     for(t_CKUINT ii = 0; ii<size; ii++) {
         in_args->get(ii, &v);
         // CK_FPRINTF_STDOUT( "weight %d = %f...\n", ii, v );
         coeffs[ii] = v;
     }
-    
+
     amp2 = coeffs[0];
     for (k = 1; k < size; k += 2) {
       amp1 = amp2;
@@ -1375,7 +1375,7 @@ CK_DLL_CTRL( gen7_coeffs )
                 (amp2 - amp1) * (double) (l - j) / (i - j + 1);
         }
     }
-   
+
     for(j = 0; j < genX_tableSize; j++) {
         if ((wmax = fabs(d->genX_table[j])) > xmax) xmax = wmax;
         // CK_FPRINTF_STDOUT( "table current = %f\n", wmax);
@@ -1401,22 +1401,22 @@ CK_DLL_CTRL( gen9_coeffs )
     t_CKINT i, j, size;
     t_CKDOUBLE wmax, xmax=0.0;
     t_CKFLOAT coeffs[genX_MAX_COEFFS];
-    
+
     Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
-    
+
     // CK_FPRINTF_STDOUT( "calling gen10coeffs, %d\n", weights );
     if(weights == 0) return;
     size = weights->size();
     if(size >= genX_MAX_COEFFS) size = genX_MAX_COEFFS - 1;
-    
-    
+
+
     t_CKFLOAT v;
     for(t_CKUINT ii = 0; ii<size; ii++) {
         weights->get(ii, &v);
         // CK_FPRINTF_STDOUT( "weight %d = %f...\n", ii, v );
         coeffs[ii] = v;
     }
-    
+
     for(j = size - 1; j > 0; j -= 3) {
         if(coeffs[j - 1] != 0) {
             for(i = 0; i < genX_tableSize; i++) {
@@ -1426,7 +1426,7 @@ CK_DLL_CTRL( gen9_coeffs )
             }
         }
     }
-    
+
     for(j = 0; j < genX_tableSize; j++) {
         if ((wmax = fabs(d->genX_table[j])) > xmax) xmax = wmax;
         // CK_FPRINTF_STDOUT( "table current = %f\n", wmax);
@@ -1436,7 +1436,7 @@ CK_DLL_CTRL( gen9_coeffs )
         d->genX_table[j] /= xmax;
     }
 
-    // return 
+    // return
     RETURN->v_object = weights;
 }
 
@@ -1451,21 +1451,21 @@ CK_DLL_CTRL( gen10_coeffs )
     genX_Data * d = (genX_Data *)OBJ_MEMBER_UINT(SELF, genX_offset_data);
     t_CKINT i, j, size;
     t_CKDOUBLE wmax, xmax=0.0;
-    
+
     Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
-    
+
     // CK_FPRINTF_STDOUT( "calling gen10coeffs, %d\n", weights );
     if(weights==0) return;
     size = weights->size();
     if(size >= genX_MAX_COEFFS) size = genX_MAX_COEFFS - 1;
-    
+
     t_CKFLOAT v;
     for(t_CKUINT ii = 0; ii<size; ii++) {
         weights->get(ii, &v);
         // CK_FPRINTF_STDOUT( "weight %d = %f...\n", ii, v );
         d->coeffs[ii] = v;
     }
-    
+
     // reset table - this allow not only to add but also to remove partials
     // 1.4.1.0 (thanks mariobuoninfante)
     for( i = 0; i < genX_tableSize; i++ )
@@ -1510,23 +1510,23 @@ CK_DLL_CTRL( gen17_coeffs )
     t_CKINT i, j, size;
     t_CKDOUBLE Tn, Tn1, Tn2, dg, x, wmax = 0.0, xmax = 0.0;
     t_CKFLOAT coeffs[genX_MAX_COEFFS];
-    
+
     Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
-    
+
     // CK_FPRINTF_STDOUT( "calling gen17coeffs, %d\n", weights );
     if(weights == 0) return;
     size = weights->size();
     if(size >= genX_MAX_COEFFS) size = genX_MAX_COEFFS - 1;
-    
+
     dg = (t_CKDOUBLE) (genX_tableSize / 2. - .5);
-    
+
     t_CKFLOAT v;
     for(t_CKUINT ii = 0; ii<size; ii++) {
         weights->get(ii, &v);
         // CK_FPRINTF_STDOUT( "weight %d = %f...\n", ii, v );
         coeffs[ii] = v;
     }
-    
+
     for (i = 0; i < genX_tableSize; i++) {
         x = (t_CKDOUBLE)(i / dg - 1.);
         d->genX_table[i] = 0.0;
@@ -1539,7 +1539,7 @@ CK_DLL_CTRL( gen17_coeffs )
             Tn = 2.0 * x * Tn1 - Tn2;
         }
     }
-   
+
     for(j = 0; j < genX_tableSize; j++) {
         if ((wmax = fabs(d->genX_table[j])) > xmax) xmax = wmax;
         // CK_FPRINTF_STDOUT( "table current = %f\n", wmax);
@@ -1571,9 +1571,9 @@ CK_DLL_CTRL( curve_coeffs )
     t_CKFLOAT coeffs[genX_MAX_COEFFS];
     t_CKUINT ii = 0;
     t_CKFLOAT v = 0.0;
-    
+
     Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
-    
+
     // CK_FPRINTF_STDOUT( "calling gen17coeffs, %d\n", weights );
     if(weights==0) goto done;
 
@@ -1586,18 +1586,18 @@ CK_DLL_CTRL( curve_coeffs )
         CK_FPRINTF_STDERR( "[chuck](via CurveTable): too many arguments.\n" );
         goto done;
     }
-    
+
     for(ii = 0; ii<nargs; ii++) {
         weights->get(ii, &v);
         // CK_FPRINTF_STDOUT( "weight %d = %f...\n", ii, v );
         coeffs[ii] = v;
     }
-    
+
     if (coeffs[0] != 0.0) {
         CK_FPRINTF_STDERR( "[chuck](via CurveTable): first time must be zero.\n" );
         goto done;
     }
-    
+
     for (i = points = 0; i < nargs; points++) {
         time[points] = (t_CKDOUBLE) coeffs[i++];
         if (points > 0 && time[points] < time[points - 1])
@@ -1623,7 +1623,7 @@ done:
     RETURN->v_object = weights;
 
     return;
-    
+
 time_err:
     CK_FPRINTF_STDERR( "[chuck](via CurveTable): times must be in ascending order.\n" );
 
@@ -1671,8 +1671,8 @@ CK_DLL_CTRL( warp_coeffs )
     genX_Data * d = (genX_Data *)OBJ_MEMBER_UINT(SELF, genX_offset_data);
     t_CKINT i = 0;
 
-    t_CKFLOAT k_asym = 1.; 
-    t_CKFLOAT k_sym  = 1.; 
+    t_CKFLOAT k_asym = 1.;
+    t_CKFLOAT k_sym  = 1.;
 
     // gewang:
     Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
@@ -1746,7 +1746,7 @@ CK_DLL_PMSG( genX_pmsg )
         // CK_FPRINTF_STDOUT( "genX:" );
         return TRUE;
     }
-    
+
     // didn't handle
     return FALSE;
 }

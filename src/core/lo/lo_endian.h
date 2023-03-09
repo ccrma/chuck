@@ -51,8 +51,8 @@ extern "C" {
 ({ \
     uint16_t __x = (x); \
     ((uint16_t)( \
-	(((uint16_t)(__x) & (uint16_t)0x00ffU) << 8) | \
-	(((uint16_t)(__x) & (uint16_t)0xff00U) >> 8) )); \
+    (((uint16_t)(__x) & (uint16_t)0x00ffU) << 8) | \
+    (((uint16_t)(__x) & (uint16_t)0xff00U) >> 8) )); \
 })
 #warning USING UNOPTIMISED ENDIAN STUFF
 #endif
@@ -62,10 +62,10 @@ extern "C" {
 ({ \
     uint32_t __x = (x); \
     ((uint32_t)( \
-	(((uint32_t)(__x) & (uint32_t)0x000000ffUL) << 24) | \
-	(((uint32_t)(__x) & (uint32_t)0x0000ff00UL) <<  8) | \
-	(((uint32_t)(__x) & (uint32_t)0x00ff0000UL) >>  8) | \
-	(((uint32_t)(__x) & (uint32_t)0xff000000UL) >> 24) )); \
+    (((uint32_t)(__x) & (uint32_t)0x000000ffUL) << 24) | \
+    (((uint32_t)(__x) & (uint32_t)0x0000ff00UL) <<  8) | \
+    (((uint32_t)(__x) & (uint32_t)0x00ff0000UL) >>  8) | \
+    (((uint32_t)(__x) & (uint32_t)0xff000000UL) >> 24) )); \
 })
 #endif
 
@@ -75,14 +75,14 @@ extern "C" {
 ({ \
     uint64_t __x = (x); \
     ((uint64_t)( \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x00000000000000ffULL) << 56) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x000000000000ff00ULL) << 40) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x0000000000ff0000ULL) << 24) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x00000000ff000000ULL) <<  8) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x000000ff00000000ULL) >>  8) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x0000ff0000000000ULL) >> 24) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x00ff000000000000ULL) >> 40) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0xff00000000000000ULL) >> 56) )); \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x00000000000000ffULL) << 56) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x000000000000ff00ULL) << 40) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x0000000000ff0000ULL) << 24) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x00000000ff000000ULL) <<  8) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x000000ff00000000ULL) >>  8) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x0000ff0000000000ULL) >> 24) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x00ff000000000000ULL) >> 40) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0xff00000000000000ULL) >> 56) )); \
 })
 #endif
 #else
@@ -90,8 +90,8 @@ extern "C" {
 typedef union {
     uint64_t all;
     struct {
-	uint32_t a;
-	uint32_t b;
+    uint32_t a;
+    uint32_t b;
     } part;
 } lo_split64;
 
@@ -171,8 +171,8 @@ extern "C" {
 ({ \
     uint16_t __x = (x); \
     ((uint16_t)( \
-	(((uint16_t)(__x) & (uint16_t)0x00ffU) << 8) | \
-	(((uint16_t)(__x) & (uint16_t)0xff00U) >> 8) )); \
+    (((uint16_t)(__x) & (uint16_t)0x00ffU) << 8) | \
+    (((uint16_t)(__x) & (uint16_t)0xff00U) >> 8) )); \
 })
 #warning USING UNOPTIMISED ENDIAN STUFF
 #endif
@@ -182,10 +182,10 @@ extern "C" {
 ({ \
     uint32_t __x = (x); \
     ((uint32_t)( \
-	(((uint32_t)(__x) & (uint32_t)0x000000ffUL) << 24) | \
-	(((uint32_t)(__x) & (uint32_t)0x0000ff00UL) <<  8) | \
-	(((uint32_t)(__x) & (uint32_t)0x00ff0000UL) >>  8) | \
-	(((uint32_t)(__x) & (uint32_t)0xff000000UL) >> 24) )); \
+    (((uint32_t)(__x) & (uint32_t)0x000000ffUL) << 24) | \
+    (((uint32_t)(__x) & (uint32_t)0x0000ff00UL) <<  8) | \
+    (((uint32_t)(__x) & (uint32_t)0x00ff0000UL) >>  8) | \
+    (((uint32_t)(__x) & (uint32_t)0xff000000UL) >> 24) )); \
 })
 #endif
 
@@ -195,14 +195,14 @@ extern "C" {
 ({ \
     uint64_t __x = (x); \
     ((uint64_t)( \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x00000000000000ffULL) << 56) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x000000000000ff00ULL) << 40) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x0000000000ff0000ULL) << 24) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x00000000ff000000ULL) <<  8) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x000000ff00000000ULL) >>  8) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x0000ff0000000000ULL) >> 24) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0x00ff000000000000ULL) >> 40) | \
-	(uint64_t)(((uint64_t)(__x) & (uint64_t)0xff00000000000000ULL) >> 56) )); \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x00000000000000ffULL) << 56) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x000000000000ff00ULL) << 40) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x0000000000ff0000ULL) << 24) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x00000000ff000000ULL) <<  8) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x000000ff00000000ULL) >>  8) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x0000ff0000000000ULL) >> 24) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0x00ff000000000000ULL) >> 40) | \
+    (uint64_t)(((uint64_t)(__x) & (uint64_t)0xff00000000000000ULL) >> 56) )); \
 })
 #endif
 #else
@@ -210,8 +210,8 @@ extern "C" {
 typedef union {
     uint64_t all;
     struct {
-	uint32_t a;
-	uint32_t b;
+    uint32_t a;
+    uint32_t b;
     } part;
 } lo_split64;
 
