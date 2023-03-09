@@ -41,6 +41,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #else
+#define _WINSOCKAPI_
 #include <windows.h>
 #endif
 
