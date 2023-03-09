@@ -51,23 +51,24 @@ using namespace std;
 
 // initialize
 t_CKBOOL Chuck_VM_Object::our_locks_in_effect = TRUE;
-const t_CKINT Chuck_IO::INT32 = 0x1;
-const t_CKINT Chuck_IO::INT16 = 0x2;
-const t_CKINT Chuck_IO::INT8 = 0x4;
+
+// constants
+const t_CKINT Chuck_IO::TYPE_ASCII = 0x1;
+const t_CKINT Chuck_IO::TYPE_BINARY = 0x2;
+const t_CKINT Chuck_IO::INT8 = 0x10;
+const t_CKINT Chuck_IO::INT16 = 0x20;
+const t_CKINT Chuck_IO::INT32 = 0x40;
+const t_CKINT Chuck_IO::FLAG_READ_WRITE = 0x100;
+const t_CKINT Chuck_IO::FLAG_READONLY = 0x200;
+const t_CKINT Chuck_IO::FLAG_WRITEONLY = 0x400;
+const t_CKINT Chuck_IO::FLAG_APPEND = 0x800;
+
 #ifndef __DISABLE_THREADS__
 const t_CKINT Chuck_IO::MODE_SYNC = 0;
 const t_CKINT Chuck_IO::MODE_ASYNC = 1;
 #else
 const t_CKINT Chuck_IO::MODE_SYNC = 1;
 const t_CKINT Chuck_IO::MODE_ASYNC = 0;
-#endif
-#ifndef __DISABLE_FILEIO__
-const t_CKINT Chuck_IO_File::FLAG_READ_WRITE = 0x8;
-const t_CKINT Chuck_IO_File::FLAG_READONLY = 0x10;
-const t_CKINT Chuck_IO_File::FLAG_WRITEONLY = 0x20;
-const t_CKINT Chuck_IO_File::FLAG_APPEND = 0x40;
-const t_CKINT Chuck_IO_File::TYPE_ASCII = 0x80;
-const t_CKINT Chuck_IO_File::TYPE_BINARY = 0x100;
 #endif
 
 
@@ -125,8 +126,14 @@ void Chuck_VM_Object::add_ref()
 //-----------------------------------------------------------------------------
 void Chuck_VM_Object::release()
 {
-    // make sure there is at least one reference
-    assert( m_ref_count > 0 );
+    // check
+    if( m_ref_count <= 0 )
+    {
+        // print error
+        EM_error3( "[chuck]: internal error: Object.release() refcount == %d", m_ref_count );
+        // make sure there is at least one reference
+        assert( m_ref_count > 0 );
+    }
     // decrement
     m_ref_count--;
 
@@ -148,6 +155,9 @@ void Chuck_VM_Object::release()
             *(int *)0 = 1;
         }
 
+        // log | 1.4.2.1 (ge) added
+        EM_log( CK_LOG_FINEST, "reclaiming %s: 0x%08x", typeid(*this).name(), this );
+
         // tell the object manager to set this free
         // Chuck_VM_Alloc::instance()->free_object( this );
         // REFACTOR-2017: doing this for now
@@ -165,6 +175,18 @@ void Chuck_VM_Object::release()
 void Chuck_VM_Object::lock()
 {
     m_locked = TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: unlock()
+// desc: unlock to allow deleting
+//-----------------------------------------------------------------------------
+void Chuck_VM_Object::unlock()
+{
+    m_locked = FALSE;
 }
 
 
@@ -229,10 +251,10 @@ void Chuck_VM_Object::unlock_all()
 //void Chuck_VM_Alloc::add_object( Chuck_VM_Object * obj )
 //{
 //    // do log
-//    if( DO_LOG( CK_LOG_CRAZY ) )
+//    if( DO_LOG( CK_LOG_ALL ) )
 //    {
 //        // log it
-//        EM_log( CK_LOG_CRAZY, "adding '%s' (0x%lx)...",
+//        EM_log( CK_LOG_ALL, "adding '%s' (0x%lx)...",
 //            mini_type( typeid(*obj).name() ), obj );
 //    }
 //
@@ -321,8 +343,8 @@ Chuck_Object::~Chuck_Object()
     Chuck_Type * type = this->type_ref;
     while( type != NULL )
     {
-        // SPENCERTODO: HACK! is there a better way to call the dtor?
-        if( type->has_destructor )
+        // SPENCER TODO: HACK! is there a better way to call the dtor?
+        if( type->info && type->has_destructor ) // 1.4.2.1 (ge) added type->info check
         {
             // sanity check
             assert( type->info->dtor && type->info->dtor->native_func );
@@ -335,9 +357,12 @@ Chuck_Object::~Chuck_Object()
     }
 
     // free
-    if( vtable ) { delete vtable; vtable = NULL; }
-    if( type_ref ) { type_ref->release(); type_ref = NULL; }
-    if( data ) { delete [] data; size = 0; data = NULL; }
+    SAFE_DELETE( vtable );
+    SAFE_RELEASE( type_ref );
+    SAFE_DELETE_ARRAY( data );
+    // if( vtable ) { delete vtable; vtable = NULL; }
+    // if( type_ref ) { type_ref->release(); type_ref = NULL; }
+    // if( data ) { delete [] data; size = 0; data = NULL; }
 }
 
 
@@ -382,7 +407,7 @@ void Chuck_Object::help() // 1.4.1.0 (ge)
 Chuck_Array::~Chuck_Array()
 {
     // decrement reference count; added (ge): 1.4.1.0
-    SAFE_RELEASE(m_array_type);
+    SAFE_RELEASE( m_array_type );
 }
 
 
@@ -414,7 +439,8 @@ Chuck_Array4::Chuck_Array4( t_CKBOOL is_obj, t_CKINT capacity )
 //-----------------------------------------------------------------------------
 Chuck_Array4::~Chuck_Array4()
 {
-    // do nothing
+    // 1.4.2.0 (ge) | added, which should cascade to nested array objects
+    clear();
 }
 
 
@@ -625,28 +651,53 @@ t_CKINT Chuck_Array4::pop_back( )
     return 1;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // name: pop_out()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array4::pop_out( t_CKUINT pos )
+t_CKINT Chuck_Array4::pop_out( t_CKINT pos )
 {
-	// check
-	if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
-		return 0;
+    // check
+    if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
+        return 0;
 
-	if( m_is_obj )
-	{
-		// get pointer
-		Chuck_Object * v = (Chuck_Object *)m_vector[pos];
-		// if not null, release
-		if( v ) v->release();
-	}
+    if( m_is_obj )
+    {
+        // get pointer
+        Chuck_Object * v = (Chuck_Object *)m_vector[pos];
+        // if not null, release
+        if( v ) v->release();
+    }
 
-	// add to vector
-	m_vector.erase(m_vector.begin()+pos);
-	return 1;
+    // add to vector
+    m_vector.erase(m_vector.begin()+pos);
+    return 1;
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_keys() | 1.4.1.1 nshaheed (added)
+// desc: return vector of keys from associative array
+//-----------------------------------------------------------------------------
+void Chuck_Array4::get_keys( std::vector<std::string> & keys )
+{
+    // clear the return array
+    keys.clear();
+    // iterator
+    for( std::map<std::string, t_CKUINT>::iterator iter = m_map.begin(); iter !=m_map.end(); iter++ )
+    {
+        // add to list
+        keys.push_back((*iter).first);
+    }
+}
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: back()
@@ -816,6 +867,7 @@ Chuck_Array8::Chuck_Array8( t_CKINT capacity )
 Chuck_Array8::~Chuck_Array8()
 {
     // do nothing
+    clear();
 }
 
 
@@ -996,11 +1048,13 @@ t_CKINT Chuck_Array8::pop_back( )
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: pop_out()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array8::pop_out( t_CKUINT pos )
+t_CKINT Chuck_Array8::pop_out( t_CKINT pos )
 {
         // check
         if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
@@ -1009,6 +1063,25 @@ t_CKINT Chuck_Array8::pop_out( t_CKUINT pos )
         // add to vector
         m_vector.erase(m_vector.begin()+pos);
         return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_keys() | 1.4.1.1 nshaheed (added)
+// desc: return vector of keys from associative array
+//-----------------------------------------------------------------------------
+void Chuck_Array8::get_keys( std::vector<std::string> & keys )
+{
+    // clear the return array
+    keys.clear();
+    // iterator
+    for( std::map<std::string,t_CKFLOAT>::iterator iter = m_map.begin(); iter !=m_map.end(); iter++ )
+    {
+        // add to list
+        keys.push_back((*iter).first);
+    }
 }
 
 
@@ -1330,7 +1403,7 @@ t_CKINT Chuck_Array16::pop_back( )
 // name: pop_out()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::pop_out( t_CKUINT pos )
+t_CKINT Chuck_Array16::pop_out( t_CKINT pos )
 {
         // check
         if ( m_vector.size() == 0 || pos<0 || pos>=m_vector.size())
@@ -1339,6 +1412,25 @@ t_CKINT Chuck_Array16::pop_out( t_CKUINT pos )
         // add to vector
         m_vector.erase(m_vector.begin()+pos);
         return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_keys() | 1.4.1.1 nshaheed (added)
+// desc: return vector of keys from associative array
+//-----------------------------------------------------------------------------
+void Chuck_Array16::get_keys( std::vector<std::string> & keys )
+{
+    // clear the return array
+    keys.clear();
+    // iterator
+    for( std::map<std::string,t_CKCOMPLEX>::iterator iter = m_map.begin(); iter !=m_map.end(); iter++ )
+    {
+        // add to list
+        keys.push_back((*iter).first);
+    }
 }
 
 
@@ -1765,6 +1857,25 @@ void Chuck_Array24::zero( t_CKUINT start, t_CKUINT end )
 
 
 //-----------------------------------------------------------------------------
+// name: get_keys() | 1.4.1.1 nshaheed (added)
+// desc: return vector of keys from associative array
+//-----------------------------------------------------------------------------
+void Chuck_Array24::get_keys( std::vector<std::string> & keys )
+{
+    // clear the return array
+    keys.clear();
+    // iterator
+    for( std::map<std::string, t_CKVEC3>::iterator iter = m_map.begin(); iter !=m_map.end(); iter++ )
+    {
+        // add to list
+        keys.push_back((*iter).first);
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_Array32()
 // desc: constructor
 //-----------------------------------------------------------------------------
@@ -2076,6 +2187,25 @@ void Chuck_Array32::zero( t_CKUINT start, t_CKUINT end )
         m_vector[i].y = 0;
         m_vector[i].z = 0;
         m_vector[i].w = 0;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_keys() | 1.4.1.1 nshaheed (added)
+// desc: return vector of keys from associative array
+//-----------------------------------------------------------------------------
+void Chuck_Array32::get_keys( std::vector<std::string> & keys )
+{
+    // clear the return array
+    keys.clear();
+    // iterator
+    for( std::map<std::string, t_CKVEC4>::iterator iter = m_map.begin(); iter !=m_map.end(); iter++ )
+    {
+        // add to list
+        keys.push_back((*iter).first);
     }
 }
 
@@ -2639,7 +2769,7 @@ Chuck_IO::~Chuck_IO()
 
 
 
-#ifndef __DISABLE_FILEIO__
+// #ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // name: Chuck_IO_File()
 // desc: constructor
@@ -2965,7 +3095,7 @@ t_CKINT Chuck_IO_File::size()
     // have to seek to end, report position
     FILE * stream = fopen( m_path.c_str(), "r" );
     fseek( stream, 0L, SEEK_END );
-    int endPos = ftell( stream );
+    long endPos = ftell( stream );
     fclose( stream );
     return endPos;
 }
@@ -2989,6 +3119,8 @@ void Chuck_IO_File::seek( t_CKINT pos )
         EM_error3( "[chuck](via FileIO): cannot seek on a directory" );
         return;
     }
+    // 1.4.2.1 (ge) | added since seekg fails if EOF already reached
+    m_io.clear();
     m_io.seekg( pos );
     m_io.seekp( pos );
 }
@@ -3128,7 +3260,14 @@ Chuck_String * Chuck_IO_File::readLine()
 
     string s;
     getline( m_io, s );
-    return new Chuck_String( s );
+
+    // chuck str
+    Chuck_String * str = new Chuck_String( s );
+    // initialize | 1.4.2.1 (ge) | added initialize_object
+    initialize_object( str, m_vmRef->env()->t_string );
+
+    // note this chuck string still needs to be initialized
+    return str;
 }
 
 
@@ -3141,38 +3280,42 @@ Chuck_String * Chuck_IO_File::readLine()
 t_CKINT Chuck_IO_File::readInt( t_CKINT flags )
 {
     // sanity
-    if (!(m_io.is_open())) {
+    if( !(m_io.is_open()) ) {
         EM_error3( "[chuck](via FileIO): cannot readInt: no file open" );
         return 0;
     }
 
-    if (m_io.eof()) {
+    if( m_io.eof() ) {
         EM_error3( "[chuck](via FileIO): cannot readInt: EOF reached" );
         return 0;
     }
 
-    if ( m_dir )
+    if( m_dir )
     {
         EM_error3( "[chuck](via FileIO): cannot read on directory" );
         return 0;
     }
 
-    if (m_io.fail()) {
+    if( m_io.fail() ) {
         EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
         return 0;
     }
 
-    if (m_flags & TYPE_ASCII) {
+    // check mode ASCII vs. binary
+    if( m_flags & TYPE_ASCII )
+    {
         // ASCII
         t_CKINT val = 0;
         m_io >> val;
         // if (m_io.fail())
         //     EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
         return val;
-
-    } else if (m_flags & TYPE_BINARY) {
+    }
+    else if( m_flags & TYPE_BINARY )
+    {
         // binary
-        if (flags & Chuck_IO::INT32) {
+        if( flags & Chuck_IO::INT32 )
+        {
             // 32-bit
             t_CKINT i;
             m_io.read( (char *)&i, 4 );
@@ -3181,34 +3324,41 @@ t_CKINT Chuck_IO_File::readInt( t_CKINT flags )
             else if (m_io.fail())
                 EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
             return i;
-        } else if (flags & Chuck_IO::INT16) {
+        }
+        else if( flags & Chuck_IO::INT16 )
+        {
             // 16-bit
             // int16_t i;
             // issue: 64-bit
             short i;
             m_io.read( (char *)&i, 2 );
-            if (m_io.gcount() != 2)
+            if( m_io.gcount() != 2 )
                 EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
             else if (m_io.fail())
                 EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
             return (t_CKINT) i;
-        } else if (flags & Chuck_IO::INT8) {
+        }
+        else if( flags & Chuck_IO::INT8 )
+        {
             // 8-bit
             // int8_t i;
             // issue: 64-bit
-            char i;
+            unsigned char i;
             m_io.read( (char *)&i, 1 );
-            if (m_io.gcount() != 1)
+            if( m_io.gcount() != 1 )
                 EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
-            else if (m_io.fail())
+            else if( m_io.fail() )
                 EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
-            return (t_CKINT) i;
-        } else {
+            return (t_CKINT)i;
+        }
+        else
+        {
             EM_error3( "[chuck](via FileIO): readInt error: invalid int size flag" );
             return 0;
         }
-
-    } else {
+    }
+    else
+    {
         EM_error3( "[chuck](via FileIO): readInt error: invalid ASCII/binary flag" );
         return 0;
     }
@@ -3384,7 +3534,10 @@ t_CKBOOL Chuck_IO_File::eof()
         return TRUE;
     }
 
-    return m_io.eof() || m_io.fail();
+    // return EOF conditions (1.4.2.1: peek() was added since eof() is set
+    // ONLY AFTER an effort is made to read and no more data is left)
+    // https://stackoverflow.com/questions/4533063/how-does-ifstreams-eof-work
+    return m_io.eof() || m_io.fail() || m_io.peek() == EOF;
 }
 
 
@@ -3580,7 +3733,7 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
     return (THREAD_RETURN)0;
 }
 #endif // __DISABLE_THREADS__
-#endif // __DISABLE_FILEIO__
+// #endif // __DISABLE_FILEIO__
 
 
 
@@ -3767,20 +3920,24 @@ t_CKBOOL Chuck_IO_Cherr::eof()
 void Chuck_IO_Cherr::write( const std::string & val )
 {
     m_buffer << val;
-    if( val == "\n" ) flush();
+    flush(); // always flush for cerr | 1.4.2.1 (ge) added
+    // if( val == "\n" ) flush();
 }
 
 void Chuck_IO_Cherr::write( t_CKINT val )
 {
     m_buffer << val;
+    flush(); // always flush for cerr | 1.4.2.1 (ge) added
 }
 
 void Chuck_IO_Cherr::write( t_CKINT val, t_CKINT flags )
 {
     m_buffer << val;
+    flush(); // always flush for cerr | 1.4.2.1 (ge) added
 }
 
 void Chuck_IO_Cherr::write( t_CKFLOAT val )
 {
     m_buffer << val;
+    flush(); // always flush for cerr | 1.4.2.1 (ge) added
 }

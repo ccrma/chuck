@@ -1,21 +1,21 @@
 /*----------------------------------------------------------------------------
  ChucK Concurrent, On-the-fly Audio Programming Language
    Compiler and Virtual Machine
- 
+
  Copyright (c) 2003 Ge Wang and Perry R. Cook.  All rights reserved.
    http://chuck.stanford.edu/
    http://chuck.cs.princeton.edu/
- 
+
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
  (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -24,10 +24,10 @@
 
 //-----------------------------------------------------------------------------
 // file: chuck.h
-// desc: chuck engine header; VM + compiler + state; no audio I/O
+// desc: chuck engine header; VM + compiler + state; independent of audio I/O
 //       REFACTOR-2017
 //
-// author: Ge Wang (http://www.gewang.com/)
+// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
 // date: fall 2017
 //
 // additional authors:
@@ -99,7 +99,7 @@ public:
     ChucK();
     // desctructor
     virtual ~ChucK();
-    
+
 public:
     // set parameter by name
     // -- all params should have reasonable defaults
@@ -115,9 +115,9 @@ public:
 
 public:
     // compile a file (can be called anytime)
-    bool compileFile( const std::string & path, const std::string & argsTogether, int count = 1 );
+    bool compileFile( const std::string & path, const std::string & argsTogether, t_CKINT count = 1 );
     // compile code directly
-    bool compileCode( const std::string & code, const std::string & argsTogether, int count = 1 );
+    bool compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count = 1 );
 
 public:
     // initialize ChucK (using params)
@@ -127,12 +127,12 @@ public:
 
 public:
     // run engine (call from callback)
-    void run( SAMPLE * input, SAMPLE * output, int numFrames );
+    void run( SAMPLE * input, SAMPLE * output, t_CKINT numFrames );
 
 public:
     // is initialized
     bool isInit() { return m_init; }
-    
+
 public:
     // additional native chuck bindings/types (use with extra caution)
     bool bind( f_ck_query queryFunc, const std::string & name );
@@ -175,12 +175,10 @@ protected:
 public: // static functions
     // chuck version
     static const char * version();
-    #ifndef __DISABLE_OTF_SERVER__
     // chuck int size (in bits)
-    // (this depends on machine, which depends on OTF, so
-    //  disable it if we don't have OTF)
+    // (this depends on machine, which depends on OTF, so disable it if we don't have OTF)
+    // 1.4.2.1 (ge) | reinstated for non-OTF, along with parts of machine
     static t_CKUINT intSize();
-    #endif
     // number of ChucK's
     static t_CKUINT numVMs() { return o_numVMs; };
     // --poop compatibilty
@@ -197,7 +195,7 @@ protected:
     static const char VERSION[];
     // number of VMs -- managed from VM constructor/destructors
     static t_CKUINT o_numVMs;
-    
+
 protected:
     // initialize default params
     void initDefaultParams();
@@ -209,7 +207,7 @@ protected:
     bool initChugins();
     // init OTF programming system
     bool initOTF();
-    
+
 protected:
     // core elements: compiler, VM, etc.
     Chuck_Carrier * m_carrier;

@@ -45,7 +45,7 @@ fun void doCh()  {
 }
 
 fun void doKay()  {
-    <<< "KKK" >>>;
+    <<< "kK" >>>;
     0.0 => i.gain;
     0.05 :: second => now;
     0.005=>ne.time;

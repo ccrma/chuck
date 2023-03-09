@@ -27,7 +27,7 @@
 #define DPRINT(msg) do { } while(/*CONSTCOND*/0)
 #endif /* !TRE_DEBUG */
 
-#define elementsof(x)	( sizeof(x) / sizeof(x[0]) )
+#define elementsof(x)    ( sizeof(x) / sizeof(x[0]) )
 
 #ifdef HAVE_MBRTOWC
 #define tre_mbrtowc(pwc, s, n, ps) (mbrtowc((pwc), (s), (n), (ps)))
@@ -174,16 +174,16 @@ struct tnfa_transition {
 
 
 /* Assertions. */
-#define ASSERT_AT_BOL		  1   /* Beginning of line. */
-#define ASSERT_AT_EOL		  2   /* End of line. */
-#define ASSERT_CHAR_CLASS	  4   /* Character class in `class'. */
-#define ASSERT_CHAR_CLASS_NEG	  8   /* Character classes in `neg_classes'. */
-#define ASSERT_AT_BOW		 16   /* Beginning of word. */
-#define ASSERT_AT_EOW		 32   /* End of word. */
-#define ASSERT_AT_WB		 64   /* Word boundary. */
-#define ASSERT_AT_WB_NEG	128   /* Not a word boundary. */
-#define ASSERT_BACKREF		256   /* A back reference in `backref'. */
-#define ASSERT_LAST		256
+#define ASSERT_AT_BOL          1   /* Beginning of line. */
+#define ASSERT_AT_EOL          2   /* End of line. */
+#define ASSERT_CHAR_CLASS      4   /* Character class in `class'. */
+#define ASSERT_CHAR_CLASS_NEG  8   /* Character classes in `neg_classes'. */
+#define ASSERT_AT_BOW         16   /* Beginning of word. */
+#define ASSERT_AT_EOW         32   /* End of word. */
+#define ASSERT_AT_WB          64   /* Word boundary. */
+#define ASSERT_AT_WB_NEG     128   /* Not a word boundary. */
+#define ASSERT_BACKREF       256   /* A back reference in `backref'. */
+#define ASSERT_LAST          256
 
 /* Tag directions. */
 typedef enum {
@@ -193,16 +193,16 @@ typedef enum {
 
 /* Parameters that can be changed dynamically while matching. */
 typedef enum {
-  TRE_PARAM_COST_INS	    = 0,
-  TRE_PARAM_COST_DEL	    = 1,
-  TRE_PARAM_COST_SUBST	    = 2,
-  TRE_PARAM_COST_MAX	    = 3,
-  TRE_PARAM_MAX_INS	    = 4,
-  TRE_PARAM_MAX_DEL	    = 5,
-  TRE_PARAM_MAX_SUBST	    = 6,
-  TRE_PARAM_MAX_ERR	    = 7,
-  TRE_PARAM_DEPTH	    = 8,
-  TRE_PARAM_LAST	    = 9
+  TRE_PARAM_COST_INS        = 0,
+  TRE_PARAM_COST_DEL        = 1,
+  TRE_PARAM_COST_SUBST      = 2,
+  TRE_PARAM_COST_MAX        = 3,
+  TRE_PARAM_MAX_INS         = 4,
+  TRE_PARAM_MAX_DEL         = 5,
+  TRE_PARAM_MAX_SUBST       = 6,
+  TRE_PARAM_MAX_ERR         = 7,
+  TRE_PARAM_DEPTH           = 8,
+  TRE_PARAM_LAST            = 9
 } tre_param_t;
 
 /* Unset matching parameter */
@@ -257,29 +257,29 @@ tre_free(regex_t *preg);
 
 void
 tre_fill_pmatch(size_t nmatch, regmatch_t pmatch[], int cflags,
-		const tre_tnfa_t *tnfa, int *tags, int match_eo);
+                const tre_tnfa_t *tnfa, int *tags, int match_eo);
 
 reg_errcode_t
 tre_tnfa_run_parallel(const tre_tnfa_t *tnfa, const void *string, int len,
-		      tre_str_type_t type, int *match_tags, int eflags,
-		      int *match_end_ofs);
+                      tre_str_type_t type, int *match_tags, int eflags,
+                      int *match_end_ofs);
 
 reg_errcode_t
 tre_tnfa_run_parallel(const tre_tnfa_t *tnfa, const void *string, int len,
-		      tre_str_type_t type, int *match_tags, int eflags,
-		      int *match_end_ofs);
+                      tre_str_type_t type, int *match_tags, int eflags,
+                      int *match_end_ofs);
 
 reg_errcode_t
 tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
-		       int len, tre_str_type_t type, int *match_tags,
-		       int eflags, int *match_end_ofs);
+                       int len, tre_str_type_t type, int *match_tags,
+                       int eflags, int *match_end_ofs);
 
 #ifdef TRE_APPROX
 reg_errcode_t
 tre_tnfa_run_approx(const tre_tnfa_t *tnfa, const void *string, int len,
-		    tre_str_type_t type, int *match_tags,
-		    regamatch_t *match, regaparams_t params,
-		    int eflags, int *match_end_ofs);
+                    tre_str_type_t type, int *match_tags,
+                    regamatch_t *match, regaparams_t params,
+                    int eflags, int *match_end_ofs);
 #endif /* TRE_APPROX */
 
 #endif /* TRE_INTERNAL_H */

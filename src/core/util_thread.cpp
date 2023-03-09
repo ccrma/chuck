@@ -68,11 +68,11 @@ XThread::XThread( )
 XThread::~XThread( )
 {
 #if defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__)
-	// can't self-terminate (much like the Terminator)
-	bool is_self_thread = (thread == pthread_self());
+    // can't self-terminate (much like the Terminator)
+    bool is_self_thread = (thread == pthread_self());
 #elif defined(__PLATFORM_WIN32__)
-	// ignore for now
-	bool is_self_thread = false;
+    // ignore for now
+    bool is_self_thread = false;
 #endif
 
     // if our thread not NULL and this destructor is NOT being called on it
@@ -102,7 +102,7 @@ XThread::~XThread( )
 bool XThread::start( THREAD_FUNCTION routine, void * ptr )
 {
     bool result = false;
-    
+
 #if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
     if( pthread_create( &thread, NULL, *routine, ptr ) == 0 )
         result = true;
@@ -124,7 +124,7 @@ bool XThread::start( THREAD_FUNCTION routine, void * ptr )
 bool XThread::wait( long milliseconds, bool cancel )
 {
     bool result = false;
-    
+
     // TODO: find an alternative for Android?
 #if( defined(__PLATFORM_MACOSX__) || ( defined(__PLATFORM_LINUX__) && !defined(__ANDROID__) ) || defined(__WINDOWS_PTHREAD__) )
     // cancel the thread?
@@ -174,7 +174,7 @@ XMutex::XMutex( )
     pthread_mutex_init(&mutex, NULL);
 #elif defined(__PLATFORM_WIN32__)
     InitializeCriticalSection(&mutex);
-#endif 
+#endif
 }
 
 
@@ -190,7 +190,7 @@ XMutex::~XMutex( )
     pthread_mutex_destroy( &mutex );
 #elif defined(__PLATFORM_WIN32__)
     DeleteCriticalSection(&mutex);
-#endif 
+#endif
 }
 
 
@@ -206,7 +206,7 @@ void XMutex::acquire( )
     pthread_mutex_lock(&mutex);
 #elif defined(__PLATFORM_WIN32__)
     EnterCriticalSection(&mutex);
-#endif 
+#endif
 }
 
 
@@ -222,7 +222,7 @@ void XMutex::release( )
     pthread_mutex_unlock(&mutex);
 #elif defined(__PLATFORM_WIN32__)
     LeaveCriticalSection(&mutex);
-#endif 
+#endif
 }
 
 
@@ -236,11 +236,11 @@ XWriteThread * XWriteThread::shared()
 {
     // static XWriteThread s_defaultWriteThread;
 
-	// check
-	if( o_defaultWriteThread == NULL )
-		o_defaultWriteThread = new XWriteThread();
-    
-	return o_defaultWriteThread;
+    // check
+    if( o_defaultWriteThread == NULL )
+        o_defaultWriteThread = new XWriteThread();
+
+    return o_defaultWriteThread;
 }
 
 
@@ -290,7 +290,7 @@ void XWriteThread::shutdown()
     Message msg;
     msg.operation = Message::SHUTDOWN;
     m_msg_buffer->put( msg );
-    
+
     // smart log push
     SmartPushLog logPush;
 
@@ -313,19 +313,19 @@ size_t XWriteThread::fwrite(const void * ptr, size_t size, size_t nitems, FILE *
 {
     if(stream != m_stream)
         flush_data_buffer();
-    
+
     // TODO: overflow detection
     if(m_data_buffer->put((char*)ptr, size*nitems) == 0)
     {
         EM_log(CK_LOG_SEVERE, "XWriteThread::fwrite: data buffer overflow");
     }
-    
+
     m_bytes_in_buffer += size*nitems;
     m_stream = stream;
-    
+
     if(m_bytes_in_buffer >= PRODUCER_BUFFER_SIZE)
         flush_data_buffer();
-    
+
     return nitems;
 }
 
@@ -339,14 +339,14 @@ size_t XWriteThread::fwrite(const void * ptr, size_t size, size_t nitems, FILE *
 int XWriteThread::fseek(FILE *stream, long offset, int whence)
 {
     flush_data_buffer();
-    
+
     Message msg;
     msg.file = stream;
     msg.operation = Message::SEEK;
     msg.seek.offset = offset;
     msg.seek.whence = whence;
     m_msg_buffer->put(msg);
-    
+
     return 0;
 }
 
@@ -360,12 +360,12 @@ int XWriteThread::fseek(FILE *stream, long offset, int whence)
 int XWriteThread::fflush(FILE *stream)
 {
     flush_data_buffer();
-    
+
     Message msg;
     msg.file = stream;
     msg.operation = Message::FLUSH;
     m_msg_buffer->put(msg);
-    
+
     return 0;
 }
 
@@ -379,12 +379,12 @@ int XWriteThread::fflush(FILE *stream)
 int XWriteThread::fclose(FILE *stream)
 {
     flush_data_buffer();
-    
+
     Message msg;
     msg.file = stream;
     msg.operation = Message::CLOSE;
     m_msg_buffer->put(msg);
-    
+
     return 0;
 }
 
@@ -404,7 +404,7 @@ void XWriteThread::flush_data_buffer()
         msg.operation = Message::WRITE;
         msg.write.data_size = m_bytes_in_buffer;
         m_msg_buffer->put(msg);
-        
+
         m_bytes_in_buffer = 0;
     }
 }
@@ -424,7 +424,7 @@ unsigned XWriteThread::write_cb(void * _thiss)
 {
     XWriteThread * _this = (XWriteThread *) _thiss;
     Message msg;
-    
+
     while(!_this->m_thread_exit)
     {
         while(_this->m_msg_buffer->get(msg))
@@ -438,7 +438,7 @@ unsigned XWriteThread::write_cb(void * _thiss)
                     EM_log(CK_LOG_SEVERE, "XWriteThread: buffered data size mismatch (%li : %li)",
                            msg.write.data_size, actual_size);
                 }
-                
+
                 ::fwrite(_this->m_thread_buffer, 1, actual_size, msg.file);
             }
             else if(msg.operation == Message::SEEK)
@@ -459,13 +459,13 @@ unsigned XWriteThread::write_cb(void * _thiss)
                 break;
             }
         }
-        
+
         usleep(1000);
     }
-    
+
     delete _this;
     _thiss = _this = NULL;
-    
+
     return 0;
 }
 
@@ -490,14 +490,14 @@ t_CKBOOL XThreadUtil::set_priority( CHUCK_THREAD tid, t_CKINT priority )
 {
     struct sched_param param;
     int policy;
-    
+
     // log
     EM_log( CK_LOG_INFO, "setting thread priority to: %ld...", priority );
-    
+
     // get for thread
     if( pthread_getschedparam( tid, &policy, &param) )
         return FALSE;
-    
+
     // pthread_attr_t attr;
     // pthread_attr_init( &attr );
     // pthread_attr_setinheritsched( &attr, PTHREAD_EXPLICIT_SCHED );
@@ -505,7 +505,7 @@ t_CKBOOL XThreadUtil::set_priority( CHUCK_THREAD tid, t_CKINT priority )
     // policy
     policy = SCHED_RR;
     // priority
-    param.sched_priority = priority;
+    param.sched_priority = (int)priority;
     // set for thread, pthread style
     if( pthread_setschedparam( tid, policy, &param ) )
         return FALSE;
@@ -550,14 +550,14 @@ t_CKBOOL XThreadUtil::set_priority( CHUCK_THREAD tid, t_CKINT priority )
 {
     // if priority is 0 then done
     if( !priority ) return TRUE;
-    
+
     // log
     EM_log( CK_LOG_FINE, "setting thread priority to: %ld...", priority );
-    
+
     // set the priority the thread, windows style
     if( !SetThreadPriority( tid, priority ) )
         return FALSE;
-    
+
     return TRUE;
 }
 //-----------------------------------------------------------------------------

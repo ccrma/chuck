@@ -104,12 +104,12 @@ typedef struct { t_CKUINT N ; t_CKFLOAT * values ; } t_CKVECTOR;
 
 // kinds (added 1.3.1.0 to faciliate 64-bit support)
 // to differentiate in case int and float have same size
-#define kindof_VOID                0
-#define kindof_INT                 1
-#define kindof_FLOAT               2
-#define kindof_COMPLEX             3
-#define kindof_VEC3                4
-#define kindof_VEC4                5
+#define kindof_VOID                 0
+#define kindof_INT                  1
+#define kindof_FLOAT                2
+#define kindof_COMPLEX              3
+#define kindof_VEC3                 4
+#define kindof_VEC4                 5
 
 typedef char *                      c_str;
 typedef const char *                c_constr;
@@ -140,6 +140,9 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #define FALSE                       0
 #endif
 
+// special non-zero value to denote "no value" | added 1.4.2.0 (ge)
+#define CK_NO_VALUE                 0xffffffff
+
 // 3.1415926535897932384626433832795028841971693993751058209749445...
 #define ONE_PI (3.14159265358979323846)
 #define TWO_PI (2.0 * ONE_PI)
@@ -151,6 +154,8 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #define SAFE_RELEASE(x)             do { if(x){ x->release(); x = NULL; } } while(0)
 #define SAFE_ADD_REF(x)             do { if(x){ x->add_ref(); } } while(0)
 #define SAFE_REF_ASSIGN(lhs,rhs)    do { SAFE_RELEASE(lhs); (lhs) = (rhs); SAFE_ADD_REF(lhs); } while(0)
+#define SAFE_FREE(x)                do { if(x){ free(x); x = NULL; } } while(0)
+#define SAFE_UNLOCK_DELETE(x)       do { if(x){ x->unlock(); delete x; x = NULL; } } while(0)
 #endif
 
 // max + min
@@ -188,7 +193,12 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 
 #ifdef __PLATFORM_WIN32__
 #ifndef usleep
-#define usleep(x) Sleep( (x / 1000 <= 0 ? 1 : x / 1000) )
+  #define usleep(x) Sleep( (x / 1000 <= 0 ? 1 : x / 1000) )
+#endif
+// 1.4.2.0 (ge and spencer) | added for legacy windows, as part of switch to snprintf
+// https://stackoverflow.com/questions/2915672/snprintf-and-visual-studio-2010
+#if defined(_MSC_VER) && _MSC_VER < 1900
+  #define snprintf(buf,len, format,...) _snprintf_s(buf, len,len, format, __VA_ARGS__)
 #endif
 #pragma warning (disable : 4996)  // stdio deprecation
 #pragma warning (disable : 4786)  // stl debug info

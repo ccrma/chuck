@@ -98,7 +98,9 @@ public:
     virtual void release();
     // lock
     virtual void lock();
-    
+    // unlock | 1.4.2.1 (ge) added
+    virtual void unlock();
+
     // NOTE: be careful when overriding these, should always
     // explicitly call up to ChucK_VM_Object (ge: 2013)
 
@@ -132,7 +134,7 @@ private:
 //{
 //public:
 //    static Chuck_VM_Alloc * instance();
-//    
+//
 //public:
 //    void add_object( Chuck_VM_Object * obj );
 //    void free_object( Chuck_VM_Object * obj );
@@ -181,7 +183,7 @@ public:
 public:
     // output type info (can be overriden; but probably shouldn't be)
     virtual void help();
-    
+
 public:
     // virtual table
     Chuck_VTable * vtable;
@@ -228,7 +230,11 @@ public:
     virtual t_CKINT find( const std::string & key ) = 0; // find
     virtual t_CKINT erase( const std::string & key ) = 0; // erase
     virtual void clear( ) = 0; // clear
-    
+    virtual void zero( t_CKUINT start, t_CKUINT end ) = 0; // zero
+    virtual void zero() = 0; // zero (all)
+    // get map keys | added (1.4.2.0) nshaheed
+    virtual void get_keys( std::vector<std::string> & keys ) = 0;
+
     Chuck_Type * m_array_type;
 };
 
@@ -254,9 +260,10 @@ public:
     t_CKINT set( const std::string & key, t_CKUINT val );
     t_CKINT push_back( t_CKUINT val );
     t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKUINT pos );
+    t_CKINT pop_out( t_CKINT pos );
     t_CKINT back( t_CKUINT * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
+    void    zero() { this->zero(0, m_vector.size()); }
 
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }
@@ -265,13 +272,18 @@ public:
     virtual t_CKINT set_capacity( t_CKINT capacity );
     virtual t_CKINT find( const std::string & key );
     virtual t_CKINT erase( const std::string & key );
-    virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY4_DATASIZE; } 
-    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY4_DATAKIND; } 
+    virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY4_DATASIZE; }
+    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY4_DATAKIND; }
+    // get map keys | added (1.4.2.0) nshaheed
+    virtual void get_keys( std::vector<std::string> & keys );
 
 public:
     std::vector<t_CKUINT> m_vector;
     std::map<std::string, t_CKUINT> m_map;
     t_CKBOOL m_is_obj;
+
+    // TODO: may need additional information here for set_size, if this is part of a multi-dim array
+
     // t_CKINT m_size;
     // t_CKINT m_capacity;
 };
@@ -298,9 +310,10 @@ public:
     t_CKINT set( const std::string & key, t_CKFLOAT val );
     t_CKINT push_back( t_CKFLOAT val );
     t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKUINT pos );
+    t_CKINT pop_out( t_CKINT pos );
     t_CKINT back( t_CKFLOAT * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
+    void    zero() { this->zero(0, m_vector.size()); }
 
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }
@@ -310,7 +323,9 @@ public:
     virtual t_CKINT find( const std::string & key );
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY8_DATASIZE; }
-    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY8_DATAKIND; } 
+    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY8_DATAKIND; }
+    // get map keys | added (1.4.2.0) nshaheed
+    virtual void get_keys( std::vector<std::string> & keys );
 
 public:
     std::vector<t_CKFLOAT> m_vector;
@@ -341,9 +356,10 @@ public:
     t_CKINT set( const std::string & key, const t_CKCOMPLEX & val );
     t_CKINT push_back( const t_CKCOMPLEX & val );
     t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKUINT pos );
+    t_CKINT pop_out( t_CKINT pos );
     t_CKINT back( t_CKCOMPLEX * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
+    void    zero() { this->zero(0, m_vector.size()); }
 
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }
@@ -353,7 +369,9 @@ public:
     virtual t_CKINT find( const std::string & key );
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY16_DATASIZE; }
-    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY16_DATAKIND; } 
+    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY16_DATAKIND; }
+    // get map keys | added (1.4.2.0) nshaheed
+    virtual void get_keys( std::vector<std::string> & keys );
 
 public:
     std::vector<t_CKCOMPLEX> m_vector;
@@ -374,7 +392,7 @@ struct Chuck_Array24 : Chuck_Array
 public:
     Chuck_Array24( t_CKINT capacity = 8 );
     virtual ~Chuck_Array24();
-    
+
 public:
     t_CKUINT addr( t_CKINT i );
     t_CKUINT addr( const std::string & key );
@@ -387,7 +405,8 @@ public:
     t_CKINT pop_out( t_CKUINT pos );
     t_CKINT back( t_CKVEC3 * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
-    
+    void    zero() { this->zero(0, m_vector.size()); }
+
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }
     virtual t_CKINT capacity( ) { return m_vector.capacity(); }
@@ -397,7 +416,9 @@ public:
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY24_DATASIZE; }
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY24_DATAKIND; }
-    
+    // get map keys | added (1.4.2.0) nshaheed
+    virtual void get_keys( std::vector<std::string> & keys );
+
 public:
     std::vector<t_CKVEC3> m_vector;
     std::map<std::string, t_CKVEC3> m_map;
@@ -415,7 +436,7 @@ struct Chuck_Array32 : Chuck_Array
 public:
     Chuck_Array32( t_CKINT capacity = 8 );
     virtual ~Chuck_Array32();
-    
+
 public:
     t_CKUINT addr( t_CKINT i );
     t_CKUINT addr( const std::string & key );
@@ -428,7 +449,8 @@ public:
     t_CKINT pop_out( t_CKUINT pos );
     t_CKINT back( t_CKVEC4 * val ) const;
     void    zero( t_CKUINT start, t_CKUINT end );
-    
+    void    zero() { this->zero(0, m_vector.size()); }
+
     virtual void    clear( );
     virtual t_CKINT size( ) { return m_vector.size(); }
     virtual t_CKINT capacity( ) { return m_vector.capacity(); }
@@ -438,7 +460,9 @@ public:
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY32_DATASIZE; }
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY32_DATAKIND; }
-    
+    // get map keys | added (1.4.1.2) nshaheed
+    virtual void get_keys( std::vector<std::string> & keys );
+
 public:
     std::vector<t_CKVEC4> m_vector;
     std::map<std::string, t_CKVEC4> m_map;
@@ -462,7 +486,7 @@ struct Chuck_Global_Event_Listener
     Chuck_Global_Get_Callback_Type callback_type;
     std::string name;
     t_CKINT id;
-    Chuck_Global_Event_Listener() : void_callback(NULL), listen_forever(FALSE), 
+    Chuck_Global_Event_Listener() : void_callback(NULL), listen_forever(FALSE),
         callback_type(ck_get_plain), name(""), id(0) {};
 };
 
@@ -555,7 +579,7 @@ struct Chuck_IO : Chuck_Event
 public:
     Chuck_IO();
     virtual ~Chuck_IO();
-    
+
 public:
     // meta
     virtual t_CKBOOL good() = 0;
@@ -563,29 +587,37 @@ public:
     virtual void flush() = 0;
     virtual t_CKINT mode() = 0;
     virtual void mode( t_CKINT flag ) = 0;
-    
+
     // reading
     virtual Chuck_String * readLine() = 0;
     virtual t_CKINT readInt( t_CKINT flags ) = 0;
     virtual t_CKFLOAT readFloat() = 0;
     virtual t_CKBOOL readString( std::string & str ) = 0;
     virtual t_CKBOOL eof() = 0;
-    
+
     // writing
     virtual void write( const std::string & val ) = 0;
     virtual void write( t_CKINT val ) = 0;
     virtual void write( t_CKINT val, t_CKINT flags ) = 0;
     virtual void write( t_CKFLOAT val ) = 0;
-    
-    // constants
+
 public:
+    // type | moved to IO in 1.4.2.1 (ge)
+    static const t_CKINT TYPE_ASCII;
+    static const t_CKINT TYPE_BINARY;
+    // datatype
     static const t_CKINT INT32;
     static const t_CKINT INT16;
     static const t_CKINT INT8;
-    
+    // flags | moved to IO in 1.4.2.1 (ge)
+    static const t_CKINT FLAG_READ_WRITE;
+    static const t_CKINT FLAG_READONLY;
+    static const t_CKINT FLAG_WRITEONLY;
+    static const t_CKINT FLAG_APPEND;
     // asynchronous I/O members
     static const t_CKINT MODE_SYNC;
     static const t_CKINT MODE_ASYNC;
+
     Chuck_Event * m_asyncEvent;
     #ifndef __DISABLE_THREADS__
     XThread * m_thread;
@@ -602,7 +634,7 @@ public:
 
 
 
-#ifndef __DISABLE_FILEIO__
+// #ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // name: Chuck_IO_File
 // desc: Chuck File IO class
@@ -613,7 +645,7 @@ public:
     // REFACTOR-2017
     Chuck_IO_File( Chuck_VM * vm );
     virtual ~Chuck_IO_File();
-    
+
 public:
     // meta
     virtual t_CKBOOL open( const std::string & path, t_CKINT flags );
@@ -623,15 +655,15 @@ public:
     virtual t_CKINT mode();
     virtual void mode( t_CKINT flag );
     virtual t_CKINT size();
-    
+
     // seeking
     virtual void seek( t_CKINT pos );
     virtual t_CKINT tell();
-    
+
     // directories
     virtual t_CKINT isDir();
     virtual Chuck_Array4 * dirList();
-    
+
     // reading
     // virtual Chuck_String * read( t_CKINT length );
     virtual Chuck_String * readLine();
@@ -639,7 +671,7 @@ public:
     virtual t_CKFLOAT readFloat();
     virtual t_CKBOOL readString( std::string & str );
     virtual t_CKBOOL eof();
-    
+
     // reading -- async
     /* TODO: doesn't look like asynchronous reads will work
      static THREAD_RETURN ( THREAD_TYPE read_thread ) ( void *data );
@@ -647,29 +679,20 @@ public:
      static THREAD_RETURN ( THREAD_TYPE readInt_thread ) ( void *data );
      static THREAD_RETURN ( THREAD_TYPE readFloat_thread ) ( void *data );
      */
-    
+
     // writing
     virtual void write( const std::string & val );
     virtual void write( t_CKINT val );
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
-    
+
     #ifndef __DISABLE_THREADS__
     // writing -- async
     static THREAD_RETURN ( THREAD_TYPE writeStr_thread ) ( void *data );
     static THREAD_RETURN ( THREAD_TYPE writeInt_thread ) ( void *data );
     static THREAD_RETURN ( THREAD_TYPE writeFloat_thread ) ( void *data );
     #endif
-    
-public:
-    // constants
-    static const t_CKINT FLAG_READ_WRITE;
-    static const t_CKINT FLAG_READONLY;
-    static const t_CKINT FLAG_WRITEONLY;
-    static const t_CKINT FLAG_APPEND;
-    static const t_CKINT TYPE_ASCII;
-    static const t_CKINT TYPE_BINARY;
-    
+
 protected:
     // open flags
     t_CKINT m_flags;
@@ -686,7 +709,7 @@ protected:
     // vm and shred
     Chuck_VM * m_vmRef;
 };
-#endif // __DISABLE_FILEIO__
+// #endif // __DISABLE_FILEIO__
 
 
 

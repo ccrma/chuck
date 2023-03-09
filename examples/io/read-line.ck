@@ -1,5 +1,10 @@
+//---------------------------------------------------------------------
+// name: read-line.ck
+// desc: basic example of reading a line of text using FileIO
+//---------------------------------------------------------------------
+
 // default file
-me.sourceDir() + "line.txt" => string filename;
+me.dir() + "read-line.txt" => string filename;
 
 // look at command line
 if( me.args() > 0 ) me.arg(0) => filename;

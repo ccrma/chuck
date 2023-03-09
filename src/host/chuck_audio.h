@@ -46,8 +46,6 @@
 //-----------------------------------------------------------------------------
 #define NUM_CHANNELS_DEFAULT         2       // number of channels
 #define NUM_BUFFERS_DEFAULT          8       // number buffers
-#define DEVICE_NUM_OUT_DEFAULT       0
-#define DEVICE_NUM_IN_DEFAULT        0
 // sample rate defaults by platform
 #if defined(__PLATFORM_LINUX__)
   #define SAMPLE_RATE_DEFAULT      48000
@@ -110,9 +108,10 @@ public: // device info
     // probe audio devices
     static void probe();
     // get device number by name?
-    static t_CKUINT device_named( const std::string & name,
-                                  t_CKBOOL needs_dac = FALSE,
-                                  t_CKBOOL needs_adc = FALSE );
+    // 1.4.2.0: changed return type from t_CKUINT to t_CKINT
+    static t_CKINT device_named( const std::string & name,
+                                 t_CKBOOL needs_dac = FALSE,
+                                 t_CKBOOL needs_adc = FALSE );
 
 public:
     static t_CKUINT srate() { return m_sample_rate; }

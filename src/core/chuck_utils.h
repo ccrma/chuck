@@ -49,7 +49,7 @@ struct U_boolList_
 };
 
 
-void * checked_malloc( int size );
+void * checked_malloc( t_CKINT size );
 c_str cc_str( char * );
 U_boolList U_BoolList( t_CKBOOL head, U_boolList tail );
 

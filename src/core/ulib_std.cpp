@@ -30,9 +30,6 @@
 // date: Spring 2004
 //-----------------------------------------------------------------------------
 #include "ulib_std.h"
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
 #include "util_buffers.h"
 #ifndef __DISABLE_PROMPTER__
 #include "util_console.h"
@@ -46,6 +43,10 @@
 #include "chuck_type.h"
 #include "chuck_compile.h"
 #include "chuck_instr.h"
+
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
 
 #if defined(__PLATFORM_WIN32__)
 
@@ -172,7 +173,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, abs_impl, "int", "abs" );
     QUERY->add_arg( QUERY, "int", "value" );
     QUERY->doc_func( QUERY, "compute absolute value (integer)." );
-    
+
     // add fabs
     QUERY->add_sfun( QUERY, fabs_impl, "float", "fabs" );
     QUERY->add_arg( QUERY, "float", "value" );
@@ -184,7 +185,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 
     // add rand2
     QUERY->add_sfun( QUERY, rand2_impl, "int", "rand2" ); //! integer between [min,max]
-    QUERY->add_arg( QUERY, "int", "min" ); 
+    QUERY->add_arg( QUERY, "int", "min" );
     QUERY->add_arg( QUERY, "int", "max" );
     QUERY->doc_func( QUERY, "generate a random integer in range [min, max]. (NOTE: this is deprecated; use Math.random2())." );
 
@@ -263,7 +264,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     QUERY->doc_func( QUERY, "convert frequency (Hz) to corresponding MIDI note number." );
 
     // add powtodb
-    QUERY->add_sfun( QUERY, powtodb_impl, "float", "powtodb" ); //! linear power to decibel 
+    QUERY->add_sfun( QUERY, powtodb_impl, "float", "powtodb" ); //! linear power to decibel
     QUERY->add_arg( QUERY, "float", "value" );
     QUERY->doc_func( QUERY, "convert signal power ratio to decibels (dB)." );
 
@@ -318,11 +319,12 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // finish class
     QUERY->end_class( QUERY );
 
-    // seed the rand
-    srand( time( NULL ) );
+    // seed rand()
+    // (NOTE: ck_srandom(time(NULL)) is invoked in ulib_math.cpp)
+    srand( (unsigned)time( NULL ) );
 
     Chuck_DL_Func * func = NULL;
-    
+
 #ifndef __DISABLE_KBHIT__
     // KBHit
     // begin class (KBHit)
@@ -569,22 +571,22 @@ error:
 
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return FALSE;
 }
 
 
-#define RAND_INV_RANGE(r) (RAND_MAX / (r))
-
-int irand_exclusive ( int max ) { 
-  int x = ::rand();
-  
-  while (x >= max * RAND_INV_RANGE (max)) 
-    x = ::rand();
-
-  x /= RAND_INV_RANGE (max);
-  return x;
-}
+//#define RAND_INV_RANGE(r) (RAND_MAX / (r))
+//
+//int irand_exclusive ( int max ) {
+//  int x = ::rand();
+//
+//  while (x >= max * RAND_INV_RANGE (max))
+//    x = ::rand();
+//
+//  x /= RAND_INV_RANGE (max);
+//  return x;
+//}
 
 
 // abs
@@ -626,22 +628,22 @@ CK_DLL_SFUN( rand2_impl ) // inclusive.
 {
     // 1.3.1.0: converted int to t_CKINT for 64-bit compatibility
     t_CKINT min = *(t_CKINT *)ARGS, max = *((t_CKINT *)ARGS + 1);
-    t_CKINT range = max - min; 
+    t_CKINT range = max - min;
     if ( range == 0 )
     {
         RETURN->v_int = min;
     }
-    //else if ( range < RAND_MAX / 2 ) { 
+    //else if ( range < RAND_MAX / 2 ) {
     //  RETURN->v_int = ( range > 0 ) ? min + irand_exclusive(1 + range) : max + irand_exclusive ( -range + 1 ) ;
     //}
     else
     {
         if( range > 0 )
-        { 
+        {
             RETURN->v_int = min + (t_CKINT)( (1.0 + range) * ( ::rand()/(RAND_MAX+1.0) ) );
         }
         else
-        { 
+        {
             RETURN->v_int = min - (t_CKINT)( (-range + 1.0) * ( ::rand()/(RAND_MAX+1.0) ) );
         }
     }
@@ -651,7 +653,7 @@ CK_DLL_SFUN( rand2_impl ) // inclusive.
 CK_DLL_SFUN( srand_impl )
 {
     t_CKINT seed = GET_CK_INT(ARGS);
-    ::srand( seed );
+    srand( (unsigned)seed );
 }
 
 // sgn
@@ -828,7 +830,7 @@ CK_DLL_SFUN( clamp_impl )
     t_CKINT v = GET_NEXT_INT(ARGS);
     t_CKINT min = GET_NEXT_INT(ARGS);
     t_CKINT max = GET_NEXT_INT(ARGS);
-    
+
     if(v < min) RETURN->v_int = min;
     else if( v > max) RETURN->v_int = max;
     else RETURN->v_int = v;
@@ -839,7 +841,7 @@ CK_DLL_SFUN( clampf_impl )
     t_CKFLOAT v = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT min = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT max = GET_NEXT_FLOAT(ARGS);
-    
+
     if(v < min) RETURN->v_float = min;
     else if( v > max) RETURN->v_float = max;
     else RETURN->v_float = v;
@@ -852,7 +854,7 @@ CK_DLL_SFUN( scalef_impl )
     t_CKFLOAT srcmax = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT dstmin = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT dstmax = GET_NEXT_FLOAT(ARGS);
-    
+
     RETURN->v_float = dstmin + (dstmax-dstmin) * ((v-srcmin)/(srcmax-srcmin));
 }
 
@@ -1232,7 +1234,7 @@ void * le_cb( void * p )
         // reset wait
         g_le_wait = TRUE;
     }
-    
+
     return NULL;
 }
 
@@ -1406,7 +1408,7 @@ void StrTok::set( const string & line )
     reset();
     m_tokens.clear();
     while( (*m_ss) >> s )
-        m_tokens.push_back( s );    
+        m_tokens.push_back( s );
 }
 
 void StrTok::reset()
@@ -1524,7 +1526,7 @@ public:
     virtual ~ColumnReader();
 
     bool init( const string & filename, long col );
-    
+
     bool reset() { if( !fin.good() ) return false; where = 0; return true; }
     bool seek( long pos ) { if( pos < 0 || pos >= values.size() ) return false; where = pos; return true; }
     bool more() { return where < values.size(); }
@@ -1564,7 +1566,7 @@ ColumnReader::ColumnReader()
 ColumnReader::~ColumnReader()
 {
     // close file
-    if( fin.good() ) 
+    if( fin.good() )
         fin.close();
 }
 
@@ -1649,7 +1651,7 @@ bool ColumnReader::get_double( double & out )
 {
     assert( column > 0 );
     long c = 1;
-    
+
     char * start = line;
     char * curr = start;
 
@@ -1678,7 +1680,7 @@ bool ColumnReader::get_double( double & out )
     *curr = '\0';
 
     out = atof( start );
-    
+
     return true;
 }
 
@@ -1687,7 +1689,7 @@ bool ColumnReader::get_str( string & out )
 {
     assert( column > 0 );
     long c = 1;
-    
+
     char * start = line;
     char * curr = start;
 
@@ -1716,7 +1718,7 @@ bool ColumnReader::get_str( string & out )
     *curr = '\0';
 
     out = start;
-    
+
     return true;
 }
 
@@ -1792,22 +1794,22 @@ class Serial
 {
 public:
     // one stop bit, 8 bits, no parity
-	Serial();
-	~Serial();
+    Serial();
+    ~Serial();
 
-	unsigned read( char * buffer, unsigned numberOfBytesToRead );
-	unsigned write( char * buffer, unsigned numberOfBytesToWrite );
+    unsigned read( char * buffer, unsigned numberOfBytesToRead );
+    unsigned write( char * buffer, unsigned numberOfBytesToWrite );
 
-	void write( char c );
-	char read();
+    void write( char c );
+    char read();
 
-	unsigned available() const;
+    unsigned available() const;
 
     t_CKBOOL open( char * port, t_CKUINT baudrate );
-	void close();
+    void close();
 
 private:
-	HANDLE serialFile;
+    HANDLE serialFile;
 };
 
 
@@ -1818,7 +1820,7 @@ Serial::Serial( )
 
 Serial::~Serial( )
 {
-	close();
+    close();
 }
 
 t_CKBOOL Serial::open( char * port, t_CKUINT baudrate )
@@ -1826,62 +1828,62 @@ t_CKBOOL Serial::open( char * port, t_CKUINT baudrate )
     if( serialFile )
         close();
 
-	// open port
-	serialFile = CreateFile( port,
-							 GENERIC_READ | GENERIC_WRITE,
-							 0,
-							 0,
-							 OPEN_EXISTING,
-							 FILE_ATTRIBUTE_NORMAL,
-							 0 );
-	if( serialFile == INVALID_HANDLE_VALUE ) 
-	{
-		if( GetLastError() == ERROR_FILE_NOT_FOUND ) 
-		{
+    // open port
+    serialFile = CreateFile( port,
+                             GENERIC_READ | GENERIC_WRITE,
+                             0,
+                             0,
+                             OPEN_EXISTING,
+                             FILE_ATTRIBUTE_NORMAL,
+                             0 );
+    if( serialFile == INVALID_HANDLE_VALUE )
+    {
+        if( GetLastError() == ERROR_FILE_NOT_FOUND )
+        {
             EM_log( CK_LOG_SYSTEM, "error: cannot open serial port '%s'...", port );
-		}
+        }
         else
         {
-            EM_log( CK_LOG_SYSTEM, "error opening serial port '%s'...", port ); 
+            EM_log( CK_LOG_SYSTEM, "error opening serial port '%s'...", port );
         }
 
         return FALSE;
-	}
+    }
 
-	// set params
-	DCB dcbSerialParams = {0};
-	dcbSerialParams.DCBlength = sizeof( dcbSerialParams );
-	if( !GetCommState( serialFile, &dcbSerialParams) ) 
-	{
+    // set params
+    DCB dcbSerialParams = {0};
+    dcbSerialParams.DCBlength = sizeof( dcbSerialParams );
+    if( !GetCommState( serialFile, &dcbSerialParams) )
+    {
         EM_log( CK_LOG_SYSTEM, "error getting serial state..." );
         close();
         return FALSE;
-	}
+    }
 
     dcbSerialParams.BaudRate = baudrate;
-	dcbSerialParams.ByteSize = 8;
-	dcbSerialParams.StopBits = ONESTOPBIT;
-	dcbSerialParams.Parity = NOPARITY;
-	if( !SetCommState( serialFile, &dcbSerialParams ) )
-	{
+    dcbSerialParams.ByteSize = 8;
+    dcbSerialParams.StopBits = ONESTOPBIT;
+    dcbSerialParams.Parity = NOPARITY;
+    if( !SetCommState( serialFile, &dcbSerialParams ) )
+    {
         EM_log( CK_LOG_SYSTEM, "error setting serial state..." );
         close();
         return FALSE;
-	}
+    }
 
-	// SET TIMEOUTS
+    // SET TIMEOUTS
     /*
-	COMMTIMEOUTS timeouts = {0};
-	timeouts.ReadIntervalTimeout = 50;
-	timeouts.ReadTotalTimeoutConstant = 50;
-	timeouts.ReadTotalTimeoutMultiplier = 10;
-	timeouts.WriteTotalTimeoutConstant= 50;
-	timeouts.WriteTotalTimeoutMultiplier = 10;
-	if( !SetCommTimeouts( serialFile, &timeouts ) )
-	{
-		//error occureed. Inform user
-	}
-	*/
+    COMMTIMEOUTS timeouts = {0};
+    timeouts.ReadIntervalTimeout = 50;
+    timeouts.ReadTotalTimeoutConstant = 50;
+    timeouts.ReadTotalTimeoutMultiplier = 10;
+    timeouts.WriteTotalTimeoutConstant= 50;
+    timeouts.WriteTotalTimeoutMultiplier = 10;
+    if( !SetCommTimeouts( serialFile, &timeouts ) )
+    {
+        //error occureed. Inform user
+    }
+    */
 
     return TRUE;
 }
@@ -1890,32 +1892,32 @@ void Serial::close()
 {
     if( serialFile )
     {
-	    CloseHandle( serialFile );
+        CloseHandle( serialFile );
         serialFile = NULL;
     }
 }
 
 void Serial::write( char c )
 {
-	write( &c, 1 );
+    write( &c, 1 );
 }
 
 char Serial::read()
 {
-	char c = '\0';
-	read( &c, 1 );
-	return c;
+    char c = '\0';
+    read( &c, 1 );
+    return c;
 }
 
 unsigned Serial::available() const
 {
-	struct _COMSTAT status;
+    struct _COMSTAT status;
     unsigned long etat;
     memset( &status, 0, sizeof(status) );
 
     if( serialFile )
     {
-	    ClearCommError( serialFile, &etat, &status);
+        ClearCommError( serialFile, &etat, &status);
         return status.cbInQue;
     }
 
@@ -1925,19 +1927,19 @@ unsigned Serial::available() const
 // try to read numberOfBytesToRead into buffer, return how many bytes read
 unsigned Serial::read( char * buffer, unsigned numberOfBytesToRead )
 {
-	DWORD bytesRead = 0;
+    DWORD bytesRead = 0;
     if( serialFile )
-	    ReadFile( serialFile, buffer, numberOfBytesToRead, &bytesRead, NULL );
-	return bytesRead;
+        ReadFile( serialFile, buffer, numberOfBytesToRead, &bytesRead, NULL );
+    return bytesRead;
 }
 
 // try to write numberOfBytesToWrite to serial from buffer, return how many bytes written
 unsigned Serial::write( char * buffer, unsigned numberOfBytesToWrite )
 {
-	DWORD bytesWritten = 0;
+    DWORD bytesWritten = 0;
     if( serialFile )
-	    WriteFile( serialFile, buffer, numberOfBytesToWrite, &bytesWritten, NULL );
-	return bytesWritten;
+        WriteFile( serialFile, buffer, numberOfBytesToWrite, &bytesWritten, NULL );
+    return bytesWritten;
 }
 
 

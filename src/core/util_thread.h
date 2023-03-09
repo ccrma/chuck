@@ -148,47 +148,47 @@ protected:
 //-----------------------------------------------------------------------------
 // name: XWriteThread()
 // desc: utility class for scheduling writes to be executed on a separate
-//       thread. 
+//       thread.
 //-----------------------------------------------------------------------------
 class XWriteThread
 {
 public:
-	// get the shared instance
+    // get the shared instance
     static XWriteThread * shared();
     // static buffer size
     const static size_t PRODUCER_BUFFER_SIZE;
 
 public:
-	// constructor
+    // constructor
     XWriteThread( size_t data_buffer_size = 4096, size_t msg_buffer_size = 32 );
-    
+
 public:
     size_t fwrite( const void * ptr, size_t size, size_t nitems, FILE * stream );
     int fseek( FILE * stream, long offset, int whence );
     int fflush( FILE * stream );
     int fclose( FILE * stream );
-    
+
     // DO NOT DELETE INSTANCES OF XWriteThread
     // instead call shutdown and they will be cleaned up in the background
     void shutdown();
 
-private:    
+private:
     // DO NOT DELETE INSTANCES OF XWriteThread
     // instead call shutdown and they will be cleaned up in the background
     ~XWriteThread();
 
-	// flush
+    // flush
     void flush_data_buffer();
 
-	// callback
+    // callback
 #if ( defined(__PLATFORM_MACOSX__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
     static void * write_cb( void * _thiss );
 #elif defined(__PLATFORM_WIN32__)
     static unsigned THREAD_TYPE write_cb( void * _thiss );
 #endif
 
-	// shared instance
-	static XWriteThread * o_defaultWriteThread;
+    // shared instance
+    static XWriteThread * o_defaultWriteThread;
 
 private:
     t_CKBOOL m_thread_exit;
@@ -198,10 +198,10 @@ private:
     t_CKBYTE * m_thread_buffer;
     FILE * m_stream;
 
-	// internal message format
+    // internal message format
     struct Message
     {
-		// operation type
+        // operation type
         enum
         {
             WRITE,
@@ -210,18 +210,18 @@ private:
             CLOSE,
             SHUTDOWN
         } operation;
-        
-		// file pointer
+
+        // file pointer
         FILE * file;
-        
-		// size / offset
+
+        // size / offset
         union
         {
             struct
             {
                 size_t data_size;
             } write;
-            
+
             struct
             {
                 long offset;
@@ -233,7 +233,7 @@ private:
         Message() : file(NULL) { }
     };
 
-	// circular buffer
+    // circular buffer
     CircularBuffer<Message> * m_msg_buffer;
 };
 
