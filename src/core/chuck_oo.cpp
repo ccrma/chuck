@@ -37,6 +37,7 @@
 #include "chuck_instr.h"
 #include "chuck_errmsg.h"
 #include "chuck_dl.h"
+#include "util_math.h"
 
 #include <iostream>
 #include <sstream>
@@ -698,6 +699,19 @@ void Chuck_Array4::get_keys( std::vector<std::string> & keys )
 
 
 
+int my_ck_random(int i) { return ck_random() % i;}
+
+//-----------------------------------------------------------------------------
+// name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
+// desc: shuffle the contents of the array
+//-----------------------------------------------------------------------------
+void Chuck_Array4::shuffle()
+{
+    std::random_shuffle( m_vector.begin(), m_vector.end(), my_ck_random );
+}
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: back()
@@ -1088,6 +1102,18 @@ void Chuck_Array8::get_keys( std::vector<std::string> & keys )
 
 
 //-----------------------------------------------------------------------------
+// name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
+// desc: shuffle the contents of the array
+//-----------------------------------------------------------------------------
+void Chuck_Array8::shuffle()
+{
+    std::random_shuffle( m_vector.begin(), m_vector.end(), my_ck_random );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: back()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -1431,6 +1457,18 @@ void Chuck_Array16::get_keys( std::vector<std::string> & keys )
         // add to list
         keys.push_back((*iter).first);
     }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
+// desc: shuffle the contents of the array
+//-----------------------------------------------------------------------------
+void Chuck_Array16::shuffle()
+{
+    std::random_shuffle( m_vector.begin(), m_vector.end(), my_ck_random );
 }
 
 
@@ -1876,6 +1914,18 @@ void Chuck_Array24::get_keys( std::vector<std::string> & keys )
 
 
 //-----------------------------------------------------------------------------
+// name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
+// desc: shuffle the contents of the array
+//-----------------------------------------------------------------------------
+void Chuck_Array24::shuffle()
+{
+    std::random_shuffle( m_vector.begin(), m_vector.end(), my_ck_random );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_Array32()
 // desc: constructor
 //-----------------------------------------------------------------------------
@@ -2207,6 +2257,18 @@ void Chuck_Array32::get_keys( std::vector<std::string> & keys )
         // add to list
         keys.push_back((*iter).first);
     }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
+// desc: shuffle the contents of the array
+//-----------------------------------------------------------------------------
+void Chuck_Array32::shuffle()
+{
+    std::random_shuffle( m_vector.begin(), m_vector.end(), my_ck_random );
 }
 
 
