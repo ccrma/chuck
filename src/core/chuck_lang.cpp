@@ -965,15 +965,10 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "set the size of the array. If the new size is less than the current size, elements will be deleted from the end; if the new size is larger than the current size, 0 or null elements will be added to the end.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // (1.4.1.1 nshaheed) add getKeys()
+    // add getKeys() | (1.4.1.1) nshaheed
     func = make_new_mfun( "void", "getKeys", array_get_keys );
     func->add_arg( "string[]", "keys" );
     func->doc = "return all keys found in associative array in keys";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-    
-    // (1.4.2.1 azaday) add reverse()
-    func = make_new_mfun( "void", "reverse", array_reverse );
-    func->doc = "reverses the array in-place";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // note 1.4.1.0: in the future, should deprecate and encourage programmer
@@ -1003,6 +998,11 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func = make_new_mfun( "int", "erase", array_erase );
     func->add_arg( "string", "key" );
     func->doc = "(map only) Erase all elements with the specified key.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add reverse() | (1.4.2.1) azaday
+    func = make_new_mfun( "void", "reverse", array_reverse );
+    func->doc = "reverses the array in-place";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add shuffle()

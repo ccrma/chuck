@@ -20,10 +20,10 @@ repeat( 10 )
     a.shuffle();
 }
 
-// a way to do random without replacement
+// one way to do random without replacement
 repeat( 3 )
 {
-    cherr <= "--- random with replacment --- " <= IO.nl();
+    cherr <= "--- random without replacment --- " <= IO.nl();
     // shuffle!
     a.shuffle();
     // just go through array in order after shuffle
