@@ -190,6 +190,7 @@ CK_DLL_MFUN( array_clear );
 CK_DLL_MFUN( array_reset );
 CK_DLL_MFUN( array_zero );
 CK_DLL_MFUN( array_get_keys );
+CK_DLL_MFUN( array_reverse );
 
 
 //-----------------------------------------------------------------------------
