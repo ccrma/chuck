@@ -1005,6 +1005,11 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "(map only) Erase all elements with the specified key.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add shuffle()
+    func = make_new_mfun( "void", "shuffle", array_shuffle );
+    func->doc = "shuffle the contents of the array.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add examples
     if( !type_engine_import_add_ex( env, "array/array_argument.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_assign.ck" ) ) goto error;
@@ -2719,6 +2724,14 @@ CK_DLL_MFUN( array_erase )
     Chuck_String * name = GET_NEXT_STRING( ARGS );
     RETURN->v_int = array->erase( name->str() );
 }
+
+// array.shuffle()
+CK_DLL_MFUN( array_shuffle )
+{
+    Chuck_Array * array = (Chuck_Array *)SELF;
+    array->shuffle();
+}
+
 
 // array.push_back()
 CK_DLL_MFUN( array_push_back )

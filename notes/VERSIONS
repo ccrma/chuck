@@ -361,48 +361,48 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
     --------------
     int arrayDepth();
         Return the number of array dimensions associated with this Type (e.g., 'int[][]' has 2; 'int' has 0).
-	void children( Type[] kids );
-	    Retrieve this Type's children Types in the array 'kids'.
-	int equals( Type another );
-	    Return whether this Type is same as 'another'.
-	int isArray();
-	    Return whether this Type is some kind of an array.
-	int isPrimitive();
-	    Return whether this is a primitive Type (e.g., 'int' and 'dur' are primitives types; 'Object' and its children Types are not).
-	int isa( Type another );
-	    Return whether this Type is a kind of 'another'.
-	int isa( string another );
-	    Return whether this Type is a kind of 'another'.
-	string name();
-	    Return the name of this Type.
-	string origin();
-	    Return a string decribing where this Type was defined (e.g., "builtin", "chugin", "user").
-	Type parent();
-	    Return this Type's parent Type; returns null if this Type is 'Object'.
-	static Type find( string typeName );
-	    Find and return the Type associated with 'typeName'; returns null if no Types currently in the VM with that name.
-	static void getTypes( Type[] types, int includeObjects, int includePrimitives, int includeSpecial, int includeBuiltin, int includeChugins, int includeImports, int includeUserDefined );
-	    Retrieves in the array 'types' all top-level Types currently in the ChucK runtime type system; 'includeObjects'--include all Objects? 'includePrimitives'--include primitive types suchs as 'int' and 'dur'? 'includeSpecial'--include special types such as '@array' and '@function'? The results are further filtered by 'includeBuiltin'--include builtin types? 'includeChugins'--include types imported from chugins? 'includeImports'--include types imported from CK files in library path? 'includeUserDefined'--include types defined in ChucK code? 
-	static void getTypes( Type[] types );
-	    Retrieves in the array 'types' all top-level Types currently in the ChucK VM's type system; 'includeObjects' indicated whether to include all Objects; 'includePrimitives' indicates whether to include primitive types suchs as 'int' and 'dur'.
-	static Type of( Object obj );
-	    Return the Type of 'obj'
-	static Type of( int val );
-	    Return the Type associated with 'int'.
-	static Type of( float val );
-	    Return the Type associated with 'float'.
-	static Type of( time val );
-	    Return the Type associated with 'time'.
-	static Type of( dur val );
-	    Return the Type associated with 'dur'.
-	static Type of( complex val );
-	    Return the Type associated with 'complex'.
-	static Type of( polar val );
-	    Return the Type associated with 'polar'.
-	static Type of( vec3 val );
-	    Return the Type associated with 'vec3'.
-	static Type of( vec4 val );
-	    Return the Type associated with 'vec4'.
+    void children( Type[] kids );
+        Retrieve this Type's children Types in the array 'kids'.
+    int equals( Type another );
+        Return whether this Type is same as 'another'.
+    int isArray();
+        Return whether this Type is some kind of an array.
+    int isPrimitive();
+        Return whether this is a primitive Type (e.g., 'int' and 'dur' are primitives types; 'Object' and its children Types are not).
+    int isa( Type another );
+        Return whether this Type is a kind of 'another'.
+    int isa( string another );
+        Return whether this Type is a kind of 'another'.
+    string name();
+        Return the name of this Type.
+    string origin();
+        Return a string decribing where this Type was defined (e.g., "builtin", "chugin", "user").
+    Type parent();
+        Return this Type's parent Type; returns null if this Type is 'Object'.
+    static Type find( string typeName );
+        Find and return the Type associated with 'typeName'; returns null if no Types currently in the VM with that name.
+    static void getTypes( Type[] types, int includeObjects, int includePrimitives, int includeSpecial, int includeBuiltin, int includeChugins, int includeImports, int includeUserDefined );
+        Retrieves in the array 'types' all top-level Types currently in the ChucK runtime type system; 'includeObjects'--include all Objects? 'includePrimitives'--include primitive types suchs as 'int' and 'dur'? 'includeSpecial'--include special types such as '@array' and '@function'? The results are further filtered by 'includeBuiltin'--include builtin types? 'includeChugins'--include types imported from chugins? 'includeImports'--include types imported from CK files in library path? 'includeUserDefined'--include types defined in ChucK code?
+    static void getTypes( Type[] types );
+        Retrieves in the array 'types' all top-level Types currently in the ChucK VM's type system; 'includeObjects' indicated whether to include all Objects; 'includePrimitives' indicates whether to include primitive types suchs as 'int' and 'dur'.
+    static Type of( Object obj );
+        Return the Type of 'obj'
+    static Type of( int val );
+        Return the Type associated with 'int'.
+    static Type of( float val );
+        Return the Type associated with 'float'.
+    static Type of( time val );
+        Return the Type associated with 'time'.
+    static Type of( dur val );
+        Return the Type associated with 'dur'.
+    static Type of( complex val );
+        Return the Type associated with 'complex'.
+    static Type of( polar val );
+        Return the Type associated with 'polar'.
+    static Type of( vec3 val );
+        Return the Type associated with 'vec3'.
+    static Type of( vec4 val );
+        Return the Type associated with 'vec4'.
 - (added) new examples in examples/type
     |- polymorph.ck -- an example of polymorphism in ChucK
     |- type_query.ck -- querying for a list of types from the ChucK runtime type system
@@ -411,7 +411,11 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
     |- zero out the contents of the array; size is unchanged.
 - (added) negative indexing for arrays (thanks nshaheed)
     |- [1,2,3,4] @=> int a[]; a[-1]; // evaluates to 4
+- (added) array.shuffle()
+    |- shuffle the contents of the array.
 - (added) example: array/array_negative.ck
+- (added) example: array/array_shuffle.ck
+- (added) example: array/array_zero.ck
 - (added) Math functions
     float map( float value, float x1, float y1,
                             float x2, float y2 );
