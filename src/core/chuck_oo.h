@@ -234,6 +234,7 @@ public:
     virtual void zero() = 0; // zero (all)
     // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys ) = 0;
+    virtual void shuffle() = 0;
 
     Chuck_Type * m_array_type;
 };
@@ -276,6 +277,7 @@ public:
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY4_DATAKIND; }
     // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
+    virtual void shuffle();
 
 public:
     std::vector<t_CKUINT> m_vector;
@@ -326,6 +328,7 @@ public:
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY8_DATAKIND; }
     // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
+    virtual void shuffle();
 
 public:
     std::vector<t_CKFLOAT> m_vector;
@@ -372,6 +375,7 @@ public:
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY16_DATAKIND; }
     // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
+    virtual void shuffle();
 
 public:
     std::vector<t_CKCOMPLEX> m_vector;
@@ -418,6 +422,7 @@ public:
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY24_DATAKIND; }
     // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
+    virtual void shuffle();
 
 public:
     std::vector<t_CKVEC3> m_vector;
@@ -462,6 +467,7 @@ public:
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY32_DATAKIND; }
     // get map keys | added (1.4.1.2) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
+    virtual void shuffle();
 
 public:
     std::vector<t_CKVEC4> m_vector;
