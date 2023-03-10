@@ -236,6 +236,7 @@ public:
     virtual void get_keys( std::vector<std::string> & keys ) = 0;
     // reverse array order | added (1.4.2.0) azaday
     virtual void reverse() = 0;
+    virtual void shuffle() = 0;
 
     Chuck_Type * m_array_type;
 };
@@ -280,6 +281,7 @@ public:
     virtual void get_keys( std::vector<std::string> & keys );
     // reverse array order | added (1.4.2.0) azaday
     virtual void reverse();
+    virtual void shuffle();
 
 public:
     std::vector<t_CKUINT> m_vector;
@@ -332,6 +334,7 @@ public:
     virtual void get_keys( std::vector<std::string> & keys );
     // reverse array order | added (1.4.2.0) azaday
     virtual void reverse();
+    virtual void shuffle();
 
 public:
     std::vector<t_CKFLOAT> m_vector;
@@ -380,6 +383,7 @@ public:
     virtual void get_keys( std::vector<std::string> & keys );
     // reverse array order | added (1.4.2.0) azaday
     virtual void reverse();
+    virtual void shuffle();
 
 public:
     std::vector<t_CKCOMPLEX> m_vector;
@@ -428,6 +432,7 @@ public:
     virtual void get_keys( std::vector<std::string> & keys );
     // reverse array order | added (1.4.2.0) azaday
     virtual void reverse();
+    virtual void shuffle();
 
 public:
     std::vector<t_CKVEC3> m_vector;
@@ -474,6 +479,7 @@ public:
     virtual void get_keys( std::vector<std::string> & keys );
     // reverse array order | added (1.4.2.0) azaday
     virtual void reverse();
+    virtual void shuffle();
 
 public:
     std::vector<t_CKVEC4> m_vector;
