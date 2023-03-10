@@ -38,6 +38,7 @@
 #include "chuck_errmsg.h"
 #include "chuck_dl.h"
 
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -700,6 +701,18 @@ void Chuck_Array4::get_keys( std::vector<std::string> & keys )
 
 
 //-----------------------------------------------------------------------------
+// name: reverse()
+// desc: reverses array in-place
+//-----------------------------------------------------------------------------
+void Chuck_Array4::reverse( )
+{
+    std::reverse(m_vector.begin(), m_vector.end());
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: back()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -1088,6 +1101,18 @@ void Chuck_Array8::get_keys( std::vector<std::string> & keys )
 
 
 //-----------------------------------------------------------------------------
+// name: reverse()
+// desc: reverses array in-place
+//-----------------------------------------------------------------------------
+void Chuck_Array8::reverse( )
+{
+    std::reverse(m_vector.begin(), m_vector.end());
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: back()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -1431,6 +1456,18 @@ void Chuck_Array16::get_keys( std::vector<std::string> & keys )
         // add to list
         keys.push_back((*iter).first);
     }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: reverse()
+// desc: reverses array in-place
+//-----------------------------------------------------------------------------
+void Chuck_Array16::reverse( )
+{
+    std::reverse(m_vector.begin(), m_vector.end());
 }
 
 
@@ -1876,6 +1913,18 @@ void Chuck_Array24::get_keys( std::vector<std::string> & keys )
 
 
 //-----------------------------------------------------------------------------
+// name: reverse()
+// desc: reverses array in-place
+//-----------------------------------------------------------------------------
+void Chuck_Array24::reverse( )
+{
+    std::reverse(m_vector.begin(), m_vector.end());
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_Array32()
 // desc: constructor
 //-----------------------------------------------------------------------------
@@ -2207,6 +2256,17 @@ void Chuck_Array32::get_keys( std::vector<std::string> & keys )
         // add to list
         keys.push_back((*iter).first);
     }
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: reverse()
+// desc: reverses array in-place
+//-----------------------------------------------------------------------------
+void Chuck_Array32::reverse( )
+{
+    std::reverse(m_vector.begin(), m_vector.end());
 }
 
 
