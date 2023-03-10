@@ -39,6 +39,7 @@
 #include "chuck_dl.h"
 #include "util_math.h"
 
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -714,6 +715,18 @@ void Chuck_Array4::shuffle()
 
 
 //-----------------------------------------------------------------------------
+// name: reverse()
+// desc: reverses array in-place
+//-----------------------------------------------------------------------------
+void Chuck_Array4::reverse( )
+{
+    std::reverse(m_vector.begin(), m_vector.end());
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: back()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -1102,6 +1115,17 @@ void Chuck_Array8::get_keys( std::vector<std::string> & keys )
 
 
 //-----------------------------------------------------------------------------
+// name: reverse()
+// desc: reverses array in-place
+//-----------------------------------------------------------------------------
+void Chuck_Array8::reverse( )
+{
+    std::reverse(m_vector.begin(), m_vector.end());
+}
+
+
+
+
 // name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
 // desc: shuffle the contents of the array
 //-----------------------------------------------------------------------------
@@ -1463,6 +1487,17 @@ void Chuck_Array16::get_keys( std::vector<std::string> & keys )
 
 
 //-----------------------------------------------------------------------------
+// name: reverse()
+// desc: reverses array in-place
+//-----------------------------------------------------------------------------
+void Chuck_Array16::reverse( )
+{
+    std::reverse(m_vector.begin(), m_vector.end());
+}
+
+
+
+
 // name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
 // desc: shuffle the contents of the array
 //-----------------------------------------------------------------------------
@@ -1914,6 +1949,17 @@ void Chuck_Array24::get_keys( std::vector<std::string> & keys )
 
 
 //-----------------------------------------------------------------------------
+// name: reverse()
+// desc: reverses array in-place
+//-----------------------------------------------------------------------------
+void Chuck_Array24::reverse( )
+{
+    std::reverse(m_vector.begin(), m_vector.end());
+}
+
+
+
+
 // name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
 // desc: shuffle the contents of the array
 //-----------------------------------------------------------------------------
@@ -2257,6 +2303,17 @@ void Chuck_Array32::get_keys( std::vector<std::string> & keys )
         // add to list
         keys.push_back((*iter).first);
     }
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: reverse()
+// desc: reverses array in-place
+//-----------------------------------------------------------------------------
+void Chuck_Array32::reverse( )
+{
+    std::reverse(m_vector.begin(), m_vector.end());
 }
 
 

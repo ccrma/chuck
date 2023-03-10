@@ -970,6 +970,11 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "string[]", "keys" );
     func->doc = "return all keys found in associative array in keys";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+    
+    // (1.4.2.1 azaday) add reverse()
+    func = make_new_mfun( "void", "reverse", array_reverse );
+    func->doc = "reverses the array in-place";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // note 1.4.1.0: in the future, should deprecate and encourage programmer
     // to explicitly use .size() OR .capacity(), depending on the context
@@ -2793,6 +2798,13 @@ CK_DLL_MFUN( array_get_keys )
         key->set(array_keys[i]);
         returned_keys->push_back((t_CKUINT) key);
     }
+}
+
+// 1.4.2.1 azaday (added) array.reverse()
+CK_DLL_MFUN( array_reverse )
+{
+    Chuck_Array * array = (Chuck_Array *)SELF;
+    array->reverse();
 }
 
 
