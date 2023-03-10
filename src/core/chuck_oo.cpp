@@ -700,7 +700,27 @@ void Chuck_Array4::get_keys( std::vector<std::string> & keys )
 
 
 
-int my_ck_random(int i) { return ck_random() % i;}
+
+t_CKINT my_ck_random( t_CKINT i ) { return ck_random() % i;}
+//-----------------------------------------------------------------------------
+// name: my_random_shuffle() | 1.4.2.1
+// desc: random shuffle an array
+// adapted from https://en.cppreference.com/w/cpp/algorithm/random_shuffle
+//-----------------------------------------------------------------------------
+template<class RandomIt>
+static void my_random_shuffle( RandomIt first, RandomIt last )
+{
+    typedef typename std::iterator_traits<RandomIt>::difference_type diff_t;
+    // iterate
+    for( diff_t i = last - first - 1; i > 0; --i )
+    {
+        // swap
+        std::swap(first[i], first[my_ck_random(i + 1)]);
+    }
+}
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
@@ -708,7 +728,7 @@ int my_ck_random(int i) { return ck_random() % i;}
 //-----------------------------------------------------------------------------
 void Chuck_Array4::shuffle()
 {
-    std::random_shuffle( m_vector.begin(), m_vector.end(), my_ck_random );
+    my_random_shuffle( m_vector.begin(), m_vector.end() );
 }
 
 
@@ -1131,7 +1151,7 @@ void Chuck_Array8::reverse( )
 //-----------------------------------------------------------------------------
 void Chuck_Array8::shuffle()
 {
-    std::random_shuffle( m_vector.begin(), m_vector.end(), my_ck_random );
+    my_random_shuffle( m_vector.begin(), m_vector.end() );
 }
 
 
@@ -1498,12 +1518,13 @@ void Chuck_Array16::reverse( )
 
 
 
+//-----------------------------------------------------------------------------
 // name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
 // desc: shuffle the contents of the array
 //-----------------------------------------------------------------------------
 void Chuck_Array16::shuffle()
 {
-    std::random_shuffle( m_vector.begin(), m_vector.end(), my_ck_random );
+    my_random_shuffle( m_vector.begin(), m_vector.end() );
 }
 
 
@@ -1960,12 +1981,13 @@ void Chuck_Array24::reverse( )
 
 
 
+//-----------------------------------------------------------------------------
 // name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
 // desc: shuffle the contents of the array
 //-----------------------------------------------------------------------------
 void Chuck_Array24::shuffle()
 {
-    std::random_shuffle( m_vector.begin(), m_vector.end(), my_ck_random );
+    my_random_shuffle( m_vector.begin(), m_vector.end() );
 }
 
 
@@ -2325,7 +2347,7 @@ void Chuck_Array32::reverse( )
 //-----------------------------------------------------------------------------
 void Chuck_Array32::shuffle()
 {
-    std::random_shuffle( m_vector.begin(), m_vector.end(), my_ck_random );
+    my_random_shuffle( m_vector.begin(), m_vector.end() );
 }
 
 
