@@ -497,7 +497,8 @@ t_CKBOOL Chuck_VM::compute()
             CK_TRACK( Chuck_Stats::instance()->activate_shred( shred ) );
 
             // run the shred
-            if( !shred->run( this ) )
+            // 1.4.2.1 (ge) add check for shred->is_done, which flags a shred to exit
+            if( shred->is_done || !shred->run( this ) )
             {
                 // track shred deactivation
                 CK_TRACK( Chuck_Stats::instance()->deactivate_shred( shred ) );
@@ -2158,7 +2159,7 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
 
 //-----------------------------------------------------------------------------
 // name: get()
-// desc: ...
+// desc: get the next shred shreduled to run 'now'
 //-----------------------------------------------------------------------------
 Chuck_VM_Shred * Chuck_VM_Shreduler::get( )
 {
@@ -2336,7 +2337,7 @@ Chuck_VM_Shred * Chuck_VM_Shreduler::lookup( t_CKUINT xid )
 struct SortByID
 {
     bool operator() ( const Chuck_VM_Shred * lhs, const Chuck_VM_Shred * rhs )
-    {    return lhs->xid < rhs->xid; }
+    { return lhs->xid < rhs->xid; }
 };
 
 
