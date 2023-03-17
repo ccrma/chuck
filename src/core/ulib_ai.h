@@ -37,13 +37,14 @@
 // Composition and Performance/ (2011) [1], the Wekinator framework [2], her
 // teaching at the intersections of AI, HCI, and Music [3], as well as earlier
 // collaborations between Rebecca and Ge [4,5] including SMIRK [6] (Small Musical
-// Information Retrieval toolKit; 2008; early efforts in on-the-fly learning),
-// the unit analyzer framework [7] (2007; afford real-time audio feature
-// extraction). All of these have directly or indirectly contributed the
-// creation of ChAI. Additionally, ChAI benefitted from the teaching
-// and design philosophy of Perry R. Cook (Ph.D. advisor to Rebecca and Ge
-// at Princeton, and ChucK co-author), who argued for real-time human interaction,
-// parametric sound synthesis, and play in the design of musical tools.
+// Information Retrieval toolKit; 2008; MARSYAS and the MIR work of Dr. George
+// Tzanetakis; early efforts in on-the-fly learning), the unit analyzer
+// framework [7] (2007; afford real-time audio feature extraction). All of
+// these have directly or indirectly contributed the creation of ChAI.
+// Additionally, ChAI benefitted from the teaching and design philosophy of
+// Dr. Perry R. Cook (Ph.D. advisor to Rebecca, George, and Ge at Princeton,
+// and ChucK co-author), who argued for real-time human interaction, parametric
+// sound synthesis, and the importance of play in the design of musical tools.
 //
 // [1] Fiebrink, Rebecca. 2011. /Real-time Human Interaction With Supervised
 // Learning Algorithms for Music Composition and Performance/ Ph.D. Thesis.
@@ -67,7 +68,13 @@
 // [6] http://smirk.cs.princeton.edu/
 // sMIRk | Small Music Information Retrieval toolKit
 //
-// [7] Wang, G., R. Fiebrink, P. R. Cook. 2007. "Combining Analysis and
+// [7] Tzanetakis, G. and P. R. Cook. 2000 "MARSYAS: A Framework for Audio
+// Analysis." Organised Sound. 4:(3)
+//
+// [8] Tzanetakis, G. and P. R. Cook. 2002 "Musical Genre Classification of
+// Audio Signals." IEEE Transaction on Speech and Audio Processing. 10(5).
+//
+// [9] Wang, G., R. Fiebrink, P. R. Cook. 2007. "Combining Analysis and
 // Synthesis in the ChucK Programming Language." /International Computer
 // Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
 //-----------------------------------------------------------------------------
