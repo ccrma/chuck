@@ -257,7 +257,7 @@ Chuck_Env::~Chuck_Env()
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Env::init()
 {
-    // initialize types
+    // initialize base types
     t_void = new Chuck_Type( this, te_void, "void", NULL, 0 );
     t_int = new Chuck_Type( this, te_int, "int", NULL, sizeof(t_CKINT) );
     t_float = new Chuck_Type( this, te_float, "float", NULL, sizeof(t_CKFLOAT) );
@@ -292,17 +292,18 @@ t_CKBOOL Chuck_Env::init()
 
 //-----------------------------------------------------------------------------
 // name: type_engine_init_object_special() | 1.4.2.1 (ge) added
-// desc:
+// desc: special initialization of base types that have mutual dependencies
+//       (e.g., with the Type base type)
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_init_special( Chuck_Env * env, Chuck_Type * objT )
 {
-    // typically, initialize_object() is called on each new Chuck_Type automatically
+    // call initialize_object() to initialize objT itself as an instance of Object
     initialize_object( objT, env->t_class );
 
-    // check
+    // ensure namespace allocation
     if( objT->info == NULL )
     {
-        EM_error3( "[chuck]: internal error initializing base class 'Object'..." );
+        EM_error3( "[chuck]: internal error initializing base class '%s'...", objT->name.c_str() );
         return FALSE;
     }
 
@@ -318,7 +319,7 @@ t_CKBOOL type_engine_init_special( Chuck_Env * env, Chuck_Type * objT )
         // loop over (for overloaded functions)
         while( f )
         {
-            // add initialize each function type as object
+            // initialize each function type as an object instance
             // (special cases: these should not be initialized yet)
             initialize_object( f->value_ref->type, env->t_class );
             // next f
