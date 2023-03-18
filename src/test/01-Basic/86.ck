@@ -7,13 +7,15 @@ repeat( 20 ) n *=> n;
 // bye sanity
 0 *=> n;
 // test it
-// *** disabled due to different isnan on different architecture ***
-// *** for example, the following returns 1 on Mac intel but 0 on Mac M1 ***	
-// <<< Math.isnan( n ) >>>;
+<<< Math.isnan( n ) >>>;
+
+// *** RE-ENABLED in 1.4.2.1; differences due the fast-math compiler flag
+// for example, if -ffast-math enabled, the above returns 1 on Mac 
+// intel but 0 on Mac arm64; fast-math is now disabled by default ***
 
 // more
 <<< 1.0 / 0.0 => Math.isinf >>>;
-// *** disabled due to above reason ***
-// <<< 0.0 / 0.0 => Math.isnan >>>;
+// *** the following alos differs if fast-math is enabled
+<<< 0.0 / 0.0 => Math.isnan >>>;
 <<< Math.INFINITY, -Math.INFINITY >>>;
 <<< Math.INFINITY => Math.isinf >>>;
