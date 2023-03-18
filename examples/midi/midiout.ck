@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// name: midiout.cpp
+// name: midiout.ck
 // desc: example of sending MIDI messages
 // note: for a good explanation of how MIDI messages work, see after the code
 //-----------------------------------------------------------------------------
