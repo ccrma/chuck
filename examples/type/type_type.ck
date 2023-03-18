@@ -99,6 +99,8 @@ about( Type.find("MFCC") );
 // get the type of the Type type; should be itself
 Type.typeOf() @=> Type @ tType;
 
+// make an array
+Type types[0];
 // get all subclasses of StkInstrument
 StkInstrument.typeOf().children( types );
 // print results
