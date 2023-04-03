@@ -89,7 +89,7 @@ CC=gcc
 # c++ compiler
 CXX=g++
 # linker
-LD=g++
+LD=$(CXX)
 
 
 ############################# COMPILER FLAGS ##################################
