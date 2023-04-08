@@ -7,10 +7,10 @@ RTAUDIODIR=rtaudio
 
 ########################## DEFAULT MAKE TARGET #################################
 # default target: print usage message and quit
-current: 
+current:
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
-	@echo "   make mac, make mac-ub, make cygwin, make win32, or make emscripten"
+	@echo "   make mac, make mac-ub, make cygwin, make win32, or make web"
 
 
 ############################## MAKE INSTALL ####################################
@@ -39,14 +39,15 @@ EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
     core/chuck_ugen.cpp core/chuck_utils.cpp core/chuck_vm.cpp \
     core/uana_extract.cpp core/uana_xform.cpp core/ugen_filter.cpp \
     core/ugen_osc.cpp core/ugen_stk.cpp core/ugen_xxx.cpp \
-    core/ulib_math.cpp core/ulib_regex.cpp core/ulib_std.cpp \
-    core/util_buffers.cpp core/util_math.c core/util_raw.c \
-    core/util_string.cpp core/util_xforms.c core/chuck_win32.c \
-    core/util_sndfile.c
+    core/ulib_ai.cpp core/ulib_machine.cpp core/ulib_math.cpp \
+    core/ulib_regex.cpp core/ulib_std.cpp core/util_buffers.cpp \
+    core/util_math.c core/util_raw.c core/util_string.cpp \
+    core/util_xforms.c core/chuck_win32.c core/util_sndfile.c
 
 
-.PHONY: emscripten
+.PHONY: emscripten web
 emscripten: host_web/webchuck/js/webchuck.js
+web: host_web/webchuck/js/webchuck.js
 
 host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
 	emcc -O3 -s DISABLE_EXCEPTION_CATCHING=0 \
@@ -58,7 +59,7 @@ host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
         -D__CHUCK_USE_PLANAR_BUFFERS__ \
 	-Wformat=0 \
         $(EMSCRIPTENSRCS) -o host_web/webchuck/js/webchuck.js \
-        -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8"]' \
+        -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8"]' \
         -s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"' \
         -s ALLOW_MEMORY_GROWTH=1 \
         -s --extern-post-js host_web/chucknode-postjs.js \
@@ -73,7 +74,7 @@ mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
 win32:
 	make -f $(COREDIR)/makefile.x/makefile.win32
 
-CK_VERSION=1.4.1.1
+CK_VERSION=1.4.2.0
 
 
 ########################### COMPILATION TOOLS ##################################
@@ -105,10 +106,13 @@ ifneq ($(CHUCK_STRICT),)
 CFLAGS+= -Wall
 endif
 
-ifneq ($(findstring arm,$(shell uname -m)),)
+# ifneq ($(findstring arm,$(shell uname -m)),)
 # some sort of arm platform- enable aggressive optimizations
-CFLAGS+= -ffast-math
-endif
+# CFLAGS+= -ffast-math
+# endif
+# ge: commenting out; breaks Math.isinf() since it assumes all finite
+# https://stackoverflow.com/questions/7420665/what-does-gccs-ffast-math-actually-do
+# https://simonbyrne.github.io/notes/fastmath/
 
 
 ######################### PLATFORM-SPECIFIC THINGS #############################
@@ -147,8 +151,8 @@ CXXOBJS_CORE+= chuck.o chuck_absyn.o chuck_parse.o chuck_errmsg.o \
 	chuck_otf.o chuck_stats.o chuck_shell.o chuck_io.o \
 	chuck_carrier.o chuck_globals.o \
 	hidio_sdl.o midiio_rtmidi.o rtmidi.o ugen_osc.o ugen_filter.o \
-	ugen_stk.o ugen_xxx.o ulib_machine.o ulib_math.o ulib_std.o \
-	ulib_opsc.o ulib_regex.o util_buffers.o util_console.o \
+	ugen_stk.o ugen_xxx.o ulib_ai.o ulib_machine.o ulib_math.o \
+	ulib_std.o ulib_opsc.o ulib_regex.o util_buffers.o util_console.o \
 	util_string.o util_thread.o util_opsc.o util_serial.o \
 	util_hid.o uana_xform.o uana_extract.o
 LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
@@ -208,7 +212,7 @@ CK_SVN=https://chuck-dev.stanford.edu/svn/chuck/
 chuck-core:
 	@echo -------------
 	@echo [chuck-core]: compiling...
-	make $(MAKECMDGOALS) -C $(COREDIR) $(ARCH_ARGS)
+	$(MAKE) $(MAKECMDGOALS) -C $(COREDIR) $(ARCH_ARGS)
 	@echo -------------
 
 CFLAGS_HOST= ${CFLAGS} -I${RTAUDIODIR}
@@ -224,12 +228,12 @@ $(CXXOBJS_HOST): %.o: %.cpp
 	$(CXX) $(CFLAGS_HOST) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND_HOST) $< > $*.d
 
-clean: 
+clean:
 	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} $(OBJS) \
         $(patsubst %.o,%.d,$(OBJS))*~ $(COREDIR)/chuck.output \
 	$(COREDIR)/chuck.tab.h $(COREDIR)/chuck.tab.c \
         $(COREDIR)/chuck.yy.c $(DIST_DIR){,.tgz,.zip} Release Debug
-	
+
 
 ############################### RUN TEST #######################################
 test:
@@ -249,7 +253,7 @@ src-dist:
 	mkdir $(DIST_DIR) $(DIST_DIR)/src $(DIST_DIR)/examples
 # copy src
 	git archive HEAD src | tar -x -C $(DIST_DIR)
-	rm -r $(DIST_DIR)/src/test 
+	rm -r $(DIST_DIR)/src/test
 # copy examples
 	git archive HEAD examples | tar -x -C $(DIST_DIR)
 # copy notes

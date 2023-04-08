@@ -21,12 +21,12 @@ ISYSROOT=-isysroot /Developer/SDKs/MacOSX10.4u.sdk
 LINK_EXTRAS=
 endif
 
-ifneq ($(shell which clang),)
+# ifneq ($(shell which clang),)
 # force clang if available (for OS X 10.4 compatibility)
-CC=clang
-CXX=clang++
-LD=clang++
-endif
+# CC=clang
+# CXX=clang++
+# LD=clang++
+# endif
 
 CFLAGS+= -D__MACOSX_CORE__ $(FORCE_M32) $(ISYSROOT)
 CFLAGSDEPEND+= -D__MACOSX_CORE__ $(FORCE_M32) $(ISYSROOT)

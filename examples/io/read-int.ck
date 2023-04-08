@@ -1,5 +1,10 @@
+//---------------------------------------------------------------------
+// name: read-int.ck
+// desc: basic example of reading int using FileIO
+//---------------------------------------------------------------------
+
 // default file
-me.sourceDir() + "/int.txt" => string filename;
+me.dir() + "read-int.txt" => string filename;
 
 // look at command line
 if( me.args() > 0 ) me.arg(0) => filename;

@@ -1,5 +1,5 @@
 # default target: print usage message and quit
-current: 
+current:
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
 	@echo "   make mac, make mac-ub, make cygwin, or make win32"
@@ -10,7 +10,7 @@ mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck-core
 win32:
 	make -f makefile.win32
 
-CK_VERSION=1.4.1.1
+CK_VERSION=1.4.2.0
 
 LEX=flex
 YACC=bison
@@ -38,10 +38,13 @@ ifneq ($(CHUCK_STRICT),)
 CFLAGS+= -Wall
 endif
 
-ifneq ($(findstring arm,$(shell uname -m)),)
+# ifneq ($(findstring arm,$(shell uname -m)),)
 # some sort of arm platform- enable aggressive optimizations
-CFLAGS+= -ffast-math
-endif
+# CFLAGS+= -ffast-math
+# endif
+# ge: commenting out; breaks Math.isinf() since it assumes all finite
+# https://stackoverflow.com/questions/7420665/what-does-gccs-ffast-math-actually-do
+# https://simonbyrne.github.io/notes/fastmath/
 
 ifneq (,$(strip $(filter mac mac-ub osx bin-dist-mac,$(MAKECMDGOALS))))
 include makefile.x/makefile.mac
@@ -75,10 +78,11 @@ CXXSRCS_CORE+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	chuck_vm.cpp chuck_instr.cpp chuck_scan.cpp chuck_type.cpp \
 	chuck_emit.cpp chuck_compile.cpp chuck_dl.cpp chuck_oo.cpp \
 	chuck_lang.cpp chuck_ugen.cpp chuck_otf.cpp chuck_stats.cpp \
-	chuck_shell.cpp chuck_io.cpp hidio_sdl.cpp chuck.cpp \
+	chuck_shell.cpp chuck_io.cpp chuck.cpp \
 	chuck_carrier.cpp chuck_globals.cpp \
-	midiio_rtmidi.cpp rtmidi.cpp ugen_osc.cpp ugen_filter.cpp \
-	ugen_stk.cpp ugen_xxx.cpp ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
+	midiio_rtmidi.cpp rtmidi.cpp hidio_sdl.cpp \
+	ugen_osc.cpp ugen_filter.cpp ugen_stk.cpp ugen_xxx.cpp \
+	ulib_ai.cpp ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
 	ulib_opsc.cpp ulib_regex.cpp util_buffers.cpp util_console.cpp \
 	util_string.cpp util_thread.cpp util_opsc.cpp util_serial.cpp \
 	util_hid.cpp uana_xform.cpp uana_extract.cpp
@@ -127,6 +131,7 @@ chuck-core: $(OBJS)
 chuck.tab.c chuck.tab.h: chuck.y
 	$(YACC) -dv -b chuck chuck.y
 
+chuck.lex: chuck.tab.h
 chuck.yy.c: chuck.lex
 	$(LEX) -ochuck.yy.c chuck.lex
 
@@ -149,7 +154,7 @@ $(LO_COBJS): %.o: %.c
 	$(CC) $(CFLAGS) $(LO_CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $(LO_CFLAGS) $< > $*.d
 
-clean: 
+clean:
 	@rm -rf *.o *.d $(OBJS) \
          $(patsubst %.o,%.d,$(OBJS)) *~ chuck.output chuck.tab.h chuck.tab.c \
          chuck.yy.c $(DIST_DIR){,.tgz,.zip} Release Debug
@@ -207,7 +212,7 @@ src-dist:
 	mkdir $(DIST_DIR) $(DIST_DIR)/doc $(DIST_DIR)/src $(DIST_DIR)/examples
 # copy src
 	git archive HEAD . | tar -x -C $(DIST_DIR)/src
-	rm -r $(DIST_DIR)/src/examples $(DIST_DIR)/src/test 
+	rm -r $(DIST_DIR)/src/examples $(DIST_DIR)/src/test
 # copy manual + notes
 	cp $(addprefix ../notes/doc/,$(DOC_NOTES)) $(DIST_DIR)/doc
 # copy examples

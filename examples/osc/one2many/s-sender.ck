@@ -12,12 +12,18 @@
 
 // array of destination hostnames
 string hostnames[0];
+
+//----------------------------------------------------------------------------
 // appending names of destinations
-hostnames << "localhost"; // localhost == this machine
+//----------------------------------------------------------------------------
+
+// localhost == this machine
+hostnames << "localhost";
+
 // external hosts (add as many as needed)
-hostnames << "albacore.local";
-hostnames << "banhmi.local";
-hostnames << "chowder.local";
+// hostnames << "albacore.local";
+// hostnames << "192.168.0.10";
+// hostnames << "host.domain.edu";
 // ...
 
 // sender object

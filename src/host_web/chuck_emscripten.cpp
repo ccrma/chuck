@@ -656,7 +656,6 @@ extern "C"
     
     bool EMSCRIPTEN_KEEPALIVE initChuckInstance( unsigned int chuckID, unsigned int sampleRate, unsigned int inChannels, unsigned int outChannels )
     {
-        
         // proceed as normal
         if( chuck_instances.count( chuckID ) == 0 )
         {
@@ -665,11 +664,11 @@ extern "C"
             
             // set params: sample rate, 2 in channels, 2 out channels,
             // don't halt the vm, and use our data directory
-            chuck->setParam( CHUCK_PARAM_SAMPLE_RATE, (t_CKINT) sampleRate );
-            chuck->setParam( CHUCK_PARAM_INPUT_CHANNELS, (t_CKINT) inChannels );
-            chuck->setParam( CHUCK_PARAM_OUTPUT_CHANNELS, (t_CKINT) outChannels );
-            chuck->setParam( CHUCK_PARAM_VM_HALT, (t_CKINT) 0 );
-            chuck->setParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, (t_CKINT) 0 );
+            chuck->setParam( CHUCK_PARAM_SAMPLE_RATE, (t_CKINT)sampleRate );
+            chuck->setParam( CHUCK_PARAM_INPUT_CHANNELS, (t_CKINT)inChannels );
+            chuck->setParam( CHUCK_PARAM_OUTPUT_CHANNELS, (t_CKINT)outChannels );
+            chuck->setParam( CHUCK_PARAM_VM_HALT, (t_CKINT)0 );
+            chuck->setParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, (t_CKINT)0 );
             // directory for compiled.code
             chuck->setParam( CHUCK_PARAM_WORKING_DIRECTORY, chuck_global_data_dir );
             // directories to search for chugins and auto-run ck files
@@ -678,6 +677,10 @@ extern "C"
             chugin_search.push_back( chuck_global_data_dir + "/ChuGins" );
             chugin_search.push_back( chuck_global_data_dir + "/chugins" );
             chuck->setParam( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES, chugin_search );
+
+            // default real-time audio is true | chuck-1.4.2.1 (ge) added
+            // set hint, so internally can advise things like async data writes etc.
+            chuck->setParam( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO, (t_CKINT)TRUE );
             
             // initialize and start
             chuck->init();

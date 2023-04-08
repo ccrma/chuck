@@ -253,7 +253,8 @@ t_CKBOOL get_count( const char * arg, t_CKUINT * out )
 
 //-----------------------------------------------------------------------------
 // name: signal_int()
-// desc: ...
+// desc: handler for ctrl-c (SIGINT).  NB: on windows this is triggered
+//       in a separate thread. global_cleanup requires a mutex.
 //-----------------------------------------------------------------------------
 extern "C" void signal_int( int sig_num )
 {
@@ -293,6 +294,26 @@ extern "C" void signal_pipe( int sig_num )
 //-----------------------------------------------------------------------------
 void global_cleanup()
 {
+    // make sure we don't double clean
+    static bool s_already_cleaning = false;
+
+    // check | 1.4.2.1 (ge) added
+    if( s_already_cleaning )
+    {
+        // log | 1.4.2.1 (ge) added
+        EM_log( CK_LOG_INFO, "additional global cleanup not needed..." );
+        // done
+        return;
+    }
+
+    // log | 1.4.2.1 (ge) added
+    EM_log( CK_LOG_SYSTEM, "global cleanup initiating..." );
+    // set flag
+    s_already_cleaning = true;
+
+    // static XMutex s_mutex;
+    // s_mutex.acquire();
+
     // REFACTOR-2017: shut down audio system
     all_stop();
 
@@ -322,6 +343,9 @@ void global_cleanup()
     // close handle
 //    if( g_tid_otf ) CloseHandle( g_tid_otf );
 #endif
+
+    // 1.4.2.1 (ge) | commented
+    // s_mutex.release();
 }
 
 
@@ -848,7 +872,7 @@ bool go( int argc, const char ** argv )
     if( dac_name.size() > 0 )
     {
         // check with RtAudio
-        int dev = ChuckAudio::device_named( audioDriver, dac_name, TRUE, FALSE );
+        t_CKINT dev = ChuckAudio::device_named( audioDriver, dac_name, TRUE, FALSE );
         if( dev >= 0 )
         {
             dac = dev;
@@ -865,7 +889,7 @@ bool go( int argc, const char ** argv )
     if( adc_name.size() > 0 )
     {
         // check with RtAudio
-        int dev = ChuckAudio::device_named( audioDriver, adc_name, FALSE, TRUE );
+        t_CKINT dev = ChuckAudio::device_named( audioDriver, adc_name, FALSE, TRUE );
         if( dev >= 0 )
         {
             adc = dev;

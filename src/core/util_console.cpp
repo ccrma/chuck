@@ -31,6 +31,7 @@
 //-----------------------------------------------------------------------------
 #include "util_console.h"
 #include "chuck_errmsg.h"
+
 #include <stdio.h>
 #ifdef __USE_READLINE__
  #include <readline/readline.h>
@@ -51,39 +52,39 @@ char * io_readline( const char * prompt )
     // insert our hack
     char * buf=(char *)malloc( CONSOLE_INPUT_BUFFER_SIZE * sizeof(char) );
     char * result;
-    
+
     fputs( prompt, stdout );
-    
-	result = fgets( buf, CONSOLE_INPUT_BUFFER_SIZE, stdin );
-	
-	if( result == NULL )
-	{
-		free( buf );
-		return NULL;
-	}
-	
-	for( int i=0; i < CONSOLE_INPUT_BUFFER_SIZE; i++ )
-		if(buf[i] == '\n' )
-		{
-			buf[i] = 0;
-			break;
-		}
-	
-	return buf;
-	
+
+    result = fgets( buf, CONSOLE_INPUT_BUFFER_SIZE, stdin );
+
+    if( result == NULL )
+    {
+        free( buf );
+        return NULL;
+    }
+
+    for( int i=0; i < CONSOLE_INPUT_BUFFER_SIZE; i++ )
+        if(buf[i] == '\n' )
+        {
+            buf[i] = 0;
+            break;
+        }
+
+    return buf;
+
 #endif
 }
 
 void io_addhistory( const char * addme )
 {
 #ifdef __USE_READLINE__
-	
-	add_history( addme );
-	
+
+    add_history( addme );
+
 #else
-	
-	//do nothing
-	
+
+    //do nothing
+
 #endif
 }
 
@@ -92,14 +93,8 @@ void io_addhistory( const char * addme )
 // kb hit
 #ifndef __PLATFORM_WIN32__
   #include <string.h>
-#ifdef __PLATFORM_MACOSX__
   #include <termios.h>
   static struct termios g_save;
-#else
-  #include <termio.h>
-  static struct termio g_save;
-#endif
-
   #include <unistd.h>
   #include <sys/ioctl.h>
 #else
@@ -118,14 +113,8 @@ t_CKBOOL kb_initscr()
     if( g_init ) return FALSE;
 
 #ifndef __PLATFORM_WIN32__
-
-#ifdef __PLATFORM_MACOSX__
     struct termios term;
-    if( ioctl( 0, TIOCGETA, &term ) == -1 )
-#else
-    struct termio term;
-    if( ioctl( 0, TCGETA, &term ) == -1 )
-#endif
+    if( tcgetattr(0, &term) == -1 )
     { 
         EM_log( CK_LOG_SEVERE, "(kbhit disabled): standard input not a tty!");
         return FALSE;
@@ -135,19 +124,14 @@ t_CKBOOL kb_initscr()
     EM_log( CK_LOG_INFO, "starting kb hit immediate mode..." );
 
     g_save = term;
-                
+
     term.c_lflag &= ~ICANON;
     term.c_lflag &= ~ECHO;
 
     term.c_cc[VMIN] = 0;
-    term.c_cc[VTIME]=0;  
+    term.c_cc[VTIME]=0;
 
-#ifdef __PLATFORM_MACOSX__
-    ioctl( 0, TIOCSETA, &term );
-#else
-    ioctl( 0, TCSETA, &term );
-#endif
-
+    tcsetattr( 0, TCSADRAIN, &term );
 #endif
 
     g_init = TRUE;
@@ -161,11 +145,7 @@ void kb_endwin()
     if( !g_init ) return;
 
 #ifndef __PLATFORM_WIN32__
-#ifdef __PLATFORM_MACOSX__
-    ioctl( 0, TIOCSETA, &g_save );
-#else
-    ioctl( 0, TCSETA, &g_save );
-#endif
+    tcsetattr( 0, TCSADRAIN, &g_save );
 #endif
 
     g_init = FALSE;
@@ -176,7 +156,7 @@ void kb_endwin()
 t_CKINT kb_hit()
 {
 #ifndef __PLATFORM_WIN32__
-    int ifkeyin;
+    long ifkeyin;
     char c;
     ifkeyin = read( 0, &c, 1 );
     g_c = (t_CKINT)c;

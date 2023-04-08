@@ -32,6 +32,8 @@
 #ifndef __UTIL_SERIAL_H__
 #define __UTIL_SERIAL_H__
 
+#include "chuck_def.h"
+
 #include <vector>
 #include <string>
 
@@ -46,7 +48,7 @@ class SerialIOManager
 {
 public:
     static std::vector<std::string> availableSerialDevices();
-    
+
 private:
     static std::vector<std::string> s_availableSerialDevices;
 };

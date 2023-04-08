@@ -1,5 +1,6 @@
 // chuck this with other shreds to record to file
-// example> chuck foo.ck bar.ck rec (see also rec2.ck)
+// example> chuck foo.ck bar.ck rec.ck
+//          (see also rec-auto-stereo.ck)
 
 // arguments: rec:<filename>
 

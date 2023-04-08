@@ -45,11 +45,11 @@
  * \brief A structure to store OSC TimeTag values.
  */
 typedef struct {
-	/** The number of seconds since Jan 1st 1900 in the UTC timezone. */
-	uint32_t sec;
-	/** The fractions of a second offset from above, expressed as 1/2^32nds
-         * of a second */
-	uint32_t frac;
+    /** The number of seconds since Jan 1st 1900 in the UTC timezone. */
+    uint32_t sec;
+    /** The fractions of a second offset from above, expressed as 1/2^32nds
+     * of a second */
+    uint32_t frac;
 } lo_timetag;
 
 /**
@@ -60,37 +60,37 @@ typedef struct {
  */
 typedef enum {
 /* basic OSC types */
-	/** 32 bit signed integer. */
-	LO_INT32 =     'i',
-	/** 32 bit IEEE-754 float. */
-	LO_FLOAT =     'f',
-	/** Standard C, NULL terminated string. */
-	LO_STRING =    's',
-	/** OSC binary blob type. Accessed using the lo_blob_*() functions. */
-	LO_BLOB =      'b',
+    /** 32 bit signed integer. */
+    LO_INT32 =     'i',
+    /** 32 bit IEEE-754 float. */
+    LO_FLOAT =     'f',
+    /** Standard C, NULL terminated string. */
+    LO_STRING =    's',
+    /** OSC binary blob type. Accessed using the lo_blob_*() functions. */
+    LO_BLOB =      'b',
 
 /* extended OSC types */
-	/** 64 bit signed integer. */
-	LO_INT64 =     'h',
-	/** OSC TimeTag type, represented by the lo_timetag structure. */
-	LO_TIMETAG =   't',
-	/** 64 bit IEEE-754 double. */
-	LO_DOUBLE =    'd',
-	/** Standard C, NULL terminated, string. Used in systems which
-	  * distinguish strings and symbols. */
-	LO_SYMBOL =    'S',
-	/** Standard C, 8 bit, char variable. */
-	LO_CHAR =      'c',
-	/** A 4 byte MIDI packet. */
-	LO_MIDI =      'm',
-	/** Sybol representing the value True. */
-	LO_TRUE =      'T',
-	/** Sybol representing the value False. */
-	LO_FALSE =     'F',
-	/** Sybol representing the value Nil. */
-	LO_NIL =       'N',
-	/** Sybol representing the value Infinitum. */
-	LO_INFINITUM = 'I'
+    /** 64 bit signed integer. */
+    LO_INT64 =     'h',
+    /** OSC TimeTag type, represented by the lo_timetag structure. */
+    LO_TIMETAG =   't',
+    /** 64 bit IEEE-754 double. */
+    LO_DOUBLE =    'd',
+    /** Standard C, NULL terminated, string. Used in systems which
+      * distinguish strings and symbols. */
+    LO_SYMBOL =    'S',
+    /** Standard C, 8 bit, char variable. */
+    LO_CHAR =      'c',
+    /** A 4 byte MIDI packet. */
+    LO_MIDI =      'm',
+    /** Sybol representing the value True. */
+    LO_TRUE =      'T',
+    /** Sybol representing the value False. */
+    LO_FALSE =     'F',
+    /** Sybol representing the value Nil. */
+    LO_NIL =       'N',
+    /** Sybol representing the value Infinitum. */
+    LO_INFINITUM = 'I'
 } lo_type;
 
 
@@ -102,32 +102,32 @@ typedef enum {
  * must be read with &argv[n]->t.
  */
 typedef union {
-	/** 32 bit signed integer. */
+    /** 32 bit signed integer. */
     int32_t    i;
-	/** 32 bit signed integer. */
+    /** 32 bit signed integer. */
     int32_t    i32;
-	/** 64 bit signed integer. */
+    /** 64 bit signed integer. */
     int64_t    h;
-	/** 64 bit signed integer. */
+    /** 64 bit signed integer. */
     int64_t    i64;
-	/** 32 bit IEEE-754 float. */
+    /** 32 bit IEEE-754 float. */
     float      f;
-	/** 32 bit IEEE-754 float. */
+    /** 32 bit IEEE-754 float. */
     float      f32;
-	/** 64 bit IEEE-754 double. */
+    /** 64 bit IEEE-754 double. */
     double     d;
-	/** 64 bit IEEE-754 double. */
+    /** 64 bit IEEE-754 double. */
     double     f64;
-	/** Standard C, NULL terminated string. */
+    /** Standard C, NULL terminated string. */
     char       s;
-	/** Standard C, NULL terminated, string. Used in systems which
-	  * distinguish strings and symbols. */
+    /** Standard C, NULL terminated, string. Used in systems which
+      * distinguish strings and symbols. */
     char       S;
-	/** Standard C, 8 bit, char. */
+    /** Standard C, 8 bit, char. */
     unsigned char c;
-	/** A 4 byte MIDI packet. */
+    /** A 4 byte MIDI packet. */
     uint8_t    m[4];
-	/** OSC TimeTag value. */
+    /** OSC TimeTag value. */
     lo_timetag t;
 } lo_arg;
 
