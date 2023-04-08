@@ -85,8 +85,18 @@
     <ClInclude Include="..\core\util_string.h" />
     <ClInclude Include="..\core\util_thread.h" />
     <ClInclude Include="..\core\util_xforms.h" />
-    <ClInclude Include="..\host\RtAudio\RtAudio.h" />
-    <ClInclude Include="..\host\RtAudio\RtError.h" />
+    <ClInclude Include="..\rtaudio\include\asio.h" />
+    <ClInclude Include="..\rtaudio\include\asiodrivers.h" />
+    <ClInclude Include="..\rtaudio\include\asiodrvr.h" />
+    <ClInclude Include="..\rtaudio\include\asiolist.h" />
+    <ClInclude Include="..\rtaudio\include\asiosys.h" />
+    <ClInclude Include="..\rtaudio\include\dsound.h" />
+    <ClInclude Include="..\rtaudio\include\functiondiscoverykeys_devpkey.h" />
+    <ClInclude Include="..\rtaudio\include\ginclude.h" />
+    <ClInclude Include="..\rtaudio\include\iasiodrv.h" />
+    <ClInclude Include="..\rtaudio\include\iasiothiscallresolver.h" />
+    <ClInclude Include="..\rtaudio\include\soundcard.h" />
+    <ClInclude Include="..\rtaudio\RtAudio.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\core\chuck.cpp" />
@@ -359,7 +369,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">HAVE_CONFIG_H;__PLATFORM_WIN32__;__WINDOWS_DS__;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HAVE_CONFIG_H;__PLATFORM_WIN32__;__WINDOWS_DS__;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\host\RtAudio\RtAudio.cpp" />
     <ClCompile Include="..\core\rtmidi.cpp" />
     <ClCompile Include="..\core\uana_extract.cpp" />
     <ClCompile Include="..\core\uana_xform.cpp" />
@@ -384,43 +393,51 @@
     <ClCompile Include="..\core\util_string.cpp" />
     <ClCompile Include="..\core\util_thread.cpp" />
     <ClCompile Include="..\core\util_xforms.c" />
+    <ClCompile Include="..\rtaudio\include\asio.cpp" />
+    <ClCompile Include="..\rtaudio\include\asiodrivers.cpp" />
+    <ClCompile Include="..\rtaudio\include\asiolist.cpp" />
+    <ClCompile Include="..\rtaudio\include\iasiothiscallresolver.cpp" />
+    <ClCompile Include="..\rtaudio\RtAudio.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\core\chuck.lex" />
     <None Include="..\core\chuck.y" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\rtaudio\include\asioinfo.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C83D6D51-D477-4BAB-B2C2-F0698B9D3FB1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>chuck_win32</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -476,7 +493,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>__WINDOWS_MODERN__;__PLATFORM_WIN32__;__WINDOWS_DS__;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;C:\Users\nicho\Documents\ChucK\chuck\src\rtaudio</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -512,8 +529,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>__WINDOWS_MODERN__;__PLATFORM_WIN32__;__WINDOWS_DS__;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>__WINDOWS_MODERN__;__PLATFORM_WIN32__;__WINDOWS_DS__;WIN32;NDEBUG;_CONSOLE;__WINDOWS_ASIO__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;C:\Users\nicho\Documents\ChucK\chuck\src\rtaudio;C:\Users\nicho\Documents\ChucK\chuck\src\rtaudio\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
