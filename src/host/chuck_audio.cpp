@@ -276,7 +276,7 @@ void ChuckAudio::probe(char const *driver)
 // desc: get device number by name; needs_dac/adc prompts further checks on
 //       requested device having > 0 channels
 //-----------------------------------------------------------------------------
-t_CKUINT ChuckAudio::device_named( char const *driver, 
+t_CKINT ChuckAudio::device_named( char const *driver, 
                                    const std::string & name, t_CKBOOL needs_dac,
                                    t_CKBOOL needs_adc )
 {
