@@ -97,25 +97,25 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
         if( !parent_path )
         {
             // error
-            EM_error2( 0, "class import: ck_begin_class: unknown parent type '%s'", 
+            EM_error2( 0, "class import: ck_begin_class: unknown parent type '%s'",
                       query->curr_class->name.c_str(), name, parent );
             return;
         }
-        
+
         Chuck_Type * ck_parent_type = type_engine_find_type( query->env(), parent_path );
-        
+
         delete_id_list( parent_path );
-        
+
         if( !ck_parent_type )
         {
             // error
             EM_error2( 0, "class import: ck_begin_class: unable to find parent type '%s'", ck_parent_type );
             return;
         }
-        
+
         parent_offset = ck_parent_type->obj_size;
     }
-    
+
     // push
     query->stack.push_back( query->curr_class );
     // allocate
@@ -134,7 +134,7 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
     c->name = name;
     c->parent = parent;
     c->current_mvar_offset = parent_offset;
-    
+
     // curr
     query->curr_class = c;
     query->curr_func = NULL;
@@ -162,7 +162,7 @@ void CK_DLL_CALL ck_add_ctor( Chuck_DL_Query * query, f_ctor ctor )
     f->name = "[ctor]";
     f->type = "void";
     f->ctor = ctor;
-    
+
     // add
     query->curr_class->ctors.push_back( f );
     query->curr_func = f;
@@ -198,7 +198,7 @@ void CK_DLL_CALL ck_add_dtor( Chuck_DL_Query * query, f_dtor dtor )
     f->name = "[dtor]";
     f->type = "void";
     f->dtor = dtor;
-    
+
     // add
     query->curr_class->dtor = f;
     // set
@@ -212,7 +212,7 @@ void CK_DLL_CALL ck_add_dtor( Chuck_DL_Query * query, f_dtor dtor )
 // name: ck_add_mfun()
 // desc: add member function, can be followed by add_arg
 //-----------------------------------------------------------------------------
-void CK_DLL_CALL ck_add_mfun( Chuck_DL_Query * query, f_mfun addr, 
+void CK_DLL_CALL ck_add_mfun( Chuck_DL_Query * query, f_mfun addr,
                               const char * type, const char * name )
 {
     // make sure there is class
@@ -228,7 +228,7 @@ void CK_DLL_CALL ck_add_mfun( Chuck_DL_Query * query, f_mfun addr,
     f->name = name;
     f->type = type;
     f->mfun = addr;
-    
+
     // add
     query->curr_class->mfuns.push_back( f );
     query->curr_func = f;
@@ -257,7 +257,7 @@ void CK_DLL_CALL ck_add_sfun( Chuck_DL_Query * query, f_sfun addr,
     f->name = name;
     f->type = type;
     f->sfun = addr;
-    
+
     // add
     query->curr_class->sfuns.push_back( f );
     query->curr_func = f;
@@ -270,7 +270,7 @@ void CK_DLL_CALL ck_add_sfun( Chuck_DL_Query * query, f_sfun addr,
 // name: ck_add_mvar()
 // desc: add member var
 //-----------------------------------------------------------------------------
-t_CKUINT CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query, 
+t_CKUINT CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query,
                                   const char * type, const char * name,
                                   t_CKBOOL is_const )
 {
@@ -286,22 +286,22 @@ t_CKUINT CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query,
     if( !path )
     {
         // error
-        EM_error2( 0, "class import: add_mvar: mvar %s.%s has unknown type '%s'", 
+        EM_error2( 0, "class import: add_mvar: mvar %s.%s has unknown type '%s'",
                    query->curr_class->name.c_str(), name, type );
         return CK_INVALID_OFFSET;
     }
-    
+
     Chuck_Type * ck_type = type_engine_find_type( query->env(), path );
-    
+
     delete_id_list( path );
-    
+
     if( !ck_type )
     {
         // error
         EM_error2( 0, "class import: add_mvar: unable to find type '%s'", type );
         return CK_INVALID_OFFSET;
     }
-       
+
     // allocate
     Chuck_DL_Value * v = new Chuck_DL_Value;
     v->name = name;
@@ -312,11 +312,11 @@ t_CKUINT CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query,
     query->curr_class->mvars.push_back( v );
     query->curr_func = NULL;
     query->last_var = v;
-    
+
     t_CKUINT offset = query->curr_class->current_mvar_offset;
     query->curr_class->current_mvar_offset = type_engine_next_offset( query->curr_class->current_mvar_offset,
                                                                       ck_type );
-    
+
     return offset;
 }
 
@@ -344,11 +344,11 @@ void CK_DLL_CALL ck_add_svar( Chuck_DL_Query * query, const char * type, const c
     v->type = type;
     v->is_const = is_const;
     v->static_addr = addr;
-    
+
     // add
     query->curr_class->svars.push_back( v );
     query->curr_func = NULL;
-    
+
     query->last_var = v;
 }
 
@@ -368,7 +368,7 @@ void CK_DLL_CALL ck_add_arg( Chuck_DL_Query * query, const char * type, const ch
         EM_error2( 0, "class import: add_arg invoked without begin_class..." );
         return;
     }
-    
+
     // make sure there is function
     if( !query->curr_func )
     {
@@ -376,12 +376,12 @@ void CK_DLL_CALL ck_add_arg( Chuck_DL_Query * query, const char * type, const ch
         EM_error2( 0, "class import: add_arg can only follow 'ctor', 'mfun', 'sfun', 'arg'..." );
         return;
     }
-    
+
     // allocate
     Chuck_DL_Value * v = new Chuck_DL_Value;
     v->name = name;
     v->type = type;
-    
+
     // add
     query->curr_func->args.push_back( v );
 }
@@ -402,7 +402,7 @@ void CK_DLL_CALL ck_add_ugen_func( Chuck_DL_Query * query, f_tick ugen_tick, f_p
         EM_error2( 0, "class import: add_ugen_func invoked without begin_class..." );
         return;
     }
-    
+
     // make sure tick not defined already
     if( query->curr_class->ugen_tick && ugen_tick )
     {
@@ -410,7 +410,7 @@ void CK_DLL_CALL ck_add_ugen_func( Chuck_DL_Query * query, f_tick ugen_tick, f_p
         EM_error2( 0, "class import: ugen_tick already defined..." );
         return;
     }
-    
+
     // make sure pmsg not defined already
     if( query->curr_class->ugen_pmsg && ugen_pmsg )
     {
@@ -418,7 +418,7 @@ void CK_DLL_CALL ck_add_ugen_func( Chuck_DL_Query * query, f_tick ugen_tick, f_p
         EM_error2( 0, "class import: ugen_pmsg already defined..." );
         return;
     }
-    
+
     // set
     if( ugen_tick ) query->curr_class->ugen_tick = ugen_tick;
     if( ugen_pmsg ) query->curr_class->ugen_pmsg = ugen_pmsg;
@@ -443,7 +443,7 @@ void CK_DLL_CALL ck_add_ugen_funcf( Chuck_DL_Query * query, f_tickf ugen_tickf, 
         EM_error2( 0, "class import: add_ugen_func invoked without begin_class..." );
         return;
     }
-    
+
     // make sure tick not defined already
     if( query->curr_class->ugen_tickf && ugen_tickf )
     {
@@ -451,7 +451,7 @@ void CK_DLL_CALL ck_add_ugen_funcf( Chuck_DL_Query * query, f_tickf ugen_tickf, 
         EM_error2( 0, "class import: ugen_tick already defined..." );
         return;
     }
-    
+
     // make sure pmsg not defined already
     if( query->curr_class->ugen_pmsg && ugen_pmsg )
     {
@@ -459,7 +459,7 @@ void CK_DLL_CALL ck_add_ugen_funcf( Chuck_DL_Query * query, f_tickf ugen_tickf, 
         EM_error2( 0, "class import: ugen_pmsg already defined..." );
         return;
     }
-    
+
     // set
     if( ugen_tickf ) query->curr_class->ugen_tickf = ugen_tickf;
     if( ugen_pmsg ) query->curr_class->ugen_pmsg = ugen_pmsg;
@@ -533,7 +533,7 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
         EM_error2( 0, "class import: end_class invoked without begin_class..." );
         return FALSE;
     }
-    
+
     // type check the class?
     // 1.3.2.0: import class into type engine if at top level
     if( query->stack.size() == 1 ) // top level class
@@ -542,21 +542,21 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
         {
             EM_log(CK_LOG_SEVERE, "[chuck](DL): error importing class '%s' into type engine",
                    query->curr_class->name.c_str());
-            
+
             // pop
             assert( query->stack.size() );
             query->curr_class = query->stack.back();
             query->stack.pop_back();
-            
+
             return FALSE;
         }
     }
-    
+
     // pop
     assert( query->stack.size() );
     query->curr_class = query->stack.back();
     query->stack.pop_back();
-    
+
     return TRUE;
 }
 
@@ -586,7 +586,7 @@ t_CKBOOL CK_DLL_CALL ck_doc_class( Chuck_DL_Query * query, const char * doc )
     else
         return FALSE;
 // #endif // CK_DOC
-    
+
     return TRUE;
 }
 
@@ -602,7 +602,7 @@ t_CKBOOL CK_DLL_CALL ck_add_example( Chuck_DL_Query * query, const char * ex )
     else
         return FALSE;
 // #endif // CK_DOC
-    
+
     return TRUE;
 }
 
@@ -615,7 +615,7 @@ t_CKBOOL CK_DLL_CALL ck_doc_func( Chuck_DL_Query * query, const char * doc )
     else
         return FALSE;
 // #endif // CK_DOC
-    
+
     return TRUE;
 }
 
@@ -628,7 +628,7 @@ t_CKBOOL CK_DLL_CALL ck_doc_var( Chuck_DL_Query * query, const char * doc )
     else
         return FALSE;
 // #endif // CK_DOC
-    
+
     return TRUE;
 }
 
@@ -692,11 +692,11 @@ t_CKBOOL Chuck_DLL::load( f_ck_query query_func, t_CKBOOL lazy )
     m_version_func = ck_builtin_declversion;
     m_done_query = FALSE;
     m_func = "ck_query";
-    
+
     // if not lazy, do it
     if( !lazy && !this->query() )
         return FALSE;
-    
+
     return TRUE;
 }
 
@@ -730,7 +730,7 @@ const Chuck_DL_Query * Chuck_DLL::query( )
     // return if there already
     if( m_done_query )
         return &m_query;
-    
+
     // get the address of the DL version function from the DLL
     if( !m_version_func )
         m_version_func = (f_ck_declversion)this->get_addr( CK_DECLVERSION_FUNC );
@@ -738,11 +738,11 @@ const Chuck_DL_Query * Chuck_DLL::query( )
         m_version_func = (f_ck_declversion)this->get_addr( (string("_")+CK_DECLVERSION_FUNC).c_str() );
     if( !m_version_func )
     {
-        m_last_error = string("no version function found in dll '") 
+        m_last_error = string("no version function found in dll '")
         + m_filename + string("'");
         return NULL;
     }
-    
+
     // check version
     t_CKUINT dll_version = m_version_func();
     t_CKBOOL version_ok = FALSE;
@@ -751,7 +751,7 @@ const Chuck_DL_Query * Chuck_DLL::query( )
     if(CK_DLL_VERSION_GETMAJOR(dll_version) == CK_DLL_VERSION_MAJOR &&
        CK_DLL_VERSION_GETMINOR(dll_version) <= CK_DLL_VERSION_MINOR)
         version_ok = TRUE;
-    
+
     if(!version_ok)
         // SPENCERTODO: do they need to be equal, or can dll_version be < ?
     {
@@ -767,12 +767,12 @@ const Chuck_DL_Query * Chuck_DLL::query( )
         << CK_DLL_VERSION_MAJOR
         << "."
         << CK_DLL_VERSION_MINOR;
-        
+
         m_last_error = oss.str();
-        
+
         return NULL;
     }
-    
+
     // get the address of the query function from the DLL
     if( !m_query_func )
         m_query_func = (f_ck_query)this->get_addr( m_func.c_str() );
@@ -780,7 +780,7 @@ const Chuck_DL_Query * Chuck_DLL::query( )
         m_query_func = (f_ck_query)this->get_addr( (string("_")+m_func).c_str() );
     if( !m_query_func )
     {
-        m_last_error = string("no query function found in dll '") 
+        m_last_error = string("no query function found in dll '")
                        + m_filename + string("'");
         return NULL;
     }
@@ -805,7 +805,7 @@ const Chuck_DL_Query * Chuck_DLL::query( )
                        + string("'");
         return NULL;
     }
-    
+
     // load the proto table
     /* Chuck_DL_Proto * proto;
     m_name2proto.clear();
@@ -818,13 +818,13 @@ const Chuck_DL_Query * Chuck_DLL::query( )
                            + string("'");
             return NULL;
         }
-        
+
         // get the addr
         if( !proto->addr )
             proto->addr = (f_ck_func)this->get_addr( (char *)proto->name.c_str() );
         if( !proto->addr )
         {
-            m_last_error = string("no addr associated with export '") + 
+            m_last_error = string("no addr associated with export '") +
                            proto->name + string("'");
             return NULL;
         }
@@ -832,7 +832,7 @@ const Chuck_DL_Query * Chuck_DLL::query( )
         // put in the lookup table
         m_name2proto[proto->name] = proto;
     }
-    
+
     // load the proto table
     Chuck_UGen_Info * info;
     m_name2ugen.clear();
@@ -845,13 +845,13 @@ const Chuck_DL_Query * Chuck_DLL::query( )
                            + string("'");
             return NULL;
         }
-        
+
         // put in the lookup table
         m_name2ugen[info->name] = info;
     }*/
 
     m_done_query = TRUE;
-    
+
     // call attach
     // if( m_attach_func ) m_attach_func( 0, NULL );
 
@@ -900,7 +900,7 @@ void * Chuck_DLL::get_addr( const char * symbol )
         m_last_error = "cannot find addr from dynamic library - nothing open...";
         return FALSE;
     }
-    
+
     return dlsym( m_handle, symbol );
 }
 
@@ -957,14 +957,14 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     doc_var = ck_doc_var;
     create_main_thread_hook = ck_create_main_thread_hook;
     m_carrier = carrier;
-    
+
     // memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
-    
+
     dll_name = "[noname]";
     reserved = NULL;
     curr_class = NULL;
     curr_func = NULL;
-    
+
     srate = carrier->vm->srate();
 
     linepos = 0;
@@ -1027,9 +1027,9 @@ Chuck_DL_Func::~Chuck_DL_Func()
 
 
 /*******************************************************************************
- 
+
  Main Thread Hook stuff
- 
+
 *******************************************************************************/
 
 t_CKBOOL ck_mthook_activate(Chuck_DL_MainThreadHook *hook)
@@ -1064,9 +1064,9 @@ m_active(FALSE)
 
 
 /*******************************************************************************
- 
- Chuck_DL_Api stuff 
- 
+
+ Chuck_DL_Api stuff
+
 *******************************************************************************/
 
 namespace Chuck_DL_Api
@@ -1080,74 +1080,212 @@ static t_CKUINT ck_get_srate(CK_DL_API api, Chuck_VM_Shred * shred)
     return shred->vm_ref->srate();
 }
 
-static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM_Shred * shred, std::string & name )
+static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM_Shred * shred, const char * name )
 {
     Chuck_Env * env = shred->vm_ref->env();
-    a_Id_List list = new_id_list( name.c_str(), 0 ); // TODO: nested types
-    
+    a_Id_List list = new_id_list( name, 0 ); // TODO: nested types
+
     Chuck_Type * t = type_engine_find_type( env, list );
-    
+
     delete_id_list( list );
-    
+
     return ( Chuck_DL_Api::Type ) t;
 }
 
 static Chuck_DL_Api::Object ck_create( CK_DL_API api, Chuck_VM_Shred * shred, Chuck_DL_Api::Type t )
 {
     assert( t != NULL );
-    
+
     Chuck_Type * type = ( Chuck_Type * ) t;
     Chuck_Object * o = instantiate_and_initialize_object( type, shred->vm_ref );
-    
+
     return ( Chuck_DL_Api::Object ) o;
 }
 
-static Chuck_DL_Api::String ck_create_string( CK_DL_API api, Chuck_VM_Shred * shred, std::string & str )
+static Chuck_DL_Api::String ck_create_string( CK_DL_API api, Chuck_VM_Shred * shred, const char * cstr )
 {
     Chuck_String * string = ( Chuck_String * ) instantiate_and_initialize_object( shred->vm_ref->env()->t_string, shred->vm_ref );
-    
-    string->set( str );
-    
+
+    string->set( cstr );
+
     return ( Chuck_DL_Api::String ) string;
 }
 
-static t_CKBOOL ck_get_mvar_int( CK_DL_API api, Chuck_DL_Api::Object, std::string &, t_CKINT & )
+//-----------------------------------------------------------------------------
+// name: ck_get_mvar()
+// desc: retrieve a class's member variable offset
+//-----------------------------------------------------------------------------
+static t_CKBOOL ck_get_mvar(Chuck_DL_Api::Object o, const char* name, te_Type basic_type, t_CKINT& offset)
 {
+    std::string mvar(name);
+    Chuck_Object* obj = (Chuck_Object*)o;
+    Chuck_Type* type = obj->type_ref;
+
+    if (type->info == NULL) {
+        // put error here
+        EM_error2(0, "get mvar: ck_get_mvar: object has no type info");
+        return FALSE;
+    }
+
+    vector<Chuck_Value*> vars;
+    Chuck_Value* var = NULL;
+    type->info->get_values(vars);
+
+    // iterate over retrieved functions
+    for (vector<Chuck_Value*>::iterator v = vars.begin(); v != vars.end(); v++)
+    {
+        // get pointer to chuck value
+        Chuck_Value* value = *v;
+        // check for NULL
+        if (value == NULL) continue;
+        // see if name matches
+        if (value->name != mvar) continue;
+        // see if name is correct type
+        if (value->type->xid != basic_type) continue;
+        // see if var is a member var
+        if (!value->is_member) continue;
+
+        // ladies and gentlement, we've got it
+        var = value;
+        break;
+    }
+
+    // make error
+    if (!var) {
+        EM_error2(0, "get mvar: ck_get_mvar: member variable %s not found", mvar.c_str());
+        return FALSE;
+    }
+
+    offset = var->offset;
     return TRUE;
 }
 
-static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object, std::string &, t_CKFLOAT & )
+//-----------------------------------------------------------------------------
+// name: ck_get_mvar_int()
+// desc: retrieve a class's member variable of type int
+//-----------------------------------------------------------------------------
+static t_CKBOOL ck_get_mvar_int(CK_DL_API api, Chuck_DL_Api::Object obj, const char* name, t_CKINT & m_int)
 {
-    return TRUE;
+    assert(obj != NULL);
+    t_CKINT offset;
+
+    t_CKBOOL success = ck_get_mvar(obj, name, te_int, offset);
+
+    if (success)
+    {
+        Chuck_Object* ck_obj = (Chuck_Object*)obj;
+        m_int = OBJ_MEMBER_INT(ck_obj, offset); // get offset
+    }
+    return success;
 }
 
-static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object, std::string &, t_CKDUR & )
+//-----------------------------------------------------------------------------
+// name: ck_get_mvar_float()
+// desc: retrieve a class's member variable of type float
+//-----------------------------------------------------------------------------
+static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object obj, const char* name, t_CKFLOAT & m_float )
 {
-    return TRUE;
+    assert(obj != NULL);
+    t_CKINT offset;
+
+    t_CKBOOL success = ck_get_mvar(obj, name, te_float, offset);
+
+    if (success)
+    {
+        Chuck_Object* ck_obj = (Chuck_Object*)obj;
+        m_float = OBJ_MEMBER_FLOAT(ck_obj, offset); // get offset
+    }
+    return success;
 }
 
-static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object, std::string &, t_CKTIME & )
+//-----------------------------------------------------------------------------
+// name: ck_get_mvar_dur()
+// desc: retrieve a class's member variable of type dur
+//-----------------------------------------------------------------------------
+static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, t_CKDUR & value )
 {
-    return TRUE;
+    assert(obj != NULL);
+    t_CKINT offset;
+
+    t_CKBOOL success = ck_get_mvar(obj, name, te_dur, offset);
+
+    if (success)
+    {
+        Chuck_Object* ck_obj = (Chuck_Object*)obj;
+        value = OBJ_MEMBER_DUR(ck_obj, offset); // get offset
+    }
+    return success;
 }
 
-static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object, std::string &, Chuck_DL_Api::String & )
+//-----------------------------------------------------------------------------
+// name: ck_get_mvar_time()
+// desc: retrieve a class's member variable of type time
+//-----------------------------------------------------------------------------
+static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, t_CKTIME & value )
 {
-    return TRUE;
+    assert(obj != NULL);
+    t_CKINT offset;
+
+    t_CKBOOL success = ck_get_mvar(obj, name, te_time, offset);
+
+    if (success)
+    {
+        Chuck_Object* ck_obj = (Chuck_Object*)obj;
+        value = OBJ_MEMBER_TIME(ck_obj, offset); // get offset
+    }
+    return success;
 }
 
-static t_CKBOOL ck_get_mvar_object( CK_DL_API api, Chuck_DL_Api::Object, std::string &, Chuck_DL_Api::Object & )
+//-----------------------------------------------------------------------------
+// name: ck_get_mvar_string()
+// desc: retrieve a class's member variable of type string
+//-----------------------------------------------------------------------------
+static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::String & str )
 {
-    return TRUE;
+    assert(obj != NULL);
+    t_CKINT offset;
+
+    t_CKBOOL success = ck_get_mvar(obj, name, te_string, offset);
+
+    if (success)
+    {
+        Chuck_Object* ck_obj = (Chuck_Object*)obj;
+        str = OBJ_MEMBER_STRING(ck_obj, offset); // get offset
+    }
+    return success;
 }
 
-static t_CKBOOL ck_set_string( CK_DL_API api, Chuck_DL_Api::String s, std::string & str )
+//-----------------------------------------------------------------------------
+// name: ck_get_mvar_object()
+// desc: retrieve a class's member variable of type object
+//-----------------------------------------------------------------------------
+static t_CKBOOL ck_get_mvar_object( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::Object & object )
+{
+    assert(obj != NULL);
+    t_CKINT offset;
+
+    // TODO how to do this?
+    t_CKBOOL success = ck_get_mvar(obj, name, te_object, offset);
+
+    if (success)
+    {
+        Chuck_Object* ck_obj = (Chuck_Object*)obj;
+        object = OBJ_MEMBER_OBJECT(ck_obj, offset); // get offset
+    }
+    return success;
+}
+
+//-----------------------------------------------------------------------------
+// name: ck_set_string()
+// desc: set a class's member string
+//-----------------------------------------------------------------------------
+static t_CKBOOL ck_set_string( CK_DL_API api, Chuck_DL_Api::String s, const char * str )
 {
     assert( s != NULL );
-    
-    Chuck_String * string = ( Chuck_String * ) s;
+
+    Chuck_String * string = (Chuck_String *) s;
     string->set( str );
-    
+
     return TRUE;
 }
 
@@ -1197,7 +1335,8 @@ const char * dlerror( void )
 {
     int error = GetLastError();
     if( error == 0 ) return NULL;
-    sprintf( dlerror_buffer, "%i", error );
+    // 1.4.2.0 (ge) | changed to snprintf
+    snprintf( dlerror_buffer, DLERROR_BUFFER_LENGTH, "%i", error );
     return dlerror_buffer;
 }
 }

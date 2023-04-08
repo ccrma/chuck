@@ -51,7 +51,7 @@ typedef string Chuck_Shell_Response;
 
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell
-// desc: controller class for facilitating interaction between a shell UI and a 
+// desc: controller class for facilitating interaction between a shell UI and a
 //      shell mode.
 //-----------------------------------------------------------------------------
 class Chuck_Shell
@@ -59,7 +59,7 @@ class Chuck_Shell
 public:
     Chuck_Shell();
     virtual ~Chuck_Shell();
-    
+
     t_CKBOOL init( Chuck_VM * process_vm, Chuck_Shell_UI * );
     void run();
     t_CKBOOL execute( string &, string & );
@@ -79,35 +79,35 @@ public: // HACK-GE: these were moved from protected for win32
     map < string, string > variables;
     map < string, Command * > commands;
     vector < Command * > allocated_commands;
-	
-	map < string, string > saved_code;
+
+    map < string, string > saved_code;
 
     string code;
 
-	// helper functions
-	t_CKBOOL do_glob( const string &, string &, vector < string > & );
+    // helper functions
+    t_CKBOOL do_glob( const string &, string &, vector < string > & );
     void do_code( string &, string &, string command = "+ " );
     void do_code_context( string & );
 
 protected:
-	// helper functions
-	void do_aliases();
-	void do_variables();
-	
-	// code helper functions
-	void start_code();
+    // helper functions
+    void do_aliases();
+    void do_variables();
+
+    // code helper functions
+    void start_code();
     void continue_code( string & );
     void string_hash( string &, string & );
-    
+
     Chuck_Shell_UI * ui;
-    
+
     t_CKBOOL initialized;
     t_CKBOOL stop;
-    
+
     string prompt;
-    
+
     string in;
-        
+
     // code entry variables
     t_CKBOOL code_entry_active;
     t_CKUINT scope;
@@ -127,13 +127,13 @@ public: // HACK-GE: moved from protected for win32
     public:
         virtual t_CKBOOL init( Chuck_Shell * );
         virtual t_CKINT execute( vector< string > &, string & ) = 0;
-		virtual string usage();
-		virtual string long_usage();
-    
+        virtual string usage();
+        virtual string long_usage();
+
     protected:
         Chuck_Shell * caller;
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_VM
 // desc: ...
@@ -144,8 +144,8 @@ public: // HACK-GE: moved from protected for win32
         ~Command_VM();
         t_CKBOOL init( Chuck_Shell * );
         t_CKINT execute( vector< string > &, string & );
-		string usage();
-    
+        string usage();
+
     protected:
         map < string, Command * > commands;
         vector < Command * > allocated_commands;
@@ -160,7 +160,7 @@ public: // HACK-GE: moved from protected for win32
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_VM_Remove
 // desc: ...
@@ -180,7 +180,7 @@ public: // HACK-GE: moved from protected for win32
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_VM_List
 // desc: ...
@@ -190,7 +190,7 @@ public: // HACK-GE: moved from protected for win32
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_VM_Swap
 // desc: ...
@@ -200,7 +200,7 @@ public: // HACK-GE: moved from protected for win32
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_VM_AttachAdd
 // desc: ...
@@ -210,7 +210,7 @@ public: // HACK-GE: moved from protected for win32
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Add
 // desc: ...
@@ -219,9 +219,9 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector < string > &, string & );
-		string usage();
+        string usage();
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Remove
 // desc: ...
@@ -230,9 +230,9 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector < string > &, string & );
-		string usage();
+        string usage();
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Status
 // desc: ...
@@ -241,10 +241,10 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector < string > &, string & );
-		string usage();
+        string usage();
     };
-    
-	//-----------------------------------------------------------------------------
+
+    //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Removeall
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -252,9 +252,9 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		string usage();
+        string usage();
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Removelast
 // desc: ...
@@ -263,9 +263,9 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		string usage();
+        string usage();
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Replace
 // desc: ...
@@ -274,9 +274,9 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		string usage();
+        string usage();
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Kill
 // desc: ...
@@ -285,9 +285,9 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		//string usage();
+        //string usage();
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Close
 // desc: ...
@@ -296,9 +296,9 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		//string usage();
+        //string usage();
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Exit
 // desc: ...
@@ -307,9 +307,9 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		//string usage();
+        //string usage();
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Ls
 // desc: ...
@@ -318,9 +318,9 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		//string usage();
+        //string usage();
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Cd
 // desc: ...
@@ -329,9 +329,9 @@ public: // HACK-GE: moved from protected for win32
     {
     public:
         t_CKINT execute( vector< string > &, string & );
-		//string usage();
+        //string usage();
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Pwd
 // desc: ...
@@ -341,7 +341,7 @@ public: // HACK-GE: moved from protected for win32
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Alias
 // desc: ...
@@ -351,7 +351,7 @@ public: // HACK-GE: moved from protected for win32
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Unalias
 // desc: ...
@@ -361,7 +361,7 @@ public: // HACK-GE: moved from protected for win32
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Source
 // desc: ...
@@ -371,7 +371,7 @@ public: // HACK-GE: moved from protected for win32
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Code
 // desc: ...
@@ -382,13 +382,13 @@ public: // HACK-GE: moved from protected for win32
         ~Command_Code();
         t_CKBOOL init( Chuck_Shell * );
         t_CKINT execute( vector< string > &, string & );
-		string usage();
-        
+        string usage();
+
     private:
         map < string, Command * > commands;
         vector < Command * > allocated_commands;
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_CodeContext
 // desc: ...
@@ -398,7 +398,7 @@ public: // HACK-GE: moved from protected for win32
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-    
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_CodeSave
 // desc: ...
@@ -413,22 +413,22 @@ public: // HACK-GE: moved from protected for win32
 // name: class Chuck_Shell::Command_CodeDelete
 // desc: ...
 //-----------------------------------------------------------------------------
-	class Command_CodeDelete : public Command
+    class Command_CodeDelete : public Command
     {
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-	
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_CodeAdd
 // desc: ...
 //-----------------------------------------------------------------------------
     class Command_CodeAdd : public Command
     {
-	public:
+    public:
         t_CKINT execute( vector< string > &, string & );
     };
-	
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_CodeList
 // desc: ...
@@ -448,7 +448,7 @@ public: // HACK-GE: moved from protected for win32
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-	
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_CodeWrite
 // desc: ...
@@ -468,7 +468,7 @@ public: // HACK-GE: moved from protected for win32
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-	
+
 //-----------------------------------------------------------------------------
 // name: class Chuck_Shell::Command_Help
 // desc: ...
@@ -478,7 +478,7 @@ public: // HACK-GE: moved from protected for win32
     public:
         t_CKINT execute( vector< string > &, string & );
     };
-	
+
 };
 
 
@@ -492,7 +492,7 @@ public:
     virtual ~Chuck_Shell_VM() {}
 
 public:
-	virtual Chuck_Shell_VM * copy()=0;
+    virtual Chuck_Shell_VM * copy()=0;
     virtual t_CKBOOL add_shred( const vector< string > &, string & )=0;
     virtual t_CKBOOL remove_shred( const vector< string > &, string & )=0;
     virtual t_CKBOOL remove_all( string & )=0;
@@ -511,9 +511,9 @@ class Chuck_Shell_Network_VM : public Chuck_Shell_VM
 {
 public:
     virtual ~Chuck_Shell_Network_VM() {}
-	
+
 public:
-	Chuck_Shell_VM * copy();
+    Chuck_Shell_VM * copy();
     t_CKBOOL init( const string &, t_CKINT );
     t_CKBOOL add_shred( const vector< string > &, string & );
     t_CKBOOL remove_shred( const vector< string > &, string & );
@@ -523,9 +523,9 @@ public:
     t_CKBOOL status( string & );
     t_CKBOOL kill( string & );
     string fullname();
-	
-private: 
-		string hostname;
+
+private:
+        string hostname;
     t_CKINT port;
 };
 /*
@@ -537,9 +537,9 @@ class Chuck_Shell_Process_VM : public Chuck_Shell_VM
 {
 public:
     virtual ~Chuck_Shell_Process_VM() {}
-	
+
 public:
-	Chuck_Shell_VM * copy();
+    Chuck_Shell_VM * copy();
     t_CKBOOL init( const string &, t_CKINT );
     t_CKBOOL add_shred( const vector< string > &, string & );
     t_CKBOOL remove_shred( const vector< string > &, string & );
@@ -549,12 +549,12 @@ public:
     t_CKBOOL status( string & );
     t_CKBOOL kill( string & );
     string fullname();
-	
-	t_CKUINT last_shred_id();
-	
-private: 
-	Chuck_VM * vm;
-	Chuck_Compiler * compiler;
+
+    t_CKUINT last_shred_id();
+
+private:
+    Chuck_VM * vm;
+    Chuck_Compiler * compiler;
 };
 */
 //-----------------------------------------------------------------------------

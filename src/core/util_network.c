@@ -40,7 +40,8 @@
 #include <stdio.h>
 
 #if defined(__PLATFORM_WIN32__)
-#include <winsock.h>
+// 2022 QTSIN changed from winsock.h to winsock2.h
+#include <winsock2.h>
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -169,7 +170,7 @@ t_CKBOOL ck_connect2( ck_socket sock, const struct sockaddr * addr, int size )
 //-----------------------------------------------------------------------------
 t_CKBOOL ck_connect( ck_socket sock, const char * hostname, int port )
 {
-    int ret;
+    t_CKINT ret;
     struct hostent * host;
 
 #ifdef __PLATFORM_WIN32__

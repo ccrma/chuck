@@ -37,10 +37,10 @@
 // modified: Ge Wang (gewang@cs.princeton.edu)
 // date: Autumn 2002
 //-----------------------------------------------------------------------------
-#include <stdio.h>
-#include <string.h>
 #include "chuck_table.h"
 #include "chuck_utils.h"
+#include <stdio.h>
+#include <string.h>
 
 #define TABSIZE 65437
 
@@ -59,13 +59,13 @@ struct TAB_table_ {
 static binder Binder(void *key, void *value, binder next, void *prevtop)
 {
     binder b = (binder)checked_malloc(sizeof(struct binder_));
-    b->key = key; b->value=value; b->next=next; b->prevtop = prevtop; 
+    b->key = key; b->value=value; b->next=next; b->prevtop = prevtop;
     return b;
 }
 
 
 TAB_table TAB_empty(void)
-{ 
+{
     return TAB_empty2(TABSIZE);
 }
 
@@ -108,7 +108,7 @@ void TAB_delete( TAB_table t )
             p = n;
         }
     }
-    
+
     // free the table
     free( t->table );
     free( t );
@@ -215,7 +215,7 @@ long str_eq( void * lhs, void * rhs )
 long str_hash( void * str )
 {
     unsigned long h=0; char *s;
-    for(s=(char *)str; *s; s++)  
+    for(s=(char *)str; *s; s++)
         h = h*65599 + *s;
     return h;
 }

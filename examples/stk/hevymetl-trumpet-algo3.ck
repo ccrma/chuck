@@ -13,7 +13,7 @@ HevyMetl t => NRev r => dac;
 0.06 => r.mix;
 
 // want to learn more about HevyMetl? uncomment this:
-// t.apropos();
+// t.help();
 
 // FM
 [1,6,6,1] @=> int waveForms[];

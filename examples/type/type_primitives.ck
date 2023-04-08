@@ -1,5 +1,4 @@
 // quick survey of chuck primitives
-
 // <<<>>> will print the type and value of any variable; 
 
 // integers 
@@ -18,7 +17,7 @@
 <<<f>>>;
 
 // durations are a measure of time 
-// the value we print will be in audio samples. 
+// the value we print will be in audio samples
 
 9.0::second => dur d; 
 <<<d>>>;
@@ -30,3 +29,6 @@ now => time t;
 <<<"waiting 10 seconds...">>>;
 10::second => now;
 <<<now>>>;
+
+// there is more: see type_analysis.ck for more primitives
+// including complex and polar

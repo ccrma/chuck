@@ -7,10 +7,10 @@ repeat( 20 ) n *=> n;
 // bye sanity
 0 *=> n;
 // test it
-// <<< Math.isnan( n ) >>>;
+<<< Math.isnan( n ) >>>;
 
 // more
 <<< 1.0 / 0.0 => Math.isinf >>>;
-// <<< 0.0 / 0.0 => Math.isnan >>>;
+<<< 0.0 / 0.0 => Math.isnan >>>;
 <<< Math.INFINITY, -Math.INFINITY >>>;
 <<< Math.INFINITY => Math.isinf >>>;

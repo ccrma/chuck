@@ -398,7 +398,7 @@ static unsigned int __stdcall watch_dog( void * )
     t_CKUINT priority = XThreadUtil::our_priority;
 
     // log
-    EM_log( CK_LOG_SEVERE, "starting real-time watch dog processs..." );
+    EM_log( CK_LOG_SEVERE, "starting real-time watch dog process..." );
     // push log
     EM_pushlog();
     EM_log( CK_LOG_INFO, "watchdog timeout: %f::second", g_watchdog_timeout );
@@ -537,7 +537,7 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
     m_cb_user_data = data;
 
     // variable to pass by reference into RtAudio
-    unsigned int bufsize = m_buffer_size;
+    unsigned int bufsize = (unsigned int)m_buffer_size;
 
     // log
     EM_log( CK_LOG_FINE, "initializing RtAudio..." );
@@ -572,7 +572,7 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
         }
 
         // get device info
-        RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo(m_dac_n);
+        RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo((unsigned int)m_dac_n);
         
         // ensure correct channel count if default device is requested
         if( useDefault )
@@ -683,84 +683,102 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
             m_adc_n = m_rtaudio->getDefaultInputDevice();
             
             // ensure correct channel count if default device is requested
-            RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo(m_adc_n);
+            RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo((unsigned int)m_adc_n);
             
             // check if input channels > 0
             if( device_info.inputChannels < m_num_channels_in )
             {
-                // find first device with at least the requested channel count
-                m_adc_n = -1;
-                int num_devices = m_rtaudio->getDeviceCount();
-                for( int i = 0; i < num_devices; i++ )
+                // 1.4.2.0 (ge) | added: a specific but possible common case
+                // for systems that have a 1-channel default input audio device -- e.g., some MacOS systems
+                if( m_num_channels_in == 2 && device_info.inputChannels == 1 )
                 {
-                    device_info = m_rtaudio->getDeviceInfo(i);
-                    if( device_info.inputChannels >= m_num_channels_in )
+                    // flag this for expansion in the callback
+                    m_expand_in_mono2stereo = TRUE;
+                    // log
+                    EM_log( CK_LOG_INFO, "using 1-channel default input audio device (instead of requested 2-channel)..." );
+                    EM_log( CK_LOG_INFO, "simulating stereo input from mono audio device..." );
+                }
+                else
+                {
+                    // find first device with at least the requested channel count
+                    m_adc_n = -1;
+                    int num_devices = m_rtaudio->getDeviceCount();
+                    for( int i = 0; i < num_devices; i++ )
                     {
-                        // added 1.4.0.1 -- check if the sample rate is supported
-                        // this is to catch the case where the default device has
-                        // insufficient channels (e.g., 1 on MacOS), finds secondary device
-                        // (e.g., ZoomAudioDevice on MacOS) that has enough channels
-                        // but does not support the desired sample rate
-                        bool isMatch = false;
-                        for( long j = 0; j < device_info.sampleRates.size(); j++ )
+                        device_info = m_rtaudio->getDeviceInfo(i);
+                        if( device_info.inputChannels >= m_num_channels_in )
                         {
-                            if( device_info.sampleRates[j] == m_sample_rate )
+                            // added 1.4.0.1 -- check if the sample rate is supported
+                            // this is to catch the case where the default device has
+                            // insufficient channels (e.g., 1 on MacOS), finds secondary device
+                            // (e.g., ZoomAudioDevice on MacOS) that has enough channels
+                            // but does not support the desired sample rate
+                            // amended 1.4.2.0 -- the behavior is modified above, where chuck
+                            // will first check if the default input device has only 1 channel
+                            // while we are requesting 2 channels
+                            bool isMatch = false;
+                            for( long j = 0; j < device_info.sampleRates.size(); j++ )
                             {
-                                // flag
-                                isMatch = true;
-                                // break out sample rate loop
+                                if( device_info.sampleRates[j] == m_sample_rate )
+                                {
+                                    // flag
+                                    isMatch = true;
+                                    // break out sample rate loop
+                                    break;
+                                }
+                            }
+
+                            // match? (does this separately to break out of outer loop)
+                            if( isMatch )
+                            {
+                                // new input device
+                                m_adc_n = i;
+                                // log
+                                EM_log( CK_LOG_INFO, "found alternate input device: %d...", i );
+                                // break out of device loop
                                 break;
                             }
                         }
-                        
-                        // match? (does this separately to break out of outer loop)
-                        if( isMatch )
-                        {
-                            // new input device
-                            m_adc_n = i;
-                            // log
-                            EM_log( CK_LOG_INFO, "found alternate input device: %d...", i );
-                            // break out of device loop
-                            break;
-                        }
                     }
-                }
-                
-                // added 1.4.0.1 (ge) -- special case if no other matching device found...
-                // for systems that have default mono audio device e.g., some MacOS systems
-                if( m_adc_n == -1 )
-                {
-                    // get default input device
-                    m_adc_n = m_rtaudio->getDefaultInputDevice();
-                    // get device info
-                    device_info = m_rtaudio->getDeviceInfo(m_adc_n);
 
-                    // special case
-                    if( m_num_channels_in == 2 && device_info.inputChannels == 1 )
-                    {
-                        // flag this for expansion in the callback
-                        m_expand_in_mono2stereo = TRUE;
-                        // log
-                        EM_log( CK_LOG_INFO, "no matching stereo input device found..." );
-                        EM_log( CK_LOG_INFO, "simulating stereo input from mono audio device..." );
-                    }
-                    else
-                    {
-                        // okay, let's not impose any further; fall through to subseqent logic
-                        m_adc_n = -1;
-                    }
-                }
+                    // added 1.4.0.1 (ge) -- special case if no other matching device found...
+                    // for systems that have default mono audio device e.g., some MacOS systems
+                    // (commented out due to 1.4.2.0 changes above to look mono default input first)
+                    //if( m_adc_n == -1 )
+                    //{
+                    //    // get default input device
+                    //    m_adc_n = m_rtaudio->getDefaultInputDevice();
+                    //    // get device info
+                    //    device_info = m_rtaudio->getDeviceInfo(m_adc_n);
+                    //
+                    //    // special case
+                    //    if( m_num_channels_in == 2 && device_info.inputChannels == 1 )
+                    //    {
+                    //        // flag this for expansion in the callback
+                    //        m_expand_in_mono2stereo = TRUE;
+                    //        // log
+                    //        EM_log( CK_LOG_INFO, "no matching stereo input device found..." );
+                    //        EM_log( CK_LOG_INFO, "simulating stereo input from mono audio device..." );
+                    //    }
+                    //    else
+                    //    {
+                    //        // okay, let's not impose any further; fall through to subseqent logic
+                    //        m_adc_n = -1;
+                    //    }
+                    //}
+                    
 
-                // changed 1.3.1.2 (ge): for input, if nothing found, we just gonna try to open half-duplex
-                if( m_adc_n == -1 )
-                {
-                    // set to 0
-                    m_num_channels_in = 0;
-                    // problem finding audio devices, most likely
-                    // EM_error2( 0, "unable to find audio input device with requested channel count (%i)...",
-                    //               m_num_channels_in);
-                    // clean up
-                    // goto error;
+                    // changed 1.3.1.2 (ge): for input, if nothing found, we just gonna try to open half-duplex
+                    if( m_adc_n == -1 )
+                    {
+                        // set to 0
+                        m_num_channels_in = 0;
+                        // problem finding audio devices, most likely
+                        // EM_error2( 0, "unable to find audio input device with requested channel count (%i)...",
+                        //               m_num_channels_in);
+                        // clean up
+                        // goto error;
+                    }
                 }
             }
         }
@@ -778,18 +796,18 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
                 dnm, m_num_channels_in, m_num_channels_out );
 
         RtAudio::StreamParameters output_parameters;
-        output_parameters.deviceId = m_dac_n;
-        output_parameters.nChannels = m_num_channels_out;
+        output_parameters.deviceId = (unsigned int)m_dac_n;
+        output_parameters.nChannels = (unsigned int)m_num_channels_out;
         output_parameters.firstChannel = 0;
         
         RtAudio::StreamParameters input_parameters;
-        input_parameters.deviceId = m_adc_n;
-        input_parameters.nChannels = m_expand_in_mono2stereo ? 1 : m_num_channels_in;
+        input_parameters.deviceId = (unsigned int)m_adc_n;
+        input_parameters.nChannels = (unsigned int)(m_expand_in_mono2stereo ? 1 : m_num_channels_in);
         input_parameters.firstChannel = 0;
         
         RtAudio::StreamOptions stream_options;
         stream_options.flags = 0;
-        stream_options.numberOfBuffers = num_buffers;
+        stream_options.numberOfBuffers = (unsigned int)num_buffers;
         stream_options.streamName = "ChucK";
         stream_options.priority = 0;
             
@@ -797,7 +815,7 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
         m_rtaudio->openStream(
             m_num_channels_out > 0 ? &output_parameters : NULL,
             m_num_channels_in > 0 ? &input_parameters : NULL,
-            CK_RTAUDIO_FORMAT, sample_rate, &bufsize,
+            CK_RTAUDIO_FORMAT, (unsigned int)sample_rate, &bufsize,
             cb, m_cb_user_data,
             &stream_options );
     } catch( RtAudioErrorType ) {

@@ -52,7 +52,7 @@ typedef enum {
     ae_op_s_or_chuck, ae_op_s_xor_chuck, ae_op_shift_right_chuck,
     ae_op_shift_left_chuck, ae_op_percent_chuck, ae_op_s_chuck,
     ae_op_plusplus, ae_op_minusminus, ae_op_tilda, ae_op_exclamation,
-    ae_op_at_chuck, ae_op_unchuck, ae_op_upchuck, ae_op_spork, 
+    ae_op_at_chuck, ae_op_unchuck, ae_op_upchuck, ae_op_spork,
     ae_op_typeof, ae_op_sizeof, ae_op_new, ae_op_arrow_left, ae_op_arrow_right
 } ae_Operator;
 
@@ -118,7 +118,7 @@ typedef struct a_Vec_ * a_Vec; // ge: added 1.3.5.3
 
 // forward reference for type
 typedef struct Chuck_Type * t_CKTYPE;
-typedef struct Chuck_Value * t_CKVALUE; 
+typedef struct Chuck_Value * t_CKVALUE;
 typedef struct Chuck_Func * t_CKFUNC;
 typedef struct Chuck_Namespace * t_CKNSPC;
 typedef struct Chuck_VM_Code * t_CKVMCODE;
@@ -226,10 +226,11 @@ struct a_Exp_Decl_ { a_Type_Decl type; a_Var_Decl_List var_decl_list; int num_va
                      t_CKTYPE ck_type; int linepos; a_Exp self; };
 struct a_Exp_Hack_ { a_Exp exp; int linepos; a_Exp self; };
 struct a_Var_Decl_List_ { a_Var_Decl var_decl; a_Var_Decl_List next; int linepos; a_Exp self; };
+// 1.4.2.0 (ge) added ck_type and ref, to handle multiple array decl (e.g., int x, y[], z[1];)
 struct a_Var_Decl_ { S_Symbol xid; a_Var_Decl var_decl; a_Array_Sub array; t_CKVALUE value;
-                     void * addr; int linepos; a_Exp self; };
+                     void * addr; t_CKTYPE ck_type; int ref; int linepos; a_Exp self; };
 struct a_Type_Decl_ { a_Id_List xid; a_Array_Sub array; int ref; int linepos; /*a_Exp self;*/ };
-struct a_Array_Sub_ { t_CKUINT depth; a_Exp exp_list; int linepos; a_Exp self; 
+struct a_Array_Sub_ { t_CKUINT depth; a_Exp exp_list; int linepos; a_Exp self;
                       int err_num; int err_pos; };
 struct a_Arg_List_ { a_Type_Decl type_decl; a_Var_Decl var_decl; t_CKTYPE type;
                      a_Arg_List next; int linepos; a_Exp self; };
@@ -238,7 +239,7 @@ struct a_Polar_ { a_Exp mod; a_Exp phase; int linepos; a_Exp self; };
 struct a_Vec_ { a_Exp args; int numdims; int linepos; a_Exp self; }; // ge: added 1.3.5.3
 
 // enum primary exp type
-typedef enum { ae_primary_var, ae_primary_num, ae_primary_float, 
+typedef enum { ae_primary_var, ae_primary_num, ae_primary_float,
                ae_primary_str, ae_primary_array, ae_primary_exp,
                ae_primary_hack, ae_primary_complex, ae_primary_polar,
                ae_primary_vec, ae_primary_char, ae_primary_nil
@@ -248,7 +249,7 @@ struct a_Exp_Primary_
 {
     ae_Exp_Primary_Type s_type;
     t_CKVALUE value;
-    
+
     union
     {
         S_Symbol var;
@@ -286,7 +287,7 @@ struct a_Exp_
     t_CKUINT group_size;
     t_CKTYPE cast_to;
     t_CKUINT emit_var; // 1 = emit var, 2 = emit var and value
-    
+
     union
     {
         struct a_Exp_Binary_ binary;
@@ -320,15 +321,15 @@ struct a_Stmt_GotoLabel_ { S_Symbol name; int linepos; a_Stmt self; };
 
 // enum values for stmt type
 typedef enum { ae_stmt_exp, ae_stmt_while, ae_stmt_until, ae_stmt_for, ae_stmt_loop,
-               ae_stmt_if, ae_stmt_code, ae_stmt_switch, ae_stmt_break, 
+               ae_stmt_if, ae_stmt_code, ae_stmt_switch, ae_stmt_break,
                ae_stmt_continue, ae_stmt_return, ae_stmt_case, ae_stmt_gotolabel
              } ae_Stmt_Type;
- 
+
 struct a_Stmt_
 {
     ae_Stmt_Type s_type;
     int skip;
-    
+
     union
     {
         a_Exp stmt_exp;
@@ -350,7 +351,7 @@ struct a_Stmt_
 };
 
 struct a_Stmt_List_ { a_Stmt stmt; a_Stmt_List next; int linepos; };
-struct a_Class_Def_ { ae_Keyword decl; a_Id_List name; a_Class_Ext ext; 
+struct a_Class_Def_ { ae_Keyword decl; a_Id_List name; a_Class_Ext ext;
                       a_Class_Body body; t_CKTYPE type; int iface; t_CKNSPC home;
                       int linepos; };
 struct a_Class_Ext_ { a_Id_List extend_id; a_Id_List impl_list; int linepos; };
@@ -363,10 +364,10 @@ typedef enum { ae_func_user, ae_func_builtin } ae_Func_Type;
 // struct t_Func_BuiltIn_ { builtin_func_ptr func_ptr; int linepos; };
 struct a_Func_Def_ {
     ae_Keyword func_decl;
-    ae_Keyword static_decl; 
+    ae_Keyword static_decl;
     a_Type_Decl type_decl;
     t_CKTYPE ret_type;
-    S_Symbol name; 
+    S_Symbol name;
     a_Arg_List arg_list;
     a_Stmt code;
     t_CKFUNC ck_func;
@@ -384,7 +385,7 @@ typedef enum { ae_section_stmt, ae_section_func, ae_section_class
 struct a_Section_
 {
     ae_Section_Type s_type;
-    
+
     union
     {
         a_Stmt_List stmt_list;

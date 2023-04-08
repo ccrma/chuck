@@ -50,7 +50,7 @@ using namespace std;
 void fa_init( Chuck_UGen ** & base, t_CKUINT & capacity );
 void fa_done( Chuck_UGen ** & base, t_CKUINT & capacity );
 void fa_resize( Chuck_UGen ** & base, t_CKUINT & capacity );
-void fa_push_back( Chuck_UGen ** & base, t_CKUINT & capacity, 
+void fa_push_back( Chuck_UGen ** & base, t_CKUINT & capacity,
                    t_CKUINT size, Chuck_UGen * value );
 t_CKBOOL fa_lookup( Chuck_UGen ** base, t_CKUINT size,
                     const Chuck_UGen * value );
@@ -118,7 +118,7 @@ void fa_resize( Chuck_UGen ** & base, t_CKUINT & capacity )
 // name: fa_push_back()
 // desc: ...
 //-----------------------------------------------------------------------------
-void fa_push_back( Chuck_UGen ** & base, t_CKUINT & capacity, 
+void fa_push_back( Chuck_UGen ** & base, t_CKUINT & capacity,
                    t_CKUINT size, Chuck_UGen * value )
 {
     // resize
@@ -194,7 +194,7 @@ void Chuck_UGen::init()
     m_num_dest = 0;
     m_num_uana_src = 0;
     m_num_uana_dest = 0;
-    m_max_src = 0xffffffff;
+    m_max_src = CK_NO_VALUE;
     m_time = 0;
     m_valid = TRUE;
     m_sum = 0.0f;
@@ -214,7 +214,7 @@ void Chuck_UGen::init()
 
     shred = NULL;
     owner = NULL;
-    
+
     // what a hack
     m_is_uana = FALSE;
 
@@ -222,8 +222,8 @@ void Chuck_UGen::init()
     m_is_subgraph = FALSE;
     m_inlet = m_outlet = NULL;
     m_multi_in_v = m_multi_out_v = NULL;
-    
-    // 1.4.1.0 (jack): yes more hacks. buffered flag allows 
+
+    // 1.4.1.0 (jack): yes more hacks. buffered flag allows
     // global ugens' samples to be gotten
     m_is_buffered = FALSE;
     // buffer empty for any ugen that is not buffered
@@ -252,7 +252,7 @@ void Chuck_UGen::done()
     fa_done( m_dest_list, m_dest_cap );
     fa_done( m_src_uana_list, m_src_uana_cap );
     fa_done( m_dest_uana_list, m_dest_uana_cap );
-    
+
     // reclaim
     SAFE_DELETE_ARRAY( m_sum_v );
     SAFE_DELETE_ARRAY( m_current_v );
@@ -260,7 +260,7 @@ void Chuck_UGen::done()
     // more reclaim (added 1.3.0.0)
     SAFE_DELETE_ARRAY( m_multi_chan );
     // TODO: m_multi_chan, break ref count loop
-    
+
     // SPENCERTODO: is this okay??? (added 1.3.0.0)
     SAFE_DELETE( m_inlet );
     SAFE_DELETE( m_outlet );
@@ -282,7 +282,7 @@ t_CKBOOL Chuck_UGen::alloc_v( t_CKUINT size )
     // reclaim
     SAFE_DELETE_ARRAY( m_sum_v );
     SAFE_DELETE_ARRAY( m_current_v );
-    
+
     // save block size as max block size (added 1.3.0.0)
     m_max_block_size = size;
 
@@ -293,8 +293,8 @@ t_CKBOOL Chuck_UGen::alloc_v( t_CKUINT size )
         m_current_v = new SAMPLE[size];
 
         return ( m_sum_v != NULL && m_current_v != NULL );
-    }    
-    
+    }
+
     return TRUE;
 }
 
@@ -323,21 +323,21 @@ void Chuck_UGen::alloc_multi_chan( t_CKUINT num_ins, t_CKUINT num_outs )
         // self
         m_multi_chan[0] = this;
     }
-    
+
     // if there tick-frame (i.e., has multi-channel tick function; added 1.3.0.0)
     if( m_multi_chan_size && tickf )
     {
         // m_max_block_size needs to be set via alloc_v() first (added 1.3.0.0)
         assert(m_max_block_size >= 0);
-        int block_size = m_max_block_size == 0 ? 1 : m_max_block_size;
-        
+        t_CKINT block_size = m_max_block_size == 0 ? 1 : m_max_block_size;
+
         SAFE_DELETE_ARRAY(m_multi_in_v);
         SAFE_DELETE_ARRAY(m_multi_out_v);
         // allocate a frame for input and output from the tick function (add 1.3.0.0)
         m_multi_in_v = new SAMPLE[m_multi_chan_size*block_size];
         m_multi_out_v = new SAMPLE[m_multi_chan_size*block_size];
     }
-                              
+
     // remember
     m_num_ins = num_ins;
     m_num_outs = num_outs;
@@ -382,7 +382,7 @@ t_CKBOOL Chuck_UGen::set_is_buffered( t_CKBOOL buffered )
     {
         return TRUE;
     }
-    
+
     if( buffered )
     {
         // alloc
@@ -394,12 +394,12 @@ t_CKBOOL Chuck_UGen::set_is_buffered( t_CKBOOL buffered )
         // dealloc
         m_buffer.resize( 0 );
     }
-    
+
     // store flag
     m_is_buffered = buffered;
-    
+
     return TRUE;
-    
+
 }
 
 
@@ -481,7 +481,7 @@ t_CKBOOL Chuck_UGen::add( Chuck_UGen * src, t_CKBOOL isUpChuck )
         // call add on the src's outlet instead
         return add( src->outlet(), isUpChuck );
     }
-    
+
     // examine ins and outs
     t_CKUINT outs = src->m_num_outs;
     t_CKUINT ins = this->m_num_ins;
@@ -503,7 +503,7 @@ t_CKBOOL Chuck_UGen::add( Chuck_UGen * src, t_CKBOOL isUpChuck )
         m_num_src++;
         src->add_ref();
         src->add_by( this, isUpChuck );
-        
+
         // upchuck
         if( isUpChuck )
         {
@@ -568,12 +568,12 @@ void Chuck_UGen::add_by( Chuck_UGen * dest, t_CKBOOL isUpChuck )
         add_by(dest->inlet(), isUpChuck);
         return;
     }
-    
+
     // append
     fa_push_back( m_dest_list, m_dest_cap, m_num_dest, dest );
     dest->add_ref();
     m_num_dest++;
-    
+
     // uana
     if( isUpChuck )
     {
@@ -604,7 +604,7 @@ t_CKBOOL Chuck_UGen::remove( Chuck_UGen * src )
         // use the src's outlet
         return remove(src->outlet());
     }
-    
+
     // ins and outs
     t_CKUINT outs = src->m_num_outs;
     t_CKUINT ins = this->m_num_ins;
@@ -624,7 +624,7 @@ t_CKBOOL Chuck_UGen::remove( Chuck_UGen * src )
                 // removing here -> removing at least one from src list
                 for( t_CKUINT k = j+1; k < m_num_uana_src; k++ )
                     m_src_uana_list[k-1] = m_src_uana_list[k];
-                
+
                 m_src_uana_list[--m_num_uana_src] = NULL;
                 --j;
             }
@@ -642,7 +642,7 @@ t_CKBOOL Chuck_UGen::remove( Chuck_UGen * src )
                 src->release();
                 --i;
             }
-        
+
     }
     /* else if( outs >= 2 && ins == 1 )
     {
@@ -700,7 +700,7 @@ void Chuck_UGen::remove_by( Chuck_UGen * dest )
         remove_by(dest->outlet());
         return;
     }
-    
+
     // remove from uana list (first due to reference count)
     for( t_CKUINT j = 0; j < m_num_uana_dest; j++ )
         if( m_dest_uana_list[j] == dest )
@@ -708,7 +708,7 @@ void Chuck_UGen::remove_by( Chuck_UGen * dest )
             // get rid of it
             for( t_CKUINT k = j+1; k < m_num_uana_dest; k++ )
                 m_dest_uana_list[k-1] = m_dest_uana_list[k];
-            
+
             // null last element
             m_dest_uana_list[--m_num_uana_dest] = NULL;
             j--;
@@ -750,7 +750,7 @@ void Chuck_UGen::remove_all( )
 
     // sanity check
     assert( this->m_num_dest == 0 );
-    
+
     // remove
     while( m_num_src > 0 )
     {
@@ -784,7 +784,7 @@ t_CKBOOL Chuck_UGen::disconnect( t_CKBOOL recursive )
         // use the inlet
         return inlet()->disconnect( recursive );
     }
-    
+
     // remove
     while( m_num_dest > 0 )
     {
@@ -807,7 +807,7 @@ t_CKBOOL Chuck_UGen::disconnect( t_CKBOOL recursive )
     // disconnect src too?
     if( recursive )
         this->remove_all();
-    
+
     return TRUE;
 }
 
@@ -833,13 +833,13 @@ t_CKBOOL Chuck_UGen::is_connected_from( Chuck_UGen * src )
                 return TRUE;
         }
     }
-    
+
     // spencer 2012: chubgraph handling (added 1.3.0.0)
     if( m_is_subgraph )
     {
         // sanity check
         assert( inlet() != NULL );
-        // use 
+        // use
         return inlet()->is_connected_from( src );
     }
     // check if source is subgraph
@@ -868,9 +868,9 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
 
     t_CKUINT i; Chuck_UGen * ugen; SAMPLE multi;
 
-    
+
     /*** Part 1: Tick upstream ugens ***/
-    
+
     // inc time
     m_time = now;
     // initial sum
@@ -918,7 +918,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
                 // tick sub-ugens for individual channels
                 if( ugen->m_time < now ) ugen->system_tick( now );
                 // set to tickf input
-                // TODO: if op is not 1? 
+                // TODO: if op is not 1?
                 m_multi_in_v[i] = m_sum + ugen->m_sum;
             }
         }
@@ -931,7 +931,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
                 // multiple channels are added
                 multi += ugen->m_current;
             }
-            
+
             // scale multi
             multi /= m_multi_chan_size;
             m_sum += multi;
@@ -954,23 +954,23 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
             return TRUE;
         }
     }
-    
-    
-    
+
+
+
     /*** Part Two: Synthesize with tick function ***/
-    
+
     if( m_multi_chan_size && tickf )
     {
         /* evaluate multi-channel tickf (added 1.3.0.0) */
-        
+
         multi = 0;
 
         if( m_op > 0 ) // UGEN_OP_TICK
         {
             m_valid = tickf( this, m_multi_in_v, m_multi_out_v, 1, Chuck_DL_Api::Api::instance() );
-                
+
             if( !m_valid ) memset( m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size );
-            
+
             // supply multichannel tick output to output channels (added 1.3.0.0)
             for( i = 0; i < m_multi_chan_size; i++ )
             {
@@ -999,7 +999,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
                 memset( m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size );
                 m_valid = TRUE;
             }
-            
+
             // supply multichannel tick output to output channels (added 1.3.0.0)
             for( i = 0; i < m_multi_chan_size; i++ )
             {
@@ -1010,7 +1010,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
                 multi += ugen->m_current;
             }
         }
-                
+
         // compute mono mixdown for owner-ugen
         multi /= m_multi_chan_size;
         // set current to mono mixdown
@@ -1021,7 +1021,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     else
     {
         /* evaluate single-channel tick */
-        
+
         if( m_op > 0 ) // UGEN_OP_TICK
         {
             // tick the ugen (Chuck_DL_Api::Api::instance() added 1.3.0.0)
@@ -1049,14 +1049,14 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
             m_valid = TRUE;
         }
     }
-    
+
     // store in buffer
     if( m_is_buffered )
     {
         // m_current is the mono mixdown of all channels (if > 1)
         m_buffer.put( m_current );
     }
-    
+
     return m_valid;
 }
 
@@ -1071,22 +1071,22 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
 {
     if( m_time >= now )
         return m_valid;
-    
+
     t_CKUINT i, j; Chuck_UGen * ugen; SAMPLE factor;
     SAMPLE multi;
-    
+
     // inc time
     m_time = now;
-    
-    
+
+
     /*** Part 1: Tick upstream ugens ***/
-    
+
     if( m_num_src )
     {
         ugen = m_src_list[0];
         if( ugen->m_time < now ) ugen->system_tick_v( now, numFrames );
         memcpy( m_sum_v, ugen->m_current_v, numFrames * sizeof(SAMPLE) );
-        
+
         // tick the src list
         for( i = 1; i < m_num_src; i++ )
         {
@@ -1149,12 +1149,12 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
             }
         }
     }
-    
+
     // if owner
     if( owner != NULL && owner->m_time < now )
     {
         owner->system_tick_v( now, numFrames );
-        
+
         // if the owner has a multichannel tick function (added 1.3.0.0)
         if( owner->tickf )
         {
@@ -1165,10 +1165,10 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
             return TRUE;
         }
     }
-    
-    
+
+
     /*** Part Two: Synthesize with tick function ***/
-    
+
     if( m_multi_chan_size && tickf )
     {
         /* evaluate multi-channel tick (added added 1.3.0.0) */
@@ -1178,18 +1178,18 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
             // compute samples with tickf
             // REFACTOR-2017: remove NULL shred
             m_valid = tickf( this, m_multi_in_v, m_multi_out_v, numFrames, Chuck_DL_Api::Api::instance() );
-            
+
             // zero samples if not valid
             if( !m_valid ) memset( m_multi_out_v, 0, sizeof(SAMPLE) * m_multi_chan_size * numFrames );
-            
+
             // precompute to save division
             factor = 1.0f / m_multi_chan_size;
-            
+
             // supply multichannel tick output to output channels (added 1.3.0.0)
             for( int f = 0; f < numFrames; f++ )
             {
                 multi = 0;
-                
+
                 for( int c = 0; c < m_multi_chan_size; c++ )
                 {
                     // apply gain/pan
@@ -1201,11 +1201,11 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
                     // add to mono mixdown
                     multi += m_multi_chan[c]->m_current_v[f];
                 }
-                
+
                 // compute mono-mixdown for the owner-ugen
                 m_current_v[f] = multi*factor;
             }
-            
+
             // save as last
             m_last = m_current_v[numFrames-1];
             for( int c = 0; c < m_multi_chan_size; c++ )
@@ -1225,22 +1225,22 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
                 memset( m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size );
                 m_valid = TRUE;
             }
-            
+
             // supply multichannel pass/stop output to output channels (added 1.3.0.0)
             for( int f = 0; f < numFrames; f++ )
             {
                 multi = 0;
-                
+
                 for( int c = 0; c < m_multi_chan_size; c++ )
                 {
                     m_multi_chan[c]->m_current_v[f] = m_multi_out_v[f*m_multi_chan_size+c];
                     multi += m_multi_chan[c]->m_current_v[f];
                 }
-                
+
                 // mono mixdown
                 m_current_v[i] = multi/m_multi_chan_size;
             }
-            
+
             // save as last
             m_last = m_current_v[numFrames-1];
             // save as last for subchannels
@@ -1285,11 +1285,11 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
             // m_current = 0.0f;
             m_valid = TRUE;
         }
-        
+
         // save as last
         m_last = m_current_v[numFrames-1];
     }
-    
+
     // store in buffer
     if( m_is_buffered )
     {
@@ -1299,7 +1299,7 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
             m_buffer.put( m_current_v[j] );
         }
     }
-    
+
     return m_valid;
 }
 
@@ -1316,7 +1316,7 @@ void Chuck_UGen::init_subgraph()
     m_is_subgraph = TRUE;
     // pointer
     Chuck_Object * obj = NULL;
-    
+
     // instantiate object for inlet
     obj = instantiate_and_initialize_object( this->shred->vm_ref->env()->t_ugen, this->shred );
     // set as inlet
@@ -1327,7 +1327,7 @@ void Chuck_UGen::init_subgraph()
     m_inlet->owner = this;
     // ref count
     this->add_ref();
-    
+
     // instantiate object for outlet
     obj = instantiate_and_initialize_object( this->shred->vm_ref->env()->t_ugen, this->shred );
     // set as outlet
@@ -1545,8 +1545,8 @@ t_CKBOOL Chuck_UAna::system_tock( t_CKTIME now )
         // REFACTOR-2017: remove NULL shred
         if( tock ) m_valid = tock( this, this, blobProxy(), Chuck_DL_Api::Api::instance() );
         if( !m_valid ) { /* clear out blob? */ }
-		// timestamp the blob
-		blobProxy()->when() = now;
+        // timestamp the blob
+        blobProxy()->when() = now;
         // TODO: set current_blob to out_blob
         // TODO: set last_blob to current
         return m_valid;
@@ -1561,7 +1561,7 @@ t_CKBOOL Chuck_UAna::system_tock( t_CKTIME now )
     {
         // TODO: anything?
     }
-    
+
     // TODO: set m_last_blob to current?
 
     return TRUE;
