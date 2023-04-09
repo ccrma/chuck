@@ -68,6 +68,9 @@ host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
 
 
 ############################## MAKE INSTALL ####################################
+## Note: If you want to build ChucK on linux with multiple audio drivers,
+## call multiple build rules, e.g.:
+## > make linux-pulse linux-alsa linux-jack
 .PHONY: mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl test
 mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
 
