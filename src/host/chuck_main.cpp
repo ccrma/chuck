@@ -213,7 +213,7 @@ void usage()
     // (note: optional colon added 1.3.0.0)
     CK_FPRINTF_STDERR( "usage: chuck --[options|commands] [+-=^] file1 file2 file3 ...\n" );
     CK_FPRINTF_STDERR( "   [options] = halt|loop|audio|silent|dump|nodump|about|probe|\n" );
-    CK_FPRINTF_STDERR( "               channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|\n" );
+    CK_FPRINTF_STDERR( "               channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|driver:<name>|\n" );
     CK_FPRINTF_STDERR( "               srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
     CK_FPRINTF_STDERR( "               remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
     CK_FPRINTF_STDERR( "               callback|deprecate:{stop|warn|ignore}|\n" );
