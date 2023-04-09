@@ -105,28 +105,28 @@ static RtAudio::Api driverNameToApi(char const *driver)
     if(driver)
     {
     #if defined(__WINDOWS_ASIO__)
-        if(!strcmp(driver, "ASIO"))
+        if(!strcmp(driver, "ASIO") || !strcmp(driver, "asio") || !strcmp(driver, "Asio"))
             api = RtAudio::WINDOWS_ASIO;
         else
     #endif
     #if defined(__WINDOWS_DS__)
-        if(!strcmp(driver, "DS"))
+        if(!strcmp(driver, "DS") || !strcmp(driver, "ds") || !strcmp(driver, "Ds"))
             api = RtAudio::WINDOWS_DS;
     #endif
     #if defined(__WINDOWS_WASAPI__)
-        if(!strcmp(driver, "WASAPI"))
+        if(!strcmp(driver, "WASAPI") || !strcmp(driver, "wasapi") || !strcmp(driver, "Wasapi"))
             api = RtAudio::WINDOWS_WASAPI;
     #endif
     #if defined(__LINUX_ALSA__)
-        if(!strcmp(driver, "ALSA")) // should match apiToDriverName
+        if(!strcmp(driver, "ALSA") || !strcmp(driver, "alsa") || !strcmp(driver, "Alsa")) // should match apiToDriverName
             api = RtAudio::LINUX_ALSA;
     #endif
     #if defined(__LINUX_PULSE__)
-        if(!strcmp(driver, "Pulse"))
+        if(!strcmp(driver, "Pulse") || !strcmp(driver, "pulse") || !strcmp(driver, "PULSE"))
             api = RtAudio:: LINUX_PULSE;
     #endif
     #if defined(__UNIX_JACK__)
-        if(!strcmp(driver, "Jack"))
+        if(!strcmp(driver, "Jack") || !strcmp(driver, "jack") || !strcmp(driver, "JACK"))
             api = RtAudio:: UNIX_JACK;
     #endif
         // XXX: add swap between ALSA, PULSE, OSS? and JACK
