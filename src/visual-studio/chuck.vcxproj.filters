@@ -232,11 +232,21 @@
     <ClCompile Include="..\core\chuck_globals.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\rtaudio\RtAudio.cpp" />
-    <ClCompile Include="..\rtaudio\include\asio.cpp" />
-    <ClCompile Include="..\rtaudio\include\asiodrivers.cpp" />
-    <ClCompile Include="..\rtaudio\include\asiolist.cpp" />
-    <ClCompile Include="..\rtaudio\include\iasiothiscallresolver.cpp" />
+    <ClCompile Include="..\host\RtAudio\RtAudio.cpp">
+      <Filter>host\RtAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\host\RtAudio\include\asio.cpp">
+      <Filter>host\RtAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\host\RtAudio\include\asiodrivers.cpp">
+      <Filter>host\RtAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\host\RtAudio\include\asiolist.cpp">
+      <Filter>host\RtAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\host\RtAudio\include\iasiothiscallresolver.cpp">
+      <Filter>host\RtAudio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\core\chuck.h">
@@ -440,18 +450,42 @@
     <ClInclude Include="..\core\chuck_globals.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\rtaudio\RtAudio.h" />
-    <ClInclude Include="..\rtaudio\include\asio.h" />
-    <ClInclude Include="..\rtaudio\include\asiodrivers.h" />
-    <ClInclude Include="..\rtaudio\include\asiodrvr.h" />
-    <ClInclude Include="..\rtaudio\include\asiolist.h" />
-    <ClInclude Include="..\rtaudio\include\asiosys.h" />
-    <ClInclude Include="..\rtaudio\include\dsound.h" />
-    <ClInclude Include="..\rtaudio\include\functiondiscoverykeys_devpkey.h" />
-    <ClInclude Include="..\rtaudio\include\ginclude.h" />
-    <ClInclude Include="..\rtaudio\include\iasiodrv.h" />
-    <ClInclude Include="..\rtaudio\include\iasiothiscallresolver.h" />
-    <ClInclude Include="..\rtaudio\include\soundcard.h" />
+    <ClInclude Include="..\host\RtAudio\RtAudio.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\asio.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\asiodrivers.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\asiodrvr.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\asiolist.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\asiosys.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\dsound.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\functiondiscoverykeys_devpkey.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\ginclude.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\iasiodrv.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\iasiothiscallresolver.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\soundcard.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
@@ -479,6 +513,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\rtaudio\include\asioinfo.txt" />
+    <Text Include="..\host\RtAudio\include\asioinfo.txt">
+      <Filter>host\RtAudio</Filter>
+    </Text>
   </ItemGroup>
 </Project>
