@@ -86,18 +86,18 @@
     <ClInclude Include="..\core\util_string.h" />
     <ClInclude Include="..\core\util_thread.h" />
     <ClInclude Include="..\core\util_xforms.h" />
-    <ClInclude Include="..\rtaudio\include\asio.h" />
-    <ClInclude Include="..\rtaudio\include\asiodrivers.h" />
-    <ClInclude Include="..\rtaudio\include\asiodrvr.h" />
-    <ClInclude Include="..\rtaudio\include\asiolist.h" />
-    <ClInclude Include="..\rtaudio\include\asiosys.h" />
-    <ClInclude Include="..\rtaudio\include\dsound.h" />
-    <ClInclude Include="..\rtaudio\include\functiondiscoverykeys_devpkey.h" />
-    <ClInclude Include="..\rtaudio\include\ginclude.h" />
-    <ClInclude Include="..\rtaudio\include\iasiodrv.h" />
-    <ClInclude Include="..\rtaudio\include\iasiothiscallresolver.h" />
-    <ClInclude Include="..\rtaudio\include\soundcard.h" />
-    <ClInclude Include="..\rtaudio\RtAudio.h" />
+    <ClInclude Include="..\host\RtAudio\include\asio.h" />
+    <ClInclude Include="..\host\RtAudio\include\asiodrivers.h" />
+    <ClInclude Include="..\host\RtAudio\include\asiodrvr.h" />
+    <ClInclude Include="..\host\RtAudio\include\asiolist.h" />
+    <ClInclude Include="..\host\RtAudio\include\asiosys.h" />
+    <ClInclude Include="..\host\RtAudio\include\dsound.h" />
+    <ClInclude Include="..\host\RtAudio\include\functiondiscoverykeys_devpkey.h" />
+    <ClInclude Include="..\host\RtAudio\include\ginclude.h" />
+    <ClInclude Include="..\host\RtAudio\include\iasiodrv.h" />
+    <ClInclude Include="..\host\RtAudio\include\iasiothiscallresolver.h" />
+    <ClInclude Include="..\host\RtAudio\include\soundcard.h" />
+    <ClInclude Include="..\host\RtAudio\RtAudio.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\core\chuck.cpp" />
@@ -395,18 +395,18 @@
     <ClCompile Include="..\core\util_string.cpp" />
     <ClCompile Include="..\core\util_thread.cpp" />
     <ClCompile Include="..\core\util_xforms.c" />
-    <ClCompile Include="..\rtaudio\include\asio.cpp" />
-    <ClCompile Include="..\rtaudio\include\asiodrivers.cpp" />
-    <ClCompile Include="..\rtaudio\include\asiolist.cpp" />
-    <ClCompile Include="..\rtaudio\include\iasiothiscallresolver.cpp" />
-    <ClCompile Include="..\rtaudio\RtAudio.cpp" />
+    <ClCompile Include="..\host\RtAudio\include\asio.cpp" />
+    <ClCompile Include="..\host\RtAudio\include\asiodrivers.cpp" />
+    <ClCompile Include="..\host\RtAudio\include\asiolist.cpp" />
+    <ClCompile Include="..\host\RtAudio\include\iasiothiscallresolver.cpp" />
+    <ClCompile Include="..\host\RtAudio\RtAudio.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\core\chuck.lex" />
     <None Include="..\core\chuck.y" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\rtaudio\include\asioinfo.txt" />
+    <Text Include="..\host\RtAudio\include\asioinfo.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C83D6D51-D477-4BAB-B2C2-F0698B9D3FB1}</ProjectGuid>
@@ -495,8 +495,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>__WINDOWS_MODERN__;__PLATFORM_WIN32__;__WINDOWS_DS__;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;C:\Users\nicho\Documents\ChucK\chuck\src\rtaudio</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>__WINDOWS_MODERN__;__PLATFORM_WIN32__;__WINDOWS_DS__;WIN32;_DEBUG;_CONSOLE;__WINDOWS_ASIO__;__WINDOWS_WASAPI__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\nick\Documents\chuck\src\host\RtAudio\include;.</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -532,8 +532,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>__WINDOWS_MODERN__;__PLATFORM_WIN32__;__WINDOWS_DS__;WIN32;NDEBUG;_CONSOLE;__WINDOWS_ASIO__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;C:\Users\nicho\Documents\ChucK\chuck\src\rtaudio;C:\Users\nicho\Documents\ChucK\chuck\src\rtaudio\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>__WINDOWS_MODERN__;__PLATFORM_WIN32__;__WINDOWS_DS__;WIN32;NDEBUG;_CONSOLE;__WINDOWS_ASIO__;__WINDOWS_WASAPI__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\nick\Documents\chuck\src\host\RtAudio\include;.</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
