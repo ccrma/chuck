@@ -36,6 +36,9 @@
 #include <limits.h>
 #include <vector>
 #include <map>
+
+#include <winuser.h>
+
 using namespace std;
 
 /* device types */
@@ -6072,6 +6075,14 @@ void Mouse_poll()
                 msg.eid = 0;
                 msg.idata[0] = state.lX;
                 msg.idata[1] = state.lY;
+
+                POINT point;
+                if (GetCursorPos(&point)) {
+                    msg.idata[2] = point.x;
+                    msg.idata[3] = point.y;
+                    cout << point.x << "," << point.y << "\n";
+                }
+
                 HidInManager::push_message( msg );
             }
 
