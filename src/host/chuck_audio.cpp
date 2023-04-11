@@ -249,9 +249,11 @@ void ChuckAudio::probe(char const *driver)
     for( int i = 0; i < devices; i++ )
     {
         info = audio->getDeviceInfo(i);
-        if(!info.probed) // errorHandle reports issues above
-            break;
+        if (!info.probed) { // errorHandle reports issues above
+            EM_error2(0, "");
             EM_reset_msg();
+            continue;
+        }
         
         // print
         EM_error2b( 0, "------( audio device: %d )---------------", i+1 );
