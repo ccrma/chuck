@@ -6041,6 +6041,10 @@ void Mouse_init()
     EM_poplog();
 }
 
+//-----------------------------------------------------------------------------
+// name: Mouse_poll()
+// desc: Populate mouse polling HID message for windows
+//-----------------------------------------------------------------------------
 void Mouse_poll()
 {
     if( !mice )
@@ -6076,14 +6080,28 @@ void Mouse_poll()
                 msg.idata[0] = state.lX;
                 msg.idata[1] = state.lY;
 
+                // 1.5.0.0 (nshaheed) add support for absolute and normalized mouse pos
+                // Acquire cursor position (in pixels)
                 POINT point;
                 if (GetCursorPos(&point)) {
                     msg.idata[2] = point.x;
                     msg.idata[3] = point.y;
-                    cout << point.x << "," << point.y << "\n";
                 }
 
-                HidInManager::push_message( msg );
+                // Get primary monitor handle
+                const POINT ptZero = { 0, 0 };
+                HMONITOR hMonitor = MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
+
+                MONITORINFO info;
+                info.cbSize = sizeof(info);
+
+                // Populate scaledCursorX and scaledCursorY 
+                if (GetMonitorInfo(hMonitor, (LPMONITORINFO)&info)) {
+                    msg.fdata[0] = ((t_CKFLOAT) (point.x - info.rcMonitor.left)) / (info.rcMonitor.right - 1);
+                    msg.fdata[1] = ((t_CKFLOAT) (point.y - info.rcMonitor.top)) / (info.rcMonitor.bottom - 1);
+                }
+
+                HidInManager::push_message(msg);
             }
 
             if( state.lZ != 0 )
