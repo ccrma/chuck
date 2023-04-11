@@ -37,8 +37,6 @@
 #include <vector>
 #include <map>
 
-#include <winuser.h>
-
 using namespace std;
 
 /* device types */
@@ -4820,6 +4818,7 @@ Windows general HID support
 #pragma mark Windows general HID support
 
 #include <windows.h>
+#include <winuser.h>
 #ifdef __WINDOWS_MODERN__ // REFACTOR-2017
 #define DIRECTINPUT_VERSION 0x0800
 #else
