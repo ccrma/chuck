@@ -395,6 +395,7 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     t_CKDUR hour = minute * 60.0;
     t_CKDUR day = hour * 24.0;
     t_CKDUR week = day * 7.0;
+    t_CKDUR eon = day * 365.0 * 1000000000.0; // one billion years, a very long time
 
     // add internal classes
     EM_log( CK_LOG_SEVERE, "adding base classes..." );
@@ -447,6 +448,7 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     env->global()->value.add( "hour", new Chuck_Value( env->t_dur, "hour", new t_CKDUR(hour), TRUE ) );
     env->global()->value.add( "day", new Chuck_Value( env->t_dur, "day", new t_CKDUR(day), TRUE ) );
     env->global()->value.add( "week", new Chuck_Value( env->t_dur, "week", new t_CKDUR(week), TRUE ) );
+    env->global()->value.add( "eon", new Chuck_Value( env->t_dur, "eon", new t_CKDUR(eon), TRUE ) );
     env->global()->value.add( "true", new Chuck_Value( env->t_int, "true", new t_CKINT(1), TRUE ) );
     env->global()->value.add( "false", new Chuck_Value( env->t_int, "false", new t_CKINT(0), TRUE ) );
     env->global()->value.add( "maybe", new Chuck_Value( env->t_int, "maybe", new t_CKFLOAT(.5), FALSE ) );
