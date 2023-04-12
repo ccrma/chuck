@@ -395,7 +395,9 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     t_CKDUR hour = minute * 60.0;
     t_CKDUR day = hour * 24.0;
     t_CKDUR week = day * 7.0;
-    t_CKDUR eon = day * 365.0 * 1000000000.0; // one billion years, a very long time
+    // one billion years, a very long time
+    // length of a sidereal year; https://en.wikipedia.org/wiki/Year
+    t_CKDUR eon = day * 365.256363004 * 1000000000.0;
 
     // add internal classes
     EM_log( CK_LOG_SEVERE, "adding base classes..." );

@@ -357,6 +357,8 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
 - (added) example: ai/knn/knn-search.ck
 - (added) example: ai/knn/knn2-classify.ck
 - (added) example: ai/knn/knn2-search.ck
+- (added) new default duration 'eon' == day * 365.256363004 * 1000000000.0 (thanks nshaheed)
+    example: eon => now; // a long long time from now
 - (added) new static method for all Objects
       Type Object.typeOf()
           Get the type of this object (or class).
