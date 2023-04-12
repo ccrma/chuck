@@ -12,10 +12,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
+    - uses: actions/checkout@v2
 
     - name: Compile - macOS
       run: cd src/ && make -j mac
