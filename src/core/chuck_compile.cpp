@@ -57,7 +57,10 @@
 
 #if defined(__PLATFORM_WIN32__)
 #include "dirent_win32.h"
+#else
+#include <wordexp.h> // 1.4.2.1 (ge) added
 #endif
+
 //#if defined(__WINDOWS_PTHREAD__)
 #include <sys/stat.h>
 //#endif
@@ -812,8 +815,25 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
 {
     static const t_CKBOOL RECURSIVE_SEARCH = false;
 
-    DIR * dir = opendir(directory);
+    // directory path
+    string path = directory, exp = "";
 
+#ifndef __PLATFORM_WIN32__
+    // 1.4.2.1 (ge) added (for ~)
+    wordexp_t exp_result;
+    // "perform shell-style word expansions"
+    wordexp( directory, &exp_result, 0 );
+    // concatenate in case there are spaces in the path
+    for( t_CKINT i = 0; i < exp_result.we_wordc; i++ )
+        exp += string(i > 0 ? " " : "") + exp_result.we_wordv[i];
+    // replace
+    path = exp;
+#endif
+
+    // open the directory
+    DIR * dir = opendir( path.c_str() );
+
+    // if successful
     if( dir )
     {
         // log
@@ -894,6 +914,11 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
         EM_log( CK_LOG_INFO, "ignoring for chugins..." );
         EM_poplog();
     }
+
+#ifndef __PLATFORM_WIN32__
+    // free | 1.4.2.1 (ge) added
+    wordfree( &exp_result );
+#endif
 
     return TRUE;
 }
