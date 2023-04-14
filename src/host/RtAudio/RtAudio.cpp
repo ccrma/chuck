@@ -238,7 +238,7 @@ void RtAudio :: openRtApi( RtAudio::Api api )
 #endif
 }
 
-RtAudio :: RtAudio( RtAudio::Api api, RtAudioErrorCallback&& errorCallback )
+RtAudio :: RtAudio( RtAudio::Api api, RtAudioErrorCallback /* && */ errorCallback )
 {
   rtapi_ = 0;
 
