@@ -174,7 +174,7 @@ static void version()
     #elif defined(__WINDOWS_DS__)
         platform = "microsoft windows + DS";
     #else
-        platform = "microsoft windows (??)";
+        platform = "microsoft windows + (?)";
     #endif
 #elif defined(__LINUX_ALSA__)
     platform = "linux (alsa)";
