@@ -98,7 +98,7 @@ public:
     virtual void release();
     // lock
     virtual void lock();
-    // unlock | 1.4.2.1 (ge) added
+    // unlock | 1.5.0.0 (ge) added
     virtual void unlock();
 
     // NOTE: be careful when overriding these, should always
@@ -234,9 +234,9 @@ public:
     virtual void zero() = 0; // zero (all)
     // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys ) = 0;
-    // reverse array order | added (1.4.2.1) azaday
+    // reverse array order | added (1.5.0.0) azaday
     virtual void reverse() = 0;
-    // reverse array order | added (1.4.2.1) kunwoo, nshaheed, azaday, ge
+    // reverse array order | added (1.5.0.0) kunwoo, nshaheed, azaday, ge
     virtual void shuffle() = 0;
 
     Chuck_Type * m_array_type;
@@ -280,9 +280,9 @@ public:
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY4_DATAKIND; }
     // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
-    // reverse array order | added (1.4.2.1) azaday
+    // reverse array order | added (1.5.0.0) azaday
     virtual void reverse();
-    // reverse array order | added (1.4.2.1) kunwoo, nshaheed, azaday, ge
+    // reverse array order | added (1.5.0.0) kunwoo, nshaheed, azaday, ge
     virtual void shuffle();
 
 public:
@@ -334,9 +334,9 @@ public:
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY8_DATAKIND; }
     // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
-    // reverse array order | added (1.4.2.1) azaday
+    // reverse array order | added (1.5.0.0) azaday
     virtual void reverse();
-    // reverse array order | added (1.4.2.1) kunwoo, nshaheed, azaday, ge
+    // reverse array order | added (1.5.0.0) kunwoo, nshaheed, azaday, ge
     virtual void shuffle();
 
 public:
@@ -384,9 +384,9 @@ public:
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY16_DATAKIND; }
     // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
-    // reverse array order | added (1.4.2.1) azaday
+    // reverse array order | added (1.5.0.0) azaday
     virtual void reverse();
-    // reverse array order | added (1.4.2.1) kunwoo, nshaheed, azaday, ge
+    // reverse array order | added (1.5.0.0) kunwoo, nshaheed, azaday, ge
     virtual void shuffle();
 
 public:
@@ -434,9 +434,9 @@ public:
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY24_DATAKIND; }
     // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
-    // reverse array order | added (1.4.2.1) azaday
+    // reverse array order | added (1.5.0.0) azaday
     virtual void reverse();
-    // reverse array order | added (1.4.2.1) kunwoo, nshaheed, azaday, ge
+    // reverse array order | added (1.5.0.0) kunwoo, nshaheed, azaday, ge
     virtual void shuffle();
 
 public:
@@ -482,9 +482,9 @@ public:
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY32_DATAKIND; }
     // get map keys | added (1.4.1.2) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
-    // reverse array order | added (1.4.2.1) azaday
+    // reverse array order | added (1.5.0.0) azaday
     virtual void reverse();
-    // reverse array order | added (1.4.2.1) kunwoo, nshaheed, azaday, ge
+    // reverse array order | added (1.5.0.0) kunwoo, nshaheed, azaday, ge
     virtual void shuffle();
 
 public:
@@ -626,14 +626,14 @@ public:
     virtual void write( t_CKFLOAT val ) = 0;
 
 public:
-    // type | moved to IO in 1.4.2.1 (ge)
+    // type | moved to IO in 1.5.0.0 (ge)
     static const t_CKINT TYPE_ASCII;
     static const t_CKINT TYPE_BINARY;
     // datatype
     static const t_CKINT INT32;
     static const t_CKINT INT16;
     static const t_CKINT INT8;
-    // flags | moved to IO in 1.4.2.1 (ge)
+    // flags | moved to IO in 1.5.0.0 (ge)
     static const t_CKINT FLAG_READ_WRITE;
     static const t_CKINT FLAG_READONLY;
     static const t_CKINT FLAG_WRITEONLY;

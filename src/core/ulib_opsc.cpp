@@ -312,7 +312,7 @@ public:
     int port(int port) { m_port = port; return m_port; }
     int port()
     {
-        // 1.4.2.1 (ge) simply return the current m_port
+        // 1.5.0.0 (ge) simply return the current m_port
         return m_port;
         // previously (which returns an assigned port is always set)
         // return OscInServer::forPort(m_port)->port();

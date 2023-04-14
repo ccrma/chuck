@@ -20162,7 +20162,7 @@ CK_DLL_TICK( Instrmnt_tick )
     // generally, we should not get here -- but is possible since there are
     // abstract classes, such as this one, but currently chuck has no
     // provisions for marking classes as abstract... this is a workaround
-    // 1.4.2.1 | (ge) changed CK_FPRINTF_STDERR to EM_log; allow program to proceed
+    // 1.5.0.0 | (ge) changed CK_FPRINTF_STDERR to EM_log; allow program to proceed
     EM_log( CK_LOG_WARNING, "(STK) error -- StkInstrmnt.tick() is abstract!" );
     EM_log( CK_LOG_WARNING, "(STK)  |- likely StkInstrmnt was declared/used directly," );
     EM_log( CK_LOG_WARNING, "(STK)  |- instead of a subclass of StkInstrmnt" );
@@ -20172,7 +20172,7 @@ CK_DLL_TICK( Instrmnt_tick )
     // TODO: suggestion on what to do: e.g.,
     // TODO: "XXX cannot be instantiated directly (use '@' to declare a reference)"
 
-    // 1.4.2.1 | (ge) commented out to avoid a potentially confusing crash
+    // 1.5.0.0 | (ge) commented out to avoid a potentially confusing crash
     // *out = i->tick();
     // instead we will return silence
     *out = 0;
@@ -25022,7 +25022,7 @@ CK_DLL_DTOR( FM_dtor  )
 }
 
 
-// 1.4.2.1 | (ge) added for error report
+// 1.5.0.0 | (ge) added for error report
 //-----------------------------------------------------------------------------
 // name: FM_tick()
 // desc: TICK function ...
@@ -25035,7 +25035,7 @@ CK_DLL_TICK( FM_tick )
     // generally, we should not get here -- but is possible since there are
     // abstract classes, such as this one, but currently chuck has no
     // provisions for marking classes as abstract... this is a workaround
-    // 1.4.2.1 | (ge) changed CK_FPRINTF_STDERR to EM_log; allow program to proceed
+    // 1.5.0.0 | (ge) changed CK_FPRINTF_STDERR to EM_log; allow program to proceed
     EM_log( CK_LOG_WARNING, "(STK) error -- FM.tick() is abstract!" );
     EM_log( CK_LOG_WARNING, "(STK)  |- likely FM was declared/used directly," );
     EM_log( CK_LOG_WARNING, "(STK)  |- instead of a subclass of FM" );
@@ -25045,7 +25045,7 @@ CK_DLL_TICK( FM_tick )
     // TODO: suggestion on what to do: e.g.,
     // TODO: "XXX cannot be instantiated directly (use '@' to declare a reference)"
 
-    // 1.4.2.1 | (ge) commented out to avoid a potentially confusing crash
+    // 1.5.0.0 | (ge) commented out to avoid a potentially confusing crash
     // *out = m->tick();
     // instead we will return silence
     *out = 0;
@@ -28317,7 +28317,7 @@ CK_DLL_DTOR( BLT_dtor )
 
 CK_DLL_TICK( BLT_tick )
 {
-    // 1.4.2.1 | (ge) changed CK_FPRINTF_STDERR to EM_log; allow program to proceed;
+    // 1.5.0.0 | (ge) changed CK_FPRINTF_STDERR to EM_log; allow program to proceed;
     EM_log( CK_LOG_WARNING, "(STK) error -- BLT.tick() is abstract!" );
     EM_log( CK_LOG_WARNING, "(STK)  |- likely BLT was declared/used directly," );
     EM_log( CK_LOG_WARNING, "(STK)  |- instead of a subclass of BLT" );
@@ -28327,7 +28327,7 @@ CK_DLL_TICK( BLT_tick )
     // TODO: suggestion on what to do: e.g.,
     // TODO: "XXX cannot be instantiated directly (use '@' to declare a reference)"
 
-    // 1.4.2.1 (ge) | added return silence
+    // 1.5.0.0 (ge) | added return silence
     *out = 0;
 
     return TRUE;

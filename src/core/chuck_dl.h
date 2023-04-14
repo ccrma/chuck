@@ -676,7 +676,7 @@ public:
     {
         ObjectApi();
 
-    // 1.4.2.1 (nshaheed and ge and anonymous pr-lab member) | changed from private to public
+    // 1.5.0.0 (nshaheed and ge and anonymous pr-lab member) | changed from private to public
     // also changed all std::string & in this section to const char *
     // intent: this allows for chugins to access member variables and create chuck strings
     public:

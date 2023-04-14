@@ -85,7 +85,7 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
     func->doc = "output helpful information about a class or an instance thereof.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
-    // add getType() // 1.4.2.1
+    // add getType() // 1.5.0.0
     func = make_new_sfun( "Type", "typeOf", object_typeInfo );
     func->doc = "get the type of this object (or class).";
     if( !type_engine_import_sfun( env, func ) ) goto error;
@@ -934,7 +934,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "clear the contents of the array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add zero() | 1.4.2.1 (ge) added
+    // add zero() | 1.5.0.0 (ge) added
     func = make_new_mfun( "void", "zero", array_zero );
     func->doc = "zero out the contents of the array; size is unchanged.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -1000,7 +1000,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "(map only) Erase all elements with the specified key.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add reverse() | (1.4.2.1) azaday
+    // add reverse() | (1.5.0.0) azaday
     func = make_new_mfun( "void", "reverse", array_reverse );
     func->doc = "reverses the array in-place";
     if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -1038,7 +1038,7 @@ error:
 
 //-----------------------------------------------------------------------------
 // name: init_class_type()
-// desc: initialize the Type class | 1.4.2.1 (ge) added
+// desc: initialize the Type class | 1.5.0.0 (ge) added
 //-----------------------------------------------------------------------------
 t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type )
 {
@@ -1203,7 +1203,7 @@ error:
 
 
 //-----------------------------------------------------------------------------
-// name: init_primitive_types() | 1.4.2.1 (ge)
+// name: init_primitive_types() | 1.5.0.0 (ge)
 // desc: initialize all primitive Type types
 //-----------------------------------------------------------------------------
 t_CKBOOL init_primitive_types( Chuck_Env * env )
@@ -1309,9 +1309,9 @@ CK_DLL_MFUN( object_toString )
             RETURN->v_object = NULL;
             return;
         }
-        // 1.4.2.1 (ge) assign to object
+        // 1.5.0.0 (ge) assign to object
         OBJ_MEMBER_UINT(SELF, Object_offset_string) = (t_CKUINT)str;
-        // 1.4.2.1 (ge) | add ref
+        // 1.5.0.0 (ge) | add ref
         str->add_ref();
 
         // set it
@@ -1590,7 +1590,7 @@ CK_DLL_DTOR( uana_dtor )
 {
     // get the blob
     Chuck_UAnaBlobProxy * blob = (Chuck_UAnaBlobProxy *)OBJ_MEMBER_INT(SELF, uana_offset_blob);
-    // delete the blob proxy | 1.4.2.1 (ge) added
+    // delete the blob proxy | 1.5.0.0 (ge) added
     SAFE_DELETE( blob ); // this should also clean up actual blob reference
     // zero out
     OBJ_MEMBER_INT(SELF, uana_offset_blob) = 0;
@@ -2670,7 +2670,7 @@ CK_DLL_MFUN( array_reset )
     array->clear();
 }
 
-// array.zero() | 1.4.2.1 (ge) added
+// array.zero() | 1.5.0.0 (ge) added
 CK_DLL_MFUN( array_zero )
 {
     Chuck_Array * array = (Chuck_Array *)SELF;
@@ -2800,7 +2800,7 @@ CK_DLL_MFUN( array_get_keys )
     }
 }
 
-// 1.4.2.1 azaday (added) array.reverse()
+// 1.5.0.0 azaday (added) array.reverse()
 CK_DLL_MFUN( array_reverse )
 {
     Chuck_Array * array = (Chuck_Array *)SELF;
@@ -2811,7 +2811,7 @@ CK_DLL_MFUN( array_reverse )
 
 //-----------------------------------------------------------------------------
 // Type implementation
-// 1.4.2.1 (ge) added
+// 1.5.0.0 (ge) added
 //-----------------------------------------------------------------------------
 static void typeGetTypes(
     Chuck_VM * vm,

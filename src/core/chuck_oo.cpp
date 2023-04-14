@@ -157,7 +157,7 @@ void Chuck_VM_Object::release()
             *(int *)0 = 1;
         }
 
-        // log | 1.4.2.1 (ge) added
+        // log | 1.5.0.0 (ge) added
         EM_log( CK_LOG_FINEST, "reclaiming %s: 0x%08x", typeid(*this).name(), this );
 
         // tell the object manager to set this free
@@ -346,7 +346,7 @@ Chuck_Object::~Chuck_Object()
     while( type != NULL )
     {
         // SPENCER TODO: HACK! is there a better way to call the dtor?
-        if( type->info && type->has_destructor ) // 1.4.2.1 (ge) added type->info check
+        if( type->info && type->has_destructor ) // 1.5.0.0 (ge) added type->info check
         {
             // sanity check
             assert( type->info->dtor && type->info->dtor->native_func );
@@ -703,7 +703,7 @@ void Chuck_Array4::get_keys( std::vector<std::string> & keys )
 
 t_CKINT my_ck_random( t_CKINT i ) { return ck_random() % i;}
 //-----------------------------------------------------------------------------
-// name: my_random_shuffle() | 1.4.2.1
+// name: my_random_shuffle() | 1.5.0.0
 // desc: random shuffle an array
 // adapted from https://en.cppreference.com/w/cpp/algorithm/random_shuffle
 //-----------------------------------------------------------------------------
@@ -723,7 +723,7 @@ static void my_random_shuffle( RandomIt first, RandomIt last )
 
 
 //-----------------------------------------------------------------------------
-// name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
+// name: shuffle() | 1.5.0.0 nshaheed, azaday, kunwoo, ge (added)
 // desc: shuffle the contents of the array
 //-----------------------------------------------------------------------------
 void Chuck_Array4::shuffle()
@@ -1146,7 +1146,7 @@ void Chuck_Array8::reverse( )
 
 
 
-// name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
+// name: shuffle() | 1.5.0.0 nshaheed, azaday, kunwoo, ge (added)
 // desc: shuffle the contents of the array
 //-----------------------------------------------------------------------------
 void Chuck_Array8::shuffle()
@@ -1519,7 +1519,7 @@ void Chuck_Array16::reverse( )
 
 
 //-----------------------------------------------------------------------------
-// name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
+// name: shuffle() | 1.5.0.0 nshaheed, azaday, kunwoo, ge (added)
 // desc: shuffle the contents of the array
 //-----------------------------------------------------------------------------
 void Chuck_Array16::shuffle()
@@ -1982,7 +1982,7 @@ void Chuck_Array24::reverse( )
 
 
 //-----------------------------------------------------------------------------
-// name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
+// name: shuffle() | 1.5.0.0 nshaheed, azaday, kunwoo, ge (added)
 // desc: shuffle the contents of the array
 //-----------------------------------------------------------------------------
 void Chuck_Array24::shuffle()
@@ -2342,7 +2342,7 @@ void Chuck_Array32::reverse( )
 
 
 //-----------------------------------------------------------------------------
-// name: shuffle() | 1.4.2.1 nshaheed, azaday, kunwoo, ge (added)
+// name: shuffle() | 1.5.0.0 nshaheed, azaday, kunwoo, ge (added)
 // desc: shuffle the contents of the array
 //-----------------------------------------------------------------------------
 void Chuck_Array32::shuffle()
@@ -3260,7 +3260,7 @@ void Chuck_IO_File::seek( t_CKINT pos )
         EM_error3( "[chuck](via FileIO): cannot seek on a directory" );
         return;
     }
-    // 1.4.2.1 (ge) | added since seekg fails if EOF already reached
+    // 1.5.0.0 (ge) | added since seekg fails if EOF already reached
     m_io.clear();
     m_io.seekg( pos );
     m_io.seekp( pos );
@@ -3404,7 +3404,7 @@ Chuck_String * Chuck_IO_File::readLine()
 
     // chuck str
     Chuck_String * str = new Chuck_String( s );
-    // initialize | 1.4.2.1 (ge) | added initialize_object
+    // initialize | 1.5.0.0 (ge) | added initialize_object
     initialize_object( str, m_vmRef->env()->t_string );
 
     // note this chuck string still needs to be initialized
@@ -3675,7 +3675,7 @@ t_CKBOOL Chuck_IO_File::eof()
         return TRUE;
     }
 
-    // return EOF conditions (1.4.2.1: peek() was added since eof() is set
+    // return EOF conditions (1.5.0.0: peek() was added since eof() is set
     // ONLY AFTER an effort is made to read and no more data is left)
     // https://stackoverflow.com/questions/4533063/how-does-ifstreams-eof-work
     return m_io.eof() || m_io.fail() || m_io.peek() == EOF;
@@ -4061,24 +4061,24 @@ t_CKBOOL Chuck_IO_Cherr::eof()
 void Chuck_IO_Cherr::write( const std::string & val )
 {
     m_buffer << val;
-    flush(); // always flush for cerr | 1.4.2.1 (ge) added
+    flush(); // always flush for cerr | 1.5.0.0 (ge) added
     // if( val == "\n" ) flush();
 }
 
 void Chuck_IO_Cherr::write( t_CKINT val )
 {
     m_buffer << val;
-    flush(); // always flush for cerr | 1.4.2.1 (ge) added
+    flush(); // always flush for cerr | 1.5.0.0 (ge) added
 }
 
 void Chuck_IO_Cherr::write( t_CKINT val, t_CKINT flags )
 {
     m_buffer << val;
-    flush(); // always flush for cerr | 1.4.2.1 (ge) added
+    flush(); // always flush for cerr | 1.5.0.0 (ge) added
 }
 
 void Chuck_IO_Cherr::write( t_CKFLOAT val )
 {
     m_buffer << val;
-    flush(); // always flush for cerr | 1.4.2.1 (ge) added
+    flush(); // always flush for cerr | 1.5.0.0 (ge) added
 }

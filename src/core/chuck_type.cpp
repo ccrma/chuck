@@ -174,7 +174,7 @@ Chuck_Env::Chuck_Env( )
     // REFACTOR-2017: carrier
     m_carrier = NULL;
 
-    // zero out | 1.4.2.1 (ge) moved Chuck_Type instantiation to after carrier is set,
+    // zero out | 1.5.0.0 (ge) moved Chuck_Type instantiation to after carrier is set,
     // in order to access compiler (e.g., for originHint)
     t_void = NULL;
     t_int = NULL;
@@ -215,7 +215,7 @@ Chuck_Env::~Chuck_Env()
     // set static flag to unlock all types
     t_object->unlock_all();
 
-    // unlock each internal object type | 1.4.2.1 (ge) added
+    // unlock each internal object type | 1.5.0.0 (ge) added
     SAFE_UNLOCK_DELETE(t_void);
     SAFE_UNLOCK_DELETE(t_int);
     SAFE_UNLOCK_DELETE(t_float);
@@ -251,7 +251,7 @@ Chuck_Env::~Chuck_Env()
 
 //-----------------------------------------------------------------------------
 // name: init()
-// desc: initialize | 1.4.2.1 (ge) added to defer Chuck_Type creations
+// desc: initialize | 1.5.0.0 (ge) added to defer Chuck_Type creations
 //       for base types in order to access more information, e.g., the compiler
 //       within the Chuck_Type constructor
 //-----------------------------------------------------------------------------
@@ -291,7 +291,7 @@ t_CKBOOL Chuck_Env::init()
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_init_object_special() | 1.4.2.1 (ge) added
+// name: type_engine_init_object_special() | 1.5.0.0 (ge) added
 // desc: special initialization of base types that have mutual dependencies
 //       (e.g., with the Type base type)
 //-----------------------------------------------------------------------------
@@ -356,7 +356,7 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     // and store carrier in env
     env->set_carrier( carrier );
 
-    // initialize types | 1.4.2.1 (ge) moved here to after carrier set
+    // initialize types | 1.5.0.0 (ge) moved here to after carrier set
     env->init();
 
     // enter the default global type mapping : lock VM objects to catch deletion
@@ -408,7 +408,7 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     // special: @array and Type, whose initializations mutually depend
     init_class_array( env, env->t_array );
     // initialize the Type type
-    init_class_type( env, env->t_class ); // 1.4.2.1
+    init_class_type( env, env->t_class ); // 1.5.0.0
     // initialize of Object's and @array's Type objects are deferred until after init_class_type()
     type_engine_init_special( env, env->t_object );
     type_engine_init_special( env, env->t_array );
@@ -3343,7 +3343,7 @@ string type_engine_print_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member membe
     member->t_base = type_engine_check_exp( env, member->base );
     if( !member->t_base ) return "[error]";
 
-    // is the base a class/namespace or a variable | modified 1.4.2.1 (ge)
+    // is the base a class/namespace or a variable | modified 1.5.0.0 (ge)
     base_static = type_engine_is_base_static( env, member->t_base );
     // base_static = isa( member->t_base, env->t_class );
 
@@ -3703,7 +3703,7 @@ check_func:
     Chuck_Type * the_base = NULL;
     t_CKBOOL base_static = FALSE;
 
-    // is the base a class/namespace or a variable | 1.4.2.1 (ge) modified to call
+    // is the base a class/namespace or a variable | 1.5.0.0 (ge) modified to call
     base_static = type_engine_is_base_static( env, member->t_base );
     // base_static = isa( member->t_base, env->t_class );
     // actual type
@@ -5499,13 +5499,13 @@ t_CKBOOL type_engine_import_class_end( Chuck_Env * env )
     // set the object size
     env->class_def->obj_size = env->class_def->info->offset;
 
-    // for everything that's not the base Object type or arrays | 1.4.2.1
+    // for everything that's not the base Object type or arrays | 1.5.0.0
     // context: Object and Type mutually depend, so we will initialize
     // Object's Type object manually in type system initialization
     // same with arrays since Type's API involved array arguments
     if( env->class_def->name != env->t_object->name && env->class_def->name != env->t_array->name )
     {
-        // initialize the type as object | 1.4.2.1 (ge) added
+        // initialize the type as object | 1.5.0.0 (ge) added
         initialize_object( env->class_def, env->t_class );
     }
 
@@ -5808,10 +5808,10 @@ Chuck_Type * Chuck_Context::new_Chuck_Type( Chuck_Env * env )
     // this is only for types created before Type (t_class) initialized,
     // which should only be for the base Object type, which needs to be
     // initialize before the Type type is initialize, becaues Type is
-    // a subclass of Object | 1.4.2.1 (ge) brain is bad
+    // a subclass of Object | 1.5.0.0 (ge) brain is bad
     if( env->t_class->info != NULL )
     {
-        // initialize it as Type object | 1.4.2.1 (ge) added
+        // initialize it as Type object | 1.5.0.0 (ge) added
         initialize_object( type, env->t_class );
     }
 
@@ -5921,7 +5921,7 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
 
     // is a ref
     t->size = array_parent->size;
-    // propagate object size | 1.4.2.1 (ge) added
+    // propagate object size | 1.5.0.0 (ge) added
     t->obj_size = array_parent->obj_size;
     // set the array depth
     t->array_depth = depth;
@@ -6581,7 +6581,7 @@ error:
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_is_base_static() | 1.4.2.1 (ge) added
+// name: type_engine_is_base_static() | 1.5.0.0 (ge) added
 // desc: check for static func/member access using class; e.g., SinOsc.help()
 //       this function was created after adding the complexity of t_class being
 //       made available in the language (as the Type type)
@@ -6778,7 +6778,7 @@ t_CKINT str2char( const char * c, int linepos )
 //-----------------------------------------------------------------------------
 // name: same_arg_lists()
 // desc: compare two argument lists to see if they are the same
-//       added 1.4.2.1 (ge) to catch duplicate functions
+//       added 1.5.0.0 (ge) to catch duplicate functions
 //-----------------------------------------------------------------------------
 t_CKBOOL same_arg_lists( a_Arg_List lhs, a_Arg_List rhs )
 {
@@ -6805,7 +6805,7 @@ t_CKBOOL same_arg_lists( a_Arg_List lhs, a_Arg_List rhs )
 //-----------------------------------------------------------------------------
 // name: arglist2string()
 // desc: generate a string from an argument list (types only)
-//       1.4.2.1 (ge) added
+//       1.5.0.0 (ge) added
 //-----------------------------------------------------------------------------
 string arglist2string( a_Arg_List list )
 {
@@ -6843,7 +6843,7 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     ugen_info = NULL; is_complete = TRUE; has_constructor = FALSE;
     has_destructor = FALSE; allocator = NULL; originHint = te_originUnknown;
 
-    // set origin hint, if possible | 1.4.2.1 (ge) added
+    // set origin hint, if possible | 1.5.0.0 (ge) added
     Chuck_Compiler * compiler = env->compiler();
     if( compiler != NULL ) originHint = compiler->m_originHint;
 }

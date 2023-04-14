@@ -736,7 +736,7 @@ void FFT_object::transform()
         return;
     }
 
-    // just checking | 1.4.2.1 (ge) | added
+    // just checking | 1.5.0.0 (ge) | added
     if( m_window_size > m_size )
     {
         // out of memory

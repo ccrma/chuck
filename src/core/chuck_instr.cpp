@@ -3815,7 +3815,7 @@ inline void call_pre_constructor( Chuck_VM * vm, Chuck_VM_Shred * shred,
     // push the stack offset
     push_( reg_sp, stack_offset );
 
-    // NOTE (1.4.2.1): pre-constructors by their nature have no arguments...
+    // NOTE (1.5.0.0): pre-constructors by their nature have no arguments...
     // if they did, they would need to clean up argument list, in the built-in/native
     // func case, by setting g_func_call_member.m_func_ref with the appropriate func
 
@@ -3983,7 +3983,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
             object = new Chuck_VM_Shred;
             ((Chuck_VM_Shred * )object)->vm_ref = vm; // REFACTOR-2017
         }
-        // 1.4.2.1 (ge) added -- here my feeble brain starts leaking out of my eyeballs
+        // 1.5.0.0 (ge) added -- here my feeble brain starts leaking out of my eyeballs
         else if( isa( type, vm->env()->t_class ) ) object = new Chuck_Type( vm->env(), te_class, type->name, type, type->size );
         // TODO: is this ok?
         else object = new Chuck_Object;
@@ -4424,7 +4424,7 @@ void Chuck_Instr_AddRef_Object2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: ref-count increment the top of the register stack (added 1.3.0.0)
-//       1.4.2.1 (ge) additional notes...
+//       1.5.0.0 (ge) additional notes...
 //       this is used to keep objects referenced while on stack;
 //       relevant for cases like `return obj;` where obj may need to
 //       released for the local stack AND need to be kept on the stack
@@ -4502,7 +4502,7 @@ void Chuck_Instr_Release_Object2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: release object reference + pop from reg stack | 1.4.2.1 (ge) added
+// desc: release object reference + pop from reg stack | 1.5.0.0 (ge) added
 //       the variant assumes object pointer directly on stack (not offset)
 //       used to release returned object pointer after a function call;
 //       FYI the return value is conveyed on the reg stack; this undoes
@@ -4530,7 +4530,7 @@ void Chuck_Instr_Release_Object3_Pop_Word::execute( Chuck_VM * vm, Chuck_VM_Shre
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: release object reference from reg stack | 1.4.2.1 (ge) added
+// desc: release object reference from reg stack | 1.5.0.0 (ge) added
 //       the variant assumes object pointer directly on stack (not offset)
 //       used to release objects on function arguments, specifically for
 //       built-in / imported (chugins) functions; code-defined functions
@@ -4581,7 +4581,7 @@ void Chuck_Instr_Func_To_Code::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 
 //-----------------------------------------------------------------------------
-// name: func_release_args() | 1.4.2.1 (ge) added
+// name: func_release_args() | 1.5.0.0 (ge) added
 // desc: helper function to release objects an function arg list
 //       input: VM, args list, mem stack pointer
 //       context: this is designed for builtin/imported functions
@@ -4793,7 +4793,7 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // push the return args
         push_( reg_sp, retval.v_uint );
 
-        // 1.4.2.1 (ge) | added -- ensure ref count
+        // 1.5.0.0 (ge) | added -- ensure ref count
         if( m_func_ref && isobj(vm->env(), m_func_ref->def->ret_type) )
         {
             // get return value as object reference
@@ -4833,7 +4833,7 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     else if( m_val == kindof_VOID ) { }
     else assert( FALSE );
 
-    // if we have a func def | 1.4.2.1 (ge) added
+    // if we have a func def | 1.5.0.0 (ge) added
     if( m_func_ref != NULL )
     {
         // cleanup / release objects on the arg list
@@ -4926,7 +4926,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // push the return args
         push_( reg_sp, retval.v_uint );
 
-        // 1.4.2.1 (ge) | added -- ensure ref count
+        // 1.5.0.0 (ge) | added -- ensure ref count
         if( m_func_ref && isobj(vm->env(), m_func_ref->def->ret_type) )
         {
             // get return value as object reference
@@ -4966,7 +4966,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     else if( m_val == kindof_VOID ) { }
     else assert( FALSE );
 
-    // if we have a func def | 1.4.2.1 (ge) added
+    // if we have a func def | 1.5.0.0 (ge) added
     if( m_func_ref != NULL )
     {
         // cleanup / release objects on the arg list
@@ -5410,7 +5410,7 @@ Chuck_Instr_Array_Alloc::Chuck_Instr_Array_Alloc( Chuck_Env * env, t_CKUINT dept
     // set
     m_depth = depth;
 
-    // 1.4.2.1 (ge) now maintains two Chuck_Types: one for the array content;
+    // 1.5.0.0 (ge) now maintains two Chuck_Types: one for the array content;
     // one for the array itself (which has depth > 0); the latter is so that
     // array object can have a reference to the array type itself
 
@@ -5451,9 +5451,9 @@ Chuck_Instr_Array_Alloc::Chuck_Instr_Array_Alloc( Chuck_Env * env, t_CKUINT dept
 //-----------------------------------------------------------------------------
 Chuck_Instr_Array_Alloc::~Chuck_Instr_Array_Alloc()
 {
-    // delete | 1.4.2.1 (ge) convert to macro
+    // delete | 1.5.0.0 (ge) convert to macro
     SAFE_DELETE_ARRAY( m_param_str );
-    // release | 1.4.2.1 (ge) added
+    // release | 1.5.0.0 (ge) added
     SAFE_RELEASE(m_type_ref_content);
     SAFE_RELEASE(m_type_ref_array);
 }
@@ -5501,7 +5501,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
                 }
             }
 
-            // initialize object | 1.4.2.1 (ge) use array type instead of base t_array
+            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
             initialize_object( base, type );
             // initialize_object( base, vm->env()->t_array );
@@ -5512,7 +5512,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             Chuck_Array8 * base = new Chuck_Array8( *capacity );
             if( !base ) goto out_of_memory;
 
-            // initialize object | 1.4.2.1 (ge) use array type instead of base t_array
+            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
             initialize_object( base, type );
             // initialize_object( base, vm->env()->t_array );
@@ -5523,7 +5523,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             Chuck_Array16 * base = new Chuck_Array16( *capacity );
             if( !base ) goto out_of_memory;
 
-            // initialize object | 1.4.2.1 (ge) use array type instead of base t_array
+            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
             initialize_object( base, type );
             // initialize_object( base, vm->env()->t_array );
@@ -5534,7 +5534,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             Chuck_Array24 * base = new Chuck_Array24( *capacity );
             if( !base ) goto out_of_memory;
 
-            // initialize object | 1.4.2.1 (ge) use array type instead of base t_array
+            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
             initialize_object( base, type );
             // initialize_object( base, vm->env()->t_array );
@@ -5545,7 +5545,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             Chuck_Array32 * base = new Chuck_Array32( *capacity );
             if( !base ) goto out_of_memory;
 
-            // initialize object | 1.4.2.1 (ge) use array type instead of base t_array
+            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
             initialize_object( base, type );
             // initialize_object( base, vm->env()->t_array );
@@ -5560,7 +5560,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
     base = new Chuck_Array4( TRUE, *capacity );
     if( !base ) goto out_of_memory;
 
-    // construct type for next array level | 1.4.2.1 (ge) added
+    // construct type for next array level | 1.5.0.0 (ge) added
     typeNext = type->copy( vm->env() );
     // check
     if( typeNext->array_depth == 0 ) goto internal_error_array_depth;
@@ -5578,7 +5578,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
         base->set( i, (t_CKUINT)next );
     }
 
-    // initialize object | 1.4.2.1 (ge) use array type instead of base t_array
+    // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
     // for the object->type_ref to contain more specific information
     initialize_object( base, type );
     // initialize_object( base, vm->env()->t_array );
@@ -5683,7 +5683,7 @@ void Chuck_Instr_Array_Alloc::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         (t_CKINT *)(reg_sp - m_depth),
         (t_CKINT *)(reg_sp - 1),
         getkindof(vm->env(), m_type_ref_content), // 1.3.1.0: changed; was 'm_type_ref->size'
-        m_is_obj, obj_array, index, m_type_ref_array // 1.4.2.1: added m_type_ref_array
+        m_is_obj, obj_array, index, m_type_ref_array // 1.5.0.0: added m_type_ref_array
     );
 
     // pop the indices - this protects the contents of the stack
@@ -5740,7 +5740,7 @@ error:
 //-----------------------------------------------------------------------------
 // name: normalize_index()
 // desc: normalize index to allow for negative array indexing
-//       1.4.2.1 (nshaheed) added
+//       1.5.0.0 (nshaheed) added
 //-----------------------------------------------------------------------------
 static t_CKINT normalize_index( t_CKINT i, t_CKINT len )
 {
@@ -5786,7 +5786,7 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         Chuck_Array4 * arr = (Chuck_Array4 *)(*sp);
         // get index
         i = (t_CKINT)(*(sp+1));
-        // normalize index to allow for negative indexing | 1.4.2.1 (nshaheed) added
+        // normalize index to allow for negative indexing | 1.5.0.0 (nshaheed) added
         ni = normalize_index( i, arr->size() );
         // check if writing
         if( m_emit_addr ) {

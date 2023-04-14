@@ -58,8 +58,8 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
 t_CKBOOL init_class_vec4( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
-t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type ); // 1.4.2.1
-t_CKBOOL init_primitive_types( Chuck_Env * env ); // 1.4.2.1
+t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type ); // 1.5.0.0
+t_CKBOOL init_primitive_types( Chuck_Env * env ); // 1.5.0.0
 
 
 
@@ -261,7 +261,7 @@ CK_DLL_MFUN( vec4_normalize );
 
 
 //-----------------------------------------------------------------------------
-// type API | 1.4.2.1 (ge) added
+// type API | 1.5.0.0 (ge) added
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( type_ctor );
 CK_DLL_DTOR( type_dtor );

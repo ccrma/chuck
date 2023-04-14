@@ -2769,7 +2769,7 @@ struct sndbuf_data
     t_CKUINT chunks_read;
     t_CKUINT chunk_num;
     SAMPLE ** chunk_map;
-    // 1.4.2.1 (ge) added (chunks will only affect next .read)
+    // 1.5.0.0 (ge) added (chunks will only affect next .read)
     t_CKUINT chunks_on_next_load;
 
     SAMPLE * eob;
@@ -2958,7 +2958,7 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
             d->current_val = 0;  // 1.4.1.0 (ge) added to avoid DC
             return; // 1.4.1.0 (ge) added
         }
-        else if( d->curf >= d->num_frames ) // 1.4.2.1 (ge) | changed from > to >=
+        else if( d->curf >= d->num_frames ) // 1.5.0.0 (ge) | changed from > to >=
         {
             d->curf = d->num_frames;
             d->current_val = 0;
@@ -2987,11 +2987,11 @@ inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT frame_pos, t_CKINT arg_c
         while( frame_pos <  0 ) frame_pos += nf;
     }
     else {
-        if( frame_pos >= nf ) frame_pos = nf; // 1.4.2.1 (ge) | set frame_pos to nf, instead of nf-1
+        if( frame_pos >= nf ) frame_pos = nf; // 1.5.0.0 (ge) | set frame_pos to nf, instead of nf-1
         if( frame_pos < 0 ) frame_pos = 0;
     }
 
-    // 1.4.2.1 (ge) | added check
+    // 1.5.0.0 (ge) | added check
     if( frame_pos == nf ) return 0;
 
     // if specific channel was requested, use that one
@@ -3180,7 +3180,7 @@ CK_DLL_TICK( sndbuf_tick )
 #endif /* CK_SNDBUF_MEMORY_BUFFER */
 
     // check if we have data to work with
-    // 1.4.2.1 (ge) modified for clarity;
+    // 1.5.0.0 (ge) modified for clarity;
     // was: if( !(d->buffer || d->chunk_map) ) { ... }
     // if no buffer allocated; nothing read
     if( d->buffer == NULL && d->chunk_map == NULL )
@@ -3328,7 +3328,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         d->fd = NULL;
     }
 
-    // check | 1.4.2.1 (ge) added check to avert crash on null argument
+    // check | 1.5.0.0 (ge) added check to avert crash on null argument
     if( !ckfilename )
     {
         CK_FPRINTF_STDERR( "[chuck] SndBuf.read() given null argument; nothing read...\n" );
@@ -3340,7 +3340,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
     // log
     EM_log( CK_LOG_INFO, "(sndbuf): reading '%s'...", filename );
     
-    // copy in the chunks size | 1.4.2.1 (ge)
+    // copy in the chunks size | 1.5.0.0 (ge)
     d->chunks = d->chunks_on_next_load;
 
     // built in
@@ -3510,7 +3510,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
             if( d->fd )
             {
                 sf_close( d->fd );
-                d->fd = NULL; // 1.4.2.1 (ge) added
+                d->fd = NULL; // 1.5.0.0 (ge) added
             }
             // escape
             return;
@@ -3521,7 +3521,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         if(d->chunks)
         {
             // split into small allocations
-            d->chunk_num = ceil(((t_CKFLOAT) size) / ((t_CKFLOAT) d->chunks)); // 1.4.2.1 (ge) | ceilf => ceil
+            d->chunk_num = ceil(((t_CKFLOAT) size) / ((t_CKFLOAT) d->chunks)); // 1.5.0.0 (ge) | ceilf => ceil
             d->buffer = NULL;
             d->chunk_map = new SAMPLE*[d->chunk_num];
             memset(d->chunk_map, 0, d->chunk_num * sizeof(SAMPLE *));
@@ -3704,7 +3704,7 @@ CK_DLL_CTRL( sndbuf_ctrl_chunks )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     t_CKINT frames = GET_NEXT_INT(ARGS);
-    // 1.4.2.1 (ge) | modified to set chunks_on_next_load
+    // 1.5.0.0 (ge) | modified to set chunks_on_next_load
     // setting chunks after load violates some assumptions
     d->chunks_on_next_load = frames >= 0 ? frames : 0;
     // d->chunks = frames >= 0 ? frames : 0;
@@ -3714,7 +3714,7 @@ CK_DLL_CTRL( sndbuf_ctrl_chunks )
 CK_DLL_CGET( sndbuf_cget_chunks )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
-    // 1.4.2.1 (ge) | retuns d->chunks_on_next_load
+    // 1.5.0.0 (ge) | retuns d->chunks_on_next_load
     RETURN->v_int = d->chunks_on_next_load;
     // RETURN->v_int = d->chunks;
 }
@@ -3754,7 +3754,7 @@ CK_DLL_CGET( sndbuf_cget_valueAt )
     t_CKINT frame, channel;
     d->sampleIndex2FrameIndexAndChannel(sample, &frame, &channel);
     if( d->fd ) sndbuf_load( d, sample );
-    // 1.4.2.1 (ge) 'frame >' => 'frame >='
+    // 1.5.0.0 (ge) 'frame >' => 'frame >='
     RETURN->v_float = ( frame >= d->num_frames || frame < 0 ) ? 0 : sndbuf_sampleAt(d, frame, channel);
 }
 

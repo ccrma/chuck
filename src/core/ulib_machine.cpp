@@ -61,7 +61,7 @@ CK_DLL_SFUN( machine_setloglevel_impl );
 CK_DLL_SFUN( machine_getloglevel_impl );
 CK_DLL_SFUN( machine_refcount_impl);
 
-// 1.4.2.1 ((ge, spencer, terry) | added
+// 1.5.0.0 ((ge, spencer, terry) | added
 CK_DLL_CTOR( CKDoc_ctor );
 CK_DLL_DTOR( CKDoc_dtor );
 CK_DLL_MFUN( CKDoc_outputDir_set );
@@ -453,7 +453,7 @@ CK_DLL_SFUN( machine_refcount_impl )
 
 //-----------------------------------------------------------------------------
 // name: ckdoc_query()
-// desc: add class for ckdoc documentation generator | 1.4.2.1 ((ge, spencer, terry)
+// desc: add class for ckdoc documentation generator | 1.5.0.0 ((ge, spencer, terry)
 //-----------------------------------------------------------------------------
 DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY )
 {
@@ -469,7 +469,7 @@ DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY )
 
     //---------------------------------------------------------------------
     // init as class
-    // 1.4.2.1 added by spencer and ge
+    // 1.5.0.0 added by spencer and ge
     //---------------------------------------------------------------------
     // doc string
     doc = "A ChucK documentation generator. Based on Spencer Salazar's ckdoc utility.";
@@ -571,7 +571,7 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: class CKDocOutput | 1.4.2.1 (based on Spencer's ckdoc Output class)
+// name: class CKDocOutput | 1.5.0.0 (based on Spencer's ckdoc Output class)
 // desc: abstract base class for doc output
 //-----------------------------------------------------------------------------
 class CKDocOutput
@@ -650,7 +650,7 @@ protected:
 
 
 //-----------------------------------------------------------------------------
-// name: class CKDocHTMLOutput | 1.4.2.1 (ge, spencer, terry) added
+// name: class CKDocHTMLOutput | 1.5.0.0 (ge, spencer, terry) added
 // desc: HTML output (based on Spencer's ckdoc)
 //-----------------------------------------------------------------------------
 class CKDocHTMLOutput : public CKDocOutput
@@ -1001,7 +1001,7 @@ private:
 
 
 //-----------------------------------------------------------------------------
-// name: class CKDoc_Impl | 1.4.2.1 (ge, spencer, terry)
+// name: class CKDoc_Impl | 1.5.0.0 (ge, spencer, terry)
 // desc: CKDoc internal implementation, based on Spencer's CKDoc utility
 //-----------------------------------------------------------------------------
 class CKDoc_Impl

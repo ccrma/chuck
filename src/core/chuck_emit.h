@@ -149,7 +149,7 @@ struct Chuck_Emitter : public Chuck_VM_Object
     void addref_on_scope();
     // pop scope
     void pop_scope();
-    // traverse scope on jumps such as 'return' 'break' 'continue' | 1.4.2.1 (ge)
+    // traverse scope on jumps such as 'return' 'break' 'continue' | 1.5.0.0 (ge)
     void traverse_scope_on_jump();
 
     // default durations

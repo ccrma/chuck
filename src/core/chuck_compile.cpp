@@ -59,7 +59,7 @@
   #include "dirent_win32.h"
 #else
   #ifndef __DISABLE_WORDEXP__
-  #include <wordexp.h> // 1.4.2.1 (ge) added
+  #include <wordexp.h> // 1.5.0.0 (ge) added
   #endif
 #endif
 
@@ -96,7 +96,7 @@ Chuck_Compiler::Chuck_Compiler()
     // REFACTOR-2017: add carrier
     m_carrier = NULL;
 
-    // origin hint | 1.4.2.1 (ge) added
+    // origin hint | 1.5.0.0 (ge) added
     m_originHint = te_originUnknown;
 }
 
@@ -827,7 +827,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
 
 #ifndef __PLATFORM_WIN32__
 #ifndef __DISABLE_WORDEXP__
-    // 1.4.2.1 (ge) added (for ~)
+    // 1.5.0.0 (ge) added (for ~)
     wordexp_t exp_result;
     // "perform shell-style word expansions"
     wordexp( directory, &exp_result, 0 );
@@ -926,7 +926,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
 
 #ifndef __PLATFORM_WIN32__
 #ifndef __DISABLE_WORDEXP__
-    // free | 1.4.2.1 (ge) added
+    // free | 1.5.0.0 (ge) added
     wordfree( &exp_result );
 #endif
 #endif

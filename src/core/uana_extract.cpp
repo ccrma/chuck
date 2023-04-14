@@ -90,7 +90,7 @@ CK_DLL_TOCK( Kurtosis_tock );
 CK_DLL_PMSG( Kurtosis_pmsg );
 CK_DLL_SFUN( Kurtosis_compute );
 
-// SFM | 1.4.2.1 (yikai) added
+// SFM | 1.5.0.0 (yikai) added
 CK_DLL_CTOR( SFM_ctor );
 CK_DLL_DTOR( SFM_dtor );
 CK_DLL_TICK( SFM_tick );
@@ -103,7 +103,7 @@ CK_DLL_MFUN( SFM_cget_nr_bands );
 static t_CKUINT SFM_offset_data = 0;
 
 
-// Chroma | 1.4.2.1 (yikai) added
+// Chroma | 1.5.0.0 (yikai) added
 CK_DLL_CTOR( Chroma_ctor );
 CK_DLL_DTOR( Chroma_dtor );
 CK_DLL_TICK( Chroma_tick );
@@ -1600,7 +1600,7 @@ CK_DLL_SFUN( Kurtosis_compute )
     }
 }
 
-// 1.4.2.1 (yikai) | SFM implementation
+// 1.5.0.0 (yikai) | SFM implementation
 // Yikai Li, Winter 2023
 struct SFM_Object
 {
@@ -1849,7 +1849,7 @@ CK_DLL_MFUN( SFM_compute )
     compute_sfm( sfm, *input, *output );
 }
 
-// 1.4.2.1 (yikai) | Chroma implementation
+// 1.5.0.0 (yikai) | Chroma implementation
 // Yikai Li, Winter 2023
 struct Chroma_Object
 {

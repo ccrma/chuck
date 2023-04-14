@@ -177,7 +177,7 @@ public: // static functions
     static const char * version();
     // chuck int size (in bits)
     // (this depends on machine, which depends on OTF, so disable it if we don't have OTF)
-    // 1.4.2.1 (ge) | reinstated for non-OTF, along with parts of machine
+    // 1.5.0.0 (ge) | reinstated for non-OTF, along with parts of machine
     static t_CKUINT intSize();
     // number of ChucK's
     static t_CKUINT numVMs() { return o_numVMs; };
