@@ -357,7 +357,6 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     
     // go ahead and seed (the code can seed again for repeatability; 1.3.1.0)
     srandom( time( NULL ) );
-    
     // add gauss (ge: added 1.3.5.3)
     QUERY->add_sfun( QUERY, gauss_impl, "float", "gauss" ); //! Gaussian function
     QUERY->add_arg( QUERY, "float", "x" );
