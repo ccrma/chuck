@@ -933,7 +933,7 @@ bool go( int argc, const char ** argv )
         if( !retval )
         {
             EM_log( CK_LOG_SYSTEM, "cannot initialize audio device..." );
-            EM_log( CK_LOG_SYSTEM, "| (use --probe see list of avaialble audio devices)" );
+            EM_log( CK_LOG_SYSTEM, "| (use --probe see list of available audio devices)" );
             EM_log( CK_LOG_SYSTEM, "| (use --dac/--adc to explicitly select output/input devices)" );
             EM_log( CK_LOG_SYSTEM, "| (use --silent/-s for non-realtime)" );
             EM_log( CK_LOG_SYSTEM, "| (use --help for more details)" );
