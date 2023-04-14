@@ -149,10 +149,17 @@ static RtAudio::Api driverNameToApi(char const *driver)
     return api;
 }
 
-static char const *apiToDriverName(RtAudio::Api api)
+
+
+
+//-----------------------------------------------------------------------------
+// name: apiToDriverName()
+// desc: get driver name from API
+//-----------------------------------------------------------------------------
+static char const * apiToDriverName( RtAudio::Api api )
 {
-    static char const *drivers[] = {
-        "Default driver",
+    static char const * drivers[] = {
+        "default",
         "ALSA",
         "Pulse",
         "OSS",
@@ -164,12 +171,16 @@ static char const *apiToDriverName(RtAudio::Api api)
         "DUMMY",
         "Invalid"
     };
-    return drivers[(int) api];
+
+    return drivers[(int)api];
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: print()
-// desc: ...
+// desc: print info for an audio device
 //-----------------------------------------------------------------------------
 void print( const RtAudio::DeviceInfo & info )
 {
@@ -221,18 +232,18 @@ static void rtAudioErrorHandler(
 // name: probe()
 // desc: ...
 //-----------------------------------------------------------------------------
-void ChuckAudio::probe(char const *driver)
+void ChuckAudio::probe( char const * driver )
 {
-    RtAudio::Api api = driverNameToApi(driver); // handles driver=NULL case
-    char const *dnm = apiToDriverName(api);
+    RtAudio::Api api = driverNameToApi( driver ); // handles driver=NULL case
+    char const * dnm = apiToDriverName( api );
     // rtaduio pointer
     RtAudio * audio = NULL;
     // device info struct
     RtAudio::DeviceInfo info;
     
     // allocate RtAudio
-    audio = new RtAudio(api, rtAudioErrorHandler);
-    if(!audio)
+    audio = new RtAudio( api, rtAudioErrorHandler );
+    if( !audio )
     {
         // error reported by our errorHandler
         return;
@@ -240,7 +251,8 @@ void ChuckAudio::probe(char const *driver)
 
     // get count
     int devices = audio->getDeviceCount();
-    EM_error2b( 0, "%s found %d device(s) ...", dnm, devices );
+    EM_error2b( 0, "[%s] driver found %d audio device(s)...", dnm, devices );
+    EM_error2( 0, "" );
 
     // reset -- what does this do
     EM_reset_msg();
@@ -279,16 +291,17 @@ void ChuckAudio::probe(char const *driver)
 // desc: get device number by name; needs_dac/adc prompts further checks on
 //       requested device having > 0 channels
 //-----------------------------------------------------------------------------
-t_CKINT ChuckAudio::device_named( char const *driver, 
-                                   const std::string & name, t_CKBOOL needs_dac,
-                                   t_CKBOOL needs_adc )
+t_CKINT ChuckAudio::device_named( char const * driver,
+                                  const std::string & name,
+                                  t_CKBOOL needs_dac,
+                                  t_CKBOOL needs_adc )
 {
     // rtaudio pointer
     RtAudio * audio = NULL;
     // device info struct
     RtAudio::DeviceInfo info;
     RtAudio::Api api = driverNameToApi(driver); // handles driver=NULL case
-    char const *dnm = apiToDriverName(api);
+    // char const * dnm = apiToDriverName(api);
     
     // allocate RtAudio
     audio = new RtAudio(api, rtAudioErrorHandler);
@@ -508,11 +521,78 @@ t_CKBOOL ChuckAudio::watchdog_stop()
 }
 
 
+
+
+//-----------------------------------------------------------------------------
+// name: supportSampleRate()
+// desc: does a device (which can potentially support multiple sample rates)
+//       support a particular sample rate? 1.5.0.0 (ge) | added
+//-----------------------------------------------------------------------------
+static t_CKBOOL supportSampleRate( RtAudio::DeviceInfo & device_info, t_CKINT sample_rate )
+{
+    // loop over supported sample rates for a device
+    for( t_CKINT i = 0; i < device_info.sampleRates.size(); i++ )
+    {
+        // look for a match
+        if( device_info.sampleRates[i] == sample_rate )
+        {
+            return TRUE;
+        }
+    }
+
+    // no match
+    return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: findMatchingInputDevice()
+// desc: find an input device with matching chans and sample rate
+//       1.5.0.0 (ge) | added
+//-----------------------------------------------------------------------------
+static t_CKINT findMatchingInputDevice( RtAudio * rtaudio, t_CKINT numInputChans,
+                                        t_CKINT sample_rate, t_CKBOOL allowMoreChans )
+{
+    // get number of devices
+    t_CKINT num_devices = rtaudio->getDeviceCount();
+    // struct to hold info for a device
+    RtAudio::DeviceInfo device_info;
+
+    // find first device with at least the requested channel count (and sample rate match)
+    for( t_CKUINT i = 0; i < num_devices; i++ )
+    {
+        // get device info
+        device_info = rtaudio->getDeviceInfo((unsigned int)i);
+        // check sample rate
+        if( supportSampleRate( device_info, sample_rate ) )
+        {
+            // check channels; the allowMoreChans toggles exact match or lenient match
+            if( (allowMoreChans == FALSE && device_info.inputChannels == numInputChans) ||
+                (allowMoreChans == TRUE && device_info.inputChannels >= numInputChans) )
+            {
+                // log
+                EM_log( CK_LOG_INFO, "found alternate input device: %d...", i );
+                // return device number
+                return i;
+            }
+        }
+    }
+
+    // no match
+    return -1;
+}
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: initialize()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL ChuckAudio::initialize( char const *driver,
+t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
+                                 t_CKUINT adc_device,
                                  t_CKUINT num_dac_channels,
                                  t_CKUINT num_adc_channels,
                                  t_CKUINT sample_rate,
@@ -520,11 +600,14 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
                                  t_CKUINT num_buffers,
                                  f_audio_cb callback,
                                  void * data,
-                                 t_CKBOOL force_srate )
+                                 t_CKBOOL force_srate,
+                                 char const * driver )
 {
     if( m_init )
         return FALSE;
 
+    m_dac_n = dac_device;
+    m_adc_n = adc_device;
     m_num_channels_out = num_dac_channels;
     m_num_channels_in = num_adc_channels;
     m_sample_rate = sample_rate;
@@ -541,6 +624,10 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
 
     // variable to pass by reference into RtAudio
     unsigned int bufsize = (unsigned int)m_buffer_size;
+    // check output device number; 0 means "default"
+    bool useDefaultOut = ( m_dac_n == 0 );
+    // check input device number; 0 means "default"
+    bool useDefaultIn = ( m_adc_n == 0 );
 
     // log
     EM_log( CK_LOG_FINE, "initializing RtAudio..." );
@@ -550,6 +637,7 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
     // allocate RtAudio
     RtAudio::Api api = driverNameToApi(driver);
     char const *dnm = apiToDriverName(api);
+    RtAudioErrorType code = RTAUDIO_NO_ERROR;
     m_rtaudio = new RtAudio(api, rtAudioErrorHandler);
     if(!m_rtaudio)
     {
@@ -561,10 +649,8 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
     // note: this is to preserve previous devices numbering after RtAudio change
     if( m_num_channels_out > 0 )
     {
-        // check output device number; 0 used to mean "default"
-        bool useDefault = ( m_dac_n == 0 );
         // default (refactor 1.3.1.2)
-        if( useDefault )
+        if( useDefaultOut )
         {
             // get the default
             m_dac_n = m_rtaudio->getDefaultOutputDevice();
@@ -578,9 +664,9 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
         RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo((unsigned int)m_dac_n);
         
         // ensure correct channel count if default device is requested
-        if( useDefault )
+        if( useDefaultOut )
         {
-            // check
+            // check for output (channels)
             if( device_info.outputChannels < m_num_channels_out )
             {
                 // find first device with at least the requested channel count
@@ -680,108 +766,96 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
     if( m_num_channels_in > 0 )
     {
         // if we are requesting the default input device
-        if( m_adc_n == 0 )
+        if( useDefaultIn )
         {
             // get default input device
             m_adc_n = m_rtaudio->getDefaultInputDevice();
             
             // ensure correct channel count if default device is requested
             RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo((unsigned int)m_adc_n);
-            
-            // check if input channels > 0
+            // remember
+            t_CKUINT inChannelsRequested = m_num_channels_in;
+
+            // check if input channels > 0 || sample rate does not match
             if( device_info.inputChannels < m_num_channels_in )
             {
                 // 1.4.2.0 (ge) | added: a specific but possible common case
                 // for systems that have a 1-channel default input audio device -- e.g., some MacOS systems
-                if( m_num_channels_in == 2 && device_info.inputChannels == 1 )
+                if( m_num_channels_in == 2 && device_info.inputChannels == 1
+                    && supportSampleRate( device_info, sample_rate ) ) // try to stay on device if possible
+                {
+                    // nothing more for now here
+                    // the code here to set the m_expand_in_mono2stereo flag has been moved below
+                }
+                else // need further matching
+                {
+                    // special case | 1.5.0.0 (ge) -- in this case of default input device,
+                    // first try to match using the current default input device channels.
+                    // This is to handle the situation in macOS and using bluetooth earbuds
+                    // or headphones and the highest supported input sample rate is lower than
+                    // the desired chuck sample rate (e.g., some input devices only support 24K);
+                    // in this case, look for devices with match sample rates AND inherit the
+                    // default input devices's actual channel count. This heuristic is so that
+                    // on most Apple laptops since macOS 11, this will end up choosing the
+                    // the onboard laptop microphone. This will hopefully serve many students
+                    // working in the above setup; of course, power users can explicitly choose
+                    // the input and output devices using command-line flags or other settings
+                    // -
+                    // special case | 1.4.0.1 (ge) -- check if the sample rate is supported
+                    // this is to catch the case where the default device has
+                    // insufficient channels (e.g., 1 on MacOS), finds secondary device
+                    // (e.g., ZoomAudioDevice on MacOS) that has enough channels
+                    // but does not support the desired sample rate
+                    // amended 1.4.2.0 -- the behavior is modified above, where chuck
+                    // will first check if the default input device has only 1 channel
+                    // while we are requesting 2 channels...
+                    // -
+                    // if non-zero input channels
+                    if( device_info.inputChannels > 0 )
+                    {
+                        // find first device with *exactly* the requested channel count
+                        m_adc_n = findMatchingInputDevice(m_rtaudio, device_info.inputChannels, sample_rate, FALSE );
+                    }
+                    
+                    // check if match
+                    if( m_adc_n >= 0 )
+                    {
+                        // update the request input channel request
+                        m_num_channels_in = device_info.inputChannels;
+                    }
+                    else
+                    {
+                        // find first device with *at least* the requested channel count
+                        m_adc_n = findMatchingInputDevice(m_rtaudio, m_num_channels_in, sample_rate, TRUE );
+
+                        // changed 1.3.1.2 (ge): for input, if no match found by this point, we just gonna try to open half-duplex
+                        if( m_adc_n < 0 )
+                        {
+                            // set to 0
+                            m_num_channels_in = 0;
+                            // problem finding audio devices, most likely
+                            // EM_error2( 0, "unable to find audio input device with requested channel count (%i)...",
+                            //               m_num_channels_in);
+                            // clean up
+                            // goto error;
+                        }
+                    }
+                }
+            }
+
+            // if we ended up with a match
+            if( m_dac_n >= 0 )
+            {
+                // get info for the input device we ended up using
+                device_info = m_rtaudio->getDeviceInfo((unsigned int)m_adc_n);
+                // check channel situation look for specific arrangement; we should have a sample rate match if we get here
+                if( inChannelsRequested == 2 && device_info.inputChannels == 1 )
                 {
                     // flag this for expansion in the callback
                     m_expand_in_mono2stereo = TRUE;
                     // log
                     EM_log( CK_LOG_INFO, "using 1-channel default input audio device (instead of requested 2-channel)..." );
                     EM_log( CK_LOG_INFO, "simulating stereo input from mono audio device..." );
-                }
-                else
-                {
-                    // find first device with at least the requested channel count
-                    m_adc_n = -1;
-                    int num_devices = m_rtaudio->getDeviceCount();
-                    for( int i = 0; i < num_devices; i++ )
-                    {
-                        device_info = m_rtaudio->getDeviceInfo(i);
-                        if( device_info.inputChannels >= m_num_channels_in )
-                        {
-                            // added 1.4.0.1 -- check if the sample rate is supported
-                            // this is to catch the case where the default device has
-                            // insufficient channels (e.g., 1 on MacOS), finds secondary device
-                            // (e.g., ZoomAudioDevice on MacOS) that has enough channels
-                            // but does not support the desired sample rate
-                            // amended 1.4.2.0 -- the behavior is modified above, where chuck
-                            // will first check if the default input device has only 1 channel
-                            // while we are requesting 2 channels
-                            bool isMatch = false;
-                            for( long j = 0; j < device_info.sampleRates.size(); j++ )
-                            {
-                                if( device_info.sampleRates[j] == m_sample_rate )
-                                {
-                                    // flag
-                                    isMatch = true;
-                                    // break out sample rate loop
-                                    break;
-                                }
-                            }
-
-                            // match? (does this separately to break out of outer loop)
-                            if( isMatch )
-                            {
-                                // new input device
-                                m_adc_n = i;
-                                // log
-                                EM_log( CK_LOG_INFO, "found alternate input device: %d...", i );
-                                // break out of device loop
-                                break;
-                            }
-                        }
-                    }
-
-                    // added 1.4.0.1 (ge) -- special case if no other matching device found...
-                    // for systems that have default mono audio device e.g., some MacOS systems
-                    // (commented out due to 1.4.2.0 changes above to look mono default input first)
-                    //if( m_adc_n == -1 )
-                    //{
-                    //    // get default input device
-                    //    m_adc_n = m_rtaudio->getDefaultInputDevice();
-                    //    // get device info
-                    //    device_info = m_rtaudio->getDeviceInfo(m_adc_n);
-                    //
-                    //    // special case
-                    //    if( m_num_channels_in == 2 && device_info.inputChannels == 1 )
-                    //    {
-                    //        // flag this for expansion in the callback
-                    //        m_expand_in_mono2stereo = TRUE;
-                    //        // log
-                    //        EM_log( CK_LOG_INFO, "no matching stereo input device found..." );
-                    //        EM_log( CK_LOG_INFO, "simulating stereo input from mono audio device..." );
-                    //    }
-                    //    else
-                    //    {
-                    //        // okay, let's not impose any further; fall through to subseqent logic
-                    //        m_adc_n = -1;
-                    //    }
-                    //}
-                    
-
-                    // changed 1.3.1.2 (ge): for input, if nothing found, we just gonna try to open half-duplex
-                    if( m_adc_n == -1 )
-                    {
-                        // set to 0
-                        m_num_channels_in = 0;
-                        // problem finding audio devices, most likely
-                        // EM_error2( 0, "unable to find audio input device with requested channel count (%i)...",
-                        //               m_num_channels_in);
-                        // clean up
-                        // goto error;
-                    }
                 }
             }
         }
@@ -793,9 +867,9 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
     }
 
     // open device
-    try {
+    { // was: try {
         // log
-        EM_log( CK_LOG_FINE, "%s trying %d input %d output...",
+        EM_log( CK_LOG_FINE, "[%s] driver trying %d input %d output...",
                 dnm, m_num_channels_in, m_num_channels_out );
 
         RtAudio::StreamParameters output_parameters;
@@ -814,18 +888,23 @@ t_CKBOOL ChuckAudio::initialize( char const *driver,
         stream_options.streamName = "ChucK";
         stream_options.priority = 0;
             
-        // open RtAudio
-        m_rtaudio->openStream(
+        // open audio stream
+        code = m_rtaudio->openStream(
             m_num_channels_out > 0 ? &output_parameters : NULL,
             m_num_channels_in > 0 ? &input_parameters : NULL,
             CK_RTAUDIO_FORMAT, (unsigned int)sample_rate, &bufsize,
             cb, m_cb_user_data,
-            &stream_options );
-    } catch( RtAudioErrorType ) {
-        // RtAudio no longer throws, errors reported via errorHandler
-        SAFE_DELETE( m_rtaudio );
-        // clean up
-        goto error;
+            &stream_options
+        );
+
+        // check error code
+        if( code > RTAUDIO_WARNING ) // was: } catch( RtAudioErrorType ) {
+        {
+            // RtAudio no longer throws, errors reported via errorHandler
+            SAFE_DELETE( m_rtaudio );
+            // clean up
+            goto error;
+        }
     }
         
     // check bufsize
