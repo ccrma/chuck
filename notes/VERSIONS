@@ -357,6 +357,27 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
 - (added) example: ai/knn/knn-search.ck
 - (added) example: ai/knn/knn2-classify.ck
 - (added) example: ai/knn/knn2-search.ck
+    --------------
+- (updated) real-time audio backend has been updated
+            *** thank you Dana Batali ***
+- (added) all platform: driver support
+- (added) Windows: ASIO, WASAPI, DirectSound
+- (added) linux: now can build multiple drivers into single executable
+          > make linux-pulse linux-alsa linux-jack
+- (fixed) macOS bluetooth/Apple AirPods audio input device error;
+    |- CONTEXT: Apple AirPods (and a number of other Bluetooth headphones) 
+    show up in macOS as its own audio input device and supports only one 
+    sample rate (24K in the case of AirPods). ChucK, like most full-duplex 
+    audio software, requires matching sample rates for audio input and 
+    output. By default, it would try to initialize with a sample rate of 
+    44.1K or 48K and would fail initialization due to the rate mismatch 
+    with the AirPods.
+    |- FIX: ChucK now has additional logic when initializing default audio 
+    devices, and will automatically try to match with a different input 
+    devices when needed.
+- (fixed) VM timing issue when real-time audio initialization switches to 
+    a different sample rate when the requested/default sample rate is not
+    available
 - (added) new default duration 'eon' == day * 365.256363004 * 1000000000.0 (thanks nshaheed)
     example: eon => now; // a long long time from now
 - (added) new static method for all Objects
