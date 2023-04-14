@@ -647,7 +647,7 @@ struct CallbackInfo {
   bool deviceDisconnected;
 
   CallbackInfo()
-    : object(NULL), thread(NULL), callback(NULL), userData(NULL),
+    : object(NULL), thread(0), callback(NULL), userData(NULL),
       apiInfo(NULL), isRunning(false), doRealtime(false), priority(0),
       deviceDisconnected(false)
   { }

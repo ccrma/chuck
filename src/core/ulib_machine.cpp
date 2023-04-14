@@ -39,6 +39,7 @@
 #include "util_string.h"
 
 #include <string>
+#include <algorithm>
 using namespace std;
 
 // exports
