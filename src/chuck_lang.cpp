@@ -1521,7 +1521,7 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     if( MidiMsg_offset_data3 == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
-    doc = "Time when the MidiMsg occured, relative to the start of the file (only valid for MidiFileIn).";
+    doc = "Time when the MidiMsg occurred, relative to the start of the file (only valid for MidiFileIn).";
     MidiMsg_offset_when = type_engine_import_mvar( env, "dur", "when", FALSE, doc.c_str() );
     if( MidiMsg_offset_when == CK_INVALID_OFFSET ) goto error;
 
