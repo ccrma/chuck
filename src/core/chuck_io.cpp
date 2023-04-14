@@ -135,6 +135,23 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "int", "flags" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    /*
+    // add readInt()
+    func = make_new_mfun( "int", "readInt8", io_dummy );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readInt()
+    func = make_new_mfun( "int", "readInt16", io_dummy );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readInt()
+    func = make_new_mfun( "int", "readInt32", io_dummy );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    */
+
     // add readFloat()
     // func = make_new_mfun( "float", "readFloat", io_dummy );
     // if( !type_engine_import_mfun( env, func ) ) goto error;
@@ -322,6 +339,28 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
     func = make_new_mfun( "int", "readInt", fileio_readintflags );
     func->add_arg( "int", "flags" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    /*
+    // add readByte()
+    func = make_new_mfun( "int", "readByte", fileio_readint8 );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readInt8()
+    func = make_new_mfun( "int", "readInt8", fileio_readint8 );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readInt16()
+    func = make_new_mfun( "int", "readInt16", fileio_readint16 );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readInt32()
+    func = make_new_mfun( "int", "readInt32", fileio_readint32 );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    */
 
     // add readFloat()
     // func = make_new_mfun( "float", "readFloat", fileio_readfloat );
@@ -1453,8 +1492,28 @@ CK_DLL_MFUN( fileio_readintflags )
 {
     t_CKINT flags = GET_NEXT_INT(ARGS);
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-    t_CKINT ret = f->readInt( flags );
-    RETURN->v_int = ret;
+    RETURN->v_int = f->readInt( flags );
+}
+
+CK_DLL_MFUN( fileio_readint8 )
+{
+    t_CKINT flags = GET_NEXT_INT(ARGS);
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    RETURN->v_int = f->readInt( Chuck_IO::INT8 );
+}
+
+CK_DLL_MFUN( fileio_readint16 )
+{
+    t_CKINT flags = GET_NEXT_INT(ARGS);
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    RETURN->v_int = f->readInt( Chuck_IO::INT16 );
+}
+
+CK_DLL_MFUN( fileio_readint32 )
+{
+    t_CKINT flags = GET_NEXT_INT(ARGS);
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    RETURN->v_int = f->readInt( Chuck_IO::INT32 );
 }
 
 CK_DLL_MFUN( fileio_readfloat )
@@ -3440,7 +3499,7 @@ t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
     tv.tv_sec = timeout_ms/1000;
     tv.tv_usec = 1000 * (timeout_ms%1000);
 
-    int result = select(m_fd+1, &fds, NULL, NULL, &tv);
+    t_CKINT result = select(m_fd+1, &fds, NULL, NULL, &tv);
 
     if(result > 0 && FD_ISSET(m_fd, &fds))
     {
