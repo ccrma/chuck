@@ -1847,7 +1847,7 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
 //  - http://msdn.microsoft.com/library/default.asp?url=/library/en-us/multimed/htm/_win32_midi_reference.asp
 
 // chuck
-#if defined(__WINDOWS_DS__)
+#if defined(__PLATFORM_WIN32__)
 //#if defined(__WINDOWS_MM__)
 
 // The Windows MM API is based on the use of a callback function for

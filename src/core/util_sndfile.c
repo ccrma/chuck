@@ -8089,7 +8089,7 @@ psf_fseek (SF_PRIVATE *psf, sf_count_t offset, int whence)
 		} ;
 
 	lDistanceToMove = (DWORD) (offset & 0xFFFFFFFF) ;
-#ifndef __WINDOWS_DS__
+#ifndef __PLATFORM_WIN32__
 	lDistanceToMoveHigh = (DWORD) (0xFFFFFFFF & (offset >> 32)) ;
 #else
     lDistanceToMoveHigh = 0;
@@ -8330,7 +8330,7 @@ psf_ftruncate (SF_PRIVATE *psf, sf_count_t len)
 		return 1 ;
 
 	lDistanceToMoveLow = (DWORD) (len & 0xFFFFFFFF) ;
-#ifndef __WINDOWS_DS__
+#ifndef __PLATFORM_WIN32__
 	lDistanceToMoveHigh = (DWORD) ((len >> 32) & 0xFFFFFFFF) ;
 #else
     lDistanceToMoveHigh = 0;
@@ -31583,7 +31583,8 @@ wav_read_header	 (SF_PRIVATE *psf, int *blockalign, int *framesperblock)
 						}
 					else if (psf->filelength < RIFFsize + 2 * SIGNED_SIZEOF (dword))
 					{	psf_log_printf (psf, "RIFF : %u (should be %D)\n", RIFFsize, psf->filelength - 2 * SIGNED_SIZEOF (dword)) ;
-						RIFFsize = dword ;
+						dword = psf->filelength - 2 * sizeof (dword) ;
+                        RIFFsize = dword ;
 						}
 					else
 						psf_log_printf (psf, "RIFF : %u\n", RIFFsize) ;
