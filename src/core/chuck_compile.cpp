@@ -721,6 +721,9 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     if( !init_class_serialio( env ) ) goto error;
     #endif
 
+    // EM_log( CK_LOG_SEVERE, "module 'CKDoc'" );
+    // if( !load_module( compiler, env, ckdoc_query, "CKDoc", "global" ) ) goto error;
+
     // clear context
     type_engine_unload_context( env );
 
