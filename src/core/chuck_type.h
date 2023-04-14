@@ -85,7 +85,7 @@ typedef enum {
 
 
 //-----------------------------------------------------------------------------
-// name: enum te_Origin | 1.4.2.1 (ge) added
+// name: enum te_Origin | 1.5.0.0 (ge) added
 // desc: where something (e.g., a Type) originates
 //-----------------------------------------------------------------------------
 typedef enum {
@@ -615,7 +615,7 @@ struct Chuck_UGen_Info : public Chuck_VM_Object
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Type
 // desc: class containing information about a type
-// note: 1.4.2.1 (ge) Chuck_VM_Object -> Chuck_Object
+// note: 1.5.0.0 (ge) Chuck_VM_Object -> Chuck_Object
 //-----------------------------------------------------------------------------
 struct Chuck_Type : public Chuck_Object
 {
@@ -934,10 +934,10 @@ t_CKBOOL type_engine_check_primitive( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL type_engine_check_const( Chuck_Env * env, a_Exp e, int pos ); // TODO
 t_CKBOOL type_engine_compat_func( a_Func_Def lhs, a_Func_Def rhs, int pos, std::string & err, t_CKBOOL print = TRUE );
 t_CKBOOL type_engine_get_deprecate( Chuck_Env * env, const std::string & from, std::string & to );
-t_CKBOOL type_engine_is_base_static( Chuck_Env * env, Chuck_Type * baseType ); // 1.4.2.1 (ge) added
+t_CKBOOL type_engine_is_base_static( Chuck_Env * env, Chuck_Type * baseType ); // 1.5.0.0 (ge) added
 Chuck_Type  * type_engine_find_common_anc( Chuck_Type * lhs, Chuck_Type * rhs );
 Chuck_Type  * type_engine_find_type( Chuck_Env * env, a_Id_List path );
-Chuck_Type  * type_engine_find_type( Chuck_Env * env, const std::string & name ); // 1.4.2.1 (ge) added
+Chuck_Type  * type_engine_find_type( Chuck_Env * env, const std::string & name ); // 1.5.0.0 (ge) added
 Chuck_Value * type_engine_find_value( Chuck_Type * type, const std::string & xid );
 Chuck_Value * type_engine_find_value( Chuck_Type * type, S_Symbol xid );
 Chuck_Value * type_engine_find_value( Chuck_Env * env, const std::string & xid, t_CKBOOL climb, int linepos = 0 );
@@ -973,7 +973,7 @@ t_CKINT str2char( const char * char_lit, int linepos );
 
 
 //-----------------------------------------------------------------------------
-// more helper functions for type scan and checking | 1.4.2.1 (ge) added
+// more helper functions for type scan and checking | 1.5.0.0 (ge) added
 //-----------------------------------------------------------------------------
 // compare two argument lists to see if they are the same (sequence of types)
 t_CKBOOL same_arg_lists( a_Arg_List lhs, a_Arg_List rhs );

@@ -114,7 +114,7 @@ void Chuck_Frame::get_scope( vector<Chuck_Local *> & out, bool localOnly ) const
     while( index >= 0 )
     {
         // did we hit a stack boundary (delineated by NULL)
-        // localOnly option added 1.4.2.1 (ge) -- to get all scope in the frame
+        // localOnly option added 1.5.0.0 (ge) -- to get all scope in the frame
         if( localOnly && this->stack[index] != NULL )
             break;
 

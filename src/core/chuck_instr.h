@@ -75,7 +75,7 @@ public:
 
     // set codestr associated with this instruction
     void set_codestr( const std::string & str );
-    // (used in instruction dump) | 1.4.2.1 (ge) added
+    // (used in instruction dump) | 1.5.0.0 (ge) added
     std::string * m_codestr;
 };
 
@@ -3027,7 +3027,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Release_Object3_Pop_Word
-// desc: release object reference + pop from reg stack | 1.4.2.1 (ge) added
+// desc: release object reference + pop from reg stack | 1.5.0.0 (ge) added
 //       the variant assumes object pointer directly on stack (not offset)
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Release_Object3_Pop_Word : public Chuck_Instr
@@ -3041,7 +3041,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Release_Object4
-// desc: release object reference from reg stack (no pop) | 1.4.2.1 (ge) added
+// desc: release object reference from reg stack (no pop) | 1.5.0.0 (ge) added
 //       the variant assumes object pointer directly on stack (not offset)
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Release_Object4 : public Chuck_Instr_Unary_Op
@@ -3097,7 +3097,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 
 public:
-    Chuck_Func * m_func_ref; // 1.4.2.1 (ge) | added for arg list cleanup
+    Chuck_Func * m_func_ref; // 1.5.0.0 (ge) | added for arg list cleanup
 };
 
 
@@ -3117,7 +3117,7 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 
 public:
-    Chuck_Func * m_func_ref; // 1.4.2.1 (ge) | added for arg list cleanup
+    Chuck_Func * m_func_ref; // 1.5.0.0 (ge) | added for arg list cleanup
 };
 
 
@@ -3236,7 +3236,7 @@ public:
 protected:
     t_CKUINT m_depth;
     Chuck_Type * m_type_ref_content;
-    Chuck_Type * m_type_ref_array; // 1.4.2.1 (ge) added
+    Chuck_Type * m_type_ref_array; // 1.5.0.0 (ge) added
     t_CKBOOL m_is_obj;
     char * m_param_str;
     t_CKUINT m_stack_offset;

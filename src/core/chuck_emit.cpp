@@ -35,7 +35,7 @@
 #include "chuck_errmsg.h"
 #include "chuck_instr.h"
 #include "chuck_globals.h" // added 1.4.1.0
-#include "chuck_parse.h" // added 1.4.2.1
+#include "chuck_parse.h" // added 1.5.0.0
 #include <sstream>
 #include <iostream>
 
@@ -316,7 +316,7 @@ Chuck_VM_Code * emit_to_code( Chuck_Code * in,
         EM_error2( 0, "-------" );
         for( t_CKUINT i = 0; i < code->num_instr; i++ )
         {
-            // check code str | 1.4.2.1 (ge) added
+            // check code str | 1.5.0.0 (ge) added
             if( code->instr[i]->m_codestr )
             {
                 // print the reconstructed code str
@@ -398,7 +398,7 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
         case ae_stmt_exp:  // expression statement
             // get str
             codestr = absyn2str( stmt->stmt_exp );
-            // get next index | 1.4.2.1 (ge) added
+            // get next index | 1.5.0.0 (ge) added
             nextIndex = emit->next_index();
 
             // emit it
@@ -427,7 +427,7 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                     exp = exp->next;
                 }
 
-                // loop over the expression that is the statement (prior to 1.4.2.1 comment: "HACK" hmmm...)
+                // loop over the expression that is the statement (prior to 1.5.0.0 comment: "HACK" hmmm...)
                 for( t_CKINT i = pxe.size()-1; i >= 0; i-- )
                 // for( t_CKINT i = 0; i < pxe.size(); i++ )
                 {
@@ -1345,7 +1345,7 @@ t_CKBOOL emit_engine_emit_return( Chuck_Emitter * emit, a_Stmt_Return stmt )
         emit->append( new Chuck_Instr_Reg_AddRef_Object3 );
     }
 
-    // 1.4.2.1 (ge) | traverse and unwind current scope frames, release object
+    // 1.5.0.0 (ge) | traverse and unwind current scope frames, release object
     // references given the current state of the stack frames; every `return`
     // statement needs its own scope unwinding; FYI: this does not change the
     // scope frames, which is needed to continue compilation for the rest
@@ -3752,7 +3752,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
     Chuck_Type * t_base = NULL;
     // whether to emit addr or value
     t_CKBOOL emit_addr = member->self->emit_var;
-    // is the base a class/namespace or a variable | 1.4.2.1 (ge) modified to func call
+    // is the base a class/namespace or a variable | 1.5.0.0 (ge) modified to func call
     t_CKBOOL base_static = type_engine_is_base_static( emit->env, member->t_base );
     // t_CKBOOL base_static = isa( member->t_base, emit->env->t_class );
     // a function
@@ -4621,13 +4621,13 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // added by spencer June 2014 (1.3.5.0) | ensure return
     if( func_def->ret_type && func_def->ret_type != emit->env->t_void )
     {
-        // 1.4.2.1 (ge) | account for differences in return type size
+        // 1.5.0.0 (ge) | account for differences in return type size
         // push 0 for the width of the return type in question
         emit->append( new Chuck_Instr_Reg_Push_Zero( func_def->ret_type->size ) );
         // previously this pushed 0 as int, regardless of return type size
         // emit->append( new Chuck_Instr_Reg_Push_Imm(0) );
 
-        // 1.4.2.1 (ge) | commented out this goto...
+        // 1.5.0.0 (ge) | commented out this goto...
         // (okay as long as the next instruction is Chuck_Instr_Func_Return...)
         // Chuck_Instr_Goto * instr = new Chuck_Instr_Goto( 0 );
         // emit->append( instr );
@@ -4854,7 +4854,7 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
                                          exp->linepos,
                                          TRUE ) ) return FALSE;
 
-    // 1.4.2.1 (ge) | added to pop/release the returned value, which could be an object
+    // 1.5.0.0 (ge) | added to pop/release the returned value, which could be an object
     if( iskindofint(emit->env, exp->ret_type) )
     {
         // is an object?
@@ -5149,7 +5149,7 @@ void Chuck_Emitter::addref_on_scope()
 
 
 //-----------------------------------------------------------------------------
-// name: traverse_scope_on_jump() | 1.4.2.1 (ge) added
+// name: traverse_scope_on_jump() | 1.5.0.0 (ge) added
 // desc: traverse the scope and emit instructions on a jump statement:
 //       'return', 'break', 'continue'
 //       this is done to ensure proper cleanup of objects on scope frames

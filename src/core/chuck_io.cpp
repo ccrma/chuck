@@ -1594,7 +1594,7 @@ CK_DLL_MFUN( fileio_writestring )
     std::string val = GET_NEXT_STRING(ARGS)->str();
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
 
-#ifndef __DISABLE_FILEIO__ // 1.4.2.1 (ge) | made more granular (e.g., for WebChucK)
+#ifndef __DISABLE_FILEIO__ // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -1630,7 +1630,7 @@ CK_DLL_MFUN( fileio_writeint )
     t_CKINT val = GET_NEXT_INT(ARGS);
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
 
-#ifndef __DISABLE_FILEIO__ // 1.4.2.1 (ge) | made more granular (e.g., for WebChucK)
+#ifndef __DISABLE_FILEIO__ // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -1667,7 +1667,7 @@ CK_DLL_MFUN( fileio_writeintflags )
     t_CKINT flags = GET_NEXT_INT(ARGS);
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
 
-#ifndef __DISABLE_FILEIO__  // 1.4.2.1 (ge) | made more granular (e.g., for WebChucK)
+#ifndef __DISABLE_FILEIO__  // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // TODO: pass flags in args
@@ -1705,7 +1705,7 @@ CK_DLL_MFUN( fileio_writefloat )
     t_CKFLOAT val = GET_NEXT_FLOAT(ARGS);
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
 
-#ifndef __DISABLE_FILEIO__  // 1.4.2.1 (ge) | made more granular (e.g., for WebChucK)
+#ifndef __DISABLE_FILEIO__  // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -1840,7 +1840,7 @@ CK_DLL_MFUN( chout_writestring )
     Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->write( val );
 
-    // 1.4.2.1 | (ge) added a single newline -> trigger chout flush
+    // 1.5.0.0 | (ge) added a single newline -> trigger chout flush
     if( val == "\n" ) c->flush();
 }
 
@@ -4355,7 +4355,7 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     // func->doc = "";
     // if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add file modes (moved into IO | 1.4.2.1 (ge))
+    // add file modes (moved into IO | 1.5.0.0 (ge))
     // type_engine_import_svar(env, "int", "BINARY", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_BINARY, "Binary mode");
     // type_engine_import_svar(env, "int", "ASCII", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_ASCII, "ASCII mode");
 

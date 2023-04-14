@@ -497,7 +497,7 @@ t_CKBOOL Chuck_VM::compute()
             CK_TRACK( Chuck_Stats::instance()->activate_shred( shred ) );
 
             // run the shred
-            // 1.4.2.1 (ge) add check for shred->is_done, which flags a shred to exit
+            // 1.5.0.0 (ge) add check for shred->is_done, which flags a shred to exit
             if( shred->is_done || !shred->run( this ) )
             {
                 // track shred deactivation

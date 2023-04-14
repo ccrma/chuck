@@ -297,16 +297,16 @@ void global_cleanup()
     // make sure we don't double clean
     static bool s_already_cleaning = false;
 
-    // check | 1.4.2.1 (ge) added
+    // check | 1.5.0.0 (ge) added
     if( s_already_cleaning )
     {
-        // log | 1.4.2.1 (ge) added
+        // log | 1.5.0.0 (ge) added
         EM_log( CK_LOG_INFO, "additional global cleanup not needed..." );
         // done
         return;
     }
 
-    // log | 1.4.2.1 (ge) added
+    // log | 1.5.0.0 (ge) added
     EM_log( CK_LOG_SYSTEM, "global cleanup initiating..." );
     // set flag
     s_already_cleaning = true;
@@ -344,7 +344,7 @@ void global_cleanup()
 //    if( g_tid_otf ) CloseHandle( g_tid_otf );
 #endif
 
-    // 1.4.2.1 (ge) | commented
+    // 1.5.0.0 (ge) | commented
     // s_mutex.release();
 }
 

@@ -354,7 +354,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
         class_def->home = env->curr;
     }
 
-    // initialize the Type info object | 1.4.2.1 (ge) added
+    // initialize the Type info object | 1.5.0.0 (ge) added
     initialize_object( the_class, env->t_class );
 
 done:
@@ -2725,7 +2725,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     {
         // -----------------------
         // make sure return types match
-        // 1.4.2.1 (ge) more precise error reporting
+        // 1.5.0.0 (ge) more precise error reporting
         // -----------------------
         if( *(f->ret_type) != *(overload->func_ref->def->ret_type) )
         {
@@ -2750,7 +2750,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
 
         // -----------------------
         // make sure not duplicate
-        // 1.4.2.1 (ge) added
+        // 1.5.0.0 (ge) added
         // -----------------------
         overfunc = overload->func_ref;
         // loop over overloaded functions

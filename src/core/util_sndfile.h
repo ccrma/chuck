@@ -1752,7 +1752,7 @@ enum
     /* -------------------------------------------------------------------------
     creating and using WAVE_FORMAT_MS_PCM in this module, as WAVE_FORMAT_PCM may
     be defined by windows, e.g., in mmeapi.h -- which breaks the build...thanks
-    important: WAVE_FORMAT_MS_PCM must be 1, as WAV format tag | 1.4.2.1 (ge)
+    important: WAVE_FORMAT_MS_PCM must be 1, as WAV format tag | 1.5.0.0 (ge)
     ------------------------------------------------------------------------- */
     /* WAVE_FORMAT_PCM                  = 0x0001, */    /* Microsoft PCM format */
     WAVE_FORMAT_MS_ADPCM                = 0x0002,       /* Microsoft ADPCM */

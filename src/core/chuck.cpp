@@ -90,7 +90,7 @@
 
 
 // chuck statics
-const char ChucK::VERSION[] = "1.4.2.1-bleed-2023.03.08 (numchucks)";
+const char ChucK::VERSION[] = "1.5.0.0-beta-4.14 (numchucks)";
 t_CKUINT ChucK::o_numVMs = 0;
 t_CKBOOL ChucK::o_isGlobalInit = FALSE;
 t_CKBOOL ChucK::enableSystemCall = FALSE;
@@ -499,12 +499,12 @@ bool ChucK::initCompiler()
     }
 
     std::string cwd;
-    char * cstr_cwd = NULL; // 1.4.2.1 (barak) | was: char cstr_cwd[MAXPATHLEN];
+    char * cstr_cwd = NULL; // 1.5.0.0 (barak) | was: char cstr_cwd[MAXPATHLEN];
 
     // figure out current working directory (added 1.3.0.0)
     // is this needed for current path to work correctly?!
     // was: if( getcwd(cstr_cwd, MAXPATHLEN) == NULL )
-    // let getcwd allocate memory | 1.4.2.1 (barak)
+    // let getcwd allocate memory | 1.5.0.0 (barak)
     if( (cstr_cwd = getcwd(NULL, 0)) == NULL )
     {
         // uh...
@@ -604,7 +604,7 @@ bool ChucK::initChugins()
         std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
 
         //---------------------------------------------------------------------
-        // set origin hint | 1.4.2.1 (ge) added
+        // set origin hint | 1.5.0.0 (ge) added
         m_carrier->compiler->m_originHint = te_originChugin;
         //---------------------------------------------------------------------
         // log
@@ -623,7 +623,7 @@ bool ChucK::initChugins()
         EM_poplog();
 
         //---------------------------------------------------------------------
-        // set origin hint | 1.4.2.1 (ge) added
+        // set origin hint | 1.5.0.0 (ge) added
         m_carrier->compiler->m_originHint = te_originImport;
         //---------------------------------------------------------------------
         // log
@@ -682,14 +682,14 @@ bool ChucK::initChugins()
     // load user namespace
     m_carrier->env->load_user_namespace();
 
-    // unset origin hint | 1.4.2.1 (ge) added
+    // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
     return true;
 
 error: // 1.4.1.0 (ge) added
 
-    // unset origin hint | 1.4.2.1 (ge) added
+    // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
     return false;
@@ -846,7 +846,7 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
     std::string full_path;
 
     //-------------------------------------------------------------------------
-    // set origin hint | 1.4.2.1 (ge) added
+    // set origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUserDefined;
     //-------------------------------------------------------------------------
 
@@ -902,7 +902,7 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
            count == 1 ? "instance" : "instances" );
 
     // spork it
-    while( count > 0 ) // 1.4.2.1 (ge) | added changed to check for > 0, in case of negative count
+    while( count > 0 ) // 1.5.0.0 (ge) | added changed to check for > 0, in case of negative count
     {
         #ifndef __EMSCRIPTEN__
         // spork (for now, spork_immediate arg is always false)
@@ -924,14 +924,14 @@ bool ChucK::compileFile( const std::string & path, const std::string & argsToget
     // reset the parser
     reset_parse();
 
-    // unset origin hint | 1.4.2.1 (ge) added
+    // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
     return true;
 
-error: // 1.4.2.1 (ge) added
+error: // 1.5.0.0 (ge) added
 
-    // unset origin hint | 1.4.2.1 (ge) added
+    // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
     return false;
@@ -961,7 +961,7 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
     std::string full_path;
 
     //-------------------------------------------------------------------------
-    // set origin hint | 1.4.2.1 (ge) added
+    // set origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUserDefined;
     //-------------------------------------------------------------------------
 
@@ -1024,14 +1024,14 @@ bool ChucK::compileCode( const std::string & code, const std::string & argsToget
     // reset the parser
     reset_parse();
 
-    // unset origin hint | 1.4.2.1 (ge) added
+    // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
     return true;
 
-error: // 1.4.2.1 (ge) added
+error: // 1.5.0.0 (ge) added
 
-    // unset origin hint | 1.4.2.1 (ge) added
+    // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
     return false;

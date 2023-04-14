@@ -40,7 +40,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <vector> // 1.4.2.1 (ge) | added
+#include <vector> // 1.5.0.0 (ge) | added
 
 
 static double g_pi = ONE_PI;
@@ -351,43 +351,43 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "sd" );
     QUERY->doc_func( QUERY, "Compute gaussian function at x, given mean and SD." );
 
-    // add cossim (ge: added 1.4.2.1)
+    // add cossim (ge: added 1.5.0.0)
     QUERY->add_sfun( QUERY, cossim_impl, "float", "cossim" ); //! cosine similarity
     QUERY->add_arg( QUERY, "float", "a[]" );
     QUERY->add_arg( QUERY, "float", "b[]" );
     QUERY->doc_func( QUERY, "Compute the cosine similarity between arrays a and b." );
 
-    // add cossim (ge: added 1.4.2.1)
+    // add cossim (ge: added 1.5.0.0)
     QUERY->add_sfun( QUERY, cossim3d_impl, "float", "cossim" ); //! cosine similarity
     QUERY->add_arg( QUERY, "vec3", "a" );
     QUERY->add_arg( QUERY, "vec3", "b" );
     QUERY->doc_func( QUERY, "Compute the cosine similarity between 3D vectors a and b." );
 
-    // add cossim (ge: added 1.4.2.1)
+    // add cossim (ge: added 1.5.0.0)
     QUERY->add_sfun( QUERY, cossim4d_impl, "float", "cossim" ); //! cosine similarity
     QUERY->add_arg( QUERY, "vec4", "a" );
     QUERY->add_arg( QUERY, "vec4", "b" );
     QUERY->doc_func( QUERY, "Compute the cosine similarity between 4D vectors a and b." );
 
-    // add euclean (ge: added 1.4.2.1)
+    // add euclean (ge: added 1.5.0.0)
     QUERY->add_sfun( QUERY, euclidean_impl, "float", "euclidean" ); //! euclidean similarity
     QUERY->add_arg( QUERY, "float", "a[]" );
     QUERY->add_arg( QUERY, "float", "b[]" );
     QUERY->doc_func( QUERY, "Compute the euclidean distance between arrays a and b." );
 
-    // add euclean (ge: added 1.4.2.1)
+    // add euclean (ge: added 1.5.0.0)
     QUERY->add_sfun( QUERY, euclidean3d_impl, "float", "euclidean" ); //! euclidean similarity
     QUERY->add_arg( QUERY, "vec3", "a" );
     QUERY->add_arg( QUERY, "vec3", "b" );
     QUERY->doc_func( QUERY, "Compute the euclidean distance between 3D vectors a and b." );
 
-    // add euclean (ge: added 1.4.2.1)
+    // add euclean (ge: added 1.5.0.0)
     QUERY->add_sfun( QUERY, euclidean4d_impl, "float", "euclidean" ); //! euclidean similarity
     QUERY->add_arg( QUERY, "vec4", "a" );
     QUERY->add_arg( QUERY, "vec4", "b" );
     QUERY->doc_func( QUERY, "Compute the euclidean distance between 4D vectors a and b." );
 
-    // add map (ge: added 1.4.2.1)
+    // add map (ge: added 1.5.0.0)
     QUERY->add_sfun( QUERY, map_impl, "float", "map" ); //! map
     QUERY->add_arg( QUERY, "float", "value" );
     QUERY->add_arg( QUERY, "float", "x1" );
@@ -396,7 +396,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "y2" );
     QUERY->doc_func( QUERY, "Map 'value' from range [x1,y1] into range [x2,y2]; 'value' can be outside range[x1,y1]. (see also: Math.map2())" );
 
-    // add map (ge: added 1.4.2.1)
+    // add map (ge: added 1.5.0.0)
     QUERY->add_sfun( QUERY, map2_impl, "float", "map2" ); //! map
     QUERY->add_arg( QUERY, "float", "value" );
     QUERY->add_arg( QUERY, "float", "x1" );
@@ -405,7 +405,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "y2" );
     QUERY->doc_func( QUERY, "Map 'value' from range [x1,y1] into range [x2,y2]; 'value' will be clamped to [x1,y1] if outside range. (see also: Math.map())" );
 
-    // add remap (ge: added 1.4.2.1)
+    // add remap (ge: added 1.5.0.0)
     QUERY->add_sfun( QUERY, map2_impl, "float", "remap" ); //! remap
     QUERY->add_arg( QUERY, "float", "value" );
     QUERY->add_arg( QUERY, "float", "x1" );
@@ -414,14 +414,14 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "y2" );
     QUERY->doc_func( QUERY, "Same as Math.map2()." );
 
-    // add clamp (ge: added 1.4.2.1 -- actually migrated from Std)
+    // add clamp (ge: added 1.5.0.0 -- actually migrated from Std)
     QUERY->add_sfun( QUERY, clamp_impl, "int", "clampi" ); //! clamp to range (int)
     QUERY->add_arg( QUERY, "int", "value" );
     QUERY->add_arg( QUERY, "int", "min" );
     QUERY->add_arg( QUERY, "int", "max" );
     QUERY->doc_func( QUERY, "Clamp an integer to range [min,max]." );
 
-    // add clampf (ge: added 1.4.2.1 -- actually migrated from Std)
+    // add clampf (ge: added 1.5.0.0 -- actually migrated from Std)
     QUERY->add_sfun( QUERY, clampf_impl, "float", "clampf" ); //! clamp to range (float)
     QUERY->add_arg( QUERY, "float", "value" );
     QUERY->add_arg( QUERY, "float", "min" );
@@ -952,7 +952,7 @@ CK_DLL_SFUN( gauss_impl )
 }
 
 
-// cossim (ge) | added 1.4.2.1
+// cossim (ge) | added 1.5.0.0
 CK_DLL_SFUN( cossim_impl )
 {
     Chuck_Array8 * a = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
@@ -999,7 +999,7 @@ CK_DLL_SFUN( cossim_impl )
 }
 
 
-// cossim (ge) | added 1.4.2.1
+// cossim (ge) | added 1.5.0.0
 CK_DLL_SFUN( cossim3d_impl )
 {
     t_CKVEC3 a = GET_NEXT_VEC3( ARGS );
@@ -1037,7 +1037,7 @@ CK_DLL_SFUN( cossim3d_impl )
 }
 
 
-// euclidean4d (ge) | added 1.4.2.1
+// euclidean4d (ge) | added 1.5.0.0
 CK_DLL_SFUN( cossim4d_impl )
 {
     t_CKVEC4 a = GET_NEXT_VEC4( ARGS );
@@ -1080,7 +1080,7 @@ CK_DLL_SFUN( cossim4d_impl )
 
 
 
-// euclidean (ge) | added 1.4.2.1
+// euclidean (ge) | added 1.5.0.0
 CK_DLL_SFUN( euclidean_impl )
 {
     Chuck_Array8 * a = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
@@ -1127,7 +1127,7 @@ CK_DLL_SFUN( euclidean_impl )
 }
 
 
-// euclidean (ge) | added 1.4.2.1
+// euclidean (ge) | added 1.5.0.0
 CK_DLL_SFUN( euclidean3d_impl )
 {
     t_CKVEC3 a = GET_NEXT_VEC3( ARGS );
@@ -1147,7 +1147,7 @@ CK_DLL_SFUN( euclidean3d_impl )
 }
 
 
-// euclidean (ge) | added 1.4.2.1
+// euclidean (ge) | added 1.5.0.0
 CK_DLL_SFUN( euclidean4d_impl )
 {
     t_CKVEC4 a = GET_NEXT_VEC4( ARGS );
@@ -1167,7 +1167,7 @@ CK_DLL_SFUN( euclidean4d_impl )
     RETURN->v_float = ::sqrt(sum);
 }
 
-// map (ge) | added 1.4.2.1
+// map (ge) | added 1.5.0.0
 CK_DLL_SFUN( map_impl )
 {
     t_CKFLOAT v = GET_NEXT_FLOAT( ARGS );
@@ -1184,7 +1184,7 @@ CK_DLL_SFUN( map_impl )
     RETURN->v_float = x2 + (v-x1)/(y1-x1)*(y2-x2);
 }
 
-// map2 (ge) | added 1.4.2.1
+// map2 (ge) | added 1.5.0.0
 CK_DLL_SFUN( map2_impl )
 {
     t_CKFLOAT v = GET_NEXT_FLOAT( ARGS );

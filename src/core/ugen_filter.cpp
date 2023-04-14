@@ -851,7 +851,7 @@ struct FilterBasic_data
     // set_rlpf
     inline void set_rlpf( t_CKFLOAT freq, t_CKFLOAT Q )
     {
-        // 1.4.2.1 (ge) | added bounds to hopefully prevent any more blow-ups
+        // 1.5.0.0 (ge) | added bounds to hopefully prevent any more blow-ups
         freq = ck_max( 1, freq );
         freq = ck_min( g_srate/2, freq );
         Q = ck_max( 1, Q );
@@ -928,7 +928,7 @@ struct FilterBasic_data
     // set_rhpf
     inline void set_rhpf( t_CKFLOAT freq, t_CKFLOAT Q )
     {
-        // 1.4.2.1 (ge) | added bounds to hopefully prevent any more blow-ups
+        // 1.5.0.0 (ge) | added bounds to hopefully prevent any more blow-ups
         freq = ck_max( 1, freq );
         freq = ck_min( g_srate/2, freq );
         Q = ck_max( 1, Q );
@@ -1084,7 +1084,7 @@ CK_DLL_DTOR( FilterBasic_dtor )
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( FilterBasic_tick )
 {
-    // 1.4.2.1 (ge) | changed CK_FPRINTF_STDERR to EM_log; allow program to proceed
+    // 1.5.0.0 (ge) | changed CK_FPRINTF_STDERR to EM_log; allow program to proceed
     EM_log( CK_LOG_WARNING, "warning -- FilterBasic is an abstract class!" );
     EM_log( CK_LOG_WARNING, "  |- likely FilterBasic declared/used directly," );
     EM_log( CK_LOG_WARNING, "  | instead of a subclass of FilterBasic" );
@@ -1592,7 +1592,7 @@ CK_DLL_CTOR( RLPF_ctor )
     FilterBasic_data * f =  new FilterBasic_data;
     // zero out data
     memset( f, 0, sizeof(FilterBasic_data) );
-    // default | 1.4.2.1.(ge) added
+    // default | 1.5.0.0.(ge) added
     f->set_rlpf( 1000, 1 );
     // set in chuck object
     OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data) = (t_CKUINT)f;
@@ -1877,7 +1877,7 @@ CK_DLL_CTOR( RHPF_ctor )
     FilterBasic_data * f =  new FilterBasic_data;
     // zero out the data
     memset( f, 0, sizeof(FilterBasic_data) );
-    // default | 1.4.2.1.(ge) added
+    // default | 1.5.0.0.(ge) added
     f->set_rhpf( 1000, 1 );
     // set in chuck object
     OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data) = (t_CKUINT)f;

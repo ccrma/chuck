@@ -129,7 +129,7 @@ CK_DLL_MFUN( KNN_train );
 CK_DLL_MFUN( KNN_search );
 CK_DLL_MFUN( KNN_search2 );
 CK_DLL_MFUN( KNN_weigh );
-// 1.4.2.1 (yikai) added KNN2
+// 1.5.0.0 (yikai) added KNN2
 CK_DLL_CTOR( KNN2_ctor );
 CK_DLL_DTOR( KNN2_dtor );
 CK_DLL_MFUN( KNN2_train );
@@ -151,7 +151,7 @@ CK_DLL_MFUN( HMM_generate );
 // offset
 static t_CKUINT HMM_offset_data = 0;
 
-// 1.4.2.1 (yikai) added Word2Vec
+// 1.5.0.0 (yikai) added Word2Vec
 CK_DLL_CTOR( Word2Vec_ctor );
 CK_DLL_DTOR( Word2Vec_dtor );
 CK_DLL_MFUN( Word2Vec_load );
@@ -174,7 +174,7 @@ CK_DLL_SFUN( PCA_reduce );
 // offset
 static t_CKUINT PCA_offset_data = 0;
 
-// 1.4.2.1 (yikai) added Wekinator
+// 1.5.0.0 (yikai) added Wekinator
 CK_DLL_CTOR( Wekinator_ctor );
 CK_DLL_DTOR( Wekinator_dtor );
 CK_DLL_MFUN( Wekinator_set_num_inputs );
@@ -508,7 +508,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
 
     //---------------------------------------------------------------------
     // init as base class: Word2Vec
-    // 1.4.2.1 added by Yikai Li, Spring 2023
+    // 1.5.0.0 added by Yikai Li, Spring 2023
     //---------------------------------------------------------------------
     // doc string
     doc = "a word embeddings utility that maps words to vectors; can load a model and perform similarity retrieval.";
@@ -624,7 +624,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
 
     //---------------------------------------------------------------------
     // init as base class: Wekinator
-    // 1.4.2.1 added by Yikai Li, Winter 2023
+    // 1.5.0.0 added by Yikai Li, Winter 2023
     //---------------------------------------------------------------------
     // doc string
     doc =
@@ -997,7 +997,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
 
     //---------------------------------------------------------------------
     // init as base class: MLP
-    // 1.4.2.1 added by Yikai Li, Winter 2023
+    // 1.5.0.0 added by Yikai Li, Winter 2023
     //---------------------------------------------------------------------
     // doc string
     doc =
@@ -2285,7 +2285,7 @@ CK_DLL_MFUN( HMM_generate )
 
 //-----------------------------------------------------------------------------
 // name: struct W2V_Dictionary
-// desc: struct for caching Word2Vec | added 1.4.2.1 (ge)
+// desc: struct for caching Word2Vec | added 1.5.0.0 (ge)
 //-----------------------------------------------------------------------------
 struct W2V_Dictionary
 {
@@ -2321,12 +2321,12 @@ struct W2V_Dictionary
 
 //-----------------------------------------------------------------------------
 // name: struct Word2Vec_Object
-// desc: Word2Vec implementation | added 1.4.2.1 (yikai)
+// desc: Word2Vec implementation | added 1.5.0.0 (yikai)
 //-----------------------------------------------------------------------------
 struct Word2Vec_Object
 {
 private:
-    // static (shared) cache | added (ge) 1.4.2.1
+    // static (shared) cache | added (ge) 1.5.0.0
     static map<string, W2V_Dictionary *> o_cache;
 
 private:
@@ -2798,7 +2798,7 @@ public:
     }
 };
 
-// static instantiation | added (ge) 1.4.2.1
+// static instantiation | added (ge) 1.5.0.0
 map<string, W2V_Dictionary *> Word2Vec_Object::o_cache;
 
 
@@ -2956,7 +2956,7 @@ CK_DLL_MFUN( Word2Vec_getUseKDTree )
 
 //-----------------------------------------------------------------------------
 // name: struct PCA_Object
-// desc: Principal Component Analysis Implementation | added 1.4.2.1 (yikai)
+// desc: Principal Component Analysis Implementation | added 1.5.0.0 (yikai)
 //-----------------------------------------------------------------------------
 struct PCA_Object
 {
@@ -3259,7 +3259,7 @@ CK_DLL_SFUN( PCA_reduce )
 
 //-----------------------------------------------------------------------------
 // name: struct MLP_Object
-// desc: Multilayer Perceptron Implementation | added 1.4.2.1 (yikai)
+// desc: Multilayer Perceptron Implementation | added 1.5.0.0 (yikai)
 //-----------------------------------------------------------------------------
 struct MLP_Object
 {
@@ -3961,7 +3961,7 @@ CK_DLL_SFUN( MLP_shuffle )
 
 //-----------------------------------------------------------------------------
 // name: struct Wekinator_Model
-// desc: Wekinator model implementation | added 1.4.2.1 (yikai)
+// desc: Wekinator model implementation | added 1.5.0.0 (yikai)
 //-----------------------------------------------------------------------------
 struct Wekinator_Model
 {
@@ -4288,7 +4288,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Wekinator_Object
-// desc: Wekinator implementation | 1.4.2.1 (yikai) added
+// desc: Wekinator implementation | 1.5.0.0 (yikai) added
 //       adapted from Rebecca Fiebrink's Wekinator java/Weka implementation
 //-----------------------------------------------------------------------------
 struct Wekinator_Object
