@@ -102,8 +102,8 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 
     // class
     QUERY->begin_class( QUERY, "Machine", "Object" );
-    // add documentation | 1.4.1.0
-    QUERY->doc_class( QUERY, "runtime interface to the ChucK virtual machine." );
+    // documentation
+    QUERY->doc_class( QUERY, "Machine is ChucK runtime interface to the virtual machine. This interface can be used to manage shreds, evalute code, set log levels, etc. Machine's shred commands are similar to the On-the-fly Programming Commands, except these are invoked from within a ChucK program, and are subject to the timing mechanism." );
 
 #ifndef __DISABLE_OTF_SERVER__
     // add add
@@ -113,6 +113,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, machine_add_impl, "int", "add" );
     QUERY->doc_func( QUERY, "add/run a new shred from file at 'path'." );
     QUERY->add_arg( QUERY, "string", "path" );
+    QUERY->doc_func( QUERY, "Compile and spork a new shred from file at 'path' into the VM now, returns the shred ID.");
 
     // add spork
     //! same as add
@@ -124,6 +125,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, machine_remove_impl, "int", "remove" );
     QUERY->doc_func( QUERY, "remove a running shred by 'id'." );
     QUERY->add_arg( QUERY, "int", "id" );
+    QUERY->doc_func( QUERY, "Remove shred from VM by shred ID (returned by Machine.add).");
 
     // add replace
     //! replace shred with new shred from file
@@ -132,23 +134,26 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->doc_func( QUERY, "replace running shred by 'id' with new shred at 'path'." );
     QUERY->add_arg( QUERY, "int", "id" );
     QUERY->add_arg( QUERY, "string", "path" );
-
-    // add crash
-    //! explicitly crash the virtual machine
-    QUERY->add_sfun( QUERY, machine_crash_impl, "void", "crash" );
-    QUERY->doc_func( QUERY, "explicitly crash the virtual machine." );
+    QUERY->doc_func( QUERY, "Replace shred with new shred from file. Returns shred ID , or 0 on error.");
 
     // add status
     //! display current status of VM
     //! (see example/status.ck)
     QUERY->add_sfun( QUERY, machine_status_impl, "int", "status" );
     QUERY->doc_func( QUERY, "display current status of virtual machine." );
+    QUERY->doc_func( QUERY, "Display the current status of VM.");
+
 #endif // __DISABLE_OTF_SERVER__
+
+    // add crash
+    //! explicitly crash the virtual machine
+    QUERY->add_sfun( QUERY, machine_crash_impl, "void", "crash" );
+    QUERY->doc_func( QUERY, "explicitly crash the virtual machine. The very last resort; or an emphatic gesture. Use with care." );
 
     // add shreds
     //! get list of active shreds by id
     QUERY->add_sfun( QUERY, machine_shreds_impl, "int[]", "shreds" );
-    QUERY->doc_func( QUERY, "get list of active shred ids." );
+    QUERY->doc_func( QUERY, "Retrieve an array of active shred ids." );
 
     // add eval
     //! evaluate a string as ChucK code, compiling it and adding it to the the virtual machine
@@ -174,7 +179,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     // add get intsize (width)
     //! get the intsize in bits (e.g., 32 or 64)
     QUERY->add_sfun( QUERY, machine_intsize_impl, "int", "intsize" );
-    QUERY->doc_func( QUERY, "get size of int in bits (e.g., 32 or 64)." );
+    QUERY->doc_func( QUERY, "Return the bit size of an integer.");
 
     // add check for silent (or realtime audio) | adapted from nshaheed PR #230
     QUERY->add_sfun( QUERY, machine_silent_impl, "int", "silent" );

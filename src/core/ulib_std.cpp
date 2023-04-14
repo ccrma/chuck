@@ -172,12 +172,12 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // add abs
     QUERY->add_sfun( QUERY, abs_impl, "int", "abs" );
     QUERY->add_arg( QUERY, "int", "value" );
-    QUERY->doc_func( QUERY, "compute absolute value (integer)." );
-
+    QUERY->doc_func( QUERY, "Return absolute value of integer." );
+    
     // add fabs
     QUERY->add_sfun( QUERY, fabs_impl, "float", "fabs" );
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "compute absolute value (floating point)." );
+    QUERY->doc_func( QUERY, "Return absolute value of float." );
 
     // add rand
     QUERY->add_sfun( QUERY, rand_impl, "int", "rand"); //! return int between 0 and RAND_MAX
@@ -187,17 +187,17 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, rand2_impl, "int", "rand2" ); //! integer between [min,max]
     QUERY->add_arg( QUERY, "int", "min" );
     QUERY->add_arg( QUERY, "int", "max" );
-    QUERY->doc_func( QUERY, "generate a random integer in range [min, max]. (NOTE: this is deprecated; use Math.random2())." );
+    QUERY->doc_func( QUERY, "Generate a random integer in range [min, max]. (NOTE: this is deprecated; use Math.random2())." );
 
     // add rand
     QUERY->add_sfun( QUERY, randf_impl, "float", "randf" ); //! rand between -1.0,1.0
-    QUERY->doc_func( QUERY, "generates a random floating point number in the range [-1, 1]. (Note: this is deprecated; use Math.randomf())" );
+    QUERY->doc_func( QUERY, "Generate random floating point number in the range [-1, 1]. (Note: this is deprecated; use Math.randomf())" );
 
     // add rand2
     QUERY->add_sfun( QUERY, rand2f_impl, "float", "rand2f" ); //! rand between min and max
     QUERY->add_arg( QUERY, "float", "min" );
     QUERY->add_arg( QUERY, "float", "max" );
-    QUERY->doc_func( QUERY, "generate random floating point number in the range [min, max]. (NOTE: this is deprecated; use Math.random2f())" );
+    QUERY->doc_func( QUERY, "Generate random floating point number in the range [min, max]. (NOTE: this is deprecated; use Math.random2f())" );
 
     // add srand
     QUERY->add_sfun( QUERY, srand_impl, "void", "srand" );
@@ -256,56 +256,56 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     //! see \example mand-o-matic.ck
     QUERY->add_sfun( QUERY, mtof_impl, "float", "mtof" ); //! midi note to frequency
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "convert a MIDI note number to frequency (Hz). MIDI note 60 is Middle C; each whole number is one semitone; the input type is float and supports fractional note numbers." );
+    QUERY->doc_func( QUERY, "Convert a MIDI note number to frequency (Hz). Note the input value is of type float (supports fractional note number). For reference, MIDI note number 60 is Middle C; each whole number is one semitone." );
 
     // add ftom
     QUERY->add_sfun( QUERY, ftom_impl, "float", "ftom" ); //! frequency to midi note
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "convert frequency (Hz) to corresponding MIDI note number." );
+    QUERY->doc_func( QUERY, "Convert frequency (Hz) to MIDI note number space." );
 
     // add powtodb
     QUERY->add_sfun( QUERY, powtodb_impl, "float", "powtodb" ); //! linear power to decibel
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "convert signal power ratio to decibels (dB)." );
+    QUERY->doc_func( QUERY, "Convert signal power ratio to decibels (dB)." );
 
     // add rmstodb
     QUERY->add_sfun( QUERY, rmstodb_impl, "float", "rmstodb" ); //! rms to decibel
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "converts rms to decibels (dB)." );
+    QUERY->doc_func( QUERY, "Convert rms to decibels (dB)." );
 
     // add dbtopow
     QUERY->add_sfun( QUERY, dbtopow_impl, "float", "dbtopow" ); //! decibel to linear
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "converts decibels (dB) to signal power ratio." );
+    QUERY->doc_func( QUERY, "Convert decibels (dB) to signal power ratio." );
 
     // add dbtorms
     QUERY->add_sfun( QUERY, dbtorms_impl, "float", "dbtorms" ); //! decibel to rms
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "convert decibles (dB) to RMS." );
+    QUERY->doc_func( QUERY, "Convert decibels (dB) to rms." );
 
     // add dbtolin
     QUERY->add_sfun( QUERY, dbtolin_impl, "float", "dbtolin" ); //! decibel to linear
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "convert decibels (dB) to linear." );
+    QUERY->doc_func( QUERY, "Convert decibels (dB) to linear amplitude." );
 
     // add lintodb
     QUERY->add_sfun( QUERY, lintodb_impl, "float", "lintodb" ); //! linear to decibel
     QUERY->add_arg( QUERY, "float", "value" );
-    QUERY->doc_func( QUERY, "convert linear to decibels (dB)." );
+    QUERY->doc_func( QUERY, "Convert linear amplitude to decibels (dB).");
 
     // add clamp
     QUERY->add_sfun( QUERY, clamp_impl, "int", "clamp" ); //! clamp to range (int)
     QUERY->add_arg( QUERY, "int", "value" );
     QUERY->add_arg( QUERY, "int", "min" );
     QUERY->add_arg( QUERY, "int", "max" );
-    QUERY->doc_func( QUERY, "clamp an integer to range [min,max]." );
+    QUERY->doc_func( QUERY, "Clamp integer to range [min, max]." );
 
     // add clampf
     QUERY->add_sfun( QUERY, clampf_impl, "float", "clampf" ); //! clamp to range (float)
     QUERY->add_arg( QUERY, "float", "value" );
     QUERY->add_arg( QUERY, "float", "min" );
     QUERY->add_arg( QUERY, "float", "max" );
-    QUERY->doc_func( QUERY, "clamp a float to range [min,max]." );
+    QUERY->doc_func( QUERY, "Clamp float to range [min, max]." );
 
     // add scalef
     QUERY->add_sfun( QUERY, scalef_impl, "float", "scalef" ); //! scale from source range to dest range (float)
@@ -314,7 +314,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "srcmax" );
     QUERY->add_arg( QUERY, "float", "dstmin" );
     QUERY->add_arg( QUERY, "float", "dstmax" );
-    QUERY->doc_func( QUERY, "scale from a source range to a destination range." );
+    QUERY->doc_func( QUERY, "Scale a float from source range to destination range." );
 
     // finish class
     QUERY->end_class( QUERY );
