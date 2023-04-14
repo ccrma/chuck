@@ -55,7 +55,7 @@ host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
         -D__DISABLE_KBHIT__ -D__DISABLE_PROMPTER__ -D__DISABLE_RTAUDIO__ \
         -D__DISABLE_OTF_SERVER__ -D__ALTER_HID__ -D__DISABLE_HID__ \
         -D__DISABLE_SERIAL__ -D__DISABLE_FILEIO__ -D__DISABLE_THREADS__ \
-        -D__DISABLE_NETWORK__ -D__DISABLE_SHELL__ \
+        -D__DISABLE_NETWORK__ -D__DISABLE_SHELL__ -D__DISABLE_WORDEXP__ \
         -D__CHUCK_USE_PLANAR_BUFFERS__ \
 	-Wformat=0 \
         $(EMSCRIPTENSRCS) -o host_web/webchuck/js/webchuck.js \

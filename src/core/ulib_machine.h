@@ -54,6 +54,9 @@ t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func func );
 t_CKUINT machine_intsize();
 
 
+// ckdoc query
+DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY );
+
 
 
 #endif
