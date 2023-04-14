@@ -20157,7 +20157,7 @@ CK_DLL_DTOR( Instrmnt_dtor )
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( Instrmnt_tick )
 {
-    Instrmnt * i = (Instrmnt *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
+    // Instrmnt * i = (Instrmnt *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
 
     // generally, we should not get here -- but is possible since there are
     // abstract classes, such as this one, but currently chuck has no
@@ -25030,7 +25030,7 @@ CK_DLL_DTOR( FM_dtor  )
 CK_DLL_TICK( FM_tick )
 {
     // FM should be NULL
-    FM * m = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
+    // FM * m = (FM *)OBJ_MEMBER_UINT(SELF, FM_offset_data);
 
     // generally, we should not get here -- but is possible since there are
     // abstract classes, such as this one, but currently chuck has no

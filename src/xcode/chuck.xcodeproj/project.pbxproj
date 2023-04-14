@@ -112,6 +112,7 @@
 			isEditable = 1;
 			outputFiles = (
 			);
+			script = "# Type a script or drag a script file from your workspace to insert its path.\n";
 		};
 /* End PBXBuildRule section */
 
@@ -428,7 +429,6 @@
 		09A40DD20A9AC6D3007604EA /* makefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 30; name = makefile; path = ../makefile; sourceTree = SOURCE_ROOT; usesTabs = 1; };
 		09A5C88913DDFB350082DF50 /* RtAudio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RtAudio.cpp; path = ../host/RtAudio/RtAudio.cpp; sourceTree = SOURCE_ROOT; };
 		09A5C88A13DDFB350082DF50 /* RtAudio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RtAudio.h; path = ../host/RtAudio/RtAudio.h; sourceTree = SOURCE_ROOT; };
-		09A5C88B13DDFB350082DF50 /* RtError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RtError.h; path = ../host/RtAudio/RtError.h; sourceTree = SOURCE_ROOT; };
 		09AAE1A618211D8F002C9B92 /* makefile.pulse */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = makefile.pulse; path = ../makefile.pulse; sourceTree = SOURCE_ROOT; };
 		09F05F580B74558400023899 /* tilt.ck */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = tilt.ck; path = examples/hid/tilt.ck; sourceTree = SOURCE_ROOT; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
@@ -984,7 +984,6 @@
 			children = (
 				09A5C88913DDFB350082DF50 /* RtAudio.cpp */,
 				09A5C88A13DDFB350082DF50 /* RtAudio.h */,
-				09A5C88B13DDFB350082DF50 /* RtError.h */,
 			);
 			path = RtAudio;
 			sourceTree = "<group>";
@@ -1079,13 +1078,14 @@
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "chuck" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
-				Japanese,
-				French,
-				German,
+				en,
+				ja,
+				Base,
+				fr,
+				de,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* miniAudicle */;
 			projectDirPath = "";

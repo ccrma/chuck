@@ -1199,8 +1199,8 @@ CK_DLL_SFUN( map_impl )
     t_CKFLOAT x2 = GET_NEXT_FLOAT( ARGS );
     t_CKFLOAT y2 = GET_NEXT_FLOAT( ARGS );
 
-    t_CKFLOAT min1 = x1 < y1 ? x1 : y1;
-    t_CKFLOAT max1 = x1 > y1 ? x1 : y1;
+    // t_CKFLOAT min1 = x1 < y1 ? x1 : y1;
+    // t_CKFLOAT max1 = x1 > y1 ? x1 : y1;
 
     // std::cerr << v << " " << x1 << " " << y1 << " " << x2 << " " << y2 << std::endl;
     // remap
