@@ -1228,7 +1228,7 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     
     // set maxvoices
     func = make_new_mfun( "int", "maxVoices", LiSaMulti_ctrl_maxvoices );
-    func->doc = "Set the maximum number of voices allowable; 10 by default (200 is the current hardwired internal limit).";
+    func->doc = "Set the maximum number of voices allowable; 10 by default (256 is the current hardwired internal limit).";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "maxVoices", LiSaMulti_cget_maxvoices);
