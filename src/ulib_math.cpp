@@ -75,7 +75,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
 
     // add class
     QUERY->begin_class( QUERY, "Math", "Object" );
-    QUERY->doc_class( QUERY, "Math contains the standard math functions, including all trignometric functions expects angles to be in radians, as well as random number generators." );
+    QUERY->doc_class( QUERY, "Math contains the standard math functions, including trigonometric functions and random number generators. Trigonometric functions expect angle values to be in radians." );
     
     // add abs
     QUERY->add_sfun( QUERY, abs_impl, "int", "abs" );
