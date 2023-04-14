@@ -56,9 +56,11 @@
 #include "chuck_io.h"
 
 #if defined(__PLATFORM_WIN32__)
-#include "dirent_win32.h"
+  #include "dirent_win32.h"
 #else
-#include <wordexp.h> // 1.4.2.1 (ge) added
+  #ifndef __DISABLE_WORDEXP__
+  #include <wordexp.h> // 1.4.2.1 (ge) added
+  #endif
 #endif
 
 //#if defined(__WINDOWS_PTHREAD__)
@@ -698,7 +700,9 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     // load
     EM_log( CK_LOG_SEVERE, "module 'machine'" );
     if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
+    #ifndef __DISABLE_OTF_SERVER__
     machine_init( compiler, otf_process_msg );
+    #endif
 
     #ifndef __DISABLE_NETWORK__
     EM_log( CK_LOG_SEVERE, "module 'opsc'" );
@@ -822,6 +826,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
     string path = directory, exp = "";
 
 #ifndef __PLATFORM_WIN32__
+#ifndef __DISABLE_WORDEXP__
     // 1.4.2.1 (ge) added (for ~)
     wordexp_t exp_result;
     // "perform shell-style word expansions"
@@ -831,6 +836,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
         exp += string(i > 0 ? " " : "") + exp_result.we_wordv[i];
     // replace
     path = exp;
+#endif
 #endif
 
     // open the directory
@@ -919,8 +925,10 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
     }
 
 #ifndef __PLATFORM_WIN32__
+#ifndef __DISABLE_WORDEXP__
     // free | 1.4.2.1 (ge) added
     wordfree( &exp_result );
+#endif
 #endif
 
     return TRUE;
