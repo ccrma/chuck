@@ -178,7 +178,7 @@ cleanup:
     return devices;
 }
 
-#elif defined(__WINDOWS_DS__)
+#elif defined(__PLATFORM_WIN32__)
 
 #include <windows.h>
 

@@ -12,6 +12,7 @@
 # ALSO: we are actually now building in 64-bit, but yeah.
 
 MSBUILD=msbuild.exe
+RTAUDIODIR=rtaudio
 
 ifneq (,$(CHUCK_DEBUG))
 CONFIG=Debug
@@ -35,7 +36,8 @@ CXXSRCS+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	ulib_opsc.cpp ulib_regex.cpp util_buffers.cpp util_console.cpp \
 	util_string.cpp util_thread.cpp util_opsc.cpp util_serial.cpp \
 	util_hid.cpp uana_xform.cpp uana_extract.cpp
-CXXSRCS_HOST+=chuck_audio.cpp chuck_main.cpp chuck_console.cpp RtAudio/RtAudio.cpp
+CXXINC_HOST+= -I${RTAUDIODIR} -I${RTAUDIODIR}/include
+CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp ../${RTAUDIODIR}/RtAudio.cpp
 LO_CSRCS+= lo/address.c lo/blob.c lo/bundle.c lo/message.c lo/method.c \
     lo/pattern_match.c lo/send.c lo/server.c lo/server_thread.c lo/timetag.c
 
@@ -44,11 +46,13 @@ CXXSRCS:=$(addprefix core/,$(CXXSRCS))
 CXXSRCS_HOST:=$(addprefix host/,$(CXXSRCS_HOST))
 LO_CSRCS:=$(addprefix core/,$(LO_CSRCS))
 
-COBJS=$(CSRCS:.c=.o)
-CXXOBJS=$(CXXSRCS:.cpp=.o)
-CXXOBJS_HOST=$(CXXSRCS_HOST:.cpp=.o)
-LO_COBJS=$(LO_CSRCS:.c=.o)
-OBJS=$(COBJS) $(CXXOBJS) $(CXXOBJS_HOST) $(LO_COBJS)
+CXXOBJS_HOST=$(addprefix $(HOSTDIR)/,$(CXXSRCS_HOST:.cpp=.o))
+
+COBJS=$(COBJS_HOST) $(addprefix $(COREDIR)/,$(COBJS_CORE))
+CXXOBJS=$(CXXOBJS_HOST) $(addprefix $(COREDIR)/,$(CXXOBJS_CORE))
+LO_COBJS=$(addprefix $(COREDIR)/,$(LO_COBJS_CORE))
+SF_COBJS=$(addprefix $(COREDIR)/,$(SF_CSRCS:.c=.o))
+OBJS=$(COBJS) $(CXXOBJS) $(LO_COBJS) $(SF_COBJS)
 SRCS=$(CSRCS) $(CXXSRCS) $(CXXSRCS_HOST) $(LO_CSRCS)
 
 $(CHUCK_BIN): $(SRCS)

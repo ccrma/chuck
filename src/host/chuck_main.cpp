@@ -167,9 +167,15 @@ static void version()
     string archs = "";
 
 #if defined(__PLATFORM_WIN32__)
-    platform = "microsoft windows";
-#elif defined(__WINDOWS_DS__)
-    platform = "microsoft windows + cygwin";
+    #if defined(__WINDOWS_ASIO__) && defined(__WINDOWS_DS__)
+        platform = "microsoft windows + DS + ASIO";
+    #elif defined(__WINDOWS_ASIO__)
+        platform = "microsoft windows + ASIO";
+    #elif defined(__WINDOWS_DS__)
+        platform = "microsoft windows + DS";
+    #else
+        platform = "microsoft windows (??)";
+    #endif
 #elif defined(__LINUX_ALSA__)
     platform = "linux (alsa)";
 #elif defined(__LINUX_OSS__)
@@ -207,7 +213,7 @@ void usage()
     // (note: optional colon added 1.3.0.0)
     CK_FPRINTF_STDERR( "usage: chuck --[options|commands] [+-=^] file1 file2 file3 ...\n" );
     CK_FPRINTF_STDERR( "   [options] = halt|loop|audio|silent|dump|nodump|about|probe|\n" );
-    CK_FPRINTF_STDERR( "               channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|\n" );
+    CK_FPRINTF_STDERR( "               channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|driver:<name>|\n" );
     CK_FPRINTF_STDERR( "               srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
     CK_FPRINTF_STDERR( "               remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
     CK_FPRINTF_STDERR( "               callback|deprecate:{stop|warn|ignore}|\n" );
@@ -458,6 +464,7 @@ bool go( int argc, const char ** argv )
     std::string adc_name = ""; // added 1.3.0.0
     t_CKINT dac_chans = 2;
     t_CKINT adc_chans = 2;
+    t_CKINT adc_chans_before_rtaudio = adc_chans; // added 1.5.0.0
     t_CKBOOL dump = FALSE;
     t_CKBOOL probe = FALSE;
     t_CKBOOL set_priority = FALSE;
@@ -477,6 +484,7 @@ bool go( int argc, const char ** argv )
     t_CKBOOL update_otf_vm = TRUE;
     string   filename = "";
     vector<string> args;
+    char const *audioDriver = NULL;
     
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path;
@@ -512,7 +520,7 @@ bool go( int argc, const char ** argv )
     t_CKUINT count = 1;
     t_CKINT i;
 
-    //------------------------- COMMAND LINE ARGUMENTS -----------------------------
+    //------------------------- COMMAND-LINE ARGUMENTS -----------------------------
     
     // parse command line args
     for( i = 1; i < argc; i++ )
@@ -570,6 +578,8 @@ bool go( int argc, const char ** argv )
                 num_buffers = atoi( argv[i]+8 ) > 0 ? atoi( argv[i]+8 ) : num_buffers;
             else if( !strncmp(argv[i], "-n", 2) )
                 num_buffers = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : num_buffers;
+            else if( !strncmp(argv[i], "--driver:", 9))
+                audioDriver = argv[i]+9;
             else if( !strncmp(argv[i], "--dac:", 6) ) // (added 1.3.0.0)
             {
                 // advance pointer to beginning of argument
@@ -797,7 +807,7 @@ bool go( int argc, const char ** argv )
     // probe
     if( probe )
     {
-        ChuckAudio::probe();
+        ChuckAudio::probe(audioDriver);
         
 #ifndef __DISABLE_MIDI__
         EM_error2b( 0, "" );
@@ -863,7 +873,7 @@ bool go( int argc, const char ** argv )
     if( dac_name.size() > 0 )
     {
         // check with RtAudio
-        t_CKINT dev = ChuckAudio::device_named( dac_name, TRUE, FALSE );
+        t_CKINT dev = ChuckAudio::device_named( audioDriver, dac_name, TRUE, FALSE );
         if( dev >= 0 )
         {
             dac = dev;
@@ -880,7 +890,7 @@ bool go( int argc, const char ** argv )
     if( adc_name.size() > 0 )
     {
         // check with RtAudio
-        t_CKINT dev = ChuckAudio::device_named( adc_name, FALSE, TRUE );
+        t_CKINT dev = ChuckAudio::device_named( audioDriver, adc_name, FALSE, TRUE );
         if( dev >= 0 )
         {
             adc = dev;
@@ -892,62 +902,55 @@ bool go( int argc, const char ** argv )
             exit( 1 );
         }
     }
-    
-    //------------------------- VIRTUAL MACHINE SETUP -----------------------------
-    // instantiate ChucK
+
+
+    //-------------------- VIRTUAL MACHINE SETUP (PART 1) -------------------------
+    // instantiate a ChucK!
     the_chuck = new ChucK();
-    
-    // set params
-    the_chuck->setParam( CHUCK_PARAM_SAMPLE_RATE, srate );
-    the_chuck->setParam( CHUCK_PARAM_INPUT_CHANNELS, adc_chans );
-    the_chuck->setParam( CHUCK_PARAM_OUTPUT_CHANNELS, dac_chans );
-    the_chuck->setParam( CHUCK_PARAM_VM_ADAPTIVE, adaptive_size );
-    the_chuck->setParam( CHUCK_PARAM_VM_HALT, (t_CKINT)(vm_halt) );
-    the_chuck->setParam( CHUCK_PARAM_OTF_PORT, g_otf_port );
-    the_chuck->setParam( CHUCK_PARAM_OTF_ENABLE, (t_CKINT)TRUE );
-    the_chuck->setParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, (t_CKINT)dump );
-    the_chuck->setParam( CHUCK_PARAM_AUTO_DEPEND, (t_CKINT)auto_depend );
-    the_chuck->setParam( CHUCK_PARAM_DEPRECATE_LEVEL, deprecate_level );
-    the_chuck->setParam( CHUCK_PARAM_CHUGIN_ENABLE, chugin_load );
-    the_chuck->setParam( CHUCK_PARAM_USER_CHUGINS, named_dls );
-    the_chuck->setParam( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES, dl_search_path );
-    // set hint, so internally can advise things like async data writes etc.
-    the_chuck->setParam( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO, g_enable_realtime_audio );
+    // set log level so things can start logging
     the_chuck->setLogLevel( log_level );
-    
-    // initialize
-    if( !the_chuck->init() )
-    {
-        CK_FPRINTF_STDERR( "[chuck]: failed to initialize...\n" );
-        exit( 1 );
-    }
+    // log
+    EM_log( CK_LOG_SYSTEM, "booting up ChucK instance..." );
     
     //--------------------------- AUDIO I/O SETUP ---------------------------------
     // log
-    EM_log( CK_LOG_SYSTEM, "initializing audio I/O..." );
+    EM_log( CK_LOG_SYSTEM, "initializing audio subsystem..." );
     // push
     EM_pushlog();
     // log
-    EM_log( CK_LOG_SYSTEM, "probing '%s' audio subsystem...", g_enable_realtime_audio ? "real-time" : "fake-time" );
+    // EM_log( CK_LOG_SYSTEM, "setting up for '%s' audio I/O...", g_enable_realtime_audio ? "real-time" : "silent mode" );
     
+    // remember this, since adc_chans could be altered when initialization real-time audio
+    adc_chans_before_rtaudio = adc_chans;
+
     // initialize audio system
     if( g_enable_realtime_audio )
     {
-        // TODO: refactor initialize() to take in the dac and adc nums
-        ChuckAudio::m_adc_n = adc;
-        ChuckAudio::m_dac_n = dac;
-        t_CKBOOL retval = ChuckAudio::initialize( dac_chans, adc_chans,
-            srate, buffer_size, num_buffers, cb, (void *)the_chuck, force_srate );
-        // check
+        // initialize real-time audio
+        t_CKBOOL retval = ChuckAudio::initialize( dac, adc, dac_chans, adc_chans,
+            srate, buffer_size, num_buffers, cb, (void *)the_chuck, force_srate, audioDriver );
+        // check return code
         if( !retval )
         {
-            EM_log( CK_LOG_SYSTEM,
-                   "cannot initialize audio device (use --silent/-s for non-realtime)" );
+            EM_log( CK_LOG_SYSTEM, "cannot initialize audio device..." );
+            EM_log( CK_LOG_SYSTEM, "| (use --probe see list of avaialble audio devices)" );
+            EM_log( CK_LOG_SYSTEM, "| (use --dac/--adc to explicitly select output/input devices)" );
+            EM_log( CK_LOG_SYSTEM, "| (use --silent/-s for non-realtime)" );
+            EM_log( CK_LOG_SYSTEM, "| (use --help for more details)" );
             // pop
             EM_poplog();
             // done
             exit( 1 );
         }
+
+        // these could have been updated during initialization
+        adc = ChuckAudio::m_adc_n+1;
+        dac = ChuckAudio::m_dac_n+1;
+        adc_chans = ChuckAudio::m_num_channels_in;
+        dac_chans = ChuckAudio::m_num_channels_out;
+        srate = ChuckAudio::m_sample_rate;
+        buffer_size = ChuckAudio::buffer_size();
+        num_buffers = ChuckAudio::num_buffers();
     }
     
     // log
@@ -966,39 +969,61 @@ bool go( int argc, const char ** argv )
     // pop
     EM_poplog();
 
+
+    //-------------------- VIRTUAL MACHINE SETUP (PART 2) -------------------------
+    // set params (some, like sample rate, could have been updated during
+    // real-time audio initialization, so we are setting actual params here)
+    // set the actual sample rate; needed to map to in-language durations
+    the_chuck->setParam( CHUCK_PARAM_SAMPLE_RATE, srate );
+    // use the request number for adc # channels
+    the_chuck->setParam( CHUCK_PARAM_INPUT_CHANNELS, adc_chans_before_rtaudio );
+    the_chuck->setParam( CHUCK_PARAM_OUTPUT_CHANNELS, dac_chans );
+    the_chuck->setParam( CHUCK_PARAM_VM_ADAPTIVE, adaptive_size );
+    the_chuck->setParam( CHUCK_PARAM_VM_HALT, (t_CKINT)(vm_halt) );
+    the_chuck->setParam( CHUCK_PARAM_OTF_PORT, g_otf_port );
+    the_chuck->setParam( CHUCK_PARAM_OTF_ENABLE, (t_CKINT)TRUE );
+    the_chuck->setParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, (t_CKINT)dump );
+    the_chuck->setParam( CHUCK_PARAM_AUTO_DEPEND, (t_CKINT)auto_depend );
+    the_chuck->setParam( CHUCK_PARAM_DEPRECATE_LEVEL, deprecate_level );
+    the_chuck->setParam( CHUCK_PARAM_CHUGIN_ENABLE, chugin_load );
+    the_chuck->setParam( CHUCK_PARAM_USER_CHUGINS, named_dls );
+    the_chuck->setParam( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES, dl_search_path );
+    // set hint, so internally can advise things like async data writes etc.
+    the_chuck->setParam( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO, g_enable_realtime_audio );
+
+    // initialize
+    if( !the_chuck->init() )
+    {
+        CK_FPRINTF_STDERR( "[chuck]: failed to initialize...\n" );
+        exit( 1 );
+    }
+
+
+    //------------------------- HID RELATED SETUP --------------------------------
 #ifndef __ALTER_HID__
     // pre-load hid
     if( load_hid ) HidInManager::init();
 #endif // __ALTER_HID__
+
     
+    //------------------------- CLI RELATED SETUP --------------------------------
     // catch SIGINT
     signal( SIGINT, signal_int );
 #ifndef __PLATFORM_WIN32__
     // catch SIGPIPE
     signal( SIGPIPE, signal_pipe );
 #endif
-    
-    // shell initialization
-    if( g_enable_shell )
-    {
-        // instantiate
-        g_shell = new Chuck_Shell;
-        // initialize
-        if( !init_shell( g_shell, new Chuck_Console(), the_chuck->vm() ) )
-            exit( 1 );
-    }
 
-    // reset count
-    count = 1;
-    
+
+    //------------------------- SOURCE COMPILATION --------------------------------
     // log
     EM_log( CK_LOG_SEVERE, "starting compilation..." );
     // push indent
     EM_pushlog();
-    
-    
-    //------------------------- SOURCE COMPILATION --------------------------------
-    
+
+    // reset count
+    count = 1;
+
     // loop through and process each file
     for( i = 1; i < argc; i++ )
     {
@@ -1042,21 +1067,29 @@ bool go( int argc, const char ** argv )
     
     
     //----------------------- SHELL SETUP -----------------------------
-    
-    // start shell on separate thread | REFACTOR-2017: per-VM?!?
+
+    // shell initialization
     if( g_enable_shell )
     {
+        // instantiate
+        g_shell = new Chuck_Shell;
+        // initialize
+        if( !init_shell( g_shell, new Chuck_Console(), the_chuck->vm() ) )
+            exit( 1 );
+
         // flag
         g_shutdown_shell = FALSE;
+
+        // start shell on separate thread | REFACTOR-2017: per-VM?!?
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
         pthread_create( &g_tid_shell, NULL, shell_cb, g_shell );
 #else
         g_tid_shell = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)shell_cb, g_shell, 0, 0 );
 #endif
     }
+
     
     //-------------------------- MAIN CHUCK LOOP!!! -----------------------------
-    
     // log
     EM_log( CK_LOG_SYSTEM, "running main loop..." );
 

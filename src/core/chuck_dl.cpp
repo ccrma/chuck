@@ -1310,7 +1310,7 @@ set_string(ck_set_string)
 
 
 // windows
-#if defined(__WINDOWS_DS__)
+#if defined(__PLATFORM_WIN32__)
 extern "C"
 {
 #include <windows.h>

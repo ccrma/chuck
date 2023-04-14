@@ -1,6 +1,7 @@
-DESTDIR?=/usr/local/bin
 COREDIR=core
 HOSTDIR=host
+RTAUDIODIR=RtAudio
+DESTDIR?=/usr/local/bin
 CK_PLATFORM=
 
 
@@ -67,6 +68,9 @@ host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
 
 
 ############################## MAKE INSTALL ####################################
+## note: If you want to build ChucK on linux with multiple audio drivers,
+## call multiple build rules, e.g.:
+## > make linux-pulse linux-alsa linux-jack
 .PHONY: mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl test
 mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
 
@@ -85,6 +89,7 @@ LD=g++
 
 
 ############################# COMPILER FLAGS ###################################
+# note: to compile with a specific c++ version (e.g., c++11) add: -std=c++11
 CFLAGS+=-I. -I$(COREDIR) -I$(COREDIR)/lo
 
 ifneq ($(CHUCK_STAT),)
@@ -159,8 +164,11 @@ LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
 
 
 ############################ CHUCK HOST TARGETS ################################
-CXXSRCS_HOST+= RtAudio/RtAudio.cpp chuck_audio.cpp chuck_console.cpp \
-	chuck_main.cpp
+CXXINC_HOST+= -I${RTAUDIODIR} -I${RTAUDIODIR}/include
+CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp \
+	${RTAUDIODIR}/RtAudio.cpp
+# NB: on some windows builds, the ASIO src in RTAUDIODIR/include
+#     should be added.
 
 
 ############################ OBJECT FILE TARGETS ###############################
@@ -212,16 +220,18 @@ chuck-core:
 	$(MAKE) $(MAKECMDGOALS) -C $(COREDIR) $(ARCH_ARGS)
 	@echo -------------
 
+CFLAGS_HOST=${CFLAGS} -I${RTAUDIODIR}
+CFLAGSDEPEND_HOST=${CFLAGSDEPEND} ${CFLAGS_HOST}
 chuck: chuck-core $(COBJS_HOST) $(CXXOBJS_HOST)
 	$(LD) -o chuck $(OBJS) $(LDFLAGS) $(ARCHOPTS)
 
 $(COBJS_HOST): %.o: %.c
-	$(CC) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
-	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
+	$(CC) $(CFLAGS_HOST) $(ARCHOPTS) -c $< -o $@
+	@$(CC) -MM -MQ "$@" $(CFLAGSDEPEND_HOST) $< > $*.d
 
 $(CXXOBJS_HOST): %.o: %.cpp
-	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
-	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
+	$(CXX) $(CFLAGS_HOST) $(ARCHOPTS) -c $< -o $@
+	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND_HOST) $< > $*.d
 
 clean:
 	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} $(OBJS) \
