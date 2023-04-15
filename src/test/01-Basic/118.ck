@@ -1,5 +1,5 @@
 // testing Math.euclidean, which has three overloaded variants
-// added 1.4.2.1
+// added 1.5.0.0
 
 @(0,0,0) => vec3 a;
 @(1,1,1) => vec3 b;
