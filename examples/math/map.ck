@@ -3,7 +3,7 @@
 //       Math.map( float value, float x1, float x2,
 //                              float y1, float y2 )
 //
-// version: need chuck-1.4.2.1 or higher
+// version: need chuck-1.5.0.0 or higher
 //
 // NOTE: Math.map(...) allows 'value' to be outside range [x1,x2]
 //       whereas Math.map2(...) clamps 'value' to range [x1,x2]

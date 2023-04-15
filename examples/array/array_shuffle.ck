@@ -1,6 +1,6 @@
 // name: array_shuffle.ck
 // desc: shuffling the contents of an array; useful for tasks like random without replacement
-// author: kunwoo, nshaheed, andrew, ge | 1.4.2.1
+// author: kunwoo, nshaheed, andrew, ge | 1.5.0.0
 
 // an array
 [1,2,3,4,5] @=> int a[];
