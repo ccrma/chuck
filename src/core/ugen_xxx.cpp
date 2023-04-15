@@ -78,7 +78,7 @@ CK_DLL_TICK( foogen_tick );
 DLL_QUERY lisa_query( Chuck_DL_Query * query );
 
 // sample rate
-t_CKUINT g_srate;
+static t_CKUINT g_srate;
 
 // offset
 static t_CKUINT subgraph_offset_inlet = 0;
