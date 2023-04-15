@@ -33,7 +33,10 @@
 #define __ULIB_MACHINE_H__
 
 #include "chuck_dl.h"
+
+#ifndef  __DISABLE_OTF_SERVER__
 #include "chuck_otf.h"
+#endif
 
 // forward reference
 struct Chuck_VM;

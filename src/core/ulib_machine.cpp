@@ -291,13 +291,6 @@ t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func proc_msg )
 }
 
 // add
-CK_DLL_SFUN( machine_crash_impl )
-{
-    CK_FPRINTF_STDERR( "[chuck]: crashing...\n" );
-    *(volatile int *)0 = 0;
-}
-
-// add
 CK_DLL_SFUN( machine_add_impl )
 {
     const char * v = GET_CK_STRING(ARGS)->str().c_str();
@@ -449,6 +442,15 @@ CK_DLL_SFUN( machine_refcount_impl )
     // return (-1 to account for the extra refcount as part of calling this function!)
     RETURN->v_int = obj != NULL ? obj->m_ref_count-1 : 0;
 }
+
+// add
+CK_DLL_SFUN( machine_crash_impl )
+{
+    CK_FPRINTF_STDERR( "[chuck]: crashing...\n" );
+    *(volatile int *)0 = 0;
+}
+
+
 
 
 //-----------------------------------------------------------------------------
