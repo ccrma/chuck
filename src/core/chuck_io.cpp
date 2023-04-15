@@ -3308,7 +3308,8 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
         {
             // assume 4-byte int
             char * buf = (char *) &val;
-            fwrite(buf, 1, size, m_cfd);
+            // 1.5.0.0 (ge and eito) | changed from size to sizeof
+            fwrite(buf, 1, sizeof(val), m_cfd);
         }
     }
 }
