@@ -3,7 +3,7 @@
 // desc: this example shows working with the Type type in ChucK
 //       to query Types currently in the ChucK type system
 //
-// version: needs 1.4.2.1 or higher
+// version: needs 1.5.0.0 or higher
 //
 // author: Ge Wang (https://ccrma.stanford.edu/~ge/)
 // date: Winter 2023

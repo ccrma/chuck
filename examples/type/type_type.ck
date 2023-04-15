@@ -4,7 +4,7 @@
 //       a Type instance represents a specific type currently in
 //       in the ChucK VM
 //
-// version: needs 1.4.2.1 or higher
+// version: needs 1.5.0.0 or higher
 //
 // author: Ge Wang (https://ccrma.stanford.edu/~ge/)
 // date: Winter 2023

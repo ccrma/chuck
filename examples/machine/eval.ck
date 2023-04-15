@@ -3,7 +3,7 @@
 //       this enables chuck to generate more code to run!
 //       powerful! perilous!
 //
-// version: need chuck-1.4.2.1 or higher
+// version: need chuck-1.5.0.0 or higher
 //
 // uncomment this to print out info about Machine:
 // Machine.help();
