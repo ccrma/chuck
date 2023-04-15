@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <limits.h>
 #include <limits>
 #include <vector> // 1.5.0.0 (ge) | added
 
