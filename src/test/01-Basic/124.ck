@@ -1,4 +1,4 @@
-// testing for filter blowup | 1.4.2.1 (ge) added
+// testing for filter blowup | 1.5.0.0 (ge) added
 // NOTE: intended to be run with --silent
 //
 // filter explosions observed, before this commit d53cdfb
