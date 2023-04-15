@@ -35,11 +35,11 @@
 #include "chuck_compile.h"
 #include "util_math.h"
 
-#include <limits.h>
 #include <float.h>
 #include <stdlib.h>
 #include <time.h>
 
+#include <limits>
 #include <vector> // 1.5.0.0 (ge) | added
 
 
@@ -470,7 +470,9 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->doc_var( QUERY, "Largest representable integer value." );
 
     // infinity, using function to avoid potential "smart" compiler warning
-    g_inf = 1.0 / fzero();
+    // g_inf = 1.0 / fzero();
+    // 1.5.0.0 (ge) | updated to use limits
+    g_inf = std::numeric_limits<t_CKFLOAT>::infinity();
     QUERY->add_svar( QUERY, "float", "INFINITY", TRUE, &g_inf );
     QUERY->doc_var( QUERY, "Like, infinity." );
 
