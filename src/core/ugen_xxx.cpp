@@ -295,7 +295,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     doc = "a mono-to-stereo unit generator for stereo panning.";
     if( !type_engine_import_ugen_begin( env, "Pan2", "UGen_Stereo", env->global(),
-                                        pan2_ctor, NULL, NULL, NULL, 2, 2, doc.c_str() ) )
+                                        pan2_ctor, NULL, NULL, pan2_tickf, NULL, 1, 2, doc.c_str() ) )
         return FALSE;
 
     if( !type_engine_import_add_ex( env, "stereo/moe2.ck" ) ) goto error;
@@ -309,7 +309,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     doc = "a stereo-to-mono unit generator for mixing stereo signal to mono.";
     if( !type_engine_import_ugen_begin( env, "Mix2", "UGen_Stereo", env->global(),
-                                        NULL, NULL, NULL, NULL, 2, 2, doc.c_str() ) )
+                                        NULL, NULL, NULL, mix2_tickf, NULL, 2, 1 , doc.c_str() ) )
         return FALSE;
 
     // end import
@@ -5515,4 +5515,51 @@ CK_DLL_CGET( LiSaMulti_cget_playing )
 CK_DLL_PMSG(LiSaMulti_pmsg )
 {
     return FALSE;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: pan2_tickf()
+// desc: Pan2 tickf function that passes inputs directly to outputs without
+// changing anything (because power panning is handled in the contructor).
+//-----------------------------------------------------------------------------
+CK_DLL_TICKF(pan2_tickf) {
+    Chuck_UGen* ugen = (Chuck_UGen*)SELF;
+
+    t_CKUINT nchans = ugen->m_num_outs;
+
+    for (t_CKUINT frame_idx = 0; frame_idx < nframes; frame_idx++)
+    {
+        for (t_CKUINT chan_idx = 0; chan_idx < nchans; chan_idx++)
+        {
+            out[frame_idx * nchans + chan_idx] = in[frame_idx * nchans]; // grab the first input
+        }
+    }
+    
+    return TRUE;
+}
+
+//-----------------------------------------------------------------------------
+// name: mix2_tickf()
+// desc: Mix2 tickf function. Scales inputs to one output.
+//-----------------------------------------------------------------------------
+CK_DLL_TICKF(mix2_tickf) {
+    Chuck_UGen* ugen = (Chuck_UGen*)SELF;
+
+    t_CKUINT nchans = ugen->m_num_ins;
+
+    for (t_CKUINT frame_idx = 0; frame_idx < nframes; frame_idx++)
+    {
+        t_CKSAMPLE sum = 0;
+
+        for (t_CKUINT chan_idx = 0; chan_idx < nchans; chan_idx++)
+        {
+            sum += in[frame_idx * nchans + chan_idx];
+        }
+
+        sum /= nchans;
+        out[frame_idx * nchans] = sum;
+    }
+
+    return TRUE;
 }

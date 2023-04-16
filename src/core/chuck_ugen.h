@@ -109,6 +109,7 @@ public:
     void init_subgraph();
 
 public: // data
+    // List of source UGens inputting into the UGen (i.e. source_ugen => curr_ugen)
     Chuck_UGen ** m_src_list;
     t_CKUINT m_src_cap;
     t_CKUINT m_num_src;

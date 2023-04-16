@@ -62,12 +62,14 @@ CK_DLL_TICK( bunghole_tick );
 // pan2
 CK_DLL_CTOR( pan2_ctor );
 CK_DLL_DTOR( pan2_dtor );
+CK_DLL_TICKF( pan2_tickf );
 CK_DLL_CTRL( pan2_ctrl_value );
 CK_DLL_CGET( pan2_cget_value );
 
 // MIX2
 CK_DLL_CTOR( mix2_ctor );
 CK_DLL_CTOR( mix2_dtor );
+CK_DLL_TICKF( mix2_tickf );
 CK_DLL_CTRL( mix2_ctrl_value );
 CK_DLL_CGET( mix2_cget_value );
 

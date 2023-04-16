@@ -933,7 +933,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
             }
 
             // scale multi
-            multi /= m_multi_chan_size;
+            multi /= m_num_ins;
             m_sum += multi;
         }
     }
@@ -972,7 +972,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
             if( !m_valid ) memset( m_multi_out_v, 0, sizeof(SAMPLE)*m_multi_chan_size );
 
             // supply multichannel tick output to output channels (added 1.3.0.0)
-            for( i = 0; i < m_multi_chan_size; i++ )
+            for( i = 0; i < m_num_outs; i++ )
             {
                 ugen = m_multi_chan[i];
                 // apply gain/pan
@@ -1012,7 +1012,7 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
         }
 
         // compute mono mixdown for owner-ugen
-        multi /= m_multi_chan_size;
+        multi /= m_num_outs; // m_multi_chan_size
         // set current to mono mixdown
         m_current = multi;
         // set last to current
