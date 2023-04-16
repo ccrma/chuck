@@ -1,4 +1,4 @@
-Step step[2] => Pan2 u => blackhole;
+Step step => Pan2 u => blackhole;
 1::samp => now;
 
 u.last() => float last;
