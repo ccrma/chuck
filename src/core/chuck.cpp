@@ -71,6 +71,7 @@
 #define CHUCK_PARAM_OTF_ENABLE_DEFAULT             "0"
 #define CHUCK_PARAM_OTF_PORT_DEFAULT               "8888"
 #define CHUCK_PARAM_DUMP_INSTRUCTIONS_DEFAULT      "0"
+#define CHUCK_PARAM_AUTO_DEPEND_DEFAULT            "0"
 #define CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT        "1"
 #define CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT      ""
 #define CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT          "1"
@@ -203,6 +204,7 @@ void ChucK::initDefaultParams()
     m_params[CHUCK_PARAM_OTF_ENABLE] = CHUCK_PARAM_OTF_ENABLE_DEFAULT;
     m_params[CHUCK_PARAM_OTF_PORT] = CHUCK_PARAM_OTF_PORT_DEFAULT;
     m_params[CHUCK_PARAM_DUMP_INSTRUCTIONS] = CHUCK_PARAM_DUMP_INSTRUCTIONS_DEFAULT;
+    m_params[CHUCK_PARAM_AUTO_DEPEND] = CHUCK_PARAM_AUTO_DEPEND_DEFAULT;
     m_params[CHUCK_PARAM_DEPRECATE_LEVEL] = CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT;
     m_params[CHUCK_PARAM_WORKING_DIRECTORY] = CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT;
     m_params[CHUCK_PARAM_CHUGIN_DIRECTORY] = CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT;
@@ -219,6 +221,7 @@ void ChucK::initDefaultParams()
     ck_param_types[CHUCK_PARAM_OTF_ENABLE]              = ck_param_int;
     ck_param_types[CHUCK_PARAM_OTF_PORT]                = ck_param_int;
     ck_param_types[CHUCK_PARAM_DUMP_INSTRUCTIONS]       = ck_param_int;
+    ck_param_types[CHUCK_PARAM_AUTO_DEPEND]             = ck_param_int;
     ck_param_types[CHUCK_PARAM_DEPRECATE_LEVEL]         = ck_param_int;
     ck_param_types[CHUCK_PARAM_WORKING_DIRECTORY]       = ck_param_string;
     ck_param_types[CHUCK_PARAM_CHUGIN_DIRECTORY]        = ck_param_string;
