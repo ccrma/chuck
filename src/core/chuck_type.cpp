@@ -2949,8 +2949,9 @@ t_CKTYPE type_engine_check_exp_vec_lit( Chuck_Env * env, a_Exp_Primary exp )
     while( e )
     {
         // get type
-        if( !(t = type_engine_check_exp(env, e )) )
-            return NULL;
+        t = type_engine_check_exp(env, e);
+        if( !t ) return NULL;
+
         // implicit cast
         if( isa( t, env->t_int ) ) e->cast_to = env->t_float;
         else if( !isa( t, env->t_float ) )
@@ -4863,12 +4864,15 @@ const char * type_path( a_Id_List thePath )
 // name: type_engine_find_type()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_Type * type_engine_find_type( Chuck_Namespace * theNpsc, S_Symbol xid )
+Chuck_Type * type_engine_find_type( Chuck_Namespace * npsc, S_Symbol xid )
 {
     Chuck_Type * type = NULL;
-    if( !theNpsc) return NULL;
+    if( !npsc ) return NULL;
+
     // -1 for base
-    if(( type = theNpsc->lookup_type( xid, -1 ) )) return type;
+    type = npsc->lookup_type( xid, -1 );
+    if( type ) return type;
+
     return NULL;
 }
 
