@@ -1016,7 +1016,7 @@ public:
     // generate CSS file
     t_CKBOOL outputCSS( const string & cssFilename );
     // generate an HTML file containing documentation for a list of classes
-    t_CKBOOL outputHTMLGroup( const vector<string> & clasess,
+    t_CKBOOL outputHTMLGroup( const vector<Chuck_Type *> & clasess,
                               const string & htmlFilename,
                               const string & cssFilename );
     // generate an HTML file containing index for a list of classes
@@ -1059,7 +1059,7 @@ t_CKBOOL CKDoc_Impl::outputCSS( const string & cssFilename )
 //-----------------------------------------------------------------------------
 // name: genHTMLGroup()
 //-----------------------------------------------------------------------------
-t_CKBOOL CKDoc_Impl::outputHTMLGroup( const vector<string> & clasess,
+t_CKBOOL CKDoc_Impl::outputHTMLGroup( const vector<Chuck_Type *> & clasess,
                                       const string & htmlFilename,
                                       const string & cssFilename )
 {
@@ -1164,11 +1164,11 @@ CK_DLL_MFUN( CKDoc_genCSS )
 CK_DLL_MFUN( CKDoc_genHTMLGroup )
 {
     CKDoc_Impl * ckdoc = (CKDoc_Impl *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
-    Chuck_Array4 * strArray = (Chuck_Array4 *)GET_CK_OBJECT(ARGS);
+    Chuck_Array4 * typeArray = (Chuck_Array4 *)GET_CK_OBJECT(ARGS);
     Chuck_String * htmlFilename = GET_CK_STRING(ARGS);
     Chuck_String * cssFilename = GET_CK_STRING(ARGS);
     // check if null
-    if( strArray == NULL )
+    if( typeArray == NULL )
     {
         CK_FPRINTF_STDERR( "[chuck] CKDoc.genHTMLGroup() given null 'classes' argument; nothing generated...\n" );
         goto error;
@@ -1180,16 +1180,16 @@ CK_DLL_MFUN( CKDoc_genHTMLGroup )
     }
     else
     {
-        vector<string> classes;
-        for( int i = 0; i < strArray->m_vector.size(); i++ )
+        vector<Chuck_Type *> classes;
+        for( int i = 0; i < typeArray->m_vector.size(); i++ )
         {
             // get pointer as chuck string
-            Chuck_String * str = (Chuck_String *)strArray->m_vector[i];
+            Chuck_Type * t = (Chuck_Type *)typeArray->m_vector[i];
             // check
-            if( str != NULL && trim(str->str()) != "" )
+            if( t != NULL )
             {
                 // append
-                classes.push_back( str->str() );
+                classes.push_back( t );
             }
         }
         // check
