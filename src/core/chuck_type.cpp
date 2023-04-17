@@ -1181,11 +1181,9 @@ t_CKBOOL type_engine_check_until( Chuck_Env * env, a_Stmt_Until stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_check_loop( Chuck_Env * env, a_Stmt_Loop stmt )
 {
-    Chuck_Type * type = NULL;
-
     // check the conditional
-    if( !(type = type_engine_check_exp( env, stmt->cond )) )
-        return FALSE;
+    Chuck_Type * type = type_engine_check_exp( env, stmt->cond );
+    if( !type ) return FALSE;
 
     // ensure the type in conditional is int (different from other loops)
     if( isa( type, env->t_float ) )
@@ -1447,9 +1445,10 @@ t_CKTYPE type_engine_check_exp_binary( Chuck_Env * env, a_Exp_Binary binary )
     while( cr )
     {
         // type check the pair
-        if( !(ret = type_engine_check_op( env, binary->op, cl, cr, binary )) )
-            return NULL;
+        ret = type_engine_check_op( env, binary->op, cl, cr, binary );
+        if( !ret ) return NULL;
 
+        // next rhs
         cr = cr->next;
     }
 
@@ -2817,9 +2816,8 @@ t_CKTYPE type_engine_check_exp_complex_lit( Chuck_Env * env, a_Exp_Primary exp )
     }
 
     // find types (only need real, since imag is linked after real)
-    if( !(type_re = type_engine_check_exp( env, val->re )) )
-        // || !(type_im = type_engine_check_exp( env, val->im )) )
-        return NULL;
+    type_re = type_engine_check_exp( env, val->re );
+    if( !type_re ) return NULL;
 
     // imaginary
     type_im = val->im->type;
@@ -2883,9 +2881,15 @@ t_CKTYPE type_engine_check_exp_polar_lit( Chuck_Env * env, a_Exp_Primary exp )
     }
 
     // find types
-    if( !(type_mod = type_engine_check_exp( env, val->mod )) ||
-        !(type_phase = type_engine_check_exp( env, val->phase )) )
-        return NULL;
+    type_mod = type_engine_check_exp( env, val->mod );
+    // this if is here due to evaluation for if( A || B ): if A==true, B is not evaluated
+    if( type_mod ) type_phase = type_engine_check_exp( env, val->phase );
+    // if either pointer is NULL return NULL
+    if( !type_mod || !type_phase ) return NULL;
+    // was previoiusly | 1.5.0.0 (ge and eito) #chunreal
+    // if( !(type_mod = type_engine_check_exp( env, val->mod )) ||
+    //     !(type_phase = type_engine_check_exp( env, val->phase )) )
+    //     return NULL;
 
     // check types
     if( !isa( type_mod, env->t_float ) && !isa( type_mod, env->t_int ) )
@@ -5013,11 +5017,14 @@ Chuck_Value * type_engine_find_value( Chuck_Type * type, S_Symbol xid )
 Chuck_Value * type_engine_find_value( Chuck_Type * type, const string & xid )
 {
     Chuck_Value * value = NULL;
+
     if( !type ) return NULL;
     if( !type->info ) return NULL;
     // -1 for base
-    if(( value = type->info->lookup_value( xid, -1 ) )) return value;
+    value = type->info->lookup_value( xid, -1 );
+    if( value ) return value;
     if( type->parent ) return type_engine_find_value( type->parent, xid );
+
     return NULL;
 }
 
