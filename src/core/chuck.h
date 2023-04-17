@@ -103,10 +103,10 @@ public:
 public:
     // set parameter by name
     // -- all params should have reasonable defaults
-    bool setParam( const std::string & name, t_CKINT value );
-    bool setParamFloat( const std::string & name, t_CKFLOAT value );
-    bool setParam( const std::string & name, const std::string & value );
-    bool setParam( const std::string & name, const std::list< std::string > & value );
+    t_CKBOOL setParam( const std::string & name, t_CKINT value );
+    t_CKBOOL setParamFloat( const std::string & name, t_CKFLOAT value );
+    t_CKBOOL setParam( const std::string & name, const std::string & value );
+    t_CKBOOL setParam( const std::string & name, const std::list< std::string > & value );
     // get params
     t_CKINT getParamInt( const std::string & key );
     t_CKFLOAT getParamFloat( const std::string & key );
@@ -115,15 +115,15 @@ public:
 
 public:
     // compile a file (can be called anytime)
-    bool compileFile( const std::string & path, const std::string & argsTogether, t_CKINT count = 1 );
+    t_CKBOOL compileFile( const std::string & path, const std::string & argsTogether, t_CKINT count = 1 );
     // compile code directly
-    bool compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count = 1 );
+    t_CKBOOL compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count = 1 );
 
 public:
     // initialize ChucK (using params)
-    bool init();
+    t_CKBOOL init();
     // explicit start (optionally -- done as neede from run())
-    bool start();
+    t_CKBOOL start();
 
 public:
     // run engine (call from callback)
@@ -131,13 +131,13 @@ public:
 
 public:
     // is initialized
-    bool isInit() { return m_init; }
+    t_CKBOOL isInit() { return m_init; }
 
 public:
     // additional native chuck bindings/types (use with extra caution)
-    bool bind( f_ck_query queryFunc, const std::string & name );
+    t_CKBOOL bind( f_ck_query queryFunc, const std::string & name );
     // set a function pointer to call from the main thread loop
-    bool setMainThreadHook( Chuck_DL_MainThreadHook * hook );
+    t_CKBOOL setMainThreadHook( Chuck_DL_MainThreadHook * hook );
     // get pointer to current function to be called from main loop
     Chuck_DL_MainThreadHook * getMainThreadHook();
 
@@ -151,7 +151,7 @@ public:
     // get compiler (dangerous)
     Chuck_Compiler * compiler() { return m_carrier->compiler; }
     // is the VM running
-    bool vm_running() { return m_carrier->vm && m_carrier->vm->running(); }
+    t_CKBOOL vm_running() { return m_carrier->vm && m_carrier->vm->running(); }
 
 public:
     // global callback functions: replace printing to command line with a callback function
@@ -170,7 +170,7 @@ public:
 
 protected:
     // shutdown
-    bool shutdown();
+    t_CKBOOL shutdown();
 
 public: // static functions
     // chuck version
@@ -200,13 +200,13 @@ protected:
     // initialize default params
     void initDefaultParams();
     // init VM
-    bool initVM();
+    t_CKBOOL initVM();
     // init compiler
-    bool initCompiler();
+    t_CKBOOL initCompiler();
     // init chugin system
-    bool initChugins();
+    t_CKBOOL initChugins();
     // init OTF programming system
-    bool initOTF();
+    t_CKBOOL initOTF();
 
 protected:
     // core elements: compiler, VM, etc.
