@@ -6915,6 +6915,7 @@ BowTabl :: BowTabl()
 {
   offSet = (MY_FLOAT) 0.0;
   slope = (MY_FLOAT) 0.1;
+  lastOutput = 0.0;
 }
 
 BowTabl :: ~BowTabl()
@@ -8031,6 +8032,7 @@ MY_FLOAT DelayA :: tick(MY_FLOAT sample)
 DelayL :: DelayL()
 {
     doNextOut = true;
+    nextOutput = 0;
 }
 
 DelayL :: DelayL(MY_FLOAT theDelay, long maxDelay)
@@ -16081,7 +16083,7 @@ void Stk :: swap64(unsigned char *ptr)
 
 #if (defined(__OS_LINUX__) || defined(__OS_MACOSX__) || defined(__OS_WINDOWS_CYGWIN__) || defined(__OS_IRIX__))
   #include <unistd.h>
-#elif
+#else
   #if (defined(__OS_WINDOWS__) || defined(__PLATFORM_WIN32__))
     #ifndef __CHUNREAL_ENGINE__
       #include <windows.h> // for win32_tmpfile()
