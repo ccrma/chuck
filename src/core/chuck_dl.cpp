@@ -1313,11 +1313,23 @@ set_string(ck_set_string)
 #if defined(__PLATFORM_WIN32__)
 extern "C"
 {
-#include <windows.h>
+#ifndef __CHUNREAL_ENGINE__
+  #include <windows.h>
+#else
+  // 1.5.0.0 (ge) | #chunreal
+  // unreal engine on windows disallows including windows.h
+  #include "Windows/MinWindows.h"
+#endif // #ifndef __CHUNREAL_ENGINE__
 
 void *dlopen( const char *path, int mode )
 {
+#ifndef __CHUNREAL_ENGINE__
     return (void *)LoadLibrary(path);
+#else
+    // 1.5.0.0 (ge) | #chunreal; explicitly call ASCII version
+    // the build envirnment seems to force UNICODE
+    return (void *)LoadLibraryA(path);
+#endif
 }
 
 int dlclose( void *handle )

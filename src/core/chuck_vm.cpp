@@ -35,12 +35,12 @@
 #include "chuck_type.h"
 #include "chuck_dl.h"
 #include "chuck_globals.h" // added 1.4.1.0 (jack)
+#include "chuck_errmsg.h"
 
 #ifndef __DISABLE_SERIAL__
 #include "chuck_io.h"
 #endif
 
-#include "chuck_errmsg.h"
 #include "ugen_xxx.h"
 #include "util_buffers.h"
 
@@ -56,11 +56,16 @@
 using namespace std;
 
 #if defined(__PLATFORM_WIN32__)
-  #include <windows.h>
+  #ifndef __CHUNREAL_ENGINE__
+    #include <windows.h>
+  #else
+    // 1.5.0.0 (ge) | #chunreal
+    #include "Windows/MinWindows.h"
+  #endif // #ifndef __CHUNREAL_ENGINE__
 #else
   #include <unistd.h>
   #include <pthread.h>
-#endif
+#endif // #if defined(__PLATFORM_WIN32__)
 
 // uncomment to compile VM debug messages
 #define CK_VM_DEBUG_ENABLE (0)
@@ -484,15 +489,16 @@ t_CKBOOL Chuck_VM::compute()
     // global manager added 1.4.1.0 (jack)
     m_globals_manager->handle_global_queue_messages();
 
-    // iteration until no more shreds/events/messages
+    // iterate until no more shreds/events/messages
     while( iterate )
     {
         // get the shreds queued for 'now'
-        while(( shred = m_shreduler->get() ))
+        shred = m_shreduler->get();
+        // run all shreds waiting to run 'now'
+        while( shred != NULL )
         {
             // set the current time of the shred
             shred->now = shred->wake_time;
-
             // track shred activation
             CK_TRACK( Chuck_Stats::instance()->activate_shred( shred ) );
 
@@ -510,9 +516,8 @@ t_CKBOOL Chuck_VM::compute()
 
             // track shred deactivation
             CK_TRACK( if( shred ) Chuck_Stats::instance()->deactivate_shred( shred ) );
-
-            // zero out
-            shred = NULL;
+            // get next shred queued for 'now'
+            shred = m_shreduler->get();
         }
 
         // set to false for now
@@ -2385,8 +2390,8 @@ void Chuck_VM_Shreduler::status( Chuck_VM_Status * status )
     }
 
     // get current shred
-    if( ( temp = m_current_shred ) )
-        list.push_back( temp );
+    temp = m_current_shred;
+    if( temp ) list.push_back( temp );
 
     // sort the list
     SortByID byid;

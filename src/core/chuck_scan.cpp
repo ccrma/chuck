@@ -2489,7 +2489,8 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     assert( !f->code || f->code->s_type == ae_stmt_code );
 
     // look up the value in the current class (can shadow?)
-    if(( overload = env->curr->lookup_value( f->name, FALSE ) ))
+    overload = env->curr->lookup_value( f->name, FALSE );
+    if( overload )
     {
         // if value
         if( !isa( overload->type, env->t_function ) )
