@@ -39,6 +39,7 @@
 #ifndef __DISABLE_THREADS__
 #include "util_thread.h"
 #endif
+
 #include "chuck.h"
 #include "chuck_type.h"
 #include "chuck_compile.h"
@@ -48,20 +49,26 @@
 #include <time.h>
 #include <math.h>
 
-#if defined(__PLATFORM_WIN32__)
-
-#include <windows.h>
-
+#ifdef __PLATFORM_WIN32__
+  #ifndef __CHUNREAL_ENGINE__
+    #include <windows.h>
+  #else
+    // 1.5.0.0 (ge) | #chunreal
+    // unreal engine on windows disallows including windows.h
+    #include "Windows/MinWindows.h"
+  #endif // #ifndef __CHUNREAL_ENGINE__
 int setenv( const char *n, const char *v, int i )
 {
+  #ifndef __CHUNREAL_ENGINE__
     return !SetEnvironmentVariable(n, v);
+  #else
+    // #chunreal explicitly call ASCII version
+    return !SetEnvironmentVariableA(n, v);
+  #endif
 }
-
 #else
-
-#include <unistd.h>
-
-#endif
+  #include <unistd.h>
+#endif // #ifdef __PLATFORM_WIN32__
 
 // for ConsoleInput and StringTokenizer
 #include <sstream>
@@ -752,7 +759,7 @@ CK_DLL_SFUN( ftoi_impl )
 }
 
 // getenv
-static Chuck_String g_str; // PROBLEM: not thread friendly
+// static Chuck_String g_str; // PROBLEM: not thread friendly
 CK_DLL_SFUN( getenv_impl )
 {
     const char * v = GET_CK_STRING(ARGS)->str().c_str();

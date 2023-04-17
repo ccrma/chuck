@@ -39,7 +39,7 @@
 #include <math.h>
 #include <stdio.h>
 
-static t_CKUINT g_srate = 0;
+static t_CKUINT g_srateOsc = 0;
 // for member data offset
 static t_CKUINT osc_offset_data = 0;
 
@@ -51,7 +51,7 @@ static t_CKUINT osc_offset_data = 0;
 DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
 {
     // srate
-    g_srate = QUERY->srate;
+    g_srateOsc = QUERY->srate;
     // get the env
     Chuck_Env * env = QUERY->env();
 
@@ -273,7 +273,7 @@ struct Osc_Data
         freq = 220.0;
         sync = 0; // internal
         width = 0.5;
-        srate = g_srate;
+        srate = g_srateOsc;
         phase = 0.0;
     }
 };
@@ -911,7 +911,7 @@ static void _transition( t_CKDOUBLE a, t_CKDOUBLE alpha, t_CKDOUBLE b,
 DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
 {
     // srate
-    g_srate = QUERY->srate;
+    g_srateOsc = QUERY->srate;
     // get the env
     Chuck_Env * env = QUERY->env();
     std::string doc;
@@ -1149,7 +1149,7 @@ struct genX_Data
     {
         //initialize data here
         sync        = 0;
-        srate       = g_srate;
+        srate       = g_srateOsc;
 
         t_CKINT i;
         for( i=0; i<genX_MAX_COEFFS; i++ ) coeffs[i] = 0.;

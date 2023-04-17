@@ -7725,7 +7725,7 @@ Delay :: Delay(long theDelay, long maxDelay)
     this->set( theDelay, maxDelay );
 }
 
-void Delay :: set( long delay, long max )
+void Delay :: set( long theDelay, long max )
 {
     // Writing before reading allows delays from 0 to length-1.
     // If we want to allow a delay of maxDelay, we need a
@@ -7738,7 +7738,7 @@ void Delay :: set( long delay, long max )
     this->clear();
 
     inPoint = 0;
-    this->setDelay(delay);
+    this->setDelay(theDelay);
 }
 
 Delay :: ~Delay()
@@ -7904,7 +7904,7 @@ DelayA :: DelayA(MY_FLOAT theDelay, long maxDelay)
   doNextOut = true;
 }
 
-void DelayA :: set( MY_FLOAT delay, long max )
+void DelayA :: set( MY_FLOAT theDelay, long max )
 {
     // Writing before reading allows delays from 0 to length-1.
     // If we want to allow a delay of maxDelay, we need a
@@ -7917,7 +7917,7 @@ void DelayA :: set( MY_FLOAT delay, long max )
     this->clear();
 
     inPoint = 0;
-    this->setDelay(delay);
+    this->setDelay(theDelay);
     apInput = 0.0;
     doNextOut = true;
 }
@@ -8054,7 +8054,7 @@ DelayL :: ~DelayL()
 {
 }
 
-void DelayL :: set( MY_FLOAT delay, long max )
+void DelayL :: set( MY_FLOAT theDelay, long max )
 {
     // Writing before reading allows delays from 0 to length-1.
     // If we want to allow a delay of maxDelay, we need a
@@ -8067,7 +8067,7 @@ void DelayL :: set( MY_FLOAT delay, long max )
     this->clear();
 
     inPoint = 0;
-    this->setDelay(delay);
+    this->setDelay(theDelay);
     doNextOut = true;
 }
 
@@ -13531,7 +13531,7 @@ SKINI :: ~SKINI()
 #define __SK_MAX_FIELDS_ 5
 #define __SK_MAX_SIZE_ 32
 
-short ignore(char aChar)
+short ignoreThis(char aChar)
 {
   short ignoreIt = 0;
   if (aChar == 0)   ignoreIt = 1;        //  Null String Termination
@@ -13631,7 +13631,8 @@ long SKINI :: parseThis(char* aString)
   int  somePointrs[__SK_MAX_FIELDS_];
 
   temp = nextChar(aString);
-  if ((which = ignore(aString[temp]))) {
+  which = ignoreThis(aString[temp]);
+  if ( which ) {
     if (which == 2) printf("// CommentLine: %s\n",aString);
     messageType = 0;
     return messageType;
@@ -14476,13 +14477,13 @@ void Shakers :: setDecays(MY_FLOAT sndDecay, MY_FLOAT sysDecay) {
   systemDecay = sysDecay;
 }
 
-int Shakers :: setFreqAndReson(int which, MY_FLOAT freq, MY_FLOAT reson) {
+int Shakers :: setFreqAndReson(int which, MY_FLOAT theFreq, MY_FLOAT reson) {
   if (which < MAX_FREQS)    {
     resons[which] = reson;
-    center_freqs[which] = freq;
-    t_center_freqs[which] = freq;
+    center_freqs[which] = theFreq;
+    t_center_freqs[which] = theFreq;
     coeffs[which][1] = reson * reson;
-    coeffs[which][0] = -reson * 2.0 * cos(freq * TWO_PI / Stk::sampleRate());
+    coeffs[which][0] = -reson * 2.0 * cos(theFreq * TWO_PI / Stk::sampleRate());
     return 1;
   }
   else return 0;
@@ -15088,9 +15089,9 @@ void Shakers :: controlChange(int number, MY_FLOAT value)
     }
     if (instType != 3 && instType != 10) {
         // reverse calculate decay setting
-        double temp = (double) (64.0 * (systemDecay-defDecays[instType])/(decayScale[instType]*(1-defDecays[instType])) + 64.0);
+        double temp2 = (double) (64.0 * (systemDecay-defDecays[instType])/(decayScale[instType]*(1-defDecays[instType])) + 64.0);
         // scale gains by decay setting
-        for (i=0;i<nFreqs;i++) gains[i] *= ((128-temp)/100.0 + 0.36);
+        for (i=0;i<nFreqs;i++) gains[i] *= ((128- temp2)/100.0 + 0.36);
     }
   }
   else if (number == __SK_ModWheel_) { // 1 ... resonance frequency
@@ -16078,19 +16079,32 @@ void Stk :: swap64(unsigned char *ptr)
   *(ptr+1) = val;
 }
 
-#if (defined(__OS_IRIX__) || defined(__OS_LINUX__) || defined(__OS_MACOSX__) || defined(__OS_WINDOWS_CYGWIN__))
+#if (defined(__OS_LINUX__) || defined(__OS_MACOSX__) || defined(__OS_WINDOWS_CYGWIN__) || defined(__OS_IRIX__))
   #include <unistd.h>
-#elif defined(__OS_WINDOWS__)
-  #include <windows.h>
+#elif
+  #if (defined(__OS_WINDOWS__) || defined(__PLATFORM_WIN32__))
+    #ifndef __CHUNREAL_ENGINE__
+      #include <windows.h> // for win32_tmpfile()
+    #else
+      // 1.5.0.0 (ge) | #chunreal
+      // unreal engine on windows disallows including windows.h
+      #include "Windows/MinWindows.h"
+    #endif // #ifndef __CHUNREAL_ENGINE__
+  #endif // #ifdef __PLATFORM_WIN32__
 #endif
 
 void Stk :: sleep(unsigned long milliseconds)
 {
-#if defined(__OS_WINDOWS__)
-  Sleep((DWORD) milliseconds);
-#elif (defined(__OS_IRIX__) || defined(__OS_LINUX__) || defined(__OS_MACOSX__) || defined(__OS_WINDOWS_CYGWIN__))
+#if (defined(__OS_WINDOWS__) || defined(__PLATFORM_WIN32__))
+  #ifndef __CHUNREAL_ENGINE__
+    Sleep( (DWORD)milliseconds );
+  #else
+    // 1.5.0.0 (ge) | #chunreal
+    #define usleep(x) FPlatformProcess::Sleep( x/1000.0f <= 0 ? .001 : x/1000.0f );
+  #endif // #ifndef __UNREAL_ENGINE__
+#else
   usleep( (unsigned int)(milliseconds * 1000.0) ); // 1.4.2.0 (ge) | changed cast to unsigned int to clear a warning
-#endif
+#endif // #if (defined(__OS_WINDOWS__) || defined(__PLATFORM_WIN32__))
 }
 
 void Stk :: handleError( const char *message, StkError::TYPE type )
@@ -18164,15 +18178,15 @@ if( !little_endian )
   channels = (unsigned int ) temp;
 
   // Get file sample rate from the header.
-  SINT32 srate;
-  if ( fread(&srate, 4, 1, fd) != 1 ) goto error;
+  SINT32 theSrate;
+  if ( fread(&theSrate, 4, 1, fd) != 1 ) goto error;
 if( !little_endian )
-  swap32((unsigned char *)&srate);
+  swap32((unsigned char *)&theSrate);
 
-  fileRate = (MY_FLOAT) srate;
+  fileRate = (MY_FLOAT)theSrate;
 
   // Set default rate based on file sampling rate.
-  rate = (MY_FLOAT) ( srate / Stk::sampleRate() );
+  rate = (MY_FLOAT)(theSrate / Stk::sampleRate() );
 
   // Determine the data type.
   dataType = 0;
@@ -18260,15 +18274,15 @@ if( little_endian )
   }
 
   // Get file sample rate from the header.
-  SINT32 srate;
-  if ( fread(&srate, 4, 1, fd) != 1 ) goto error;
+  SINT32 theSrate;
+  if ( fread(&theSrate, 4, 1, fd) != 1 ) goto error;
 if( little_endian )
-  swap32((unsigned char *)&srate);
+  swap32((unsigned char *)&theSrate);
 
-  fileRate = (MY_FLOAT) srate;
+  fileRate = (MY_FLOAT)theSrate;
 
   // Set default rate based on file sampling rate.
-  rate = (MY_FLOAT) ( srate / sampleRate() );
+  rate = (MY_FLOAT) (theSrate / sampleRate() );
 
   // Get number of channels from the header.
   SINT32 chans;
@@ -18358,16 +18372,16 @@ if( little_endian )
   // Get file sample rate from the header. For AIFF files, this value
   // is stored in a 10-byte, IEEE Standard 754 floating point number,
   // so we need to convert it first.
-  unsigned char srate[10];
+  unsigned char theSrate[10];
   unsigned char exp;
   unsigned long mantissa;
   unsigned long last;
-  if ( fread(&srate, 10, 1, fd) != 1 ) goto error;
-  mantissa = (unsigned long) *(unsigned long *)(srate+2);
+  if ( fread(&theSrate, 10, 1, fd) != 1 ) goto error;
+  mantissa = (unsigned long) *(unsigned long *)(theSrate+2);
 if( little_endian )
   swap32((unsigned char *)&mantissa);
 
-  exp = 30 - *(srate+1);
+  exp = 30 - *(theSrate+1);
   last = 0;
   while (exp--) {
     last = mantissa;
@@ -19852,7 +19866,7 @@ MidiFileIn :: MidiFileIn( std::string fileName )
             count += getNextEvent( &event, 0 );
         }
         rewindTrack( 0 );
-        for ( unsigned int i=0; i<nTracks_; i++ ) {
+        for ( unsigned int j=0; j<nTracks_; j++ ) {
             trackCounters_.push_back( 0 );
             trackTempoIndex_.push_back( 0 );
         }

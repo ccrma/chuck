@@ -39,8 +39,10 @@
 #include <stdlib.h>
 
 
-static t_CKUINT g_srate = 0;
+// local globals
+static t_CKUINT g_srateFilter = 0;
 static t_CKFLOAT g_radians_per_sample = 0;
+
 // filter member data offset
 static t_CKUINT FilterBasic_offset_data = 0;
 static t_CKUINT Teabox_offset_data = 0;
@@ -56,9 +58,9 @@ static t_CKUINT biquad_offset_data = 0;
 DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
 {
     // set srate
-    g_srate = QUERY->srate;
+    g_srateFilter = QUERY->srate;
     // set radians per sample
-    g_radians_per_sample = TWO_PI / (t_CKFLOAT)g_srate;
+    g_radians_per_sample = TWO_PI / (t_CKFLOAT)g_srateFilter;
 
     std::string doc;
 
@@ -853,7 +855,7 @@ struct FilterBasic_data
     {
         // 1.5.0.0 (ge) | added bounds to hopefully prevent any more blow-ups
         freq = ck_max( 1, freq );
-        freq = ck_min( g_srate/2, freq );
+        freq = ck_min(g_srateFilter /2, freq );
         Q = ck_max( 1, Q );
 
         t_CKFLOAT qres = ck_max( .001, 1.0/Q );
@@ -930,7 +932,7 @@ struct FilterBasic_data
     {
         // 1.5.0.0 (ge) | added bounds to hopefully prevent any more blow-ups
         freq = ck_max( 1, freq );
-        freq = ck_min( g_srate/2, freq );
+        freq = ck_min(g_srateFilter /2, freq );
         Q = ck_max( 1, Q );
 
         t_CKFLOAT qres = ck_max( .001, 1.0/Q );
@@ -2111,7 +2113,7 @@ struct biquad_data
         pfreq = zfreq = 0.0f;
         prad = zrad = 0.0f;
         norm = FALSE;
-        srate = g_srate;
+        srate = g_srateFilter;
     }
 };
 
