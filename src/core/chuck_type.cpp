@@ -3223,15 +3223,18 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         // get the decl
         var_decl = list->var_decl;
 
-        // (if at class_scope) check if in parent
-        // TODO: sort
-        if( env->class_def && env->class_scope == 0 && ( value =
-            type_engine_find_value( env->class_def->parent, var_decl->xid ) ) )
+        // (if at class_scope) | TODO: sort
+        if( env->class_def && env->class_scope == 0 )
         {
-            EM_error2( var_decl->linepos,
-                "'%s' has already been defined in super class '%s'...",
-                S_name(var_decl->xid), value->owner_class->c_name() );
-            return NULL;
+            // check if in parent
+            value = type_engine_find_value( env->class_def->parent, var_decl->xid );
+            if( value )
+            {
+                EM_error2( var_decl->linepos,
+                    "'%s' has already been defined in super class '%s'...",
+                    S_name(var_decl->xid), value->owner_class->c_name() );
+                return NULL;
+            }
         }
 
         // get the value
@@ -3370,10 +3373,10 @@ string type_engine_print_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member membe
 Chuck_Func * find_func_match_actual( Chuck_Env * env, Chuck_Func * up, a_Exp args,
                                      t_CKBOOL implicit, t_CKBOOL specific )
 {
-    a_Exp e;
-    a_Arg_List e1;
-    t_CKUINT count;
-    Chuck_Func * func;
+    a_Exp e = NULL;
+    a_Arg_List e1 = NULL;
+    t_CKUINT count = 0;
+    Chuck_Func * theFunc = NULL;
     t_CKBOOL match = FALSE;
 
     // see if args is nil
@@ -3383,12 +3386,12 @@ Chuck_Func * find_func_match_actual( Chuck_Env * env, Chuck_Func * up, a_Exp arg
     // up is the list of functions in single class / namespace
     while( up )
     {
-        func = up;
+        theFunc = up;
         // loop
-        while( func )
+        while( theFunc )
         {
             e = args;
-            e1 = func->def->arg_list;
+            e1 = theFunc->def->arg_list;
             count = 1;
 
             // check arguments against the definition
@@ -3418,11 +3421,11 @@ Chuck_Func * find_func_match_actual( Chuck_Env * env, Chuck_Func * up, a_Exp arg
             }
 
             // check for extra arguments
-            if( e1 == NULL ) return func;
+            if( e1 == NULL ) return theFunc;
 
 moveon:
             // next func
-            func = func->next;
+            theFunc = theFunc->next;
         }
 
         // go up
@@ -3443,23 +3446,23 @@ moveon:
 //-----------------------------------------------------------------------------
 Chuck_Func * find_func_match( Chuck_Env * env, Chuck_Func * up, a_Exp args )
 {
-    Chuck_Func * func = NULL;
+    Chuck_Func * theFunc = NULL;
 
     // try to find specific
-    func = find_func_match_actual( env, up, args, FALSE, TRUE );
-    if( func ) return func;
+    theFunc = find_func_match_actual( env, up, args, FALSE, TRUE );
+    if( theFunc ) return theFunc;
 
     // try to find specific with implicit
-    func = find_func_match_actual( env, up, args, TRUE, TRUE );
-    if( func ) return func;
+    theFunc = find_func_match_actual( env, up, args, TRUE, TRUE );
+    if( theFunc ) return theFunc;
 
     // try to find non-specific
-    func = find_func_match_actual( env, up, args, FALSE, FALSE );
-    if( func ) return func;
+    theFunc = find_func_match_actual( env, up, args, FALSE, FALSE );
+    if( theFunc ) return theFunc;
 
     // try to find non-specific with implicit
-    func = find_func_match_actual( env, up, args, TRUE, FALSE );
-    if( func ) return func;
+    theFunc = find_func_match_actual( env, up, args, TRUE, FALSE );
+    if( theFunc ) return theFunc;
 
     return NULL;
 }
@@ -3474,7 +3477,7 @@ Chuck_Func * find_func_match( Chuck_Env * env, Chuck_Func * up, a_Exp args )
 t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp args,
                                           t_CKFUNC & ck_func, int linepos )
 {
-    Chuck_Func * func = NULL;
+    Chuck_Func * theFunc = NULL;
     Chuck_Func * up = NULL;
 
     // type check the func
@@ -3503,10 +3506,10 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
     }
 
     // look for a match
-    func = find_func_match( env, up, args );
+    theFunc = find_func_match( env, up, args );
 
     // no func
-    if( !func )
+    if( !theFunc )
     {
         // if primary
         if( exp_func->s_type == ae_exp_primary && exp_func->primary.s_type == ae_primary_var )
@@ -3542,7 +3545,7 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
     {
         // set the new name
         // TODO: clear old
-        exp_func->primary.var = insert_symbol(func->name.c_str());
+        exp_func->primary.var = insert_symbol(theFunc->name.c_str());
         // make sure the type is still the name
         if( *exp_func->type != *type_engine_check_exp( env, exp_func ) )
         {
@@ -3556,7 +3559,7 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
     {
         // set the new name
         // TODO: clear old
-        exp_func->dot_member.xid = insert_symbol(func->name.c_str());
+        exp_func->dot_member.xid = insert_symbol(theFunc->name.c_str());
         /*
         // TODO: figure if this is necessary - it type checks things twice!
         // make sure the type is still the name
@@ -3571,9 +3574,9 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
     }
     else assert( FALSE );
 
-    ck_func = func;
+    ck_func = theFunc;
 
-    return func->def->ret_type;
+    return theFunc->def->ret_type;
 }
 
 
@@ -4062,10 +4065,10 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
 t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
 {
     Chuck_Value * value = NULL;
-    Chuck_Func * func = NULL;
+    Chuck_Func * theFunc = NULL;
 
     Chuck_Type * parent = NULL;
-    Chuck_Value * override = NULL;
+    Chuck_Value * theOverride = NULL;
     Chuck_Value * v = NULL;
     Chuck_Func * parent_func = NULL;
     a_Arg_List arg_list = NULL;
@@ -4083,23 +4086,28 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     }
 
     // get the func
-    func = f->ck_func;
+    theFunc = f->ck_func;
     // get the value
-    value = func->value_ref;
+    value = theFunc->value_ref;
     // make sure
-    assert( func != NULL && value != NULL );
+    assert( theFunc != NULL && value != NULL );
 
-    // look up the value in the parent class
-    if( env->class_def &&
-        ( override = type_engine_find_value( env->class_def->parent, f->name ) ) )
+    // check
+    if( env->class_def )
     {
-        // see if the target is a function
-        if( !isa( override->type, env->t_function ) )
+        // look up the value in the parent class
+        theOverride = type_engine_find_value( env->class_def->parent, f->name );
+        // check if override
+        if( theOverride )
         {
-            EM_error2( f->linepos, "function name '%s' conflicts with previously defined value...",
-                S_name(f->name) );
-            EM_error2( f->linepos, "from super class '%s'...", override->owner_class->c_name() );
-            return FALSE;
+            // see if the target is a function
+            if( !isa( theOverride->type, env->t_function ) )
+            {
+                EM_error2( f->linepos, "function name '%s' conflicts with previously defined value...",
+                    S_name(f->name) );
+                EM_error2( f->linepos, "from super class '%s'...", theOverride->owner_class->c_name() );
+                return FALSE;
+            }
         }
     }
 
@@ -4107,11 +4115,11 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     assert( !f->code || f->code->s_type == ae_stmt_code );
 
     // if override
-    if( override )
+    if( theOverride )
     {
         // make reference to parent
         // TODO: ref count
-        func->up = override;
+        theFunc->up = theOverride;
     }
 
     // make sure return type is not NULL
@@ -4161,7 +4169,8 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
         parent = env->class_def->parent;
         while( parent && !parent_match )
         {
-            if(( v = type_engine_find_value( env->class_def->parent, f->name ) ))
+            v = type_engine_find_value( env->class_def->parent, f->name );
+            if( v )
             {
                 // see if the target is a function
                 if( !isa( v->type, env->t_function ) )
@@ -4250,12 +4259,12 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
                     parent_match = TRUE;
 
                     // update virtual table
-                    func->vt_index = parent_func->vt_index;
-                    assert( func->vt_index < env->curr->obj_v_table.funcs.size() );
-                    env->curr->obj_v_table.funcs[func->vt_index] = func;
+                    theFunc->vt_index = parent_func->vt_index;
+                    assert( theFunc->vt_index < env->curr->obj_v_table.funcs.size() );
+                    env->curr->obj_v_table.funcs[theFunc->vt_index] = theFunc;
                     // update name
                     func_name = parent_func->name;
-                    func->name = func_name;
+                    theFunc->name = func_name;
                     value->name = func_name;
                 }
             }
@@ -4266,16 +4275,16 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     }
 
     // if not override, make entry in virtual table
-    if( func->is_member && !parent_match )
+    if( theFunc->is_member && !parent_match )
     {
         // remember virtual table index
-        func->vt_index = env->curr->obj_v_table.funcs.size();
+        theFunc->vt_index = env->curr->obj_v_table.funcs.size();
         // append to virtual table
-        env->curr->obj_v_table.funcs.push_back( func );
+        env->curr->obj_v_table.funcs.push_back( theFunc );
     }
 
     // set the current function to this
-    env->func = func;
+    env->func = theFunc;
     // push the value stack
     env->curr->value.push();
 
@@ -4323,9 +4332,9 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     if( f->s_type == ae_func_builtin )
     {
         // set the stack depth?
-        func->code->stack_depth = f->stack_depth;
+        theFunc->code->stack_depth = f->stack_depth;
         // if member add room for this
-        // done: if( func->is_member ) func->code->stack_depth += sizeof(t_CKUINT);
+        // done: if( theFunc->is_member ) theFunc->code->stack_depth += sizeof(t_CKUINT);
     }
 
     // pop the value stack
@@ -4340,7 +4349,7 @@ error:
 
     // clean up
     env->func = NULL;
-    // func->release();
+    // theFunc->release();
 
     return FALSE;
 }
@@ -4352,11 +4361,11 @@ error:
 // name: lookup_type()
 // desc: lookup type in the env
 //-----------------------------------------------------------------------------
-Chuck_Type * Chuck_Namespace::lookup_type( const string & name, t_CKINT climb )
+Chuck_Type * Chuck_Namespace::lookup_type( const string & theName, t_CKINT climb )
 {
-    Chuck_Type * t = type.lookup( name, climb );
+    Chuck_Type * t = type.lookup( theName, climb );
     if( climb > 0 && !t && parent )
-        return parent->lookup_type( name, climb );
+        return parent->lookup_type( theName, climb );
     return t;
 }
 
@@ -4367,11 +4376,11 @@ Chuck_Type * Chuck_Namespace::lookup_type( const string & name, t_CKINT climb )
 // name: lookup_type()
 // desc: lookup type in the env
 //-----------------------------------------------------------------------------
-Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol name, t_CKINT climb )
+Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol theName, t_CKINT climb )
 {
-    Chuck_Type * t = type.lookup( name, climb );
+    Chuck_Type * t = type.lookup( theName, climb );
     if( climb > 0 && !t && parent )
-        return parent->lookup_type( name, climb );
+        return parent->lookup_type( theName, climb );
     return t;
 }
 
@@ -4382,11 +4391,11 @@ Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol name, t_CKINT climb )
 // name: lookup_value()
 // desc: lookup value in the env
 //-----------------------------------------------------------------------------
-Chuck_Value * Chuck_Namespace::lookup_value( const string & name, t_CKINT climb )
+Chuck_Value * Chuck_Namespace::lookup_value( const string & theName, t_CKINT climb )
 {
-    Chuck_Value * v = value.lookup( name, climb );
+    Chuck_Value * v = value.lookup( theName, climb );
     if( climb > 0 && !v && parent )
-        return parent->lookup_value( name, climb );
+        return parent->lookup_value( theName, climb );
     return v;
 }
 
@@ -4397,11 +4406,11 @@ Chuck_Value * Chuck_Namespace::lookup_value( const string & name, t_CKINT climb 
 // name: lookup_value()
 // desc: lookup value in the env
 //-----------------------------------------------------------------------------
-Chuck_Value * Chuck_Namespace::lookup_value( S_Symbol name, t_CKINT climb )
+Chuck_Value * Chuck_Namespace::lookup_value( S_Symbol theName, t_CKINT climb )
 {
-    Chuck_Value * v = value.lookup( name, climb );
+    Chuck_Value * v = value.lookup( theName, climb );
     if( climb > 0 && !v && parent )
-        return parent->lookup_value( name, climb );
+        return parent->lookup_value( theName, climb );
     return v;
 }
 
@@ -4412,11 +4421,11 @@ Chuck_Value * Chuck_Namespace::lookup_value( S_Symbol name, t_CKINT climb )
 // name: lookup_func()
 // desc: lookup func in the env
 //-----------------------------------------------------------------------------
-Chuck_Func * Chuck_Namespace::lookup_func( const string & name, t_CKINT climb )
+Chuck_Func * Chuck_Namespace::lookup_func( const string & theName, t_CKINT climb )
 {
-    Chuck_Func * f = func.lookup( name, climb );
+    Chuck_Func * f = this->func.lookup( theName, climb );
     if( climb > 0 && !f && parent )
-        return parent->lookup_func( name, climb );
+        return parent->lookup_func( theName, climb );
     return f;
 }
 
@@ -4427,11 +4436,11 @@ Chuck_Func * Chuck_Namespace::lookup_func( const string & name, t_CKINT climb )
 // name: lookup_func()
 // desc: lookup func in the env
 //-----------------------------------------------------------------------------
-Chuck_Func * Chuck_Namespace::lookup_func( S_Symbol name, t_CKINT climb )
+Chuck_Func * Chuck_Namespace::lookup_func( S_Symbol theName, t_CKINT climb )
 {
-    Chuck_Func * f = func.lookup( name, climb );
+    Chuck_Func * f = this->func.lookup( theName, climb );
     if( climb > 0 && !f && parent )
-        return parent->lookup_func( name, climb );
+        return parent->lookup_func( theName, climb );
     return f;
 }
 
@@ -4621,10 +4630,10 @@ Chuck_Context::~Chuck_Context()
 // name: add_commit_candidate()
 // desc: ...
 //-----------------------------------------------------------------------------
-void Chuck_Context::add_commit_candidate( Chuck_Namespace * nspc )
+void Chuck_Context::add_commit_candidate( Chuck_Namespace * theNpsc )
 {
     // add for commit
-    commit_map[nspc] = nspc;
+    commit_map[theNpsc] = theNpsc;
 }
 
 
@@ -4827,21 +4836,21 @@ Chuck_Type * type_engine_find_common_anc( Chuck_Type * lhs, Chuck_Type * rhs )
 // name: type_path()
 // desc: ...
 //-----------------------------------------------------------------------------
-const char * type_path( a_Id_List path )
+const char * type_path( a_Id_List thePath )
 {
     static string str;
 
     // clear it
     str = "";
     // loop over path
-    while( path )
+    while( thePath )
     {
         // concatenate
-        str += S_name(path->xid);
+        str += S_name(thePath->xid);
         // add .
-        if( path->next ) str += ".";
+        if( thePath->next ) str += ".";
         // advance
-        path = path->next;
+        thePath = thePath->next;
     }
 
     return str.c_str();
@@ -4854,12 +4863,12 @@ const char * type_path( a_Id_List path )
 // name: type_engine_find_type()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_Type * type_engine_find_type( Chuck_Namespace * nspc, S_Symbol xid )
+Chuck_Type * type_engine_find_type( Chuck_Namespace * theNpsc, S_Symbol xid )
 {
     Chuck_Type * type = NULL;
-    if( !nspc) return NULL;
+    if( !theNpsc) return NULL;
     // -1 for base
-    if(( type = nspc->lookup_type( xid, -1 ) )) return type;
+    if(( type = theNpsc->lookup_type( xid, -1 ) )) return type;
     return NULL;
 }
 
@@ -4902,14 +4911,14 @@ t_CKBOOL type_engine_get_deprecate( Chuck_Env * env,
 // name: type_engine_find_deprecated_type()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_Type * type_engine_find_deprecated_type( Chuck_Env * env, a_Id_List path )
+Chuck_Type * type_engine_find_deprecated_type( Chuck_Env * env, a_Id_List thePath )
 {
     // S_Symbol xid = NULL;
     // Chuck_Type * t = NULL;
     std::string actual;
 
     // find mapping
-    if( !type_engine_get_deprecate( env, S_name(path->xid), actual ) )
+    if( !type_engine_get_deprecate( env, S_name(thePath->xid), actual ) )
         return NULL;
 
     // get base type
@@ -4920,8 +4929,8 @@ Chuck_Type * type_engine_find_deprecated_type( Chuck_Env * env, a_Id_List path )
         // check level
         if( env->deprecate_level < 2 )
         {
-            EM_error2( path->linepos, "deprecated: '%s' --> use: '%s'...",
-                type_path( path ), actual.c_str() );
+            EM_error2( thePath->linepos, "deprecated: '%s' --> use: '%s'...",
+                type_path( thePath ), actual.c_str() );
         }
     }
 
@@ -4935,37 +4944,37 @@ Chuck_Type * type_engine_find_deprecated_type( Chuck_Env * env, a_Id_List path )
 // name: type_engine_find_type()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_Type * type_engine_find_type( Chuck_Env * env, a_Id_List path )
+Chuck_Type * type_engine_find_type( Chuck_Env * env, a_Id_List thePath )
 {
     S_Symbol xid = NULL;
     Chuck_Type * t = NULL;
     // get base type
-    Chuck_Type * type = env->curr->lookup_type( path->xid, TRUE );
+    Chuck_Type * type = env->curr->lookup_type( thePath->xid, TRUE );
     if( !type )
     {
         // check level
         if( env->deprecate_level > 0 )
-            type = type_engine_find_deprecated_type( env, path );
+            type = type_engine_find_deprecated_type( env, thePath );
 
         // error
         if( !type )
         {
-            EM_error2( path->linepos, "undefined type '%s'...",
-                type_path( path ) );
+            EM_error2( thePath->linepos, "undefined type '%s'...",
+                type_path( thePath ) );
             return NULL;
         }
     }
     // start the namespace
-    Chuck_Namespace * nspc = type->info;
-    path = path->next;
+    Chuck_Namespace * theNpsc = type->info;
+    thePath = thePath->next;
 
     // loop
-    while( path != NULL )
+    while( thePath != NULL )
     {
         // get the id
-        xid = path->xid;
+        xid = thePath->xid;
         // look for the type in the namespace
-        t = type_engine_find_type( nspc, xid );
+        t = type_engine_find_type( theNpsc, xid );
         // look in parent
         while( !t && type && type->parent )
         {
@@ -4976,20 +4985,20 @@ Chuck_Type * type_engine_find_type( Chuck_Env * env, a_Id_List path )
         if( !t )
         {
             // error
-            EM_error2( path->linepos, "undefined type '%s'...",
-                type_path( path ) );
-            EM_error2( path->linepos,
+            EM_error2( thePath->linepos, "undefined type '%s'...",
+                type_path( thePath ) );
+            EM_error2( thePath->linepos,
                 "...(cannot find class '%s' in namespace '%s')",
-                S_name(xid), nspc->name.c_str() );
+                S_name(xid), theNpsc->name.c_str() );
             return NULL;
         }
 
         // set the type
         type = t;
         // update nspc
-        if( type ) nspc = type->info;
+        if( type ) theNpsc = type->info;
         // advance
-        path = path->next;
+        thePath = thePath->next;
     }
 
     return type;
@@ -5042,7 +5051,8 @@ Chuck_Value * type_engine_find_value( Chuck_Env * env, const string & xid,
     string actual;
 
     // look up
-    if(( value = env->curr->lookup_value( xid, climb ) )) return value;
+    value = env->curr->lookup_value( xid, climb );
+    if( value ) return value;
 
     // see if deprecated if climb
     if( climb )
@@ -5074,19 +5084,19 @@ Chuck_Value * type_engine_find_value( Chuck_Env * env, const string & xid,
 // name: type_engine_find_nspc()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List path )
+Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List thePath )
 {
-    Chuck_Namespace * nspc = NULL;
+    Chuck_Namespace * theNpsc = NULL;
     // if the first if global, move to the next
-    if( path && !strcmp( S_name(path->xid), "global" ) ) path = path->next;
+    if( thePath && !strcmp( S_name(thePath->xid), "global" ) ) thePath = thePath->next;
     // global namespace
-    if( path == NULL ) return env->global();
+    if( thePath == NULL ) return env->global();
     // find the type
-    Chuck_Type * type = type_engine_find_type( env, path );
+    Chuck_Type * type = type_engine_find_type( env, thePath );
     if( type == NULL ) return NULL;
     // copy the nspc
-    nspc = type->info;
-    if( nspc == NULL )
+    theNpsc = type->info;
+    if( theNpsc == NULL )
     {
         // primitive
         if( isprim( env, type ) )
@@ -5105,7 +5115,7 @@ Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List path )
         }
     }
 
-    return nspc;
+    return theNpsc;
 }
 
 
@@ -5371,8 +5381,8 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
     Chuck_UGen_Info * info = NULL;
 
     // construct class
-    if( !(type = type_engine_import_class_begin( env, name, parent, where, pre_ctor, dtor, doc ) ) )
-        return NULL;
+    type = type_engine_import_class_begin( env, name, parent, where, pre_ctor, dtor, doc );
+    if( !type ) return NULL;
 
     // make sure parent is ugen
     assert( type->parent != NULL );
@@ -5460,9 +5470,9 @@ Chuck_Type * type_engine_import_uana_begin( Chuck_Env * env, const char * name,
     Chuck_UGen_Info * info = NULL;
 
     // construct class
-    if( !(type = type_engine_import_ugen_begin( env, name, parent, where, pre_ctor, dtor,
-                                                tick, pmsg, num_ins, num_outs, doc ) ) )
-        return NULL;
+    type = type_engine_import_ugen_begin( env, name, parent, where, pre_ctor, dtor,
+                                          tick, pmsg, num_ins, num_outs, doc );
+    if( !type ) return NULL;
 
     // make sure parent is ugen
     assert( type->parent != NULL );
@@ -5627,8 +5637,8 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
 
     // make path
     t_CKUINT array_depth = 0;
-    a_Id_List path = str2list( type, array_depth );
-    if( !path )
+    a_Id_List thePath = str2list( type, array_depth );
+    if( !thePath )
     {
         // error
         EM_error2( 0, "... during mvar import '%s.%s'...",
@@ -5636,7 +5646,7 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
         return CK_INVALID_OFFSET;
     }
     // make type decl
-    a_Type_Decl type_decl = new_type_decl( path, FALSE, 0 );
+    a_Type_Decl type_decl = new_type_decl( thePath, FALSE, 0 );
     // check for array
     if( array_depth )
     {
@@ -5668,7 +5678,7 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
         !type_engine_scan2_exp_decl( env, &exp_decl->decl ) ||
         !type_engine_check_exp_decl( env, &exp_decl->decl ) )
     {
-        delete_id_list( path );
+        delete_id_list( thePath );
         return CK_INVALID_OFFSET;
     }
 
@@ -5676,7 +5686,7 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
         var_decl->value->doc = doc;
 
     // cleanup
-    delete_id_list( path );
+    delete_id_list( thePath );
 
     // return the offset
     return var_decl->value->offset;
@@ -5704,8 +5714,8 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
     }
 
     // make path
-    a_Id_List path = str2list( type );
-    if( !path )
+    a_Id_List thePath = str2list( type );
+    if( !thePath )
     {
         // error
         EM_error2( 0, "... during svar import '%s.%s'...",
@@ -5714,7 +5724,7 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
     }
 
     // make type decl
-    a_Type_Decl type_decl = new_type_decl( path, FALSE, 0 );
+    a_Type_Decl type_decl = new_type_decl( thePath, FALSE, 0 );
     // make var decl
     a_Var_Decl var_decl = new_var_decl( (char *)name, NULL, 0 );
     // make var decl list
@@ -5728,7 +5738,7 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
         !type_engine_scan2_exp_decl( env, &exp_decl->decl ) ||
         !type_engine_check_exp_decl( env, &exp_decl->decl ) )
     {
-        delete_id_list( path );
+        delete_id_list( thePath );
         return FALSE;
     }
 
@@ -5736,7 +5746,7 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
         var_decl->value->doc = doc;
 
     // cleanup
-    delete_id_list( path );
+    delete_id_list( thePath );
 
     return TRUE;
 }
@@ -5856,14 +5866,14 @@ Chuck_Value * Chuck_Context::new_Chuck_Value( Chuck_Type * t,
 Chuck_Func * Chuck_Context::new_Chuck_Func()
 {
     // allocate
-    Chuck_Func * func = new Chuck_Func;
-    if( !func ) return NULL;
+    Chuck_Func * theFunc = new Chuck_Func;
+    if( !theFunc ) return NULL;
     // set v ref
-    func->m_v_ref = &new_funcs;
+    theFunc->m_v_ref = &new_funcs;
     // initialize it
-    init_special( func );
+    init_special( theFunc );
 
-    return func;
+    return theFunc;
 }
 
 
@@ -5876,14 +5886,14 @@ Chuck_Func * Chuck_Context::new_Chuck_Func()
 Chuck_Namespace * Chuck_Context::new_Chuck_Namespace()
 {
     // allocate
-    Chuck_Namespace * nspc = new Chuck_Namespace;
-    if( !nspc ) return NULL;
+    Chuck_Namespace * theNpsc = new Chuck_Namespace;
+    if( !theNpsc ) return NULL;
     // set v ref
-    nspc->m_v_ref = &new_nspc;
+    theNpsc->m_v_ref = &new_nspc;
     // initialize it
-    init_special( nspc );
+    init_special( theNpsc );
 
-    return nspc;
+    return theNpsc;
 }
 
 
@@ -6033,10 +6043,10 @@ t_CKBOOL verify_array( a_Array_Sub array )
 // name: str2list()
 // desc: convert str to list
 //-----------------------------------------------------------------------------
-a_Id_List str2list( const string & path )
+a_Id_List str2list( const string & thePath )
 {
     t_CKUINT dummy;
-    return str2list( path, dummy );
+    return str2list( thePath, dummy );
 }
 
 
@@ -6046,9 +6056,9 @@ a_Id_List str2list( const string & path )
 // name: str2list()
 // desc: convert str to list
 //-----------------------------------------------------------------------------
-a_Id_List str2list( const string & path, t_CKUINT & array_depth )
+a_Id_List str2list( const string & thePath, t_CKUINT & array_depth )
 {
-    t_CKINT len = path.length();
+    t_CKINT len = thePath.length();
     t_CKINT i, j;
     string curr;
     a_Id_List list = NULL;
@@ -6056,7 +6066,7 @@ a_Id_List str2list( const string & path, t_CKUINT & array_depth )
 
     // look for []
     array_depth = 0;
-    while( len > 2 && path[len-1] == ']' && path[len-2] == '[' )
+    while( len > 2 && thePath[len-1] == ']' && thePath[len-2] == '[' )
     {
         // flag it
         array_depth++;
@@ -6067,7 +6077,7 @@ a_Id_List str2list( const string & path, t_CKUINT & array_depth )
     // loop backwards
     for( i = len - 1; i >= 0; i-- )
     {
-        char c = path[i];
+        char c = thePath[i];
         // if not .
         if( c != '.' )
         {
@@ -6082,7 +6092,7 @@ a_Id_List str2list( const string & path, t_CKUINT & array_depth )
             {
                 // error
                 EM_error2( 0, "illegal character '%c' in path '%s'...",
-                    c, path.c_str() );
+                    c, thePath.c_str() );
                 // delete
                 delete_id_list( list );
                 return NULL;
@@ -6115,7 +6125,7 @@ a_Id_List str2list( const string & path, t_CKUINT & array_depth )
             {
                 // error
                 EM_error2( 0, "path '%s' must not begin or end with '.'",
-                    path.c_str() );
+                    thePath.c_str() );
                 // delete
                 delete_id_list( list );
                 return NULL;
@@ -6195,7 +6205,7 @@ a_Arg_List make_dll_arg_list( Chuck_DL_Func * dl_fun )
         {
             array_sub = new_array_sub( NULL, 0 );
 
-            for( int i = 1; i < array_depth; i++ )
+            for( int j = 1; j < array_depth; j++ )
                 array_sub = prepend_array_sub( array_sub, NULL, 0 );
         }
 
@@ -6322,11 +6332,11 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
     vector<a_Func_Def> the_funs;
 
     // convert to id list
-    a_Id_List path = str2list( dest );
-    if( !path ) goto error;
+    a_Id_List thePath = str2list( dest );
+    if( !thePath ) goto error;
 
     // find the namespace to put the import
-    nspc = type_engine_find_nspc( env, path );
+    nspc = type_engine_find_nspc( env, thePath );
     if( !nspc ) goto error;
 
     // get the query
@@ -6405,9 +6415,9 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
         for( j = 0; j < cl->svars.size(); j++ )
         {
             // get type
-            a_Id_List path = str2list( cl->svars[j]->type.c_str() );
+            a_Id_List thePath = str2list( cl->svars[j]->type.c_str() );
             // make type decl
-            a_Type_Decl type_decl = new_type_decl( path, FALSE, 0 );
+            a_Type_Decl type_decl = new_type_decl( thePath, FALSE, 0 );
             // make var decl
             a_Var_Decl var_decl = new_var_decl( cl->svars[j]->name.c_str(), NULL, 0 );
             // make var decl list
@@ -6447,7 +6457,7 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
     }
 
     // free the path
-    delete_id_list( path );
+    delete_id_list( thePath );
 
     return TRUE;
 
@@ -6457,7 +6467,7 @@ error:
         query ? ( query->dll_name == "" ? query->dll_name.c_str() : "[empty]" ) : "[null]", dll->name() );
 
     // free the path
-    delete_id_list( path );
+    delete_id_list( thePath );
 
     // TODO: free the absyn stuff?
 
@@ -6556,15 +6566,15 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
     // import member functions
     for(j = 0; j < c->mfuns.size(); j++)
     {
-        Chuck_DL_Func * func = c->mfuns[j];
-        if(!type_engine_import_mfun(env, func)) goto error;
+        Chuck_DL_Func * theFunc = c->mfuns[j];
+        if(!type_engine_import_mfun(env, theFunc)) goto error;
     }
 
     // import static functions
     for(j = 0; j < c->sfuns.size(); j++)
     {
-        Chuck_DL_Func * func = c->sfuns[j];
-        if(!type_engine_import_sfun(env, func)) goto error;
+        Chuck_DL_Func * theFunc = c->sfuns[j];
+        if(!type_engine_import_sfun(env, theFunc)) goto error;
     }
 
     // import examples (if any)
@@ -7214,26 +7224,26 @@ void apropos_func_arg( std::ostringstream & sout, a_Arg_List arg )
 // name: apropos_func()
 // desc: helper function for outputing function
 //-----------------------------------------------------------------------------
-void apropos_func( std::ostringstream & sout, Chuck_Func * func,
+void apropos_func( std::ostringstream & sout, Chuck_Func * theFunc,
                    const std::string & PREFIX )
 {
     // print line prefix, if any
     sout << PREFIX;
     // print static
-    sout << (func->def->static_decl == ae_key_static ? "static " : "");
+    sout << (theFunc->def->static_decl == ae_key_static ? "static " : "");
     // output return type
-    sout << func->def->ret_type->str();
+    sout << theFunc->def->ret_type->str();
     // space
     sout << " ";
     // output function name
-    sout << S_name(func->def->name);
+    sout << S_name(theFunc->def->name);
     // open paren
     sout << "(";
     // extra space, if we have args
-    if( func->def->arg_list != NULL ) sout << " ";
+    if( theFunc->def->arg_list != NULL ) sout << " ";
 
     // argument list
-    a_Arg_List args = func->def->arg_list;
+    a_Arg_List args = theFunc->def->arg_list;
     while( args != NULL )
     {
         // output arg
@@ -7243,12 +7253,12 @@ void apropos_func( std::ostringstream & sout, Chuck_Func * func,
     }
 
     // extra space, if we are args
-    if( func->def->arg_list != NULL ) sout << " ";
+    if( theFunc->def->arg_list != NULL ) sout << " ";
 
     // close paren
     sout << ");" << endl;
     // output doc
-    if( func->doc != "" ) sout << PREFIX << "    " << capitalize(func->doc) << endl;
+    if( theFunc->doc != "" ) sout << PREFIX << "    " << capitalize(theFunc->doc) << endl;
 }
 
 
@@ -7283,28 +7293,28 @@ void Chuck_Type::apropos_funcs( std::string & output,
         for( vector<Chuck_Func *>::iterator f = funcs.begin(); f != funcs.end(); f++ )
         {
             // get pointer to chuck func
-            Chuck_Func * func = *f;
+            Chuck_Func * theFunc = *f;
             // check for NULL
-            if( func == NULL ) continue;
+            if( theFunc == NULL ) continue;
             // see if name appeared before
-            if( func_names.count(func->name) )
+            if( func_names.count(theFunc->name) )
             {
                 // increment count associated with name
-                func_names[func->name]++;
+                func_names[theFunc->name]++;
                 // done for now
                 continue;
             }
 
             // create entry for name
-            func_names[func->name] = 1;
+            func_names[theFunc->name] = 1;
 
             // check for static declaration
-            if( func->is_static ) {
+            if( theFunc->is_static ) {
                 // append to static funcs list
-                sfuncs.push_back( func );
+                sfuncs.push_back( theFunc );
             } else {
                 // append to static funcs list
-                mfuncs.push_back( func );
+                mfuncs.push_back( theFunc );
             }
         }
 
@@ -7332,9 +7342,9 @@ void Chuck_Type::apropos_funcs( std::string & output,
             for( vector<Chuck_Func *>::iterator f = mfuncs.begin(); f != mfuncs.end(); f++ )
             {
                 // pointer to chuck func
-                Chuck_Func * func = *f;
+                Chuck_Func * theFunc = *f;
                 // output function content
-                apropos_func( sout, func, PREFIX );
+                apropos_func( sout, theFunc, PREFIX );
             }
         }
 
@@ -7345,9 +7355,9 @@ void Chuck_Type::apropos_funcs( std::string & output,
             for( vector<Chuck_Func *>::iterator f = sfuncs.begin(); f != sfuncs.end(); f++ )
             {
                 // pointer to chuck func
-                Chuck_Func * func = *f;
+                Chuck_Func * theFunc = *f;
                 // output function content
-                apropos_func( sout, func, PREFIX );
+                apropos_func( sout, theFunc, PREFIX );
             }
         }
     }
@@ -7438,12 +7448,12 @@ void Chuck_Type::apropos_vars( std::string & output, const std::string & PREFIX,
         if( mvars.size() > 0 || svars.size() > 0 )
         {
             // type name
-            string name = this->str() + " " + "variables" + (inherited ? " (inherited)" : "" );
+            string theName = this->str() + " " + "variables" + (inherited ? " (inherited)" : "" );
             // number of '-'
-            t_CKUINT n = name.length(); t_CKUINT i;
+            t_CKUINT n = theName.length(); t_CKUINT i;
             // output
             for( i = 0; i < n; i++ ) { sout << "-"; }
-            sout << endl << name << endl;
+            sout << endl << theName << endl;
             for( i = 0; i < n; i++ ) { sout << "-"; }
             sout << endl;
         }
