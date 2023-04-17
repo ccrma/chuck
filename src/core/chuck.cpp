@@ -238,7 +238,7 @@ void ChucK::initDefaultParams()
 // name: setParam()
 // desc: set an int param by name
 //-----------------------------------------------------------------------------
-bool ChucK::setParam( const std::string & name, t_CKINT value )
+t_CKBOOL ChucK::setParam( const std::string & name, t_CKINT value )
 {
     if( m_params.count( name ) > 0 && ck_param_types[name] == ck_param_int )
     {
@@ -260,7 +260,7 @@ bool ChucK::setParam( const std::string & name, t_CKINT value )
 // name: setParamFloat()
 // desc: set a float param by name
 //-----------------------------------------------------------------------------
-bool ChucK::setParamFloat( const std::string & name, t_CKFLOAT value )
+t_CKBOOL ChucK::setParamFloat( const std::string & name, t_CKFLOAT value )
 {
     if( m_params.count( name ) > 0 && ck_param_types[name] == ck_param_float )
     {
@@ -282,7 +282,7 @@ bool ChucK::setParamFloat( const std::string & name, t_CKFLOAT value )
 // name: setParam()
 // desc: set a string param by name
 //-----------------------------------------------------------------------------
-bool ChucK::setParam( const std::string & name, const std::string & value )
+t_CKBOOL ChucK::setParam( const std::string & name, const std::string & value )
 {
     if( m_params.count( name ) > 0 && ck_param_types[name] == ck_param_string )
     {
@@ -302,7 +302,7 @@ bool ChucK::setParam( const std::string & name, const std::string & value )
 // name: setParam()
 // desc: set a string list param by name
 //-----------------------------------------------------------------------------
-bool ChucK::setParam( const std::string & name, const std::list< std::string > & value )
+t_CKBOOL ChucK::setParam( const std::string & name, const std::list< std::string > & value )
 {
     if( m_listParams.count( name ) > 0 &&
         ck_param_types[name] == ck_param_string_list )
@@ -398,7 +398,7 @@ std::list< std::string > ChucK::getParamStringList( const std::string & key )
 // name: init()
 // desc: initialize ChucK (using params)
 //-----------------------------------------------------------------------------
-bool ChucK::init()
+t_CKBOOL ChucK::init()
 {
     // sanity check
     if( m_init == TRUE )
@@ -438,7 +438,7 @@ cleanup:
 // name: initVM()
 // desc: initialize VM
 //-----------------------------------------------------------------------------
-bool ChucK::initVM()
+t_CKBOOL ChucK::initVM()
 {
     // get VM params
     t_CKUINT srate = getParamInt( CHUCK_PARAM_SAMPLE_RATE );
@@ -468,7 +468,7 @@ bool ChucK::initVM()
 // name: initCompiler()
 // desc: initialize compiler
 //-----------------------------------------------------------------------------
-bool ChucK::initCompiler()
+t_CKBOOL ChucK::initCompiler()
 {
     // get compiler params
     t_CKBOOL dump = getParamInt( CHUCK_PARAM_DUMP_INSTRUCTIONS ) != 0;
@@ -587,7 +587,7 @@ bool ChucK::initCompiler()
 // name: initChugin()
 // desc: initialize chugin system
 //-----------------------------------------------------------------------------
-bool ChucK::initChugins()
+t_CKBOOL ChucK::initChugins()
 {
     Chuck_VM_Code * code = NULL;
     Chuck_VM_Shred * shred = NULL;
@@ -705,7 +705,7 @@ error: // 1.4.1.0 (ge) added
 // name: initOTF()
 // desc: init OTF programming system
 //-----------------------------------------------------------------------------
-bool ChucK::initOTF()
+t_CKBOOL ChucK::initOTF()
 {
 #ifndef __DISABLE_OTF_SERVER__
     // server
@@ -753,7 +753,7 @@ bool ChucK::initOTF()
 // name: shutdown()
 // desc: shutdown ChucK instance
 //-----------------------------------------------------------------------------
-bool ChucK::shutdown()
+t_CKBOOL ChucK::shutdown()
 {
     // log
     EM_log( CK_LOG_SYSTEM, "shutting down ChucK instance..." );
@@ -832,7 +832,7 @@ bool ChucK::shutdown()
 // name: compileFile()
 // desc: compile a file (can be called anytime)
 //-----------------------------------------------------------------------------
-bool ChucK::compileFile( const std::string & path, const std::string & argsTogether, t_CKINT count )
+t_CKBOOL ChucK::compileFile( const std::string & path, const std::string & argsTogether, t_CKINT count )
 {
     // sanity check
     if( !m_carrier->compiler )
@@ -947,7 +947,7 @@ error: // 1.5.0.0 (ge) added
 // name: compileCode()
 // desc: compile code directly
 //-----------------------------------------------------------------------------
-bool ChucK::compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count)
+t_CKBOOL ChucK::compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count)
 {
     // sanity check
     if( !m_carrier->compiler )
@@ -1047,7 +1047,7 @@ error: // 1.5.0.0 (ge) added
 // name: start()
 // desc: start chuck instance
 //-----------------------------------------------------------------------------
-bool ChucK::start()
+t_CKBOOL ChucK::start()
 {
     // sanity check
     if( m_carrier->vm == NULL )
@@ -1271,7 +1271,7 @@ void ChucK::poop()
 // desc: set a function pointer to call from the main thread loop
 //       e.g., for graphics, MAUI, potentially from a chug-in
 //-----------------------------------------------------------------------------
-bool ChucK::setMainThreadHook(Chuck_DL_MainThreadHook * hook)
+t_CKBOOL ChucK::setMainThreadHook(Chuck_DL_MainThreadHook * hook)
 {
     m_hook = hook;
     return true;
