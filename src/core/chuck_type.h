@@ -198,7 +198,10 @@ public:
         else if( climb > 0 )
         {
             for( t_CKUINT i = scope.size(); i > 0; i-- )
-            { if( ( val = (*scope[i-1])[xid] ) ) break; }
+            {
+                val = (*scope[i - 1])[xid];
+                if( val ) break;
+            }
 
             // look in commit buffer
             if( !val && (commit_map.find(xid) != commit_map.end()) )

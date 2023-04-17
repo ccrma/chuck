@@ -6415,9 +6415,9 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
         for( j = 0; j < cl->svars.size(); j++ )
         {
             // get type
-            a_Id_List thePath = str2list( cl->svars[j]->type.c_str() );
+            a_Id_List thePath2 = str2list( cl->svars[j]->type.c_str() );
             // make type decl
-            a_Type_Decl type_decl = new_type_decl( thePath, FALSE, 0 );
+            a_Type_Decl type_decl = new_type_decl( thePath2, FALSE, 0 );
             // make var decl
             a_Var_Decl var_decl = new_var_decl( cl->svars[j]->name.c_str(), NULL, 0 );
             // make var decl list
@@ -7318,15 +7318,16 @@ void Chuck_Type::apropos_funcs( std::string & output,
             }
         }
 
+        // have static or member funcs?
         if( sfuncs.size() > 0 || mfuncs.size() > 0 )
         {
             // type name
-            string name = this->str() + " " + "functions" + (inherited ? " (inherited)" : "" );
+            string theName = this->str() + " " + "functions" + (inherited ? " (inherited)" : "" );
             // number of '-'
-            t_CKUINT n = name.length(); t_CKUINT i;
+            t_CKUINT n = theName.length(); t_CKUINT i;
             // output
             for( i = 0; i < n; i++ ) { sout << "-"; }
-            sout << endl << name << endl;
+            sout << endl << theName << endl;
             for( i = 0; i < n; i++ ) { sout << "-"; }
             sout << endl;
         }
@@ -7335,10 +7336,10 @@ void Chuck_Type::apropos_funcs( std::string & output,
         sort( mfuncs.begin(), mfuncs.end(), comp_func );
         sort( sfuncs.begin(), sfuncs.end(), comp_func );
 
-        // one or more static functions?
+        // one or more member functions?
         if( mfuncs.size() )
         {
-            // iterate over static functions
+            // iterate over member functions
             for( vector<Chuck_Func *>::iterator f = mfuncs.begin(); f != mfuncs.end(); f++ )
             {
                 // pointer to chuck func
