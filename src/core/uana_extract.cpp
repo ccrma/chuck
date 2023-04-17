@@ -1225,23 +1225,23 @@ struct MFCC_Object
     }
 
     // prepare filterband and dct
-    void prepare( t_CKINT size )
+    void prepare( t_CKINT theSize )
     {
-        if( this->size == size
+        if( this->size == theSize
             && this->sample_rate == this->curr_sample_rate
             && this->num_filters == this->curr_num_filters
             && this->num_coeffs == this->curr_num_coeffs )
             return;
 
-        this->size = size;
+        this->size = theSize;
         this->curr_sample_rate = this->sample_rate;
         this->curr_num_filters = this->num_filters;
         this->curr_num_coeffs = this->num_coeffs;
 
         // filter bank
         SAFE_DELETE_ARRAY( this->filterbank );
-        this->filterbank = new t_CKFLOAT[num_filters * size];
-        memset( this->filterbank, 0, sizeof( t_CKFLOAT ) * num_filters * size );
+        this->filterbank = new t_CKFLOAT[num_filters * theSize];
+        memset( this->filterbank, 0, sizeof( t_CKFLOAT ) * num_filters * theSize);
 
         SAFE_DELETE_ARRAY( this->filterpoints );
         this->filterpoints = new t_CKINT[num_filters + 2];
@@ -1263,12 +1263,12 @@ struct MFCC_Object
             energy = 2.0 / ( this->filterfreqs[i + 2] - this->filterfreqs[i] );
             for( t_CKINT j = this->filterpoints[i]; j < this->filterpoints[i + 1]; j++ )
             {
-                this->filterbank[i * size + j] =
+                this->filterbank[i * theSize + j] =
                     energy * ( j - this->filterpoints[i] ) / ( this->filterpoints[i + 1] - this->filterpoints[i] );
             }
             for( t_CKINT j = this->filterpoints[i + 1]; j < this->filterpoints[i + 2]; j++ )
             {
-                this->filterbank[i * size + j] = energy * ( this->filterpoints[i + 2] - j )
+                this->filterbank[i * theSize + j] = energy * ( this->filterpoints[i + 2] - j )
                     / ( this->filterpoints[i + 2] - this->filterpoints[i + 1] );
             }
         }
@@ -1297,7 +1297,7 @@ struct MFCC_Object
 
         // spectrum
         SAFE_DELETE_ARRAY( this->spectrum );
-        this->spectrum = new t_CKFLOAT[size];
+        this->spectrum = new t_CKFLOAT[theSize];
 
         // filtered
         SAFE_DELETE_ARRAY( this->filtered );
@@ -1648,9 +1648,9 @@ struct SFM_Object
     }
 
     // update
-    void update( t_CKINT size )
+    void update( t_CKINT theSize )
     {
-        if( size == this->size ) return;
+        if( theSize == this->size ) return;
 
         //MPEG-7 audio standard:
         //assumes an 1/4 octave frequency resolution,
@@ -1688,7 +1688,7 @@ struct SFM_Object
 
         // spectrum sampling rate - not audio TODO: check this
         // this->sample_rate = ctrl_israte_->to<t_CKFLOAT>();
-        t_CKFLOAT df = this->sample_rate / size;
+        t_CKFLOAT df = this->sample_rate / theSize;
 
         //calculate FFT bin indexes for each band's edges
         SAFE_DELETE( il );
@@ -1706,7 +1706,7 @@ struct SFM_Object
             //must verify if sampling rate is enough
             //for the specified nr of bands. If not,
             //reduce nr of valid freq. bands
-            if( ih[i] >= size ) //if ih[i] >= N/2+1 = spectrumSize_ = inObservations ...
+            if( ih[i] >= theSize) //if ih[i] >= N/2+1 = spectrumSize_ = inObservations ...
             {
                 this->nr_valid_bands = i;
                 break;
@@ -1905,15 +1905,15 @@ struct Chroma_Object
     }
 
     // update
-    void update( t_CKINT size )
+    void update( t_CKINT theSize )
     {
-        if( this->size == size
+        if( this->size == theSize
             && this->curr_sample_rate == this->sample_rate
             && this->curr_low_oct_num == this->low_oct_num
             && this->curr_high_oct_num == this->high_oct_num )
             return;
 
-        this->size = size;
+        this->size = theSize;
         this->curr_sample_rate = this->sample_rate;
         this->curr_low_oct_num = this->low_oct_num;
         this->curr_high_oct_num = this->high_oct_num;
@@ -1926,11 +1926,11 @@ struct Chroma_Object
         m = new t_CKFLOAT[9];
         memset( m, 0, sizeof( t_CKFLOAT ) * 9 );
         SAFE_DELETE_ARRAY( freq );
-        freq = new t_CKFLOAT[size];
-        memset( freq, 0, sizeof( t_CKFLOAT ) * size );
+        freq = new t_CKFLOAT[theSize];
+        memset( freq, 0, sizeof( t_CKFLOAT ) * theSize);
         SAFE_DELETE_ARRAY( filter );
-        filter = new t_CKFLOAT[14 * size];
-        memset( filter, 0, sizeof( t_CKFLOAT ) * 14 * size );
+        filter = new t_CKFLOAT[14 * theSize];
+        memset( filter, 0, sizeof( t_CKFLOAT ) * 14 * theSize);
         SAFE_DELETE_ARRAY( chord );
         chord = new t_CKFLOAT[14];
         memset( chord, 0, sizeof( t_CKFLOAT ) * 14 );
@@ -1953,45 +1953,45 @@ struct Chroma_Object
         {
             m[i] = ::pow( 2.0, (t_CKFLOAT)i - 3.0 );
         }
-        for( i = 0; i < size; ++i )
+        for( i = 0; i < theSize; ++i )
         {
             freq[i] =
-                this->sample_rate * (t_CKFLOAT)i / ( 2.0 * (t_CKFLOAT)( size - 1 ) );
+                this->sample_rate * (t_CKFLOAT)i / ( 2.0 * (t_CKFLOAT)(theSize - 1) );
         }
 
         // create filter
         for( i = 1; i < 13; ++i )
         {
-            for( k = 0; k < size - 1; k++ )
+            for( k = 0; k < theSize - 1; k++ )
             {
                 for( j = this->low_oct_num; j < this->high_oct_num + 1; j++ )
                 {
                     if( freq[k] < m[j] * chord[i] && freq[k + 1] >= m[j] * chord[i] )
                     {
-                        filter[i * size + k] += ( freq[k + 1] - m[j] * chord[i] ) / ( freq[k + 1] - freq[k] );
-                        filter[i * size + k + 1] += ( m[j] * chord[i] - freq[k] ) / ( freq[k + 1] - freq[k] );
+                        filter[i * theSize + k] += ( freq[k + 1] - m[j] * chord[i] ) / ( freq[k + 1] - freq[k] );
+                        filter[i * theSize + k + 1] += ( m[j] * chord[i] - freq[k] ) / ( freq[k + 1] - freq[k] );
                     }
                     if( ( m[j] * chord[i] + m[j] * chord[i - 1] ) / 2.0 < freq[k]
                         && freq[k] <= ( m[j] * chord[i + 1] + m[j] * chord[i] ) / 2.0 )
                     {
-                        filter[i * size + k] += 1.0;
+                        filter[i * theSize + k] += 1.0;
                     }
                 }
             }
         }
 
-        for( k = 0; k < size; k++ )
+        for( k = 0; k < theSize; k++ )
         {
             tmp = 0.0;
             for( i = 1; i < 13; ++i )
             {
-                tmp += filter[i * size + k];
+                tmp += filter[i * theSize + k];
             }
             if( tmp > 0 )
             {
                 for( i = 1; i < 13; ++i )
                 {
-                    filter[i * size + k] /= tmp;
+                    filter[i * theSize + k] /= tmp;
                 }
             }
         }

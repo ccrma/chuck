@@ -78,7 +78,7 @@ CK_DLL_TICK( foogen_tick );
 DLL_QUERY lisa_query( Chuck_DL_Query * query );
 
 // sample rate
-static t_CKUINT g_srate;
+static t_CKUINT g_srateXxx;
 
 // offset
 static t_CKUINT subgraph_offset_inlet = 0;
@@ -116,7 +116,7 @@ enum PanTypesEnum
 //-----------------------------------------------------------------------------
 DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 {
-    g_srate = QUERY->srate;
+    g_srateXxx = QUERY->srate;
     // get the env
     Chuck_Env * env = QUERY->env();
 
@@ -2323,7 +2323,7 @@ struct delayp_data
 
     delayp_data()
     {
-        bufsize  = 2 * g_srate;
+        bufsize  = 2 * g_srateXxx;
         buffer   = ( SAMPLE * ) realloc ( NULL, sizeof ( SAMPLE ) * bufsize );
         t_CKINT i;
 
@@ -3573,7 +3573,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
     }
 
     // d->interp = SNDBUF_INTERP;
-    d->sampleratio = (double)d->samplerate / (double)g_srate;
+    d->sampleratio = (double)d->samplerate / (double)g_srateXxx;
     // set the rate
     d->rate = d->sampleratio * d->rate_factor;
     d->current_val = 0;
@@ -3627,15 +3627,15 @@ CK_DLL_CTRL( sndbuf_ctrl_freq )
     sndbuf_data * d = ( sndbuf_data * ) OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     t_CKFLOAT freq = GET_CK_FLOAT(ARGS);  //hz
 
-    d->rate = ( freq * (double) d->num_frames / (double) g_srate );
+    d->rate = ( freq * (double) d->num_frames / (double)g_srateXxx);
     d->rate_factor = d->rate / d->sampleratio;
-    RETURN->v_float = d->rate * (t_CKFLOAT) g_srate / ( (t_CKFLOAT) d->num_frames ); // TODO: really?
+    RETURN->v_float = d->rate * (t_CKFLOAT)g_srateXxx / ( (t_CKFLOAT) d->num_frames ); // TODO: really?
 }
 
 CK_DLL_CGET( sndbuf_cget_freq )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
-    RETURN->v_float = d->rate * (t_CKFLOAT) g_srate / ( (t_CKFLOAT) d->num_frames );
+    RETURN->v_float = d->rate * (t_CKFLOAT)g_srateXxx / ( (t_CKFLOAT) d->num_frames );
 }
 
 CK_DLL_CTRL( sndbuf_ctrl_phase )
