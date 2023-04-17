@@ -630,19 +630,18 @@ t_CKBOOL Chuck_UGen::remove( Chuck_UGen * src )
             }
 
         // remove
-        for( t_CKUINT i = 0; i < m_num_src; i++ )
-            if( m_src_list[i] == src )
+        for( t_CKUINT k = 0; k < m_num_src; k++ )
+            if( m_src_list[k] == src )
             {
                 ret = TRUE;
-                for( t_CKUINT j = i+1; j < m_num_src; j++ )
+                for( t_CKUINT j = k+1; j < m_num_src; j++ )
                     m_src_list[j-1] = m_src_list[j];
 
                 m_src_list[--m_num_src] = NULL;
                 src->remove_by( this );
                 src->release();
-                --i;
+                --k;
             }
-
     }
     /* else if( outs >= 2 && ins == 1 )
     {
@@ -866,11 +865,11 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     if( m_time >= now )
         return m_valid;
 
-    t_CKUINT i; Chuck_UGen * ugen; SAMPLE multi;
+    t_CKUINT i;
+    Chuck_UGen * ugen = NULL;
+    SAMPLE multi;
 
-
-    /*** Part 1: Tick upstream ugens ***/
-
+    // part 1: tick upstream ugens
     // inc time
     m_time = now;
     // initial sum
@@ -957,12 +956,10 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
 
 
 
-    /*** Part Two: Synthesize with tick function ***/
-
+    // part 2: synthesize with tick function
     if( m_multi_chan_size && tickf )
     {
-        /* evaluate multi-channel tickf (added 1.3.0.0) */
-
+        // evaluate multi-channel tickf (added 1.3.0.0)
         multi = 0;
 
         if( m_op > 0 ) // UGEN_OP_TICK
@@ -1072,15 +1069,15 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
     if( m_time >= now )
         return m_valid;
 
-    t_CKUINT i, j; Chuck_UGen * ugen; SAMPLE factor;
+    t_CKUINT i, j;
+    Chuck_UGen * ugen = NULL;
+    SAMPLE factor;
     SAMPLE multi;
 
     // inc time
     m_time = now;
 
-
-    /*** Part 1: Tick upstream ugens ***/
-
+    // part 1: tick upstream ugens
     if( m_num_src )
     {
         ugen = m_src_list[0];
@@ -1122,7 +1119,7 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
     // tick multiple channels
     if( m_multi_chan_size )
     {
-        if(tickf)
+        if( tickf )
         {
             // system tick each input channel (added 1.3.0.0)
             for( int c = 0; c < m_multi_chan_size; c++ )
@@ -1166,13 +1163,10 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
         }
     }
 
-
-    /*** Part Two: Synthesize with tick function ***/
-
+    // part 2: synthesize with tick function
     if( m_multi_chan_size && tickf )
     {
-        /* evaluate multi-channel tick (added added 1.3.0.0) */
-
+        // evaluate multi-channel tick (added added 1.3.0.0)
         if( m_op > 0) // UGEN_OP_TICK
         {
             // compute samples with tickf
@@ -1250,8 +1244,7 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
     }
     else
     {
-        /* evaluate single-channel tick */
-
+        // evaluate single-channel tick
         if( m_op > 0 )  // UGEN_OP_TICK
         {
             // tick the ugen (Chuck_DL_Api::Api::instance() added 1.3.0.0)

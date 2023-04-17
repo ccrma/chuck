@@ -157,8 +157,13 @@ void Chuck_VM_Object::release()
             *(int *)0 = 1;
         }
 
+    #ifndef __CHUNREAL_ENGINE__
         // log | 1.5.0.0 (ge) added
         EM_log( CK_LOG_FINEST, "reclaiming %s: 0x%08x", typeid(*this).name(), this );
+    #else
+        // #chunreal UE seems to disallow real-time type info
+        EM_log( CK_LOG_FINEST, "reclaiming object: 0x%08x", this );
+    #endif // #ifndef __CHUNREAL_ENGINE__
 
         // tell the object manager to set this free
         // Chuck_VM_Alloc::instance()->free_object( this );
@@ -322,10 +327,10 @@ Chuck_Object::Chuck_Object()
     vtable = NULL;
     // zero type
     type_ref = NULL;
-    // zero size
-    size = 0;
     // zero data
     data = NULL;
+    // zero size
+    data_size = 0;
 
     // add to vm allocator
     // Chuck_VM_Alloc::instance()->add_object( this );
@@ -3038,11 +3043,12 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
         mode |= ios_base::binary;
 
     // close first
-    if (m_io.is_open())
+    if( m_io.is_open() )
         this->close();
 
     // try to open as a dir first (fixed 1.3.0.0 removed warning)
-    if( (m_dir = opendir( path.c_str() )) )
+    m_dir = opendir(path.c_str());
+    if( m_dir )
     {
         EM_poplog();
         return TRUE;
@@ -3050,7 +3056,7 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
 
     // not a dir, create file if it does not exist unless flag is
     // readonly
-    if ( !(flags & FLAG_READONLY) )
+    if( !(flags & FLAG_READONLY) )
     {
         m_io.open( path.c_str(), ios_base::in );
         if ( m_io.fail() )
@@ -3319,8 +3325,11 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     // fill vector with entry names
     rewinddir( m_dir );
     std::vector<Chuck_String *> entrylist;
-    struct dirent *ent;
-    while( (ent = readdir( m_dir )) ) // fixed 1.3.0.0: removed warning
+
+    // 1.5.0.0 (ge) | #chunreal UE-forced refactor
+    struct dirent * ent = readdir( m_dir );
+    // was: while( (ent = readdir( m_dir ) ) <-- in ge's opinion this is cleaner splitting readir() into two places
+    while( ent != NULL ) // fixed 1.3.0.0: removed warning
     {
         // pass NULL as shred ref
         Chuck_String *s = (Chuck_String *)instantiate_and_initialize_object( m_vmRef->env()->t_string, NULL, m_vmRef );
@@ -3330,6 +3339,8 @@ Chuck_Array4 * Chuck_IO_File::dirList()
             // don't include .. and . in the list
             entrylist.push_back( s );
         }
+        // #chunreal refactor
+        ent = readdir( m_dir );
     }
 
     // make array

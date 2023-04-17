@@ -39,8 +39,14 @@
 #endif
 
 #ifdef __PLATFORM_WIN32__
-#include <windows.h> // for win32_tmpfile()
-#endif
+#ifndef __CHUNREAL_ENGINE__
+  #include <windows.h> // for win32_tmpfile()
+#else
+  // 1.5.0.0 (ge) | #chunreal
+  // unreal engine on windows disallows including windows.h
+  #include "Windows/MinWindows.h"
+#endif // #ifndef __CHUNREAL_ENGINE__
+#endif // #ifdef __PLATFORM_WIN32__
 
 using namespace std;
 
@@ -76,15 +82,18 @@ FILE * open_cat_ck( c_str fname )
     }
 #endif // __ANDROID__
 
-    FILE * fd = NULL;
-    if( !(fd = fopen( fname, "rb" )) )
+    FILE * fd = fopen(fname, "rb");
+    if( !fd )
+    {
         if( !strstr( fname, ".ck" ) && !strstr( fname, ".CK" ) )
         {
             strcat( fname, ".ck" );
             fd = fopen( fname, "rb" );
         }
+    }
     return fd;
 }
+
 
 
 
@@ -93,27 +102,33 @@ FILE * open_cat_ck( c_str fname )
 // desc: replacement for broken tmpfile() on Windows Vista + 7
 //-----------------------------------------------------------------------------
 #ifdef __PLATFORM_WIN32__
-
-#include <windows.h>
-
 FILE *win32_tmpfile()
 {
     char tmp_path[MAX_PATH];
     char file_path[MAX_PATH];
     FILE * file = NULL;
 
-    if(GetTempPath(256, tmp_path) == 0)
+#ifndef __CHUNREAL_ENGINE__
+    if( GetTempPath(256, tmp_path) == 0 )
+#else
+    // 1.5.0.0 (ge) | #chunreal explicit call ASCII version
+    if( GetTempPathA(256, tmp_path) == 0 )
+#endif
         return NULL;
 
-    if(GetTempFileName(tmp_path, "mA", 0, file_path) == 0)
+#ifndef __CHUNREAL_ENGINE__
+    if( GetTempFileName(tmp_path, "mA", 0, file_path) == 0 )
+#else
+    // 1.5.0.0 (ge) | #chunreal explicit call ASCII version
+    if( GetTempFileNameA(tmp_path, "mA", 0, file_path) == 0 )
+#endif
         return NULL;
 
-    file = fopen(file_path, "wb+D");
+    file = fopen( file_path, "wb+D" );
 
     return file;
 }
-
-#endif
+#endif // #ifdef __PLATFORM_WIN32__
 
 
 

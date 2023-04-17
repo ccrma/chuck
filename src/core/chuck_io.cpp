@@ -31,16 +31,20 @@
 //-----------------------------------------------------------------------------
 #include "chuck_io.h"
 #include "chuck_errmsg.h"
-#include "util_serial.h"
 #include "chuck_instr.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
+
 #ifndef __DISABLE_HID__
 #include "hidio_sdl.h"
 #endif
 
 #ifndef __DISABLE_MIDI__
 #include "midiio_rtmidi.h"
+#endif
+
+#ifndef __DISABLE_SERIAL__
+#include "util_serial.h"
 #endif
 
 #ifndef __PLATFORM_WIN32__
@@ -3308,7 +3312,7 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
         {
             // assume 4-byte int
             char * buf = (char *) &val;
-            // 1.5.0.0 (ge and eito) | changed from size to sizeof
+            // 1.5.0.0 (ge) | fixed from size to sizeof
             fwrite(buf, 1, sizeof(val), m_cfd);
         }
     }

@@ -69,7 +69,13 @@ Chuck_Instr::Chuck_Instr()
 //-----------------------------------------------------------------------------
 const char * Chuck_Instr::name() const
 {
-     return mini_type( typeid(*this).name() );
+#ifndef __CHUNREAL_ENGINE__
+    return mini_type( typeid(*this).name() );
+#else
+    // 1.5.0.0 (ge) | #chureal
+    // Unreal Engine seems to disable C++ run time type information
+    return "[chunreal type info disabled]";
+#endif // #ifndef __CHUNREAL_ENGINE__
 }
 
 
@@ -3861,15 +3867,15 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
     // reference count
     SAFE_ADD_REF(object->type_ref);
     // get the size
-    object->size = type->obj_size;
+    object->data_size = type->obj_size;
     // allocate memory
-    if( object->size )
+    if( object->data_size )
     {
         // check to ensure enough memory
-        object->data = new t_CKBYTE[object->size];
+        object->data = new t_CKBYTE[object->data_size];
         if( !object->data ) goto out_of_memory;
         // zero it out
-        memset( object->data, 0, object->size );
+        memset( object->data, 0, object->data_size );
     }
     else object->data = NULL;
 
@@ -5472,7 +5478,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
                                Chuck_Type * type )
 {
     // not top level
-    Chuck_Array4 * base = NULL;
+    Chuck_Array4 * theBase = NULL;
     Chuck_Object * next = NULL;
     Chuck_Type * typeNext = NULL;
     t_CKINT i = 0;
@@ -5487,8 +5493,8 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
         // 1.3.1.0: look at type to use kind instead of size
         if( kind == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
-            Chuck_Array4 * base = new Chuck_Array4( is_obj, *capacity );
-            if( !base ) goto out_of_memory;
+            Chuck_Array4 * baseX = new Chuck_Array4( is_obj, *capacity );
+            if( !baseX ) goto out_of_memory;
 
             // if object
             if( is_obj && objs )
@@ -5497,59 +5503,59 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
                 for( i = 0; i < *capacity; i++ )
                 {
                     // add to array for later allocation
-                    objs[index++] = base->addr( i );
+                    objs[index++] = baseX->addr( i );
                 }
             }
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
-            initialize_object( base, type );
-            // initialize_object( base, vm->env()->t_array );
-            return base;
+            initialize_object( baseX, type );
+            // initialize_object( baseX, vm->env()->t_array );
+            return baseX;
         }
         else if( kind == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
-            Chuck_Array8 * base = new Chuck_Array8( *capacity );
-            if( !base ) goto out_of_memory;
+            Chuck_Array8 * baseX = new Chuck_Array8( *capacity );
+            if( !baseX ) goto out_of_memory;
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
-            initialize_object( base, type );
-            // initialize_object( base, vm->env()->t_array );
-            return base;
+            initialize_object( baseX, type );
+            // initialize_object( baseX, vm->env()->t_array );
+            return baseX;
         }
         else if( kind == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
-            Chuck_Array16 * base = new Chuck_Array16( *capacity );
-            if( !base ) goto out_of_memory;
+            Chuck_Array16 * baseX = new Chuck_Array16( *capacity );
+            if( !baseX ) goto out_of_memory;
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
-            initialize_object( base, type );
-            // initialize_object( base, vm->env()->t_array );
-            return base;
+            initialize_object( baseX, type );
+            // initialize_object( baseX, vm->env()->t_array );
+            return baseX;
         }
         else if( kind == kindof_VEC3 ) // 1.3.5.3
         {
-            Chuck_Array24 * base = new Chuck_Array24( *capacity );
-            if( !base ) goto out_of_memory;
+            Chuck_Array24 * baseX = new Chuck_Array24( *capacity );
+            if( !baseX ) goto out_of_memory;
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
-            initialize_object( base, type );
-            // initialize_object( base, vm->env()->t_array );
-            return base;
+            initialize_object( baseX, type );
+            // initialize_object( baseX, vm->env()->t_array );
+            return baseX;
         }
         else if( kind == kindof_VEC4 ) // 1.3.5.3
         {
-            Chuck_Array32 * base = new Chuck_Array32( *capacity );
-            if( !base ) goto out_of_memory;
+            Chuck_Array32 * baseX = new Chuck_Array32( *capacity );
+            if( !baseX ) goto out_of_memory;
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
-            initialize_object( base, type );
-            // initialize_object( base, vm->env()->t_array );
-            return base;
+            initialize_object( baseX, type );
+            // initialize_object( baseX, vm->env()->t_array );
+            return baseX;
         }
 
         // shouldn't get here
@@ -5557,8 +5563,8 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
     }
 
     // not top level
-    base = new Chuck_Array4( TRUE, *capacity );
-    if( !base ) goto out_of_memory;
+    theBase = new Chuck_Array4( TRUE, *capacity );
+    if( !theBase) goto out_of_memory;
 
     // construct type for next array level | 1.5.0.0 (ge) added
     typeNext = type->copy( vm->env() );
@@ -5575,15 +5581,14 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
         // error if NULL
         if( !next ) goto error;
         // set that, with ref count
-        base->set( i, (t_CKUINT)next );
+        theBase->set( i, (t_CKUINT)next );
     }
 
     // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
     // for the object->type_ref to contain more specific information
-    initialize_object( base, type );
-    // initialize_object( base, vm->env()->t_array );
-
-    return base;
+    initialize_object( theBase, type );
+    // initialize_object( theBase, vm->env()->t_array );
+    return theBase;
 
 internal_error_array_depth:
     // we have a big problem
@@ -5605,7 +5610,7 @@ negative_array_size:
 
 error:
     // base shouldn't have been ref counted
-    SAFE_DELETE( base );
+    SAFE_DELETE( theBase );
     return NULL;
 }
 

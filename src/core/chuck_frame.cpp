@@ -56,7 +56,7 @@ Chuck_Frame::Chuck_Frame()
 // name: alloc_local()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_Local * Chuck_Frame::alloc_local( t_CKUINT size, const string & name,
+Chuck_Local * Chuck_Frame::alloc_local( t_CKUINT size, const string & theName,
     t_CKBOOL is_ref, t_CKBOOL is_obj, t_CKBOOL is_global )
 {
     // alloc
@@ -74,7 +74,7 @@ Chuck_Local * Chuck_Frame::alloc_local( t_CKUINT size, const string & name,
     // the next offset
     this->curr_offset += local->size;
     // name
-    local->name = name;
+    local->name = theName;
     // push the local
     this->stack.push_back( local );
 

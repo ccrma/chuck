@@ -53,7 +53,7 @@ static S_Symbol mksymbol( c_constr name, S_Symbol next )
 
 static S_Symbol hashtable[SIZE];
 
-static unsigned int hash(const char *s0)
+static unsigned int s_hash(const char *s0)
 {
     unsigned int h=0; const char *s;
     for(s=s0; *s; s++)
@@ -69,7 +69,7 @@ static int streq(c_constr a, c_constr b)
 S_Symbol insert_symbol(c_constr name)
 {
     S_Symbol syms = NULL, sym;
-    int index= hash(name) % SIZE;
+    int index= s_hash(name) % SIZE;
 
     if( !name ) return NULL;
     syms = hashtable[index];
