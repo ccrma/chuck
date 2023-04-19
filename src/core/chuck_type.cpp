@@ -4780,6 +4780,8 @@ t_CKBOOL isfunc( Chuck_Env * env, Chuck_Type * type )
 {   return isa( type, env->t_function ); }
 t_CKBOOL iskindofint( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
 {   return isa( type, env->t_int ) || isobj( env, type ); }
+t_CKBOOL isvoid( Chuck_Env * env, Chuck_Type * type ) // added 1.5.0.0
+{   return isa( type, env->t_void ); }
 t_CKUINT getkindof( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
 {
     // the kind (1.3.1.0)
