@@ -1,15 +1,21 @@
-1.5.0.0 (March 2023; was originally 1.4.2.1)
+1.5.0.0 (March 2023; was previously to be 1.4.2.1)
 ---
 ***************************************************************************
 * chuck-1.5.0.0 (chai)
 ***************************************************************************
 * significant addition: ChAI (Chuck + AI)
-* significant update: WebChucK (chuck on browsers)
+* significant update: WebChucK (ChucK in web browser) + WebChucK IDE
 * also: new features, new bug fixes, and new bugs!
 ***************************************************************************
 ---
 (NOTE) WebChucK (ChucK on browsers) [beta] was released during the 
-development of this version. https://chuck.stanford.edu/webchuck/
+development of this version.
+
+WebChucK IDE (program chuck on the web):
+https://chuck.stanford.edu/ide/
+
+WebChucK landing page (including using WebChucK in your web projects)
+https://chuck.stanford.edu/webchuck/
 ---
 (NOTE) ChAI (ChucK + AI), first appeared in beta as part of chuck-1.4.2.0;
 ChAI was used in the course Music 356 / CS 470 "Music and AI" [*] at
@@ -17,7 +23,10 @@ Stanford University, taught by Ge Wang and Yikai Li (TA); Many thanks to
 the immensely creative students of "Music and AI". The v1.0 version of the
 ChAI API and modules is hereby released, with new additions on the way.
 
-[*] "Music and AI" (Winter 2023 Stanford University)
+ChAI landing page:
+https://chuck.stanford.edu/chai/
+
+"Music and AI" (Winter 2023 Stanford University) -- taught with ChAI
 https://ccrma.stanford.edu/courses/356-winter-2023/
 ---
 (HISTORICAL NOTE for ChAI)
@@ -126,7 +135,8 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
 	void load( string filename );
 	    Load the Wekinator from a file.
 	int modelType( int model_type );
-	    Set the model type of the Wekinator. Options: AI.Regression: AI.MLP, AI.LR, AI.Classification: AI.KNN, AI.SVM, AI.DT
+	    Set the model type of the Wekinator. Options: AI.Regression: AI.MLP, AI.LR,
+	    AI.Classification: AI.KNN, AI.SVM, AI.DT
 	int modelType();
 	    Get the model type id of the Wekinator.
 	string modelTypeName();
@@ -354,6 +364,7 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
         corresponding labels.
     void weigh( float[] weights );
         Set the weights for each dimension in the data.
+- (renamed) unit analyzer pilF is now UnFlip; pilF deprecated
 - (added) example: ai/knn/knn-search.ck
 - (added) example: ai/knn/knn2-classify.ck
 - (added) example: ai/knn/knn2-search.ck

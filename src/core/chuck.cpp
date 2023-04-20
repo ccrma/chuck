@@ -91,7 +91,7 @@
 
 
 // chuck statics
-const char ChucK::VERSION[] = "1.5.0.0-beta-4.14 (chai)";
+const char ChucK::VERSION[] = "1.5.0.0-beta-4.20 (chai)";
 t_CKUINT ChucK::o_numVMs = 0;
 t_CKBOOL ChucK::o_isGlobalInit = FALSE;
 t_CKBOOL ChucK::enableSystemCall = FALSE;
