@@ -4,16 +4,16 @@
 //         Rebecca Fiebrink (fiebrink@cs.princeton.edu)
 
 // identity test
-SinOsc s => Flip flip =^ pilF pilf => dac;
+SinOsc s => Flip flip =^ UnFlip unflip => dac;
 
 // set size
-512 => flip.size => pilf.size;
+512 => flip.size => unflip.size;
 
 // go
 while( true )
 {
     // do it
-    pilf.upchuck();
+    unflip.upchuck();
     // hop
-    pilf.size()::samp => now;
+    unflip.size()::samp => now;
 }

@@ -363,6 +363,8 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // end the class import
     type_engine_import_class_end( env );
 
+    // deprecate
+    type_engine_register_deprecate( env, "pilF", "UnFlip" );
 
     //---------------------------------------------------------------------
     // init as base class: pilF
@@ -370,7 +372,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
 
     doc = "turns UAna frames into audio samples, via overlap add.";
 
-    if( !type_engine_import_uana_begin( env, "pilF", "UAna", env->global(),
+    if( !type_engine_import_uana_begin( env, "UnFlip", "UAna", env->global(),
                                         UnFlip_ctor, UnFlip_dtor,
                                         UnFlip_tick, UnFlip_tock, UnFlip_pmsg,
                                         CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
