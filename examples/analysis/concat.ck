@@ -5,7 +5,7 @@
 //
 // author: Curtis Ullerich
 
-FeatureCollector fc =^ pilF pilf => dac;
+FeatureCollector fc =^ UnFlip unflip => dac;
 SinOsc one => Flip f1 =^ fc;
 TriOsc two => Flip f2 =^ fc;
 .5 => one.gain => two.gain;
@@ -20,5 +20,5 @@ size => f1.size => f2.size;
 while(true)
 {
     period => now;
-    pilf.upchuck();
+    unflip.upchuck();
 }
