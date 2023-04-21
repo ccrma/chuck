@@ -455,6 +455,9 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
 - (added) example: array/array_negative.ck
 - (added) example: array/array_shuffle.ck
 - (added) example: array/array_zero.ck
+- (updated) LiSa (all channel variants) internal restructure to allow
+    for more flexible usage patterns | also # voices defaults to 16
+- (added) example: special/LiSa-stereo.ck
 - (added) Math functions
     float map( float value, float x1, float y1,
                             float x2, float y2 );

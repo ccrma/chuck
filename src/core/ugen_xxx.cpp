@@ -249,10 +249,10 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add panType
     func = make_new_mfun( "int", "panType", stereo_ctrl_panType );
     func->add_arg( "int", "val" );
-    func->doc = "set the panning type: (0) unity again anti-panning, (1) constant power.";
+    func->doc = "set the panning type: (1) constant power panning, (0) unity gain anti-panning.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "panType", stereo_cget_panType );
-    func->doc = "get the panning type: (0) unity again anti-panning, (1) constant power.";
+    func->doc = "get the panning type: (1) constant power panning, (0) unity gain anti-panning.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
@@ -983,6 +983,19 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_class_end( env ) )
         return FALSE;
 
+    //---------------------------------------------------------------------
+    // init as base class: Identity2
+    // 1.5.0.0 (ge + nshaheed) made this for exploring multichannel conundrums
+    //---------------------------------------------------------------------
+    doc = "A 2-channel UGen that outputs the inputs.";
+    // multichannel
+    if( !type_engine_import_ugen_begin( env, "Identity2", "UGen", env->global(),
+                                        NULL, NULL, NULL, Identity2_tickf,
+                                        NULL, 2, 2, doc.c_str() ) )
+        return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+
     // import LiSa!
     if( !lisa_query( QUERY ) )
         return FALSE;
@@ -1246,7 +1259,6 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int", "voice" );
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-
     func = make_new_mfun( "float", "pan", LiSaMulti_cget_voicepan);
     func->doc = "For particular voice (arg 1), get panning value.";
     func->add_arg( "int", "voice" );
@@ -1354,7 +1366,6 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
 
     // end the class import
     type_engine_import_class_end( env );
-
 
     // LiSa2 description
     doc = "a (li)ve (sa)mpling unit generator (stereo edition); also popularly used for granular synthesis.";
@@ -4098,37 +4109,44 @@ struct LiSaMulti_data
     // constructor; 1.4.1.0 (ge) added
     LiSaMulti_data()
         : mdata(NULL), outsamples(NULL), mdata_len(0), maxvoices(0),
-          loop_end_rec(0), rindex(0), looprec(FALSE), reset(FALSE),
+          loop_end_rec(0), rindex(0), record(FALSE), looprec(FALSE), reset(FALSE),
           append(FALSE), coeff(0), rec_ramplen(0), rec_ramplen_inv(0),
           track(0), num_chans(0)
-    { /* zero out things out! */ }
-
-    // allocate memory, length in samples
-    inline int buffer_alloc(t_CKINT length)
     {
-        mdata = (SAMPLE *)malloc((length + 1) * sizeof(SAMPLE)); // extra sample for safety....
-        if( !mdata ) {
-            CK_FPRINTF_STDERR( "LiSaBasic: unable to allocate memory!\n" );
-            return false;
-        }
+        // zero out | 1.5.0.0 (ge) | added (instead of big memset outside!)
+        memset( loop_start, 0, sizeof(loop_start) );
+        memset( loop_end, 0, sizeof(loop_end) );
+        memset( loopplay, 0, sizeof(loopplay) );
+        memset( play, 0, sizeof(play) );
+        memset( bi, 0, sizeof(bi) );
+        memset( voiceGain, 0, sizeof(voiceGain) );
+        memset( voicePan, 0, sizeof(voicePan) );
+        memset( channelGain, 0, sizeof(channelGain) );
+        memset( p_inc, 0, sizeof(p_inc) );
+        memset( pindex, 0, sizeof(pindex) );
+        memset( rampup_len, 0, sizeof(rampup_len) );
+        memset( rampdown_len, 0, sizeof(rampdown_len) );
+        memset( rampup_len_inv, 0, sizeof(rampup_len_inv) );
+        memset( rampdown_len_inv, 0, sizeof(rampdown_len_inv) );
+        memset( rampctr, 0, sizeof(rampctr) );
+        memset( rampup, 0, sizeof(rampup) );
+        memset( rampdown, 0, sizeof(rampdown) );
 
-        memset(mdata, 0, (length + 1) * sizeof(SAMPLE));
-
-        mdata_len = length;
+        // 1.5.0.0 (ge) moved to constructor from buffer_alloc()
+        // ...in case user sets this before allocating
+        // 1.4.1.0 (ge) increased from 10 to 16
         // default maxvoices; user can set
-        maxvoices = 16; // 1.4.1.0 (ge) increased from 10 to 16
+        maxvoices = 16;
+
+        // initialize more stuff
         rec_ramplen = 0.;
         rec_ramplen_inv = 1.;
-
         track = 0;
 
+        // initialize to reasonable values
+        // 1.5.0.0 (ge) moved to constructor from buffer_alloc()
         for( t_CKINT i=0; i < LiSa_MAXVOICES; i++ )
         {
-            loop_start[i] = 0;
-            //loop_end[i] = length - 1; //no idea why i had this
-            loop_end[i] = length;
-            loop_end_rec = length;
-
             pindex[i] = rindex = 0;
             play[i] = record = bi[i] = false;
             looprec = loopplay[i] = true;
@@ -4149,6 +4167,46 @@ struct LiSaMulti_data
             channelGain[i][0] = 1.0;
             // channelGain[i][0] = 0.707;
             // channelGain[i][1] = 0.707;
+        }
+    }
+
+    // destructor | 1.5.0.0 (ge) added
+    ~LiSaMulti_data()
+    {
+        // cleanup
+        cleanup();
+    }
+
+    // clean up LiSa
+    void cleanup()
+    {
+        // deallocate
+        SAFE_FREE( mdata );
+    }
+
+    // allocate memory, length in samples
+    /* inline */ int buffer_alloc(t_CKINT length)
+    {
+        // cleanup | 1.5.0.0 (ge) added
+        cleanup();
+
+        // allocate
+        mdata = (SAMPLE *)malloc((length + 1) * sizeof(SAMPLE)); // extra sample for safety....
+        if( !mdata ) {
+            CK_FPRINTF_STDERR( "LiSaBasic: unable to allocate memory!\n" );
+            return false;
+        }
+        // zero out
+        memset( mdata, 0, (length + 1) * sizeof(SAMPLE) );
+        // remember data length
+        mdata_len = length;
+
+        for( t_CKINT i=0; i < LiSa_MAXVOICES; i++ )
+        {
+            loop_start[i] = 0;
+            //loop_end[i] = length - 1; //no idea why i had this
+            loop_end[i] = length;
+            loop_end_rec = length;
         }
 
         return true;
@@ -4479,15 +4537,19 @@ struct LiSaMulti_data
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( LiSaMulti_ctor )
 {
-    LiSaMulti_data * f =  new LiSaMulti_data;
-    memset( f, 0, sizeof(LiSaMulti_data) );
-
+    // instantiate an internal LiSa implementation instance
+    LiSaMulti_data * f = new LiSaMulti_data;
+    // get the LiSa object in ChucK
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    // set channel information
     f->num_chans = ugen->m_multi_chan_size > 0 ? ugen->m_multi_chan_size : 1;
-    //CK_FPRINTF_STDERR( "LiSa: number of channels = %d\n", f->num_chans );
+    // CK_FPRINTF_STDERR( "LiSa: number of channels = %d\n", f->num_chans );
+    // allocate array of samples based on channel information
     f->outsamples = new SAMPLE[f->num_chans];
+    // zero out
     memset( f->outsamples, 0, (f->num_chans)*sizeof(SAMPLE) );
 
+    // remember implementation instance in address space of LiSa object in ChucK
     OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data) = (t_CKUINT)f;
 }
 
@@ -4502,6 +4564,8 @@ CK_DLL_DTOR( LiSaMulti_dtor )
 {
     // get data
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
+    // clean up | 1.5.0.0 (ge) added
+    SAFE_DELETE_ARRAY( d->outsamples );
     // delete
     SAFE_DELETE(d);
     // set
@@ -4548,7 +4612,8 @@ CK_DLL_TICKF( LiSaMulti_tickf )
     t_CKUINT nchans = ugen->m_num_outs;
     for( t_CKUINT frame_idx = 0; frame_idx < nframes; frame_idx++ )
     {
-        SAMPLE * temp_out_samples = d->tick_multi( in[frame_idx*nchans+1] );
+        // 1.5.0.0 (ge) | changed to in[frame_idx*nchans+0]; was:+1
+        SAMPLE * temp_out_samples = d->tick_multi( in[frame_idx*nchans+0] );
         // CK_FPRINTF_STDERR( "%0.2f ", in[frame_idx*nchans+0] );
 
         for( t_CKUINT chan_idx = 0; chan_idx < nchans; chan_idx++ )
@@ -4573,7 +4638,7 @@ CK_DLL_CTRL( LiSaMulti_size )
     t_CKDUR buflen = GET_NEXT_DUR(ARGS);
     if( buflen > LiSa_MAXBUFSIZE )
     {
-        CK_FPRINTF_STDERR( "LiSa: buffer size request too large, resizing\n" );
+        CK_FPRINTF_STDERR( "LiSa: buffer size request too large, resizing to %i...\n", LiSa_MAXBUFSIZE );
         buflen = LiSa_MAXBUFSIZE;
     }
     // allocate
@@ -5135,7 +5200,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicepan )
     // get voice number argument
     t_CKINT which = GET_NEXT_INT(ARGS);
     // get pan argument
-    d->voicePan[which] = (t_CKFLOAT)GET_NEXT_FLOAT(ARGS);
+    d->voicePan[which] = GET_NEXT_FLOAT(ARGS);
 
     t_CKINT i;
 
@@ -5174,10 +5239,10 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicepan )
             d->channelGain[which][i] = sqrt(d->channelGain[which][i]);
         }
 
-        //CK_FPRINTF_STDERR( "gain for channel %d and voice %d = %f\n", i, which, d->channelGain[which][i] );
+        // CK_FPRINTF_STDERR( "gain for channel %d and voice %d = %f\n", i, which, d->channelGain[which][i] );
     }
 
-    RETURN->v_float = (t_CKFLOAT)d->voicePan[which];
+    RETURN->v_float = d->voicePan[which];
 }
 
 
@@ -5515,4 +5580,41 @@ CK_DLL_CGET( LiSaMulti_cget_playing )
 CK_DLL_PMSG(LiSaMulti_pmsg )
 {
     return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Identity2_tickf()
+// desc: TICKF function ...
+//-----------------------------------------------------------------------------
+CK_DLL_TICKF( Identity2_tickf )
+{
+    // get "this"
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+
+    t_CKUINT nchans = ugen->m_num_outs;
+
+    // print input to tickf
+    for( t_CKUINT f = 0; f < nframes; f++ )
+    {
+        // look over chans
+        for( t_CKUINT c = 0; c < nchans; c++ )
+        {
+            // copy input to output
+            out[f*nchans+c] = in[f*nchans+c];
+        }
+
+        // printing (can be useful for observing multichan ugen logic)
+        // cerr << "inputs: ";
+        // for( t_CKUINT c = 0; c < nchans; c++ )
+        // { cerr << in[f*nchans+c] << " "; }
+        // cerr << "output: ";
+        // for( t_CKUINT c = 0; c < nchans; c++ )
+        // { cerr << out[f*nchans+c] << " "; }
+        // cerr << endl;
+    }
+
+    return TRUE;
 }

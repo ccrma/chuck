@@ -185,6 +185,9 @@ CK_DLL_CGET( sndbuf_cget_length );
 CK_DLL_CGET( sndbuf_cget_channels );
 CK_DLL_CGET( sndbuf_cget_valueAt );
 
+// Identity2
+CK_DLL_TICKF( Identity2_tickf );
+
 // LiSa (Dan Trueman)
 CK_DLL_CTOR( LiSaMulti_ctor );
 CK_DLL_DTOR( LiSaMulti_dtor );
