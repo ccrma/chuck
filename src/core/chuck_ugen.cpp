@@ -874,6 +874,10 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     m_time = now;
     // initial sum
     m_sum = 0.0f;
+    // NOTE: if this UGen has more than one input channel:
+    // m_num_src would be zero, and m_src_list are handled in this
+    // UGen's per-channel "sub-ugens" -- (ge + nshaheed, 1.5.0.0)
+    // e.g., in=2 and out=2 (as in Identity2)
     if( m_num_src )
     {
         ugen = m_src_list[0];
@@ -915,9 +919,15 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
             {
                 ugen = m_multi_chan[i];
                 // tick sub-ugens for individual channels
-                if( ugen->m_time < now ) ugen->system_tick( now );
+                if( ugen->m_time < now )
+                    ugen->system_tick( now );
                 // set to tickf input
                 // TODO: if op is not 1?
+                // 1.5.0.0 (nshaheed + ge) | why m_sum + ugen->m_sum?
+                // in our testing, it seems one of these two would always be 0, depending on channel size;
+                // e.g., if in=1 and out=2 (like LiSa2) then m_sum holds the input and ugen->m_sum is 0
+                // e.g., if in=2 and out=2 (like Identity2) then the reverse is true
+                // also see the 1.5.0.0 note regarding m_num_src earlier in this function
                 m_multi_in_v[i] = m_sum + ugen->m_sum;
             }
         }
@@ -953,8 +963,6 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
             return TRUE;
         }
     }
-
-
 
     // part 2: synthesize with tick function
     if( m_multi_chan_size && tickf )
@@ -1129,7 +1137,10 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
                 if( ugen->m_time < now ) ugen->system_tick_v( now, numFrames );
                 // set to tickf input
                 for( int f = 0; f < numFrames; f++ )
-                    m_multi_in_v[f*m_multi_chan_size+c] = ugen->m_sum_v[f];
+                {
+                    // 1.5.0.0 (ge + nshaheed) | added m_sum_v[f] to match system_tick
+                    m_multi_in_v[f*m_multi_chan_size+c] = m_sum_v[f] + ugen->m_sum_v[f];
+                }
             }
         }
         else

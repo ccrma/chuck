@@ -1,22 +1,28 @@
 //---------------------------------------------------------------------
-// name: LiSa-munger1.ck
-// desc: Live sampling utilities for ChucK
-//       (also see: LiSa-stereo.ck for stereo version of this)
+// name: LiSa-stereo.ck
+// desc: Live sampling utilities for ChucK (stereo edition)
 //
-// author: Dan Trueman, 2007
+// this can readily adapted to more channels, using one of the
+// following:
+//   ----
+//   LiSa2 (stereo)
+//   LiSa4 (quad),
+//   LiSa6 (6-channel, laptop orchestra edition)
+//   LiSa8 (8-channel),
+//   LiSa10 (10-channel, for compatibility)
+//   LiSa16 (16-channel)
+//   ----
+// The outputs of these LiSas can be sent to a multichannel dac, or
+// simply to other ugens, if it is desirable to process the channels
+// in different ways. These multiple channels are available
+// regardless of whether the dac is running > 2 chans. LiSaX's
+// multi-channel output can be manually connected through .chan(n).
 //
-// These three example files demonstrate a couple ways to approach
-// granular sampling with ChucK and LiSa. All are modeled after the
-// munger~ from PeRColate. One of the cool things about doing this
-// in ChucK is that there is a lot more ready flexibility in
-// designing grain playback patterns; rolling one's own idiosyncratic
-// munger is a lot easier. 
-//
-// Example 1 (below) is simple, but will feature some clicking due
-// to playing back over the record-point discontinuity.
+// author: Dan Trueman, 2007 (LiSa-munger1.ck)
+//         Ge Wang 2023 (LiSa-stereo.ck, based on the above)
 //---------------------------------------------------------------------
 // patch
-SinOsc s => LiSa lisa => dac;
+SinOsc s => LiSa2 lisa => dac;
 // thru
 s => dac;
 
@@ -24,7 +30,14 @@ s => dac;
 lisa.duration( 1::second );
 // set max voices
 lisa.maxVoices( 30 );
-// set ramp duration
+// set voice pan
+for( int v; v < lisa.maxVoices(); v++ )
+{
+    // can pan across all available channels
+    // note LiSa.pan( voice, [0...channels-1] )
+    lisa.pan( v, Math.random2f( 0, lisa.channels()-1 ) );
+}
+// set ramp
 lisa.recRamp( 20::ms );
 
 // frequency
@@ -37,7 +50,7 @@ SinOsc freqmod => blackhole;
 // modulation frequency
 freqmod.freq( 0.1 );
 
-// set it recording constantly; loop records by default
+// start recording; will loop-record by default
 lisa.record( true );
 // set gain
 lisa.gain( 0.1 );

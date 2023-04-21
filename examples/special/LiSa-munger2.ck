@@ -46,13 +46,13 @@ for( 0 => int i; i < 3; i++ )
     lisa[i].gain( 0.1 );
     lisa[i].feedback( 0.5 );
     lisa[i].recRamp( 20::ms );
-    lisa[i].record( 0 );
+    lisa[i].record( false );
     // connect s to each LiSa
     s => lisa[i] => dac;
 }
 
 // start recording in the recbuf LiSa
-lisa[recbuf].record(1);
+lisa[recbuf].record( true );
 
 // create grains, rotate record and play bufs as needed
 // shouldn't click as long as the grainlen < bufferlen
@@ -77,9 +77,9 @@ while( true )
     }
 
     // rotate the record LiSa
-    lisa[recbuf++].record( 0 );
+    lisa[recbuf++].record( false );
     if( recbuf == 3 ) 0 => recbuf;
-    lisa[recbuf].record( 1 );
+    lisa[recbuf].record( true );
 
     // rotate the play LiSa
     playbuf++;
