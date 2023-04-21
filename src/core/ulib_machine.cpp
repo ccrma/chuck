@@ -1018,10 +1018,7 @@ public:
     CKDoc_Impl(Chuck_VM * vm)
     : m_vm(vm)
     , m_htmlOutput(vm)
-    {
-        // default?
-        m_indexFilepath = "class.index";
-    }
+    { }
 
 public:
     // generate CSS file
@@ -1053,48 +1050,7 @@ public:
     CKDocHTMLOutput m_htmlOutput;
     
     Chuck_VM * m_vm;
-
-protected:
-    // index
-    std::map<std::string, std::string> m_index;
-    std::string m_indexFilepath;
-
-    // make index from index file
-    void makeIndex( const std::string & filepath )
-    {
-        char classname[1024];
-        char url[1024];
-
-        FILE * file = fopen( filepath.c_str(), "r" );
-        if( file )
-        {
-            // create indices
-            while( fscanf(file, "%1024s %1024s\n", classname, url) == 2 && !feof(file) )
-                m_index[std::string(classname)] = std::string(url) + "#" + std::string(classname);
-            // close
-            fclose(file);
-        }
-        else
-            fprintf(stderr, "error: unable to open index file '%s'\n", filepath.c_str());
-    }
 };
-
-
-
-const char *css_for_type( Chuck_Env * env, Chuck_Type * type )
-{
-    static char buf[1024];
-    std::string name = CKDocHTMLOutput::cssclean(type->name.c_str());
-
-    if( isprim(env, type) || isvoid(env, type) || (type->array_depth && isprim(env, type->array_type)) )
-        snprintf(buf, 1024, ".type_%s { color: blue; }", name.c_str());
-    else if( CKDocHTMLOutput::isugen(type) )
-        snprintf(buf, 1024, ".type_%s { color: #A200EC; }", name.c_str());
-    else
-        snprintf(buf, 1024, ".type_%s { color: #800023; }", name.c_str());
-
-    return buf;
-}
 
 
 
@@ -1105,11 +1061,7 @@ const char *css_for_type( Chuck_Env * env, Chuck_Type * type )
 //-----------------------------------------------------------------------------
 t_CKBOOL CKDoc_Impl::outputCSS( Chuck_Env * env, const vector<Chuck_Type *> & types, const string & cssFilename )
 {
-    for( vector<Chuck_Type *>::const_iterator t = types.begin(); t != types.end(); t++ )
-    {
-        Chuck_Type * type = *t;
-        printf( "%s\n", css_for_type( env, type ) );
-    }
+    // return string of static CSS file
     return TRUE;
 }
 
@@ -1135,21 +1087,15 @@ t_CKBOOL CKDoc_Impl::outputHTMLGroup( const vector<Chuck_Type *> & types,
                                       const string & htmlFilename,
                                       const string & cssFilename )
 {
-    string index_path = m_indexFilepath;
     string examples_path = "http://chuck.stanford.edu/doc/examples/";
     string markdown_exe = "markdown";
     list<string> type_args;
-    bool do_markdown = false;
     bool do_toc = true;
     bool do_heading = true;
-    const char *param = NULL;
 
     // markdown_exe = find_exe(markdown_exe);
     // if(markdown_exe.length() == 0)
     // do_markdown = false;
-
-    // make index
-    makeIndex( index_path );
 
     CKDocHTMLOutput * output = &m_htmlOutput;
     // if( do_markdown )

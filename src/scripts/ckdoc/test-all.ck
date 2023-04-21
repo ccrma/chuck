@@ -13,7 +13,7 @@ Type.getTypes(
 );
 
 // instantiate
-CKDoc doc;
+CKDoc doc; // documentation orchestra
 
 // set destination
 doc.outputDir(".");
