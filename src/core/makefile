@@ -82,10 +82,10 @@ CXXSRCS_CORE+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	chuck_carrier.cpp chuck_globals.cpp \
 	midiio_rtmidi.cpp rtmidi.cpp hidio_sdl.cpp \
 	ugen_osc.cpp ugen_filter.cpp ugen_stk.cpp ugen_xxx.cpp \
-	ulib_ai.cpp ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
-	ulib_opsc.cpp ulib_regex.cpp util_buffers.cpp util_console.cpp \
-	util_string.cpp util_thread.cpp util_opsc.cpp util_serial.cpp \
-	util_hid.cpp uana_xform.cpp uana_extract.cpp
+	ulib_ai.cpp ulib_doc.cpp ulib_machine.cpp ulib_math.cpp \
+	ulib_std.cpp ulib_opsc.cpp ulib_regex.cpp util_buffers.cpp \
+	util_console.cpp  util_string.cpp util_thread.cpp util_opsc.cpp \
+	util_serial.cpp util_hid.cpp uana_xform.cpp uana_extract.cpp
 LO_CSRCS+= lo/address.c lo/blob.c lo/bundle.c lo/message.c lo/method.c \
     lo/pattern_match.c lo/send.c lo/server.c lo/server_thread.c lo/timetag.c
 ################################################################################

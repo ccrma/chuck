@@ -16081,19 +16081,17 @@ void Stk :: swap64(unsigned char *ptr)
   *(ptr+1) = val;
 }
 
-#if (defined(__OS_LINUX__) || defined(__OS_MACOSX__) || defined(__OS_WINDOWS_CYGWIN__) || defined(__OS_IRIX__))
-  #include <unistd.h>
+#if (defined(__OS_WINDOWS__) || defined(__PLATFORM_WIN32__))
+  #ifndef __CHUNREAL_ENGINE__
+    #include <windows.h> // for win32_tmpfile()
+  #else
+    // 1.5.0.0 (ge) | #chunreal
+    // unreal engine on windows disallows including windows.h
+    #include "Windows/MinWindows.h"
+  #endif // #ifndef __CHUNREAL_ENGINE__
 #else
-  #if (defined(__OS_WINDOWS__) || defined(__PLATFORM_WIN32__))
-    #ifndef __CHUNREAL_ENGINE__
-      #include <windows.h> // for win32_tmpfile()
-    #else
-      // 1.5.0.0 (ge) | #chunreal
-      // unreal engine on windows disallows including windows.h
-      #include "Windows/MinWindows.h"
-    #endif // #ifndef __CHUNREAL_ENGINE__
-  #endif // #ifdef __PLATFORM_WIN32__
-#endif
+  #include <unistd.h>
+#endif // #if (defined(__OS_WINDOWS__) || defined(__PLATFORM_WIN32__))
 
 void Stk :: sleep(unsigned long milliseconds)
 {

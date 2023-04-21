@@ -44,8 +44,9 @@
 #include "uana_xform.h"
 #include "uana_extract.h"
 
-#include "ulib_machine.h"
 #include "ulib_ai.h"
+#include "ulib_doc.h"
+#include "ulib_machine.h"
 #include "ulib_math.h"
 #include "ulib_std.h"
 
