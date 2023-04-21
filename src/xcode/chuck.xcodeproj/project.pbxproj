@@ -87,6 +87,7 @@
 		0982F19A2021871C005B1521 /* chuck_carrier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0982F1992021871C005B1521 /* chuck_carrier.cpp */; };
 		8615DFF9264D9AE20084EF86 /* chuck_globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8615DFF7264D9AE20084EF86 /* chuck_globals.cpp */; };
 		8615DFFA264D9AE20084EF86 /* chuck_globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8615DFF7264D9AE20084EF86 /* chuck_globals.cpp */; };
+		864617FA29F24FC60018DC65 /* ulib_doc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 864617F929F24FC60018DC65 /* ulib_doc.cpp */; };
 		86D8F47429419EBB00954EF4 /* ulib_ai.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 86D8F47329419EBB00954EF4 /* ulib_ai.cpp */; };
 /* End PBXBuildFile section */
 
@@ -435,6 +436,8 @@
 		8615DFF6264CD96B0084EF86 /* chuck_carrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chuck_carrier.h; path = ../core/chuck_carrier.h; sourceTree = "<group>"; };
 		8615DFF7264D9AE20084EF86 /* chuck_globals.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = chuck_globals.cpp; path = ../core/chuck_globals.cpp; sourceTree = "<group>"; };
 		8615DFF8264D9AE20084EF86 /* chuck_globals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chuck_globals.h; path = ../core/chuck_globals.h; sourceTree = "<group>"; };
+		864617F829F24FC60018DC65 /* ulib_doc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ulib_doc.h; path = ../core/ulib_doc.h; sourceTree = "<group>"; };
+		864617F929F24FC60018DC65 /* ulib_doc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ulib_doc.cpp; path = ../core/ulib_doc.cpp; sourceTree = "<group>"; };
 		86D8F47229419EBB00954EF4 /* ulib_ai.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ulib_ai.h; path = ../core/ulib_ai.h; sourceTree = "<group>"; };
 		86D8F47329419EBB00954EF4 /* ulib_ai.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ulib_ai.cpp; path = ../core/ulib_ai.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -919,6 +922,8 @@
 				090B4B1B0C4F038E00DF5577 /* uana_xform.h */,
 				86D8F47329419EBB00954EF4 /* ulib_ai.cpp */,
 				86D8F47229419EBB00954EF4 /* ulib_ai.h */,
+				864617F929F24FC60018DC65 /* ulib_doc.cpp */,
+				864617F829F24FC60018DC65 /* ulib_doc.h */,
 				09A40B4A0A9A54DA007604EA /* ulib_machine.cpp */,
 				09A40B4B0A9A54DA007604EA /* ulib_machine.h */,
 				09A40B4C0A9A54DA007604EA /* ulib_math.cpp */,
@@ -1151,6 +1156,7 @@
 				091677361F7CAD1100248F78 /* util_network.c in Sources */,
 				091677371F7CAD1100248F78 /* util_opsc.cpp in Sources */,
 				091677381F7CAD1100248F78 /* method.c in Sources */,
+				864617FA29F24FC60018DC65 /* ulib_doc.cpp in Sources */,
 				091677391F7CAD1100248F78 /* util_raw.c in Sources */,
 				0916773A1F7CAD1100248F78 /* util_sndfile.c in Sources */,
 				0916773B1F7CAD1100248F78 /* util_string.cpp in Sources */,
