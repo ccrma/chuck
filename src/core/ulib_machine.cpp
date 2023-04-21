@@ -37,6 +37,7 @@
 #include "chuck_instr.h"
 #include "chuck.h"
 #include "util_string.h"
+#include "chuck_type.h"
 
 #include <string>
 #include <algorithm>
@@ -660,8 +661,8 @@ protected:
 class CKDocHTMLOutput : public CKDocOutput
 {
 public:
-    CKDocHTMLOutput( FILE * output = stdout )
-        : m_output(output), m_func(NULL) { }
+    CKDocHTMLOutput( Chuck_VM * vm, FILE * output = stdout )
+        : m_vm(vm), m_output(output), m_func(NULL) { }
 
     void begin( const std::string & title )
     {
@@ -712,7 +713,7 @@ public:
     void toc_class(Chuck_Type * type)
     {
         fprintf(m_output, "<p class=\"toc_class\"><a href=\"#%s\" class=\"%s\">%s</a></p>\n",
-                type->name.c_str(), class_for_type(type), type->name.c_str());
+                type->name.c_str(), css_class_for_type(m_vm->env(), type), type->name.c_str());
     }
 
     void end_toc()
@@ -742,7 +743,7 @@ public:
         while(parent != NULL)
         {
             fprintf(m_output, ": <a href=\"%s\" class=\"%s\">%s</a> ",
-                    type2url(parent->name).c_str(), class_for_type(parent), parent->name.c_str());
+                    type2url(parent->name).c_str(), css_class_for_type(m_vm->env(), parent), parent->name.c_str());
             parent = parent->parent;
         }
         if(type->parent != NULL) fprintf(m_output, "</h4>\n");
@@ -825,7 +826,7 @@ public:
     void static_member_var(Chuck_Value * var)
     {
         fprintf(m_output, "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\"%s\">%s",
-                class_for_type(var->type), var->type->name.c_str());
+                css_class_for_type(m_vm->env(), var->type), var->type->name.c_str());
         if(var->type->array_depth)
         {
             fprintf(m_output, "</span>");
@@ -850,7 +851,7 @@ public:
     void member_var(Chuck_Value * var)
     {
         fprintf(m_output, "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\"%s\">%s",
-                class_for_type(var->type), var->type->name.c_str());
+                css_class_for_type(m_vm->env(), var->type), var->type->name.c_str());
         if(var->type->array_depth)
         {
             fprintf(m_output, "</span>");
@@ -876,7 +877,7 @@ public:
     {
         // return type
         fprintf(m_output, "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\"%s\">%s",
-                class_for_type(func->def->ret_type),
+                css_class_for_type(m_vm->env(), func->def->ret_type),
                 func->def->ret_type->name.c_str());
         if(func->def->ret_type->array_depth)
         {
@@ -912,7 +913,7 @@ public:
     {
         // return type
         fprintf(m_output, "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\"%s\">%s",
-                class_for_type(func->def->ret_type),
+                css_class_for_type(m_vm->env(), func->def->ret_type),
                 func->def->ret_type->name.c_str());
         if(func->def->ret_type->array_depth)
         {
@@ -948,7 +949,7 @@ public:
     {
         // argument type
         fprintf(m_output, "<span class=\"%s\">%s",
-                class_for_type(arg->type), arg->type->name.c_str());
+                css_class_for_type(m_vm->env(), arg->type), arg->type->name.c_str());
         if(arg->type->array_depth)
         {
             fprintf(m_output, "</span>");
@@ -970,6 +971,7 @@ private:
     FILE * m_output;
     Chuck_Func *m_func;
     std::string m_title;
+    Chuck_VM *m_vm;
 
 public:
     static bool isugen( Chuck_Type *type ) { return type->ugen_info != NULL; }
@@ -991,12 +993,14 @@ public:
         return s;
     }
 
-    static const char * class_for_type( Chuck_Type * type )
+    static const char * css_class_for_type( Chuck_Env * env, Chuck_Type * type )
     {
-        static char buf[1024];
-        std::string name = cssclean(type->name);
-        snprintf( buf, 1024, "typename type_%s", name.c_str() );
-        return buf;
+        if( isprim(env, type) || isvoid(env, type) || (type->array_depth && isprim(env, type->array_type)) )
+            return "ckdoc_typename ckdoc_primitive_type";
+        else if(isugen(type))
+            return "ckdoc_typename ckdoc_ugen_type";
+        else
+            return "ckdoc_typename ckdoc_object_type";
     }
 };
 
@@ -1011,7 +1015,9 @@ class CKDoc_Impl
 {
 public:
     // constructor
-    CKDoc_Impl()
+    CKDoc_Impl(Chuck_VM * vm)
+    : m_vm(vm)
+    , m_htmlOutput(vm)
     {
         // default?
         m_indexFilepath = "class.index";
@@ -1045,6 +1051,8 @@ public:
     string m_outputDir;
     // the HTML output
     CKDocHTMLOutput m_htmlOutput;
+    
+    Chuck_VM * m_vm;
 
 protected:
     // index
@@ -1434,7 +1442,7 @@ t_CKBOOL CKDoc_Impl::outputMarkdownIndex( const vector<string> & clasess,
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( CKDoc_ctor )
 {
-    CKDoc_Impl * ckdoc = new CKDoc_Impl();
+    CKDoc_Impl * ckdoc = new CKDoc_Impl(VM);
     OBJ_MEMBER_UINT( SELF, CKDoc_offset_data ) = (t_CKUINT)ckdoc;
 }
 
