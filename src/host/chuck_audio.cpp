@@ -94,6 +94,8 @@ SAMPLE * ChuckAudio::m_extern_in = NULL;
 SAMPLE * ChuckAudio::m_extern_out = NULL;
 t_CKUINT ChuckAudio::m_dac_n = 0;
 t_CKUINT ChuckAudio::m_adc_n = 0;
+std::string ChuckAudio::m_dac_name = "";
+std::string ChuckAudio::m_adc_name = "";
 RtAudio * ChuckAudio::m_rtaudio = NULL;
 f_audio_cb ChuckAudio::m_audio_cb = NULL;
 void * ChuckAudio::m_cb_user_data = NULL;
@@ -603,11 +605,13 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
                                  t_CKBOOL force_srate,
                                  char const * driver )
 {
-    if( m_init )
-        return FALSE;
+    // check if already initialized
+    if( m_init ) return FALSE;
 
     m_dac_n = dac_device;
     m_adc_n = adc_device;
+    m_dac_name = "[no output device]";
+    m_adc_name = "[no input device]";
     m_num_channels_out = num_dac_channels;
     m_num_channels_in = num_adc_channels;
     m_sample_rate = sample_rate;
@@ -621,6 +625,10 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
     m_audio_cb = callback;
     // remember user data to pass to callback
     m_cb_user_data = data;
+
+    // audio device probe results
+    RtAudio::DeviceInfo dac_info;
+    RtAudio::DeviceInfo adc_info;
 
     // variable to pass by reference into RtAudio
     unsigned int bufsize = (unsigned int)m_buffer_size;
@@ -914,6 +922,15 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
         m_buffer_size = bufsize;
     }
 
+    // the dac and adc devices we ended up initializing | 1.5.0.0 (ge)
+    if( m_num_channels_out > 0 )
+        dac_info = m_rtaudio->getDeviceInfo((unsigned int)m_dac_n);
+    if( m_num_channels_in > 0 )
+        adc_info = m_rtaudio->getDeviceInfo((unsigned int)m_adc_n);
+    // copy names
+    m_dac_name = dac_info.name;
+    m_adc_name = adc_info.name;
+
     // pop indent
     EM_poplog();
 
@@ -1112,6 +1129,10 @@ void ChuckAudio::shutdown()
     m_rtaudio->closeStream();
     // cleanup
     SAFE_DELETE( m_rtaudio );
+
+    // deallocate | 1.5.0.0 (ge) added
+    SAFE_DELETE( m_buffer_in );
+    SAFE_DELETE( m_buffer_out );
 
     // unflag
     m_init = FALSE;

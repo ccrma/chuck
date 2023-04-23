@@ -44,6 +44,10 @@
   #include <pthread.h>
 #endif
 
+using namespace std;
+
+
+
 
 //-----------------------------------------------------------------------------
 // function prototypes
@@ -484,8 +488,11 @@ bool go( int argc, const char ** argv )
     t_CKBOOL update_otf_vm = TRUE;
     string   filename = "";
     vector<string> args;
-    char const *audioDriver = NULL;
-    
+    char const * audioDriver = NULL;
+    // dac and adc devices names | 1.5.0.0 (ge) added
+    string   dac_device_name = "";
+    string   adc_device_name = "";
+
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path;
     // initial chug-in path (added 1.3.0.0)
@@ -911,7 +918,9 @@ bool go( int argc, const char ** argv )
     the_chuck->setLogLevel( log_level );
     // log
     EM_log( CK_LOG_SYSTEM, "booting up ChucK instance..." );
-    
+    // push
+    EM_pushlog();
+
     //--------------------------- AUDIO I/O SETUP ---------------------------------
     // log
     EM_log( CK_LOG_SYSTEM, "initializing audio subsystem..." );
@@ -948,23 +957,12 @@ bool go( int argc, const char ** argv )
         dac = ChuckAudio::m_dac_n+1;
         adc_chans = ChuckAudio::m_num_channels_in;
         dac_chans = ChuckAudio::m_num_channels_out;
+        adc_device_name = ChuckAudio::m_adc_name;
+        dac_device_name = ChuckAudio::m_dac_name;
         srate = ChuckAudio::m_sample_rate;
         buffer_size = ChuckAudio::buffer_size();
         num_buffers = ChuckAudio::num_buffers();
     }
-    
-    // log
-    EM_log( CK_LOG_SYSTEM, "real-time audio: %s", g_enable_realtime_audio ? "YES" : "NO" );
-    EM_log( CK_LOG_SYSTEM, "mode: %s", block ? "BLOCKING" : "CALLBACK" );
-    EM_log( CK_LOG_SYSTEM, "sample rate: %ld", srate );
-    EM_log( CK_LOG_SYSTEM, "buffer size: %ld", buffer_size );
-    if( g_enable_realtime_audio )
-    {
-        EM_log( CK_LOG_SYSTEM, "num buffers: %ld", num_buffers );
-        EM_log( CK_LOG_SYSTEM, "adc: %ld dac: %d", adc, dac );
-        EM_log( CK_LOG_SYSTEM, "adaptive block processing: %ld", adaptive_size > 1 ? adaptive_size : 0 );
-    }
-    EM_log( CK_LOG_SYSTEM, "channels in: %ld out: %ld", adc_chans, dac_chans );
     
     // pop
     EM_poplog();
@@ -998,6 +996,28 @@ bool go( int argc, const char ** argv )
         exit( 1 );
     }
 
+    //------------------ PRINT VERIFIED AUDIO SETTING ---------------------------
+
+    // log
+    EM_log( CK_LOG_SYSTEM, "audio subsystem enabled..." );
+    // push
+    EM_pushlog();
+    // log
+    EM_log( CK_LOG_SYSTEM, "real-time audio: %s", g_enable_realtime_audio ? "YES" : "NO" );
+    EM_log( CK_LOG_SYSTEM, "mode: %s", block ? "BLOCKING" : "CALLBACK" );
+    EM_log( CK_LOG_SYSTEM, "sample rate: %ld", srate );
+    EM_log( CK_LOG_SYSTEM, "buffer size: %ld", buffer_size );
+    if( g_enable_realtime_audio )
+    {
+        EM_log( CK_LOG_SYSTEM, "num buffers: %ld", num_buffers );
+        EM_log( CK_LOG_SYSTEM, "adaptive block processing: %ld", adaptive_size > 1 ? adaptive_size : 0 );
+        // EM_log( CK_LOG_SYSTEM, "adc: %ld dac: %d", adc, dac );
+        EM_log( CK_LOG_SYSTEM, "adc:[%d] \"%s\"", adc, adc_device_name.c_str() );
+        EM_log( CK_LOG_SYSTEM, "dac:[%d] \"%s\"", dac, dac_device_name.c_str() );
+    }
+    EM_log( CK_LOG_SYSTEM, "channels in: %ld out: %ld", adc_chans, dac_chans );
+    // pop
+    EM_poplog();
 
     //------------------------- HID RELATED SETUP --------------------------------
 #ifndef __ALTER_HID__
@@ -1014,6 +1034,8 @@ bool go( int argc, const char ** argv )
     signal( SIGPIPE, signal_pipe );
 #endif
 
+    // version
+    EM_log( CK_LOG_SYSTEM, "ChucK version: %s", the_chuck->version() );
 
     //------------------------- SOURCE COMPILATION --------------------------------
     // log
@@ -1088,6 +1110,8 @@ bool go( int argc, const char ** argv )
 #endif
     }
 
+    // pop log
+    EM_poplog();
     
     //-------------------------- MAIN CHUCK LOOP!!! -----------------------------
     // log
@@ -1098,10 +1122,6 @@ bool go( int argc, const char ** argv )
     
     // push indent
     EM_pushlog();
-    // log
-    EM_log( CK_LOG_SYSTEM, "starting virtual machine..." );
-    // pop indent
-    EM_poplog();
     
     // silent mode buffers
     SAMPLE * input = new SAMPLE[buffer_size*adc_chans];
@@ -1113,10 +1133,18 @@ bool go( int argc, const char ** argv )
     // if real-time audio mode
     if( g_enable_realtime_audio )
     {
+        // log
+        EM_log( CK_LOG_SYSTEM, "starting real-time audio..." );
         // start real-time audio I/O
         ChuckAudio::start();
     }
     
+    // log
+    EM_log( CK_LOG_SYSTEM, "starting virtual machine..." );
+
+    // pop indent
+    EM_poplog();
+
     // wait
     while( the_chuck->vm_running() )
     {
