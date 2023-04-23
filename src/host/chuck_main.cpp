@@ -492,7 +492,7 @@ bool go( int argc, const char ** argv )
     // dac and adc devices names | 1.5.0.0 (ge) added
     string   dac_device_name = "";
     string   adc_device_name = "";
-    
+
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path;
     // initial chug-in path (added 1.3.0.0)
@@ -953,12 +953,12 @@ bool go( int argc, const char ** argv )
         }
 
         // these could have been updated during initialization
-        dac = ChuckAudio::m_dac_n+1;
         adc = ChuckAudio::m_adc_n+1;
-        dac_chans = ChuckAudio::m_num_channels_out;
+        dac = ChuckAudio::m_dac_n+1;
         adc_chans = ChuckAudio::m_num_channels_in;
-        dac_device_name = ChuckAudio::m_dac_name;
+        dac_chans = ChuckAudio::m_num_channels_out;
         adc_device_name = ChuckAudio::m_adc_name;
+        dac_device_name = ChuckAudio::m_dac_name;
         srate = ChuckAudio::m_sample_rate;
         buffer_size = ChuckAudio::buffer_size();
         num_buffers = ChuckAudio::num_buffers();
@@ -1012,8 +1012,8 @@ bool go( int argc, const char ** argv )
         EM_log( CK_LOG_SYSTEM, "num buffers: %ld", num_buffers );
         EM_log( CK_LOG_SYSTEM, "adaptive block processing: %ld", adaptive_size > 1 ? adaptive_size : 0 );
         // EM_log( CK_LOG_SYSTEM, "adc: %ld dac: %d", adc, dac );
-        EM_log( CK_LOG_SYSTEM, "dac: \"%s\" (device %d)", dac_device_name.c_str(), dac );
-        EM_log( CK_LOG_SYSTEM, "adc: \"%s\" (device %d)", adc_device_name.c_str(), adc );
+        EM_log( CK_LOG_SYSTEM, "adc:[%d] \"%s\"", adc, adc_device_name.c_str() );
+        EM_log( CK_LOG_SYSTEM, "dac:[%d] \"%s\"", dac, dac_device_name.c_str() );
     }
     EM_log( CK_LOG_SYSTEM, "channels in: %ld out: %ld", adc_chans, dac_chans );
     // pop
