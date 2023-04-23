@@ -1052,6 +1052,10 @@ t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_class_begin( env, type, env->global(), type_ctor, type_dtor, doc ) )
         return FALSE;
 
+    // add relevant examples
+    if( !type_engine_import_add_ex( env, "type/type_type.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "type/type_query.ck" ) ) goto error;
+
     // add equals()
     func = make_new_mfun( "int", "equals", type_equals );
     func->add_arg( "Type", "another" );
@@ -1068,6 +1072,11 @@ t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type )
     func = make_new_mfun( "int", "isa", type_isa_str );
     func->add_arg( "string", "another" );
     func->doc = "return whether this Type is a kind of 'another'.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add baseName()
+    func = make_new_mfun( "string", "baseName", type_basename );
+    func->doc = "return the base name of this Type. The base of name of an array Type is the type without the array dimensions (e.g., base name of 'int[][]' is 'int')";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add name()
@@ -2918,7 +2927,7 @@ CK_DLL_MFUN( type_isa_str )
     RETURN->v_int = isa( lhs, rhs );
 }
 
-CK_DLL_MFUN( type_name )
+CK_DLL_MFUN( type_basename )
 {
     // get self as type
     Chuck_Type * type = (Chuck_Type *)SELF;
@@ -2926,6 +2935,22 @@ CK_DLL_MFUN( type_name )
     Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
     // set
     str->set( type->name );
+    // return
+    RETURN->v_object = str;
+}
+
+CK_DLL_MFUN( type_name )
+{
+    // get self as type
+    Chuck_Type * type = (Chuck_Type *)SELF;
+    // new it
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    // construct the full type name (arrays included)
+    string name = type->name;
+    // append array depth
+    for( t_CKINT i = 0; i < type->array_depth; i++ ) name += "[]";
+    // set
+    str->set( name );
     // return
     RETURN->v_object = str;
 }

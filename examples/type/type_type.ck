@@ -23,9 +23,13 @@ fun void about( Type t )
     }
 
     //-----------------------------------------------------------------
-    // name
+    // use .name() to get full type name e.g., 'int[][]'
     //-----------------------------------------------------------------
-    cherr <= "type name: " <= t.name();
+    cherr <= "type name using .name(): " <= t.name() <= IO.newline();
+    //-----------------------------------------------------------------
+    // use .baseName() to get base type name (without the array part)
+    //-----------------------------------------------------------------
+    cherr <= "type name using .baseName(): " <= t.baseName();
     repeat( t.arrayDepth() ) cherr <= "[]";
     cherr <= IO.newline();
 

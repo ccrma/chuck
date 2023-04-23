@@ -269,6 +269,7 @@ CK_DLL_MFUN( type_equals );
 CK_DLL_MFUN( type_isa );
 CK_DLL_MFUN( type_isa_str );
 CK_DLL_MFUN( type_name );
+CK_DLL_MFUN( type_basename );
 CK_DLL_MFUN( type_parent ); // return parent Type
 CK_DLL_MFUN( type_children ); // return children Types
 CK_DLL_MFUN( type_origin ); // built-in, chugin, defined in chuck
