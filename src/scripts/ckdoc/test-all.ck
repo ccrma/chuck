@@ -18,7 +18,7 @@ CKDoc doc; // documentation orchestra
 // set destination
 doc.outputDir(".");
 // generate CSS
-doc.genCSS( types, "ckdoc.css" );
+doc.genCSS( "ckdoc.css" );
 // generate HTML group
 doc.genHTMLGroup( types, "All", "all.html", "ckdoc.css" );
 
