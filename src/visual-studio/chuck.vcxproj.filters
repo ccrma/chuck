@@ -247,6 +247,9 @@
     <ClCompile Include="..\host\RtAudio\include\iasiothiscallresolver.cpp">
       <Filter>host\RtAudio</Filter>
     </ClCompile>
+    <ClCompile Include="..\core\ulib_doc.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\core\chuck.h">
@@ -485,6 +488,9 @@
     </ClInclude>
     <ClInclude Include="..\host\RtAudio\include\soundcard.h">
       <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\ulib_doc.h">
+      <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
