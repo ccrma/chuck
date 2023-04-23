@@ -414,6 +414,11 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
         Return whether this Type is a kind of 'another'.
     string name();
         Return the name of this Type.
+    string baseName();
+        Return the base name of this Type. The base of name of an array
+        Type is the type without the array dimensions (e.g., base name of
+        'int[][]' is 'int')
+        Return the name of this Type.
     string origin();
         Return a string decribing where this Type was defined (e.g., "builtin", "chugin", "user").
     Type parent();
