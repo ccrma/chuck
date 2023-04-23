@@ -101,9 +101,8 @@ DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY )
 
     // genCSS
     func = make_new_mfun( "int", "genCSS", CKDoc_genCSS );
-    func->add_arg( "Type[]", "types" );
     func->add_arg( "string", "cssFilename" );
-    func->doc = "Generate the CSS file named in 'cssFilename'.";
+    func->doc = "Generate the default CSS file named in 'cssFilename'; if cssFilename is NULL, output to stdout";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // genHTMLGroup
@@ -639,9 +638,32 @@ CKDoc::~CKDoc()
 // name: genCSS()
 // desc: output CSS for array of types
 //-----------------------------------------------------------------------------
-t_CKBOOL CKDoc::outputCSS( Chuck_Env * env, const vector<Chuck_Type *> & types, const string & cssFilename )
+t_CKBOOL CKDoc::outputCSS( const string & cssFilename )
 {
-    // return string of static CSS file
+    // check
+    if( cssFilename == "" )
+    {
+        // print string of static CSS file
+        fprintf( stdout, "%s", m_ckdocCSS.c_str() );
+    }
+    else
+    {
+        // open file
+        ofstream fout( cssFilename );
+        // if not good
+        if( !fout.good() )
+        {
+            EM_error3( "CKDoc.outputCSS(): cannot open file '%s' for output...", cssFilename.c_str() );
+            return FALSE;
+        }
+
+        // write
+        fout << m_ckdocCSS;
+
+        // done
+        fout.close();
+    }
+
     return TRUE;
 }
 
@@ -998,50 +1020,8 @@ CK_DLL_MFUN( CKDoc_outputDir_get )
 CK_DLL_MFUN( CKDoc_genCSS )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
-    Chuck_Array4 * typeArray = (Chuck_Array4 *)GET_CK_OBJECT(ARGS);
     Chuck_String * cssFilename = GET_CK_STRING(ARGS);
-    // check if null
-    // check if null
-    if( typeArray == NULL )
-    {
-        CK_FPRINTF_STDERR( "[chuck] CKDoc.genCSS() given null 'classes' argument; nothing generated...\n" );
-        goto error;
-    }
-    if( cssFilename == NULL )
-    {
-        CK_FPRINTF_STDERR( "[chuck] CKDoc.genCSS() given null argument; nothing generated...\n" );
-        goto error;
-    }
-    else
-    {
-        vector<Chuck_Type *> classes;
-        for( int i = 0; i < typeArray->m_vector.size(); i++ )
-        {
-            // get pointer as chuck string
-            Chuck_Type * t = (Chuck_Type *)typeArray->m_vector[i];
-            // check
-            if( t != NULL )
-            {
-                // append
-                classes.push_back( t );
-            }
-        }
-        // check
-        if( classes.size() == 0 )
-        {
-            CK_FPRINTF_STDERR( "[chuck] CKDoc.genHTMLGroup() given 'classes' array with null and/or empty strings; nothing generated...\n" );
-            goto error;
-        }
-
-        // get
-        RETURN->v_int = ckdoc->outputCSS( VM->carrier()->env, classes, cssFilename->str() );
-    }
-
-    // done
-    return;
-
-error:
-    RETURN->v_int = FALSE;
+    RETURN->v_int = ckdoc->outputCSS( cssFilename != NULL ? cssFilename->str() : "" );
 }
 
 CK_DLL_MFUN( CKDoc_genHTMLGroup )
@@ -1162,3 +1142,238 @@ CK_DLL_MFUN( CKDoc_genMarkdownIndex )
 {
     CK_FPRINTF_STDERR( "[chuck] CKDoc.genMarkdownIndex() currently not implemented!\n" );
 }
+
+
+string CKDoc::m_ckdocCSS = "\
+  body \
+  { \
+      margin: 2em 7em 2em 2em; \
+      font-family: Helvetica, sans-serif; \
+      font-size: 14px; \
+  } \
+ \
+  .index_group \
+  { \
+      clear: both; \
+      background-color: #eee; \
+      padding: 1em 1em 1em 1em; \
+      margin-bottom: 2em; \
+      vertical-align: top; \
+  } \
+ \
+  .index_group_title \
+  { \
+      float: left; \
+      margin: 0; \
+      width: 15%; \
+      padding-right: 3em; \
+      border-right: 4px solid #fcfcfc; \
+  } \
+ \
+  .index_group_classes \
+  { \
+      padding-top: 0.15em; \
+      padding-left: 1em; \
+      padding-bottom: 0.15em; \
+       \
+      margin: 0; \
+      margin-left: 20%; \
+      width: 75%; \
+  } \
+ \
+  .index_group_classes a \
+  { \
+      margin-right: 0.5em; \
+      line-height: 1.5em; \
+  } \
+ \
+  .index_group_title a { color: black; } \
+ \
+  #title \
+  { \
+      float: left; \
+      width: 100%; \
+      border-bottom: 1px solid black; \
+      padding-bottom: 0.5em; \
+      margin-bottom: 1.5em; \
+  } \
+ \
+  .titleL \
+  { \
+      float: left; \
+      width: auto; \
+      clear: none; \
+  } \
+ \
+  .titleR \
+  { \
+      float: right; \
+      text-align: right; \
+      width: auto; \
+      clear: none; \
+  } \
+ \
+  h1 \
+  { \
+      font-size: 28px; \
+      margin: 0; \
+  } \
+ \
+  h1 a { color: black; text-decoration: none; } \
+ \
+  #body \
+  { \
+      clear: both; \
+  } \
+ \
+  .toc \
+  { \
+      float: left; \
+  /*    position: fixed;*/ \
+      clear: both; \
+      background-color: #eee; \
+      padding: 0.25em 0.5em 1em 0.75em; \
+      margin: 0; \
+      width: 6em; \
+  } \
+ \
+  .toc_class \
+  { \
+      font-size: 12px; \
+      margin-top: 0.5em; \
+      margin-bottom: 0.25em; \
+  } \
+ \
+  .classes \
+  { \
+      clear: right; \
+      margin-left: 9em; \
+      margin-right: 0em; \
+  } \
+ \
+  .class \
+  { \
+      background-color: #eee; \
+      padding: 0.025em 0.5em 0.25em 1em; \
+  } \
+ \
+  .class_title \
+  { \
+      font-family: Menlo, Monaco, Courier; \
+      font-size: 18px; \
+  } \
+ \
+  .class_hierarchy \
+  { \
+      font-family: Menlo, Monaco, Courier; \
+      font-size: 14px; \
+      margin-right: 4em; \
+  } \
+ \
+  .class_section_header \
+  { \
+       \
+  } \
+ \
+  .class_description \
+  { \
+      font-family: Helvetica; \
+      font-size: 14px; \
+      margin-right: 4em; \
+  } \
+ \
+  .empty_class_description \
+  { \
+      font-family: Helvetica; \
+      font-size: 12px; \
+      font-style: italic; \
+      color: grey; \
+      margin-right: 4em; \
+  } \
+ \
+  .members \
+  { \
+      font-family: Menlo, Monaco, Courier; \
+      font-size: 13px; \
+  } \
+ \
+  .member \
+  { \
+      margin-left: 0em; \
+      padding-left: 0.85em; \
+      padding-top: 0.85em; \
+      border-top: 4px solid #fcfcfc; \
+      border-left: 4px solid #fcfcfc; \
+       \
+      padding-bottom: 0.85em; \
+      padding-left: 0.85em; \
+      margin-bottom: 1.5em; \
+       \
+      margin-right: 4em; \
+      padding-right: 0; \
+  } \
+ \
+  .member_declaration \
+  { \
+      margin-top: 0; \
+      margin-bottom: 0.5em; \
+  } \
+ \
+  .member_description \
+  { \
+      font-family: Helvetica; \
+      font-size: 14px; \
+      margin-top: 0; \
+      margin-bottom: 0; \
+  } \
+ \
+  .empty_member_description \
+  { \
+      font-family: Helvetica; \
+      font-size: 12px; \
+      font-style: italic; \
+      color: grey; \
+      margin-top: 0; \
+      margin-bottom: 0; \
+  } \
+ \
+  .ckdoc_typename \
+  { \
+      font-family: Menlo, Monaco, Courier; \
+      font-size: 13px; \
+  } \
+ \
+  .membername \
+  { \
+      font-weight: bold; \
+  } \
+ \
+  .top_link \
+  { \
+      text-align: right; \
+      margin-top: 2em; \
+      margin-right: 1em; \
+  } \
+ \
+  .top_link a \
+  { \
+      color: #44F; \
+  } \
+ \
+  .examples ul \
+  { \
+      margin-top: -1em; \
+  } \
+ \
+  .examples ul li a \
+  { \
+      text-decoration: none; \
+  } \
+ \
+  .clear { clear: both; } \
+ \
+  .ckdoc_type_primitive { color: blue; } \
+ \
+  .ckdoc_type_ugen { color: #A200EC; } \
+ \
+  .ckdoc_type_object { color: #800023; }";

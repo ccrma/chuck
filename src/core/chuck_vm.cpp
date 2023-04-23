@@ -277,11 +277,6 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     }
 
     // log
-    EM_log( CK_LOG_SYSTEM, "initializing synthesis engine..." );
-    // push indent
-    EM_pushlog();
-
-    // log
     EM_log( CK_LOG_SEVERE, "initializing 'dac'..." );
     // allocate dac and adc (REFACTOR-2017: g_t_dac changed to env()->t_dac)
     env()->t_dac->ugen_info->num_outs =
@@ -322,9 +317,6 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     m_shreduler->m_bunghole = m_bunghole;
     m_shreduler->m_num_dac_channels = m_num_dac_channels;
     m_shreduler->m_num_adc_channels = m_num_adc_channels;
-
-    // pop indent
-    EM_poplog();
 
     return TRUE;
 }

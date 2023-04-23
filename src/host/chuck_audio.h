@@ -154,6 +154,8 @@ public: // data
     static RtAudio * m_rtaudio;
     static t_CKUINT m_dac_n;
     static t_CKUINT m_adc_n;
+    static std::string m_dac_name;
+    static std::string m_adc_name;
     static f_audio_cb m_audio_cb;
     static void * m_cb_user_data;
 };

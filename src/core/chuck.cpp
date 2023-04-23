@@ -91,7 +91,7 @@
 
 
 // chuck statics
-const char ChucK::VERSION[] = "1.5.0.0-beta-4.20 (chai)";
+const char ChucK::VERSION[] = CHUCK_VERSION_STRING;
 t_CKUINT ChucK::o_numVMs = 0;
 t_CKBOOL ChucK::o_isGlobalInit = FALSE;
 t_CKBOOL ChucK::enableSystemCall = FALSE;
@@ -476,6 +476,11 @@ t_CKBOOL ChucK::initCompiler()
     t_CKUINT deprecate = getParamInt( CHUCK_PARAM_DEPRECATE_LEVEL );
     std::string workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
 
+    // log
+    EM_log( CK_LOG_SYSTEM, "initializing compiler..." );
+    // push indent level
+    EM_pushlog();
+
     // instantiate compiler
     m_carrier->compiler = new Chuck_Compiler();
     // reference back to carrier
@@ -494,12 +499,22 @@ t_CKBOOL ChucK::initCompiler()
     // set deprecation level
     m_carrier->env->deprecate_level = deprecate;
 
+    // pop indent for compiler
+    EM_poplog();
+    // log
+    EM_log( CK_LOG_SYSTEM, "initializing synthesis engine..." );
+    // push indent for synthesis
+    EM_pushlog();
+
     // VM + type system integration (needs to be done after compiler)
     if( !m_carrier->vm->initialize_synthesis() )
     {
         CK_FPRINTF_STDERR( "[chuck]: %s\n", m_carrier->vm->last_error() );
         return false;
     }
+
+    // pop indent
+    EM_poplog();
 
     std::string cwd;
     char * cstr_cwd = NULL; // 1.5.0.0 (barak) | was: char cstr_cwd[MAXPATHLEN];

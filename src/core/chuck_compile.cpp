@@ -126,11 +126,6 @@ Chuck_Compiler::~Chuck_Compiler()
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Compiler::initialize()
 {
-    // log
-    EM_log( CK_LOG_SYSTEM, "initializing compiler..." );
-    // push indent level
-    EM_pushlog();
-
     // set origin hint
     m_originHint = te_originBuiltin;
 
@@ -152,9 +147,6 @@ t_CKBOOL Chuck_Compiler::initialize()
 
     // unset origin hint
     m_originHint = te_originUnknown;
-
-    // pop indent
-    EM_poplog();
 
     return TRUE;
 

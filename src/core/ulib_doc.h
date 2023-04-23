@@ -61,7 +61,7 @@ public:
 
 public:
     // generate CSS file
-    t_CKBOOL outputCSS( Chuck_Env * env, const std::vector<Chuck_Type *> & types, const std::string & cssFilename );
+    t_CKBOOL outputCSS( const std::string & cssFilename );
     // generate an HTML file containing documentation for a list of classes
     t_CKBOOL outputHTMLGroup( const std::vector<Chuck_Type *> & clasess,
                               const std::string & title,
@@ -71,6 +71,8 @@ public:
     t_CKBOOL outputHTMLIndex( const std::vector<std::string> & clasess,
                               const std::string & htmlFilename,
                               const std::string & cssFilename );
+    // generate HTML for a type
+    t_CKBOOL outputHTMLType( const std::string & typeName, std::string & output );
     // generate an Markdown file containing documentation for a list of classes
     t_CKBOOL outputMarkdownGroup( const std::vector<std::string> & clasess,
                                const std::string & mdFilename );
@@ -79,8 +81,8 @@ public:
                                   const std::string & mdFilename );
 
 public:
-    // generate HTML for a type
-    t_CKBOOL outputHTMLType( const std::string & typeName, std::string & output );
+    // literally ckdoc.css
+    static std::string m_ckdocCSS;
 
 public:
     // where to output files

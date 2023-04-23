@@ -414,7 +414,6 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     type_engine_init_special( env, env->t_array );
 
     // initialize the remaining internal classes
-    init_class_type(env, env->t_function );
     init_class_string( env, env->t_string );
     init_class_ugen( env, env->t_ugen );
     init_class_blob( env, env->t_uanablob );
@@ -427,6 +426,7 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     init_class_cherr( env, env->t_cherr ); // 1.3.0.0
     init_class_vec3( env, env->t_vec3 ); // 1.3.5.3
     init_class_vec4( env, env->t_vec4 ); // 1.3.5.3
+    // init_class_function(env, env->t_function );
 
     // initialize primitive types
     init_primitive_types( env );
