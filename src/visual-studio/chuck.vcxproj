@@ -69,6 +69,7 @@
     <ClInclude Include="..\core\ugen_stk.h" />
     <ClInclude Include="..\core\ugen_xxx.h" />
     <ClInclude Include="..\core\ulib_ai.h" />
+    <ClInclude Include="..\core\ulib_doc.h" />
     <ClInclude Include="..\core\ulib_machine.h" />
     <ClInclude Include="..\core\ulib_math.h" />
     <ClInclude Include="..\core\ulib_opsc.h" />
@@ -378,6 +379,7 @@
     <ClCompile Include="..\core\ugen_stk.cpp" />
     <ClCompile Include="..\core\ugen_xxx.cpp" />
     <ClCompile Include="..\core\ulib_ai.cpp" />
+    <ClCompile Include="..\core\ulib_doc.cpp" />
     <ClCompile Include="..\core\ulib_machine.cpp" />
     <ClCompile Include="..\core\ulib_math.cpp" />
     <ClCompile Include="..\core\ulib_opsc.cpp" />
