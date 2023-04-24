@@ -661,6 +661,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
         if( useDefaultOut )
         {
             // get the default
+            // FYI: getDefaultInputDevice returns 0 either as a valid index OR if no default/any devices
             m_dac_n = m_rtaudio->getDefaultOutputDevice();
         }
         else
@@ -777,10 +778,11 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
         if( useDefaultIn )
         {
             // get default input device
+            // FYI getDefaultInputDevice returns 0 either as a valid index OR if no default/any devices
             m_adc_n = m_rtaudio->getDefaultInputDevice();
-            
             // ensure correct channel count if default device is requested
             RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo((unsigned int)m_adc_n);
+
             // remember
             t_CKUINT inChannelsRequested = m_num_channels_in;
 
@@ -818,22 +820,30 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
                     // will first check if the default input device has only 1 channel
                     // while we are requesting 2 channels...
                     // -
+
                     // if non-zero input channels
                     if( device_info.inputChannels > 0 )
                     {
-                        // find first device with *exactly* the requested channel count
-                        m_adc_n = findMatchingInputDevice(m_rtaudio, device_info.inputChannels, sample_rate, FALSE );
+                        // find a device with *exactly* the current device input channels
+                        m_adc_n = findMatchingInputDevice( m_rtaudio, device_info.inputChannels, sample_rate, FALSE );
+                    }
+                    else  // if device input channel count is 0
+                    {
+                        // find a device with *exactly* the requested channel count
+                        m_adc_n = findMatchingInputDevice( m_rtaudio, m_num_channels_in, sample_rate, FALSE);
                     }
                     
                     // check if match
                     if( m_adc_n >= 0 )
                     {
+                        // get updated device info (since m_adc_n may be updated by this point)
+                        device_info = m_rtaudio->getDeviceInfo((unsigned int)m_adc_n);
                         // update the request input channel request
                         m_num_channels_in = device_info.inputChannels;
                     }
                     else
                     {
-                        // find first device with *at least* the requested channel count
+                        // find a device with *at least* the requested channel count
                         m_adc_n = findMatchingInputDevice(m_rtaudio, m_num_channels_in, sample_rate, TRUE );
 
                         // changed 1.3.1.2 (ge): for input, if no match found by this point, we just gonna try to open half-duplex
@@ -841,6 +851,12 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
                         {
                             // set to 0
                             m_num_channels_in = 0;
+                            // log
+                            EM_log( CK_LOG_SEVERE, "cannot find compatible audio input device..." );
+                            EM_pushlog();
+                                EM_log(CK_LOG_SEVERE, "defaulting to half-duplex (no audio input)...");
+                            EM_poplog();
+
                             // problem finding audio devices, most likely
                             // EM_error2( 0, "unable to find audio input device with requested channel count (%i)...",
                             //               m_num_channels_in);
