@@ -1034,9 +1034,9 @@ void HidInManager::probeHidIn()
         if( count == 0 )
             continue;
 
-        EM_error2b( 0, "------( chuck -- %i %s device%s )------",
-                    count, default_drivers[i].driver_name,
-                    count > 1 ? "s" : "" );
+        EM_error2b( 0, "------( %s device%s: %i )------",
+                    default_drivers[i].driver_name,
+                    count > 1 ? "s" : "", count );
 
         for( int j = 0; j < count; j++ )
         {
