@@ -161,17 +161,17 @@ static RtAudio::Api driverNameToApi(char const *driver)
 static char const * apiToDriverName( RtAudio::Api api )
 {
     static char const * drivers[] = {
-        "default",
+        "system default",
         "ALSA",
         "Pulse",
         "OSS",
         "Jack",
-        "MacOSXCore",
+        "CoreAudio",
         "WASAPI",
         "ASIO",
         "DS", // DirectSound
         "DUMMY",
-        "Invalid"
+        "invalid"
     };
 
     return drivers[(int)api];
