@@ -315,7 +315,7 @@ public:
     {
         m_outputStr += "<p class=\"toc_class\"><a href=\"#" + type->name
                      + "\" class=\"" + css_class_for_type(m_env_ref, type)
-                     + "\">" + type->name + "\"</a></p>\n";
+                     + "\">" + type->name + "</a></p>\n";
     }
 
     void end_toc()
