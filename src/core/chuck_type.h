@@ -946,6 +946,8 @@ Chuck_Value * type_engine_find_value( Chuck_Type * type, const std::string & xid
 Chuck_Value * type_engine_find_value( Chuck_Type * type, S_Symbol xid );
 Chuck_Value * type_engine_find_value( Chuck_Env * env, const std::string & xid, t_CKBOOL climb, int linepos = 0 );
 Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List path );
+// convert a vector of type names to a vector of Types | 1.5.0.0 (ge) added
+void type_engine_names2types( Chuck_Env * env, const std::vector<std::string> & typeNames, std::vector<Chuck_Type *> & types );
 
 
 //-----------------------------------------------------------------------------
@@ -983,6 +985,8 @@ t_CKINT str2char( const char * char_lit, int linepos );
 t_CKBOOL same_arg_lists( a_Arg_List lhs, a_Arg_List rhs );
 // generate a string from an argument list (types only)
 std::string arglist2string( a_Arg_List list );
+
+
 
 
 //-----------------------------------------------------------------------------

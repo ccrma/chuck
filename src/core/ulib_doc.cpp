@@ -36,30 +36,46 @@
 #include "chuck_instr.h"
 #include "chuck_compile.h"
 #include "chuck_errmsg.h"
+#include "util_string.h"
 
 #include <string>
+#include <fstream>
 #include <algorithm>
 using namespace std;
 
 // 1.5.0.0 ((ge, spencer) | added
 CK_DLL_CTOR( CKDoc_ctor );
 CK_DLL_DTOR( CKDoc_dtor );
-CK_DLL_MFUN( CKDoc_outputDir_set );
-CK_DLL_MFUN( CKDoc_outputDir_get );
+CK_DLL_MFUN( CKDoc_addGroup_str );
+CK_DLL_MFUN( CKDoc_addGroup_type );
+CK_DLL_MFUN( CKDoc_numGroups );
+CK_DLL_MFUN( CKDoc_clearGroup );
+CK_DLL_CTRL( CKDoc_examplesRoot_set );
+CK_DLL_CGET( CKDoc_examplesRoot_get );
+CK_DLL_CTRL( CKDoc_outputFormat_set );
+CK_DLL_CGET( CKDoc_outputFormat_get );
+CK_DLL_MFUN( CKDoc_genIndex );
 CK_DLL_MFUN( CKDoc_genCSS );
-CK_DLL_MFUN( CKDoc_genHTMLGroup );
-CK_DLL_MFUN( CKDoc_genHTMLIndex );
-CK_DLL_MFUN( CKDoc_genMarkdownGroup );
-CK_DLL_MFUN( CKDoc_genMarkdownIndex );
+CK_DLL_MFUN( CKDoc_genGroups );
+CK_DLL_MFUN( CKDoc_genType_type );
+CK_DLL_MFUN( CKDoc_genType_str );
+CK_DLL_MFUN( CKDoc_outputToDir );
 // offset
 static t_CKUINT CKDoc_offset_data = 0;
+
+// static initialization
+t_CKINT const CKDoc::FORMAT_NONE = 0;
+t_CKINT const CKDoc::FORMAT_HTML = 1;
+t_CKINT const CKDoc::FORMAT_TEXT = 2;
+t_CKINT const CKDoc::FORMAT_MARKDOWN = 3;
+t_CKINT const CKDoc::FORMAT_JSON = 4;
 
 
 
 
 //-----------------------------------------------------------------------------
 // name: ckdoc_query()
-// desc: add class for ckdoc documentation generator | 1.5.0.0 ((ge, spencer, terry)
+// desc: add class for ckdoc documentation generator | 1.5.0.0 (ge, spencer, terry)
 //-----------------------------------------------------------------------------
 DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY )
 {
@@ -88,52 +104,95 @@ DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY )
     CKDoc_offset_data = type_engine_import_mvar( env, "int", "@CKDoc_data", FALSE );
     if( CKDoc_offset_data == CK_INVALID_OFFSET ) goto error;
 
-    // outputDir
-    func = make_new_mfun( "string", "outputDir", CKDoc_outputDir_set );
-    func->add_arg( "string", "path" );
-    func->doc = "Set the output directory; this will be automatically prepended to relative-path filenames for generated files.";
+    // const static variables, for format selection, e.g., with CKDoc.HTML or CKDoc.TEXT
+    if( !type_engine_import_svar( env, "int", "NONE", TRUE, (t_CKUINT)&CKDoc::FORMAT_NONE, "no output format." ) ) goto error;
+    if( !type_engine_import_svar( env, "int", "HTML", TRUE, (t_CKUINT)&CKDoc::FORMAT_HTML, "output HTML format." ) ) goto error;
+    if( !type_engine_import_svar( env, "int", "TEXT", TRUE, (t_CKUINT)&CKDoc::FORMAT_TEXT, "output TEXT format (not implemented)." ) ) goto error;
+    if( !type_engine_import_svar( env, "int", "MARKDOWN", TRUE, (t_CKUINT)&CKDoc::FORMAT_MARKDOWN, "output MARKDOWN format (not implemented)." ) ) goto error;
+    if( !type_engine_import_svar( env, "int", "JSON", TRUE, (t_CKUINT)&CKDoc::FORMAT_JSON, "output JSON format (not implemented)." ) ) goto error;
+
+    // addGroup (by types)
+    func = make_new_mfun( "void", "addGroup", CKDoc_addGroup_type );
+    func->add_arg( "Type[]", "types" );
+    func->add_arg( "string", "name" );
+    func->add_arg( "string", "shortName" );
+    func->add_arg( "string", "description" );
+    func->doc = "Add a group of types to be documented, including group 'name', a 'shortName' to be used for any files, and a group 'description'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // outputDir
-    func = make_new_mfun( "string", "outputDir", CKDoc_outputDir_get );
-    func->doc = "Get the output directory.";
+    // addGroup (by names)
+    func = make_new_mfun( "void", "addGroup", CKDoc_addGroup_str );
+    func->add_arg( "string[]", "typeNames" );
+    func->add_arg( "string", "name" );
+    func->add_arg( "string", "shortName" );
+    func->add_arg( "string", "description" );
+    func->doc = "Add a group of types (by type name) to be documented, including group 'name', a 'shortName' to be used for any files, and a group 'description'.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // numGroups
+    func = make_new_mfun( "int", "numGroups", CKDoc_numGroups );
+    func->doc = "Get the number of groups added.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // clear
+    func = make_new_mfun( "void", "clear", CKDoc_clearGroup );
+    func->doc = "Clear all added groups.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // examplesRoot
+    func = make_new_mfun( "string", "examplesRoot", CKDoc_examplesRoot_set );
+    func->add_arg( "string", "path" );
+    func->doc = "Set the examples directory root path; returns what was set.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // examplesRoot
+    func = make_new_mfun( "string", "examplesRoot", CKDoc_examplesRoot_get );
+    func->doc = "Get the current examples directory root path.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // outputFormat
+    func = make_new_mfun( "int", "outputFormat", CKDoc_outputFormat_set );
+    func->add_arg( "int", "which" );
+    func->doc = "Set which output format to use; see CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // CKDoc_outputFormat_set
+    func = make_new_mfun( "int", "outputFormat", CKDoc_outputFormat_get );
+    func->doc = "Set which output format is selected; see CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // genIndex
+    func = make_new_mfun( "string", "genIndex", CKDoc_genIndex );
+    func->doc = "Generate top-level index; return as string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // genCSS
-    func = make_new_mfun( "int", "genCSS", CKDoc_genCSS );
-    func->add_arg( "string", "cssFilename" );
-    func->doc = "Generate the default CSS file named in 'cssFilename'; if cssFilename is NULL, output to stdout";
+    func = make_new_mfun( "string", "genCSS", CKDoc_genCSS );
+    func->doc = "Generate CSS; return as string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // genHTMLGroup
-    func = make_new_mfun( "int", "genHTMLGroup", CKDoc_genHTMLGroup );
-    func->add_arg( "Type[]", "types" );
-    func->add_arg( "string", "groupTitle" );
-    func->add_arg( "string", "htmlFilename" );
-    func->add_arg( "string", "cssFilename" );
-    func->doc = "Generate the group HTML with 'groupTitle'in 'htmlFilename' for types in the array 'types', referencing the CSS file named in 'cssFilename'.";
+    // genGroups
+    func = make_new_mfun( "void", "genGroups", CKDoc_genGroups );
+    func->add_arg( "string[]", "results" );
+    func->doc = "Generate documentation for all added groups, return each in a separate entry";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // genHTMLIndex
-    func = make_new_mfun( "int", "genHTMLIndex", CKDoc_genHTMLIndex );
-    func->add_arg( "Type[]", "types" );
-    func->add_arg( "string", "htmlFilename" );
-    func->add_arg( "string", "cssFilename" );
-    func->doc = "Generate the index HTML file named 'htmlFilename' for types in the array 'types', referencing the CSS file named in 'cssFilename'.";
+    // genType
+    func = make_new_mfun( "string", "genType", CKDoc_genType_type );
+    func->add_arg( "Type", "type" );
+    func->doc = "Generate documentation for a single Type.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // genMarkdownGroup
-    func = make_new_mfun( "int", "genMarkdownGroup", CKDoc_genMarkdownGroup );
-    func->add_arg( "Type[]", "types" );
-    func->add_arg( "string", "mdFilename" );
-    func->doc = "Generate the document Markdown file named 'mdFilename' for types in the array 'types'.";
+    // genType
+    func = make_new_mfun( "string", "genType", CKDoc_genType_str );
+    func->add_arg( "string", "typeName" );
+    func->doc = "Generate documentation for a single Type (by name).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // genMarkdownIndex
-    func = make_new_mfun( "int", "genMarkdownIndex", CKDoc_genMarkdownIndex );
-    func->add_arg( "Type[]", "types" );
-    func->add_arg( "string", "mdFilename" );
-    func->doc = "Generate the index Markdown file named 'mdFilename' for types in the array 'types'.";
+    // outputToDir
+    func = make_new_mfun( "int", "outputToDir", CKDoc_outputToDir );
+    func->add_arg( "string", "path" );
+    func->doc = "Generate everything as files into the output directory";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -161,135 +220,75 @@ std::string type2url( const std::string & type )
 
 
 //-----------------------------------------------------------------------------
-// name: class CKDocTextFilter
-// desc: pure abstract class (i.e., interface) for a text filter
+// name: struct CKDocGroup | 1.5.0.0 (ge, spencer) added
+// desc: structure for a doc group e.g., "UGens"
 //-----------------------------------------------------------------------------
-class CKDocTextFilter
+struct CKDocGroup
 {
-public:
-    // virtal destructor
-    virtual ~CKDocTextFilter() { };
-
-public:
-    virtual std::string filter(const std::string &) = 0;
+    // types in the group
+    vector<Chuck_Type *> types;
+    // name of the group
+    string name;
+    // short name of the group (used for filenames and such)
+    string shortName;
+    // description of the group
+    string desc;
 };
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: class CKDocOutput | 1.5.0.0 (based on Spencer's ckdoc Output class)
-// desc: abstract base class for doc output
-//-----------------------------------------------------------------------------
-class CKDocOutput
-{
-public:
-    // base constructor
-    CKDocOutput()
-    { m_doc_text_filter = NULL; }
-    // virtual destructor
-    virtual ~CKDocOutput() { SAFE_DELETE(m_doc_text_filter); }
-
-public:
-    void set_doc_text_filter( CKDocTextFilter * filter )
-    { m_doc_text_filter = filter; }
-
-public:
-    virtual void begin(const std::string &title) = 0;
-    virtual void heading() = 0;
-    virtual void end() = 0;
-
-    // body
-    virtual void begin_body() = 0;
-    virtual void end_body() = 0;
-
-    // toc
-    virtual void begin_toc() = 0;
-    virtual void toc_class(Chuck_Type * type) = 0;
-    virtual void end_toc() = 0;
-
-    // classes
-    virtual void begin_classes() = 0;
-    virtual void end_classes() = 0;
-
-    // one class
-    virtual void begin_class( Chuck_Type * type ) = 0;
-
-    // examples
-    virtual void begin_examples() = 0;
-    virtual void example( const std::string & name, const std::string & url ) = 0;
-    virtual void end_examples() = 0;
-
-    // class variables
-    virtual void begin_static_member_vars() = 0;
-    virtual void end_static_member_vars() = 0;
-    virtual void begin_member_vars() = 0;
-    virtual void end_member_vars() = 0;
-
-    // class functions
-    virtual void begin_static_member_funcs() = 0;
-    virtual void end_static_member_funcs() = 0;
-    virtual void begin_member_funcs() = 0;
-    virtual void end_member_funcs() = 0;
-
-    // individual vars
-    virtual void static_member_var( Chuck_Value * var ) = 0;
-    virtual void member_var( Chuck_Value * var ) = 0;
-
-    // individual funs
-    virtual void begin_static_member_func(Chuck_Func * func) = 0;
-    virtual void end_static_member_func() = 0;
-    virtual void begin_member_func(Chuck_Func * func) = 0;
-    virtual void end_member_func() = 0;
-
-    // func arguments
-    virtual void func_arg(a_Arg_List arg) = 0;
-
-    // end class
-    virtual void end_class() = 0;
-
-protected:
-    // reference to doc text filter
-    CKDocTextFilter * m_doc_text_filter;
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: class CKDocHTMLOutput | 1.5.0.0 (ge, spencer, terry) added
+// name: class CKDocHTMLOutput | 1.5.0.0 (ge, spencer) added
 // desc: HTML output (based on Spencer's ckdoc)
 //-----------------------------------------------------------------------------
 class CKDocHTMLOutput : public CKDocOutput
 {
-public:
-    CKDocHTMLOutput( Chuck_VM * vm, FILE * output = stdout )
-        : m_vm(vm), m_output(output), m_func(NULL) { }
+private:
+    Chuck_Func * m_func;
+    std::string m_title;
+    Chuck_VM * m_vm_ref;
+    Chuck_Env * m_env_ref;
 
+public:
+    CKDocHTMLOutput( Chuck_VM * vm )
+        : m_vm_ref(vm), m_func(NULL)
+    {
+        // get the env
+        m_env_ref = vm != NULL ? vm->env() : NULL;
+    }
+
+    // file extension
+    virtual string fileExtension() const { return ".html"; }
+
+public:
     void begin( const std::string & title )
     {
-        m_title = title;
-        if(m_title.length() == 0) m_title = "&nbsp;";
+        // trim
+        m_title = trim(title);
+        // check length
+        if( m_title.length() == 0 ) m_title = "&nbsp;";
+        // string to return
 
-        fprintf(m_output, "<html>\n");
-        fprintf(m_output, "<link rel=\"stylesheet\" type=\"text/css\" href=\"ckdoc.css\" />\n");
-        fprintf(m_output, "<link rel=\"stylesheet\" type=\"text/css\" href=\"class.css\" />\n");
-        fprintf(m_output, "<title>%s</title>\n", m_title.c_str());
-        fprintf(m_output, "<body>\n");
+        m_outputStr += "<html>\n";
+        m_outputStr += "<link rel=\"stylesheet\" type=\"text/css\" href=\"ckdoc.css\" />\n";
+        m_outputStr += "<link rel=\"stylesheet\" type=\"text/css\" href=\"class.css\" />\n";
+        m_outputStr += "<title>" + m_title + "</title>\n";
+        m_outputStr += "<body>\n";
     }
 
     void heading()
     {
-        fprintf(m_output, "<a name=\"top\"/>\n");
-        fprintf(m_output, "<div id=\"title\">\n");
-        fprintf(m_output, "<div class=\"titleL\"><h1><a href=\"index.html\">ChucK Class Library Reference</a></h1></div>\n");
-        fprintf(m_output, "<div class=\"titleR\"><h1>%s</h1></div>\n", m_title.c_str());
-        fprintf(m_output, "</div>\n"); // #title
+        m_outputStr += "<a name=\"top\"/>\n";
+        m_outputStr += "<div id=\"title\">\n";
+        m_outputStr += "<div class=\"titleL\"><h1><a href=\"index.html\">ChucK Class Library Reference</a></h1></div>\n";
+        m_outputStr += "<div class=\"titleR\"><h1>" + m_title + "</h1></div>\n";
+        m_outputStr += "</div>\n"; // #title
     }
 
     void end()
     {
-        fprintf(m_output, "</html>\n");
+        m_outputStr += "</html>\n";
     }
 
     void title(const std::string &_title)
@@ -298,215 +297,220 @@ public:
 
     void begin_body()
     {
-        fprintf(m_output, "<div id=\"body\">\n");
+        m_outputStr += "<div id=\"body\">\n";
     }
 
     void end_body()
     {
-        fprintf(m_output, "</div>\n"); // #body
-        fprintf(m_output, "</body>\n");
+        m_outputStr += "</div>\n"; // #body
+        m_outputStr += "</body>\n";
     }
 
     void begin_toc()
     {
-        fprintf(m_output, "<div class=\"toc\"><a id=\"toc\"/>\n");
+        m_outputStr += "<div class=\"toc\"><a id=\"toc\"/>\n";
     }
 
     void toc_class(Chuck_Type * type)
     {
-        fprintf(m_output, "<p class=\"toc_class\"><a href=\"#%s\" class=\"%s\">%s</a></p>\n",
-                type->name.c_str(), css_class_for_type(m_vm->env(), type), type->name.c_str());
+        m_outputStr += "<p class=\"toc_class\"><a href=\"#" + type->name
+                     + "\" class=\"" + css_class_for_type(m_env_ref, type)
+                     + "\">" + type->name + "\"</a></p>\n";
     }
 
     void end_toc()
     {
-        fprintf(m_output, "</div>\n");
+        m_outputStr += "</div>\n";
     }
 
     void begin_classes()
     {
-        fprintf(m_output, "<div class=\"classes\">\n");
+        m_outputStr += "<div class=\"classes\">\n";
     }
 
     void end_classes()
     {
-        fprintf(m_output, "</div>\n");
+        m_outputStr += "</div>\n";
     }
 
     void begin_class(Chuck_Type * type)
     {
-        fprintf(m_output, "<a name=\"%s\" /><div class=\"class\">\n", type->name.c_str());
-        fprintf(m_output, "<h2 class=\"class_title\" name=\"%s\">%s</h2>\n",
-                type->name.c_str(), type->name.c_str());
+        m_outputStr += "<a name=\"" + type->name + "\" /><div class=\"class\">\n";
+        m_outputStr += "<h2 class=\"class_title\" name=\"" + type->name + "\">" + type->name + "</h2>\n";
 
         // type heirarchy
         Chuck_Type * parent = type->parent;
-        if(parent != NULL) fprintf(m_output, "<h4 class=\"class_hierarchy\">");
-        while(parent != NULL)
+        // check if there is a parent class
+        if( parent != NULL ) m_outputStr += "<h4 class=\"class_hierarchy\">";
+        // iterate over parents
+        while( parent != NULL )
         {
-            fprintf(m_output, ": <a href=\"%s\" class=\"%s\">%s</a> ",
-                    type2url(parent->name).c_str(), css_class_for_type(m_vm->env(), parent), parent->name.c_str());
+            m_outputStr += ": <a href=\"" + type2url(parent->name)
+                         + "\" class=\"" + css_class_for_type(m_env_ref, parent)
+                         + "\">" + parent->name + "</a> ",
+            // go up the inheritance chain
             parent = parent->parent;
         }
-        if(type->parent != NULL) fprintf(m_output, "</h4>\n");
+        // end the tag
+        if( type->parent != NULL ) m_outputStr += "</h4>\n";
 
         if(type->doc.size() > 0)
         {
             std::string doc;
-            if(m_doc_text_filter)
-                doc = m_doc_text_filter->filter(type->doc);
-            else
-                doc = type->doc;
-            fprintf(m_output, "<p class=\"class_description\">%s</p>\n",
-                    doc.c_str());
+            // if( m_doc_text_filter )
+            //     doc = m_doc_text_filter->filter(type->doc);
+            // else
+            doc = type->doc;
+            m_outputStr += "<p class=\"class_description\">" + doc + "<p>\n";
         }
         else
-            fprintf(m_output, "<p class=\"empty_class_description\">No description available</p>\n");
+            m_outputStr += "<p class=\"empty_class_description\">No description available</p>\n";
     }
 
     void end_class()
     {
-        fprintf(m_output, "<p class=\"top_link\">[ <a href=\"#top\">top</a> ]</p>\n");
-        fprintf(m_output, "</div>\n<hr />\n");
+        m_outputStr += "<p class=\"top_link\">[ <a href=\"#top\">top</a> ]</p>\n";
+        m_outputStr += "</div>\n<hr />\n";
     }
 
     void begin_examples()
     {
-        fprintf(m_output, "<h3 class=\"class_section_header\">examples</h3><div class=\"examples\"><ul>\n");
+        m_outputStr += "<h3 class=\"class_section_header\">examples</h3><div class=\"examples\"><ul>\n";
     }
 
     void end_examples()
     {
-        fprintf(m_output, "</ul></div>\n");
+        m_outputStr += "</ul></div>\n";
     }
 
     void begin_static_member_vars()
     {
-        fprintf(m_output, "<h3 class=\"class_section_header\">static member variables</h3>\n<div class=\"members\">\n");
+        m_outputStr += "<h3 class=\"class_section_header\">static member variables</h3>\n<div class=\"members\">\n";
     }
 
     void end_static_member_vars()
     {
-        fprintf(m_output, "</div>\n");
+        m_outputStr += "</div>\n";
     }
 
     void begin_member_vars()
     {
-        fprintf(m_output, "<h3 class=\"class_section_header\">member variables</h3>\n<div class=\"members\">\n");
+        m_outputStr += "<h3 class=\"class_section_header\">member variables</h3>\n<div class=\"members\">\n";
     }
 
     void end_member_vars()
     {
-        fprintf(m_output, "</div>\n");
+        m_outputStr += "</div>\n";
     }
 
     void begin_static_member_funcs()
     {
-        fprintf(m_output, "<h3 class=\"class_section_header\">static member functions</h3>\n<div class=\"members\">\n");
+        m_outputStr += "<h3 class=\"class_section_header\">static member functions</h3>\n<div class=\"members\">\n";
     }
 
     void end_static_member_funcs()
     {
-        fprintf(m_output, "</div>\n");
+        m_outputStr += "</div>\n";
     }
 
     void begin_member_funcs()
     {
-        fprintf(m_output, "<h3 class=\"class_section_header\">member functions</h3>\n<div class=\"members\">\n");
+        m_outputStr += "<h3 class=\"class_section_header\">member functions</h3>\n<div class=\"members\">\n";
     }
 
     void end_member_funcs()
     {
-        fprintf(m_output, "</div>\n");
+        m_outputStr += "</div>\n";
     }
 
     void example(const std::string &name, const std::string &url)
     {
-        fprintf(m_output, "<li><a href=\"%s\">%s</a></li>\n", url.c_str(), name.c_str());
+        m_outputStr += "<li><a href=\"" + url + "\">" + name + "</a></li>\n";
     }
 
     void static_member_var(Chuck_Value * var)
     {
-        fprintf(m_output, "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\"%s\">%s",
-                css_class_for_type(m_vm->env(), var->type), var->type->name.c_str());
-        if(var->type->array_depth)
+        m_outputStr += "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\""
+                     + css_class_for_type(m_env_ref, var->type) + "\">"
+                     + var->type->name;
+        // check array depth
+        if( var->type->array_depth )
         {
-            fprintf(m_output, "</span>");
-            fprintf(m_output, "<span class=\"typename\">");
+            m_outputStr += "</span>";
+            m_outputStr += "<span class=\"typename\">";
             for(int i = 0; i < var->type->array_depth; i++)
-                fprintf(m_output, "[]");
+                m_outputStr += "[]";
         }
-        fprintf(m_output, "</span> ");
+        m_outputStr += "</span> ";
 
         // function name
-        fprintf(m_output, "<span class=\"membername\">%s</span></p>", var->name.c_str());
+        m_outputStr += "<span class=\"membername\">" + var->name + "</span></p>";
 
         if(var->doc.size() > 0)
-            fprintf(m_output, "<p class=\"member_description\">%s</p>\n",
-                    var->doc.c_str());
+            m_outputStr += "<p class=\"member_description\">" + var->doc + "</p>\n";
         else
-            fprintf(m_output, "<p class=\"empty_member_description\">No description available</p>\n");
+            m_outputStr += "<p class=\"empty_member_description\">No description available</p>\n";
 
-        fprintf(m_output, "</div>\n");
+        m_outputStr += "</div>\n";
     }
 
     void member_var(Chuck_Value * var)
     {
-        fprintf(m_output, "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\"%s\">%s",
-                css_class_for_type(m_vm->env(), var->type), var->type->name.c_str());
-        if(var->type->array_depth)
+        m_outputStr += "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\""
+                     + css_class_for_type(m_env_ref, var->type) + "\">" + var->type->name;
+        // check array depth
+        if( var->type->array_depth )
         {
-            fprintf(m_output, "</span>");
-            fprintf(m_output, "<span class=\"typename\">");
+            m_outputStr += "</span>";
+            m_outputStr += "<span class=\"typename\">";
             for(int i = 0; i < var->type->array_depth; i++)
-                fprintf(m_output, "[]");
+                m_outputStr += "[]";
         }
-        fprintf(m_output, "</span> ");
+        m_outputStr += "</span>";
 
         // function name
-        fprintf(m_output, "<span class=\"membername\">%s</span></p>", var->name.c_str());
+        m_outputStr += "<span class=\"membername\">" + var->name + "</span></p>";
 
         if(var->doc.size() > 0)
-            fprintf(m_output, "<p class=\"member_description\">%s</p>\n",
-                    var->doc.c_str());
+            m_outputStr += "<p class=\"member_description\">" + var->doc + "</p>\n";
         else
-            fprintf(m_output, "<p class=\"empty_member_description\">No description available</p>\n");
+            m_outputStr += "<p class=\"empty_member_description\">No description available</p>\n";
 
-        fprintf(m_output, "</div>\n");
+        m_outputStr += "</div>\n";
     }
 
     void begin_static_member_func(Chuck_Func * func)
     {
         // return type
-        fprintf(m_output, "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\"%s\">%s",
-                css_class_for_type(m_vm->env(), func->def->ret_type),
-                func->def->ret_type->name.c_str());
-        if(func->def->ret_type->array_depth)
+        m_outputStr += "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\""
+                     + css_class_for_type(m_env_ref, func->def->ret_type) + "\">"
+                    + func->def->ret_type->name;
+        // check array
+        if( func->def->ret_type->array_depth )
         {
-            fprintf(m_output, "</span>");
-            fprintf(m_output, "<span class=\"typename\">");
+            m_outputStr += "</span>";
+            m_outputStr += "<span class=\"typename\">";
             for(int i = 0; i < func->def->ret_type->array_depth; i++)
-                fprintf(m_output, "[]");
+                m_outputStr += "[]";
         }
-        fprintf(m_output, "</span> ");
+        m_outputStr += "</span> ";
 
         // function name
-        fprintf(m_output, "<span class=\"membername\">%s</span>(", S_name(func->def->name));
+        m_outputStr += "<span class=\"membername\">" + string(S_name(func->def->name)) + "</span>(";
 
         m_func = func;
     }
 
     void end_static_member_func()
     {
-        fprintf(m_output, ")</p>\n");
+        m_outputStr += ")</p>\n";
 
         if(m_func->doc.size() > 0)
-            fprintf(m_output, "<p class=\"member_description\">%s</p>\n",
-                    m_func->doc.c_str());
+            m_outputStr += "<p class=\"member_description\">" + m_func->doc + "</p>\n";
         else
-            fprintf(m_output, "<p class=\"empty_member_description\">No description available</p>\n");
+            m_outputStr += "<p class=\"empty_member_description\">No description available</p>\n";
 
-        fprintf(m_output, "</div>\n");
+        m_outputStr += "</div>\n";
 
         m_func = NULL;
     }
@@ -514,35 +518,35 @@ public:
     void begin_member_func(Chuck_Func * func)
     {
         // return type
-        fprintf(m_output, "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\"%s\">%s",
-                css_class_for_type(m_vm->env(), func->def->ret_type),
-                func->def->ret_type->name.c_str());
-        if(func->def->ret_type->array_depth)
+        m_outputStr += "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\""
+                     + css_class_for_type(m_env_ref, func->def->ret_type)
+                     + "\">" + func->def->ret_type->name.c_str();
+        // check array
+        if( func->def->ret_type->array_depth )
         {
-            fprintf(m_output, "</span>");
-            fprintf(m_output, "<span class=\"typename\">");
+            m_outputStr += "</span>";
+            m_outputStr += "<span class=\"typename\">";
             for(int i = 0; i < func->def->ret_type->array_depth; i++)
-                fprintf(m_output, "[]");
+                m_outputStr += "[]";
         }
-        fprintf(m_output, "</span> ");
+        m_outputStr += "</span> ";
 
         // function name
-        fprintf(m_output, "<span class=\"membername\">%s</span>(", S_name(func->def->name));
+        m_outputStr += "<span class=\"membername\">" + string(S_name(func->def->name)) + "</span>(";
 
         m_func = func;
     }
 
     void end_member_func()
     {
-        fprintf(m_output, ")</p>\n");
+        m_outputStr += ")</p>\n";
 
         if(m_func->doc.size() > 0)
-            fprintf(m_output, "<p class=\"member_description\">%s</p>\n",
-                    m_func->doc.c_str());
+            m_outputStr += "<p class=\"member_description\">" + m_func->doc + "</p>\n";
         else
-            fprintf(m_output, "<p class=\"empty_member_description\">No description available</p>\n");
+            m_outputStr += "<p class=\"empty_member_description\">No description available</p>\n";
 
-        fprintf(m_output, "</div>\n");
+        m_outputStr += "</div>\n";
 
         m_func = NULL;
     }
@@ -550,30 +554,24 @@ public:
     void func_arg(a_Arg_List arg)
     {
         // argument type
-        fprintf(m_output, "<span class=\"%s\">%s",
-                css_class_for_type(m_vm->env(), arg->type), arg->type->name.c_str());
-        if(arg->type->array_depth)
+        m_outputStr += "<span class=\"" + css_class_for_type(m_env_ref, arg->type) + "\">" + arg->type->name;
+        // check array
+        if( arg->type->array_depth )
         {
-            fprintf(m_output, "</span>");
-            fprintf(m_output, "<span class=\"typename\">");
+            m_outputStr += "</span>";
+            m_outputStr += "<span class=\"typename\">";
             for(int i = 0; i < arg->type->array_depth; i++)
-                fprintf(m_output, "[]");
+                m_outputStr += "[]";
         }
-        fprintf(m_output, "</span> ");
+        m_outputStr += "</span> ";
 
         // argument name
         std::string varname = varnameclean(S_name(arg->var_decl->xid));
-        fprintf(m_output, "%s", varname.c_str());
+        m_outputStr += varname;
 
         if(arg->next != NULL)
-            fprintf(m_output, ", ");
+            m_outputStr += ", ";
     }
-
-private:
-    FILE * m_output;
-    Chuck_Func * m_func;
-    std::string m_title;
-    Chuck_VM * m_vm;
 
 public:
     static bool isugen( Chuck_Type *type ) { return type->ugen_info != NULL; }
@@ -595,7 +593,7 @@ public:
         return s;
     }
 
-    static const char * css_class_for_type( Chuck_Env * env, Chuck_Type * type )
+    static std::string css_class_for_type( Chuck_Env * env, Chuck_Type * type )
     {
         if( isprim(env, type) || isvoid(env, type) || (type->array_depth && isprim(env, type->array_type)) )
             return "ckdoc_typename ckdoc_primitive_type";
@@ -614,9 +612,15 @@ public:
 // desc: constructor
 //-----------------------------------------------------------------------------
 CKDoc::CKDoc( Chuck_VM * vm )
-    : m_vm(vm)
 {
-    m_htmlOutput = new CKDocHTMLOutput( vm );
+    // copy VM reference
+    m_vm_ref = vm;
+    // reset
+    m_format = FORMAT_NONE;
+    m_output = NULL;
+
+    // default
+    setOutputFormat( FORMAT_HTML );
 }
 
 
@@ -628,7 +632,226 @@ CKDoc::CKDoc( Chuck_VM * vm )
 //-----------------------------------------------------------------------------
 CKDoc::~CKDoc()
 {
-    SAFE_DELETE( m_htmlOutput );
+    // clear groups
+    clearGroups();
+    // clear output generator
+    clearOutput();
+    // zero out
+    m_vm_ref = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: clearGroups()
+// desc: clear all added groups
+//-----------------------------------------------------------------------------
+void CKDoc::clearGroups()
+{
+    // iterate groups
+    for( t_CKINT i = 0; i < m_groups.size(); i++ )
+    {
+        // iterate over a group
+        for( t_CKINT j = 0; j < m_groups[i]->types.size(); j++ )
+        {
+            // release ref count
+            SAFE_RELEASE( m_groups[i]->types[j] );
+        }
+        // deallocate the group struct
+        SAFE_DELETE( m_groups[i] );
+    }
+
+    // clear the arrar
+    m_groups.clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: clearOutput()
+// desc: clear output generator
+//-----------------------------------------------------------------------------
+void CKDoc::clearOutput()
+{
+    // reste
+    m_format = FORMAT_NONE;
+    // deallocate
+    SAFE_DELETE( m_output );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: addGroup()
+// add a group of types to document
+//-----------------------------------------------------------------------------
+t_CKBOOL CKDoc::addGroup( const vector<Chuck_Type *> & types, const string & name,
+                          const string & shortName, const string & description )
+{
+    // trim
+    string shortNameTrim = trim(shortName);
+    // check for empty string; shortName is needed as filename for outputToDir()
+    if( shortNameTrim == "" )
+    {
+        EM_error3( "[CKDoc.addGroup()]: 'shortName' parameter cannot be empty" );
+        return FALSE;
+    }
+    // check for conflicts
+    for( t_CKINT i = 0; i < m_groups.size(); i++ )
+    {
+        if( shortNameTrim == m_groups[i]->shortName )
+        {
+            EM_error3( "[CKDoc.addGroup()]: duplicate shortName found: '%s'...", shortNameTrim.c_str() );
+            return FALSE;
+        }
+    }
+
+    // allocate group
+    CKDocGroup * group = new CKDocGroup();
+    // check
+    if( !group )
+    {
+        EM_error3( "[CKDoc.addGroup()]: could not allocate new memory...bailing out" );
+        return FALSE;
+    }
+    // copy
+    group->name = trim(name);
+    group->shortName = shortNameTrim;
+    group->desc = trim(description);
+    // iterate
+    for( t_CKINT i = 0; i < types.size(); i++ )
+    {
+        // filter out NULL elements
+        if( types[i] == NULL ) continue;
+
+        // ref count
+        SAFE_ADD_REF( types[i] );
+        // append
+        group->types.push_back( types[i] );
+    }
+    // add to groups
+    m_groups.push_back( group );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: numGroups()
+// desc: get number of groups
+//-----------------------------------------------------------------------------
+t_CKINT CKDoc::numGroups() const
+{ return m_groups.size(); }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setOutputFormat()
+// desc: set output format: CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON
+//-----------------------------------------------------------------------------
+t_CKBOOL CKDoc::setOutputFormat( t_CKINT which )
+{
+    // clear output
+    clearOutput();
+    // format names
+    const char * formats[] = { "NONE", "HTML", "TEXT", "MARKDOWN", "JSON" };
+
+    // copy for now
+    m_format = which;
+    // check
+    switch( which )
+    {
+        // currently supported
+        case FORMAT_NONE: break;
+        case FORMAT_HTML:
+            m_output = new CKDocHTMLOutput( m_vm_ref );
+            break;
+
+        // currently unsupported
+        case FORMAT_TEXT:
+        case FORMAT_MARKDOWN:
+        case FORMAT_JSON:
+            EM_error3( "[CKDoc]: unsupported format '%s'...", formats[which] );
+            goto error;
+
+        // unrecognized
+        default:
+            EM_error3( "[CKDoc]: unrecognized format ID '%i'...", which );
+            goto error;
+    }
+
+    return TRUE;
+
+error:
+    // set to none
+    m_format = FORMAT_NONE;
+    // return false
+    return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getOutputFormat()
+// desc: get output format
+//-----------------------------------------------------------------------------
+t_CKINT CKDoc::getOutpuFormat() const
+{
+    return m_format;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setExamplesRoot()
+// desc: set base examples root path
+//-----------------------------------------------------------------------------
+void CKDoc::setExamplesRoot( const string & path )
+{
+    // set
+    m_examplesRoot = path;
+    // trim
+    m_examplesRoot = trim( m_examplesRoot );
+    // process
+    if( m_examplesRoot.length() == 0 )
+    { m_examplesRoot = "./"; }
+    // check for trailing /
+    if( m_examplesRoot[m_examplesRoot.length()-1] != '/' )
+    { m_examplesRoot += "/"; }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getExamplesRoot()
+// desc: get base examples root path
+//-----------------------------------------------------------------------------
+string CKDoc::getExamplesRoot() const
+{
+    // set
+    return m_examplesRoot;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: genIndex()
+// desc: generate top-level index file; return as string
+//-----------------------------------------------------------------------------
+string CKDoc::genIndex()
+{
+    // return the string literal
+    return "";
 }
 
 
@@ -636,35 +859,12 @@ CKDoc::~CKDoc()
 
 //-----------------------------------------------------------------------------
 // name: genCSS()
-// desc: output CSS for array of types
+// desc: generate CSS; return as string
 //-----------------------------------------------------------------------------
-t_CKBOOL CKDoc::outputCSS( const string & cssFilename )
+string CKDoc::genCSS()
 {
-    // check
-    if( cssFilename == "" )
-    {
-        // print string of static CSS file
-        fprintf( stdout, "%s", m_ckdocCSS.c_str() );
-    }
-    else
-    {
-        // open file
-        ofstream fout( cssFilename );
-        // if not good
-        if( !fout.good() )
-        {
-            EM_error3( "CKDoc.outputCSS(): cannot open file '%s' for output...", cssFilename.c_str() );
-            return FALSE;
-        }
-
-        // write
-        fout << m_ckdocCSS;
-
-        // done
-        fout.close();
-    }
-
-    return TRUE;
+    // return the string literal
+    return m_ckdocCSS;
 }
 
 
@@ -682,22 +882,47 @@ bool comp_value(Chuck_Value *a, Chuck_Value *b)
 
 
 //-----------------------------------------------------------------------------
-// name: genHTMLGroup()
+// name: genGroups()
+// desc: generate all added groups, return each in a separate entry
 //-----------------------------------------------------------------------------
-t_CKBOOL CKDoc::outputHTMLGroup( const vector<Chuck_Type *> & types,
-                                      const string & title,
-                                      const string & htmlFilename,
-                                      const string & cssFilename )
+void CKDoc::genGroups( vector<string> & results )
 {
-    string examples_path = "https://chuck.stanford.edu/doc/examples/";
-    list<string> type_args;
+    // clear results array
+    results.clear();
+    // set the size
+    results.resize( m_groups.size() );
+
+    // iterate over added groups
+    for( t_CKINT i = 0; i < m_groups.size(); i++ )
+    {
+        // generate each group
+        results[i] = genGroup( m_groups[i], FALSE );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: genGroup()
+// desc: generate documentation for a group
+//-----------------------------------------------------------------------------
+string CKDoc::genGroup( CKDocGroup * group, t_CKBOOL clearOutput )
+{
+    // check
+    if( m_output == NULL ) return "[NO OUTPUT FORMAT SELECTED (genGroup)]";
+
     bool do_toc = true;
     bool do_heading = true;
+    list<string> type_args;
 
-    CKDocHTMLOutput * output = m_htmlOutput;
+    // the output
+    CKDocOutput * output = m_output;
+    // clear output
+    if( clearOutput ) output->clear();
 
     // output group title
-    output->begin( title );
+    output->begin( group->name );
     // do heading
     if( do_heading ) output->heading();
 
@@ -711,14 +936,12 @@ t_CKBOOL CKDoc::outputHTMLGroup( const vector<Chuck_Type *> & types,
         output->begin_toc();
 
         // iterate
-        for( vector<Chuck_Type *>::const_iterator t = types.begin(); t != types.end(); t++ )
+        for( vector<Chuck_Type *>::const_iterator t = group->types.begin(); t != group->types.end(); t++ )
         {
             // get the current type
             Chuck_Type * type = *t;
-
             // skip
             // if( skip(type->name) ) continue;
-
             // output the type in TOC
             output->toc_class( type );
         }
@@ -731,201 +954,12 @@ t_CKBOOL CKDoc::outputHTMLGroup( const vector<Chuck_Type *> & types,
     output->begin_classes();
 
     // iterate
-    for( vector<Chuck_Type *>::const_iterator t = types.begin(); t != types.end(); t++ )
+    for( vector<Chuck_Type *>::const_iterator t = group->types.begin(); t != group->types.end(); t++ )
     {
-        // get the type
-        Chuck_Type * type = *t;
+        // skip
         // if( skip(type->name) ) continue;
-
-        // fprintf(stderr, "## %s\n", type->name.c_str());
-        // begin the type
-        output->begin_class( type );
-
-        // output examples
-        if( type->examples.size() )
-        {
-            // begin examples
-            output->begin_examples();
-
-            // iterate over examples
-            for( vector<string>::iterator _ex = type->examples.begin(); _ex != type->examples.end(); _ex++ )
-            {
-                string ex = *_ex;
-                string name;
-                string url;
-
-                // test for absolute vs. relative URL
-                if( ex.find("http://") == 0 || ex.find("https://") == 0 )
-                {
-                    // absolute URL
-                    url = ex;
-                    // find the example name without path
-                    std::basic_string<char>::size_type pos = ex.rfind('/');
-                    if( pos != string::npos )
-                        name = string(ex, pos+1);
-                    else
-                        name = ex;
-                }
-                else
-                {
-                    // relative URL
-                    url = examples_path + ex;
-                    name = ex;
-                }
-                // output examples
-                output->example(name, url);
-            }
-
-            // done with examples
-            output->end_examples();
-        }
-
-        // check type info
-        if( type->info )
-        {
-            // get functions
-            vector<Chuck_Func *> funcs;
-            type->info->get_funcs( funcs );
-            // get values
-            vector<Chuck_Value *> vars;
-            type->info->get_values( vars );
-            // function names
-            map<string, int> func_names;
-
-            // member and static functions and values
-            vector<Chuck_Func *> mfuncs;
-            vector<Chuck_Func *> sfuncs;
-            vector<Chuck_Value *> mvars;
-            vector<Chuck_Value *> svars;
-            // fprintf(stderr, "### %lu vars\n", vars.size());
-
-            // iterate through values
-            for( vector<Chuck_Value *>::iterator v = vars.begin(); v != vars.end(); v++ )
-            {
-                // the value
-                Chuck_Value * value = *v;
-
-                // check
-                if(value == NULL) continue;
-                // zero length name
-                if( value->name.length() == 0 )
-                    continue;
-                // special internal values
-                if(value->name[0] == '@')
-                    continue;
-                // value is a function
-                if( value->type->name == "[function]" )
-                    continue;
-
-                // static or instance?
-                if( value->is_static ) svars.push_back( value );
-                else mvars.push_back( value );
-            }
-
-            // iterate over functions
-            for( vector<Chuck_Func *>::iterator f = funcs.begin(); f != funcs.end(); f++ )
-            {
-                // the function
-                Chuck_Func * func = *f;
-
-                // check
-                if(func == NULL) continue;
-                // if already seen (overloaded?)
-                if( func_names.count(func->name) )
-                    continue;
-                // first one
-                func_names[func->name] = 1;
-                // static or instance?
-                if(func->def->static_decl == ae_key_static) sfuncs.push_back(func);
-                else mfuncs.push_back(func);
-            }
-
-            // sort
-            sort(svars.begin(), svars.end(), comp_value);
-            sort(mvars.begin(), mvars.end(), comp_value);
-            sort(sfuncs.begin(), sfuncs.end(), comp_func);
-            sort(mfuncs.begin(), mfuncs.end(), comp_func);
-
-            // static vars
-            if( svars.size() )
-            {
-                // start output
-                output->begin_static_member_vars();
-                // iterate
-                for( vector<Chuck_Value *>::iterator v = svars.begin(); v != svars.end(); v++ )
-                    output->static_member_var(*v);
-                // end output
-                output->end_static_member_vars();
-            }
-
-            // member vars
-            if( mvars.size() )
-            {
-                // start
-                output->begin_member_vars();
-                // iterate
-                for( vector<Chuck_Value *>::iterator v = mvars.begin(); v != mvars.end(); v++ )
-                    output->member_var(*v);
-                // end
-                output->end_member_vars();
-            }
-
-            // static functions
-            if( sfuncs.size() )
-            {
-                // begin static functions
-                output->begin_static_member_funcs();
-                // iterate
-                for( vector<Chuck_Func *>::iterator f = sfuncs.begin(); f != sfuncs.end(); f++ )
-                {
-                    // the func
-                    Chuck_Func * func = *f;
-                    // begin output
-                    output->begin_static_member_func(func);
-                    // argument list
-                    a_Arg_List args = func->def->arg_list;
-                    while(args != NULL)
-                    {
-                        // output argument
-                        output->func_arg( args );
-                        args = args->next;
-                    }
-                    // end output
-                    output->end_static_member_func();
-                }
-                // end static functions
-                output->end_static_member_funcs();
-            }
-
-            // member functions
-            if( mfuncs.size() )
-            {
-                // begin member functions
-                output->begin_member_funcs();
-                // iterate
-                for( vector<Chuck_Func *>::iterator f = mfuncs.begin(); f != mfuncs.end(); f++ )
-                {
-                    // the func
-                    Chuck_Func * func = *f;
-                    // begin the func
-                    output->begin_member_func(func);
-                    // argument list
-                    a_Arg_List args = func->def->arg_list;
-                    while(args != NULL)
-                    {
-                        // output argument
-                        output->func_arg(args);
-                        args = args->next;
-                    }
-                    // end the func
-                    output->end_member_func();
-                }
-                // end member functions
-                output->end_member_funcs();
-            }
-        }
-        // end the type
-        output->end_class();
+        // gen type, don't clear output
+        genType( *t, FALSE );
     }
 
     // end types
@@ -935,43 +969,284 @@ t_CKBOOL CKDoc::outputHTMLGroup( const vector<Chuck_Type *> & types,
     // end output
     output->end();
 
-    return TRUE;
+    // return output string
+    return output->str();
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: genHTMLIndex()
+// name: genType()
+// desc: generate documentation for a single Type
 //-----------------------------------------------------------------------------
-t_CKBOOL CKDoc::outputHTMLIndex( const vector<string> & clasess,
-                                      const string & htmlFilename,
-                                      const string & cssFilename )
+string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
 {
-    return TRUE;
+    // check
+    if( m_output == NULL ) return "[NO OUTPUT FORMAT SELECTED (getType)]";
+
+    // the output
+    CKDocOutput * output = m_output;
+    // clear it
+    if( clearOutput ) output->clear();
+
+    // begin the type
+    output->begin_class( type );
+
+    // output examples
+    if( type->examples.size() )
+    {
+        // begin examples
+        output->begin_examples();
+
+        // iterate over examples
+        for( vector<string>::iterator _ex = type->examples.begin(); _ex != type->examples.end(); _ex++ )
+        {
+            string ex = *_ex;
+            string name;
+            string url;
+
+            // test for absolute vs. relative URL
+            if( ex.find("http://") == 0 || ex.find("https://") == 0 )
+            {
+                // absolute URL
+                url = ex;
+                // find the example name without path
+                std::basic_string<char>::size_type pos = ex.rfind('/');
+                if( pos != string::npos )
+                    name = string(ex, pos+1);
+                else
+                    name = ex;
+            }
+            else
+            {
+                // relative URL
+                url = m_examplesRoot + ex;
+                name = ex;
+            }
+            // output examples
+            output->example(name, url);
+        }
+
+        // done with examples
+        output->end_examples();
+    }
+
+    // check type info
+    if( type->info )
+    {
+        // get functions
+        vector<Chuck_Func *> funcs;
+        type->info->get_funcs( funcs );
+        // get values
+        vector<Chuck_Value *> vars;
+        type->info->get_values( vars );
+        // function names
+        map<string, int> func_names;
+
+        // member and static functions and values
+        vector<Chuck_Func *> mfuncs;
+        vector<Chuck_Func *> sfuncs;
+        vector<Chuck_Value *> mvars;
+        vector<Chuck_Value *> svars;
+        // fprintf(stderr, "### %lu vars\n", vars.size());
+
+        // iterate through values
+        for( vector<Chuck_Value *>::iterator v = vars.begin(); v != vars.end(); v++ )
+        {
+            // the value
+            Chuck_Value * value = *v;
+
+            // check
+            if(value == NULL) continue;
+            // zero length name
+            if( value->name.length() == 0 )
+                continue;
+            // special internal values
+            if(value->name[0] == '@')
+                continue;
+            // value is a function
+            if( value->type->name == "[function]" )
+                continue;
+
+            // static or instance?
+            if( value->is_static ) svars.push_back( value );
+            else mvars.push_back( value );
+        }
+
+        // iterate over functions
+        for( vector<Chuck_Func *>::iterator f = funcs.begin(); f != funcs.end(); f++ )
+        {
+            // the function
+            Chuck_Func * func = *f;
+
+            // check
+            if(func == NULL) continue;
+            // if already seen (overloaded?)
+            if( func_names.count(func->name) )
+                continue;
+            // first one
+            func_names[func->name] = 1;
+            // static or instance?
+            if(func->def->static_decl == ae_key_static) sfuncs.push_back(func);
+            else mfuncs.push_back(func);
+        }
+
+        // sort
+        sort(svars.begin(), svars.end(), comp_value);
+        sort(mvars.begin(), mvars.end(), comp_value);
+        sort(sfuncs.begin(), sfuncs.end(), comp_func);
+        sort(mfuncs.begin(), mfuncs.end(), comp_func);
+
+        // static vars
+        if( svars.size() )
+        {
+            // start output
+            output->begin_static_member_vars();
+            // iterate
+            for( vector<Chuck_Value *>::iterator v = svars.begin(); v != svars.end(); v++ )
+                output->static_member_var(*v);
+            // end output
+            output->end_static_member_vars();
+        }
+
+        // member vars
+        if( mvars.size() )
+        {
+            // start
+            output->begin_member_vars();
+            // iterate
+            for( vector<Chuck_Value *>::iterator v = mvars.begin(); v != mvars.end(); v++ )
+                output->member_var(*v);
+            // end
+            output->end_member_vars();
+        }
+
+        // static functions
+        if( sfuncs.size() )
+        {
+            // begin static functions
+            output->begin_static_member_funcs();
+            // iterate
+            for( vector<Chuck_Func *>::iterator f = sfuncs.begin(); f != sfuncs.end(); f++ )
+            {
+                // the func
+                Chuck_Func * func = *f;
+                // begin output
+                output->begin_static_member_func(func);
+                // argument list
+                a_Arg_List args = func->def->arg_list;
+                while(args != NULL)
+                {
+                    // output argument
+                    output->func_arg( args );
+                    args = args->next;
+                }
+                // end output
+                output->end_static_member_func();
+            }
+            // end static functions
+            output->end_static_member_funcs();
+        }
+
+        // member functions
+        if( mfuncs.size() )
+        {
+            // begin member functions
+            output->begin_member_funcs();
+            // iterate
+            for( vector<Chuck_Func *>::iterator f = mfuncs.begin(); f != mfuncs.end(); f++ )
+            {
+                // the func
+                Chuck_Func * func = *f;
+                // begin the func
+                output->begin_member_func(func);
+                // argument list
+                a_Arg_List args = func->def->arg_list;
+                while(args != NULL)
+                {
+                    // output argument
+                    output->func_arg(args);
+                    args = args->next;
+                }
+                // end the func
+                output->end_member_func();
+            }
+            // end member functions
+            output->end_member_funcs();
+        }
+    }
+    // end the type
+    output->end_class();
+
+    // return result
+    return output->str();
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: genMarkdownGroup()
+// name: outputToDir()
+// desc: generate everything as files into the output directory
 //-----------------------------------------------------------------------------
-t_CKBOOL CKDoc::outputMarkdownGroup( const vector<string> & clasess,
-                                          const string & mdFilename )
+t_CKBOOL CKDoc::outputToDir( const string & outputDir )
 {
+    // groups content
+    vector<string> groupOutput;
+    // trim
+    string path = trim( outputDir );
+    // process
+    if( path.length() == 0 ) { path = "./"; }
+    // check for trailing /
+    if( path[path.length()-1] != '/' ) { path += "/"; }
+    // clear output
+    m_output->clear();
+
+    // gen index
+    if( !outputToFile( path + "index" + m_output->fileExtension(), genIndex() ) ) goto error;
+    // gen CSS
+    if( !outputToFile( path + "ckdoc.css", genCSS() ) ) goto error;
+    // gen groups
+    genGroups( groupOutput );
+    // for each group
+    for( t_CKINT i = 0; i < m_groups.size(); i++ )
+    {
+        if( !outputToFile( path + m_groups[i]->shortName + m_output->fileExtension(), groupOutput[i] ) )
+            goto error;
+    }
+
+    // done
     return TRUE;
+
+error:
+    // error
+    EM_error3( "CKDoc: error encountered in outputToDir(...); bailing out..." );
+    return FALSE;
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: genMarkdownIndex()
+// name: outputToFile()
+// desc: write string to file
 //-----------------------------------------------------------------------------
-t_CKBOOL CKDoc::outputMarkdownIndex( const vector<string> & clasess,
-                                          const string & mdFilename )
+t_CKBOOL CKDoc::outputToFile( const std::string & filename, const std::string & content )
 {
+    // open file
+    ofstream fout( filename );
+    // if not good
+    if( !fout.good() )
+    {
+        EM_error3( "CKDoc: cannot open file '%s' for output...", filename.c_str() );
+        return FALSE;
+    }
+    // write
+    fout << content;
+    // done
+    fout.close();
+    // success
     return TRUE;
 }
 
@@ -994,62 +1269,28 @@ CK_DLL_DTOR( CKDoc_dtor )
     OBJ_MEMBER_UINT( SELF, CKDoc_offset_data ) = 0;
 }
 
-CK_DLL_MFUN( CKDoc_outputDir_set )
+CK_DLL_MFUN( CKDoc_addGroup_type )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
-    Chuck_String * path = GET_CK_STRING(ARGS);
-    // check if null
-    if( path == NULL ) ckdoc->m_outputDir = ".";
-    else
-    {
-        // set output dir
-        ckdoc->m_outputDir = trim( path->str() );
-    }
-    // set return value
-    RETURN->v_string = path;
-}
+    Chuck_Array4 * typeArray = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_String * groupName = GET_NEXT_STRING(ARGS);
+    Chuck_String * shortName = GET_NEXT_STRING(ARGS);
+    Chuck_String * description = GET_NEXT_STRING(ARGS);
 
-CK_DLL_MFUN( CKDoc_outputDir_get )
-{
-    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
-    str->set( ckdoc->m_outputDir );
-    RETURN->v_string = str;
-}
-
-CK_DLL_MFUN( CKDoc_genCSS )
-{
-    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
-    Chuck_String * cssFilename = GET_CK_STRING(ARGS);
-    RETURN->v_int = ckdoc->outputCSS( cssFilename != NULL ? cssFilename->str() : "" );
-}
-
-CK_DLL_MFUN( CKDoc_genHTMLGroup )
-{
-    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
-    Chuck_Array4 * typeArray = (Chuck_Array4 *)GET_CK_OBJECT(ARGS);
-    Chuck_String * groupTitle = GET_CK_STRING(ARGS);
-    Chuck_String * htmlFilename = GET_CK_STRING(ARGS);
-    Chuck_String * cssFilename = GET_CK_STRING(ARGS);
     // check if null
     if( typeArray == NULL )
     {
-        CK_FPRINTF_STDERR( "[chuck] CKDoc.genHTMLGroup() given null 'classes' argument; nothing generated...\n" );
+        CK_FPRINTF_STDERR( "CKDoc.addGroup(): null 'types' array; nothing added...\n" );
         goto error;
     }
-    else if( groupTitle == NULL )
+    else if( shortName == NULL || shortName->str() == "" )
     {
-        CK_FPRINTF_STDERR( "[chuck] CKDoc.genHTMLGroup() given null 'groupTitle' argument; nothing generated...\n" );
-        goto error;
-    }
-    else if( htmlFilename == NULL )
-    {
-        CK_FPRINTF_STDERR( "[chuck] CKDoc.genHTMLGroup() given null 'htmlFilename' argument; nothing generated...\n" );
+        CK_FPRINTF_STDERR( "CKDoc.addGroup(): 'shortName' must be non-empty and unique; nothing added...\n" );
         goto error;
     }
     else
     {
-        vector<Chuck_Type *> classes;
+        vector<Chuck_Type *> types;
         for( int i = 0; i < typeArray->m_vector.size(); i++ )
         {
             // get pointer as chuck string
@@ -1058,22 +1299,22 @@ CK_DLL_MFUN( CKDoc_genHTMLGroup )
             if( t != NULL )
             {
                 // append
-                classes.push_back( t );
+                types.push_back( t );
             }
         }
         // check
-        if( classes.size() == 0 )
+        if( types.size() == 0 )
         {
-            CK_FPRINTF_STDERR( "[chuck] CKDoc.genHTMLGroup() given 'classes' array with null and/or empty strings; nothing generated...\n" );
+            CK_FPRINTF_STDERR( "CKDoc.addGroup(): empty 'types' array; nothing added...\n" );
             goto error;
         }
 
-        // get
-        RETURN->v_int = ckdoc->outputHTMLGroup( classes, groupTitle->str(), htmlFilename->str(), cssFilename ? cssFilename->str() : "" );
+        // add group and return success code
+        RETURN->v_int = ckdoc->addGroup( types,
+                        groupName ? groupName->str() : "",
+                        shortName ? shortName->str() : "",
+                        description ? description->str() : "" );
     }
-
-    // set return value
-    RETURN->v_int = TRUE;
     // done
     return;
 
@@ -1081,48 +1322,53 @@ error:
     RETURN->v_int = FALSE;
 }
 
-CK_DLL_MFUN( CKDoc_genHTMLIndex )
+CK_DLL_MFUN( CKDoc_addGroup_str )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
-    Chuck_Array4 * strArray = (Chuck_Array4 *)GET_CK_OBJECT(ARGS);
-    Chuck_String * htmlFilename = GET_CK_STRING(ARGS);
-    Chuck_String * cssFilename = GET_CK_STRING(ARGS);
-
-    // class names
-    vector<string> classes;
-
+    Chuck_Array4 * strArray = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_String * groupName = GET_NEXT_STRING(ARGS);
+    Chuck_String * shortName = GET_NEXT_STRING(ARGS);
+    Chuck_String * desc = GET_NEXT_STRING(ARGS);
     // check if null
     if( strArray == NULL )
     {
-        CK_FPRINTF_STDERR( "[chuck] CKDoc.genHTMLIndex() given null 'classes' argument; nothing generated...\n" );
+        CK_FPRINTF_STDERR( "[chuck]: CKDoc.addGroup() given null 'typeNames' array; nothing added...\n" );
         goto error;
     }
-    else if( htmlFilename == NULL )
+    else
     {
-        CK_FPRINTF_STDERR( "[chuck] CKDoc.genHTMLIndex() given null 'classes' argument; nothing generated...\n" );
-        goto error;
-    }
-
-    for( int i = 0; i < strArray->m_vector.size(); i++ )
-    {
-        // get pointer as chuck string
-        Chuck_String * str = (Chuck_String *)strArray->m_vector[i];
-        // check
-        if( str != NULL && trim(str->str()) != "" )
+        // type names
+        vector<string> typeNames;
+        // get the names from chuck strings to c++ strings
+        for( int i = 0; i < strArray->m_vector.size(); i++ )
         {
-            // append
-            classes.push_back( str->str() );
+            // get pointer as chuck string
+            Chuck_String * s = (Chuck_String *)strArray->m_vector[i];
+            // check
+            if( s != NULL )
+            {
+                // append
+                typeNames.push_back( s->str() );
+            }
         }
-    }
-    // check
-    if( classes.size() == 0 )
-    {
-        CK_FPRINTF_STDERR( "[chuck] CKDoc.genHTMLIndex() given 'classes' array with null and/or empty strings; nothing generated...\n" );
-        goto error;
-    }
+        // types
+        vector<Chuck_Type *> types;
+        // convert to types
+        type_engine_names2types( VM->env(), typeNames, types );
 
-    // get
-    RETURN->v_int = ckdoc->outputHTMLIndex( classes, htmlFilename->str(), cssFilename ? cssFilename->str() : "" );
+        // check
+        if( types.size() == 0 )
+        {
+            CK_FPRINTF_STDERR( "[chuck]: CKDoc.addGroup() given 'typeNames' array has no associated Types; nothing added...\n" );
+            goto error;
+        }
+
+        // add group
+        ckdoc->addGroup( types,
+                         groupName ? groupName->str() : "",
+                         shortName ? shortName->str() : "",
+                         desc ? desc->str() : "" );
+    }
 
     // set return value
     RETURN->v_int = TRUE;
@@ -1133,247 +1379,379 @@ error:
     RETURN->v_int = FALSE;
 }
 
-CK_DLL_MFUN( CKDoc_genMarkdownGroup )
+CK_DLL_MFUN( CKDoc_numGroups )
 {
-    CK_FPRINTF_STDERR( "[chuck] CKDoc.genMarkdownGroup() currently not implemented!\n" );
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    // return (could be different than requested)
+    RETURN->v_int = ckdoc->numGroups();
 }
 
-CK_DLL_MFUN( CKDoc_genMarkdownIndex )
+CK_DLL_MFUN( CKDoc_clearGroup )
 {
-    CK_FPRINTF_STDERR( "[chuck] CKDoc.genMarkdownIndex() currently not implemented!\n" );
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    // clear
+    ckdoc->clearGroups();
+}
+
+CK_DLL_CTRL( CKDoc_examplesRoot_set )
+{
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    Chuck_String * path = GET_NEXT_STRING(ARGS);
+    // check if null
+    if( path == NULL ) {
+        // default
+        ckdoc->setExamplesRoot( "./" );
+    } else {
+        // set examples root
+        ckdoc->setExamplesRoot( trim( path->str() ) );
+    }
+    // set return value
+    RETURN->v_string = path;
+}
+
+CK_DLL_CGET( CKDoc_examplesRoot_get )
+{
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    str->set( ckdoc->getExamplesRoot() );
+    RETURN->v_string = str;
+}
+
+CK_DLL_CTRL( CKDoc_outputFormat_set )
+{
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    t_CKINT format = GET_NEXT_INT(ARGS);
+    // attempt to set
+    ckdoc->setOutputFormat( format );
+    // return (could be different than requested)
+    RETURN->v_int = ckdoc->getOutpuFormat();
+}
+
+CK_DLL_CGET( CKDoc_outputFormat_get )
+{
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    // return
+    RETURN->v_int = ckdoc->getOutpuFormat();
+}
+
+CK_DLL_MFUN( CKDoc_genIndex )
+{
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+}
+
+CK_DLL_MFUN( CKDoc_genCSS )
+{
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    str->set( ckdoc->genCSS() );
+    RETURN->v_string = str;
+}
+
+CK_DLL_MFUN( CKDoc_genGroups )
+{
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    // the return array
+    Chuck_Array4 * strArray = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
+    // the c++ return vector
+    vector<string> results;
+    // gen the groups
+    ckdoc->genGroups( results );
+    // clear the return array
+    strArray->clear();
+
+    // loop over results
+    for( t_CKINT i = 0; i < results.size(); i++ )
+    {
+        // instantiate chuck string
+        Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+        // set into chuck string
+        str->set( ckdoc->genCSS() );
+        // push back
+        strArray->push_back( (t_CKINT)str );
+    }
+}
+
+CK_DLL_MFUN( CKDoc_genType_type )
+{
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    Chuck_Type * type = (Chuck_Type *)GET_NEXT_OBJECT(ARGS);
+    // return something
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    // gen type
+    str->set( type ? ckdoc->genType( type ) : "" );
+    // set return
+    RETURN->v_string = str;
+}
+
+CK_DLL_MFUN( CKDoc_genType_str )
+{
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    Chuck_String * typeName = GET_NEXT_STRING(ARGS);
+    // c++ string
+    string name = typeName ? typeName->str() : "";
+    // chuck type
+    Chuck_Type * type = type_engine_find_type( VM->env(), typeName->str() );
+    // return something
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    // gen type
+    str->set( type ? ckdoc->genType( type ) : "" );
+    // set return
+    RETURN->v_string = str;
+}
+
+CK_DLL_MFUN( CKDoc_outputToDir )
+{
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    Chuck_String * path = GET_NEXT_STRING(ARGS);
+    // the path as c++ string
+    string thePath;
+
+    // check if null
+    if( path == NULL ) {
+        thePath = ".";
+    } else {
+        // set output dir
+        thePath = trim( path->str() );
+    }
+
+    // output
+    ckdoc->outputToDir( thePath );
 }
 
 
+
+
+// the default CSS (ckdoc.css), literally
 string CKDoc::m_ckdocCSS = "\
-  body \
-  { \
-      margin: 2em 7em 2em 2em; \
-      font-family: Helvetica, sans-serif; \
-      font-size: 14px; \
-  } \
- \
-  .index_group \
-  { \
-      clear: both; \
-      background-color: #eee; \
-      padding: 1em 1em 1em 1em; \
-      margin-bottom: 2em; \
-      vertical-align: top; \
-  } \
- \
-  .index_group_title \
-  { \
-      float: left; \
-      margin: 0; \
-      width: 15%; \
-      padding-right: 3em; \
-      border-right: 4px solid #fcfcfc; \
-  } \
- \
-  .index_group_classes \
-  { \
-      padding-top: 0.15em; \
-      padding-left: 1em; \
-      padding-bottom: 0.15em; \
-       \
-      margin: 0; \
-      margin-left: 20%; \
-      width: 75%; \
-  } \
- \
-  .index_group_classes a \
-  { \
-      margin-right: 0.5em; \
-      line-height: 1.5em; \
-  } \
- \
-  .index_group_title a { color: black; } \
- \
-  #title \
-  { \
-      float: left; \
-      width: 100%; \
-      border-bottom: 1px solid black; \
-      padding-bottom: 0.5em; \
-      margin-bottom: 1.5em; \
-  } \
- \
-  .titleL \
-  { \
-      float: left; \
-      width: auto; \
-      clear: none; \
-  } \
- \
-  .titleR \
-  { \
-      float: right; \
-      text-align: right; \
-      width: auto; \
-      clear: none; \
-  } \
- \
-  h1 \
-  { \
-      font-size: 28px; \
-      margin: 0; \
-  } \
- \
-  h1 a { color: black; text-decoration: none; } \
- \
-  #body \
-  { \
-      clear: both; \
-  } \
- \
-  .toc \
-  { \
-      float: left; \
-  /*    position: fixed;*/ \
-      clear: both; \
-      background-color: #eee; \
-      padding: 0.25em 0.5em 1em 0.75em; \
-      margin: 0; \
-      width: 6em; \
-  } \
- \
-  .toc_class \
-  { \
-      font-size: 12px; \
-      margin-top: 0.5em; \
-      margin-bottom: 0.25em; \
-  } \
- \
-  .classes \
-  { \
-      clear: right; \
-      margin-left: 9em; \
-      margin-right: 0em; \
-  } \
- \
-  .class \
-  { \
-      background-color: #eee; \
-      padding: 0.025em 0.5em 0.25em 1em; \
-  } \
- \
-  .class_title \
-  { \
-      font-family: Menlo, Monaco, Courier; \
-      font-size: 18px; \
-  } \
- \
-  .class_hierarchy \
-  { \
-      font-family: Menlo, Monaco, Courier; \
-      font-size: 14px; \
-      margin-right: 4em; \
-  } \
- \
-  .class_section_header \
-  { \
-       \
-  } \
- \
-  .class_description \
-  { \
-      font-family: Helvetica; \
-      font-size: 14px; \
-      margin-right: 4em; \
-  } \
- \
-  .empty_class_description \
-  { \
-      font-family: Helvetica; \
-      font-size: 12px; \
-      font-style: italic; \
-      color: grey; \
-      margin-right: 4em; \
-  } \
- \
-  .members \
-  { \
-      font-family: Menlo, Monaco, Courier; \
-      font-size: 13px; \
-  } \
- \
-  .member \
-  { \
-      margin-left: 0em; \
-      padding-left: 0.85em; \
-      padding-top: 0.85em; \
-      border-top: 4px solid #fcfcfc; \
-      border-left: 4px solid #fcfcfc; \
-       \
-      padding-bottom: 0.85em; \
-      padding-left: 0.85em; \
-      margin-bottom: 1.5em; \
-       \
-      margin-right: 4em; \
-      padding-right: 0; \
-  } \
- \
-  .member_declaration \
-  { \
-      margin-top: 0; \
-      margin-bottom: 0.5em; \
-  } \
- \
-  .member_description \
-  { \
-      font-family: Helvetica; \
-      font-size: 14px; \
-      margin-top: 0; \
-      margin-bottom: 0; \
-  } \
- \
-  .empty_member_description \
-  { \
-      font-family: Helvetica; \
-      font-size: 12px; \
-      font-style: italic; \
-      color: grey; \
-      margin-top: 0; \
-      margin-bottom: 0; \
-  } \
- \
-  .ckdoc_typename \
-  { \
-      font-family: Menlo, Monaco, Courier; \
-      font-size: 13px; \
-  } \
- \
-  .membername \
-  { \
-      font-weight: bold; \
-  } \
- \
-  .top_link \
-  { \
-      text-align: right; \
-      margin-top: 2em; \
-      margin-right: 1em; \
-  } \
- \
-  .top_link a \
-  { \
-      color: #44F; \
-  } \
- \
-  .examples ul \
-  { \
-      margin-top: -1em; \
-  } \
- \
-  .examples ul li a \
-  { \
-      text-decoration: none; \
-  } \
- \
-  .clear { clear: both; } \
- \
-  .ckdoc_type_primitive { color: blue; } \
- \
-  .ckdoc_type_ugen { color: #A200EC; } \
- \
+  body\n\
+  {\n\
+      margin: 2em 7em 2em 2em;\n\
+      font-family: Helvetica, sans-serif;\n\
+      font-size: 14px;\n\
+  }\n\
+\n\
+  .index_group\n\
+  {\n\
+      clear: both;\n\
+      background-color: #eee;\n\
+      padding: 1em 1em 1em 1em;\n\
+      margin-bottom: 2em;\n\
+      vertical-align: top;\n\
+  }\n\
+\n\
+  .index_group_title\n\
+  {\n\
+      float: left;\n\
+      margin: 0;\n\
+      width: 15%;\n\
+      padding-right: 3em;\n\
+      border-right: 4px solid #fcfcfc;\n\
+  }\n\
+\n\
+  .index_group_classes\n\
+  {\n\
+      padding-top: 0.15em;\n\
+      padding-left: 1em;\n\
+      padding-bottom: 0.15em;\n\
+      \n\
+      margin: 0;\n\
+      margin-left: 20%;\n\
+      width: 75%;\n\
+  }\n\
+\n\
+  .index_group_classes a\n\
+  {\n\
+      margin-right: 0.5em;\n\
+      line-height: 1.5em;\n\
+  }\n\
+\n\
+  .index_group_title a { color: black; }\n\
+\n\
+  #title\n\
+  {\n\
+      float: left;\n\
+      width: 100%;\n\
+      border-bottom: 1px solid black;\n\
+      padding-bottom: 0.5em;\n\
+      margin-bottom: 1.5em;\n\
+  }\n\
+\n\
+  .titleL\n\
+  {\n\
+      float: left;\n\
+      width: auto;\n\
+      clear: none;\n\
+  }\n\
+\n\
+  .titleR\n\
+  {\n\
+      float: right;\n\
+      text-align: right;\n\
+      width: auto;\n\
+      clear: none;\n\
+  }\n\
+\n\
+  h1\n\
+  {\n\
+      font-size: 28px;\n\
+      margin: 0;\n\
+  }\n\
+\n\
+  h1 a { color: black; text-decoration: none; }\n\
+\n\
+  #body\n\
+  {\n\
+      clear: both;\n\
+  }\n\
+\n\
+  .toc\n\
+  {\n\
+      float: left;\n\
+  /* position: fixed;*/\n\
+      clear: both;\n\
+      background-color: #eee;\n\
+      padding: 0.25em 0.5em 1em 0.75em;\n\
+      margin: 0;\n\
+      width: 6em;\n\
+  }\n\
+\n\
+  .toc_class\n\
+  {\n\
+      font-size: 12px;\n\
+      margin-top: 0.5em;\n\
+      margin-bottom: 0.25em;\n\
+  }\n\
+\n\
+  .classes\n\
+  {\n\
+      clear: right;\n\
+      margin-left: 9em;\n\
+      margin-right: 0em;\n\
+  }\n\
+\n\
+  .class\n\
+  {\n\
+      background-color: #eee;\n\
+      padding: 0.025em 0.5em 0.25em 1em;\n\
+  }\n\
+\n\
+  .class_title\n\
+  {\n\
+      font-family: Menlo, Monaco, Courier;\n\
+      font-size: 18px;\n\
+  }\n\
+\n\
+  .class_hierarchy\n\
+  {\n\
+      font-family: Menlo, Monaco, Courier;\n\
+      font-size: 14px;\n\
+      margin-right: 4em;\n\
+  }\n\
+\n\
+  .class_section_header\n\
+  {\n\
+      \n\
+  }\n\
+\n\
+  .class_description\n\
+  {\n\
+      font-family: Helvetica;\n\
+      font-size: 14px;\n\
+      margin-right: 4em;\n\
+  }\n\
+\n\
+  .empty_class_description\n\
+  {\n\
+      font-family: Helvetica;\n\
+      font-size: 12px;\n\
+      font-style: italic;\n\
+      color: grey;\n\
+      margin-right: 4em;\n\
+  }\n\
+\n\
+  .members\n\
+  {\n\
+      font-family: Menlo, Monaco, Courier;\n\
+      font-size: 13px;\n\
+  }\n\
+\n\
+  .member\n\
+  {\n\
+      margin-left: 0em;\n\
+      padding-left: 0.85em;\n\
+      padding-top: 0.85em;\n\
+      border-top: 4px solid #fcfcfc;\n\
+      border-left: 4px solid #fcfcfc;\n\
+      \n\
+      padding-bottom: 0.85em;\n\
+      padding-left: 0.85em;\n\
+      margin-bottom: 1.5em;\n\
+      \n\
+      margin-right: 4em;\n\
+      padding-right: 0;\n\
+  }\n\
+\n\
+  .member_declaration\n\
+  {\n\
+      margin-top: 0;\n\
+      margin-bottom: 0.5em;\n\
+  }\n\
+\n\
+  .member_description\n\
+  {\n\
+      font-family: Helvetica;\n\
+      font-size: 14px;\n\
+      margin-top: 0;\n\
+      margin-bottom: 0;\n\
+  }\n\
+\n\
+  .empty_member_description\n\
+  {\n\
+      font-family: Helvetica;\n\
+      font-size: 12px;\n\
+      font-style: italic;\n\
+      color: grey;\n\
+      margin-top: 0;\n\
+      margin-bottom: 0;\n\
+  }\n\
+\n\
+  .ckdoc_typename\n\
+  {\n\
+      font-family: Menlo, Monaco, Courier;\n\
+      font-size: 13px;\n\
+  }\n\
+\n\
+  .membername\n\
+  {\n\
+      font-weight: bold;\n\
+  }\n\
+\n\
+  .top_link\n\
+  {\n\
+      text-align: right;\n\
+      margin-top: 2em;\n\
+      margin-right: 1em;\n\
+  }\n\
+\n\
+  .top_link a\n\
+  {\n\
+      color: #44F;\n\
+  }\n\
+\n\
+  .examples ul\n\
+  {\n\
+      margin-top: -1em;\n\
+  }\n\
+\n\
+  .examples ul li a\n\
+  {\n\
+      text-decoration: none;\n\
+  }\n\
+\n\
+  .clear { clear: both; }\n\
+\n\
+  .ckdoc_type_primitive { color: blue; }\n\
+\n\
+  .ckdoc_type_ugen { color: #A200EC; }\n\
+\n\
   .ckdoc_type_object { color: #800023; }";

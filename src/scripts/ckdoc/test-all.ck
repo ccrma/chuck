@@ -15,12 +15,7 @@ Type.getTypes(
 // instantiate
 CKDoc doc; // documentation orchestra
 
-// set destination
-doc.outputDir(".");
-// generate CSS
-doc.genCSS( "ckdoc.css" );
-// generate HTML group
-doc.genHTMLGroup( types, "All", "all.html", "ckdoc.css" );
-
-// generate HTML index
-// doc.genHTMLIndex( types, "index.html", "ckdoc.css" );
+// add as group
+doc.addGroup( types, "All", "all", "Here are some types in the ChucK VM" );
+// generate
+doc.outputToDir( "." );
