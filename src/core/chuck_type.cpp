@@ -5014,6 +5014,29 @@ Chuck_Type * type_engine_find_type( Chuck_Env * env, a_Id_List thePath )
 
 
 //-----------------------------------------------------------------------------
+// name: type_engine_names2types()
+// desc: convert a vector of type names to a vector of Types
+//-----------------------------------------------------------------------------
+void type_engine_names2types( Chuck_Env * env,
+                              const std::vector<std::string> & typeNames,
+                              std::vector<Chuck_Type *> & types )
+{
+    // clear result vector
+    types.clear();
+    // resize
+    types.resize( typeNames.size() );
+    // iterate
+    for( t_CKINT i = 0; i < typeNames.size(); i++ )
+    {
+        // lookup
+        types[i] = type_engine_find_type( env, typeNames[i] );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: type_engine_find_value()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -6822,6 +6845,7 @@ t_CKBOOL same_arg_lists( a_Arg_List lhs, a_Arg_List rhs )
     // at this point, lists are same if rhs is NULL
     return (rhs == NULL);
 }
+
 
 
 
