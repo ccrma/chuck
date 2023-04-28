@@ -1256,7 +1256,10 @@ public: // SWAP formerly protected
 
   char msg[STK_MSG_BUF_LENGTH];
   // char m_filename[STK_MSG_BUF_LENGTH]; // chuck data
-  Chuck_String str_filename; // chuck data
+  // Chuck_String str_filename; // chuck data
+  // NOTE: all Chuck_Objects needs heap allocation using 'new'
+  // since reference counting automatically calls 'delete'
+  std::string str_filename;
   FILE *fd;
   MY_FLOAT *data;
   MY_FLOAT *lastOutput;
@@ -5724,10 +5727,14 @@ class WvOut : public Stk
   unsigned long counter;
   unsigned long totalCount;
   // char m_filename[1024];
-  Chuck_String str_filename;
-  t_CKUINT start;
+  // Chuck_String str_filename;
+  // NOTE: all Chuck_Objects needs heap allocation using 'new'
+  // since reference counting automatically calls 'delete'
+  std::string str_filename;
   // char autoPrefix[1024];
-  Chuck_String autoPrefix;
+  // Chuck_String autoPrefix;
+  std::string autoPrefix;
+  t_CKUINT start;
   t_CKUINT flush;
   t_CKFLOAT fileGain;
 
@@ -5976,7 +5983,10 @@ public: // SWAP formerly protected
   FormSwep  *filters[4];
   OnePole  *onepole;
   OneZero  *onezero;
-  Chuck_String str_phoneme; // chuck data
+  // Chuck_String str_phoneme; // chuck data
+  // NOTE: all Chuck_Objects needs heap allocation using 'new'
+  // since reference counting automatically calls 'delete'
+  std::string str_phoneme;
 };
 
 #endif

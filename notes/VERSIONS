@@ -563,6 +563,8 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
      |- event-x-bpm-2.ck -- same as event-x-bpm-2.ck but using arrays
 - (added) absyn tree printing for instruction dumping abysn2str()
 - (added) Machine.refcount() and refcount printing for object references
+- (fixed) Stk WvIn, WvOut, and VoicForm handling of chuck strings, 
+    addressing related instability and averting potential crashes
 - (updated and fixed) memory system upgrade (part 1); scope-sensitive
     cleanup for each return statement; clarified reference counting
     semantics; function argument release for builtin functions; improved
