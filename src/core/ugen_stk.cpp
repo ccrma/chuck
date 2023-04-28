@@ -37,13 +37,14 @@
 //-----------------------------------------------------------------------------
 #include "ugen_stk.h"
 #include "chuck_type.h"
-#include "util_math.h"
 #include "chuck_vm.h"
+#include "chuck_instr.h"
 #include "chuck_compile.h"
 #include "chuck_lang.h"
-#include "chuck_io.h"
 #include "chuck_carrier.h"
 #include "chuck_errmsg.h"
+#include "chuck_io.h"
+#include "util_math.h"
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -16818,7 +16819,7 @@ bool VoicForm :: setPhoneme( const char *phoneme )
     if( !found )
         CK_STDCERR << "[chuck](via STK): VoicForm: phoneme " << phoneme << " not found!" << CK_STDENDL;
     else
-        str_phoneme.set( Phonemes::name( m_phonemeNum ) );
+        str_phoneme = Phonemes::name( m_phonemeNum );
 
     return found;
 }
@@ -17898,14 +17899,14 @@ void WvIn :: closeFile( void )
 {
     if ( fd ) fclose( fd );
     finished = true;
-    str_filename.set( "" );
+    str_filename = "";
 }
 
 void WvIn :: openFile( const char *fileName, bool raw, bool doNormalize, bool generate )
 {
     unsigned long lastChannels = channels;
     unsigned long samples, lastSamples = (bufferSize+1)*channels;
-    str_filename.set( fileName );
+    str_filename = fileName;
     //strncpy ( m_filename, fileName, 255 );
     //m_filename[255] = '\0';
     if(!generate || !strstr(fileName, "special:"))
@@ -19058,14 +19059,14 @@ void WvOut :: closeFile( void )
     totalCount = 0;
   }
 
-  str_filename.set( "" );
+  str_filename = "";
   //m_filename[0] = '\0';
 }
 
 void WvOut :: openFile( const char *fileName, unsigned int nChannels, WvOut::FILE_TYPE type, Stk::STK_FORMAT format )
 {
   closeFile();
-  str_filename.set( fileName );
+  str_filename = fileName;
   //strncpy( m_filename, fileName, 255);
   //if ( strlen( fileName ) > 255 )
   //  m_filename[255] = '\0';
@@ -26205,7 +26206,10 @@ CK_DLL_CTRL( Mandolin_ctrl_bodyIR )
 CK_DLL_CGET( Mandolin_cget_bodyIR )
 {
     Mandolin * m = (Mandolin *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    RETURN->v_string = &(m->soundfile[0]->str_filename);
+    // instantiate | 1.5.0.0 (ge) added to dynamic allocate chuck string
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    str->set( m->soundfile[0]->str_filename );
+    RETURN->v_string = str;
 }
 
 
@@ -27146,9 +27150,15 @@ CK_DLL_CTRL( VoicForm_ctrl_quiet )
 CK_DLL_CTRL( VoicForm_ctrl_phoneme )
 {
     VoicForm * v = (VoicForm *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    const char * c = GET_CK_STRING(ARGS)->str().c_str();
-    v->setPhoneme( c );
-    RETURN->v_string = &(v->str_phoneme);
+    Chuck_String * phoneme = GET_NEXT_STRING( ARGS );
+    // check for NULL | 1.5.0.0 (ge)
+    if( phoneme != NULL)
+    {
+        // set phoneme
+        v->setPhoneme( phoneme->str().c_str() );
+    }
+    // return value
+    RETURN->v_string = phoneme;
 }
 
 
@@ -27159,7 +27169,11 @@ CK_DLL_CTRL( VoicForm_ctrl_phoneme )
 CK_DLL_CGET( VoicForm_cget_phoneme )
 {
     VoicForm * v = (VoicForm *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    RETURN->v_string = &(v->str_phoneme);
+    // instantiate | 1.5.0.0 (ge) added to dynamic allocate chuck string
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    // set
+    str->set( v->str_phoneme );
+    RETURN->v_string = str;
 }
 
 
@@ -27243,7 +27257,7 @@ CK_DLL_CGET( VoicForm_cget_voiceMix )
 CK_DLL_CTRL( VoicForm_ctrl_selPhoneme )
 {
     VoicForm * v = (VoicForm *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    int i = GET_CK_INT(ARGS);
+    t_CKINT i = GET_CK_INT(ARGS);
     v->controlChange(__SK_FootControl_, i);
     RETURN->v_float = (t_CKFLOAT)v->m_phonemeNum;
 }
@@ -27422,15 +27436,23 @@ CK_DLL_CTRL( WvIn_ctrl_rate )
 CK_DLL_CTRL( WvIn_ctrl_path )
 {
     WvIn * w = (WvIn *)OBJ_MEMBER_UINT(SELF, WvIn_offset_data);
-    const char * c = GET_CK_STRING(ARGS)->str().c_str();
-    try { w->openFile( c, FALSE, FALSE ); }
-    catch( StkError & e )
+    Chuck_String * path = GET_NEXT_STRING(ARGS);
+
+    // check if not null | 1.5.0.0 (ge)
+    if( path != NULL )
     {
-        const char * s = e.getMessage();
-        // CK_FPRINTF_STDERR( "[chuck](via STK): WvIn cannot load file '%s'\n", c );
-        s = "";
+        // open
+        try { w->openFile( path->str().c_str(), FALSE, FALSE ); }
+        catch( StkError & e )
+        {
+            // do nothing here; should have already printed
+            // const char * s = e.getMessage();
+            // CK_FPRINTF_STDERR( "[chuck](via STK): WvIn cannot load file '%s'\n", c );
+        }
     }
-    RETURN->v_string = &(w->str_filename);
+
+    // return value
+    RETURN->v_string = path;
 }
 
 
@@ -27452,7 +27474,11 @@ CK_DLL_CGET( WvIn_cget_rate )
 CK_DLL_CGET( WvIn_cget_path )
 {
     WvIn * w = (WvIn *)OBJ_MEMBER_UINT(SELF, WvIn_offset_data);
-    RETURN->v_string = &(w->str_filename);
+    // instantiate | 1.5.0.0 (ge) added to dynamic allocate chuck string
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    str->set( w->str_filename );
+    // return value
+    RETURN->v_string = str;
 }
 
 
@@ -27612,7 +27638,7 @@ Chuck_Carrier * getCarrier( Chuck_VM * vm, const std::string & where = "" )
 CK_DLL_CTOR( WvOut_ctor )
 {
     WvOut * yo = new WvOut;
-    yo->autoPrefix.set( "chuck-session" );
+    yo->autoPrefix = "chuck-session";
     // default write mode is synchronous
     yo->asyncIO = FALSE;
     // get the carrier
@@ -27722,6 +27748,28 @@ CK_DLL_PMSG( WvOut_pmsg )
 
 
 
+//-----------------------------------------------------------------------------
+// name: autoFilename()
+// desc: generate auto filename | 1.5.0.0 (ge) refactored into this function
+//-----------------------------------------------------------------------------
+static std::string autoFilename( const std::string & prefix, const std::string & fileExt )
+{
+    char buffer[1024];
+    time_t t; time(&t);
+    strcpy( buffer, prefix.c_str() );
+    strcat( buffer, "(" );
+    strncat( buffer, ctime(&t), 24 );
+    buffer[strlen(prefix.c_str())+14] = 'h';
+    buffer[strlen(prefix.c_str())+17] = 'm';
+    strcat( buffer, ")." );
+    strcat( buffer, fileExt.c_str() );
+    // return
+    return buffer;
+}
+
+
+
+
 // XXX chuck got mono, so we have one channel. fix later.
 //-----------------------------------------------------------------------------
 // name: WvOut_ctrl_matFilename()
@@ -27730,42 +27778,47 @@ CK_DLL_PMSG( WvOut_pmsg )
 CK_DLL_CTRL( WvOut_ctrl_matFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-    char buffer[1024];
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    std::string theFilename;
 
     // REFACTOR-2017: get the carrier
     Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl matFilename" );
 
-    // special
-    if( strstr( filename, "special:auto" ) )
+    // check for null | 1.5.0.0 (ge) added
+    if( filename != NULL )
     {
-        time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str().c_str() );
-        strcat( buffer, "(" );
-        strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-        strcat( buffer, ").mat" );
-        filename = buffer;
-    }
-    try { w->openFile( filename, 1, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
-    catch( StkError & e )
-    {
-        // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-        CK_STDCERR << "[chuck]: WvOut cannot open mat file: " << filename << CK_STDENDL;
-        CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
-        goto done;
-    }
+        // special
+        if( strstr( filename->str().c_str(), "special:auto" ) )
+        {
+            theFilename = autoFilename( w->autoPrefix, "mat" );
+        }
+        else
+        {
+            // not special case
+            theFilename = filename->str();
+        }
 
-    // check
-    if( carrier != NULL )
-    {
-        // insert into map
-        carrier->stk_wvOutMap[w] = w;
+        // open
+        try { w->openFile( theFilename.c_str(), 1, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
+        catch( StkError & e )
+        {
+            // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+            CK_STDCERR << "[chuck]: WvOut cannot open mat file: " << filename << CK_STDENDL;
+            CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
+            goto done;
+        }
+
+        // check
+        if( carrier != NULL )
+        {
+            // insert into map
+            carrier->stk_wvOutMap[w] = w;
+        }
     }
 
 done:
-    RETURN->v_string = &(w->str_filename);
+    // return value
+    RETURN->v_string = filename;
 }
 
 
@@ -27778,44 +27831,47 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_matFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-    char buffer[1024];
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    std::string theFilename;
 
     // REFACTOR-2017: get the carrier
     Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl matFilename" );
 
-    // special
-    if( strstr( filename, "special:auto" ) )
+    // check for null | 1.5.0.0 (ge) added
+    if( filename != NULL )
     {
-        time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str().c_str() );
-        strcat( buffer, "(" );
-        strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-        strcat( buffer, ").mat" );
-        filename = buffer;
-    }
-    try { w->openFile( filename, 2, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
-    catch (StkError) { goto done; }
-    //catch( StkError & e )
-    //{
-    //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-    //    CK_STDCERR << "[chuck]: WvOut2 cannot open mat file: " << filename << CK_STDENDL;
-    //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
-    //    goto done;
-    //}
+        // special
+        if( strstr( filename->str().c_str(), "special:auto" ) )
+        {
+            theFilename = autoFilename( w->autoPrefix, "mat" );
+        }
+        else
+        {
+            // not special case
+            theFilename = filename->str();
+        }
 
+        // open
+        try { w->openFile( theFilename.c_str(), 2, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
+        catch (StkError) { goto done; }
+        //catch( StkError & e )
+        //{
+        //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+        //    CK_STDCERR << "[chuck]: WvOut2 cannot open mat file: " << filename << CK_STDENDL;
+        //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
+        //    goto done;
+        //}
 
-    // check
-    if( carrier != NULL )
-    {
-        // insert into map
-        carrier->stk_wvOutMap[w] = w;
+        // check
+        if( carrier != NULL )
+        {
+            // insert into map
+            carrier->stk_wvOutMap[w] = w;
+        }
     }
 
 done:
-    RETURN->v_string = &(w->str_filename);
+    RETURN->v_string = filename;
 }
 
 
@@ -27828,43 +27884,47 @@ done:
 CK_DLL_CTRL( WvOut_ctrl_sndFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-    char buffer[1024];
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    std::string theFilename;
 
     // REFACTOR-2017: get the carrier
     Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl sndFilename" );
 
-    // special
-    if( strstr( filename, "special:auto" ) )
+    // check for null | 1.5.0.0 (ge) added
+    if( filename != NULL )
     {
-        time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str().c_str() );
-        strcat( buffer, "(" );
-        strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-        strcat( buffer, ").snd" );
-        filename = buffer;
-    }
-    try { w->openFile( filename, 1, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
-    catch (StkError) { goto done; }
-    //catch( StkError & e )
-    //{
-    //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-    //    CK_STDCERR << "[chuck]: WvOut cannot open snd file: " << filename << CK_STDENDL;
-    //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
-    //    goto done;
-    //}
+        // special
+        if( strstr( filename->str().c_str(), "special:auto" ) )
+        {
+            theFilename = autoFilename( w->autoPrefix, "snd" );
+        }
+        else
+        {
+            // not special case
+            theFilename = filename->str();
+        }
 
-    // check
-    if( carrier != NULL )
-    {
-        // insert into map
-        carrier->stk_wvOutMap[w] = w;
+        // open
+        try { w->openFile( theFilename.c_str(), 1, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
+        catch (StkError) { goto done; }
+        //catch( StkError & e )
+        //{
+        //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+        //    CK_STDCERR << "[chuck]: WvOut cannot open snd file: " << filename << CK_STDENDL;
+        //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
+        //    goto done;
+        //}
+
+        // check
+        if( carrier != NULL )
+        {
+            // insert into map
+            carrier->stk_wvOutMap[w] = w;
+        }
     }
 
 done:
-    RETURN->v_string = &(w->str_filename);
+    RETURN->v_string = filename;
 }
 
 
@@ -27877,43 +27937,47 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_sndFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-    char buffer[1024];
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    std::string theFilename;
 
     // REFACTOR-2017: get the carrier
     Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl sndFilename" );
 
-    // special
-    if( strstr( filename, "special:auto" ) )
+    // check for null | 1.5.0.0 (ge) added
+    if( filename != NULL )
     {
-        time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str().c_str() );
-        strcat( buffer, "(" );
-        strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-        strcat( buffer, ").snd" );
-        filename = buffer;
-    }
-    try { w->openFile( filename, 2, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
-    catch (StkError) { goto done; }
-    //catch( StkError & e )
-    //{
-    //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-    //    CK_STDCERR << "[chuck]: WvOut2 cannot open snd file: " << filename << CK_STDENDL;
-    //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
-    //    goto done;
-    //}
+        // special
+        if( strstr( filename->str().c_str(), "special:auto" ) )
+        {
+            theFilename = autoFilename( w->autoPrefix, "snd" );
+        }
+        else
+        {
+            // not special case
+            theFilename = filename->str();
+        }
 
-    // check
-    if( carrier != NULL )
-    {
-        // insert into map
-        carrier->stk_wvOutMap[w] = w;
+        // open
+        try { w->openFile( theFilename.c_str(), 2, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
+        catch (StkError) { goto done; }
+        //catch( StkError & e )
+        //{
+        //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+        //    CK_STDCERR << "[chuck]: WvOut2 cannot open snd file: " << filename << CK_STDENDL;
+        //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
+        //    goto done;
+        //}
+
+        // check
+        if( carrier != NULL )
+        {
+            // insert into map
+            carrier->stk_wvOutMap[w] = w;
+        }
     }
 
 done:
-    RETURN->v_string = &(w->str_filename);
+    RETURN->v_string = filename;
 }
 
 
@@ -27926,43 +27990,47 @@ done:
 CK_DLL_CTRL( WvOut_ctrl_wavFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-    char buffer[1024];
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    std::string theFilename;
 
     // REFACTOR-2017: get the carrier
     Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl wavFilename" );
 
-    // special
-    if( strstr( filename, "special:auto" ) )
+    // check for null | 1.5.0.0 (ge) added
+    if( filename != NULL )
     {
-        time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str().c_str() );
-        strcat( buffer, "(" );
-        strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-        strcat( buffer, ").wav" );
-        filename = buffer;
-    }
-    try { w->openFile( filename, 1, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
-    catch (StkError) { goto done; }
-    //catch( StkError & e )
-    //{
-    //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-    //    CK_STDCERR << "[chuck]: WvOut cannot open wav file: " << filename << CK_STDENDL;
-    //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
-    //    goto done;
-    //}
+        // special
+        if( strstr( filename->str().c_str(), "special:auto" ) )
+        {
+            theFilename = autoFilename( w->autoPrefix, "wav" );
+        }
+        else
+        {
+            // not special case
+            theFilename = filename->str();
+        }
 
-    // check
-    if( carrier != NULL )
-    {
-        // insert into map
-        carrier->stk_wvOutMap[w] = w;
+        // open
+        try { w->openFile( theFilename.c_str(), 1, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
+        catch (StkError) { goto done; }
+        //catch( StkError & e )
+        //{
+        //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+        //    CK_STDCERR << "[chuck]: WvOut cannot open wav file: " << filename << CK_STDENDL;
+        //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
+        //    goto done;
+        //}
+
+        // check
+        if( carrier != NULL )
+        {
+            // insert into map
+            carrier->stk_wvOutMap[w] = w;
+        }
     }
 
 done:
-    RETURN->v_string = &(w->str_filename);
+    RETURN->v_string = filename;
 }
 
 
@@ -27975,43 +28043,47 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_wavFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-    char buffer[1024];
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    std::string theFilename;
 
     // REFACTOR-2017: get the carrier
     Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl wavFilename" );
 
-    // special
-    if( strstr( filename, "special:auto" ) )
+    // check for null | 1.5.0.0 (ge) added
+    if( filename != NULL )
     {
-        time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str().c_str() );
-        strcat( buffer, "(" );
-        strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-        strcat( buffer, ").wav" );
-        filename = buffer;
-    }
-    try { w->openFile( filename, 2, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
-    catch (StkError) { goto done; }
-    //catch( StkError & e )
-    //{
-    //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-    //    CK_STDCERR << "[chuck]: WvOut2 cannot open wav file: " << filename << CK_STDENDL;
-    //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
-    //    goto done;
-    //}
+        // special
+        if( strstr( filename->str().c_str(), "special:auto" ) )
+        {
+            theFilename = autoFilename( w->autoPrefix, "wav" );
+        }
+        else
+        {
+            // not special case
+            theFilename = filename->str();
+        }
 
-    // check
-    if( carrier != NULL )
-    {
-        // insert into map
-        carrier->stk_wvOutMap[w] = w;
+        // open
+        try { w->openFile( theFilename.c_str(), 2, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
+        catch (StkError) { goto done; }
+        //catch( StkError & e )
+        //{
+        //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
+        //    CK_STDCERR << "[chuck]: WvOut2 cannot open wav file: " << filename << CK_STDENDL;
+        //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
+        //    goto done;
+        //}
+
+        // check
+        if( carrier != NULL )
+        {
+            // insert into map
+            carrier->stk_wvOutMap[w] = w;
+        }
     }
 
 done:
-    RETURN->v_string = &(w->str_filename);
+    RETURN->v_string = filename;
 }
 
 
@@ -28024,42 +28096,46 @@ done:
 CK_DLL_CTRL( WvOut_ctrl_rawFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-    char buffer[1024];
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    std::string theFilename;
 
     // REFACTOR-2017: get the carrier
     Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl rawFilename" );
 
-    // special
-    if( strstr( filename, "special:auto" ) )
+    // check for null | 1.5.0.0 (ge) added
+    if( filename != NULL )
     {
-        time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str().c_str() );
-        strcat( buffer, "(" );
-        strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-        strcat( buffer, ").raw" );
-        filename = buffer;
-    }
-    try { w->openFile( filename, 1, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
-    catch (StkError) { goto done; }
-    //catch( StkError & e )
-    //{
-    //    CK_STDCERR << "[chuck]: WvOut cannot open raw file: " << filename << CK_STDENDL;
-    //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
-    //    goto done;
-    //}
+        // special
+        if( strstr( filename->str().c_str(), "special:auto" ) )
+        {
+            theFilename = autoFilename( w->autoPrefix, "raw" );
+        }
+        else
+        {
+            // not special case
+            theFilename = filename->str();
+        }
 
-    // check
-    if( carrier != NULL )
-    {
-        // insert into map
-        carrier->stk_wvOutMap[w] = w;
+        // open
+        try { w->openFile( theFilename.c_str(), 1, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
+        catch (StkError) { goto done; }
+        //catch( StkError & e )
+        //{
+        //    CK_STDCERR << "[chuck]: WvOut cannot open raw file: " << filename << CK_STDENDL;
+        //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
+        //    goto done;
+        //}
+
+        // check
+        if( carrier != NULL )
+        {
+            // insert into map
+            carrier->stk_wvOutMap[w] = w;
+        }
     }
 
 done:
-    RETURN->v_string = &(w->str_filename);
+    RETURN->v_string = filename;
 }
 
 
@@ -28072,42 +28148,46 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_rawFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-    char buffer[1024];
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    std::string theFilename;
 
     // REFACTOR-2017: get the carrier
     Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl rawFilename" );
 
-    // special
-    if( strstr( filename, "special:auto" ) )
+    // check for null | 1.5.0.0 (ge) added
+    if( filename != NULL )
     {
-        time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str().c_str() );
-        strcat( buffer, "(" );
-        strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-        strcat( buffer, ").raw" );
-        filename = buffer;
-    }
-    try { w->openFile( filename, 2, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
-    catch (StkError) { goto done; }
-    //catch( StkError & e )
-    //{
-    //    CK_STDCERR << "[chuck]: WvOut2 cannot open raw file: " << filename << CK_STDENDL;
-    //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
-    //    goto done;
-    //}
+        // special
+        if( strstr( filename->str().c_str(), "special:auto" ) )
+        {
+            theFilename = autoFilename( w->autoPrefix, "raw" );
+        }
+        else
+        {
+            // not special case
+            theFilename = filename->str();
+        }
 
-    // check
-    if( carrier != NULL )
-    {
-        // insert into map
-        carrier->stk_wvOutMap[w] = w;
+        // open
+        try { w->openFile( theFilename.c_str(), 2, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
+        catch (StkError) { goto done; }
+        //catch( StkError & e )
+        //{
+        //    CK_STDCERR << "[chuck]: WvOut2 cannot open raw file: " << filename << CK_STDENDL;
+        //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
+        //    goto done;
+        //}
+
+        // check
+        if( carrier != NULL )
+        {
+            // insert into map
+            carrier->stk_wvOutMap[w] = w;
+        }
     }
 
 done:
-    RETURN->v_string = &(w->str_filename);
+    RETURN->v_string = filename;
 }
 
 
@@ -28120,42 +28200,46 @@ done:
 CK_DLL_CTRL( WvOut_ctrl_aifFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-    char buffer[1024];
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    std::string theFilename;
 
     // REFACTOR-2017: get the carrier
     Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl aifFilename" );
 
-    // special
-    if( strstr( filename, "special:auto" ) )
+    // check for null | 1.5.0.0 (ge) added
+    if( filename != NULL )
     {
-        time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str().c_str() );
-        strcat( buffer, "(" );
-        strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-        strcat( buffer, ").aiff" );
-        filename = buffer;
-    }
-    try { w->openFile( filename, 1, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
-    catch (StkError) { goto done; }
-    //catch( StkError & e )
-    //{
-    //    CK_STDCERR << "[chuck]: WvOut cannot open aif file: " << filename << CK_STDENDL;
-    //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
-    //    goto done;
-    //}
+        // special
+        if( strstr( filename->str().c_str(), "special:auto" ) )
+        {
+            theFilename = autoFilename( w->autoPrefix, "aiff" );
+        }
+        else
+        {
+            // not special case
+            theFilename = filename->str();
+        }
 
-    // check
-    if( carrier != NULL )
-    {
-        // insert into map
-        carrier->stk_wvOutMap[w] = w;
+        // open
+        try { w->openFile( theFilename.c_str(), 1, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
+        catch (StkError) { goto done; }
+        //catch( StkError & e )
+        //{
+        //    CK_STDCERR << "[chuck]: WvOut cannot open aif file: " << filename << CK_STDENDL;
+        //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
+        //    goto done;
+        //}
+
+        // check
+        if( carrier != NULL )
+        {
+            // insert into map
+            carrier->stk_wvOutMap[w] = w;
+        }
     }
 
 done:
-    RETURN->v_string = &(w->str_filename);
+    RETURN->v_string = filename;
 }
 
 
@@ -28168,42 +28252,46 @@ done:
 CK_DLL_CTRL( WvOut2_ctrl_aifFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    const char * filename = GET_CK_STRING(ARGS)->str().c_str();
-    char buffer[1024];
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    std::string theFilename;
 
     // REFACTOR-2017: get the carrier
     Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl aifFilename" );
 
-    // special
-    if( strstr( filename, "special:auto" ) )
+    // check for null | 1.5.0.0 (ge) added
+    if( filename != NULL )
     {
-        time_t t; time(&t);
-        strcpy( buffer, w->autoPrefix.str().c_str() );
-        strcat( buffer, "(" );
-        strncat( buffer, ctime(&t), 24 );
-        buffer[strlen(w->autoPrefix.str().c_str())+14] = 'h';
-        buffer[strlen(w->autoPrefix.str().c_str())+17] = 'm';
-        strcat( buffer, ").aiff" );
-        filename = buffer;
-    }
-    try { w->openFile( filename, 2, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
-    catch (StkError) { goto done; }
-    //catch( StkError & e )
-    //{
-    //    CK_STDCERR << "[chuck]: WvOut2 cannot open aif file: " << filename << CK_STDENDL;
-    //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
-    //    goto done;
-    //}
+        // special
+        if( strstr( filename->str().c_str(), "special:auto" ) )
+        {
+            theFilename = autoFilename( w->autoPrefix, "aiff" );
+        }
+        else
+        {
+            // not special case
+            theFilename = filename->str();
+        }
 
-    // check
-    if( carrier != NULL )
-    {
-        // insert into map
-        carrier->stk_wvOutMap[w] = w;
+        // open
+        try { w->openFile( theFilename.c_str(), 2, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
+        catch (StkError) { goto done; }
+        //catch( StkError & e )
+        //{
+        //    CK_STDCERR << "[chuck]: WvOut2 cannot open aif file: " << filename << CK_STDENDL;
+        //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
+        //    goto done;
+        //}
+
+        // check
+        if( carrier != NULL )
+        {
+            // insert into map
+            carrier->stk_wvOutMap[w] = w;
+        }
     }
 
 done:
-    RETURN->v_string = &(w->str_filename);
+    RETURN->v_string = filename;
 }
 
 
@@ -28216,7 +28304,12 @@ done:
 CK_DLL_CGET( WvOut_cget_filename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    RETURN->v_string = &(w->str_filename);
+
+    // instantiate | 1.5.0.0 (ge) added to dynamic allocate chuck string
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    str->set( w->str_filename );
+
+    RETURN->v_string = str;
 }
 
 
@@ -28279,8 +28372,11 @@ CK_DLL_CGET( WvOut_cget_record )
 CK_DLL_CTRL( WvOut_ctrl_autoPrefix )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    w->autoPrefix.set( GET_NEXT_STRING(ARGS)->str().c_str() );
-    RETURN->v_string = &w->autoPrefix;
+    Chuck_String * prefix = GET_NEXT_STRING(ARGS);
+    // check
+    if( prefix != NULL ) w->autoPrefix = prefix->str();
+    // pass through
+    RETURN->v_string = prefix;
 }
 
 
@@ -28291,7 +28387,11 @@ CK_DLL_CTRL( WvOut_ctrl_autoPrefix )
 CK_DLL_CGET( WvOut_cget_autoPrefix )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    RETURN->v_string = &w->autoPrefix;
+    // instantiate | 1.5.0.0 (ge) added to dynamic allocate chuck string
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    str->set( w->autoPrefix );
+    // return value
+    RETURN->v_string = str;
 }
 
 
