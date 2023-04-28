@@ -164,6 +164,7 @@ DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY )
 
     // genIndex
     func = make_new_mfun( "string", "genIndex", CKDoc_genIndex );
+    func->add_arg( "string", "indexTitle" );
     func->doc = "Generate top-level index; return as string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
@@ -1520,6 +1521,10 @@ CK_DLL_CGET( CKDoc_outputFormat_get )
 CK_DLL_MFUN( CKDoc_genIndex )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    Chuck_String * indexTitle = GET_NEXT_STRING(ARGS);
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    str->set( ckdoc->genIndex( indexTitle != NULL ? indexTitle->str() : "" ) );
+    RETURN->v_string = str;
 }
 
 CK_DLL_MFUN( CKDoc_genCSS )
