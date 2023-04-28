@@ -53,6 +53,8 @@ std::string trim( const std::string & val );
 std::string ltrim( const std::string & val );
 // rtrim
 std::string rtrim( const std::string & val );
+// return capitalized copy of a string
+std::string capitalize( const std::string & s );
 
 // argument extraction
 t_CKBOOL extract_args( const std::string & token,
