@@ -69,6 +69,8 @@ public:
     const std::string & str() const { return m_outputStr; }
     // get file name: ".html", ".txt", etc.
     virtual std::string fileExtension() const { return ""; }
+    // render index
+    virtual std::string renderIndex( const std::string & indexTitle, const std::vector<CKDocGroup *> & groups ) { return ""; };
 
 public:
     virtual void begin(const std::string &title) = 0;
@@ -85,11 +87,11 @@ public:
     virtual void end_toc() = 0;
 
     // classes
-    virtual void begin_classes() = 0;
+    virtual void begin_classes( CKDocGroup * group ) = 0;
     virtual void end_classes() = 0;
 
     // one class
-    virtual void begin_class( Chuck_Type * type ) = 0;
+    virtual void begin_class( Chuck_Type * type, const std::vector<CKDocGroup *> & groups ) = 0;
 
     // examples
     virtual void begin_examples() = 0;
@@ -167,9 +169,9 @@ public:
 
 public:
     // generate everything as files into the output directory
-    t_CKBOOL outputToDir( const std::string & outputDir );
+    t_CKBOOL outputToDir( const std::string & outputDir, const std::string & indexTitle );
     // generate top-level index file; return as string
-    std::string genIndex();
+    std::string genIndex( const std::string & title );
     // generate CSS; return as string
     std::string genCSS();
     // generate all added groups, return each in a separate entry

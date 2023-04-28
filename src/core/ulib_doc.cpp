@@ -39,6 +39,7 @@
 #include "util_string.h"
 
 #include <string>
+#include <sstream>
 #include <fstream>
 #include <algorithm>
 using namespace std;
@@ -192,7 +193,8 @@ DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY )
     // outputToDir
     func = make_new_mfun( "int", "outputToDir", CKDoc_outputToDir );
     func->add_arg( "string", "path" );
-    func->doc = "Generate everything as files into the output directory";
+    func->add_arg( "string", "indexTitle" );
+    func->doc = "Generate everything as files into the output directory.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -203,17 +205,6 @@ DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY )
 error:
 
     return false;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// begin CKDoc implemention
-//-----------------------------------------------------------------------------
-std::string type2url( const std::string & type )
-{
-    return "[type2url NOT IMPLEMENTED]";
 }
 
 
@@ -239,6 +230,37 @@ struct CKDocGroup
 
 
 //-----------------------------------------------------------------------------
+// name: type2url()
+// desc: convert type name to URL, using groups to detemine the file for each
+//-----------------------------------------------------------------------------
+string type2url( const string & type, const vector<CKDocGroup *> & groups )
+{
+    // search
+    for( t_CKINT i = 0; i < groups.size(); i++ )
+    {
+        for( t_CKINT j = 0; j < groups[i]->types.size(); j++ )
+        {
+            // check
+            if( groups[i]->types[j] == NULL ) continue;
+            // compare
+            if( type == groups[i]->types[j]->name )
+            {
+                // file + location within file: basically: 'group.html#type'
+                return groups[i]->shortName + ".html#" + type;
+            }
+        }
+    }
+
+    // TODO: make a list of default classes on chuck website to link to
+    // return "[type2url NOT IMPLEMENTED]";
+    return "";
+}
+
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: class CKDocHTMLOutput | 1.5.0.0 (ge, spencer) added
 // desc: HTML output (based on Spencer's ckdoc)
 //-----------------------------------------------------------------------------
@@ -257,12 +279,13 @@ public:
         // get the env
         m_env_ref = vm != NULL ? vm->env() : NULL;
     }
-
     // file extension
     virtual string fileExtension() const { return ".html"; }
+    // render HTML index
+    virtual string renderIndex( const string & indexTitle, const vector<CKDocGroup *> & groups );
 
 public:
-    void begin( const std::string & title )
+    void begin( const string & title )
     {
         // trim
         m_title = trim(title);
@@ -323,9 +346,10 @@ public:
         m_outputStr += "</div>\n";
     }
 
-    void begin_classes()
+    void begin_classes( CKDocGroup * group )
     {
         m_outputStr += "<div class=\"classes\">\n";
+        m_outputStr += "<p class=\"group_desc\">" + group->desc + "</p>\n";
     }
 
     void end_classes()
@@ -333,7 +357,7 @@ public:
         m_outputStr += "</div>\n";
     }
 
-    void begin_class(Chuck_Type * type)
+    void begin_class(Chuck_Type * type, const vector<CKDocGroup *> & groups )
     {
         m_outputStr += "<a name=\"" + type->name + "\" /><div class=\"class\">\n";
         m_outputStr += "<h2 class=\"class_title\" name=\"" + type->name + "\">" + type->name + "</h2>\n";
@@ -341,11 +365,16 @@ public:
         // type heirarchy
         Chuck_Type * parent = type->parent;
         // check if there is a parent class
-        if( parent != NULL ) m_outputStr += "<h4 class=\"class_hierarchy\">";
+        if( parent != NULL )
+        {
+            m_outputStr += "<h4>";
+            m_outputStr += "<span class=\"class_inherits\">inherits</span> ";
+            // m_outputStr += "<h4 class=\"class_hierarchy\">";
+        }
         // iterate over parents
         while( parent != NULL )
         {
-            m_outputStr += ": <a href=\"" + type2url(parent->name)
+            m_outputStr += ": <a href=\"" + type2url(parent->name, groups)
                          + "\" class=\"" + css_class_for_type(m_env_ref, parent)
                          + "\">" + parent->name + "</a> ",
             // go up the inheritance chain
@@ -356,11 +385,7 @@ public:
 
         if(type->doc.size() > 0)
         {
-            std::string doc;
-            // if( m_doc_text_filter )
-            //     doc = m_doc_text_filter->filter(type->doc);
-            // else
-            doc = type->doc;
+            std::string doc = capitalize(type->doc);
             m_outputStr += "<p class=\"class_description\">" + doc + "<p>\n";
         }
         else
@@ -447,7 +472,7 @@ public:
         m_outputStr += "<span class=\"membername\">" + var->name + "</span></p>";
 
         if(var->doc.size() > 0)
-            m_outputStr += "<p class=\"member_description\">" + var->doc + "</p>\n";
+            m_outputStr += "<p class=\"member_description\">" + capitalize(var->doc) + "</p>\n";
         else
             m_outputStr += "<p class=\"empty_member_description\">No description available</p>\n";
 
@@ -466,13 +491,13 @@ public:
             for(int i = 0; i < var->type->array_depth; i++)
                 m_outputStr += "[]";
         }
-        m_outputStr += "</span>";
+        m_outputStr += "</span> ";
 
         // function name
         m_outputStr += "<span class=\"membername\">" + var->name + "</span></p>";
 
         if(var->doc.size() > 0)
-            m_outputStr += "<p class=\"member_description\">" + var->doc + "</p>\n";
+            m_outputStr += "<p class=\"member_description\">" + capitalize(var->doc) + "</p>\n";
         else
             m_outputStr += "<p class=\"empty_member_description\">No description available</p>\n";
 
@@ -506,7 +531,7 @@ public:
         m_outputStr += ")</p>\n";
 
         if(m_func->doc.size() > 0)
-            m_outputStr += "<p class=\"member_description\">" + m_func->doc + "</p>\n";
+            m_outputStr += "<p class=\"member_description\">" + capitalize(m_func->doc) + "</p>\n";
         else
             m_outputStr += "<p class=\"empty_member_description\">No description available</p>\n";
 
@@ -542,7 +567,7 @@ public:
         m_outputStr += ")</p>\n";
 
         if(m_func->doc.size() > 0)
-            m_outputStr += "<p class=\"member_description\">" + m_func->doc + "</p>\n";
+            m_outputStr += "<p class=\"member_description\">" + capitalize(m_func->doc) + "</p>\n";
         else
             m_outputStr += "<p class=\"empty_member_description\">No description available</p>\n";
 
@@ -596,14 +621,70 @@ public:
     static std::string css_class_for_type( Chuck_Env * env, Chuck_Type * type )
     {
         if( isprim(env, type) || isvoid(env, type) || (type->array_depth && isprim(env, type->array_type)) )
-            return "ckdoc_typename ckdoc_primitive_type";
+            return "ckdoc_typename ckdoc_type_primitive";
         else if(isugen(type))
-            return "ckdoc_typename ckdoc_ugen_type";
+            return "ckdoc_typename ckdoc_type_ugen";
         else
-            return "ckdoc_typename ckdoc_object_type";
+            return "ckdoc_typename ckdoc_type_object";
     }
 };
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: renderIndex()
+// desc: render HTML index
+//-----------------------------------------------------------------------------
+string CKDocHTMLOutput::renderIndex( const string & title, const vector<CKDocGroup *> & groups )
+{
+    // output string stream
+    ostringstream sout;
+
+    // output index header
+    sout <<  "<html>\n<head>\n";
+    sout <<  "<title>" << title << "</title>\n";
+    sout <<  "<link rel=\"stylesheet\" type=\"text/css\" href=\"ckdoc.css\" />\n";
+    sout <<  "<link rel=\"stylesheet\" type=\"text/css\" href=\"class.css\" />\n";
+    sout <<  "</head>\n";
+    sout <<  "<body>\n";
+    sout <<  "<div id=\"title\">\n";
+    sout <<  "<div class=\"titleL\"><h1>" << title <<  "</h1></div>\n";
+    sout <<  "<div class=\"titleR\"><h1>&nbsp;</h1></div>\n";
+    sout <<  "</div>\n";
+    sout <<  "<div id=\"body\">\n";
+
+    // loop over groups
+    for( t_CKINT i = 0; i < groups.size(); i++ )
+    {
+        CKDocGroup * group = groups[i];
+        sout << "<div class=\"index_group\">\n";
+        sout << "<div class=\"index_group_title\">\n";
+        sout << "<h2><a href=\"" << group->shortName << ".html\">" << group->name << "</a></h2>\n";
+        sout << "<p class=\"index_group_desc\">" << group->desc << "</p>\n";
+        sout << "</div>\n";
+        sout << "<div class=\"index_group_classes\">\n";
+        sout << "<p>\n";
+
+        for( t_CKINT j = 0; j < group->types.size(); j++ )
+        {
+            Chuck_Type * type = group->types[j];
+            if( !type ) continue;
+            string cssClass = css_class_for_type( m_env_ref, type );
+            // TODO: check for array_depth
+            sout << "<a href=\"" << group->shortName << ".html#" << type->name << "\" class=\"" << cssClass << "\">" << type->name << "</a>\n";
+        }
+        sout << "</p>\n";
+        sout << "</div>\n";
+        sout << "<div class=\"clear\"></div>\n";
+        sout << "</div>\n";
+    }
+    sout << "</div>\n";
+    sout << "</body>\n</html>\n";
+
+    // return the string literal
+    return sout.str();
+};
 
 
 
@@ -848,10 +929,12 @@ string CKDoc::getExamplesRoot() const
 // name: genIndex()
 // desc: generate top-level index file; return as string
 //-----------------------------------------------------------------------------
-string CKDoc::genIndex()
+string CKDoc::genIndex( const string & title )
 {
-    // return the string literal
-    return "";
+    // check
+    if( !m_output ) return "";
+    // generate index
+    return m_output->renderIndex( title, m_groups );
 }
 
 
@@ -896,7 +979,7 @@ void CKDoc::genGroups( vector<string> & results )
     for( t_CKINT i = 0; i < m_groups.size(); i++ )
     {
         // generate each group
-        results[i] = genGroup( m_groups[i], FALSE );
+        results[i] = genGroup( m_groups[i], TRUE );
     }
 }
 
@@ -951,7 +1034,7 @@ string CKDoc::genGroup( CKDocGroup * group, t_CKBOOL clearOutput )
     }
 
     // begin type contents
-    output->begin_classes();
+    output->begin_classes( group );
 
     // iterate
     for( vector<Chuck_Type *>::const_iterator t = group->types.begin(); t != group->types.end(); t++ )
@@ -991,7 +1074,7 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
     if( clearOutput ) output->clear();
 
     // begin the type
-    output->begin_class( type );
+    output->begin_class( type, m_groups );
 
     // output examples
     if( type->examples.size() )
@@ -1190,7 +1273,7 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
 // name: outputToDir()
 // desc: generate everything as files into the output directory
 //-----------------------------------------------------------------------------
-t_CKBOOL CKDoc::outputToDir( const string & outputDir )
+t_CKBOOL CKDoc::outputToDir( const string & outputDir, const string & indexTitle )
 {
     // groups content
     vector<string> groupOutput;
@@ -1204,7 +1287,7 @@ t_CKBOOL CKDoc::outputToDir( const string & outputDir )
     m_output->clear();
 
     // gen index
-    if( !outputToFile( path + "index" + m_output->fileExtension(), genIndex() ) ) goto error;
+    if( !outputToFile( path + "index" + m_output->fileExtension(), genIndex( indexTitle ) ) ) goto error;
     // gen CSS
     if( !outputToFile( path + "ckdoc.css", genCSS() ) ) goto error;
     // gen groups
@@ -1503,8 +1586,13 @@ CK_DLL_MFUN( CKDoc_outputToDir )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
     Chuck_String * path = GET_NEXT_STRING(ARGS);
+    Chuck_String * indexTitle = GET_NEXT_STRING(ARGS);
     // the path as c++ string
     string thePath;
+    string theTitle;
+
+    // check
+    theTitle = indexTitle != NULL ? indexTitle->str() : "";
 
     // check if null
     if( path == NULL ) {
@@ -1515,7 +1603,7 @@ CK_DLL_MFUN( CKDoc_outputToDir )
     }
 
     // output
-    ckdoc->outputToDir( thePath );
+    ckdoc->outputToDir( thePath, theTitle );
 }
 
 
@@ -1563,6 +1651,15 @@ string CKDoc::m_ckdocCSS = "\
   {\n\
       margin-right: 0.5em;\n\
       line-height: 1.5em;\n\
+  }\n\
+  .index_group_desc\n\
+  {\n\
+        color:#555;\n\
+  }\n\
+  \n\
+  .group_desc\n\
+  {\n\
+        color:#000;\n\
   }\n\
 \n\
   .index_group_title a { color: black; }\n\
@@ -1612,7 +1709,7 @@ string CKDoc::m_ckdocCSS = "\
       background-color: #eee;\n\
       padding: 0.25em 0.5em 1em 0.75em;\n\
       margin: 0;\n\
-      width: 6em;\n\
+      width: 9.5em;\n\
   }\n\
 \n\
   .toc_class\n\
@@ -1625,7 +1722,7 @@ string CKDoc::m_ckdocCSS = "\
   .classes\n\
   {\n\
       clear: right;\n\
-      margin-left: 9em;\n\
+      margin-left: 12em;\n\
       margin-right: 0em;\n\
   }\n\
 \n\
@@ -1640,12 +1737,16 @@ string CKDoc::m_ckdocCSS = "\
       font-family: Menlo, Monaco, Courier;\n\
       font-size: 18px;\n\
   }\n\
+  .class_inherits\n\
+  {\n\
+      font-weight: normal;\n\
+  }\n\
 \n\
   .class_hierarchy\n\
   {\n\
       font-family: Menlo, Monaco, Courier;\n\
       font-size: 14px;\n\
-      margin-right: 4em;\n\
+      /* margin-right: 4em; */ \n\
   }\n\
 \n\
   .class_section_header\n\

@@ -125,6 +125,24 @@ string toupper( const string & str )
 
 
 //-----------------------------------------------------------------------------
+// name: capitalize()
+// capitalize first character
+//-----------------------------------------------------------------------------
+string capitalize( const string & s )
+{
+    // copy
+    string retval = s;
+    // if not empty and first character is a lower-case letter
+    if( retval.length() > 0 && retval[0] >= 'a' && retval[0] <= 'z' )
+        retval[0] -= 32;
+    // done
+    return retval;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: trim()
 // desc: ...
 //-----------------------------------------------------------------------------
