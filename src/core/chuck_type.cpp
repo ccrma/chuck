@@ -1491,7 +1491,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
                                a_Exp_Binary binary )
 {
      t_CKTYPE left = lhs->type, right = rhs->type;
-    assert( left && right );
+     assert( left && right );
 
     // make sure not involve multiple declarations (for now)
     if( !type_engine_ensure_no_multi_decl( lhs, op2str(op) ) ||
@@ -2101,7 +2101,23 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
             // assigment?
             if( rhs->s_meta == ae_meta_var )
             {
-                // TODO: check if rhs is const
+                // check if rhs is const
+                if( rhs->s_type == ae_exp_primary )
+                {
+                    // get the associate value
+                    Chuck_Value * v = rhs->primary.value;
+                    // check if const | 1.5.0.0 (ge) added
+                    if( v && v->is_const )
+                    {
+                        // error
+                        EM_error2( rhs->linepos,
+                            "cannot chuck/assign => to '%s'...",
+                            v->name.c_str() );
+                        EM_error2( lhs->linepos,
+                            " |- reason: '%s' is a constant (and is not assignable)", v->name.c_str() );
+                        return NULL;
+                    }
+                }
 
                 // emit ref - remember for emitter
                 rhs->emit_var = TRUE;
