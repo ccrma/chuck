@@ -533,6 +533,8 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
     provide additional information in the compiler error message
 - (fixed) overloaded functions with identical arguments now will
     correctly result in a compiler error
+- (fixed) attempting to assign to reserved/const values (e.g., 'day')
+    now will correctly result in a compiler error
 - (fixed, hopefully) no more LPF and HPF filter explosion for small 
     values of .freq (<.2), large values of .freq (>Nyquist frequency), 
     or Q < 1 with high frequency below Nyquist; now LPF.freq and HPF .Q 
