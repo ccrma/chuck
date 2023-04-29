@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.0.0 (March 2023; was previously to be 1.4.2.1)
+1.5.0.0 (May 2023)
 ---
 ***************************************************************************
 * chuck-1.5.0.0 (chai)
@@ -455,6 +455,50 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
     |- polymorph.ck -- an example of polymorphism in ChucK
     |- type_query.ck -- querying for a list of types from the ChucK runtime type system
     |- type_type.ck -- example showing some functionalities of the Type type
+	---------------
+- (added) new CKDoc class
+    |- A ChucK documentation generator. Based on Spencer Salazar's ckdoc utility.
+    |- (inheritance) CKDoc -> Object
+	---------------
+	void addGroup( Type[] types, string name, string shortName, string description );
+	    Add a group of types to be documented, including group 'name', a 'shortName' to be used for any files, and a group 'description'.
+	void addGroup( string[] typeNames, string name, string shortName, string description );
+	    Add a group of types (by type name) to be documented, including group 'name', a 'shortName' to be used for any files, and a group 'description'.
+	void clear();
+	    Clear all added groups.
+	string examplesRoot( string path );
+	    Set the examples directory root path; returns what was set.
+	string examplesRoot();
+	    Get the current examples directory root path.
+	string genCSS();
+	    Generate CSS; return as string.
+	void genGroups( string[] results );
+	    Generate documentation for all added groups, return each in a separate entry
+	string genIndex( string indexTitle );
+	    Generate top-level index; return as string.
+	string genType( Type type );
+	    Generate documentation for a single Type.
+	string genType( string typeName );
+	    Generate documentation for a single Type (by name).
+	int numGroups();
+	    Get the number of groups added.
+	int outputFormat( int which );
+	    Set which output format to use; see CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON.
+	int outputFormat();
+	    Set which output format is selected; see CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON.
+	int outputToDir( string path, string indexTitle );
+	    Generate everything as files into the output directory.
+	static int HTML;
+	    Output HTML format.
+	static int JSON;
+	    Output JSON format (not implemented).
+	static int MARKDOWN;
+	    Output MARKDOWN format (not implemented).
+	static int NONE;
+	    No output format.
+	static int TEXT;
+	    Output TEXT format (not implemented).
+	---------------
 - (added) array.zero()
     |- zero out the contents of the array; size is unchanged.
 - (added) negative indexing for arrays (thanks nshaheed)
@@ -567,6 +611,12 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
 - (added) Machine.refcount() and refcount printing for object references
 - (fixed) Stk WvIn, WvOut, and VoicForm handling of chuck strings, 
     addressing related instability and averting potential crashes
+- (fixed) Stk WvOut for MAT (MATLAB) format; previously closing a
+    MAT file in WvOut results in an assertation failure; this has been
+    addressed.
+- (fixed) WvOut and WaveLoop playback for non-16bit data formats;
+    previously was normalizing to 16-bit signed int, regardless of
+    data format
 - (updated and fixed) memory system upgrade (part 1); scope-sensitive
     cleanup for each return statement; clarified reference counting
     semantics; function argument release for builtin functions; improved
