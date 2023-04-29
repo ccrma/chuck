@@ -1284,10 +1284,12 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
 
     std::string doc;
 
+    // TODO: does not work for multiple VMs running different sample rates
+    // https://github.com/ccrma/chuck/issues/208
     // set srate
     Stk::setSampleRate( QUERY->srate );
-    // test for endian
 
+    // test for endian
     what w; w.x = 1;
     little_endian = (t_CKBOOL)w.y[0];
 
@@ -17369,12 +17371,16 @@ const MY_FLOAT * WaveLoop :: tickFrame(void)
     lastOutput[i] = data[index];
     lastOutput[i] += (alpha * (data[index+channels] - lastOutput[i]));
     index++;
+    // 1.5.0.0 (ge) moved gain normalization from below to here
+    lastOutput[i] *= gain;
   }
 
-  if (chunking) {
-    // Scale outputs by gain.
-    for (i=0; i<channels; i++)  lastOutput[i] *= gain;
-  }
+  // 1.5.0.0 (ge) | moved the gain normalization out of chunking logic
+  // which will not run if file is below chunk size
+  // if (chunking) {
+  //   // Scale outputs by gain.
+  //   for (i=0; i<channels; i++)  lastOutput[i] *= gain;
+  // }
 
   // Increment time, which can be negative.
   time += rate;
@@ -17863,7 +17869,7 @@ WvIn :: WvIn()
 WvIn :: WvIn( const char *fileName, bool raw, bool doNormalize, bool generate )
 {
     init();
-    openFile( fileName, raw, generate );
+    openFile( fileName, raw, doNormalize, generate );
 }
 
 WvIn :: ~WvIn()
@@ -18994,9 +19000,16 @@ int WvOut::fclose(FILE *stream)
 
 size_t WvOut::fread(void *ptr, size_t size, size_t nitems, FILE *stream)
 {
-    // can't read asynchronously (yet)
-    assert(0);
-    return 0;
+    #ifndef __DISABLE_THREADS__
+    if( asyncIO ) {
+        // can't read asynchronously (yet)
+        EM_error3( "WvOut: internal error/warning -- cannot read asynchronously yet..." );
+        // assert(0);
+        return 0;
+    } else { return ::fread( ptr, size, nitems, stream ); }
+    #else
+    return ::fread( ptr, size, nitems, stream );
+    #endif
 }
 
 WvOut :: WvOut()
@@ -19087,6 +19100,21 @@ void WvOut :: openFile( const char *fileName, unsigned int nChannels, WvOut::FIL
     handleError(msg, StkError::FUNCTION_ARGUMENT);
   }
   dataType = format;
+
+  // 1.5.0.0 (ge) | disable asyncIO for MAT files #HACK
+  // reason: closeMatFile() currently does a fread(), which is not yet
+  // supported in async mode likely due to trickiness of asycnchronously
+  // getting values back to the calling thread
+  // implication: file IO for MAT files is done on the audio thread
+  // which could adversely affect real-time audio stability
+  #ifndef __DISABLE_THREADS__
+    if( fileType == WVOUT_MAT )
+    { asyncIO = FALSE; }
+    else
+    { asyncIO = asyncWriteThread != NULL; }
+  #else
+    // do nothing; already taken care of (WvOut_ctor)
+  #endif
 
   bool result = false;
   if ( fileType == WVOUT_RAW ) {
@@ -19569,6 +19597,9 @@ void WvOut :: closeMatFile( void )
   temp = (SINT32)(totalCount * 8 * channels);
   fwrite(&temp, 4, 1, fd);
 
+  // explicitly flush
+  fflush(fd); // 1.5.0.0 (ge) added...but why? (fclose() flushes, does it not)
+  // close
   fclose(fd);
 }
 
@@ -27401,7 +27432,12 @@ CK_DLL_DTOR( WvIn_dtor )
 CK_DLL_TICK( WvIn_tick )
 {
     WvIn * w = (WvIn *)OBJ_MEMBER_UINT(SELF, WvIn_offset_data);
-    *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() / SHRT_MAX : (SAMPLE)0.0 );
+
+    // setting doNormalize flag in w->openFile() and let WvIn take care of it
+    *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() : (SAMPLE)0.0 );
+    // old: dividing by SHRT_MAX no good for for non-16bit datatypes
+    // *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() / SHRT_MAX : (SAMPLE)0.0 );
+
     return TRUE;
 }
 
@@ -27441,8 +27477,8 @@ CK_DLL_CTRL( WvIn_ctrl_path )
     // check if not null | 1.5.0.0 (ge)
     if( path != NULL )
     {
-        // open
-        try { w->openFile( path->str().c_str(), FALSE, FALSE ); }
+        // open | 1.5.0.0 (ge) changed doNormalize to TRUE
+        try { w->openFile( path->str().c_str(), FALSE, TRUE ); }
         catch( StkError & e )
         {
             // do nothing here; should have already printed
@@ -27512,7 +27548,12 @@ CK_DLL_DTOR( WaveLoop_dtor )
 CK_DLL_TICK( WaveLoop_tick )
 {
     WaveLoop * w = (WaveLoop *)OBJ_MEMBER_UINT(SELF, WvIn_offset_data);
-    *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() / SHRT_MAX : (SAMPLE)0.0 );
+
+    // setting doNormalize flag in w->openFile() and let WvIn take care of it
+    *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() : (SAMPLE)0.0 );
+    // old: dividing by SHRT_MAX no good for for non-16bit datatypes
+    // *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() / SHRT_MAX : (SAMPLE)0.0 );
+
     return TRUE;
 }
 
