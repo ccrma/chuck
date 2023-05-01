@@ -404,8 +404,8 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
     --------------
     int arrayDepth();
         Return the number of array dimensions associated with this Type (e.g., 'int[][]' has 2; 'int' has 0).
-    void children( Type[] kids );
-        Retrieve this Type's children Types in the array 'kids'.
+    Type[] children();
+        Retrieve this Type's children Types.
     int equals( Type another );
         Return whether this Type is same as 'another'.
     int isArray();
@@ -419,20 +419,17 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
     string name();
         Return the name of this Type.
     string baseName();
-        Return the base name of this Type. The base of name of an array
-        Type is the type without the array dimensions (e.g., base name of
-        'int[][]' is 'int')
-        Return the name of this Type.
+        Return the base name of this Type. The base of name of an array Type is the type without the array dimensions (e.g., base name of 'int[][]' is 'int')
     string origin();
-        Return a string decribing where this Type was defined (e.g., "builtin", "chugin", "user").
+        Return a string decribing where this Type was defined (e.g., "builtin", "chugin", "cklib", "user").
     Type parent();
         Return this Type's parent Type; returns null if this Type is 'Object'.
     static Type find( string typeName );
         Find and return the Type associated with 'typeName'; returns null if no Types currently in the VM with that name.
-    static void getTypes( Type[] types, int includeObjects, int includePrimitives, int includeSpecial, int includeBuiltin, int includeChugins, int includeImports, int includeUserDefined );
-        Retrieves in the array 'types' all top-level Types currently in the ChucK runtime type system; 'includeObjects'--include all Objects? 'includePrimitives'--include primitive types suchs as 'int' and 'dur'? 'includeSpecial'--include special types such as '@array' and '@function'? The results are further filtered by 'includeBuiltin'--include builtin types? 'includeChugins'--include types imported from chugins? 'includeImports'--include types imported from CK files in library path? 'includeUserDefined'--include types defined in ChucK code?
-    static void getTypes( Type[] types );
-        Retrieves in the array 'types' all top-level Types currently in the ChucK VM's type system; 'includeObjects' indicated whether to include all Objects; 'includePrimitives' indicates whether to include primitive types suchs as 'int' and 'dur'.
+    static Type[] getTypes( int attributes, int origins );
+        Retrieve all top-level Types in the ChucK runtime type system that fit the attributes and origins flags. Flags that can bitwise-OR'ed for attributes: Type.ATTRIB_OBJECT, Type.ATTRIB_PRIMITIVE,  TYPE_SPECIAL -- and for origins: Type.ORIGIN_BUILTIN, Type.ORIGIN_CHUGIN, Type.ORIGIN_CKLIB, Type.ORIGIN_USER.
+    static Type[] getTypes();
+        Retrieves all top-level Types currently in the type system.
     static Type of( Object obj );
         Return the Type of 'obj'
     static Type of( int val );
@@ -451,54 +448,69 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
         Return the Type associated with 'vec3'.
     static Type of( vec4 val );
         Return the Type associated with 'vec4'.
+    --------------
+    static int ATTRIB_OBJECT;
+        Attribute bit for non-primitive Object types.
+    static int ATTRIB_PRIMITIVE;
+        Attribute bit for primitive types.
+    static int ATTRIB_SPECIAL;
+        Attribute bit for special types (e.g., @array and @function).
+    static int ORIGIN_BUILTIN;
+        Origin bit for "builtin".
+    static int ORIGIN_CHUGIN;
+        Origin bit for "chugin".
+    static int ORIGIN_CKLIB;
+        Origin bit for "cklib".
+    static int ORIGIN_USER;
+        Origin bit for "user".
 - (added) new examples in examples/type
     |- polymorph.ck -- an example of polymorphism in ChucK
     |- type_query.ck -- querying for a list of types from the ChucK runtime type system
     |- type_type.ck -- example showing some functionalities of the Type type
-	---------------
+    ---------------
 - (added) new CKDoc class
     |- A ChucK documentation generator. Based on Spencer Salazar's ckdoc utility.
     |- (inheritance) CKDoc -> Object
-	---------------
-	void addGroup( Type[] types, string name, string shortName, string description );
-	    Add a group of types to be documented, including group 'name', a 'shortName' to be used for any files, and a group 'description'.
-	void addGroup( string[] typeNames, string name, string shortName, string description );
-	    Add a group of types (by type name) to be documented, including group 'name', a 'shortName' to be used for any files, and a group 'description'.
-	void clear();
-	    Clear all added groups.
-	string examplesRoot( string path );
-	    Set the examples directory root path; returns what was set.
-	string examplesRoot();
-	    Get the current examples directory root path.
-	string genCSS();
-	    Generate CSS; return as string.
-	void genGroups( string[] results );
-	    Generate documentation for all added groups, return each in a separate entry
-	string genIndex( string indexTitle );
-	    Generate top-level index; return as string.
-	string genType( Type type );
-	    Generate documentation for a single Type.
-	string genType( string typeName );
-	    Generate documentation for a single Type (by name).
-	int numGroups();
-	    Get the number of groups added.
-	int outputFormat( int which );
-	    Set which output format to use; see CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON.
-	int outputFormat();
-	    Set which output format is selected; see CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON.
-	int outputToDir( string path, string indexTitle );
-	    Generate everything as files into the output directory.
-	static int HTML;
-	    Output HTML format.
-	static int JSON;
-	    Output JSON format (not implemented).
-	static int MARKDOWN;
-	    Output MARKDOWN format (not implemented).
-	static int NONE;
-	    No output format.
-	static int TEXT;
-	    Output TEXT format (not implemented).
-	---------------
+    ---------------
+    void addGroup( Type[] types, string name, string shortName, string description );
+        Add a group of types to be documented, including group 'name', a 'shortName' to be used for any files, and a group 'description'.
+    void addGroup( string[] typeNames, string name, string shortName, string description );
+        Add a group of types (by type name) to be documented, including group 'name', a 'shortName' to be used for any files, and a group 'description'.
+    void clear();
+        Clear all added groups.
+    string examplesRoot( string path );
+        Set the examples directory root path; returns what was set.
+    string examplesRoot();
+        Get the current examples directory root path.
+    string genCSS();
+        Generate CSS; return as string.
+    void genGroups( string[] results );
+        Generate documentation for all added groups, return each in a separate entry
+    string genIndex( string indexTitle );
+        Generate top-level index; return as string.
+    string genType( Type type );
+        Generate documentation for a single Type.
+    string genType( string typeName );
+        Generate documentation for a single Type (by name).
+    int numGroups();
+        Get the number of groups added.
+    int outputFormat( int which );
+        Set which output format to use; see CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON.
+    int outputFormat();
+        Set which output format is selected; see CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON.
+    int outputToDir( string path, string indexTitle );
+        Generate everything as files into the output directory.
+    static int HTML;
+        Output HTML format.
+    static int JSON;
+        Output JSON format (not implemented).
+    static int MARKDOWN;
+        Output MARKDOWN format (not implemented).
+    static int NONE;
+        No output format.
+    static int TEXT;
+        Output TEXT format (not implemented).
+    ---------------
 - (added) array.zero()
     |- zero out the contents of the array; size is unchanged.
 - (added) negative indexing for arrays (thanks nshaheed)

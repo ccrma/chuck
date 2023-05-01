@@ -1037,6 +1037,38 @@ error:
 
 
 //-----------------------------------------------------------------------------
+// name: init_class_function()
+// desc: initialize the @fuction class | 1.5.0.0 (ge) added
+//-----------------------------------------------------------------------------
+t_CKBOOL init_class_function( Chuck_Env * env, Chuck_Type * type )
+{
+    // log
+    EM_log( CK_LOG_SEVERE, "class '@function'" );
+    const char * doc = "the base function Type.";
+
+    // init as base class
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc ) )
+        return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+
+    return TRUE;
+}
+
+
+
+
+// global initialization
+const t_CKINT TYPE_ATTRIB_OBJECT = 0x1;
+const t_CKINT TYPE_ATTRIB_PRIMITIVE = 0x2;
+const t_CKINT TYPE_ATTRIB_SPECIAL = 0x4;
+const t_CKINT TYPE_ORIGIN_BUILTIN = 0x8;
+const t_CKINT TYPE_ORIGIN_CHUGIN = 0x10;
+const t_CKINT TYPE_ORIGIN_CKLIB = 0x20;
+const t_CKINT TYPE_ORIGIN_USER = 0x40;
+
+
+//-----------------------------------------------------------------------------
 // name: init_class_type()
 // desc: initialize the Type class | 1.5.0.0 (ge) added
 //-----------------------------------------------------------------------------
@@ -1055,6 +1087,15 @@ t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type )
     // add relevant examples
     if( !type_engine_import_add_ex( env, "type/type_type.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "type/type_query.ck" ) ) goto error;
+
+    // add static variables
+    if( !type_engine_import_svar( env, "int", "OBJECT", TRUE, (t_CKUINT)(&TYPE_ATTRIB_OBJECT), "attribute bit for non-primitive Object types.") ) goto error;
+    if( !type_engine_import_svar( env, "int", "PRIMITIVE", TRUE, (t_CKUINT)(&TYPE_ATTRIB_PRIMITIVE), "attribute bit for primitive types.") ) goto error;
+    if( !type_engine_import_svar( env, "int", "SPECIAL", TRUE, (t_CKUINT)(&TYPE_ATTRIB_SPECIAL), "attribute bit for special types (e.g., @array and @function).") ) goto error;
+    if( !type_engine_import_svar( env, "int", "BUILTIN", TRUE, (t_CKUINT)(&TYPE_ORIGIN_BUILTIN), "origin bit for \"builtin\".") ) goto error;
+    if( !type_engine_import_svar( env, "int", "CHUGIN", TRUE, (t_CKUINT)(&TYPE_ORIGIN_CHUGIN), "origin bit for \"chugin\".") ) goto error;
+    if( !type_engine_import_svar( env, "int", "CKLIB", TRUE, (t_CKUINT)(&TYPE_ORIGIN_BUILTIN), "origin bit for \"cklib\".") ) goto error;
+    if( !type_engine_import_svar( env, "int", "USER", TRUE, (t_CKUINT)(&TYPE_ORIGIN_BUILTIN), "origin bit for \"user\".") ) goto error;
 
     // add equals()
     func = make_new_mfun( "int", "equals", type_equals );
@@ -1090,9 +1131,8 @@ t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add kids()
-    func = make_new_mfun( "void", "children", type_children );
-    func->add_arg( "Type[]", "kids" );
-    func->doc = "retrieve this Type's children Types in the array 'kids'.";
+    func = make_new_mfun( "Type[]", "children", type_children );
+    func->doc = "retrieve this Type's children Types.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add isPrimitive()
@@ -1112,7 +1152,7 @@ t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type )
 
     // add origin()
     func = make_new_mfun( "string", "origin", type_origin );
-    func->doc = "return a string decribing where this Type was defined (e.g., \"builtin\", \"chugin\", \"user\").";
+    func->doc = "return a string decribing where this Type was defined (e.g., \"builtin\", \"chugin\", \"cklib\", \"user\").";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add find()
@@ -1176,22 +1216,27 @@ t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // add getTypes()
-    func = make_new_sfun( "void", "getTypes", type_getTypes );
-    func->add_arg( "Type[]", "types" );
-    func->add_arg( "int", "includeObjects" );
-    func->add_arg( "int", "includePrimitives" );
-    func->add_arg( "int", "includeSpecial" );
-    func->add_arg( "int", "includeBuiltin" );
-    func->add_arg( "int", "includeChugins" );
-    func->add_arg( "int", "includeImports" );
-    func->add_arg( "int", "includeUserDefined" );
-    func->doc = "retrieves in the array 'types' all top-level Types currently in the ChucK runtime type system; 'includeObjects'--include all Objects? 'includePrimitives'--include primitive types suchs as 'int' and 'dur'? 'includeSpecial'--include special types such as '@array' and '@function'? The results are further filtered by 'includeBuiltin'--include builtin types? 'includeChugins'--include types imported from chugins? 'includeImports'--include types imported from CK files in library path? 'includeUserDefined'--include types defined in ChucK code? ";
+    func = make_new_sfun( "Type[]", "getTypes", type_getTypes );
+    func->add_arg( "int", "attributes" );
+    func->add_arg( "int", "origins" );
+    func->doc = "retrieve all top-level Types in the ChucK runtime type system that fit the attributes and origins flags. Flags that can bitwise-OR'ed for attributes: Type.ATTRIB_OBJECT, Type.ATTRIB_PRIMITIVE,  TYPE_SPECIAL -- and for origins: Type.ORIGIN_BUILTIN, Type.ORIGIN_CHUGIN, Type.ORIGIN_CKLIB, Type.ORIGIN_USER.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
+    // add getTypes()
+    // func = make_new_sfun( "Type[]", "getTypes", type_getTypes2 );
+    // func->add_arg( "int", "includeObjects" );
+    // func->add_arg( "int", "includePrimitives" );
+    // func->add_arg( "int", "includeSpecial" );
+    // func->add_arg( "int", "includeBuiltin" );
+    // func->add_arg( "int", "includeChugins" );
+    // func->add_arg( "int", "includeImports" );
+    // func->add_arg( "int", "includeUserDefined" );
+    // func->doc = "retrieves in the array 'types' all top-level Types currently in the ChucK runtime type system; 'includeObjects'--include all Objects? 'includePrimitives'--include primitive types suchs as 'int' and 'dur'? 'includeSpecial'--include special types such as '@array' and '@function'? The results are further filtered by 'includeBuiltin'--include builtin types? 'includeChugins'--include types imported from chugins? 'includeImports'--include types imported from CK files in library path? 'includeUserDefined'--include types defined in ChucK code?";
+    // if( !type_engine_import_sfun( env, func ) ) goto error;
+
     // add getTypesAll()
-    func = make_new_sfun( "void", "getTypes", type_getTypesAll );
-    func->add_arg( "Type[]", "types" );
-    func->doc = "retrieves in the array 'types' all top-level Types currently in the ChucK VM's type system; 'includeObjects' indicated whether to include all Objects; 'includePrimitives' indicates whether to include primitive types suchs as 'int' and 'dur'.";
+    func = make_new_sfun( "Type[]", "getTypes", type_getTypesAll );
+    func->doc = "retrieves all top-level Types currently in the type system.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // end the class import
@@ -2844,8 +2889,8 @@ static void typeGetTypes(
     {
         // check special
         t_CKBOOL special = (types[i]->name.length()>0 && types[i]->name[0] == '@');
-        // if not match
-        if( special != isSpecial ) continue;
+        // if not requesting special types
+        if( !isSpecial && (special == TRUE) ) continue;
         // check origin
         te_Origin origin = types[i]->originHint;
 
@@ -2969,10 +3014,11 @@ CK_DLL_MFUN( type_children )
     Chuck_Type * me = (Chuck_Type *)SELF;
     // name
     string name = me->name;
-    // get argument
-    Chuck_Array4 * ret = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
-    // check
-    if( ret == NULL ) return;
+
+    // instantiate
+    Chuck_Array4 * ret = new Chuck_Array4( TRUE );
+    initialize_object( ret, VM->env()->t_array );
+
     // results
     vector<Chuck_Type *> types;
     // get types
@@ -2991,12 +3037,48 @@ CK_DLL_MFUN( type_children )
         // add reference
         SAFE_ADD_REF( types[i] );
     }
+
+    // return
+    RETURN->v_object = ret;
 }
 
 CK_DLL_MFUN( type_origin )
 {
+    // me, the type
     Chuck_Type * type = (Chuck_Type *)SELF;
-    RETURN->v_int = type->originHint;
+    // return type
+    Chuck_String * origin = (Chuck_String *)instantiate_and_initialize_object( VM->env()->t_string, VM );
+    // string
+    string s = "";
+    // check origin hint
+    switch( type->originHint )
+    {
+    case te_originBuiltin:
+        s = "builtin";
+        break;
+    case te_originChugin:
+        s = "chugin";
+        break;
+    case te_originImport:
+        s = "cklib";
+        break;
+    case te_originUserDefined:
+        s = "user";
+        break;
+    case te_originGenerated:
+        s = "generated";
+        break;
+
+    case te_originUnknown:
+    default:
+        s = "[unknown origin]";
+        break;
+    }
+
+    // set
+    origin->set( s );
+    // return
+    RETURN->v_object = origin;
 }
 
 CK_DLL_MFUN( type_isPrimitive )
@@ -3093,10 +3175,35 @@ CK_DLL_SFUN( type_typeOf_vec4 )
 
 CK_DLL_SFUN( type_getTypes )
 {
-    // get argument
-    Chuck_Array4 * ret = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
-    // check
-    if( ret == NULL ) return;
+    // instantiate
+    Chuck_Array4 * array = new Chuck_Array4( TRUE );
+    initialize_object( array, VM->env()->t_array );
+
+    // get args
+    t_CKINT attributes = GET_NEXT_INT(ARGS);
+    t_CKINT origins = GET_NEXT_INT(ARGS);
+
+    // get args
+    t_CKBOOL objs = (attributes & TYPE_ATTRIB_OBJECT) != 0;
+    t_CKBOOL prim = (attributes & TYPE_ATTRIB_PRIMITIVE) != 0;
+    t_CKBOOL special = (attributes & TYPE_ATTRIB_SPECIAL) != 0;
+    t_CKBOOL builtin = (origins & TYPE_ORIGIN_BUILTIN) != 0;
+    t_CKBOOL chugins = (origins & TYPE_ORIGIN_CHUGIN) != 0;
+    t_CKBOOL imports = (origins & TYPE_ORIGIN_CKLIB) != 0;
+    t_CKBOOL user = (origins & TYPE_ORIGIN_USER) != 0;
+
+    // get types with the flags
+    typeGetTypes( VM, array, objs, prim, special, builtin, chugins, imports, user );
+    // return
+    RETURN->v_object = array;
+}
+
+CK_DLL_SFUN( type_getTypes2 )
+{
+    // instantiate
+    Chuck_Array4 * array = new Chuck_Array4( TRUE );
+    initialize_object( array, VM->env()->t_array );
+
     // get args
     t_CKBOOL objs = GET_NEXT_INT(ARGS);
     t_CKBOOL prim = GET_NEXT_INT(ARGS);
@@ -3107,15 +3214,19 @@ CK_DLL_SFUN( type_getTypes )
     t_CKBOOL user = GET_NEXT_INT(ARGS);
 
     // get types with the flags
-    typeGetTypes( VM, ret, objs, prim, special, builtin, chugins, imports, user );
+    typeGetTypes( VM, array, objs, prim, special, builtin, chugins, imports, user );
+    // return
+    RETURN->v_object = array;
 }
 
 CK_DLL_SFUN( type_getTypesAll )
 {
-    // get argument
-    Chuck_Array4 * ret = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
-    // check
-    if( ret == NULL ) return;
+    // instantiate
+    Chuck_Array4 * array = new Chuck_Array4( TRUE );
+    initialize_object( array, VM->env()->t_array );
+
     // get all types
-    typeGetTypes( VM, ret, true, true, true, true, true, true, true );
+    typeGetTypes( VM, array, true, true, true, true, true, true, true );
+    // return
+    RETURN->v_object = array;
 }
