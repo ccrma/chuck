@@ -1,4 +1,5 @@
-example:
+macOS
+---
 python3 generate-iconset.py ~/Desktop/chuck.png
 
 this will:
@@ -11,6 +12,10 @@ iconutil -c icns chuck.iconset -o chuck.icns
 this will:
 create a single chuck.icns file
 
+
+windows
+---
+magick.exe convert icon-16.png icon-32.png icon-256.png icon.ico
 
 --- author and reference ---
 Old version (we are using this one)

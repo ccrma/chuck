@@ -2396,6 +2396,7 @@ CK_DLL_SFUN( HidIn_read_tilt_sensor )
     static t_CKBOOL hi_good = TRUE;
 
     Chuck_Array4 * array = new Chuck_Array4( FALSE, 3 );
+    initialize_object( array, VM->env()->t_array ); // 1.5.0.0 (ge) added
     array->set( 0, 0 );
     array->set( 1, 0 );
     array->set( 2, 0 );
@@ -3777,6 +3778,7 @@ t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Request & r)
     t_CKINT val = 0;
     int numRead = 0;
     Chuck_Array4 * array = new Chuck_Array4(FALSE, 0);
+    initialize_object( array, m_vmRef->env()->t_array ); // 1.5.0.0 (ge) added
     for(int i = 0; i < r.m_num; i++)
     {
         t_CKUINT len = 0;
@@ -3849,6 +3851,7 @@ t_CKBOOL Chuck_IO_Serial::handle_byte(Chuck_IO_Serial::Request & r)
     else
     {
         Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
+        initialize_object( array, m_vmRef->env()->t_array ); // 1.5.0.0 (ge) added
         for(int i = 0; i < r.m_num; i++)
         {
             array->set(i, m_tmp_buf[i]);
@@ -3925,6 +3928,7 @@ t_CKBOOL Chuck_IO_Serial::handle_int_binary(Chuck_IO_Serial::Request & r)
     uint32_t * m_ints = (uint32_t *) m_tmp_buf;
 
     Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
+    initialize_object( array, m_vmRef->env()->t_array ); // 1.5.0.0 (ge) added
     for(int i = 0; i < r.m_num; i++)
     {
         array->set(i, m_ints[i]);

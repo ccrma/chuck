@@ -9,20 +9,10 @@
 // date: Winter 2023
 //---------------------------------------------------------------------
 
-// instantiate an array of Type refs
-Type @ types[0];
-
 // get types currently in ChucK type system
 Type.getTypes(
-    types, // to be filled with results
-    false, // include objects
-    true, // include primitive types
-    false, // include special types (@array and @function)
-    true, // include builtin types
-    false, // include types from chugins
-    false, // include types from ck files in lib path
-    false // include user-defined classes
-);
+    Type.PRIMITIVE, Type.BUILTIN
+) @=> Type types[];
 
 // print results of query
 for( int i; i < types.size(); i++ )
@@ -32,15 +22,8 @@ for( int i; i < types.size(); i++ )
 
 // get types currently in ChucK type system
 Type.getTypes(
-    types, // to be filled with results
-    true, // include objects
-    false, // include primitive types
-    false, // include special types (@array and @function)
-    true, // include builtin types
-    false, // include types from chugins
-    false, // include types from ck files in lib path
-    false // include user-defined classes
-);
+    Type.OBJECT, Type.BUILTIN
+) @=> types;
 
 // print results of query
 for( int i; i < types.size(); i++ )
@@ -50,15 +33,8 @@ for( int i; i < types.size(); i++ )
 
 // get types currently in ChucK type system
 Type.getTypes(
-    types, // to be filled with results
-    true, // include objects
-    false, // include primitive types
-    false, // include special types (@array and @function)
-    false, // include builtin types
-    true, // include types from chugins
-    false, // include types from ck files in lib path
-    false // include user-defined classes
-);
+    Type.OBJECT, Type.CHUGIN
+) @=> types;
 
 // print results of query
 for( int i; i < types.size(); i++ )
@@ -67,7 +43,7 @@ for( int i; i < types.size(); i++ )
 }
 
 // get all subclasses of UGen
-UGen.typeOf().children( types );
+UGen.typeOf().children() @=> types;
 // print results
 for( int i; i < types.size(); i++ )
 {
