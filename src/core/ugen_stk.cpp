@@ -17904,7 +17904,7 @@ void WvIn :: init( void )
     byteswap = false;
     fileSize = 0;
     dataOffset = 0;
-    chunkPointer = NULL;
+    chunkPointer = 0;
     fileRate = 0;
     gain = 1;
     rate = 1;
