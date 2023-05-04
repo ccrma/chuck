@@ -8036,12 +8036,15 @@ DelayL :: DelayL()
 {
     doNextOut = true;
     nextOutput = 0;
+    alpha = 0; // added 1.5.0.0
+    omAlpha = 0; // added 1.5.0.0
 }
 
 DelayL :: DelayL(MY_FLOAT theDelay, long maxDelay)
 {
   // Writing before reading allows delays from 0 to length-1.
   length = maxDelay+1;
+  nextOutput = 0; // added 1.5.0.0
 
   if ( length > 4096 ) {
     // We need to delete the previously allocated inputs.
@@ -17371,16 +17374,15 @@ const MY_FLOAT * WaveLoop :: tickFrame(void)
     lastOutput[i] = data[index];
     lastOutput[i] += (alpha * (data[index+channels] - lastOutput[i]));
     index++;
-    // 1.5.0.0 (ge) moved gain normalization from below to here
-    lastOutput[i] *= gain;
+    // 1.5.0.0 (ge) | scaleToOne
+    lastOutput[i] *= scaleToOne;
   }
 
-  // 1.5.0.0 (ge) | moved the gain normalization out of chunking logic
-  // which will not run if file is below chunk size
-  // if (chunking) {
-  //   // Scale outputs by gain.
-  //   for (i=0; i<channels; i++)  lastOutput[i] *= gain;
-  // }
+   // if reading in chunks
+   if(chunking) {
+     // Scale outputs by gain.
+     for (i=0; i<channels; i++)  lastOutput[i] *= gain;
+   }
 
   // Increment time, which can be negative.
   time += rate;
@@ -17679,8 +17681,7 @@ Wurley :: Wurley()
   : FM()
 {
   // Concatenate the STK rawwave path to the rawwave files
-  for ( int i=0; i<3; i++ )
-  waves[i] = new WaveLoop( "special:sinewave", TRUE );
+  for ( int i=0; i<3; i++ ) waves[i] = new WaveLoop( "special:sinewave", TRUE );
   waves[3] = new WaveLoop( "special:fwavblnk", TRUE );
 
   this->setRatio(0, 1.0);
@@ -17889,16 +17890,26 @@ WvIn :: ~WvIn()
 void WvIn :: init( void )
 {
     fd = 0;
-    m_loaded = false;
-    // strcpy ( m_filename, "" );
     data = 0;
     lastOutput = 0;
+    m_loaded = false;
     chunking = false;
     finished = true;
     interpolate = false;
     bufferSize = 0;
     channels = 0;
     time = 0.0;
+
+    // 1.5.0.0 (ge) added initialization
+    byteswap = false;
+    fileSize = 0;
+    dataOffset = 0;
+    chunkPointer = NULL;
+    fileRate = 0;
+    gain = 1;
+    rate = 1;
+    scaleToOne = 1;
+    memset( msg, 0, sizeof(msg) );
 }
 
 void WvIn :: closeFile( void )
@@ -17997,7 +18008,6 @@ void WvIn :: openFile( const char *fileName, bool raw, bool doNormalize, bool ge
         byteswap = false;
         fileRate = 22050.0;
         rate = (MY_FLOAT)fileRate / Stk::sampleRate();
-
 
         // which
         if( strstr(fileName, "special:sinewave") )
@@ -18103,7 +18113,17 @@ void WvIn :: openFile( const char *fileName, bool raw, bool doNormalize, bool ge
     }
     else readData( 0 );  // Load file data.
 
-    if ( doNormalize ) normalize();
+    // check normalize
+    if( doNormalize ) {
+        normalize();
+    } else {
+        // 1.5.0.0 (ge) | added scaling to range [-1,1]
+        if ( dataType == STK_SINT8 ) scaleToOne = 1.0 / 128.0;
+        else if ( dataType == STK_SINT16 ) scaleToOne = 1.0 / 32768.0;
+        else if ( dataType == STK_SINT32 ) scaleToOne = 1.0 / 2147483648.0;
+        else if ( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 ) scaleToOne = 1.0;
+        else scaleToOne = 1.0;
+    }
     m_loaded = true;
     finished = false;
     interpolate = ( fmod( rate, 1.0 ) != 0.0 );
@@ -18683,12 +18703,12 @@ void WvIn :: normalize(void)
 // Normalize all channels equally by the greatest magnitude in all of the data.
 void WvIn :: normalize(MY_FLOAT peak)
 {
-  if (chunking) {
-    if ( dataType == STK_SINT8 ) gain = peak / 128.0;
-    else if ( dataType == STK_SINT16 ) gain = peak / 32768.0;
-    else if ( dataType == STK_SINT32 ) gain = peak / 2147483648.0;
-    else if ( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 ) gain = peak;
-
+  if( chunking )
+  {
+    if( dataType == STK_SINT8 ) gain = peak / 128.0;
+    else if( dataType == STK_SINT16 ) gain = peak / 32768.0;
+    else if( dataType == STK_SINT32 ) gain = peak / 2147483648.0;
+    else if( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 ) gain = peak;
     return;
   }
 
@@ -27433,7 +27453,7 @@ CK_DLL_TICK( WvIn_tick )
 {
     WvIn * w = (WvIn *)OBJ_MEMBER_UINT(SELF, WvIn_offset_data);
 
-    // setting doNormalize flag in w->openFile() and let WvIn take care of it
+    // value is auto-scaled OR normalized in w->openFile() | 1.5.0.0 (ge)
     *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() : (SAMPLE)0.0 );
     // old: dividing by SHRT_MAX no good for for non-16bit datatypes
     // *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() / SHRT_MAX : (SAMPLE)0.0 );
@@ -27477,8 +27497,8 @@ CK_DLL_CTRL( WvIn_ctrl_path )
     // check if not null | 1.5.0.0 (ge)
     if( path != NULL )
     {
-        // open | 1.5.0.0 (ge) changed doNormalize to TRUE
-        try { w->openFile( path->str().c_str(), FALSE, TRUE ); }
+        // open
+        try { w->openFile( path->str().c_str(), FALSE, FALSE ); }
         catch( StkError & e )
         {
             // do nothing here; should have already printed

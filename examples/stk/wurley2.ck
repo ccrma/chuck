@@ -33,7 +33,7 @@ fun void vecho_Shred( )
         // find the increment
         (mix-old)/1000.0 => inc;
         1000 => n;
-        while( n-- )
+        while( --n )
         {
             old + inc => old;
             old => a.mix => b.mix => c.mix;
