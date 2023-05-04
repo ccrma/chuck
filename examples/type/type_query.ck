@@ -17,7 +17,7 @@ Type.getTypes(
 // print results of query
 for( int i; i < types.size(); i++ )
 {
-    cherr <= "(builtin primitive types): " <= types[i].name() <= IO.newline();
+    cherr <= "(builtin primitive types): " <= types[i].name() <= " (" <= types[i].origin() <= ")" <= IO.newline();
 }
 
 // get types currently in ChucK type system
@@ -28,7 +28,7 @@ Type.getTypes(
 // print results of query
 for( int i; i < types.size(); i++ )
 {
-    cherr <= "(builtin object types): " <= types[i].name() <= IO.newline();
+    cherr <= "(builtin object types): " <= types[i].name() <= " (" <= types[i].origin() <= ")" <= IO.newline();
 }
 
 // get types currently in ChucK type system
@@ -39,7 +39,7 @@ Type.getTypes(
 // print results of query
 for( int i; i < types.size(); i++ )
 {
-    cherr <= "(chugin types): " <= types[i].name() <= IO.newline();
+    cherr <= "(chugin types): " <= types[i].name() <= " (" <= types[i].origin() <= ")" <= IO.newline();
 }
 
 // get all subclasses of UGen
@@ -47,5 +47,5 @@ UGen.typeOf().children() @=> types;
 // print results
 for( int i; i < types.size(); i++ )
 {
-    cherr <= "(UGens): " <= types[i].name() <= IO.newline();
+    cherr <= "(UGens): " <= types[i].name() <= " (" <= types[i].origin() <= ")" <= IO.newline();
 }
