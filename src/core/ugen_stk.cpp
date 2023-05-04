@@ -18835,12 +18835,15 @@ const MY_FLOAT * WvIn :: tickFrame(void)
       lastOutput[i] = data[index];
       lastOutput[i] += (alpha * (data[index+channels] - lastOutput[i]));
       index++;
+      lastOutput[i] *= scaleToOne; // 1.5.0.0 (ge) | scaleToOne
     }
   }
   else {
     index *= channels;
-    for (i=0; i<channels; i++)
+    for (i=0; i<channels; i++) {
       lastOutput[i] = data[index++];
+      lastOutput[i] *= scaleToOne; // 1.5.0.0 (ge) | scaleToOne
+    }
   }
 
   if (chunking) {
@@ -27569,7 +27572,7 @@ CK_DLL_TICK( WaveLoop_tick )
 {
     WaveLoop * w = (WaveLoop *)OBJ_MEMBER_UINT(SELF, WvIn_offset_data);
 
-    // setting doNormalize flag in w->openFile() and let WvIn take care of it
+    // value is auto-scaled OR normalized in w->openFile() | 1.5.0.0 (ge)
     *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() : (SAMPLE)0.0 );
     // old: dividing by SHRT_MAX no good for for non-16bit datatypes
     // *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() / SHRT_MAX : (SAMPLE)0.0 );
