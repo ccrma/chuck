@@ -3,9 +3,12 @@
 // desc: mel-frequency cepstral coefficients
 //       this example aggregates multiple MFCC frames; compute mean
 //
+// version: need chuck version 1.5.0.0 or higher
+// sorting: part of ChAI (ChucK for AI)
+//
 // to see API, uncomment:
 // MFCC.help();
-
+//
 // author: Yikai Li and Ge Wang
 // date: Spring 2023
 //---------------------------------------------------------------------

@@ -2,8 +2,8 @@
 // name: hmm-train.ck
 // desc: basic hidden markov model (HMM) usage example (using train)
 //
-// version: need chuck version 1.4.2.0 or higher
-// sorting: part of ChAI (ChucK for AI) [BETA]
+// version: need chuck version 1.5.0.0 or higher
+// sorting: part of ChAI (ChucK for AI)
 //
 // uncomment the next line to learn more about the KNN object:
 // HMM.help();

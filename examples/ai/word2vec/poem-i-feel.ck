@@ -1,7 +1,9 @@
 //------------------------------------------------------------------------------
 // name: poem-i-feel.ck
 // desc: a sus poem made with chAI and word2vec
-// sorting: part of chAI (ChucK for AI)
+//
+// version: need chuck version 1.5.0.0 or higher
+// sorting: part of ChAI (ChucK for AI)
 //
 // "i feel"
 // -- a stream of unconsciousness poem generator

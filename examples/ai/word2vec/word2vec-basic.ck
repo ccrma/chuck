@@ -2,13 +2,15 @@
 // name: word2vec-basic.ck
 // desc: word2vec basic usage
 //
+// version: need chuck version 1.5.0.0 or higher
+// sorting: part of ChAI (ChucK for AI)
+//
 // NOTE: download pre-trained word vector model from:
 //       https://chuck.stanford.edu/chai/data/glove/
 //         | (can use any of these)
 //       glove-wiki-gigaword-50.txt (400000 words x 50 dimensions)
 //       glove-wiki-gigaword-50-pca-3.txt (400000 words x 3 dimensions)
 //       glove-wiki-gigaword-50-tsne-2.txt (400000 words x 2 dimensions)
-// sorting: part of ChAI (ChucK for AI) [BETA]
 //
 // author: Yikai Li and Ge Wang
 // date: Spring 2023

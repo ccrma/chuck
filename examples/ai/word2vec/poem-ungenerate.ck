@@ -1,7 +1,9 @@
 //------------------------------------------------------------------------------
 // name: poem-ungenerate.ck
 // desc: they just keep coming; more sus poem word2vec examples
-// sorting: part of chAI (ChucK for AI)
+//
+// version: need chuck version 1.5.0.0 or higher
+// sorting: part of ChAI (ChucK for AI)
 //
 // NOTE: because this example needs ConsoleInput, it needs to
 //       run command line chuck
