@@ -1,7 +1,9 @@
 //------------------------------------------------------------------------------
 // name: poem-spew.ck
 // desc: yet another sus poem made with chAI and word2vec
-// sorting: part of ChAI (ChucK for AI) [BETA]
+//
+// version: need chuck version 1.5.0.0 or higher
+// sorting: part of ChAI (ChucK for AI)
 //
 // "Spew"
 // -- yet another stream of unconsciousness poem generator

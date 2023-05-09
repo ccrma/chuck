@@ -653,7 +653,7 @@ string CKDocHTMLOutput::renderIndex( const string & title, const vector<CKDocGro
     sout << "<meta property=\"og:url\" content=\"https://ccrma.stanford.edu/software/chuck/doc/reference/\" />\n";
     sout << "<meta property=\"og:type\" content=\"website\" />\n";
     sout << "<meta property=\"og:title\" content=\"ChucK | Class Library Reference\" />\n";
-    sout << "<meta property=\"og:description\" content=\"ChucK programming language core class library reference, including base types, unit generators, unit analyzers, basic libraries, and more.\" />\n";
+    sout << "<meta property=\"og:description\" content=\"ChucK programming language core class library reference, including base types, unit generators, unit analyzers, standard libraries, and more.\" />\n";
     sout << "<meta name=\"author\" content=\"ChucK Team\">\n";
     sout << "<meta property=\"og:image\" content=\"https://ccrma.stanford.edu/software/chuck/doc/images/chuck-logo2023w.png\" />\n";
     sout << "<meta property=\"fb:app_id\" content=\"966242223397117\" /> <!--default app id-->\n";

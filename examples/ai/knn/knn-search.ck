@@ -2,8 +2,8 @@
 // name: knn2-search.ck
 // desc: basic k-nearest-neighbor (k-NN) search example;
 //
-// version: need chuck version 1.4.2.1 or higher
-// sorting: part of ChAI (ChucK for AI) [BETA]
+// version: need chuck version 1.5.0.0 or higher
+// sorting: part of ChAI (ChucK for AI)
 //
 // uncomment the next line to learn more about the KNN object:
 // KNN.help();

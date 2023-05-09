@@ -3,7 +3,7 @@
 // desc: a real-time genre-classifier using the features extracted using
 //       GTZAN dataset + features-extract.ck
 //
-// version: need chuck version 1.4.2.1 or higher
+// version: need chuck version 1.5.0.0 or higher
 // sorting: part of ChAI (ChucK for AI)
 //
 // USAGE: run in any real-time mode (default)

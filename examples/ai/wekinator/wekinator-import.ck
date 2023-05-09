@@ -4,7 +4,7 @@
 //       (which can be saved either from the Wekinator app or
 //       using Wekinator.exportObs())
 //
-// version: need chuck version 1.4.2.1 or higher
+// version: need chuck version 1.5.0.0 or higher
 // sorting: part of ChAI (ChucK for AI)
 //
 // uncomment for Wekinator API:

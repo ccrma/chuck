@@ -4,8 +4,8 @@
 //       simplified musical genre classification task where three labeled
 //       categories are given respective locations in a 2D feature space.
 //
-// version: need chuck version 1.4.2.1 or higher
-// sorting: part of ChAI (ChucK for AI) [BETA]
+// version: need chuck version 1.5.0.0 or higher
+// sorting: part of ChAI (ChucK for AI)
 //
 // uncomment the next line to learn more about the KNN2 object:
 // KNN2.help();

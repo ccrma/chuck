@@ -1,4 +1,15 @@
-// instantiate
+//---------------------------------------------------------------------
+// name: gen-all.ck
+// desc: generate HTML documentation for chuck website reference
+//       see: https://chuck.stanford.edu/doc/reference/
+//
+// version: need chuck version 1.5.0.0 or higher
+//
+// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
+// date: Spring 2023
+//---------------------------------------------------------------------
+
+// instantiate a CKDoc object
 CKDoc doc; // documentation orchestra
 // set the examples root
 "../examples/" => doc.examplesRoot;
@@ -6,9 +17,9 @@ CKDoc doc; // documentation orchestra
 // add group
 doc.addGroup(
     // class names
-    ["Object", "Event", "Shred", "Math", "Machine", "Std", "string", "@array"],
+    ["Object", "Event", "Shred", "Math", "Machine", "Std", "string", "@array", "CKDoc" ],
     // group name
-    "Base Libraries",
+    "Base Classes",
     // file name
     "base", 
     // group description
@@ -124,8 +135,20 @@ doc.addGroup(
     "Communication tools, including file input/output, Open Sound Control, MIDI, MIDI file reading, serial i/o."
 );
 
+// add group
+doc.addGroup(
+    // class names
+    [ "CKDoc", "StringTokenizer", "ConsoleInput" ],
+    // group name
+    "Utilities",
+    // file name
+    "utils",
+    // group description
+    "Additional Utiilities"
+);
+
 // generate
 doc.outputToDir( ".", "ChucK Class Library Reference" );
 
-// print what was generated (or add option to)
-// print what types are in the type system but wasn't documented
+// TODO: print what was generated (or add option to)
+// TODO: print what types are in the type system but wasn't documented
