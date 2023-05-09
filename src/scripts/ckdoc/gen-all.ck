@@ -95,7 +95,7 @@ doc.addGroup(
     // file name
     "chugins",
     // group descriptions
-    "Distribution chugins ranging from unit generators to utilities."
+    "Default chugins library offering unit generators and utilities."
 );
 
 // add group
