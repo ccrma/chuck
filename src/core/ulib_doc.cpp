@@ -451,7 +451,7 @@ public:
 
     void example(const std::string &name, const std::string &url)
     {
-        m_outputStr += "<li><a href=\"" + url + "\">" + name + "</a></li>\n";
+        m_outputStr += "<li><a target=\"_blank\" href=\"" + url + "\">" + name + "</a></li>\n";
     }
 
     void static_member_var(Chuck_Value * var)
@@ -643,10 +643,22 @@ string CKDocHTMLOutput::renderIndex( const string & title, const vector<CKDocGro
     ostringstream sout;
 
     // output index header
-    sout <<  "<html>\n<head>\n";
-    sout <<  "<title>" << title << "</title>\n";
-    sout <<  "<link rel=\"stylesheet\" type=\"text/css\" href=\"ckdoc.css\" />\n";
-    sout <<  "<link rel=\"stylesheet\" type=\"text/css\" href=\"class.css\" />\n";
+    sout << "<html>\n<head>\n";
+    sout << "<title>" << title << "</title>\n";
+    sout << "<link rel=\"stylesheet\" type=\"text/css\" href=\"ckdoc.css\" />\n";
+    sout << "<link rel=\"stylesheet\" type=\"text/css\" href=\"class.css\" />\n";
+
+    sout << "<meta charset=\"utf-8\">\n";
+    sout << "<meta name=\"keywords\" content=\"ChucK, strongly-timed,audio, programming language, computer music, Artful Design, Stanford University, CCRMA, Princeton University, SoundLab, Ge Wang, Perry Cook, design, art, computer, music, technology, engineering, education\" />\n";
+    sout << "<meta property=\"og:url\" content=\"https://ccrma.stanford.edu/software/chuck/doc/reference/\" />\n";
+    sout << "<meta property=\"og:type\" content=\"website\" />\n";
+    sout << "<meta property=\"og:title\" content=\"ChucK | Class Library Reference\" />\n";
+    sout << "<meta property=\"og:description\" content=\"ChucK programming language core class library reference, including base types, unit generators, unit analyzers, basic libraries, and more.\" />\n";
+    sout << "<meta name=\"author\" content=\"ChucK Team\">\n";
+    sout << "<meta property=\"og:image\" content=\"https://ccrma.stanford.edu/software/chuck/doc/images/chuck-logo2023w.png\" />\n";
+    sout << "<meta property=\"fb:app_id\" content=\"966242223397117\" /> <!--default app id-->\n";
+    sout << "<link rel=\"canonical\" href=\"http://chuck.stanford.edu/doc/reference\" />\n";
+
     sout <<  "</head>\n";
     sout <<  "<body>\n";
     sout <<  "<div id=\"title\">\n";
