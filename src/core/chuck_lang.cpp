@@ -415,6 +415,21 @@ t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type )
     func->doc = "can the event can be waited on? Currently always returns true.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "event/broadcast.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "event/signal.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "event/signal4.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "event/event-extend.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "event/event-x-bpm-1.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "event/event-x-bpm-2.ck" ) ) goto error;
+
+    // if( !type_engine_import_add_ex( env, "hid/joy.ck" ) ) goto error;
+    // if( !type_engine_import_add_ex( env, "hid/kb.ck" ) ) goto error;
+    // if( !type_engine_import_add_ex( env, "midi/gomidi.ck" ) ) goto error;
+    // if( !type_engine_import_add_ex( env, "midi/polyfony.ck" ) ) goto error;
+    // if( !type_engine_import_add_ex( env, "midi/polyfony2.ck" ) ) goto error;
+    // if( !type_engine_import_add_ex( env, "osc/r.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -541,6 +556,16 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "int", "levelsUp" );
     func->doc = "get the enclosing directory, the specified number of parent directories up.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "shred/powerup.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "shred/spork.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "shred/spork2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "shred/spork2-exit.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "shred/spork2-remove.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "event/broadcast.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "event/signal.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "event/signal4.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -875,26 +900,33 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
 
     // add parent()
     // disable for now
-//    func = make_new_mfun( "string", "parent", string_parent );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
+    // func = make_new_mfun( "string", "parent", string_parent );
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
 
-//    // add toTime()
-//    func = make_new_mfun( "float", "toTime", string_toFloat );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
-//
-//    // add toDur()
-//    func = make_new_mfun( "float", "toDur", string_toFloat );
-//    if( !type_engine_import_mfun( env, func ) ) goto error;
+    // add toTime()
+    // func = make_new_mfun( "float", "toTime", string_toFloat );
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
 
-/*    // add at()
-    func = make_new_mfun( "int", "ch", string_set_at );
-    func->add_arg( "int", "index" );
-    func->add_arg( "int", "val" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-    func = make_new_mfun( "int", "ch", string_get_at );
-    func->add_arg( "int", "index" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-*/
+    // add toDur()
+    // func = make_new_mfun( "float", "toDur", string_toFloat );
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add at()
+    // func = make_new_mfun( "int", "ch", string_set_at );
+    // func->add_arg( "int", "index" );
+    // func->add_arg( "int", "val" );
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
+    // func = make_new_mfun( "int", "ch", string_get_at );
+    // func->add_arg( "int", "index" );
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples | 1.5.0.0 (ge) added
+    if( !type_engine_import_add_ex( env, "string/strops.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "string/strops2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "string/token.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "string/escape.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "string/tostr.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 

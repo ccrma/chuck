@@ -148,7 +148,15 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
                                         doc.c_str() ) )
         return FALSE;
 
+    // add examples | 1.5.0.0 (ge)
+    type_engine_import_add_ex( env, "otf_05.ck" );
+    type_engine_import_add_ex( env, "otf_06.ck" );
+    type_engine_import_add_ex( env, "basic/foo.ck" );
+    type_engine_import_add_ex( env, "basic/bar.ck" );
+    type_engine_import_add_ex( env, "basic/chirp.ck" );
+    type_engine_import_add_ex( env, "basic/alarm.ck" );
     type_engine_import_add_ex( env, "basic/whirl.ck" );
+    type_engine_import_add_ex( env, "analysis/fft.ck" );
 
     // end the class import
     type_engine_import_class_end( env );
@@ -194,6 +202,10 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     func->doc = "whether sawtooth wave is to fall (0) or rise (1).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "deep/thx.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "/basic/oscillatronx.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -232,6 +244,12 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "float", "width", sqrosc_ctrl_width );
     func->doc = "set width of duty cycle (always 0.5).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "basic/oscillatronx.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "filter/brf.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "filter/rlpf.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "filter/rhpf.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -949,6 +967,9 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     func->doc = "set lookup table coefficients; meaning is dependent on subclass";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "special/readme-GenX.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -973,9 +994,11 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     func->doc = "set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "special/Gen5-test.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
-
 
 
     //---------------------------------------------------------------------
@@ -996,6 +1019,9 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float", "v[]" );
     func->doc = "set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "special/Gen7-test.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -1018,9 +1044,11 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     func->doc = "set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "special/Gen9-test.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
-
 
 
     //---------------------------------------------------------------------
@@ -1038,6 +1066,9 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float", "v[]" );
     func->doc = "set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "special/Gen10-test.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -1064,11 +1095,15 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     func->doc = "set lookup table coefficients.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "special/Gen17-test.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
+
     //---------------------------------------------------------------------
-    // Curve
+    // CurveTable
     //---------------------------------------------------------------------
     doc = "constructs a wavetable composed of segments of variable times, "
     "values, and curvatures. Coefficients are specified as a single linear "
@@ -1081,6 +1116,9 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "CurveTable", "GenX", env->global(),
                                         NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "special/GenX-CurveTable-test.ck" ) ) goto error;
 
     func = make_new_mfun( "float[]", "coefs", curve_coeffs ); //load table
     func->add_arg( "float", "v[]" );
@@ -1113,7 +1151,6 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
 
     // end the class import
     type_engine_import_class_end( env );
-
 
     return TRUE;
 

@@ -17,7 +17,7 @@ CKDoc doc; // documentation orchestra
 // add group
 doc.addGroup(
     // class names
-    ["Object", "Event", "Shred", "Math", "Machine", "Std", "string", "@array", "CKDoc" ],
+    ["Object", "Event", "Shred", "Math", "Machine", "Std", "string", "@array" ],
     // group name
     "Base Classes",
     // file name
@@ -107,7 +107,7 @@ doc.addGroup(
     // file name
     "uanae",
     // group description
-    "Unit analyzer (UAna) objects are specialized UGens that can also pass analysis information to other UAnae."
+    "Unit analyzer (UAna) objects are specialized UGens that can perform audio analysis and pass analysis information to other UAnae."
 );
 
 // add group

@@ -511,6 +511,9 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
     static int TEXT;
         Output TEXT format (not implemented).
     ---------------
+- (added/updated) now ChucK API reference documentation is generated from
+    the type system using CKDoc, ensuring alignment between documention
+    and type system.
 - (added) array.zero()
     |- zero out the contents of the array; size is unchanged.
 - (added) negative indexing for arrays (thanks nshaheed)
@@ -642,6 +645,8 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
     previously crashed: 'FM fm => dac; 1::second => now;')
 - (developer) Chugin API clients in C++ now able to create
     strings and access member variables (thanks Nick Shaheed!)
+- (developer) Chugin API query now able to add examples using
+    QUERY->add_ex(...)
 
 
 01.4.2.0 (January 2023)

@@ -226,6 +226,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // add examples
     if( !type_engine_import_add_ex( env, "ai/genre-classify/feature-extract.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "ai/genre-classify/genre-classify.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/concat.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -234,8 +235,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: Centroid
     //---------------------------------------------------------------------
 
-    doc =
-        "A unit analyzer that computes the spectral centroid from a magnitude spectrum (either from incoming UAna or manually given), and outputs a single number.";
+    doc = "A unit analyzer that computes the spectral centroid from a magnitude spectrum (either from incoming UAna or manually given), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "Centroid", "UAna", env->global(),
                                         NULL, NULL,
@@ -252,6 +252,8 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
 
     // add examples
     if( !type_engine_import_add_ex( env, "ai/features/centroid.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/genre-classify/feature-extract.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/genre-classify/genre-classify.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -296,6 +298,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
 
     // add examples
     if( !type_engine_import_add_ex( env, "ai/features/flux.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/features/flux0.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
