@@ -1850,8 +1850,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         Clarinet_ctor, Clarinet_dtor,
                         Clarinet_tick, Clarinet_pmsg, doc.c_str() ) ) return FALSE;
 
-    type_engine_import_add_ex(env, "stk/clarinet.ck");
-    type_engine_import_add_ex(env, "stk/clarinet2.ck");
+    type_engine_import_add_ex( env, "stk/clarinet.ck" );
+    type_engine_import_add_ex( env, "stk/clarinet2.ck" );
+    type_engine_import_add_ex( env, "midi/polyfony2.ck" );
 
     // member variable
     // Clarinet_offset_data = type_engine_import_mvar ( env, "int", "@Clarinet_data", FALSE );
@@ -1952,7 +1953,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         Flute_ctor, Flute_dtor,
                         Flute_tick, Flute_pmsg, doc.c_str() ) ) return FALSE;
 
-    type_engine_import_add_ex(env, "stk/flute.ck");
+    // add examples
+    type_engine_import_add_ex( env, "stk/flute.ck");
 
     // member variable
     // Flute_offset_data = type_engine_import_mvar ( env, "int", "@Flute_data", FALSE );
@@ -2173,6 +2175,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     type_engine_import_add_ex(env, "stk/modalbar.ck");
     type_engine_import_add_ex(env, "stk/modalbar2.ck");
+    type_engine_import_add_ex(env, "stk/mode-o-matic.ck");
+    type_engine_import_add_ex(env, "stk/mode-o-test.ck");
 
     // member variable
     // ModalBar_offset_data = type_engine_import_mvar ( env, "int", "@ModalBar_data", FALSE );
@@ -3117,6 +3121,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         BeeThree_ctor, BeeThree_dtor,
                         BeeThree_tick, BeeThree_pmsg, doc.c_str() ) ) return FALSE;
 
+    // add examples
+    type_engine_import_add_ex(env, "hid/keyboard-organ.ck");
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -3211,11 +3218,13 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         HevyMetl_ctor, HevyMetl_dtor,
                         HevyMetl_tick, HevyMetl_pmsg, doc.c_str() ) ) return FALSE;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "stk/hevymetl-algo3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/hevymetl-dance-now.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/hevymetl-trumpet-algo3.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
-
-
-
 
 
     /***** REPAIRATHON2021 NEW FM SUB CLASS/ALGORITHM ADDITIONS *****/
@@ -3281,6 +3290,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
         FrencHrn_ctor, FrencHrn_dtor,
         FrencHrn_tick, FrencHrn_pmsg, doc.c_str() ) ) return FALSE;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "stk/frenchrn-algo2.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -3314,6 +3326,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( !type_engine_import_ugen_begin( env, "KrstlChr", "FM", env->global(),
         KrstlChr_ctor, KrstlChr_dtor,
         KrstlChr_tick, KrstlChr_pmsg, doc.c_str() ) ) return FALSE;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "stk/krstlchr-algo7.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -3349,6 +3364,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( !type_engine_import_ugen_begin( env, "PercFlut", "FM", env->global(),
                         PercFlut_ctor, PercFlut_dtor,
                         PercFlut_tick, PercFlut_pmsg, doc.c_str() ) ) return FALSE;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "ctrl/ctrl_sequencer.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -3482,6 +3500,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         Delay_ctor, Delay_dtor,
                         Delay_tick, Delay_pmsg, doc.c_str() ) ) return FALSE;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "basic/comb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/plu.ck" ) ) goto error;
+
     // member variable
     Delay_offset_data = type_engine_import_mvar ( env, "int", "@Delay_data", FALSE );
     if( Delay_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -3529,6 +3551,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // member variable
     DelayA_offset_data = type_engine_import_mvar ( env, "int", "@DelayA_data", FALSE );
     if( DelayA_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "deep/ks-chord.ck" ) ) goto error;
+
     func = make_new_mfun( "dur", "delay", DelayA_ctrl_delay ); //! length of delay
     func->add_arg( "dur", "value" );
     func->doc = "set length of delay.";
@@ -3572,6 +3598,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     type_engine_import_add_ex(env, "basic/delay.ck");
     type_engine_import_add_ex(env, "basic/i-robot.ck");
+    type_engine_import_add_ex(env, "multi/we-robot.ck");
+    type_engine_import_add_ex(env, "analysis/xcorr.ck");
+    type_engine_import_add_ex(env, "ai/word2vec/poem-i-feel.ck");
 
     // member variable
     DelayL_offset_data = type_engine_import_mvar ( env, "int", "@DelayL_data", FALSE );
@@ -3614,7 +3643,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         Echo_ctor, Echo_dtor,
                         Echo_tick, Echo_pmsg, doc.c_str() ) ) return FALSE;
 
+    // add examples
     type_engine_import_add_ex(env, "basic/echo.ck");
+    type_engine_import_add_ex(env, "stk/rhodey.ck");
+    type_engine_import_add_ex(env, "stk/wurley2.ck");
 
     //member variable
     Echo_offset_data = type_engine_import_mvar ( env, "int", "@Echo_data", FALSE );
@@ -3666,6 +3698,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         Envelope_tick, Envelope_pmsg, doc.c_str() ) ) return FALSE;
 
     type_engine_import_add_ex(env, "basic/envelope.ck");
+    type_engine_import_add_ex(env, "basic/chirp2.ck");
+    type_engine_import_add_ex(env, "deep/say-chu.ck");
 
     //member variable
     Envelope_offset_data = type_engine_import_mvar ( env, "int", "@Envelope_data", FALSE );
@@ -3753,6 +3787,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                                         ADSR_tick, ADSR_pmsg, doc.c_str() ) ) return FALSE;
 
     type_engine_import_add_ex(env, "basic/adsr.ck");
+    type_engine_import_add_ex(env, "basic/blit2.ck");
 
     func = make_new_mfun( "dur", "attackTime", ADSR_ctrl_attackTime ); //! attack time
     func->add_arg( "dur", "value" );
@@ -4007,6 +4042,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get pole position along real axis of z-plane.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    type_engine_import_add_ex( env, "deep/follower.ck" );
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4128,6 +4165,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    type_engine_import_add_ex( env, "deep/plu.ck" );
+    type_engine_import_add_ex( env, "deep/plu2.ck" );
+    type_engine_import_add_ex( env, "deep/plu3.ck" );
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4258,14 +4299,22 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get allpass filter with given coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples | 1.5.0.0 (ge)
+    if( !type_engine_import_add_ex( env, "deep/plu2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/plu3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/flute.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/tracking/pitch-track.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/tracking/pitch-third.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/tracking/pitch-fifth.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/tracking/pitch-seventh.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/tracking/Tracking.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
-
 
     //end Filters
 
     //! \section stk-reverbs
-
 
     //------------------------------------------------------------------------
     // begin JCRev ugen
@@ -4456,6 +4505,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get gain for random contribution.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "stk/modulate.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4716,6 +4767,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get file gain.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples | 1.5.0.0 (ge) added
+    if( !type_engine_import_add_ex( env, "basic/rec.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/rec-auto.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/rec-auto-stereo.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -4743,6 +4799,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func = make_new_mfun( "string", "aifFilename", WvOut2_ctrl_aifFilename ); //!open AIFF file for writing
     func->add_arg( "string", "value" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples | 1.5.0.0 (ge) added
+    if( !type_engine_import_add_ex( env, "basic/rec.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/rec-auto.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/rec-auto-stereo.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4815,6 +4876,8 @@ Revisions by Gary Scavone for STK, 2005.";
          Blit_ctor, Blit_dtor, Blit_tick, Blit_pmsg, doc.c_str() ) ) return FALSE;
 
     type_engine_import_add_ex(env, "basic/blit.ck");
+    type_engine_import_add_ex(env, "basic/blit2.ck");
+    type_engine_import_add_ex(env, "basic/foo2.ck");
 
     // end the class import
     type_engine_import_class_end( env );

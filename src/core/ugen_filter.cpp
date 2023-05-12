@@ -168,7 +168,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
                                         BPF_ctor, NULL, BPF_tick, BPF_pmsg, doc.c_str() ) )
         return FALSE;
 
-    type_engine_import_add_ex(env, "filter/bp.ck");
+    type_engine_import_add_ex(env, "filter/bpf.ck");
 
     // freq
     func = make_new_mfun( "float", "freq", BPF_ctrl_freq );
@@ -207,7 +207,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
                                         BRF_ctor, NULL, BRF_tick, BRF_pmsg, doc.c_str() ) )
         return FALSE;
 
-    type_engine_import_add_ex(env, "filter/br.ck");
+    type_engine_import_add_ex(env, "filter/brf.ck");
 
     // freq
     func = make_new_mfun( "float", "freq", BRF_ctrl_freq );
@@ -246,7 +246,9 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
                                         RLPF_ctor, NULL, RLPF_tick, RLPF_pmsg, doc.c_str() ) )
         return FALSE;
 
-    type_engine_import_add_ex(env, "filter/lp.ck");
+    // add examples
+    type_engine_import_add_ex(env, "filter/lpf.ck");
+    type_engine_import_add_ex(env, "filter/rlpf.ck");
 
     // freq
     func = make_new_mfun( "float", "freq", RLPF_ctrl_freq );
@@ -351,6 +353,9 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     func->doc = "set filter frequency and resonance at the same time.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples | 1.5.0.0 (ge)
+    if( !type_engine_import_add_ex( env, "filter/resonz.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -366,6 +371,10 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // member variable
     biquad_offset_data = type_engine_import_mvar ( env, "int", "@biquad_data", FALSE );
     if ( biquad_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // add examples
+    type_engine_import_add_ex(env, "basic/wind.ck");
+    type_engine_import_add_ex(env, "basic/moe.ck");
 
     // pfreq
     func = make_new_mfun ( "float", "pfreq", biquad_ctrl_pfreq );

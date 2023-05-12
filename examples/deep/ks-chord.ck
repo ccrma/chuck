@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------------
 
 // single voice Karplus Strong chubgraph
-class KS extends Chubgraph
+class KS extends Chugraph
 {
     // sample rate
     second / samp => float SRATE;
@@ -86,7 +86,7 @@ class KS extends Chubgraph
 }
 
 // chord class for KS
-class KSChord extends Chubgraph
+class KSChord extends Chugraph
 {
     // array of KS objects    
     KS chordArray[4];

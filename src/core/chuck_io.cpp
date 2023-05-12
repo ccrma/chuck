@@ -401,17 +401,19 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
     if( !type_engine_import_add_ex( env, "io/chout.ck" ) ) goto error;
-    if( !type_engine_import_add_ex( env, "io/read-byte.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/read-float.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/read-int.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/read-line.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/read-str.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/read-tokens.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/seek.ck" ) ) goto error;
-    if( !type_engine_import_add_ex( env, "io/write-byte.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/write.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/write2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-byte.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/write-byte.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -662,6 +664,12 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     MidiMsg_offset_when = type_engine_import_mvar( env, "dur", "when", FALSE, doc.c_str() );
     if( MidiMsg_offset_when == CK_INVALID_OFFSET ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "midi/gomidi.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "midi/gomidi2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "midi/polyfony.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "midi/polyfony2.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -723,6 +731,12 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     MidiIn_offset_data = type_engine_import_mvar( env, "int", "@MidiIn_data", FALSE );
     if( MidiIn_offset_data == CK_INVALID_OFFSET ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "midi/gomidi.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "midi/gomidi2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "midi/polyfony.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "midi/polyfony2.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -771,6 +785,9 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     func->add_arg( "MidiMsg", "msg" );
     func->doc = "Send out a MidiMsg message.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "midi/midiout.ck" ) ) goto error;
 
     // add member variable
     MidiOut_offset_data = type_engine_import_mvar( env, "int", "@MidiOut_data", FALSE );
@@ -1015,6 +1032,17 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
     if( !type_engine_import_class_begin( env, "Hid", "Event",
                                         env->global(), HidIn_ctor, HidIn_dtor ) )
         return FALSE;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "hid/kb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/keyboard-organ.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/mouse.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/mouse-abs.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/mouse-fm.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/joy.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/joy-fm.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/joy-noise.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/joy-shake.ck" ) ) goto error;
 
     // add open()
     func = make_new_mfun( "int", "open", HidIn_open );

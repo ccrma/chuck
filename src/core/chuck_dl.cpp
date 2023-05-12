@@ -955,6 +955,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     doc_class = ck_doc_class;
     doc_func = ck_doc_func;
     doc_var = ck_doc_var;
+    add_ex = ck_add_example; // 1.5.0.0 (ge) added
     create_main_thread_hook = ck_create_main_thread_hook;
     m_carrier = carrier;
 
