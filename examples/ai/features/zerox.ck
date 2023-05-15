@@ -1,31 +1,44 @@
+//----------------------------------------------------------------
+// name: ZeroX (Zero Crossing Detector)
+// desc: Detect the number of zero crosses in a Flip of samples
+//       1. Flip will convert N samples to a UAna Frame
+//       2. ZeroX will then count the number of zero crossings in 
+//       the UAna Frame 
+//       
+//       Note the ZeroX output in this example is equal to
+//       zeroX = 2*freq / (sample_rate / N) 
+//----------------------------------------------------------------
+
 // analysis patch
 SinOsc foo => Flip flip =^ ZeroX zerox => blackhole;
 
-// set flip params
+// set flip size (N)
 4096 => flip.size;
 
-// control
+// change the frequency of foo randomly every 1-2 seconds
 fun void ctrl()
 {
-    // go
     while( true )
     {
+        // new random freq
         Math.random2f( 100, 2000 ) => foo.freq;
         <<< "setting new freq:", foo.freq() >>>;
+        // wait 1-2 seconds
         Math.random2f( 1, 2 )::second => now;
     }
 }
 
-// spork down
+// spork frequency changer shred
 spork ~ ctrl();
 
-// go
+// main
 while( true )
 {
-    // compute ZeroX
+    // compute ZeroX in the last UAna Frame
+    // store the result in a UAnaBlob
     zerox.upchuck() @=> UAnaBlob blob;
 
-    // print result
+    // print number of zero crossings
     <<< blob.fvals()[0], "" >>>;
 
     // advance time
