@@ -4458,6 +4458,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->add_arg( "float", "modDepth" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "stk/chorus.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
