@@ -151,7 +151,11 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
                                         subgraph_ctor, NULL, NULL, NULL, 1, 1, doc.c_str() ) )
         return FALSE;
 
+    // add examples
     if( !type_engine_import_add_ex( env, "extend/chugraph.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "class/dinky.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "class/try.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/ks-chord.ck" ) ) goto error;
 
     doc = "terminal for sources chucked into this ugen.";
     subgraph_offset_inlet = type_engine_import_mvar( env, "UGen", "inlet", TRUE, doc.c_str() );
@@ -298,7 +302,19 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
                                         pan2_ctor, NULL, NULL, NULL, 2, 2, doc.c_str() ) )
         return FALSE;
 
+    // add examples | 1.5.0.0 (ge)
+    if( !type_engine_import_add_ex( env, "basic/chirp2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stereo/array.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stereo/powerup2.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "stereo/moe2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stereo/larry2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stereo/curly2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stereo/ugen-array.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stereo/stereo-noise.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/honkeytonk-algo1.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hanoi++.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hanoi2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hanoi3.ck" ) ) goto error;
 
     // end import
     if( !type_engine_import_class_end( env ) )
@@ -497,7 +513,10 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
                                         step_ctor, step_dtor, step_tick, NULL, doc.c_str() ) )
         return FALSE;
 
+    // add examples | 1.5.0.0 (ge)
     if( !type_engine_import_add_ex( env, "basic/step.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/fm3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/zerox.ck" ) ) goto error;
 
     // add ctrl: value
     //func = make_new_mfun( "float", "value", step_ctrl_value );
@@ -1055,6 +1074,22 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                         LiSaMulti_pmsg, 1, 1, doc.c_str() ))
         return FALSE;
 
+    // add examples | 1.5.0.0 (ge)
+    if( !type_engine_import_add_ex( env, "special/LiSa-munger1.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-munger2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-munger3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-load.ck.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-simplelooping.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-trigger.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-track1.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-track2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-track3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-track4.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-track5.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-stereo.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/twilight/twilight-granular-kb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/twilight/twilight-granular-kb-interp.ck" ) ) goto error;
+
     // set/get buffer size
     func = make_new_mfun( "dur", "duration", LiSaMulti_size );
     func->doc = "Set buffer size; required to allocate memory, also resets all parameter values to default.";
@@ -1375,6 +1410,10 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                        NULL, LiSaMulti_tickf,
                                        LiSaMulti_pmsg, 1, 2, doc.c_str() ) )
         return FALSE;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "special/LiSa-stereo.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 

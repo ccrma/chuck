@@ -184,6 +184,14 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     FFT_offset_data = type_engine_import_mvar( env, "int", "@FFT_data", FALSE );
     if( FFT_offset_data == CK_INVALID_OFFSET ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "analysis/fft.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/fft2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/fft3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/ifft.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/genre-classify/feature-extract.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/genre-classify/genre-classify.ck" ) ) goto error;
+
     // transform
     func = make_new_mfun( "void", "transform", FFT_transform );
     func->add_arg( "float[]", "from" );
@@ -298,6 +306,15 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, Windowing_blackmanHarris, "float[]", "blackmanHarris" );
     QUERY->add_arg( QUERY, "int", "size" );
 
+    // add examples | 1.5.0.0 (ge)
+    QUERY->add_ex( QUERY, "analysis/win.ck" );
+    QUERY->add_ex( QUERY, "analysis/xsynth.ck" );
+    QUERY->add_ex( QUERY, "analysis/tracking/pitch-track.ck" );
+    QUERY->add_ex( QUERY, "ai/features/rolloff2.ck" );
+    QUERY->add_ex( QUERY, "analysis/win.ck" );
+    QUERY->add_ex( QUERY, "ai/genre-classify/feature-extract.ck" );
+    QUERY->add_ex( QUERY, "ai/genre-classify/genre-classify.ck" );
+
     // done
     QUERY->end_class( QUERY );
 
@@ -327,6 +344,9 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // member variable
     Flip_offset_data = type_engine_import_mvar( env, "int", "@Flip_data", FALSE );
     if( Flip_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "analysis/flip.ck" ) ) goto error;
 
     // transform
     func = make_new_mfun( "void", "transform", Flip_take );
@@ -430,6 +450,9 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
                                         CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "analysis/dct.ck" ) ) goto error;
 
     // member variable
     DCT_offset_data = type_engine_import_mvar( env, "int", "@DCT_data", FALSE );

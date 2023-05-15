@@ -4,16 +4,17 @@
 // to test this: 
 //    > chuck dinky.ck try.ck
 //
-// NOTE: in a future version of chuck...
+// NOTE (2003): in a future version of chuck...
 //       this class will be able to extend UGen
-// NOTE: the above is now possible using Chugraphs,
+// NOTE (2013): the above is now possible using Chugraphs,
 //       Chugens, or Chugins!
+// NOTE (2023): finally updated this example using Chugraphs
 
 // the Dinky class
-public class Dinky
+public class Dinky extends Chugraph
 {
     // impulse to filter to dac
-    Impulse i => BiQuad f => Envelope e;
+    Impulse i => BiQuad f => Envelope e => outlet;
     // set the filter's pole radius
     .99 => f.prad;
     // set equal gain zeros
@@ -25,9 +26,6 @@ public class Dinky
 
     public void radius( float rad )
     { rad => f.prad; }
-
-    public void gain( float g )
-    { g => i.gain; }
 
     public void connect( UGen ugen )
     { e => ugen; }
@@ -43,7 +41,7 @@ public class Dinky
         e.keyOn();
     }
 
-    // t is for trigger (using MIDI notes)
+    // t is for trigger (using MIDI note numbers)
     public void t( int note )
     { t( Std.mtof( note ) ); }
 

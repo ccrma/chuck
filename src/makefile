@@ -52,19 +52,19 @@ web: host_web/webchuck/js/webchuck.js
 
 host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
 	emcc -O3 -s DISABLE_EXCEPTION_CATCHING=0 \
-        -Icore -D__DISABLE_MIDI__ -D__DISABLE_WATCHDOG__ \
-        -D__DISABLE_KBHIT__ -D__DISABLE_PROMPTER__ -D__DISABLE_RTAUDIO__ \
-        -D__DISABLE_OTF_SERVER__ -D__ALTER_HID__ -D__DISABLE_HID__ \
-        -D__DISABLE_SERIAL__ -D__DISABLE_FILEIO__ -D__DISABLE_THREADS__ \
-        -D__DISABLE_NETWORK__ -D__DISABLE_SHELL__ -D__DISABLE_WORDEXP__ \
-        -D__CHUCK_USE_PLANAR_BUFFERS__ \
+	-Icore -D__DISABLE_MIDI__ -D__DISABLE_WATCHDOG__ \
+	-D__DISABLE_KBHIT__ -D__DISABLE_PROMPTER__ -D__DISABLE_RTAUDIO__ \
+	-D__DISABLE_OTF_SERVER__ -D__ALTER_HID__ -D__DISABLE_HID__ \
+	-D__DISABLE_SERIAL__ -D__DISABLE_FILEIO__ -D__DISABLE_THREADS__ \
+	-D__DISABLE_NETWORK__ -D__DISABLE_SHELL__ -D__DISABLE_WORDEXP__ \
+	-D__CHUCK_USE_PLANAR_BUFFERS__ \
 	-Wformat=0 \
-        $(EMSCRIPTENSRCS) -o host_web/webchuck/js/webchuck.js \
-        -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8"]' \
-        -s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"' \
-        -s ALLOW_MEMORY_GROWTH=1 \
-        -s --extern-post-js host_web/chucknode-postjs.js \
-        -s RESERVED_FUNCTION_POINTERS=50 -s FORCE_FILESYSTEM=1
+	$(EMSCRIPTENSRCS) -o host_web/webchuck/js/webchuck.js \
+	-s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8"]' \
+	-s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"' \
+	-s ALLOW_MEMORY_GROWTH=1 \
+	-s --extern-post-js host_web/chucknode-postjs.js \
+	-s RESERVED_FUNCTION_POINTERS=50 -s FORCE_FILESYSTEM=1
 
 
 

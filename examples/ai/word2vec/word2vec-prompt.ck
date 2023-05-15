@@ -2,6 +2,9 @@
 // name: word2vec-prompt.ck
 // desc: word2vec interative prompt explorer
 //
+// version: need chuck version 1.5.0.0 or higher
+// sorting: part of ChAI (ChucK for AI)
+//
 // NOTE: this requires ConsoleInput which needs command line chuck
 // NOTE: download pre-trained word vector model from:
 //       https://chuck.stanford.edu/chai/data/glove/
@@ -9,7 +12,6 @@
 //       glove-wiki-gigaword-50.txt (400000 words x 50 dimensions)
 //       glove-wiki-gigaword-50-pca-3.txt (400000 words x 3 dimensions)
 //       glove-wiki-gigaword-50-tsne-2.txt (400000 words x 2 dimensions)
-// sorting: part of ChAI (ChucK for AI) [BETA]
 //
 // author: Yikai Li and Ge Wang
 // date: Spring 2023

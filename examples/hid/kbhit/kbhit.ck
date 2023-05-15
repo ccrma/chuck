@@ -1,3 +1,7 @@
+// name: kbhit.ck
+// desc: KBHit (terminal only) is a simple mechanism for capturing
+//       keyboard input (for a more flexible mechanism, see HID)
+
 // the event
 KBHit kb;
 

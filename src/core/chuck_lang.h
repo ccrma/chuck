@@ -59,6 +59,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
 t_CKBOOL init_class_vec4( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
 t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type ); // 1.5.0.0
+t_CKBOOL init_class_function( Chuck_Env * env, Chuck_Type * type ); // 1.5.0.0
 t_CKBOOL init_primitive_types( Chuck_Env * env ); // 1.5.0.0
 
 
@@ -287,6 +288,7 @@ CK_DLL_SFUN( type_typeOf_polar ); // Type.typeOf( polar )
 CK_DLL_SFUN( type_typeOf_vec3 ); // Type.typeOf( vec3 )
 CK_DLL_SFUN( type_typeOf_vec4 ); // Type.typeOf( vec4 )
 CK_DLL_SFUN( type_getTypes );
+CK_DLL_SFUN( type_getTypes2 );
 CK_DLL_SFUN( type_getTypesAll );
 
 

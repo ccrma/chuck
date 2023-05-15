@@ -223,6 +223,11 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
                                         doc.c_str() ) )
         return FALSE;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/genre-classify/feature-extract.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/genre-classify/genre-classify.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/concat.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -230,8 +235,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     // init as base class: Centroid
     //---------------------------------------------------------------------
 
-    doc =
-        "A unit analyzer that computes the spectral centroid from a magnitude spectrum (either from incoming UAna or manually given), and outputs a single number.";
+    doc = "A unit analyzer that computes the spectral centroid from a magnitude spectrum (either from incoming UAna or manually given), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "Centroid", "UAna", env->global(),
                                         NULL, NULL,
@@ -245,6 +249,11 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "input" );
     func->doc = "Manually computes the centroid from a float array.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/features/centroid.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/genre-classify/feature-extract.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/genre-classify/genre-classify.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -287,6 +296,10 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     func->doc = "Manually computes the flux between two frames, and stores the difference in a third array.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/features/flux.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/features/flux0.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -309,6 +322,9 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "input" );
     func->doc = "Manually computes the RMS from a float array.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/features/rms.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -373,6 +389,12 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
         "Manually computes the MFCC of the input (an FFT spectrum), and stores the results in the output array (MFCC coefficients).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/features/mfcc-basic.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/features/mfcc-mean.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/genre-classify/feature-extract.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/genre-classify/genre-classify.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -395,6 +417,9 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "input" );
     func->doc = "Manually computes the kurtosis of a given input array.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/features/kurtosis.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -435,6 +460,9 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     func->doc =
         "Manually computes the SFM of the input (an FFT spectrum), and stores the results in the output array (SFM coefficients).";
     if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/features/sfm.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -498,6 +526,9 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
         "Manually computes the Chroma of the input (an FFT spectrum), and stores the results in the output array (Chroma coefficients).";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/features/chroma.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -537,6 +568,10 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     func->doc = "Manually computes the rolloff from a float array.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/features/rolloff.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/features/rolloff2.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -567,6 +602,9 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int", "normalize" );
     func->add_arg( "float[]", "output" );
     if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "analysis/autocorr.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -600,6 +638,9 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "y" );
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "analysis/xcorr.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -625,6 +666,9 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "input" );
     func->doc = "Manually computes the zero crossing rate for an array.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/features/zerox.ck" ) ) goto error;
 
     // end import
     if( !type_engine_import_class_end( env ) )

@@ -333,12 +333,21 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     Chuck_DL_Func * func = NULL;
 
 #ifndef __DISABLE_KBHIT__
-    // KBHit
+    // doc string
+    string doc = "KBHit (terminal only) is a simple mechanism for capturing keyboard input (for a more flexible mechanism, see HID).";
+
     // begin class (KBHit)
     if( !type_engine_import_class_begin( env, "KBHit", "Event",
                                          env->global(), KBHit_ctor,
-                                         KBHit_dtor ) )
+                                         KBHit_dtor, doc.c_str() ) )
         return FALSE;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "hid/kbhit/kbhit.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/kbhit/kbhit2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/kbhit/clix.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/kbhit/clix2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/kbhit/clix3.ck" ) ) goto error;
 
     // add member variable
     KBHit_offset_data = type_engine_import_mvar( env, "int", "@KBHit_data", FALSE );
@@ -469,6 +478,13 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // add size()
     func = make_new_mfun( "int", "size", StrTok_size );
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "string/token.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "string/readline.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-tokens.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/jabberwocky.txt" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/word2vec/word2vec-prompt.ck" ) ) goto error;
 
     // end class
     type_engine_import_class_end( env );

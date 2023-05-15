@@ -3,7 +3,7 @@
 // desc: sets up automated extraction over a training dataset
 //       this example can be adapted to other labeled audio dataset
 //
-// version: need chuck version 1.4.2.1 or higher
+// version: need chuck version 1.5.0.0 or higher
 // sorting: part of ChAI (ChucK for AI)
 //
 // DATA: by default, this uses the GTZAN dataset:

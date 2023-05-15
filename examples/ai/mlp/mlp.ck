@@ -4,7 +4,7 @@
 //       a basic artificial neural network
 //       (for a step-by-step example, see mlp-manual.ck)
 //
-// version: need chuck version 1.4.2.1 or higher
+// version: need chuck version 1.5.0.0 or higher
 // sorting: part of ChAI (ChucK for AI)
 //
 // uncomment for MLP API:

@@ -3,6 +3,9 @@
 // desc: mel-frequency cepstral coefficients
 //       basic MFCC feature extractor
 //
+// version: need chuck version 1.5.0.0 or higher
+// sorting: part of ChAI (ChucK for AI)
+//
 // uncomment for MFCC API:
 // MFCC.help();
 //
