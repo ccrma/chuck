@@ -1,5 +1,5 @@
 // Flip: turns the last N samples into a vector in the UAna domain
-// pilF: turns a UAna frame back into the time domain via overlap add
+// UnFlip: turns a UAna frame back into the time domain via overlap add
 // author: Ge Wang (ge@ccrma.stanford.edu)
 //         Rebecca Fiebrink (fiebrink@cs.princeton.edu)
 
