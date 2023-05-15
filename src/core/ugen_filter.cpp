@@ -326,8 +326,6 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
                                         ResonZ_ctor, NULL, ResonZ_tick, ResonZ_pmsg, doc.c_str() ) )
         return FALSE;
 
-    type_engine_import_add_ex(env, "filter/resonz.ck");
-
     // freq
     func = make_new_mfun( "float", "freq", ResonZ_ctrl_freq );
     func->add_arg( "float", "val" );
