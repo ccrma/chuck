@@ -1284,10 +1284,12 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
 
     std::string doc;
 
+    // TODO: does not work for multiple VMs running different sample rates
+    // https://github.com/ccrma/chuck/issues/208
     // set srate
     Stk::setSampleRate( QUERY->srate );
-    // test for endian
 
+    // test for endian
     what w; w.x = 1;
     little_endian = (t_CKBOOL)w.y[0];
 
@@ -1848,8 +1850,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         Clarinet_ctor, Clarinet_dtor,
                         Clarinet_tick, Clarinet_pmsg, doc.c_str() ) ) return FALSE;
 
-    type_engine_import_add_ex(env, "stk/clarinet.ck");
-    type_engine_import_add_ex(env, "stk/clarinet2.ck");
+    type_engine_import_add_ex( env, "stk/clarinet.ck" );
+    type_engine_import_add_ex( env, "stk/clarinet2.ck" );
+    type_engine_import_add_ex( env, "midi/polyfony2.ck" );
 
     // member variable
     // Clarinet_offset_data = type_engine_import_mvar ( env, "int", "@Clarinet_data", FALSE );
@@ -1950,7 +1953,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         Flute_ctor, Flute_dtor,
                         Flute_tick, Flute_pmsg, doc.c_str() ) ) return FALSE;
 
-    type_engine_import_add_ex(env, "stk/flute.ck");
+    // add examples
+    type_engine_import_add_ex( env, "stk/flute.ck");
 
     // member variable
     // Flute_offset_data = type_engine_import_mvar ( env, "int", "@Flute_data", FALSE );
@@ -2171,6 +2175,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     type_engine_import_add_ex(env, "stk/modalbar.ck");
     type_engine_import_add_ex(env, "stk/modalbar2.ck");
+    type_engine_import_add_ex(env, "stk/mode-o-matic.ck");
+    type_engine_import_add_ex(env, "stk/mode-o-test.ck");
 
     // member variable
     // ModalBar_offset_data = type_engine_import_mvar ( env, "int", "@ModalBar_data", FALSE );
@@ -3115,6 +3121,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         BeeThree_ctor, BeeThree_dtor,
                         BeeThree_tick, BeeThree_pmsg, doc.c_str() ) ) return FALSE;
 
+    // add examples
+    type_engine_import_add_ex(env, "hid/keyboard-organ.ck");
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -3209,11 +3218,13 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         HevyMetl_ctor, HevyMetl_dtor,
                         HevyMetl_tick, HevyMetl_pmsg, doc.c_str() ) ) return FALSE;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "stk/hevymetl-algo3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/hevymetl-dance-now.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/hevymetl-trumpet-algo3.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
-
-
-
 
 
     /***** REPAIRATHON2021 NEW FM SUB CLASS/ALGORITHM ADDITIONS *****/
@@ -3279,6 +3290,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
         FrencHrn_ctor, FrencHrn_dtor,
         FrencHrn_tick, FrencHrn_pmsg, doc.c_str() ) ) return FALSE;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "stk/frenchrn-algo2.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -3312,6 +3326,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( !type_engine_import_ugen_begin( env, "KrstlChr", "FM", env->global(),
         KrstlChr_ctor, KrstlChr_dtor,
         KrstlChr_tick, KrstlChr_pmsg, doc.c_str() ) ) return FALSE;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "stk/krstlchr-algo7.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -3347,6 +3364,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( !type_engine_import_ugen_begin( env, "PercFlut", "FM", env->global(),
                         PercFlut_ctor, PercFlut_dtor,
                         PercFlut_tick, PercFlut_pmsg, doc.c_str() ) ) return FALSE;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "ctrl/ctrl_sequencer.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -3480,6 +3500,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         Delay_ctor, Delay_dtor,
                         Delay_tick, Delay_pmsg, doc.c_str() ) ) return FALSE;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "basic/comb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/plu.ck" ) ) goto error;
+
     // member variable
     Delay_offset_data = type_engine_import_mvar ( env, "int", "@Delay_data", FALSE );
     if( Delay_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -3527,6 +3551,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // member variable
     DelayA_offset_data = type_engine_import_mvar ( env, "int", "@DelayA_data", FALSE );
     if( DelayA_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "deep/ks-chord.ck" ) ) goto error;
+
     func = make_new_mfun( "dur", "delay", DelayA_ctrl_delay ); //! length of delay
     func->add_arg( "dur", "value" );
     func->doc = "set length of delay.";
@@ -3570,6 +3598,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     type_engine_import_add_ex(env, "basic/delay.ck");
     type_engine_import_add_ex(env, "basic/i-robot.ck");
+    type_engine_import_add_ex(env, "multi/we-robot.ck");
+    type_engine_import_add_ex(env, "analysis/xcorr.ck");
+    type_engine_import_add_ex(env, "ai/word2vec/poem-i-feel.ck");
 
     // member variable
     DelayL_offset_data = type_engine_import_mvar ( env, "int", "@DelayL_data", FALSE );
@@ -3612,7 +3643,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         Echo_ctor, Echo_dtor,
                         Echo_tick, Echo_pmsg, doc.c_str() ) ) return FALSE;
 
+    // add examples
     type_engine_import_add_ex(env, "basic/echo.ck");
+    type_engine_import_add_ex(env, "stk/rhodey.ck");
+    type_engine_import_add_ex(env, "stk/wurley2.ck");
 
     //member variable
     Echo_offset_data = type_engine_import_mvar ( env, "int", "@Echo_data", FALSE );
@@ -3664,6 +3698,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         Envelope_tick, Envelope_pmsg, doc.c_str() ) ) return FALSE;
 
     type_engine_import_add_ex(env, "basic/envelope.ck");
+    type_engine_import_add_ex(env, "basic/chirp2.ck");
+    type_engine_import_add_ex(env, "deep/say-chu.ck");
 
     //member variable
     Envelope_offset_data = type_engine_import_mvar ( env, "int", "@Envelope_data", FALSE );
@@ -3751,6 +3787,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                                         ADSR_tick, ADSR_pmsg, doc.c_str() ) ) return FALSE;
 
     type_engine_import_add_ex(env, "basic/adsr.ck");
+    type_engine_import_add_ex(env, "basic/blit2.ck");
 
     func = make_new_mfun( "dur", "attackTime", ADSR_ctrl_attackTime ); //! attack time
     func->add_arg( "dur", "value" );
@@ -4005,6 +4042,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get pole position along real axis of z-plane.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    type_engine_import_add_ex( env, "deep/follower.ck" );
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4126,6 +4165,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get filter coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    type_engine_import_add_ex( env, "deep/plu.ck" );
+    type_engine_import_add_ex( env, "deep/plu2.ck" );
+    type_engine_import_add_ex( env, "deep/plu3.ck" );
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4256,14 +4299,22 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get allpass filter with given coefficient.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples | 1.5.0.0 (ge)
+    if( !type_engine_import_add_ex( env, "deep/plu2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/plu3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/flute.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/tracking/pitch-track.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/tracking/pitch-third.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/tracking/pitch-fifth.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/tracking/pitch-seventh.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/tracking/Tracking.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
-
 
     //end Filters
 
     //! \section stk-reverbs
-
 
     //------------------------------------------------------------------------
     // begin JCRev ugen
@@ -4407,6 +4458,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->add_arg( "float", "modDepth" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "stk/chorus.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4454,6 +4507,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get gain for random contribution.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "stk/modulate.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4714,6 +4769,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get file gain.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples | 1.5.0.0 (ge) added
+    if( !type_engine_import_add_ex( env, "basic/rec.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/rec-auto.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/rec-auto-stereo.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -4741,6 +4801,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func = make_new_mfun( "string", "aifFilename", WvOut2_ctrl_aifFilename ); //!open AIFF file for writing
     func->add_arg( "string", "value" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples | 1.5.0.0 (ge) added
+    if( !type_engine_import_add_ex( env, "basic/rec.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/rec-auto.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/rec-auto-stereo.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4813,6 +4878,8 @@ Revisions by Gary Scavone for STK, 2005.";
          Blit_ctor, Blit_dtor, Blit_tick, Blit_pmsg, doc.c_str() ) ) return FALSE;
 
     type_engine_import_add_ex(env, "basic/blit.ck");
+    type_engine_import_add_ex(env, "basic/blit2.ck");
+    type_engine_import_add_ex(env, "basic/foo2.ck");
 
     // end the class import
     type_engine_import_class_end( env );
@@ -8034,12 +8101,15 @@ DelayL :: DelayL()
 {
     doNextOut = true;
     nextOutput = 0;
+    alpha = 0; // added 1.5.0.0
+    omAlpha = 0; // added 1.5.0.0
 }
 
 DelayL :: DelayL(MY_FLOAT theDelay, long maxDelay)
 {
   // Writing before reading allows delays from 0 to length-1.
   length = maxDelay+1;
+  nextOutput = 0; // added 1.5.0.0
 
   if ( length > 4096 ) {
     // We need to delete the previously allocated inputs.
@@ -17369,12 +17439,15 @@ const MY_FLOAT * WaveLoop :: tickFrame(void)
     lastOutput[i] = data[index];
     lastOutput[i] += (alpha * (data[index+channels] - lastOutput[i]));
     index++;
+    // 1.5.0.0 (ge) | scaleToOne
+    lastOutput[i] *= scaleToOne;
   }
 
-  if (chunking) {
-    // Scale outputs by gain.
-    for (i=0; i<channels; i++)  lastOutput[i] *= gain;
-  }
+   // if reading in chunks
+   if(chunking) {
+     // Scale outputs by gain.
+     for (i=0; i<channels; i++)  lastOutput[i] *= gain;
+   }
 
   // Increment time, which can be negative.
   time += rate;
@@ -17673,8 +17746,7 @@ Wurley :: Wurley()
   : FM()
 {
   // Concatenate the STK rawwave path to the rawwave files
-  for ( int i=0; i<3; i++ )
-  waves[i] = new WaveLoop( "special:sinewave", TRUE );
+  for ( int i=0; i<3; i++ ) waves[i] = new WaveLoop( "special:sinewave", TRUE );
   waves[3] = new WaveLoop( "special:fwavblnk", TRUE );
 
   this->setRatio(0, 1.0);
@@ -17863,7 +17935,7 @@ WvIn :: WvIn()
 WvIn :: WvIn( const char *fileName, bool raw, bool doNormalize, bool generate )
 {
     init();
-    openFile( fileName, raw, generate );
+    openFile( fileName, raw, doNormalize, generate );
 }
 
 WvIn :: ~WvIn()
@@ -17883,16 +17955,26 @@ WvIn :: ~WvIn()
 void WvIn :: init( void )
 {
     fd = 0;
-    m_loaded = false;
-    // strcpy ( m_filename, "" );
     data = 0;
     lastOutput = 0;
+    m_loaded = false;
     chunking = false;
     finished = true;
     interpolate = false;
     bufferSize = 0;
     channels = 0;
     time = 0.0;
+
+    // 1.5.0.0 (ge) added initialization
+    byteswap = false;
+    fileSize = 0;
+    dataOffset = 0;
+    chunkPointer = 0;
+    fileRate = 0;
+    gain = 1;
+    rate = 1;
+    scaleToOne = 1;
+    memset( msg, 0, sizeof(msg) );
 }
 
 void WvIn :: closeFile( void )
@@ -17991,7 +18073,6 @@ void WvIn :: openFile( const char *fileName, bool raw, bool doNormalize, bool ge
         byteswap = false;
         fileRate = 22050.0;
         rate = (MY_FLOAT)fileRate / Stk::sampleRate();
-
 
         // which
         if( strstr(fileName, "special:sinewave") )
@@ -18097,7 +18178,17 @@ void WvIn :: openFile( const char *fileName, bool raw, bool doNormalize, bool ge
     }
     else readData( 0 );  // Load file data.
 
-    if ( doNormalize ) normalize();
+    // check normalize
+    if( doNormalize ) {
+        normalize();
+    } else {
+        // 1.5.0.0 (ge) | added scaling to range [-1,1]
+        if ( dataType == STK_SINT8 ) scaleToOne = 1.0 / 128.0;
+        else if ( dataType == STK_SINT16 ) scaleToOne = 1.0 / 32768.0;
+        else if ( dataType == STK_SINT32 ) scaleToOne = 1.0 / 2147483648.0;
+        else if ( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 ) scaleToOne = 1.0;
+        else scaleToOne = 1.0;
+    }
     m_loaded = true;
     finished = false;
     interpolate = ( fmod( rate, 1.0 ) != 0.0 );
@@ -18677,12 +18768,12 @@ void WvIn :: normalize(void)
 // Normalize all channels equally by the greatest magnitude in all of the data.
 void WvIn :: normalize(MY_FLOAT peak)
 {
-  if (chunking) {
-    if ( dataType == STK_SINT8 ) gain = peak / 128.0;
-    else if ( dataType == STK_SINT16 ) gain = peak / 32768.0;
-    else if ( dataType == STK_SINT32 ) gain = peak / 2147483648.0;
-    else if ( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 ) gain = peak;
-
+  if( chunking )
+  {
+    if( dataType == STK_SINT8 ) gain = peak / 128.0;
+    else if( dataType == STK_SINT16 ) gain = peak / 32768.0;
+    else if( dataType == STK_SINT32 ) gain = peak / 2147483648.0;
+    else if( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 ) gain = peak;
     return;
   }
 
@@ -18809,12 +18900,15 @@ const MY_FLOAT * WvIn :: tickFrame(void)
       lastOutput[i] = data[index];
       lastOutput[i] += (alpha * (data[index+channels] - lastOutput[i]));
       index++;
+      lastOutput[i] *= scaleToOne; // 1.5.0.0 (ge) | scaleToOne
     }
   }
   else {
     index *= channels;
-    for (i=0; i<channels; i++)
+    for (i=0; i<channels; i++) {
       lastOutput[i] = data[index++];
+      lastOutput[i] *= scaleToOne; // 1.5.0.0 (ge) | scaleToOne
+    }
   }
 
   if (chunking) {
@@ -18994,9 +19088,16 @@ int WvOut::fclose(FILE *stream)
 
 size_t WvOut::fread(void *ptr, size_t size, size_t nitems, FILE *stream)
 {
-    // can't read asynchronously (yet)
-    assert(0);
-    return 0;
+    #ifndef __DISABLE_THREADS__
+    if( asyncIO ) {
+        // can't read asynchronously (yet)
+        EM_error3( "WvOut: internal error/warning -- cannot read asynchronously yet..." );
+        // assert(0);
+        return 0;
+    } else { return ::fread( ptr, size, nitems, stream ); }
+    #else
+    return ::fread( ptr, size, nitems, stream );
+    #endif
 }
 
 WvOut :: WvOut()
@@ -19087,6 +19188,21 @@ void WvOut :: openFile( const char *fileName, unsigned int nChannels, WvOut::FIL
     handleError(msg, StkError::FUNCTION_ARGUMENT);
   }
   dataType = format;
+
+  // 1.5.0.0 (ge) | disable asyncIO for MAT files #HACK
+  // reason: closeMatFile() currently does a fread(), which is not yet
+  // supported in async mode likely due to trickiness of asycnchronously
+  // getting values back to the calling thread
+  // implication: file IO for MAT files is done on the audio thread
+  // which could adversely affect real-time audio stability
+  #ifndef __DISABLE_THREADS__
+    if( fileType == WVOUT_MAT )
+    { asyncIO = FALSE; }
+    else
+    { asyncIO = asyncWriteThread != NULL; }
+  #else
+    // do nothing; already taken care of (WvOut_ctor)
+  #endif
 
   bool result = false;
   if ( fileType == WVOUT_RAW ) {
@@ -19569,6 +19685,9 @@ void WvOut :: closeMatFile( void )
   temp = (SINT32)(totalCount * 8 * channels);
   fwrite(&temp, 4, 1, fd);
 
+  // explicitly flush
+  fflush(fd); // 1.5.0.0 (ge) added...but why? (fclose() flushes, does it not)
+  // close
   fclose(fd);
 }
 
@@ -27401,7 +27520,12 @@ CK_DLL_DTOR( WvIn_dtor )
 CK_DLL_TICK( WvIn_tick )
 {
     WvIn * w = (WvIn *)OBJ_MEMBER_UINT(SELF, WvIn_offset_data);
-    *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() / SHRT_MAX : (SAMPLE)0.0 );
+
+    // value is auto-scaled OR normalized in w->openFile() | 1.5.0.0 (ge)
+    *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() : (SAMPLE)0.0 );
+    // old: dividing by SHRT_MAX no good for for non-16bit datatypes
+    // *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() / SHRT_MAX : (SAMPLE)0.0 );
+
     return TRUE;
 }
 
@@ -27512,7 +27636,12 @@ CK_DLL_DTOR( WaveLoop_dtor )
 CK_DLL_TICK( WaveLoop_tick )
 {
     WaveLoop * w = (WaveLoop *)OBJ_MEMBER_UINT(SELF, WvIn_offset_data);
-    *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() / SHRT_MAX : (SAMPLE)0.0 );
+
+    // value is auto-scaled OR normalized in w->openFile() | 1.5.0.0 (ge)
+    *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() : (SAMPLE)0.0 );
+    // old: dividing by SHRT_MAX no good for for non-16bit datatypes
+    // *out = ( w->m_loaded ? (t_CKFLOAT)w->tick() / SHRT_MAX : (SAMPLE)0.0 );
+
     return TRUE;
 }
 

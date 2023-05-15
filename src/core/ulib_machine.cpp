@@ -205,6 +205,14 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "Object", "obj" );
     QUERY->doc_func( QUERY, "get an object's current internal reference count; this is intended for testing or curiosity; NOTE: this function intentionally does not take into account any reference counting related to the calling of this function (normally all functions increments the reference count for objects passed as arguments and decrements upon returning)" );
 
+    // add examples
+    QUERY->add_ex( QUERY, "machine/eval.ck" );
+    QUERY->add_ex( QUERY, "machine/intsize.ck" );
+    QUERY->add_ex( QUERY, "machine/is-realtime.ck" );
+    QUERY->add_ex( QUERY, "machine/machine-shred.ck" );
+    QUERY->add_ex( QUERY, "book/digital-artists/chapter9/DrumMachine" );
+    QUERY->add_ex( QUERY, "book/digital-artists/chapter9/SmartMandolin/initialize.ck" );
+
     // end class
     QUERY->end_class( QUERY );
 

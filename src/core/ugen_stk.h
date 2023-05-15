@@ -1130,7 +1130,7 @@ public:
     An StkError will be thrown if the file is not found, its format is
     unknown, or a read error occurs.
   */
-  WvIn( const char *fileName, bool raw = FALSE, bool doNormalize = TRUE, bool generate=true );
+  WvIn( const char *fileName, bool raw = FALSE, bool doNormalize = TRUE, bool generate = TRUE );
 
   //! Class destructor.
   virtual ~WvIn();
@@ -1140,7 +1140,7 @@ public:
     An StkError will be thrown if the file is not found, its format is
     unknown, or a read error occurs.
   */
-  virtual void openFile( const char *fileName, bool raw = FALSE, bool doNormalize = TRUE, bool generate = true );
+  virtual void openFile( const char *fileName, bool raw = FALSE, bool doNormalize = TRUE, bool generate = TRUE );
 
   //! If a file is open, close it.
   void closeFile(void);
@@ -1277,6 +1277,7 @@ public: // SWAP formerly protected
   MY_FLOAT gain;
   MY_FLOAT time;
   MY_FLOAT rate;
+  MY_FLOAT scaleToOne;
 public:
   bool m_loaded;
 };

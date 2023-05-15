@@ -1157,36 +1157,53 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     query->add_ctor(query, oscmsg_ctor);
     query->add_dtor(query, oscmsg_dtor);
 
+    // add examples | 1.5.0.0 (ge) added
+    query->add_ex( query, "osc/r.ck" );
+    query->add_ex( query, "osc/osc-dump.ck" );
+    query->add_ex( query, "multi-msg/r-multi-msg.ck" );
+
     query->end_class(query);
 
 
     /*** OscIn ***/
 
+    // begin class
     query->begin_class(query, "OscIn", "Event");
 
+    // add member reference
     oscin_offset_data = query->add_mvar(query, "int", "@OscOut_data", FALSE);
 
     query->add_ctor(query, oscin_ctor);
     query->add_dtor(query, oscin_dtor);
 
+    // get port
     query->add_mfun(query, oscin_getport, "int", "port");
-
+    // set port
     query->add_mfun(query, oscin_setport, "int", "port");
     query->add_arg(query, "int", "p");
 
+    // add address
     query->add_mfun(query, oscin_addAddress, "void", "addAddress");
     query->add_arg(query, "string", "address");
-
+    // remove address
     query->add_mfun(query, oscin_removeAddress, "void", "removeAddress");
     query->add_arg(query, "string", "address");
-
+    // remove all addresses
     query->add_mfun(query, oscin_removeAllAddresses, "void", "removeAllAddresses");
 
+    // listenAll()
     query->add_mfun(query, oscin_listenAll, "void", "listenAll");
-
+    // recv
     query->add_mfun(query, oscin_recv, "int", "recv");
     query->add_arg(query, "OscMsg", "msg");
 
+    // add examples | 1.5.0.0 (ge) added
+    query->add_ex( query, "osc/r.ck" );
+    query->add_ex( query, "osc/s.ck" );
+    query->add_ex( query, "osc/osc-dump.ck" );
+    query->add_ex( query, "multi-msg/r-multi-msg.ck" );
+
+    // end class definition
     query->end_class(query);
 
 

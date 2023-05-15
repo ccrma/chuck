@@ -342,6 +342,9 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->doc = "Predict the output 'y' given the input 'x'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add example
+    if( !type_engine_import_add_ex( env, "ai/svm/svm-basic.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -390,6 +393,9 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "weights" );
     func->doc = "Set the weights for each dimension in the data.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add example
+    if( !type_engine_import_add_ex( env, "ai/knn/knn-search.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -461,6 +467,10 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->doc = "Set the weights for each dimension in the data.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add example
+    if( !type_engine_import_add_ex( env, "ai/knn/knn2-classify.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/knn/knn2-search.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -502,6 +512,10 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->add_arg( "int[]", "output" );
     func->doc = "Generate a sequence of observations of the given length.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/hmm/hmm-load.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/hmm/hmm-train.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -592,6 +606,14 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->doc = "Get whether a KDTree is used for similarity search.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/word2vec/word2vec-basic.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/word2vec/poem-i-feel.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/word2vec/poem-randomwalk.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/word2vec/poem-spew.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/word2vec/poem-ungenerate.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/word2vec/word2vec-prompt.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -618,6 +640,9 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->doc =
         "dimension-reduce 'input' (NxM) to 'output' (NxD) as the projection of the input data onto its first 'D' principle components";
     if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add example
+    if( !type_engine_import_add_ex( env, "ai/pca/pca.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -992,6 +1017,11 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->doc = "Get the run status for all outputs.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/wekinator/wekinator-basic.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/wekinator/wekinator-customize.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/wekinator/wekinator-import.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -1117,6 +1147,12 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     func->add_arg( "string", "filename" );
     func->doc = "Load a MLP model from file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "ai/mlp/mlp.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/mlp/mlp-manual.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/mlp/model-load.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/mlp/model-save.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );

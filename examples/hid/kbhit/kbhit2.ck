@@ -1,3 +1,7 @@
+// name: kbhit2.ck
+// desc: KBHit (terminal only) is a simple mechanism for capturing
+//       keyboard ouly; for more flexible keyboard input, see HID
+
 // computer key input, with sound
 KBHit kb;
 

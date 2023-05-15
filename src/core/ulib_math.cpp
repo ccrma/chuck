@@ -493,6 +493,10 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_svar( QUERY, "complex", "j", TRUE, &g_i );
     QUERY->doc_var( QUERY, "The complex number sqrt(-1)." );
 
+    // add examples
+    // QUERY->add_ex( QUERY, "map.ck" );
+    // QUERY->add_ex( QUERY, "math-help.ck" );
+
     // done
     QUERY->end_class( QUERY );
 

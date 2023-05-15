@@ -426,7 +426,7 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     init_class_cherr( env, env->t_cherr ); // 1.3.0.0
     init_class_vec3( env, env->t_vec3 ); // 1.3.5.3
     init_class_vec4( env, env->t_vec4 ); // 1.3.5.3
-    // init_class_function(env, env->t_function );
+    init_class_function(env, env->t_function ); // 1.5.0.0
 
     // initialize primitive types
     init_primitive_types( env );

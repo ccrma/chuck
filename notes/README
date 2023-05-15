@@ -22,8 +22,8 @@ what this distribution includes:
   - license + other information
 
 supported platforms:
-  - MacOS X (CoreAudio)
-  - Linux (ALSA/OSS)
+  - macOS (CoreAudio)
+  - Linux (ALSA/Pulse/JACK)
   - Windows/Cygwin (DirectSound)
 
 authors:
@@ -49,8 +49,7 @@ Princeton Sound Lab:
 Visit the ChucK home page (http://chuck.stanford.edu/)
   - the ChucK tutorial
   - documentation
-  - developer's guide
-  - programmer's guide
+  - examples
   - publications
 
 - HTML version: (http://chuck.stanford.edu/doc/)

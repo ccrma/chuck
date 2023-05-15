@@ -103,20 +103,18 @@ about( Type.find("MFCC") );
 // get the type of the Type type; should be itself
 Type.typeOf() @=> Type @ tType;
 
-// make an array
-Type types[0];
 // get all subclasses of StkInstrument
-StkInstrument.typeOf().children( types );
+StkInstrument.typeOf().children() @=> Type kids[];
 // print results
-for( int i; i < types.size(); i++ )
+for( int i; i < kids.size(); i++ )
 {
-    cherr <= "StkInstrument: " <= types[i].name() <= IO.newline();
+    cherr <= "StkInstrument: " <= kids[i].name() <= IO.newline();
 }
 
 // get all subclasses of UAna
-UAna.typeOf().children( types );
+UAna.typeOf().children() @=> kids;
 // print results
-for( int i; i < types.size(); i++ )
+for( int i; i < kids.size(); i++ )
 {
-    cherr <= "UAna: " <= types[i].name() <= IO.newline();
+    cherr <= "UAna: " <= kids[i].name() <= IO.newline();
 }
