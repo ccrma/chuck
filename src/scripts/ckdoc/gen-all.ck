@@ -107,7 +107,7 @@ doc.addGroup(
     // file name
     "uanae",
     // group description
-    "Unit analyzer (UAna) objects are specialized UGens that can perform audio analysis and pass analysis information to other UAnae. (See also: <a target=\"_blank\" href=\"ai.html\">AI Tools API reference</a>.)"
+    "Unit analyzer (<a target=\"_blank\" href=\"../../uana/\">UAna</a>) objects are specialized UGens that can perform audio analysis and pass analysis information to other UAnae. (See also: <a href=\"ai.html\">AI Tools API reference</a>.)"
 );
 
 // add group
@@ -118,7 +118,7 @@ doc.addGroup(
     // file name
     "ai",
     // group description
-    "ChucK for AI (ChAI) is a set of AI/ML tools for building interactive AI musical instruments and systems. (See also: <a target=\"_blank\" href=\"uanae.html\">Unit Analyzer API reference</a>.)"
+    "ChucK for AI (<a target=\"_blank\" href=\"../../chai/\">ChAI</a>) is a set of AI/ML tools for building interactive AI musical instruments and systems. (See also: <a href=\"uanae.html\">Unit Analyzer API reference</a>.)"
 );
 
 // add group
