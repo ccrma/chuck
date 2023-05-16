@@ -93,7 +93,7 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
 {
     // init as base class
     Chuck_DL_Func * func = NULL;
-    std::string doc = "";
+    std::string doc = "Base class for other IO classes such as FileIO, StdOut and StdErr. Besides IO.newline(), it’s unlikely you need to use this class directly.";
 
     // log
     EM_log( CK_LOG_SEVERE, "class 'IO'" );
@@ -272,7 +272,8 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
     // init as base class
     // TODO: ctor/dtor?
     // TODO: replace dummy with pure function
-    if( !type_engine_import_class_begin( env, type, env->global(), fileio_ctor, fileio_dtor ) )
+    if( !type_engine_import_class_begin( env, type, env->global(), fileio_ctor, fileio_dtor,
+        "Helper class doing file-related operations such as reading, writing, seeking, etc. See examples for usage." ) )
         return FALSE;
 
     // add open(string)
@@ -444,7 +445,7 @@ t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type )
     EM_log( CK_LOG_SEVERE, "class 'chout'" );
 
     // TODO: ctor/dtor?
-    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL ) )
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, "Do not instantiate this class directly! Use `chout` instead." ) )
         return FALSE;
 
     // add good()
@@ -537,7 +538,7 @@ t_CKBOOL init_class_cherr( Chuck_Env * env, Chuck_Type * type )
     EM_log( CK_LOG_SEVERE, "class 'cherr'" );
 
     // TODO: ctor/dtor?
-    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL ) )
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, "Do not instantiate this class directly! Use `cherr` instead." ) )
         return FALSE;
 
     // add good()

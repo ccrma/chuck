@@ -277,6 +277,11 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     func->doc = "Manually take IFFT (as opposed to using .upchuck() / upchuck operator)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "analysis/ifft.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/ifft2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/ifft3.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -435,6 +440,9 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "buffer" );
     func->doc = "Manually take pilF (as opposed to using .upchuck() / upchuck operator)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add example
+    if( !type_engine_import_add_ex( env, "analysis/flip.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );

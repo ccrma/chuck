@@ -1072,7 +1072,9 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     Multiple voice facility is built in, allowing for a single\
     LiSa object to serve as a source for sample layering and\
     granular textures.\
-    by Dan Trueman (2007)";
+    by Dan Trueman (2007)\n\
+    See also: a slowly growing <a target=\"_blank\" href=\"../program/lisa/tutorial-1.html\">tutorial</a>\
+    | <a target=\"_blank\" href=\"../examples/#lisa\">LiSa examples</a> in the ChucK distribution | <a target=\"_blank\" href=\"https://www.youtube.com/watch?v=7F75v_73pF4\">video tutorial</a> by Clint Hoagland.";
     if( !type_engine_import_ugen_begin( env, "LiSa", "UGen", env->global(),
                                         LiSaMulti_ctor, LiSaMulti_dtor,
                                         LiSaMulti_tick, NULL,

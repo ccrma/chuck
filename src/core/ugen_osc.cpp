@@ -1139,10 +1139,9 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     type_engine_import_class_end( env );
 
     //---------------------------------------------------------------------
-    // Warp
+    // WarpTable
     //---------------------------------------------------------------------
-    doc = "...";
-
+    doc = "An end-constrained mapping table, mostly useful for conditioning control signals.";
     if( !type_engine_import_ugen_begin( env, "WarpTable", "GenX", env->global(),
                                         NULL, NULL, genX_tick, NULL, doc.c_str() ) )
         return FALSE;
@@ -1158,6 +1157,9 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float", "sym" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     */
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "special/GenX-WarpTable-test.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );

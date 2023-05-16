@@ -305,8 +305,8 @@ public:
     {
         m_outputStr += "<a name=\"top\"/>\n";
         m_outputStr += "<div id=\"title\">\n";
-        m_outputStr += "<div class=\"titleL\"><h1>" + m_title + "</h1></div>\n";
-        m_outputStr += "<div class=\"titleR\"><h1><a href=\"index.html\">ChucK Class Library Reference</a></h1></div>\n";
+        m_outputStr += "<div class=\"titleL\"><h1><a href=\"./\">ChucK Class Library Reference</a></h1></div>\n";
+        m_outputStr += "<h1>&nbsp;&nbsp;<span style=\"color:black\">/</span>&nbsp;&nbsp;" + m_title + "</h1></div>\n";
         m_outputStr += "</div>\n"; // #title
     }
 
