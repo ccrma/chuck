@@ -125,7 +125,7 @@ doc.addGroup(
 doc.addGroup(
     [ "IO", "FileIO", /* "StdOut", "StdErr", */
       "OscIn", "OscOut", "OscMsg",
-      "Hid", "HidMsg", "SerialIO",
+      "Hid", "HidMsg", "KBHit", "SerialIO",
       "MidiIn", "MidiOut", "MidiMsg", "MidiFileIn" ],
     // group name
     "Input & Output",
