@@ -136,6 +136,9 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
                                         doc.c_str() ) )
         return FALSE;
 
+    // add examples | 1.5.0.0 added
+    if( !type_engine_import_add_ex( env, "basic/phasor.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -180,6 +183,10 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     func->doc = "get width of triangle wave (ratio of rise time to fall time).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "basic/oscillatronx.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/shepard.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -204,7 +211,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
 
     // add examples
     if( !type_engine_import_add_ex( env, "deep/thx.ck" ) ) goto error;
-    if( !type_engine_import_add_ex( env, "/basic/oscillatronx.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/oscillatronx.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );

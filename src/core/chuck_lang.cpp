@@ -483,8 +483,8 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // add clone()
-    func = make_new_mfun( "void", "clone", shred_clone );
-    if( !type_engine_import_mfun( env, func ) ) goto error;
+    // func = make_new_mfun( "void", "clone", shred_clone );
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add exit()
     func = make_new_mfun( "void", "exit", shred_exit );
@@ -779,6 +779,7 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
 
     // add toString()
     func = make_new_mfun( "string", "toString", string_toString );
+    func->doc = "return the reference of calling string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add charAt()
