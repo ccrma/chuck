@@ -3872,11 +3872,16 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get state; attack=0, decay=1, sustain=2, release=3, done=4";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    if( !type_engine_import_svar( env, "int", "ATTACK", TRUE, (t_CKUINT) &ADSR_state_ATTACK) ) goto error;
-    if( !type_engine_import_svar( env, "int", "DECAY", TRUE, (t_CKUINT) &ADSR_state_DECAY) ) goto error;
-    if( !type_engine_import_svar( env, "int", "SUSTAIN", TRUE, (t_CKUINT) &ADSR_state_SUSTAIN) ) goto error;
-    if( !type_engine_import_svar( env, "int", "RELEASE", TRUE, (t_CKUINT) &ADSR_state_RELEASE) ) goto error;
-    if( !type_engine_import_svar( env, "int", "DONE", TRUE, (t_CKUINT) &ADSR_state_DONE) ) goto error;
+    if( !type_engine_import_svar( env, "int", "ATTACK", TRUE, (t_CKUINT)&ADSR_state_ATTACK,
+        "see state() function. Denotes that the envelope is in the attack stage") ) goto error;
+    if( !type_engine_import_svar( env, "int", "DECAY", TRUE, (t_CKUINT)&ADSR_state_DECAY,
+        "see state() function. Denotes that the envelope is in the decay stage") ) goto error;
+    if( !type_engine_import_svar( env, "int", "SUSTAIN", TRUE, (t_CKUINT)&ADSR_state_SUSTAIN,
+        "see state() function. Denotes that the envelope is in the sustain stage") ) goto error;
+    if( !type_engine_import_svar( env, "int", "RELEASE", TRUE, (t_CKUINT)&ADSR_state_RELEASE,
+        "see state() function. Denotes that the envelope is in the release stage") ) goto error;
+    if( !type_engine_import_svar( env, "int", "DONE", TRUE, (t_CKUINT)&ADSR_state_DONE,
+        "see state() function. Denotes that the envelope has completed all stages") ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4234,6 +4239,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get filter notch radius.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "deep/chant.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/say-chu.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4300,6 +4308,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples | 1.5.0.0 (ge)
+    if( !type_engine_import_add_ex( env, "filter/dcblocker.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "deep/plu2.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "deep/plu3.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "stk/flute.ck" ) ) goto error;
@@ -4340,6 +4349,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "effects/reverb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "otf_06.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "otf_07.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4369,6 +4382,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "effects/reverb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/krstlchr-algo7.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/thx.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -4396,6 +4414,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func = make_new_mfun( "float", "mix", PRCRev_cget_mix ); //! mix level
     func->doc = "get mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add example
+    if( !type_engine_import_add_ex( env, "effects/reverb.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4557,6 +4578,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get effect mix level";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples | 1.5.0.0 (alex han) added
+    if( !type_engine_import_add_ex( env, "effects/pitch-shift.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );

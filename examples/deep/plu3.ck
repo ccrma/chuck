@@ -9,7 +9,7 @@ allpass => Delay delay => lowpass;
 // our radius
 .99999 => float R;
 // finding our (integer) delay order
-Std.mtof( 80.75 ) => setFreq => float L;
+Std.mtof( 36.5 ) => setFreq => float L;
 // set delay
 L::samp => delay.delay;
 // set dissipation factor

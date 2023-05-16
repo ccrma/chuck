@@ -454,7 +454,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: impulse
     //---------------------------------------------------------------------
-    doc = "a impulse generator. Can be used to set the value of the next sample; default for each sample is 0 if not set. Additionally, this can be used to generate a digial signal, one sample at a time.";
+    doc = "An impulse generator. Can be used to set the value of the next sample; default for each sample is 0 if not set. Additionally, this can be used to generate a digital signal, one sample at a time.";
     if( !type_engine_import_ugen_begin( env, "Impulse", "UGen", env->global(),
                                         impulse_ctor, impulse_dtor, impulse_tick, NULL, doc.c_str() ) )
         return FALSE;
@@ -480,6 +480,11 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "float", "next", impulse_cget_next );
     func->doc = "get value of next sample to be generated.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "basic/imp.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/comb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/chant.ck" ) ) goto error;
 
     // end import
     if( !type_engine_import_class_end( env ) )
