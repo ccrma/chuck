@@ -395,8 +395,8 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 #ifndef __DISABLE_PROMPTER__
     // begin class (Skot)
     if( !type_engine_import_class_begin( env, "ConsoleInput", "Event",
-                                         env->global(), Skot_ctor,
-                                         Skot_dtor ) )
+                                         env->global(), Skot_ctor, Skot_dtor,
+                                         "(Terminal only) a utility for prompting user input on the command line." ) )
         return FALSE;
 
     // add member variable
@@ -405,24 +405,34 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 
     // add prompt()
     func = make_new_mfun( "Event", "prompt", Skot_prompt );
+    func->doc = "Return an Event to wait on.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add prompt()
     func = make_new_mfun( "Event", "prompt", Skot_prompt2 );
     func->add_arg( "string", "what" );
+    func->doc = "Print a prompt text and return an Event to wait on.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add ready()
+    // add more()
     func = make_new_mfun( "int", "more", Skot_more );
+    func->doc = "Return whether there is more input to read.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add getString()
     func = make_new_mfun( "string", "getLine", Skot_getLine );
+    func->doc = "Return the next line of input as a string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add can_wait()
     func = make_new_mfun( "int", "can_wait", Skot_can_wait );
+    func->doc = "(internal) used by virtual machine for synthronization.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "string/readline.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/word2vec/word2vec-prompt.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/word2vec/poem-ungenerate.ck" ) ) goto error;
 
     // end class
     type_engine_import_class_end( env );

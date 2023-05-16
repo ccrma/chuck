@@ -2932,7 +2932,7 @@ Phoneme Names:\n\
     // begin FM ugen
     //------------------------------------------------------------------------
 
-    doc = "STK FM synthesis super class.\n\
+    doc = "STK FM synthesis super class. You should NOT need to use this UGen directly. Please refer to the documentation on FM subclasses instead.\n\
 \n\
 This class controls an arbitrary number of waves and envelopes, determined via a constructor argument.\n\
 \n\
@@ -3990,7 +3990,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     if( !type_engine_import_ugen_begin( env, "FilterStk", "UGen", env->global(),
                         FilterStk_ctor, FilterStk_dtor,
-                        FilterStk_tick, FilterStk_pmsg ) ) return FALSE;
+                        FilterStk_tick, FilterStk_pmsg,
+                        "FilterStk is an STK Filter base class inherited by all Stk Filter UGens such as BiQuad, TwoZero, PoleZero, etc. You should NOT need to use this UGen directly. Please refer to the documentation on other filter types instead." ) ) return FALSE;
     // member variable
     FilterStk_offset_data = type_engine_import_mvar ( env, "int", "@FilterStk_data", FALSE );
     if( FilterStk_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -4480,7 +4481,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
-    if( !type_engine_import_add_ex( env, "stk/chorus.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "effects/chorus.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4608,6 +4609,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func = make_new_mfun( "int", "rate", SubNoise_cget_rate ); //! subsampling rate
     func->doc = "get subsampling rate";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "stk/subnoise-control.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/subnoise-audio.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );

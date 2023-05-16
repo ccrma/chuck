@@ -123,12 +123,12 @@ doc.addGroup(
 
 // add group
 doc.addGroup(
-    [ "IO", "FileIO", "StdOut", "StdErr",
+    [ "IO", "FileIO", /* "StdOut", "StdErr", */
       "OscIn", "OscOut", "OscMsg",
       "Hid", "HidMsg", "SerialIO",
       "MidiIn", "MidiOut", "MidiMsg", "MidiFileIn" ],
     // group name
-    "Input / Output",
+    "Input & Output",
     // file name
     "io",
     // group descriptions
