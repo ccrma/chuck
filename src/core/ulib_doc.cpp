@@ -306,7 +306,7 @@ public:
         m_outputStr += "<a name=\"top\"/>\n";
         m_outputStr += "<div id=\"title\">\n";
         m_outputStr += "<div class=\"titleL\"><h1><a href=\"./\">ChucK Class Library Reference</a></h1></div>\n";
-        m_outputStr += "<h1>&nbsp;&nbsp;<span style=\"color:black\">/</span>&nbsp;&nbsp;" + m_title + "</h1></div>\n";
+        m_outputStr += "<div class=\"titleR\"><h1>&nbsp;&nbsp;<span style=\"color:black\">/</span>&nbsp;&nbsp;" + m_title + "</h1></div>\n";
         m_outputStr += "</div>\n"; // #title
     }
 
@@ -1628,248 +1628,299 @@ CK_DLL_MFUN( CKDoc_outputToDir )
 
 // the default CSS (ckdoc.css), literally
 string CKDoc::m_ckdocCSS = "\
-  body\n\
-  {\n\
-      margin: 2em 7em 2em 2em;\n\
-      font-family: Helvetica, sans-serif;\n\
-      font-size: 14px;\n\
-  }\n\
+html\n\
+{\n\
+    margin: 0;\n\
+    padding: 0;\n\
+}\n\
 \n\
-  .index_group\n\
-  {\n\
-      clear: both;\n\
-      background-color: #eee;\n\
-      padding: 1em 1em 1em 1em;\n\
-      margin-bottom: 2em;\n\
-      vertical-align: top;\n\
-  }\n\
+body\n\
+{\n\
+    margin-left: 2em;\n\
+    margin-right: 2em;\n\
+    font-family: Helvetica, sans-serif;\n\
+    font-size: 14px;\n\
+}\n\
 \n\
-  .index_group_title\n\
-  {\n\
-      float: left;\n\
-      margin: 0;\n\
-      width: 15%;\n\
-      padding-right: 3em;\n\
-      border-right: 4px solid #fcfcfc;\n\
-  }\n\
+a\n\
+{\n\
+    scroll-margin-top: 80px;\n\
+}\n\
 \n\
-  .index_group_classes\n\
-  {\n\
-      padding-top: 0.15em;\n\
-      padding-left: 1em;\n\
-      padding-bottom: 0.15em;\n\
-      \n\
-      margin: 0;\n\
-      margin-left: 20%;\n\
-      width: 75%;\n\
-  }\n\
 \n\
-  .index_group_classes a\n\
-  {\n\
-      margin-right: 0.5em;\n\
-      line-height: 1.5em;\n\
-  }\n\
-  .index_group_desc\n\
-  {\n\
-        color:#555;\n\
-  }\n\
-  \n\
-  .group_desc\n\
-  {\n\
-        color:#000;\n\
-  }\n\
+.index_group\n\
+{\n\
+    clear: both;\n\
+    background-color: #eee;\n\
+    padding: 1em 1em 1em 1em;\n\
+    margin-bottom: 2em;\n\
+    vertical-align: top;\n\
+}\n\
 \n\
-  .index_group_title a { color: black; }\n\
+.index_group_title\n\
+{\n\
+    float: left;\n\
+    margin: 0;\n\
+    width: 15%;\n\
+    padding-right: 3em;\n\
+    border-right: 4px solid #fcfcfc;\n\
+}\n\
 \n\
-  #title\n\
-  {\n\
-      float: left;\n\
-      width: 100%;\n\
-      border-bottom: 1px solid black;\n\
-      padding-bottom: 0.5em;\n\
-      margin-bottom: 1.5em;\n\
-  }\n\
+.index_group_classes\n\
+{\n\
+    padding-top: 0.15em;\n\
+    padding-left: 1em;\n\
+    padding-bottom: 0.15em;\n\
 \n\
-  .titleL\n\
-  {\n\
-      float: left;\n\
-      width: auto;\n\
-      clear: none;\n\
-  }\n\
+    margin: 0;\n\
+    margin-left: 20%;\n\
+    width: 75%;\n\
+}\n\
 \n\
-  .titleR\n\
-  {\n\
-      float: right;\n\
-      text-align: right;\n\
-      width: auto;\n\
-      clear: none;\n\
-  }\n\
+.index_group_classes a\n\
+{\n\
+    margin-right: 0.5em;\n\
+    line-height: 1.5em;\n\
+}\n\
 \n\
-  h1\n\
-  {\n\
-      font-size: 28px;\n\
-      margin: 0;\n\
-  }\n\
+.index_group_desc\n\
+{\n\
+    color: #555;\n\
+}\n\
 \n\
-  h1 a { color: black; text-decoration: none; }\n\
+.group_desc\n\
+{\n\
+    color: #000;\n\
+}\n\
 \n\
-  #body\n\
-  {\n\
-      clear: both;\n\
-  }\n\
+.index_group_title a\n\
+{\n\
+    color: black;\n\
+}\n\
 \n\
-  .toc\n\
-  {\n\
-      float: left;\n\
-  /* position: fixed;*/\n\
-      clear: both;\n\
-      background-color: #eee;\n\
-      padding: 0.25em 0.5em 1em 0.75em;\n\
-      margin: 0;\n\
-      width: 9.5em;\n\
-  }\n\
+#title\n\
+{\n\
+    position: fixed;\n\
+    top: 0;\n\
+    left: 0;\n\
+    right: 0;\n\
+    border-bottom: 1px solid black;\n\
+    padding: 1em 2em;\n\
+    margin-bottom: 1.5em;\n\
+    background-color: white;\n\
+    float: left;\n\
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n\
+}\n\
 \n\
-  .toc_class\n\
-  {\n\
-      font-size: 12px;\n\
-      margin-top: 0.5em;\n\
-      margin-bottom: 0.25em;\n\
-  }\n\
+.titleL\n\
+{\n\
+    float: left;\n\
+    width: auto;\n\
+    clear: none;\n\
+}\n\
 \n\
-  .classes\n\
-  {\n\
-      clear: right;\n\
-      margin-left: 12em;\n\
-      margin-right: 0em;\n\
-  }\n\
+.titleR\n\
+{\n\
+    /* float: right; */\n\
+    width: auto;\n\
+    clear: none;\n\
+    color: gray;\n\
+}\n\
 \n\
-  .class\n\
-  {\n\
-      background-color: #eee;\n\
-      padding: 0.025em 0.5em 0.25em 1em;\n\
-  }\n\
+h1\n\
+{\n\
+    font-size: 28px;\n\
+    margin: 0;\n\
+}\n\
 \n\
-  .class_title\n\
-  {\n\
-      font-family: Menlo, Monaco, Courier;\n\
-      font-size: 18px;\n\
-  }\n\
-  .class_inherits\n\
-  {\n\
-      font-weight: normal;\n\
-  }\n\
+h1 a\n\
+{\n\
+    color: black;\n\
+    text-decoration: none;\n\
+}\n\
 \n\
-  .class_hierarchy\n\
-  {\n\
-      font-family: Menlo, Monaco, Courier;\n\
-      font-size: 14px;\n\
-      /* margin-right: 4em; */ \n\
-  }\n\
+h1 a:hover\n\
+{\n\
+    color: blue;\n\
+    text-decoration: underline;\n\
+}\n\
 \n\
-  .class_section_header\n\
-  {\n\
-      \n\
-  }\n\
+#body\n\
+{\n\
+    clear: both;\n\
+    margin-top: 80px;\n\
+}\n\
 \n\
-  .class_description\n\
-  {\n\
-      font-family: Helvetica;\n\
-      font-size: 14px;\n\
-      margin-right: 4em;\n\
-  }\n\
+.toc\n\
+{\n\
+    float: left;\n\
+    position: fixed;\n\
+    top: 80px;\n\
+    clear: both;\n\
+    background-color: #eee;\n\
+    padding: 0.25em 0.5em 1em 0.75em;\n\
+    margin: 0;\n\
+    width: 12.5em;\n\
+    overflow-x: auto;\n\
+    overflow-y: auto;\n\
+    max-height: calc(100% - 100px);\n\
+    margin-bottom: 20px;\n\
+}\n\
 \n\
-  .empty_class_description\n\
-  {\n\
-      font-family: Helvetica;\n\
-      font-size: 12px;\n\
-      font-style: italic;\n\
-      color: grey;\n\
-      margin-right: 4em;\n\
-  }\n\
+.toc_class\n\
+{\n\
+    font-size: 12px;\n\
+    margin-top: 0.5em;\n\
+    margin-bottom: 0.25em;\n\
+}\n\
 \n\
-  .members\n\
-  {\n\
-      font-family: Menlo, Monaco, Courier;\n\
-      font-size: 13px;\n\
-  }\n\
+.classes\n\
+{\n\
+    clear: right;\n\
+    margin-left: 15em;\n\
+    margin-right: 0em;\n\
+    margin-top: 80px;\n\
+}\n\
 \n\
-  .member\n\
-  {\n\
-      margin-left: 0em;\n\
-      padding-left: 0.85em;\n\
-      padding-top: 0.85em;\n\
-      border-top: 4px solid #fcfcfc;\n\
-      border-left: 4px solid #fcfcfc;\n\
-      \n\
-      padding-bottom: 0.85em;\n\
-      padding-left: 0.85em;\n\
-      margin-bottom: 1.5em;\n\
-      \n\
-      margin-right: 4em;\n\
-      padding-right: 0;\n\
-  }\n\
+.class\n\
+{\n\
+    background-color: #eee;\n\
+    padding: 0.025em 0.5em 0.25em 1em;\n\
+}\n\
 \n\
-  .member_declaration\n\
-  {\n\
-      margin-top: 0;\n\
-      margin-bottom: 0.5em;\n\
-  }\n\
+.class_title\n\
+{\n\
+    font-family: Menlo, Monaco, Courier;\n\
+    font-size: 18px;\n\
+}\n\
 \n\
-  .member_description\n\
-  {\n\
-      font-family: Helvetica;\n\
-      font-size: 14px;\n\
-      margin-top: 0;\n\
-      margin-bottom: 0;\n\
-  }\n\
+.class_inherits\n\
+{\n\
+    font-weight: normal;\n\
+}\n\
 \n\
-  .empty_member_description\n\
-  {\n\
-      font-family: Helvetica;\n\
-      font-size: 12px;\n\
-      font-style: italic;\n\
-      color: grey;\n\
-      margin-top: 0;\n\
-      margin-bottom: 0;\n\
-  }\n\
+.class_hierarchy\n\
+{\n\
+    font-family: Menlo, Monaco, Courier;\n\
+    font-size: 14px;\n\
+    /* margin-right: 4em; */\n\
+}\n\
 \n\
-  .ckdoc_typename\n\
-  {\n\
-      font-family: Menlo, Monaco, Courier;\n\
-      font-size: 13px;\n\
-  }\n\
+.class_section_header\n\
+{}\n\
 \n\
-  .membername\n\
-  {\n\
-      font-weight: bold;\n\
-  }\n\
+.class_description\n\
+{\n\
+    font-family: Helvetica;\n\
+    font-size: 14px;\n\
+    margin-right: 4em;\n\
+}\n\
 \n\
-  .top_link\n\
-  {\n\
-      text-align: right;\n\
-      margin-top: 2em;\n\
-      margin-right: 1em;\n\
-  }\n\
+.empty_class_description\n\
+{\n\
+    font-family: Helvetica;\n\
+    font-size: 12px;\n\
+    font-style: italic;\n\
+    color: grey;\n\
+    margin-right: 4em;\n\
+}\n\
 \n\
-  .top_link a\n\
-  {\n\
-      color: #44F;\n\
-  }\n\
+.members\n\
+{\n\
+    font-family: Menlo, Monaco, Courier;\n\
+    font-size: 13px;\n\
+}\n\
 \n\
-  .examples ul\n\
-  {\n\
-      margin-top: -1em;\n\
-  }\n\
+.member\n\
+{\n\
+    margin-left: 0em;\n\
+    padding-left: 0.85em;\n\
+    padding-top: 0.85em;\n\
+    border-top: 4px solid #fcfcfc;\n\
+    border-left: 4px solid #fcfcfc;\n\
 \n\
-  .examples ul li a\n\
-  {\n\
-      text-decoration: none;\n\
-  }\n\
+    padding-bottom: 0.85em;\n\
+    padding-left: 0.85em;\n\
+    margin-bottom: 1.5em;\n\
 \n\
-  .clear { clear: both; }\n\
+    margin-right: 4em;\n\
+    padding-right: 0;\n\
+}\n\
 \n\
-  .ckdoc_type_primitive { color: blue; }\n\
+.member_declaration\n\
+{\n\
+    margin-top: 0;\n\
+    margin-bottom: 0.5em;\n\
+}\n\
 \n\
-  .ckdoc_type_ugen { color: #A200EC; }\n\
+.member_description\n\
+{\n\
+    font-family: Helvetica;\n\
+    font-size: 14px;\n\
+    margin-top: 0;\n\
+    margin-bottom: 0;\n\
+}\n\
 \n\
-  .ckdoc_type_object { color: #800023; }";
+.empty_member_description\n\
+{\n\
+    font-family: Helvetica;\n\
+    font-size: 12px;\n\
+    font-style: italic;\n\
+    color: grey;\n\
+    margin-top: 0;\n\
+    margin-bottom: 0;\n\
+}\n\
+\n\
+.ckdoc_typename\n\
+{\n\
+    font-family: Menlo, Monaco, Courier;\n\
+    font-size: 13px;\n\
+}\n\
+\n\
+.membername\n\
+{\n\
+    font-weight: bold;\n\
+}\n\
+\n\
+.top_link\n\
+{\n\
+    text-align: right;\n\
+    margin-top: 2em;\n\
+    margin-right: 1em;\n\
+}\n\
+\n\
+.top_link a\n\
+{\n\
+    color: #44F;\n\
+}\n\
+\n\
+.examples ul\n\
+{\n\
+    margin-top: -1em;\n\
+}\n\
+\n\
+.examples ul li a\n\
+{\n\
+    text-decoration: none;\n\
+}\n\
+\n\
+.clear\n\
+{\n\
+    clear: both;\n\
+}\n\
+\n\
+.ckdoc_type_primitive\n\
+{\n\
+    color: blue;\n\
+}\n\
+\n\
+.ckdoc_type_ugen\n\
+{\n\
+    color: #A200EC;\n\
+}\n\
+\n\
+.ckdoc_type_object\n\
+{\n\
+    color: #800023;\n\
+}\n\
+";
