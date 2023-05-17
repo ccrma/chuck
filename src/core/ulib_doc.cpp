@@ -305,8 +305,13 @@ public:
     {
         m_outputStr += "<a name=\"top\"/>\n";
         m_outputStr += "<div id=\"title\">\n";
-        m_outputStr += "<div class=\"titleL\"><h1><a href=\"./\">ChucK Class Library Reference</a></h1></div>\n";
-        m_outputStr += "<div class=\"titleR\"><h1>&nbsp;&nbsp;<span style=\"color:black\">/</span>&nbsp;&nbsp;" + m_title + "</h1></div>\n";
+        m_outputStr += "<div class=\"titleL\">\n";
+        m_outputStr += "<div style=\"display: flex; align-items: center;\">";
+        m_outputStr += "<div class=\"inline titlelogo\"><a href=\"https://chuck.stanford.edu/\" target=\"_blank\"><img src=\"https://chuck.stanford.edu/doc/images/chuck-logo2023w.png\" /> </div>";
+        m_outputStr += "<div class=\"inline\"><h1><a href=\"./\">ChucK Class Library Reference</a></h1></div>\n";
+        m_outputStr += "<div class=\"inline gray\"><h1>&nbsp;&nbsp;<span style=\"color:black\">/</span>&nbsp;&nbsp;" + m_title + "</h1></div>\n";
+        m_outputStr += "</div>\n";
+        m_outputStr += "</div>\n";
         m_outputStr += "</div>\n"; // #title
     }
 
@@ -662,8 +667,12 @@ string CKDocHTMLOutput::renderIndex( const string & title, const vector<CKDocGro
     sout <<  "</head>\n";
     sout <<  "<body>\n";
     sout <<  "<div id=\"title\">\n";
-    sout <<  "<div class=\"titleL\"><h1>" << title <<  "</h1></div>\n";
-    sout <<  "<div class=\"titleR\"><h1>&nbsp;</h1></div>\n";
+    sout <<  "<div class=\"titleL\">\n";
+    sout <<  "<div style=\"display: flex; align-items: center;\">";
+    sout <<  "<div class=\"inline titlelogo\"><a href=\"https://chuck.stanford.edu/\" target=\"_blank\"><img src=\"https://chuck.stanford.edu/doc/images/chuck-logo2023w.png\" /> </div>";
+    sout <<  "<div class=\"inline\"><h1>" << title <<  "</h1></div>\n";
+    sout <<  "</div>\n";
+    sout <<  "</div>\n";
     sout <<  "</div>\n";
     sout <<  "<div id=\"body\">\n";
 
@@ -1705,7 +1714,7 @@ a\n\
     left: 0;\n\
     right: 0;\n\
     border-bottom: 1px solid black;\n\
-    padding: 1em 2em;\n\
+    padding: 0.5em 2em;\n\
     margin-bottom: 1.5em;\n\
     background-color: white;\n\
     float: left;\n\
@@ -1716,15 +1725,40 @@ a\n\
 {\n\
     float: left;\n\
     width: auto;\n\
-    clear: none;\n\
+    /* vertically center */\n\
+    line-height: 48px;\n\
+    height: 48px;\n\
 }\n\
+\n\
+.gray\n\
+{\n\
+    color: gray;\n\
+}\n\
+\n\
+.inline\n\
+{\n\
+    display: inline;\n\
+}\n\
+\n\
 \n\
 .titleR\n\
 {\n\
-    /* float: right; */\n\
-    width: auto;\n\
+    float: right;\n\
+    width: initial;\n\
     clear: none;\n\
-    color: gray;\n\
+}\n\
+\n\
+.titleLogo\n\
+{\n\
+    width: 48px;\n\
+    height: 48px;\n\
+    padding-right: 8px;\n\
+}\n\
+\n\
+.titleLogo img\n\
+{\n\
+    width: 48px;\n\
+    height: 48px;\n\
 }\n\
 \n\
 h1\n\
