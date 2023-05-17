@@ -1269,6 +1269,7 @@ CK_DLL_MFUN( MidiFileIn_numTracks );
 CK_DLL_MFUN( MidiFileIn_read );
 CK_DLL_MFUN( MidiFileIn_readTrack );
 CK_DLL_MFUN( MidiFileIn_rewind );
+CK_DLL_MFUN( MidiFileIn_rewindTrack );
 
 
 
@@ -5018,8 +5019,9 @@ Modified algorithm code by Gary Scavone, 2005.";
     // end the class import
     type_engine_import_class_end( env );
 
-
-    if(!type_engine_import_class_begin( env, "MidiFileIn", "Object", env->global(), MidiFileIn_ctor, MidiFileIn_dtor ))
+    // MidiFileIn
+    if(!type_engine_import_class_begin( env, "MidiFileIn", "Object", env->global(), MidiFileIn_ctor, MidiFileIn_dtor,
+                                        "Class for reading data from a MIDI file." ) )
         return FALSE;
 
     MidiFileIn_offset_data = type_engine_import_mvar ( env, "int", "@MidiFileIn_data", FALSE );
@@ -5027,25 +5029,40 @@ Modified algorithm code by Gary Scavone, 2005.";
 
     func = make_new_mfun( "int", "open", MidiFileIn_open );
     func->add_arg( "string", "path" );
+    func->doc = "Open a MIDI file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "close", MidiFileIn_close );
+    func->doc = "Close the MIDI file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "read", MidiFileIn_read );
     func->add_arg( "MidiMsg", "msg" );
+    func->doc = "Read next MIDI Event (on default track 0); return contents in 'msg'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "read", MidiFileIn_readTrack );
     func->add_arg( "MidiMsg", "msg" );
     func->add_arg( "int", "track" );
+    func->doc = "Read next MIDI Event on track 'track'; return contents in 'msg'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "numTracks", MidiFileIn_numTracks );
+    func->doc = "Get the number of tracks in the open MIDI file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "rewind", MidiFileIn_rewind );
+    func->doc = "Rewind MIDI reader to beginning of default track 0.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "void", "rewind", MidiFileIn_rewindTrack );
+    func->add_arg( "int", "track" );
+    func->doc = "Rewind MIDI reader to beginning of track 'track'.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples | 1.5.0.0
+    type_engine_import_add_ex( env, "examples/midi/midiplay-play.ck" );
+    type_engine_import_add_ex( env, "examples/midi/bwv772.mid" );
 
     // end the class import
     type_engine_import_class_end( env );
@@ -28976,11 +28993,16 @@ CK_DLL_MFUN( MidiFileIn_readTrack )
 CK_DLL_MFUN( MidiFileIn_rewind )
 {
     stk::MidiFileIn *f = (stk::MidiFileIn *) OBJ_MEMBER_UINT(SELF, MidiFileIn_offset_data);
-
-    if(f)
-        f->rewindTrack();
+    if(f) f->rewindTrack(); // default track (0)
 }
 
+// 1.5.0.0 (ge) added
+CK_DLL_MFUN( MidiFileIn_rewindTrack )
+{
+    stk::MidiFileIn *f = (stk::MidiFileIn *) OBJ_MEMBER_UINT(SELF, MidiFileIn_offset_data);
+    t_CKINT track = GET_NEXT_INT(ARGS);
+    if( f ) f->rewindTrack( track );
+}
 
 
 
