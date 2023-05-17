@@ -4967,8 +4967,9 @@ Modified algorithm code by Gary Scavone, 2005.";
     // end the class import
     type_engine_import_class_end( env );
 
-
     // Mesh2D
+    // 1.5.0.0 (ge) commented out, using the chugin Mesh2D
+    /*
     if( !type_engine_import_ugen_begin( env, "Mesh2D", "UGen", env->global(),
                                         Mesh2D_ctor, Mesh2D_dtor,
                                         Mesh2D_tick, Mesh2D_pmsg ) ) return FALSE;
@@ -5018,6 +5019,7 @@ Modified algorithm code by Gary Scavone, 2005.";
 
     // end the class import
     type_engine_import_class_end( env );
+    */
 
     // MidiFileIn
     if(!type_engine_import_class_begin( env, "MidiFileIn", "Object", env->global(), MidiFileIn_ctor, MidiFileIn_dtor,
