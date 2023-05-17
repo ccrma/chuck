@@ -6559,6 +6559,23 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
 t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
 {
     Chuck_DL_Func * ctor = NULL, * dtor = c->dtor;
+
+    // check for duplicates | 1.5.0.0 (ge) added
+    if( type_engine_find_type( env, c->name ) )
+    {
+        EM_log( CK_LOG_SYSTEM,
+                "** error importing class '%s'...",
+                c->name.c_str() );
+        EM_pushlog();
+        EM_log( CK_LOG_SYSTEM,
+                "type with the same name already exists" );
+        EM_poplog();
+
+        // before ugen begin, can just return
+        return FALSE;
+    }
+
+    // check constructor(s)
     if(c->ctors.size() > 0)
         ctor = c->ctors[0]; // TODO: uh, is more than one possible?
 
