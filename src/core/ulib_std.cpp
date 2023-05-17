@@ -334,7 +334,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 
 #ifndef __DISABLE_KBHIT__
     // doc string
-    string doc = "KBHit (terminal only) is a simple mechanism for capturing keyboard input (for a more flexible mechanism, see HID).";
+    string doc = "KBHit (terminal only) is a simple mechanism for capturing keyboard input; for a more flexible mechanism, see HID. (On Linux, KBHit does not require granting device permissions; it works out of the box.)";
 
     // begin class (KBHit)
     if( !type_engine_import_class_begin( env, "KBHit", "Event",
@@ -355,30 +355,37 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 
     // add on()
     func = make_new_mfun( "void", "on", KBHit_on );
+    func->doc = "Enable the KBHit.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add off()
     func = make_new_mfun( "void", "off", KBHit_off );
+    func->doc = "Disable the KBHit.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add state()
     func = make_new_mfun( "void", "state", KBHit_state );
+    func->doc = "Get whether the KBHit is currently enabled.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add hit()
     func = make_new_mfun( "Event", "hit", KBHit_hit );
+    func->doc = "Return itself as an Event to wait on; this is largely unnecessary as the KBHit instance can be directly => to 'now'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add more()
     func = make_new_mfun( "int", "more", KBHit_more );
+    func->doc = "Return whether there are unprocessed KBHit events (e.g., if a user presses multiple keys at once).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add getchar()
     func = make_new_mfun( "int", "getchar", KBHit_getchar );
+    func->doc = "Get the ASCII value of the last keyboard press.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add can_wait()
     func = make_new_mfun( "int", "can_wait", KBHit_can_wait );
+    func->doc = "(internal) used by virtual machine for synthronization.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end class

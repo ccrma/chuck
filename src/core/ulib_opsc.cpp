@@ -1082,40 +1082,50 @@ static t_CKUINT osc_address_offset_data = 0;
 static Chuck_Type * osc_addr_type_ptr = 0;
 
 
-DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
-
+DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query )
+{
     /*** OscOut ***/
-
     query->begin_class(query, "OscOut", "Object");
-    query->doc_class(query, "Class for sending OSC messages. ");
-
+    query->doc_class(query, "Class for sending Open Sound Control (OSC) messages. See examples for usage.");
     oscout_offset_data = query->add_mvar(query, "int", "@OscOut_data", FALSE);
 
     query->add_ctor(query, oscout_ctor);
     query->add_dtor(query, oscout_dtor);
 
     query->add_mfun(query, oscout_dest, "OscOut", "dest");
-    query->add_arg(query, "string", "host");
+    query->add_arg(query, "string", "hostname");
     query->add_arg(query, "int", "port");
+    query->doc_func(query, "Set the destination hostname and port for sending OSC message.");
 
     query->add_mfun(query, oscout_start, "OscOut", "start");
-    query->add_arg(query, "string", "method");
+    query->add_arg(query, "string", "address");
+    query->doc_func(query, "Start an OSC message with a particular address.");
 
     query->add_mfun(query, oscout_startDest, "OscOut", "start");
-    query->add_arg(query, "string", "method");
+    query->add_arg(query, "string", "address");
     query->add_arg(query, "string", "host");
     query->add_arg(query, "int", "port");
+    query->doc_func(query, "Start an OSC message with a particular address, aimed at a destination host and port.");
 
     query->add_mfun(query, oscout_addInt, "OscOut", "add");
     query->add_arg(query, "int", "i");
+    query->doc_func(query, "Add an integer value to an OSC message.");
 
     query->add_mfun(query, oscout_addFloat, "OscOut", "add");
     query->add_arg(query, "float", "f");
+    query->doc_func(query, "Add a floating-point value to an OSC message.");
 
     query->add_mfun(query, oscout_addString, "OscOut", "add");
     query->add_arg(query, "string", "s");
+    query->doc_func(query, "Add an string value to an OSC message.");
 
     query->add_mfun(query, oscout_send, "OscOut", "send");
+    query->doc_func(query, "Send the current OSC message.");
+
+    // add examples | 1.5.0.0 (ge) added
+    query->add_ex( query, "osc/s.ck" );
+    query->add_ex( query, "osc/r.ck" );
+    query->add_ex( query, "osc/osc-dump.ck" );
 
     query->end_class(query);
 
@@ -1138,27 +1148,36 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     /*** OscMsg ***/
 
     query->begin_class(query, "OscMsg", "Object");
+    query->doc_class(query, "Helper class for receiving the contents of an OSC message.");
 
     oscmsg_offset_address = query->add_mvar(query, "string", "address", FALSE);
+    query->doc_var(query, "The OSC address string (e.g., \"/foo/param\")." );
     oscmsg_offset_typetag = query->add_mvar(query, "string", "typetag", FALSE);
+    query->doc_var(query, "The OSC type tag string (e.g., \"iif\" for int, int, float).");
     oscmsg_offset_args = query->add_mvar(query, "OscArg[]", "args", FALSE);
+    query->doc_var(query, "Array of OscArgs contained in this message.");
 
     query->add_mfun(query, oscmsg_numArgs, "int", "numArgs");
+    query->doc_func(query, "Get the number of arguments contained in this OscMsg.");
 
     query->add_mfun(query, oscmsg_getInt, "int", "getInt");
     query->add_arg(query, "int", "i");
+    query->doc_func(query, "Get argument (at index 'i') as an integer.");
 
     query->add_mfun(query, oscmsg_getFloat, "float", "getFloat");
     query->add_arg(query, "int", "i");
+    query->doc_func(query, "Get argument (at index 'i') as a float.");
 
     query->add_mfun(query, oscmsg_getString, "string", "getString");
     query->add_arg(query, "int", "i");
+    query->doc_func(query, "Get argument (at index 'i') as a string.");
 
     query->add_ctor(query, oscmsg_ctor);
     query->add_dtor(query, oscmsg_dtor);
 
     // add examples | 1.5.0.0 (ge) added
     query->add_ex( query, "osc/r.ck" );
+    query->add_ex( query, "osc/s.ck" );
     query->add_ex( query, "osc/osc-dump.ck" );
     query->add_ex( query, "multi-msg/r-multi-msg.ck" );
 
@@ -1168,7 +1187,8 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     /*** OscIn ***/
 
     // begin class
-    query->begin_class(query, "OscIn", "Event");
+    query->begin_class( query, "OscIn", "Event" );
+    query->doc_class( query, "Class for receiving Open Sound Control (OSC) messages. See examples for usage." );
 
     // add member reference
     oscin_offset_data = query->add_mvar(query, "int", "@OscOut_data", FALSE);
@@ -1178,24 +1198,31 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
 
     // get port
     query->add_mfun(query, oscin_getport, "int", "port");
+    query->doc_func(query, "Get which port to listen on.");
     // set port
     query->add_mfun(query, oscin_setport, "int", "port");
     query->add_arg(query, "int", "p");
+    query->doc_func(query, "Set which port to listen on.");
 
     // add address
     query->add_mfun(query, oscin_addAddress, "void", "addAddress");
     query->add_arg(query, "string", "address");
+    query->doc_func(query, "Add an OSC address to receive messages from.");
     // remove address
     query->add_mfun(query, oscin_removeAddress, "void", "removeAddress");
     query->add_arg(query, "string", "address");
+    query->doc_func(query, "Stop listening on a particular OSC address.");
     // remove all addresses
     query->add_mfun(query, oscin_removeAllAddresses, "void", "removeAllAddresses");
+    query->doc_func(query, "Stop listening on all OSC addresses.");
 
     // listenAll()
     query->add_mfun(query, oscin_listenAll, "void", "listenAll");
+    query->doc_func(query, "Set OscIn to receive messages of any OSC address.");
     // recv
     query->add_mfun(query, oscin_recv, "int", "recv");
     query->add_arg(query, "OscMsg", "msg");
+    query->doc_func(query, "Receive the next queued incoming OSC message, returning its contents in `msg`.");
 
     // add examples | 1.5.0.0 (ge) added
     query->add_ex( query, "osc/r.ck" );
@@ -1298,6 +1325,7 @@ DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query * query ) {
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "can_wait", osc_address_can_wait );
+    func->doc = "(internal) used by virtual machine for synthronization.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     type_engine_import_class_end( env );
