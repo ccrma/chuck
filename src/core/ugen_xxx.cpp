@@ -454,7 +454,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: impulse
     //---------------------------------------------------------------------
-    doc = "a impulse generator. Can be used to set the value of the next sample; default for each sample is 0 if not set. Additionally, this can be used to generate a digial signal, one sample at a time.";
+    doc = "An impulse generator. Can be used to set the value of the next sample; default for each sample is 0 if not set. Additionally, this can be used to generate a digital signal, one sample at a time.";
     if( !type_engine_import_ugen_begin( env, "Impulse", "UGen", env->global(),
                                         impulse_ctor, impulse_dtor, impulse_tick, NULL, doc.c_str() ) )
         return FALSE;
@@ -480,6 +480,11 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "float", "next", impulse_cget_next );
     func->doc = "get value of next sample to be generated.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "basic/imp.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/comb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/chant.ck" ) ) goto error;
 
     // end import
     if( !type_engine_import_class_end( env ) )
@@ -1067,7 +1072,9 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     Multiple voice facility is built in, allowing for a single\
     LiSa object to serve as a source for sample layering and\
     granular textures.\
-    by Dan Trueman (2007)";
+    by Dan Trueman (2007)\n\
+    See also: a slowly growing <a target=\"_blank\" href=\"../program/lisa/tutorial-1.html\">tutorial</a>\
+    | <a target=\"_blank\" href=\"../examples/#lisa\">LiSa examples</a> in the ChucK distribution | <a target=\"_blank\" href=\"https://www.youtube.com/watch?v=7F75v_73pF4\">video tutorial</a> by Clint Hoagland.";
     if( !type_engine_import_ugen_begin( env, "LiSa", "UGen", env->global(),
                                         LiSaMulti_ctor, LiSaMulti_dtor,
                                         LiSaMulti_tick, NULL,

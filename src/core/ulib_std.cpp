@@ -395,8 +395,8 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 #ifndef __DISABLE_PROMPTER__
     // begin class (Skot)
     if( !type_engine_import_class_begin( env, "ConsoleInput", "Event",
-                                         env->global(), Skot_ctor,
-                                         Skot_dtor ) )
+                                         env->global(), Skot_ctor, Skot_dtor,
+                                         "(Terminal only) a utility for prompting user input on the command line." ) )
         return FALSE;
 
     // add member variable
@@ -405,24 +405,34 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 
     // add prompt()
     func = make_new_mfun( "Event", "prompt", Skot_prompt );
+    func->doc = "Return an Event to wait on.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add prompt()
     func = make_new_mfun( "Event", "prompt", Skot_prompt2 );
     func->add_arg( "string", "what" );
+    func->doc = "Print a prompt text and return an Event to wait on.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add ready()
+    // add more()
     func = make_new_mfun( "int", "more", Skot_more );
+    func->doc = "Return whether there is more input to read.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add getString()
     func = make_new_mfun( "string", "getLine", Skot_getLine );
+    func->doc = "Return the next line of input as a string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add can_wait()
     func = make_new_mfun( "int", "can_wait", Skot_can_wait );
+    func->doc = "(internal) used by virtual machine for synthronization.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "string/readline.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/word2vec/word2vec-prompt.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/word2vec/poem-ungenerate.ck" ) ) goto error;
 
     // end class
     type_engine_import_class_end( env );
@@ -434,8 +444,8 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 
     // begin class (StrTok)
     if( !type_engine_import_class_begin( env, "StringTokenizer", "Object",
-                                         env->global(), StrTok_ctor,
-                                         StrTok_dtor ) )
+                                         env->global(), StrTok_ctor, StrTok_dtor,
+                                         "Break a string into tokens. This uses whitespace as the delimiter." ) )
         return FALSE;
 
     // add member variable
@@ -445,38 +455,46 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // add set()
     func = make_new_mfun( "void", "set", StrTok_set );
     func->add_arg( "string", "line" );
+    func->doc = "Set the string to be tokenized.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add reset()
     func = make_new_mfun( "void", "reset", StrTok_reset );
+    func->doc = "Reset token iteration back to the beginning of the set string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add more()
     func = make_new_mfun( "int", "more", StrTok_more );
+    func->doc = "Return true (1) if there are still more tokens, false (0) if no more tokens.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add next()
     func = make_new_mfun( "string", "next", StrTok_next );
+    func->doc = "Return the next token string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add get()
     func = make_new_mfun( "string", "next", StrTok_next2 );
     func->add_arg( "string", "out" );
+    func->doc = "Return the next token string. Additionally, write the token string to the 'out' string variable.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add get()
     func = make_new_mfun( "string", "get", StrTok_get );
     func->add_arg( "int", "index" );
+    func->doc = "Return the i-th token in the set string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add get()
     func = make_new_mfun( "string", "get", StrTok_get2 );
     func->add_arg( "int", "index" );
     func->add_arg( "string", "out" );
+    func->doc = "Return the i-th token in the set string. Additionally, write the token string to the `out` string variable.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add size()
     func = make_new_mfun( "int", "size", StrTok_size );
+    func->doc = "Returns the number of token strings that the set string can be broken into.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples

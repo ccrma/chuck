@@ -29,11 +29,11 @@ doc.addGroup(
 // add group
 doc.addGroup(
     // class names
-    [ "UGen", "Gain", "Impulse", "Step", "SndBuf", "ADSR", "Envelope",
-      "Delay", "DelayL", "DelayA", "DelayP", "Echo", "Noise", "CNoise",
+    [ "UGen", "Gain", "Impulse", "Step", "SndBuf", "SndBuf2", "ADSR", "Envelope",
+      "Delay", "DelayL", "DelayA", /*"DelayP",*/ "Echo", "Noise", "CNoise",
       "Osc", "SinOsc", "TriOsc", "SawOsc", "PulseOsc", "SqrOsc", "Phasor",
       "HalfRect", "FullRect", "Chugraph", "Chugen", "UGen_Multi",
-      "UGen_Stereo", "SndBuf2", "Mix2", "Pan2" ],
+      "UGen_Stereo", "Mix2", "Pan2" ],
     // group name
     "Basic Unit Generators",
     // file name
@@ -59,7 +59,7 @@ doc.addGroup(
 doc.addGroup(
     [ "JCRev", "NRev", "PRCRev", "Chorus", "Modulate", "PitShift",
       "SubNoise", "BLT", "Blit", "BlitSaw", "BlitSquare", "FilterStk",
-      "WvIn", "WaveLoop", "WvOut", "StkInstrument", "BandedWG",
+      "WvIn", "WaveLoop", "WvOut", "WvOut2", "StkInstrument", "BandedWG",
       "BlowBotl", "BlowHole", "Bowed", "Brass", "Clarinet", "Flute",
       "Mandolin", "ModalBar", "Moog", "Saxofony", "Shakers", "Sitar",
       "StifKarp", "VoicForm", "FM", "BeeThree", "FMVoices", "HevyMetl",
@@ -123,12 +123,12 @@ doc.addGroup(
 
 // add group
 doc.addGroup(
-    [ "IO", "FileIO", "StdOut", "StdErr",
+    [ "IO", "FileIO", /* "StdOut", "StdErr", */
       "OscIn", "OscOut", "OscMsg",
-      "Hid", "HidMsg", "SerialIO",
+      "Hid", "HidMsg", "KBHit", "SerialIO",
       "MidiIn", "MidiOut", "MidiMsg", "MidiFileIn" ],
     // group name
-    "Input / Output",
+    "Input & Output",
     // file name
     "io",
     // group descriptions
