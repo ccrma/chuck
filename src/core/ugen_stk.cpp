@@ -2932,7 +2932,7 @@ Phoneme Names:\n\
     // begin FM ugen
     //------------------------------------------------------------------------
 
-    doc = "STK FM synthesis super class.\n\
+    doc = "STK FM synthesis super class. You should NOT need to use this UGen directly. Please refer to the documentation on FM subclasses instead.\n\
 \n\
 This class controls an arbitrary number of waves and envelopes, determined via a constructor argument.\n\
 \n\
@@ -3872,11 +3872,16 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get state; attack=0, decay=1, sustain=2, release=3, done=4";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    if( !type_engine_import_svar( env, "int", "ATTACK", TRUE, (t_CKUINT) &ADSR_state_ATTACK) ) goto error;
-    if( !type_engine_import_svar( env, "int", "DECAY", TRUE, (t_CKUINT) &ADSR_state_DECAY) ) goto error;
-    if( !type_engine_import_svar( env, "int", "SUSTAIN", TRUE, (t_CKUINT) &ADSR_state_SUSTAIN) ) goto error;
-    if( !type_engine_import_svar( env, "int", "RELEASE", TRUE, (t_CKUINT) &ADSR_state_RELEASE) ) goto error;
-    if( !type_engine_import_svar( env, "int", "DONE", TRUE, (t_CKUINT) &ADSR_state_DONE) ) goto error;
+    if( !type_engine_import_svar( env, "int", "ATTACK", TRUE, (t_CKUINT)&ADSR_state_ATTACK,
+        "see state() function. Denotes that the envelope is in the attack stage") ) goto error;
+    if( !type_engine_import_svar( env, "int", "DECAY", TRUE, (t_CKUINT)&ADSR_state_DECAY,
+        "see state() function. Denotes that the envelope is in the decay stage") ) goto error;
+    if( !type_engine_import_svar( env, "int", "SUSTAIN", TRUE, (t_CKUINT)&ADSR_state_SUSTAIN,
+        "see state() function. Denotes that the envelope is in the sustain stage") ) goto error;
+    if( !type_engine_import_svar( env, "int", "RELEASE", TRUE, (t_CKUINT)&ADSR_state_RELEASE,
+        "see state() function. Denotes that the envelope is in the release stage") ) goto error;
+    if( !type_engine_import_svar( env, "int", "DONE", TRUE, (t_CKUINT)&ADSR_state_DONE,
+        "see state() function. Denotes that the envelope has completed all stages") ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -3985,7 +3990,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     if( !type_engine_import_ugen_begin( env, "FilterStk", "UGen", env->global(),
                         FilterStk_ctor, FilterStk_dtor,
-                        FilterStk_tick, FilterStk_pmsg ) ) return FALSE;
+                        FilterStk_tick, FilterStk_pmsg,
+                        "FilterStk is an STK Filter base class inherited by all Stk Filter UGens such as BiQuad, TwoZero, PoleZero, etc. You should NOT need to use this UGen directly. Please refer to the documentation on other filter types instead." ) ) return FALSE;
     // member variable
     FilterStk_offset_data = type_engine_import_mvar ( env, "int", "@FilterStk_data", FALSE );
     if( FilterStk_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -4234,6 +4240,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get filter notch radius.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "deep/chant.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/say-chu.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4300,6 +4309,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples | 1.5.0.0 (ge)
+    if( !type_engine_import_add_ex( env, "filter/dcblocker.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "deep/plu2.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "deep/plu3.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "stk/flute.ck" ) ) goto error;
@@ -4340,6 +4350,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "effects/reverb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "otf_06.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "otf_07.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4369,6 +4383,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "effects/reverb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/krstlchr-algo7.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/thx.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -4396,6 +4415,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func = make_new_mfun( "float", "mix", PRCRev_cget_mix ); //! mix level
     func->doc = "get mix level.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add example
+    if( !type_engine_import_add_ex( env, "effects/reverb.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4459,7 +4481,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
-    if( !type_engine_import_add_ex( env, "stk/chorus.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "effects/chorus.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4557,6 +4579,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func->doc = "get effect mix level";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples | 1.5.0.0 (alex han) added
+    if( !type_engine_import_add_ex( env, "effects/pitch-shift.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4585,6 +4609,10 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     func = make_new_mfun( "int", "rate", SubNoise_cget_rate ); //! subsampling rate
     func->doc = "get subsampling rate";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "stk/subnoise-control.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/subnoise-audio.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );

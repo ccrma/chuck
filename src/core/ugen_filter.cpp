@@ -287,7 +287,9 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
                                         RHPF_ctor, NULL, RHPF_tick, RHPF_pmsg, doc.c_str() ) )
         return FALSE;
 
-    type_engine_import_add_ex(env, "filter/hp.ck");
+    // add examples
+    type_engine_import_add_ex(env, "filter/hpf.ck");
+    type_engine_import_add_ex(env, "filter/rhpf.ck");
 
     // freq
     func = make_new_mfun( "float", "freq", RHPF_ctrl_freq );

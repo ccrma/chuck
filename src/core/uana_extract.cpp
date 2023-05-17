@@ -308,7 +308,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
 
     doc =
-        "A unit analyzer that computes the RMS power mean from a magnitude spectrum (either from an incoming UAna, or given manually), and outputs a single number.";
+        "A unit analyzer that computes the root-mean-square (RMS) power mean from a magnitude spectrum (either from an incoming UAna, or given manually), and outputs a single number.";
 
     if( !type_engine_import_uana_begin( env, "RMS", "UAna", env->global(),
                                         NULL, NULL,
@@ -535,7 +535,6 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: RollOff
     //---------------------------------------------------------------------
-
     doc =
         "A unit analyzer that computes the spectral rolloff from a magnitude spectrum (either from incoming UAna, or given manually), and outputs a single number.";
 
@@ -578,9 +577,14 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: AutoCorr
     //---------------------------------------------------------------------
+    doc =
+        "A unit analyzer that computes auto-correlation of the incoming analysis frame.";
+
     if( !type_engine_import_uana_begin( env, "AutoCorr", "UAna", env->global(),
                                         AutoCorr_ctor, AutoCorr_dtor,
-                                        AutoCorr_tick, AutoCorr_tock, AutoCorr_pmsg ) )
+                                        AutoCorr_tick, AutoCorr_tock, AutoCorr_pmsg,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
+                                        doc.c_str() ) )
         return FALSE;
 
     // data offset
@@ -612,9 +616,14 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: XCorr
     //---------------------------------------------------------------------
+    doc =
+        "A unit analyzer that computes cross-correlation between two incoming analysis frames.";
+
     if( !type_engine_import_uana_begin( env, "XCorr", "UAna", env->global(),
                                         XCorr_ctor, XCorr_dtor,
-                                        XCorr_tick, XCorr_tock, XCorr_pmsg ) )
+                                        XCorr_tick, XCorr_tock, XCorr_pmsg,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
+                                        doc.c_str() ) )
         return FALSE;
 
     // data offset

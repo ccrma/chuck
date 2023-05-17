@@ -277,6 +277,11 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     func->doc = "Manually take IFFT (as opposed to using .upchuck() / upchuck operator)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "analysis/ifft.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/ifft2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/ifft3.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -332,7 +337,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // init as base class: Flip
     //---------------------------------------------------------------------
 
-    doc = "turns audio samples into frames in the UAna domain.";
+    doc = "Turn N (size) audio samples into a Unit Analyzer audio analysis frame.";
 
     if( !type_engine_import_uana_begin( env, "Flip", "UAna", env->global(),
                                         Flip_ctor, Flip_dtor,
@@ -347,6 +352,8 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
 
     // add examples
     if( !type_engine_import_add_ex( env, "analysis/flip.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/autocorr.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/features/zerox.ck" ) ) goto error;
 
     // transform
     func = make_new_mfun( "void", "transform", Flip_take );
@@ -433,6 +440,9 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "buffer" );
     func->doc = "Manually take pilF (as opposed to using .upchuck() / upchuck operator)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add example
+    if( !type_engine_import_add_ex( env, "analysis/flip.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
