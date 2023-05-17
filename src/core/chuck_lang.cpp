@@ -412,7 +412,7 @@ t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type )
 
     // add can_wait()
     func = make_new_mfun( "int", "can_wait", event_can_wait );
-    func->doc = "can the event can be waited on? Currently always returns true.";
+    func->doc = "can the event can be waited on? Internally used by virtual machine for synthronization.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
