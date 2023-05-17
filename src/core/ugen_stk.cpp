@@ -27613,13 +27613,14 @@ CK_DLL_CTRL( WvIn_ctrl_path )
     if( path != NULL )
     {
         // open
-        try { w->openFile( path->str().c_str(), FALSE, FALSE ); }
-        catch( StkError & e )
-        {
+        w->openFile( path->str().c_str(), FALSE, FALSE );
+        // try { w->openFile( path->str().c_str(), FALSE, FALSE ); }
+        // catch( StkError & e )
+        // {
             // do nothing here; should have already printed
             // const char * s = e.getMessage();
             // CK_FPRINTF_STDERR( "[chuck](via STK): WvIn cannot load file '%s'\n", c );
-        }
+        // }
     }
 
     // return value
@@ -27979,7 +27980,7 @@ CK_DLL_CTRL( WvOut_ctrl_matFilename )
         catch( StkError & e )
         {
             // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-            CK_STDCERR << "[chuck]: WvOut cannot open mat file: " << filename << CK_STDENDL;
+            CK_STDCERR << "[chuck]: WvOut cannot open mat file: " << theFilename.c_str() << CK_STDENDL;
             CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
             goto done;
         }
