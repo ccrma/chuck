@@ -956,7 +956,7 @@ std::string HidIn::name()
 {
     if( m_valid && phin )
         return phin->name();
-    return " ";
+    return "";
 }
 
 //-----------------------------------------------------------------------------
