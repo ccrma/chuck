@@ -1,5 +1,6 @@
 
 CFLAGS+= -D__UNIX_JACK__ -D__PLATFORM_LINUX__ -fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
+CFLAGS+= $(shell pkg-config --cflags jack)
 
 ifneq ($(CHUCK_DEBUG),)
 CFLAGS+= -g
@@ -7,4 +8,4 @@ else
 CFLAGS+= -O3
 endif
 
-LDFLAGS+= -lasound -ljack -lstdc++ -ldl -lm -lsndfile -lpthread
+LDFLAGS+= -lasound $(shell pkg-config --libs jack) -lstdc++ -ldl -lm -lsndfile -lpthread
