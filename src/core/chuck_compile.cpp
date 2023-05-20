@@ -54,11 +54,6 @@
 #include "ulib_opsc.h"
 #endif
 
-// 1.5.0.0 (ge) | chunreal
-#ifndef __DISABLE_REGEX__
-#include "ulib_regex.h"
-#endif
-
 #if defined(__PLATFORM_WIN32__)
   #include "dirent_win32.h"
 #else
@@ -704,11 +699,6 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     #ifndef __DISABLE_NETWORK__
     EM_log( CK_LOG_SEVERE, "module 'opsc'" );
     if( !load_module( compiler, env, opensoundcontrol_query, "opsc", "global" ) ) goto error;
-    #endif
-
-    #ifndef __DISABLE_REGEX__
-    EM_log( CK_LOG_SEVERE, "module 'RegEx'" );
-    if( !load_module( compiler, env, regex_query, "RegEx", "global" ) ) goto error;
     #endif
 
     // deprecated:
