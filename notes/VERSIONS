@@ -2,6 +2,15 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.0.1
+---
+* (added) examples/special/scream-o-matic/ -- using LiSa + granular
+  synthesis for a scream texture generator.
+* (added/developer) DL Api array4 operations from chugin
+* (added/developer) ChuckArray4::contains_object() returns whether
+  array4 contains object references or integers
+* (updated) makefile for linux-jack
+
 1.5.0.0 (May 2023)
 ---
 ***************************************************************************
