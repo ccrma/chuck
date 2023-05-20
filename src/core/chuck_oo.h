@@ -278,6 +278,7 @@ public:
     virtual t_CKINT erase( const std::string & key );
     virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY4_DATASIZE; }
     virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY4_DATAKIND; }
+    virtual t_CKBOOL contains_objects( ) { return m_is_obj; } // 1.5.0.1 (ge) added
     // get map keys | added (1.4.2.0) nshaheed
     virtual void get_keys( std::vector<std::string> & keys );
     // reverse array order | added (1.5.0.0) azaday
