@@ -68,7 +68,6 @@
 		091677411F7CAD1100248F78 /* uana_extract.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09812B980C6E394A00D1D68C /* uana_extract.cpp */; };
 		091677431F7CAD1100248F78 /* util_serial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0966E6C815CFBB0F0099CBD8 /* util_serial.cpp */; };
 		091677441F7CAD1100248F78 /* chuck_io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0962DA2715D3A626002DEFF3 /* chuck_io.cpp */; };
-		091677451F7CAD1100248F78 /* ulib_regex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 091F327C17A03A4D00686C8D /* ulib_regex.cpp */; };
 		091677481F7CAD1100248F78 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09A40BD40A9A57C6007604EA /* Carbon.framework */; };
 		091677491F7CAD1100248F78 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09A40BD50A9A57C6007604EA /* CoreAudio.framework */; };
 		0916774A1F7CAD1100248F78 /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09A40BD60A9A57C6007604EA /* CoreMIDI.framework */; };
@@ -139,8 +138,6 @@
 		090B4B1A0C4F038E00DF5577 /* uana_xform.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = uana_xform.cpp; path = ../core/uana_xform.cpp; sourceTree = SOURCE_ROOT; };
 		090B4B1B0C4F038E00DF5577 /* uana_xform.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = uana_xform.h; path = ../core/uana_xform.h; sourceTree = SOURCE_ROOT; };
 		091677521F7CAD1100248F78 /* libchuck.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libchuck.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		091F327C17A03A4D00686C8D /* ulib_regex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ulib_regex.cpp; path = ../core/ulib_regex.cpp; sourceTree = SOURCE_ROOT; };
-		091F327D17A03A4D00686C8D /* ulib_regex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ulib_regex.h; path = ../core/ulib_regex.h; sourceTree = SOURCE_ROOT; };
 		095D14581341476200BBD9EB /* MultitouchSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultitouchSupport.framework; path = System/Library/PrivateFrameworks/MultitouchSupport.framework; sourceTree = SDKROOT; };
 		0962DA2715D3A626002DEFF3 /* chuck_io.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = chuck_io.cpp; path = ../core/chuck_io.cpp; sourceTree = SOURCE_ROOT; };
 		0962DA2815D3A626002DEFF3 /* chuck_io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chuck_io.h; path = ../core/chuck_io.h; sourceTree = SOURCE_ROOT; };
@@ -932,8 +929,6 @@
 				09A40B4F0A9A54DA007604EA /* ulib_opsc.h */,
 				09A40B500A9A54DA007604EA /* ulib_std.cpp */,
 				09A40B510A9A54DA007604EA /* ulib_std.h */,
-				091F327C17A03A4D00686C8D /* ulib_regex.cpp */,
-				091F327D17A03A4D00686C8D /* ulib_regex.h */,
 				09A40B520A9A54DA007604EA /* util_buffers.cpp */,
 				09A40B530A9A54DA007604EA /* util_buffers.h */,
 				09A40B540A9A54DA007604EA /* util_console.cpp */,
@@ -1169,7 +1164,6 @@
 				8615DFFA264D9AE20084EF86 /* chuck_globals.cpp in Sources */,
 				091677431F7CAD1100248F78 /* util_serial.cpp in Sources */,
 				091677441F7CAD1100248F78 /* chuck_io.cpp in Sources */,
-				091677451F7CAD1100248F78 /* ulib_regex.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
