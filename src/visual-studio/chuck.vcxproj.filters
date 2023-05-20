@@ -91,9 +91,6 @@
     <ClCompile Include="..\core\hidio_sdl.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\regex\xmalloc.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
     <ClCompile Include="..\core\uana_extract.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -122,9 +119,6 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\core\ulib_opsc.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\ulib_regex.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\core\ulib_std.cpp">
@@ -189,42 +183,6 @@
     </ClCompile>
     <ClCompile Include="..\core\lo\pattern_match.c">
       <Filter>core\lo</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\regcomp.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\regerror.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\regexec.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-ast.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-compile.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-filter.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-match-approx.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-match-backtrack.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-match-parallel.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-mem.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-parse.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-stack.c">
-      <Filter>core\regex</Filter>
     </ClCompile>
     <ClCompile Include="..\core\chuck_carrier.cpp">
       <Filter>core</Filter>
@@ -402,9 +360,6 @@
     <ClInclude Include="..\core\ulib_opsc.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\core\ulib_regex.h">
-      <Filter>core</Filter>
-    </ClInclude>
     <ClInclude Include="..\core\ulib_std.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -505,9 +460,6 @@
     </Filter>
     <Filter Include="host\RtAudio">
       <UniqueIdentifier>{f903c727-2038-4fe8-9639-90e8150dbf94}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="core\regex">
-      <UniqueIdentifier>{63914168-3a2a-429b-b20e-80ad17a4e036}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
