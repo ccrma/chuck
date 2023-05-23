@@ -901,6 +901,19 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
                                                        extension);
                 }
             }
+            #if __APPLE__
+            // On macOS, a chugin can either be a regular file (a .dylib simply renamed to .chug)
+            // or it can be a MODULE like using CMake with add_library(FooChugin MODULE foo.cpp)
+            // If it's a module bundle, then because .chug is a nonstandard extension,
+            // on the filesystem it shows up as a directory ending in .chug.
+            // If we see one of these directories, we can dive directly to the Contents/MacOS subfolder
+            // and look for a regular file.
+            else if (is_directory && extension_matches(de->d_name, extension)) {
+                std::string absolute_path = std::string(directory) + "/" + de->d_name + "/Contents/MacOS";
+                const char* subdirectory = absolute_path.c_str();
+                load_external_modules_in_directory(compiler, subdirectory, "");
+            }
+            #endif
 
             // read next | 1.5.0.0 (ge) moved here due to #chunreal
             de = readdir( dir );
