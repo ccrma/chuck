@@ -904,12 +904,12 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
         return FALSE;
 
     // add member variable
-    doc = "Device type that produced the messsage.";
+    doc = "Device type that produced the message.";
     HidMsg_offset_device_type = type_engine_import_mvar( env, "int", "deviceType", FALSE, doc.c_str() );
     if( HidMsg_offset_device_type == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
-    doc = "Device number that produced the messsage.";
+    doc = "Device number that produced the message.";
     HidMsg_offset_device_num = type_engine_import_mvar( env, "int", "deviceNum", FALSE, doc.c_str() );
     if( HidMsg_offset_device_num == CK_INVALID_OFFSET ) goto error;
 
@@ -934,7 +934,7 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
     if( HidMsg_offset_fdata == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
-    doc = "Time when the HidMsg occured, relative to the start of the file.";
+    doc = "Time when the HidMsg occurred, relative to the start of the file.";
     HidMsg_offset_when = type_engine_import_mvar( env, "time", "when", FALSE, doc.c_str() );
     if( HidMsg_offset_when == CK_INVALID_OFFSET ) goto error;
 

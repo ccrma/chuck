@@ -90,7 +90,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     // class
     QUERY->begin_class( QUERY, "Machine", "Object" );
     // documentation
-    QUERY->doc_class( QUERY, "Machine is ChucK runtime interface to the virtual machine. This interface can be used to manage shreds, evalute code, set log levels, etc. Machine's shred commands are similar to the On-the-fly Programming Commands, except these are invoked from within a ChucK program, and are subject to the timing mechanism." );
+    QUERY->doc_class( QUERY, "Machine is ChucK runtime interface to the virtual machine. This interface can be used to manage shreds, evaluate code, set log levels, etc. Machine's shred commands are similar to the On-the-fly Programming Commands, except these are invoked from within a ChucK program, and are subject to the timing mechanism." );
 
 #ifndef __DISABLE_OTF_SERVER__
     // add add
