@@ -138,14 +138,21 @@ static RtAudio::Api driverNameToApi(char const *driver)
         }
     }
 
+    // 1.5.0.0 (nshaheed) If the audio driver is UNSPECIFIED then
+    // return a default driver. This will depend on OS and, in the
+    // case of linux, which drivers chuck is being compiled with.
     if(api == RtAudio::UNSPECIFIED)
     {
     #if defined(__PLATFORM_WIN32__)
         // traditional chuck default behavior:
         // DIRECT SOUND is most general albeit high-latency
-        api = RtAudio::WINDOWS_DS; 
-    #elif defined(__PLATFORM_LINUX__)
+        api = RtAudio::WINDOWS_DS;
+    #elif defined(__PLATFORM_LINUX__) && defined(__LINUX_PULSE__)
         api = RtAudio::LINUX_PULSE;
+    #elif defined(__PLATFORM_LINUX__) && defined(__LINUX_ALSA__)
+        api = RtAudio::LINUX_ALSA;
+    #elif defined(__PLATFORM_LINUX__) && defined(__UNIX_JACK__)
+        api = RtAudio::UNIX_JACK;
     #endif
     }
     return api;
