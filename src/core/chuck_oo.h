@@ -631,9 +631,13 @@ public:
     static const t_CKINT TYPE_ASCII;
     static const t_CKINT TYPE_BINARY;
     // datatype
-    static const t_CKINT INT32;
-    static const t_CKINT INT16;
     static const t_CKINT INT8;
+    static const t_CKINT INT16;
+    static const t_CKINT INT24; // 1.5.0.1 (ge) added
+    static const t_CKINT INT32;
+    static const t_CKINT INT64; // 1.5.0.1 (ge) added
+    static const t_CKINT FLOAT32; // 1.5.0.1 (ge) added
+    static const t_CKINT FLOAT64; // 1.5.0.1 (ge) added
     // flags | moved to IO in 1.5.0.0 (ge)
     static const t_CKINT FLAG_READ_WRITE;
     static const t_CKINT FLAG_READONLY;

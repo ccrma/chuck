@@ -44,6 +44,7 @@
 #include "chuck_carrier.h"
 #include "chuck_errmsg.h"
 #include "chuck_io.h"
+#include "chuck_oo.h"
 #include "util_math.h"
 #include <stdlib.h>
 #include <string.h>
@@ -16107,6 +16108,7 @@ MY_FLOAT Stk :: srate = (MY_FLOAT) SRATE;
 std::string Stk :: rawwavepath = RAWWAVE_PATH;
 const Stk::STK_FORMAT Stk :: STK_SINT8 = 1;
 const Stk::STK_FORMAT Stk :: STK_SINT16 = 2;
+const Stk::STK_FORMAT Stk :: STK_SINT24 = 4; // 1.5.0.1 (ge) added
 const Stk::STK_FORMAT Stk :: STK_SINT32 = 8;
 const Stk::STK_FORMAT Stk :: MY_FLOAT32 = 16;
 const Stk::STK_FORMAT Stk :: MY_FLOAT64 = 32;
@@ -18232,6 +18234,7 @@ void WvIn :: openFile( const char *fileName, bool raw, bool doNormalize, bool ge
         // 1.5.0.0 (ge) | added scaling to range [-1,1]
         if ( dataType == STK_SINT8 ) scaleToOne = 1.0 / 128.0;
         else if ( dataType == STK_SINT16 ) scaleToOne = 1.0 / 32768.0;
+        else if ( dataType == STK_SINT24 ) scaleToOne = 1.0 / 8388608.0;
         else if ( dataType == STK_SINT32 ) scaleToOne = 1.0 / 2147483648.0;
         else if ( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 ) scaleToOne = 1.0;
         else scaleToOne = 1.0;
@@ -18339,6 +18342,8 @@ if( !little_endian )
       dataType = STK_SINT8;
     else if (temp == 16)
       dataType = STK_SINT16;
+    else if (temp == 24) // 1.5.0.1 (ge) added
+      dataType = STK_SINT24;
     else if (temp == 32)
       dataType = STK_SINT32;
   }
@@ -18404,6 +18409,7 @@ if( little_endian )
 
   if (format == 2) dataType = STK_SINT8;
   else if (format == 3) dataType = STK_SINT16;
+  else if (format == 4) dataType = STK_SINT24; // 1.5.0.1 (ge) added
   else if (format == 5) dataType = STK_SINT32;
   else if (format == 6) dataType = MY_FLOAT32;
   else if (format == 7) dataType = MY_FLOAT64;
@@ -18537,6 +18543,7 @@ if( little_endian )
   if ( aifc == false ) {
     if ( temp == 8 ) dataType = STK_SINT8;
     else if ( temp == 16 ) dataType = STK_SINT16;
+    else if ( temp == 24 ) dataType = STK_SINT24; // 1.5.0.1 (ge) added
     else if ( temp == 32 ) dataType = STK_SINT32;
   }
   else {
@@ -18639,6 +18646,7 @@ else
   if (byteswap) swap32((unsigned char *)&tmp);
   if ( tmp == 1 ) dataType = STK_SINT8;
   else if ( tmp == 3 ) dataType = STK_SINT16;
+  // NOTE: MAT file format does not appear to support 24-bit | 1.5.0.1 (ge)
   else if ( tmp == 5 ) dataType = STK_SINT32;
   else if ( tmp == 7 ) dataType = MY_FLOAT32;
   else if ( tmp == 9 ) dataType = MY_FLOAT64;
@@ -18737,6 +18745,18 @@ void WvIn :: readData( unsigned long index )
     for (i=length*channels-1; i>=0; i--)
       data[i] = buf[i];
   }
+  else if ( dataType == STK_SINT24 ) { // 1.5.0.1 (ge) added
+    SINT24 * buf = (SINT24 *)data;
+    if (fseek(fd, dataOffset+(long)(chunkPointer*channels*3), SEEK_SET) == -1) goto error;
+    if (fread(buf, length*channels, 3, fd) != 3 ) goto error;
+    if ( byteswap ) {
+      SINT24 * ptr = buf;
+      for (i=length*channels-1; i>=0; i--, ptr++)
+          ptr->byteswap();
+    }
+    for (i=length*channels-1; i>=0; i--)
+      data[i] = buf[i].asInt();
+  }
   else if ( dataType == STK_SINT32 ) {
     SINT32 *buf = (SINT32 *)data;
     if (fseek(fd, dataOffset+(long)(chunkPointer*channels*4), SEEK_SET) == -1) goto error;
@@ -18819,6 +18839,7 @@ void WvIn :: normalize(MY_FLOAT peak)
   {
     if( dataType == STK_SINT8 ) gain = peak / 128.0;
     else if( dataType == STK_SINT16 ) gain = peak / 32768.0;
+    else if( dataType == STK_SINT24 ) gain = peak / 8388608.0;
     else if( dataType == STK_SINT32 ) gain = peak / 2147483648.0;
     else if( dataType == MY_FLOAT32 || dataType == MY_FLOAT64 ) gain = peak;
     return;
@@ -19228,7 +19249,7 @@ void WvOut :: openFile( const char *fileName, unsigned int nChannels, WvOut::FIL
   channels = nChannels;
   fileType = type;
 
-  if( format != STK_SINT8 && format != STK_SINT16 && /* STK_SINT24 && */ // 1.4.1.0 SINT24 attempt
+  if( format != STK_SINT8 && format != STK_SINT16 && format != STK_SINT24 && // 1.4.1.0 SINT24 attempt | 1.5.0.1 second attempt
       format != STK_SINT32 && format != MY_FLOAT32 && format != MY_FLOAT64 )
   {
     snprintf( msg, STK_MSG_BUF_LENGTH, "[chuck](via WvOut): Unknown data type specified (%ld).", format );
@@ -19335,6 +19356,8 @@ bool WvOut :: setWavFile( const char *fileName )
     hdr.bits_per_samp = 8;
   else if ( dataType == STK_SINT16 )
     hdr.bits_per_samp = 16;
+  else if ( dataType == STK_SINT24 ) // 1.5.0.1
+    hdr.bits_per_samp = 24;
   else if ( dataType == STK_SINT32 )
     hdr.bits_per_samp = 32;
   else if ( dataType == MY_FLOAT32 ) {
@@ -19376,6 +19399,8 @@ void WvOut :: closeWavFile( void )
   int bytes_per_sample = 1;
   if ( dataType == STK_SINT16 )
     bytes_per_sample = 2;
+  else if ( dataType == STK_SINT24 )
+    bytes_per_sample = 3;
   else if ( dataType == STK_SINT32 || dataType == MY_FLOAT32 )
     bytes_per_sample = 4;
   else if ( dataType == MY_FLOAT64 )
@@ -19415,6 +19440,8 @@ bool WvOut :: setSndFile( const char *fileName )
     hdr.format = 2;
   else if ( dataType == STK_SINT16 )
     hdr.format = 3;
+  else if ( dataType == STK_SINT24 ) // 1.5.0.1 (ge) added
+    hdr.format = 4;
   else if ( dataType == STK_SINT32 )
     hdr.format = 5;
   else if ( dataType == MY_FLOAT32 )
@@ -19485,6 +19512,8 @@ bool WvOut :: setAifFile( const char *fileName )
     hdr.sample_size = 8;
   else if ( dataType == STK_SINT16 )
     hdr.sample_size = 16;
+  else if ( dataType == STK_SINT24 ) // 1.5.0.1 (ge) added
+    hdr.sample_size = 24;
   else if ( dataType == STK_SINT32 )
     hdr.sample_size = 32;
   else if ( dataType == MY_FLOAT32 ) {
@@ -19581,6 +19610,8 @@ if( little_endian )
   int bytes_per_sample = 1;
   if ( dataType == STK_SINT16 )
     bytes_per_sample = 2;
+  else if ( dataType == STK_SINT24 )
+    bytes_per_sample = 3;
   else if ( dataType == STK_SINT32 || dataType == MY_FLOAT32 )
     bytes_per_sample = 4;
   else if ( dataType == MY_FLOAT64 )
@@ -19786,9 +19817,19 @@ void WvOut :: writeData( unsigned long frames )
       if ( fwrite(&sample, 2, 1, fd) != 1 ) goto error;
     }
   }
+  else if( dataType == STK_SINT24 ) { // 1.5.0.1 (ge) added
+    for( unsigned long k=0; k<frames*channels; k++ ) {
+      double float_sample = data[k] * 8388607.0;
+      if(float_sample < -8388607.0 ) float_sample = -8388607.0;
+      if(float_sample > 8388607.0 ) float_sample = 8388607.0;
+      SINT24 sample( float_sample );
+      if( byteswap ) sample.byteswap();
+      if( fwrite(&sample, 3, 1, fd) != 1 ) goto error;
+    }
+  }
   else if ( dataType == STK_SINT32 ) {
     for ( unsigned long k=0; k<frames*channels; k++ ) {
-      double float_sample = data[k] * 32767.0; // 1.4.2.0 (ge) | change datetype to double from float for precision
+      double float_sample = data[k] * 2147483647.0; // 1.4.2.0 (ge) | change datetype to double from float for precision
       if(float_sample < -2147483647.0 ) float_sample = -2147483647.0; // 1.4.2.0 (ge) | using float literal, instead of conversion from int
       if(float_sample > 2147483647.0 ) float_sample = 2147483647.0; // 1.4.2.0 (ge) | using float literal, instead of conversion from int
       SINT32 sample = (SINT32) float_sample;
@@ -27947,7 +27988,93 @@ static std::string autoFilename( const std::string & prefix, const std::string &
 
 
 
-// XXX chuck got mono, so we have one channel. fix later.
+//-----------------------------------------------------------------------------
+// name: fileType2fileExt() | 1.5.0.1 (ge) added
+// desc: helper function for converting WvOut type enum to file extension
+//-----------------------------------------------------------------------------
+static std::string fileType2fileExt( WvOut::FILE_TYPE type )
+{
+    switch( type )
+    {
+        case WvOut::WVOUT_WAV: return "wav"; break;
+        case WvOut::WVOUT_SND: return "snd"; break;
+        case WvOut::WVOUT_AIF: return "aiff"; break;
+        case WvOut::WVOUT_MAT: return "mat"; break;
+        case WvOut::WVOUT_RAW: return "raw"; break;
+        // unregonized type, assume raw
+        default: return "raw"; break;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: openWvOutFile()
+// desc: helper function for opening audio files with WvOut | 1.5.0.1 (ge)
+//-----------------------------------------------------------------------------
+static t_CKBOOL openWvOutFile( WvOut * w, Chuck_VM * vm,
+                               Chuck_String * filename, unsigned int channels,
+                               WvOut::FILE_TYPE type, t_CKINT ioFormat )
+{
+    // actual file name
+    std::string theFilename;
+    // actual STK file format
+    Stk::STK_FORMAT theFormat = 0;
+    // chuck carrier containing vm vitals
+    Chuck_Carrier * carrier;
+    
+    // check for NULL
+    if( filename == NULL ) return FALSE;
+
+    // check chuck IO format enumeration
+    if( ioFormat == Chuck_IO::INT16 ) theFormat = Stk::STK_SINT16;
+    else if( ioFormat == Chuck_IO::INT24 ) theFormat = Stk::STK_SINT24;
+    else if( ioFormat == Chuck_IO::FLOAT32 ) theFormat = Stk::MY_FLOAT32;
+    else if( ioFormat == Chuck_IO::FLOAT64 ) theFormat = Stk::MY_FLOAT64;
+
+    // error check
+    if( theFormat == 0 )
+    {
+        // error message
+        EM_error3( "unrecognized format value '%d' in WvOut while opening file...", ioFormat );
+        goto done;
+    }
+
+    // REFACTOR-2017: get the carrier
+    carrier = getCarrier( vm, "WvOut helper: openWvOutFile()" );
+
+    // special
+    if( strstr( filename->str().c_str(), "special:auto" ) )
+    {
+        theFilename = autoFilename( w->autoPrefix, fileType2fileExt(type) );
+    }
+    else
+    {
+        // not special case
+        theFilename = filename->str();
+    }
+
+    // open
+    try { w->openFile( theFilename.c_str(), channels, type, theFormat ); }
+    catch( StkError ) { goto done; }
+
+    // check
+    if( carrier != NULL )
+    {
+        // insert into map
+        carrier->stk_wvOutMap[w] = w;
+    }
+
+    return TRUE;
+
+done:
+    return FALSE;
+}
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: WvOut_ctrl_matFilename()
 // desc: CTRL function ...
@@ -27956,45 +28083,9 @@ CK_DLL_CTRL( WvOut_ctrl_matFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    std::string theFilename;
-
-    // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl matFilename" );
-
-    // check for null | 1.5.0.0 (ge) added
-    if( filename != NULL )
-    {
-        // special
-        if( strstr( filename->str().c_str(), "special:auto" ) )
-        {
-            theFilename = autoFilename( w->autoPrefix, "mat" );
-        }
-        else
-        {
-            // not special case
-            theFilename = filename->str();
-        }
-
-        // open
-        try { w->openFile( theFilename.c_str(), 1, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
-        catch( StkError & e )
-        {
-            // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-            CK_STDCERR << "[chuck]: WvOut cannot open mat file: " << theFilename.c_str() << CK_STDENDL;
-            CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
-            goto done;
-        }
-
-        // check
-        if( carrier != NULL )
-        {
-            // insert into map
-            carrier->stk_wvOutMap[w] = w;
-        }
-    }
-
-done:
-    // return value
+    // open the file
+    openWvOutFile( w, VM, filename, 1, WvOut::WVOUT_MAT, Chuck_IO::INT16 );
+    // return
     RETURN->v_string = filename;
 }
 
@@ -28009,45 +28100,9 @@ CK_DLL_CTRL( WvOut2_ctrl_matFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    std::string theFilename;
-
-    // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl matFilename" );
-
-    // check for null | 1.5.0.0 (ge) added
-    if( filename != NULL )
-    {
-        // special
-        if( strstr( filename->str().c_str(), "special:auto" ) )
-        {
-            theFilename = autoFilename( w->autoPrefix, "mat" );
-        }
-        else
-        {
-            // not special case
-            theFilename = filename->str();
-        }
-
-        // open
-        try { w->openFile( theFilename.c_str(), 2, WvOut::WVOUT_MAT, Stk::STK_SINT16 ); }
-        catch (StkError) { goto done; }
-        //catch( StkError & e )
-        //{
-        //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-        //    CK_STDCERR << "[chuck]: WvOut2 cannot open mat file: " << filename << CK_STDENDL;
-        //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
-        //    goto done;
-        //}
-
-        // check
-        if( carrier != NULL )
-        {
-            // insert into map
-            carrier->stk_wvOutMap[w] = w;
-        }
-    }
-
-done:
+    // open the file
+    openWvOutFile( w, VM, filename, 2, WvOut::WVOUT_MAT, Chuck_IO::INT16 );
+    // return
     RETURN->v_string = filename;
 }
 
@@ -28062,45 +28117,9 @@ CK_DLL_CTRL( WvOut_ctrl_sndFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    std::string theFilename;
-
-    // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl sndFilename" );
-
-    // check for null | 1.5.0.0 (ge) added
-    if( filename != NULL )
-    {
-        // special
-        if( strstr( filename->str().c_str(), "special:auto" ) )
-        {
-            theFilename = autoFilename( w->autoPrefix, "snd" );
-        }
-        else
-        {
-            // not special case
-            theFilename = filename->str();
-        }
-
-        // open
-        try { w->openFile( theFilename.c_str(), 1, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
-        catch (StkError) { goto done; }
-        //catch( StkError & e )
-        //{
-        //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-        //    CK_STDCERR << "[chuck]: WvOut cannot open snd file: " << filename << CK_STDENDL;
-        //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
-        //    goto done;
-        //}
-
-        // check
-        if( carrier != NULL )
-        {
-            // insert into map
-            carrier->stk_wvOutMap[w] = w;
-        }
-    }
-
-done:
+    // open the file
+    openWvOutFile( w, VM, filename, 1, WvOut::WVOUT_SND, Chuck_IO::INT16 );
+    // return
     RETURN->v_string = filename;
 }
 
@@ -28115,45 +28134,9 @@ CK_DLL_CTRL( WvOut2_ctrl_sndFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    std::string theFilename;
-
-    // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl sndFilename" );
-
-    // check for null | 1.5.0.0 (ge) added
-    if( filename != NULL )
-    {
-        // special
-        if( strstr( filename->str().c_str(), "special:auto" ) )
-        {
-            theFilename = autoFilename( w->autoPrefix, "snd" );
-        }
-        else
-        {
-            // not special case
-            theFilename = filename->str();
-        }
-
-        // open
-        try { w->openFile( theFilename.c_str(), 2, WvOut::WVOUT_SND, Stk::STK_SINT16 ); }
-        catch (StkError) { goto done; }
-        //catch( StkError & e )
-        //{
-        //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-        //    CK_STDCERR << "[chuck]: WvOut2 cannot open snd file: " << filename << CK_STDENDL;
-        //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
-        //    goto done;
-        //}
-
-        // check
-        if( carrier != NULL )
-        {
-            // insert into map
-            carrier->stk_wvOutMap[w] = w;
-        }
-    }
-
-done:
+    // open the file
+    openWvOutFile( w, VM, filename, 2, WvOut::WVOUT_SND, Chuck_IO::INT16 );
+    // return
     RETURN->v_string = filename;
 }
 
@@ -28168,45 +28151,9 @@ CK_DLL_CTRL( WvOut_ctrl_wavFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    std::string theFilename;
-
-    // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl wavFilename" );
-
-    // check for null | 1.5.0.0 (ge) added
-    if( filename != NULL )
-    {
-        // special
-        if( strstr( filename->str().c_str(), "special:auto" ) )
-        {
-            theFilename = autoFilename( w->autoPrefix, "wav" );
-        }
-        else
-        {
-            // not special case
-            theFilename = filename->str();
-        }
-
-        // open
-        try { w->openFile( theFilename.c_str(), 1, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
-        catch (StkError) { goto done; }
-        //catch( StkError & e )
-        //{
-        //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-        //    CK_STDCERR << "[chuck]: WvOut cannot open wav file: " << filename << CK_STDENDL;
-        //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
-        //    goto done;
-        //}
-
-        // check
-        if( carrier != NULL )
-        {
-            // insert into map
-            carrier->stk_wvOutMap[w] = w;
-        }
-    }
-
-done:
+    // open the file
+    openWvOutFile( w, VM, filename, 1, WvOut::WVOUT_WAV, Chuck_IO::INT16 );
+    // return
     RETURN->v_string = filename;
 }
 
@@ -28221,45 +28168,9 @@ CK_DLL_CTRL( WvOut2_ctrl_wavFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    std::string theFilename;
-
-    // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl wavFilename" );
-
-    // check for null | 1.5.0.0 (ge) added
-    if( filename != NULL )
-    {
-        // special
-        if( strstr( filename->str().c_str(), "special:auto" ) )
-        {
-            theFilename = autoFilename( w->autoPrefix, "wav" );
-        }
-        else
-        {
-            // not special case
-            theFilename = filename->str();
-        }
-
-        // open
-        try { w->openFile( theFilename.c_str(), 2, WvOut::WVOUT_WAV, Stk::STK_SINT16 ); }
-        catch (StkError) { goto done; }
-        //catch( StkError & e )
-        //{
-        //    // CK_FPRINTF_STDERR( "%s\n", e.getMessage() );
-        //    CK_STDCERR << "[chuck]: WvOut2 cannot open wav file: " << filename << CK_STDENDL;
-        //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
-        //    goto done;
-        //}
-
-        // check
-        if( carrier != NULL )
-        {
-            // insert into map
-            carrier->stk_wvOutMap[w] = w;
-        }
-    }
-
-done:
+    // open the file
+    openWvOutFile( w, VM, filename, 2, WvOut::WVOUT_WAV, Chuck_IO::INT16 );
+    // return
     RETURN->v_string = filename;
 }
 
@@ -28274,44 +28185,9 @@ CK_DLL_CTRL( WvOut_ctrl_rawFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    std::string theFilename;
-
-    // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl rawFilename" );
-
-    // check for null | 1.5.0.0 (ge) added
-    if( filename != NULL )
-    {
-        // special
-        if( strstr( filename->str().c_str(), "special:auto" ) )
-        {
-            theFilename = autoFilename( w->autoPrefix, "raw" );
-        }
-        else
-        {
-            // not special case
-            theFilename = filename->str();
-        }
-
-        // open
-        try { w->openFile( theFilename.c_str(), 1, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
-        catch (StkError) { goto done; }
-        //catch( StkError & e )
-        //{
-        //    CK_STDCERR << "[chuck]: WvOut cannot open raw file: " << filename << CK_STDENDL;
-        //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
-        //    goto done;
-        //}
-
-        // check
-        if( carrier != NULL )
-        {
-            // insert into map
-            carrier->stk_wvOutMap[w] = w;
-        }
-    }
-
-done:
+    // open the file
+    openWvOutFile( w, VM, filename, 1, WvOut::WVOUT_RAW, Chuck_IO::INT16 );
+    // return
     RETURN->v_string = filename;
 }
 
@@ -28326,44 +28202,9 @@ CK_DLL_CTRL( WvOut2_ctrl_rawFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    std::string theFilename;
-
-    // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl rawFilename" );
-
-    // check for null | 1.5.0.0 (ge) added
-    if( filename != NULL )
-    {
-        // special
-        if( strstr( filename->str().c_str(), "special:auto" ) )
-        {
-            theFilename = autoFilename( w->autoPrefix, "raw" );
-        }
-        else
-        {
-            // not special case
-            theFilename = filename->str();
-        }
-
-        // open
-        try { w->openFile( theFilename.c_str(), 2, WvOut::WVOUT_RAW, Stk::STK_SINT16 ); }
-        catch (StkError) { goto done; }
-        //catch( StkError & e )
-        //{
-        //    CK_STDCERR << "[chuck]: WvOut2 cannot open raw file: " << filename << CK_STDENDL;
-        //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
-        //    goto done;
-        //}
-
-        // check
-        if( carrier != NULL )
-        {
-            // insert into map
-            carrier->stk_wvOutMap[w] = w;
-        }
-    }
-
-done:
+    // open the file
+    openWvOutFile( w, VM, filename, 2, WvOut::WVOUT_RAW, Chuck_IO::INT16 );
+    // return
     RETURN->v_string = filename;
 }
 
@@ -28378,44 +28219,9 @@ CK_DLL_CTRL( WvOut_ctrl_aifFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    std::string theFilename;
-
-    // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( VM, "WvOut ctrl aifFilename" );
-
-    // check for null | 1.5.0.0 (ge) added
-    if( filename != NULL )
-    {
-        // special
-        if( strstr( filename->str().c_str(), "special:auto" ) )
-        {
-            theFilename = autoFilename( w->autoPrefix, "aiff" );
-        }
-        else
-        {
-            // not special case
-            theFilename = filename->str();
-        }
-
-        // open
-        try { w->openFile( theFilename.c_str(), 1, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
-        catch (StkError) { goto done; }
-        //catch( StkError & e )
-        //{
-        //    CK_STDCERR << "[chuck]: WvOut cannot open aif file: " << filename << CK_STDENDL;
-        //    CK_STDCERR << "[chuck]: WvOut error text '" << e.getMessage() << "'" << CK_STDENDL;
-        //    goto done;
-        //}
-
-        // check
-        if( carrier != NULL )
-        {
-            // insert into map
-            carrier->stk_wvOutMap[w] = w;
-        }
-    }
-
-done:
+    // open the file
+    openWvOutFile( w, VM, filename, 1, WvOut::WVOUT_AIF, Chuck_IO::INT16 );
+    // return
     RETURN->v_string = filename;
 }
 
@@ -28430,44 +28236,9 @@ CK_DLL_CTRL( WvOut2_ctrl_aifFilename )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    std::string theFilename;
-
-    // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( VM, "WvOut2 ctrl aifFilename" );
-
-    // check for null | 1.5.0.0 (ge) added
-    if( filename != NULL )
-    {
-        // special
-        if( strstr( filename->str().c_str(), "special:auto" ) )
-        {
-            theFilename = autoFilename( w->autoPrefix, "aiff" );
-        }
-        else
-        {
-            // not special case
-            theFilename = filename->str();
-        }
-
-        // open
-        try { w->openFile( theFilename.c_str(), 2, WvOut::WVOUT_AIF, Stk::STK_SINT16 ); }
-        catch (StkError) { goto done; }
-        //catch( StkError & e )
-        //{
-        //    CK_STDCERR << "[chuck]: WvOut2 cannot open aif file: " << filename << CK_STDENDL;
-        //    CK_STDCERR << "[chuck]: WvOut2 error text '" << e.getMessage() << "'" << CK_STDENDL;
-        //    goto done;
-        //}
-
-        // check
-        if( carrier != NULL )
-        {
-            // insert into map
-            carrier->stk_wvOutMap[w] = w;
-        }
-    }
-
-done:
+    // open the file
+    openWvOutFile( w, VM, filename, 2, WvOut::WVOUT_AIF, Chuck_IO::INT16 );
+    // return
     RETURN->v_string = filename;
 }
 
