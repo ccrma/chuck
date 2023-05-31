@@ -30,11 +30,11 @@
 // adapted from: Andrew Appel (appel@cs.princeton.edu)
 // date: Autumn 2002
 //-----------------------------------------------------------------------------
+#include "chuck_symbol.h"
+#include "chuck_utils.h"
+#include "chuck_table.h"
 #include <stdio.h>
 #include <string.h>
-#include "chuck_utils.h"
-#include "chuck_symbol.h"
-#include "chuck_table.h"
 
 
 // S_Symbol
@@ -43,7 +43,8 @@ struct S_Symbol_ { c_str name; S_Symbol next; };
 static S_Symbol mksymbol( c_constr name, S_Symbol next )
 {
     S_Symbol s = (S_Symbol)checked_malloc(sizeof(*s));
-    s->name = (c_str)checked_malloc(strlen(name)+1);
+    t_CKINT len = strlen(name) + 1;
+    s->name = (c_str)checked_malloc((int)len);
     strcpy(s->name, (c_str)name); s->next=next;
     return s;
 }
@@ -52,14 +53,14 @@ static S_Symbol mksymbol( c_constr name, S_Symbol next )
 
 static S_Symbol hashtable[SIZE];
 
-static unsigned int hash(const char *s0)
+static unsigned int s_hash(const char *s0)
 {
     unsigned int h=0; const char *s;
-    for(s=s0; *s; s++)  
+    for(s=s0; *s; s++)
         h = h*65599 + *s;
     return h;
 }
- 
+
 static int streq(c_constr a, c_constr b)
 {
     return !strcmp((char*)a,(char*)b);
@@ -68,7 +69,7 @@ static int streq(c_constr a, c_constr b)
 S_Symbol insert_symbol(c_constr name)
 {
     S_Symbol syms = NULL, sym;
-    int index= hash(name) % SIZE;
+    int index= s_hash(name) % SIZE;
 
     if( !name ) return NULL;
     syms = hashtable[index];
@@ -76,7 +77,7 @@ S_Symbol insert_symbol(c_constr name)
         if (streq(sym->name,name)) return sym;
     sym = mksymbol(name,syms);
     hashtable[index]=sym;
-    
+
     return sym;
 }
 
@@ -85,8 +86,8 @@ c_str S_name( S_Symbol sym )
     return sym->name;
 }
 
-S_table S_empty( void ) 
-{ 
+S_table S_empty( void )
+{
     return TAB_empty();
 }
 

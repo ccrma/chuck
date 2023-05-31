@@ -91,9 +91,6 @@
     <ClCompile Include="..\core\hidio_sdl.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\regex\xmalloc.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
     <ClCompile Include="..\core\uana_extract.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -112,6 +109,9 @@
     <ClCompile Include="..\core\ugen_xxx.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="..\core\ulib_ai.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClCompile Include="..\core\ulib_machine.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -119,9 +119,6 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\core\ulib_opsc.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\ulib_regex.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\core\ulib_std.cpp">
@@ -175,9 +172,6 @@
     <ClCompile Include="..\core\rtmidi.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\host\RtAudio\RtAudio.cpp">
-      <Filter>host\RtAudio</Filter>
-    </ClCompile>
     <ClCompile Include="..\core\midiio_rtmidi.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -190,46 +184,28 @@
     <ClCompile Include="..\core\lo\pattern_match.c">
       <Filter>core\lo</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\regex\regcomp.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\regerror.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\regexec.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-ast.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-compile.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-filter.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-match-approx.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-match-backtrack.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-match-parallel.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-mem.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-parse.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\regex\tre-stack.c">
-      <Filter>core\regex</Filter>
-    </ClCompile>
     <ClCompile Include="..\core\chuck_carrier.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\core\chuck_globals.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\host\RtAudio\RtAudio.cpp">
+      <Filter>host\RtAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\host\RtAudio\include\asio.cpp">
+      <Filter>host\RtAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\host\RtAudio\include\asiodrivers.cpp">
+      <Filter>host\RtAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\host\RtAudio\include\asiolist.cpp">
+      <Filter>host\RtAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\host\RtAudio\include\iasiothiscallresolver.cpp">
+      <Filter>host\RtAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\ulib_doc.cpp">
       <Filter>core</Filter>
     </ClCompile>
   </ItemGroup>
@@ -372,6 +348,9 @@
     <ClInclude Include="..\core\ugen_xxx.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="..\core\ulib_ai.h">
+      <Filter>core</Filter>
+    </ClInclude>
     <ClInclude Include="..\core\ulib_machine.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -379,9 +358,6 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="..\core\ulib_opsc.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\core\ulib_regex.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="..\core\ulib_std.h">
@@ -429,13 +405,46 @@
     <ClInclude Include="..\core\midiio_rtmidi.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="..\core\chuck_globals.h">
+      <Filter>core</Filter>
+    </ClInclude>
     <ClInclude Include="..\host\RtAudio\RtAudio.h">
       <Filter>host\RtAudio</Filter>
     </ClInclude>
-    <ClInclude Include="..\host\RtAudio\RtError.h">
+    <ClInclude Include="..\host\RtAudio\include\asio.h">
       <Filter>host\RtAudio</Filter>
     </ClInclude>
-    <ClInclude Include="..\core\chuck_globals.h">
+    <ClInclude Include="..\host\RtAudio\include\asiodrivers.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\asiodrvr.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\asiolist.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\asiosys.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\dsound.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\functiondiscoverykeys_devpkey.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\ginclude.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\iasiodrv.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\iasiothiscallresolver.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\host\RtAudio\include\soundcard.h">
+      <Filter>host\RtAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\ulib_doc.h">
       <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
@@ -452,9 +461,6 @@
     <Filter Include="host\RtAudio">
       <UniqueIdentifier>{f903c727-2038-4fe8-9639-90e8150dbf94}</UniqueIdentifier>
     </Filter>
-    <Filter Include="core\regex">
-      <UniqueIdentifier>{63914168-3a2a-429b-b20e-80ad17a4e036}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\core\chuck.lex">
@@ -463,5 +469,10 @@
     <None Include="..\core\chuck.y">
       <Filter>core</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\host\RtAudio\include\asioinfo.txt">
+      <Filter>host\RtAudio</Filter>
+    </Text>
   </ItemGroup>
 </Project>

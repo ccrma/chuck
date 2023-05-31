@@ -1,44 +1,16 @@
 ChucK : Build Instructions 
-
 ---
-
 ChucK home:
-    http://chuck.cs.princeton.edu/
     http://chuck.stanford.edu/
+    http://chuck.cs.princeton.edu/
 
 Got questions?
-    http://chuck.cs.princeton.edu/community.html
+    http://chuck.stanford.edu/community.html
 
 online version of this document:
-    http://chuck.cs.princeton.edu/doc/build/
+    http://chuck.stanford.edu/doc/build/
 
 ---
-
-If you are using the executable, you only need to put chuck (osx) or
-chuck.exe (win32) in your path.
-
-On MacOS X (using Terminal): go to the bin/ directory and type:
-
-    sudo cp chuck /usr/bin/
-    (enter your password when prompted)
-
-    sudo chmod 755 /usr/bin/chuck
-    (now you can run chuck from any directory using Terminal)
-
-On win32: put bin\chuck.exe in c:\windows\system32\
-
-At this point, you should be able to invoke 'chuck' from either Terminal 
-(in OSX) or 'cmd' under windowsm, from any directory:
-
-    > chuck
-    [chuck]: no input files... (try --help)
-
-(this is the correct output, since we didn't specify the files to run)
-
-If that is the case, you can skip the rest of this document.
-
----
-
 We tried to make ChucK as easy as possible to build and re-use. All 
 sources files - headers source for compiler, vm, and audio engine - are 
 in the same directory (they run in the same address space anyway). Platforms 
@@ -47,14 +19,12 @@ Scavone). None of the compiler/vm has any OS-depedent code. To build
 chuck from the source (from scratch): 
 
 ---
-
 1. Go to the src/ directory (replace chuck-x.x.x.x with the actual 
 directory name):
 
    %> cd chuck-x.x.x.x/src/
 
 ---
-
 2. If you type 'make' here, you should get the following message:
 
    %> make
@@ -64,28 +34,25 @@ directory name):
 
 Now, type the command corresponding to your platform... 
 
-for example, for MacOS X (Universal Binary: PowerPC + Intel):
+for example, for macOS (Universal Binary: Intel + Apple Silicon):
 
-   %> make osx-ub
+   %> make mac-ub
 
-or for MacOS X (current):
+or for macOS (current):
 
-   %> make osx
+   %> make mac
 
 etc...
 
 ---
-
-3. If you like to install chuck (cp into /usr/bin by default). if you 
-don't like the destination, simply edit the makefile under 'install', or 
-skip this step altogether. (we recommend putting it somewhere in your 
+3. If you like to install chuck (cp into /usr/local/bin by default).
+If you would like a different destination, edit the makefile under 'install',
+or skip this step altogether. (we recommend putting it somewhere in your 
 path, it makes on-the-fly programming easier)
 
-   # (optional: edit the makefile first)
    %> make install
 
 ---
-
 4. If you haven't gotten any egregous error messages up to this point, 
 then you should be done! There should be a 'chuck' executable in the 
 current directory. For a quick sanity check, execute the following (use 
@@ -99,11 +66,9 @@ other problem - please let us know and we will do our best to provide
 support) 
 
 ---
-
 5. You are ready to ChucK. If this is your first time programming in 
 ChucK, you may want to look at the documentation, or take the ChucK 
-Tutorial (in doc/ and online http://chuck.cs.princeton.edu/doc/). ThanK 
-you very much. Go forth and ChucK - email us for support or to make a 
-suggestion or to call us idiots.
+Tutorial (in doc/ and online http://chuck.stanford.edu/doc/). ThanK 
+you very much. Go forth and happy ChucKin'!
 
 Ge + Perry

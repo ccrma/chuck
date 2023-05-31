@@ -1,5 +1,5 @@
 // chuck this with other shreds to record to file
-// example> chuck foo.ck bar.ck rec (see also rec2.ck)
+// example> chuck foo.ck bar.ck rec-auto-stereo.ck
 
 // pull samples from the dac
 // WvOut2 -> stereo operation

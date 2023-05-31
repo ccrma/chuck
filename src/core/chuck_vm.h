@@ -145,7 +145,7 @@ public:
     t_CKUINT native_func;
     // is ctor?
     t_CKUINT native_func_type;
-    
+
     // filename this code came from (added 1.3.0.0)
     std::string filename;
 
@@ -169,17 +169,17 @@ public:
     Chuck_VM_Shred( );
     ~Chuck_VM_Shred( );
 
-    t_CKBOOL initialize( Chuck_VM_Code * c, 
-                         t_CKUINT mem_st_size = CVM_MEM_STACK_SIZE, 
+    t_CKBOOL initialize( Chuck_VM_Code * c,
+                         t_CKUINT mem_st_size = CVM_MEM_STACK_SIZE,
                          t_CKUINT reg_st_size = CVM_REG_STACK_SIZE );
     t_CKBOOL shutdown();
     t_CKBOOL run( Chuck_VM * vm );
     t_CKBOOL add( Chuck_UGen * ugen );
     t_CKBOOL remove( Chuck_UGen * ugen );
-    
+
     // add parent object reference (added 1.3.1.2)
     t_CKVOID add_parent_ref( Chuck_Object * obj );
-    
+
     #ifndef __DISABLE_SERIAL__
     // HACK - spencer (added 1.3.2.0)
     // add/remove SerialIO devices to close on shred exit
@@ -187,7 +187,7 @@ public:
     t_CKVOID add_serialio( Chuck_IO_Serial * serial );
     t_CKVOID remove_serialio( Chuck_IO_Serial * serial );
     #endif
-    
+
 //-----------------------------------------------------------------------------
 // data
 //-----------------------------------------------------------------------------
@@ -252,7 +252,7 @@ public: // ge: 1.3.5.3
     bool popLoopCounter();
     // loop counter pointer stack
     std::vector<t_CKUINT *> m_loopCounters;
-    
+
 #ifndef __DISABLE_SERIAL__
 private:
     std::list<Chuck_IO_Serial *> * m_serials;
@@ -272,7 +272,7 @@ public:
     t_CKUINT xid;
     std::string name;
     t_CKTIME start;
-    t_CKBOOL has_event;    
+    t_CKBOOL has_event;
 
 public:
     Chuck_VM_Shred_Status( t_CKUINT _id, const std::string & n, t_CKTIME _start, t_CKBOOL e )
@@ -297,7 +297,7 @@ public:
     Chuck_VM_Status();
     ~Chuck_VM_Status();
     void clear();
-    
+
 public:
     // sample rate
     t_CKUINT srate;
@@ -308,7 +308,7 @@ public:
     t_CKUINT t_minute;
     t_CKUINT t_hour;
     // list of shred status
-	std::vector<Chuck_VM_Shred_Status *> list;
+    std::vector<Chuck_VM_Shred_Status *> list;
 };
 
 
@@ -374,10 +374,10 @@ public:
     Chuck_UGen * m_bunghole;
     t_CKUINT m_num_dac_channels;
     t_CKUINT m_num_adc_channels;
-    
+
     // status cache
     Chuck_VM_Status m_status;
-    
+
     // max block size for adaptive block processing
     t_CKUINT m_max_block_size;
     t_CKBOOL m_adaptive;
@@ -446,7 +446,7 @@ public: // running the machine
     t_CKBOOL compute( );
     // abort current running shred
     t_CKBOOL abort_current_shred( );
-    
+
 public: // invoke functions
     t_CKBOOL invoke_static( Chuck_VM_Shred * shred );
 
@@ -464,7 +464,7 @@ public: // msg
     // added 1.3.0.0 to fix uber-crash
     CBufferSimple * create_event_buffer();
     void destroy_event_buffer( CBufferSimple * buffer );
-    
+
 public: // get error
     const char * last_error() const
     { return m_last_error.c_str(); }
@@ -514,7 +514,7 @@ public:
     Chuck_VM_Shred * spork( Chuck_VM_Shred * shred );
 
 protected:
-    t_CKBOOL free( Chuck_VM_Shred * shred, t_CKBOOL cascade, 
+    t_CKBOOL free( Chuck_VM_Shred * shred, t_CKBOOL cascade,
                    t_CKBOOL dec = TRUE );
     void dump( Chuck_VM_Shred * shred );
     void release_dump();
@@ -536,7 +536,7 @@ protected:
     CBufferSimple * m_msg_buffer;
     CBufferSimple * m_reply_buffer;
     CBufferSimple * m_event_buffer;
-    
+
     // TODO: vector? (added 1.3.0.0 to fix uber-crash)
     std::list<CBufferSimple *> m_event_buffers;
 
@@ -597,10 +597,10 @@ struct Chuck_Msg
 
     Chuck_Msg() : args(NULL) { clear(); }
     ~Chuck_Msg() { SAFE_DELETE( args ); }
-    
+
     // added 1.3.0.0
     void clear() { SAFE_DELETE( args ); memset( this, 0, sizeof(*this) ); }
-    
+
     void set( const std::vector<std::string> & vargs )
     {
         SAFE_DELETE(args);

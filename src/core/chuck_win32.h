@@ -266,13 +266,13 @@
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 59 "chuck.y"
+#line 65 "chuck.y"
 {
     int pos;
     int ival;
     double fval;
     c_str sval;
-    
+
     a_Program program;
     a_Section program_section;
     a_Stmt_List stmt_list;
@@ -294,7 +294,7 @@ typedef union YYSTYPE
 }
 /* Line 1529 of yacc.c.  */
 #line 297 "chuck.tab.h"
-	YYSTYPE;
+    YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

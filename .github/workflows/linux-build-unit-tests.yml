@@ -18,7 +18,7 @@ jobs:
       run: sudo apt update && sudo apt install --fix-missing -y libsndfile1-dev libpulse-dev libasound2-dev
 
     - name: Compile - Linux
-      run: cd src/ && make linux-pulse
+      run: cd src/ && make -j linux-pulse
       
     - name: Unit Tests - Linux
       run: cd src/ && export PATH=$PATH:$(pwd) && cd test/ && python test.py

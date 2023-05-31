@@ -15,7 +15,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Compile - macOS
-      run: cd src/ && make osx
+      run: cd src/ && make -j mac
       
     - name: Unit Tests - macOS
       run: cd src/ && export PATH=$PATH:$(pwd) && cd test/ && python test.py

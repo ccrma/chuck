@@ -47,9 +47,6 @@ struct Chuck_Carrier;
 DLL_QUERY stk_query( Chuck_DL_Query * QUERY );
 t_CKBOOL  stk_detach( Chuck_Carrier * carrier );
 
-
-
-
 // this determines STK float type and de-denormal method
 #ifndef __STK_USE_SINGLE_PRECISION__
 #define MY_FLOAT double
@@ -58,6 +55,9 @@ t_CKBOOL  stk_detach( Chuck_Carrier * carrier );
 #define MY_FLOAT float
 #define CK_STK_DDN CK_DDN_SINGLE
 #endif
+
+// 1.4.2.0 (ge) | added as part of switch to snprintf()
+#define STK_MSG_BUF_LENGTH 256
 
 
 
@@ -88,14 +88,14 @@ t_CKBOOL  stk_detach( Chuck_Carrier * carrier );
 // a "long double" in the future.
 
 //XXX sample is already defined in chuck_def.h!!!
-#if !defined(SAMPLE) 
+#if !defined(SAMPLE)
    typedef SAMPLE MY_FLOAT;
 #endif
 // The "MY_FLOAT" type will be deprecated in STK
 // versions higher than 4.1.2 and replaced with the variable
 // "StkFloat".
 //typedef double StkFloat;
-//#if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__)
+//#if defined(__PLATFORM_WIN32__) || 
 //  #pragma deprecated(MY_FLOAT)
 //#else
 //  typedef StkFloat MY_FLOAT __attribute__ ((deprecated));
@@ -110,7 +110,7 @@ t_CKBOOL  stk_detach( Chuck_Carrier * carrier );
 class StkError
 {
 public:
-  enum TYPE { 
+  enum TYPE {
     WARNING,
     DEBUG_WARNING,
     FUNCTION_ARGUMENT,
@@ -126,7 +126,7 @@ public:
   };
 
 public: // SWAP formerly protected
-  char message[256];
+  char message[STK_MSG_BUF_LENGTH];
   TYPE type;
 
 public:
@@ -250,7 +250,7 @@ typedef double FLOAT64;
 #if defined(__WINDOWS_PTHREAD__)
   #define __OS_WINDOWS_CYGWIN__
   #define __STK_REALTIME__
-#elif defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__)
+#elif defined(__PLATFORM_WIN32__)
   #define __OS_WINDOWS__
   #define __STK_REALTIME__
 #elif defined(__PLATFORM_LINUX__)
@@ -492,15 +492,14 @@ class Instrmnt : public Stk
 
   //! Computer \e vectorSize outputs and return them in \e vector.
   virtual MY_FLOAT *tick(MY_FLOAT *vector, unsigned int vectorSize);
-  
+
   //! Perform the control change specified by \e number and \e value (0.0 - 128.0).
   virtual void controlChange(int number, MY_FLOAT value);
 
 public: // SWAP formerly protected
+  MY_FLOAT lastOutput;
   // chuck
   t_CKFLOAT m_frequency;
-
-  MY_FLOAT lastOutput;
 };
 
 
@@ -635,7 +634,7 @@ public:
     Alternatively, the delay and maximum length
     can be set during instantiation with an
     overloaded constructor.
-    
+
     A non-interpolating delay line is typically
     used in fixed delay-length applications, such
     as for reverberation.
@@ -748,7 +747,7 @@ public:
   DelayL();
 
   //! Overloaded constructor which specifies the current and maximum delay-line lengths.
-  
+
   DelayL(MY_FLOAT theDelay, long maxDelay);
 
   //! Class destructor.
@@ -770,7 +769,7 @@ public:
   //! Input one sample to the delay-line and return one output.
   MY_FLOAT tick(MY_FLOAT sample);
 
- public: // SWAP formerly protected  
+ public: // SWAP formerly protected
   MY_FLOAT alpha;
   MY_FLOAT omAlpha;
   MY_FLOAT nextOutput;
@@ -835,7 +834,7 @@ public:
   //! Take \e vectorSize inputs and return the corresponding function values in \e vector.
   MY_FLOAT *tick(MY_FLOAT *vector, unsigned int vectorSize);
 
-public: // SWAP formerly protected  
+public: // SWAP formerly protected
   MY_FLOAT offSet;
   MY_FLOAT slope;
   MY_FLOAT lastOutput;
@@ -962,7 +961,7 @@ public:
     Percussion Instruments", Proceedings of the
     1999 International Computer Music Conference.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Bow Pressure = 2
        - Bow Motion = 4
        - Strike Position = 8 (not implemented)
@@ -1018,7 +1017,7 @@ class BandedWG : public Instrmnt
   void pluck(MY_FLOAT amp);
 
   //! Start a note with the given frequency and amplitude.
-  void noteOn(MY_FLOAT amplitude) { noteOn ( freakency, amplitude ); } 
+  void noteOn(MY_FLOAT amplitude) { noteOn ( freakency, amplitude ); }
   void noteOn(MY_FLOAT frequency, MY_FLOAT amplitude);
 
   //! Stop a note with the given amplitude (speed of decay).
@@ -1085,7 +1084,7 @@ class BandedWG : public Instrmnt
     WvIn supports multi-channel data in interleaved
     format.  It is important to distinguish the
     tick() methods, which return samples produced
-    by averaging across sample frames, from the 
+    by averaging across sample frames, from the
     tickFrame() methods, which return pointers to
     multi-channel sample frames.  For single-channel
     data, these methods return equivalent values.
@@ -1131,7 +1130,7 @@ public:
     An StkError will be thrown if the file is not found, its format is
     unknown, or a read error occurs.
   */
-  WvIn( const char *fileName, bool raw = FALSE, bool doNormalize = TRUE, bool generate=true );
+  WvIn( const char *fileName, bool raw = FALSE, bool doNormalize = TRUE, bool generate = TRUE );
 
   //! Class destructor.
   virtual ~WvIn();
@@ -1141,7 +1140,7 @@ public:
     An StkError will be thrown if the file is not found, its format is
     unknown, or a read error occurs.
   */
-  virtual void openFile( const char *fileName, bool raw = FALSE, bool doNormalize = TRUE, bool generate = true );
+  virtual void openFile( const char *fileName, bool raw = FALSE, bool doNormalize = TRUE, bool generate = TRUE );
 
   //! If a file is open, close it.
   void closeFile(void);
@@ -1161,7 +1160,7 @@ public:
   //! Normalize data to a maximum of \e +-peak.
   /*!
     For large, incrementally loaded files with integer data types,
-    normalization is computed relative to the data type maximum 
+    normalization is computed relative to the data type maximum
     (\e peak/maximum).  For incrementally loaded files with floating-
     point data types, direct scaling by \e peak is performed.
   */
@@ -1255,9 +1254,12 @@ public: // SWAP formerly protected
   // Get MAT-file header information.
   bool getMatInfo( const char *fileName );
 
-  char msg[256];
-  // char m_filename[256]; // chuck data
-  Chuck_String str_filename; // chuck data
+  char msg[STK_MSG_BUF_LENGTH];
+  // char m_filename[STK_MSG_BUF_LENGTH]; // chuck data
+  // Chuck_String str_filename; // chuck data
+  // NOTE: all Chuck_Objects needs heap allocation using 'new'
+  // since reference counting automatically calls 'delete'
+  std::string str_filename;
   FILE *fd;
   MY_FLOAT *data;
   MY_FLOAT *lastOutput;
@@ -1275,6 +1277,7 @@ public: // SWAP formerly protected
   MY_FLOAT gain;
   MY_FLOAT time;
   MY_FLOAT rate;
+  MY_FLOAT scaleToOne;
 public:
   bool m_loaded;
 };
@@ -1315,7 +1318,7 @@ public:
   WaveLoop( );
   //! Class constructor.
   WaveLoop( const char *fileName, bool raw = FALSE, bool generate = true );
-  
+
   virtual void openFile( const char * fileName, bool raw = FALSE, bool n = TRUE );
 
   //! Class destructor.
@@ -1458,7 +1461,7 @@ class TwoZero : public FilterStk // formerly protected Filter
     waves and envelopes, determined via a
     constructor argument.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Control One = 2
        - Control Two = 4
        - LFO Speed = 11
@@ -1529,7 +1532,7 @@ class FM : public Instrmnt
   MY_FLOAT getFMTableSusLevel(int index); // programming settings
   // 1.4.1.0 (prc): *** END REPAIRATHON2021 BLOCK ***
   /****************************************/
-   
+
   //! Set instrument parameters for a particular frequency.
   virtual void setFrequency(MY_FLOAT frequency);
 
@@ -1566,8 +1569,8 @@ class FM : public Instrmnt
   //! Perform the control change specified by \e number and \e value (0.0 - 128.0).
   virtual void controlChange(int number, MY_FLOAT value);
 
- public: // SWAP formerly protected  
-  ADSR     **adsr; 
+ public: // SWAP formerly protected
+  ADSR     **adsr;
   WaveLoop **waves;
   WaveLoop *vibrato;
   TwoZero  *twozero;
@@ -1587,7 +1590,6 @@ class FM : public Instrmnt
   MY_FLOAT __FM_gains[100];
   MY_FLOAT __FM_susLevels[16];
   MY_FLOAT __FM_attTimes[32];
-
 };
 
 #endif
@@ -1612,7 +1614,7 @@ class FM : public Instrmnt
                      4 --
     \endcode
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Operator 4 (feedback) Gain = 2
        - Operator 3 Gain = 4
        - LFO Speed = 11
@@ -1691,7 +1693,7 @@ public:
   //! Take \e vectorSize inputs and return the corresponding function values in \e vector.
   MY_FLOAT *tick(MY_FLOAT *vector, unsigned int vectorSize);
 
-public: // SWAP formerly protected  
+public: // SWAP formerly protected
   MY_FLOAT lastOutput;
 
 };
@@ -1832,7 +1834,7 @@ public:
   //! Return the last computed value.
   MY_FLOAT lastOut() const;
 
-public: // SWAP formerly protected  
+public: // SWAP formerly protected
 
   MY_FLOAT lastOutput;
 
@@ -1851,7 +1853,7 @@ public: // SWAP formerly protected
     (biquad filter) with a polynomial jet
     excitation (a la Cook).
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Noise Gain = 4
        - Vibrato Frequency = 11
        - Vibrato Gain = 1
@@ -1901,14 +1903,14 @@ class BlowBotl : public Instrmnt
   //! Perform the control change specified by \e number and \e value (0.0 - 128.0).
   void controlChange(int number, MY_FLOAT value);
 
- public: // SWAP formerly protected  
+ public: // SWAP formerly protected
   // chuck
   t_CKFLOAT m_rate;
   t_CKFLOAT m_noiseGain;
   t_CKFLOAT m_vibratoFreq;
   t_CKFLOAT m_vibratoGain;
   t_CKFLOAT m_volume;
-  
+
   void setVibratoFreq(MY_FLOAT freq)
   { vibrato->setFrequency( freq ); m_vibratoFreq = vibrato->m_freq; }
   void setVibratoGain(MY_FLOAT gain)
@@ -1994,7 +1996,7 @@ public:
   //! Take \e vectorSize inputs and return the corresponding function values in \e vector.
   MY_FLOAT *tick(MY_FLOAT *vector, unsigned int vectorSize);
 
-public: // SWAP formerly protected  
+public: // SWAP formerly protected
   MY_FLOAT offSet;
   MY_FLOAT slope;
   MY_FLOAT lastOutput;
@@ -2104,7 +2106,7 @@ class OneZero : public FilterStk // formerly protected Filter
     use possibly subject to patents held by Stanford
     University, Yamaha, and others.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Reed Stiffness = 2
        - Noise Gain = 4
        - Tonehole State = 11
@@ -2162,7 +2164,7 @@ class BlowHole : public Instrmnt
   //! Perform the control change specified by \e number and \e value (0.0 - 128.0).
   void controlChange(int number, MY_FLOAT value);
 
- public: // SWAP formerly protected  
+ public: // SWAP formerly protected
 
   // CHUCK
   t_CKFLOAT m_reed;
@@ -2283,7 +2285,7 @@ public:
     use possibly subject to patents held by
     Stanford University, Yamaha, and others.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Bow Pressure = 2
        - Bow Position = 4
        - Vibrato Frequency = 11
@@ -2323,7 +2325,7 @@ class Bowed : public Instrmnt
   //! Decrease breath pressure with given rate of decrease.
   void stopBowing(MY_FLOAT rate);
 
-  void noteOn(MY_FLOAT amplitude) { noteOn ( m_frequency, amplitude ); } 
+  void noteOn(MY_FLOAT amplitude) { noteOn ( m_frequency, amplitude ); }
   //! Start a note with the given frequency and amplitude.
   void noteOn(MY_FLOAT frequency, MY_FLOAT amplitude);
 
@@ -2406,7 +2408,7 @@ public:
   DelayA();
 
   //! Overloaded constructor which specifies the current and maximum delay-line lengths.
-  
+
   DelayA(MY_FLOAT theDelay, long maxDelay);
 
   //! Class destructor.
@@ -2431,7 +2433,7 @@ public:
   //! Input one sample to the delay-line and return one output.
   MY_FLOAT tick(MY_FLOAT sample);
 
-public: // SWAP formerly protected  
+public: // SWAP formerly protected
   MY_FLOAT alpha;
   MY_FLOAT coeff;
   MY_FLOAT apInput;
@@ -2455,7 +2457,7 @@ public: // SWAP formerly protected
     use possibly subject to patents held by
     Stanford University, Yamaha, and others.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Lip Tension = 2
        - Slide Length = 4
        - Vibrato Frequency = 11
@@ -2506,7 +2508,7 @@ class Brass: public Instrmnt
   //! Perform the control change specified by \e number and \e value (0.0 - 128.0).
   void controlChange(int number, MY_FLOAT value);
 
- public: // SWAP formerly protected  
+ public: // SWAP formerly protected
 
   // CHUCK
   t_CKFLOAT m_rate;
@@ -2576,7 +2578,7 @@ class Chorus : public Stk
   //! Set modulation frequency.
   void setModFrequency(MY_FLOAT frequency);
 
-  //! Set the mixture of input and processed levels in the output (0.0 = input only, 1.0 = processed only). 
+  //! Set the mixture of input and processed levels in the output (0.0 = input only, 1.0 = processed only).
   void setEffectMix(MY_FLOAT mix);
 
   //! Return the last output value.
@@ -2594,7 +2596,7 @@ class Chorus : public Stk
   //! Take \e vectorSize inputs, compute the same number of outputs and return them in \e vector.
   MY_FLOAT *tick(MY_FLOAT *vector, unsigned int vectorSize);
 
- public: // SWAP formerly protected  
+ public: // SWAP formerly protected
   DelayL *delayLine[2];
   WaveLoop *mods[2];
   MY_FLOAT baseLength;
@@ -2623,7 +2625,7 @@ class Chorus : public Stk
     use possibly subject to patents held by Stanford
     University, Yamaha, and others.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Reed Stiffness = 2
        - Noise Gain = 4
        - Vibrato Frequency = 11
@@ -2753,7 +2755,7 @@ class Drummer : public Instrmnt
   //! Compute one output sample.
   MY_FLOAT tick();
 
- public: // SWAP formerly protected  
+ public: // SWAP formerly protected
   WvIn    *waves[DRUM_POLYPHONY];
   OnePole *filters[DRUM_POLYPHONY];
   int      sounding[DRUM_POLYPHONY];
@@ -2797,7 +2799,7 @@ public:
   void set(MY_FLOAT max);
   MY_FLOAT getDelay();
 
-  //! Set the mixture of input and processed levels in the output (0.0 = input only, 1.0 = processed only). 
+  //! Set the mixture of input and processed levels in the output (0.0 = input only, 1.0 = processed only).
   void setEffectMix(MY_FLOAT mix);
 
   //! Return the last output value.
@@ -2838,7 +2840,7 @@ public:
                         \->3 -/
     \endcode
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Vowel = 2
        - Spectral Tilt = 4
        - LFO Speed = 11
@@ -2905,7 +2907,7 @@ class FMVoices : public FM
     use possibly subject to patents held by Stanford
     University, Yamaha, and others.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Jet Delay = 2
        - Noise Gain = 4
        - Vibrato Frequency = 11
@@ -2973,14 +2975,14 @@ public: // SWAP formerly protected
   t_CKFLOAT m_vibratoGain;
   t_CKFLOAT m_pressure;
   t_CKFLOAT m_rate;
- 
+
   void setVibratoFreq(MY_FLOAT freq)
   { vibrato->setFrequency( freq ); m_vibratoFreq = vibrato->m_freq; }
   void setVibratoGain(MY_FLOAT gain)
   { vibratoGain = gain; m_vibratoGain = vibratoGain; }
   void setNoiseGain(MY_FLOAT gain)
   { noiseGain = gain; m_noiseGain = gain; }
- 
+
   DelayL *jetDelay;
   DelayL *boreDelay;
   JetTabl *jetTable;
@@ -3061,7 +3063,7 @@ class FormSwep : public BiQuad
     A sweep rate of 1.0 will produce an immediate change in
     resonance parameters from their current values to the
     target values.  A sweep rate of 0.0 will produce no
-    change in resonance parameters.  
+    change in resonance parameters.
   */
   void setSweepRate(MY_FLOAT aRate);
 
@@ -3079,7 +3081,7 @@ class FormSwep : public BiQuad
   //! Input \e vectorSize samples to the filter and return an equal number of outputs in \e vector.
   MY_FLOAT *tick(MY_FLOAT *vector, unsigned int vectorSize);
 
- public: // SWAP formerly protected  
+ public: // SWAP formerly protected
   bool dirty;
   MY_FLOAT frequency;
   MY_FLOAT radius;
@@ -3115,7 +3117,7 @@ class FormSwep : public BiQuad
                     3-->2-- + -->1-->Out
     \endcode
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Total Modulator Index = 2
        - Modulator Crossfade = 4
        - LFO Speed = 11
@@ -3163,27 +3165,27 @@ class HevyMetl : public FM
 /***************************************************/
 /*! \class HnkyTonk
  \brief STK Honkey Tonk Piano FM synthesis instrument.
- 
+
  This class implements 4 cascade operators with
  feedback modulation on the master modulator,
  also referred to as algorithm 1 of the TX81Z.
- 
+
  Algorithm 1 is :
  4-->3-->2-->1-->Out
- 
+
  Control Change Numbers:
  - Total Modulator Index = 2
  - Modulator Crossfade = 4
  - LFO Speed = 11
  - LFO Depth = 1
  - ADSR 2 & 4 Target = 128
- 
+
  The basic Chowning/Stanford FM patent expired
  in 1995, but there exist follow-on patents,
  mostly assigned to Yamaha.  If you are of the
  type who should worry about this (making
  money) worry away.
- 
+
  by Perry R. Cook, 2021.
  */
 /***************************************************/
@@ -3196,14 +3198,14 @@ class HnkyTonk : public FM
 public:
     //! Class constructor.
     HnkyTonk();
-    
+
     //! Class destructor.
     ~HnkyTonk();
-    
+
     //! Start a note with the given frequency and amplitude.
     void noteOn(MY_FLOAT frequency, MY_FLOAT amplitude);
     void noteOn( MY_FLOAT amplitude) { noteOn(baseFrequency, amplitude); }
-    
+
     //! Compute one output sample.
     MY_FLOAT tick();
 };
@@ -3215,27 +3217,27 @@ public:
 /***************************************************/
 /*! \class FrencHrn
  \brief NEW STK-style French Horn FM synthesis instrument.
- 
+
  This class implements 3 cascade operators with
  feedback modulation, also referred to as
  algorithm 3 of the TX81Z.
- 
+
  Algorithm 3 is :     4--\
  3-->2-- + -->1-->Out
- 
+
  Control Change Numbers:
  - Total Modulator Index = 2
  - Modulator Crossfade = 4
  - LFO Speed = 11
  - LFO Depth = 1
  - ADSR 2 & 4 Target = 128
- 
+
  The basic Chowning/Stanford FM patent expired
  in 1995, but there exist follow-on patents,
  mostly assigned to Yamaha.  If you are of the
  type who should worry about this (making
  money) worry away.
- 
+
  by Perry R. Cook, 2021.
  */
 /***************************************************/
@@ -3248,14 +3250,14 @@ class FrencHrn : public FM
 public:
     //! Class constructor.
     FrencHrn();
-    
+
     //! Class destructor.
     ~FrencHrn();
-    
+
     //! Start a note with the given frequency and amplitude.
     void noteOn(MY_FLOAT frequency, MY_FLOAT amplitude);
     void noteOn( MY_FLOAT amplitude) { noteOn(baseFrequency, amplitude); }
-    
+
     //! Compute one output sample.
     MY_FLOAT tick();
 };
@@ -3268,28 +3270,28 @@ public:
 /***************************************************/
 /*! \class KrstlChr
  \brief New STK-style Crystal Choir FM synthesis instrument.
- 
+
  This class implements 3 parallel operators with
  one modulated, by one with feedback modulation,
  also referred to as algorithm 7 of the TX81Z.
- 
+
  Algorithm 3 is :     4-->3-->\
  2--> + -->Out
  1-->/
- 
+
  Control Change Numbers:
  - Total Modulator Index = 2
  - Modulator Crossfade = 4
  - LFO Speed = 11
  - LFO Depth = 1
  - ADSR 2 & 4 Target = 128
- 
+
  The basic Chowning/Stanford FM patent expired
  in 1995, but there exist follow-on patents,
  mostly assigned to Yamaha.  If you are of the
  type who should worry about this (making
  money) worry away.
- 
+
  by Perry R. Cook, 2021.
  */
 /***************************************************/
@@ -3302,14 +3304,14 @@ class KrstlChr : public FM
 public:
     //! Class constructor.
     KrstlChr();
-    
+
     //! Class destructor.
     ~KrstlChr();
-    
+
     //! Start a note with the given frequency and amplitude.
     void noteOn(MY_FLOAT frequency, MY_FLOAT amplitude);
     void noteOn( MY_FLOAT amplitude) { noteOn(baseFrequency, amplitude); }
-    
+
     //! Compute one output sample.
     MY_FLOAT tick();
 };
@@ -3348,7 +3350,7 @@ class Reverb : public Stk
   //! Reset and clear all internal state.
   virtual void clear() = 0;
 
-  //! Set the mixture of input and "reverberated" levels in the output (0.0 = input only, 1.0 = reverb only). 
+  //! Set the mixture of input and "reverberated" levels in the output (0.0 = input only, 1.0 = reverb only).
   void setEffectMix(MY_FLOAT mix);
 
   //! Return the last output value.
@@ -3495,7 +3497,7 @@ class PluckTwo : public Instrmnt
   //! Virtual (abstract) tick function is implemented by subclasses.
   virtual MY_FLOAT tick() = 0;
 
-  public: // SWAP formerly protected  
+  public: // SWAP formerly protected
     DelayA *delayLine;
     DelayA *delayLine2;
     DelayL *combDelay;
@@ -3535,7 +3537,7 @@ class PluckTwo : public Instrmnt
     information, contact the Office of Technology
     Licensing, Stanford University.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Body Size = 2
        - Pluck Position = 4
        - String Sustain = 11
@@ -3580,7 +3582,7 @@ class Mandolin : public PluckTwo
   //! Perform the control change specified by \e number and \e value (0.0 - 128.0).
   virtual void controlChange(int number, MY_FLOAT value);
 
-  public: // SWAP formerly protected  
+  public: // SWAP formerly protected
     WvIn *soundfile[12];
     MY_FLOAT directBody;
     int mic;
@@ -3611,7 +3613,7 @@ class Mandolin : public PluckTwo
     use possibly subject to patents held by Stanford
     University, Yamaha, and others.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - X Dimension = 2
        - Y Dimension = 4
        - Mesh Decay = 11
@@ -3639,7 +3641,7 @@ class Mesh2D : public Instrmnt
   ~Mesh2D();
 
   //! Reset and clear all internal state.
-  void clear(); 
+  void clear();
 
   //! Set the x dimension size in samples.
   void setNX(short lenX);
@@ -3769,7 +3771,7 @@ public: // SWAP formerly protected
   t_CKFLOAT m_vibratoFreq;
   t_CKFLOAT m_volume;
 
-  Envelope *envelope; 
+  Envelope *envelope;
   WvIn     *wave;
   BiQuad   **filters;
   OnePole  *onepole;
@@ -3799,7 +3801,7 @@ public: // SWAP formerly protected
     struck bar instruments.  It inherits from the
     Modal class.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Stick Hardness = 2
        - Stick Position = 4
        - Vibrato Gain = 11
@@ -3889,7 +3891,7 @@ class SubNoise : public Noise
   //! Return a sub-sampled random number between -1.0 and 1.0.
   MY_FLOAT tick();
 
- public: // SWAP formerly protected  
+ public: // SWAP formerly protected
   int counter;
   int rate;
 
@@ -4006,8 +4008,8 @@ class Sampler : public Instrmnt
   //! Perform the control change specified by \e number and \e value (0.0 - 128.0).
   virtual void controlChange(int number, MY_FLOAT value) = 0;
 
- public: // SWAP formerly protected  
-  ADSR     *adsr; 
+ public: // SWAP formerly protected
+  ADSR     *adsr;
   WvIn     *attacks[5];
   WaveLoop *loops[5];
   OnePole  *filter;
@@ -4034,7 +4036,7 @@ class Sampler : public Instrmnt
     from the Sampler class) and adds two sweepable
     formant (FormSwep) filters.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Filter Q = 2
        - Filter Sweep Rate = 4
        - Vibrato Frequency = 11
@@ -4132,7 +4134,7 @@ class NRev : public Reverb
   //! Compute one output sample.
   MY_FLOAT tick(MY_FLOAT input);
 
- public: // SWAP formerly protected  
+ public: // SWAP formerly protected
   Delay *allpassDelays[8];
   Delay *combDelays[6];
   MY_FLOAT allpassCoefficient;
@@ -4182,7 +4184,7 @@ public:
   //! Compute one output sample.
   MY_FLOAT tick(MY_FLOAT input);
 
-public: // SWAP formerly protected  
+public: // SWAP formerly protected
   Delay *allpassDelays[2];
   Delay *combDelays[2];
   MY_FLOAT allpassCoefficient;
@@ -4207,7 +4209,7 @@ public: // SWAP formerly protected
                           2-- + -->1-->Out
     \endcode
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Total Modulator Index = 2
        - Modulator Crossfade = 4
        - LFO Speed = 11
@@ -4337,7 +4339,7 @@ class PitShift : public Stk
   //! Set the pitch shift factor (1.0 produces no shift).
   void setShift(MY_FLOAT shift);
 
-  //! Set the mixture of input and processed levels in the output (0.0 = input only, 1.0 = processed only). 
+  //! Set the mixture of input and processed levels in the output (0.0 = input only, 1.0 = processed only).
   void setEffectMix(MY_FLOAT mix);
 
   //! Return the last output value.
@@ -4349,7 +4351,7 @@ class PitShift : public Stk
   //! Input \e vectorSize samples to the filter and return an equal number of outputs in \e vector.
   MY_FLOAT *tick(MY_FLOAT *vector, unsigned int vectorSize);
 
- public: // SWAP formerly protected  
+ public: // SWAP formerly protected
   //chuck
   t_CKFLOAT m_vibratoGain;
   t_CKFLOAT m_vibratoFreq;
@@ -4420,7 +4422,7 @@ class Plucked : public Instrmnt
   //! Compute one output sample.
   virtual MY_FLOAT tick();
 
- public: // SWAP formerly protected  
+ public: // SWAP formerly protected
   DelayA *delayLine;
   OneZero *loopFilter;
   OnePole *pickFilter;
@@ -4498,7 +4500,7 @@ class Resonate : public Instrmnt
   //! Perform the control change specified by \e number and \e value (0.0 - 128.0).
   virtual void controlChange(int number, MY_FLOAT value);
 
- public: // SWAP formerly protected  
+ public: // SWAP formerly protected
   ADSR     *adsr;
   BiQuad   *filter;
   Noise    *noise;
@@ -4529,7 +4531,7 @@ class Resonate : public Instrmnt
                       2->1--/
     \endcode
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Modulator Index One = 2
        - Crossfade of Outputs = 4
        - LFO Speed = 11
@@ -4564,7 +4566,7 @@ class Rhodey : public FM
 
   //! Start a note with the given frequency and amplitude.
   void noteOn(MY_FLOAT frequency, MY_FLOAT amplitude);
-  void noteOn(MY_FLOAT amplitude) { noteOn(baseFrequency * 0.5, amplitude ); } 
+  void noteOn(MY_FLOAT amplitude) { noteOn(baseFrequency * 0.5, amplitude ); }
 
   //! Compute one output sample.
   MY_FLOAT tick();
@@ -4729,7 +4731,7 @@ static const double Midi2Pitch[129] = {
     use possibly subject to patents held by Stanford
     University, Yamaha, and others.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Reed Stiffness = 2
        - Reed Aperture = 26
        - Noise Gain = 4
@@ -4829,7 +4831,7 @@ class Saxofony : public Instrmnt
     breaking sticks, crunchy snow (or not), a
     wrench, sandpaper, and more.
 
-    Control Change Numbers: 
+    Control Change Numbers:
       - Shake Energy = 2
       - System Decay = 4
       - Number Of Objects = 11
@@ -4885,7 +4887,7 @@ class Shakers : public Instrmnt
     Use the instrument numbers above, converted to frequency values
     as if MIDI note numbers, to select a particular instrument.
   */
-  virtual void ck_noteOn(MY_FLOAT amplitude ); // chuck single arg call 
+  virtual void ck_noteOn(MY_FLOAT amplitude ); // chuck single arg call
   virtual void noteOn(MY_FLOAT instrument, MY_FLOAT amplitude);
 
   //! Stop a note with the given amplitude (speed of decay).
@@ -4957,7 +4959,7 @@ class Shakers : public Instrmnt
     a one-pole filter, and an ADSR envelope
     to create some interesting sounds.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Filter Pole Position = 2
        - Noise/Pitched Cross-Fade = 4
        - Envelope Rate = 11
@@ -5004,8 +5006,8 @@ class Simple : public Instrmnt
   //! Perform the control change specified by \e number and \e value (0.0 - 128.0).
   virtual void controlChange(int number, MY_FLOAT value);
 
- public: // SWAP formerly protected  
-  ADSR     *adsr; 
+ public: // SWAP formerly protected
+  ADSR     *adsr;
   WaveLoop  *loop;
   OnePole  *filter;
   BiQuad   *biquad;
@@ -5162,7 +5164,7 @@ class Sitar : public Instrmnt
   //! Compute one output sample.
   MY_FLOAT tick();
 
- public: // SWAP formerly protected  
+ public: // SWAP formerly protected
   DelayA *delayLine;
   OneZero *loopFilter;
   Noise *noise;
@@ -5195,7 +5197,7 @@ class Sitar : public Instrmnt
     The user is responsible for checking the values
     returned by the read/write methods.  Values
     less than or equal to zero indicate a closed
-    or lost connection or the occurence of an error.
+    or lost connection or the occurrence of an error.
 
     by Perry R. Cook and Gary P. Scavone, 1995 - 2002.
 */
@@ -5275,7 +5277,7 @@ class Socket : public Stk
 
  public: // SWAP formerly protected
 
-  char msg[256];
+  char msg[STK_MSG_BUF_LENGTH];
   int soket;
   int poort;
   bool server;
@@ -5403,7 +5405,7 @@ public:
 
   //! Move the sphere for the given time increment.
   void tick(double timeIncrement);
-   
+
 public: // SWAP formerly private
   Vector3D *myPosition;
   Vector3D *myVelocity;
@@ -5558,7 +5560,7 @@ public:
   //! Take \e vectorSize index positions and return the corresponding table values in \e vector.
   MY_FLOAT *tick(MY_FLOAT *vector, unsigned int vectorSize);
 
-public: // SWAP formerly protected  
+public: // SWAP formerly protected
   long length;
   MY_FLOAT *data;
   MY_FLOAT lastOutput;
@@ -5635,7 +5637,7 @@ class WvOut : public Stk
     int fflush(FILE *stream);
     int fclose(FILE *stream);
     size_t fread(void *ptr, size_t size, size_t nitems, FILE *stream);
-    
+
   //! Default constructor.
   WvOut();
 
@@ -5716,7 +5718,7 @@ class WvOut : public Stk
   // Close MAT-file, updating the header.
   void closeMatFile( void );
 
-  char msg[256];
+  char msg[STK_MSG_BUF_LENGTH];
   FILE *fd;
   MY_FLOAT *data;
   FILE_TYPE fileType;
@@ -5726,13 +5728,17 @@ class WvOut : public Stk
   unsigned long counter;
   unsigned long totalCount;
   // char m_filename[1024];
-  Chuck_String str_filename;
-  t_CKUINT start;
+  // Chuck_String str_filename;
+  // NOTE: all Chuck_Objects needs heap allocation using 'new'
+  // since reference counting automatically calls 'delete'
+  std::string str_filename;
   // char autoPrefix[1024];
-  Chuck_String autoPrefix;
+  // Chuck_String autoPrefix;
+  std::string autoPrefix;
+  t_CKUINT start;
   t_CKUINT flush;
   t_CKFLOAT fileGain;
-    
+
   // spencer: for data asynch write
   t_CKBOOL asyncIO;
   XWriteThread * asyncWriteThread;
@@ -5759,7 +5765,7 @@ class WvOut : public Stk
                       2->1--/
     \endcode
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Modulator Index One = 2
        - Crossfade of Outputs = 4
        - LFO Speed = 11
@@ -5862,9 +5868,9 @@ class TwoPole : public FilterStk // formerly protected Filter
   MY_FLOAT m_resFreq;
   MY_FLOAT m_resRad;
 
-  void ck_setResNorm( bool n ) { m_resNorm = n; setResonance(m_resFreq, m_resRad, m_resNorm); } 
-  void ck_setResFreq( MY_FLOAT n ) { m_resFreq = n; setResonance(m_resFreq, m_resRad, m_resNorm); } 
-  void ck_setResRad( MY_FLOAT n ) { m_resRad = n; setResonance(m_resFreq, m_resRad, m_resNorm); } 
+  void ck_setResNorm( bool n ) { m_resNorm = n; setResonance(m_resFreq, m_resRad, m_resNorm); }
+  void ck_setResFreq( MY_FLOAT n ) { m_resFreq = n; setResonance(m_resFreq, m_resRad, m_resNorm); }
+  void ck_setResRad( MY_FLOAT n ) { m_resRad = n; setResonance(m_resFreq, m_resRad, m_resNorm); }
   //! Set the filter gain.
   /*!
     The gain is applied at the filter input and does not affect the
@@ -5906,7 +5912,7 @@ class TwoPole : public FilterStk // formerly protected Filter
     cascade synthesis is the most natural so
     that's what you'll find here.
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Voiced/Unvoiced Mix = 2
        - Vowel/Phoneme Selection = 4
        - Vibrato Frequency = 11
@@ -5978,7 +5984,10 @@ public: // SWAP formerly protected
   FormSwep  *filters[4];
   OnePole  *onepole;
   OneZero  *onezero;
-  Chuck_String str_phoneme; // chuck data
+  // Chuck_String str_phoneme; // chuck data
+  // NOTE: all Chuck_Objects needs heap allocation using 'new'
+  // since reference counting automatically calls 'delete'
+  std::string str_phoneme;
 };
 
 #endif
@@ -6143,7 +6152,7 @@ public: // SWAP formerly protected
     This class implements a hybrid physical/spectral
     model of a police whistle (a la Cook).
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Noise Gain = 4
        - Fipple Modulation Frequency = 11
        - Fipple Modulation Gain = 1
@@ -6191,7 +6200,7 @@ public:
   //! Perform the control change specified by \e number and \e value (0.0 - 128.0).
   void controlChange(int number, MY_FLOAT value);
 
-public: // SWAP formerly protected  
+public: // SWAP formerly protected
     Vector3D *tempVectorP;
   Vector3D *tempVector;
   OnePole onepole;
@@ -6233,7 +6242,7 @@ public: // SWAP formerly protected
                       2->1--/
     \endcode
 
-    Control Change Numbers: 
+    Control Change Numbers:
        - Modulator Index One = 2
        - Crossfade of Outputs = 4
        - LFO Speed = 11
@@ -6269,7 +6278,7 @@ class Wurley : public FM
   //! Start a note with the given frequency and amplitude.
   void noteOn(MY_FLOAT frequency, MY_FLOAT amplitude);
   void noteOn(MY_FLOAT amplitude) { noteOn ( baseFrequency, amplitude ); }
-  
+
   // CHUCK HACK:
   virtual void controlChange( int which, MY_FLOAT value );
 
@@ -6432,7 +6441,7 @@ class BlitSaw : public BLT
     Set the phase of the signal, in the range 0 to 1.
   */
   virtual void setPhase( MY_FLOAT phase ) { phase_ = ONE_PI * phase; }
-  
+
   //! Set the sawtooth oscillator rate in terms of a frequency in Hz.
   virtual void setFrequency( MY_FLOAT frequency );
 
@@ -6580,11 +6589,11 @@ class BlitSquare : public BLT
 #include <sstream>
 
 namespace stk {
-    
+
 /**********************************************************************/
 /*! \class MidiFileIn
  \brief A standard MIDI file reading/parsing class.
- 
+
  This class can be used to read events from a standard MIDI file.
  Event bytes are copied to a C++ vector and must be subsequently
  interpreted by the user.  The function getNextMidiEvent() skips
@@ -6593,7 +6602,7 @@ namespace stk {
  function is provided to determine the current "seconds per tick".
  Tempo changes are internally tracked by the class and reflected in
  the values returned by the function getTickSeconds().
- 
+
  by Gary P. Scavone, 2003 - 2010.
  */
 /**********************************************************************/
@@ -6607,16 +6616,16 @@ public:
      StkError exception will be thrown.
      */
     MidiFileIn( std::string fileName );
-    
+
     //! Class destructor.
     ~MidiFileIn();
-    
+
     //! Return the MIDI file format (0, 1, or 2).
     int getFileFormat() const;
-    
+
     //! Return the number of tracks in the MIDI file.
     unsigned int getNumberOfTracks() const;
-    
+
     //! Return the MIDI file division value from the file header.
     /*!
      Note that this value must be "parsed" in accordance with the
@@ -6624,14 +6633,14 @@ public:
      file uses time-code representations for delta-time values.
      */
     int getDivision() const;
-    
+
     //! Move the specified track event reader to the beginning of its track.
     /*!
      The relevant track tempo value is reset as well.  If an invalid
      track number is specified, an StkError exception will be thrown.
      */
     void rewindTrack( unsigned int track = 0 );
-    
+
     //! Get the current value, in seconds, of delta-time ticks for the specified track.
     /*!
      This value can change as events are read (via "Set Tempo"
@@ -6641,7 +6650,7 @@ public:
      thrown.
      */
     double getTickSeconds( unsigned int track = 0 );
-    
+
     //! Fill the user-provided vector with the next event in the specified track and return the event delta-time in ticks.
     /*!
      MIDI File events consist of a delta time and a sequence of event
@@ -6656,7 +6665,7 @@ public:
      file, an StkError exception will be thrown.
      */
     unsigned long getNextEvent( std::vector<unsigned char> *event, unsigned int track = 0 );
-    
+
     //! Fill the user-provided vector with the next MIDI channel event in the specified track and return the event delta time in ticks.
     /*!
      All returned MIDI events are complete ... a status byte is
@@ -6669,23 +6678,23 @@ public:
      StkError exception will be thrown.
      */
     unsigned long getNextMidiEvent( std::vector<unsigned char> *midiEvent, unsigned int track = 0 );
-    
+
     //! ge: get the current BPM (I think)
     /*!
      This value can change as events are read... hmm pretty much
      what it says above for getTickSeconds()
      */
     double getBPM();
-    
+
 protected:
-    
+
     // This protected class function is used for reading variable-length
     // MIDI file values. It is assumed that this function is called with
     // the file read pointer positioned at the start of a
     // variable-length value.  The function returns true if the value is
     // successfully parsed.  Otherwise, it returns false.
     bool readVariableLength( unsigned long *value );
-    
+
     std::ifstream file_;
     unsigned int nTracks_;
     int format_;
@@ -6698,11 +6707,11 @@ protected:
     std::vector<char> trackStatus_;
     // ge:
     double bpm_;
-    
+
     // This structure and the following variables are used to save and
     // keep track of a format 1 tempo map (and the initial tickSeconds
     // parameter for formats 0 and 2).
-    struct TempoChange { 
+    struct TempoChange {
         unsigned long count;
         double tickSeconds;
     };
@@ -6710,7 +6719,7 @@ protected:
     std::vector<unsigned long> trackCounters_;
     std::vector<unsigned int> trackTempoIndex_;
 };
-    
+
 } // stk namespace
 
 #endif
@@ -6767,7 +6776,7 @@ protected:
 #define __SK_Pan_                    10
 #define __SK_Sustain_                64
 #define __SK_Damper_                 __SK_Sustain_
-#define __SK_Expression_             11 
+#define __SK_Expression_             11
 
 #define __SK_AfterTouch_Cont_        128
 #define __SK_ModFrequency_           __SK_Expression_
@@ -6812,7 +6821,7 @@ protected:
 #define __SK_FilterFreq_             1062
 #define __SK_FilterSweepRate_        __SK_FootControl_
 
-#define __SK_ShakerInst_             1071 
+#define __SK_ShakerInst_             1071
 #define __SK_ShakerEnergy_           __SK_Breath_
 #define __SK_ShakerDamping_          __SK_ModFrequency_
 #define __SK_ShakerNumObjects_       __SK_FootControl_

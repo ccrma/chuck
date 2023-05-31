@@ -43,17 +43,17 @@ extern "C" {
 
 
 extern t_CKBOOL EM_anyErrors;
-extern int EM_tokPos;
-extern int EM_lineNum;
+extern t_CKINT EM_tokPos;
+extern t_CKINT EM_lineNum;
 
-// EM_extLineNum is synced with EM_lineNum in lexer/parser phase, then synced 
+// EM_extLineNum is synced with EM_lineNum in lexer/parser phase, then synced
 // with scanner/typechecker (EM_lineNum is not synced with scanner/typechecker)
-extern int EM_extLineNum; 
+extern t_CKINT EM_extLineNum;
 
 void EM_newline( );
 
 // levels
-#define CK_LOG_CRAZY            10 // set this to log everything
+#define CK_LOG_ALL              10 // set this to log everything
 #define CK_LOG_FINEST           9
 #define CK_LOG_FINER            8
 #define CK_LOG_FINE             7
@@ -155,9 +155,9 @@ extern t_CKINT g_loglevel;
 // macro to compare
 #define DO_LOG(x) ( x <= g_loglevel )
 
-void EM_error( int, c_constr, ... );
-void EM_error2( int, c_constr, ... );
-void EM_error2b( int, c_constr, ... );
+void EM_error( t_CKINT, c_constr, ... );
+void EM_error2( t_CKINT, c_constr, ... );
+void EM_error2b( t_CKINT, c_constr, ... );
 void EM_error3( c_constr, ... );
 void EM_impossible( c_constr, ... );
 t_CKBOOL EM_reset( c_constr filename, FILE * fd );
@@ -190,7 +190,7 @@ public:
     {
         EM_pushlog();
     }
-    
+
     ~SmartPushLog()
     {
         EM_poplog();

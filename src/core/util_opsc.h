@@ -35,12 +35,13 @@
 
 
 // chuck high-style artistry
-// let's just cat included files into an enormous code-wad. 
+// let's just cat included files into an enormous code-wad.
 // keep that bubble gum in your hair.
 
 
-// the included files were from the CNMAT OSC-Kit distrib. 
+// the included files were from the CNMAT OSC-Kit distrib.
 #ifdef __PLATFORM_WIN32__
+#define _WINSOCKAPI_
 #include <windows.h>
 #endif
 
@@ -48,7 +49,7 @@
 // OSC-pattern-match.h
 
 /*
-Copyright � 1998. The Regents of the University of California (Regents). 
+Copyright � 1998. The Regents of the University of California (Regents).
 All Rights Reserved.
 
 Written by Matt Wright, The Center for New Music and Audio Technologies,
@@ -71,7 +72,7 @@ PURPOSE. THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
 HEREUNDER IS PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE
 MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
-The OpenSound Control WWW page is 
+The OpenSound Control WWW page is
     http://www.cnmat.berkeley.edu/OpenSoundControl
 */
 
@@ -94,7 +95,7 @@ bool PatternMatch (const char *pattern, const char *test);
 
 // - end OSC-pattern-match.h
 
-//#inclue OSC-TimeTag.h 
+//#inclue OSC-TimeTag.h
 
 /*
 Copyright (c) 1998.  The Regents of the University of California (Regents).
@@ -123,7 +124,7 @@ University of California, Berkeley.
      REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,
      ENHANCEMENTS, OR MODIFICATIONS.
 
-The OpenSound Control WWW page is 
+The OpenSound Control WWW page is
     http://www.cnmat.berkeley.edu/OpenSoundControl
 */
 
@@ -134,10 +135,10 @@ The OpenSound Control WWW page is
  Time tags in OSC have the same format as in NTP: 64 bit fixed point, with the
  top 32 bits giving number of seconds sinve midnight 1/1/1900 and the bottom
  32 bits giving fractional parts of a second.  We represent this by a 64-bit
- unsigned long if possible, or else a struct. 
+ unsigned long if possible, or else a struct.
 
  NB: On many architectures with 64-bit ints, it's illegal (like maybe a bus error)
- to dereference a pointer to a 64-bit int that's not 64-bit aligned.  
+ to dereference a pointer to a 64-bit int that's not 64-bit aligned.
 */
 
 #ifndef OSC_TIMETAG
@@ -151,7 +152,7 @@ The OpenSound Control WWW page is
     typedef unsigned long long uint64;
     typedef unsigned long uint32;
 #else
-    /* You may have to redefine this typedef if ints on your system 
+    /* You may have to redefine this typedef if ints on your system
        aren't 32 bits. */
     typedef unsigned int uint32;
 #endif
@@ -192,7 +193,7 @@ int OSCTT_Compare(OSCTimeTag left, OSCTimeTag right);
 
 
 //#include "OSC-client.h"
-// OSC-client.h 
+// OSC-client.h
 /*
 Copyright (c) 1996,1997.  The Regents of the University of California (Regents).
 All Rights Reserved.
@@ -221,7 +222,7 @@ University of California, Berkeley.
      ENHANCEMENTS, OR MODIFICATIONS.
 */
 
-/* 
+/*
 
    OSC-client.h: library for constructing OpenSoundControl messages.
    Derived from SynthControl.h
@@ -269,7 +270,7 @@ University of California, Berkeley.
 #endif
 
 /* The maximum depth of bundles within bundles within bundles within...
-   This is the size of a static array.  If you exceed this limit you'll 
+   This is the size of a static array.  If you exceed this limit you'll
    get an error message. */
 #define MAX_BUNDLE_NESTING 32
 
@@ -284,7 +285,7 @@ typedef struct OSCbuf_struct {
     int size;                /* Size of the buffer */
     char *bufptr;            /* Current position as we fill the buffer */
     int state;           /* State of partially-constructed message */
-    int4byte *thisMsgSize;   /* Pointer to count field before 
+    int4byte *thisMsgSize;   /* Pointer to count field before
                     currently-being-written message */
     int4byte *prevCounts[MAX_BUNDLE_NESTING];
                  /* Pointers to count field before each currently
@@ -334,12 +335,12 @@ int OSC_packetSize(OSCbuf *buf);
 
     - Make sure the OSCbuf has been initialized with OSC_initBuffer().
 
-    - To open a bundle, call OSC_openBundle().  You can then write 
+    - To open a bundle, call OSC_openBundle().  You can then write
       messages or open new bundles within the bundle you opened.
       Call OSC_closeBundle() to close the bundle.  Note that a packet
-      does not have to have a bundle; it can instead consist of just a 
+      does not have to have a bundle; it can instead consist of just a
       single message.
-                                  
+
 
     - For each message you want to send:
 
@@ -350,7 +351,7 @@ int OSC_packetSize(OSCbuf *buf);
         - Alternately, call OSC_writeAddressAndTypes() with the name of
           your message and with a type string listing the types of all the
           arguments you will be putting in this message.
-    
+
     - Now write each of the arguments into the buffer, by calling one of:
         OSC_writeFloatArg()
         OSC_writeFloatArgs()
@@ -376,7 +377,7 @@ extern const char * OSC_errorMessage;
 
 /* How many bytes will be needed in the OSC format to hold the given
    string?  The length of the string, plus the null char, plus any padding
-   needed for 4-byte alignment. */ 
+   needed for 4-byte alignment. */
 int OSC_effectiveStringLength(char *string);
 
 // end OSC-client.h
@@ -390,11 +391,11 @@ int OSC_effectiveStringLength(char *string);
 
 class OSC_Address_Space;
 class UDP_Transmitter;
-class UDP_Receiver; 
+class UDP_Receiver;
 
 class OSC_Transmitter
 {
-protected: 
+protected:
     char              _buffer[2048];
     OSCbuf            _osc;
     UDP_Transmitter * _out;
@@ -408,10 +409,10 @@ public:
     void init();
     void setHost( char * host, int port);
     void addMessage( char * address, char * args, ...);
-    
+
     void openBundle( OSCTimeTag t);
     void closeBundle();
-    
+
     void startMessage( char * spec );
     void startMessage( char * address, char * args );
     void addInt( int4byte i ); // gewang: changed from int
@@ -423,7 +424,7 @@ public:
     void kickMessage();
 
     void presend( char * buffer , int size );
-    
+
 };
 
 #define OSCINBUFSIZE 8192
@@ -434,7 +435,7 @@ public:
 //maximum size for the array  ( ~2mb is enough, no )
 #define OSCINBOXMAX 256
 
-struct OSCMesg { 
+struct OSCMesg {
     char *address;
     char *types;
     char *data;
@@ -453,10 +454,10 @@ public:
     virtual ~UDP_Subscriber() {}
 
 public:
-    virtual int& port() = 0; // get/set the value of the subscriber's current port. 
+    virtual int& port() = 0; // get/set the value of the subscriber's current port.
     virtual void onReceive( char * mesg, int mesgLen ) = 0;
 
-protected: 
+protected:
     virtual bool subscribe( int port );
     virtual bool unsubscribe();
 };
@@ -474,12 +475,12 @@ protected:
     // int            _mesglen;
 
 protected:
-	void onReceive( char * mesg, int mesgLen);
-	int & port();
+    void onReceive( char * mesg, int mesgLen);
+    int & port();
 
 protected:
-	int			   _port;
-	int			   _tmp_port;
+    int               _port;
+    int               _tmp_port;
     XMutex *        _io_mutex;
     XMutex *        _address_mutex;
     // XThread *       _io_thread;
@@ -493,37 +494,37 @@ protected:
     OSC_Address_Space **      _address_space;
     int             _address_size;
     int             _address_num;
-    
+
     CBufferSimple * m_event_buffer;
-    
+
     // REFACTOR-2017: VM ref
     Chuck_VM * m_vmRef;
-    
+
 public:
     OSC_Receiver( Chuck_VM * vm );
     OSC_Receiver( Chuck_VM * vm, UDP_Receiver * in );
     virtual ~OSC_Receiver();
-    
+
     //setup //takedown
     void init();
     void bind_to_port(int port = 0);
     void close_sock();
-    
+
     void recv_mesg();
 
-	bool listen( int port );
+    bool listen( int port );
     bool listen();
-	void stopListening(); //unsubscribe;
+    void stopListening(); //unsubscribe;
 
     void parse(char *, int len);
     void handle_mesg(char *, int len);
     void handle_bundle(char *, int len);
     void set_mesg(OSCMesg *m, char * buf, int len );
-    
+
     OSCMesg *write()  { return _inbox + _in_write;}
     void next_write();
-    
-    OSCMesg *read()  { return _inbox + _in_read;}    
+
+    OSCMesg *read()  { return _inbox + _in_read;}
     OSCMesg *next_read();
 
 
@@ -531,7 +532,7 @@ public:
     bool get_mesg(OSCMesg* bucket);
 
     void add_address ( OSC_Address_Space * o );
-    void remove_address ( OSC_Address_Space * o ); 
+    void remove_address ( OSC_Address_Space * o );
     OSC_Address_Space * new_event ( char * spec );
     OSC_Address_Space * new_event ( char * addr, char * type );
     void distribute_message( OSCMesg * msg);
@@ -541,22 +542,22 @@ enum osc_datatype { OSC_UNTYPED, OSC_NOARGS, OSC_INT, OSC_FLOAT, OSC_STRING, OSC
 
 struct opsc_data
 {
-    osc_datatype t;    
+    osc_datatype t;
     OSCTimeTag timetag;
 
-	union {
-		int4byte i;  // gewang: changed from int
-		unsigned long u;  // gewang: changed from unsigned int
-		float f;
-	};
+    union {
+        int4byte i;  // gewang: changed from int
+        unsigned long u;  // gewang: changed from unsigned int
+        float f;
+    };
 
     char * s;
 
-    opsc_data() { 
+    opsc_data() {
         t = OSC_UNTYPED;
         s = NULL;
     }
-    ~opsc_data() { 
+    ~opsc_data() {
         s = NULL;
     }
 };
@@ -590,10 +591,10 @@ protected:
     void resizeData(int n);
     void resizeQueue(int n);
     void parseSpec();
-	void scanSpec();
+    void scanSpec();
 
 public:
-    Chuck_Object * SELF; 
+    Chuck_Object * SELF;
     Chuck_String p_str;
     OSC_Address_Space();
     OSC_Address_Space( const char * spec );

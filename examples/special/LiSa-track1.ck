@@ -54,7 +54,7 @@ loopme.play(1);
 
 // now backwards half speed
 2000::ms => e.duration;
-// close envelope
+// close envelope
 e.keyOff();
 // advance time
 2000::ms => now;

@@ -14,18 +14,12 @@ MidiMsg msg;
 // the filename
 string filename;
 // if no command line arguments provided
-if( me.args() == 0 ) me.sourceDir() + "bwv772.mid" => filename;
+if( me.args() == 0 ) me.dir() + "bwv772.mid" => filename;
 // else use that filename
 else me.arg(0) => filename;
 
-// open the file
-if( !min.open(filename) )
-{
-    // error!
-    cherr <= "unable to open MIDI file: '" <= filename <= "'\n";
-    // done
-    me.exit();
-}
+// open the file; exit on error
+if( !min.open(filename) ) me.exit();
 
 // print out 
 cherr <= "----------" <= IO.newline();

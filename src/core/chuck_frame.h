@@ -92,7 +92,7 @@ public:
     Chuck_Local * alloc_local( t_CKUINT size, const std::string & name,
        t_CKBOOL is_ref, t_CKBOOL is_obj, t_CKBOOL is_global );
     // get the current scope (added 1.3.0.0)
-    void get_scope( std::vector<Chuck_Local *> & out ) const;
+    void get_scope( std::vector<Chuck_Local *> & out, bool localOnly = true ) const;
     // pop scope
     void pop_scope( std::vector<Chuck_Local *> & out );
 };

@@ -1,3 +1,830 @@
+------------------
+ChucK VERSIONS log
+------------------
+
+1.5.0.1
+---
+* (added) examples/special/scream-o-matic/ -- using LiSa + granular
+  synthesis for a scream texture generator.
+* (updated) on Linux, better default runtime driver selection for 
+  Jack and ALSA
+* (updated/developer) makefile for linux-jack
+* (added/developer) DL Api array4 operations from chugin
+* (added/developer) ChuckArray4::contains_object() returns whether
+  array4 contains object references or integers
+
+
+1.5.0.0 (May 2023)
+---
+***************************************************************************
+* chuck-1.5.0.0 (chai)
+***************************************************************************
+* significant addition: ChAI (Chuck + AI)
+* significant update: WebChucK (ChucK in web browser) + WebChucK IDE
+* also: new features, new bug fixes, and new bugs!
+***************************************************************************
+---
+(NOTE) WebChucK (ChucK on browsers) [beta] was released during the 
+development of this version.
+
+WebChucK IDE (program chuck on the web):
+https://chuck.stanford.edu/ide/
+
+WebChucK landing page (including using WebChucK in your web projects)
+https://chuck.stanford.edu/webchuck/
+---
+(NOTE) ChAI (ChucK + AI), first appeared in beta as part of chuck-1.4.2.0;
+ChAI was used in the course Music 356 / CS 470 "Music and AI" [*] at
+Stanford University, taught by Ge Wang and Yikai Li (TA); Many thanks to
+the immensely creative students of "Music and AI". The v1.0 version of the
+ChAI API and modules is hereby released, with new additions on the way.
+
+ChAI landing page:
+https://chuck.stanford.edu/chai/
+
+"Music and AI" (Winter 2023 Stanford University) -- taught with ChAI
+https://ccrma.stanford.edu/courses/356-winter-2023/
+---
+(HISTORICAL NOTE for ChAI)
+Much of ChAI and its ways of thinking and doing can be foundationally
+attributed to the work of Dr. Rebecca Fiebrink, her landmark Ph.D. Thesis,
+/Real-time Human Interaction With Supervised Learning Algorithms for Music
+Composition and Performance/ (2011) [1], the Wekinator framework [2], her
+teaching at the intersections of AI, HCI, and Music [3], as well as earlier
+collaborations between Rebecca and Ge [4,5] including SMIRK [6] (Small Musical
+Information Retrieval toolKit; 2008; MARSYAS and the MIR work of Dr. George
+Tzanetakis; early efforts in on-the-fly learning), the unit analyzer
+framework [7] (2007; afford real-time audio feature extraction). All of
+these have directly or indirectly contributed the creation of ChAI.
+Additionally, ChAI benefitted from the teaching and design philosophy of
+Dr. Perry R. Cook (Ph.D. advisor to Rebecca, George, and Ge at Princeton,
+and ChucK co-author), who argued for real-time human interaction, parametric
+sound synthesis, and the importance of play in the design of musical tools.
+
+[1] Fiebrink, Rebecca. 2011. /Real-time Human Interaction With Supervised
+Learning Algorithms for Music Composition and Performance/ Ph.D. Thesis.
+Princeton University. https://www.cs.princeton.edu/techreports/2010/891.pdf
+[2] http://www.wekinator.org/
+Wekinator | Software for real-time, interactive machine learning
+[3] Fiebrink, Rebecca. "Machine Learning for Musicians and Artists" MOOC
+https://www.kadenze.com/courses/machine-learning-for-musicians-and-artists/info
+[4] Fiebrink, R., G. Wang, P. R. Cook. 2008. "Foundations for On-the-fly
+Learning in the ChucK Programming Language." /International Computer Music
+Conference/. https://mcd.stanford.edu/publish/files/2008-icmc-learning.pdf
+[5] Fiebrink, R., G. Wang, P. R. Cook. 2008. "Support for Music Information
+Retrieval in the ChucK Programming Language." /International Conference
+on Music Information Retrieval/ (ISMIR).
+https://mcd.stanford.edu/publish/files/2008-ismir-proto.pdf
+[6] http://smirk.cs.princeton.edu/
+sMIRk | Small Music Information Retrieval toolKit
+[7] Tzanetakis, G. and P. R. Cook. 2000 "MARSYAS: A Framework for Audio
+Analysis." Organised Sound. 4:(3)
+[8] Tzanetakis, G. and P. R. Cook. 2002 "Musical Genre Classification of
+Audio Signals." IEEE Transaction on Speech and Audio Processing. 10(5).
+[9] Wang, G., R. Fiebrink, P. R. Cook. 2007. "Combining Analysis and
+Synthesis in the ChucK Programming Language." /International Computer
+Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
+---
+- (added) Wekinator [ChAI] (thanks Rebecca Fiebrink and Yikai Li)
+    |- A Wekinator utility that maps input vectors to output vectors,
+       commonly used for interactive machine learning combining
+       human-computer interaction and ML. Based on Rebecca Fiebrink's
+       Wekinator framework.
+    |- (inheritance) Wekinator -> Object
+    -------------------
+	void add();
+	    Add current inputs and outputs to the observations.
+	void add( float[] inputs, float[] outputs );
+	    Add given inputs and outputs to the observations.
+	void add( int output_index, float[] inputs, float[] outputs );
+	    Add given inputs and outputs to the observations for the specified output.
+	void clear();
+	    Clear everything except the global properties.
+	void clearAllObs();
+	    Clear all observations.
+	void clearAllObs( int output_index );
+	    Clear all observations for the specified output.
+	void clearObs( int lo, int hi );
+	    Clear the observations by id range.
+	void clearObs( int output_index, int lo, int hi );
+	    Clear the observations by id range for the specified output.
+	void deleteLastRound();
+	    Delete the last round of observations.
+	void exportObs( string filename );
+	    Export the observations to a file.
+	void exportObs( int output_index, string filename );
+	    Export the observations for the specified output to a file.
+	int getAllRecordStatus();
+	    Get the record status for all outputs.
+	int getAllRunStatus();
+	    Get the run status for all outputs.
+	void getObs( float[][] obs );
+	    Get the observations in the Wekinator.
+	void getObs( int output_index, float[][] obs );
+	    Get the observations for the specified output in the Wekinator.
+	void getOutputProperty( int output_index, string property_name, int[] property_value );
+	    Get the output property of the Wekinator. See the Wekinator documentation for more information.
+	float getOutputPropertyFloat( int output_index, int property_type, string property_name );
+	    Get the output property of the Wekinator. See the Wekinator documentation for more information.
+	int getOutputPropertyInt( int output_index, string property_name );
+	    Get the output property of the Wekinator. See the Wekinator documentation for more information.
+	int getOutputPropertyInt( int output_index, int property_type, string property_name );
+	    Get the output property of the Wekinator. See the Wekinator documentation for more information.
+	int getOutputRecordStatus( int output_index );
+	    Get the record status for the specified output.
+	int getOutputRunStatus( int output_index );
+	    Get the run status for the specified output.
+	float getPropertyFloat( int property_type, string property_name );
+	    Get the property of the Wekinator. See the Wekinator documentation for more information.
+	int getPropertyInt( int property_type, string property_name );
+	    Get the property of the Wekinator. See the Wekinator documentation for more information.
+	int getRound();
+	    Get the current recording round.
+	void importObs( string filename );
+	    Import the observations from a file.
+	void input( float[] inputs );
+	    Set the inputs of the Wekinator.
+	int inputDims( int n );
+	    Set the number of input dimensions to Wekinator.
+	int inputDims();
+	    Get the number of input dimensions to Wekinator.
+	void load( string filename );
+	    Load the Wekinator from a file.
+	int modelType( int model_type );
+	    Set the model type of the Wekinator. Options: AI.Regression: AI.MLP, AI.LR,
+	    AI.Classification: AI.KNN, AI.SVM, AI.DT
+	int modelType();
+	    Get the model type id of the Wekinator.
+	string modelTypeName();
+	    Get the model type name of the Wekinator.
+	void nextRound();
+	    Bump the recording round.
+	int numObs();
+	    Get the number of observations in the Wekinator.
+	int numObs( int output_index );
+	    Get the number of observations for the specified output in the Wekinator.
+	void output( float[] outputs );
+	    Set the outputs of the Wekinator.
+	int outputDims( int n );
+	    Set the number of output dimensions to Wekinator.
+	int outputDims();
+	    Get the number of output dimensions to Wekinator.
+	void predict( float[] inputs, float[] outputs );
+	    Predict outputs for the given inputs.
+	void randomizeOutputs();
+	    Randomize the outputs of the Wekinator.
+	void save( string filename );
+	    Save the Wekinator to a file.
+	void setAllRecordStatus( int status );
+	    Set the record status for all outputs.
+	void setAllRunStatus( int status );
+	    Set the run status for all outputs.
+	void setOutputProperty( int output_index, string property_name, int property_value );
+	    Set the output property of the Wekinator. See the Wekinator documentation for more information.
+	void setOutputProperty( int output_index, int property_type, string property_name, int property_value );
+	    Set the output property of the Wekinator. See the Wekinator documentation for more information.
+	void setOutputProperty( int output_index, int property_type, string property_name, float property_value );
+	    Set the output property of the Wekinator. See the Wekinator documentation for more information.
+	void setOutputProperty( int output_index, string property_name, int[] property_value );
+	    Set the output property of the Wekinator. See the Wekinator documentation for more information.
+	void setOutputRecordStatus( int output_index, int status );
+	    Set the record status for the specified output.
+	void setOutputRunStatus( int output_index, int status );
+	    Set the run status for the specified output.
+	void setProperty( int property_type, string property_name, int property_value );
+	    Set the property of the Wekinator. See the Wekinator documentation for more information.
+	void setProperty( int property_type, string property_name, float property_value );
+	    Set the property of the Wekinator. See the Wekinator documentation for more information.
+	int taskType( int task_type );
+	    Set the task type of the Wekinator. Options: AI.Regression, AI.Classification
+	int taskType();
+	    Get the task type id of the Wekinator.
+	string taskTypeName();
+	    Get the task type name of the Wekinator.
+	void train();
+	    Train models for all outputs.
+- (added) new examples in ai/wekinator [ChAI]
+    |- wekinator-basic.ck -- example of basic Wekinator usage
+    |- wekinator-custom.ck -- more extensive customization for Wekinator
+    |- wekinator-import.ck -- example of importing observations from file
+- (added) MLP [ChAI] (thanks Yikai Li)
+    |- a multilayer perceptron (MLP)--a basic artificial neural 
+       network--that maps an input layer to an output layer across a 
+       number of fully-connected hidden layers. This implemention can be 
+       trained either 1) by using one of the comprehensive .train() 
+       functions OR 2) by iteratively calling .forward() and .backprop() 
+       for each input-output observation, and using .shuffle() for each 
+       epoch. Commonly used for regression or classification.
+    |- (inheritance) MLP -> Object
+    -------------
+    void backprop( float[] output, float learningRate );
+        (Manually) backpropagate from the output layer, for a single input-output
+        observation; compute the gradient of the loss function with respect to
+        the weights in the network, one layer at a time.
+    void forward( float[] input );
+        (Manually) forward-propagate the input vector through the network.
+    void getActivations( int layer, float[] activations );
+        Get the activations of the given layer, after a manual .forward().
+    void getBiases( int layer, float[] biases );
+        Get the biases of the given layer.
+    void getGradients( int layer, float[] gradients );
+        Get the gradients of the given layer, after a manual .backprop().
+    int getPropertyInt( int modelType, string key );
+        Get int property of name 'key' for the given model type (options: AI.MLP, AI.KNN, AI.SVM).
+    float getPropertyFloat( int modelType, string key );
+        Get float property of name 'key' for the given model type (options: AI.MLP, AI.KNN, AI.SVM).
+    void getWeights( int layer, float[][] weights );
+        Get the weights of the given layer.
+    void init( int[] unitsPerLayer );
+        Initialize the MLP with the given number of neurons per layer, as
+        specified in 'unitsPerLayer'.
+    void init( int[] nodesPerLayer, int[] activationPerLayer );
+        Initialize the MLP with the given number of nodes per layer and the given
+        ctivation function per layer, as specified in 'activationPerLayer'
+        (options: AI.Linear, AI.Sigmoid, AI.ReLU, AI.Tanh, or AI.Softmax).
+    void init( int[] nodesPerLayer, int activationFunction );
+        Initialize the MLP with the given number of nodes per layer and the given
+        activation function for all layers (options: AI.Linear, AI.Sigmoid, 
+        I.ReLU, AI.Tanh, or AI.Softmax).
+    int load( string filename );
+        Load a MLP model from file.
+    int predict( float[] input, float[] output );
+        Predict the output layer from an input layer.
+    void setProperty( int modelType, string key, int value );
+        Set int property of name 'key' for the given model type (options: AI.MLP, AI.KNN, AI.SVM).
+    void setProperty( int modelType, string key, float value );
+        Set float property of name 'key' for the given model type (options: AI.MLP, AI.KNN, AI.SVM).
+    int save( string filename );
+        Save the MLP model to file.
+    void train( float[][] inputs, float[][] outputs );
+        Train the MLP with the given input and output observations with default
+        learning rate=.001 and epochs=100.
+        (Also see MLP.train(inputs,outputs,learningRate,epochs).)
+    void train( float[][] inputs, float[][] outputs, float learningRate, int epochs );
+        Train the MLP with the given input and output observations, the learning
+        rate, and number of epochs.
+    static void shuffle( float[][] X, float[][] Y );
+        (Manually) shuffle the given input and output vectors.
+- (added) new examples in ai/mlp [ChAI]
+    |- mlp.ck -- example training a basic artificial neural network
+    |- mlp-manual.ck -- example of step-by-step training an MLP, printing each stage
+    |- mlp-load.ck -- loading a saved MLP model from file
+    |- mlp-save.ck -- saving the MLP model to file'
+    |- model.txt -- an example model file
+- (added) Word2Vec [ChAI] (thanks Yikai Li)
+    |- A word embeddings utility that maps words to vectors; can load a 
+       model and perform similiarity retrieval.
+    |- (inheritance) Word2Vec -> Object
+    ------------------
+    int contains( string word );
+        Query if 'word' is in the current model.
+    int dim();
+        Get number of dimensions for word embedding.
+    void getSimilar( string word, int k, string[] output );
+        Get the k most similar words to the given word.
+    void getSimilar( float[] vec, int k, string[] output );
+        Get the k most similar words to the given vector.
+    void getVector( string word, float[] output );
+        Get the vector of the given word.
+    int load( string path );
+        Load pre-trained word embedding model from the given path.
+    int load( string path, int useKDTreeDim );
+        Load pre-trained word embedding model from the given path; will use 
+        KDTree for similarity searches if the data dimension is less than 
+        or equal to 'useKDTreeDim'. Set 'useKDTreeDim' to 0 to use linear 
+        (brute force) similarity search; set 'useKDTreeDim' to less than 0 
+        to always use KDTree.
+    void minMax( float[] mins, float[] maxs );
+        Retrieve the minimums and maximums for each dimension.
+    int size();
+        Get number of words in dictionary.
+    int useKDTree();
+        Get whether a KDTree is used for similarity search.
+- (added) new examples in ai/word2vec [ChAI]
+    |- poem-i-feel.ck -- a stream of unconsciousness poem generator
+    |- poem-randomwalk.ck -- another stream of unconsciousness generator
+    |- poem-spew.ck -- yet another stream of unconsciousness generator
+    |- poem-ungenerate.ck -- interactive prompt un/de-generator
+       (need to use command line chuck)
+    |- word2vec-basic.ck -- demos load(), getVector(), getSimilar()
+    |- word2vec-prompt.ck -- command line interactive tool
+       (need to use command line chuck)
+- (added) Chroma unit analyzer (thanks Yikai Li)
+    |- A unit analyzer that computes pitch chroma
+    |- see examples/ai/features/chroma.ck
+- (added) Kurtosis unit analyzer (thanks Yikai Li)
+    |- A unit analyzer that computes kurtosis
+    |- see examples/ai/features/kurtosis.ck
+- (added) SFM unit analyzer (thanks Yikai Li)
+    |- A unit analyzer that computes spetral flatness measure
+    |- see examples/ai/features/sfm.ck
+- (moved) examples/analysis/features => examples/ai/features
+- (added) new examples in examples/ai/features
+    |- features-combined -- real-time extraction of multiple features
+    |- mfcc-basic.ck -- shows MFCC unit analyzer / feature extractor
+    |- mfcc-mean.ck -- averaged MFCC feature extraction
+    |- chroma.ck -- shows Chroma unit analyzer
+    |- kurtosis.ck -- shows Kurtosis unit analyzer
+    |- sfm.ck -- shows SFM (spectral flatness measure) unit analyzer
+- (added) PCA [ChAI] (thanks Yikai Li)
+    |- A principle component analysis (PCA) utility, commonly used
+       for dimensionality reduction.
+    |- (inheritance) PCA -> Object
+    -------------------
+    static void reduce( float[][] input, int D, float[][] output );
+        Dimension-reduce 'input' (NxM) to 'output' (NxD) as the projection
+        of the input data onto its first 'D' principle components
+- (added) example: ai/pca/pca.ck
+- (reworked) KNN [ChAI] (thanks Yikai Li)
+    |- A basic k-NN utility that searches for k nearest
+       neighbors from a set of observations / feature
+       vectors. (Also see KNN2. The differrence between KNN
+       and KNN2 is that KNN does not deal with labels whereas
+       KNN2 is designed to work with labels.)
+    |- (inheritance) KNN -> Object
+    -------------------
+    void search( float[] query, int k, int[] indices );
+        Search for the 'k' nearest neighbors of 'query' and
+        return their corresponding indices.
+    void search( float[] query, int k, int[] indices,
+                 float[][] observations );
+        Search for the 'k' nearest neighbors of 'query' and
+        return their corresponding indices and observations
+    int train( float[][] x );
+        Train the KNN model with the given observations 'x'
+    void weigh( float[] weights );
+        Set the weights for each dimension in the data.
+- (added) KNN2 [ChAI] (thanks Yikai Li)
+    |- A k-NN utility that predicts probabilities of class
+       membership based on distances from a test input to its
+       k nearest neighbors. (Also see KNN. The differrence
+       between KNN and KNN2 is that KNN does not deal with
+       labels whereas KNN2 is designed to work with labels.)
+    |- (inheritance) KNN2 -> Object
+    -------------------
+    int predict( float[] query, int k, float[] prob );
+        Predict the output probabilities 'prob' given unlabeled test
+        input 'query' based on distances to 'k' nearest neighbors.
+    void search( float[] query, int k, int[] labels );
+        Search for the 'k' nearest neighbors of 'query' and return
+        their labels.
+    void search( float[] query, int k, int[] labels, int[] indices );
+        Search for the 'k' nearest neighbors of 'query' and return
+        their labels and indices.
+    void search( float[] query, int k, int[] labels, int[] indices,
+                 float[][] observations);
+        Search for the 'k' nearest neighbors of 'query' and return
+        their labels, indices, and observations.
+    int train( float[][] x, int[] labels );
+        Train the KNN model with the given samples 'x' and
+        corresponding labels.
+    void weigh( float[] weights );
+        Set the weights for each dimension in the data.
+- (renamed) unit analyzer pilF is now UnFlip; pilF deprecated
+- (added) example: ai/knn/knn-search.ck
+- (added) example: ai/knn/knn2-classify.ck
+- (added) example: ai/knn/knn2-search.ck
+    --------------
+- (updated) real-time audio backend has been updated
+            *** thank you Dana Batali ***
+- (added) all platform: driver support
+- (added) Windows: ASIO, WASAPI, DirectSound
+- (added) linux: now can build multiple drivers into single executable
+          > make linux-pulse linux-alsa linux-jack
+- (fixed) macOS bluetooth/Apple AirPods audio input device error;
+    |- CONTEXT: Apple AirPods (and a number of other Bluetooth headphones) 
+    show up in macOS as its own audio input device and supports only one 
+    sample rate (24K in the case of AirPods). ChucK, like most full-duplex 
+    audio software, requires matching sample rates for audio input and 
+    output. By default, it would try to initialize with a sample rate of 
+    44.1K or 48K and would fail initialization due to the rate mismatch 
+    with the AirPods.
+    |- FIX: ChucK now has additional logic when initializing default audio 
+    devices, and will automatically try to match with a different input 
+    devices when needed.
+- (fixed) VM timing issue when real-time audio initialization switches to 
+    a different sample rate when the requested/default sample rate is not
+    available
+- (added) new default duration 'eon' == day * 365.256363004 * 1000000000.0 (thanks nshaheed)
+    example: eon => now; // a long long time from now
+- (added) new static method for all Objects
+      Type Object.typeOf()
+          Get the type of this object (or class).
+- (added) new Type type
+    |- A representation of a ChucK type.
+    |- (inheritance) Type -> Object
+    --------------
+    int arrayDepth();
+        Return the number of array dimensions associated with this Type (e.g., 'int[][]' has 2; 'int' has 0).
+    Type[] children();
+        Retrieve this Type's children Types.
+    int equals( Type another );
+        Return whether this Type is same as 'another'.
+    int isArray();
+        Return whether this Type is some kind of an array.
+    int isPrimitive();
+        Return whether this is a primitive Type (e.g., 'int' and 'dur' are primitives types; 'Object' and its children Types are not).
+    int isa( Type another );
+        Return whether this Type is a kind of 'another'.
+    int isa( string another );
+        Return whether this Type is a kind of 'another'.
+    string name();
+        Return the name of this Type.
+    string baseName();
+        Return the base name of this Type. The base of name of an array Type is the type without the array dimensions (e.g., base name of 'int[][]' is 'int')
+    string origin();
+        Return a string decribing where this Type was defined (e.g., "builtin", "chugin", "cklib", "user").
+    Type parent();
+        Return this Type's parent Type; returns null if this Type is 'Object'.
+    static Type find( string typeName );
+        Find and return the Type associated with 'typeName'; returns null if no Types currently in the VM with that name.
+    static Type[] getTypes( int attributes, int origins );
+        Retrieve all top-level Types in the ChucK runtime type system that fit the attributes and origins flags. Flags that can bitwise-OR'ed for attributes: Type.ATTRIB_OBJECT, Type.ATTRIB_PRIMITIVE,  TYPE_SPECIAL -- and for origins: Type.ORIGIN_BUILTIN, Type.ORIGIN_CHUGIN, Type.ORIGIN_CKLIB, Type.ORIGIN_USER.
+    static Type[] getTypes();
+        Retrieves all top-level Types currently in the type system.
+    static Type of( Object obj );
+        Return the Type of 'obj'
+    static Type of( int val );
+        Return the Type associated with 'int'.
+    static Type of( float val );
+        Return the Type associated with 'float'.
+    static Type of( time val );
+        Return the Type associated with 'time'.
+    static Type of( dur val );
+        Return the Type associated with 'dur'.
+    static Type of( complex val );
+        Return the Type associated with 'complex'.
+    static Type of( polar val );
+        Return the Type associated with 'polar'.
+    static Type of( vec3 val );
+        Return the Type associated with 'vec3'.
+    static Type of( vec4 val );
+        Return the Type associated with 'vec4'.
+    --------------
+    static int ATTRIB_OBJECT;
+        Attribute bit for non-primitive Object types.
+    static int ATTRIB_PRIMITIVE;
+        Attribute bit for primitive types.
+    static int ATTRIB_SPECIAL;
+        Attribute bit for special types (e.g., @array and @function).
+    static int ORIGIN_BUILTIN;
+        Origin bit for "builtin".
+    static int ORIGIN_CHUGIN;
+        Origin bit for "chugin".
+    static int ORIGIN_CKLIB;
+        Origin bit for "cklib".
+    static int ORIGIN_USER;
+        Origin bit for "user".
+- (added) new examples in examples/type
+    |- polymorph.ck -- an example of polymorphism in ChucK
+    |- type_query.ck -- querying for a list of types from the ChucK runtime type system
+    |- type_type.ck -- example showing some functionalities of the Type type
+    ---------------
+- (added) new CKDoc class
+    |- A ChucK documentation generator. Based on Spencer Salazar's ckdoc utility.
+    |- (inheritance) CKDoc -> Object
+    ---------------
+    void addGroup( Type[] types, string name, string shortName, string description );
+        Add a group of types to be documented, including group 'name', a 'shortName' to be used for any files, and a group 'description'.
+    void addGroup( string[] typeNames, string name, string shortName, string description );
+        Add a group of types (by type name) to be documented, including group 'name', a 'shortName' to be used for any files, and a group 'description'.
+    void clear();
+        Clear all added groups.
+    string examplesRoot( string path );
+        Set the examples directory root path; returns what was set.
+    string examplesRoot();
+        Get the current examples directory root path.
+    string genCSS();
+        Generate CSS; return as string.
+    void genGroups( string[] results );
+        Generate documentation for all added groups, return each in a separate entry
+    string genIndex( string indexTitle );
+        Generate top-level index; return as string.
+    string genType( Type type );
+        Generate documentation for a single Type.
+    string genType( string typeName );
+        Generate documentation for a single Type (by name).
+    int numGroups();
+        Get the number of groups added.
+    int outputFormat( int which );
+        Set which output format to use; see CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON.
+    int outputFormat();
+        Set which output format is selected; see CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON.
+    int outputToDir( string path, string indexTitle );
+        Generate everything as files into the output directory.
+    static int HTML;
+        Output HTML format.
+    static int JSON;
+        Output JSON format (not implemented).
+    static int MARKDOWN;
+        Output MARKDOWN format (not implemented).
+    static int NONE;
+        No output format.
+    static int TEXT;
+        Output TEXT format (not implemented).
+    ---------------
+- (added/updated) now ChucK API reference documentation is generated from
+    the type system using CKDoc, ensuring alignment between documention
+    and type system.
+- (added) array.zero()
+    |- zero out the contents of the array; size is unchanged.
+- (added) negative indexing for arrays (thanks nshaheed)
+    |- [1,2,3,4] @=> int a[]; a[-1]; // evaluates to 4
+- (added) array.shuffle()
+    |- shuffle the contents of the array.
+- (added) example: array/array_negative.ck
+- (added) example: array/array_shuffle.ck
+- (added) example: array/array_zero.ck
+- (updated) LiSa (all channel variants) internal restructure to allow
+    for more flexible usage patterns | also # voices defaults to 16
+- (added) example: special/LiSa-stereo.ck
+- (added) Math functions
+    float map( float value, float x1, float y1,
+                            float x2, float y2 );
+        Map 'value' from range [x1,y1] into range [x2,y2]; 'value'
+        can be outside range[x1,y1].
+    float map2( float value, float x1, float y1,
+                             float x2, float y2 );
+        Map 'value' from range [x1,y1] into range [x2,y2]; 'value'
+        will be clamped to [x1,y1] if outside range.
+        (Math.remap() is the same as Math.map2())
+    float clampi( int value, int min, int max );
+        Clamp integer 'value' to range [min, max].
+    float clampf( float value, float min, float max );
+        Clamp float 'value' to range [min, max].
+    float cossim( float[] a[], float[] b[] );
+        Compute the cosine similarity between arrays a and b.
+    float cossim( vec3 a, vec3 b );
+        Compute the cosine similarity between 3D vectors a and b.
+    float cossim( vec4 a, vec4 b );
+        Compute the cosine similarity between 4D vectors a and b.
+    float euclidean( float[] a[], float[] b[] );
+        Compute the euclidean distance between arrays a and b.
+    float euclidean( vec3 a, vec3 b );
+        Compute the euclidean distance between 3D vectors a and b.
+    float euclidean( vec4 a, vec4 b );
+        Compute the euclidean distance between 4D vectors a and b.
+- (added) examples/math
+    |- map.ck -- shows mapping using Math.map() and Math.map2()
+    |- math-help.ck -- just prints Math API using Math.help();
+- (added) Machine functions
+    int eval( string code );
+        Evaluate a string as ChucK code, compiling it and spork it as a child 
+        shred of the current shred.
+    int eval( string code, string args );
+        Evaluate a string as ChucK code, with optional arguments (bundled in 
+        'args' as "ARG1:ARG2:...", compiling it and spork it as a child shred of 
+        the current shred.
+    int eval( string code, string args, int count );
+        Evaluate a string as ChucK code, with optional arguments (bundled in 
+        'args' as "ARG1:ARG2:...", compiling it and sporking 'count' instances as 
+        a child shreds of the current shred.
+    int loglevel( int level );
+        Set log level
+          |- 0: NONE
+          |- 1: CORE
+          |- 2: SYSTEM
+          |- 3: SEVERE
+          |- 4: WARNING
+          |- 5: INFO
+          |- 6: CONFIG
+          |- 7: FINE
+          |- 8: FINER
+          |- 9: FINEST
+          |- 10: ALL
+    static int loglevel();
+        Get log level
+- (added) examples in machine
+    |- eval.ck -- demonstrate Machine.eval(), noting its behavior wrt 
+       to schreduler
+- (modified) MFCC -- added (back) a missing and crucial log10() to
+    to the MFCC computation and updated implementation; output
+    range magnitudes now in the hundreds
+- (enhanced) overloaded functions with non-matching return types now
+    provide additional information in the compiler error message
+- (fixed) overloaded functions with identical arguments now will
+    correctly result in a compiler error
+- (fixed) attempting to assign to reserved/const values (e.g., 'day')
+    now will correctly result in a compiler error
+- (fixed, hopefully) no more LPF and HPF filter explosion for small 
+    values of .freq (<.2), large values of .freq (>Nyquist frequency), 
+    or Q < 1 with high frequency below Nyquist; now LPF.freq and HPF .Q 
+    are internally clamped to values between [1,SRATE/2];
+- (fixed) SndBuf crash in cases where file size is integer multiple
+    of .chunks and .chunks > 0 and reaching the end of the file
+- (fixed) SndBuf.valueAt(n) for n == file size in samples now returns 0;
+    previously this special case returned .valueAt(n-1) 
+- (fixed) SndBuf assertation failure if SndBuf.chunks was set AFTER
+    loading a file; now .chunks will ONLY take effect for the next
+    SndBuf.read
+- (renamed) int LiSa.loop0(int) and int LiSa.loop0(); previously these
+    were incorrectly overloaded as "loop()" and was unavailable
+- (fixed) FileIO.seek() previously fails if EOF is reached in reading
+    a file; FileIO.seek() now functions after EOF is reached.
+- (fixed) FileIO.more() now looks ahead for EOF
+- (updated) all cherr prints now flushes immediately
+- (updated) IO.newline() or a solitary "\n" now automatically flushes
+    chout
+- (added) examples in examples/io
+     |- read-byte.ck -- reading raw bytes from file in binary mode
+     |- read-float.ck -- reading floats from file (in ASCII mode)
+     |- seek.ck -- shows FileIO.seek usage for rewind a file read
+     |- write-byte.ck -- writing raw bytes to file in binary mode
+- (added) examples in examples/events
+     |- event-x-bpm-1.ck -- example using custom Events to synchronize
+        multiple shreds to a common clock
+     |- event-x-bpm-2.ck -- same as event-x-bpm-2.ck but using arrays
+- (added) absyn tree printing for instruction dumping abysn2str()
+- (added) Machine.refcount() and refcount printing for object references
+- (fixed) Stk WvIn, WvOut, and VoicForm handling of chuck strings, 
+    addressing related instability and averting potential crashes
+- (fixed) Stk WvOut for MAT (MATLAB) format; previously closing a
+    MAT file in WvOut results in an assertation failure; this has been
+    addressed.
+- (fixed) WvOut and WaveLoop playback for non-16bit data formats;
+    previously was normalizing to 16-bit signed int, regardless of
+    data format
+- (updated and fixed) memory system upgrade (part 1); scope-sensitive
+    cleanup for each return statement; clarified reference counting
+    semantics; function argument release for builtin functions; improved
+    post-function call object cleanup; auto-reference-increment on
+    returned objects from all builtin/imported functions;
+- (updated) built-in abstract classes FM, StkInstrmnt, BLT, and
+    FilterBasic, when used directly, issues a WARNING level log
+    message in their respective synthesis tick functions (set log
+    level in chuck or miniAudicle to WARNING or higher to enable
+    printing), and allows program to procede silently. (Example that
+    previously crashed: 'FM fm => dac; 1::second => now;')
+- (developer) Chugin API clients in C++ now able to create
+    strings and access member variables (thanks Nick Shaheed!)
+- (developer) Chugin API query now able to add examples using
+    QUERY->add_ex(...)
+
+
+01.4.2.0 (January 2023)
+---
+(NOTE) chuck-1.4.2.0 marks a beginning (in BETA) of chAI => ChucK for AI 
+-- a set of functionalities for interactive machine learning and artful, 
+humanistic design of music and artificial intelligence; it coincides with 
+the new "Music and AI" course at Stanford University, designed and taught 
+by Ge Wang with Ph.D. candidate Yikai Li.
+
+---
+  - (added) MFCC unit analyzer (thanks Yikai Li)
+        |- A unit analyzer that computes Mel-frequency Cepstral Coefficients
+           (MFCCs), and outputs a vector of coefficients.
+        |- (inheritance) MFCC -> UAna -> UGen -> Object
+  - (added) examples: analysis/features/mfcc.ck
+  - (added) all associative arrays now have a new method [thanks nshaheed]
+        void getKeys( string[] keys );
+        Return all keys found in associative array in keys
+  - (added) Machine.realtime(): "return true if the shred is in realtime 
+        mode, false if it's in silent mode (i.e. --silent is enabled)"
+        -- thanks nshaheed --
+  - (added) Machine.silent(): "return false if the shred is in realtime 
+        mode, true if it's in silent mode (i.e. --silent is enabled)"
+        -- thanks nshaheed --
+  - (fixed) .help() now more accurately prints ("unit analyzer")
+    for UAna types
+  - (fixed) multi-variable array declaration; the following should
+    now work:
+        int x[1], y[2];
+        int x, y[3];
+  - (fixed) resolved an issue with multi-dimensional arrays pre-maturely
+    releasing internal type data structure -- e.g., causing an assertion 
+    failure in the second function call
+        fun void test()
+        {
+            [ [1,2,3], [1,2,3] ] @=> int arr[][];
+        }
+        test();
+        test();
+  - (fixed) internal array storage now (more) correctly differentiate
+    between int and float, on systems where the two are the same size
+    (e.g., both 32-bit or both 64-bit)
+  - (fixed) command line chuck: when opening default input audio device
+        (e.g., Microphone), check for mono devices (the case on some MacOS
+        systems) now happens earlier, before searching other 2-channel input
+        audio devices; this preempts chuck using virtual audio input devices
+        such as ZoomAudioDevice as the input device
+  - (dev) added test examples in 01-Basic related to multi-var array
+    declarations
+  - (dev) extraneous white spaces removed throughout src/core
+    ** thank you nshaheed for this soul-restoring measure **
+  - (dev) all tabs replaced with 4 spaces, now consistent across project
+    ** thank you nshaheed for this soul-restoring measure **
+  - (dev) nshaheed: linux makefiles now correctly inserts Debug (-g)
+    build flag when Debug build is enabled (default builds for Release)
+-----------------------
+(BETA) chAI-related additions: please note this is in Beta, meaning that 
+APIs may change in the near future; many additions are in the works
+-----------------------
+  - (added) SVM object (thanks Yikai Li)
+        |- a support vector machine (SVM) utility trains a model and 
+           predicts output based on new input
+        |- (inheritance) SVM -> Object
+        |- methods:
+           int predict( float[] x, float[] y );
+               Predict the output 'y' given the input 'x'.
+           int train( float[][] x, float[][] y );
+               Train the SVM model with the given samples 'x' and 'y'.
+  - (added) KNN object (thanks Yikai Li)
+        |- A k-nearest neighbor (KNN) utility that predicts the output of 
+           a given input based on the training data
+        |- (inheritance) KNN -> Object
+        |- methods:
+           int predict( int k, float[] x, float[] prob );
+               Predict the output probabilities (in 'prob') given new input
+               'x' based on 'k' nearing neighbors.
+           int train( float[][] x, int[] y );
+               Train the KNN model with the given samples 'x' and 
+           corresponding labels 'y'.
+  - (added) HMM object (thanks Yikai Li)
+        |- A hidden markov model (HMM) utility that generates a sequence 
+           of observations based on the training data
+        |- (inheritance) SVM -> Object
+        |- methods:
+           int load( float[] initiailDistribution,
+                     float[][] transitionMatrix, 
+                     float[][] emissionMatrix );
+               Initialize the HMM model with the given initial state 
+               distribution, transition matrix, and emission matrix.
+           int train( int numStates, int numEmissions,
+               int[] observations );
+           Train the HMM model with the given observations.
+           int generate( int length, int[] output );
+               Generate a sequence of observations of the given length.
+  - (added) basic usage examples in examples/ai/ folder
+        |- also can use the built-in help() function
+           KNN.help(); // this will print KNN type info and API
+           SVM.help(); // this will print SVM type info and API
+           HMM.help(); // this will print HMM type info and API
+-----------------------
+(BETA) end chAI additions
+-----------------------
+    
+
+1.4.1.1 (May 2022)
+---
+  - (added) native support for Apple Silicon (e.g., M1) as intel/apple 
+    universal binary; *significant* performance throughput observed
+    running chuck natively on Apple Silicon
+  - (modified) building from source, on MacOS command line:
+        > make mac (compile for current architecture: arm64/x86_64)
+        > make mac-ub (compile universal binary: arm64+x86_64)
+        > lipo -archs ./chuck (checks architectures)
+        > ./chuck --about (prints out compiled platform...
+          ...and if compiled as universal binary):
+          ---
+          chuck version: 1.4.1.1 (numchucks)
+          macOS : 64-bit [universal binary]
+          ---
+        > make osx (deprecated; use 'make mac' or 'make mac-ub')
+  - (updated, pre-built executables, MacOS) both command line chuck and
+    miniAudicle are now built as universal binaries to support both
+    intel(x86_64) and Apple silicion/M1(arm64) architectures
+  - (updated, pre-built executables, MacOS) all packaged chugins are
+    now also built as universal binaries
+  - (added) Math.equal( float x, float y )
+    returns whether two floats are considered equivalent
+  - (added) array.popOut( int index )
+    removes an array element by index [thanks chamington and nshaheed]
+  - (added) OscOut.send() error reporting now includes the intended
+    recipient (hostname:port)
+  - (added) examples/hid/gametra.ck
+    boilerplate gametrak code
+  - (moved) examples/osc/1-send-recv/
+    moved s.ck and r.ck (sender and receiver) examples here
+  - (added) examples/osc/2-multi-msg/
+    examples for interleaving two OSC message types at different rates
+  - (added) examples/osc/3-one2many/
+    examples showing one sender to many receivers
+  - (added) examples/osc/4-multicast/
+    examples showing one sender using multicast to broadcast
+  - (added) examples/stk/hevymetl-dance-now.ck
+    example of power chords in sequence
+  - (fixed) fixed Lisa-load.ck to correct load sound file [thanks nshaheed]
+  - (fixed) CK_STDCERR now flushes on all output
+  - (fixed) error message display for MidiFileIn (STK)
+  - (fixed) array literal assignment now works as expected when
+    common ancestor type is child type of the RHS type; [thanks nshaheed]
+    --- for example ---
+    [ new SinOsc ] @=> Osc arr[]; // previously this results in a
+                                  // incompatible type error, although
+                                  // Osc is a superclass SinOsc
+    -------------------
+  - (continuous integration) --  updated to use 'make mac'
+  - (test) -- modified 01-Basic/86.ck; disabled 87.ck due to 
+    Math.isnan() behaving differently on Apple Silicon;
+    modified 03-Modules/std01.ck to handled floating point equivalence
+    differently; also prompted adding Math.equal(); modified
+    05-Global/86.ck to disable Math.isnan()
+  - (updated, internal) integer types update for smoother Windows 64 bit
+  - (noted) synchronization point for Chunity version x.x.x
+  - (added) added to VERSIONS (this file) release dates since initial
+    release in 2004
+
+
 1.4.1.0 (June 2021)
 ---
 (NOTE) chuck-1.4.1.0 is the first significant release resulting from a 
@@ -165,7 +992,8 @@ contributed. Happy ChucKing!
   - (internal/development) Thanks to Mark Cerqueira -- migrated from old
     Travis CI (continuous integration testing) to GHA (GitHub Actions).
 
-1.4.0.1
+
+1.4.0.1 (May 2020)
 ---
   - (fixed) when opening audio input devices where the default
     device has insufficient chanels (e.g., MacOS input is mono
@@ -193,7 +1021,8 @@ contributed. Happy ChucKing!
   - (developer) refactored code to move I/O-related code out of
     chuck_lang and into chuck_io.
 
-1.4.0.0
+
+1.4.0.0 (February 2018)
 ---
   ********************************************************
   * NOTE: 1.4.0.0 is a simultaneous release with 1.3.6.0;*
@@ -233,9 +1062,11 @@ contributed. Happy ChucKing!
               - DL_Query stores a reference to compiler
   - (internal) refactored all print statements to use new macros
 
-1.3.6.0
+
+1.3.6.0 (February 2018)
 ---
   - (see 1.4.0.0)
+
 
 1.3.5.3 (unreleased; rolled into 1.4.0.0)
 ---
@@ -251,11 +1082,12 @@ contributed. Happy ChucKing!
   - (fixed) repeat statement now worked correctly for shreds
   - (fixed) crash with --adaptive:N and ugens that used tickf e.g. WvOut2
   - (fixed) SndBuf occasional crash at end of file
-  - (fixed)(Win) install issue where chugins and/or example files were missing
+  - (fixed) (windows) install issue where chugins and/or example files were missing
   - (removed) --blocking functionality; callback only for real-time audio
   - (internal) refactored VM to be more friendly for integration
 
-1.3.5.2
+
+1.3.5.2 (October 2015)
 ---
   - (added) default root path changed from /usr to /usr/local
             (fixes issues in Mac OS X 10.11 "El Capitan")
@@ -276,7 +1108,8 @@ contributed. Happy ChucKing!
   - (fixed) crash fix for array => ugen
   - (fixed) fix OscOut send failure for programs that also use OscIn
 
-1.3.5.1
+
+1.3.5.1 (April 2015)
 ---
   - (added) new ChuGins
             - PowerADSR
@@ -292,7 +1125,8 @@ contributed. Happy ChucKing!
             - full-duplex IO
             - general lag issues
 
-1.3.5.0
+
+1.3.5.0 (December 2014)
 ---
   - (added) new functions in Std
             - int Std.clamp(int v, int min, int max)
@@ -327,7 +1161,8 @@ contributed. Happy ChucKing!
   - (fixed) better error messages for OscIn/OscOut
   - (fixed) rare threading bug for OTF commands
 
-1.3.4.0
+
+1.3.4.0 (April 2014)
 ---
   - (added) chuck operator connects between arrays of ugens, multi-channel 
             ugens, and mono unit ugens
@@ -396,14 +1231,16 @@ contributed. Happy ChucKing!
               harmonic ripples
   - (fixed) ChucK Shell fixes
 
-1.3.3.0
+
+1.3.3.0 (November 2013)
 ---
   - (added) PulseAudio support (via RtAudio)  
   - (fixed) relative path resolution for me.path() and me.dir()
   - (fixed) C:/ style pathnames do not trigger spurious argument processing
   - (fixed) MidiFileIn on Windows/Linux
 
-1.3.2.0
+
+1.3.2.0 (September 2013)
 ---
   - (added) --clear.vm flag
             instructs remote VM to remove all shreds and clear public user types
@@ -545,12 +1382,14 @@ contributed. Happy ChucKing!
   - (fixed) crash in Mandolin destructor
   - (fixed) ADSR correctly initialized in "DONE" state
 
-1.3.1.3
+
+1.3.1.3 (September 2012)
 ---
   - (fixed) number in --dac:<N> flag is no longer off by one (this bug
             was introduced in 1.3.1.2)
 
-1.3.1.2
+
+1.3.1.2 (September 2012)
 ---
   - (added) chuck now automatically detects and uses next highest
             or closest (in that order) system sample rate in   
@@ -569,7 +1408,8 @@ contributed. Happy ChucKing!
   - (fixed) opening real-time audio with 0 input channels should
             now work, once again.
 
-1.3.1.1
+
+1.3.1.1 (September 2012)
 ---
   - (fixed) critical bug since 1.3 where member function calls in
             loop conditionals caused crashes when the loop body
@@ -586,8 +1426,9 @@ contributed. Happy ChucKing!
             and '/' in aboslute paths (previously only '\\').
             (thanks to Graham Coleman for finding this!)
 
+
+1.3.1.0 (September 2012)
 ---
-1.3.1.0
   - (added) 64-bit support for all platforms (OS X, Linux, Windows)
             many thanks to Paul Brossier, Stephen Sinclair, 
             Robin Haberkorn, Michael Wilson, Kassen, and 
@@ -627,18 +1468,21 @@ contributed. Happy ChucKing!
             (see 'added' above; Std.rand*() still there, but to be 
             deprecated; please use Math.random*() moving forward)
 
+
+1.3.0.2 (August 2012)
 ---
-1.3.0.2
   - (fixed) string literal reference counting
   - (fixed) chuck to function call reference counting
 
+
+1.3.0.1 (August 2012)
 ---
-1.3.0.1
   - (fixed) WvOut no longer only record silence
   - (fixed) WvOut.closeFile() does not cause the VM to hang
 
+
+1.3.0.0 (August 2012)
 ---
-1.3.0.0
   - (added) Chugins: dynamically loaded compiled classes/ugens
             see http://chuck.stanford.edu/extend/ for examples. 
   - (added) new command line options
@@ -680,8 +1524,9 @@ contributed. Happy ChucKing!
   - (fixed) crash when HID events are sent to an exited shred
   - (fixed) destructors for built-in objects are executed
 
+
+1.2.1.3 (October 2009)
 ---
-1.2.1.3
   - (added) initial/experimental support for file I/O (finally)
             (thanks to Andrew Schran, Martin Robinson)
   - (added) new class: IO, FileIO
@@ -721,8 +1566,8 @@ contributed. Happy ChucKing!
   - (fixed) complilation on OS X Snow Leopard
 
 
+1.2.1.2 (July 2008)
 ---
-1.2.1.2
   - (added) dynamic, resizable arrays
                 .size( int ) resizes array; .size() returns current size()
                 << operator appends new elements into array
@@ -779,8 +1624,8 @@ contributed. Happy ChucKing!
   - (fixed) typos in ugen_xxx.cpp and chuck-specific rtaudio.cpp (/moudi)
 
 
+1.2.1.1 (October 2007)
 ---
-1.2.1.1
   - (fixed) ctrl-c no longer causes crash on shutdown
             (was due to memory deallocation bug)
   - (fixed) incorrect code generation for multiple expressions in 3rd clause 
@@ -789,8 +1634,8 @@ contributed. Happy ChucKing!
             kijjaz, and others on electro-music!)
             
 
+1.2.1.0 (codename: spectral, August 2007)
 ---
-1.2.1.0 : codename spectral
   - (added) Unit Analyzers (UAna: prounced U-Wanna, plural UAnae)
               (primary creators: Rebecca and Ge)
             provides support for spectral processing, 
@@ -866,11 +1711,13 @@ contributed. Happy ChucKing!
   - (changed) default frequencies (220/440) added for various STK instruments
 
 
+---
 (there is no version 1.2.0.9!)
 ---
 
+
+1.2.0.8 (March 2007)
 ---
-1.2.0.8
   - (added) command line argument support
             e.g. %> chuck foo.ck:1:hello bar:2.5:"with space"
                  also works with OTF commands
@@ -981,8 +1828,8 @@ contributed. Happy ChucKing!
   - (fixed) variables must be declared before being used
 
 
+1.2.0.7b (October 2006)
 ---
-1.2.0.7b
   - added: (all) HidIn.name() now returns meaningful device name
   - fixed: (all) fixed STK Envelope bug
   - fixed: (osx) mouse motion now correctly returns delta Y
@@ -993,8 +1840,8 @@ contributed. Happy ChucKing!
            string message specification
 
 
+1.2.0.7 (October 2006)
 ---
-1.2.0.7
   - (api) deprecated --> new classes
     --------------------------
        sinosc  -->  SinOsc
@@ -1064,8 +1911,8 @@ contributed. Happy ChucKing!
   - (fixed) ADSR now correctly inherits Envelope
 
 
+1.2.0.6 (more, August 2006))
 ---
-1.2.0.6 (more)
   - (added) support for Mac OS X universal binary
   - (added) executable now reports targets:
 
@@ -1075,8 +1922,8 @@ contributed. Happy ChucKing!
        exe target: mac os x : universal binary
        http://chuck.cs.princeton.edu/
 
+1.2.0.6 (August 2006)
 ---
-1.2.0.6
   - (added) support for Mac OS X on Intel: (make osx-intel)
   - (added) win32 - boost thread priority default from 0 to 5
   - (added) Mandolin.bodyIR( string path ): set body impulse response
@@ -1103,14 +1950,14 @@ contributed. Happy ChucKing!
   - (fixed) STK Mandolin.damping( float f ) changed
 
 
+1.2.0.5b (April 2006)
 ---
-1.2.0.5b
   - (fixed) adc bug
   - (fixed) %=> bug
 
 
+1.2.0.5 (April 2006)
 ---
-1.2.0.5
   - (added) multi-channel audio
             - use --channels<N> or -c<N> set number of channels
               for both input and output
@@ -1218,8 +2065,8 @@ contributed. Happy ChucKing!
   - (fixed) syntax error causing syntax errors
 
 
+1.2.0.4 (December 2005)
 ---
-1.2.0.4
   - (added) The ChucK Manual (pdf)
             fantastic work by Adam Tindale and other documentors
             see doc/Chuck_manual.pdf
@@ -1255,8 +2102,8 @@ contributed. Happy ChucKing!
   - (fixed) CK_LOG_SYSTEM_ERROR now CK_LOG_CORE
 
 
+1.2.0.3 (October 2005)
 ---
-1.2.0.3
   (API changes again)
   (syntax change - 'loop' -> 'repeat')
   - loop( ... ) construct (see 1.2.0.2) changed to repeat( ... )
@@ -1280,8 +2127,8 @@ contributed. Happy ChucKing!
   - (changed) examples/stk/wurley.ck (wacky version)
 
 
+1.2.0.2 (2005.10.17)
 ---
-1.2.0.2 - 2005.10.17
   (sorry for the API changes)
   - (API change) OSC_Send class name changed to 'OscSend'
       (also): .startMesg(...) name changed to startMsg(...)
@@ -1338,8 +2185,8 @@ contributed. Happy ChucKing!
   - (fixed) examples/stk/*-o-matic.ck now uses array
 
 
+1.2.0.1 (2005.9.27)
 ---
-1.2.0.1 - 2005.9.27
   - (added) full callback capability for real-time audio
     - blocking functionality still available
     - select via flags: --blocking and --callback
@@ -1361,9 +2208,8 @@ contributed. Happy ChucKing!
   - (added) string operations <, <=, >, >=
 
 
+1.2.0.0 (August 2005)
 ---
-1.2.0.0
-
   SYNTAX and OPERATORS:
   - (added) +=>, operator : 2 +=> i; (also) -=>, *=>, /=>, %=>
   - (added) @=> for explicit assignment
@@ -1466,20 +2312,20 @@ contributed. Happy ChucKing!
   - (added) stereo ugen: mix2 mix stereo input into mono
 
 
+1.1.5.6 (2005.4.11)
 ---
-1.1.5.6 - 2005.4.11
   - last 1.1 release : contains all 1.1 changes
 
 
+1.1.5.5 (2005.2.10)
 ---
-1.1.5.5 - 2005.2.10
   - FIFO to RR for audio and synthesis - improves stability on OS X
   - fixed stack underflow emitter bug with declarations
   - fixed cpu sleep bug on win32
 
 
+1.1.5.4 (2004.11.18)
 ---
-1.1.5.4 - 2004.11.18
   - fixed clicks when using adc unit generator
     (thanks to paul botelho for testing)
   - added 'maybe' keyword
@@ -1495,8 +2341,8 @@ adc examples work better:
   - i-robot.ck
 
 
+1.1.5.3 (2004.11.4)
 ---
-1.1.5.3 - 2004.11.4
   - when a shred is removed from VM, all children shreds are 
     also recursively removed
     (this fix crash due to removing shreds with active children shreds)
@@ -1509,14 +2355,14 @@ updated examples:
   - spork.ck : added infinite time loop to keep children active
 
 
+1.1.5.2 (2004.10.17)
 ---
-1.1.5.2 - 2004.10.17
   - crtical patch shreduler time precision
   - same as 1.1.5.1 - see below
 
 
+1.1.5.1 (2004.10.15)
 ---
-1.1.5.1 - 2004.10.15
   - on-the-fly chuck files to remote hosts!
     > chuck @hostname + foo.ck
     > chuck @hostname -p<N> + foo.ck
@@ -1546,8 +2392,8 @@ new examples:
       (remove, replace and add your own)
 
 
+1.1.5.0 (2004.9.29)
 ---
-1.1.5.0 - 2004.9.29
   - now able to write audio files (wav, aiff, raw)
     (try rec.ck and rec2.ck concurrently with any other shreds
      to record to disk)
@@ -1572,8 +2418,8 @@ new examples:
     for sessions
 
 
+1.1.4.9 (2004.9.18)
 ---
-1.1.4.9 - 2004.9.18
   - all of STK is now in ChucK!
   - new examples (see below)
   - add '--bufnum<N>' to chuck command line (number of buffers)
@@ -1603,8 +2449,8 @@ new examples:
   stifkarp.ck - stifkarp, chaos
 
 
+1.1.4.8 (2004.9.8)
 ---
-1.1.4.8 - 2004.9.8
   - added win32 visual studio support (chuck_win32.*)
   - new oscillators (see below, thanks to Phil)
   - corrected more issues on some 64-bit systems
@@ -1626,16 +2472,17 @@ new examples:
   (you can still do FM "by hand" - see fmsynth.ck)
 
 
+1.1.4.7 (2004.9.4)
 ---
-1.1.4.7 - 2004.9.4
   - improved performance (reduce cpu overhead)
   - fixed bug that caused crash on ctrl-c
   - added sndbuf.play (same as rate)
   - corrected issues on some 64-bit systems
   - sndbuf.ck now works
 
+
+1.1.4.6 (2004.8.26)
 ---
-1.1.4.6 - 2004.8.26
   - added netin/netout unit generators (alpha version)
   - added a lot of STK unit generators (thanks to philipd)
     (over 80% of STK is now imported)
@@ -1673,8 +2520,8 @@ new examples:
   - net_bounce.ck - redirect
 
 
+1.1.4.5 (2004.8.14)
 ---
-1.1.4.5 - 2004.8.14
   - fixed bug for multiple declarations
   - made functions local to shred by default
   - shadowing now works
@@ -1702,8 +2549,9 @@ new examples:
   - voic-o-form.ck (music for replicants)
   - rhodey/wurley.ck (more stk-o-matics)
 
+
+1.1.4.4 (2004.8.2)
 ---
-1.1.4.4 - 2004.8.2
   - added sndfile patch for jack/sndfile (Martin Rumori)
   - added special raw wav for WaveLoop (philipd, gewang)
 
@@ -1745,8 +2593,8 @@ new examples:
   - wind2.ck (2 shreds control parameters)
 
 
+1.1.4.3 (2004.7.4)
 ---
-1.1.4.3 - 2004.7.4
   - add sndfile support (Ari Lazier)
   - add sndbuf file reading/writing (Ari Lazier)
   - add sinosc.sfreq and phase (Phil Davidson)
@@ -1775,47 +2623,47 @@ new Unit Generators
   WaveLoop (updated)
 
 
+1.1.4.2 (2004.6.14)
 ---
-1.1.4.2 - 2004.6.14
   - added support for arbitrary audio in/out (via command line)
 
 
+1.1.4.1 (2004.6.13)
 ---
-1.1.4.1 - 2004.6.13
   - double lt gt fix
   - added demo[0-5].ck to examples
   - PROGRAMMER updated
   - big/little endian issue fixed
 
 
+1.1.4.0 (2004.6.12)
 ---
-1.1.4.0 - 2004.6.12
   - major update to use double float for time, dur, and float
     (this fixes the millisecond bug)
 
 
+1.1.3.6 (2004.6.9)
 ---
-1.1.3.6 - 2004.6.9
   - fixed win32 build problem (thanks to Adam Wendt)
   - fixed midi stack problem (thanks to Thomas Charbonnel)
 
 
+1.1.3.5 (2004.6.8)
 ---
-1.1.3.5 - 2004.6.8
   - fixed mem stack bug (report Alex Chapman)
   - added jack support (thanks to Thomas Charbonnel)
 
 
+1.1.3.4 (2004.6.7)
 ---
-1.1.3.4 - 2004.6.7
   - fixed spork bug
   - bad midiin now returns 0
   - supports sound card with no input
   - add spork.ck
 
 
+1.1.3.3 (2004.6.7)
 ---
-1.1.3.3 - 2004.6.7
   - added ability to spork shreds from code
   - casting float/int
   - 0-127 MIDI devices support
@@ -1826,15 +2674,10 @@ new Unit Generators
   - fixed linux makefile (thanks to n++k)
   - added STK ugen: WaveLoop, Shakers, JCRev, ADSR
   - added shred-time synch by T - (now % T ) => now;
-
-
 ---
 1.1.3.2
-
-
 ---
 1.1.3.1
 
 
----
-1.1.3.0 - initial release
+1.1.3.0 (Spring 2004) --- initial release ---

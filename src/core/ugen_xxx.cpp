@@ -34,6 +34,14 @@
 // date: Spring 2004
 //       Summer 2005 - updated
 //-----------------------------------------------------------------------------
+#include "ugen_xxx.h"
+#include "chuck_type.h"
+#include "chuck_ugen.h"
+#include "chuck_vm.h"
+#include "chuck_compile.h"
+#include "chuck_instr.h"
+#include "util_math.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,13 +61,6 @@
 #include "util_platforms.h"
 #endif
 
-#include "ugen_xxx.h"
-#include "chuck_type.h"
-#include "chuck_ugen.h"
-#include "chuck_vm.h"
-#include "chuck_compile.h"
-#include "chuck_instr.h"
-
 #include <fstream>
 using namespace std;
 
@@ -77,7 +78,7 @@ CK_DLL_TICK( foogen_tick );
 DLL_QUERY lisa_query( Chuck_DL_Query * query );
 
 // sample rate
-t_CKUINT g_srate;
+static t_CKUINT g_srateXxx;
 
 // offset
 static t_CKUINT subgraph_offset_inlet = 0;
@@ -115,7 +116,7 @@ enum PanTypesEnum
 //-----------------------------------------------------------------------------
 DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 {
-    g_srate = QUERY->srate;
+    g_srateXxx = QUERY->srate;
     // get the env
     Chuck_Env * env = QUERY->env();
 
@@ -137,10 +138,11 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     type_engine_register_deprecate( env, "zerox", "ZeroX" );
     type_engine_register_deprecate( env, "delayp", "DelayP" );
     type_engine_register_deprecate( env, "sndbuf", "SndBuf" );
-    type_engine_register_deprecate( env, "Chubgraph", "Chugraph" );
+    // 1.5.0.0 (ge) removed deprecate; allow both
+    // type_engine_register_deprecate( env, "Chubgraph", "Chugraph" );
 
     //! \section audio output
-    
+
     //-------------------------------------------------------------------------
     // init as base class: Subgraph
     //-------------------------------------------------------------------------
@@ -148,21 +150,25 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Chugraph", "UGen", env->global(),
                                         subgraph_ctor, NULL, NULL, NULL, 1, 1, doc.c_str() ) )
         return FALSE;
-    
+
+    // add examples
     if( !type_engine_import_add_ex( env, "extend/chugraph.ck" ) ) goto error;
-    
+    if( !type_engine_import_add_ex( env, "class/dinky.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "class/try.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/ks-chord.ck" ) ) goto error;
+
     doc = "terminal for sources chucked into this ugen.";
     subgraph_offset_inlet = type_engine_import_mvar( env, "UGen", "inlet", TRUE, doc.c_str() );
     if( subgraph_offset_inlet == CK_INVALID_OFFSET ) goto error;
-    
+
     doc = "terminal for the output of this ugen.";
     subgraph_offset_outlet = type_engine_import_mvar( env, "UGen", "outlet", TRUE, doc.c_str() );
     if( subgraph_offset_outlet == CK_INVALID_OFFSET ) goto error;
-    
+
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
-    
+
 
     //-------------------------------------------------------------------------
     // init as base class: FooGen
@@ -172,16 +178,16 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
                                         foogen_ctor, foogen_dtor, foogen_tick, NULL, 1, 1,
                                         doc.c_str() ) )
         return FALSE;
-    
+
     if( !type_engine_import_add_ex( env, "extend/chugen.ck" ) ) goto error;
 
     foogen_offset_data = type_engine_import_mvar( env, "int", "@foogen_data", FALSE );
     if( foogen_offset_data == CK_INVALID_OFFSET ) goto error;
-    
+
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
-    
+
 
     //-------------------------------------------------------------------------
     // init as base class: UGen_Multi
@@ -190,13 +196,13 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "UGen_Multi", "UGen", env->global(),
                                         multi_ctor, (f_dtor)NULL, (f_tick)NULL, (f_pmsg)NULL, 0, 0, doc.c_str() ) )
         return FALSE;
-    
+
     // add chan
     func = make_new_mfun( "UGen", "chan", multi_cget_chan );
     func->add_arg( "int", "which" );
     func->doc = "get UGen representing a specific channel of this UGen, or null if no such channel is available.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add pan
     /* func = make_new_mfun( "float", "pan", multi_ctrl_pan );
     func->add_arg( "float", "val" );
@@ -207,7 +213,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
-    
+
 
     //---------------------------------------------------------------------
     // init as base class: UGen_Stereo
@@ -221,7 +227,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     doc = "left channel (same as .chan(0)).";
     stereo_offset_left = type_engine_import_mvar( env, "UGen", "left", FALSE, doc.c_str() );
     if( stereo_offset_left == CK_INVALID_OFFSET ) goto error;
-    
+
     // add right
     doc = "right channel (same as .chan(1)).";
     stereo_offset_right = type_engine_import_mvar( env, "UGen", "right", FALSE, doc.c_str() );
@@ -243,14 +249,14 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "float", "pan", stereo_cget_pan );
     func->doc = "pan between left and right channels, in range [-1,1], with -1 being far-left, 1 far-right, and 0 centered.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add panType
     func = make_new_mfun( "int", "panType", stereo_ctrl_panType );
     func->add_arg( "int", "val" );
-    func->doc = "set the panning type: (0) unity again anti-panning, (1) constant power.";
+    func->doc = "set the panning type: (1) constant power panning, (0) unity gain anti-panning.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "panType", stereo_cget_panType );
-    func->doc = "get the panning type: (0) unity again anti-panning, (1) constant power.";
+    func->doc = "get the panning type: (1) constant power panning, (0) unity gain anti-panning.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
@@ -263,23 +269,25 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: dac
     //---------------------------------------------------------------------
-    if( !(env->t_dac = type_engine_import_ugen_begin( env, "DAC", "UGen_Stereo", env->global(),
-                                                      NULL, NULL, NULL, NULL, 2, 2 )) )
+    env->t_dac = type_engine_import_ugen_begin( env, "DAC", "UGen_Stereo", env->global(),
+                                                NULL, NULL, NULL, NULL, 2, 2 );
+    if( !env->t_dac )
         return FALSE;
 
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
-    
+
     // add adc
     //! analog/digital converter
     //! abstraction for underlying audio input device
     //---------------------------------------------------------------------
     // init as base class: adc
     //---------------------------------------------------------------------
-    if( !(env->t_adc = type_engine_import_ugen_begin( env, "ADC", "UGen_Stereo", env->global(),
-                                                      (f_ctor)NULL, (f_dtor)NULL, (f_tick)NULL,
-                                                      (f_pmsg)NULL, 0, 2 )) )
+    env->t_adc = type_engine_import_ugen_begin( env, "ADC", "UGen_Stereo", env->global(),
+                                                (f_ctor)NULL, (f_dtor)NULL, (f_tick)NULL,
+                                                (f_pmsg)NULL, 0, 2 );
+    if( !env->t_adc )
         return FALSE;
 
     // end import
@@ -293,9 +301,21 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Pan2", "UGen_Stereo", env->global(),
                                         pan2_ctor, NULL, NULL, NULL, 2, 2, doc.c_str() ) )
         return FALSE;
-    
+
+    // add examples | 1.5.0.0 (ge)
+    if( !type_engine_import_add_ex( env, "basic/chirp2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stereo/array.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stereo/powerup2.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "stereo/moe2.ck" ) ) goto error;
-    
+    if( !type_engine_import_add_ex( env, "stereo/larry2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stereo/curly2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stereo/ugen-array.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stereo/stereo-noise.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/honkeytonk-algo1.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hanoi++.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hanoi2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hanoi3.ck" ) ) goto error;
+
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
@@ -307,11 +327,11 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "Mix2", "UGen_Stereo", env->global(),
                                         NULL, NULL, NULL, NULL, 2, 2, doc.c_str() ) )
         return FALSE;
-    
+
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
-    
+
     // add blackhole
     //! sample rate sample sucker
     //! ( like dac, ticks ugens, but no more )
@@ -319,29 +339,29 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //QUERY->ugen_add( QUERY, "blackhole", NULL );
     // set funcs
     //QUERY->ugen_func( QUERY, NULL, NULL, bunghole_tick, NULL );
-    
+
     // add bunghole
     //! sample rate sample sucker
     //! ( like dac, ticks ugens, but no more )
     //QUERY->ugen_add( QUERY, "bunghole", NULL );
     // set funcs
     //QUERY->ugen_func( QUERY, NULL, NULL, bunghole_tick, NULL );
-    
+
     // add gain
     //! gain control
     //! (NOTE - all unit generators can themselves change their gain)
-    //! (this is a way to add N outputs together and scale them) 
+    //! (this is a way to add N outputs together and scale them)
     //! used in \example i-robot.ck
     //---------------------------------------------------------------------
     // init as base class: gain
     //---------------------------------------------------------------------
     doc = "a gain control unit generator. (All unit generators can already change their own gain; this is an explicit way to add multiple outputs together and scale them.)";
-    if( !type_engine_import_ugen_begin( env, "Gain", "UGen", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "Gain", "UGen", env->global(),
                                         NULL, NULL, NULL, NULL, doc.c_str() ) )
         return FALSE;
-    
+
     if( !type_engine_import_add_ex( env, "basic/i-robot.ck" ) ) goto error;
-    
+
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
@@ -351,17 +371,17 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     .3 => g.gain;
     while( true ) { 100::ms => now; }
     */
-    
+
     //! \section wave forms
-    
+
     // add noise
-    //! white noise generator 
+    //! white noise generator
     //! see \example noise.ck \example powerup.ck
     //---------------------------------------------------------------------
     // init as base class: noise
     //---------------------------------------------------------------------
     doc = "a white noise generator.";
-    if( !type_engine_import_ugen_begin( env, "Noise", "UGen", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "Noise", "UGen", env->global(),
                                         NULL, NULL, noise_tick, NULL, doc.c_str() ) )
         return FALSE;
 
@@ -373,7 +393,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
         return FALSE;
 //zzz
 
-    // add cnoise 
+    // add cnoise
     /*QUERY->ugen_add( QUERY, "cnoise", NULL );
     QUERY->ugen_func( QUERY, cnoise_ctor, cnoise_dtor, cnoise_tick, NULL );
     QUERY->ugen_ctrl( QUERY, cnoise_ctrl_mode, NULL, "string", "mode" );
@@ -390,7 +410,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add member variable
     cnoise_offset_data = type_engine_import_mvar( env, "int", "@cnoise_data", FALSE );
     if( cnoise_offset_data == CK_INVALID_OFFSET ) goto error;
-    
+
     // add ctrl: mode
     func = make_new_mfun( "string", "mode", cnoise_ctrl_mode );
     func->add_arg( "string", "mode" );
@@ -425,7 +445,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
         //QUERY->ugen_ctrl( QUERY, impulse_ctrl_value, impulse_cget_value, "float", "next" ); //! set value of next sample
     /*! \example
         impulse i => dac;
-    
+
     while( true ) {
         1.0 => i.next;
         100::ms => now;
@@ -434,8 +454,8 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: impulse
     //---------------------------------------------------------------------
-    doc = "a impulse generator. Can be used to set the value of the next sample; default for each sample is 0 if not set. Additionally, this can be used to generate a digial signal, one sample at a time.";
-    if( !type_engine_import_ugen_begin( env, "Impulse", "UGen", env->global(), 
+    doc = "An impulse generator. Can be used to set the value of the next sample; default for each sample is 0 if not set. Additionally, this can be used to generate a digital signal, one sample at a time.";
+    if( !type_engine_import_ugen_begin( env, "Impulse", "UGen", env->global(),
                                         impulse_ctor, impulse_dtor, impulse_tick, NULL, doc.c_str() ) )
         return FALSE;
 
@@ -461,12 +481,17 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     func->doc = "get value of next sample to be generated.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "basic/imp.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/comb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/chant.ck" ) ) goto error;
+
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
-    
+
     // add step
-    //! step generator - like impulse, but once a value is set, 
+    //! step generator - like impulse, but once a value is set,
     //! it is held for all following samples, until value is set again
     //! see \example step.ck
         //QUERY->ugen_add( QUERY, "step", NULL );
@@ -474,11 +499,11 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
         //QUERY->ugen_func( QUERY, step_ctor, step_dtor, step_tick, NULL );
     // ctrl func
         //QUERY->ugen_ctrl( QUERY, step_ctrl_value, step_cget_value, "float", "value" );
-        //QUERY->ugen_ctrl( QUERY, step_ctrl_value, step_cget_value, "float", "next" ); //! set the step value 
+        //QUERY->ugen_ctrl( QUERY, step_ctrl_value, step_cget_value, "float", "next" ); //! set the step value
     /*! \example
         step s => dac;
     -1.0 => float amp;
-    
+
     // square wave using step
     while( true ) {
         -amp => amp => s.next;
@@ -489,12 +514,15 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // init as base class: step
     //---------------------------------------------------------------------
     doc = "a step generator. Step behaves like Impulse, except that once a next value is set, that value is held for all following samples, until a different value is set.";
-    if( !type_engine_import_ugen_begin( env, "Step", "UGen", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "Step", "UGen", env->global(),
                                         step_ctor, step_dtor, step_tick, NULL, doc.c_str() ) )
         return FALSE;
 
+    // add examples | 1.5.0.0 (ge)
     if( !type_engine_import_add_ex( env, "basic/step.ck" ) ) goto error;
-    
+    if( !type_engine_import_add_ex( env, "basic/fm3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "basic/zerox.ck" ) ) goto error;
+
     // add ctrl: value
     //func = make_new_mfun( "float", "value", step_ctrl_value );
     //func->add_arg( "float", "value" );
@@ -520,10 +548,10 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
-    
+
     // add halfrect
     //! half wave rectifier
-    //! for half-wave rectification. 
+    //! for half-wave rectification.
         //QUERY->ugen_add( QUERY, "halfrect", NULL );
     // set funcs
         //QUERY->ugen_func( QUERY, NULL, NULL, halfrect_tick, NULL );
@@ -531,7 +559,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // init as base class: halfrect
     //---------------------------------------------------------------------
     doc = "a half wave rectifier.";
-    if( !type_engine_import_ugen_begin( env, "HalfRect", "UGen", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "HalfRect", "UGen", env->global(),
                                         NULL, NULL, halfrect_tick, NULL, doc.c_str() ) )
         return FALSE;
 
@@ -560,7 +588,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 
     // add zerox
     //! zero crossing detector
-    //! emits a single pulse at the the zero crossing in the direction of the zero crossing.  
+    //! emits a single pulse at the the zero crossing in the direction of the zero crossing.
     //! (see \example zerox.ck)
     //QUERY->ugen_add( QUERY, "zerox", NULL );
     // set funcs
@@ -568,7 +596,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: zerox
     //---------------------------------------------------------------------
-    /* if( !type_engine_import_ugen_begin( env, "ZeroX", "UGen", env->global(), 
+    /* if( !type_engine_import_ugen_begin( env, "ZeroX", "UGen", env->global(),
                                         zerox_ctor, zerox_dtor, zerox_tick, NULL ) )
         return FALSE;
 
@@ -582,8 +610,8 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 
 
     //! \section delay lines
-    
-    //! delay with varying write position ( instead of read position ) 
+
+    //! delay with varying write position ( instead of read position )
     //! change to delay length will not affect the delay of samples already in
     //! the buffer.
     //! see \example delayp.ck
@@ -592,13 +620,13 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //QUERY->ugen_func ( QUERY, delayp_ctor, delayp_dtor, delayp_tick, delayp_pmsg);
     //QUERY->ugen_ctrl( QUERY, delayp_ctrl_delay, delayp_cget_delay , "dur", "delay" ); //! delay before subsequent values emerge
     //QUERY->ugen_ctrl( QUERY, delayp_ctrl_window, delayp_cget_window , "dur", "window" ); //! time for 'write head' to move
-    //QUERY->ugen_ctrl( QUERY, delayp_ctrl_max, delayp_cget_max , "dur", "max" ); //! max delay possible.  trashes buffer, so do it first! 
-    
+    //QUERY->ugen_ctrl( QUERY, delayp_ctrl_max, delayp_cget_max , "dur", "max" ); //! max delay possible.  trashes buffer, so do it first!
+
     //---------------------------------------------------------------------
     // init as base class: delayp
     //---------------------------------------------------------------------
-    if( !type_engine_import_ugen_begin( env, "DelayP", "UGen", env->global(), 
-                                        delayp_ctor, delayp_dtor, 
+    if( !type_engine_import_ugen_begin( env, "DelayP", "UGen", env->global(),
+                                        delayp_ctor, delayp_dtor,
                                         delayp_tick, delayp_pmsg ) )
         return FALSE;
 
@@ -625,21 +653,22 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add ctrl: max
     func = make_new_mfun( "dur", "max", delayp_ctrl_max );
     func->add_arg( "dur", "max" );
-    if( !type_engine_import_mfun( env, func ) ) goto error; 
+    if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: max
     func = make_new_mfun( "dur", "max", delayp_cget_max );
+
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
-    
+
     //! \section sound files
-    
+
 #ifndef __DISABLE_SNDBUF__
-    
+
     // add sndbuf
-    //! sound buffer ( now interpolating ) 
+    //! sound buffer ( now interpolating )
     //! reads from a variety of file formats
     //! see \example sndbuf.ck
     //QUERY->ugen_add( QUERY, "sndbuf", NULL );
@@ -647,31 +676,31 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //QUERY->ugen_func( QUERY, sndbuf_ctor, sndbuf_dtor, sndbuf_tick, NULL );
     // set ctrl
     //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_read, NULL, "string", "read" ); //! loads file for reading
-    //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_write, NULL, "string", "write" ); //! loads a file for writing ( or not ) 
-    //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_pos, sndbuf_cget_pos, "int", "pos" ); //! set position ( 0 < p < .samples ) 
-    //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_loop, sndbuf_cget_loop, "int", "loop" ); //! toggle looping 
+    //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_write, NULL, "string", "write" ); //! loads a file for writing ( or not )
+    //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_pos, sndbuf_cget_pos, "int", "pos" ); //! set position ( 0 < p < .samples )
+    //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_loop, sndbuf_cget_loop, "int", "loop" ); //! toggle looping
     //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_interp, sndbuf_cget_interp, "int", "interp" ); //! set interpolation ( 0=drop, 1=linear, 2=sinc )
-    //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_rate, sndbuf_cget_rate, "float", "rate" ); //! playback rate ( relative to file's natural speed ) 
-    //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_rate, sndbuf_cget_rate, "float", "play" ); //! play (same as rate) 
-    //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_freq, sndbuf_cget_freq, "float", "freq" ); //! playback rate ( file loops / second ) 
+    //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_rate, sndbuf_cget_rate, "float", "rate" ); //! playback rate ( relative to file's natural speed )
+    //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_rate, sndbuf_cget_rate, "float", "play" ); //! play (same as rate)
+    //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_freq, sndbuf_cget_freq, "float", "freq" ); //! playback rate ( file loops / second )
     //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_phase, sndbuf_cget_phase, "float", "phase" ); //! set phase position ( 0-1 )
     //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_channel, sndbuf_cget_channel, "int", "channel" ); //! select channel ( 0 < p < .channels )
     //QUERY->ugen_ctrl( QUERY, sndbuf_ctrl_phase_offset, sndbuf_cget_phase, "float", "phase_offset" ); //! set a phase offset
     //QUERY->ugen_ctrl( QUERY, NULL, sndbuf_cget_samples, "int", "samples" ); //! fetch number of samples
     //QUERY->ugen_ctrl( QUERY, NULL, sndbuf_cget_length, "dur", "length" ); //! fetch length
     //QUERY->ugen_ctrl( QUERY, NULL, sndbuf_cget_channels, "int", "channels" ); //! fetch number of channels
-    
+
     //---------------------------------------------------------------------
     // init as base class: sndbuf
     //---------------------------------------------------------------------
     doc = "an interpolating sound buffer/player with single-channel output; can read audio data from a variety of uncompressed formats.";
-    if( !type_engine_import_ugen_begin( env, "SndBuf", "UGen", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "SndBuf", "UGen", env->global(),
                                         sndbuf_ctor, sndbuf_dtor,
                                         sndbuf_tick, NULL, 1, 1, doc.c_str() ) )
         return FALSE;
 
     if( !type_engine_import_add_ex( env, "basic/sndbuf.ck" ) ) goto error;
-    
+
     // add member variable
     sndbuf_offset_data = type_engine_import_mvar( env, "int", "@sndbuf_data", FALSE );
     if( sndbuf_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -807,7 +836,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "dur", "length", sndbuf_cget_length );
     func->doc = "get total length of the file as a duration.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add cget: channels
     func = make_new_mfun( "int", "channels", sndbuf_cget_channels );
     func->doc = "get number of channels available in the sound file.";
@@ -822,8 +851,8 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
-    
-    
+
+
     //---------------------------------------------------------------------
     // init as base class: SndBuf2
     //---------------------------------------------------------------------
@@ -832,11 +861,11 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
                                         NULL, NULL,
                                         NULL, sndbuf_tickf, NULL, 2, 2, doc.c_str() ) )
         return FALSE;
-    
+
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
-    
+
 #endif // __DISABLE_SNDBUF__
 
 
@@ -844,14 +873,14 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // init as base class: Dyno
     //---------------------------------------------------------------------
     doc = "a dynamics processor. Includes presets for limiter, compressor, expander, noise gate, and ducker.";
-    if( !type_engine_import_ugen_begin( env, "Dyno", "UGen", env->global(), 
+    if( !type_engine_import_ugen_begin( env, "Dyno", "UGen", env->global(),
                                         dyno_ctor, dyno_dtor, dyno_tick, NULL, doc.c_str() ) )
         return FALSE;
 
     if( !type_engine_import_add_ex( env, "Dyno-compress.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "Dyno-duck.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "Dyno-limit.ck" ) ) goto error;
-    
+
     // add member variable
     dyno_offset_data = type_engine_import_mvar( env, "int", "@dyno_data", FALSE );
     if( dyno_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -902,23 +931,23 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     func->add_arg( "dur", "aTime" );
     func->doc = "set duration for the envelope to move linearly from current value to the absolute value of the signal's amplitude.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     //add cget: attackTime
     func = make_new_mfun( "dur", "attackTime", dyno_cget_attackTime );
     func->doc = "get duration for the envelope to move linearly from current value to the absolute value of the signal's amplitude.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     //add ctrl: releaseTime
     func = make_new_mfun( "dur", "releaseTime", dyno_ctrl_releaseTime );
     func->add_arg( "dur", "rTime" );
     func->doc = "set duration for the envelope to decay down to around 1/10 of its current amplitude, if not brought back up by the signal.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     //add ctrl: releaseTime
     func = make_new_mfun( "dur", "releaseTime", dyno_cget_releaseTime );
     func->doc = "get duration for the envelope to decay down to around 1/10 of its current amplitude, if not brought back up by the signal.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     //add ctrl: ratio
     func = make_new_mfun( "float", "ratio", dyno_ctrl_ratio );
     func->add_arg( "float", "ratio" );
@@ -978,6 +1007,19 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_class_end( env ) )
         return FALSE;
 
+    //---------------------------------------------------------------------
+    // init as base class: Identity2
+    // 1.5.0.0 (ge + nshaheed) made this for exploring multichannel conundrums
+    //---------------------------------------------------------------------
+    doc = "A 2-channel UGen that outputs the inputs.";
+    // multichannel
+    if( !type_engine_import_ugen_begin( env, "Identity2", "UGen", env->global(),
+                                        NULL, NULL, NULL, Identity2_tickf,
+                                        NULL, 2, 2, doc.c_str() ) )
+        return FALSE;
+    // end the class import
+    type_engine_import_class_end( env );
+
     // import LiSa!
     if( !lisa_query( QUERY ) )
         return FALSE;
@@ -988,7 +1030,7 @@ error:
 
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return FALSE;
 }
 
@@ -1013,265 +1055,359 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
 {
     Chuck_Env * env = QUERY->env();
     Chuck_DL_Func * func = NULL;
+    std::string doc;
 
     //---------------------------------------------------------------------
     // init class: LiSa; overloaded class for both LiSaBasic and LiSaMulti
     //              - probably don't need the others anymore....
     // author: Dan Trueman (dan /at/ music.princeton.edu)
     //---------------------------------------------------------------------
-    string doc = "a (li)ve (sa)mpling unit generator; also popularly used for granular synthesis.";
-    
-    // begin UGen definition
+
+    // doc string
+    doc = "LiSa provides basic live sampling functionality,\
+    and is also often used for granular synthesis.\
+    An internal buffer stores samples chucked to LiSa's input.\
+    Segments of this buffer can be played back, with ramping and\
+    speed/direction control.\
+    Multiple voice facility is built in, allowing for a single\
+    LiSa object to serve as a source for sample layering and\
+    granular textures.\
+    by Dan Trueman (2007)\n\
+    See also: a slowly growing <a target=\"_blank\" href=\"../program/lisa/tutorial-1.html\">tutorial</a>\
+    | <a target=\"_blank\" href=\"../examples/#lisa\">LiSa examples</a> in the ChucK distribution | <a target=\"_blank\" href=\"https://www.youtube.com/watch?v=7F75v_73pF4\">video tutorial</a> by Clint Hoagland.";
     if( !type_engine_import_ugen_begin( env, "LiSa", "UGen", env->global(),
                                         LiSaMulti_ctor, LiSaMulti_dtor,
                                         LiSaMulti_tick, NULL,
-                                        LiSaMulti_pmsg, 1, 1, doc.c_str() ) )
+                                        LiSaMulti_pmsg, 1, 1, doc.c_str() ))
         return FALSE;
-	
+
+    // add examples | 1.5.0.0 (ge)
+    if( !type_engine_import_add_ex( env, "special/LiSa-munger1.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-munger2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-munger3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-load.ck.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-simplelooping.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-trigger.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-track1.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-track2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-track3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-track4.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-track5.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-stereo.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/twilight/twilight-granular-kb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/twilight/twilight-granular-kb-interp.ck" ) ) goto error;
+
     // set/get buffer size
     func = make_new_mfun( "dur", "duration", LiSaMulti_size );
+    func->doc = "Set buffer size; required to allocate memory, also resets all parameter values to default.";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 	func = make_new_mfun( "dur", "duration", LiSaMulti_cget_size );
+    func->doc = "Get buffer size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // start/stop recording
     func = make_new_mfun( "int", "record", LiSaMulti_start_record );
+    func->doc = "Turn recording on and off";
     func->add_arg( "int", "toggle" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // start/stop playing
     func = make_new_mfun( "int", "play", LiSaMulti_start_play );
+    func->doc = "For particular voice (arg 1), turn on/off sample playback";
     func->add_arg( "int", "voice" );
     func->add_arg( "int", "toggle" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "play", LiSaMulti_start_play0 );
+    func->doc = "Turn on/off sample playback (voice 0)";
     func->add_arg( "int", "toggle" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // set/get playback rate
     func = make_new_mfun( "float", "rate", LiSaMulti_ctrl_rate );
+    func->doc = "For particular voice (arg 1), set playback rate";
     func->add_arg( "int", "voice" );
     func->add_arg( "float", "val" );
 	if( !type_engine_import_mfun( env, func ) ) goto error;
 	func = make_new_mfun( "float", "rate", LiSaMulti_cget_rate );
+    func->doc = "For particular voice (arg 1), get playback rate";
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "rate", LiSaMulti_ctrl_rate0 );
+    func->doc = "Set playback rate (voice 0). Note that the int/float type for this method will determine whether the rate is being set (float, for voice 0) or read (int, for voice number).";
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 	func = make_new_mfun( "float", "rate", LiSaMulti_cget_rate0 );
+    func->doc = "Get playback rate (voice 0).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // playback position
     func = make_new_mfun( "dur", "playPos", LiSaMulti_ctrl_pindex );
+    func->doc = "For particular voice (arg 1), set playback position.";
     func->add_arg( "int", "voice" );
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "playPos", LiSaMulti_cget_pindex );
+    func->doc = "For particular voice (arg 1), get playback position.";
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "playPos", LiSaMulti_ctrl_pindex0 );
+    func->doc = "Set playback position (voice 0).";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "playPos", LiSaMulti_cget_pindex0 );
+    func->doc = "Get playback position (voice 0).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // record position
     func = make_new_mfun( "dur", "recPos", LiSaMulti_ctrl_rindex );
+    func->doc = "Set record position.";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "recPos", LiSaMulti_cget_rindex );
+    func->doc = "Get record position.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // loopstart position
     func = make_new_mfun( "dur", "loopStart", LiSaMulti_ctrl_lstart );
+    func->doc = "For particular voice (arg 1), set loop starting point for playback. only applicable when .loop(voice, 1).";
     func->add_arg( "int", "voice" );
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopStart", LiSaMulti_cget_lstart );
+    func->doc = "For particular voice (arg 1), get loop starting point for playback. only applicable when .loop(voice, 1).";
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopStart", LiSaMulti_ctrl_lstart0 );
+    func->doc = "Set loop starting point for playback (voice 0). only applicable when 1 => loop.";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopStart", LiSaMulti_cget_lstart0 );
+    func->doc = "Get loop starting point for playback (voice 0). only applicable when 1 => loop.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // loopend position
     func = make_new_mfun( "dur", "loopEnd", LiSaMulti_ctrl_lend );
+    func->doc = "For particular voice (arg 1), set loop ending point for playback. only applicable when .loop(voice, 1).";
     func->add_arg( "int", "voice" );
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopEnd", LiSaMulti_cget_lend);
+     func->doc = "For particular voice (arg 1), get loop ending point for playback. only applicable when .loop(voice, 1).";
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopEnd", LiSaMulti_ctrl_lend0 );
+    func->doc = "Set loop ending point for playback (voice 0). only applicable when 1 => loop.";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopEnd", LiSaMulti_cget_lend0);
+    func->doc = "Get loop ending point for playback (voice 0). only applicable when 1 => loop.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // loop
     func = make_new_mfun( "int", "loop", LiSaMulti_ctrl_loop );
+    func->doc = "For particular voice (arg 1), turn on/off looping.";
     func->add_arg( "int", "voice" );
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
     func = make_new_mfun( "int", "loop", LiSaMulti_cget_loop);
+    func->doc = "For particular voice (arg 1), get looping status.";
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    func = make_new_mfun( "int", "loop", LiSaMulti_ctrl_loop0 );
+
+    func = make_new_mfun( "int", "loop0", LiSaMulti_ctrl_loop0 );
+    func->doc = "Turn on/off looping (voice 0).";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    func = make_new_mfun( "int", "loop", LiSaMulti_cget_loop0);
+
+    func = make_new_mfun( "int", "loop0", LiSaMulti_cget_loop0);
+    func->doc = "Get looping status (voice 0).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // bidirectional looping
     func = make_new_mfun( "int", "bi", LiSaMulti_ctrl_bi );
+    func->doc = "For particular voice (arg 1), turn on/off bidirectional playback.";
     func->add_arg( "int", "voice" );
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "getbi", LiSaMulti_cget_bi);
+    func->doc = "Turn on/off bidirectional playback (voice 0).";
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "bi", LiSaMulti_ctrl_bi0 );
+    func->doc = "For particular voice (arg 1), get bidirectional playback status.";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "bi", LiSaMulti_cget_bi0);
+    func->doc = "Get birectional playback status.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // loopend_rec position
     func = make_new_mfun( "dur", "loopEndRec", LiSaMulti_ctrl_loop_end_rec );
+    func->doc = "Set end point in buffer for loop recording.";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "loopEndRec", LiSaMulti_cget_loop_end_rec);
+    func->doc = "Get end point in buffer for loop recording.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-	
-	// loop_rec toggle set; for turning on/off loop recording
+
+    // loop_rec toggle set; for turning on/off loop recording
     func = make_new_mfun( "int", "loopRec", LiSaMulti_ctrl_loop_rec );
+    func->doc = "Turn on/off loop recording.";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "loopRec", LiSaMulti_cget_loop_rec);
+    func->doc = "Get loop recording status.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-	
-	// look at or put sample directly in record buffer, do not pass go
+
+    // look at or put sample directly in record buffer, do not pass go
     func = make_new_mfun( "float", "valueAt", LiSaMulti_ctrl_sample );
+    func->doc = "Set value directly in record buffer.";
     func->add_arg( "float", "val" );
-	func->add_arg( "dur", "index" );
+    func->add_arg( "dur", "index" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "valueAt", LiSaMulti_cget_sample);
+    func->doc = "Get value directly from record buffer.";
 	func->add_arg( "dur", "index" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-	
-	// set/get voiceGain
+
+    // set/get voiceGain
     func = make_new_mfun( "float", "voiceGain", LiSaMulti_ctrl_voicegain );
+    func->doc = "For particular voice (arg 1), set gain.";
     func->add_arg( "int", "voice" );
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "voiceGain", LiSaMulti_cget_voicegain);
+    func->doc = "Set playback gain (voice 0).";
     func->add_arg( "int", "voice" );
-	if( !type_engine_import_mfun( env, func ) ) goto error;
-    
-	// set/get voicePan [value between 0 and numchans-1, to place voice]
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set/get voicePan [value between 0 and numchans-1, to place voice]
     func = make_new_mfun( "float", "voicePan", LiSaMulti_ctrl_voicepan );
+    func->doc = "For particular voice (arg 1), set panning value [0.0, number of channels - 1.0].";
     func->add_arg( "int", "voice" );
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "voicePan", LiSaMulti_cget_voicepan);
+    func->doc = "For particular voice (arg 1), get panning value.";
     func->add_arg( "int", "voice" );
-	if( !type_engine_import_mfun( env, func ) ) goto error;
-	
-	// set/get voicePan [value between 0 and numchans-1, to place voice]
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // set/get voicePan [value between 0 and numchans-1, to place voice]
     func = make_new_mfun( "float", "pan", LiSaMulti_ctrl_voicepan );
+    func->doc = "For particular voice (arg 1), set panning value [0.0, number of channels - 1.0].";
     func->add_arg( "int", "voice" );
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "pan", LiSaMulti_cget_voicepan);
+    func->doc = "For particular voice (arg 1), get panning value.";
     func->add_arg( "int", "voice" );
-	if( !type_engine_import_mfun( env, func ) ) goto error;
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 	
 	func = make_new_mfun( "float", "pan", LiSaMulti_ctrl_voicepan0 );
+    func->doc = "For voice 0, set panning value [0.0, number of channels - 1.0].";
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "pan", LiSaMulti_cget_voicepan0);
+    func->doc = "For voice 0, get panning value.";
 	if( !type_engine_import_mfun( env, func ) ) goto error;
 	
     // set record feedback coefficient
     func = make_new_mfun( "float", "feedback", LiSaMulti_ctrl_coeff );
+    func->doc = "Set feedback amount when overdubbing (loop recording; how much to retain).";
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "float", "feedback", LiSaMulti_cget_coeff);
+    func->doc = "Get feedback amount when overdubbing (loop recording; how much to retain).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // clear buffer
     func = make_new_mfun( "void", "clear", LiSaMulti_ctrl_clear );
+    func->doc = "Clear recording buffer.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // get free voice
     func = make_new_mfun( "int", "getVoice", LiSaMulti_cget_voice );
+    func->doc = "Return an available voice (one that is not currently playing). Return -1 if no voice is available.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // set maxvoices
     func = make_new_mfun( "int", "maxVoices", LiSaMulti_ctrl_maxvoices );
+    func->doc = "Set the maximum number of voices allowable; 10 by default (256 is the current hardwired internal limit).";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "maxVoices", LiSaMulti_cget_maxvoices);
+    func->doc = "Get the maximum number of voices allowable; 10 by default (256 is the current hardwired internal limit).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // ramp stuff
     func = make_new_mfun( "void", "rampUp", LiSaMulti_ctrl_rampup );
+    func->doc = "For particular voice (arg 1), turn on sample playback, with ramp.";
     func->add_arg( "int", "voice" );
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     func = make_new_mfun( "void", "rampDown", LiSaMulti_ctrl_rampdown );
+    func->doc = "For particular voice (arg 1), turn off sample playback, with ramp";
     func->add_arg( "int", "voice" );
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     func = make_new_mfun( "dur", "recRamp", LiSaMulti_ctrl_rec_ramplen );
+    func->doc = "Set ramping when recording (from 0 to loopEndRec).";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     func = make_new_mfun( "void", "rampUp", LiSaMulti_ctrl_rampup0 );
+    func->doc = "Turn on sample playback, with ramp (voice 0).";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     func = make_new_mfun( "void", "rampDown", LiSaMulti_ctrl_rampdown0 );
+    func->doc = "Turn off sample playback, with ramp (voice 0).";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // get value
     func = make_new_mfun( "dur", "value", LiSaMulti_cget_value );
+    func->doc = "For particular voice (arg 1), get value from the voice.";
     func->add_arg( "int", "voice" );
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "dur", "value", LiSaMulti_cget_value0 );
+    func->doc = "Get value from voice 0.";
     func->add_arg( "dur", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // track
     func = make_new_mfun( "int", "track", LiSaMulti_ctrl_track );
+    func->doc = "Identical to sync.";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "track", LiSaMulti_cget_track);
+    func->doc = "Identical to sync.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-	
-	// sync = track
+
+    // sync = track
     func = make_new_mfun( "int", "sync", LiSaMulti_ctrl_track );
+    func->doc = "Set input mode; (0) input is recorded to internal buffer, (1) input sets playback position [0,1] (phase value between loopStart and loopEnd for all active voices), (2) input sets playback position, interpreted as a time value in samples (only works with voice 0)";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
     func = make_new_mfun( "int", "sync", LiSaMulti_cget_track);
+    func->doc = "Get input mode; (0) input is recorded to internal buffer, (1) input sets playback position [0,1] (phase value between loopStart and loopEnd for all active voices), (2) input sets playback position, interpreted as a time value in samples (only works with voice 0)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-	
-	// playing
+
+    // playing
     func = make_new_mfun( "int", "playing", LiSaMulti_cget_playing );
+    func->doc = "Get playing status.";
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
-
 
     // LiSa2 description
     doc = "a (li)ve (sa)mpling unit generator (stereo edition); also popularly used for granular synthesis.";
@@ -1281,10 +1417,14 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                        NULL, LiSaMulti_tickf,
                                        LiSaMulti_pmsg, 1, 2, doc.c_str() ) )
         return FALSE;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "special/LiSa-stereo.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
-    
-    
+
+
     // LiSa4 description
     doc = "a (li)ve (sa)mpling unit generator (quad edition); also popularly used for granular synthesis.";
     // multichannel
@@ -1295,7 +1435,7 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
         return FALSE;
     // end the class import
     type_engine_import_class_end( env );
-    
+
     // LiSa6 description
     doc = "a (li)ve (sa)mpling unit generator (6-channel edition); also popularly used for granular synthesis.";
     // multichannel
@@ -1306,7 +1446,7 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
         return FALSE;
     // end the class import
     type_engine_import_class_end( env );
-    
+
     // LiSa8 description
     doc = "a (li)ve (sa)mpling unit generator (8-channel edition); also popularly used for granular synthesis.";
     // multichannel
@@ -1329,7 +1469,7 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
         return FALSE;
     // end the class import
     type_engine_import_class_end( env );
-    
+
     // LiSa16 description
     doc = "a (li)ve (sa)mpling unit generator (16-channel edition); also popularly used for granular synthesis.";
     // multichannel
@@ -1340,7 +1480,7 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
         return FALSE;
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return TRUE;
 
 error:
@@ -1360,14 +1500,14 @@ CK_DLL_CTOR( subgraph_ctor )
 {
     // get ugen
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
-    
+
     ugen->init_subgraph();
-    
+
     if( ugen->inlet() )
     {
         OBJ_MEMBER_OBJECT(SELF, subgraph_offset_inlet) = ugen->inlet();
     }
-    
+
     if( ugen->outlet() )
     {
         OBJ_MEMBER_OBJECT(SELF, subgraph_offset_outlet) = ugen->outlet();
@@ -1383,7 +1523,7 @@ struct FooGen_Data
 {
     Chuck_VM_Shred * shred;
     Chuck_VM * vm;
-    
+
     t_CKFLOAT input;
     t_CKFLOAT output;
 };
@@ -1396,20 +1536,20 @@ struct FooGen_Data
 CK_DLL_CTOR( foogen_ctor )
 {
     FooGen_Data * data = new FooGen_Data;
-    
+
     data->shred = NULL;
     data->vm = SHRED->vm_ref;
-    
+
     // 1.3.1.0: changed from unsigned int to t_CKUINT
     OBJ_MEMBER_UINT(SELF, foogen_offset_data) = (t_CKUINT)data;
 
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     int tick_fun_index = -1;
-    
+
     for(int i = 0; i < ugen->vtable->funcs.size(); i++)
     {
         Chuck_Func * func = ugen->vtable->funcs[i];
-        if(func->name.find("tick") == 0 && 
+        if(func->name.find("tick") == 0 &&
            // ensure has one argument
            func->def->arg_list != NULL &&
            // ensure first argument is float
@@ -1423,7 +1563,7 @@ CK_DLL_CTOR( foogen_ctor )
             break;
         }
     }
-    
+
     if( tick_fun_index != -1 )
     {
         vector<Chuck_Instr *> instrs;
@@ -1449,15 +1589,15 @@ CK_DLL_CTOR( foogen_ctor )
         instrs.push_back(new Chuck_Instr_Reg_Pop_Word2);
         // EOC
         instrs.push_back(new Chuck_Instr_EOC);
-        
+
         Chuck_VM_Code * code = new Chuck_VM_Code;
-        
+
         code->instr = new Chuck_Instr*[instrs.size()];
         code->num_instr = instrs.size();
         for(int i = 0; i < instrs.size(); i++) code->instr[i] = instrs[i];
         code->stack_depth = 0;
         code->need_this = 0;
-        
+
         data->shred = new Chuck_VM_Shred;
         data->shred->vm_ref = SHRED->vm_ref;
         data->shred->initialize(code);
@@ -1489,14 +1629,14 @@ CK_DLL_DTOR( foogen_dtor )
 CK_DLL_TICK( foogen_tick )
 {
     FooGen_Data * data = (FooGen_Data *) OBJ_MEMBER_UINT(SELF, foogen_offset_data);
-        
+
     // default: passthru
     data->output = in;
-    
+
     if(data->shred)
     {
         // reset shred
-        
+
         // program counter
         data->shred->pc = 0;
         data->shred->next_pc = 1;
@@ -1514,16 +1654,16 @@ CK_DLL_TICK( foogen_tick )
         data->shred->xid = 0;
         // set vmRef
         data->shred->vm_ref = data->vm;
-        
+
         // set input
         data->input = in;
-        
+
         // run shred
         data->shred->run( data->vm );
     }
-    
+
     *out = data->output;
-    
+
     return TRUE;
 }
 
@@ -1697,7 +1837,7 @@ CK_DLL_CTRL( stereo_ctrl_panType )
     t_CKFLOAT pan = OBJ_MEMBER_FLOAT(SELF, stereo_offset_pan);
     // pan it!
     pan_this( left, right, pan, panType );
-    
+
     // pass through pan value
     RETURN->v_int = panType;
 }
@@ -1770,6 +1910,8 @@ CK_DLL_CTOR( pan2_ctor )
 CK_DLL_TICK( noise_tick )
 {
     *out = -1.0 + 2.0 * (SAMPLE)rand() / RAND_MAX;
+    // for now keep synthesis using rand() instead of ck_random()
+    // *out = -1.0 + 2.0 * (SAMPLE)ck_random() / CK_RANDOM_MAX;
     return TRUE;
 }
 
@@ -1793,9 +1935,9 @@ private:
   t_CKINT last;
 
 public:
-  CNoise_Data() { 
-    value = 0; 
-    mode = NOISE_PINK; 
+  CNoise_Data() {
+    value = 0;
+    mode = NOISE_PINK;
     pink_depth = 24;
     pink_array = NULL;
     counter = 1;
@@ -1805,7 +1947,7 @@ public:
     t_CKINT randt = RAND_MAX;
     rand_bits = 0;
     fprob = (t_CKINT)( (double)RAND_MAX * 1.0 / 32.0 );
-    while ( randt > 0 ) { 
+    while ( randt > 0 ) {
       rand_bits++;
       randt = randt >> 1;
     }
@@ -1815,7 +1957,7 @@ public:
   ~CNoise_Data() {
     if ( pink_array != NULL ) free(pink_array);
   }
-   
+
   t_CKINT fprob;
   t_CKUINT mode;
   void tick( t_CKTIME now, SAMPLE * out );
@@ -1843,8 +1985,8 @@ CK_DLL_DTOR( cnoise_dtor )
 CK_DLL_TICK( cnoise_tick )
 {
   CNoise_Data * d = ( CNoise_Data * )OBJ_MEMBER_UINT(SELF, cnoise_offset_data);
-  switch( d->mode ) { 
-  case NOISE_WHITE: 
+  switch( d->mode ) {
+  case NOISE_WHITE:
     return noise_tick(SELF,in,out,API);
     break;
   case NOISE_PINK:
@@ -1867,13 +2009,13 @@ CK_DLL_TICK( cnoise_tick )
 }
 
 t_CKINT CNoise_Data::pink_tick( SAMPLE * out )
-{ 
+{
   //based on Voss-McCartney
 
-  if ( pink_array == NULL ) { 
+  if ( pink_array == NULL ) {
     pink_array = (t_CKINT *) malloc ( sizeof ( t_CKINT ) * pink_depth );
     last = 0;
-    for ( t_CKINT i = 0 ; i < pink_depth ; i++ ) { pink_array[i] = rand(); last += pink_array[i]; } 
+    for ( t_CKINT i = 0 ; i < pink_depth ; i++ ) { pink_array[i] = rand(); last += pink_array[i]; }
     scale = 2.0 / ((double)RAND_MAX  * ( pink_depth + 1.0 ) );
     bias = -1.0;
     // CK_FPRINTF_STDERR( "scale %f %f %d %d \n", scale, bias, RAND_MAX, pink_depth + 1 );
@@ -1882,11 +2024,11 @@ t_CKINT CNoise_Data::pink_tick( SAMPLE * out )
   t_CKINT pind = 0;
 
   //count trailing zeroes
-  while ( pind < pink_depth && ! (counter & ( 1 << pind ) ) ) pind++;
+  while ( pind < pink_depth && ! (counter & ( ((t_CKINT)1) << pind ) ) ) pind++;
 
   //  fprintf (stderr, "counter %d pink - %d \n", counter, pind );
 
-  if ( pind < pink_depth ) { 
+  if ( pind < pink_depth ) {
     t_CKINT diff = rand() - pink_array[pind];
     pink_array[pind] += diff;
     last += diff;
@@ -1899,55 +2041,54 @@ t_CKINT CNoise_Data::pink_tick( SAMPLE * out )
 }
 
 t_CKINT CNoise_Data::xor_tick( SAMPLE * out )
-{ 
+{
   t_CKINT mask = 0;
-  for ( t_CKINT i = 0; i < rand_bits ; i++ ) 
-    if ( rand() <= fprob ) 
-      mask |= ( 1 << i );
-  last = last ^ mask;  
+  for ( t_CKINT i = 0; i < rand_bits ; i++ )
+    if ( rand() <= fprob )
+      mask |= ( ((t_CKINT)1) << i );
+  last = last ^ mask;
   *out = bias + scale * (SAMPLE)last;
   return TRUE;
 }
 
 t_CKINT CNoise_Data::flip_tick( SAMPLE * out )
 {
-  t_CKINT ind = (t_CKINT) ( (double) rand_bits * rand() / ( RAND_MAX + 1.0 ) );
- 
-  last = last ^ ( 1 << ind );
+  t_CKINT ind = (t_CKINT)( (double)rand_bits * rand() / ( RAND_MAX + 1.0 ) );
+  last = last ^ ( ((t_CKINT)1) << ind );
   //  fprintf ( stderr, "ind - %d %d %f %f", ind, last, bias, scale );
   *out = bias + scale * (SAMPLE)last;
   return TRUE;
 }
 
 t_CKINT
-CNoise_Data::brown_tick( SAMPLE * out ) { 
+CNoise_Data::brown_tick( SAMPLE * out ) {
   //brownian noise function..later!
   *out = 0;
   return TRUE;
 }
 
 t_CKINT
-CNoise_Data::fbm_tick( SAMPLE * out ) { 
+CNoise_Data::fbm_tick( SAMPLE * out ) {
   //non-brownian noise function..later!
   *out = 0;
   return TRUE;
 }
 
 void
-CNoise_Data::setMode( const char * c ) { 
-  if ( strcmp ( c, "white" ) == 0 ) { 
+CNoise_Data::setMode( const char * c ) {
+  if ( strcmp ( c, "white" ) == 0 ) {
     // CK_FPRINTF_STDERR( "white noise\n" );
-    mode = NOISE_WHITE;    
+    mode = NOISE_WHITE;
     scale = 2.0 / (t_CKFLOAT)RAND_MAX;
     bias = -1.0;
   }
-  if ( strcmp ( c, "pink" ) == 0 ) { 
+  if ( strcmp ( c, "pink" ) == 0 ) {
     // CK_FPRINTF_STDERR( "pink noise\n" );
     mode = NOISE_PINK;
     scale = 2.0 / (double)(RAND_MAX  * ( pink_depth + 1 ) );
     bias = -1.0;
   }
-  if ( strcmp ( c, "flip" ) == 0) { 
+  if ( strcmp ( c, "flip" ) == 0) {
     // CK_FPRINTF_STDERR( "bitflip noise\n" );
     mode = NOISE_FLIP;
     scale = 2.0 / (t_CKFLOAT)RAND_MAX;
@@ -1959,13 +2100,13 @@ CNoise_Data::setMode( const char * c ) {
     scale = 2.0 / (t_CKFLOAT)RAND_MAX;
     bias = -1.0;
   }
-  if ( strcmp ( c, "brown" ) == 0) { 
+  if ( strcmp ( c, "brown" ) == 0) {
     // CK_FPRINTF_STDERR( "brownian noise\n" );
     mode = NOISE_BROWN;
     scale = 2.0 / (t_CKFLOAT)RAND_MAX;
     bias = -1.0;
   }
-  if ( strcmp ( c, "fbm" ) == 0) {   
+  if ( strcmp ( c, "fbm" ) == 0) {
     // CK_FPRINTF_STDERR( "fbm noise\n" );
     mode = NOISE_FBM;
     scale = 2.0 / (t_CKFLOAT)RAND_MAX;
@@ -2044,7 +2185,7 @@ CK_DLL_TICK( impulse_tick )
     }
     else
         *out = 0.0f;
-    
+
     return TRUE;
 }
 
@@ -2111,7 +2252,7 @@ CK_DLL_TICK( step_tick )
 {
     SAMPLE * d = (SAMPLE *)OBJ_MEMBER_UINT(SELF, step_offset_data);
     *out = *d;
-    
+
     return TRUE;
 }
 
@@ -2200,7 +2341,7 @@ CK_DLL_TICK( zerox_tick )
     *out = __SGN(in) != __SGN(*d);
     *out *= __SGN(in);
     *d = in;
-    
+
     return TRUE;
 }
 */
@@ -2208,28 +2349,28 @@ CK_DLL_TICK( zerox_tick )
 
 
 
-struct delayp_data 
-{ 
+struct delayp_data
+{
 
     SAMPLE *    buffer;
     t_CKINT     bufsize;
-    
+
     t_CKTIME    now;
 
     double      readpos;   //readpos ( moves at constant speed, sample per sample
     double      writepos; // relative to read position
-    
+
     t_CKTIME    offset; // distance between read and write
-    
-    t_CKDUR     offset_start; 
+
+    t_CKDUR     offset_start;
     t_CKDUR     offset_target;
 
     t_CKTIME    move_end_time; //target time
     t_CKDUR     move_duration; //time we started shift
-    
+
     SAMPLE      last_sample;
     t_CKDUR     last_offset;
-    
+
 #ifdef _DEBUG
     int         lasti;
 #endif
@@ -2238,26 +2379,26 @@ struct delayp_data
     double      bcoeff[2];
     SAMPLE      outputs[3];
     SAMPLE      inputs[3];
-    
-    delayp_data() 
-    { 
-        bufsize  = 2 * g_srate;
+
+    delayp_data()
+    {
+        bufsize  = 2 * g_srateXxx;
         buffer   = ( SAMPLE * ) realloc ( NULL, sizeof ( SAMPLE ) * bufsize );
         t_CKINT i;
-        
+
         for ( i = 0 ; i < bufsize ; i++ ) buffer[i] = 0;
         for ( i = 0 ; i < 2 ; i++ ) { acoeff[i] = 0; bcoeff[i] = 0; }
-        
+
         acoeff[0] = 1.0;
         acoeff[1] = -.99;
         bcoeff[0] = 1.0;
         bcoeff[1] = -1.0;
-        
-        readpos  = 0.0;        
+
+        readpos  = 0.0;
 
         now             = 0.0;
 
-        offset          = 0.0; 
+        offset          = 0.0;
         last_offset     = 0.0;
         offset_start    = 0.0;
         offset_target   = 0.0;
@@ -2279,7 +2420,7 @@ struct delayp_data
 
 CK_DLL_CTOR( delayp_ctor )
 {
-    OBJ_MEMBER_UINT(SELF, delayp_offset_data) = (t_CKUINT)new delayp_data;    
+    OBJ_MEMBER_UINT(SELF, delayp_offset_data) = (t_CKUINT)new delayp_data;
 }
 
 CK_DLL_DTOR( delayp_dtor )
@@ -2301,40 +2442,40 @@ CK_DLL_TICK( delayp_tick )
 
     // area
     d->now = ((Chuck_UGen*)SELF)->shred->vm_ref->shreduler()->now_system;
-    
+
     //calculate new write-offset position ( we interpolate if we've been assigned a new write-offset )
     if ( d->now >= d->move_end_time || d->move_duration == 0 ) d->offset = d->offset_target;
-    else  { 
-        double dt = 1.0 + ( d->now - d->move_end_time ) / ( d->move_duration ); 
+    else  {
+        double dt = 1.0 + ( d->now - d->move_end_time ) / ( d->move_duration );
         d->offset = d->offset_start + dt * ( d->offset_target - d->offset_start );
         // fprintf (stderr, "dt %f, off %f , start %f target %f\n", dt, d->writeoff,  d->writeoff_start, d->writeoff_target );
     }
-    
+
     //find locations in buffer...
     double write        = (d->readpos )         + d->offset;
     double last_write   = (d->readpos - 1.0)    + d->last_offset ;
-    
+
     //linear interpolation.  will introduce some lowpass/aliasing.
     double write_delta  = write - last_write;
     double sample_delta = in - d->last_sample;
 
     double duck_constant = 0.69;
 
-    
+
     double gee = fabs(write_delta) - 1.0;
 
-    if ( gee < 24.0 ) { 
+    if ( gee < 24.0 ) {
         double head_contact = ( gee > 0 ) ? exp ( - duck_constant * gee ) : 1.0;
         t_CKINT i, smin, smax, sampi;
         SAMPLE sampf = 0;
         if ( write_delta >= 0 ) { //forward.
             smin = (t_CKINT) floor ( last_write );
             smax = (t_CKINT) floor ( write );
-            for ( i = smin+1 ; i <= smax ; i++ ) { 
+            for ( i = smin+1 ; i <= smax ; i++ ) {
                 sampf = d->last_sample + sample_delta * ( double(i) - last_write ) / write_delta;
                 sampi = ( i + d->bufsize * 2 ) % d->bufsize;
-#ifdef _DEBUG 
-                if ( d->lasti == sampi ) { 
+#ifdef _DEBUG
+                if ( d->lasti == sampi ) {
                     CK_FPRINTF_STDERR( "[chuck](via Curve): over!\n");
                 }
                 d->lasti = sampi;
@@ -2345,44 +2486,44 @@ CK_DLL_TICK( delayp_tick )
         else { //moving in reverse
             smin = (t_CKINT) floor ( write );
             smax = (t_CKINT) floor ( last_write );
-            for ( i = smin+1 ; i <= smax ; i++ ) { 
+            for ( i = smin+1 ; i <= smax ; i++ ) {
                 sampf = d->last_sample + sample_delta * ( double(i) - last_write ) / write_delta;
                 sampi = ( i + d->bufsize * 2 ) % d->bufsize;
 #ifdef _DEBUG
-                if ( d->lasti == sampi ) { 
+                if ( d->lasti == sampi ) {
                     CK_FPRINTF_STDERR( "[chuck](via Curve): over!\n" );
                 }
                 d->lasti = sampi;
 #endif
-                d->buffer[sampi] += sampf * head_contact;   
+                d->buffer[sampi] += sampf * head_contact;
             }
         }
     }
-    
+
     d->last_offset = d->offset;
     d->last_sample = in;
-    
-    
-    //output should go through a dc blocking filter, for cases where 
+
+
+    //output should go through a dc blocking filter, for cases where
     //we are zipping around in the buffer leaving a fairly constant
     //trail of samples
-    
+
     //output last sample
-    
-    t_CKINT rpos = (t_CKINT) fmod( d->readpos, d->bufsize ) ; 
-    
+
+    t_CKINT rpos = (t_CKINT) fmod( d->readpos, d->bufsize ) ;
+
     //   *out = d->buffer[rpos];
 
-    /*    
-    // did i try to write a dc blocking filter? 
+    /*
+    // did i try to write a dc blocking filter?
     d->outputs[0] =  0.0;
     d->inputs [0] =  d->buffer[rpos];
 
     d->outputs[0] += d->bcoeff[1] * d->inputs[1];
     d->inputs [1] =  d->inputs[0];
-    
+
     d->outputs[0] += d->bcoeff[0] * d->inputs[0];
-    
+
     d->outputs[0] += -d->acoeff[1] * d->outputs[1];
     d->outputs[1] =  d->outputs[0];
 
@@ -2391,22 +2532,22 @@ CK_DLL_TICK( delayp_tick )
     */
 
     *out = d->buffer[rpos];
-    
+
     d->buffer[rpos] = 0; //clear once it's been read
     d->readpos = fmod ( d->readpos + 1.0 , double( d->bufsize ) );
- 
+
     return TRUE;
-    
+
 }
 
 CK_DLL_CTRL( delayp_ctrl_delay )
 {
     delayp_data * d = ( delayp_data * ) OBJ_MEMBER_UINT(SELF, delayp_offset_data);
-    t_CKDUR target = GET_CK_DUR(ARGS); // rate     
+    t_CKDUR target = GET_CK_DUR(ARGS); // rate
     // area
 
     if ( target != d->offset_target ) {
-        if ( target > d->bufsize ) { 
+        if ( target > d->bufsize ) {
             CK_FPRINTF_STDERR( "[chuck](via delayp): delay time %f over max!  set max first!\n", target);
             return;
         }
@@ -2414,7 +2555,7 @@ CK_DLL_CTRL( delayp_ctrl_delay )
         d->offset_start  = d->last_offset;
 
         t_CKTIME snow = ((Chuck_UGen*)SELF)->shred->now;
-        d->move_end_time = snow + d->move_duration; 
+        d->move_end_time = snow + d->move_duration;
     }
     RETURN->v_dur = d->last_offset; // TODO:
 }
@@ -2429,7 +2570,7 @@ CK_DLL_CGET( delayp_cget_delay )
 CK_DLL_CTRL( delayp_ctrl_window )
 {
     delayp_data * d = ( delayp_data * ) OBJ_MEMBER_UINT(SELF, delayp_offset_data);
-    t_CKDUR window = GET_CK_DUR(ARGS); // rate     
+    t_CKDUR window = GET_CK_DUR(ARGS); // rate
     if ( window >= 0 ) {
         d->move_duration = window;
         //fprintf ( stderr, "set window time %f , %f , %d \n", d->writeoff_window_time, d->writeoff, d->bufsize );
@@ -2445,11 +2586,11 @@ CK_DLL_CGET( delayp_cget_window )
 
 
 CK_DLL_CTRL( delayp_ctrl_max )
-{   
+{
     delayp_data * d = ( delayp_data * ) OBJ_MEMBER_UINT(SELF, delayp_offset_data);
-    t_CKDUR nmax = GET_CK_DUR(ARGS); // rate 
-    if ( d->bufsize != (t_CKINT)nmax && nmax > 1.0 ) { 
-        d->bufsize = (t_CKINT)(nmax+.5); 
+    t_CKDUR nmax = GET_CK_DUR(ARGS); // rate
+    if ( d->bufsize != (t_CKINT)nmax && nmax > 1.0 ) {
+        d->bufsize = (t_CKINT)(nmax+.5);
         d->buffer = ( SAMPLE * ) realloc ( d->buffer, sizeof ( SAMPLE ) * d->bufsize );
         for ( t_CKINT i = 0; i < d->bufsize; i++ ) d->buffer[i] = 0;
     }
@@ -2489,7 +2630,7 @@ sinc is calculated by floating point trig function calls.  */
 interpolated or not.  If you re not using the
 table, this has no effect         */
 
-#define SAMPLES_PER_ZERO_CROSSING 32    /* this defines how finely the sinc function 
+#define SAMPLES_PER_ZERO_CROSSING 32    /* this defines how finely the sinc function
 is sampled for storage in the table  */
 
 #ifdef CK_SNDBUF_MEMORY_BUFFER
@@ -2509,29 +2650,29 @@ public:
     {
         m_size = 0;
     }
-    
+
     ~MultiBuffer()
     {
         deallocate();
     }
-    
+
     size_t size()
     {
         return m_size;
     }
-    
+
     void resize( size_t size )
     {
         assert( size > m_size ); // for now
         size_t new_buffer_size = size - m_size;
-        
+
         extent new_extent;
         new_extent.position = new _type[new_buffer_size];
         new_extent.length = new_buffer_size;
         m_bufs.push_back( new_extent );
         m_size = size;
     }
-    
+
     void deallocate()
     {
         // delete everything
@@ -2540,7 +2681,7 @@ public:
             delete[] m_bufs[i].position;
         m_size = 0;
     }
-    
+
     class Pointer
     {
     public:
@@ -2551,7 +2692,7 @@ public:
             m_extent = 0;
             m_extpos = 0;
         }
-        
+
         Pointer( MultiBuffer * mb )
         {
             m_mb = mb;
@@ -2559,35 +2700,35 @@ public:
             m_extent = 0;
             m_extpos = 0;
         }
-        
-        Pointer( const Pointer & mbp )
+
+        Pointer( const Pointer & mbp )
         {
             m_mb = mbp.m_mb;
             m_lpos = mbp.m_lpos;
             m_extent = mbp.m_extent;
-            m_extpos = mbp.m_extpos;      
+            m_extpos = mbp.m_extpos;
         }
-        
+
         Pointer & operator=( MultiBuffer & mb )
         {
             m_mb = &mb;
             m_lpos = 0;
             m_extent = 0;
             m_extpos = 0;
-            
+
             return *this;
         }
-        
+
         Pointer & operator=( const Pointer & mbp )
         {
             m_mb = mbp.m_mb;
             m_lpos = mbp.m_lpos;
             m_extent = mbp.m_extent;
             m_extpos = mbp.m_extpos;
-            
+
             return *this;
         }
-        
+
         Pointer & operator=( size_t i )
         {
             reset();
@@ -2599,31 +2740,31 @@ public:
         {
             return m_mb->m_bufs[m_extent].position[m_extpos];
         }
-        
+
         Pointer operator+( size_t i ) const
         {
             Pointer mbp( *this );
             mbp.increment( i );
             return mbp;
         }
-        
+
         Pointer operator++( int )
         {
             Pointer mbp = *this;
             this->increment( 1 );
             return mbp;
         }
-        
+
         bool operator>=( const Pointer & mbp ) const
         {
             return ( m_lpos >= mbp.m_lpos );
         }
-        
+
         bool operator>=( const size_t i ) const
         {
             return ( m_lpos >= i );
         }
-        
+
         void increment( size_t i )
         {
             m_lpos += i;
@@ -2633,7 +2774,7 @@ public:
                 m_extpos = m_lpos - m_mb->m_size;
                 return;
             }
-            
+
             extent ext_current = m_mb->m_bufs[m_extent];
             i += m_extpos;
             while( i >= ext_current.length )
@@ -2642,17 +2783,17 @@ public:
                 m_extent++;
                 ext_current = m_mb->m_bufs[m_extent];
             }
-            
+
             m_extpos = i;
         }
-        
+
         void reset()
         {
             m_lpos = 0;
             m_extent = 0;
             m_extpos = 0;
         }
-        
+
     protected:
         MultiBuffer * m_mb;
 
@@ -2660,15 +2801,15 @@ public:
         size_t m_extent; // current extent
         size_t m_extpos; // position within the extent
     };
-    
+
 protected:
-    
+
     struct extent
     {
         _type * position;
         size_t length;
     };
-    
+
     /* data shared by a set of MultiBuffers */
     vector< extent > m_bufs; // array of sequentially allocated buffers
     size_t m_size; // overall size of total memory represented
@@ -2684,11 +2825,13 @@ struct sndbuf_data
     t_CKUINT num_frames;
     t_CKUINT samplerate;
     t_CKUINT chan;
-    
+
     t_CKUINT chunks;
     t_CKUINT chunks_read;
     t_CKUINT chunk_num;
     SAMPLE ** chunk_map;
+    // 1.5.0.0 (ge) added (chunks will only affect next .read)
+    t_CKUINT chunks_on_next_load;
 
     SAMPLE * eob;
     //SAMPLE * curr;
@@ -2699,7 +2842,7 @@ struct sndbuf_data
     t_CKFLOAT rate;
     t_CKINT interp;
     t_CKBOOL loop;
-    
+
     bool sinc_table_built;
     bool sinc_use_table;
     bool sinc_use_interp;
@@ -2736,18 +2879,19 @@ struct sndbuf_data
         current_val = 0.0;
         chunk_map = NULL;
         chunk_num = 0;
-        
+        chunks_on_next_load = chunks; // whatever chunks default is
+
         sinc_table_built = false;
         sinc_use_table = USE_TABLE;
         sinc_use_interp = USE_INTERP;
         sinc_width = WIDTH;
         sinc_samples_per_zero_crossing = SAMPLES_PER_ZERO_CROSSING;
         sinc_table = NULL;
-        
+
 #ifdef CK_SNDBUF_MEMORY_BUFFER
         mb_buffer = MultiBuffer< SAMPLE >();
 #endif /* CK_SNDBUF_MEMORY_BUFFER */
-        
+
         loop = FALSE;
         fd = NULL;
     }
@@ -2755,7 +2899,7 @@ struct sndbuf_data
     ~sndbuf_data()
     {
         SAFE_DELETE_ARRAY( buffer );
-        
+
         if( chunk_map )
         {
             for(int i = 0; i < chunk_num; i++)
@@ -2763,7 +2907,7 @@ struct sndbuf_data
             SAFE_DELETE_ARRAY(chunk_map);
         }
     }
-    
+
     inline void sampleIndex2FrameIndexAndChannel(t_CKINT sample, t_CKINT *frame, t_CKINT *channel)
     {
         *frame = (t_CKINT) floorf(sample/this->num_channels);
@@ -2795,7 +2939,7 @@ inline t_CKUINT sndbuf_read( sndbuf_data * d, t_CKUINT frame, t_CKUINT num_frame
     // check
     if( d->fd == NULL ) return 0;
     if( frame >= d->num_frames ) return 0;
-    
+
     // log
     // EM_log( CK_LOG_FINE, "(sndbuf): reading %d:%d frames...", offset, howmuch );
 
@@ -2835,18 +2979,18 @@ inline t_CKINT sndbuf_load( sndbuf_data * d, t_CKUINT sample )
 {
     // map to bin
     t_CKUINT bin = floor(((t_CKFLOAT) sample) / ((t_CKFLOAT) d->chunks));
-    
+
     assert(bin < d->chunk_num);
-    
+
     // already loaded
     if( d->chunk_map[bin] ) return 0;
-    
+
     // allocate
     d->chunk_map[bin] = new SAMPLE[d->chunks];
 
     // read it
     t_CKINT ret = sndbuf_read( d, bin*d->chunks/d->num_channels, d->chunks/d->num_channels );
-    
+
     // log
     // EM_log( CK_LOG_FINER, "chunk test: pos: %d bin: %d read:%d/%d", where, bin, d->chunks_read, d->num_frames );
 //    CK_FPRINTF_STDERR( "chunks: loaded bin %lu\n", bin );
@@ -2856,7 +3000,8 @@ inline t_CKINT sndbuf_load( sndbuf_data * d, t_CKUINT sample )
 
 inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
 {
-    if( !(d->buffer || d->chunk_map) ) return;
+    // if no buffer allocate (nothing read)
+    if( d->buffer == NULL && d->chunk_map == NULL ) return;
 
     d->curf = frame_pos;
 
@@ -2865,7 +3010,7 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
     {
         while( d->curf >= d->num_frames ) d->curf -= d->num_frames;
         while( d->curf < 0 ) d->curf += d->num_frames;
-    } 
+    }
     else
     {
         if( d->curf < 0 )
@@ -2874,18 +3019,18 @@ inline void sndbuf_setpos( sndbuf_data *d, double frame_pos )
             d->current_val = 0;  // 1.4.1.0 (ge) added to avoid DC
             return; // 1.4.1.0 (ge) added
         }
-        else if( d->curf > d->num_frames )
+        else if( d->curf >= d->num_frames ) // 1.5.0.0 (ge) | changed from > to >=
         {
-            d->curf = d->num_frames; // 1.4.1.0 (ge) added back the -1
+            d->curf = d->num_frames;
             d->current_val = 0;
             return;
         }
     }
-    
+
     t_CKUINT index = d->chan + ((t_CKINT)d->curf) * d->num_channels;
     // ensure load
     if( d->fd != NULL ) sndbuf_load( d, index );
-    
+
     // sets curr to correct position ( account for channels )
     // t_CKUINT index = d->chan + i * d->num_channels;
     if(d->buffer)
@@ -2898,15 +3043,18 @@ inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT frame_pos, t_CKINT arg_c
 {
     // boundary cases
     t_CKINT nf = d->num_frames;
-    if( d->loop ) { 
+    if( d->loop ) {
         while( frame_pos >= nf ) frame_pos -= nf;
         while( frame_pos <  0 ) frame_pos += nf;
     }
-    else { 
-        if( frame_pos >= nf ) frame_pos = nf-1;
+    else {
+        if( frame_pos >= nf ) frame_pos = nf; // 1.5.0.0 (ge) | set frame_pos to nf, instead of nf-1
         if( frame_pos < 0 ) frame_pos = 0;
     }
-    
+
+    // 1.5.0.0 (ge) | added check
+    if( frame_pos == nf ) return 0;
+
     // if specific channel was requested, use that one
     t_CKUINT chan = 0;
     // I love sentinal values
@@ -2914,11 +3062,11 @@ inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT frame_pos, t_CKINT arg_c
         chan = d->chan;
     else if(arg_chan < d->num_channels)
         chan = arg_chan;
-    
+
     t_CKUINT index = chan + frame_pos * d->num_channels;
     // ensure load
     if( d->fd != NULL ) sndbuf_load( d, index );
-    
+
     // return sample
     if(d->buffer != NULL)
         return d->buffer[index];
@@ -2928,7 +3076,8 @@ inline SAMPLE sndbuf_sampleAt( sndbuf_data * d, t_CKINT frame_pos, t_CKINT arg_c
 
 inline double sndbuf_getpos( sndbuf_data * d )
 {
-    if( !(d->buffer || d->chunk_map) ) return 0;
+    // if no buffer allocated (nothing read)
+    if( d->buffer == NULL && d->chunk_map == NULL ) return 0;
     return floor(d->curf);
 }
 
@@ -2937,7 +3086,7 @@ CK_DLL_CTRL( sndbuf_ctrl_loop )
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     d->loop = GET_CK_INT(ARGS);
     RETURN->v_int = d->loop; // TODO: Check (everything)
-} 
+}
 
 CK_DLL_CGET( sndbuf_cget_loop )
 {
@@ -2945,13 +3094,13 @@ CK_DLL_CGET( sndbuf_cget_loop )
     RETURN->v_int = d->loop;
 }
 
-// PRC's sinc interpolation function.. as found 
+// PRC's sinc interpolation function.. as found
 // http://www.cs.princeton.edu/courses/archive/spring03/cs325/src/TimeStuf/srconvrt.c
 //
 // there's probably a lot in there that could be optimized, if we care to..
 
 // #define PI 3.14159265358979323846
-// wow... we are sensitive.. 
+// wow... we are sensitive..
 
 inline double sndbuf_linear_interp( double * first, double * second, double * frac );
 bool sinc_table_built = false;
@@ -2965,9 +3114,9 @@ void sndbuf_sinc_interpolate( sndbuf_data *d, SAMPLE * out )
     // UNUSED: double int_time = 0;
     // UNUSED: double last_time = 0;
     double temp1 = 0.0;
-    
+
     long time_i = (long)time_now;
-    
+
     // bounds checking now in sampleAt function...
     if( factor < 1.0 ) {
         for( j = -d->sinc_width + 1; j < d->sinc_width; j++ )
@@ -2980,7 +3129,7 @@ void sndbuf_sinc_interpolate( sndbuf_data *d, SAMPLE * out )
         one_over_factor = 1.0 / factor;
         for( j = -d->sinc_width + 1; j < d->sinc_width; j++ ) {
             temp1 += sndbuf_sampleAt(d,time_i+j) * one_over_factor * sndbuf_sinc( d, one_over_factor * (double)j );
-        } 
+        }
         *out = (SAMPLE)temp1;
     }
 }
@@ -2992,7 +3141,7 @@ void sndbuf_make_sinc( sndbuf_data * d )
     double temp, win_freq, win;
     win_freq = ONE_PI / d->sinc_width / d->sinc_samples_per_zero_crossing;
     t_CKINT tabsize = d->sinc_width * d->sinc_samples_per_zero_crossing;
-    
+
     d->sinc_table = (double *) realloc( d->sinc_table, tabsize * sizeof(double) );
     d->sinc_table[0] = 1.0;
     for( i = 1; i < tabsize; i++ ) {
@@ -3030,7 +3179,7 @@ double sndbuf_t_sinc( sndbuf_data * d, double x )
 double sndbuf_sinc( sndbuf_data * d, double x )
 {
     double temp;
-    
+
     if( d->sinc_use_table ) return sndbuf_t_sinc(d,x);
     else {
         if( x == 0.0 ) return 1.0;
@@ -3044,14 +3193,14 @@ double sndbuf_sinc( sndbuf_data * d, double x )
 CK_DLL_TICK( sndbuf_tick )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
-    
+
 #ifdef CK_SNDBUF_MEMORY_BUFFER
     // spencer's memory buffer stuff
     if( d->fd == 0 )
         // no file open - memory buffer mode
     {
         Chuck_UGen * ugen = (Chuck_UGen *)SELF;
-        if( ugen->m_num_src ) 
+        if( ugen->m_num_src )
             // recording mode
         {
             if( d->mb_buffer.size() == 0 )
@@ -3060,43 +3209,47 @@ CK_DLL_TICK( sndbuf_tick )
                 d->mb_record_position = d->mb_buffer;
                 d->mb_playback_position = d->mb_buffer;
             }
-            
+
             if( d->mb_record_position >= d->mb_buffer.size() )
                 d->mb_buffer.resize( d->mb_buffer.size() * 2 );
-            
+
             *(d->mb_record_position++) = in;
         }
-        
+
         if( d->mb_buffer.size() )
         {
             if( d->mb_playback_position >= d->mb_record_position )
             {
                 if( d->loop )
                     d->mb_playback_position = 0;
-                
+
                 else if( ugen->m_num_src )
                 {
                     *out = 0;
                     return TRUE;
                 }
-                
+
                 else
                     return FALSE;
             }
-            
+
             *out = *(d->mb_playback_position++);
         }
-        
+
         return TRUE;
     }
 #endif /* CK_SNDBUF_MEMORY_BUFFER */
-    
-    if( !( d->buffer || d->chunk_map ) )
+
+    // check if we have data to work with
+    // 1.5.0.0 (ge) modified for clarity;
+    // was: if( !(d->buffer || d->chunk_map) ) { ... }
+    // if no buffer allocated; nothing read
+    if( d->buffer == NULL && d->chunk_map == NULL )
     {
         *out = 0;
         return TRUE;
     }
-    
+
     // we're ticking once per sample ( system )
     // curf in samples;
     if( !d->loop && (d->curf >= d->num_frames || d->curf < 0) )
@@ -3122,28 +3275,29 @@ CK_DLL_TICK( sndbuf_tick )
             sndbuf_sinc_interpolate(d, out);
         }
     }
-    
+
     // advance
     d->curf += d->rate;
     sndbuf_setpos(d, d->curf);
-    
-    return TRUE;    
+
+    return TRUE;
 }
 
 /* multi-chan tick */
 CK_DLL_TICKF( sndbuf_tickf )
 {
     Chuck_UGen * ugen = (Chuck_UGen *) SELF;
-    
+
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
-    
-    if( !( d->buffer || d->chunk_map ) ) return FALSE;
-    
+
+    // if no buffer allocated, nothing read
+    if( d->buffer == NULL && d->chunk_map == NULL ) return FALSE;
+
     // we're ticking once per sample ( system )
     // curf in samples;
-    
+
     if( !d->loop && d->curf >= d->num_frames ) return FALSE;
-    
+
     // normalize amplitude across channels
     // TODO: normalize power?
     SAMPLE amp_factor = 1;
@@ -3159,9 +3313,9 @@ CK_DLL_TICKF( sndbuf_tickf )
     {
         // ruh roh
     }
-    
-    unsigned int frame_idx;
-    unsigned int nchans = ugen->m_num_outs;
+
+    t_CKUINT frame_idx;
+    t_CKUINT nchans = ugen->m_num_outs;
     for(frame_idx = 0; frame_idx < nframes && (d->loop || d->curf < d->num_frames); frame_idx++)
     {
         for(unsigned int chan_idx = 0; chan_idx < nchans; chan_idx++)
@@ -3188,21 +3342,21 @@ CK_DLL_TICKF( sndbuf_tickf )
                 //sndbuf_sinc_interpolate(d, out);
             }
         }
-        
+
         // advance
         sndbuf_setpos(d, d->curf + d->rate);
     }
-    
+
     for(; frame_idx < nframes; frame_idx++)
     {
-        for(unsigned int chan_idx = 0; chan_idx < nchans; chan_idx++)
+        for(t_CKUINT chan_idx = 0; chan_idx < nchans; chan_idx++)
         {
             out[frame_idx*nchans+chan_idx] = 0;
         }
     }
-                
-    
-    return TRUE;    
+
+
+    return TRUE;
 }
 
 
@@ -3213,13 +3367,14 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     Chuck_String * ckfilename = GET_CK_STRING(ARGS);
-    const char * filename = ckfilename->str().c_str();
-    
-    // return filename
+    const char * filename = NULL;
+
+    // set return value
     RETURN->v_string = ckfilename;
-    
+
+    // cleanup
     SAFE_DELETE_ARRAY(d->buffer);
-    
+    // clean up chunk map
     if( d->chunk_map )
     {
         for(int i = 0; i < d->chunk_num; i++)
@@ -3227,16 +3382,28 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         SAFE_DELETE_ARRAY(d->chunk_map);
         d->chunk_num = 0;
     }
-    
+    // close file descriptor
     if( d->fd )
     {
         sf_close( d->fd );
         d->fd = NULL;
     }
 
+    // check | 1.5.0.0 (ge) added check to avert crash on null argument
+    if( !ckfilename )
+    {
+        CK_FPRINTF_STDERR( "[chuck] SndBuf.read() given null argument; nothing read...\n" );
+        return;
+    }
+    // get filename c string
+    filename = ckfilename->str().c_str();
+
     // log
     EM_log( CK_LOG_INFO, "(sndbuf): reading '%s'...", filename );
     
+    // copy in the chunks size | 1.5.0.0 (ge)
+    d->chunks = d->chunks_on_next_load;
+
     // built in
     if( strstr(filename, "special:") )
     {
@@ -3368,7 +3535,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
             struct stat s;
             if( stat( filename, &s ) )
             {
-                CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot stat file '%s'...\n", filename );
+                CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot open file '%s'...\n", filename );
                 return;
             }
         }
@@ -3378,7 +3545,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         info.format = 0;
         const char * format = (const char *)strrchr( filename, '.');
         if( format && strcmp( format, ".raw" ) == 0 )
-        { 
+        {
             CK_FPRINTF_STDERR( "[chuck](via SndBuf) %s :: type is '.raw'...\n    assuming 16 bit signed mono (PCM)\n", filename );
             info.format = SF_FORMAT_RAW | SF_FORMAT_PCM_16 | SF_ENDIAN_CPU ;
             info.channels = 1;
@@ -3401,7 +3568,11 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         {
             CK_FPRINTF_STDERR( "[chuck](via SndBuf): sndfile error '%li' opening '%s'...\n", er, filename );
             CK_FPRINTF_STDERR( "[chuck](via SndBuf): (reason: %s)\n", sf_strerror( d->fd ) );
-            if( d->fd ) sf_close( d->fd );
+            if( d->fd )
+            {
+                sf_close( d->fd );
+                d->fd = NULL; // 1.5.0.0 (ge) added
+            }
             // escape
             return;
         }
@@ -3411,7 +3582,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         if(d->chunks)
         {
             // split into small allocations
-            d->chunk_num = ceilf(((t_CKFLOAT) size) / ((t_CKFLOAT) d->chunks));
+            d->chunk_num = ceil(((t_CKFLOAT) size) / ((t_CKFLOAT) d->chunks)); // 1.5.0.0 (ge) | ceilf => ceil
             d->buffer = NULL;
             d->chunk_map = new SAMPLE*[d->chunk_num];
             memset(d->chunk_map, 0, d->chunk_num * sizeof(SAMPLE *));
@@ -3424,7 +3595,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
             memset( d->buffer, 0, (size+info.channels)*sizeof(SAMPLE) );
             d->chunk_map = NULL;
         }
-        
+
         d->chan = 0;
         d->num_frames = info.frames;
         d->num_channels = info.channels;
@@ -3461,7 +3632,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
     }
 
     // d->interp = SNDBUF_INTERP;
-    d->sampleratio = (double)d->samplerate / (double)g_srate;
+    d->sampleratio = (double)d->samplerate / (double)g_srateXxx;
     // set the rate
     d->rate = d->sampleratio * d->rate_factor;
     d->current_val = 0;
@@ -3474,20 +3645,20 @@ CK_DLL_CTRL( sndbuf_ctrl_write )
 #ifdef SPENCER_SNDBUF_WRITE
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     const char * filename = GET_CK_STRING(ARGS)->str.c_str();
-    
+
     if( d->buffer )
     {
         delete [] d->buffer;
         d->buffer = NULL;
     }
-    
+
     struct stat s;
     if( stat( filename, &s ) )
     {
-        CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot stat file '%s'...\n", filename );
+        CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot open file '%s'...\n", filename );
         return;
     }
-    
+
     d->curr = d->buffer;
     d->eob = d->buffer + d->num_samples;
 #endif
@@ -3511,27 +3682,27 @@ CK_DLL_CGET( sndbuf_cget_rate )
 
 
 CK_DLL_CTRL( sndbuf_ctrl_freq )
-{ 
+{
     sndbuf_data * d = ( sndbuf_data * ) OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     t_CKFLOAT freq = GET_CK_FLOAT(ARGS);  //hz
-    
-    d->rate = ( freq * (double) d->num_frames / (double) g_srate );
+
+    d->rate = ( freq * (double) d->num_frames / (double)g_srateXxx);
     d->rate_factor = d->rate / d->sampleratio;
-    RETURN->v_float = d->rate * (t_CKFLOAT) g_srate / ( (t_CKFLOAT) d->num_frames ); // TODO: really?
+    RETURN->v_float = d->rate * (t_CKFLOAT)g_srateXxx / ( (t_CKFLOAT) d->num_frames ); // TODO: really?
 }
 
 CK_DLL_CGET( sndbuf_cget_freq )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
-    RETURN->v_float = d->rate * (t_CKFLOAT) g_srate / ( (t_CKFLOAT) d->num_frames ); 
+    RETURN->v_float = d->rate * (t_CKFLOAT)g_srateXxx / ( (t_CKFLOAT) d->num_frames );
 }
 
 CK_DLL_CTRL( sndbuf_ctrl_phase )
-{ 
+{
     sndbuf_data * d = ( sndbuf_data * ) OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     t_CKFLOAT phase = GET_CK_FLOAT(ARGS);
     sndbuf_setpos(d, phase * (double)d->num_frames);
-    RETURN->v_float = (t_CKFLOAT) d->curf / (t_CKFLOAT)d->num_frames; // TODO: 
+    RETURN->v_float = (t_CKFLOAT) d->curf / (t_CKFLOAT)d->num_frames; // TODO:
 }
 
 CK_DLL_CGET( sndbuf_cget_phase )
@@ -3542,10 +3713,10 @@ CK_DLL_CGET( sndbuf_cget_phase )
 }
 
 CK_DLL_CTRL( sndbuf_ctrl_channel )
-{ 
+{
     sndbuf_data * d = ( sndbuf_data * ) OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     t_CKINT chan = GET_CK_INT(ARGS);
-    if ( chan >= 0 && chan < d->num_channels ) { 
+    if ( chan >= 0 && chan < d->num_channels ) {
         d->chan = chan;
     }
     RETURN->v_int = (t_CKINT)d->chan;
@@ -3559,7 +3730,7 @@ CK_DLL_CGET( sndbuf_cget_channel )
 }
 
 CK_DLL_CTRL( sndbuf_ctrl_pos )
-{ 
+{
     sndbuf_data * d = ( sndbuf_data * ) OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     t_CKINT pos = GET_CK_INT(ARGS);
 #ifdef CK_SNDBUF_MEMORY_BUFFER
@@ -3573,11 +3744,11 @@ CK_DLL_CTRL( sndbuf_ctrl_pos )
 CK_DLL_CGET( sndbuf_cget_pos )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
-    RETURN->v_int = (t_CKINT)sndbuf_getpos(d); 
+    RETURN->v_int = (t_CKINT)sndbuf_getpos(d);
 }
 
 CK_DLL_CTRL( sndbuf_ctrl_interp )
-{ 
+{
     sndbuf_data * d = ( sndbuf_data * ) OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     t_CKINT interp = GET_CK_INT(ARGS);
     d->interp = interp;
@@ -3594,14 +3765,19 @@ CK_DLL_CTRL( sndbuf_ctrl_chunks )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     t_CKINT frames = GET_NEXT_INT(ARGS);
-    d->chunks = frames >= 0 ? frames : 0;
+    // 1.5.0.0 (ge) | modified to set chunks_on_next_load
+    // setting chunks after load violates some assumptions
+    d->chunks_on_next_load = frames >= 0 ? frames : 0;
+    // d->chunks = frames >= 0 ? frames : 0;
     RETURN->v_int = d->chunks;
 }
 
 CK_DLL_CGET( sndbuf_cget_chunks )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
-    RETURN->v_int = d->chunks;
+    // 1.5.0.0 (ge) | retuns d->chunks_on_next_load
+    RETURN->v_int = d->chunks_on_next_load;
+    // RETURN->v_int = d->chunks;
 }
 
 CK_DLL_CTRL( sndbuf_ctrl_phase_offset )
@@ -3639,7 +3815,8 @@ CK_DLL_CGET( sndbuf_cget_valueAt )
     t_CKINT frame, channel;
     d->sampleIndex2FrameIndexAndChannel(sample, &frame, &channel);
     if( d->fd ) sndbuf_load( d, sample );
-    RETURN->v_float = ( frame > d->num_frames || frame < 0 ) ? 0 : sndbuf_sampleAt(d, frame, channel);
+    // 1.5.0.0 (ge) 'frame >' => 'frame >='
+    RETURN->v_float = ( frame >= d->num_frames || frame < 0 ) ? 0 : sndbuf_sampleAt(d, frame, channel);
 }
 
 #endif // __DISABLE_SNDBUF__
@@ -3657,9 +3834,9 @@ public:
   t_CKFLOAT rt;
   t_CKFLOAT at;
   t_CKFLOAT xd; //sidechain
-  int externalSideInput; // use input signal or a ctrl signal for env
+  t_CKINT externalSideInput; // use input signal or a ctrl signal for env
   t_CKFLOAT sideInput;   // the ctrl signal for the envelope
-  
+
   int count; //diagnostic
 
   Dyno_Data( Chuck_VM * vm ) {
@@ -3843,7 +4020,7 @@ CK_DLL_CGET( dyno_cget_ratio ) {
 CK_DLL_CTRL( dyno_ctrl_slopeBelow ) {
     Dyno_Data * d = ( Dyno_Data * )OBJ_MEMBER_UINT(SELF, dyno_offset_data);
     d->slopeBelow = GET_CK_FLOAT(ARGS);
-    
+
     RETURN->v_float = d->slopeBelow;
 }
 
@@ -3856,7 +4033,7 @@ CK_DLL_CGET( dyno_cget_slopeBelow ) {
 CK_DLL_CTRL( dyno_ctrl_slopeAbove ) {
     Dyno_Data * d = ( Dyno_Data * )OBJ_MEMBER_UINT(SELF, dyno_offset_data);
     d->slopeAbove = GET_CK_FLOAT(ARGS);
-    
+
     RETURN->v_float = d->slopeAbove;
 }
 
@@ -3869,7 +4046,7 @@ CK_DLL_CGET( dyno_cget_slopeAbove ) {
 CK_DLL_CTRL( dyno_ctrl_sideInput ) {
     Dyno_Data * d = ( Dyno_Data * )OBJ_MEMBER_UINT(SELF, dyno_offset_data);
     d->sideInput = GET_CK_FLOAT(ARGS);
-    
+
     RETURN->v_float = d->sideInput;
 }
 
@@ -3882,7 +4059,7 @@ CK_DLL_CGET( dyno_cget_sideInput ) {
 CK_DLL_CTRL( dyno_ctrl_externalSideInput ) {
     Dyno_Data * d = ( Dyno_Data * )OBJ_MEMBER_UINT(SELF, dyno_offset_data);
     d->externalSideInput = GET_CK_INT(ARGS);
-    
+
     RETURN->v_int = d->externalSideInput;
 }
 
@@ -3967,7 +4144,7 @@ struct LiSaMulti_data
     t_CKFLOAT voicePan[LiSa_MAXVOICES];  // pan control for each voice; places voice between any pair of channels.
     t_CKFLOAT channelGain[LiSa_MAXVOICES][LiSa_MAXCHANNELS];
     t_CKDOUBLE p_inc[LiSa_MAXVOICES], pindex[LiSa_MAXVOICES]; // playback increment
-    
+
     // ramp stuff
     t_CKDOUBLE rampup_len[LiSa_MAXVOICES], rampdown_len[LiSa_MAXVOICES], rec_ramplen, rec_ramplen_inv;
     t_CKDOUBLE rampup_len_inv[LiSa_MAXVOICES], rampdown_len_inv[LiSa_MAXVOICES];
@@ -3975,72 +4152,119 @@ struct LiSaMulti_data
     t_CKBOOL rampup[LiSa_MAXVOICES], rampdown[LiSa_MAXVOICES];
 
     t_CKINT track;
-	t_CKINT num_chans;
-    
+    t_CKINT num_chans;
+
     // constructor; 1.4.1.0 (ge) added
     LiSaMulti_data()
         : mdata(NULL), outsamples(NULL), mdata_len(0), maxvoices(0),
-          loop_end_rec(0), rindex(0), looprec(FALSE), reset(FALSE),
+          loop_end_rec(0), rindex(0), record(FALSE), looprec(FALSE), reset(FALSE),
           append(FALSE), coeff(0), rec_ramplen(0), rec_ramplen_inv(0),
           track(0), num_chans(0)
-    { /* zero out things out! */ }
-
-    // allocate memory, length in samples
-    inline int buffer_alloc(t_CKINT length)
     {
-        mdata = (SAMPLE *)malloc((length + 1) * sizeof(SAMPLE)); // extra sample for safety....
-        if( !mdata ) {
-            CK_FPRINTF_STDERR( "LiSaBasic: unable to allocate memory!\n" );
-            return false;
-        }
-        
-        memset(mdata, 0, (length + 1) * sizeof(SAMPLE));
-            
-        mdata_len = length;
+        // zero out | 1.5.0.0 (ge) | added (instead of big memset outside!)
+        memset( loop_start, 0, sizeof(loop_start) );
+        memset( loop_end, 0, sizeof(loop_end) );
+        memset( loopplay, 0, sizeof(loopplay) );
+        memset( play, 0, sizeof(play) );
+        memset( bi, 0, sizeof(bi) );
+        memset( voiceGain, 0, sizeof(voiceGain) );
+        memset( voicePan, 0, sizeof(voicePan) );
+        memset( channelGain, 0, sizeof(channelGain) );
+        memset( p_inc, 0, sizeof(p_inc) );
+        memset( pindex, 0, sizeof(pindex) );
+        memset( rampup_len, 0, sizeof(rampup_len) );
+        memset( rampdown_len, 0, sizeof(rampdown_len) );
+        memset( rampup_len_inv, 0, sizeof(rampup_len_inv) );
+        memset( rampdown_len_inv, 0, sizeof(rampdown_len_inv) );
+        memset( rampctr, 0, sizeof(rampctr) );
+        memset( rampup, 0, sizeof(rampup) );
+        memset( rampdown, 0, sizeof(rampdown) );
+
+        // 1.5.0.0 (ge) moved to constructor from buffer_alloc()
+        // ...in case user sets this before allocating
+        // 1.4.1.0 (ge) increased from 10 to 16
         // default maxvoices; user can set
-        maxvoices = 16; // 1.4.1.0 (ge) increased from 10 to 16
+        maxvoices = 16;
+
+        // initialize more stuff
         rec_ramplen = 0.;
         rec_ramplen_inv = 1.;
-        
         track = 0;
-        
+
+        // initialize to reasonable values
+        // 1.5.0.0 (ge) moved to constructor from buffer_alloc()
         for( t_CKINT i=0; i < LiSa_MAXVOICES; i++ )
         {
-            loop_start[i] = 0;
-            //loop_end[i] = length - 1; //no idea why i had this
-			loop_end[i] = length;
-			loop_end_rec = length;
-            
             pindex[i] = rindex = 0;
             play[i] = record = bi[i] = false;
             looprec = loopplay[i] = true;
             coeff = 0.;
             p_inc[i] = 1.;
-			voiceGain[i] = 1.;
-			voicePan[i] = 0.5;
-            
+            voiceGain[i] = 1.;
+            voicePan[i] = 0.5;
+
             // ramp stuff
             rampup[i] = rampdown[i] = false;
             rampup_len[i] = rampdown_len[i] = 0.;
             rampup_len_inv[i] = rampdown_len_inv[i] = 1.;
             rampctr[i] = 0.;
-			
-			for(t_CKINT j=2; j<num_chans; j++) {
-				channelGain[i][j] = 1.;
-			}
-			channelGain[i][0] = 1.0;
+
+            for(t_CKINT j=2; j<num_chans; j++) {
+                channelGain[i][j] = 1.;
+            }
+            channelGain[i][0] = 1.0;
             // channelGain[i][0] = 0.707;
             // channelGain[i][1] = 0.707;
         }
-        
+    }
+
+    // destructor | 1.5.0.0 (ge) added
+    ~LiSaMulti_data()
+    {
+        // cleanup
+        cleanup();
+    }
+
+    // clean up LiSa
+    void cleanup()
+    {
+        // deallocate
+        SAFE_FREE( mdata );
+    }
+
+    // allocate memory, length in samples
+    /* inline */ int buffer_alloc(t_CKINT length)
+    {
+        // cleanup | 1.5.0.0 (ge) added
+        cleanup();
+
+        // allocate
+        mdata = (SAMPLE *)malloc((length + 1) * sizeof(SAMPLE)); // extra sample for safety....
+        if( !mdata ) {
+            CK_FPRINTF_STDERR( "LiSaBasic: unable to allocate memory!\n" );
+            return false;
+        }
+        // zero out
+        memset( mdata, 0, (length + 1) * sizeof(SAMPLE) );
+        // remember data length
+        mdata_len = length;
+
+        for( t_CKINT i=0; i < LiSa_MAXVOICES; i++ )
+        {
+            loop_start[i] = 0;
+            //loop_end[i] = length - 1; //no idea why i had this
+            loop_end[i] = length;
+            loop_end_rec = length;
+        }
+
         return true;
     }
-    
+
     // dump a sample into the buffer; retain existing sample, scaled by "coeff"
     inline void recordSamp( SAMPLE insample )
     {
         SAMPLE tempsample;
-        
+
         if( record )
         {
             if( looprec )
@@ -4064,27 +4288,27 @@ struct LiSaMulti_data
                     return;
                 }
             }
-            
+
             // ramp stuff here
             if( rindex < rec_ramplen )
             {
                 tempsample *= (rindex * rec_ramplen_inv);
-				//CK_FPRINTF_STDERR( "ramping up %f\n", rindex * rec_ramplen_inv );
+                //CK_FPRINTF_STDERR( "ramping up %f\n", rindex * rec_ramplen_inv );
             }
             else if( rindex > (loop_end_rec - rec_ramplen) )
             {
                 tempsample *= (loop_end_rec - rindex) * rec_ramplen_inv;
-				//CK_FPRINTF_STDERR( "ramping down %f\n", (loop_end_rec - rindex) * rec_ramplen_inv );
+                //CK_FPRINTF_STDERR( "ramping down %f\n", (loop_end_rec - rindex) * rec_ramplen_inv );
             }
-            
+
             mdata[rindex] = tempsample;
             rindex++;
         }
     }
-    
+
     // grab a sample from the buffer, with linear interpolation (add prc's SINC interp later)
     // increment play index
-	// which specifies voice number
+    // which specifies voice number
     inline SAMPLE getNextSamp(t_CKINT which)
     {
         // constrain
@@ -4093,47 +4317,47 @@ struct LiSaMulti_data
                 if(pindex[which] >= loop_end[which] || pindex[which] < loop_start[which]) { //should be >= ?
                     pindex[which]  -=  p_inc[which];
                     p_inc[which]    = -p_inc[which];
-                } 
+                }
             }
-			if( loop_start[which] == loop_end[which] ) pindex[which] = loop_start[which]; //catch this condition to avoid infinite while loops
-			else {
-				while(pindex[which] >= loop_end[which]) pindex[which] = loop_start[which] + (pindex[which] - loop_end[which]); //again, >=?
-				while(pindex[which] < loop_start[which]) pindex[which] = loop_end[which] - (loop_start[which] - pindex[which]);
-			}
+            if( loop_start[which] == loop_end[which] ) pindex[which] = loop_start[which]; //catch this condition to avoid infinite while loops
+            else {
+                while(pindex[which] >= loop_end[which]) pindex[which] = loop_start[which] + (pindex[which] - loop_end[which]); //again, >=?
+                while(pindex[which] < loop_start[which]) pindex[which] = loop_end[which] - (loop_start[which] - pindex[which]);
+            }
 
         } else if(pindex[which] >= mdata_len || pindex[which] < 0) { //should be >=, no?
             play[which] = 0;
             //CK_FPRINTF_STDERR( "turning voice %d off!\n", which );
             return (SAMPLE) 0.;
         }
-        
+
         // interp
         t_CKINT whereTrunc = (t_CKINT) pindex[which];
         t_CKDOUBLE whereFrac = pindex[which] - (t_CKDOUBLE)whereTrunc;
         t_CKINT whereNext = whereTrunc + 1;
-        
+
         if (loopplay[which]) {
-			if((whereNext) >= loop_end[which]) {
-				whereNext = loop_start[which];
-			}
-			if((whereTrunc) >= loop_end[which]) {
-				whereTrunc = loop_start[which];
-			}
-		} else {
-			if((whereTrunc) >= mdata_len) {
-				whereTrunc = mdata_len - 1; //should correct this, in case we've overshot by more than 1 sample
-				whereNext = 0;
-			}
-			if((whereNext) >= mdata_len) {
-				whereNext = 0;
-			}
-		}
-        
+            if((whereNext) >= loop_end[which]) {
+                whereNext = loop_start[which];
+            }
+            if((whereTrunc) >= loop_end[which]) {
+                whereTrunc = loop_start[which];
+            }
+        } else {
+            if((whereTrunc) >= mdata_len) {
+                whereTrunc = mdata_len - 1; //should correct this, in case we've overshot by more than 1 sample
+                whereNext = 0;
+            }
+            if((whereNext) >= mdata_len) {
+                whereNext = 0;
+            }
+        }
+
         pindex[which] += p_inc[which];
-        
+
         t_CKDOUBLE outsample;
         outsample = (t_CKDOUBLE)mdata[whereTrunc] + (t_CKDOUBLE)(mdata[whereNext] - mdata[whereTrunc]) * whereFrac;
-        
+
         // ramp stuff
         if(rampup[which]) {
             outsample *= rampctr[which]++ * rampup_len_inv[which]; //remove divide
@@ -4143,15 +4367,15 @@ struct LiSaMulti_data
             outsample *= (rampdown_len[which] - rampctr[which]++) * rampdown_len_inv[which];
             if(rampctr[which] >= rampdown_len[which]) {
                 rampdown[which] = false;
-                play[which] = false; 
+                play[which] = false;
             }
         }
-		
-		outsample *= voiceGain[which];
-        
-        return (SAMPLE)outsample;        
+
+        outsample *= voiceGain[which];
+
+        return (SAMPLE)outsample;
     }
-    
+
     // grab a sample from the buffer, with linear interpolation (add prc's SINC interp later)
     // given a position within the buffer
     inline SAMPLE getSamp(t_CKDOUBLE where, t_CKINT which)
@@ -4159,25 +4383,25 @@ struct LiSaMulti_data
         // constrain
         if(where > loop_end[which])   where = loop_end[which];
         if(where < loop_start[which]) where = loop_start[which];
-        
+
         // interp
         t_CKINT whereTrunc = (t_CKINT) where;
         t_CKDOUBLE whereFrac = where - (t_CKDOUBLE)whereTrunc;
         t_CKINT whereNext = whereTrunc + 1;
-        
+
         if((whereNext) == loop_end[which]) whereNext = loop_start[which];
 
         t_CKDOUBLE outsample;
         outsample = (t_CKDOUBLE)mdata[whereTrunc] + (t_CKDOUBLE)(mdata[whereNext] - mdata[whereTrunc]) * whereFrac;
-		outsample *= voiceGain[which];
-        
-		//add voiceGain ctl here; return (SAMPLE)vgain[which]*outsample;
-        return (SAMPLE)outsample;        
+        outsample *= voiceGain[which];
+
+        //add voiceGain ctl here; return (SAMPLE)vgain[which]*outsample;
+        return (SAMPLE)outsample;
     }
 
     // ramp stuff
     inline void ramp_up( t_CKINT voicenum, t_CKDUR uptime )
-    {            
+    {
         // CK_FPRINTF_STDERR( "ramping up voice %d", voicenum );
 
         rampup[voicenum] = true;
@@ -4192,27 +4416,27 @@ struct LiSaMulti_data
             rampdown[voicenum] = false;
         } else rampctr[voicenum] = 0;
     }
-    
+
     inline void ramp_down(t_CKINT voicenum, t_CKDUR downtime)
     {
         rampdown[voicenum] = true;
         rampdown_len[voicenum] = (t_CKDOUBLE)downtime;
         if(rampdown_len[voicenum] > 0.) rampdown_len_inv[voicenum] = 1./rampdown_len[voicenum];
         else rampdown_len[voicenum] = 1.;
-        
+
         // check to make sure we are not mid ramping up
         if(rampup[voicenum]) {
             rampctr[voicenum] = rampdown_len[voicenum] * (1. - rampctr[voicenum]/rampup_len[voicenum]);
             rampup[voicenum] = false;
         } else rampctr[voicenum] = 0;
     }
-    
+
     inline void set_rec_ramplen(t_CKDUR newlen)
     {
         rec_ramplen = (t_CKDOUBLE)newlen;
         if(rec_ramplen > 0.) rec_ramplen_inv = 1./rec_ramplen;
         else rec_ramplen_inv = 1.;
-		//fprintf ( stderr, "rec_ramplen = %f, inv = %f \n", rec_ramplen, rec_ramplen_inv );
+        //fprintf ( stderr, "rec_ramplen = %f, inv = %f \n", rec_ramplen, rec_ramplen_inv );
     }
 
     // for simple stereo panning of a particular voice, and...
@@ -4256,7 +4480,7 @@ struct LiSaMulti_data
                 {
                     t_CKDOUBLE location = loop_start[i] + (t_CKDOUBLE)in * (loop_end[i] - loop_start[i]);
                     tempsample = getSamp(location, i);
-                    
+
                     // spencer 2013/5/13: fix LiSa track-mode multichannel
                     for( t_CKINT j = 0; j < num_chans; j++ )
                     {
@@ -4270,7 +4494,7 @@ struct LiSaMulti_data
         {
             if( in < 0.0 ) in = -in; // only use voice 0 when tracking with durs.
             tempsample = getSamp( (t_CKDOUBLE)in, 0 );
-            
+
             // spencer 2013/5/13: fix LiSa track-mode multichannel
             for( t_CKINT j = 0; j < num_chans; j++ )
             {
@@ -4282,13 +4506,13 @@ struct LiSaMulti_data
 
         return outsamples;
     }
-    
+
     inline void clear_buf()
     {
         for( t_CKINT i = 0; i < mdata_len; i++ )
             mdata[i] = 0.;
     }
-    
+
     inline t_CKINT get_free_voice()
     {
         t_CKINT voicenumber = 0;
@@ -4299,7 +4523,7 @@ struct LiSaMulti_data
         if( voicenumber == maxvoices ) voicenumber = -1;
         return voicenumber;
     }
-	
+
     // stick sample in record buffer
     inline void pokeSample( SAMPLE insample, t_CKINT index )
     {
@@ -4313,7 +4537,7 @@ struct LiSaMulti_data
             mdata[index] = insample;
         }
     }
-	
+
     // grab sample directly from record buffer, with linear interpolation
     inline SAMPLE grabSample( t_CKDOUBLE where )
     {
@@ -4322,7 +4546,7 @@ struct LiSaMulti_data
             where = 0;
             CK_FPRINTF_STDERR( "LiSa: trying to grab sample out of buffer range; ignoring" );
             return 0.;
-		}
+        }
         else
         {
             // interp
@@ -4361,15 +4585,19 @@ struct LiSaMulti_data
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( LiSaMulti_ctor )
 {
-    LiSaMulti_data * f =  new LiSaMulti_data;
-    memset( f, 0, sizeof(LiSaMulti_data) );
-			
-	Chuck_UGen * ugen = (Chuck_UGen *)SELF;
-	f->num_chans = ugen->m_multi_chan_size > 0 ? ugen->m_multi_chan_size : 1;
-    //CK_FPRINTF_STDERR( "LiSa: number of channels = %d\n", f->num_chans );
-	f->outsamples = new SAMPLE[f->num_chans];
-	memset( f->outsamples, 0, (f->num_chans)*sizeof(SAMPLE) );
-	
+    // instantiate an internal LiSa implementation instance
+    LiSaMulti_data * f = new LiSaMulti_data;
+    // get the LiSa object in ChucK
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    // set channel information
+    f->num_chans = ugen->m_multi_chan_size > 0 ? ugen->m_multi_chan_size : 1;
+    // CK_FPRINTF_STDERR( "LiSa: number of channels = %d\n", f->num_chans );
+    // allocate array of samples based on channel information
+    f->outsamples = new SAMPLE[f->num_chans];
+    // zero out
+    memset( f->outsamples, 0, (f->num_chans)*sizeof(SAMPLE) );
+
+    // remember implementation instance in address space of LiSa object in ChucK
     OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data) = (t_CKUINT)f;
 }
 
@@ -4384,6 +4612,8 @@ CK_DLL_DTOR( LiSaMulti_dtor )
 {
     // get data
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
+    // clean up | 1.5.0.0 (ge) added
+    SAFE_DELETE_ARRAY( d->outsamples );
     // delete
     SAFE_DELETE(d);
     // set
@@ -4401,15 +4631,15 @@ CK_DLL_TICK( LiSaMulti_tick )
 {
     // get "this"
     // Chuck_UGen * ugen = (Chuck_UGen *)SELF;
-    
+
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-	SAMPLE * temp_out_samples = d->tick_multi( in );
-	
-    //	for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
+    SAMPLE * temp_out_samples = d->tick_multi( in );
+
+    //    for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
     //      // yay this works!
-    //		ugen->m_multi_chan[i]->m_sum = ugen->m_multi_chan[i]->m_current = temp_out_samples[i];
+    //        ugen->m_multi_chan[i]->m_sum = ugen->m_multi_chan[i]->m_current = temp_out_samples[i];
     *out = temp_out_samples[0];
-	
+
     return TRUE;
 }
 
@@ -4430,9 +4660,10 @@ CK_DLL_TICKF( LiSaMulti_tickf )
     t_CKUINT nchans = ugen->m_num_outs;
     for( t_CKUINT frame_idx = 0; frame_idx < nframes; frame_idx++ )
     {
-        SAMPLE * temp_out_samples = d->tick_multi( in[frame_idx*nchans+1] );
+        // 1.5.0.0 (ge) | changed to in[frame_idx*nchans+0]; was:+1
+        SAMPLE * temp_out_samples = d->tick_multi( in[frame_idx*nchans+0] );
         // CK_FPRINTF_STDERR( "%0.2f ", in[frame_idx*nchans+0] );
-        
+
         for( t_CKUINT chan_idx = 0; chan_idx < nchans; chan_idx++ )
         {
             out[frame_idx*nchans+chan_idx] = temp_out_samples[chan_idx];
@@ -4455,12 +4686,12 @@ CK_DLL_CTRL( LiSaMulti_size )
     t_CKDUR buflen = GET_NEXT_DUR(ARGS);
     if( buflen > LiSa_MAXBUFSIZE )
     {
-        CK_FPRINTF_STDERR( "LiSa: buffer size request too large, resizing\n" );
+        CK_FPRINTF_STDERR( "LiSa: buffer size request too large, resizing to %i...\n", LiSa_MAXBUFSIZE );
         buflen = LiSa_MAXBUFSIZE;
     }
     // allocate
     d->buffer_alloc((t_CKINT)buflen);
-    
+
     RETURN->v_dur = (t_CKDUR)buflen;
 }
 
@@ -4474,8 +4705,8 @@ CK_DLL_CTRL( LiSaMulti_size )
 CK_DLL_CGET( LiSaMulti_cget_size )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-	
-	RETURN->v_dur = (t_CKDUR)d->mdata_len;
+
+    RETURN->v_dur = (t_CKDUR)d->mdata_len;
 }
 
 
@@ -4489,8 +4720,8 @@ CK_DLL_CTRL( LiSaMulti_start_record )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     d->record = GET_NEXT_INT(ARGS);
-    
-    RETURN->v_int = (t_CKINT)d->record;    
+
+    RETURN->v_int = (t_CKINT)d->record;
 }
 
 
@@ -4506,11 +4737,11 @@ CK_DLL_CTRL( LiSaMulti_start_play )
     t_CKINT which = GET_NEXT_INT(ARGS);
     d->play[which] = GET_NEXT_INT(ARGS);
     // CK_FPRINTF_STDERR( "voice %d playing = %d\n", which, d->play[which] );
-	
+
     // turn off ramping toggles
     d->rampdown[which] = false;
     d->rampup[which] = false;
-    
+
     RETURN->v_int = (t_CKINT)d->play[which];
 }
 
@@ -4530,7 +4761,7 @@ CK_DLL_CTRL( LiSaMulti_start_play0 )
     // turn off ramping toggles
     d->rampdown[0] = false;
     d->rampup[0] = false;
-    
+
     RETURN->v_int = (t_CKINT)d->play[0];
 }
 
@@ -4545,10 +4776,10 @@ CK_DLL_CTRL( LiSaMulti_ctrl_rate )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     t_CKINT which = GET_NEXT_INT(ARGS);
-    d->p_inc[which] = (t_CKDOUBLE)GET_NEXT_FLOAT(ARGS); 
-														
+    d->p_inc[which] = (t_CKDOUBLE)GET_NEXT_FLOAT(ARGS);
+
     //CK_FPRINTF_STDERR( "setting voice %d rate to %f\n", which, d->p_inc[which] );
-    
+
     RETURN->v_float = d->p_inc[which];
 }
 
@@ -4558,10 +4789,10 @@ CK_DLL_CTRL( LiSaMulti_ctrl_rate )
 CK_DLL_CTRL( LiSaMulti_ctrl_rate0 )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-    d->p_inc[0] = (t_CKDOUBLE)GET_CK_FLOAT(ARGS);  
-	
+    d->p_inc[0] = (t_CKDOUBLE)GET_CK_FLOAT(ARGS);
+
     //CK_FPRINTF_STDERR( "setting voice %d rate to %f\n", 0, d->p_inc[0] );
-    
+
     RETURN->v_float = d->p_inc[0];
 }
 
@@ -4577,7 +4808,7 @@ CK_DLL_CTRL( LiSaMulti_cget_rate )
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     t_CKINT which = GET_NEXT_INT(ARGS);
     //CK_FPRINTF_STDERR( "setting voice %d rate to %f\n", which, d->p_inc[which] );
-    
+
     RETURN->v_float = d->p_inc[which];
 }
 
@@ -4588,7 +4819,7 @@ CK_DLL_CTRL( LiSaMulti_cget_rate0 )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     //CK_FPRINTF_STDERR( "setting voice %d rate to %f\n", which, d->p_inc[which] );
-    
+
     RETURN->v_float = d->p_inc[0];
 }
 
@@ -4604,7 +4835,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_pindex )
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     t_CKINT which = GET_NEXT_INT(ARGS);
     d->pindex[which] = (t_CKDOUBLE)GET_NEXT_DUR(ARGS);
-    
+
     RETURN->v_dur = (t_CKDUR)d->pindex[which];
 }
 
@@ -4613,7 +4844,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_pindex0 )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     d->pindex[0] = (t_CKDOUBLE)GET_NEXT_DUR(ARGS);
-    
+
     RETURN->v_dur = (t_CKDUR)d->pindex[0];
 }
 
@@ -4653,7 +4884,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_rindex )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     d->rindex = /* gewang-> */(t_CKINT)GET_NEXT_DUR(ARGS);
-    
+
     RETURN->v_dur = (t_CKDUR)d->rindex;
 }
 
@@ -4684,9 +4915,9 @@ CK_DLL_CTRL( LiSaMulti_ctrl_lstart )
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     t_CKINT which = GET_NEXT_INT(ARGS);
     d->loop_start[which] = /* gewang-> */(t_CKINT)GET_NEXT_DUR(ARGS);
-    
-	if (d->loop_start[which] < 0) d->loop_start[which] = 0;
-	
+
+    if (d->loop_start[which] < 0) d->loop_start[which] = 0;
+
     RETURN->v_dur = (t_CKDUR)d->loop_start[which];
 }
 
@@ -4695,9 +4926,9 @@ CK_DLL_CTRL( LiSaMulti_ctrl_lstart0 )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     d->loop_start[0] = /* gewang-> */(t_CKINT)GET_NEXT_DUR(ARGS);
-    
-	if (d->loop_start[0] < 0) d->loop_start[0] = 0;
-	
+
+    if (d->loop_start[0] < 0) d->loop_start[0] = 0;
+
     RETURN->v_dur = (t_CKDUR)d->loop_start[0];
 }
 
@@ -4711,7 +4942,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_lstart0 )
 CK_DLL_CGET( LiSaMulti_cget_lstart )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-    
+
     t_CKINT which = GET_NEXT_INT(ARGS);
     // return
     RETURN->v_dur = (t_CKDUR)d->loop_start[which];
@@ -4721,7 +4952,7 @@ CK_DLL_CGET( LiSaMulti_cget_lstart )
 CK_DLL_CGET( LiSaMulti_cget_lstart0 )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-    
+
     // return
     RETURN->v_dur = (t_CKDUR)d->loop_start[0];
 }
@@ -4738,11 +4969,11 @@ CK_DLL_CTRL( LiSaMulti_ctrl_lend )
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     t_CKINT which = GET_NEXT_INT(ARGS);
     d->loop_end[which] = /* gewang-> */(t_CKINT)GET_NEXT_DUR(ARGS);
-	
-	//check to make sure loop_end is not too large
-	if (d->loop_end[which] >= d->mdata_len) d->loop_end[which] = d->mdata_len - 1;
-	
-	RETURN->v_dur = (t_CKDUR)d->loop_end[which];
+
+    //check to make sure loop_end is not too large
+    if (d->loop_end[which] >= d->mdata_len) d->loop_end[which] = d->mdata_len - 1;
+
+    RETURN->v_dur = (t_CKDUR)d->loop_end[which];
 }
 
 
@@ -4750,10 +4981,10 @@ CK_DLL_CTRL( LiSaMulti_ctrl_lend0 )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     d->loop_end[0] = /* gewang-> */(t_CKINT)GET_NEXT_DUR(ARGS);
-	
-	//check to make sure loop_end is not too large
-	if (d->loop_end[0] >= d->mdata_len) d->loop_end[0] = d->mdata_len - 1;
-    
+
+    //check to make sure loop_end is not too large
+    if (d->loop_end[0] >= d->mdata_len) d->loop_end[0] = d->mdata_len - 1;
+
     RETURN->v_dur = (t_CKDUR)d->loop_end[0];
 }
 
@@ -4801,7 +5032,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_loop0 )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     d->loopplay[0] = (t_CKBOOL)GET_NEXT_INT(ARGS);
-    
+
     RETURN->v_int = (t_CKINT)d->loopplay[0];
 }
 
@@ -4842,7 +5073,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_bi )
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     t_CKINT which = GET_NEXT_INT(ARGS);
     d->bi[which] = (t_CKBOOL)GET_NEXT_INT(ARGS);
-    
+
     RETURN->v_int = (t_CKINT)d->bi[which];
 }
 
@@ -4851,7 +5082,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_bi0 )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     d->bi[0] = (t_CKBOOL)GET_NEXT_INT(ARGS);
-    
+
     RETURN->v_int = (t_CKINT)d->bi[0];
 }
 
@@ -4891,7 +5122,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_loop_end_rec )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     d->loop_end_rec = /* gewang-> */(t_CKINT)GET_NEXT_DUR(ARGS);
-    
+
     RETURN->v_dur = (t_CKDUR)d->loop_end_rec;
 }
 
@@ -4919,7 +5150,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_loop_rec )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     d->looprec = (t_CKBOOL)GET_NEXT_INT(ARGS);
-    
+
     RETURN->v_int = (t_CKINT)d->looprec;
 }
 
@@ -4948,11 +5179,11 @@ CK_DLL_CGET( LiSaMulti_cget_loop_rec )
 CK_DLL_CTRL( LiSaMulti_ctrl_sample )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-	SAMPLE sample_in = (SAMPLE)GET_NEXT_FLOAT(ARGS);
-    int index_in = (t_CKINT)GET_NEXT_DUR(ARGS);
-	
-	d->pokeSample( sample_in, index_in );
-    
+    SAMPLE sample_in = (SAMPLE)GET_NEXT_FLOAT(ARGS);
+    t_CKINT index_in = (t_CKINT)GET_NEXT_DUR(ARGS);
+
+    d->pokeSample( sample_in, index_in );
+
     RETURN->v_float = (t_CKFLOAT)sample_in; //pass input through
 }
 
@@ -4966,7 +5197,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_sample )
 CK_DLL_CGET( LiSaMulti_cget_sample )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-	double index_in = (t_CKDOUBLE)GET_NEXT_DUR(ARGS);
+    double index_in = (t_CKDOUBLE)GET_NEXT_DUR(ARGS);
     // return
     RETURN->v_float = (t_CKFLOAT)d->grabSample( index_in ); //change this to getSamp for interpolation
 }
@@ -4981,9 +5212,9 @@ CK_DLL_CGET( LiSaMulti_cget_sample )
 CK_DLL_CTRL( LiSaMulti_ctrl_voicegain )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-	t_CKINT which = GET_NEXT_INT(ARGS);
+    t_CKINT which = GET_NEXT_INT(ARGS);
     d->voiceGain[which] = (t_CKDOUBLE)GET_NEXT_FLOAT(ARGS);
-    
+
     RETURN->v_float = (t_CKFLOAT)d->voiceGain[which];
 }
 
@@ -4997,8 +5228,8 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicegain )
 CK_DLL_CGET( LiSaMulti_cget_voicegain )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-	t_CKINT which = GET_NEXT_INT(ARGS);
-	
+    t_CKINT which = GET_NEXT_INT(ARGS);
+
     // return
     RETURN->v_float = (t_CKFLOAT)d->voiceGain[which];
 }
@@ -5017,13 +5248,13 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicepan )
     // get voice number argument
     t_CKINT which = GET_NEXT_INT(ARGS);
     // get pan argument
-    d->voicePan[which] = (t_CKFLOAT)GET_NEXT_FLOAT(ARGS);
-	
+    d->voicePan[which] = GET_NEXT_FLOAT(ARGS);
+
     t_CKINT i;
 
     // reset channel gains for voice
     for( i = 0; i < d->num_chans; i++ ) d->channelGain[which][i] = 0.;
-	
+
     // iterate over channels
     for( i = 0; i < d->num_chans; i++ )
     {
@@ -5054,12 +5285,12 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicepan )
             }
             // calculate sqrt
             d->channelGain[which][i] = sqrt(d->channelGain[which][i]);
-		}
-		
-		//CK_FPRINTF_STDERR( "gain for channel %d and voice %d = %f\n", i, which, d->channelGain[which][i] );
-	}
-    
-    RETURN->v_float = (t_CKFLOAT)d->voicePan[which];
+        }
+
+        // CK_FPRINTF_STDERR( "gain for channel %d and voice %d = %f\n", i, which, d->channelGain[which][i] );
+    }
+
+    RETURN->v_float = d->voicePan[which];
 }
 
 
@@ -5072,8 +5303,8 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicepan )
 CK_DLL_CGET( LiSaMulti_cget_voicepan )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-	t_CKINT which = GET_NEXT_INT(ARGS);
-	
+    t_CKINT which = GET_NEXT_INT(ARGS);
+
     // return
     RETURN->v_float = (t_CKFLOAT)d->voicePan[which];
 }
@@ -5088,21 +5319,21 @@ CK_DLL_CGET( LiSaMulti_cget_voicepan )
 CK_DLL_CTRL( LiSaMulti_ctrl_voicepan0 )
 {
     // LiSa data structure
-	LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
+    LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     // voice 0 for this one
     t_CKINT which = 0;
     // get argument
     d->voicePan[which] = (t_CKFLOAT)GET_NEXT_FLOAT(ARGS);
-	
+
     t_CKINT i;
 
     // zero out all channel gains for this voice
-	for( i = 0; i < d->num_chans; i++ ) d->channelGain[which][i] = 0.;
-	// iterate through channels
-	for( i = 0; i < d->num_chans; i++ )
+    for( i = 0; i < d->num_chans; i++ ) d->channelGain[which][i] = 0.;
+    // iterate through channels
+    for( i = 0; i < d->num_chans; i++ )
     {
         // get truncated value (0.4 -> 0; 5.6 -> 5) as channel index
-		t_CKINT panTrunc = (t_CKINT)d->voicePan[which];
+        t_CKINT panTrunc = (t_CKINT)d->voicePan[which];
         // match channel
         if( i == panTrunc )
         {
@@ -5123,13 +5354,13 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicepan0 )
                     d->channelGain[which][i+1] = sqrt(d->channelGain[which][i+1]);
                 }
             }
-			// sqrt the gain
-			d->channelGain[which][i] = sqrt(d->channelGain[which][i]);
-		}
-		
-		// CK_FPRINTF_STDERR( "gain for voice %d channel %d  = %f\n", which, i, d->channelGain[which][i] );
-	}
-    
+            // sqrt the gain
+            d->channelGain[which][i] = sqrt(d->channelGain[which][i]);
+        }
+
+        // CK_FPRINTF_STDERR( "gain for voice %d channel %d  = %f\n", which, i, d->channelGain[which][i] );
+    }
+
     RETURN->v_float = (t_CKFLOAT)d->voicePan[which];
 }
 
@@ -5137,8 +5368,8 @@ CK_DLL_CTRL( LiSaMulti_ctrl_voicepan0 )
 CK_DLL_CGET( LiSaMulti_cget_voicepan0 )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-	
-	// return
+
+    // return
     RETURN->v_float = (t_CKFLOAT)d->voicePan[0];
 }
 
@@ -5152,9 +5383,9 @@ CK_DLL_CGET( LiSaMulti_cget_voicepan0 )
 CK_DLL_CTRL( LiSaMulti_ctrl_coeff )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-	d->coeff = (t_CKDOUBLE)GET_NEXT_FLOAT(ARGS);
-	
-	RETURN->v_float = (t_CKFLOAT)d->coeff;
+    d->coeff = (t_CKDOUBLE)GET_NEXT_FLOAT(ARGS);
+
+    RETURN->v_float = (t_CKFLOAT)d->coeff;
 }
 
 
@@ -5215,8 +5446,8 @@ CK_DLL_CTRL( LiSaMulti_ctrl_rampup )
     t_CKDUR len = GET_NEXT_DUR(ARGS);
 
     d->ramp_up(voice, len);
-    
-    RETURN->v_dur = (t_CKDUR)len;    
+
+    RETURN->v_dur = (t_CKDUR)len;
 }
 
 
@@ -5226,8 +5457,8 @@ CK_DLL_CTRL( LiSaMulti_ctrl_rampup0 )
     t_CKDUR len = GET_NEXT_DUR(ARGS);
 
     d->ramp_up(0, len);
-    
-    RETURN->v_dur = (t_CKDUR)len;    
+
+    RETURN->v_dur = (t_CKDUR)len;
 }
 
 
@@ -5244,8 +5475,8 @@ CK_DLL_CTRL( LiSaMulti_ctrl_rampdown )
     t_CKDUR len = GET_NEXT_DUR(ARGS);
 
     d->ramp_down(voice, len);
-    
-    RETURN->v_dur = (t_CKDUR)len;    
+
+    RETURN->v_dur = (t_CKDUR)len;
 }
 
 
@@ -5255,8 +5486,8 @@ CK_DLL_CTRL( LiSaMulti_ctrl_rampdown0 )
     t_CKDUR len = GET_NEXT_DUR(ARGS);
 
     d->ramp_down(0, len);
-    
-    RETURN->v_dur = (t_CKDUR)len;    
+
+    RETURN->v_dur = (t_CKDUR)len;
 }
 
 
@@ -5271,8 +5502,8 @@ CK_DLL_CTRL( LiSaMulti_ctrl_rec_ramplen )
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     t_CKDUR newramplen = GET_NEXT_DUR(ARGS);
     d->set_rec_ramplen(newramplen);
-    
-    RETURN->v_dur = (t_CKDUR)newramplen;    
+
+    RETURN->v_dur = (t_CKDUR)newramplen;
 }
 
 
@@ -5286,10 +5517,10 @@ CK_DLL_CTRL( LiSaMulti_ctrl_maxvoices )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     d->maxvoices = GET_NEXT_INT(ARGS);
-	if( d->maxvoices > LiSa_MAXVOICES) {
-		d->maxvoices = LiSa_MAXVOICES;
-		CK_FPRINTF_STDERR( "LiSa: MAXVOICES limited to  %d.\n", LiSa_MAXVOICES );
-	}
+    if( d->maxvoices > LiSa_MAXVOICES) {
+        d->maxvoices = LiSa_MAXVOICES;
+        CK_FPRINTF_STDERR( "LiSa: MAXVOICES limited to  %d.\n", LiSa_MAXVOICES );
+    }
     RETURN->v_int = d->maxvoices;
 }
 
@@ -5348,7 +5579,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_track )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     d->track = (t_CKINT)GET_NEXT_INT(ARGS);
-    
+
     RETURN->v_int = d->track;
 }
 
@@ -5377,12 +5608,12 @@ CK_DLL_CGET( LiSaMulti_cget_track )
 CK_DLL_CGET( LiSaMulti_cget_playing )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-	t_CKINT voice = GET_NEXT_INT(ARGS);
-	if(voice >= d->maxvoices) {
-		CK_FPRINTF_STDERR( "LiSa: requesting info greater than MAXVOICES %d.\n", LiSa_MAXVOICES );
-		voice = 0;
-	}
-	
+    t_CKINT voice = GET_NEXT_INT(ARGS);
+    if(voice >= d->maxvoices) {
+        CK_FPRINTF_STDERR( "LiSa: requesting info greater than MAXVOICES %d.\n", LiSa_MAXVOICES );
+        voice = 0;
+    }
+
     // return
     RETURN->v_int = d->play[voice];
 }
@@ -5397,4 +5628,41 @@ CK_DLL_CGET( LiSaMulti_cget_playing )
 CK_DLL_PMSG(LiSaMulti_pmsg )
 {
     return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Identity2_tickf()
+// desc: TICKF function ...
+//-----------------------------------------------------------------------------
+CK_DLL_TICKF( Identity2_tickf )
+{
+    // get "this"
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+
+    t_CKUINT nchans = ugen->m_num_outs;
+
+    // print input to tickf
+    for( t_CKUINT f = 0; f < nframes; f++ )
+    {
+        // look over chans
+        for( t_CKUINT c = 0; c < nchans; c++ )
+        {
+            // copy input to output
+            out[f*nchans+c] = in[f*nchans+c];
+        }
+
+        // printing (can be useful for observing multichan ugen logic)
+        // cerr << "inputs: ";
+        // for( t_CKUINT c = 0; c < nchans; c++ )
+        // { cerr << in[f*nchans+c] << " "; }
+        // cerr << "output: ";
+        // for( t_CKUINT c = 0; c < nchans; c++ )
+        // { cerr << out[f*nchans+c] << " "; }
+        // cerr << endl;
+    }
+
+    return TRUE;
 }

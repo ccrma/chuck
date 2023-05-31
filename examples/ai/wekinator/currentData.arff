@@ -1,0 +1,19 @@
+@relation dataset
+@attribute ID numeric@attribute Time date 'yyyy/MM/dd HH:mm:ss:SSS'@attribute 'Training round' numeric
+@attribute inputs-1 numeric
+@attribute inputs-2 numeric
+@attribute inputs-3 numeric
+@attribute outputs-1 numeric
+@attribute outputs-2 numeric
+
+@data
+0, 2023/01/01 00:00:00:000, 0, 0.1, 0.1, 0.1, 48, 60
+1, 2023/01/01 00:00:00:000, 0, 0.1, 0.1, 0.1, 48, 60
+2, 2023/01/01 00:00:00:000, 0, 0.1, 0.1, 0.1, 48, 60
+3, 2023/01/01 00:00:00:000, 0, 0.1, 0.1, 0.1, 48, 60
+4, 2023/01/01 00:00:00:000, 0, 0.1, 0.1, 0.1, 48, 60
+5, 2023/01/01 00:00:00:000, 0, 0.8, 0.8, 0.8, 5, 8
+6, 2023/01/01 00:00:00:000, 0, 0.8, 0.8, 0.8, 5, 8
+7, 2023/01/01 00:00:00:000, 0, 0.8, 0.8, 0.8, 5, 8
+8, 2023/01/01 00:00:00:000, 0, 0.8, 0.8, 0.8, 5, 8
+9, 2023/01/01 00:00:00:000, 0, 0.8, 0.8, 0.8, 5, 8
