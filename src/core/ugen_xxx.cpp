@@ -1942,7 +1942,7 @@ public:
     pink_array = NULL;
     counter = 1;
     scale = 2.0 / (double) RAND_MAX ;
-    bias = -1.0;
+    bias = -1.0; // 1.5.0.1 (anthonyhawes) changed from 0.0, removing a DC bias
     pink_rand = false;
     t_CKINT randt = RAND_MAX;
     rand_bits = 0;
@@ -1955,7 +1955,8 @@ public:
     setMode ( "pink" );
   } 
   ~CNoise_Data() {
-    if ( pink_array != NULL ) free(pink_array);
+      // 1.5.0.1 (anthonyhawes) added
+      SAFE_FREE( pink_array );
   }
 
   t_CKINT fprob;
