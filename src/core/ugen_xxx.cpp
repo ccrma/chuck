@@ -1942,7 +1942,7 @@ public:
     pink_array = NULL;
     counter = 1;
     scale = 2.0 / (double) RAND_MAX ;
-    bias = -1.0;
+    bias = -1.0; // 1.5.0.1 (anthonyhawes) changed from 0.0, removing a DC bias
     pink_rand = false;
     t_CKINT randt = RAND_MAX;
     rand_bits = 0;
@@ -1953,8 +1953,11 @@ public:
     }
     // CK_FPRINTF_STDERR( "random bits - %d", rand_bits );
     setMode ( "pink" );
+  } 
+  ~CNoise_Data() {
+      // 1.5.0.1 (anthonyhawes) added
+      SAFE_FREE( pink_array );
   }
-  ~CNoise_Data() {}
 
   t_CKINT fprob;
   t_CKUINT mode;
@@ -2015,7 +2018,7 @@ t_CKINT CNoise_Data::pink_tick( SAMPLE * out )
     last = 0;
     for ( t_CKINT i = 0 ; i < pink_depth ; i++ ) { pink_array[i] = rand(); last += pink_array[i]; }
     scale = 2.0 / ((double)RAND_MAX  * ( pink_depth + 1.0 ) );
-    bias = 0.0;
+    bias = -1.0;
     // CK_FPRINTF_STDERR( "scale %f %f %d %d \n", scale, bias, RAND_MAX, pink_depth + 1 );
   }
 
