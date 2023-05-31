@@ -35,12 +35,12 @@
 #include "chuck_type.h"
 #include "chuck_dl.h"
 #include "chuck_globals.h" // added 1.4.1.0 (jack)
+#include "chuck_errmsg.h"
 
 #ifndef __DISABLE_SERIAL__
 #include "chuck_io.h"
 #endif
 
-#include "chuck_errmsg.h"
 #include "ugen_xxx.h"
 #include "util_buffers.h"
 
@@ -56,11 +56,16 @@
 using namespace std;
 
 #if defined(__PLATFORM_WIN32__)
-  #include <windows.h>
+  #ifndef __CHUNREAL_ENGINE__
+    #include <windows.h>
+  #else
+    // 1.5.0.0 (ge) | #chunreal
+    #include "Windows/MinWindows.h"
+  #endif // #ifndef __CHUNREAL_ENGINE__
 #else
   #include <unistd.h>
   #include <pthread.h>
-#endif
+#endif // #if defined(__PLATFORM_WIN32__)
 
 // uncomment to compile VM debug messages
 #define CK_VM_DEBUG_ENABLE (0)
@@ -141,7 +146,7 @@ Chuck_VM::Chuck_VM()
 {
     // REFACTOR-2017: refs
     m_carrier = NULL;
-    
+
     // data
     m_shreds = NULL;
     m_num_shreds = 0;
@@ -272,11 +277,6 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     }
 
     // log
-    EM_log( CK_LOG_SYSTEM, "initializing synthesis engine..." );
-    // push indent
-    EM_pushlog();
-
-    // log
     EM_log( CK_LOG_SEVERE, "initializing 'dac'..." );
     // allocate dac and adc (REFACTOR-2017: g_t_dac changed to env()->t_dac)
     env()->t_dac->ugen_info->num_outs =
@@ -318,9 +318,6 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     m_shreduler->m_num_dac_channels = m_num_dac_channels;
     m_shreduler->m_num_adc_channels = m_num_adc_channels;
 
-    // pop indent
-    EM_poplog();
-
     return TRUE;
 }
 
@@ -340,11 +337,11 @@ t_CKBOOL Chuck_VM::shutdown()
     EM_log( CK_LOG_SYSTEM, "shutting down virtual machine..." );
     // push indent
     EM_pushlog();
-    
+
     // unlockdown
     // REFACTOR-2017: TODO: don't unlock all objects for all VMs? see relockdown below
     Chuck_VM_Object::unlock_all();
-    
+
     // REFACTOR-2017: clean up after my global variables
     m_globals_manager->cleanup_global_variables();
     SAFE_DELETE( m_globals_manager );
@@ -353,14 +350,14 @@ t_CKBOOL Chuck_VM::shutdown()
     EM_log( CK_LOG_SYSTEM, "freeing shreduler..." );
     // free the shreduler
     SAFE_DELETE( m_shreduler );
-    
+
     #ifndef __DISABLE_HID__
     // log
     EM_log( CK_LOG_SYSTEM, "unregistering VM from HID manager..." );
     // clean up this vm
     HidInManager::cleanup_buffer( this );
     #endif
-    
+
     #ifndef __DISABLE_MIDI__
     EM_log( CK_LOG_SYSTEM, "unregistering VM from MIDI manager..." );
     MidiInManager::cleanup_buffer( this );
@@ -402,10 +399,10 @@ t_CKBOOL Chuck_VM::shutdown()
     SAFE_RELEASE( m_dac );
     SAFE_RELEASE( m_adc );
     SAFE_RELEASE( m_bunghole );
-    
+
     // set state
     m_init = FALSE;
-    
+
     // relockdown (added 1.3.6.0)
     // REFACTOR-2017: TODO -- remove once made per-VM
     Chuck_VM_Object::lock_all();
@@ -478,26 +475,28 @@ t_CKBOOL Chuck_VM::compute()
     Chuck_Msg * msg = NULL;
     Chuck_Event * event = NULL;
     t_CKBOOL iterate = TRUE;
-    
+
     // REFACTOR-2017: spork queued shreds, handle global messages
     // this is called once per chuck time / sample / "tick"
     // global manager added 1.4.1.0 (jack)
     m_globals_manager->handle_global_queue_messages();
 
-    // iteration until no more shreds/events/messages
+    // iterate until no more shreds/events/messages
     while( iterate )
     {
         // get the shreds queued for 'now'
-        while(( shred = m_shreduler->get() ))
+        shred = m_shreduler->get();
+        // run all shreds waiting to run 'now'
+        while( shred != NULL )
         {
             // set the current time of the shred
             shred->now = shred->wake_time;
-
             // track shred activation
             CK_TRACK( Chuck_Stats::instance()->activate_shred( shred ) );
 
             // run the shred
-            if( !shred->run( this ) )
+            // 1.5.0.0 (ge) add check for shred->is_done, which flags a shred to exit
+            if( shred->is_done || !shred->run( this ) )
             {
                 // track shred deactivation
                 CK_TRACK( Chuck_Stats::instance()->deactivate_shred( shred ) );
@@ -509,9 +508,8 @@ t_CKBOOL Chuck_VM::compute()
 
             // track shred deactivation
             CK_TRACK( if( shred ) Chuck_Stats::instance()->deactivate_shred( shred ) );
-
-            // zero out
-            shred = NULL;
+            // get next shred queued for 'now'
+            shred = m_shreduler->get();
         }
 
         // set to false for now
@@ -524,7 +522,7 @@ t_CKBOOL Chuck_VM::compute()
             event->broadcast_global();
             iterate = TRUE;
         }
-        
+
         // loop over thread-specific queued event buffers (added 1.3.0.0)
         for( list<CBufferSimple *>::const_iterator i = m_event_buffers.begin();
              i != m_event_buffers.end(); i++ )
@@ -586,7 +584,7 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
         }
         else m_shreduler->advance_v( N, frame );
     }
-    
+
     // clear
     m_input_ref = NULL; m_output_ref = NULL;
 
@@ -648,7 +646,7 @@ t_CKBOOL Chuck_VM::queue_msg( Chuck_Msg * msg, int count )
 // name: queue_event()
 // desc: since 1.3.0.0 a buffer is passed in associated with each thread
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::queue_event( Chuck_Event * event, int count, 
+t_CKBOOL Chuck_VM::queue_event( Chuck_Event * event, int count,
                                 CBufferSimple * buffer )
 {
     // sanity
@@ -678,7 +676,7 @@ CBufferSimple * Chuck_VM::create_event_buffer()
     CBufferSimple * buffer = new CBufferSimple;
     buffer->initialize( 1024, sizeof(Chuck_Event *) );
     m_event_buffers.push_back(buffer);
-    
+
     return buffer;
 }
 
@@ -764,7 +762,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
                        out->xid, mini(out->name.c_str()), shred->xid, mini(shred->name.c_str()) );
             this->free( out, TRUE, FALSE );
             retval = shred->xid;
-        
+
             // tracking new shred
             CK_TRACK( Chuck_Stats::instance()->add_shred( shred ) );
 
@@ -781,7 +779,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     }
     else if( msg->type == MSG_REMOVE )
     {
-        if( msg->param == 0xffffffff )
+        if( msg->param == CK_NO_VALUE )
         {
             if( !this->m_num_shreds)
             {
@@ -796,7 +794,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
                 xid--;
             if( xid >= 0 )
             {
-                EM_error3( "[chuck](VM): removing recent shred: %i (%s)...", 
+                EM_error3( "[chuck](VM): removing recent shred: %i (%s)...",
                            xid, mini(shred->name.c_str()) );
                 this->free( shred, TRUE );
                 retval = xid;
@@ -836,14 +834,14 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         t_CKUINT xid = m_shred_id;
         EM_error3( "[chuck](VM): removing all (%i) shreds...", m_num_shreds );
         Chuck_VM_Shred * shred = NULL;
-        
+
         while( m_num_shreds && xid > 0 )
         {
             if( m_shreduler->remove( shred = m_shreduler->lookup( xid ) ) )
                 this->free( shred, TRUE );
             xid--;
         }
-        
+
         m_shred_id = 0;
         m_num_shreds = 0;
     }
@@ -853,14 +851,14 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         t_CKUINT xid = m_shred_id;
         EM_error3( "[chuck](VM): removing all shreds and resetting type system" );
         Chuck_VM_Shred * shred = NULL;
-        
+
         while( m_num_shreds && xid > 0 )
         {
             if( m_shreduler->remove( shred = m_shreduler->lookup( xid ) ) )
                 this->free( shred, TRUE );
             xid--;
         }
-        
+
         // clear user type system
         if( env() )
         {
@@ -869,7 +867,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
 
         // 1.4.1.0 (jack): also clear any global variables
         m_globals_manager->cleanup_global_variables();
-        
+
         m_shred_id = 0;
         m_num_shreds = 0;
     }
@@ -935,7 +933,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     {
         t_CKUINT n = m_shreduler->highest();
         m_shred_id = n;
-        CK_FPRINTF_STDERR( "[chuck](VM): reseting shred id to %lu...\n", m_shred_id + 1 );
+        CK_FPRINTF_STDERR( "[chuck](VM): resetting shred id to %lu...\n", m_shred_id + 1 );
     }
 
 done:
@@ -1081,7 +1079,7 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Shred * shred )
 t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec )
 {
     assert( cascade );
-    
+
     // log
     EM_log( CK_LOG_FINER, "freeing shred (id==%d | ptr==%p)", shred->xid,
             (t_CKUINT)shred );
@@ -1124,7 +1122,7 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
     shred = NULL;
     if( dec ) m_num_shreds--;
     if( !m_num_shreds ) m_shred_id = 0;
-    
+
     return TRUE;
 }
 
@@ -1139,7 +1137,7 @@ t_CKBOOL Chuck_VM::abort_current_shred( )
 {
     // for threading
     Chuck_VM_Shred * shred = m_shreduler->m_current_shred;
-    
+
     // if there
     if( shred )
     {
@@ -1224,7 +1222,7 @@ void Chuck_VM::release_dump( )
 //        m_main_thread_bindle = bindle;
 //        m_main_thread_hook = hook;
 //        m_main_thread_quit = quit;
-//        
+//
 //        return TRUE;
 //    }
 //    else
@@ -1246,7 +1244,7 @@ void Chuck_VM::release_dump( )
 //    m_main_thread_bindle = NULL;
 //    m_main_thread_hook = NULL;
 //    m_main_thread_quit = NULL;
-//    
+//
 //    return TRUE;
 //}
 
@@ -1355,7 +1353,7 @@ t_CKBOOL Chuck_VM_Stack::initialize( t_CKUINT size )
 out_of_memory:
 
     // we have a problem
-    CK_FPRINTF_STDERR( 
+    CK_FPRINTF_STDERR(
         "[chuck](VM): OutOfMemory: while allocating stack\n" );
 
     // return FALSE
@@ -1434,7 +1432,7 @@ Chuck_VM_Shred::~Chuck_VM_Shred()
 // desc: ...
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
-                                     t_CKUINT mem_stack_size, 
+                                     t_CKUINT mem_stack_size,
                                      t_CKUINT reg_stack_size )
 {
     // allocate mem and reg
@@ -1477,12 +1475,12 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
 t_CKBOOL Chuck_VM_Shred::shutdown()
 {
     // spencer - March 2012 (added 1.3.0.0)
-    // can't dealloc ugens while they are still keys to a map; 
+    // can't dealloc ugens while they are still keys to a map;
     // add reference, store them in a vector, and release them after
     // SPENCERTODO: is there a better way to do this????
     std::vector<Chuck_UGen *> release_v;
     release_v.reserve(m_ugen_map.size());
-    
+
     // get iterator to our map
     map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
     while( iter != m_ugen_map.end() )
@@ -1490,12 +1488,12 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
         // get the ugen
         Chuck_UGen * ugen = iter->first;
         // CK_GC_LOG("Chuck_VM_Shred::shutdown() disconnect: 0x%08x", ugen);
-        
+
         // store ref in array for now (added 1.3.0.0)
         release_v.push_back(ugen);
         // no need to bump reference since now ugen_map ref counts
         // ugen->add_ref();
-        
+
         // disconnect
         ugen->disconnect( TRUE );
 
@@ -1507,13 +1505,13 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     m_ugen_map.clear();
 
     // loop over vector
-    for( vector<Chuck_UGen *>::iterator rvi = release_v.begin(); 
+    for( vector<Chuck_UGen *>::iterator rvi = release_v.begin();
          rvi != release_v.end(); rvi++ )
     {
         // release it
         (*rvi)->release();
     }
-    
+
     // loop over parent object references (added 1.3.1.2)
     for( vector<Chuck_Object *>::iterator it = m_parent_objects.begin();
          it != m_parent_objects.end(); it++ )
@@ -1521,7 +1519,7 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
         // release it
         (*it)->release();
     }
-    
+
     // clear the vectors (added 1.3.1.2)
     release_v.clear();
     m_parent_objects.clear();
@@ -1530,7 +1528,7 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     SAFE_DELETE( mem );
     SAFE_DELETE( reg );
     base_ref = NULL;
-    
+
     // delete temp pointer space
     // SAFE_DELETE_ARRAY( obj_array );
     // obj_array_size = 0;
@@ -1555,12 +1553,12 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
         SAFE_DELETE(m_serials);
     }
     #endif
-    
+
     // 1.3.5.3 pop all loop counters
     while( this->popLoopCounter() );
-    
+
     // TODO: what to do with next and prev?
-    
+
     return TRUE;
 }
 
@@ -1578,7 +1576,7 @@ t_CKBOOL Chuck_VM_Shred::add( Chuck_UGen * ugen )
 
     // increment reference count (added 1.3.0.0)
     ugen->add_ref();
-    
+
     // RUBBISH
     // cerr << "vm add ugen: 0x" << hex << (int)ugen << endl;
 
@@ -1600,7 +1598,7 @@ t_CKBOOL Chuck_VM_Shred::remove( Chuck_UGen * ugen )
 
     // decrement reference count (added 1.3.0.0)
     ugen->release();
-    
+
     // RUBBISH
     // cerr << "vm remove ugen: 0x" << hex << (int)ugen << endl;
 
@@ -1621,10 +1619,10 @@ t_CKVOID Chuck_VM_Shred::add_parent_ref( Chuck_Object * obj )
     // sanity check
     if( !obj )
         return;
-    
+
     // reference count
     obj->add_ref();
-    
+
     // add it to vector
     m_parent_objects.push_back( obj );
 }
@@ -1670,7 +1668,7 @@ CK_VM_DEBUG(CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
         // track number of cycles
         CK_TRACK( this->stat->cycles++ );
     }
-    
+
     // check abort
     if( is_abort )
     {
@@ -1783,7 +1781,7 @@ Chuck_VM_Shreduler::Chuck_VM_Shreduler()
     m_bunghole = NULL;
     m_num_dac_channels = 0;
     m_num_adc_channels = 0;
-    
+
     set_adaptive( 0 );
 }
 
@@ -1848,7 +1846,7 @@ t_CKBOOL Chuck_VM_Shreduler::add_blocked( Chuck_VM_Shred * shred )
 {
     // add shred to map, using pointer
     blocked[shred] = shred;
-    
+
     return TRUE;
 }
 
@@ -1876,7 +1874,7 @@ t_CKBOOL Chuck_VM_Shreduler::remove_blocked( Chuck_VM_Shred * shred )
         // to signify that the shred is done using the event
         SAFE_RELEASE( event_to_release );
     }
-    
+
     return TRUE;
 }
 
@@ -1905,7 +1903,7 @@ t_CKBOOL Chuck_VM_Shreduler::shredule( Chuck_VM_Shred * shred,
     // sanity check
     if( shred->prev || shred->next )
     {
-        // something is really wrong here - no shred can be 
+        // something is really wrong here - no shred can be
         // shreduled more than once
         EM_error3( "[chuck](VM): internal sanity check failed in shredule()" );
         EM_error3( "[chuck](VM): (shred shreduled while shreduled)" );
@@ -1964,7 +1962,7 @@ t_CKBOOL Chuck_VM_Shreduler::shredule( Chuck_VM_Shred * shred,
     if( diff < 0 ) diff = 0;
     // if( diff < m_samps_until_next )
     m_samps_until_next = diff;
-    
+
     return TRUE;
 }
 
@@ -1991,7 +1989,7 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
     const SAMPLE * input = vm_ref->input_ref() + (offset*m_num_adc_channels);
     SAMPLE * output = vm_ref->output_ref() + (offset*m_num_dac_channels);
     #endif
-    
+
     // compute number of frames to compute; update
     numFrames = ck_min( m_max_block_size, numLeft );
     if( this->m_samps_until_next >= 0 )
@@ -2014,7 +2012,7 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
         // cache gain
         gain[j] = m_adc->m_multi_chan[j]->m_gain;
     }
-    
+
     // INPUT: adaptive block
     for( i = 0; i < numFrames; i++ )
     {
@@ -2036,7 +2034,7 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
             sum += m_adc->m_multi_chan[j]->m_current_v[i];
         }
         m_adc->m_current_v[i] = sum / m_num_adc_channels;
-        
+
         // advance pointer
         #ifdef __CHUCK_USE_PLANAR_BUFFERS__
         input++;
@@ -2044,7 +2042,7 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
         input += m_num_adc_channels;
         #endif
     }
-    
+
     // ???
     for( j = 0; j < m_num_adc_channels; j++ )
     {
@@ -2078,7 +2076,7 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
             output[j] = m_dac->m_multi_chan[j]->m_current_v[i];
             #endif
         }
-        
+
         // advance pointer
         #ifdef __CHUCK_USE_PLANAR_BUFFERS__
         output++;
@@ -2158,7 +2156,7 @@ void Chuck_VM_Shreduler::advance( t_CKINT N )
 
 //-----------------------------------------------------------------------------
 // name: get()
-// desc: ...
+// desc: get the next shred shreduled to run 'now'
 //-----------------------------------------------------------------------------
 Chuck_VM_Shred * Chuck_VM_Shreduler::get( )
 {
@@ -2180,7 +2178,7 @@ Chuck_VM_Shred * Chuck_VM_Shreduler::get( )
         shred_list = shred->next;
         shred->next = NULL;
         shred->prev = NULL;
-        
+
         if( shred_list )
         {
             shred_list->prev = NULL;
@@ -2212,7 +2210,7 @@ t_CKUINT Chuck_VM_Shreduler::highest( )
         shred = shred->next;
     }
 
-    std::map<Chuck_VM_Shred *, Chuck_VM_Shred *>::iterator iter;    
+    std::map<Chuck_VM_Shred *, Chuck_VM_Shred *>::iterator iter;
     for( iter = blocked.begin(); iter != blocked.end(); iter++ )
     {
         shred = (*iter).second;
@@ -2241,18 +2239,18 @@ t_CKBOOL Chuck_VM_Shreduler::replace( Chuck_VM_Shred * out, Chuck_VM_Shred * in 
         shred_list = in;
     else
         out->prev->next = in;
-    
+
     if( out->next )
         out->next->prev = in;
-    
+
     in->next = out->next;
     in->prev = out->prev;
-    
+
     out->next = out->prev = NULL;
 
     in->wake_time = out->wake_time;
     in->start = in->wake_time;
-    
+
     return TRUE;
 }
 
@@ -2276,15 +2274,15 @@ t_CKBOOL Chuck_VM_Shreduler::remove( Chuck_VM_Shred * out )
     // sanity check
     if( !out->prev && !out->next && out != shred_list )
         return FALSE;
-    
+
     if( !out->prev )
         shred_list = out->next;
     else
         out->prev->next = out->next;
-    
+
     if( out->next )
         out->next->prev = out->prev;
-    
+
     out->next = out->prev = NULL;
 
     return TRUE;
@@ -2322,7 +2320,7 @@ Chuck_VM_Shred * Chuck_VM_Shreduler::lookup( t_CKUINT xid )
         if( shred->xid == xid )
             return shred;
     }
-    
+
     return NULL;
 }
 
@@ -2336,7 +2334,7 @@ Chuck_VM_Shred * Chuck_VM_Shreduler::lookup( t_CKUINT xid )
 struct SortByID
 {
     bool operator() ( const Chuck_VM_Shred * lhs, const Chuck_VM_Shred * rhs )
-    {    return lhs->xid < rhs->xid; }
+    { return lhs->xid < rhs->xid; }
 };
 
 
@@ -2360,13 +2358,13 @@ void Chuck_VM_Shreduler::status( Chuck_VM_Status * status )
     t_CKUINT sec = s / srate;
     s = s - (sec*(srate));
     // float millisecond = s / (float)(srate) * 1000.0f;
-    
+
     status->srate = srate;
     status->now_system = now_system;
     status->t_second = sec;
     status->t_minute = m;
     status->t_hour = h;
-    
+
     // get list of shreds
     vector<Chuck_VM_Shred *> list;
     while( shred )
@@ -2376,7 +2374,7 @@ void Chuck_VM_Shreduler::status( Chuck_VM_Status * status )
     }
 
     // get blocked
-    std::map<Chuck_VM_Shred *, Chuck_VM_Shred *>::iterator iter;    
+    std::map<Chuck_VM_Shred *, Chuck_VM_Shred *>::iterator iter;
     for( iter = blocked.begin(); iter != blocked.end(); iter++ )
     {
         shred = (*iter).second;
@@ -2384,8 +2382,8 @@ void Chuck_VM_Shreduler::status( Chuck_VM_Status * status )
     }
 
     // get current shred
-    if( ( temp = m_current_shred ) )
-        list.push_back( temp );
+    temp = m_current_shred;
+    if( temp ) list.push_back( temp );
 
     // sort the list
     SortByID byid;
@@ -2398,7 +2396,7 @@ void Chuck_VM_Shreduler::status( Chuck_VM_Status * status )
         shred = list[i];
         status->list.push_back( new Chuck_VM_Shred_Status(
             shred->xid, shred->name, shred->start, shred->event != NULL ) );
-    }    
+    }
 }
 
 
@@ -2423,7 +2421,7 @@ void Chuck_VM_Shreduler::status( )
     for( t_CKUINT i = 0; i < m_status.list.size(); i++ )
     {
         shred = m_status.list[i];
-        CK_FPRINTF_STDOUT( 
+        CK_FPRINTF_STDOUT(
             "    [shred id]: %ld  [source]: %s  [spork time]: %.2fs ago%s\n",
             shred->xid, mini( shred->name.c_str() ),
             (m_status.now_system - shred->start) / m_status.srate,
@@ -2470,6 +2468,6 @@ void Chuck_VM_Status::clear()
     {
         SAFE_DELETE( list[i] );
     }
-    
+
     list.clear();
 }

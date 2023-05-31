@@ -27,7 +27,7 @@
 //--------------------------------------------------------------------
 
 // default filename (can be overwritten via input argument)
-"twilight-source.aiff" => string FILENAME;
+"twilight-granular.aiff" => string FILENAME;
 // get file name, if one specified as input x0argument
 if( me.args() > 0 ) me.arg(0) => FILENAME;
 
@@ -67,7 +67,7 @@ Hid hi;
 HidMsg msg;
 
 // which joystick
-1 => int device;
+0 => int device;
 // get from command line
 if( me.args() ) me.arg(0) => Std.atoi => device;
 

@@ -32,7 +32,6 @@
 // date: Spring 2004
 //-----------------------------------------------------------------------------
 #include "util_math.h"
-#include "chuck_def.h" // 1.4.1.0 (ge) for t_CKINT
 #include <math.h>
 
 
@@ -40,6 +39,8 @@
 #ifdef __PLATFORM_WIN32__
 
 
+
+#ifdef __CK_MATH_DEFINE_ROUND_TRUNC__
 //-----------------------------------------------------------------------------
 // name: round()
 // desc: ...
@@ -59,11 +60,26 @@ double trunc( double a )
 {
     return (double)(long)a;
 }
-
+#endif // #ifdef __CK_MATH_DEFINE_ROUND_TRUNC
 
 
 
 #endif
+
+
+//-----------------------------------------------------------------------------
+// name: ck_random() and ck_srandom()
+// desc: chuck wrappers for random number generators | 1.4.2.0 (ge)
+//-----------------------------------------------------------------------------
+#ifndef __WINDOWS_DS__
+long ck_random() { return random(); }
+void ck_srandom( unsigned s ) { srandom( s ); }
+#else // __WINDOWS_DS__
+long ck_random() { return rand(); }
+void ck_srandom( unsigned s ) { srand( s ); }
+#endif
+
+
 
 
 //-----------------------------------------------------------------------------

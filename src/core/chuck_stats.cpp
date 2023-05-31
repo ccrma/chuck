@@ -56,7 +56,7 @@ Chuck_Stats * Chuck_Stats::instance()
         our_instance = new Chuck_Stats;
         assert( our_instance );
     }
-    
+
     return our_instance;
 }
 
@@ -72,7 +72,7 @@ void Chuck_Stats::add_shred( Chuck_VM_Shred * shred )
     assert( vm != NULL );
     assert( shred->stat == NULL );
     assert( shred->xid != 0 );
-    
+
     Shred_Stat * stat = new Shred_Stat;
     stat->xid = shred->xid;
     stat->parent = shred->parent ? shred->parent->xid : 0;
@@ -95,7 +95,7 @@ void Chuck_Stats::add_shred( Chuck_VM_Shred * shred )
         another->children.push_back( stat );
         another->mutex.release();
     }
-    
+
     // attach to shred
     shred->stat = stat;
     // add
@@ -116,7 +116,7 @@ void Chuck_Stats::activate_shred( Chuck_VM_Shred * shred )
     assert( vm !=  NULL );
     //assert( shred->stat != NULL );
     //assert( shred->id != 0 );
-    
+
     Shred_Stat * stat = shred->stat;
     // set active state
     stat->state = 1;  // active
@@ -136,7 +136,7 @@ void Chuck_Stats::activate_shred( Chuck_VM_Shred * shred )
 void Chuck_Stats::advance_time( Chuck_VM_Shred * shred, t_CKTIME to )
 {
     assert( vm != NULL );
-    
+
     Shred_Stat * stat = shred->stat;
     // set the wake_time
     stat->wake_time = to;
@@ -204,7 +204,7 @@ void Chuck_Stats::deactivate_shred( Chuck_VM_Shred * shred )
 void Chuck_Stats::remove_shred( Chuck_VM_Shred * shred )
 {
     assert( vm != NULL );
-    
+
     Shred_Stat * stat = shred->stat;
     // set state
     stat->state = 3;  // deleted
@@ -227,7 +227,7 @@ void Chuck_Stats::remove_shred( Chuck_VM_Shred * shred )
 void Chuck_Stats::get_shreds( vector<Shred_Stat *> & out, map<Shred_Stat *, Shred_Stat *> & d )
 {
     assert( vm != NULL );
-    
+
     map<t_CKUINT, Shred_Stat *>::iterator iter;
     out.clear();
 
@@ -236,7 +236,7 @@ void Chuck_Stats::get_shreds( vector<Shred_Stat *> & out, map<Shred_Stat *, Shre
         out.push_back( (*iter).second );
     for( int i = 0; i < done.size(); i++ )
         d[done[i]] = done[i];
-    done.clear(); 
+    done.clear();
     mutex.release();
 }
 
@@ -274,7 +274,7 @@ Chuck_Stats::~Chuck_Stats()
 void Shred_Stat::get_sporked( vector<Shred_Stat *> & out )
 {
     out.clear();
-    
+
     mutex.acquire();
     for( int i = 0; i < children.size(); i++ )
         out.push_back( children[i] );
@@ -291,7 +291,7 @@ void Shred_Stat::get_sporked( vector<Shred_Stat *> & out )
 void Shred_Stat::get_activations( vector<Shred_Activation> & out )
 {
     out.clear();
-    
+
     mutex.acquire();
     out = activationss;
     activationss.clear();

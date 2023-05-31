@@ -1,7 +1,9 @@
+// filename
+"write.txt" => string filename;
+// instantiate a file IO object
 FileIO fout;
-
-// open for write
-fout.open( "out.txt", FileIO.WRITE );
+// open for write (default mode: ASCII)
+fout.open( filename, FileIO.WRITE );
 
 // test
 if( !fout.good() )
@@ -15,3 +17,6 @@ fout <= 1 <= " " <= 2 <= " " <= "foo" <= IO.newline();
 
 // close the thing
 fout.close();
+
+// print
+<<< "file written:", filename >>>;

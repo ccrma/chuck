@@ -6,3 +6,6 @@ chout <= 1 <= " foo " <= 5.5 <= IO.newline();
 
 // output to console on stderr
 cherr <= 1 <= " bar " <= 5.5 <= IO.newline();
+
+// 'chout' is buffered; use chout.flush() to output immediately
+// 'cherr' prints immediately, flush() or no flush()

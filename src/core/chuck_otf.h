@@ -74,15 +74,15 @@ void otf_hton( Net_Msg * msg );
 void otf_ntoh( Net_Msg * msg );
 
 // process incoming message
-t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler, 
+t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
                           Net_Msg * msg, t_CKBOOL immediate, void * data );
 
 // send command
-int otf_send_cmd( int argc, const char ** argv, t_CKINT & i, const char * host, int port, int * is_otf = NULL );
+t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i, const char * host, t_CKINT port, t_CKINT * is_otf = NULL );
 // send file to remote host
-int otf_send_file( const char * filename, Net_Msg & msg, const char * op, ck_socket sock );
+t_CKINT otf_send_file( const char * filename, Net_Msg & msg, const char * op, ck_socket sock );
 // connect
-ck_socket otf_send_connect( const char * host, int port );
+ck_socket otf_send_connect( const char * host, t_CKINT port );
 
 // callback
 void * otf_cb( void * p );

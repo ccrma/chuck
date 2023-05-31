@@ -164,25 +164,33 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
 {
     Chuck_Env * env = QUERY->env();
     Chuck_DL_Func * func = NULL;
-    
+
     std::string doc;
 
     //---------------------------------------------------------------------
     // init as base class: FFT
     //---------------------------------------------------------------------
 
-    doc = "computes the Fast Fourier Transform on incoming audio samples, and outputs the result via its UAnaBlob as both the complex spectrum and the magnitude spectrum. A buffering mechanism maintains the previous FFTsize # of samples, allowing FFT's to be taken at any point in time, on demand (via .upchuck() or by upchucking a downstream UAna. The window size (along with an arbitry window shape) is controlled via the .window method. The hop size is complete dynamic, and is throttled by how time is advanced.";
-    
+    doc = "computes the Fast Fourier Transform on incoming audio samples, and outputs the result via its UAnaBlob as both the complex spectrum and the magnitude spectrum. A buffering mechanism maintains the previous FFTsize # of samples, allowing FFT's to be taken at any point in time, on demand (via .upchuck() or by upchucking a downstream UAna. The window size (along with an arbitrary window shape) is controlled via the .window method. The hop size is complete dynamic, and is throttled by how time is advanced.";
+
     if( !type_engine_import_uana_begin( env, "FFT", "UAna", env->global(),
                                         FFT_ctor, FFT_dtor,
                                         FFT_tick, FFT_tock, FFT_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
     // member variable
     FFT_offset_data = type_engine_import_mvar( env, "int", "@FFT_data", FALSE );
     if( FFT_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "analysis/fft.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/fft2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/fft3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/ifft.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/genre-classify/feature-extract.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/genre-classify/genre-classify.ck" ) ) goto error;
 
     // transform
     func = make_new_mfun( "void", "transform", FFT_transform );
@@ -223,13 +231,13 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: IFFT
     //---------------------------------------------------------------------
-    
-    doc = "computes the inverse Fast Fourier Transform on incoming spectral frames (on demand), and overlap-adds the results into its internal buffer, ready to be sent to other UGen's connected via =>. The window size (along with an arbitry window shape) is controlled via the .window method.";
-    
-    if( !type_engine_import_uana_begin( env, "IFFT", "UAna", env->global(), 
+
+    doc = "computes the inverse Fast Fourier Transform on incoming spectral frames (on demand), and overlap-adds the results into its internal buffer, ready to be sent to other UGen's connected via =>. The window size (along with an arbitrary window shape) is controlled via the .window method.";
+
+    if( !type_engine_import_uana_begin( env, "IFFT", "UAna", env->global(),
                                         IFFT_ctor, IFFT_dtor,
                                         IFFT_tick, IFFT_tock, IFFT_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -269,6 +277,11 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     func->doc = "Manually take IFFT (as opposed to using .upchuck() / upchuck operator)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "analysis/ifft.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/ifft2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/ifft3.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -298,6 +311,15 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, Windowing_blackmanHarris, "float[]", "blackmanHarris" );
     QUERY->add_arg( QUERY, "int", "size" );
 
+    // add examples | 1.5.0.0 (ge)
+    QUERY->add_ex( QUERY, "analysis/win.ck" );
+    QUERY->add_ex( QUERY, "analysis/xsynth.ck" );
+    QUERY->add_ex( QUERY, "analysis/tracking/pitch-track.ck" );
+    QUERY->add_ex( QUERY, "ai/features/rolloff2.ck" );
+    QUERY->add_ex( QUERY, "analysis/win.ck" );
+    QUERY->add_ex( QUERY, "ai/genre-classify/feature-extract.ck" );
+    QUERY->add_ex( QUERY, "ai/genre-classify/genre-classify.ck" );
+
     // done
     QUERY->end_class( QUERY );
 
@@ -314,19 +336,24 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: Flip
     //---------------------------------------------------------------------
-    
-    doc = "turns audio samples into frames in the UAna domain.";
-    
-    if( !type_engine_import_uana_begin( env, "Flip", "UAna", env->global(), 
+
+    doc = "Turn N (size) audio samples into a Unit Analyzer audio analysis frame.";
+
+    if( !type_engine_import_uana_begin( env, "Flip", "UAna", env->global(),
                                         Flip_ctor, Flip_dtor,
                                         Flip_tick, Flip_tock, Flip_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
     // member variable
     Flip_offset_data = type_engine_import_mvar( env, "int", "@Flip_data", FALSE );
     if( Flip_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "analysis/flip.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "analysis/autocorr.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "ai/features/zerox.ck" ) ) goto error;
 
     // transform
     func = make_new_mfun( "void", "transform", Flip_take );
@@ -344,7 +371,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "int", "windowSize", Flip_cget_windowSize );
     func->doc = "Get the current window size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // size
     func = make_new_mfun( "int", "size", Flip_ctrl_size );
     func->add_arg( "int", "size" );
@@ -363,17 +390,19 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     // end the class import
     type_engine_import_class_end( env );
 
-    
+    // deprecate
+    type_engine_register_deprecate( env, "pilF", "UnFlip" );
+
     //---------------------------------------------------------------------
     // init as base class: pilF
     //---------------------------------------------------------------------
-    
+
     doc = "turns UAna frames into audio samples, via overlap add.";
-    
-    if( !type_engine_import_uana_begin( env, "pilF", "UAna", env->global(), 
+
+    if( !type_engine_import_uana_begin( env, "UnFlip", "UAna", env->global(),
                                         UnFlip_ctor, UnFlip_dtor,
                                         UnFlip_tick, UnFlip_tock, UnFlip_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -396,7 +425,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     func = make_new_mfun( "int", "windowSize", UnFlip_cget_windowSize );
     func->doc = "Get the current window size.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // size
     func = make_new_mfun( "int", "size", UnFlip_ctrl_size );
     func->add_arg( "int", "size" );
@@ -412,22 +441,28 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     func->doc = "Manually take pilF (as opposed to using .upchuck() / upchuck operator)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add example
+    if( !type_engine_import_add_ex( env, "analysis/flip.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
-    
-    
+
+
     //---------------------------------------------------------------------
     // init as base class: DCT
     //---------------------------------------------------------------------
-    
-    doc = "computes the Discrete Cosine Transform on incoming audio samples, and outputs the result via its UAnaBlob as real values in the D.C. spectrum. A buffering mechanism maintains the previous DCT size # of samples, allowing DCT to be taken at any point in time, on demand (via .upchuck() or by upchucking a downstream UAna; see UAna documentation). The window size (along with an arbitry window shape) is controlled via the .window method. The hop size is complete dynamic, and is throttled by how time is advanced.";
-    
-    if( !type_engine_import_uana_begin( env, "DCT", "UAna", env->global(), 
+
+    doc = "computes the Discrete Cosine Transform on incoming audio samples, and outputs the result via its UAnaBlob as real values in the D.C. spectrum. A buffering mechanism maintains the previous DCT size # of samples, allowing DCT to be taken at any point in time, on demand (via .upchuck() or by upchucking a downstream UAna; see UAna documentation). The window size (along with an arbitrary window shape) is controlled via the .window method. The hop size is complete dynamic, and is throttled by how time is advanced.";
+
+    if( !type_engine_import_uana_begin( env, "DCT", "UAna", env->global(),
                                         DCT_ctor, DCT_dtor,
                                         DCT_tick, DCT_tock, DCT_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "analysis/dct.ck" ) ) goto error;
 
     // member variable
     DCT_offset_data = type_engine_import_mvar( env, "int", "@DCT_data", FALSE );
@@ -472,13 +507,13 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // init as base class: IDCT
     //---------------------------------------------------------------------
-    
-    doc = "computes the inverse Discrete Cosine Transform on incoming spectral frames (on demand), and overlap-adds the results into its internal buffer, ready to be sent to other UGen's connected via =>. The window size (along with an arbitry window shape) is controlled via the .window method.";
-    
-    if( !type_engine_import_uana_begin( env, "IDCT", "UAna", env->global(), 
+
+    doc = "computes the inverse Discrete Cosine Transform on incoming spectral frames (on demand), and overlap-adds the results into its internal buffer, ready to be sent to other UGen's connected via =>. The window size (along with an arbitrary window shape) is controlled via the .window method.";
+
+    if( !type_engine_import_uana_begin( env, "IDCT", "UAna", env->global(),
                                         IDCT_ctor, IDCT_dtor,
                                         IDCT_tick, IDCT_tock, IDCT_pmsg,
-                                        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+                                        CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE, CK_NO_VALUE,
                                         doc.c_str()) )
         return FALSE;
 
@@ -543,7 +578,7 @@ struct FFT_object
 public:
     FFT_object();
     virtual ~FFT_object();
-    
+
 public:
     t_CKBOOL resize( t_CKINT size );
     t_CKBOOL window( Chuck_Array8 * window, t_CKINT win_size );
@@ -616,7 +651,7 @@ t_CKBOOL FFT_object::resize( t_CKINT size )
 {
     // sanity check
     assert( size > 0 );
-    
+
     // next power of 2
     t_CKINT x = --size;
     for( ; size &= size-1; x = size );
@@ -671,7 +706,7 @@ t_CKBOOL FFT_object::window( Chuck_Array8 * win, t_CKINT win_size )
 {
     // sanity check
     assert( win_size >= 0 );
-    
+
     // in any case, clean up
     SAFE_DELETE_ARRAY( m_window );
     // reset
@@ -694,7 +729,7 @@ t_CKBOOL FFT_object::window( Chuck_Array8 * win, t_CKINT win_size )
         // zero it
         memset( m_window, 0, win_size * sizeof(SAMPLE) );
 
-        // set window    
+        // set window
         m_window_size = win_size;
         // copy
         t_CKFLOAT sample;
@@ -735,10 +770,16 @@ void FFT_object::transform()
         // bye
         return;
     }
-    
-    // sanity
-    assert( m_window_size <= m_size );
-    
+
+    // just checking | 1.5.0.0 (ge) | added
+    if( m_window_size > m_size )
+    {
+        // out of memory
+        CK_FPRINTF_STDERR( "[chuck]: FFT window size > FFT size (bailing out)...\n" );
+        // bye
+        return;
+    }
+
     // apply window, if there is one
     if( m_window )
         apply_window( m_buffer, m_window, m_window_size );
@@ -791,7 +832,7 @@ void FFT_object::transform( Chuck_Array8 * frame )
         frame->get( i, &v );
         m_buffer[i] = v;
     }
-    
+
     // zero pad
     for( t_CKINT j = amount; j < m_size; j++ )
         m_buffer[j] = 0;
@@ -858,8 +899,8 @@ void FFT_object::copyTo( Chuck_Array16 * cmp )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( FFT_ctor )
 {
@@ -870,8 +911,8 @@ CK_DLL_CTOR( FFT_ctor )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_DTOR( FFT_dtor )
 {
@@ -882,8 +923,8 @@ CK_DLL_DTOR( FFT_dtor )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( FFT_tick )
 {
@@ -892,14 +933,14 @@ CK_DLL_TICK( FFT_tick )
     fft->m_accum.put( in );
     // zero output
     *out = 0;
-    
+
     return TRUE;
 }
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_PMSG( FFT_pmsg )
 {
@@ -908,8 +949,8 @@ CK_DLL_PMSG( FFT_pmsg )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_TOCK( FFT_tock )
 {
@@ -943,8 +984,8 @@ CK_DLL_TOCK( FFT_tock )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( FFT_transform )
 {
@@ -958,8 +999,8 @@ CK_DLL_MFUN( FFT_transform )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( FFT_ctrl_window )
 {
@@ -975,8 +1016,8 @@ CK_DLL_CTRL( FFT_ctrl_window )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( FFT_cget_window )
 {
@@ -987,7 +1028,7 @@ CK_DLL_CGET( FFT_cget_window )
 
 //-----------------------------------------------------------------------------
 // name: windowSize()
-// desc: 
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( FFT_cget_windowSize )
 {
@@ -1019,7 +1060,7 @@ CK_DLL_CTRL( FFT_ctrl_size )
 
 invalid_size:
     // we have a problem
-    CK_FPRINTF_STDERR( 
+    CK_FPRINTF_STDERR(
         "[chuck](IFFT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
@@ -1036,8 +1077,8 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( FFT_cget_size )
 {
@@ -1049,8 +1090,8 @@ CK_DLL_CGET( FFT_cget_size )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( FFT_spectrum )
 {
@@ -1065,7 +1106,7 @@ CK_DLL_MFUN( FFT_spectrum )
         EM_log( CK_LOG_WARNING, "(via FFT): null array passed to spectrum(...)" );
         return;
     }
-    
+
     // copy it
     fft->copyTo( arr );
 }
@@ -1082,7 +1123,7 @@ struct IFFT_object
 public:
     IFFT_object();
     virtual ~IFFT_object();
-    
+
 public:
     t_CKBOOL resize( t_CKINT size );
     t_CKBOOL window( Chuck_Array8 * window, t_CKINT win_size );
@@ -1207,7 +1248,7 @@ t_CKBOOL IFFT_object::window( Chuck_Array8 * win, t_CKINT win_size )
 {
     // sanity check
     assert( win_size >= 0 );
-    
+
     // in any case, clean up
     SAFE_DELETE_ARRAY( m_window );
     // reset
@@ -1230,7 +1271,7 @@ t_CKBOOL IFFT_object::window( Chuck_Array8 * win, t_CKINT win_size )
         // zero it
         memset( m_window, 0, win_size * sizeof(SAMPLE) );
 
-        // set window    
+        // set window
         m_window_size = win_size;
         // copy
         t_CKFLOAT sample;
@@ -1268,7 +1309,7 @@ void IFFT_object::transform( )
         // bye
         return;
     }
-    
+
     // sanity
     assert( m_window_size <= m_size );
     // go for it
@@ -1307,7 +1348,7 @@ void IFFT_object::transform( Chuck_Array16 * cmp )
     // zero pad
     for( t_CKINT j = amount; j < m_size/2; j++ )
         m_buffer[j*2] = m_buffer[j*2+1] = 0;
-    
+
     // um
     this->transform();
 }
@@ -1349,8 +1390,8 @@ void IFFT_object::copyTo( Chuck_Array8 * samples )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( IFFT_ctor )
 {
@@ -1361,8 +1402,8 @@ CK_DLL_CTOR( IFFT_ctor )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_DTOR( IFFT_dtor )
 {
@@ -1373,8 +1414,8 @@ CK_DLL_DTOR( IFFT_dtor )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( IFFT_tick )
 {
@@ -1382,14 +1423,14 @@ CK_DLL_TICK( IFFT_tick )
     IFFT_object * ifft = (IFFT_object *)OBJ_MEMBER_UINT(SELF, IFFT_offset_data);
     // get output
     ifft->m_deccum.get( out );
-    
+
     return TRUE;
 }
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_PMSG( IFFT_pmsg )
 {
@@ -1398,8 +1439,8 @@ CK_DLL_PMSG( IFFT_pmsg )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_TOCK( IFFT_tock )
 {
@@ -1455,8 +1496,8 @@ CK_DLL_TOCK( IFFT_tock )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( IFFT_transform )
 {
@@ -1476,7 +1517,7 @@ CK_DLL_MFUN( IFFT_transform )
 
 null_pointer:
     // we have a problem
-    CK_FPRINTF_STDERR( 
+    CK_FPRINTF_STDERR(
         "[chuck](IFFT): NullPointerException (argument is NULL)\n");
     goto done;
 
@@ -1491,8 +1532,8 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( IFFT_ctrl_window )
 {
@@ -1508,8 +1549,8 @@ CK_DLL_CTRL( IFFT_ctrl_window )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( IFFT_cget_window )
 {
@@ -1520,7 +1561,7 @@ CK_DLL_CGET( IFFT_cget_window )
 
 //-----------------------------------------------------------------------------
 // name: windowSize()
-// desc: 
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( IFFT_cget_windowSize )
 {
@@ -1552,7 +1593,7 @@ CK_DLL_CTRL( IFFT_ctrl_size )
 
 invalid_size:
     // we have a problem
-    CK_FPRINTF_STDERR( 
+    CK_FPRINTF_STDERR(
         "[chuck](IFFT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
@@ -1569,8 +1610,8 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( IFFT_cget_size )
 {
@@ -1582,8 +1623,8 @@ CK_DLL_CGET( IFFT_cget_size )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( IFFT_inverse )
 {
@@ -1598,7 +1639,7 @@ CK_DLL_MFUN( IFFT_inverse )
         EM_log( CK_LOG_WARNING, "(via IFFT): null array passed to samples(...)" );
         return;
     }
-    
+
     // copy it
     ifft->copyTo( arr );
 }
@@ -1639,7 +1680,7 @@ static t_CKBOOL prepare_window( void * ARGS, Chuck_VM_Shred * SHRED, t_CKINT & s
 
 out_of_memory:
     // we have a problem
-    CK_FPRINTF_STDERR( 
+    CK_FPRINTF_STDERR(
         "[chuck](Windowing): OutOfMemoryException (allocating FLOAT[%ld])\n",
         float_array_size );
     goto done;
@@ -1792,7 +1833,7 @@ struct Flip_object
 public:
     Flip_object();
     virtual ~Flip_object();
-    
+
 public:
     t_CKBOOL resize( t_CKINT size );
     t_CKBOOL window( Chuck_Array8 * window, t_CKINT win_size );
@@ -1906,7 +1947,7 @@ t_CKBOOL Flip_object::window( Chuck_Array8 * win, t_CKINT win_size )
 {
     // sanity check
     assert( win_size >= 0 );
-    
+
     // in any case, clean up
     SAFE_DELETE_ARRAY( m_window );
     // reset
@@ -1929,7 +1970,7 @@ t_CKBOOL Flip_object::window( Chuck_Array8 * win, t_CKINT win_size )
         // zero it
         memset( m_window, 0, win_size * sizeof(SAMPLE) );
 
-        // set window    
+        // set window
         m_window_size = win_size;
         // copy
         t_CKFLOAT sample;
@@ -1970,7 +2011,7 @@ void Flip_object::transform( )
         // bye
         return;
     }
-    
+
     // sanity
     assert( m_window_size <= m_size );
 
@@ -2042,8 +2083,8 @@ void Flip_object::copyTo( Chuck_Array8 * val )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Flip_ctor )
 {
@@ -2054,8 +2095,8 @@ CK_DLL_CTOR( Flip_ctor )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_DTOR( Flip_dtor )
 {
@@ -2066,8 +2107,8 @@ CK_DLL_DTOR( Flip_dtor )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( Flip_tick )
 {
@@ -2076,14 +2117,14 @@ CK_DLL_TICK( Flip_tick )
     flip->m_accum.put( in );
     // zero output
     *out = 0;
-    
+
     return TRUE;
 }
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_PMSG( Flip_pmsg )
 {
@@ -2092,8 +2133,8 @@ CK_DLL_PMSG( Flip_pmsg )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_TOCK( Flip_tock )
 {
@@ -2118,8 +2159,8 @@ CK_DLL_TOCK( Flip_tock )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( Flip_take )
 {
@@ -2133,8 +2174,8 @@ CK_DLL_MFUN( Flip_take )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( Flip_ctrl_window )
 {
@@ -2150,8 +2191,8 @@ CK_DLL_CTRL( Flip_ctrl_window )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( Flip_cget_window )
 {
@@ -2162,7 +2203,7 @@ CK_DLL_CGET( Flip_cget_window )
 
 //-----------------------------------------------------------------------------
 // name: windowSize()
-// desc: 
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( Flip_cget_windowSize )
 {
@@ -2194,7 +2235,7 @@ CK_DLL_CTRL( Flip_ctrl_size )
 
 invalid_size:
     // we have a problem
-    CK_FPRINTF_STDERR( 
+    CK_FPRINTF_STDERR(
         "[chuck](IFFT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
@@ -2211,8 +2252,8 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( Flip_cget_size )
 {
@@ -2224,8 +2265,8 @@ CK_DLL_CGET( Flip_cget_size )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( Flip_output )
 {
@@ -2240,7 +2281,7 @@ CK_DLL_MFUN( Flip_output )
         EM_log( CK_LOG_WARNING, "(via Flip): null array passed to spectrum(...)" );
         return;
     }
-    
+
     // copy it
     flip->copyTo( arr );
 }
@@ -2257,7 +2298,7 @@ struct UnFlip_object
 public:
     UnFlip_object();
     virtual ~UnFlip_object();
-    
+
 public:
     t_CKBOOL resize( t_CKINT size );
     t_CKBOOL window( Chuck_Array8 * window, t_CKINT win_size );
@@ -2369,7 +2410,7 @@ t_CKBOOL UnFlip_object::window( Chuck_Array8 * win, t_CKINT win_size )
 {
     // sanity check
     assert( win_size >= 0 );
-    
+
     // in any case, clean up
     SAFE_DELETE_ARRAY( m_window );
     // reset
@@ -2392,7 +2433,7 @@ t_CKBOOL UnFlip_object::window( Chuck_Array8 * win, t_CKINT win_size )
         // zero it
         memset( m_window, 0, win_size * sizeof(SAMPLE) );
 
-        // set window    
+        // set window
         m_window_size = win_size;
         // copy
         t_CKFLOAT sample;
@@ -2430,7 +2471,7 @@ void UnFlip_object::transform( )
         // bye
         return;
     }
-    
+
     // sanity
     assert( m_window_size <= m_size );
     // apply window, if there is one
@@ -2464,7 +2505,7 @@ void UnFlip_object::transform( Chuck_Array8 * val )
     // zero pad
     for( t_CKINT j = amount; j < m_size; j++ )
         m_buffer[j] = 0;
-    
+
     // um
     this->transform();
 }
@@ -2502,8 +2543,8 @@ void UnFlip_object::copyTo( Chuck_Array8 * samples )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( UnFlip_ctor )
 {
@@ -2514,8 +2555,8 @@ CK_DLL_CTOR( UnFlip_ctor )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_DTOR( UnFlip_dtor )
 {
@@ -2526,8 +2567,8 @@ CK_DLL_DTOR( UnFlip_dtor )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( UnFlip_tick )
 {
@@ -2535,14 +2576,14 @@ CK_DLL_TICK( UnFlip_tick )
     UnFlip_object * unflip = (UnFlip_object *)OBJ_MEMBER_UINT(SELF, UnFlip_offset_data);
     // get output
     unflip->m_deccum.get( out );
-    
+
     return TRUE;
 }
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_PMSG( UnFlip_pmsg )
 {
@@ -2551,8 +2592,8 @@ CK_DLL_PMSG( UnFlip_pmsg )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_TOCK( UnFlip_tock )
 {
@@ -2606,8 +2647,8 @@ CK_DLL_TOCK( UnFlip_tock )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( UnFlip_take )
 {
@@ -2627,7 +2668,7 @@ CK_DLL_MFUN( UnFlip_take )
 
 null_pointer:
     // we have a problem
-    CK_FPRINTF_STDERR( 
+    CK_FPRINTF_STDERR(
         "[chuck](UnFlip): NullPointerException (argument is NULL)\n");
     goto done;
 
@@ -2642,8 +2683,8 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( UnFlip_ctrl_window )
 {
@@ -2659,8 +2700,8 @@ CK_DLL_CTRL( UnFlip_ctrl_window )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( UnFlip_cget_window )
 {
@@ -2671,7 +2712,7 @@ CK_DLL_CGET( UnFlip_cget_window )
 
 //-----------------------------------------------------------------------------
 // name: windowSize()
-// desc: 
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( UnFlip_cget_windowSize )
 {
@@ -2703,7 +2744,7 @@ CK_DLL_CTRL( UnFlip_ctrl_size )
 
 invalid_size:
     // we have a problem
-    CK_FPRINTF_STDERR( 
+    CK_FPRINTF_STDERR(
         "[chuck](UnFlip): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
@@ -2720,8 +2761,8 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( UnFlip_cget_size )
 {
@@ -2733,8 +2774,8 @@ CK_DLL_CGET( UnFlip_cget_size )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( UnFlip_output )
 {
@@ -2749,7 +2790,7 @@ CK_DLL_MFUN( UnFlip_output )
         EM_log( CK_LOG_WARNING, "(via UnFlip): null array passed to samples(...)" );
         return;
     }
-    
+
     // copy it
     unflip->copyTo( arr );
 }
@@ -2766,7 +2807,7 @@ struct DCT_object
 public:
     DCT_object();
     virtual ~DCT_object();
-    
+
 public:
     t_CKBOOL resize( t_CKINT size );
     t_CKBOOL window( Chuck_Array8 * window, t_CKINT win_size );
@@ -2898,7 +2939,7 @@ t_CKBOOL DCT_object::window( Chuck_Array8 * win, t_CKINT win_size )
 {
     // sanity check
     assert( win_size >= 0 );
-    
+
     // in any case, clean up
     SAFE_DELETE_ARRAY( m_window );
     // reset
@@ -2921,7 +2962,7 @@ t_CKBOOL DCT_object::window( Chuck_Array8 * win, t_CKINT win_size )
         // zero it
         memset( m_window, 0, win_size * sizeof(SAMPLE) );
 
-        // set window    
+        // set window
         m_window_size = win_size;
         // copy
         t_CKFLOAT sample;
@@ -2962,7 +3003,7 @@ void DCT_object::transform( )
         // bye
         return;
     }
-    
+
     // sanity
     assert( m_window_size <= m_size );
 
@@ -3035,8 +3076,8 @@ void DCT_object::copyTo( Chuck_Array8 * frame )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( DCT_ctor )
 {
@@ -3047,8 +3088,8 @@ CK_DLL_CTOR( DCT_ctor )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_DTOR( DCT_dtor )
 {
@@ -3059,8 +3100,8 @@ CK_DLL_DTOR( DCT_dtor )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( DCT_tick )
 {
@@ -3069,14 +3110,14 @@ CK_DLL_TICK( DCT_tick )
     dct->m_accum.put( in );
     // zero output
     *out = 0;
-    
+
     return TRUE;
 }
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_PMSG( DCT_pmsg )
 {
@@ -3085,8 +3126,8 @@ CK_DLL_PMSG( DCT_pmsg )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_TOCK( DCT_tock )
 {
@@ -3111,8 +3152,8 @@ CK_DLL_TOCK( DCT_tock )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( DCT_transform )
 {
@@ -3124,8 +3165,8 @@ CK_DLL_MFUN( DCT_transform )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( DCT_ctrl_window )
 {
@@ -3139,8 +3180,8 @@ CK_DLL_CTRL( DCT_ctrl_window )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( DCT_cget_window )
 {
@@ -3149,7 +3190,7 @@ CK_DLL_CGET( DCT_cget_window )
 
 //-----------------------------------------------------------------------------
 // name: windowSize()
-// desc: 
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( DCT_cget_windowSize )
 {
@@ -3181,7 +3222,7 @@ CK_DLL_CTRL( DCT_ctrl_size )
 
 invalid_size:
     // we have a problem
-    CK_FPRINTF_STDERR( 
+    CK_FPRINTF_STDERR(
         "[chuck](IDCT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
@@ -3198,8 +3239,8 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( DCT_cget_size )
 {
@@ -3211,8 +3252,8 @@ CK_DLL_CGET( DCT_cget_size )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( DCT_spectrum )
 {
@@ -3227,7 +3268,7 @@ CK_DLL_MFUN( DCT_spectrum )
         EM_log( CK_LOG_WARNING, "(via DCT): null array passed to spectrum(...)" );
         return;
     }
-    
+
     // copy it
     dct->copyTo( arr );
 }
@@ -3244,7 +3285,7 @@ struct IDCT_object
 public:
     IDCT_object();
     virtual ~IDCT_object();
-    
+
 public:
     t_CKBOOL resize( t_CKINT size );
     t_CKBOOL window( Chuck_Array8 * window, t_CKINT win_size );
@@ -3373,7 +3414,7 @@ t_CKBOOL IDCT_object::window( Chuck_Array8 * win, t_CKINT win_size )
 {
     // sanity check
     assert( win_size >= 0 );
-    
+
     // in any case, clean up
     SAFE_DELETE_ARRAY( m_window );
     // reset
@@ -3396,7 +3437,7 @@ t_CKBOOL IDCT_object::window( Chuck_Array8 * win, t_CKINT win_size )
         // zero it
         memset( m_window, 0, win_size * sizeof(SAMPLE) );
 
-        // set window    
+        // set window
         m_window_size = win_size;
         // copy
         t_CKFLOAT sample;
@@ -3434,7 +3475,7 @@ void IDCT_object::transform( )
         // bye
         return;
     }
-    
+
     // sanity
     assert( m_window_size <= m_size );
     // go for it
@@ -3470,7 +3511,7 @@ void IDCT_object::transform( Chuck_Array8 * frame )
     // zero pad
     for( t_CKINT j = amount; j < m_size; j++ )
         m_buffer[j] = 0;
-    
+
     // um
     this->transform();
 }
@@ -3511,8 +3552,8 @@ void IDCT_object::copyTo( Chuck_Array8 * samples )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( IDCT_ctor )
 {
@@ -3523,8 +3564,8 @@ CK_DLL_CTOR( IDCT_ctor )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_DTOR( IDCT_dtor )
 {
@@ -3535,8 +3576,8 @@ CK_DLL_DTOR( IDCT_dtor )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( IDCT_tick )
 {
@@ -3544,14 +3585,14 @@ CK_DLL_TICK( IDCT_tick )
     IDCT_object * idct = (IDCT_object *)OBJ_MEMBER_UINT(SELF, IDCT_offset_data);
     // get output
     idct->m_deccum.get( out );
-    
+
     return TRUE;
 }
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_PMSG( IDCT_pmsg )
 {
@@ -3560,8 +3601,8 @@ CK_DLL_PMSG( IDCT_pmsg )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_TOCK( IDCT_tock )
 {
@@ -3617,8 +3658,8 @@ CK_DLL_TOCK( IDCT_tock )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( IDCT_transform )
 {
@@ -3638,7 +3679,7 @@ CK_DLL_MFUN( IDCT_transform )
 
 null_pointer:
     // we have a problem
-    CK_FPRINTF_STDERR( 
+    CK_FPRINTF_STDERR(
         "[chuck](IDCT): NullPointerException (argument is NULL)\n");
     goto done;
 
@@ -3653,8 +3694,8 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( IDCT_ctrl_window )
 {
@@ -3668,8 +3709,8 @@ CK_DLL_CTRL( IDCT_ctrl_window )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( IDCT_cget_window )
 {
@@ -3678,7 +3719,7 @@ CK_DLL_CGET( IDCT_cget_window )
 
 //-----------------------------------------------------------------------------
 // name: windowSize()
-// desc: 
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( IDCT_cget_windowSize )
 {
@@ -3710,7 +3751,7 @@ CK_DLL_CTRL( IDCT_ctrl_size )
 
 invalid_size:
     // we have a problem
-    CK_FPRINTF_STDERR( 
+    CK_FPRINTF_STDERR(
         "[chuck](IDCT): InvalidTransformSizeException (%ld)\n", size );
     goto done;
 
@@ -3727,8 +3768,8 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( IDCT_cget_size )
 {
@@ -3740,8 +3781,8 @@ CK_DLL_CGET( IDCT_cget_size )
 
 
 //-----------------------------------------------------------------------------
-// name: 
-// desc: 
+// name:
+// desc:
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( IDCT_inverse )
 {
@@ -3756,7 +3797,7 @@ CK_DLL_MFUN( IDCT_inverse )
         EM_log( CK_LOG_WARNING, "(via IDCT): null array passed to samples(...)" );
         return;
     }
-    
+
     // copy it
     idct->copyTo( arr );
 }

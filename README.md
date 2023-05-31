@@ -14,3 +14,22 @@ what is it? : Chuck is a programming language for real-time sound synthesis and 
 
 For more information, including documentation, research publications, and community resources, please check out the ChucK website:
 http://chuck.stanford.edu/
+
+## Building ChucK
+### Mac
+In order to build chuck from source you need to download the `chuck` repo from github, move into the `chuck/src` directory and then run `make`.
+
+```
+git clone https://github.com/ccrma/chuck.git
+cd chuck/src
+make mac
+```
+
+### Linux
+In order to build chuck from source you need to download the `chuck` repo from github, move into the `chuck/src` directory and then run `make`.
+
+```
+git clone https://github.com/ccrma/chuck.git
+cd chuck/src
+make linux-alsa linux-pulse linux-jack
+```

@@ -48,7 +48,7 @@
 // major version must be the same between chuck:chugin
 #define CK_DLL_VERSION_MAJOR (0x0008)
 // minor version of chugin must be less than or equal to chuck's
-#define CK_DLL_VERSION_MINOR (0x0000)
+#define CK_DLL_VERSION_MINOR (0x0001)
 #define CK_DLL_VERSION_MAKE(maj,min) ((t_CKUINT)(((maj) << 16) | (min)))
 #define CK_DLL_VERSION_GETMAJOR(v) (((v) >> 16) & 0xFFFF)
 #define CK_DLL_VERSION_GETMINOR(v) ((v) & 0xFFFF)
@@ -154,14 +154,14 @@ namespace Chuck_DL_Api { struct Api; }
 
 
 // chuck dll export linkage and calling convention
-#if defined (__PLATFORM_WIN32__) 
+#if defined (__PLATFORM_WIN32__)
   #define CK_DLL_LINKAGE extern "C" __declspec( dllexport )
 #else
-  #define CK_DLL_LINKAGE extern "C" 
-#endif 
+  #define CK_DLL_LINKAGE extern "C"
+#endif
 
 // calling convention of functions provided by chuck to the dll
-#if defined(__WINDOWS_DS__)
+#if defined(__PLATFORM_WIN32__)
   #define CK_DLL_CALL    _cdecl
 #else
   #define CK_DLL_CALL
@@ -183,7 +183,7 @@ typedef const Chuck_DL_Api::Api *CK_DL_API;
 // example: CK_DLL_QUERY
 #ifndef __CK_DLL_STATIC__
 #define CK_DLL_QUERY(name) CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKBOOL) ck_query( Chuck_DL_Query * QUERY )
-#else 
+#else
 #define CK_DLL_QUERY(name) CK_DLL_QUERY_STATIC(name)
 #endif // __CK_DLL_STATIC__
 // macro for defining ChucK DLL export allocator
@@ -382,13 +382,13 @@ public:
 
     // re-added 1.4.0.1
     f_create_main_thread_hook create_main_thread_hook;
-    
+
     // NOTE: everything below std::anything cannot be reliably accessed
     // by offset between dynamic modules, since std::anything could be variable
     // size -- put everything need to be accessed across modules above here!
     // discovered by the vigilant and forever traumatized Jack Atherton,
     // fixed during REFACTOR-2017; warning by the guilt-ridden Ge Wang
-    
+
     // dll
     Chuck_DLL * dll_ref;
     // reserved
@@ -410,7 +410,7 @@ public:
     std::vector<Chuck_DL_Class *> classes;
     // stack
     std::vector<Chuck_DL_Class * >stack;
-    
+
     // constructor
     Chuck_DL_Query( Chuck_Carrier * carrier );
     // desctructor
@@ -458,12 +458,12 @@ struct Chuck_DL_Class
     std::vector<Chuck_DL_Class *> classes;
     // current mvar offset
     t_CKUINT current_mvar_offset;
-    
+
     t_CKUINT ugen_num_in, ugen_num_out;
-    
+
     std::string doc;
     std::vector<std::string> examples;
-    
+
     // constructor
     Chuck_DL_Class() { dtor = NULL; ugen_tick = NULL; ugen_tickf = NULL; ugen_pmsg = NULL; uana_tock = NULL; ugen_pmsg = NULL; current_mvar_offset = 0; ugen_num_in = ugen_num_out = 0; }
     // destructor
@@ -515,7 +515,7 @@ struct Chuck_DL_Func
     std::vector<Chuck_DL_Value *> args;
     // description
     std::string doc;
-    
+
     // constructor
     Chuck_DL_Func() { ctor = NULL; }
     Chuck_DL_Func( const char * t, const char * n, t_CKUINT a )
@@ -580,7 +580,7 @@ union Chuck_DL_Return
     t_CKVEC4 v_vec4; // ge: added 1.3.5.3
     Chuck_Object * v_object;
     Chuck_String * v_string;
-    
+
     Chuck_DL_Return() { v_vec4.x = v_vec4.y = v_vec4.z = v_vec4.w = 0; }
 };
 
@@ -595,7 +595,7 @@ struct Chuck_DLL : public Chuck_VM_Object
 {
 public:
     // load dynamic ckx/dll from filename
-    t_CKBOOL load( const char * filename, 
+    t_CKBOOL load( const char * filename,
                    const char * func = CK_QUERY_FUNC,
                    t_CKBOOL lazy = FALSE );
     t_CKBOOL load( f_ck_query query_func, t_CKBOOL lazy = FALSE );
@@ -611,7 +611,7 @@ public:
     t_CKBOOL good() const;
     // name
     const char * name() const;
-    
+
 public:
     // constructor
     Chuck_DLL( Chuck_Carrier * carrier, const char * xid = NULL )
@@ -644,7 +644,7 @@ public:
                             void * bindle, Chuck_Carrier * carrier);
     t_CKBOOL (* const activate)(Chuck_DL_MainThreadHook *);
     t_CKBOOL (* const deactivate)(Chuck_DL_MainThreadHook *);
-    
+
     Chuck_Carrier * const m_carrier;
     f_mainthreadhook const m_hook;
     f_mainthreadquit const m_quit;
@@ -659,51 +659,58 @@ namespace Chuck_DL_Api
 typedef void * Object;
 typedef void * Type;
 typedef void * String;
+typedef void * Array4; // 1.5.0.1 (ge) added
 
 struct Api
 {
 public:
     static Api g_api;
     static inline const Api * instance() { return &g_api; }
-    
+
     struct VMApi
     {
         VMApi();
         t_CKUINT (* const get_srate)( CK_DL_API, Chuck_VM_Shred * );
     } * const vm;
-    
+
     struct ObjectApi
     {
         ObjectApi();
-    private:
+
+    // 1.5.0.0 (nshaheed and ge and anonymous pr-lab member) | changed from private to public
+    // also changed all std::string & in this section to const char *
+    // intent: this allows for chugins to access member variables and create chuck strings
+    public:
         // function pointer get_type()
-        Type (* const get_type)( CK_DL_API, Chuck_VM_Shred *, std::string &name );
+        Type (* const get_type)( CK_DL_API, Chuck_VM_Shred *, const char * name );
         // function pointer create()
         Object (* const create)( CK_DL_API, Chuck_VM_Shred *, Type type );
         // function pointer create_string()
-        String (* const create_string)( CK_DL_API, Chuck_VM_Shred *, std::string &value );
+        String (* const create_string)( CK_DL_API, Chuck_VM_Shred *, const char * value );
         // function pointers for get_mvar_*()
-        t_CKBOOL (* const get_mvar_int)( CK_DL_API, Object object, std::string &name, t_CKINT &value );
-        t_CKBOOL (* const get_mvar_float)( CK_DL_API, Object object, std::string &name, t_CKFLOAT &value );
-        t_CKBOOL (* const get_mvar_dur)( CK_DL_API, Object object, std::string &name, t_CKDUR &value );
-        t_CKBOOL (* const get_mvar_time)( CK_DL_API, Object object, std::string &name, t_CKTIME &value );
-        t_CKBOOL (* const get_mvar_string)( CK_DL_API, Object object, std::string &name, String &value );
-        t_CKBOOL (* const get_mvar_object)( CK_DL_API, Object object, std::string &name, Object &value );
+        t_CKBOOL (* const get_mvar_int)( CK_DL_API, Object object, const char * name, t_CKINT & value );
+        t_CKBOOL (* const get_mvar_float)( CK_DL_API, Object object, const char * name, t_CKFLOAT & value );
+        t_CKBOOL (* const get_mvar_dur)( CK_DL_API, Object object, const char * name, t_CKDUR & value );
+        t_CKBOOL (* const get_mvar_time)( CK_DL_API, Object object, const char * name, t_CKTIME & value );
+        t_CKBOOL (* const get_mvar_string)( CK_DL_API, Object object, const char * name, String & value );
+        t_CKBOOL (* const get_mvar_object)( CK_DL_API, Object object, const char * name, Object & value );
         // function pointer for set_string()
-        t_CKBOOL (* const set_string)( CK_DL_API, String string, std::string &value );
+        t_CKBOOL (* const set_string)( CK_DL_API, String string, const char * value );
+        // array4 operations
+        t_CKBOOL (* const array4_push_back)( CK_DL_API, Array4 array, t_CKUINT value );
     } * const object;
-    
+
     Api() :
         vm(new VMApi),
         object(new ObjectApi)
     { }
-    
+
 private:
     Api( Api & a ) :
         vm(a.vm),
         object(a.object)
     { assert(0); };
-    
+
     Api & operator=( Api & a ) { assert(0); return a; }
 };
 }
@@ -720,31 +727,33 @@ private:
 
 #error ChucK not support on Mac OS X 10.3 or lower
 
-#elif defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__) 
-	 	 	 	 
-          #ifdef __cplusplus 
-          extern "C" { 
-          #endif 
-         
-          #define RTLD_LAZY         0x1 
-          #define RTLD_NOW          0x2 
-          #define RTLD_LOCAL        0x4 
-      #define RTLD_GLOBAL       0x8 
-          #define RTLD_NOLOAD       0x10 
-          #define RTLD_SHARED       0x20    /* not used, the default */ 
-          #define RTLD_UNSHARED     0x40 
-          #define RTLD_NODELETE     0x80 
-          #define RTLD_LAZY_UNDEF   0x100 
-         
-          void * dlopen( const char * path, int mode ); 
-          void * dlsym( void * handle, const char * symbol ); 
-          const char * dlerror( void ); 
-          int dlclose( void * handle ); 
-          static char dlerror_buffer[128]; 
-         
-          #ifdef __cplusplus 
-          } 
-          #endif 
+#elif defined(__PLATFORM_WIN32__)
+
+          #ifdef __cplusplus
+          extern "C" {
+          #endif
+
+          #define RTLD_LAZY         0x1
+          #define RTLD_NOW          0x2
+          #define RTLD_LOCAL        0x4
+      #define RTLD_GLOBAL       0x8
+          #define RTLD_NOLOAD       0x10
+          #define RTLD_SHARED       0x20    /* not used, the default */
+          #define RTLD_UNSHARED     0x40
+          #define RTLD_NODELETE     0x80
+          #define RTLD_LAZY_UNDEF   0x100
+
+          void * dlopen( const char * path, int mode );
+          void * dlsym( void * handle, const char * symbol );
+          const char * dlerror( void );
+          int dlclose( void * handle );
+          // 1.4.2.0 (ge) | added DLERROR_BUFFER_LENGTH
+          #define DLERROR_BUFFER_LENGTH 128
+          static char dlerror_buffer[DLERROR_BUFFER_LENGTH];
+
+          #ifdef __cplusplus
+          }
+          #endif
 
 #else
   #include "dlfcn.h"

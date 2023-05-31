@@ -1,9 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import os
 import subprocess
 import time
+# 1.4.1.1 (added) nshaheed for windows CI
+import posixpath
 
 
 failures = 0
@@ -20,6 +22,11 @@ def handle_directory(dir, exe):
 
     for filename in os.listdir(dir):
         path = os.path.join(dir, filename)
+        # 1.4.1.1 (added) nshaheed
+        # split path into its components and then rejoin cast as a posix path
+        path_components = os.path.normpath(path).lstrip(os.path.sep).split(os.path.sep)
+        path = posixpath.join(*path_components)
+
         if os.path.isfile(path):
             if os.path.splitext(filename)[1] == ".ck":
                 run_test(exe, path, filename, 0)
@@ -40,7 +47,7 @@ def run_test(exe, path, filename, attempt):
     try:
         result = subprocess.check_output([exe, "--silent", "%s" % path], stderr=subprocess.STDOUT).decode("utf-8")
 
-        if result.strip().endswith(("\"success\" : (string)",)):
+        if result.strip().endswith(("\"success\" :(string)",)):
             successes += 1
 
         else:

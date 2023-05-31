@@ -1,4 +1,19 @@
-// make HidIn and HidMsg
+//-----------------------------------------------------------------------------
+// name: mouse.ck
+// desc: basic mouse input (relative X and Y deltas)
+//       also see: mouse-abs.ck for absolute screen position
+//
+// note: select between mice/trackpads by specifying device number;
+//       to see a list of devices and their numbers, either...
+//       1) view the Device Browser window in miniAudicle (select
+//          "Human Interface Devices" in the drop-down menu)
+//       OR 2) from the command line:
+//          > chuck --probe
+//
+// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
+//-----------------------------------------------------------------------------
+
+// HID input and a HID message
 Hid hi;
 HidMsg msg;
 
@@ -27,7 +42,6 @@ while( true )
             {
                 <<< "mouse motion:", msg.deltaX, "on x-axis" >>>;
             }
-            
             if( msg.deltaY )
             {
                 <<< "mouse motion:", msg.deltaY, "on y-axis" >>>;

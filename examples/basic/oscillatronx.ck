@@ -1,5 +1,10 @@
-// oscillator demo
-// - philipd
+//------------------------------------------------------------------
+// name: oscillatronx (oscillator demo)
+// desc: playing all of the different types of oscillator UGens
+//       mixing together different timbres to create a sonic texture
+//
+// author: philipd
+//------------------------------------------------------------------
 
 // scale degrees in semi-tones
 [ 0, 2, 4, 7, 9 ] @=> int f[];
@@ -10,7 +15,7 @@ SawOsc saw => dac;
 TriOsc tri => dac;
 PulseOsc pul => dac;
 SqrOsc sqr => dac;
-// modulator and carrier
+// FM modulator and carrier
 TriOsc trictrl => SinOsc sintri => dac;
 // interpret input as frequency modulation
 2 => sintri.sync;
@@ -31,17 +36,17 @@ TriOsc trictrl => SinOsc sintri => dac;
 while( true )
 { 
     // randomize
-	Math.random2(0,7) => int select;
+    Math.random2(0,7) => int select;
     // clamp (giving more weight to 5)
-	if( select > 5 ) 5 => select;
+    if( select > 5 ) 5 => select;
     // generate new frequenc value
-	Std.mtof( f[Math.random2( 0, 4 )] + 60 ) => float newnote;
+    Std.mtof( f[Math.random2( 0, 4 )] + 60 ) => float newnote;
     // set frequency
-	newnote => oscillators[select].freq;
+    newnote => oscillators[select].freq;
     // wait a bit
-	0.25::second => now;
+    0.25::second => now;
     // 10 times
-	repeat(10)
+    repeat(10)
     {
         Math.random2f( 0.2, 0.8 ) => trictrl.width;
         // <<< "trictrl width:", trictrl.width() >>>;

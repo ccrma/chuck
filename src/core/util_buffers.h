@@ -43,8 +43,8 @@
 #include <queue>
 #include <iostream>
 
-#define DWORD__                unsigned long
-#define SINT__                 long
+#define DWORD__                t_CKUINT
+#define SINT__                 t_CKINT
 #define UINT__                 DWORD__
 #define BOOL__                 DWORD__
 #define BYTE__                 unsigned char
@@ -103,7 +103,7 @@ protected:
     #ifndef __DISABLE_THREADS__
     XMutex m_mutex;
     #endif
-    
+
     CBufferSimple * m_event_buffer;
 };
 
@@ -203,7 +203,7 @@ template<typename T>
 class CircularBuffer
 {
 public:
-    
+
     CircularBuffer(size_t numElements) :
     m_read(0),
     m_write(0),
@@ -211,7 +211,7 @@ public:
     {
         m_elements = new T[m_numElements];
     }
-    
+
     ~CircularBuffer()
     {
         if(m_elements != NULL)
@@ -220,7 +220,7 @@ public:
             m_elements = NULL;
         }
     }
-    
+
     // put one element
     // returns number of elements successfully put
     size_t put(T element)
@@ -230,14 +230,14 @@ public:
             // no space
             return 0;
         }
-        
+
         m_elements[m_write] = element;
-        
+
         m_write = (m_write+1)%m_numElements;
-        
+
         return 1;
     }
-    
+
     // get one element
     // returns number of elements successfully got
     size_t get(T &element)
@@ -247,14 +247,14 @@ public:
             // nothing to get
             return 0;
         }
-        
+
         element = m_elements[m_read];
-        
+
         m_read = (m_read+1)%m_numElements;
-        
+
         return 1;
     }
-    
+
     // peek at element i without removing it
     // i = 1 would correspond to the least recently put element;
     // i = -1 would correspond to the most recent (not implemented)
@@ -263,24 +263,24 @@ public:
     {
         if(i == 0)
             return 0;
-        
+
         if(i > 0 && i <= numElements())
         {
             element = m_elements[(m_read+(i-1))%m_numElements];
             return 1;
         }
-        
+
         return 0;
     }
-    
+
     void clear() { m_write = m_read; }
-    
+
     // return maximum number of elements that can be held
     size_t maxElements() { return m_numElements-1; }
-    
+
     // return if buffer is full
     bool atMaximum() { return (m_write + 1)%m_numElements == m_read; }
-    
+
     // return number of valid elements in the buffer
     size_t numElements()
     {
@@ -291,7 +291,7 @@ public:
         else
             return m_numElements - m_read + m_write;
     }
-    
+
 private:
     T * m_elements;
     size_t m_read, m_write;
@@ -311,17 +311,17 @@ class FastCircularBuffer
 public:
     FastCircularBuffer();
     ~FastCircularBuffer();
-    
+
 public:
     t_CKUINT initialize( t_CKUINT num_elem, t_CKUINT width );
     void cleanup();
-    
+
 public:
     t_CKUINT get( void * data, t_CKUINT num_elem );
     t_CKUINT put( void * data, t_CKUINT num_elem );
     inline bool hasMore() { return (m_read_offset != m_write_offset); }
     inline void clear() { m_read_offset = m_write_offset = 0; }
-    
+
 protected:
     t_CKBYTE * m_data;
     t_CKUINT   m_data_width;
@@ -343,7 +343,7 @@ class XCircleBuffer
 public:
     XCircleBuffer( long length = 0 );
     ~XCircleBuffer();
-    
+
 public:
     // reset length of buffer (capacity)
     void init( long length );
@@ -351,7 +351,7 @@ public:
     long length() const;
     // clear (does no explicit memory management)
     void clear();
-    
+
 public:
     // put an element into the buffer - the item will be copied
     // NOTE: if over-capacity, will discard least recently put item
@@ -366,11 +366,11 @@ public:
     long peek( T * array, long numItems, unsigned long stride = 0 );
     // pop
     long pop( long numItems = 1 );
-    
+
 protected: // helper functions
     inline void advanceWrite();
     inline void advanceRead();
-    
+
 protected:
     // the buffer
     T * m_buffer;
@@ -397,7 +397,7 @@ XCircleBuffer<T>::XCircleBuffer( long length )
     // zero out first
     m_buffer = NULL;
     m_length = m_readIndex = m_writeIndex = m_numElements = 0;
-    
+
     // call init
     this->init( length );
 }
@@ -412,7 +412,7 @@ XCircleBuffer<T>::XCircleBuffer( long length )
 template <typename T>
 XCircleBuffer<T>::~XCircleBuffer()
 {
-    
+
 }
 
 
@@ -433,20 +433,20 @@ void XCircleBuffer<T>::init( long length )
         // zero out
         m_length = m_readIndex = m_writeIndex = m_numElements = 0;
     }
-    
+
     // sanity check
     if( length < 0 )
     {
         // doh
         std::cerr << "[XCircleBuffer]: error invalid length '"
         << length << "' requested" << std::endl;
-        
+
         return;
     }
-    
+
     // check for zero length
     if( length == 0 ) return;
-    
+
     // allocate
     m_buffer = new T[length];
     // check
@@ -455,10 +455,10 @@ void XCircleBuffer<T>::init( long length )
         // doh
         std::cerr << "[XCircleBuffer]: failed to allocate buffer of length '"
         << length << "'..." << std::endl;
-        
+
         return;
     }
-    
+
     // save
     m_length = length;
     // zero out
@@ -504,14 +504,14 @@ void XCircleBuffer<T>::advanceWrite()
 {
     // increment
     m_writeIndex++;
-    
+
     // check for bounds
     if( m_writeIndex >= m_length )
     {
         // wrap
         m_writeIndex -= m_length;
     }
-    
+
     // increment count
     m_numElements++;
 }
@@ -528,14 +528,14 @@ void XCircleBuffer<T>::advanceRead()
 {
     // increment
     m_readIndex++;
-    
+
     // check for bounds
     if( m_readIndex >= m_length )
     {
         // wrap
         m_readIndex -= m_length;
     }
-    
+
     // decrement count
     m_numElements--;
 }
@@ -553,13 +553,13 @@ void XCircleBuffer<T>::put( const T & item )
 {
     // sanity check
     if( m_buffer == NULL ) return;
-    
+
     // copy it
     m_buffer[m_writeIndex] = item;
-    
+
     // advance write index
     advanceWrite();
-    
+
     // if read and write pointer are the same, over-capacity
     if( m_writeIndex == m_readIndex )
     {
@@ -609,19 +609,19 @@ long XCircleBuffer<T>::peek( T * array, long numItems, unsigned long stride )
 {
     // sanity check
     if( m_buffer == NULL ) return 0;
-    
+
     // sanity check (so the wrap can be sure to land inbounds)
     if( stride >= m_length ) return 0;
-    
+
     // count
     long count = 0;
     // actual count, taking stride out of the equation
     long actualCount = 0;
-    
+
     // starting index
     long index = m_writeIndex - 1;
     if( index < 0 ) index += m_length;
-    
+
     // while need more but haven't reached write index...
     while( (count < numItems) && (count < m_numElements) )
     {
@@ -636,7 +636,7 @@ long XCircleBuffer<T>::peek( T * array, long numItems, unsigned long stride )
         // wrap
         if( index < 0 ) index += m_length;
     }
-    
+
     // reverse contents
     for( int i = 0; i < actualCount/2; i++ )
     {
@@ -644,7 +644,7 @@ long XCircleBuffer<T>::peek( T * array, long numItems, unsigned long stride )
         array[i] = array[actualCount-1-i];
         array[actualCount-1-i] = v;
     }
-    
+
     return actualCount;
 }
 
@@ -660,10 +660,10 @@ long XCircleBuffer<T>::pop( long numItems )
 {
     // sanity check
     if( m_buffer == NULL ) return 0;
-    
+
     // count
     long count = 0;
-    
+
     // while there is more to pop and need to pop more
     while( more() && count < numItems )
     {
@@ -672,7 +672,7 @@ long XCircleBuffer<T>::pop( long numItems )
         // increment count
         count++;
     }
-    
+
     return count;
 }
 
@@ -688,12 +688,12 @@ bool XCircleBuffer<T>::get( T * result )
 {
     // sanity check
     if( m_buffer == NULL || m_readIndex == m_writeIndex ) return false;
-    
+
     // get item to read
     *result = m_buffer[m_readIndex];
     // advance read
     advanceRead();
-    
+
     return true;
 }
 

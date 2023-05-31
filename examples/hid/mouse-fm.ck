@@ -1,6 +1,17 @@
+//-----------------------------------------------------------------------------
 // name: mouse-fm.ck
-// desc: uses first X/Y axes of a mouse to control mf and index for FM
+// desc: uses first X/Y axes of a mouse to control modulation frequency
+//       and index of modulation for FM Synthesis
+//
+// note: select between mice/trackpads by specifying device number;
+//       to see a list of devices and their numbers, either...
+//       1) view the Device Browser window in miniAudicle (select
+//          "Human Interface Devices" in the drop-down menu)
+//       OR 2) from the command line:
+//          > chuck --probe
+//
 // author: Spencer Salazar
+//-----------------------------------------------------------------------------
 
 // which mouse
 0 => int device;
@@ -33,7 +44,7 @@ int count;
 // start things
 set( base, a0, a1, a2 );
 
-// hid objects
+// HID input and HID message
 Hid hi;
 HidMsg msg;
 

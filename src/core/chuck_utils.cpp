@@ -30,16 +30,16 @@
 // adapted from: Andrew Appel (appel@cs.princeton.edu)
 // date: Summer 2002
 //-----------------------------------------------------------------------------
+#include "chuck_utils.h"
+#include "chuck_errmsg.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "chuck_utils.h"
-#include "chuck_errmsg.h"
 
 
 
 
-void * checked_malloc( int len )
+void * checked_malloc( t_CKINT len )
 {
     if( !len ) return NULL;
 
@@ -58,7 +58,8 @@ void * checked_malloc( int len )
 
 c_str cc_str( char * s )
 {
-    c_str p = (c_str)checked_malloc( strlen(s)+1 );
+    t_CKINT len = strlen(s) + 1;
+    c_str p = (c_str)checked_malloc( len );
     strcpy( p, s );
 
     return p;

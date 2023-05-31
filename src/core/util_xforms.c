@@ -271,7 +271,7 @@ void cfft( FLOAT * x, long NC, unsigned int forward )
 
         for( m = 0 ; m < mmax ; m += 2 )
         {
-            register FLOAT rtemp, itemp ;
+            /* register */ FLOAT rtemp, itemp ;
             for( i = m ; i < ND ; i += delta )
             {
                 j = i + mmax ;
@@ -291,7 +291,7 @@ void cfft( FLOAT * x, long NC, unsigned int forward )
     // scale output
     scale = (FLOAT)(forward ? 1./ND : 2.) ;
     {
-        register FLOAT *xi=x, *xe=x+ND ;
+        /* register */ FLOAT *xi=x, *xe=x+ND ;
         while( xi < xe )
             *xi++ *= scale ;
     }

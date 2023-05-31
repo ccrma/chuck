@@ -56,7 +56,7 @@ Chuck_Frame::Chuck_Frame()
 // name: alloc_local()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_Local * Chuck_Frame::alloc_local( t_CKUINT size, const string & name,
+Chuck_Local * Chuck_Frame::alloc_local( t_CKUINT size, const string & theName,
     t_CKBOOL is_ref, t_CKBOOL is_obj, t_CKBOOL is_global )
 {
     // alloc
@@ -74,7 +74,7 @@ Chuck_Local * Chuck_Frame::alloc_local( t_CKUINT size, const string & name,
     // the next offset
     this->curr_offset += local->size;
     // name
-    local->name = name;
+    local->name = theName;
     // push the local
     this->stack.push_back( local );
 
@@ -100,7 +100,7 @@ void Chuck_Frame::push_scope( )
 // name: get_scope()
 // desc: get current scope (added 1.3.0.0)
 //-----------------------------------------------------------------------------
-void Chuck_Frame::get_scope( vector<Chuck_Local *> & out ) const
+void Chuck_Frame::get_scope( vector<Chuck_Local *> & out, bool localOnly ) const
 {
     // sanity
     assert( this->stack.size() > 0 );
@@ -108,11 +108,16 @@ void Chuck_Frame::get_scope( vector<Chuck_Local *> & out ) const
     // the local
     Chuck_Local * local = NULL;
     // the index
-    long index = this->stack.size() - 1;
+    t_CKINT index = this->stack.size() - 1;
 
     // loop
-    while( index >= 0 && this->stack[index] != NULL )
+    while( index >= 0 )
     {
+        // did we hit a stack boundary (delineated by NULL)
+        // localOnly option added 1.5.0.0 (ge) -- to get all scope in the frame
+        if( localOnly && this->stack[index] != NULL )
+            break;
+
         // last thing
         local = stack[index];
         // move
@@ -140,7 +145,7 @@ void Chuck_Frame::pop_scope( vector<Chuck_Local *> & out )
 
     // the local
     Chuck_Local * local = NULL;
-    
+
     // loop
     while( this->stack.size() && this->stack.back() )
     {
@@ -157,7 +162,7 @@ void Chuck_Frame::pop_scope( vector<Chuck_Local *> & out )
             out.push_back( local );
         }
     }
-    
+
     // sanity (should be at least one left)
     assert( this->stack.size() > 0 );
     // get ride of null boundary character (added 1.3.0.0)

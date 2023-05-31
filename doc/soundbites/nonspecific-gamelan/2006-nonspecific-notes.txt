@@ -1,0 +1,8 @@
+Non-specific Gamelan Taiko Fusion (2006)
+Perry R. Cook and Ge Wang
+
+This piece is an experiment in human controlled, but machine synchronized 
+percussion ensemble performance. Various percussive sounds are temporally 
+positioned by PLOrk members, and the piece gradually transitions from 
+tuned bell timbres to drums as the texture and density grows.
+

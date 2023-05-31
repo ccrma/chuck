@@ -7,32 +7,33 @@ Chief Architect and Design:
   Ge Wang
 
 Developers:
-  Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
-  Perry Cook (prc@cs.princeton.edu)
-  Spencer Salazar (spencer@ccrma.stanford.edu)
-  Rebecca Fiebrink (fiebrink@cs.princeton.edu)
-  Ananya Misra (amisra@cs.princeton.edu)
-  Ari Lazier (alazier@cs.princeton.edu)
-  Philip Davidson (philipd@alumni.princeton.edu)
-  Dan Trueman (dan@music.princeton.edu)
-  Jack Atherton (lja@ccrma.stanford.edu)
-
-Lead Test:
   Ge Wang
-  Spencer Salazar
-  Philip Davidson
-  Ajay Kapur
-
-Sporksperson, ChucK Forums Moderator, ChucKian Sherpa:
-  Kassen Oud
-
-Documentation:
-  Adam Tindale
-  Philip Davidson
-  Ananya Misra
+  Perry Cook
   Spencer Salazar
   Rebecca Fiebrink
-  Ge Wang
+  Jack Atherton
+  Dan Trueman
+  Ajay Kapur
+  Celeste Betancur
+  Chris Chafe
+  Mike Mulshine
+  Andrew Zhu Aday
+  Terry Feng
+  Nick Shaheed
+  Alex Han
+  Eito Murakami
+  Marise van Zyl
+  Yikai Li
+
+Developers emeritus:
+  Ananya Misra
+  Ari Lazier
+  Philip Davidson
+
+Sporkspersons, ChucKian sherpas, forums moderators
+  Kassen Oud
+  Joel Matthys
+  Mario Buoninfante
 
 (See also the file THANKS and README)
 
@@ -43,6 +44,9 @@ ChucK home page:
 
 CCRMA:
     http://ccrma.stanford.edu/
+
+Developed in Music:Computing:Design (MCD) Research Group
+    https://mcd.stanford.edu/
 
 Princeton Sound Lab:
     http://soundlab.cs.princeton.edu/

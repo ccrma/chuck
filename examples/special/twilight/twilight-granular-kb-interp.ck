@@ -27,7 +27,7 @@
 //--------------------------------------------------------------------
 
 // default filename (can be overwritten via input argument)
-"twilight-source.aiff" => string FILENAME;
+"twilight-granular.aiff" => string FILENAME;
 // get file name, if one specified as input x0argument
 if( me.args() > 0 ) me.arg(0) => FILENAME;
 

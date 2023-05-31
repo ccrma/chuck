@@ -63,6 +63,8 @@ t_CKBOOL chuck_parse( c_constr fname, FILE * fd = NULL, c_constr code = NULL );
 // reset the parser
 void reset_parse( );
 
+// convert abstract syntax expression to string
+std::string absyn2str( a_Exp exp );
 
 // syntax highlighting tools
 #include <vector>
@@ -103,7 +105,7 @@ struct SyntaxToken
     std::string::size_type begin;
     // from the beginning of line
     std::string::size_type end;
-    
+
     // constructor
     SyntaxToken() : type(0) { }
     // copy constructor
@@ -121,7 +123,7 @@ struct SyntaxToken
 struct SyntaxTokenList
 {
     std::vector<SyntaxToken> list;
-    std::vector<SyntaxToken>::size_type howmany;    
+    std::vector<SyntaxToken>::size_type howmany;
     // copy constructor
     SyntaxTokenList( const SyntaxTokenList & rhs )
     {
@@ -133,9 +135,9 @@ struct SyntaxTokenList
         for( std::vector<SyntaxToken>::size_type i = 0; i < howmany; i++ )
             list[i] = rhs.list[i];
     }
-	SyntaxTokenList() { 
-		howmany = 0;
-	}
+    SyntaxTokenList() {
+        howmany = 0;
+    }
 };
 
 

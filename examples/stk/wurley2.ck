@@ -33,7 +33,7 @@ fun void vecho_Shred( )
         // find the increment
         (mix-old)/1000.0 => inc;
         1000 => n;
-        while( n-- )
+        while( --n )
         {
             old + inc => old;
             old => a.mix => b.mix => c.mix;
@@ -72,7 +72,7 @@ while( true )
         0 => int pick_dir;
         0.0 => float pluck;
 
-	for( ; i < pick; i++ )
+        for( ; i < pick; i++ )
         {
             Math.random2f(.4,.6) + i*.035 => pluck;
             pluck + 0.03 * (i * pick_dir) => voc.noteOn;

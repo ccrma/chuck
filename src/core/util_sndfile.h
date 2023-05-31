@@ -57,7 +57,7 @@
 
 
 // XXX philipd this might break things?
-// these defines were placed after the machine-dependent 
+// these defines were placed after the machine-dependent
 // checks below...i'm not sure why
 
 #define COMPILER_IS_GCC 1
@@ -163,7 +163,7 @@
 #endif
 
 #ifdef __LINUX_ALSA__
-#define HAVE_ALSA_ASOUNDLIB_H 
+#define HAVE_ALSA_ASOUNDLIB_H
 #endif
 
 #if defined(__PLATFORM_LINUX__)
@@ -201,11 +201,11 @@
 
 // XXX 'inline' is necessary for C compilation
 // in the microsoft vc6 compiler...
-// and other ms win32 specialteez. 
+// and other ms win32 specialteez.
 
 #ifdef __PLATFORM_WIN32__
 
-#define C_INLINE __inline 
+#define C_INLINE __inline
 #define SF_COUNT_MAX 0x7FFFFFFFFFFFFFFF
 
 #else
@@ -421,7 +421,7 @@ typedef struct SNDFILE_tag  SNDFILE ;
 
 
 /* The following typedef is system specific and is defined when libsndfile is.
-** compiled. sf_count_t can be one of loff_t (Linux), off_t (*BSD), 
+** compiled. sf_count_t can be one of loff_t (Linux), off_t (*BSD),
 ** off64_t (Solaris), __int64_t (Win32) etc.
 */
 
@@ -1284,53 +1284,53 @@ int sf_dither_double    (const SF_DITHER_INFO *dither, const double *in, double 
 */
 /*
 ** Copyright (C) 1999-2001 Erik de Castro Lopo <erikd@mega-nerd.com>
-**  
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU Lesser General Public License as published by
 ** the Free Software Foundation; either version 2.1 of the License, or
 ** (at your option) any later version.
-** 
+**
 ** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU Lesser General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU Lesser General Public License
-** along with this program; if not, write to the Free Software 
+** along with this program; if not, write to the Free Software
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 /*
 ** This file is not the same as the original file from Sun Microsystems. Nearly
-** all the original definitions and function prototypes that were in the file 
+** all the original definitions and function prototypes that were in the file
 ** of this name have been moved to private.h.
-*/  
+*/
 
 #ifndef G72X_HEADER_FILE
 #define G72X_HEADER_FILE
 
-/* 
-** Number of samples per block to process. 
+/*
+** Number of samples per block to process.
 ** Must be a common multiple of possible bits per sample : 2, 3, 4, 5 and 8.
 */
-#define G72x_BLOCK_SIZE     (3*5*8)  
+#define G72x_BLOCK_SIZE     (3*5*8)
 
-/*  
+/*
 **  Identifiers for the differing kinds of G72x ADPCM codecs.
 **  The identifiers also define the number of encoded bits per sample.
 */
 
 enum
 {   G723_16_BITS_PER_SAMPLE = 2,
-    G723_24_BITS_PER_SAMPLE = 3, 
-    G723_40_BITS_PER_SAMPLE = 5, 
+    G723_24_BITS_PER_SAMPLE = 3,
+    G723_40_BITS_PER_SAMPLE = 5,
 
     G721_32_BITS_PER_SAMPLE = 4,
     G721_40_BITS_PER_SAMPLE = 5,
 
     G723_16_SAMPLES_PER_BLOCK = G72x_BLOCK_SIZE,
-    G723_24_SAMPLES_PER_BLOCK = G723_24_BITS_PER_SAMPLE * (G72x_BLOCK_SIZE / G723_24_BITS_PER_SAMPLE), 
-    G723_40_SAMPLES_PER_BLOCK = G723_40_BITS_PER_SAMPLE * (G72x_BLOCK_SIZE / G723_40_BITS_PER_SAMPLE), 
+    G723_24_SAMPLES_PER_BLOCK = G723_24_BITS_PER_SAMPLE * (G72x_BLOCK_SIZE / G723_24_BITS_PER_SAMPLE),
+    G723_40_SAMPLES_PER_BLOCK = G723_40_BITS_PER_SAMPLE * (G72x_BLOCK_SIZE / G723_40_BITS_PER_SAMPLE),
 
     G721_32_SAMPLES_PER_BLOCK = G72x_BLOCK_SIZE,
     G721_40_SAMPLES_PER_BLOCK = G721_40_BITS_PER_SAMPLE * (G72x_BLOCK_SIZE / G721_40_BITS_PER_SAMPLE),
@@ -1341,11 +1341,11 @@ enum
 
     G721_32_BYTES_PER_BLOCK = (G721_32_BITS_PER_SAMPLE * G72x_BLOCK_SIZE) / 8,
     G721_40_BYTES_PER_BLOCK = (G721_40_BITS_PER_SAMPLE * G72x_BLOCK_SIZE) / 8
-} ; 
+} ;
 
-/* 
+/*
 ** This is the public structure for passing data between the caller and
-** the G72x encoder and decoder. 
+** the G72x encoder and decoder.
 ** The private array is used by the encoder and decoder for internal
 ** state information and should not be changed in any way by the caller.
 ** When decoding or encoding a stream, the same instance of this struct
@@ -1353,9 +1353,9 @@ enum
 ** correct state data between calls.
 */
 
-typedef struct 
+typedef struct
 {   /* Private data. Don't mess with it. */
-    unsigned long   sprivateo [256 / sizeof (long)] ;  
+    unsigned long   sprivateo [256 / sizeof (long)] ;
 
     /* Public data. Read only. */
     int             blocksize, max_bytes, samplesperblock, bytesperblock ;
@@ -1377,23 +1377,23 @@ int g72x_writer_init (G72x_DATA *data, int codec) ;
 
 int g72x_decode_block (G72x_DATA *data) ;
 /*
-**  The caller fills data->block with data->bytes bytes before calling the 
-**  function. The value data->bytes must be an integer multiple of 
+**  The caller fills data->block with data->bytes bytes before calling the
+**  function. The value data->bytes must be an integer multiple of
 **  data->blocksize and be <= data->max_bytes.
-**  When it returns, the caller can read out data->samples samples. 
-*/  
+**  When it returns, the caller can read out data->samples samples.
+*/
 
 int g72x_encode_block (G72x_DATA *data) ;
-/*  
+/*
 **  The caller fills state->samples some integer multiple data->samples_per_block
 **  (up to G72x_BLOCK_SIZE) samples before calling the function.
-**  When it returns, the caller can read out bytes encoded bytes. 
+**  When it returns, the caller can read out bytes encoded bytes.
 */
 
 #endif /* !G72X_HEADER_FILE */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 6ca84e5f-f932-4ba1-87ee-37056d921621
@@ -1432,10 +1432,10 @@ int g72x_encode_block (G72x_DATA *data) ;
 /*
 ** The following is the definition of the state structure used by the
 ** G.721/G.723 encoder and decoder to preserve their internal state
-** between successive calls.  The meanings of the majority of the state 
-** structure fields are explained in detail in the CCITT Recommendation 
-** G.721.  The field names are essentially identical to variable names 
-** in the bit level description of the coding algorithm included in this 
+** between successive calls.  The meanings of the majority of the state
+** structure fields are explained in detail in the CCITT Recommendation
+** G.721.  The field names are essentially identical to variable names
+** in the bit level description of the coding algorithm included in this
 ** Recommendation.
 */
 
@@ -1463,19 +1463,19 @@ typedef struct private_g72x
                     ** format.
                     */
     char td;    /* delayed tone detect, new in 1988 version */
-    
-    /*  The following struct members were added for libsndfile. The original 
-    **  code worked by calling a set of functions on a sample by sample basis 
-    **  which is slow on architectures like Intel x86. For libsndfile, this 
+
+    /*  The following struct members were added for libsndfile. The original
+    **  code worked by calling a set of functions on a sample by sample basis
+    **  which is slow on architectures like Intel x86. For libsndfile, this
     **  was changed so that the encoding and decoding routines could work on
     **  a block of samples at a time to reduce the function call overhead.
     */
     int     (*encoder) (int, struct private_g72x* state) ;
     int     (*decoder) (int, struct private_g72x* state) ;
-    
+
     int     codec_bits ;
     int     byte_index, sample_index ;
-    
+
 } G72x_STATE ;
 
 
@@ -1512,7 +1512,7 @@ void private_init_state (G72x_STATE *state_ptr) ;
 #endif /* G72X_PRIVATE_H */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: d9ad4da7-0fa3-471d-8020-720b5cfb5e5b
@@ -1615,7 +1615,7 @@ void    endswap_long_copy   (long *dest, long *src, int len) ;
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: f0c5cd54-42d3-4237-90ec-11fe24995de7
@@ -1655,9 +1655,9 @@ typedef gsm_byte            gsm_frame[33];      /* 33 * 8 bits   */
 gsm  gsm_create     (void);
 
 /* Added for libsndfile : May 6, 2002 */
-void gsm_init (gsm);    
+void gsm_init (gsm);
 
-void gsm_destroy (gsm); 
+void gsm_destroy (gsm);
 
 int  gsm_print   (FILE *, gsm, gsm_byte  *);
 int  gsm_option  (gsm, int, int *);
@@ -1671,7 +1671,7 @@ void gsm_implode (gsm, gsm_signal *, gsm_byte   *);
 #endif  /* GSM_H */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 8cfc7698-5433-4b6f-aeca-967c6fda4dec
@@ -1679,19 +1679,19 @@ void gsm_implode (gsm, gsm_signal *, gsm_byte   *);
 
 /*
 ** Copyright (C) 1999-2004 Erik de Castro Lopo <erikd@mega-nerd.com>
-**  
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU Lesser General Public License as published by
 ** the Free Software Foundation; either version 2.1 of the License, or
 ** (at your option) any later version.
-** 
+**
 ** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU Lesser General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU Lesser General Public License
-** along with this program; if not, write to the Free Software 
+** along with this program; if not, write to the Free Software
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
@@ -1711,7 +1711,7 @@ int au_g72x_writer_init (SF_PRIVATE *psf, int codec) ;
 #endif /* AU_HEADER_FILE */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 63affc81-e204-4468-9705-60abe4d10689
@@ -1748,7 +1748,13 @@ enum
 {
   /* keep sorted for wav_w64_format_str() */
     WAVE_FORMAT_UNKNOWN                 = 0x0000,       /* Microsoft Corporation */
-    WAVE_FORMAT_PCM                     = 0x0001,       /* Microsoft PCM format */
+    WAVE_FORMAT_MS_PCM                  = 0x0001,       /* Microsoft PCM format */
+    /* -------------------------------------------------------------------------
+    creating and using WAVE_FORMAT_MS_PCM in this module, as WAVE_FORMAT_PCM may
+    be defined by windows, e.g., in mmeapi.h -- which breaks the build...thanks
+    important: WAVE_FORMAT_MS_PCM must be 1, as WAV format tag | 1.5.0.0 (ge)
+    ------------------------------------------------------------------------- */
+    /* WAVE_FORMAT_PCM                  = 0x0001, */    /* Microsoft PCM format */
     WAVE_FORMAT_MS_ADPCM                = 0x0002,       /* Microsoft ADPCM */
     WAVE_FORMAT_IEEE_FLOAT              = 0x0003,       /* Micrososft 32 bit float format */
     WAVE_FORMAT_VSELP                   = 0x0004,       /* Compaq Computer Corporation */
@@ -1993,60 +1999,60 @@ int     wav_w64_read_fmt_chunk (SF_PRIVATE *psf, WAV_FMT *wav_fmt, int structsiz
 #endif
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 877fde12-9be3-4a31-8a5a-fdae39958613
 */
 /*
 ** Copyright (C) 1999-2001 Erik de Castro Lopo <erikd@mega-nerd.com>
-**  
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU Lesser General Public License as published by
 ** the Free Software Foundation; either version 2.1 of the License, or
 ** (at your option) any later version.
-** 
+**
 ** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU Lesser General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU Lesser General Public License
-** along with this program; if not, write to the Free Software 
+** along with this program; if not, write to the Free Software
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 /*
 ** This file is not the same as the original file from Sun Microsystems. Nearly
-** all the original definitions and function prototypes that were in the file 
+** all the original definitions and function prototypes that were in the file
 ** of this name have been moved to private.h.
-*/  
+*/
 
 #ifndef G72X_HEADER_FILE
 #define G72X_HEADER_FILE
 
-/* 
-** Number of samples per block to process. 
+/*
+** Number of samples per block to process.
 ** Must be a common multiple of possible bits per sample : 2, 3, 4, 5 and 8.
 */
-#define G72x_BLOCK_SIZE     (3*5*8)  
+#define G72x_BLOCK_SIZE     (3*5*8)
 
-/*  
+/*
 **  Identifiers for the differing kinds of G72x ADPCM codecs.
 **  The identifiers also define the number of encoded bits per sample.
 */
 
 enum
 {   G723_16_BITS_PER_SAMPLE = 2,
-    G723_24_BITS_PER_SAMPLE = 3, 
-    G723_40_BITS_PER_SAMPLE = 5, 
+    G723_24_BITS_PER_SAMPLE = 3,
+    G723_40_BITS_PER_SAMPLE = 5,
 
     G721_32_BITS_PER_SAMPLE = 4,
     G721_40_BITS_PER_SAMPLE = 5,
 
     G723_16_SAMPLES_PER_BLOCK = G72x_BLOCK_SIZE,
-    G723_24_SAMPLES_PER_BLOCK = G723_24_BITS_PER_SAMPLE * (G72x_BLOCK_SIZE / G723_24_BITS_PER_SAMPLE), 
-    G723_40_SAMPLES_PER_BLOCK = G723_40_BITS_PER_SAMPLE * (G72x_BLOCK_SIZE / G723_40_BITS_PER_SAMPLE), 
+    G723_24_SAMPLES_PER_BLOCK = G723_24_BITS_PER_SAMPLE * (G72x_BLOCK_SIZE / G723_24_BITS_PER_SAMPLE),
+    G723_40_SAMPLES_PER_BLOCK = G723_40_BITS_PER_SAMPLE * (G72x_BLOCK_SIZE / G723_40_BITS_PER_SAMPLE),
 
     G721_32_SAMPLES_PER_BLOCK = G72x_BLOCK_SIZE,
     G721_40_SAMPLES_PER_BLOCK = G721_40_BITS_PER_SAMPLE * (G72x_BLOCK_SIZE / G721_40_BITS_PER_SAMPLE),
@@ -2057,11 +2063,11 @@ enum
 
     G721_32_BYTES_PER_BLOCK = (G721_32_BITS_PER_SAMPLE * G72x_BLOCK_SIZE) / 8,
     G721_40_BYTES_PER_BLOCK = (G721_40_BITS_PER_SAMPLE * G72x_BLOCK_SIZE) / 8
-} ; 
+} ;
 
-/* 
+/*
 ** This is the public structure for passing data between the caller and
-** the G72x encoder and decoder. 
+** the G72x encoder and decoder.
 ** The private array is used by the encoder and decoder for internal
 ** state information and should not be changed in any way by the caller.
 ** When decoding or encoding a stream, the same instance of this struct
@@ -2069,9 +2075,9 @@ enum
 ** correct state data between calls.
 */
 
-typedef struct 
+typedef struct
 {   /* Private data. Don't mess with it. */
-    unsigned long   sprivateo [256 / sizeof (long)] ;  
+    unsigned long   sprivateo [256 / sizeof (long)] ;
 
     /* Public data. Read only. */
     int             blocksize, max_bytes, samplesperblock, bytesperblock ;
@@ -2093,23 +2099,23 @@ int g72x_writer_init (G72x_DATA *data, int codec) ;
 
 int g72x_decode_block (G72x_DATA *data) ;
 /*
-**  The caller fills data->block with data->bytes bytes before calling the 
-**  function. The value data->bytes must be an integer multiple of 
+**  The caller fills data->block with data->bytes bytes before calling the
+**  function. The value data->bytes must be an integer multiple of
 **  data->blocksize and be <= data->max_bytes.
-**  When it returns, the caller can read out data->samples samples. 
-*/  
+**  When it returns, the caller can read out data->samples samples.
+*/
 
 int g72x_encode_block (G72x_DATA *data) ;
-/*  
+/*
 **  The caller fills state->samples some integer multiple data->samples_per_block
 **  (up to G72x_BLOCK_SIZE) samples before calling the function.
-**  When it returns, the caller can read out bytes encoded bytes. 
+**  When it returns, the caller can read out bytes encoded bytes.
 */
 
 #endif /* !G72X_HEADER_FILE */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 6ca84e5f-f932-4ba1-87ee-37056d921621
@@ -2127,7 +2133,7 @@ int g72x_encode_block (G72x_DATA *data) ;
 /* Added by Erik de Castro Lopo */
 #define USE_FLOAT_MUL
 #define FAST
-#define WAV49  
+#define WAV49
 /* Added by Erik de Castro Lopo */
 
 
@@ -2138,7 +2144,7 @@ typedef int                 longword;   /* 32 bit signed int    */
 typedef unsigned short      uword;      /* unsigned word    */
 typedef unsigned int        ulongword;  /* unsigned longword    */
 
-struct gsm_state 
+struct gsm_state
 {   word            dp0[ 280 ] ;
 
     word            z1;         /* preprocessing.c, Offset_com. */
@@ -2210,7 +2216,7 @@ longword gsm_L_asr      (longword a, int n) ;
 word    gsm_asr         (word a, int n) ;
 
 /*
- *  Inlined functions from add.h 
+ *  Inlined functions from add.h
  */
 
 static C_INLINE longword
@@ -2231,17 +2237,17 @@ GSM_L_MULT (word a, word b)
 static C_INLINE longword
 GSM_L_ADD (longword a, longword b)
 {   ulongword utmp ;
-    
+
     if (a < 0 && b < 0)
     {   utmp = (ulongword)-((a) + 1) + (ulongword)-((b) + 1) ;
         return (utmp >= (ulongword) MAX_LONGWORD) ? MIN_LONGWORD : -(longword)utmp-2 ;
         } ;
-    
+
     if (a > 0 && b > 0)
     {   utmp = (ulongword) a + (ulongword) b ;
         return (utmp >= (ulongword) MAX_LONGWORD) ? MAX_LONGWORD : utmp ;
         } ;
-    
+
     return a + b ;
 } /* GSM_L_ADD */
 
@@ -2264,12 +2270,12 @@ GSM_SUB (word a, word b)
 {   longword ltmp ;
 
     ltmp = ((longword) a) - ((longword) b) ;
-    
+
     if (ltmp >= MAX_WORD)
         ltmp = MAX_WORD ;
     else if (ltmp <= MIN_WORD)
         ltmp = MIN_WORD ;
-    
+
     return ltmp ;
 } /* GSM_SUB */
 
@@ -2317,10 +2323,10 @@ void Gsm_Preprocess (
 
 void Gsm_Encoding (
         struct gsm_state * S,
-        word    * e,    
-        word    * ep,   
+        word    * e,
+        word    * ep,
         word    * xmaxc,
-        word    * Mc,   
+        word    * Mc,
         word    * xMc) ;
 
 void Gsm_Short_Term_Analysis_Filter (
@@ -2413,7 +2419,7 @@ extern word gsm_FAC [8] ;
 #endif  /* PRIVATE_H */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 8bc5fdf2-e8c8-4686-9bd7-a30b512bef0c
@@ -2580,8 +2586,8 @@ extern word gsm_FAC [8] ;
     {   int res [2] ;
 
         __asm__ __volatile__
-        (   "fctiw	%1, %1\n\t"
-            "stfd	%1, %0"
+        (   "fctiw    %1, %1\n\t"
+            "stfd    %1, %0"
             : "=m" (res)    /* Output */
             : "f" (in)      /* Input */
             : "memory"
@@ -2595,8 +2601,8 @@ extern word gsm_FAC [8] ;
     {   int res [2] ;
 
         __asm__ __volatile__
-        (   "fctiw	%1, %1\n\t"
-            "stfd	%1, %0"
+        (   "fctiw    %1, %1\n\t"
+            "stfd    %1, %0"
             : "=m" (res)    /* Output */
             : "f" (in)      /* Input */
             : "memory"
@@ -2621,7 +2627,7 @@ extern word gsm_FAC [8] ;
 
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 42db1693-ff61-4051-bac1-e4d24c4e30b7
@@ -2710,7 +2716,7 @@ extern word gsm_FAC [8] ;
 */
 /*
 ** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch 
+** The arch-tag line is a file identity tag for the GNU Arch
 ** revision control system.
 **
 ** arch-tag: 253aea6d-6299-46fd-8d06-bc5f6224c8fe

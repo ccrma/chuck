@@ -31,10 +31,10 @@
 //-----------------------------------------------------------------------------
 #include "chuck_io.h"
 #include "chuck_errmsg.h"
-#include "util_serial.h"
 #include "chuck_instr.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
+
 #ifndef __DISABLE_HID__
 #include "hidio_sdl.h"
 #endif
@@ -43,14 +43,18 @@
 #include "midiio_rtmidi.h"
 #endif
 
-#ifndef __WINDOWS_DS__
+#ifndef __DISABLE_SERIAL__
+#include "util_serial.h"
+#endif
+
+#ifndef __PLATFORM_WIN32__
 #include <sys/select.h>
 #include <poll.h>
 #include <termios.h>
 #include <unistd.h>
 #else
 #include <io.h>
-#endif // __WINDOWS_DS__
+#endif // __PLATFORM_WIN32__
 #include <fcntl.h>
 #include <math.h>
 
@@ -61,7 +65,7 @@
 using namespace std;
 
 
-#ifdef __WINDOWS_DS__
+#ifdef __PLATFORM_WIN32__
 typedef BYTE uint8_t;
 typedef WORD uint16_t;
 // ge: this needed in earlier/some versions of windows
@@ -69,7 +73,7 @@ typedef WORD uint16_t;
 typedef __int32 int32_t; // 1.4.1.0 (ge) added
 typedef DWORD uint32_t;
 #endif
-#endif 
+#endif
 
 #ifdef __PLATFORM_LINUX__
 #include <stdint.h>
@@ -89,138 +93,187 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
 {
     // init as base class
     Chuck_DL_Func * func = NULL;
-    
+    std::string doc = "Base class for other IO classes such as FileIO, StdOut and StdErr. Besides IO.newline(), it’s unlikely you need to use this class directly.";
+
     // log
     EM_log( CK_LOG_SEVERE, "class 'IO'" );
     
     // init as base class
     // TODO: ctor/dtor?
     // TODO: replace dummy with pure function
-    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL ) )
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc.c_str() ) )
         return FALSE;
-    
+
     // add good()
     func = make_new_mfun( "int", "good", io_dummy );
+    func->doc = "Returns whether IO is ready for reading.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add close()
     func = make_new_mfun( "void", "close", io_dummy );
+    func->doc = "Close the currently open IO.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add flush()
     func = make_new_mfun( "void", "flush", io_dummy );
+    func->doc = "Write any buffered output.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add mode(int)
     func = make_new_mfun( "int", "mode", io_dummy );
     func->add_arg( "int", "flag" );
+    func->doc = "Set the current IO mode; either IO.MODE_ASYNC or IO.MODE_SYNC.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add mode()
     func = make_new_mfun( "int", "mode", io_dummy );
+    func->doc = "Get the current IO mode; either IO.MODE_ASYNC or IO.MODE_SYNC.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // TODO: add this later?
     // add read()
     // func = make_new_mfun( "string", "read", io_dummy );
     // func->add_arg( "int", "length" );
     // if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readLine()
     func = make_new_mfun( "string", "readLine", io_dummy );
+    func->doc = "Read until an end-of-line character.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readInt()
     func = make_new_mfun( "int", "readInt", io_dummy );
     func->add_arg( "int", "flags" );
+    func->doc = "Read and return the next integer (binary mode); 'flags' denotes the bit-size of int (IO.INT8, IO.INT16, or IO.INT32).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
+    /*
+    // add readInt()
+    func = make_new_mfun( "int", "readInt8", io_dummy );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readInt()
+    func = make_new_mfun( "int", "readInt16", io_dummy );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readInt()
+    func = make_new_mfun( "int", "readInt32", io_dummy );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    */
+
     // add readFloat()
     // func = make_new_mfun( "float", "readFloat", io_dummy );
     // if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add eof()
     func = make_new_mfun( "int", "eof", io_dummy );
+    func->doc = "Return whether end-of-file has been reached; the opposite of .more().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add more()
     func = make_new_mfun( "int", "more", io_dummy );
+    func->doc = "Return whether there is more to read; the opposite of .eof().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write(string)
     func = make_new_mfun( "void", "write", io_dummy );
     func->add_arg( "string", "val" );
+    func->doc = "Write string 'val'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write(int)
     func = make_new_mfun( "void", "write", io_dummy );
     func->add_arg( "int", "val" );
+    func->doc = "Write integer 'val'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write(float)
     func = make_new_mfun( "void", "write", io_dummy );
     func->add_arg( "float", "val" );
+    func->doc = "Write floating point number 'val'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add newline
     func = make_new_sfun( "string", "newline", io_newline );
+    func->doc = "newline character; same as IO.nl().";
     if( !type_engine_import_sfun( env, func ) ) goto error;
+    // add nl
     func = make_new_sfun( "string", "nl", io_newline );
+    func->doc = "newline character; same as IO.newline().";
     if( !type_engine_import_sfun( env, func ) ) goto error;
-    func = make_new_sfun( "string", "newlineEx2VistaHWNDVisualFoxProA", io_newline );
-    if( !type_engine_import_sfun( env, func ) ) goto error;
+    // hmm
+    // func = make_new_sfun( "string", "newlineEx2VistaHWNDVisualFoxProA", io_newline );
+    // func->doc = "_";
+    // if( !type_engine_import_sfun( env, func ) ) goto error;
+    // new line string
     initialize_object( g_newline, env->t_string );
     g_newline->set( "\n" );
-    
-    // add READ_INT32
-    if( !type_engine_import_svar( env, "int", "READ_INT32",
-                                 TRUE, (t_CKUINT)&Chuck_IO::INT32 ) ) goto error;
-    
-    // add READ_INT16
-    if( !type_engine_import_svar( env, "int", "READ_INT16",
-                                 TRUE, (t_CKUINT)&Chuck_IO::INT16 ) ) goto error;
-    
-    // add READ_INT8
-    if( !type_engine_import_svar( env, "int", "READ_INT8",
-                                 TRUE, (t_CKUINT)&Chuck_IO::INT8 ) ) goto error;
-    
-    // add INT32
-    if( !type_engine_import_svar( env, "int", "INT32",
-                                 TRUE, (t_CKUINT)&Chuck_IO::INT32 ) ) goto error;
-    
-    // add INT16
-    if( !type_engine_import_svar( env, "int", "INT16",
-                                 TRUE, (t_CKUINT)&Chuck_IO::INT16 ) ) goto error;
-    
+
+    // add TYPE_ASCII
+    if( !type_engine_import_svar( env, "int", "ASCII",
+                                 TRUE, (t_CKUINT)&Chuck_IO::TYPE_ASCII, "Flag denoting ASCII IO mode." ) ) goto error;
+    // add TYPE_BINARY
+    if( !type_engine_import_svar( env, "int", "BINARY",
+                                 TRUE, (t_CKUINT)&Chuck_IO::TYPE_BINARY, "Flag denoting binary IO mode." ) ) goto error;
     // add INT8
     if( !type_engine_import_svar( env, "int", "INT8",
-                                 TRUE, (t_CKUINT)&Chuck_IO::INT8 ) ) goto error;
-    
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT8, "Flag denoting 8-bit integer type." ) ) goto error;
+    // add INT16
+    if( !type_engine_import_svar( env, "int", "INT16",
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT16, "Flag denoting 16-bit integer type." ) ) goto error;
+    // add INT32
+    if( !type_engine_import_svar( env, "int", "INT32",
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT32, "Flag denoting 32-bit integer type." ) ) goto error;
+//    // add READ_INT8
+//    if( !type_engine_import_svar( env, "int", "READ_INT8",
+//                                 TRUE, (t_CKUINT)&Chuck_IO::INT8, "Flag denoting 8-bit integer type (same as INT8)." ) ) goto error;
+//    // add READ_INT16
+//    if( !type_engine_import_svar( env, "int", "READ_INT16",
+//                                 TRUE, (t_CKUINT)&Chuck_IO::INT16, "Flag denoting 16-bit integer type (same as INT16)." ) ) goto error;
+//    // add READ_INT32
+//    if( !type_engine_import_svar( env, "int", "READ_INT32",
+//                                 TRUE, (t_CKUINT)&Chuck_IO::INT32, "Flag denoting 32-bit integer type (same as INT32)." ) ) goto error;
     // add MODE_SYNC
     if( !type_engine_import_svar( env, "int", "MODE_SYNC",
-                                 TRUE, (t_CKUINT)&Chuck_IO::MODE_SYNC ) ) goto error;
-    
+                                 TRUE, (t_CKUINT)&Chuck_IO::MODE_SYNC, "Flag denoting synchronous IO." ) ) goto error;
+#ifndef __DISABLE_FILEIO__
     // add MODE_ASYNC
     if( !type_engine_import_svar( env, "int", "MODE_ASYNC",
-                                 TRUE, (t_CKUINT)&Chuck_IO::MODE_ASYNC ) ) goto error;
-    
+                                 TRUE, (t_CKUINT)&Chuck_IO::MODE_ASYNC, "Flag denoting asychronous IO." ) ) goto error;
+#endif
+    // add FLAG_READONLY
+    if( !type_engine_import_svar( env, "int", "READ",
+                                  TRUE, (t_CKUINT)&Chuck_IO::FLAG_READONLY, "Flag denoting read mode." ) ) goto error;
+    // add FLAG_WRITEONLY
+    if( !type_engine_import_svar( env, "int", "WRITE",
+                                  TRUE, (t_CKUINT)&Chuck_IO::FLAG_WRITEONLY, "Flag denoting write mode." ) ) goto error;
+    // add FLAG_APPEND
+    if( !type_engine_import_svar( env, "int", "APPEND",
+                                  TRUE, (t_CKUINT)&Chuck_IO::FLAG_APPEND, "Flag denoting append mode." ) ) goto error;
+    // add FLAG_READ_WRITE
+    if( !type_engine_import_svar( env, "int", "READ_WRITE",
+                                  TRUE, (t_CKUINT)&Chuck_IO::FLAG_READ_WRITE, "Flag denoting read/write mode." ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return TRUE;
-    
+
 error:
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return FALSE;
 }
 
 
 
 
-#ifndef __DISABLE_FILEIO__
+// #ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // name: init_class_fileio()
 // desc: ...
@@ -229,157 +282,189 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
 {
     // init as base class
     Chuck_DL_Func * func = NULL;
-    
+
     // log
     EM_log( CK_LOG_SEVERE, "class 'FileIO'" );
-    
+
     // init as base class
     // TODO: ctor/dtor?
     // TODO: replace dummy with pure function
-    if( !type_engine_import_class_begin( env, type, env->global(), fileio_ctor, fileio_dtor ) )
+    if( !type_engine_import_class_begin( env, type, env->global(), fileio_ctor, fileio_dtor,
+        "File input and output utilities for reading, writing, seeking, etc. See examples for usage." ) )
         return FALSE;
-    
+
     // add open(string)
     func = make_new_mfun( "int", "open", fileio_open );
     func->add_arg( "string", "path" );
+    func->doc = "Open a file by name (and by default in ASCII mode).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add open(string, flags)
     func = make_new_mfun( "int", "open", fileio_openflags );
     func->add_arg( "string", "path" );
     func->add_arg( "int", "flags" );
+    func->doc = "Open a file by name with flags (bitwise combinations of IO.READ, IO.WRITE, IO.READ_WRITE, IO_APPEND, IO.ASCII, IO.BINARY).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add good()
     func = make_new_mfun( "int", "good", fileio_good );
+    func->doc = "Returns whether the file is ready for reading.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add close()
     func = make_new_mfun( "void", "close", fileio_close );
+    func->doc = "Close (and flush) the currently open file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add flush()
     func = make_new_mfun( "void", "flush", fileio_flush );
+    func->doc = "Write any buffered output to file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add mode()
     func = make_new_mfun( "int", "mode", fileio_getmode );
+    func->doc = "Get file IO mode (IO.MODE_SYNC or IO.MODE_ASYNC).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add mode(int)
     func = make_new_mfun( "int", "mode", fileio_setmode );
     func->add_arg( "int", "flag" );
+    func->doc = "Set file IO mode (IO.MODE_SYNC or IO.MODE_ASYNC).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add size()
     func = make_new_mfun( "int", "size", fileio_size );
+    func->doc = "Return the size of the file in bytes, or -1 if no file is opened or if a directory is opened.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add seek(int)
     func = make_new_mfun( "void", "seek", fileio_seek );
     func->add_arg( "int", "pos" );
+    func->doc = "Seek to a specified byte offset in file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add tell()
     func = make_new_mfun( "int", "tell", fileio_tell );
+    func->doc = "Return the byte read offset of the file, or -1 if no file is opened.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add isDir()
     func = make_new_mfun( "int", "isDir", fileio_isdir );
+    func->doc = "Return if the open file is a directory.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add dirList()
     func = make_new_mfun( "string[]", "dirList", fileio_dirlist );
+    func->doc = "Get an array of file names in an open directory.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add read()
     // func = make_new_mfun( "string", "read", fileio_read );
     // func->add_arg( "int", "length" );
     // if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readLine()
     func = make_new_mfun( "string", "readLine", fileio_readline );
+    func->doc = "Read and return the next line from file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readInt()
     // func = make_new_mfun( "int", "readInt", fileio_readint );
     // if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readInt(int)
     func = make_new_mfun( "int", "readInt", fileio_readintflags );
     func->add_arg( "int", "flags" );
+    func->doc = "Read and return an integer by size (binary mode) as specified in 'flags' (IO.INT8, IO.INT16, IO.INT32).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
+    /*
+    // add readByte()
+    func = make_new_mfun( "int", "readByte", fileio_readint8 );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readInt8()
+    func = make_new_mfun( "int", "readInt8", fileio_readint8 );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readInt16()
+    func = make_new_mfun( "int", "readInt16", fileio_readint16 );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add readInt32()
+    func = make_new_mfun( "int", "readInt32", fileio_readint32 );
+    func->add_arg( "int", "flags" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+    */
+
     // add readFloat()
     // func = make_new_mfun( "float", "readFloat", fileio_readfloat );
     // if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add eof()
     func = make_new_mfun( "int", "eof", fileio_eof );
+    func->doc = "Return whether end-of-file has been reached; the opposite of .more().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add more()
     func = make_new_mfun( "int", "more", fileio_more );
+    func->doc = "Return whether there is more to read; the opposite of .eof().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write(string)
     func = make_new_mfun( "void", "write", fileio_writestring );
     func->add_arg( "string", "val" );
+    func->doc = "Write a string to file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write(int)
     func = make_new_mfun( "void", "write", fileio_writeint );
     func->add_arg( "int", "val" );
+    func->doc = "Write an integer to file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write(int,flags)
     func = make_new_mfun( "void", "write", fileio_writeintflags );
     func->add_arg( "int", "val" );
     func->add_arg( "int", "flags" );
+    func->doc = "Write integer to file (binary mode) by size as specified by 'flags' (IO.INT8, IO.INT16, IO.INT32).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write(float)
     func = make_new_mfun( "void", "write", fileio_writefloat );
     func->add_arg( "float", "val" );
+    func->doc = "Write integer to file.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
-    // add FLAG_READ_WRITE
-    if( !type_engine_import_svar( env, "int", "READ_WRITE",
-                                 TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_READ_WRITE ) ) goto error;
-    
-    // add FLAG_READONLY
-    if( !type_engine_import_svar( env, "int", "READ",
-                                 TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_READONLY ) ) goto error;
-    
-    // add FLAG_WRITEONLY
-    if( !type_engine_import_svar( env, "int", "WRITE",
-                                 TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_WRITEONLY ) ) goto error;
-    
-    // add FLAG_APPEND
-    if( !type_engine_import_svar( env, "int", "APPEND",
-                                 TRUE, (t_CKUINT)&Chuck_IO_File::FLAG_APPEND ) ) goto error;
-    
-    // add TYPE_ASCII
-    if( !type_engine_import_svar( env, "int", "ASCII",
-                                 TRUE, (t_CKUINT)&Chuck_IO_File::TYPE_ASCII ) ) goto error;
-    
-    // add TYPE_BINARY
-    if( !type_engine_import_svar( env, "int", "BINARY",
-                                 TRUE, (t_CKUINT)&Chuck_IO_File::TYPE_BINARY ) ) goto error;
-    
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "io/chout.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-float.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-int.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-line.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-str.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-tokens.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/seek.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/write.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/write2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/read-byte.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/write-byte.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return TRUE;
-    
+
 error:
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return FALSE;
 }
-#endif // __DISABLE_FILEIO__
+// #endif // __DISABLE_FILEIO__
 
 
 
@@ -392,85 +477,85 @@ t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type )
 {
     // init as base class
     Chuck_DL_Func * func = NULL;
-    
+
     // log
     EM_log( CK_LOG_SEVERE, "class 'chout'" );
-    
+
     // TODO: ctor/dtor?
-    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL ) )
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, "Do not instantiate this class directly! Use 'chout' instead." ) )
         return FALSE;
-    
+
     // add good()
     func = make_new_mfun( "int", "good", chout_good );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add close()
     func = make_new_mfun( "void", "close", chout_close );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add flush()
     func = make_new_mfun( "void", "flush", chout_flush );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add mode()
     func = make_new_mfun( "int", "mode", chout_getmode );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add mode(int)
     func = make_new_mfun( "int", "mode", chout_setmode );
     func->add_arg( "int", "flag" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readLine()
     func = make_new_mfun( "string", "readLine", chout_readline );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readInt()
     // func = make_new_mfun( "int", "readInt", chout_readint );
     // if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readInt(int)
     func = make_new_mfun( "int", "readInt", chout_readintflags );
     func->add_arg( "int", "flags" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readFloat()
     // func = make_new_mfun( "float", "readFloat", chout_readfloat );
     // if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add eof()
     func = make_new_mfun( "int", "eof", chout_eof );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add more()
     func = make_new_mfun( "int", "more", chout_more );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write(string)
     func = make_new_mfun( "void", "write", chout_writestring );
     func->add_arg( "string", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write(int)
     func = make_new_mfun( "void", "write", chout_writeint );
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write(float)
     func = make_new_mfun( "void", "write", chout_writefloat );
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return TRUE;
-    
+
 error:
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return FALSE;
 }
 
@@ -485,85 +570,85 @@ t_CKBOOL init_class_cherr( Chuck_Env * env, Chuck_Type * type )
 {
     // init as base class
     Chuck_DL_Func * func = NULL;
-    
+
     // log
     EM_log( CK_LOG_SEVERE, "class 'cherr'" );
-    
+
     // TODO: ctor/dtor?
-    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL ) )
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, "Do not instantiate this class directly! Use 'cherr' instead." ) )
         return FALSE;
-    
+
     // add good()
     func = make_new_mfun( "int", "good", cherr_good );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add close()
     func = make_new_mfun( "void", "close", cherr_close );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add flush()
     func = make_new_mfun( "void", "flush", cherr_flush );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add mode()
     func = make_new_mfun( "int", "mode", cherr_getmode );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add mode(int)
     func = make_new_mfun( "int", "mode", cherr_setmode );
     func->add_arg( "int", "flag" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readLine()
     func = make_new_mfun( "string", "readLine", cherr_readline );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readInt()
     // func = make_new_mfun( "int", "readInt", cherr_readint );
     // if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readInt(int)
     func = make_new_mfun( "int", "readInt", cherr_readintflags );
     func->add_arg( "int", "flags" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readFloat()
     // func = make_new_mfun( "float", "readFloat", cherr_readfloat );
     // if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add eof()
     func = make_new_mfun( "int", "eof", cherr_eof );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add more()
     func = make_new_mfun( "int", "more", cherr_more );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write(string)
     func = make_new_mfun( "void", "write", cherr_writestring );
     func->add_arg( "string", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write(int)
     func = make_new_mfun( "void", "write", cherr_writeint );
     func->add_arg( "int", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write(float)
     func = make_new_mfun( "void", "write", cherr_writefloat );
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return TRUE;
-    
+
 error:
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return FALSE;
 }
 
@@ -586,134 +671,179 @@ static t_CKUINT MidiOut_offset_data = 0;
 t_CKBOOL init_class_Midi( Chuck_Env * env )
 {
     Chuck_DL_Func * func = NULL;
+    std::string doc;
+
+    // doc string
+    doc = "Creates a message for sending and receiving Midi information.";
     
     // init base class
     // TODO: ctor/dtor?
     if( !type_engine_import_class_begin( env, "MidiMsg", "Object",
-                                        env->global(), NULL, NULL ) )
+                                         env->global(), NULL, NULL, doc.c_str() ) )
         return FALSE;
-    
+
     // add member variable
-    MidiMsg_offset_data1 = type_engine_import_mvar( env, "int", "data1", FALSE );
+    doc = "First byte of a Midi message, usually a status byte or command byte.";
+    MidiMsg_offset_data1 = type_engine_import_mvar( env, "int", "data1", FALSE, doc.c_str() );
     if( MidiMsg_offset_data1 == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    MidiMsg_offset_data2 = type_engine_import_mvar( env, "int", "data2", FALSE );
+    doc = "Second byte of a Midi message, usually a note value.";
+    MidiMsg_offset_data2 = type_engine_import_mvar( env, "int", "data2", FALSE, doc.c_str() );
     if( MidiMsg_offset_data2 == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    MidiMsg_offset_data3 = type_engine_import_mvar( env, "int", "data3", FALSE );
+    doc = "Third byte of a Midi message, usually a velocity value.";
+    MidiMsg_offset_data3 = type_engine_import_mvar( env, "int", "data3", FALSE, doc.c_str() );
     if( MidiMsg_offset_data3 == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    MidiMsg_offset_when = type_engine_import_mvar( env, "dur", "when", FALSE );
+    doc = "Time when the MidiMsg occurred, relative to the start of the file (only valid for MidiFileIn).";
+    MidiMsg_offset_when = type_engine_import_mvar( env, "dur", "when", FALSE, doc.c_str() );
     if( MidiMsg_offset_when == CK_INVALID_OFFSET ) goto error;
-    
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "midi/gomidi.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "midi/gomidi2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "midi/polyfony.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "midi/polyfony2.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
 #ifndef __DISABLE_MIDI__
     // init base class
-    if( !type_engine_import_class_begin( env, "MidiIn", "Event",
-                                        env->global(), MidiIn_ctor, MidiIn_dtor ) )
-        return FALSE;
     
+    // doc string
+    doc = "Class that can be ChucKed to now as an event. When receiving a message, an event is signaled and Midi information can be read.";
+    
+    if( !type_engine_import_class_begin( env, "MidiIn", "Event",
+                                         env->global(), MidiIn_ctor, MidiIn_dtor, doc.c_str() ) )
+        return FALSE;
+
     // add open()
     func = make_new_mfun( "int", "open", MidiIn_open );
     func->add_arg( "int", "port" );
+    func->doc = "Open Midi device using a port number.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add open() (added 1.3.0.0)
     func = make_new_mfun( "int", "open", MidiIn_open_named );
     func->add_arg( "string", "name" );
+    func->doc = "Open Midi device using the device's name.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add good()
     func = make_new_mfun( "int", "good", MidiIn_good );
+    func->doc = "Return true (1) if a device has been opened for this instance and there was no error connecting to it. Return false (0) if a device has not been opened or there was an error opening a device.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add num()
     func = make_new_mfun( "int", "num", MidiIn_num );
+    func->doc = "Return the device number of the device (i.e. the number passed to MidiIn/MidiOut.open).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add name()
     func = make_new_mfun( "string", "name", MidiIn_name );
+    func->doc = "Return the Midi device's name as string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add printerr()
     func = make_new_mfun( "void", "printerr", MidiIn_printerr );
     func->add_arg( "int", "print_or_not" );
+    func->doc = "Set error printing (1 for on, 0 for off). On by default.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add recv()
     func = make_new_mfun( "int", "recv", MidiIn_recv );
     func->add_arg( "MidiMsg", "msg" );
+    func->doc = "Return into the MidiMsg argument the next message in the queue from the device. Return 0 if the queue is empty or 1 if a message was in the queue and returned in the argument.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add can_wait()
     func = make_new_mfun( "int", "can_wait", MidiIn_can_wait );
+    func->doc = "(internal) used by virtual machine for synthronization.";
+    // func->doc = "Return 1 if the device has no more messages in its queue from the device, 0 if it has more messages.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add member variable
     MidiIn_offset_data = type_engine_import_mvar( env, "int", "@MidiIn_data", FALSE );
     if( MidiIn_offset_data == CK_INVALID_OFFSET ) goto error;
-    
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "midi/gomidi.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "midi/gomidi2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "midi/polyfony.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "midi/polyfony2.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
+    // doc string
+    doc = "Class for sending out Midi messages.";
     // init base class
     if( !type_engine_import_class_begin( env, "MidiOut", "Object",
-                                        env->global(), MidiOut_ctor, MidiOut_dtor ) )
+                                         env->global(), MidiOut_ctor, MidiOut_dtor, doc.c_str() ) )
         return FALSE;
-    
+
     // add open()
     func = make_new_mfun( "int", "open", MidiOut_open );
     func->add_arg( "int", "port" );
+    func->doc = "Open Midi device using a port number.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add open() (added 1.3.0.0)
     func = make_new_mfun( "int", "open", MidiOut_open_named );
     func->add_arg( "string", "name" );
+    func->doc = "Open Midi device using the device's name.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add good()
     func = make_new_mfun( "int", "good", MidiOut_good );
+    func->doc = "Return true (1) if a device has been opened for this instance and there was no error connecting to it. Return false (0) if a device has not been opened or there was an error opening a device.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add num()
     func = make_new_mfun( "int", "num", MidiOut_num );
+    func->doc = "Return the device number of the device (i.e. the number passed to MidiIn/MidiOut.open).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add name()
     func = make_new_mfun( "string", "name", MidiOut_name );
+    func->doc = "Return the Midi device's name as string.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add printerr()
     func = make_new_mfun( "void", "printerr", MidiOut_printerr );
     func->add_arg( "int", "print_or_not" );
+    func->doc = "Set error printing (1 for on, 0 for off). On by default.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add send()
     func = make_new_mfun( "int", "send", MidiOut_send );
     func->add_arg( "MidiMsg", "msg" );
+    func->doc = "Send out a MidiMsg message.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "midi/midiout.ck" ) ) goto error;
+
     // add member variable
     MidiOut_offset_data = type_engine_import_mvar( env, "int", "@MidiOut_data", FALSE );
     if( MidiOut_offset_data == CK_INVALID_OFFSET ) goto error;
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
 #endif // __DISABLE_MIDI__
-    
+
     return TRUE;
-    
+
 error:
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return FALSE;
 }
 
@@ -759,401 +889,482 @@ static t_CKUINT HidOut_offset_data = 0;
 t_CKBOOL init_class_HID( Chuck_Env * env )
 {
     Chuck_DL_Func * func = NULL;
-    
+    std::string doc;
+
+    // doc string
+    doc = "Helper class for receiving HID information; e.g., which key was pressed, joystick position, etc.";
+
     // init base class
     if( !type_engine_import_class_begin( env, "HidMsg", "Object",
-                                        env->global(), NULL, NULL ) )
+                                         env->global(), NULL, NULL, doc.c_str() ) )
         return FALSE;
-    
+
     // add member variable
-    HidMsg_offset_device_type = type_engine_import_mvar( env, "int", "deviceType", FALSE );
+    doc = "Device type that produced the messsage.";
+    HidMsg_offset_device_type = type_engine_import_mvar( env, "int", "deviceType", FALSE, doc.c_str() );
     if( HidMsg_offset_device_type == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_device_num = type_engine_import_mvar( env, "int", "deviceNum", FALSE );
+    doc = "Device number that produced the messsage.";
+    HidMsg_offset_device_num = type_engine_import_mvar( env, "int", "deviceNum", FALSE, doc.c_str() );
     if( HidMsg_offset_device_num == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_type = type_engine_import_mvar( env, "int", "type", FALSE );
+    doc = "A number representing the message type.";
+    HidMsg_offset_type = type_engine_import_mvar( env, "int", "type", FALSE, doc.c_str() );
     if( HidMsg_offset_type == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_which = type_engine_import_mvar( env, "int", "which", FALSE );
+    doc = "Code (platform dependent) associated with a keyboard key.";
+    HidMsg_offset_which = type_engine_import_mvar( env, "int", "which", FALSE, doc.c_str() );
     if( HidMsg_offset_which == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_idata = type_engine_import_mvar( env, "int", "idata", FALSE );
+    doc = "Integer data generated from the Hid device.";
+    HidMsg_offset_idata = type_engine_import_mvar( env, "int", "idata", FALSE, doc.c_str() );
     if( HidMsg_offset_idata == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_fdata = type_engine_import_mvar( env, "float", "fdata", FALSE );
+    doc = "Float data generate from the Hid device.";
+    HidMsg_offset_fdata = type_engine_import_mvar( env, "float", "fdata", FALSE, doc.c_str() );
     if( HidMsg_offset_fdata == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_when = type_engine_import_mvar( env, "time", "when", FALSE );
+    doc = "Time when the HidMsg occured, relative to the start of the file.";
+    HidMsg_offset_when = type_engine_import_mvar( env, "time", "when", FALSE, doc.c_str() );
     if( HidMsg_offset_when == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_deltax = type_engine_import_mvar( env, "int", "deltaX", FALSE );
+    doc = "Change in X-axis of pointing device.";
+    HidMsg_offset_deltax = type_engine_import_mvar( env, "int", "deltaX", FALSE, doc.c_str() );
     if( HidMsg_offset_deltax == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_deltay = type_engine_import_mvar( env, "int", "deltaY", FALSE );
+    doc = "Change in Y-axis of pointing device.";
+    HidMsg_offset_deltay = type_engine_import_mvar( env, "int", "deltaY", FALSE, doc.c_str() );
     if( HidMsg_offset_deltay == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_cursorx = type_engine_import_mvar( env, "int", "cursorX", FALSE );
+    doc = "Position of X-axis of pointing device.";
+    HidMsg_offset_cursorx = type_engine_import_mvar( env, "int", "cursorX", FALSE, doc.c_str() );
     if( HidMsg_offset_cursorx == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_cursory = type_engine_import_mvar( env, "int", "cursorY", FALSE );
+    doc = "Position of Y-axis of pointing device.";
+    HidMsg_offset_cursory = type_engine_import_mvar( env, "int", "cursorY", FALSE, doc.c_str() );
     if( HidMsg_offset_cursory == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_scaledcursorx = type_engine_import_mvar( env, "float", "scaledCursorX", FALSE );
+    doc = "Position of X-axis of pointing device, scaled between 0.0 and 1.0.";
+    HidMsg_offset_scaledcursorx = type_engine_import_mvar( env, "float", "scaledCursorX", FALSE, doc.c_str() );
     if( HidMsg_offset_scaledcursorx == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_scaledcursory = type_engine_import_mvar( env, "float", "scaledCursorY", FALSE );
+    doc = "Position of Y-axis of pointing device, scaled between 0.0 and 1.0.";
+    HidMsg_offset_scaledcursory = type_engine_import_mvar( env, "float", "scaledCursorY", FALSE, doc.c_str() );
     if( HidMsg_offset_scaledcursory == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_x = type_engine_import_mvar( env, "int", "x", FALSE );
+    doc = "Change in X-axis of pointing device (same as deltaX).";
+    HidMsg_offset_x = type_engine_import_mvar( env, "int", "x", FALSE, doc.c_str() );
     if( HidMsg_offset_x == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_y = type_engine_import_mvar( env, "int", "y", FALSE );
+    doc = "Change in Y-axis of pointing device (same as deltaY).";
+    HidMsg_offset_y = type_engine_import_mvar( env, "int", "y", FALSE, doc.c_str() );
     if( HidMsg_offset_y == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_z = type_engine_import_mvar( env, "int", "z", FALSE );
+    doc = "Change in Z-axis of pointing device.";
+    HidMsg_offset_z = type_engine_import_mvar( env, "int", "z", FALSE, doc.c_str() );
     if( HidMsg_offset_z == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable (added 1.3.0.0)
-    HidMsg_offset_touchx = type_engine_import_mvar( env, "float", "touchX", FALSE );
+    doc = "Position of X-axis of pointing device, scaled between 0.0 and 1.0.";
+    HidMsg_offset_touchx = type_engine_import_mvar( env, "float", "touchX", FALSE, doc.c_str() );
     if( HidMsg_offset_touchx == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable (added 1.3.0.0)
-    HidMsg_offset_touchy = type_engine_import_mvar( env, "float", "touchY", FALSE );
+    doc = "Position of X-axis of pointing device, scaled between 0.0 and 1.0.";
+    HidMsg_offset_touchy = type_engine_import_mvar( env, "float", "touchY", FALSE, doc.c_str() );
     if( HidMsg_offset_touchy == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable (added 1.3.0.0)
-    HidMsg_offset_touchsize = type_engine_import_mvar( env, "float", "touchSize", FALSE );
+    doc = "Multi-touch size.";
+    HidMsg_offset_touchsize = type_engine_import_mvar( env, "float", "touchSize", FALSE, doc.c_str() );
     if( HidMsg_offset_touchsize == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_axis_position = type_engine_import_mvar( env, "int", "axis_position", FALSE );
+    doc = "Joystick axis position (int).";
+    HidMsg_offset_axis_position = type_engine_import_mvar( env, "int", "axis_position", FALSE, doc.c_str() );
     if( HidMsg_offset_axis_position == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_axis_position2 = type_engine_import_mvar( env, "float", "axisPosition", FALSE );
+    doc = "Joystick axis position (float).";
+    HidMsg_offset_axis_position2 = type_engine_import_mvar( env, "float", "axisPosition", FALSE, doc.c_str() );
     if( HidMsg_offset_axis_position2 == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_hat_position = type_engine_import_mvar( env, "int", "hatPosition", FALSE );
+    doc = "Joystick hat position.";
+    HidMsg_offset_hat_position = type_engine_import_mvar( env, "int", "hatPosition", FALSE, doc.c_str() );
     if( HidMsg_offset_hat_position == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_ascii = type_engine_import_mvar( env, "int", "ascii", FALSE );
+    doc = "ASCII value associated with a keyboard key.";
+    HidMsg_offset_ascii = type_engine_import_mvar( env, "int", "ascii", FALSE, doc.c_str() );
     if( HidMsg_offset_ascii == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_key = type_engine_import_mvar( env, "int", "key", FALSE );
+    doc = "Code (USB) for a keyboard key.";
+    HidMsg_offset_key = type_engine_import_mvar( env, "int", "key", FALSE, doc.c_str() );
     if( HidMsg_offset_key == CK_INVALID_OFFSET ) goto error;
-    
+
     // add member variable
-    HidMsg_offset_scaled_axis_position = type_engine_import_mvar( env, "float", "scaled_axis_position", FALSE );
+    doc = "Position of the primary pointing device, scaled between 0.0 and 1.0.";
+    HidMsg_offset_scaled_axis_position = type_engine_import_mvar( env, "float", "scaled_axis_position", FALSE, doc.c_str() );
     if( HidMsg_offset_scaled_axis_position == CK_INVALID_OFFSET ) goto error;
-    
+
     // add is_axis_motion()
     func = make_new_mfun( "int", "is_axis_motion", HidMsg_is_axis_motion ); // deprecated
+    func->doc = "(Deprecated; use .isAxisMotion() instead).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add isAxisMotion()
     func = make_new_mfun( "int", "isAxisMotion", HidMsg_is_axis_motion );
+    func->doc = "Return whether this message is an axis-motion event.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add is_button_down()
     func = make_new_mfun( "int", "is_button_down", HidMsg_is_button_down ); // deprecated
+    func->doc = "(Deprecated; use .isButtonDown() instead).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add isButtonDown()
     func = make_new_mfun( "int", "isButtonDown", HidMsg_is_button_down );
+    func->doc = "Return whether this message is a button-down event.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add is_button_up()
     func = make_new_mfun( "int", "is_button_up", HidMsg_is_button_up ); // deprecated
+    func->doc = "(Deprecated; use .isButtonUp() instead).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add isButtonUp()
     func = make_new_mfun( "int", "isButtonUp", HidMsg_is_button_up );
+    func->doc = "Return whether this message is a button-up event.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add is_mouse_motion()
     func = make_new_mfun( "int", "is_mouse_motion", HidMsg_is_mouse_motion ); // deprecated
+    func->doc = "(Deprecated; use .isMouseMotion() instead).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add isMouseMotion()
     func = make_new_mfun( "int", "isMouseMotion", HidMsg_is_mouse_motion );
+    func->doc = "Return whether this message is a mouse-motion event.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add is_hat_motion()
     func = make_new_mfun( "int", "is_hat_motion", HidMsg_is_hat_motion ); // deprecated
+    func->doc = "(Deprecated; use .isHatMotion() instead).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add isHatMotion()
     func = make_new_mfun( "int", "isHatMotion", HidMsg_is_hat_motion );
+    func->doc = "Return whether this message is a hat-motion event.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add isWheelMotion()
     func = make_new_mfun( "int", "isWheelMotion", HidMsg_is_wheel_motion );
+    func->doc = "Return whether this message is a wheel-motion event.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "hid/kb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/keyboard-organ.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/mouse.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/mouse-abs.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/mouse-fm.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/joy.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/joy-fm.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/joy-noise.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/joy-shake.ck" ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
-    
-    
+
+
     // register deprecate
     type_engine_register_deprecate( env, "HidIn", "Hid" );
-    
+
     // init base class Hid (copy of HidIn + constants)
     if( !type_engine_import_class_begin( env, "Hid", "Event",
-                                        env->global(), HidIn_ctor, HidIn_dtor ) )
+                                         env->global(), HidIn_ctor, HidIn_dtor, "Class for interacting with human-interface devices (HIDs) such as keyboards, mice, gamepads, joysticks, etc." ) )
         return FALSE;
-    
+
+    // add examples
+    if( !type_engine_import_add_ex( env, "hid/kb.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/keyboard-organ.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/mouse.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/mouse-abs.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/mouse-fm.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/joy.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/joy-fm.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/joy-noise.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/joy-shake.ck" ) ) goto error;
+
     // add open()
     func = make_new_mfun( "int", "open", HidIn_open );
     func->add_arg( "int", "type" );
     func->add_arg( "int", "num" );
+    func->doc = "Open a HID device by device number ('num') and type ('type'). See static member variables for possible types.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add open()
     func = make_new_mfun( "int", "open", HidIn_open_named );
     func->add_arg( "string", "name" );
+    func->doc = "Open a HID device by name.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add openJoystick()
     func = make_new_mfun( "int", "openJoystick", HidIn_open_joystick );
     func->add_arg( "int", "num" );
+    func->doc = "Open a joystick/gamepad by device number.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add openMouse()
     func = make_new_mfun( "int", "openMouse", HidIn_open_mouse );
     func->add_arg( "int", "num" );
+    func->doc = "Open a mouse/trackpad by device number.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add openKeyboard()
     func = make_new_mfun( "int", "openKeyboard", HidIn_open_keyboard );
     func->add_arg( "int", "num" );
+    func->doc = "Open a keyboard by device number.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add openTiltSensor()
     func = make_new_mfun( "int", "openTiltSensor", HidIn_open_tiltsensor );
+    func->doc = "Open a tilt-sensor by device number.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add good()
     func = make_new_mfun( "int", "good", HidIn_good );
+    func->doc = "Get whether a device has been successfully opened on this HID instance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add num()
     func = make_new_mfun( "int", "num", HidIn_num );
+    func->doc = "Get the number of the currently open device; returns -1 if no device is open on this HID instance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add name()
     func = make_new_mfun( "string", "name", HidIn_name );
+    func->doc = "Get the name of the currently open device; return empty string (\"\") if no device is open on this HID instance.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add printerr()
     func = make_new_mfun( "void", "printerr", HidIn_printerr );
-    func->add_arg( "int", "print_or_not" );
+    func->add_arg( "int", "toPrintOrNot" );
+    func->doc = "Set whether to print errors (default is YES).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add recv()
     func = make_new_mfun( "int", "recv", HidIn_recv );
     func->add_arg( "HidMsg", "msg" );
+    func->doc = "Receive the next available HidMsg.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add read()
     func = make_new_mfun( "int", "read", HidIn_read );
     func->add_arg( "int", "type" );
     func->add_arg( "int", "which" );
     func->add_arg( "HidMsg", "msg" );
+    func->doc = "Read the next HidMsg from device of type 'type' with device id 'which'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add send()
     func = make_new_mfun( "int", "send", HidIn_send );
     func->add_arg( "HidMsg", "msg" );
+    func->doc = "Send a HidMsg to device; return whether the operation was successful.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add can_wait()
     func = make_new_mfun( "int", "can_wait", HidIn_can_wait );
+    func->doc = "(internal) used by virtual machine for synthronization.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readTiltSensor()
     func = make_new_sfun( "int[]", "readTiltSensor", HidIn_read_tilt_sensor );
+    func->doc = "Read tilt-sensor and return as an int array.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
-    
+
     // add globalTiltPollRate()
     func = make_new_sfun( "dur", "globalTiltPollRate", HidIn_ctrl_tiltPollRate );
     func->add_arg( "dur", "d" );
+    func->doc = "Set tilt-sensor poll rate.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
-    
+
     // add globalTiltPollRate()
     func = make_new_sfun( "dur", "globalTiltPollRate", HidIn_cget_tiltPollRate );
+    func->doc = "Get tilt-sensor poll rate.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
-    
+
     // add startCursorTrack()
     func = make_new_sfun( "int", "startCursorTrack", HidIn_start_cursor_track );
+    func->doc = "Start cursor tracking; return whether the request was successful.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
-    
+
     // add stopCursorTrack()
     func = make_new_sfun( "int", "stopCursorTrack", HidIn_stop_cursor_track );
+    func->doc = "Stop cursor tracking; return whether the request was successful.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
-    
+
     // add member variable
     HidIn_offset_data = type_engine_import_mvar( env, "int", "@Hid_data", FALSE );
     if( HidIn_offset_data == CK_INVALID_OFFSET ) goto error;
-    
+
     // add static member variable joystick
     if( type_engine_import_svar( env, "int", "JOYSTICK", TRUE,
                                 ( t_CKUINT ) &CK_HID_DEV_JOYSTICK ) == FALSE )
         goto error;
-    
+
     // add static member variable keyboard
     if( type_engine_import_svar( env, "int", "KEYBOARD", TRUE,
                                 ( t_CKUINT ) &CK_HID_DEV_KEYBOARD ) == FALSE )
         goto error;
-    
+
     // add static member variable mouse
     if( type_engine_import_svar( env, "int", "MOUSE", TRUE,
                                 ( t_CKUINT ) &CK_HID_DEV_MOUSE ) == FALSE )
         goto error;
-    
+
     // add static member variable wii_remote
     if( type_engine_import_svar( env, "int", "WII_REMOTE", TRUE,
                                 ( t_CKUINT ) &CK_HID_DEV_WIIREMOTE ) == FALSE )
         goto error;
-    
+
     // add static member variable wii_remote
     if( type_engine_import_svar( env, "int", "TILT_SENSOR", TRUE,
                                 ( t_CKUINT ) &CK_HID_DEV_TILTSENSOR ) == FALSE )
         goto error;
-    
+
     // add static member variable tablet
     if( type_engine_import_svar( env, "int", "TABLET", TRUE,
                                 ( t_CKUINT ) &CK_HID_DEV_TABLET ) == FALSE )
         goto error;
-    
+
     // add static member variable axisMotion
     if( type_engine_import_svar( env, "int", "AXIS_MOTION", TRUE,
                                 ( t_CKUINT ) &CK_HID_JOYSTICK_AXIS ) == FALSE )
         goto error;
-    
+
     // add static member variable buttonDown
     if( type_engine_import_svar( env, "int", "BUTTON_DOWN", TRUE,
                                 ( t_CKUINT ) &CK_HID_BUTTON_DOWN ) == FALSE )
         goto error;
-    
+
     // add static member variable buttonUp
     if( type_engine_import_svar( env, "int", "BUTTON_UP", TRUE,
                                 ( t_CKUINT ) &CK_HID_BUTTON_UP ) == FALSE )
         goto error;
-    
+
     // add static member variable joystickHat
     if( type_engine_import_svar( env, "int", "JOYSTICK_HAT", TRUE,
                                 ( t_CKUINT ) &CK_HID_JOYSTICK_HAT ) == FALSE )
         goto error;
-    
+
     // add static member variable JOYSTICK_BALL
     if( type_engine_import_svar( env, "int", "JOYSTICK_BALL", TRUE,
                                 ( t_CKUINT ) &CK_HID_JOYSTICK_BALL ) == FALSE )
         goto error;
-    
+
     // add static member variable mouseMotion
     if( type_engine_import_svar( env, "int", "MOUSE_MOTION", TRUE,
                                 ( t_CKUINT ) &CK_HID_MOUSE_MOTION ) == FALSE )
         goto error;
-    
+
     // add static member variable mouseWheel
     if( type_engine_import_svar( env, "int", "MOUSE_WHEEL", TRUE,
                                 ( t_CKUINT ) &CK_HID_MOUSE_WHEEL ) == FALSE )
         goto error;
-    
+
     // add static member variable DEVICE_CONNECTED
     if( type_engine_import_svar( env, "int", "DEVICE_CONNECTED", TRUE,
                                 ( t_CKUINT ) &CK_HID_DEVICE_CONNECTED ) == FALSE )
         goto error;
-    
+
     // add static member variable DEVICE_DISCONNECTED
     if( type_engine_import_svar( env, "int", "DEVICE_DISCONNECTED", TRUE,
                                 ( t_CKUINT ) &CK_HID_DEVICE_DISCONNECTED ) == FALSE )
         goto error;
-    
+
     // add static member variable ACCELEROMETER
     if( type_engine_import_svar( env, "int", "ACCELEROMETER", TRUE,
                                 ( t_CKUINT ) &CK_HID_ACCELEROMETER ) == FALSE )
         goto error;
-    
+
     // add static member variable LED
     if( type_engine_import_svar( env, "int", "LED", TRUE,
                                 ( t_CKUINT ) &CK_HID_LED ) == FALSE )
         goto error;
-    
+
     // add static member variable LED
     if( type_engine_import_svar( env, "int", "FORCE_FEEDBACK", TRUE,
                                 ( t_CKUINT ) &CK_HID_FORCE_FEEDBACK ) == FALSE )
         goto error;
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     /*
      // init base class
      if( !type_engine_import_class_begin( env, "HidOut", "Object",
      env->global(), HidOut_ctor ) )
      return FALSE;
-     
+
      // add open()
      func = make_new_mfun( "int", "open", HidOut_open );
      func->add_arg( "int", "port" );
      if( !type_engine_import_mfun( env, func ) ) goto error;
-     
+
      // add good()
      func = make_new_mfun( "int", "good", HidOut_good );
      if( !type_engine_import_mfun( env, func ) ) goto error;
-     
+
      // add num()
      func = make_new_mfun( "int", "num", HidOut_num );
      if( !type_engine_import_mfun( env, func ) ) goto error;
-     
+
      // add name()
      func = make_new_mfun( "string", "name", HidOut_name );
      if( !type_engine_import_mfun( env, func ) ) goto error;
-     
+
      // add printerr()
      func = make_new_mfun( "void", "printerr", HidOut_printerr );
      func->add_arg( "int", "print_or_not" );
      if( !type_engine_import_mfun( env, func ) ) goto error;
-     
+
      // add send()
      func = make_new_mfun( "int", "send", HidOut_send );
      func->add_arg( "HidMsg", "msg" );
      if( !type_engine_import_mfun( env, func ) ) goto error;
-     
+
      // add member variable
      HidOut_offset_data = type_engine_import_mvar( env, "int", "@HidOut_data", FALSE );
      if( HidOut_offset_data == CK_INVALID_OFFSET ) goto error;
-     
+
      // end the class import
      type_engine_import_class_end( env );
      */
     return TRUE;
-    
+
 error:
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return FALSE;
 }
 #endif // __DISABLE_HID__
@@ -1174,104 +1385,104 @@ static t_CKUINT MidiMsgIn_offset_data = 0;
 t_CKBOOL init_class_MidiRW( Chuck_Env * env )
 {
     Chuck_DL_Func * func = NULL;
-    
+
     // init base class
     if( !type_engine_import_class_begin( env, "MidiRW", "Object",
                                         env->global(), MidiRW_ctor, MidiRW_dtor ) )
         return FALSE;
-    
+
     // add open()
     func = make_new_mfun( "int", "open", MidiRW_open );
     func->add_arg( "string", "filename" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add close()
     func = make_new_mfun( "int", "close", MidiRW_close );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write()
     func = make_new_mfun( "int", "write", MidiRW_write );
     func->add_arg( "MidiMsg", "msg" );
     func->add_arg( "time", "t" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add read()
     func = make_new_mfun( "int", "read", MidiRW_read );
     func->add_arg( "MidiMsg", "msg" );
     //func->add_arg( "time", "t" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add member variable
     MidiRW_offset_data = type_engine_import_mvar( env, "int", "@MidiRW_data", FALSE );
     if( MidiRW_offset_data == CK_INVALID_OFFSET ) goto error;
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     // init base class
     if( !type_engine_import_class_begin( env, "MidiMsgOut", "Object",
                                         env->global(), MidiMsgOut_ctor, MidiMsgOut_dtor ) )
         return FALSE;
-    
+
     // add open()
     func = make_new_mfun( "int", "open", MidiMsgOut_open );
     func->add_arg( "string", "filename" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add close()
     func = make_new_mfun( "int", "close", MidiMsgOut_close );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add write()
     func = make_new_mfun( "int", "write", MidiMsgOut_write );
     func->add_arg( "MidiMsg", "msg" );
     func->add_arg( "time", "t" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add member variable
     MidiMsgOut_offset_data = type_engine_import_mvar( env, "int", "@MidiMsgOut_data", FALSE );
     if( MidiMsgOut_offset_data == CK_INVALID_OFFSET ) goto error;
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     // init base class
     if( !type_engine_import_class_begin( env, "MidiMsgIn", "Object",
                                         env->global(), MidiMsgIn_ctor, MidiMsgIn_dtor ) )
         return FALSE;
-    
+
     // add open()
     func = make_new_mfun( "int", "open", MidiMsgIn_open );
     func->add_arg( "string", "filename" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add close()
     func = make_new_mfun( "int", "close", MidiMsgIn_close );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add read()
     func = make_new_mfun( "int", "read", MidiMsgIn_read );
     func->add_arg( "MidiMsg", "msg" );
     //func->add_arg( "time", "t" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add member variable
     MidiMsgIn_offset_data = type_engine_import_mvar( env, "int", "@MidiMsgIn_data", FALSE );
     if( MidiMsgIn_offset_data == CK_INVALID_OFFSET ) goto error;
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     // initialize
     // HidInManager::init();
-    
+
     return TRUE;
-    
+
 error:
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return FALSE;
 }
 #endif // __DISABLE_MIDI__
@@ -1298,7 +1509,7 @@ CK_DLL_SFUN( io_newline )
 }
 
 
-#ifndef __DISABLE_FILEIO__
+// #ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // FileIO API
 //-----------------------------------------------------------------------------
@@ -1313,8 +1524,8 @@ CK_DLL_MFUN( fileio_open )
     std::string filename = GET_NEXT_STRING(ARGS)->str();
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
     t_CKINT default_flags =
-    Chuck_IO_File::FLAG_READ_WRITE | Chuck_IO_File::TYPE_ASCII;
-    
+    Chuck_IO::FLAG_READ_WRITE | Chuck_IO::TYPE_ASCII;
+
     RETURN->v_int = f->open(filename, default_flags);
 }
 
@@ -1323,7 +1534,7 @@ CK_DLL_MFUN( fileio_openflags )
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
     std::string filename = GET_NEXT_STRING(ARGS)->str();
     t_CKINT flags = GET_NEXT_INT(ARGS);
-    
+
     RETURN->v_int = f->open(filename, flags);
 }
 
@@ -1354,7 +1565,7 @@ CK_DLL_MFUN( fileio_getmode )
 CK_DLL_MFUN( fileio_setmode )
 {
     t_CKINT flag = GET_NEXT_INT(ARGS);
-    
+
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
     f->mode( flag );
     RETURN->v_int = 0;
@@ -1369,7 +1580,7 @@ CK_DLL_MFUN( fileio_size )
 CK_DLL_MFUN( fileio_seek )
 {
     t_CKINT pos = GET_NEXT_INT(ARGS);
-    
+
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
     f->seek(pos);
 }
@@ -1398,7 +1609,7 @@ CK_DLL_MFUN( fileio_dirlist )
  {
  t_CKINT len = GET_NEXT_INT(ARGS);
  Chuck_IO_File * f = (Chuck_IO_File *)SELF;
- 
+
  Chuck_String * s = f->read( len );
  RETURN->v_object = s;
  }
@@ -1415,31 +1626,34 @@ CK_DLL_MFUN( fileio_readint )
 {
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
     t_CKINT defaultflags = Chuck_IO::INT32;
-    
+
     /* (ATODO: doesn't look like asynchronous reading will work)
-     if (f->mode() == Chuck_IO::MODE_ASYNC)
-     {
-     // set up arguments
-     Chuck_IO::async_args *args = new Chuck_IO::async_args;
-     args->RETURN = (void *)RETURN;
-     args->fileio_obj = f;
-     args->intArg = defaultflags;
-     // set shred to wait for I/O completion
-     f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
-     // start thread
-     bool ret = f->m_thread->start( f->readInt_thread, (void *)args );
-     if (!ret) {
-     cerr << "m_thread->start failed; recreating m_thread" << endl;
-     delete f->m_thread;
-     f->m_thread = new XThread;
-     ret = f->m_thread->start( f->readInt_thread, (void *)args );
-     if (!ret) {
-     EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
-     }
-     }
-     } else {*/
+    if (f->mode() == Chuck_IO::MODE_ASYNC)
+    {
+        // set up arguments
+        Chuck_IO::async_args *args = new Chuck_IO::async_args;
+        args->RETURN = (void *)RETURN;
+        args->fileio_obj = f;
+        args->intArg = defaultflags;
+        // set shred to wait for I/O completion
+        f->m_asyncEvent->wait( SHRED, SHRED->vm_ref );
+        // start thread
+        bool ret = f->m_thread->start( f->readInt_thread, (void *)args );
+        if (!ret)
+        {
+            cerr << "m_thread->start failed; recreating m_thread" << endl;
+            delete f->m_thread;
+            f->m_thread = new XThread;
+            ret = f->m_thread->start( f->readInt_thread, (void *)args );
+            if (!ret) {
+                EM_error3( "(FileIO): failed to start thread for asynchronous mode I/O" );
+            }
+        }
+    } else {*/
+
     t_CKINT ret = f->readInt( defaultflags );
     RETURN->v_int = ret;
+
     //}
     // ATODO: Debug
     //sleep(1);
@@ -1449,11 +1663,29 @@ CK_DLL_MFUN( fileio_readint )
 CK_DLL_MFUN( fileio_readintflags )
 {
     t_CKINT flags = GET_NEXT_INT(ARGS);
-    
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-    t_CKINT ret = f->readInt( flags );
-    
-    RETURN->v_int = ret;
+    RETURN->v_int = f->readInt( flags );
+}
+
+CK_DLL_MFUN( fileio_readint8 )
+{
+    t_CKINT flags = GET_NEXT_INT(ARGS);
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    RETURN->v_int = f->readInt( Chuck_IO::INT8 );
+}
+
+CK_DLL_MFUN( fileio_readint16 )
+{
+    t_CKINT flags = GET_NEXT_INT(ARGS);
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    RETURN->v_int = f->readInt( Chuck_IO::INT16 );
+}
+
+CK_DLL_MFUN( fileio_readint32 )
+{
+    t_CKINT flags = GET_NEXT_INT(ARGS);
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    RETURN->v_int = f->readInt( Chuck_IO::INT32 );
 }
 
 CK_DLL_MFUN( fileio_readfloat )
@@ -1480,8 +1712,9 @@ CK_DLL_MFUN( fileio_more )
 CK_DLL_MFUN( fileio_writestring )
 {
     std::string val = GET_NEXT_STRING(ARGS)->str();
-    
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+
+#ifndef __DISABLE_FILEIO__ // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -1507,13 +1740,17 @@ CK_DLL_MFUN( fileio_writestring )
     } else {
         f->write(val);
     }
+#else
+    f->write(val);
+#endif // __DISABLE_FILEIO__
 }
 
 CK_DLL_MFUN( fileio_writeint )
 {
     t_CKINT val = GET_NEXT_INT(ARGS);
-    
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+
+#ifndef __DISABLE_FILEIO__ // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -1539,14 +1776,18 @@ CK_DLL_MFUN( fileio_writeint )
     } else {
         f->write(val);
     }
+#else
+    f->write(val);
+#endif // __DISABLE_FILEIO__
 }
 
 CK_DLL_MFUN( fileio_writeintflags )
 {
     t_CKINT val = GET_NEXT_INT(ARGS);
     t_CKINT flags = GET_NEXT_INT(ARGS);
-    
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+
+#ifndef __DISABLE_FILEIO__  // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // TODO: pass flags in args
@@ -1573,13 +1814,18 @@ CK_DLL_MFUN( fileio_writeintflags )
     } else {
         f->write(val, flags);
     }
+#else
+    f->write(val, flags);
+#endif // __DISABLE_FILEIO__
+
 }
 
 CK_DLL_MFUN( fileio_writefloat )
 {
     t_CKFLOAT val = GET_NEXT_FLOAT(ARGS);
-    
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+
+#ifndef __DISABLE_FILEIO__  // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -1605,8 +1851,14 @@ CK_DLL_MFUN( fileio_writefloat )
     } else {
         f->write(val);
     }
+#else
+    f->write(val);
+#endif //__DISABLE_FILEIO__
 }
-#endif // __DISABLE_FILEIO__
+
+// #endif // __DISABLE_FILEIO__
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -1651,7 +1903,7 @@ CK_DLL_MFUN( chout_setmode )
  {
  t_CKINT len = GET_NEXT_INT(ARGS);
  Chuck_IO_File * f = (Chuck_IO_File *)SELF;
- 
+
  Chuck_String * s = f->read( len );
  RETURN->v_object = s;
  }
@@ -1673,10 +1925,10 @@ CK_DLL_MFUN( chout_readint )
 CK_DLL_MFUN( chout_readintflags )
 {
     t_CKINT flags = GET_NEXT_INT(ARGS);
-    
+
     Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     t_CKINT ret = c->readInt( flags );
-    
+
     RETURN->v_int = ret;
 }
 
@@ -1704,15 +1956,18 @@ CK_DLL_MFUN( chout_more )
 CK_DLL_MFUN( chout_writestring )
 {
     std::string val = GET_NEXT_STRING(ARGS)->str();
-    
+
     Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->write( val );
+
+    // 1.5.0.0 | (ge) added a single newline -> trigger chout flush
+    if( val == "\n" ) c->flush();
 }
 
 CK_DLL_MFUN( chout_writeint )
 {
     t_CKINT val = GET_NEXT_INT(ARGS);
-    
+
     Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->write(val);
 }
@@ -1720,7 +1975,7 @@ CK_DLL_MFUN( chout_writeint )
 CK_DLL_MFUN( chout_writefloat )
 {
     t_CKFLOAT val = GET_NEXT_FLOAT(ARGS);
-    
+
     Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->write(val);
 }
@@ -1770,7 +2025,7 @@ CK_DLL_MFUN( cherr_setmode )
  {
  t_CKINT len = GET_NEXT_INT(ARGS);
  Chuck_IO_File * f = (Chuck_IO_File *)SELF;
- 
+
  Chuck_String * s = f->read( len );
  RETURN->v_object = s;
  }
@@ -1792,10 +2047,10 @@ CK_DLL_MFUN( cherr_readint )
 CK_DLL_MFUN( cherr_readintflags )
 {
     t_CKINT flags = GET_NEXT_INT(ARGS);
-    
+
     Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     t_CKINT ret = c->readInt( flags );
-    
+
     RETURN->v_int = ret;
 }
 
@@ -1823,7 +2078,7 @@ CK_DLL_MFUN( cherr_more )
 CK_DLL_MFUN( cherr_writestring )
 {
     std::string val = GET_NEXT_STRING(ARGS)->str();
-    
+
     Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     c->write( val );
 }
@@ -1831,7 +2086,7 @@ CK_DLL_MFUN( cherr_writestring )
 CK_DLL_MFUN( cherr_writeint )
 {
     t_CKINT val = GET_NEXT_INT(ARGS);
-    
+
     Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->write(val);
 }
@@ -1839,7 +2094,7 @@ CK_DLL_MFUN( cherr_writeint )
 CK_DLL_MFUN( cherr_writefloat )
 {
     t_CKFLOAT val = GET_NEXT_FLOAT(ARGS);
-    
+
     Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     c->write(val);
 }
@@ -2149,7 +2404,7 @@ CK_DLL_MFUN( HidIn_recv )
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_which) = the_msg.eid;
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_idata) = the_msg.idata[0];
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_fdata) = the_msg.fdata[0];
-        
+
         // mouse motion specific member variables
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_deltax) = the_msg.idata[0];
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_deltay) = the_msg.idata[1];
@@ -2157,24 +2412,24 @@ CK_DLL_MFUN( HidIn_recv )
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_cursory) = the_msg.idata[3];
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaledcursorx) = the_msg.fdata[0];
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaledcursory) = the_msg.fdata[1];
-        
+
         // axis motion specific member variables
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_axis_position) = the_msg.idata[0];
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaled_axis_position) = the_msg.fdata[0];
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_axis_position2) = the_msg.fdata[0];
-        
+
         // hat motion specific variables
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_hat_position) = the_msg.idata[0];
-        
+
         // keyboard specific variables
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_key) = the_msg.idata[1];
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_ascii) = the_msg.idata[2];
-        
+
         // accelerometer (tilt sensor, wii remote) specific members
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_x) = the_msg.idata[0];
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_y) = the_msg.idata[1];
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_z) = the_msg.idata[2];
-        
+
         // multitouch stuff - added 1.3.0.0
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchx) = the_msg.fdata[0];
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_touchy) = the_msg.fdata[1];
@@ -2188,21 +2443,21 @@ CK_DLL_MFUN( HidIn_read )
     t_CKINT type = GET_NEXT_INT(ARGS);
     t_CKINT num = GET_NEXT_INT(ARGS);
     Chuck_Object * fake_msg = GET_NEXT_OBJECT(ARGS);
-    
+
     HidMsg the_msg;
-    
+
     RETURN->v_int = min->read( type, num, &the_msg );
-    
+
     if( RETURN->v_int )
     {
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_device_type) = the_msg.device_type;
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_device_num) = the_msg.device_num;
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_type) = the_msg.type;
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_which) = the_msg.eid;
-        
+
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_idata) = the_msg.idata[0];
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_fdata) = the_msg.fdata[0];
-        
+
         // mouse motion specific member members
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_deltax) = the_msg.idata[0];
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_deltay) = the_msg.idata[1];
@@ -2210,19 +2465,19 @@ CK_DLL_MFUN( HidIn_read )
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_cursory) = the_msg.idata[3];
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaledcursorx) = the_msg.fdata[0];
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaledcursory) = the_msg.fdata[1];
-        
+
         // joystick axis specific member members
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_axis_position) = the_msg.idata[0];
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_scaled_axis_position) = the_msg.fdata[0];
         OBJ_MEMBER_FLOAT(fake_msg, HidMsg_offset_axis_position2) = the_msg.fdata[0];
-        
+
         // joystick hat specific member members
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_hat_position) = the_msg.idata[0];
-        
+
         // keyboard specific members
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_key) = the_msg.idata[1];
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_ascii) = the_msg.idata[2];
-        
+
         // accelerometer (tilt sensor, wii remote) specific members
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_x) = the_msg.idata[0];
         OBJ_MEMBER_INT(fake_msg, HidMsg_offset_y) = the_msg.idata[1];
@@ -2234,14 +2489,14 @@ CK_DLL_MFUN( HidIn_send )
 {
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     Chuck_Object * fake_msg = GET_NEXT_OBJECT(ARGS);
-    
+
     HidMsg the_msg;
     the_msg.device_type = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_device_type );
     the_msg.device_num = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_device_num );
     the_msg.type = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_type );
     the_msg.eid = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_which );
     the_msg.idata[0] = OBJ_MEMBER_INT( fake_msg, HidMsg_offset_idata );
-    
+
     RETURN->v_int = min->send( &the_msg );
 }
 
@@ -2255,19 +2510,20 @@ CK_DLL_SFUN( HidIn_read_tilt_sensor )
 {
     static HidIn * hi;
     static t_CKBOOL hi_good = TRUE;
-    
+
     Chuck_Array4 * array = new Chuck_Array4( FALSE, 3 );
+    initialize_object( array, VM->env()->t_array ); // 1.5.0.0 (ge) added
     array->set( 0, 0 );
     array->set( 1, 0 );
     array->set( 2, 0 );
-    
+
     // TODO: reference count?
     array->add_ref();
     RETURN->v_object = array;
-    
+
     if( hi_good == FALSE )
         return;
-    
+
     if( !hi )
     {
         hi = new HidIn;
@@ -2277,14 +2533,14 @@ CK_DLL_SFUN( HidIn_read_tilt_sensor )
             return;
         }
     }
-    
+
     HidMsg msg;
-    
+
     if( !hi->read( CK_HID_ACCELEROMETER, 0, &msg ) )
     {
         return;
     }
-    
+
     array->set( 0, msg.idata[0] );
     array->set( 1, msg.idata[1] );
     array->set( 2, msg.idata[2] );
@@ -2301,16 +2557,16 @@ CK_DLL_SFUN( HidIn_ctrl_tiltPollRate )
         return;
     }
     t_CKFLOAT srate = SHRED->vm_ref->srate();
-    
+
     // get arg
     t_CKDUR v = GET_NEXT_DUR( ARGS );
-    
+
     // get in microseconds
     t_CKINT usec = (t_CKINT)( v / srate * 1000000 );
-    
+
     // make sure it's nonnegative
     if( usec < 0 ) usec = 0;
-    
+
     // go
     RETURN->v_dur = TiltSensor_setPollRate( usec ) * srate / 1000000;
 }
@@ -2326,7 +2582,7 @@ CK_DLL_SFUN( HidIn_cget_tiltPollRate )
         return;
     }
     t_CKFLOAT srate = SHRED->vm_ref->srate();
-    
+
     RETURN->v_dur = TiltSensor_getPollRate() * srate / 1000000;
 }
 
@@ -2617,18 +2873,18 @@ CK_DLL_MFUN(serialio_canWait);
 void * Chuck_IO_Serial::shell_read_cb( void *_this )
 {
     Chuck_IO_Serial *cereal = (Chuck_IO_Serial *) _this;
-    
+
     cereal->read_cb();
-    
+
     return NULL;
 }
 
 void * Chuck_IO_Serial::shell_write_cb( void *_this )
 {
     Chuck_IO_Serial *cereal = (Chuck_IO_Serial *) _this;
-    
+
     cereal->write_cb();
-    
+
     return NULL;
 }
 
@@ -2651,24 +2907,24 @@ m_writeBuffer(1024)
 {
     m_fd = -1;
     m_cfd = NULL;
-    
+
     m_io_buf_max = CHUCK_IO_DEFAULT_BUFSIZE;
     m_io_buf = new unsigned char[m_io_buf_max];
     m_io_buf_pos = m_io_buf_available = 0;
-    
+
     m_tmp_buf_max = CHUCK_IO_DEFAULT_BUFSIZE;
     m_tmp_buf = new unsigned char[m_tmp_buf_max];
-    
+
     m_read_thread = NULL;
     m_event_buffer = NULL;
-    
+
     m_write_thread = NULL;
     m_do_write_thread = TRUE;
 
     m_do_exit = FALSE;
-    
+
     s_serials.push_back(this);
-    
+
     m_vmRef = vm;
 }
 
@@ -2679,29 +2935,29 @@ Chuck_IO_Serial::~Chuck_IO_Serial()
     SAFE_DELETE(m_read_thread);
     if( m_event_buffer )
         m_vmRef->destroy_event_buffer( m_event_buffer );
-    
+
     close();
-    
+
     SAFE_DELETE(m_io_buf);
     m_io_buf_max = 0;
     m_io_buf_pos = m_io_buf_available = 0;
-    
+
     SAFE_DELETE(m_tmp_buf);
     m_tmp_buf_max = 0;
-    
+
     s_serials.remove(this);
 }
 
 t_CKBOOL Chuck_IO_Serial::ready()
 {
-#ifndef __WINDOWS_DS__
+#ifndef __PLATFORM_WIN32__
     struct pollfd pollfds;
     pollfds.fd = m_fd;
     pollfds.events = POLLIN;
     pollfds.revents = 0;
-    
+
     int result = poll(&pollfds, 1, 0);
-    
+
     if( result > 0 && (pollfds.revents & POLLIN) ) return TRUE;
     else return FALSE; // TODO: error handling
 #else
@@ -2712,11 +2968,11 @@ t_CKBOOL Chuck_IO_Serial::ready()
 t_CKBOOL Chuck_IO_Serial::open( const t_CKUINT i, t_CKINT flags, t_CKUINT baud )
 {
     vector<string> ports = SerialIOManager::availableSerialDevices();
-    
+
     if( i < ports.size() )
     {
         const string &path = ports[i];
-        
+
         open(path, flags, baud);
     }
     else
@@ -2724,47 +2980,47 @@ t_CKBOOL Chuck_IO_Serial::open( const t_CKUINT i, t_CKINT flags, t_CKUINT baud )
         EM_log(CK_LOG_WARNING, "(Serial.open): error: invalid port number");
         return FALSE;
     }
-    
+
     return TRUE;
 }
 
 
 t_CKBOOL Chuck_IO_Serial::open( const std::string & path, t_CKINT flags, t_CKUINT baud )
 {
-    if( flags & Chuck_IO_File::TYPE_BINARY )
+    if( flags & Chuck_IO::TYPE_BINARY )
     {
-        m_flags = Chuck_IO_File::TYPE_BINARY;
+        m_flags = Chuck_IO::TYPE_BINARY;
     }
-    else if( flags & Chuck_IO_File::TYPE_ASCII )
+    else if( flags & Chuck_IO::TYPE_ASCII )
     {
-        m_flags = Chuck_IO_File::TYPE_ASCII;
+        m_flags = Chuck_IO::TYPE_ASCII;
     }
     else
     {
         EM_log(CK_LOG_WARNING, "(Serial.open): warning: invalid binary/ASCII flag requested, defaulting to ASCII");
-        m_flags = Chuck_IO_File::TYPE_ASCII;
+        m_flags = Chuck_IO::TYPE_ASCII;
     }
-    
+
     int fd = ::open( path.c_str(), O_RDWR );
     if( fd < 0 )
     {
         EM_log(CK_LOG_WARNING, "(Serial.open): error: unable to open file at '%s'", path.c_str());
         return FALSE;
     }
-    
+
     m_fd = fd;
     m_path = path;
-    
+
     // set default baud rate
     setBaudRate(baud);
-    
+
     m_cfd = fdopen(fd, "a+");
     m_iomode = MODE_ASYNC;
 #ifndef WIN32
     fcntl(m_fd, F_SETFL, O_NONBLOCK);
 #endif
     m_eof = FALSE;
-    
+
     return TRUE;
 }
 
@@ -2795,7 +3051,7 @@ void Chuck_IO_Serial::close()
 void Chuck_IO_Serial::close_int()
 {
     EM_log(CK_LOG_INFO, "(Serial.close): closing serial device '%s'", m_path.c_str());
-    
+
     if(good())
     {
         if(m_cfd)
@@ -2844,23 +3100,23 @@ t_CKINT Chuck_IO_Serial::readInt( t_CKINT flags )
         EM_log(CK_LOG_WARNING, "(Serial.readInt): warning: file not open");
         return 0;
     }
-    
+
     if( m_iomode == MODE_ASYNC )
     {
         EM_log(CK_LOG_WARNING, "(Serial.readInt): warning: calling synchronous read function on asynchronous file");
         return 0;
     }
-    
-    t_CKINT i = 0;
-    
-    if( m_flags & Chuck_IO_File::TYPE_BINARY )
+
+    long i = 0; // 1.4.1.1 (ge) changed from t_CKUINT; to clear warning for fscanf using %li
+
+    if( m_flags & Chuck_IO::TYPE_BINARY )
     {
         if( flags & INT8 )
         {
             uint8_t byte = 0;
             if(!fread(&byte, 1, 1, m_cfd))
                 EM_log(CK_LOG_WARNING, "(Serial.readInt): error: read failed");
-            
+
             i = byte;
         }
         else if( flags & INT16 )
@@ -2868,7 +3124,7 @@ t_CKINT Chuck_IO_Serial::readInt( t_CKINT flags )
             uint16_t word = 0;
             if(!fread(&word, 2, 1, m_cfd))
                 EM_log(CK_LOG_WARNING, "(Serial.readInt): error: read failed");
-            
+
             i = word;
         }
         else if( flags & INT32 )
@@ -2876,7 +3132,7 @@ t_CKINT Chuck_IO_Serial::readInt( t_CKINT flags )
             uint32_t dword = 0;
             if(!fread(&dword, 4, 1, m_cfd))
                 EM_log(CK_LOG_WARNING, "(Serial.readInt): error: read failed");
-            
+
             i = dword;
         }
     }
@@ -2885,7 +3141,7 @@ t_CKINT Chuck_IO_Serial::readInt( t_CKINT flags )
         if(!fscanf(m_cfd, "%li", &i))
             EM_log(CK_LOG_WARNING, "(Serial.readInt): error: read failed");
     }
-    
+
     return i;
 }
 
@@ -2896,16 +3152,16 @@ t_CKFLOAT Chuck_IO_Serial::readFloat()
         EM_log(CK_LOG_WARNING, "(Serial.readFloat): warning: file not open");
         return 0;
     }
-    
+
     if( m_iomode == MODE_ASYNC )
     {
         EM_log(CK_LOG_WARNING, "(Serial.readFloat): warning: calling synchronous read function on asynchronous file");
         return 0;
     }
-    
+
     t_CKFLOAT f = 0;
-    
-    if( m_flags & Chuck_IO_File::TYPE_BINARY )
+
+    if( m_flags & Chuck_IO::TYPE_BINARY )
     {
         if(!fread(&f, 4, 1, m_cfd))
             EM_log(CK_LOG_WARNING, "(Serial.readFloat): error: read failed");
@@ -2915,7 +3171,7 @@ t_CKFLOAT Chuck_IO_Serial::readFloat()
         if(!fscanf(m_cfd, "%lf", &f))
             EM_log(CK_LOG_WARNING, "(Serial.readFloat): error: read failed");
     }
-    
+
     return f;
 }
 
@@ -2926,27 +3182,27 @@ t_CKBOOL Chuck_IO_Serial::readString( std::string & str )
         EM_log(CK_LOG_WARNING, "(Serial.readString): warning: file not open");
         return FALSE;
     }
-    
+
     if( m_iomode == MODE_ASYNC )
     {
         EM_log(CK_LOG_WARNING, "(Serial.readString): warning: calling synchronous read function on asynchronous file");
         return FALSE;
     }
-    
-    if( m_flags & Chuck_IO_File::TYPE_BINARY )
+
+    if( m_flags & Chuck_IO::TYPE_BINARY )
     {
         EM_log(CK_LOG_WARNING, "(Serial.readString): warning: cannot read string from binary file");
         return FALSE;
     }
-    
+
     if(!fscanf(m_cfd, CHUCK_IO_SCANF_STRING, &m_tmp_buf))
     {
         EM_log(CK_LOG_WARNING, "(Serial.readFloat): error: read failed");
         return FALSE;
     }
-    
+
     str = (char *) m_tmp_buf;
-    
+
     return TRUE;
 }
 
@@ -2958,31 +3214,30 @@ Chuck_String * Chuck_IO_Serial::readLine()
         EM_log(CK_LOG_WARNING, "(Serial.readLine): warning: file not open");
         return NULL;
     }
-    
+
     if( m_iomode == MODE_ASYNC )
     {
         EM_log(CK_LOG_WARNING, "(Serial.readLine): warning: calling synchronous read function on asynchronous file");
         return NULL;
     }
-    
-    if( m_flags & Chuck_IO_File::TYPE_BINARY )
+
+    if( m_flags & Chuck_IO::TYPE_BINARY )
     {
         EM_log(CK_LOG_WARNING, "(Serial.readLine): warning: cannot read line from binary file");
         return NULL;
     }
-    
-    
-    if(!fgets((char *)m_tmp_buf, m_tmp_buf_max, m_cfd))
+
+    if(!fgets((char *)m_tmp_buf, (int)m_tmp_buf_max, m_cfd))
     {
         EM_log(CK_LOG_WARNING, "(Serial.readLine): error: from fgets");
         return NULL;
     }
-    
+
     Chuck_String * str = new Chuck_String;
     initialize_object(str, m_vmRef->env()->t_string);
-    
+
     str->set( string((char *)m_tmp_buf) );
-    
+
     return str;
 }
 
@@ -2994,7 +3249,7 @@ t_CKBOOL Chuck_IO_Serial::eof()
         EM_log(CK_LOG_WARNING, "(Serial.eof): warning: file not open");
         return FALSE;
     }
-    
+
     if( MODE_SYNC )
         return (m_eof = feof( m_cfd ));
     else
@@ -3010,22 +3265,22 @@ void Chuck_IO_Serial::write( const std::string & val )
         EM_log(CK_LOG_WARNING, "(Serial.write): warning: file not open");
         return;
     }
-    
+
     if( m_iomode == MODE_ASYNC )
     {
         start_read_thread();
-        
-        int len = val.length();
-        for(int i = 0; i < len; i++)
+
+        t_CKUINT len = val.length();
+        for(t_CKUINT i = 0; i < len; i++)
             // TODO: efficiency
             m_writeBuffer.put(val[i]);
-        
+
         Request r;
         r.m_type = TYPE_WRITE;
         r.m_val = 0;
         r.m_num = 0;
         r.m_status = Request::RQ_STATUS_PENDING;
-        
+
         m_asyncWriteRequests.put(r);
     }
     else if( m_iomode == MODE_SYNC )
@@ -3048,61 +3303,61 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT size )
         EM_log(CK_LOG_WARNING, "(Serial.write): warning: file not open");
         return;
     }
-    
+
     if(!(size == 1 || size == 2 || size == 4 || size == 8))
     {
         EM_log(CK_LOG_WARNING, "(Serial.write): warning: invalid int size %li, ignoring write request", size);
         return;
     }
-    
+
     if( m_iomode == MODE_ASYNC )
     {
         start_read_thread();
-        
-        if( m_flags & Chuck_IO_File::TYPE_ASCII )
+
+        if( m_flags & Chuck_IO::TYPE_ASCII )
         {
             // TODO: don't use m_tmp_buf (thread safety?)
 #ifdef WIN32
-            _snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%li", val);
+            _snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%li", (long)val);
             m_tmp_buf[m_tmp_buf_max - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
 #else
             snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%li", val);
-#endif       
-            int len = strlen((char *)m_tmp_buf);
-            for(int i = 0; i < len; i++)
+#endif
+            t_CKUINT len = strlen((char *)m_tmp_buf);
+            for(t_CKUINT i = 0; i < len; i++)
                 // TODO: efficiency
                 m_writeBuffer.put(m_tmp_buf[i]);
-            
+
             Request r;
             r.m_type = TYPE_WRITE;
             r.m_val = 0;
             r.m_num = 0;
             r.m_status = Request::RQ_STATUS_PENDING;
-            
+
             m_asyncWriteRequests.put(r);
         }
         else
         {
             char * buf = (char *)&val;
-            
+
             // assume 4-byte int
             for(int i = 0; i < size; i++)
                 m_writeBuffer.put(buf[i]);
-            
+
             Request r;
             r.m_type = TYPE_WRITE;
             r.m_val = 0;
             r.m_num = 0;
             r.m_status = Request::RQ_STATUS_PENDING;
-            
+
             m_asyncWriteRequests.put(r);
         }
     }
     else if( m_iomode == MODE_SYNC )
     {
-        if( m_flags & Chuck_IO_File::TYPE_ASCII )
+        if( m_flags & Chuck_IO::TYPE_ASCII )
         {
-            fprintf( m_cfd, "%li", val );
+            fprintf( m_cfd, "%li", (long)val );
         }
         else
         {
@@ -3120,53 +3375,53 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
         EM_log(CK_LOG_WARNING, "(Serial.write): warning: file not open");
         return;
     }
-    
+
     if( m_iomode == MODE_ASYNC )
     {
         start_read_thread();
-        
-        if( m_flags & Chuck_IO_File::TYPE_ASCII )
+
+        if( m_flags & Chuck_IO::TYPE_ASCII )
         {
 #ifdef WIN32
             _snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%f", val);
             m_tmp_buf[m_tmp_buf_max - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
 #else
             snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%f", val);
-#endif       
-            
-            int len = strlen((char *)m_tmp_buf);
-            for(int i = 0; i < len; i++)
+#endif
+
+            t_CKUINT len = strlen((char *)m_tmp_buf);
+            for(t_CKUINT i = 0; i < len; i++)
                 // TODO: efficiency
                 m_writeBuffer.put(m_tmp_buf[i]);
-            
+
             Request r;
             r.m_type = TYPE_WRITE;
             r.m_val = 0;
             r.m_num = 0;
             r.m_status = Request::RQ_STATUS_PENDING;
-            
+
             m_asyncWriteRequests.put(r);
         }
         else
         {
             char * buf = (char *) &val;
-            
+
             // assume 4-byte float
             for(int i = 0; i < 4; i++)
                 m_writeBuffer.put(buf[i]);
-            
+
             Request r;
             r.m_type = TYPE_WRITE;
             r.m_val = 0;
             r.m_num = 0;
             r.m_status = Request::RQ_STATUS_PENDING;
-            
+
             m_asyncWriteRequests.put(r);
         }
     }
     else if( m_iomode == MODE_SYNC )
     {
-        if( m_flags & Chuck_IO_File::TYPE_ASCII )
+        if( m_flags & Chuck_IO::TYPE_ASCII )
         {
             fprintf( m_cfd, "%f", val );
         }
@@ -3174,7 +3429,8 @@ void Chuck_IO_Serial::write( t_CKFLOAT val )
         {
             // assume 4-byte int
             char * buf = (char *) &val;
-            fwrite(buf, 1, size, m_cfd);
+            // 1.5.0.0 (ge) | fixed from size to sizeof
+            fwrite(buf, 1, sizeof(val), m_cfd);
         }
     }
 }
@@ -3187,12 +3443,12 @@ void Chuck_IO_Serial::writeBytes( Chuck_Array4 * arr )
         EM_log(CK_LOG_WARNING, "(Serial.writeBytes): warning: file not open");
         return;
     }
-    
+
     if( m_iomode == MODE_ASYNC )
     {
         start_read_thread();
-        
-        int len = arr->size();
+
+        t_CKINT len = arr->size();
         for(int i = 0; i < len; i++)
         {
             // TODO: efficiency
@@ -3200,18 +3456,18 @@ void Chuck_IO_Serial::writeBytes( Chuck_Array4 * arr )
             arr->get(i, &byte);
             m_writeBuffer.put((char) byte);
         }
-        
+
         Request r;
         r.m_type = TYPE_WRITE;
         r.m_val = 0;
         r.m_num = 0;
         r.m_status = Request::RQ_STATUS_PENDING;
-        
+
         m_asyncWriteRequests.put(r);
     }
     else if( m_iomode == MODE_SYNC )
     {
-        int len = arr->size();
+        t_CKINT len = arr->size();
         for(int i = 0; i < len; i++)
         {
             // TODO: efficiency
@@ -3231,7 +3487,7 @@ void Chuck_IO_Serial::start_read_thread()
         m_read_thread->start((unsigned int (__stdcall *)(void*))shell_read_cb, this);
 #else
         m_read_thread->start(shell_read_cb, this);
-#endif         
+#endif
         assert(m_event_buffer == NULL);
         m_event_buffer = m_vmRef->create_event_buffer();
     }
@@ -3245,15 +3501,15 @@ t_CKBOOL Chuck_IO_Serial::readAsync( t_CKUINT type, t_CKUINT num )
         EM_log(CK_LOG_WARNING, "(Serial.readAsync): warning: file not open");
         return FALSE;
     }
-    
+
     start_read_thread();
-    
+
     Request read;
     read.m_type = type;
     read.m_num = num;
     read.m_val = 0;
     read.m_status = Request::RQ_STATUS_PENDING;
-    
+
     if(!m_asyncRequests.atMaximum() )
     {
         m_asyncRequests.put(read);
@@ -3263,7 +3519,7 @@ t_CKBOOL Chuck_IO_Serial::readAsync( t_CKUINT type, t_CKUINT num )
         EM_log(CK_LOG_SEVERE, "(SerialIO.readAsync): warning: request buffer overflow, dropping read");
         return FALSE;
     }
-    
+
     return TRUE;
 }
 
@@ -3274,18 +3530,18 @@ Chuck_String * Chuck_IO_Serial::getLine()
         EM_log(CK_LOG_WARNING, "(Serial.getLine): warning: file not open");
         return NULL;
     }
-    
+
     Request r;
-    
+
     Chuck_String * str = NULL;
-    
+
     if(m_asyncResponses.peek(r, 1) &&
        r.m_type == TYPE_LINE && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         str = (Chuck_String *) r.m_val;
         m_asyncResponses.get(r);
     }
-    
+
     return str;
 }
 
@@ -3297,11 +3553,11 @@ t_CKINT Chuck_IO_Serial::getByte()
         EM_log(CK_LOG_WARNING, "(Serial.getByte): warning: file not open");
         return 0;
     }
-    
+
     Request r;
-    
+
     t_CKINT i = 0;
-    
+
     if(m_asyncResponses.peek(r, 1) &&
        r.m_type == TYPE_BYTE && r.m_num == 1 &&
        r.m_status == Request::RQ_STATUS_SUCCESS)
@@ -3309,7 +3565,7 @@ t_CKINT Chuck_IO_Serial::getByte()
         i = (t_CKINT) r.m_val;
         m_asyncResponses.get(r);
     }
-    
+
     return i;
 }
 
@@ -3320,11 +3576,11 @@ Chuck_Array * Chuck_IO_Serial::getBytes()
         EM_log(CK_LOG_WARNING, "(Serial.getBytes): warning: file not open");
         return NULL;
     }
-    
+
     Request r;
-    
+
     Chuck_Array * arr = NULL;
-    
+
     if(m_asyncResponses.peek(r, 1) &&
        r.m_type == TYPE_BYTE && r.m_num > 1 &&
        r.m_status == Request::RQ_STATUS_SUCCESS)
@@ -3333,7 +3589,7 @@ Chuck_Array * Chuck_IO_Serial::getBytes()
         initialize_object(arr, m_vmRef->env()->t_array);
         m_asyncResponses.get(r);
     }
-    
+
     return arr;
 }
 
@@ -3346,9 +3602,9 @@ Chuck_Array * Chuck_IO_Serial::getInts()
     }
 
     Request r;
-    
+
     Chuck_Array * arr = NULL;
-    
+
     if(m_asyncResponses.peek(r, 1) &&
        r.m_type == TYPE_INT && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
@@ -3356,7 +3612,7 @@ Chuck_Array * Chuck_IO_Serial::getInts()
         initialize_object(arr, m_vmRef->env()->t_array);
         m_asyncResponses.get(r);
     }
-    
+
     return arr;
 }
 
@@ -3369,9 +3625,9 @@ Chuck_Array * Chuck_IO_Serial::getFloats()
     }
 
     Request r;
-    
+
     Chuck_Array * arr = NULL;
-    
+
     if(m_asyncResponses.peek(r, 1) &&
        r.m_type == TYPE_FLOAT && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
@@ -3379,7 +3635,7 @@ Chuck_Array * Chuck_IO_Serial::getFloats()
         initialize_object(arr, m_vmRef->env()->t_array);
         m_asyncResponses.get(r);
     }
-    
+
     return arr;
 }
 
@@ -3390,35 +3646,35 @@ Chuck_String * Chuck_IO_Serial::getString()
         EM_log(CK_LOG_WARNING, "(Serial.getString): warning: file not open");
         return NULL;
     }
-    
+
     Request r;
-    
+
     Chuck_String * str = NULL;
-    
+
     if(m_asyncResponses.peek(r, 1) &&
        r.m_type == TYPE_STRING && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         str = (Chuck_String *) r.m_val;
         m_asyncResponses.get(r);
     }
-    
+
     return str;
 }
 
 
 t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
 {
-#ifndef WIN32    
+#ifndef WIN32
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(m_fd, &fds);
-    
+
     timeval tv;
     tv.tv_sec = timeout_ms/1000;
     tv.tv_usec = 1000 * (timeout_ms%1000);
-    
-    int result = select(m_fd+1, &fds, NULL, NULL, &tv);
-    
+
+    t_CKINT result = select(m_fd+1, &fds, NULL, NULL, &tv);
+
     if(result > 0 && FD_ISSET(m_fd, &fds))
     {
         result = ::read(m_fd, m_io_buf, m_io_buf_max);
@@ -3426,9 +3682,9 @@ t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
         {
             m_io_buf_available = result;
             m_io_buf_pos = 0;
-            
+
             EM_log(CK_LOG_FINE, "(SerialIO::get_buffer): read() returned %i bytes", result);
-            
+
             return TRUE;
         }
         else
@@ -3440,9 +3696,9 @@ t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
     {
         EM_log(CK_LOG_FINE, "(SerialIO::get_buffer): select() timeout");
     }
-    
+
     return FALSE;
-    
+
 #else
 
     int result = ::read(m_fd, m_io_buf, m_io_buf_max);
@@ -3450,7 +3706,7 @@ t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
     {
         m_io_buf_available = result;
         m_io_buf_pos = 0;
-        
+
         return TRUE;
     }
 
@@ -3465,17 +3721,17 @@ t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
 t_CKINT Chuck_IO_Serial::peek_buffer()
 {
     // CK_FPRINTF_STDERR( "Chuck_IO_Serial::peek_buffer %i/%i\n", m_io_buf_pos, m_io_buf_available);
-    
+
     if(m_io_buf_pos >= m_io_buf_available)
     {
         // refresh data
         while(!m_do_exit && !m_eof && !get_buffer(5))
             ;
-        
+
         if(m_do_exit || m_eof)
             return -1;
     }
-    
+
     return m_io_buf[m_io_buf_pos];
 }
 
@@ -3484,17 +3740,17 @@ t_CKINT Chuck_IO_Serial::peek_buffer()
 t_CKINT Chuck_IO_Serial::pull_buffer()
 {
     // CK_FPRINTF_STDERR( "Chuck_IO_Serial::pull_buffer %i/%i\n", m_io_buf_pos, m_io_buf_available);
-    
+
     if(m_io_buf_pos >= m_io_buf_available)
     {
         // refresh data
         while(!m_do_exit && !m_eof && !get_buffer(5))
             ;
-        
+
         if(m_do_exit || m_eof)
             return -1;
     }
-    
+
     return m_io_buf[m_io_buf_pos++];
 }
 
@@ -3506,10 +3762,10 @@ t_CKINT Chuck_IO_Serial::buffer_bytes_to_tmp(t_CKINT num_bytes)
     {
         if(peek_buffer() == -1)
             break;
-        
+
         m_tmp_buf[len++] = pull_buffer();
     }
-    
+
     return len;
 }
 
@@ -3517,13 +3773,13 @@ t_CKINT Chuck_IO_Serial::buffer_bytes_to_tmp(t_CKINT num_bytes)
 t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
 {
     t_CKUINT len = 0;
-    Chuck_String * str;
-    
+    Chuck_String * str = NULL;
+
     while(!m_do_exit)
     {
         if(peek_buffer() == -1)
             break;
-        
+
         if(peek_buffer() == '\r')
         {
             // consume newline character
@@ -3531,7 +3787,7 @@ t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
             if(peek_buffer() == '\n') pull_buffer(); // handle \r\n
             break;
         }
-        
+
         if(peek_buffer() == '\n')
         {
             // consume newline character
@@ -3539,40 +3795,40 @@ t_CKBOOL Chuck_IO_Serial::handle_line(Chuck_IO_Serial::Request &r)
             if(peek_buffer() == '\r') pull_buffer(); // handle \n\r (unlikely)
             break;
         }
-                
+
         m_tmp_buf[len++] = pull_buffer();
-        
+
         if(len >= m_tmp_buf_max)
         {
             EM_log(CK_LOG_WARNING, "(Serial.handle_line): warning: line exceeds buffer length, truncating to %i characters", m_tmp_buf_max);
             break;
         }
     }
-    
+
     if(m_do_exit)
         goto error;
     // TODO: eof
-    
+
     str = new Chuck_String;
     str->set( std::string((char *)m_tmp_buf, len) );
-    
+
     r.m_val = (t_CKUINT) str;
     r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_SUCCESS;
 
     return TRUE;
-    
+
 error:
     r.m_val = 0;
     r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
-    
+
 #ifdef WIN32
     HANDLE hFile = (HANDLE) _get_osfhandle(m_fd);
     DWORD error;
     ClearCommError(hFile, &error, NULL);
-    
+
     PurgeComm(hFile, PURGE_RXCLEAR);
 #endif
-    
+
     return TRUE;
 }
 
@@ -3586,19 +3842,19 @@ t_CKBOOL Chuck_IO_Serial::handle_float_ascii(Chuck_IO_Serial::Request & r)
     t_CKFLOAT val = 0;
     int numRead = 0;
     Chuck_Array8 * array = new Chuck_Array8(0);
-    
+
     for(int i = 0; i < r.m_num && !m_do_exit; i++)
     {
         t_CKUINT len = 0;
-        
+
         while(!m_do_exit)
         {
             if(peek_buffer() == -1)
                 break;
-            
+
             // TODO: '\r'?
-            int c = peek_buffer();
-            
+            int c = (int)peek_buffer();
+
             if(isdigit(c) || c=='.' || (len==0 && (c=='-' || c=='+')))
             {
                 m_tmp_buf[len++] = pull_buffer();
@@ -3607,29 +3863,29 @@ t_CKBOOL Chuck_IO_Serial::handle_float_ascii(Chuck_IO_Serial::Request & r)
             {
                 m_tmp_buf[len++] = '\0';
                 val = strtod((char *)m_tmp_buf, NULL);
-                
+
                 numRead++;
                 array->push_back(val);
-                
+
                 break;
             }
         }
     }
-    
+
     if(m_do_exit || m_eof)
         goto error;
 
     r.m_num = numRead;
     r.m_val = (t_CKUINT) array;
     r.m_status = Request::RQ_STATUS_SUCCESS;
-    
+
     return TRUE;
-    
+
 error:
     SAFE_DELETE(array);
     r.m_val = 0;
     r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
-    
+
     return TRUE;
 }
 
@@ -3638,17 +3894,18 @@ t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Request & r)
     t_CKINT val = 0;
     int numRead = 0;
     Chuck_Array4 * array = new Chuck_Array4(FALSE, 0);
+    initialize_object( array, m_vmRef->env()->t_array ); // 1.5.0.0 (ge) added
     for(int i = 0; i < r.m_num; i++)
     {
         t_CKUINT len = 0;
-        
+
         while(!m_do_exit)
         {
             if(peek_buffer() == -1)
                 break;
-            
-            int c = pull_buffer();
-            
+
+            int c = (int)pull_buffer();
+
             if(isdigit(c) || (len==0 && (c=='-' || c=='+')))
             {
                 m_tmp_buf[len++] = c;
@@ -3657,39 +3914,39 @@ t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Request & r)
             {
                 m_tmp_buf[len++] = '\0';
                 val = strtol((char *)m_tmp_buf, NULL, 10);
-                
+
                 numRead++;
                 array->push_back(val);
-                
+
                 break;
             }
         }
     }
-    
+
     if(m_do_exit || m_eof)
         goto error;
-    
+
     r.m_num = numRead;
     r.m_val = (t_CKUINT) array;
     r.m_status = Request::RQ_STATUS_SUCCESS;
-    
+
     return TRUE;
-    
+
 error:
     SAFE_DELETE(array);
     r.m_val = 0;
     r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
-    
+
     return TRUE;
 }
 
 t_CKBOOL Chuck_IO_Serial::handle_byte(Chuck_IO_Serial::Request & r)
 {
     // binary
-    int size = 1;    
+    int size = 1;
     int num = r.m_num;
     t_CKUINT val = 0;
-    
+
     if(size*num > m_tmp_buf_max)
     {
         int new_num = (int) floorf(((float)m_tmp_buf_max)/size);
@@ -3697,36 +3954,37 @@ t_CKBOOL Chuck_IO_Serial::handle_byte(Chuck_IO_Serial::Request & r)
                num, size*num, new_num);
         num = new_num;
     }
-    
+
     t_CKINT len = buffer_bytes_to_tmp(num);
-    
+
     if(m_do_exit || m_eof)
         goto error;
 
     r.m_num = len;
-    
+
     if(r.m_num == 1)
         val = m_tmp_buf[0];
     else
     {
         Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
+        initialize_object( array, m_vmRef->env()->t_array ); // 1.5.0.0 (ge) added
         for(int i = 0; i < r.m_num; i++)
         {
             array->set(i, m_tmp_buf[i]);
         }
-        
+
         val = (t_CKUINT) array;
     }
-    
+
     r.m_val = val;
     r.m_status = Request::RQ_STATUS_SUCCESS;
-    
+
     return TRUE;
-    
+
 error:
     r.m_val = 0;
     r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
-    
+
     return TRUE;
 }
 
@@ -3735,9 +3993,9 @@ t_CKBOOL Chuck_IO_Serial::handle_float_binary(Chuck_IO_Serial::Request & r)
     // binary
     int size = 4; // SPENCERTODO: should these be based on arch (64 bit)?
     assert(sizeof(t_CKSINGLE) == 4);
-    
+
     int num = r.m_num;
-    
+
     if(size*num > m_tmp_buf_max)
     {
         int new_num = (int) floorf(((float)m_tmp_buf_max)/size);
@@ -3745,23 +4003,23 @@ t_CKBOOL Chuck_IO_Serial::handle_float_binary(Chuck_IO_Serial::Request & r)
                num, size*num, new_num);
         num = new_num;
     }
-    
+
     r.m_num = buffer_bytes_to_tmp(size*num)/size;
-    
+
     t_CKUINT val = 0;
     t_CKSINGLE * m_floats = (t_CKSINGLE *) m_tmp_buf;
-    
+
     Chuck_Array8 * array = new Chuck_Array8(r.m_num);
     for(int i = 0; i < r.m_num; i++)
     {
         array->set(i, m_floats[i]);
     }
-        
+
     val = (t_CKUINT) array;
-    
+
     r.m_val = val;
     r.m_status = Request::RQ_STATUS_SUCCESS;
-    
+
     return TRUE;
 }
 
@@ -3769,9 +4027,9 @@ t_CKBOOL Chuck_IO_Serial::handle_int_binary(Chuck_IO_Serial::Request & r)
 {
     // binary
     int size = 4; // SPENCERTODO: should these be based on arch (64 bit)?
-    
+
     int num = r.m_num;
-    
+
     if(size*num > m_tmp_buf_max)
     {
         int new_num = (int) floorf(((float)m_tmp_buf_max)/size);
@@ -3779,23 +4037,24 @@ t_CKBOOL Chuck_IO_Serial::handle_int_binary(Chuck_IO_Serial::Request & r)
                num, size*num, new_num);
         num = new_num;
     }
-    
+
     r.m_num = buffer_bytes_to_tmp(size*num)/size;
-    
+
     t_CKUINT val = 0;
     uint32_t * m_ints = (uint32_t *) m_tmp_buf;
-    
+
     Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
+    initialize_object( array, m_vmRef->env()->t_array ); // 1.5.0.0 (ge) added
     for(int i = 0; i < r.m_num; i++)
     {
         array->set(i, m_ints[i]);
     }
-    
+
     val = (t_CKUINT) array;
-    
+
     r.m_val = val;
     r.m_status = Request::RQ_STATUS_SUCCESS;
-    
+
     return TRUE;
 }
 
@@ -3803,19 +4062,19 @@ t_CKBOOL Chuck_IO_Serial::handle_int_binary(Chuck_IO_Serial::Request & r)
 void Chuck_IO_Serial::read_cb()
 {
     m_do_read_thread = TRUE;
-    
+
     m_write_thread = new XThread;
 #ifdef WIN32
-        m_read_thread->start((unsigned int (__stdcall *)(void*))shell_write_cb, this);
+    m_read_thread->start((unsigned int (__stdcall *)(void*))shell_write_cb, this);
 #else
-	m_write_thread->start(shell_write_cb, this);
+    m_write_thread->start(shell_write_cb, this);
 #endif
-    
+
     while(m_do_read_thread && !m_do_exit)
     {
         Request r;
         int num_responses = 0;
-        
+
         while(m_asyncRequests.get(r) && m_do_read_thread && !m_do_exit)
         {
             if( m_asyncResponses.atMaximum() )
@@ -3823,27 +4082,27 @@ void Chuck_IO_Serial::read_cb()
                 EM_log(CK_LOG_SEVERE, "SerialIO.read_cb: error: response buffer overflow, dropping read");
                 continue;
             }
-            
-            if(m_flags & Chuck_IO_File::TYPE_ASCII)
+
+            if(m_flags & Chuck_IO::TYPE_ASCII)
             {
                 switch(r.m_type)
                 {
                     case TYPE_LINE:
                         handle_line(r);
                         break;
-                        
+
                     case TYPE_STRING:
                         handle_string(r);
                         break;
-                        
+
                     case TYPE_INT:
                         handle_int_ascii(r);
                         break;
-                        
+
                     case TYPE_FLOAT:
                         handle_float_ascii(r);
                         break;
-                        
+
                     default:
                         // this shouldnt happen
                         r.m_type = TYPE_NONE;
@@ -3867,7 +4126,7 @@ void Chuck_IO_Serial::read_cb()
                     case TYPE_FLOAT:
                         handle_float_binary(r);
                         break;
-                        
+
                     default:
                         // this shouldnt happen
                         r.m_type = TYPE_NONE;
@@ -3877,33 +4136,33 @@ void Chuck_IO_Serial::read_cb()
                         EM_log(CK_LOG_WARNING, "SerialIO.read_cb: error: invalid request");
                 }
             }
-            
+
             m_asyncResponses.put(r);
             num_responses++;
         }
-        
+
         if(m_asyncResponses.numElements() > 0)
             queue_broadcast(m_event_buffer);
-        
+
         usleep(100);
     }
-    
+
     m_write_thread->wait(-1);
-    
+
     close_int();
 }
 
 void Chuck_IO_Serial::write_cb()
 {
     m_do_write_thread = TRUE;
-    
+
     char *tmp_writethread_buf = new char[CHUCK_IO_DEFAULT_BUFSIZE];
     t_CKINT tmp_writethread_buf_max = CHUCK_IO_DEFAULT_BUFSIZE;
-    
+
     while(m_do_write_thread && !m_do_exit)
     {
         Request r;
-        
+
         while(m_asyncWriteRequests.get(r) && m_do_write_thread && !m_do_exit)
         {
             if(r.m_type == TYPE_WRITE)
@@ -3915,9 +4174,9 @@ void Chuck_IO_Serial::write_cb()
                     tmp_writethread_buf[numBytes] = c;
                     numBytes++;
                 }
-                
+
                 assert(numBytes < tmp_writethread_buf_max);
-                
+
                 if(numBytes)
                 {
                     fwrite(tmp_writethread_buf, 1, numBytes, m_cfd);
@@ -3925,11 +4184,11 @@ void Chuck_IO_Serial::write_cb()
                 }
             }
         }
-        
+
         // todo: replace with semaphore?
         usleep(100);
     }
-    
+
     delete[] tmp_writethread_buf;
     tmp_writethread_buf = NULL;
 }
@@ -3944,7 +4203,7 @@ t_CKBOOL Chuck_IO_Serial::setBaudRate( t_CKUINT rate )
     cfsetispeed(&tios, rate);
     cfsetospeed(&tios, rate);
     tcsetattr(m_fd, TCSAFLUSH, &tios);
-    
+
     return TRUE;
 #else
     DCB dcb;
@@ -4011,7 +4270,7 @@ t_CKBOOL Chuck_IO_Serial::setBaudRate( t_CKUINT rate )
     dcb.fRtsControl = RTS_CONTROL_ENABLE;
     dcb.fAbortOnError = TRUE;
     dcb.Parity = NOPARITY;
-    
+
     if(!SetCommState(hFile, &dcb))
     {
         //goto error;
@@ -4092,7 +4351,7 @@ CK_DLL_MFUN( serialio_writeBytes );
 CK_DLL_MFUN( serialio_flush )
 {
     Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
-    
+
     cereal->flush();
 }
 
@@ -4107,120 +4366,124 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     Chuck_DL_Func * func = NULL;
 
     std::string doc = "serial input/output. popularly used to communicate with systems like Arduino.";
-    
+
     Chuck_Type * type = type_engine_import_class_begin( env, "SerialIO", "IO",
                                                         env->global(), serialio_ctor, serialio_dtor, doc.c_str() );
     // TODO: ctor/dtor?
     if( !type )
         return FALSE;
-    
+
     // HACK; SPENCERTODO: better way to set this
     type->allocator = serialio_alloc;
-    
+
     // add list()
     func = make_new_sfun( "string[]", "list", serialio_list );
     func->doc = "get list of available serial devices.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
-    
+
     func = make_new_mfun("int", "open", serialio_open);
     func->add_arg("int", "i");
     func->add_arg("int", "baud");
     func->add_arg("int", "mode");
     func->doc = "open serial device i with specified baud rate and mode (binary or ASCII).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     func = make_new_mfun("void", "close", serialio_close);
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add ready (data available)
     func = make_new_mfun("int", "dataAvailable", serialio_ready);
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add readLine
     func = make_new_mfun("string", "readLine", serialio_readLine);
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add onLine
     func = make_new_mfun("SerialIO", "onLine", serialio_onLine);
     func->doc = "wait for one line (ASCII mode only).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add onByte
     func = make_new_mfun("SerialIO", "onByte", serialio_onByte);
     func->doc = "wait for one byte (binary mode only).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add onBytes
     func = make_new_mfun("SerialIO", "onBytes", serialio_onBytes);
     func->add_arg("int", "num");
     func->doc = "wait for requested number of bytes (binary mode only).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add onInts
     func = make_new_mfun("SerialIO", "onInts", serialio_onInts);
     func->add_arg("int", "num");
     func->doc = "wait for requested number of ints (ASCII or binary mode).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add onInts
     func = make_new_mfun("SerialIO", "onFloats", serialio_onFloats);
     func->add_arg("int", "num");
     func->doc = "wait for requested number of floats (ASCII or binary mode).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add getLine
     func = make_new_mfun("string", "getLine", serialio_getLine);
     func->doc = "get next requested line.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add getByte
     func = make_new_mfun("int", "getByte", serialio_getByte);
     func->doc = "get next requested byte. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add getBytes
     func = make_new_mfun("int[]", "getBytes", serialio_getBytes);
     func->doc = "get next requested number of bytes. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add getInts
     func = make_new_mfun("int[]", "getInts", serialio_getInts);
     func->doc = "get next requested number of integers. ";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add writeByte
     func = make_new_mfun("void", "writeByte", serialio_writeByte);
     func->add_arg("int", "b");
     func->doc = "write a single byte.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add writeBytes
     func = make_new_mfun("void", "writeBytes", serialio_writeBytes);
     func->add_arg("int[]", "b");
     func->doc = "write array of bytes.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add setBaudRate
     func = make_new_mfun("int", "baudRate", serialio_setBaudRate);
     func->add_arg("int", "r");
     func->doc = "set baud rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add getBaudRate
     func = make_new_mfun("int", "baudRate", serialio_getBaudRate);
     func->doc = "get current baud rate.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add getBaudRate
     func = make_new_mfun("void", "flush", serialio_flush);
     func->doc = "flush the IO buffer.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
     // add can_wait
     // func = make_new_mfun("int", "can_wait", serialio_canWait);
-    // func->doc = "";
+    // func->doc = "(internal) used by virtual machine for synthronization.";
     // if( !type_engine_import_mfun( env, func ) ) goto error;
-    
+
+    // add file modes (moved into IO | 1.5.0.0 (ge))
+    // type_engine_import_svar(env, "int", "BINARY", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_BINARY, "Binary mode");
+    // type_engine_import_svar(env, "int", "ASCII", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_ASCII, "ASCII mode");
+
     // add baud rate constants
     type_engine_import_svar(env, "int", "B2400",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_2400, "2400 baud");
     type_engine_import_svar(env, "int", "B4800",   TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_4800, "4800 baud");
@@ -4235,9 +4498,6 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     type_engine_import_svar(env, "int", "B115200", TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_115200, "115200 baud");
     type_engine_import_svar(env, "int", "B230400", TRUE, (t_CKUINT) &Chuck_IO_Serial::CK_BAUD_230400, "230400 baud");
 
-    type_engine_import_svar(env, "int", "BINARY", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_BINARY, "Binary mode");
-    type_engine_import_svar(env, "int", "ASCII", TRUE, (t_CKUINT) &Chuck_IO_File::TYPE_ASCII, "ASCII mode");
-
     // add examples
     if( !type_engine_import_add_ex( env, "serial/byte.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "serial/bytes.ck" ) ) goto error;
@@ -4247,17 +4507,17 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     if( !type_engine_import_add_ex( env, "serial/list.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "serial/write-bytes.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "serial/write.ck" ) ) goto error;
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return TRUE;
-    
+
 error:
-    
+
     // end the class import
     type_engine_import_class_end( env );
-    
+
     return FALSE;
 }
 
@@ -4266,18 +4526,18 @@ error:
 CK_DLL_SFUN( serialio_list )
 {
     vector<string> devices = SerialIOManager::availableSerialDevices();
-    
+
     // ISSUE: 64-bit
     Chuck_Array4 * array = new Chuck_Array4(TRUE, 0);
     initialize_object( array, SHRED->vm_ref->env()->t_array );
-    
+
     for(vector<string>::iterator i = devices.begin(); i != devices.end(); i++)
     {
         Chuck_String * name = new Chuck_String(*i);
         initialize_object(name, SHRED->vm_ref->env()->t_string);
         array->push_back((t_CKUINT) name);
     }
-    
+
     RETURN->v_object = array;
 }
 
@@ -4309,28 +4569,28 @@ CK_DLL_MFUN( serialio_open )
     t_CKINT num = GET_NEXT_INT(ARGS);
     t_CKINT baud = GET_NEXT_INT(ARGS);
     t_CKINT mode = GET_NEXT_INT(ARGS);
-    
+
     RETURN->v_int = cereal->open(num, mode, baud);
 }
 
 CK_DLL_MFUN( serialio_close )
 {
     Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
-    
+
     cereal->close();
 }
 
 CK_DLL_MFUN( serialio_ready )
 {
     Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
-    
+
     RETURN->v_int = cereal->ready();
 }
 
 CK_DLL_MFUN( serialio_readLine )
 {
     Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
-    
+
     RETURN->v_string = cereal->readLine();
 }
 
@@ -4338,9 +4598,9 @@ CK_DLL_MFUN( serialio_readLine )
 CK_DLL_MFUN( serialio_onLine )
 {
     Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
-    
+
     cereal->readAsync(Chuck_IO_Serial::TYPE_LINE, 1);
-    
+
     RETURN->v_object = cereal;
 }
 
@@ -4348,9 +4608,9 @@ CK_DLL_MFUN( serialio_onLine )
 CK_DLL_MFUN( serialio_onByte )
 {
     Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
-    
+
     cereal->readAsync(Chuck_IO_Serial::TYPE_BYTE, 1);
-    
+
     RETURN->v_object = cereal;
 }
 
@@ -4358,11 +4618,11 @@ CK_DLL_MFUN( serialio_onByte )
 CK_DLL_MFUN( serialio_onBytes )
 {
     Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
-    
+
     t_CKINT num = GET_NEXT_INT(ARGS);
-    
+
     cereal->readAsync(Chuck_IO_Serial::TYPE_BYTE, num);
-    
+
     RETURN->v_object = cereal;
 }
 
@@ -4370,11 +4630,11 @@ CK_DLL_MFUN( serialio_onBytes )
 CK_DLL_MFUN( serialio_onInts )
 {
     Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
-    
+
     t_CKINT num = GET_NEXT_INT(ARGS);
-    
+
     cereal->readAsync(Chuck_IO_Serial::TYPE_INT, num);
-    
+
     RETURN->v_object = cereal;
 }
 
@@ -4382,11 +4642,11 @@ CK_DLL_MFUN( serialio_onInts )
 CK_DLL_MFUN( serialio_onFloats )
 {
     Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
-    
+
     t_CKINT num = GET_NEXT_INT(ARGS);
-    
+
     cereal->readAsync(Chuck_IO_Serial::TYPE_FLOAT, num);
-    
+
     RETURN->v_object = cereal;
 }
 

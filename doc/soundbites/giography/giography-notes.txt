@@ -1,0 +1,4 @@
+Giography (2015)
+Ge Wang
+
+“Giography” is based on an instrument called Intervalia—created in 2014 by Gio Jacuzzi in the course, Music 220b: Compositional Algorithms, Psychoacoustics, and Spatial Processing. Here it is reworked as a networked instrument for laptop orchestra. Musical gestures originate from a single performer typing on the computer keyboard, and emanate throughout the ensemble. This work is named in honor of the creator of the original instrument—and for the spaces it explores.

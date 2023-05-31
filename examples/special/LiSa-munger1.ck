@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------
 // name: LiSa-munger1.ck
 // desc: Live sampling utilities for ChucK
+//       (also see: LiSa-stereo.ck for stereo version of this)
 //
 // author: Dan Trueman, 2007
 //
@@ -19,6 +20,13 @@ SinOsc s => LiSa lisa => dac;
 // thru
 s => dac;
 
+// LiSa duration (this also allocates internals)
+lisa.duration( 1::second );
+// set max voices
+lisa.maxVoices( 30 );
+// set ramp duration
+lisa.recRamp( 20::ms );
+
 // frequency
 s.freq( 440 );
 // gain
@@ -29,10 +37,8 @@ SinOsc freqmod => blackhole;
 // modulation frequency
 freqmod.freq( 0.1 );
 
-// LiSa duration
-lisa.duration( 1::second );
 // set it recording constantly; loop records by default
-lisa.record( 1 );
+lisa.record( true );
 // set gain
 lisa.gain( 0.1 );
 
@@ -46,12 +52,9 @@ while( now < later )
 }
 
 // stop recording
-lisa.record( 0 );
+lisa.record( false );
 // set gain to 0 for SinOsc
 s.gain( 0 );
-lisa.recRamp( 20::ms );
-// set max voices
-lisa.maxVoices( 30 );
 
 // this arrangment will create some clicks because of discontinuities
 // from the loop recording. to fix, need to make a rotating buffer 
@@ -75,7 +78,7 @@ fun void getgrain( dur grainlen, dur rampup, dur rampdown, float rate )
     // get an available voice
     lisa.getVoice() => int newvoice;
 
-    // make sure we got a valid voice   
+    // make sure we got a valid voice   
     if( newvoice > -1 )
     {
         // set play rate
