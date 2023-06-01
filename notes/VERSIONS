@@ -4,6 +4,23 @@ ChucK VERSIONS log
 
 1.5.0.1
 ---
+* (added) WvOut support for multiple bit-depths: 16-bit signed int,
+  24-bit signed int, 32-bit signed int, 32-bit float, 64-bit float
+* these can optionally specified in the newly overloaded WvOut methods:
+	string aifFilename( string value, int datatype );
+	    Open an AIFF file for writing, with datatype (e.g., IO.INT16,
+	    IO.INT24, IO.INT32, IO.FLOAT32, IO.FLOAT64).
+	string matFilename( string value, int datatype );
+	    Open MATLAB file for writing; datatype for MATLAB files can
+	    only be IO.FLOAT64.
+	string sndFilename( string value, int datatype );
+	    Open SND file for writing, with datatype (e.g., IO.INT16, IO.INT24, IO.INT32, IO.FLOAT32, IO.FLOAT64).
+	string wavFilename( string value, int datatype );
+	    Open WAVE file for writing, with datatype (e.g., IO.INT16, IO.INT24, IO.INT32, IO.FLOAT32, IO.FLOAT64).
+	string rawFilename( string value, int datatype );
+	    Open a RAW file for writing; datatype for raw files can
+	    only be IO.INT16.
+* (added) IO.INT24, IO.INT64, IO.FLOAT32, IO.FLOAT64 IO flags
 * (added) examples/special/scream-o-matic/ -- using LiSa + granular
   synthesis for a scream texture generator.
 * (updated) on Linux, better default runtime driver selection for 
