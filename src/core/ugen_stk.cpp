@@ -455,19 +455,18 @@ CK_DLL_CGET( WvIn_cget_path );
 CK_DLL_CTOR( WvOut_ctor );
 CK_DLL_DTOR( WvOut_dtor );
 CK_DLL_TICK( WvOut_tick );
-CK_DLL_TICKF( WvOut2_tickf );
 CK_DLL_PMSG( WvOut_pmsg );
 CK_DLL_CTRL( WvOut_ctrl_filename );
-CK_DLL_CTRL( WvOut_ctrl_matFilename );
-CK_DLL_CTRL( WvOut2_ctrl_matFilename );
-CK_DLL_CTRL( WvOut_ctrl_sndFilename );
-CK_DLL_CTRL( WvOut2_ctrl_sndFilename );
-CK_DLL_CTRL( WvOut_ctrl_wavFilename );
-CK_DLL_CTRL( WvOut2_ctrl_wavFilename );
-CK_DLL_CTRL( WvOut_ctrl_rawFilename );
-CK_DLL_CTRL( WvOut2_ctrl_rawFilename );
 CK_DLL_CTRL( WvOut_ctrl_aifFilename );
-CK_DLL_CTRL( WvOut2_ctrl_aifFilename );
+CK_DLL_CTRL( WvOut_ctrl_aifFilename2 );
+CK_DLL_CTRL( WvOut_ctrl_matFilename );
+CK_DLL_CTRL( WvOut_ctrl_matFilename2 );
+CK_DLL_CTRL( WvOut_ctrl_sndFilename );
+CK_DLL_CTRL( WvOut_ctrl_sndFilename2 );
+CK_DLL_CTRL( WvOut_ctrl_wavFilename );
+CK_DLL_CTRL( WvOut_ctrl_wavFilename2 );
+CK_DLL_CTRL( WvOut_ctrl_rawFilename );
+CK_DLL_CTRL( WvOut_ctrl_rawFilename2 );
 CK_DLL_CTRL( WvOut_ctrl_closeFile );
 CK_DLL_CTRL( WvOut_ctrl_record );
 CK_DLL_CTRL( WvOut_ctrl_autoPrefix );
@@ -476,6 +475,8 @@ CK_DLL_CGET( WvOut_cget_record );
 CK_DLL_CGET( WvOut_cget_autoPrefix );
 CK_DLL_CTRL( WvOut_ctrl_fileGain );
 CK_DLL_CGET( WvOut_cget_fileGain );
+// WvOut2
+CK_DLL_TICKF( WvOut2_tickf );
 #endif
 
 
@@ -4734,29 +4735,59 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     WvOut_offset_data = type_engine_import_mvar ( env, "int", "@WvOut_data", FALSE );
     if( WvOut_offset_data == CK_INVALID_OFFSET ) goto error;
 
+    func = make_new_mfun( "string", "aifFilename", WvOut_ctrl_aifFilename ); //!open AIFF file for writing
+    func->add_arg( "string", "value" );
+    func->doc = "open an AIFF file for writing (with default datatype IO.INT16).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "aifFilename", WvOut_ctrl_aifFilename2 ); //!open AIFF file for writing
+    func->add_arg( "string", "value" );
+    func->add_arg( "int", "datatype" );
+    func->doc = "open an AIFF file for writing, with datatype (e.g., IO.INT16, IO.INT24, IO.INT32, IO.FLOAT32, IO.FLOAT64).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     func = make_new_mfun( "string", "matFilename", WvOut_ctrl_matFilename ); //!open matlab file for writing
     func->add_arg( "string", "value" );
-    func->doc = "open MATLAB file for writing.";
+    func->doc = "open MATLAB file for writing (with default datatype IO.FLOAT64).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "matFilename", WvOut_ctrl_matFilename2 ); //!open matlab file for writing
+    func->add_arg( "string", "value" );
+    func->add_arg( "int", "datatype" );
+    func->doc = "open MATLAB file for writing; datatype for MATLAB files can only be IO.FLOAT64.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "sndFilename", WvOut_ctrl_sndFilename ); //!open snd file for writing
     func->add_arg( "string", "value" );
-    func->doc = "open SND file for writing.";
+    func->doc = "open SND file for writing (with default datatype IO.INT16).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "sndFilename", WvOut_ctrl_sndFilename2 ); //!open snd file for writing
+    func->add_arg( "string", "value" );
+    func->add_arg( "int", "datatype" );
+    func->doc = "open SND file for writing, with datatype (e.g., IO.INT16, IO.INT24, IO.INT32, IO.FLOAT32, IO.FLOAT64).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "wavFilename", WvOut_ctrl_wavFilename ); //!open WAVE file for writing
     func->add_arg( "string", "value" );
-    func->doc = "open WAVE file for writing.";
+    func->doc = "open WAVE file for writing (with default datatype IO.INT16).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "wavFilename", WvOut_ctrl_wavFilename2 ); //!open WAVE file for writing
+    func->add_arg( "string", "value" );
+    func->add_arg( "int", "datatype" );
+    func->doc = "open WAVE file for writing, with datatype (e.g., IO.INT16, IO.INT24, IO.INT32, IO.FLOAT32, IO.FLOAT64).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "rawFilename", WvOut_ctrl_rawFilename ); //!open raw file for writing
     func->add_arg( "string", "value" );
-    func->doc = "open a raw file for writing.";
+    func->doc = "open a RAW file for writing (note: raw audio files are mono and 16-bit).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "string", "aifFilename", WvOut_ctrl_aifFilename ); //!open AIFF file for writing
+    func = make_new_mfun( "string", "rawFilename", WvOut_ctrl_rawFilename2 ); //!open raw file for writing
     func->add_arg( "string", "value" );
-    func->doc = "open an AIFF file for writing.";
+    func->add_arg( "int", "datatype" );
+    func->doc = "open a RAW file for writing; datatype for raw files can only be IO.INT16.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "filename", WvOut_cget_filename ); //!get filename
@@ -4807,30 +4838,13 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // end the class import
     type_engine_import_class_end( env );
 
+    // description
+    doc = "WvOut2 is the stereo version of WvOut; opens and writes a 2-channel audio file; see WvOut for usage.";
 
+    // start WvOut2 import
     if( !type_engine_import_ugen_begin( env, "WvOut2", "WvOut", env->global(),
                                         NULL, NULL,
-                                        NULL, WvOut2_tickf, WvOut_pmsg, 2, 2 ) ) return FALSE;
-
-    func = make_new_mfun( "string", "matFilename", WvOut2_ctrl_matFilename ); //!open matlab file for writing
-    func->add_arg( "string", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    func = make_new_mfun( "string", "sndFilename", WvOut2_ctrl_sndFilename ); //!open snd file for writing
-    func->add_arg( "string", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    func = make_new_mfun( "string", "wavFilename", WvOut2_ctrl_wavFilename ); //!open WAVE file for writing
-    func->add_arg( "string", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    func = make_new_mfun( "string", "rawFilename", WvOut2_ctrl_rawFilename ); //!open raw file for writing
-    func->add_arg( "string", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    func = make_new_mfun( "string", "aifFilename", WvOut2_ctrl_aifFilename ); //!open AIFF file for writing
-    func->add_arg( "string", "value" );
-    if( !type_engine_import_mfun( env, func ) ) goto error;
+                                        NULL, WvOut2_tickf, WvOut_pmsg, 2, 2, doc.c_str() ) ) return FALSE;
 
     // add examples | 1.5.0.0 (ge) added
     if( !type_engine_import_add_ex( env, "basic/rec.ck" ) ) goto error;
@@ -19829,7 +19843,7 @@ void WvOut :: writeData( unsigned long frames )
   }
   else if ( dataType == STK_SINT32 ) {
     for ( unsigned long k=0; k<frames*channels; k++ ) {
-      double float_sample = data[k] * 2147483647.0; // 1.4.2.0 (ge) | change datetype to double from float for precision
+      double float_sample = data[k] * 2147483647.0; // 1.4.2.0 (ge) | change datatype to double from float for precision
       if(float_sample < -2147483647.0 ) float_sample = -2147483647.0; // 1.4.2.0 (ge) | using float literal, instead of conversion from int
       if(float_sample > 2147483647.0 ) float_sample = 2147483647.0; // 1.4.2.0 (ge) | using float literal, instead of conversion from int
       SINT32 sample = (SINT32) float_sample;
@@ -28014,7 +28028,7 @@ static std::string fileType2fileExt( WvOut::FILE_TYPE type )
 // desc: helper function for opening audio files with WvOut | 1.5.0.1 (ge)
 //-----------------------------------------------------------------------------
 static t_CKBOOL openWvOutFile( WvOut * w, Chuck_VM * vm,
-                               Chuck_String * filename, unsigned int channels,
+                               Chuck_String * filename, t_CKINT channels,
                                WvOut::FILE_TYPE type, t_CKINT ioFormat )
 {
     // actual file name
@@ -28030,6 +28044,7 @@ static t_CKBOOL openWvOutFile( WvOut * w, Chuck_VM * vm,
     // check chuck IO format enumeration
     if( ioFormat == Chuck_IO::INT16 ) theFormat = Stk::STK_SINT16;
     else if( ioFormat == Chuck_IO::INT24 ) theFormat = Stk::STK_SINT24;
+    else if( ioFormat == Chuck_IO::INT32 ) theFormat = Stk::STK_SINT32;
     else if( ioFormat == Chuck_IO::FLOAT32 ) theFormat = Stk::MY_FLOAT32;
     else if( ioFormat == Chuck_IO::FLOAT64 ) theFormat = Stk::MY_FLOAT64;
 
@@ -28056,7 +28071,7 @@ static t_CKBOOL openWvOutFile( WvOut * w, Chuck_VM * vm,
     }
 
     // open
-    try { w->openFile( theFilename.c_str(), channels, type, theFormat ); }
+    try { w->openFile( theFilename.c_str(), (unsigned int)channels, type, theFormat ); }
     catch( StkError ) { goto done; }
 
     // check
@@ -28076,83 +28091,16 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: WvOut_ctrl_matFilename()
-// desc: CTRL function ...
-//-----------------------------------------------------------------------------
-CK_DLL_CTRL( WvOut_ctrl_matFilename )
-{
-    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    // open the file
-    openWvOutFile( w, VM, filename, 1, WvOut::WVOUT_MAT, Chuck_IO::INT16 );
-    // return
-    RETURN->v_string = filename;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: WvOut2_ctrl_matFilename()
-// desc: CTRL function ...
-//-----------------------------------------------------------------------------
-CK_DLL_CTRL( WvOut2_ctrl_matFilename )
-{
-    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    // open the file
-    openWvOutFile( w, VM, filename, 2, WvOut::WVOUT_MAT, Chuck_IO::INT16 );
-    // return
-    RETURN->v_string = filename;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: WvOut_ctrl_sndFilename()
-// desc: CTRL function ...
-//-----------------------------------------------------------------------------
-CK_DLL_CTRL( WvOut_ctrl_sndFilename )
-{
-    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    // open the file
-    openWvOutFile( w, VM, filename, 1, WvOut::WVOUT_SND, Chuck_IO::INT16 );
-    // return
-    RETURN->v_string = filename;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: WvOut2_ctrl_sndFilename()
-// desc: CTRL function ...
-//-----------------------------------------------------------------------------
-CK_DLL_CTRL( WvOut2_ctrl_sndFilename )
-{
-    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    // open the file
-    openWvOutFile( w, VM, filename, 2, WvOut::WVOUT_SND, Chuck_IO::INT16 );
-    // return
-    RETURN->v_string = filename;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: WvOut_ctrl_wavFilename()
 // desc: CTRL function ...
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( WvOut_ctrl_wavFilename )
 {
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
     // open the file
-    openWvOutFile( w, VM, filename, 1, WvOut::WVOUT_WAV, Chuck_IO::INT16 );
+    openWvOutFile( w, VM, filename, ugen->m_num_ins, WvOut::WVOUT_WAV, Chuck_IO::INT16 );
     // return
     RETURN->v_string = filename;
 }
@@ -28161,49 +28109,17 @@ CK_DLL_CTRL( WvOut_ctrl_wavFilename )
 
 
 //-----------------------------------------------------------------------------
-// name: WvOut2_ctrl_wavFilename()
+// name: WvOut_ctrl_wavFilename2()
 // desc: CTRL function ...
 //-----------------------------------------------------------------------------
-CK_DLL_CTRL( WvOut2_ctrl_wavFilename )
+CK_DLL_CTRL( WvOut_ctrl_wavFilename2 )
 {
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    t_CKINT ioFormat = GET_NEXT_INT(ARGS);
     // open the file
-    openWvOutFile( w, VM, filename, 2, WvOut::WVOUT_WAV, Chuck_IO::INT16 );
-    // return
-    RETURN->v_string = filename;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: WvOut_ctrl_rawFilename()
-// desc: CTRL function ...
-//-----------------------------------------------------------------------------
-CK_DLL_CTRL( WvOut_ctrl_rawFilename )
-{
-    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    // open the file
-    openWvOutFile( w, VM, filename, 1, WvOut::WVOUT_RAW, Chuck_IO::INT16 );
-    // return
-    RETURN->v_string = filename;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: WvOut2_ctrl_rawFilename()
-// desc: CTRL function ...
-//-----------------------------------------------------------------------------
-CK_DLL_CTRL( WvOut2_ctrl_rawFilename )
-{
-    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
-    Chuck_String * filename = GET_NEXT_STRING(ARGS);
-    // open the file
-    openWvOutFile( w, VM, filename, 2, WvOut::WVOUT_RAW, Chuck_IO::INT16 );
+    openWvOutFile( w, VM, filename, ugen->m_num_ins, WvOut::WVOUT_WAV, ioFormat );
     // return
     RETURN->v_string = filename;
 }
@@ -28217,10 +28133,11 @@ CK_DLL_CTRL( WvOut2_ctrl_rawFilename )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( WvOut_ctrl_aifFilename )
 {
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
     // open the file
-    openWvOutFile( w, VM, filename, 1, WvOut::WVOUT_AIF, Chuck_IO::INT16 );
+    openWvOutFile( w, VM, filename, ugen->m_num_ins, WvOut::WVOUT_AIF, Chuck_IO::INT16 );
     // return
     RETURN->v_string = filename;
 }
@@ -28229,15 +28146,128 @@ CK_DLL_CTRL( WvOut_ctrl_aifFilename )
 
 
 //-----------------------------------------------------------------------------
-// name: WvOut2_ctrl_aifFilename()
+// name: WvOut_ctrl_aifFilename()
 // desc: CTRL function ...
 //-----------------------------------------------------------------------------
-CK_DLL_CTRL( WvOut2_ctrl_aifFilename )
+CK_DLL_CTRL( WvOut_ctrl_aifFilename2 )
 {
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    t_CKINT ioFormat = GET_NEXT_INT(ARGS);
+    // open the file
+    openWvOutFile( w, VM, filename, ugen->m_num_ins, WvOut::WVOUT_AIF, ioFormat );
+    // return
+    RETURN->v_string = filename;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_sndFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_sndFilename )
+{
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     Chuck_String * filename = GET_NEXT_STRING(ARGS);
     // open the file
-    openWvOutFile( w, VM, filename, 2, WvOut::WVOUT_AIF, Chuck_IO::INT16 );
+    openWvOutFile( w, VM, filename, ugen->m_num_ins, WvOut::WVOUT_SND, Chuck_IO::INT16 );
+    // return
+    RETURN->v_string = filename;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_sndFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_sndFilename2 )
+{
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    t_CKINT ioFormat = GET_NEXT_INT(ARGS);
+    // open the file
+    openWvOutFile( w, VM, filename, ugen->m_num_ins, WvOut::WVOUT_SND, ioFormat );
+    // return
+    RETURN->v_string = filename;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_matFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_matFilename )
+{
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    // open the file
+    openWvOutFile( w, VM, filename, ugen->m_num_ins, WvOut::WVOUT_MAT, Chuck_IO::INT16 );
+    // return
+    RETURN->v_string = filename;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_matFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_matFilename2 )
+{
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    t_CKINT ioFormat = GET_NEXT_INT(ARGS);
+    // open the file
+    openWvOutFile( w, VM, filename, ugen->m_num_ins, WvOut::WVOUT_MAT, ioFormat );
+    // return
+    RETURN->v_string = filename;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_rawFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_rawFilename )
+{
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    // open the file
+    openWvOutFile( w, VM, filename, ugen->m_num_ins, WvOut::WVOUT_RAW, Chuck_IO::INT16 );
+    // return
+    RETURN->v_string = filename;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: WvOut_ctrl_rawFilename()
+// desc: CTRL function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( WvOut_ctrl_rawFilename2 )
+{
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
+    Chuck_String * filename = GET_NEXT_STRING(ARGS);
+    t_CKINT ioFormat = GET_NEXT_INT(ARGS);
+    // open the file
+    openWvOutFile( w, VM, filename, ugen->m_num_ins, WvOut::WVOUT_RAW, ioFormat );
     // return
     RETURN->v_string = filename;
 }

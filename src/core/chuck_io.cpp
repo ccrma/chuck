@@ -224,16 +224,19 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
     // add INT16
     if( !type_engine_import_svar( env, "int", "INT16",
                                  TRUE, (t_CKUINT)&Chuck_IO::INT16, "Flag denoting 16-bit integer type." ) ) goto error;
+    // add INT24 | 1.5.0.1 (ge) added
+    if( !type_engine_import_svar( env, "int", "INT24",
+                                 TRUE, (t_CKUINT)&Chuck_IO::INT24, "Flag denoting 24-bit integer type." ) ) goto error;
     // add INT32
     if( !type_engine_import_svar( env, "int", "INT32",
                                  TRUE, (t_CKUINT)&Chuck_IO::INT32, "Flag denoting 32-bit integer type." ) ) goto error;
-    // add INT64
+    // add INT64 | 1.5.0.1 (ge) added
     if( !type_engine_import_svar( env, "int", "INT64",
                                  TRUE, (t_CKUINT)&Chuck_IO::INT64, "Flag denoting 64-bit integer type." ) ) goto error;
-    // add FLOAT32
+    // add FLOAT32 | 1.5.0.1 (ge) added
     if( !type_engine_import_svar( env, "int", "FLOAT32",
                                  TRUE, (t_CKUINT)&Chuck_IO::FLOAT32, "Flag denoting 32-bit floating point type." ) ) goto error;
-    // add FLOAT64
+    // add FLOAT64 | 1.5.0.1 (ge) added
     if( !type_engine_import_svar( env, "int", "FLOAT64",
                                  TRUE, (t_CKUINT)&Chuck_IO::FLOAT64, "Flag denoting 64-bit floating point type." ) ) goto error;
 //    // add READ_INT8
