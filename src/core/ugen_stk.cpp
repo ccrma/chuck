@@ -4834,6 +4834,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( !type_engine_import_add_ex( env, "basic/rec.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "basic/rec-auto.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "basic/rec-auto-stereo.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/wvout-24bit.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -4850,6 +4851,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( !type_engine_import_add_ex( env, "basic/rec.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "basic/rec-auto.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "basic/rec-auto-stereo.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/wvout-24bit.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
