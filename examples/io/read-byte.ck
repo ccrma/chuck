@@ -28,8 +28,11 @@ int val;
 while( fio.more() )
 {
     // read the next byte
-    // (other options include IO.INT16 and IO.INT32)
     fio.readInt( IO.INT8 ) => val;
+    // optionsss ^^^^^^^ | requires chuck-1.5.0.1 or higher
+    // IO.INT8, IO.INT16, IO.INT32 (default to unsigned)
+    // IO.UINT8, IO.UINT16, IO.UINT32 (explicitly unsigned)
+    // IO.SINT6, IO.SINT16, IO.SINT32 (explicitly signed)
 
     // print the value
     cherr <= val <= IO.newline();
