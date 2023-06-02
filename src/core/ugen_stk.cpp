@@ -19199,8 +19199,9 @@ WvOut :: ~WvOut()
 {
   closeFile();
 
-  if (data)
-    delete [] data;
+  // 1.5.0.1 (ge) using macro
+  // if (data) delete [] data;
+  SAFE_DELETE_ARRAY( data );
 }
 
 void WvOut :: init()
@@ -27886,7 +27887,9 @@ CK_DLL_CTOR( WvOut_ctor )
         if( carrier->stk_writeThread == NULL )
         {
             // create new write thread, one per VM
-            carrier->stk_writeThread = new XWriteThread( 2<<20, 32 );
+            carrier->stk_writeThread = new XWriteThread( 2<<20, 1024 );
+            // 1.5.0.1 (ge) increased message buffer capacity from 32 to 1024
+            // message being dropped when a lot of WvOuts are present
         }
 
         // REFACTOR-2017: set async mode, if on realtime audio thread...
@@ -27959,6 +27962,7 @@ CK_DLL_TICKF( WvOut2_tickf )
         frame[0] = in[i*2] * w->fileGain;
         frame[1] = in[i*2+1] * w->fileGain;
 
+        // tick frame into WvOut
         if( w->start ) w->tickFrame( frame, 1 );
 
         out[i*2] = in[i*2]; // pass samples downstream
