@@ -617,6 +617,7 @@ public:
     virtual Chuck_String * readLine() = 0;
     virtual t_CKINT readInt( t_CKINT flags ) = 0;
     virtual t_CKFLOAT readFloat() = 0;
+    virtual t_CKFLOAT readFloat( t_CKINT flags ) = 0;
     virtual t_CKBOOL readString( std::string & str ) = 0;
     virtual t_CKBOOL eof() = 0;
 
@@ -625,6 +626,7 @@ public:
     virtual void write( t_CKINT val ) = 0;
     virtual void write( t_CKINT val, t_CKINT flags ) = 0;
     virtual void write( t_CKFLOAT val ) = 0;
+    virtual void write( t_CKFLOAT val, t_CKINT flags ) = 0;
 
 public:
     // type | moved to IO in 1.5.0.0 (ge)
@@ -636,8 +638,20 @@ public:
     static const t_CKINT INT24; // 1.5.0.1 (ge) added
     static const t_CKINT INT32;
     static const t_CKINT INT64; // 1.5.0.1 (ge) added
-    static const t_CKINT FLOAT32; // 1.5.0.1 (ge) added
-    static const t_CKINT FLOAT64; // 1.5.0.1 (ge) added
+    // 1.5.0.1 (ge) added SINT and UINT type flags
+    static const t_CKINT SINT8;
+    static const t_CKINT SINT16;
+    static const t_CKINT SINT24;
+    static const t_CKINT SINT32;
+    static const t_CKINT SINT64;
+    static const t_CKINT UINT8;
+    static const t_CKINT UINT16;
+    static const t_CKINT UINT24;
+    static const t_CKINT UINT32;
+    static const t_CKINT UINT64;
+    // 1.5.0.1 (ge) added FLOAT type flags
+    static const t_CKINT FLOAT32;
+    static const t_CKINT FLOAT64;
     // flags | moved to IO in 1.5.0.0 (ge)
     static const t_CKINT FLAG_READ_WRITE;
     static const t_CKINT FLAG_READONLY;
@@ -698,6 +712,7 @@ public:
     virtual Chuck_String * readLine();
     virtual t_CKINT readInt( t_CKINT flags );
     virtual t_CKFLOAT readFloat();
+    virtual t_CKFLOAT readFloat( t_CKINT flags );
     virtual t_CKBOOL readString( std::string & str );
     virtual t_CKBOOL eof();
 
@@ -714,6 +729,7 @@ public:
     virtual void write( t_CKINT val );
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
+    virtual void write( t_CKFLOAT val, t_CKINT flags );
 
     #ifndef __DISABLE_THREADS__
     // writing -- async
@@ -765,6 +781,7 @@ public:
     virtual Chuck_String * readLine();
     virtual t_CKINT readInt( t_CKINT flags );
     virtual t_CKFLOAT readFloat();
+    virtual t_CKFLOAT readFloat( t_CKINT flags );
     virtual t_CKBOOL readString( std::string & str );
     virtual t_CKBOOL eof();
 
@@ -773,6 +790,7 @@ public:
     virtual void write( t_CKINT val );
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
+    virtual void write( t_CKFLOAT val, t_CKINT flags );
 
 public: // REFACTOR-2017
     // set callback
@@ -810,6 +828,7 @@ public:
     virtual Chuck_String * readLine();
     virtual t_CKINT readInt( t_CKINT flags );
     virtual t_CKFLOAT readFloat();
+    virtual t_CKFLOAT readFloat( t_CKINT flags );
     virtual t_CKBOOL readString( std::string & str );
     virtual t_CKBOOL eof();
 
@@ -818,6 +837,7 @@ public:
     virtual void write( t_CKINT val );
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
+    virtual void write( t_CKFLOAT val, t_CKINT flags );
 
 public:
     // set callback | REFACTOR-2017
