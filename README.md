@@ -16,8 +16,8 @@ For more information, including documentation, research publications, and commun
 http://chuck.stanford.edu/
 
 ## Building ChucK
-### Mac
-In order to build chuck from source you need to download the `chuck` repo from github, move into the `chuck/src` directory and then run `make`.
+### macOS
+To build the latest chuck from source, clone the `chuck` repo from github, navigate to the `chuck/src` directory, and run `make`.
 
 ```
 git clone https://github.com/ccrma/chuck.git
@@ -26,10 +26,13 @@ make mac
 ```
 
 ### Linux
-In order to build chuck from source you need to download the `chuck` repo from github, move into the `chuck/src` directory and then run `make`.
+To build the latest chuck from source, clone the `chuck` repo from github, navigate to the `chuck/src` directory, and run `make`.
 
 ```
 git clone https://github.com/ccrma/chuck.git
 cd chuck/src
 make linux-alsa linux-pulse linux-jack
 ```
+
+### Windows
+To build the latest chuck on Windows using Visual Studio (2019 or later recommended), clone the `chuck` repo from github, navigate to `chuck\src\visual-studio`, open `chuck.sln`, and build.
