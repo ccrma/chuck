@@ -55,14 +55,28 @@ using namespace std;
 t_CKBOOL Chuck_VM_Object::our_locks_in_effect = TRUE;
 
 // constants
-const t_CKINT Chuck_IO::TYPE_ASCII = 0x1;
+const t_CKINT Chuck_IO::TYPE_ASCII  = 0x1;
 const t_CKINT Chuck_IO::TYPE_BINARY = 0x2;
-const t_CKINT Chuck_IO::INT8 = 0x10;
-const t_CKINT Chuck_IO::INT16 = 0x20;
-const t_CKINT Chuck_IO::INT32 = 0x40;
-const t_CKINT Chuck_IO::FLAG_READ_WRITE = 0x100;
-const t_CKINT Chuck_IO::FLAG_READONLY = 0x200;
-const t_CKINT Chuck_IO::FLAG_WRITEONLY = 0x400;
+const t_CKINT Chuck_IO::FLOAT32 = 0x10;
+const t_CKINT Chuck_IO::FLOAT64 = 0x20;
+const t_CKINT Chuck_IO::INT8  = 0x100;
+const t_CKINT Chuck_IO::INT16 = 0x200;
+const t_CKINT Chuck_IO::INT24 = 0x400;
+const t_CKINT Chuck_IO::INT32 = 0x800;
+const t_CKINT Chuck_IO::INT64 = 0x1000;
+const t_CKINT Chuck_IO::SINT8 = 0x2000;
+const t_CKINT Chuck_IO::SINT16 = 0x4000;
+const t_CKINT Chuck_IO::SINT24 = 0x8000;
+const t_CKINT Chuck_IO::SINT32 = 0x10000;
+const t_CKINT Chuck_IO::SINT64 = 0x20000;
+const t_CKINT Chuck_IO::UINT8  = 0x40000;
+const t_CKINT Chuck_IO::UINT16 = 0x80000;
+const t_CKINT Chuck_IO::UINT24 = 0x100000;
+const t_CKINT Chuck_IO::UINT32 = 0x200000;
+const t_CKINT Chuck_IO::UINT64 = 0x400000;
+const t_CKINT Chuck_IO::FLAG_READONLY = 0x100;
+const t_CKINT Chuck_IO::FLAG_WRITEONLY = 0x200;
+const t_CKINT Chuck_IO::FLAG_READ_WRITE = 0x400;
 const t_CKINT Chuck_IO::FLAG_APPEND = 0x800;
 
 #ifndef __DISABLE_THREADS__
@@ -3466,36 +3480,10 @@ t_CKINT Chuck_IO_File::readInt( t_CKINT flags )
     else if( m_flags & TYPE_BINARY )
     {
         // binary
-        if( flags & Chuck_IO::INT32 )
+        if( flags & Chuck_IO::INT8 || flags & Chuck_IO::UINT8 ) // 1.5.0.1 (ge) added UINT
         {
-            // 32-bit
-            t_CKINT i;
-            m_io.read( (char *)&i, 4 );
-            if (m_io.gcount() != 4)
-                EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
-            else if (m_io.fail())
-                EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
-            return i;
-        }
-        else if( flags & Chuck_IO::INT16 )
-        {
-            // 16-bit
-            // int16_t i;
-            // issue: 64-bit
-            short i;
-            m_io.read( (char *)&i, 2 );
-            if( m_io.gcount() != 2 )
-                EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
-            else if (m_io.fail())
-                EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
-            return (t_CKINT) i;
-        }
-        else if( flags & Chuck_IO::INT8 )
-        {
-            // 8-bit
-            // int8_t i;
-            // issue: 64-bit
-            unsigned char i;
+            // unsigned 8-bit
+            uint8_t i; // 1.5.0.1 (ge) changed to int8_t from unsigned char
             m_io.read( (char *)&i, 1 );
             if( m_io.gcount() != 1 )
                 EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
@@ -3503,9 +3491,86 @@ t_CKINT Chuck_IO_File::readInt( t_CKINT flags )
                 EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
             return (t_CKINT)i;
         }
+        else if( flags & Chuck_IO::INT16 || flags & Chuck_IO::UINT16 ) // 1.5.0.1 (ge) added UINT
+        {
+            // unsigned 16-bit
+            uint16_t i; // 1.5.0.1 (ge) changed to uint16_t from t_CKINT
+            m_io.read( (char *)&i, 2 );
+            if( m_io.gcount() != 2 )
+                EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
+            else if (m_io.fail())
+                EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
+            return (t_CKINT)i;
+        }
+        else if( flags & Chuck_IO::INT32 || flags & Chuck_IO::UINT32 ) // 1.5.0.1 (ge) added UINT
+        {
+            // unsigned 32-bit
+            uint32_t i; // 1.5.0.1 (ge) changed to uint32_t from t_CKINT
+            m_io.read( (char *)&i, 4 );
+            if (m_io.gcount() != 4)
+                EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
+            else if (m_io.fail())
+                EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
+            return (t_CKINT)i;
+        }
+        else if( flags & Chuck_IO::INT64 || flags & Chuck_IO::UINT64 ) // 1.5.0.1 (ge) added 64-bit
+        {
+            // unsigned 64-bit
+            uint64_t i; // 1.5.0.1 (ge) added
+            m_io.read( (char *)&i, 8 );
+            if (m_io.gcount() != 8)
+                EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
+            else if (m_io.fail())
+                EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
+            return (t_CKINT)i; // TODO: handle signed vs unsigned
+        }
+        else if( flags & Chuck_IO::SINT8 ) // 1.5.0.1 (ge) added SINT
+        {
+            // signed 8-bit
+            int8_t i;
+            m_io.read( (char *)&i, 1 );
+            if( m_io.gcount() != 1 )
+                EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
+            else if( m_io.fail() )
+                EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
+            return (t_CKINT)i;
+        }
+        else if( flags & Chuck_IO::SINT16 ) // 1.5.0.1 (ge) added SINT
+        {
+            // signed 16-bit
+            int16_t i;
+            m_io.read( (char *)&i, 2 );
+            if( m_io.gcount() != 2 )
+                EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
+            else if (m_io.fail())
+                EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
+            return (t_CKINT)i;
+        }
+        else if( flags & Chuck_IO::SINT32 ) // 1.5.0.1 (ge) added SINT
+        {
+            // signed 32-bit
+            int32_t i;
+            m_io.read( (char *)&i, 4 );
+            if (m_io.gcount() != 4)
+                EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
+            else if (m_io.fail())
+                EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
+            return (t_CKINT)i;
+        }
+        else if( flags & Chuck_IO::SINT64 ) // 1.5.0.1 (ge) added SINT
+        {
+            // signed 64-bit
+            int64_t i;
+            m_io.read( (char *)&i, 4 );
+            if (m_io.gcount() != 8)
+                EM_error3( "[chuck](via FileIO): cannot readInt: not enough bytes left" );
+            else if (m_io.fail())
+                EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
+            return (t_CKINT)i;
+        }
         else
         {
-            EM_error3( "[chuck](via FileIO): readInt error: invalid int size flag" );
+            EM_error3( "[chuck](via FileIO): readInt error: invalid/unsupported int size flag" );
             return 0;
         }
     }
@@ -3521,33 +3586,43 @@ t_CKINT Chuck_IO_File::readInt( t_CKINT flags )
 
 //-----------------------------------------------------------------------------
 // name: readFloat()
-// desc: read next as (ascii) floating point value
+// desc: read next as floating point value; could be ASCII or BINARY
 //-----------------------------------------------------------------------------
 t_CKFLOAT Chuck_IO_File::readFloat()
 {
+    return this->readFloat( Chuck_IO::FLOAT32 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: readFloat()
+// desc: read next as floating point value; could be ASCII or BINARY
+//-----------------------------------------------------------------------------
+t_CKFLOAT Chuck_IO_File::readFloat( t_CKINT flags )
+{
     // sanity
-    if (!(m_io.is_open())) {
+    if( !(m_io.is_open()) ) {
         EM_error3( "[chuck](via FileIO): cannot readFloat: no file open" );
         return 0;
     }
-
-    if (m_io.eof()) {
+    if( m_io.eof() ) {
         EM_error3( "[chuck](via FileIO): cannot readFloat: EOF reached" );
         return 0;
     }
-
-    if (m_io.fail()) {
+    if( m_io.fail() ) {
         EM_error3( "[chuck](via FileIO): cannot readFloat: I/O stream failed" );
         return 0;
     }
-
-    if ( m_dir )
-    {
+    if( m_dir ) {
         EM_error3( "[chuck](via FileIO): cannot read a directory" );
         return 0;
     }
 
-    if (m_flags & TYPE_ASCII) {
+    // check mode
+    if( m_flags & TYPE_ASCII )
+    {
         // ASCII
         t_CKFLOAT val = 0;
         m_io >> val;
@@ -3555,17 +3630,38 @@ t_CKFLOAT Chuck_IO_File::readFloat()
         //     EM_error3( "[chuck](via FileIO): cannot readFloat: I/O stream failed" );
         return val;
 
-    } else if (m_flags & TYPE_BINARY) {
-        // binary
-        t_CKFLOAT i;
-        m_io.read( (char *)&i, sizeof(t_CKFLOAT) );
-        if (m_io.gcount() != sizeof(t_CKFLOAT) )
-            EM_error3( "[chuck](via FileIO): cannot readFloat: not enough bytes left" );
-        else if (m_io.fail())
-            EM_error3( "[chuck](via FileIO): cannot readInt: I/O stream failed" );
-        return i;
-
-    } else {
+    }
+    else if( m_flags & TYPE_BINARY )
+    {
+        // 1.5.0.1
+        if( flags & Chuck_IO::FLOAT32 )
+        {
+            float i;
+            m_io.read( (char *)&i, sizeof(float) );
+            if (m_io.gcount() != sizeof(float) )
+                EM_error3( "[chuck](via FileIO): cannot readFloat: not enough bytes left" );
+            else if (m_io.fail())
+                EM_error3( "[chuck](via FileIO): cannot readFloat: I/O stream failed" );
+            return (t_CKFLOAT)i;
+        }
+        else if( flags & Chuck_IO::FLOAT64 )
+        {
+            double i;
+            m_io.read( (char *)&i, sizeof(double) );
+            if (m_io.gcount() != sizeof(double) )
+                EM_error3( "[chuck](via FileIO): cannot readFloat: not enough bytes left" );
+            else if (m_io.fail())
+                EM_error3( "[chuck](via FileIO): cannot readFloat: I/O stream failed" );
+            return (t_CKFLOAT)i;
+        }
+        else
+        {
+            EM_error3( "[chuck](via FileIO): readFloat error: invalid/unsupported datatype size flag" );
+            return 0;
+        }
+    }
+    else
+    {
         EM_error3( "[chuck](via FileIO): readFloat error: invalid ASCII/binary flag" );
         return 0;
     }
@@ -3790,14 +3886,64 @@ void Chuck_IO_File::write( t_CKINT val, t_CKINT flags )
         return;
     }
 
-    if (m_flags & TYPE_ASCII) {
+    // check file mode
+    if( m_flags & TYPE_ASCII ) // ASCII mode
+    {
+        // insert into file stream
         m_io << val;
-    } else if (m_flags & TYPE_BINARY) {
-        int nBytes = 4;
-        if(flags & INT8) nBytes = 1;
-        else if(flags & INT16) nBytes = 2;
-        else if(flags & INT32) nBytes = 4;
-        m_io.write( (char *)&val, nBytes );
+    }
+    else if( m_flags & TYPE_BINARY ) // BINARY mode
+    {
+        // check datatype size flags
+        // 1.5.0.1 (ge) modified to new signed/unsigned handling
+        if( flags & Chuck_IO::INT8 || flags & Chuck_IO::UINT8 )
+        {
+            // unsigned 8-bit
+            uint8_t v = val;
+            m_io.write( (char *)&v, 1 );
+        }
+        else if( flags & Chuck_IO::INT16 || flags & Chuck_IO::UINT16 )
+        {
+            // unsigned 16-bit
+            uint16_t v = val;
+            m_io.write( (char *)&v, 2 );
+        }
+        else if( flags & Chuck_IO::INT32 || flags & Chuck_IO::UINT32 )
+        {
+            // unsigned 32-bit
+            uint32_t v = val;
+            m_io.write( (char *)&v, 4 );
+        }
+        else if( flags & Chuck_IO::INT64 || flags & Chuck_IO::UINT64 )
+        {
+            // unsigned 64-bit
+            uint64_t v = val;
+            m_io.write( (char *)&v, 8 );
+        }
+        else if( flags & Chuck_IO::SINT8 )
+        {
+            // signed 8-bit
+            int8_t v = val;
+            m_io.write( (char *)&v, 1 );
+        }
+        else if( flags & Chuck_IO::SINT16 )
+        {
+            // signed 16-bit
+            int16_t v = val;
+            m_io.write( (char *)&v, 2 );
+        }
+        else if( flags & Chuck_IO::SINT32 )
+        {
+            // signed 32-bit
+            int32_t v = val;
+            m_io.write( (char *)&v, 4 );
+        }
+        else if( flags & Chuck_IO::SINT64 )
+        {
+            // signed 32-bit
+            int64_t v = val;
+            m_io.write( (char *)&v, 8 );
+        }
     } else {
         EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
     }
@@ -3812,32 +3958,64 @@ void Chuck_IO_File::write( t_CKINT val, t_CKINT flags )
 
 //-----------------------------------------------------------------------------
 // name: write( t_CKFLOAT val )
-// desc: ...
+// desc: write a floating point value
 //-----------------------------------------------------------------------------
 void Chuck_IO_File::write( t_CKFLOAT val )
 {
+    this->write( val, Chuck_IO::FLOAT32 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: write( t_CKFLOAT val, t_CKINT flags )
+// desc: write a floating point value; binary mode will heed flags for size
+//-----------------------------------------------------------------------------
+void Chuck_IO_File::write( t_CKFLOAT val, t_CKINT flags )
+{
     // sanity
-    if (!(m_io.is_open())) {
+    if( !(m_io.is_open()) ) {
         EM_error3( "[chuck](via FileIO): cannot write: no file open" );
         return;
     }
-
-    if (m_io.fail()) {
+    if( m_io.fail() ) {
         EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
         return;
     }
-
-    if ( m_dir )
-    {
+    if( m_dir ) {
         EM_error3( "[chuck](via FileIO): cannot write to a directory" );
         return;
     }
 
-    if (m_flags & TYPE_ASCII) {
+    // check ASCII or BINARY
+    if( m_flags & TYPE_ASCII )
+    {
+        // insert into stream
         m_io << val;
-    } else if (m_flags & TYPE_BINARY) {
-        m_io.write( (char *)&val, sizeof(t_CKFLOAT) );
-    } else {
+    }
+    else if( m_flags & TYPE_BINARY )
+    {
+        // 1.5.0.1 (ge) add distinction between different float sizes
+        if( flags & Chuck_IO::FLOAT32 )
+        {
+            // 32-bit
+            float v = (float)val;
+            m_io.write( (char *)&v, 4 );
+        }
+        else if( flags & Chuck_IO::FLOAT64 )
+        {
+            // 64-bit
+            double v = (double)val;
+            m_io.write( (char *)&v, 8 );
+        }
+        else
+        {
+            EM_error3( "[chuck](via FileIO): writeFloat error: invalid/unsupport datatype size flag" );
+        }
+    }
+    else
+    {
         EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
     }
 
@@ -3877,7 +4055,7 @@ THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeInt_thread ) ( void *data )
 THREAD_RETURN ( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) ( void *data )
 {
     async_args *args = (async_args *)data;
-    args->fileio_obj->write ( args->floatArg );
+    args->fileio_obj->write( args->floatArg, args->intArg );
     args->fileio_obj->m_asyncEvent->broadcast_local(); // wake up
     args->fileio_obj->m_asyncEvent->broadcast_global();
     delete args;
@@ -3956,7 +4134,10 @@ t_CKINT Chuck_IO_Chout::readInt( t_CKINT flags )
 { return 0; }
 
 t_CKFLOAT Chuck_IO_Chout::readFloat()
-{ return 0.0f; }
+{ return 0; }
+
+t_CKFLOAT Chuck_IO_Chout::readFloat( t_CKINT flags )
+{ return 0; }
 
 t_CKBOOL Chuck_IO_Chout::readString( std::string & str )
 {
@@ -3989,6 +4170,11 @@ void Chuck_IO_Chout::write( t_CKFLOAT val )
     m_buffer << val;
 }
 
+void Chuck_IO_Chout::write( t_CKFLOAT val, t_CKINT flags )
+{
+    // ignore flags for chout
+    m_buffer << val;
+}
 
 
 
@@ -4058,7 +4244,10 @@ t_CKINT Chuck_IO_Cherr::readInt( t_CKINT flags )
 { return 0; }
 
 t_CKFLOAT Chuck_IO_Cherr::readFloat()
-{ return 0.0f; }
+{ return 0; }
+
+t_CKFLOAT Chuck_IO_Cherr::readFloat( t_CKINT flags )
+{ return 0; }
 
 t_CKBOOL Chuck_IO_Cherr::readString( std::string & str )
 {
@@ -4090,6 +4279,13 @@ void Chuck_IO_Cherr::write( t_CKINT val, t_CKINT flags )
 
 void Chuck_IO_Cherr::write( t_CKFLOAT val )
 {
+    m_buffer << val;
+    flush(); // always flush for cerr | 1.5.0.0 (ge) added
+}
+
+void Chuck_IO_Cherr::write( t_CKFLOAT val, t_CKINT flags )
+{
+    // ignore flags for cherr
     m_buffer << val;
     flush(); // always flush for cerr | 1.5.0.0 (ge) added
 }
