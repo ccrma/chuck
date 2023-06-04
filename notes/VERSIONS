@@ -37,6 +37,7 @@ ChucK VERSIONS log
   using FileIO in binary mode (author: Perry R. Cook)
 * (added) examples/special/scream-o-matic/ -- using LiSa + granular
   synthesis for a scream texture generator.
+* (fixed) CNoise incorrect bias on pink noise (thank you anthonyhawes)
 * (updated) on Linux, better default runtime driver selection for 
   Jack and ALSA
 * (updated/developer) makefile for linux-jack
