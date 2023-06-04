@@ -72,7 +72,10 @@ t_CKBOOL init_class_serialio( Chuck_Env * env );
 //-----------------------------------------------------------------------------
 // io API
 //-----------------------------------------------------------------------------
-CK_DLL_MFUN( io_dummy );
+CK_DLL_MFUN( io_dummy_int );
+CK_DLL_MFUN( io_dummy_float );
+CK_DLL_MFUN( io_dummy_string );
+CK_DLL_MFUN( io_dummy_void );
 CK_DLL_SFUN( io_newline );
 CK_DLL_SFUN( io_openfile );
 
@@ -103,12 +106,14 @@ CK_DLL_MFUN( fileio_readint8 );
 CK_DLL_MFUN( fileio_readint16 );
 CK_DLL_MFUN( fileio_readint32 );
 CK_DLL_MFUN( fileio_readfloat );
+CK_DLL_MFUN( fileio_readfloatflags );
 CK_DLL_MFUN( fileio_eof );
 CK_DLL_MFUN( fileio_more );
 CK_DLL_MFUN( fileio_writestring );
 CK_DLL_MFUN( fileio_writeint );
 CK_DLL_MFUN( fileio_writeintflags );
 CK_DLL_MFUN( fileio_writefloat );
+CK_DLL_MFUN( fileio_writefloatflags );
 // #endif // __DISABLE_FILEIO__
 
 
@@ -312,15 +317,17 @@ public:
     virtual Chuck_String * readLine();
     virtual t_CKINT readInt( t_CKINT flags );
     virtual t_CKFLOAT readFloat();
+    virtual t_CKFLOAT readFloat( t_CKINT flags );
     virtual t_CKBOOL readString( std::string & str );
     virtual t_CKBOOL eof();
 
     // writing
     virtual void write( const std::string & val );
     virtual void write( t_CKINT val );
-    virtual void write( t_CKINT val, t_CKINT size );
+    virtual void write( t_CKINT val, t_CKINT flags );
     virtual void writeBytes( Chuck_Array4 * arr );
     virtual void write( t_CKFLOAT val );
+    virtual void write( t_CKFLOAT val, t_CKINT flags );
 
     // serial stuff
     virtual t_CKBOOL setBaudRate( t_CKUINT rate );

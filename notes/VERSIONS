@@ -4,6 +4,37 @@ ChucK VERSIONS log
 
 1.5.0.1
 ---
+* (added) WvOut support for multiple bit-depths: 16-bit signed int,
+  24-bit signed int, 32-bit signed int, 32-bit float, 64-bit float
+* (added) the above can be optionally specified in new overloaded WvOut methods:
+	string aifFilename( string value, int datatype );
+	    Open an AIFF file for writing, with datatype (e.g., IO.INT16,
+	    IO.INT24, IO.INT32, IO.FLOAT32, IO.FLOAT64).
+	string sndFilename( string value, int datatype );
+	    Open SND file for writing, with datatype (e.g., IO.INT16, IO.INT24, IO.INT32,
+	    IO.FLOAT32, IO.FLOAT64).
+	string wavFilename( string value, int datatype );
+	    Open WAVE file for writing, with datatype (e.g., IO.INT16, IO.INT24, IO.INT32, IO.FLOAT32, IO.FLOAT64).
+	string matFilename( string value, int datatype );
+	    Open MATLAB file for writing; NOTE: datatype for MATLAB files can
+	    only be IO.FLOAT64.
+	string rawFilename( string value, int datatype );
+	    Open a RAW file for writing; NOTE: datatype for raw files can
+	    only be IO.INT16
+* (added) examples/stk/wvout-24bit.ck shows writing to a 24-bit audio file
+* (added) new IO flags: IO.INT24, IO.INT64, IO.FLOAT32, IO.FLOAT64
+  IO.UINT8, IO.SINT8, IO.UINT16, IO.SINT16, IO.UINT32, IO.SINT32,
+  IO.UINT64, IO.SINT64
+* (updated) BINARY mode for IO now able to read signed vs. unsigned integers,
+  specified using using .readtInt( flags ), where 'flags' is one of the above
+  IO flags; in BINARY mode, IO.INT8/16/32 now returns unsigned integers, same as
+  IO.UINT8/16/32; to read in signed two's complement integers, use the new
+  IO.SINT8/16/32/64 flags
+* (added) FileIO.readFloat( int flags) and FileIO.write( float val, int flags )
+  these overloaded versions of readFloat() and write() respectively have a 'flags'
+  argument to specify the kind of float (IO.FLOAT32 or IO.FLOAT64)
+* (added) examples/io/read-wav-raw.ck -- illustrates directly parsing a WAV file
+  using FileIO in binary mode (author: Perry R. Cook)
 * (added) examples/special/scream-o-matic/ -- using LiSa + granular
   synthesis for a scream texture generator.
 * (updated) on Linux, better default runtime driver selection for 

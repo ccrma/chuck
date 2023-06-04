@@ -14,6 +14,8 @@ dac => WvOut2 w => blackhole;
 
 // this is the output file name
 "special:auto" => w.wavFilename;
+// optionally specify bit depth
+// ("special:auto", IO.INT24) => w.wavFilename;
 
 // print it out
 <<<"writing to file: ", w.filename()>>>;
