@@ -3023,7 +3023,7 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
     }
 
     // set open flags
-    ios_base::openmode theMode = 0;
+    ios_base::openmode theMode;
 
     // check flags for errors
     if ((flags & TYPE_ASCII) &&
