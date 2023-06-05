@@ -1974,7 +1974,9 @@ t_CKINT Chuck_Shell::Command_VMSwap::execute( vector< string > & argv,
 t_CKINT Chuck_Shell::Command_VMList::execute( vector< string > & argv,
                                               string & out )
 {
-    char buf[16];
+    // 1.5.0.1 (ge) changed from 16 to 32;
+    // the former not long enough for big 64-bit numbers
+    char buf[32];
     vector<string>::size_type i, len = caller->vms.size();
 
     if( caller->current_vm != NULL )
@@ -1985,9 +1987,9 @@ t_CKINT Chuck_Shell::Command_VMList::execute( vector< string > & argv,
         if( caller->vms[i] != NULL )
         {
 #ifndef __PLATFORM_WIN32__
-            snprintf( buf, 16, "%lu", i );
+            snprintf( buf, 32, "%lu", i );
 #else
-            snprintf( buf, 16, "%lu", (long)i );
+            snprintf( buf, 32, "%lu", (long)i );
 #endif // __PLATFORM_WIN32__
             out += string( "VM " ) + buf + ": " +
                    caller->vms[i]->fullname() + "\n";
