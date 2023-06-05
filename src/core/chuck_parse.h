@@ -107,7 +107,7 @@ struct SyntaxToken
     std::string::size_type end;
 
     // constructor
-    SyntaxToken() : type(0) { }
+    SyntaxToken() : type(0), begin(0), end(0) { }
     // copy constructor
     SyntaxToken( const SyntaxToken & rhs )
     {

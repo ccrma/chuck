@@ -63,7 +63,7 @@ typedef enum {
 // desc: ChucK types for global vars: int, float, (subclass of) Event
 //       (REFACTOR-2017)
 //-----------------------------------------------------------------------------
-typedef enum {
+typedef enum { te_globalTypeNone,
     te_globalInt, te_globalFloat, te_globalString, te_globalEvent,
     te_globalUGen, te_globalObject,
     // symbol: not used for declarations, only for later lookups :/
@@ -422,20 +422,41 @@ struct Chuck_Context : public Chuck_VM_Object
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Env
-// desc: chuck env with type info
+// desc: chuck type environment; one per VM instance
 //-----------------------------------------------------------------------------
 struct Chuck_Env : public Chuck_VM_Object
 {
 public:
     // constructor
     Chuck_Env();
+    // destructor
+    virtual ~Chuck_Env();
 
 public:
     // initialize
     t_CKBOOL init();
+    // cleanup
+    void cleanup();
 
-// REFACTOR-2017: carrier and accessors
+    // reset the Env
+    void reset();
+    // load user namespace
+    void load_user_namespace();
+    // clear user namespace
+    void clear_user_namespace();
+    // check whether the context is the global context
+    t_CKBOOL is_global();
+    // global namespace
+    Chuck_Namespace * global();
+    // user namespace, if there is one (if not, return global)
+    Chuck_Namespace * user();
+    // get namespace at top of stack
+    Chuck_Namespace * nspc_top();
+    // get type at top of type stack
+    Chuck_Type* class_top();
+
 public:
+    // REFACTOR-2017: carrier and accessors
     void set_carrier( Chuck_Carrier * carrier ) { m_carrier = carrier; }
     Chuck_VM * vm() { return m_carrier ? m_carrier->vm : NULL; }
     Chuck_Compiler * compiler() { return m_carrier ? m_carrier->compiler : NULL; }
@@ -452,17 +473,6 @@ protected:
     Chuck_Namespace * user_nspc;
 
 public:
-    // global namespace
-    Chuck_Namespace * global() { return global_nspc; }
-    // global namespace
-    Chuck_Namespace * user()
-    {
-        if(user_nspc == NULL)
-            return global_nspc;
-        else
-            return user_nspc;
-    }
-
     // namespace stack
     std::vector<Chuck_Namespace *> nspc_stack;
     // expression namespace
@@ -494,59 +504,6 @@ public:
     // level - 0:stop, 1:warn, 2:ignore
     t_CKINT deprecate_level;
 
-    // destructor
-    virtual ~Chuck_Env();
-
-    // reset
-    void reset( )
-    {
-        // TODO: release stack items?
-        nspc_stack.clear();
-        nspc_stack.push_back( this->global() );
-        if(user_nspc != NULL)
-            nspc_stack.push_back( this->user_nspc );
-        // TODO: release stack items?
-        class_stack.clear(); class_stack.push_back( NULL );
-        // should be at top level
-        assert( context == &global_context );
-        // assign : TODO: release curr? class_def? func?
-        // TODO: need another function, since this is called from constructor
-        if(user_nspc != NULL)
-            curr = this->user();
-        else
-            curr = this->global();
-        class_def = NULL; func = NULL;
-        // make sure this is 0
-        class_scope = 0;
-    }
-
-    void load_user_namespace()
-    {
-        // user namespace
-        user_nspc = new Chuck_Namespace;
-        user_nspc->name = "[user]";
-        user_nspc->parent = global_nspc;
-        SAFE_ADD_REF(global_nspc);
-        SAFE_ADD_REF(user_nspc);
-    }
-
-    void clear_user_namespace()
-    {
-        if(user_nspc) SAFE_RELEASE(user_nspc->parent);
-        SAFE_RELEASE(user_nspc);
-        load_user_namespace();
-        this->reset();
-    }
-
-    // top
-    Chuck_Namespace * nspc_top( )
-    { assert( nspc_stack.size() > 0 ); return nspc_stack.back(); }
-    Chuck_Type * class_top( )
-    { assert( class_stack.size() > 0 ); return class_stack.back(); }
-
-    // check whether the context is the global context
-    t_CKBOOL is_global()
-    { return class_def == NULL && func == NULL && class_scope == 0; }
 
 public:
     // REFACTOR-2017: public types

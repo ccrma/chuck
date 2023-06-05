@@ -131,8 +131,8 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
 //        query->classes.push_back( c );
 
     // remember info
-    c->name = name;
-    c->parent = parent;
+    c->name = name ? name : "";
+    c->parent = parent ? parent : "";
     c->current_mvar_offset = parent_offset;
 
     // curr

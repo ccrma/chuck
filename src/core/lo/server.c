@@ -24,10 +24,12 @@
 #include <errno.h>
 #include <float.h>
 #include <sys/types.h>
+#include <time.h>
 
 #ifdef _MSC_VER
 #define _WINSOCKAPI_
 #define snprintf _snprintf
+#include <io.h> // 1.5.0.1 (ge) added for close
 #else
 #include <unistd.h>
 #endif

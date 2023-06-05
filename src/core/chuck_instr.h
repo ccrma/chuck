@@ -89,6 +89,7 @@ public:
 struct Chuck_Instr_Branch_Op : public Chuck_Instr
 {
 public:
+    Chuck_Instr_Branch_Op() : m_jmp(0) { }
     inline void set( t_CKUINT jmp ) { m_jmp = jmp; }
 
 public:
@@ -109,6 +110,7 @@ protected:
 struct Chuck_Instr_Unary_Op : public Chuck_Instr
 {
 public:
+    Chuck_Instr_Unary_Op() : m_val(0) { }
     inline void set( t_CKUINT val ) { m_val = val; }
     inline t_CKUINT get() { return m_val; }
 
@@ -130,6 +132,7 @@ protected:
 struct Chuck_Instr_Unary_Op2 : public Chuck_Instr
 {
 public:
+    Chuck_Instr_Unary_Op2() : m_val(0) { }
     inline void set( t_CKFLOAT val ) { m_val = val; }
     inline t_CKFLOAT get() { return m_val; }
 
@@ -2702,8 +2705,10 @@ struct Chuck_Instr_Alloc_Word_Global : public Chuck_Instr_Unary_Op
 public:
     // (added 1.3.0.0 -- is_object)
     Chuck_Instr_Alloc_Word_Global()
-    { this->set( 0 ); m_stack_offset = 0; m_chuck_type = NULL;
-      m_should_execute_ctors = FALSE; m_is_array = FALSE; }
+        : m_type(te_globalTypeNone), m_is_array(FALSE),
+        m_should_execute_ctors(FALSE),
+        m_stack_offset(0), m_chuck_type(NULL)
+    { this->set( 0 ); }
 
     virtual const char * params() const
     { static char buffer[CK_PRINT_BUF_LENGTH];

@@ -204,6 +204,7 @@ private:
         // operation type
         enum
         {
+            NONE,
             WRITE,
             SEEK,
             FLUSH,
@@ -230,7 +231,7 @@ private:
         };
 
         // 1.4.1.0 (ge) added
-        Message() : file(NULL) { }
+        Message() : file(NULL) { seek.offset = 0; operation = NONE; }
     };
 
     // circular buffer

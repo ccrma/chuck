@@ -93,6 +93,8 @@ struct Chuck_Global_Object_Container;
 //-----------------------------------------------------------------------------
 enum Chuck_Global_Request_Type
 {
+    // none
+    global_request_none,
     // primitives
     set_global_int_request,
     get_global_int_request,
@@ -167,7 +169,9 @@ struct Chuck_Global_Request
 
     Chuck_Global_Request()
     {
+        type = global_request_none;
         retries = 0;
+        executeChuckMsgRequest = NULL;
     }
 };
 
