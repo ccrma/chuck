@@ -3022,6 +3022,9 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
         flags |= FLAG_READ_WRITE;
     }
 
+    // set open flags
+    ios_base::openmode theMode = 0;
+
     // check flags for errors
     if ((flags & TYPE_ASCII) &&
         (flags & TYPE_BINARY))
@@ -3064,9 +3067,6 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
         EM_error3( "[chuck](via FileIO): conflicting flags: APPEND and FLAG_READ" );
         goto error;
     }
-
-    // set open flags
-    ios_base::openmode theMode = 0;
 
     if (flags & FLAG_READ_WRITE)
         theMode = ios_base::in | ios_base::out;

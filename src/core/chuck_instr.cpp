@@ -2412,6 +2412,13 @@ void Chuck_Instr_Reg_Push_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
         }
             break;
+        default:
+            // we have a problem | 1.5.0.1 (ge) added
+            CK_FPRINTF_STDERR(
+                              "[chuck](VM): Chuck_Instr_Reg_Push_Global: on line[%lu] in shred[id=%lu:%s]\n[chuck](VM): unhandled type flag '%d'...bailing out\n",
+                              m_linepos, shred->xid, shred->name.c_str(), m_type );
+            goto error;
+            break;
     }
 
     return;
@@ -3733,6 +3740,13 @@ void Chuck_Instr_Alloc_Word_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
             case te_globalArraySymbol:
                 EM_error2( 0, "(internal error) symbol-only global type used in allocation" );
                 goto error;
+            default:
+                // we have a problem | 1.5.0.1 (ge) added
+                CK_FPRINTF_STDERR(
+                                  "[chuck](VM): Chuck_Instr_Alloc_Word_Global: on line[%lu] in shred[id=%lu:%s]\n[chuck](VM): unhandled type flag '%d'...bailing out\n",
+                                  m_linepos, shred->xid, shred->name.c_str(), m_type );
+                goto error;
+                break;
         }
 
     }
@@ -3770,9 +3784,15 @@ void Chuck_Instr_Alloc_Word_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
             case te_globalArraySymbol:
                 EM_error2( 0, "(internal error) symbol-only global type used in allocation" );
                 goto error;
+            default:
+                // we have a problem | 1.5.0.1 (ge) added
+                CK_FPRINTF_STDERR(
+                                  "[chuck](VM): Chuck_Instr_Alloc_Word_Global: on line[%lu] in shred[id=%lu:%s]\n[chuck](VM): unhandled type flag '%d'...bailing out\n",
+                                  m_linepos, shred->xid, shred->name.c_str(), m_type );
+                goto error;
+                break;
         }
     }
-
 
     // push addr onto operand stack
     push_( reg_sp, addr );

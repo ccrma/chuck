@@ -2347,6 +2347,8 @@ t_CKBOOL Chuck_Globals_Manager::should_call_global_ctor( const std::string & nam
 {
     switch( type )
     {
+        case te_globalTypeNone:
+            // no type
         case te_globalInt:
         case te_globalFloat:
         case te_globalString:
@@ -2387,6 +2389,8 @@ void Chuck_Globals_Manager::global_ctor_was_called( const std::string & name,
 {
     switch( type )
     {
+        case te_globalTypeNone:
+            // no type
         case te_globalInt:
         case te_globalFloat:
         case te_globalString:
@@ -2510,6 +2514,10 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
         {
             switch( message.type )
             {
+                case global_request_none: // 1.5.0.1 (ge) added
+                    // do nothing
+                    break;
+
                 case execute_chuck_msg_request:
                     if( message.executeChuckMsgRequest->msg != NULL )
                     {
