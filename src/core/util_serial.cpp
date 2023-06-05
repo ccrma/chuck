@@ -126,15 +126,17 @@ using namespace std;
 vector<string> SerialIOManager::availableSerialDevices()
 {
     vector<string> devices;
-    const int buf_size = 4096+256;
-    // was PATH_MAX;
-    // which apparently isn't
+
+    // two sizes | 1.5.0.1 (ge) updated, as pointed out by linux compilation warning
+    const int link_buf_size = 4096+256;
+    const int path_buf_size = 4096;
+    // was PATH_MAX, which apparently isn't
     // https://stackoverflow.com/questions/9449241/where-is-path-max-defined-in-linux
     // https://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html
     // https://news.ycombinator.com/item?id=14194681
     const char * serial_dir = "/dev/serial/by-id";
-    char link_buf[buf_size]; // 1.5.0.1 (ge) added 256 for extra snprintf padding
-    char path_buf[buf_size-256];
+    char link_buf[link_buf_size];
+    char path_buf[path_buf_size];
 
     DIR * dir = opendir(serial_dir);
 
@@ -151,8 +153,8 @@ vector<string> SerialIOManager::availableSerialDevices()
         if(strcmp(dir_info->d_name, ".") == 0 ||
            strcmp(dir_info->d_name, "..") == 0)
             continue;
-        snprintf(link_buf, buf_size, "%s/%s", serial_dir, dir_info->d_name);
-        int link_size = readlink(link_buf, path_buf, buf_size-1);
+        snprintf(link_buf, link_buf_size, "%s/%s", serial_dir, dir_info->d_name);
+        int link_size = readlink(link_buf, path_buf, path_buf_size-1);
         if(link_size <= 0)
         {
             EM_log(CK_LOG_INFO, "(SerialIOManager): readlink failed on '%s'", link_buf);
@@ -165,7 +167,7 @@ vector<string> SerialIOManager::availableSerialDevices()
         if(path_buf[0] != '/')
         {
             // normalize path
-            snprintf(link_buf, buf_size, "%s/%s", serial_dir, path_buf);
+            snprintf(link_buf, link_buf_size, "%s/%s", serial_dir, path_buf);
 
             if(!realpath(link_buf, path_buf))
                 goto error;
