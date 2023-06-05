@@ -91,6 +91,26 @@ const t_CKINT Chuck_IO::MODE_ASYNC = 0;
 
 
 //-----------------------------------------------------------------------------
+// name: Chuck_VM_Object()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_VM_Object::Chuck_VM_Object()
+{ this->init_ref(); }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_VM_Object()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_VM_Object::~Chuck_VM_Object()
+{ }
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: init_ref()
 // desc: initialize vm object
 //-----------------------------------------------------------------------------
@@ -161,7 +181,7 @@ void Chuck_VM_Object::release()
     // if no more references
     if( m_ref_count == 0 )
     {
-        // this is not good
+        // this is not good | TODO: our_locks_in_effect assumes single VM
         if( our_locks_in_effect && m_locked )
         {
             EM_error2( 0, "internal error: releasing locked VM object!" );
@@ -2913,8 +2933,12 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
 // name: Chuck_IO Constructor
 // desc: Empty because you cannot construct a Chuck_IO object
 //-----------------------------------------------------------------------------
-Chuck_IO::Chuck_IO()
-{ }
+Chuck_IO::Chuck_IO() : m_asyncEvent(NULL)
+{
+#ifndef __DISABLE_THREADS__
+    m_thread = NULL;
+#endif
+}
 
 
 
@@ -3042,19 +3066,19 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
     }
 
     // set open flags
-    ios_base::openmode mode;
+    ios_base::openmode theMode = 0;
 
     if (flags & FLAG_READ_WRITE)
-        mode = ios_base::in | ios_base::out;
+        theMode = ios_base::in | ios_base::out;
     else if (flags & FLAG_READONLY)
-        mode = ios_base::in;
+        theMode = ios_base::in;
     else if (flags & FLAG_APPEND)
-        mode = ios_base::out | ios_base::app;
+        theMode = ios_base::out | ios_base::app;
     else if (flags & FLAG_WRITEONLY)
-        mode = ios_base::out | ios_base::trunc;
+        theMode = ios_base::out | ios_base::trunc;
 
     if (flags & TYPE_BINARY)
-        mode |= ios_base::binary;
+        theMode |= ios_base::binary;
 
     // close first
     if( m_io.is_open() )
@@ -3084,7 +3108,7 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
     }
 
     //open file
-    m_io.open( path.c_str(), mode );
+    m_io.open( path.c_str(), theMode );
 
     // seek to beginning if necessary
     if (flags & FLAG_READ_WRITE)

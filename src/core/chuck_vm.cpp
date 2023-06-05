@@ -158,6 +158,7 @@ Chuck_VM::Chuck_VM()
     m_event_buffer = NULL;
     m_shred_id = 0;
     m_halt = TRUE;
+    m_is_running = FALSE;
 
     m_dac = NULL;
     m_adc = NULL;
@@ -426,7 +427,7 @@ t_CKBOOL Chuck_VM::shutdown()
 t_CKBOOL Chuck_VM::start()
 {
     // already running?
-    if( m_is_running) return FALSE;
+    if( m_is_running ) return FALSE;
     // set state
     m_is_running = TRUE;
     // done
@@ -1404,9 +1405,20 @@ Chuck_VM_Shred::Chuck_VM_Shred()
     vm_ref = NULL;
     event = NULL;
     xid = 0;
-    #ifndef __DISABLE_SERIAL__
+
+    // initialize
+    is_abort = FALSE;
+    is_done = FALSE;
+    is_dumped = FALSE;
+    is_running = FALSE;
+    pc = next_pc = 0;
+    now = 0;
+    start = 0;
+    wake_time = 0;
+
+#ifndef __DISABLE_SERIAL__
     m_serials = NULL;
-    #endif
+#endif
 
     // set
     CK_TRACK( stat = NULL );

@@ -88,8 +88,8 @@ enum Chuck_Global_Get_Callback_Type
 struct Chuck_VM_Object
 {
 public:
-    Chuck_VM_Object() { this->init_ref(); }
-    virtual ~Chuck_VM_Object() { }
+    Chuck_VM_Object();
+    virtual ~Chuck_VM_Object();
 
 public:
     // add reference (ge: april 2013: made these virtual)
@@ -170,7 +170,7 @@ public:
 // name: struct Chuck_Object
 // dsec: base object
 //-----------------------------------------------------------------------------
-struct Chuck_Object : Chuck_VM_Object
+struct Chuck_Object : public Chuck_VM_Object
 {
 public:
     Chuck_Object();
@@ -213,7 +213,7 @@ public:
 // name: struct Chuck_Array
 // desc: native ChucK arrays ( virtual base class )
 //-----------------------------------------------------------------------------
-struct Chuck_Array : Chuck_Object
+struct Chuck_Array : public Chuck_Object
 {
     // functionality that we can keep in common...
 
@@ -249,7 +249,7 @@ public:
 // name: struct Chuck_Array4
 // desc: native ChucK arrays (for 4-byte)
 //-----------------------------------------------------------------------------
-struct Chuck_Array4 : Chuck_Array
+struct Chuck_Array4 : public Chuck_Array
 {
 public:
     Chuck_Array4( t_CKBOOL is_obj, t_CKINT capacity = 8 );
@@ -304,7 +304,7 @@ public:
 // name: struct Chuck_Array8
 // desc: native ChucK arrays (for 8-byte)
 //-----------------------------------------------------------------------------
-struct Chuck_Array8 : Chuck_Array
+struct Chuck_Array8 : public Chuck_Array
 {
 public:
     Chuck_Array8( t_CKINT capacity = 8 );
@@ -354,7 +354,7 @@ public:
 // name: struct Chuck_Array16
 // desc: native ChucK arrays (for 16-byte)
 //-----------------------------------------------------------------------------
-struct Chuck_Array16 : Chuck_Array
+struct Chuck_Array16 : public Chuck_Array
 {
 public:
     Chuck_Array16( t_CKINT capacity = 8 );
@@ -404,7 +404,7 @@ public:
 // name: struct Chuck_Array24
 // desc: native ChucK arrays (for vec3)
 //-----------------------------------------------------------------------------
-struct Chuck_Array24 : Chuck_Array
+struct Chuck_Array24 : public Chuck_Array
 {
 public:
     Chuck_Array24( t_CKINT capacity = 8 );
@@ -452,7 +452,7 @@ public:
 // name: struct Chuck_Array32
 // desc: native ChucK arrays (for vec4)
 //-----------------------------------------------------------------------------
-struct Chuck_Array32 : Chuck_Array
+struct Chuck_Array32 : public Chuck_Array
 {
 public:
     Chuck_Array32( t_CKINT capacity = 8 );
@@ -522,7 +522,7 @@ struct Chuck_Global_Event_Listener
 // name: Chuck_Event
 // desc: base Chuck Event class
 //-----------------------------------------------------------------------------
-struct Chuck_Event : Chuck_Object
+struct Chuck_Event : public Chuck_Object
 {
 public:
     // signal/broadcast "local" -- signal ChucK Events
@@ -570,13 +570,13 @@ protected:
 // name: Chuck_String
 // desc: base Chuck string class
 //-----------------------------------------------------------------------------
-struct Chuck_String : Chuck_Object
+struct Chuck_String : public Chuck_Object
 {
 public:
     // constructor
     Chuck_String( const std::string & s = "" ) { set( s ); }
-    // destructor
-    ~Chuck_String() { }
+    // destructor | 1.5.0.1 (ge) made destructor virtual
+    virtual ~Chuck_String() { }
 
     // set string (makes copy)
     void set( const std::string & s ) { m_str = s; m_charptr = m_str.c_str(); }
@@ -599,7 +599,7 @@ private:
 // name: Chuck_IO
 // desc: base Chuck IO class
 //-----------------------------------------------------------------------------
-struct Chuck_IO : Chuck_Event
+struct Chuck_IO : public Chuck_Event
 {
 public:
     Chuck_IO();
@@ -682,7 +682,7 @@ public:
 // name: Chuck_IO_File
 // desc: Chuck File IO class
 //-----------------------------------------------------------------------------
-struct Chuck_IO_File : Chuck_IO
+struct Chuck_IO_File : public Chuck_IO
 {
 public:
     // REFACTOR-2017
@@ -763,7 +763,7 @@ protected:
 // name: Chuck_IO_Chout
 // desc: Chuck console IO out
 //-----------------------------------------------------------------------------
-struct Chuck_IO_Chout : Chuck_IO
+struct Chuck_IO_Chout : public Chuck_IO
 {
 public:
     Chuck_IO_Chout( Chuck_Carrier * carrier );
@@ -810,7 +810,7 @@ private:
 // name: Chuck_IO_Cherr
 // desc: Chuck console IO err
 //-----------------------------------------------------------------------------
-struct Chuck_IO_Cherr : Chuck_IO
+struct Chuck_IO_Cherr : public Chuck_IO
 {
 public:
     Chuck_IO_Cherr( Chuck_Carrier * carrier );

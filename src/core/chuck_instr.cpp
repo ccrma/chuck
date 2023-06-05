@@ -2451,7 +2451,7 @@ void Chuck_Instr_Reg_Push_Global_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred * 
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
     // find addr
-    t_CKUINT addr;
+    t_CKUINT addr = 0;
     switch( m_type ) {
         case te_globalInt:
             addr = (t_CKUINT) vm->globals_manager()->get_ptr_to_global_int( m_name );
@@ -2475,7 +2475,9 @@ void Chuck_Instr_Reg_Push_Global_Addr::execute( Chuck_VM * vm, Chuck_VM_Shred * 
         case te_globalArraySymbol:
             addr = (t_CKUINT) vm->globals_manager()->get_ptr_to_global_array( m_name );
             break;
-
+        default:
+            EM_error3( "Chuck_Instr_Reg_Push_Global_Addr: unrecognized type flag %d...", m_type );
+            break;
     }
 
     // push mem stack addr into reg stack
@@ -5212,7 +5214,7 @@ Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * t,
     // add reference
     m_type_ref->add_ref();
     // type
-    m_param_str = new char[64];
+    m_param_str = new char[72]; // 1.5.0.1 (ge) changed from 64 to 72
     // obj | REFACTOR-2017: added env
     m_is_obj = isobj( env, m_type_ref );
     // float | 1.4.2.0 (ge) added to differentiate between int and float arrays
