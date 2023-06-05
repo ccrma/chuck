@@ -126,15 +126,15 @@ using namespace std;
 vector<string> SerialIOManager::availableSerialDevices()
 {
     vector<string> devices;
-    const int buf_size = 4096;
+    const int buf_size = 4096+256;
     // was PATH_MAX;
     // which apparently isn't
     // https://stackoverflow.com/questions/9449241/where-is-path-max-defined-in-linux
     // https://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html
     // https://news.ycombinator.com/item?id=14194681
     const char * serial_dir = "/dev/serial/by-id";
-    char link_buf[buf_size+256]; // 1.5.0.1 (ge) added 256 for extra snprintf padding
-    char path_buf[buf_size];
+    char link_buf[buf_size]; // 1.5.0.1 (ge) added 256 for extra snprintf padding
+    char path_buf[buf_size-256];
 
     DIR * dir = opendir(serial_dir);
 
