@@ -5018,7 +5018,7 @@ void Joystick_init()
     if( lpdi->EnumDevices( DIDEVTYPE_JOYSTICK, DIEnumJoystickProc,
 #else
     // fix 1.5.0.1 (Spencer 2023): use DI8DEVCLASS_GAMECTRL instead of DI8DEVTYPE_JOYSTICK
-    // cf. EnumDevices documentation
+    // cf. EnumDevices documentation https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee417804(v=vs.85)
     // this seems to fix joystick usage in general, but Xbox One controller still fails
     //if (lpdi->EnumDevices(DI8DEVTYPE_JOYSTICK, DIEnumJoystickProc,
     if( lpdi->EnumDevices( DI8DEVCLASS_GAMECTRL, DIEnumJoystickProc,
