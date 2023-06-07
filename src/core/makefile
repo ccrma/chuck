@@ -10,7 +10,7 @@ mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck-core
 win32:
 	make -f makefile.win32
 
-CK_VERSION=1.5.0.0
+CK_VERSION=1.5.0.1-dev
 
 LEX=flex
 YACC=bison
