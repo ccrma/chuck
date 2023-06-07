@@ -479,7 +479,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
 
     // random max
     QUERY->add_svar( QUERY, "int", "RANDOM_MAX", TRUE, &g_randomMax );
-    QUERY->doc_var( QUERY, "Lhe largest possible value returned by random()." );
+    QUERY->doc_var( QUERY, "The largest possible value returned by random()." );
 
     // i
     QUERY->add_svar( QUERY, "complex", "I", TRUE, &g_i );
@@ -901,7 +901,8 @@ CK_DLL_SFUN( randomf_impl )
 // randomf (added 1.3.1.0)
 CK_DLL_SFUN( random2f_impl )
 {
-    t_CKFLOAT min = GET_CK_FLOAT(ARGS), max = *((t_CKFLOAT *)ARGS + 1);
+    t_CKFLOAT min = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT max = GET_NEXT_FLOAT(ARGS);
     // 1.4.2.0 (ge) | updated to use ck_random() wrapper
     t_CKFLOAT normRand = ck_random() / (t_CKFLOAT)CK_RANDOM_MAX;
     //CK_FPRINTF_STDERR( "[chuck random2f]: %G --> %G, %G\n", normRand, min, max );
@@ -919,9 +920,6 @@ CK_DLL_SFUN( random2_impl ) // inclusive.
     {
         RETURN->v_int = min;
     }
-    //else if( range < RAND_MAX / 2 ) {
-    //  RETURN->v_int = ( range > 0 ) ? min + irandom_exclusive(1 + range) : max + irandom_exclusive ( -range + 1 ) ;
-    //}
     else
     {
         if( range > 0 )

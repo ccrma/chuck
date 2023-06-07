@@ -152,6 +152,8 @@ static t_CKUINT Cereal_offset_data = 0;
 #endif
 
 
+// variable to random max
+static t_CKINT g_randMax = CK_RANDOM_MAX;
 
 
 //-----------------------------------------------------------------------------
@@ -187,7 +189,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     QUERY->doc_func( QUERY, "Return absolute value of float." );
 
     // add rand
-    QUERY->add_sfun( QUERY, rand_impl, "int", "rand"); //! return int between 0 and RAND_MAX
+    QUERY->add_sfun( QUERY, rand_impl, "int", "rand"); //! return int between 0 and max
     QUERY->doc_func( QUERY, "generate a random integer between 0 and Std.RAND_MAX. (NOTE: this is deprecated; use Math.random())." );
 
     // add rand2
@@ -209,7 +211,11 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // add srand
     QUERY->add_sfun( QUERY, srand_impl, "void", "srand" );
     QUERY->add_arg( QUERY, "int", "seed" );
-    QUERY->doc_func( QUERY, "seed the random number generator. Different seeds will likely generate different sequences of random numbers even if the seeds are close together; alternatively, a sequence of random numbers can be repeated by setting the same seed." );
+    QUERY->doc_func( QUERY, "seed the random number generator. Different seeds will likely generate different sequences of random numbers even if the seeds are close together; alternatively, a sequence of random numbers can be repeated by setting the same seed. (NOTE: this is deprecated; use Math.srandom())" );
+
+    // random max
+    QUERY->add_svar( QUERY, "int", "RAND_MAX", TRUE, &g_randMax );
+    QUERY->doc_var( QUERY, "The largest possible value returned by Std.rand()." );
 
     // add sgn
     QUERY->add_sfun( QUERY, sgn_impl, "float", "sgn" ); //! return sign of value (-1, 0, 1)
@@ -328,7 +334,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 
     // seed rand()
     // (NOTE: ck_srandom(time(NULL)) is invoked in ulib_math.cpp)
-    srand( (unsigned)time( NULL ) );
+    // srand( (unsigned)time( NULL ) );
 
     Chuck_DL_Func * func = NULL;
 
@@ -623,20 +629,6 @@ error:
     return FALSE;
 }
 
-
-//#define RAND_INV_RANGE(r) (RAND_MAX / (r))
-//
-//int irand_exclusive ( int max ) {
-//  int x = ::rand();
-//
-//  while (x >= max * RAND_INV_RANGE (max))
-//    x = ::rand();
-//
-//  x /= RAND_INV_RANGE (max);
-//  return x;
-//}
-
-
 // abs
 CK_DLL_SFUN( abs_impl )
 {
@@ -655,20 +647,22 @@ CK_DLL_SFUN( fabs_impl )
 // rand
 CK_DLL_SFUN( rand_impl )
 {
-    RETURN->v_int = ::rand();
+    // 1.5.0.1 (ge) use ck_random()
+    RETURN->v_int = ck_random();
 }
 
 // randf
 CK_DLL_SFUN( randf_impl )
 {
-    RETURN->v_float = ( 2.0 * ::rand() / (t_CKFLOAT)RAND_MAX - 1.0 );
+    // 1.5.0.1 (ge) use ck_random() and CK_RANDOM_MAX
+    RETURN->v_float = ( 2.0 * ck_random() / (t_CKFLOAT)CK_RANDOM_MAX - 1.0 );
 }
 
 // randf
 CK_DLL_SFUN( rand2f_impl )
 {
     t_CKFLOAT min = GET_CK_FLOAT(ARGS), max = *((t_CKFLOAT *)ARGS + 1);
-    RETURN->v_float = min + (max-min)*(::rand()/(t_CKFLOAT)RAND_MAX);
+    RETURN->v_float = min + (max-min)*(::ck_random()/(t_CKFLOAT)CK_RANDOM_MAX);
 }
 
 // randi
@@ -681,18 +675,15 @@ CK_DLL_SFUN( rand2_impl ) // inclusive.
     {
         RETURN->v_int = min;
     }
-    //else if ( range < RAND_MAX / 2 ) {
-    //  RETURN->v_int = ( range > 0 ) ? min + irand_exclusive(1 + range) : max + irand_exclusive ( -range + 1 ) ;
-    //}
     else
     {
         if( range > 0 )
         {
-            RETURN->v_int = min + (t_CKINT)( (1.0 + range) * ( ::rand()/(RAND_MAX+1.0) ) );
+            RETURN->v_int = min + (t_CKINT)( (1.0 + range) * ( ::ck_random()/(CK_RANDOM_MAX+1.0) ) );
         }
         else
         {
-            RETURN->v_int = min - (t_CKINT)( (-range + 1.0) * ( ::rand()/(RAND_MAX+1.0) ) );
+            RETURN->v_int = min - (t_CKINT)( (-range + 1.0) * ( ::ck_random()/(CK_RANDOM_MAX+1.0) ) );
         }
     }
 }
@@ -701,7 +692,8 @@ CK_DLL_SFUN( rand2_impl ) // inclusive.
 CK_DLL_SFUN( srand_impl )
 {
     t_CKINT seed = GET_CK_INT(ARGS);
-    srand( (unsigned)seed );
+    // 1.5.0.1 (ge) updated to ck_srandom()
+    ck_srandom( (unsigned)seed );
 }
 
 // sgn
