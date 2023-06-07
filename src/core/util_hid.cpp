@@ -5020,7 +5020,15 @@ void Joystick_init()
     // fix 1.5.0.1 (Spencer 2023): use DI8DEVCLASS_GAMECTRL instead of DI8DEVTYPE_JOYSTICK
     // cf. EnumDevices documentation https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee417804(v=vs.85)
     // this seems to fix joystick usage in general, but Xbox One controller still fails
-    //if (lpdi->EnumDevices(DI8DEVTYPE_JOYSTICK, DIEnumJoystickProc,
+    // XBox One controller workaround from otherTom#4512
+    // *** open up Device Manager, expand "Human Interface Devices",
+    // right click "XINPUT compatible HID device", "Update driver",
+    // "Browse my computer", "Let me pick". should be three options.
+    // Try "HID-compliant game controller". If you want to undo the
+    // change, same thing but update "HID-compliant game controller"
+    // and pick the XINPUT ***
+    // https://www.snes9x.com/phpbb3/viewtopic.php?t=27510&sid=661fbbc1609037a8ec2e5f10e003f5a0
+    // was: if (lpdi->EnumDevices(DI8DEVTYPE_JOYSTICK, DIEnumJoystickProc,
     if( lpdi->EnumDevices( DI8DEVCLASS_GAMECTRL, DIEnumJoystickProc,
 #endif
                            NULL, DIEDFL_ATTACHEDONLY ) != DI_OK )
