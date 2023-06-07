@@ -901,7 +901,8 @@ CK_DLL_SFUN( randomf_impl )
 // randomf (added 1.3.1.0)
 CK_DLL_SFUN( random2f_impl )
 {
-    t_CKFLOAT min = GET_CK_FLOAT(ARGS), max = *((t_CKFLOAT *)ARGS + 1);
+    t_CKFLOAT min = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT max = GET_NEXT_FLOAT(ARGS);
     // 1.4.2.0 (ge) | updated to use ck_random() wrapper
     t_CKFLOAT normRand = ck_random() / (t_CKFLOAT)CK_RANDOM_MAX;
     //CK_FPRINTF_STDERR( "[chuck random2f]: %G --> %G, %G\n", normRand, min, max );
