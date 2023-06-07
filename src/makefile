@@ -41,7 +41,7 @@ EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
     core/ugen_osc.cpp core/ugen_stk.cpp core/ugen_xxx.cpp \
     core/ulib_ai.cpp core/ulib_doc.cpp core/ulib_machine.cpp \
     core/ulib_math.cpp core/ulib_std.cpp \
-    core/util_buffers.cpp core/util_math.c core/util_raw.c \
+    core/util_buffers.cpp core/util_math.cpp core/util_raw.c \
     core/util_string.cpp core/util_xforms.c core/chuck_win32.c \
     core/util_sndfile.c
 
