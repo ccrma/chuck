@@ -133,7 +133,7 @@
     <ClCompile Include="..\core\util_hid.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\util_math.c">
+    <ClCompile Include="..\core\util_math.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\core\util_network.c">
