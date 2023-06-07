@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 #include "util_math.h"
 #include <math.h>
+#include <random>
 
 
 // windows / visual c++
@@ -67,18 +68,32 @@ double trunc( double a )
 #endif
 
 
+#ifndef __OLDSCHOOL_RANDOM__
+
 //-----------------------------------------------------------------------------
 // name: ck_random() and ck_srandom()
 // desc: chuck wrappers for random number generators | 1.4.2.0 (ge)
 //-----------------------------------------------------------------------------
-#ifndef __WINDOWS_DS__
-long ck_random() { return random(); }
+static std::mt19937 g_ck_global_rng;
+t_CKINT ck_random() { return g_ck_globa_rng() % CK_RANDOM_MAX; }
+void ck_srandom( unsigned s ) { g_ck_global_rng.seed(s); }
+
+
+#else // using old school random (pre-c++11)
+
+//-----------------------------------------------------------------------------
+// name: ck_random() and ck_srandom()
+// desc: chuck wrappers for random number generators | 1.4.2.0 (ge)
+//-----------------------------------------------------------------------------
+#ifndef __PLATFORM_WIN32__
+t_CKINT ck_random() { return random(); }
 void ck_srandom( unsigned s ) { srandom( s ); }
 #else // __WINDOWS_DS__
-long ck_random() { return rand(); }
+t_CKINT ck_random() { return rand(); }
 void ck_srandom( unsigned s ) { srand( s ); }
-#endif
 
+#endif
+#endif // __OLDSCHOOL_RANDOM__
 
 
 
