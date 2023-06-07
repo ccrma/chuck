@@ -256,7 +256,7 @@
     <ClCompile Include="..\core\util_buffers.cpp" />
     <ClCompile Include="..\core\util_console.cpp" />
     <ClCompile Include="..\core\util_hid.cpp" />
-    <ClCompile Include="..\core\util_math.c" />
+    <ClCompile Include="..\core\util_math.cpp" />
     <ClCompile Include="..\core\util_network.c" />
     <ClCompile Include="..\core\util_opsc.cpp" />
     <ClCompile Include="..\core\util_raw.c" />
