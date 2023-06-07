@@ -8,6 +8,18 @@
 //          "Human Interface Devices" in the drop-down menu)
 //       OR 2) from the command line:
 //          > chuck --probe
+//
+// note (Windows only): XBox One controllers may not generate input
+//      for HID without the following workaround:
+//
+//      from otherTom#4512 on snes9x.com forum
+//      *** open up Device Manager, expand "Human Interface Devices",
+//      right click "XINPUT compatible HID device", "Update driver",
+//      "Browse my computer", "Let me pick". should be three options.
+//      Try "HID-compliant game controller". If you want to undo the
+//      change, same thing but update "HID-compliant game controller"
+//      and pick the XINPUT ***
+// https://www.snes9x.com/phpbb3/viewtopic.php?t=27510&sid=661fbbc1609037a8ec2e5f10e003f5a0
 //-----------------------------------------------------------------------------
 
 // HID input and HID message
