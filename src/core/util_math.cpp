@@ -68,31 +68,30 @@ double trunc( double a )
 #endif
 
 
-#ifndef __OLDSCHOOL_RANDOM__
-
+//-----------------------------------------------------------------------------
+#ifndef __OLDSCHOOL_RANDOM__ // not using old school, pre-c++11 compatibility
 //-----------------------------------------------------------------------------
 // name: ck_random() and ck_srandom()
-// desc: chuck wrappers for random number generators | 1.4.2.0 (ge)
+// desc: chuck wrappers for random number generators
+// 1.5.0.1 (ge) using mt19937 (requires c++11)
 //-----------------------------------------------------------------------------
 static std::mt19937 g_ck_global_rng;
-t_CKINT ck_random() { return g_ck_globa_rng() % CK_RANDOM_MAX; }
+t_CKINT ck_random() { return g_ck_global_rng() % CK_RANDOM_MAX; }
 void ck_srandom( unsigned s ) { g_ck_global_rng.seed(s); }
-
-
+//-----------------------------------------------------------------------------
 #else // using old school random (pre-c++11)
-
 //-----------------------------------------------------------------------------
 // name: ck_random() and ck_srandom()
 // desc: chuck wrappers for random number generators | 1.4.2.0 (ge)
 //-----------------------------------------------------------------------------
 #ifndef __PLATFORM_WIN32__
-t_CKINT ck_random() { return random(); }
-void ck_srandom( unsigned s ) { srandom( s ); }
+  t_CKINT ck_random() { return random(); }
+  void ck_srandom( unsigned s ) { srandom( s ); }
 #else // __WINDOWS_DS__
-t_CKINT ck_random() { return rand(); }
-void ck_srandom( unsigned s ) { srand( s ); }
-
+  t_CKINT ck_random() { return rand(); }
+  void ck_srandom( unsigned s ) { srand( s ); }
 #endif
+//-----------------------------------------------------------------------------
 #endif // __OLDSCHOOL_RANDOM__
 
 

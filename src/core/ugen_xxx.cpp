@@ -1909,9 +1909,8 @@ CK_DLL_CTOR( pan2_ctor )
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( noise_tick )
 {
-    *out = -1.0 + 2.0 * (SAMPLE)rand() / RAND_MAX;
-    // for now keep synthesis using rand() instead of ck_random()
-    // *out = -1.0 + 2.0 * (SAMPLE)ck_random() / CK_RANDOM_MAX;
+    // 1.5.0.1 (ge) updated to use ck_random()
+    *out = -1.0 + 2.0 * (SAMPLE)ck_random() / CK_RANDOM_MAX;
     return TRUE;
 }
 
@@ -1941,12 +1940,12 @@ public:
     pink_depth = 24;
     pink_array = NULL;
     counter = 1;
-    scale = 2.0 / (double) RAND_MAX ;
+    scale = 2.0 / (double) CK_RANDOM_MAX ;
     bias = -1.0; // 1.5.0.1 (anthonyhawes) changed from 0.0, removing a DC bias
     pink_rand = false;
-    t_CKINT randt = RAND_MAX;
+    t_CKINT randt = CK_RANDOM_MAX;
     rand_bits = 0;
-    fprob = (t_CKINT)( (double)RAND_MAX * 1.0 / 32.0 );
+    fprob = (t_CKINT)( (double)CK_RANDOM_MAX * 1.0 / 32.0 );
     while ( randt > 0 ) {
       rand_bits++;
       randt = randt >> 1;
@@ -2016,10 +2015,12 @@ t_CKINT CNoise_Data::pink_tick( SAMPLE * out )
   if ( pink_array == NULL ) {
     pink_array = (t_CKINT *) malloc ( sizeof ( t_CKINT ) * pink_depth );
     last = 0;
-    for ( t_CKINT i = 0 ; i < pink_depth ; i++ ) { pink_array[i] = rand(); last += pink_array[i]; }
-    scale = 2.0 / ((double)RAND_MAX  * ( pink_depth + 1.0 ) );
+    // 1.5.0.1 (ge) updated to ck_random()
+    for ( t_CKINT i = 0 ; i < pink_depth ; i++ )
+    { pink_array[i] = ck_random(); last += pink_array[i]; }
+    scale = 2.0 / ((double)CK_RANDOM_MAX  * ( pink_depth + 1.0 ) );
     bias = -1.0;
-    // CK_FPRINTF_STDERR( "scale %f %f %d %d \n", scale, bias, RAND_MAX, pink_depth + 1 );
+    // CK_FPRINTF_STDERR( "scale %f %f %d %d \n", scale, bias, CK_RANDOM_MAX, pink_depth + 1 );
   }
 
   t_CKINT pind = 0;
@@ -2030,14 +2031,14 @@ t_CKINT CNoise_Data::pink_tick( SAMPLE * out )
   //  fprintf (stderr, "counter %d pink - %d \n", counter, pind );
 
   if ( pind < pink_depth ) {
-    t_CKINT diff = rand() - pink_array[pind];
+    t_CKINT diff = ck_random() - pink_array[pind];
     pink_array[pind] += diff;
     last += diff;
   }
 
-  *out = bias + scale * ( rand() + last );
+  *out = bias + scale * ( ck_random() + last );
   counter++;
-  if ( pink_rand ) counter = rand();
+  if ( pink_rand ) counter = ck_random();
   return TRUE;
 }
 
@@ -2045,7 +2046,7 @@ t_CKINT CNoise_Data::xor_tick( SAMPLE * out )
 {
   t_CKINT mask = 0;
   for ( t_CKINT i = 0; i < rand_bits ; i++ )
-    if ( rand() <= fprob )
+    if ( ck_random() <= fprob )
       mask |= ( ((t_CKINT)1) << i );
   last = last ^ mask;
   *out = bias + scale * (SAMPLE)last;
@@ -2054,7 +2055,7 @@ t_CKINT CNoise_Data::xor_tick( SAMPLE * out )
 
 t_CKINT CNoise_Data::flip_tick( SAMPLE * out )
 {
-  t_CKINT ind = (t_CKINT)( (double)rand_bits * rand() / ( RAND_MAX + 1.0 ) );
+  t_CKINT ind = (t_CKINT)( (double)rand_bits * ck_random() / ( CK_RANDOM_MAX + 1.0 ) );
   last = last ^ ( ((t_CKINT)1) << ind );
   //  fprintf ( stderr, "ind - %d %d %f %f", ind, last, bias, scale );
   *out = bias + scale * (SAMPLE)last;
@@ -2080,37 +2081,37 @@ CNoise_Data::setMode( const char * c ) {
   if ( strcmp ( c, "white" ) == 0 ) {
     // CK_FPRINTF_STDERR( "white noise\n" );
     mode = NOISE_WHITE;
-    scale = 2.0 / (t_CKFLOAT)RAND_MAX;
+    scale = 2.0 / (t_CKFLOAT)CK_RANDOM_MAX;
     bias = -1.0;
   }
   if ( strcmp ( c, "pink" ) == 0 ) {
     // CK_FPRINTF_STDERR( "pink noise\n" );
     mode = NOISE_PINK;
-    scale = 2.0 / (double)(RAND_MAX  * ( pink_depth + 1 ) );
+    scale = 2.0 / (double)(CK_RANDOM_MAX  * ( pink_depth + 1 ) );
     bias = -1.0;
   }
   if ( strcmp ( c, "flip" ) == 0) {
     // CK_FPRINTF_STDERR( "bitflip noise\n" );
     mode = NOISE_FLIP;
-    scale = 2.0 / (t_CKFLOAT)RAND_MAX;
+    scale = 2.0 / (t_CKFLOAT)CK_RANDOM_MAX;
     bias = -1.0;
   }
   if ( strcmp ( c, "xor" ) == 0) {
     // CK_FPRINTF_STDERR( "xor noise\n" );
     mode = NOISE_XOR;
-    scale = 2.0 / (t_CKFLOAT)RAND_MAX;
+    scale = 2.0 / (t_CKFLOAT)CK_RANDOM_MAX;
     bias = -1.0;
   }
   if ( strcmp ( c, "brown" ) == 0) {
     // CK_FPRINTF_STDERR( "brownian noise\n" );
     mode = NOISE_BROWN;
-    scale = 2.0 / (t_CKFLOAT)RAND_MAX;
+    scale = 2.0 / (t_CKFLOAT)CK_RANDOM_MAX;
     bias = -1.0;
   }
   if ( strcmp ( c, "fbm" ) == 0) {
     // CK_FPRINTF_STDERR( "fbm noise\n" );
     mode = NOISE_FBM;
-    scale = 2.0 / (t_CKFLOAT)RAND_MAX;
+    scale = 2.0 / (t_CKFLOAT)CK_RANDOM_MAX;
     bias = -1.0;
   }
 
@@ -2128,7 +2129,7 @@ CK_DLL_CTRL( cnoise_ctrl_fprob )
 {
     CNoise_Data * d = ( CNoise_Data * )OBJ_MEMBER_UINT(SELF, cnoise_offset_data);
     t_CKFLOAT p= GET_CK_FLOAT(ARGS);
-    d->fprob = (t_CKINT) ( (double)RAND_MAX * p );
+    d->fprob = (t_CKINT) ( (double)CK_RANDOM_MAX * p );
 }
 
 

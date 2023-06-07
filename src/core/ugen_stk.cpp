@@ -11980,7 +11980,7 @@ MY_FLOAT NRev :: tick(MY_FLOAT input)
 Noise :: Noise() : Stk()
 {
   // Seed the random number generator with system time.
-  this->setSeed( 0 );
+  // this->setSeed( time(NULL) ); // 1.5.0.1 (ge) changed from 0 to time(NULL)
   lastOutput = (MY_FLOAT) 0.0;
 }
 

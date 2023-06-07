@@ -53,7 +53,7 @@
 		091677321F7CAD1100248F78 /* ulib_std.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B500A9A54DA007604EA /* ulib_std.cpp */; };
 		091677331F7CAD1100248F78 /* util_buffers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B520A9A54DA007604EA /* util_buffers.cpp */; };
 		091677341F7CAD1100248F78 /* util_console.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B540A9A54DA007604EA /* util_console.cpp */; };
-		091677351F7CAD1100248F78 /* util_math.c in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B580A9A54DA007604EA /* util_math.c */; };
+		091677351F7CAD1100248F78 /* util_math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B580A9A54DA007604EA /* util_math.cpp */; };
 		091677361F7CAD1100248F78 /* util_network.c in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B5A0A9A54DA007604EA /* util_network.c */; };
 		091677371F7CAD1100248F78 /* util_opsc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B5C0A9A54DA007604EA /* util_opsc.cpp */; };
 		091677381F7CAD1100248F78 /* method.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D58181601F700806471 /* method.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H -I../src/core"; }; };
@@ -403,7 +403,7 @@
 		09A40B540A9A54DA007604EA /* util_console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = util_console.cpp; path = ../core/util_console.cpp; sourceTree = SOURCE_ROOT; };
 		09A40B550A9A54DA007604EA /* util_console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = util_console.h; path = ../core/util_console.h; sourceTree = SOURCE_ROOT; };
 		09A40B570A9A54DA007604EA /* util_hid.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = util_hid.h; path = ../core/util_hid.h; sourceTree = SOURCE_ROOT; };
-		09A40B580A9A54DA007604EA /* util_math.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = util_math.c; path = ../core/util_math.c; sourceTree = SOURCE_ROOT; };
+		09A40B580A9A54DA007604EA /* util_math.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = util_math.cpp; path = ../core/util_math.cpp; sourceTree = SOURCE_ROOT; };
 		09A40B590A9A54DA007604EA /* util_math.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = util_math.h; path = ../core/util_math.h; sourceTree = SOURCE_ROOT; };
 		09A40B5A0A9A54DA007604EA /* util_network.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = util_network.c; path = ../core/util_network.c; sourceTree = SOURCE_ROOT; };
 		09A40B5B0A9A54DA007604EA /* util_network.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = util_network.h; path = ../core/util_network.h; sourceTree = SOURCE_ROOT; };
@@ -935,7 +935,7 @@
 				09A40B550A9A54DA007604EA /* util_console.h */,
 				090A5BE70AA75AEA005DC04D /* util_hid.cpp */,
 				09A40B570A9A54DA007604EA /* util_hid.h */,
-				09A40B580A9A54DA007604EA /* util_math.c */,
+				09A40B580A9A54DA007604EA /* util_math.cpp */,
 				09A40B590A9A54DA007604EA /* util_math.h */,
 				09A40B5A0A9A54DA007604EA /* util_network.c */,
 				09A40B5B0A9A54DA007604EA /* util_network.h */,
@@ -1147,7 +1147,7 @@
 				091677321F7CAD1100248F78 /* ulib_std.cpp in Sources */,
 				091677331F7CAD1100248F78 /* util_buffers.cpp in Sources */,
 				091677341F7CAD1100248F78 /* util_console.cpp in Sources */,
-				091677351F7CAD1100248F78 /* util_math.c in Sources */,
+				091677351F7CAD1100248F78 /* util_math.cpp in Sources */,
 				091677361F7CAD1100248F78 /* util_network.c in Sources */,
 				091677371F7CAD1100248F78 /* util_opsc.cpp in Sources */,
 				091677381F7CAD1100248F78 /* method.c in Sources */,
