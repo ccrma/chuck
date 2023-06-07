@@ -38,8 +38,14 @@ ChucK VERSIONS log
 * (added) examples/special/scream-o-matic/ -- using LiSa + granular
   synthesis for a scream texture generator.
 * (fixed) CNoise incorrect bias on pink noise (thank you anthonyhawes)
-* (updated) on Linux, better default runtime driver selection for 
+* (updated) on all platforms, Math.random*() functions now internally
+  use a standard Mersenne Twister RNG; this greatly improves the quality
+  of RNG output especially for Windows
+* (updated) on Linux, better default runtime driver selection for
   Jack and ALSA
+* (updated/developer) chuck core minimum c++ level raised to c++11;
+  projects need compile chuck core with earlier dialect of c++ would need
+  to modify the source code accordingly
 * (updated/developer) makefile for linux-jack
 * (added/developer) DL Api array4 operations from chugin
 * (added/developer) ChuckArray4::contains_object() returns whether
