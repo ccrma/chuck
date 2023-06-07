@@ -39,8 +39,8 @@ ChucK VERSIONS log
   synthesis for a scream texture generator.
 * (fixed) CNoise incorrect bias on pink noise (thank you anthonyhawes)
 * (updated) on all platforms, Math.random*() functions now internally
-  use a standard Mersenne Twister RNG; this greatly improves the quality
-  of RNG output especially for Windows
+  use a standard Mersenne Twister RNG (mt19937); this greatly improves 
+  the quality of RNG output, especially on Windows
 * (updated) on Linux, better default runtime driver selection for
   Jack and ALSA
 * (updated/developer) chuck core minimum c++ level raised to c++11;
