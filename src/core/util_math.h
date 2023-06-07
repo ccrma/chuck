@@ -52,17 +52,27 @@ extern "C" {
 double ck_remainder( double a, double b );
 
 
-// max for random functions
-#ifdef __PLATFORM_WIN32__
-#define CK_RANDOM_MAX RAND_MAX
-#else
-#define CK_RANDOM_MAX 0x7fffffff
-#endif
-
 // chuck random wrapper
-long ck_random();
+t_CKINT ck_random();
 // chuck srandom wrapper
 void ck_srandom( unsigned seed );
+
+//-----------------------------------------------------------------------------
+#ifndef __OLDSCHOOL_RANDOM__
+//-----------------------------------------------------------------------------
+#define CK_RANDOM_MAX 0x7fffffff
+//-----------------------------------------------------------------------------
+#else // __OLDSCHOOL_RANDOM__ (enable only for compatibility pre-c++11)
+//-----------------------------------------------------------------------------
+#ifdef __PLATFORM_WIN32__
+  #define CK_RANDOM_MAX RAND_MAX
+#else
+  #define CK_RANDOM_MAX 0x7fffffff
+#endif
+//-----------------------------------------------------------------------------
+#endif // __OLDSCHOOL_RANDOM__
+//-----------------------------------------------------------------------------
+
 
 // mtof
 double mtof( double f );

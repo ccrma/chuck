@@ -479,7 +479,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
 
     // random max
     QUERY->add_svar( QUERY, "int", "RANDOM_MAX", TRUE, &g_randomMax );
-    QUERY->doc_var( QUERY, "Lhe largest possible value returned by random()." );
+    QUERY->doc_var( QUERY, "The largest possible value returned by random()." );
 
     // i
     QUERY->add_svar( QUERY, "complex", "I", TRUE, &g_i );
@@ -919,9 +919,6 @@ CK_DLL_SFUN( random2_impl ) // inclusive.
     {
         RETURN->v_int = min;
     }
-    //else if( range < RAND_MAX / 2 ) {
-    //  RETURN->v_int = ( range > 0 ) ? min + irandom_exclusive(1 + range) : max + irandom_exclusive ( -range + 1 ) ;
-    //}
     else
     {
         if( range > 0 )
