@@ -23,8 +23,8 @@
 -----------------------------------------------------------------------------*/
 
 //-----------------------------------------------------------------------------
-// name: util_math.c
-// desc: ...
+// name: util_math.cpp
+// desc: a mini-compatibility library for math functions
 //
 // author: Ge Wang (gewang@cs.princeton.edu)
 //         Perry R. Cook (prc@cs.princeton.edu)
@@ -36,36 +36,6 @@
 #include <random>
 
 
-// windows / visual c++
-#ifdef __PLATFORM_WIN32__
-
-
-
-#ifdef __CK_MATH_DEFINE_ROUND_TRUNC__
-//-----------------------------------------------------------------------------
-// name: round()
-// desc: ...
-//-----------------------------------------------------------------------------
-double round( double a )
-{
-    if( a >= 0 ) return (double)(t_CKINT)( a + .5 );
-    else return (double)(t_CKINT)( a - .5 );
-}
-
-
-//-----------------------------------------------------------------------------
-// name: trunc()
-// desc: ...
-//-----------------------------------------------------------------------------
-double trunc( double a )
-{
-    return (double)(long)a;
-}
-#endif // #ifdef __CK_MATH_DEFINE_ROUND_TRUNC
-
-
-
-#endif
 
 
 //-----------------------------------------------------------------------------
@@ -104,6 +74,35 @@ void ck_srandom( unsigned s ) { g_ck_global_rng.seed(s); }
 
 
 
+
+// windows / visual c++
+#ifdef __PLATFORM_WIN32__
+#ifdef __CK_MATH_DEFINE_ROUND_TRUNC__
+//-----------------------------------------------------------------------------
+// name: round()
+// desc: ...
+//-----------------------------------------------------------------------------
+  double round(double a)
+  {
+      if (a >= 0) return (double)(t_CKINT)(a + .5);
+      else return (double)(t_CKINT)(a - .5);
+  }
+
+
+  //-----------------------------------------------------------------------------
+  // name: trunc()
+  // desc: ...
+  //-----------------------------------------------------------------------------
+  double trunc(double a)
+  {
+      return (double)(long)a;
+  }
+#endif // __CK_MATH_DEFINE_ROUND_TRUNC
+#endif // __PLATFORM_WIN32__
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: ck_remainder()
 // desc: ...
@@ -120,11 +119,14 @@ double ck_remainder( double a, double b )
 
 
 
+
 // the following 6 functions are lifted from PD source
 // specifically x_acoustics.c
 // http://puredata.info/downloads
 #define LOGTWO 0.69314718055994528623
 #define LOGTEN 2.302585092994
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -141,6 +143,8 @@ double mtof( double f )
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: ftom()
 // desc: freq to midi
@@ -151,6 +155,8 @@ double ftom( double f )
     // TODO: optimize
     return (f > 0 ? (log(f/440.0) / LOGTWO) * 12.0 + 69 : -1500);
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -168,6 +174,8 @@ double powtodb( double f )
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: rmstodb()
 // desc: ...
@@ -181,6 +189,8 @@ double rmstodb( double f )
         return (val < 0 ? 0 : val);
     }
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -197,6 +207,8 @@ double dbtopow( double f )
         return (exp((LOGTEN * 0.1) * (f-100.)));
     }
 }
+
+
 
 
 //-----------------------------------------------------------------------------

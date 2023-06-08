@@ -24,7 +24,7 @@
 
 //-----------------------------------------------------------------------------
 // name: util_math.h
-// desc: a mini-compatibility library for math functions.
+// desc: a mini-compatibility library for math functions
 //
 // author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
 //         Philip Davidson (philipd@alumni.princeton.edu)
