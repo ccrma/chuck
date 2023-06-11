@@ -158,7 +158,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     // add eval
     //! evaluate a string as ChucK code, compiling it and adding it to the the virtual machine
     QUERY->add_sfun( QUERY, machine_eval3_impl, "int", "eval" );
-    QUERY->doc_func( QUERY, "evaluate a string as ChucK code, with optional arguments (bundled in 'args' as \"ARG1:ARG2:...\", compile it and sporking 'count' independent shreds." );
+    QUERY->doc_func( QUERY, "evaluate a string as ChucK code, with optional arguments (bundled in 'args' as \"ARG1:ARG2:...\", compile it and spork 'count' independent shreds." );
     QUERY->add_arg( QUERY, "string", "code" );
     QUERY->add_arg( QUERY, "string", "args" );
     QUERY->add_arg( QUERY, "int", "count" );
