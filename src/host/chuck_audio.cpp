@@ -35,6 +35,7 @@
 //-----------------------------------------------------------------------------
 #include "chuck_audio.h"
 #include "chuck_errmsg.h"
+#include "util_string.h"
 #include "util_thread.h"
 #include <limits.h>
 #include "rtmidi.h"
@@ -104,37 +105,41 @@ void * ChuckAudio::m_cb_user_data = NULL;
 static RtAudio::Api driverNameToApi( char const * driver )
 {
     RtAudio::Api api = RtAudio::UNSPECIFIED;
-    if(driver)
+    if( driver )
     {
+        // get lowercase version
+        std::string driverLower = ::tolower(::trim(driver));
     #if defined(__WINDOWS_ASIO__)
-        if(!strcmp(driver, "ASIO") || !strcmp(driver, "asio") || !strcmp(driver, "Asio"))
+        if( driverLower == "asio" )
             api = RtAudio::WINDOWS_ASIO;
-        else
     #endif
     #if defined(__WINDOWS_DS__)
-        if(!strcmp(driver, "DS") || !strcmp(driver, "ds") || !strcmp(driver, "Ds"))
+        if( driverLower == "ds" || driverLower == "directsound" )
             api = RtAudio::WINDOWS_DS;
     #endif
     #if defined(__WINDOWS_WASAPI__)
-        if(!strcmp(driver, "WASAPI") || !strcmp(driver, "wasapi") || !strcmp(driver, "Wasapi"))
+        if( driverLower == "wasapi" )
             api = RtAudio::WINDOWS_WASAPI;
     #endif
     #if defined(__LINUX_ALSA__)
-        if(!strcmp(driver, "ALSA") || !strcmp(driver, "alsa") || !strcmp(driver, "Alsa")) // should match apiToDriverName
+        if( driverLower == "alsa" )
             api = RtAudio::LINUX_ALSA;
     #endif
     #if defined(__LINUX_PULSE__)
-        if(!strcmp(driver, "Pulse") || !strcmp(driver, "pulse") || !strcmp(driver, "PULSE"))
+        if( driverLower == "pulse" )
             api = RtAudio:: LINUX_PULSE;
     #endif
     #if defined(__UNIX_JACK__)
-        if(!strcmp(driver, "Jack") || !strcmp(driver, "jack") || !strcmp(driver, "JACK"))
+        if( driverLower == "jack" )
             api = RtAudio:: UNIX_JACK;
     #endif
+    #if defined(__MACOSX_CORE__)
+        if( driverLower == "coreaudio")
+    #endif
         // XXX: add swap between ALSA, PULSE, OSS? and JACK
-        if(api == RtAudio::UNSPECIFIED) 
+        if( api == RtAudio::UNSPECIFIED ) 
         {
-            EM_error2( 0, "unsupported audio driver: %s", driver);
+            EM_error2( 0, "unsupported audio driver: %s", driver );
         }
     }
 
@@ -168,7 +173,7 @@ static RtAudio::Api driverNameToApi( char const * driver )
 static char const * apiToDriverName( RtAudio::Api api )
 {
     static char const * drivers[] = {
-        "system default",
+        "(Unspecified)",
         "ALSA",
         "Pulse",
         "OSS",
@@ -176,9 +181,9 @@ static char const * apiToDriverName( RtAudio::Api api )
         "CoreAudio",
         "WASAPI",
         "ASIO",
-        "DS", // DirectSound
-        "DUMMY",
-        "invalid"
+        "DirectSound", // DirectSound
+        "(DUMMY)",
+        "(Invalid)"
     };
 
     return drivers[(int)api];
@@ -395,6 +400,18 @@ RtAudio::Api ChuckAudio::driverNameToApi( char const * driver )
     return ::driverNameToApi( driver );
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: driverApiToName()
+// desc: get API/driver name
+//-----------------------------------------------------------------------------
+std::string ChuckAudio::driverApiToName( t_CKUINT num )
+{
+    // pass it on
+    return apiToDriverName( (RtAudio::Api)num );
+}
 
 
 
