@@ -97,7 +97,7 @@ public:
                                 f_audio_cb callback,
                                 void * data,
                                 t_CKBOOL force_srate, // force_srate | 1.3.1.2 (added)
-                                char const * driver // NULL means default for build | 1.5.0.0 (added)
+                                const char * driver // NULL means default for build | 1.5.0.0 (added)
                                 );
     static void shutdown();
     static t_CKBOOL start();
@@ -109,14 +109,14 @@ public: // watchdog stuff
 
 public: // device info
     // probe audio devices
-    static void probe( char const * driver ); // NULL means default for build
+    static void probe( const char * driver ); // NULL means default for build
     // get API/driver enum from name
-    static RtAudio::Api driverNameToApi( char const* driver = NULL );
+    static RtAudio::Api driverNameToApi( const char * driver = NULL );
     // get API/drive name from int assumed to be RtAudio::Api enum
-    static std::string driverApiToName( t_CKUINT driverNum );
+    static const char * driverApiToName( t_CKUINT driverNum );
     // get device number by name?
     // 1.4.2.0: changed return type from t_CKUINT to t_CKINT
-    static t_CKINT device_named( char const *driver,
+    static t_CKINT device_named( const char * driver,
                                  const std::string & name,
                                  t_CKBOOL needs_dac = FALSE,
                                  t_CKBOOL needs_adc = FALSE );
