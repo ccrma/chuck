@@ -399,6 +399,30 @@ t_CKINT ChuckAudio::device_named( const char * driver,
 
 
 //-----------------------------------------------------------------------------
+// name: defaultDriverApi()
+// desc: get default audio driver number, i.e., RtAudio::Api enum
+//-----------------------------------------------------------------------------
+RtAudio::Api ChuckAudio::defaultDriverApi()
+{
+    return driverNameToApi( NULL );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: defaultDriverName()
+// desc: get default audio driver name
+//-----------------------------------------------------------------------------
+const char * ChuckAudio::defaultDriverName()
+{
+    return driverApiToName( defaultDriverApi() );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: driverNameToApi()
 // desc: get API/driver enum
 //-----------------------------------------------------------------------------
