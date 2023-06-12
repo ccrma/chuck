@@ -186,11 +186,15 @@ static char const * apiToDriverName( RtAudio::Api api )
         "WASAPI",
         "ASIO",
         "DirectSound", // DirectSound
-        "(DUMMY)",
-        "(Invalid)"
+        "(DUMMY)"
     };
 
-    return drivers[(int)api];
+    // cast and check
+    t_CKINT index = (t_CKINT)api;
+    if( index < 0 || index >= sizeof(drivers) / sizeof(char const *) ) return NULL;
+
+    // return
+    return drivers[index];
 }
 
 
