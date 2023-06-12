@@ -102,7 +102,7 @@ void * ChuckAudio::m_cb_user_data = NULL;
 // name: driverNameToApi()
 // desc: look up from driver name to API/driver
 //-----------------------------------------------------------------------------
-static RtAudio::Api driverNameToApi( char const * driver )
+static RtAudio::Api driverNameToApi( const char * driver )
 {
     RtAudio::Api api = RtAudio::UNSPECIFIED;
     if( driver )
@@ -174,9 +174,9 @@ static RtAudio::Api driverNameToApi( char const * driver )
 // name: apiToDriverName()
 // desc: get driver name from API
 //-----------------------------------------------------------------------------
-static char const * apiToDriverName( RtAudio::Api api )
+static const char * apiToDriverName( RtAudio::Api api )
 {
-    static char const * drivers[] = {
+    static const char * const drivers[] = {
         "(Unspecified)",
         "ALSA",
         "Pulse",
@@ -191,7 +191,7 @@ static char const * apiToDriverName( RtAudio::Api api )
 
     // cast and check
     t_CKINT index = (t_CKINT)api;
-    if( index < 0 || index >= sizeof(drivers) / sizeof(char const *) ) return NULL;
+    if( index < 0 || index >= sizeof(drivers) / sizeof(const char *) ) return NULL;
 
     // return
     return drivers[index];
@@ -260,12 +260,12 @@ static void rtAudioErrorHandler( RtAudioErrorType t, const std::string & errorTe
 // name: probe()
 // desc: probe audio devices by driver
 //-----------------------------------------------------------------------------
-void ChuckAudio::probe( char const * driver )
+void ChuckAudio::probe( const char * driver )
 {
     // get the audio driver enum by name; handles driver == NULL case
     RtAudio::Api api = driverNameToApi( driver );
     // go back from driver enum to driver name
-    char const * dnm = apiToDriverName( api );
+    const char * dnm = apiToDriverName( api );
     // rtaudio pointer
     RtAudio * audio = NULL;
     // device info struct
@@ -321,7 +321,7 @@ void ChuckAudio::probe( char const * driver )
 // desc: get device number by name; needs_dac/adc prompts further checks on
 //       requested device having > 0 channels
 //-----------------------------------------------------------------------------
-t_CKINT ChuckAudio::device_named( char const * driver,
+t_CKINT ChuckAudio::device_named( const char * driver,
                                   const std::string & name,
                                   t_CKBOOL needs_dac,
                                   t_CKBOOL needs_adc )
@@ -331,7 +331,7 @@ t_CKINT ChuckAudio::device_named( char const * driver,
     // device info struct
     RtAudio::DeviceInfo info;
     RtAudio::Api api = driverNameToApi(driver); // handles driver=NULL case
-    // char const * dnm = apiToDriverName(api);
+    // const char * dnm = apiToDriverName(api);
     
     // allocate RtAudio
     audio = new RtAudio(api, rtAudioErrorHandler);
@@ -402,7 +402,7 @@ t_CKINT ChuckAudio::device_named( char const * driver,
 // name: driverNameToApi()
 // desc: get API/driver enum
 //-----------------------------------------------------------------------------
-RtAudio::Api ChuckAudio::driverNameToApi( char const * driver )
+RtAudio::Api ChuckAudio::driverNameToApi( const char * driver )
 {
     // pass it on
     return ::driverNameToApi( driver );
@@ -415,12 +415,10 @@ RtAudio::Api ChuckAudio::driverNameToApi( char const * driver )
 // name: driverApiToName()
 // desc: get API/driver name
 //-----------------------------------------------------------------------------
-std::string ChuckAudio::driverApiToName( t_CKUINT num )
+const char * ChuckAudio::driverApiToName( t_CKUINT num )
 {
     // pass it on
-    const char * name = apiToDriverName( (RtAudio::Api)num );
-    // return
-    return name != NULL ? name : "";
+    return apiToDriverName( (RtAudio::Api)num );
 }
 
 
@@ -658,7 +656,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
                                  f_audio_cb callback,
                                  void * data,
                                  t_CKBOOL force_srate,
-                                 char const * driver )
+                                 const char * driver )
 {
     // check if already initialized
     if( m_init ) return FALSE;
@@ -699,7 +697,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
 
     // allocate RtAudio
     RtAudio::Api api = driverNameToApi(driver);
-    char const *dnm = apiToDriverName(api);
+    const char * dnm = apiToDriverName(api);
     RtAudioErrorType code = RTAUDIO_NO_ERROR;
     m_rtaudio = new RtAudio(api, rtAudioErrorHandler);
     if(!m_rtaudio)

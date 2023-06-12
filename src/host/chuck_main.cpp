@@ -488,7 +488,7 @@ bool go( int argc, const char ** argv )
     t_CKBOOL update_otf_vm = TRUE;
     string   filename = "";
     vector<string> args;
-    char const * audioDriver = NULL;
+    const char * audioDriver = NULL;
     // dac and adc devices names | 1.5.0.0 (ge) added
     string   dac_device_name = "";
     string   adc_device_name = "";
