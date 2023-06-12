@@ -418,7 +418,9 @@ RtAudio::Api ChuckAudio::driverNameToApi( char const * driver )
 std::string ChuckAudio::driverApiToName( t_CKUINT num )
 {
     // pass it on
-    return apiToDriverName( (RtAudio::Api)num );
+    const char * name = apiToDriverName( (RtAudio::Api)num );
+    // return
+    return name != NULL ? name : "";
 }
 
 
