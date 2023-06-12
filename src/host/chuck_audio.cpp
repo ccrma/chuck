@@ -109,6 +109,7 @@ static RtAudio::Api driverNameToApi( char const * driver )
     {
         // get lowercase version
         std::string driverLower = ::tolower(::trim(driver));
+        // from what is available, match by driver name
     #if defined(__WINDOWS_ASIO__)
         if( driverLower == "asio" )
             api = RtAudio::WINDOWS_ASIO;
@@ -127,14 +128,15 @@ static RtAudio::Api driverNameToApi( char const * driver )
     #endif
     #if defined(__LINUX_PULSE__)
         if( driverLower == "pulse" )
-            api = RtAudio:: LINUX_PULSE;
+            api = RtAudio::LINUX_PULSE;
     #endif
     #if defined(__UNIX_JACK__)
         if( driverLower == "jack" )
-            api = RtAudio:: UNIX_JACK;
+            api = RtAudio::UNIX_JACK;
     #endif
     #if defined(__MACOSX_CORE__)
-        if( driverLower == "coreaudio")
+        if( driverLower == "coreaudio" || driverLower == "core" )
+            api = RtAudio::MACOSX_CORE;
     #endif
         // XXX: add swap between ALSA, PULSE, OSS? and JACK
         if( api == RtAudio::UNSPECIFIED ) 
