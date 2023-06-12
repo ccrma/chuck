@@ -48,16 +48,12 @@
 #endif
 
 
-
-
 // sample
 #if defined(__CHUCK_USE_64_BIT_SAMPLE__)
 #define CK_RTAUDIO_FORMAT RTAUDIO_FLOAT64
 #else
 #define CK_RTAUDIO_FORMAT RTAUDIO_FLOAT32
 #endif
-
-
 
 
 // real-time watch dog
@@ -72,8 +68,6 @@ t_CKUINT g_watchdog_countermeasure_priority = 0;
 #endif
 // watchdog timeout
 t_CKFLOAT g_watchdog_timeout = 0.5;
-
-
 
 
 // static initialization
@@ -101,7 +95,13 @@ f_audio_cb ChuckAudio::m_audio_cb = NULL;
 void * ChuckAudio::m_cb_user_data = NULL;
 
 
-static RtAudio::Api driverNameToApi(char const *driver)
+
+
+//-----------------------------------------------------------------------------
+// name: driverNameToApi()
+// desc: look up from driver name to API/driver
+//-----------------------------------------------------------------------------
+static RtAudio::Api driverNameToApi( char const * driver )
 {
     RtAudio::Api api = RtAudio::UNSPECIFIED;
     if(driver)
@@ -227,25 +227,33 @@ void print( const RtAudio::DeviceInfo & info )
     }
 }
 
-/* this is the RtAudio error handler --- */
-static void rtAudioErrorHandler(
-    RtAudioErrorType t,
-    const std::string &errorText)
+
+
+
+//-----------------------------------------------------------------------------
+// name: rtAudioErrorHandler()
+// desc: the RtAudio error handler
+//-----------------------------------------------------------------------------
+static void rtAudioErrorHandler( RtAudioErrorType t, const std::string & errorText)
 {
     // problem finding audio devices, most likely
     EM_error2b( 0, "%s", errorText.c_str() );
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: probe()
-// desc: ...
+// desc: probe audio devices by driver
 //-----------------------------------------------------------------------------
 void ChuckAudio::probe( char const * driver )
 {
-    RtAudio::Api api = driverNameToApi( driver ); // handles driver=NULL case
+    // get the audio driver enum by name; handles driver == NULL case
+    RtAudio::Api api = driverNameToApi( driver );
+    // go back from driver enum to driver name
     char const * dnm = apiToDriverName( api );
-    // rtaduio pointer
+    // rtaudio pointer
     RtAudio * audio = NULL;
     // device info struct
     RtAudio::DeviceInfo info;
@@ -372,6 +380,19 @@ t_CKINT ChuckAudio::device_named( char const * driver,
     
     // done
     return device_no;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: driverNameToApi()
+// desc: get API/driver enum
+//-----------------------------------------------------------------------------
+RtAudio::Api ChuckAudio::driverNameToApi( char const * driver )
+{
+    // pass it on
+    return ::driverNameToApi( driver );
 }
 
 
