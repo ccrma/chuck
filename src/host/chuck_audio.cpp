@@ -160,6 +160,8 @@ static RtAudio::Api driverNameToApi( char const * driver )
         api = RtAudio::LINUX_ALSA;
     #elif defined(__PLATFORM_LINUX__) && defined(__UNIX_JACK__)
         api = RtAudio::UNIX_JACK;
+    #elif defined(__MACOSX_CORE__)
+        api = RtAudio::MACOSX_CORE;
     #endif
     }
     return api;
