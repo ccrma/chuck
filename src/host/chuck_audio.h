@@ -109,9 +109,11 @@ public: // watchdog stuff
 
 public: // device info
     // probe audio devices
-    static void probe(char const *driver); // NULL means default for build
-    // get API/driver enum
+    static void probe( char const * driver ); // NULL means default for build
+    // get API/driver enum from name
     static RtAudio::Api driverNameToApi( char const* driver = NULL );
+    // get API/drive name from int assumed to be RtAudio::Api enum
+    static std::string driverApiToName( t_CKUINT driverNum );
     // get device number by name?
     // 1.4.2.0: changed return type from t_CKUINT to t_CKINT
     static t_CKINT device_named( char const *driver,
