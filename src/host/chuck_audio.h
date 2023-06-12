@@ -110,6 +110,10 @@ public: // watchdog stuff
 public: // device info
     // probe audio devices
     static void probe( const char * driver ); // NULL means default for build
+    // default audio driver number
+    static RtAudio::Api defaultDriverApi();
+    // default audio driver name
+    static const char * defaultDriverName();
     // get API/driver enum from name
     static RtAudio::Api driverNameToApi( const char * driver = NULL );
     // get API/drive name from int assumed to be RtAudio::Api enum

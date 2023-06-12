@@ -489,6 +489,9 @@ bool go( int argc, const char ** argv )
     string   filename = "";
     vector<string> args;
     const char * audioDriver = NULL;
+    // default driver name | 1.5.0.1 (ge) added
+    if( g_enable_realtime_audio )
+        audioDriver = ChuckAudio::defaultDriverName();
     // dac and adc devices names | 1.5.0.0 (ge) added
     string   dac_device_name = "";
     string   adc_device_name = "";
@@ -1011,9 +1014,10 @@ bool go( int argc, const char ** argv )
     {
         EM_log( CK_LOG_SYSTEM, "num buffers: %ld", num_buffers );
         EM_log( CK_LOG_SYSTEM, "adaptive block processing: %ld", adaptive_size > 1 ? adaptive_size : 0 );
-        // EM_log( CK_LOG_SYSTEM, "adc: %ld dac: %d", adc, dac );
+        EM_log( CK_LOG_SYSTEM, "audio driver: %s", audioDriver ? audioDriver : "(unspecified)");
         EM_log( CK_LOG_SYSTEM, "adc:[%d] \"%s\"", adc, adc_device_name.c_str() );
         EM_log( CK_LOG_SYSTEM, "dac:[%d] \"%s\"", dac, dac_device_name.c_str() );
+        // EM_log( CK_LOG_SYSTEM, "adc: %ld dac: %d", adc, dac );
     }
     EM_log( CK_LOG_SYSTEM, "channels in: %ld out: %ld", adc_chans, dac_chans );
     // pop
