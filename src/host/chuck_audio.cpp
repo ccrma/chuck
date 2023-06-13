@@ -464,7 +464,7 @@ const char * ChuckAudio::driverApiToName( t_CKUINT num )
 //-----------------------------------------------------------------------------
 t_CKUINT ChuckAudio::numDrivers()
 {
-    return (t_CKUINT)rtaudio_compiled_apis;
+    return (t_CKUINT)rtaudio_num_compiled_apis;
 }
 
 
