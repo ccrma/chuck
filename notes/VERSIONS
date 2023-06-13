@@ -50,6 +50,16 @@ ChucK VERSIONS log
 * (added/developer) DL Api array4 operations from chugin
 * (added/developer) ChuckArray4::contains_object() returns whether
   array4 contains object references or integers
+---
+miniAudicle
+* (updated) on Windows and Linux; miniAudicle now has a new "Audio driver"
+  drop-down selection in the Preferences dialog window; this selections
+  allows for run-time selection of different drivers, e.g., "DirectSound",
+  "WASAPI", and "ASIO" on Windows, as well as "Jack", "Pulse", ALSA" on
+  Linux
+* (fixed) miniAudicle linux compilation using Qt6
+    |- FYI: needs qscintilla-qt6-devel and qscintilla-qt6)
+  [Many thanks to Fernando Lopez-Lezcano and Nils Tonnätt]
 
 
 1.5.0.0 (May 2023)
