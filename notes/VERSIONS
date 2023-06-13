@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.0.1
+1.5.0.1 (June 2023)
 ---
 * (added) WvOut support for multiple bit-depths: 16-bit signed int,
   24-bit signed int, 32-bit signed int, 32-bit float, 64-bit float
@@ -63,10 +63,10 @@ ChucK VERSIONS log
   array4 contains object references or integers
 ---
 miniAudicle
-* (updated) on Windows and Linux; miniAudicle now has a new "Audio driver"
+* (updated) on Windows and Linux; miniAudicle now has a "Audio driver"
   drop-down selection in the Preferences dialog window; this selections
   allows for run-time selection of different drivers, e.g., "DirectSound",
-  "WASAPI", and "ASIO" on Windows, as well as "Jack", "Pulse", ALSA" on
+  "WASAPI", or "ASIO" on Windows, as well as "Jack", "Pulse", or "ALSA" on
   Linux
 * (fixed) miniAudicle linux compilation using Qt6
     |- FYI: needs qscintilla-qt6-devel and qscintilla-qt6)
