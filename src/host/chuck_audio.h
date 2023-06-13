@@ -79,6 +79,21 @@ extern t_CKFLOAT g_watchdog_timeout;
 
 
 
+//-----------------------------------------------------------------------------
+// name: class ChuckAudioDriverInfo
+// desc: info pertaining to an audio driver
+//-----------------------------------------------------------------------------
+struct ChuckAudioDriverInfo
+{
+    t_CKUINT driver;
+    std::string name;
+    std::string userFriendlyName;
+
+    ChuckAudioDriverInfo() : driver(0) { }
+};
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: class ChuckAudio
@@ -107,9 +122,7 @@ public: // watchdog stuff
     static t_CKBOOL watchdog_start();
     static t_CKBOOL watchdog_stop();
 
-public: // device info
-    // probe audio devices
-    static void probe( const char * driver ); // NULL means default for build
+public: // driver related operations
     // default audio driver number
     static RtAudio::Api defaultDriverApi();
     // default audio driver name
@@ -118,6 +131,14 @@ public: // device info
     static RtAudio::Api driverNameToApi( const char * driver = NULL );
     // get API/drive name from int assumed to be RtAudio::Api enum
     static const char * driverApiToName( t_CKUINT driverNum );
+    // get number of compiled audio driver APIs
+    static t_CKUINT numDrivers();
+    // get info on a particular driver
+    static ChuckAudioDriverInfo getDriver( t_CKUINT n );
+
+public: // audio device related operations
+    // probe audio devices; NULL for driver means default for build
+    static void probe( const char * driver );
     // get device number by name?
     // 1.4.2.0: changed return type from t_CKUINT to t_CKINT
     static t_CKINT device_named( const char * driver,

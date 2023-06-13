@@ -99,6 +99,16 @@ void * ChuckAudio::m_cb_user_data = NULL;
 
 
 //-----------------------------------------------------------------------------
+// global symbols expected from RtAudio | 1.5.0.1 (ge) added
+//-----------------------------------------------------------------------------
+extern "C" const unsigned int rtaudio_num_compiled_apis;
+extern "C" const unsigned int rtaudio_compiled_apis[];
+extern "C" const char* rtaudio_api_names[][2];
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: driverNameToApi()
 // desc: look up from driver name to API/driver
 //-----------------------------------------------------------------------------
@@ -444,6 +454,39 @@ const char * ChuckAudio::driverApiToName( t_CKUINT num )
     // pass it on
     return apiToDriverName( (RtAudio::Api)num );
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: numDrivers()
+// desc: get number of compiled audio driver APIs
+//-----------------------------------------------------------------------------
+t_CKUINT ChuckAudio::numDrivers()
+{
+    return (t_CKUINT)rtaudio_compiled_apis;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getDriver()
+// desc: get info on a particular driver
+//-----------------------------------------------------------------------------
+ChuckAudioDriverInfo ChuckAudio::getDriver( t_CKUINT n )
+{
+    // check
+    if( n >= numDrivers() ) return ChuckAudioDriverInfo();
+
+    ChuckAudioDriverInfo info;
+    info.driver = rtaudio_compiled_apis[n];
+    info.name = rtaudio_api_names[info.driver][0];
+    info.userFriendlyName = rtaudio_api_names[info.driver][1];
+
+    return info;
+}
+
 
 
 
