@@ -474,7 +474,7 @@ t_CKUINT ChuckAudio::numDrivers()
 // name: getDriver()
 // desc: get info on a particular driver
 //-----------------------------------------------------------------------------
-ChuckAudioDriverInfo ChuckAudio::getDriver( t_CKUINT n )
+ChuckAudioDriverInfo ChuckAudio::getDriverInfo( t_CKUINT n )
 {
     // check
     if( n >= numDrivers() ) return ChuckAudioDriverInfo();

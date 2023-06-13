@@ -85,11 +85,21 @@ extern t_CKFLOAT g_watchdog_timeout;
 //-----------------------------------------------------------------------------
 struct ChuckAudioDriverInfo
 {
+    // driver API ID; e.g., RtAudio::Api values
+    // RtAudio::MACOSX_CORE or RtAudio::WINDOWS_DS or RtAudio::UNIX_JACK
+    // (see RtAudio.h for full list)
     t_CKUINT driver;
+    // a short name of the driver, e.g., "DS"
     std::string name;
+    // a longer name of the driver, e.g., "DirectSound"
     std::string userFriendlyName;
 
-    ChuckAudioDriverInfo() : driver(0) { }
+    // constructor
+    ChuckAudioDriverInfo()
+        : driver(0),
+        name("(unspecified)"),
+        userFriendlyName("(unspecified driver")
+    {  }
 };
 
 
@@ -134,7 +144,7 @@ public: // driver related operations
     // get number of compiled audio driver APIs
     static t_CKUINT numDrivers();
     // get info on a particular driver
-    static ChuckAudioDriverInfo getDriver( t_CKUINT n );
+    static ChuckAudioDriverInfo getDriverInfo( t_CKUINT n );
 
 public: // audio device related operations
     // probe audio devices; NULL for driver means default for build
