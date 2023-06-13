@@ -25,6 +25,17 @@ ChucK VERSIONS log
 * (added) new IO flags: IO.INT24, IO.INT64, IO.FLOAT32, IO.FLOAT64
   IO.UINT8, IO.SINT8, IO.UINT16, IO.SINT16, IO.UINT32, IO.SINT32,
   IO.UINT64, IO.SINT64
+* (fixed) (Windows) HID joystick input
+    |- note: certain joystick devices (including some XBox One gamepads)
+       are recognized but do not receive input data; a workaround is to
+       install explicitly HID drivers for these devices; see
+    |- https://www.snes9x.com/phpbb3/viewtopic.php?t=27510&sid=661fbbc1609037a8ec2e5f10e003f5a0
+    |- (from above URL): open Device Manager, expand "Human Interface Devices",
+          right click "XINPUT compatible HID device", "Update driver",
+       "Browse my computer", "Let me pick". should be three options.
+       Try "HID-compliant game controller". If you want to undo the
+       change, same thing but update "HID-compliant game controller"
+       and pick the XINPUT ***
 * (updated) BINARY mode for IO now able to read signed vs. unsigned integers,
   specified using using .readtInt( flags ), where 'flags' is one of the above
   IO flags; in BINARY mode, IO.INT8/16/32 now returns unsigned integers, same as
