@@ -40,9 +40,10 @@
 #include "util_math.h"
 
 #include <algorithm>
+#include <cstdint> // 1.5.0.1 (ge) added; requires c++11
+#include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <iomanip>
 #include <typeinfo>
 using namespace std;
 
