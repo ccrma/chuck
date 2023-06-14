@@ -8,12 +8,16 @@ Please note that the `master` branch has been renamed to `main.`
 
 ## Strongly-timed, Concurrent, and On-the-fly Music Programming Language  
 
+Chuck is a programming language for real-time sound synthesis and music creation. It is open-source and freely available on macOS, Windows, and Linux. Chuck presents a unique time-based, concurrent programming model that's precise and expressive (we call this strongly-timed), with dynamic control rates and the ability to add and modify code on-the-fly. In addition, ChucK supports MIDI, OpenSoundControl, HID device, and multi-channel audio. It's fun and easy to learn, and offers composers, researchers, and performers a powerful programming tool for building and experimenting with complex audio synthesis/analysis programs, and real-time interactive music.
+
 Welcome to ChucK! 
 
-what is it? : Chuck is a programming language for real-time sound synthesis and music creation. It is open-source and freely available on macOS, Windows, and Linux. Chuck presents a unique time-based, concurrent programming model that's precise and expressive (we call this strongly-timed), with dynamic control rates and the ability to add and modify code on-the-fly. In addition, ChucK supports MIDI, OpenSoundControl, HID device, and multi-channel audio. It's fun and easy to learn, and offers composers, researchers, and performers a powerful programming tool for building and experimenting with complex audio synthesis/analysis programs, and real-time interactive music.
+## Downloading ChucK
 
-For more information, including documentation, research publications, and community resources, please check out the ChucK website:
-http://chuck.stanford.edu/
+To download and install ChucK, visit https://chuck.stanford.edu/release/
+
+For more information, including documentation, examples, research publications, and community resources, please check out the ChucK website:
+https://chuck.stanford.edu/
 
 ## Building ChucK
 ### macOS
