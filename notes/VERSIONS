@@ -2,6 +2,11 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.0.2
+---
+* (developer) cleaned up core/makefile
+
+
 1.5.0.1 (June 2023)
 ---
 * (added) WvOut support for multiple bit-depths: 16-bit signed int,
@@ -48,6 +53,7 @@ ChucK VERSIONS log
   using FileIO in binary mode (author: Perry R. Cook)
 * (added) examples/special/scream-o-matic/ -- using LiSa + granular
   synthesis for a scream texture generator.
+* (fixed) potential-crash-on-shutdown type system issue
 * (fixed) CNoise incorrect bias on pink noise (thank you anthonyhawes)
 * (updated) on all platforms, Math.random*() functions now internally
   use a standard Mersenne Twister RNG (mt19937); this greatly improves 
