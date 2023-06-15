@@ -933,6 +933,7 @@ public:
   bool callbackEvent( unsigned long nframes );
 
   private:
+  std::string escape_regex_pattern( const std::string & s );
 
   bool probeDeviceOpen( unsigned int device, StreamMode mode, unsigned int channels, 
                         unsigned int firstChannel, unsigned int sampleRate,

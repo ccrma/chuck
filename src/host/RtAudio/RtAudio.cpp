@@ -2187,10 +2187,13 @@ RtAudio::DeviceInfo RtApiJack :: getDeviceInfo( unsigned int device )
   info.preferredSampleRate = jack_get_sample_rate( client );
   info.sampleRates.push_back( info.preferredSampleRate );
 
+  // escape regex special characters in jack port name to match verbatim
+  std::string port_name = escape_regex_pattern( info.name );
+
   // Count the available ports containing the client name as device
   // channels.  Jack "input ports" equal RtAudio output channels.
   unsigned int nChannels = 0;
-  ports = jack_get_ports( client, info.name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput );
+  ports = jack_get_ports( client, port_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput );
   if ( ports ) {
     while ( ports[ nChannels ] ) nChannels++;
     free( ports );
@@ -2199,7 +2202,7 @@ RtAudio::DeviceInfo RtApiJack :: getDeviceInfo( unsigned int device )
 
   // Jack "output ports" equal RtAudio input channels.
   nChannels = 0;
-  ports = jack_get_ports( client, info.name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput );
+  ports = jack_get_ports( client, port_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput );
   if ( ports ) {
     while ( ports[ nChannels ] ) nChannels++;
     free( ports );
@@ -2281,6 +2284,19 @@ static int jackXrun( void *infoPointer )
   return 0;
 }
 
+std::string RtApiJack :: escape_regex_pattern( const std::string & s )
+{
+  static const char metacharacters[] = R"(\.^$-+()[]{}|?*)";
+  std::string out;
+
+  out.reserve( s.size() );
+  for ( auto ch : s ) {
+    if ( strchr( metacharacters, ch ) ) out.push_back( '\\' );
+    out.push_back(ch);
+  }
+  return out;
+}
+
 bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned int channels,
                                    unsigned int firstChannel, unsigned int sampleRate,
                                    RtAudioFormat format, unsigned int *bufferSize,
@@ -2335,6 +2351,9 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     return FAILURE;
   }
 
+  // escape regex special characters in jack port name to match verbatim
+  std::string port_name = escape_regex_pattern( deviceName );
+
   unsigned long flag = JackPortIsInput;
   if ( mode == INPUT ) flag = JackPortIsOutput;
 
@@ -2342,7 +2361,7 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     // Count the available ports containing the client name as device
     // channels.  Jack "input ports" equal RtAudio output channels.
     unsigned int nChannels = 0;
-    ports = jack_get_ports( client, deviceName.c_str(), JACK_DEFAULT_AUDIO_TYPE, flag );
+    ports = jack_get_ports( client, port_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, flag );
     if ( ports ) {
       while ( ports[ nChannels ] ) nChannels++;
       free( ports );
@@ -2366,7 +2385,7 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   stream_.sampleRate = jackRate;
 
   // Get the latency of the JACK port.
-  ports = jack_get_ports( client, deviceName.c_str(), JACK_DEFAULT_AUDIO_TYPE, flag );
+  ports = jack_get_ports( client, port_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, flag );
   if ( ports[ firstChannel ] ) {
     // Added by Ge Wang
     jack_latency_callback_mode_t cbmode = (mode == INPUT ? JackCaptureLatency : JackPlaybackLatency);
@@ -2611,7 +2630,7 @@ RtAudioErrorType RtApiJack :: startStream( void )
   // Get the list of available ports.
   if ( shouldAutoconnect_ && (stream_.mode == OUTPUT || stream_.mode == DUPLEX) ) {
     result = 1;
-    ports = jack_get_ports( handle->client, handle->deviceName[0].c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput);
+    ports = jack_get_ports( handle->client, escape_regex_pattern( handle->deviceName[0] ).c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput );
     if ( ports == NULL) {
       errorText_ = "RtApiJack::startStream(): error determining available JACK input ports!";
       goto unlock;
@@ -2635,7 +2654,7 @@ RtAudioErrorType RtApiJack :: startStream( void )
 
   if ( shouldAutoconnect_ && (stream_.mode == INPUT || stream_.mode == DUPLEX) ) {
     result = 1;
-    ports = jack_get_ports( handle->client, handle->deviceName[1].c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput );
+    ports = jack_get_ports( handle->client, escape_regex_pattern( handle->deviceName[1] ).c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput );
     if ( ports == NULL) {
       errorText_ = "RtApiJack::startStream(): error determining available JACK output ports!";
       goto unlock;
