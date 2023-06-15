@@ -10,8 +10,6 @@ mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck-core
 win32:
 	make -f makefile.win32
 
-CK_VERSION=1.5.0.1
-
 LEX=flex
 YACC=bison
 CC=gcc
@@ -158,70 +156,3 @@ clean:
 	@rm -rf *.o *.d $(OBJS) \
          $(patsubst %.o,%.d,$(OBJS)) *~ chuck.output chuck.tab.h chuck.tab.c \
          chuck.yy.c $(DIST_DIR){,.tgz,.zip} Release Debug
-
-# ------------------------------------------------------------------------------
-# Distribution meta-targets
-# ------------------------------------------------------------------------------
-
-.PHONY: bin-dist-mac
-bin-dist-mac: mac-ub
-# clean out old dists
-	-rm -rf $(DIST_DIR_EXE){,.tgz,.zip}
-# create directories
-	mkdir $(DIST_DIR_EXE) $(DIST_DIR_EXE)/bin $(DIST_DIR_EXE)/doc
-# copy binary + notes
-	cp chuck $(addprefix ../notes/bin/,$(BIN_NOTES)) $(DIST_DIR_EXE)/bin
-# copy manual + notes
-	cp ../doc/manual/ChucK_manual.pdf $(addprefix ../notes/doc/,$(DOC_NOTES)) $(DIST_DIR_EXE)/doc
-# copy examples
-	svn export $(CK_SVN)/trunk/src/examples $(DIST_DIR_EXE)/examples &> /dev/null
-#cp -r examples $(DIST_DIR_EXE)/examples
-# remove .svn directories
-#-find $(DIST_DIR_EXE)/examples/ -name '.svn' -exec rm -rf '{}' \; &> /dev/null
-# copy notes
-	cp $(addprefix ../notes/,$(NOTES)) $(DIST_DIR_EXE)
-# tar/gzip
-	tar czf $(DIST_DIR_EXE).tgz $(DIST_DIR_EXE)
-
-.PHONY: bin-dist-win32
-bin-dist-win32:
-#	make win32
-# clean out old dists
-	-rm -rf $(DIST_DIR_EXE){,.tgz,.zip}
-# create directories
-	mkdir $(DIST_DIR_EXE) $(DIST_DIR_EXE)/bin $(DIST_DIR_EXE)/doc
-# copy binary + notes
-	cp Release/chuck.exe $(addprefix ../notes/bin/,$(BIN_NOTES)) $(DIST_DIR_EXE)/bin
-# copy manual + notes
-	cp ../doc/manual/ChucK_manual.pdf $(addprefix ../notes/doc/,$(DOC_NOTES)) $(DIST_DIR_EXE)/doc
-# copy examples
-	svn export $(CK_SVN)/trunk/src/examples $(DIST_DIR_EXE)/examples &> /dev/null
-#cp -r examples $(DIST_DIR_EXE)/examples
-# remove .svn directories
-#-find $(DIST_DIR_EXE)/examples/ -name '.svn' -exec rm -rf '{}' \; &> /dev/null
-# copy notes
-	cp $(addprefix ../notes/,$(NOTES)) $(DIST_DIR_EXE)
-# tar/gzip
-	zip -q -9 -r -m $(DIST_DIR_EXE).zip $(DIST_DIR_EXE)
-
-.PHONY: src-dist
-src-dist:
-# clean out old dists
-	rm -rf $(DIST_DIR) $(DIST_DIR){.tgz,.zip}
-# create directories
-	mkdir $(DIST_DIR) $(DIST_DIR)/doc $(DIST_DIR)/src $(DIST_DIR)/examples
-# copy src
-	git archive HEAD . | tar -x -C $(DIST_DIR)/src
-	rm -r $(DIST_DIR)/src/examples $(DIST_DIR)/src/test
-# copy manual + notes
-	cp $(addprefix ../notes/doc/,$(DOC_NOTES)) $(DIST_DIR)/doc
-# copy examples
-	git archive HEAD examples | tar -x -C $(DIST_DIR)/
-	# svn export $(CK_SVN)/trunk/src/examples $(DIST_DIR)/examples 2>&1 > /dev/null
-#cp -r examples $(DIST_DIR)/examples
-# remove .svn directories
-#-find $(DIST_DIR)/examples/ -name '.svn' -exec rm -rf '{}' \; &> /dev/null
-# copy notes
-	cp $(addprefix ../notes/,$(NOTES)) $(DIST_DIR)
-# tar/gzip
-	tar czf $(DIST_DIR).tgz $(DIST_DIR)
