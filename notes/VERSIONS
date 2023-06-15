@@ -2,6 +2,12 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.0.2
+---
+- (fixed) (jack, linux/unix) port name now accounts for regex meta
+  characters (thanks @gyroplast and @garyscavone)
+
+
 1.5.0.1 (June 2023)
 ---
 - (added) WvOut support for multiple bit-depths: 16-bit signed int,
