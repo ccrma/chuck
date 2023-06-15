@@ -1,13 +1,44 @@
----
-ChucK Developer's Guide
 
-current version of this document:
-
-    http://chuck.stanford.edu/doc/develop/
-
-chuck home:
-
-    http://chuck.stanford.edu/
-    http://chuck.cs.princeton.edu/
+ChucK Developers Wanted!!!
 
 ---
+Join us on the ChucK Community Discord:
+    https://discord.gg/ENr3nurrx8
+
+Github Repositories:
+---
+ChucK (core language, VM, and synthesis engine)
+    https://github.com/ccrma/chuck
+
+chugins (ChucK plugins)
+(^^^ a great place to start contributing!)
+    https://github.com/ccrma/miniAudicle
+
+miniAudicle (IDE for ChucK; macOS, Linux, Windows)
+    https://github.com/ccrma/miniAudicle
+
+WebChucK (ChucK in web browsers)
+    https://github.com/ccrma/webchuck
+
+WebChucK IDE (web-based IDE for ChucK)
+    https://github.com/ccrma/webchuck-ide
+
+Chunity (Chuck for Unity)
+    https://github.com/ccrma/chunity
+
+ChucK-Media (non-source chuck document and media files)
+    https://github.com/ccrma/chuck-media
+
+ChucK-web (source for the ChucK website)
+    https://github.com/ccrma/chuck-website
+
+Early in development
+---
+ChuGL (ChucK graphics/game library)
+    https://github.com/ccrma/chugl
+
+Chunreal (ChucK in Unreal Engine)
+    https://github.com/ccrma/chunreal
+
+ChucK-o-Matic (automation tools for the ChucK ecosystem)
+    https://github.com/ccrma/chuck-o-matic
