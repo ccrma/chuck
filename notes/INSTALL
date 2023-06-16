@@ -1,74 +1,46 @@
-ChucK : Build Instructions 
+Installing ChucK
 ---
-ChucK home:
-    http://chuck.stanford.edu/
-    http://chuck.cs.princeton.edu/
+To install the latest release applications, visit:
+    https://chuck.stanford.edu/release/
+
+(macOS and Windows), the installer will install two separate programs:
+    miniAudicle (GUI-based IDE for ChucK)
+    chuck (command line ChucK)
+
+(Linux) build from source
+    https://chuck.stanford.edu/release/
+
+
+Building ChucK
+---
+To build the latest chuck from source, either download the latest source 
+(https://chuck.stanford.edu/release/), or clone the chuck repo from 
+github.
+
+
+macOS
+---
+git clone https://github.com/ccrma/chuck.git (or download source)
+cd chuck/src
+make mac (OR make mac-ub for universal binary)
+
+Linux
+---
+git clone https://github.com/ccrma/chuck.git (or download source)
+cd chuck/src
+make linux-alsa linux-pulse linux-jack
+
+Windows
+---
+To build the latest chuck on Windows using Visual Studio (2019 or later 
+recommended)
+
+git clone https://github.com/ccrma/chuck.git (or download source)
+navigate to chuck\src\visual-studio
+open chuck.sln and build.
+
 
 Got questions?
-    http://chuck.stanford.edu/community.html
-
-online version of this document:
-    http://chuck.stanford.edu/doc/build/
-
 ---
-We tried to make ChucK as easy as possible to build and re-use. All 
-sources files - headers source for compiler, vm, and audio engine - are 
-in the same directory (they run in the same address space anyway). Platforms 
-differences are abstracted to the lowest level (in part thanks to Gary 
-Scavone). None of the compiler/vm has any OS-depedent code. To build 
-chuck from the source (from scratch): 
-
----
-1. Go to the src/ directory (replace chuck-x.x.x.x with the actual 
-directory name):
-
-   %> cd chuck-x.x.x.x/src/
-
----
-2. If you type 'make' here, you should get the following message:
-
-   %> make
-   [chuck build]: please use one of the following configurations:
-       make osx, make osx-ub, make win32,
-       make linux-oss, make linux-alsa, or make linux-jack
-
-Now, type the command corresponding to your platform... 
-
-for example, for macOS (Universal Binary: Intel + Apple Silicon):
-
-   %> make mac-ub
-
-or for macOS (current):
-
-   %> make mac
-
-etc...
-
----
-3. If you like to install chuck (cp into /usr/local/bin by default).
-If you would like a different destination, edit the makefile under 'install',
-or skip this step altogether. (we recommend putting it somewhere in your 
-path, it makes on-the-fly programming easier)
-
-   %> make install
-
----
-4. If you haven't gotten any egregous error messages up to this point, 
-then you should be done! There should be a 'chuck' executable in the 
-current directory. For a quick sanity check, execute the following (use 
-'./chuck' if chuck is not in your path), and see if you get the same output:
-
-   %> chuck
-   [chuck]: no input files...
-
-(if you do get error messages during compilation, or you run into some 
-other problem - please let us know and we will do our best to provide 
-support) 
-
----
-5. You are ready to ChucK. If this is your first time programming in 
-ChucK, you may want to look at the documentation, or take the ChucK 
-Tutorial (in doc/ and online http://chuck.stanford.edu/doc/). ThanK 
-you very much. Go forth and happy ChucKin'!
-
-Ge + Perry
+Join the ChucK Community Discord:
+    https://discord.gg/ENr3nurrx8
