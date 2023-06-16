@@ -11,6 +11,15 @@ To install the latest release applications, visit:
     https://chuck.stanford.edu/release/
 
 
+Installing (command-line) ChucK using Homebrew
+---
+macOS and linux
+    brew install chuck
+
+more info:
+    https://formulae.brew.sh/formula/chuck
+
+
 Building ChucK
 ---
 To build the latest chuck from source, either download the latest source 
