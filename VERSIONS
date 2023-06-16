@@ -6,7 +6,34 @@ ChucK VERSIONS log
 ---
 - (fixed) (jack, linux/unix) port name now accounts for regex meta
   characters (thanks @gyroplast and @garyscavone)
-
+- (developer) house cleaning on the chuck git repository
+  |- migrated large files out of 'chuck' and into a new 'chuck-media' repo
+  |- streamlined release notes and moved to top level
+  |- removed outdated files
+  |- added additional information including ChucK History into README.md
+---
+- (developer) the Great ChucK Repo Cleanup of 2023 has been completed!
+As a result, the overall chuck repo size has been reduced from 721MB to 
+25MB -- since git works by cloning the entire repo and all history, this 
+massively improves the speed of git clone, git submodule update --init in 
+repos that reference chuck, and the size of each chuck clone on disk. 
+  |- To accomplish this, we had to "rewrite the git history," which is 
+a semi-cataclysmic process for git repos. As a result, all existing 
+clones of the chuck, miniAudicle, and chunity repos as well as branches 
+and pull-requests that reference the older repo *** are now invalid ***. 
+Please do a fresh clone of the chuck/miniAudicle/chunity repos and copy 
+any important changes to these fresh clones before making any further 
+changes to avoid headaches! 
+  |- NOTE: do not use git pull with your existing, pre-cleanup chuck 
+repo as it will seem to work BUT will put your local repo into a messed 
+up state. A fresh git clone is necessary before proceeding with chuck 
+development! We believe that the cleaner, smoother ChucK dev experience 
+will be worth this short-term inconvenience. 
+  |- If you have any difficulty porting any existing branches to the new 
+repo, please let us know and we will do our best to help! Apologies for 
+any confusion that may arise, and thank you for being involved in ChucK 
+development!
+---
 
 1.5.0.1 (June 2023)
 ---
