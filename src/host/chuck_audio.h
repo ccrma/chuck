@@ -191,8 +191,8 @@ public: // data
     static SAMPLE * m_extern_out; // for things like audicle
 
     static RtAudio * m_rtaudio;
-    static t_CKUINT m_dac_n;
-    static t_CKUINT m_adc_n;
+    static t_CKINT m_dac_n; // 1.5.0.3 (ge) changed to signed
+    static t_CKINT m_adc_n; // 1.5.0.3 (ge) changed to signed
     static std::string m_dac_name;
     static std::string m_adc_name;
     static f_audio_cb m_audio_cb;
