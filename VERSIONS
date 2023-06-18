@@ -2,6 +2,14 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.0.3
+---
+- (fixed) chuck audio I/O now correctly carries out extended probing
+  for default input and output devices with differing sample rates,
+  e.g., with some bluetooth mic/headphones whose input is limited
+  to 24kHZ, including some AirPods.
+
+
 1.5.0.2 (June 2023)
 ---
 - (note) this is primarily a maintenance release; please see 1.5.0.1
