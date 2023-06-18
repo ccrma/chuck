@@ -50,8 +50,9 @@ miniAudicle (added: few helpful features)
     https://chuck.stanford.edu/
   "miniAudicle website..."
     https://github.com/ccrma/miniAudicle/
-- (added) Device Browser now has an "Audio driver" drop-down box that
-  can select an available driver to view its associated audio devices
+- (added, Windows/Linux) Device Browser now has an "Audio driver"
+  drop-down box that can select an available driver to view its
+  associated audio devices
 
 
 1.5.0.1 (June 2023)
