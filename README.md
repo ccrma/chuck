@@ -39,36 +39,35 @@ OR to build a universal binary (intel + apple sillicon):
 make mac-ub
 ```
 
-This should create a `chuck` executable in `chuck/src`.
+This should build a `chuck` executable in `chuck/src`.
 
 ### Linux
-Dependencies: gcc, g++, make, bison, flex, libsndfile, ALSA, PulseAudio (for linux-pulse builds), JACK (for linux-jack builds)
+Dependencies: gcc, g++, make, bison, flex, libsndfile, ALSA (for linux-alsa builds), PulseAudio (for linux-pulse builds), JACK (for linux-jack builds)
 
 To set up a build environment for **chuck** on Debian or Ubuntu:
 ```
 sudo apt install build-essential bison flex libsndfile1-dev \
   libasound2-dev libpulse-dev libjack-jackd2-dev
 ```
-For other Linux distributions, the setup should be similar although the package install tools and package names may be slightly different.
+For other Linux distributions, the setup should be similar although the package install tools and package names may be slightly different. (_NOTE: setups that do not need JACK or PulseAudio can omit either or both of these packages. ALSA is needed for MIDI support on Linux._)
 
-
-To build, navigate to the `chuck/src` directory:
+To build **chuck** (with all suppported drivers: ALSA, PulseAudio, JACK), navigate to the `chuck/src` directory and run `make`:
 ```
 cd chuck/src
-```
-
-To build chuck with all supported drivers: ALSA, PulseAudio, and JACK:
-```
 make linux-alsa linux-pulse linux-jack
 ```
 
-To build chuck that specifically supports ALSA, PulseAudio, or JACK (or any combination thereof), run `make` with desired driver(s).
-For example, to build for ALSA/JACK:
+To build **chuck** with support for a subset of ALSA, PulseAudio, or JACK, run `make` with the desired driver(s). For example, to build for ALSA and PulseAudio only:
 ```
-make linux-alsa linux-jack
+make linux-alsa linux-pulse
 ```
 
-This should create a `chuck` executable in `chuck/src`.
+Or, to build for ALSA only:
+```
+make linux-alsa
+```
+
+This build process should build a `chuck` executable in `chuck/src`.
 
 ### Windows
 To build chuck using Visual Studio (2019 or later recommended), navigate to `chuck\src\visual-studio`, open `chuck.sln`, and build.
@@ -87,3 +86,6 @@ Non-source code documents (papers, logos, soundbites, comics) have been migrated
 
 ## ChucK Community
 Join us! [ChucK Community Discord](https://discord.gg/ENr3nurrx8) | [ChucK-users Mailing list](https://lists.cs.princeton.edu/mailman/listinfo/chuck-users)
+
+
+_Happy ChucKing!_
