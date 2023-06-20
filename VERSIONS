@@ -4,12 +4,13 @@ ChucK VERSIONS log
 
 1.5.0.3
 ---
-- (note) this is (also) a maintenance release; please see 1.5.0.1
-  and earlier release notes  to see recent feature updates
 - (fixed) chuck audio I/O now correctly carries out extended probing
   for default input and output devices with differing sample rates,
   e.g., with some bluetooth mic/headphones whose input is limited
   to 24kHZ, including some AirPods.
+- (note) beyond the above, this release is a follow-up maintenance
+  release; please see 1.5.0.1 and earlier release notes  to see recent
+  feature updates
 - (updated) examples/README now has more useful information
 - (updated) README.md streamlined and linux build instructions improved.
 - (updated, developer) `make linux-all` (or simply `make linux`) now

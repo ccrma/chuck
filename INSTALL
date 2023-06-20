@@ -1,55 +1,35 @@
 Installing ChucK
 ---
-To install the latest release applications, visit:
+To install the latest release, visit:
     https://chuck.stanford.edu/release/
 
 (macOS and Windows), the installer will install two separate programs:
     miniAudicle (GUI-based IDE for ChucK)
     chuck (command line ChucK)
 
-(Linux) build from source
+(Linux) build from source:
     https://chuck.stanford.edu/release/
 
 
 Installing (command-line) ChucK using Homebrew
 ---
-macOS and linux
     brew install chuck
-
-more info:
-    https://formulae.brew.sh/formula/chuck
 
 
 Building ChucK
 ---
-To build the latest chuck from source, either download the latest source 
-(https://chuck.stanford.edu/release/), or clone the chuck repo from 
-github.
+To build the latest chuck from source code, either download the latest
+source archive (https://chuck.stanford.edu/release/), or clone the chuck
+repo from github.
 
-
-macOS
----
-git clone https://github.com/ccrma/chuck.git (or download source)
-cd chuck/src
-make mac (OR make mac-ub for universal binary)
-
-Linux
----
-git clone https://github.com/ccrma/chuck.git (or download source)
-cd chuck/src
-make linux-alsa linux-pulse linux-jack
-
-Windows
----
-To build the latest chuck on Windows using Visual Studio (2019 or later 
-recommended)
-
-git clone https://github.com/ccrma/chuck.git (or download source)
-navigate to chuck\src\visual-studio
-open chuck.sln and build.
+Please README.md or https://github.com/ccrma/chuck for more details on
+building ChucK from source.
 
 
 Got questions?
 ---
+Join us on any of the ChucK Community channels:
+    https://chuck.stanford.edu/community/
+
 Join the ChucK Community Discord:
     https://discord.gg/ENr3nurrx8
