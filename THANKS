@@ -1,9 +1,14 @@
-ChucK THANKS:
+ChucK THANKS
 
-Many people have contributed to ChucK by suggesting great new ideas and
-improvements, reporting problems, or submitting code. Here is a list. 
+Over the years, many people have contributed to ChucK by introducing new 
+ideas and improvements, reporting problems, submitting code, documenting, 
+creating examples and tutorials, making and sharing music with the tools, 
+and helping one another along. Here is a partial list (also see AUTHORS 
+for more folks who have contributed).
 
-ThanK you! (also see AUTHORS)
+==========
+ThanK you!
+==========
 
 Andrew Appel
 Brian Kernighan
@@ -11,17 +16,21 @@ Paul Lansky
 Roger Dannenberg
 Brad Garton
 Ken Steiglitz
+Jieun Oh
 Max Mathews
 Fernando Lopez-Lezcano
+Julius Smith
+Gary Scavone
+Julia Mills
+Clint Hoagland
 Matt Wright
+Dana Batali
 Nicholas J. Bryan
-Jieun Oh
 Jorge Herrera
 Kunwoo Kim
-Julia Mills
 Trijeet Mukhopadhyay
+Kelly Cochran
 Michael Wilson
-Gary Scavone
 Szymon Rusinkiewicz
 Nick Collins
 Graham Coleman
@@ -32,9 +41,10 @@ Paul Calamia
 Mark Daly
 Joel Matthys
 Mario Buoninfante
-Joel Matthys
 Eric Heep
 Paul Brossier
+Barak A. Pearlmutter
+David Braun
 Steven Sinclair
 Niklas Werner
 Robin Haberkorn
@@ -51,5 +61,6 @@ Princeton Laptop Orchestra
 Stanford Laptop Orchestra
 CCRMA researchers, composers, students
 ChucK Users Community!
-
 ---
+
+Keep on ChucKin

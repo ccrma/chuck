@@ -1,53 +1,52 @@
+ChucK: Strongly-time Audio Programming Language
+    https://chuck.stanford.edu/
+    https://chuck.cs.princeton.edu/
+
 ---
-ChucK was originated by:
-  Ge Wang
-  Perry R. Cook
+ChucK was originated by
+    Ge Wang
+    Perry R. Cook
 
-Chief Architect and Design:
-  Ge Wang
+Chief architect and designer
+    Ge Wang
 
-Developers:
-  Ge Wang
-  Perry Cook
-  Spencer Salazar
-  Rebecca Fiebrink
-  Jack Atherton
-  Dan Trueman
-  Ajay Kapur
-  Celeste Betancur
-  Chris Chafe
-  Mike Mulshine
-  Andrew Zhu Aday
-  Terry Feng
-  Nick Shaheed
-  Alex Han
-  Eito Murakami
-  Marise van Zyl
-  Yikai Li
+ChucK Team
+    Ge Wang
+    Perry Cook
+    Spencer Salazar
+    Rebecca Fiebrink
+    Jack Atherton
+    Dan Trueman
+    Ajay Kapur
+    Celeste Betancur
+    Chris Chafe
+    Mike Mulshine
+    Andrew Zhu Aday
+    Terry Feng
+    Nick Shaheed
+    Alex Han
+    Eito Murakami
+    Marise van Zyl
+    Yikai Li
 
 Developers emeritus:
-  Ananya Misra
-  Ari Lazier
-  Philip Davidson
+    Ananya Misra
+    Ari Lazier
+    Philip Davidson
 
 Sporkspersons, ChucKian sherpas, forums moderators
-  Kassen Oud
-  Joel Matthys
-  Mario Buoninfante
+    Kassen Oud
+    Joel Matthys
+    Mario Buoninfante
 
-(See also the file THANKS and README)
+(See also THANKS and README.md)
 
 ---
-ChucK home page:
-    http://chuck.stanford.edu/
-    http://chuck.cs.princeton.edu/
-
-CCRMA:
-    http://ccrma.stanford.edu/
-
-Developed in Music:Computing:Design (MCD) Research Group
+Music, Computing, Design (MCD) Research Group
     https://mcd.stanford.edu/
 
 Princeton Sound Lab:
     http://soundlab.cs.princeton.edu/
 
+CCRMA:
+    http://ccrma.stanford.edu/

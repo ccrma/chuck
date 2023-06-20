@@ -1,14 +1,14 @@
-ChucK homepage:
-    https://chuck.stanford.edu/
-
-(We recommend Clint Hoagland's excellent video tutorial series
-    "Making Electronic Music with ChucK" see link on homepage)
-
+Where to start?
+---
 For documentation, reference, and examples, see:
     https://chuck.stanford.edu/doc/
 
+(We recommend Clint Hoagland's excellent video tutorial series
+    "Making Electronic Music with ChucK" -- see link on the
+    documentation page)
+
 ChucK API Reference
-    https://chuck.stanford.edu/doc/
+    https://chuck.stanford.edu/doc/reference/
 
 ChucK Examples
     https://chuck.stanford.edu/doc/examples/
@@ -19,9 +19,6 @@ Join the ChucK Community:
 For the ideas and design behind ChucK, read the papers at:
     https://chuck.stanford.edu/doc/publish/
 
-ChucK on Github
-    https://github.com/ccrma/chuck/
-
 ---
 ChucK: a Strongly-timed Audio Programming Language
 
@@ -29,26 +26,25 @@ ChucK home page:
     http://chuck.stanford.edu/
     http://chuck.cs.princeton.edu/
 
----
-what is it: ChucK is a general-purpose programming language, intended for 
-real-time audio synthesis and graphics/multimedia programming.  It 
-introduces a truly concurrent programming model that embeds timing 
-directly in the program flow.  Other potentially useful features include 
-the ability to write/change programs on-the-fly.
+ChucK on Github
+    https://github.com/ccrma/chuck/
 
-who it is for: audio/multimedia researchers, developers, composers, and 
+---
+what is it: ChucK is a general-purpose programming language, intended 
+for real-time audio synthesis and graphics/multimedia programming. It 
+introduces a truly concurrent programming model that embeds timing 
+directly in the program flow.  Other potentially useful features
+include the ability to write/change programs on-the-fly.
+
+who it's for: audio/multimedia researchers, developers, composers, and 
 performers
 
 what this distribution includes:
-  - ChucK compiler
-  - ChucK virtual machine
-  - tutorials and documentation
-  - license + other information
+  - source for ChucK (compiler, virtual machine, synthesis engine)
+  - examples
+  - license + release notes
 
 supported platforms:
   - macOS (CoreAudio)
   - Linux (ALSA/Pulse/JACK)
-  - Windows/Cygwin (DirectSound)
-
-authors:
-    see AUTHORS  
+  - Windows (DirectSound/WASAPI/ASIO)
