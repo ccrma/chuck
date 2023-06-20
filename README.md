@@ -54,10 +54,15 @@ For other Linux distributions, the setup should be similar although the package 
 To build **chuck** (with all suppported drivers: ALSA, PulseAudio, JACK), navigate to the `chuck/src` directory and run `make`:
 ```
 cd chuck/src
+make linux-all
+```
+
+FYI `make linux-all` is equivalent in outcome to combining individual drivers:
+```
 make linux-alsa linux-pulse linux-jack
 ```
 
-To build **chuck** with support for a subset of ALSA, PulseAudio, or JACK, run `make` with the desired driver(s). For example, to build for ALSA and PulseAudio only:
+To build **chuck** for a subset of ALSA, PulseAudio, or JACK, run `make` with the desired driver(s). For example, to build for ALSA and PulseAudio only:
 ```
 make linux-alsa linux-pulse
 ```
