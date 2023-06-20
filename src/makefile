@@ -1,19 +1,20 @@
 COREDIR=core
 HOSTDIR=host
 RTAUDIODIR=RtAudio
-DESTDIR?=/usr/local/bin
-CK_PLATFORM=
+CK_VERSION=1.5.0.3-dev
 
 
 ########################## DEFAULT MAKE TARGET #################################
 # default target: print usage message and quit
 current:
-	@echo "[chuck build]: please use one of the following configurations:"
-	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
-	@echo "   make mac, make mac-ub, make cygwin, make win32, or make web"
+	@echo "[chuck build]: please use the following configurations:"
+	@echo "   make linux-alsa, make linux-jack, make linux-pulse, linux-all,"
+	@echo "   make mac, make mac-ub, make web, make cygwin, make win32"
 
 
 ############################## MAKE INSTALL ####################################
+DESTDIR?=/usr/local/bin
+
 install:
 	mkdir -p $(DESTDIR)
 	cp $(wildcard chuck chuck.exe) $(DESTDIR)/
@@ -68,17 +69,16 @@ host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
 
 
 
-############################## MAKE INSTALL ####################################
+################################ PLATFORMS #####################################
 ## note: If you want to build ChucK on linux with multiple audio drivers,
-## call multiple build rules, e.g.:
+## combine multiple build rules, e.g.:
 ## > make linux-pulse linux-alsa linux-jack
-.PHONY: mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl test
-mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
+
+.PHONY: mac mac-ub osx linux-all linux linux-pulse linux-jack linux-alsa cygwin osx-rl test
+mac mac-ub osx linux-all linux linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck
 
 win32:
 	make -f $(COREDIR)/makefile.x/makefile.win32
-
-CK_VERSION=1.5.0.0
 
 
 ########################### COMPILATION TOOLS ##################################
@@ -121,8 +121,13 @@ endif
 
 
 ######################### PLATFORM-SPECIFIC THINGS #############################
+
 ifneq (,$(strip $(filter mac mac-ub osx bin-dist-mac,$(MAKECMDGOALS))))
 include $(COREDIR)/makefile.x/makefile.mac
+endif
+
+ifneq (,$(strip $(filter linux linux-all,$(MAKECMDGOALS))))
+include $(COREDIR)/makefile.x/makefile.linux
 endif
 
 ifneq (,$(strip $(filter linux-pulse,$(MAKECMDGOALS))))
@@ -201,14 +206,12 @@ ARCH_ARGS=MAC_UB=true
 CFLAGS+=-D__MACOSX_UB__
 endif
 
+
 ############################ DISTRIBUTION INFO #################################
-NOTES=AUTHORS DEVELOPER PROGRAMMER README TODO COPYING INSTALL QUICKSTART \
- THANKS VERSIONS
-BIN_NOTES=README.txt
-DOC_NOTES=GOTO
+# release notes
+NOTES=AUTHORS DEVELOPERS INSTALL LICENSE QUICKSTART README.md THANKS VERSIONS
+# where to put the newly constructed distribution
 DIST_DIR=chuck-$(CK_VERSION)
-DIST_DIR_EXE=chuck-$(CK_VERSION)-exe
-CK_SVN=https://chuck-dev.stanford.edu/svn/chuck/
 
 # pull in dependency info for *existing* .o files
 -include $(OBJS:.o=.d)
@@ -259,10 +262,11 @@ src-dist:
 	mkdir $(DIST_DIR) $(DIST_DIR)/src $(DIST_DIR)/examples
 # copy src
 	git archive HEAD src | tar -x -C $(DIST_DIR)
-	rm -r $(DIST_DIR)/src/test
+# 	rm -r $(DIST_DIR)/src/test
 # copy examples
 	git archive HEAD examples | tar -x -C $(DIST_DIR)
 # copy notes
-	cp $(addprefix notes/,$(NOTES)) $(DIST_DIR)
+	cp $(addprefix ./,$(NOTES)) $(DIST_DIR)
 # tar/gzip
 	tar czf $(DIST_DIR).tgz $(DIST_DIR)
+

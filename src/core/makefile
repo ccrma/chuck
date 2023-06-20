@@ -1,11 +1,11 @@
 # default target: print usage message and quit
 current:
 	@echo "[chuck build]: please use one of the following configurations:"
-	@echo "   make linux-alsa, make linux-jack, make linux-pulse,"
+	@echo "   make linux-alsa, make linux-jack, make linux-pulse, linux-all,"
 	@echo "   make mac, make mac-ub, make cygwin, or make win32"
 
-.PHONY: mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl test
-mac mac-ub osx linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck-core
+.PHONY: mac mac-ub osx linux-all linux linux-pulse linux-jack linux-alsa cygwin osx-rl test
+mac mac-ub osx linux-all linux linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck-core
 
 win32:
 	make -f makefile.win32
@@ -46,6 +46,10 @@ endif
 
 ifneq (,$(strip $(filter mac mac-ub osx bin-dist-mac,$(MAKECMDGOALS))))
 include makefile.x/makefile.mac
+endif
+
+ifneq (,$(strip $(filter linux linux-all,$(MAKECMDGOALS))))
+include makefile.x/makefile.linux
 endif
 
 ifneq (,$(strip $(filter linux-pulse,$(MAKECMDGOALS))))
@@ -111,14 +115,6 @@ endif
 ifneq (,$(MAC_UB))
 ARCHOPTS=-arch arm64 -arch x86_64
 endif
-
-NOTES=AUTHORS DEVELOPER PROGRAMMER README TODO COPYING INSTALL QUICKSTART \
- THANKS VERSIONS
-BIN_NOTES=README.txt
-DOC_NOTES=GOTO
-DIST_DIR=chuck-$(CK_VERSION)
-DIST_DIR_EXE=chuck-$(CK_VERSION)-exe
-CK_SVN=https://chuck-dev.stanford.edu/svn/chuck/
 
 # pull in dependency info for *existing* .o files
 -include $(OBJS:.o=.d)
