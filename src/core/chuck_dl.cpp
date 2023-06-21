@@ -959,14 +959,24 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     create_main_thread_hook = ck_create_main_thread_hook;
     m_carrier = carrier;
 
-    // memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
-
     dll_name = "[noname]";
     reserved = NULL;
     curr_class = NULL;
     curr_func = NULL;
+    // memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
 
-    srate = carrier->vm->srate();
+    // 1.5.0.4 (ge) allow carrier to be NULL (for query purposes)
+    if( m_carrier != NULL )
+    {
+        // get the actual runtime sample rate
+        srate = m_carrier->vm->srate();
+    }
+    else
+    {
+        // set to something invalid...
+        // (instead of default sample rate, which could be harder to notice / debug)
+        srate = 0;
+    }
 
     linepos = 0;
 }

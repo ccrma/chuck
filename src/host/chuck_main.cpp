@@ -817,25 +817,29 @@ bool go( int argc, const char ** argv )
     // probe
     if( probe )
     {
+        // probe default/selected audio driver
         ChuckAudio::probe(audioDriver);
-        
+    
 #ifndef __DISABLE_MIDI__
+        // probe MIDI input and output devices
         EM_error2b( 0, "" );
         probeMidiIn();
         EM_error2b( 0, "" );
         probeMidiOut();
         EM_error2b( 0, "" );
 #endif  // __DISABLE_MIDI__
-        
+
+        // probe HID devices
         HidInManager::probeHidIn();
-        
+
+        // don't exit, wait to probe chugins, which needs a ChucK instance | 1.5.0.4
         // exit
-        exit( 0 );
+        // exit( 0 );
     }
-    
+
     // set caution to wind
     ChucK::enableSystemCall = g_enable_system_cmd;
-    
+
     // check buffer size
     buffer_size = ensurepow2( buffer_size );
     // check mode and blocking
@@ -849,13 +853,13 @@ bool go( int argc, const char ** argv )
     g_do_watchdog = do_watchdog;
     // set adaptive size
     if( adaptive_size < 0 ) adaptive_size = buffer_size;
-    
+
     if( !files && vm_halt && !g_enable_shell )
     {
         CK_FPRINTF_STDERR( "[chuck]: no input files... (try --help)\n" );
         exit( 1 );
     }
-    
+
     // shell initialization without vm
     if( g_enable_shell && no_vm )
     {
@@ -924,6 +928,26 @@ bool go( int argc, const char ** argv )
     // push
     EM_pushlog();
 
+    // set chugins parameters
+    the_chuck->setParam( CHUCK_PARAM_CHUGIN_ENABLE, chugin_load );
+    the_chuck->setParam( CHUCK_PARAM_USER_CHUGINS, named_dls );
+    the_chuck->setParam( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES, dl_search_path );
+
+    // probe chugins | 1.5.0.4 (ge) added
+    if( probe )
+    {
+        // ensure log level is at least SYSTEM
+        if( the_chuck->getLogLevel() < CK_LOG_SYSTEM )
+            the_chuck->setLogLevel( CK_LOG_SYSTEM );
+
+        // probe chugins (.chug and .ck modules)
+        // print/log what ChucK would load with current settings
+        the_chuck->probeChugins();
+
+        // done with probe
+        exit( 0 );
+    }
+
     //--------------------------- AUDIO I/O SETUP ---------------------------------
     // log
     EM_log( CK_LOG_SYSTEM, "initializing audio subsystem..." );
@@ -986,9 +1010,6 @@ bool go( int argc, const char ** argv )
     the_chuck->setParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, (t_CKINT)dump );
     the_chuck->setParam( CHUCK_PARAM_AUTO_DEPEND, (t_CKINT)auto_depend );
     the_chuck->setParam( CHUCK_PARAM_DEPRECATE_LEVEL, deprecate_level );
-    the_chuck->setParam( CHUCK_PARAM_CHUGIN_ENABLE, chugin_load );
-    the_chuck->setParam( CHUCK_PARAM_USER_CHUGINS, named_dls );
-    the_chuck->setParam( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES, dl_search_path );
     // set hint, so internally can advise things like async data writes etc.
     the_chuck->setParam( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO, g_enable_realtime_audio );
 

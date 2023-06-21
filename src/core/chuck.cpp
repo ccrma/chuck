@@ -717,6 +717,102 @@ error: // 1.4.1.0 (ge) added
 
 
 //-----------------------------------------------------------------------------
+// name: probeChugins()
+// desc: probe chugin system and print output
+//-----------------------------------------------------------------------------
+void ChucK::probeChugins()
+{
+    Chuck_VM_Code * code = NULL;
+    Chuck_VM_Shred * shred = NULL;
+
+    // print whether chugins enabled
+    EM_log( CK_LOG_SYSTEM, "chugin system: %s", getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) ? "ON" : "OFF" );
+
+    // chugin dur
+    std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
+    // list of search pathes (added 1.3.0.0)
+    std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES );
+    if( chuginDir != "" )
+    {
+        // add to search path
+        dl_search_path.push_back( chuginDir );
+    }
+    // list of individually named chug-ins (added 1.3.0.0)
+    std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
+
+    //---------------------------------------------------------------------
+    // set origin hint | 1.5.0.0 (ge) added
+    m_carrier->compiler->m_originHint = te_originChugin;
+    //---------------------------------------------------------------------
+    // log
+    EM_log( CK_LOG_SYSTEM, "loading chugins..." );
+    // push indent level
+    EM_pushlog();
+    // load external libs
+    if(!compiler()->load_external_modules( ".chug", dl_search_path, named_dls ))
+    {
+        // pop indent level
+        EM_poplog();
+        // clean up
+        // goto error;
+    }
+    // pop log
+    EM_poplog();
+
+    //---------------------------------------------------------------------
+    // set origin hint | 1.5.0.0 (ge) added
+    m_carrier->compiler->m_originHint = te_originImport;
+    //---------------------------------------------------------------------
+    // log
+    EM_log( CK_LOG_SYSTEM, "pre-loading ChucK libs..." );
+    EM_pushlog();
+
+    // iterate over list of ck files that the compiler found
+    for(std::list<std::string>::iterator j =
+        compiler()->m_cklibs_to_preload.begin();
+        j != compiler()->m_cklibs_to_preload.end(); j++)
+    {
+        // the filename
+        std::string filename = *j;
+
+        // log
+        EM_log( CK_LOG_SEVERE, "preloading '%s'...", filename.c_str() );
+        // push indent
+        EM_pushlog();
+
+        // SPENCERTODO: what to do for full path
+        std::string full_path = filename;
+
+        // parse, type-check, and emit
+        if(compiler()->go( filename, NULL, NULL, full_path ))
+        {
+            // TODO: how to compilation handle?
+            //return 1;
+
+            // get the code
+            code = compiler()->output();
+            // name it - TODO?
+            // code->name += string(argv[i]);
+
+            // spork it
+            shred = vm()->spork( code, NULL, TRUE );
+        }
+
+        // pop indent
+        EM_poplog();
+    }
+
+    // clear the list of chuck files to preload
+    compiler()->m_cklibs_to_preload.clear();
+
+    // pop log
+    EM_poplog();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: initOTF()
 // desc: init OTF programming system
 //-----------------------------------------------------------------------------
