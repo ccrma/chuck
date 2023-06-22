@@ -773,7 +773,7 @@ void ChucK::probeChugins()
         // the filename
         std::string filename = *j;
         // log
-        EM_log( CK_LOG_SYSTEM, "[FOUND] source '%s'...", filename.c_str() );
+        EM_log( CK_LOG_SYSTEM, "[SOURCE] '%s'...", filename.c_str() );
     }
 
     // check
