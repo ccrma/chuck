@@ -83,11 +83,11 @@ t_CKBOOL str_endsin(const char *str, const char *end);
 // check if path is absolute on the underlying platform
 t_CKBOOL is_absolute_path( const std::string & path );
 
-//-----------------------------------------------------------------------------
-// name: parse_path_list()
-// desc: split "x:y:z"-style path list into {"x","y","z"}
-//-----------------------------------------------------------------------------
+// split "x:y:z"-style path list into {"x","y","z"}
 void parse_path_list( std::string & str, std::list<std::string> & lst );
+
+// check whether a filename matches a particular extension
+t_CKBOOL extension_matches( const char * filename, const char * extension );
 
 
 

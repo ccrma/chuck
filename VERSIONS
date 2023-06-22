@@ -2,6 +2,19 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.0.4
+---
+- (added) --chugin-probe command-line flag to probe (and verify version)
+  for chugins and auto-load chuck sources in the search paths; print 
+  results and any version mismatches (e.g., `chuck --chugin-probe`)
+  also, explicited named chugins can be probed using --chugins:[FILE]
+  (e.g., `chuck --chugin:Foo.chug --chugin:Bar.chug --chugin-probe`) 
+- (added) chugins loading in search directories now will recursively
+  search in subdirectories
+- (updated) setting chuck log level is no longer logged below
+  log level INFO
+
+
 1.5.0.3 (June 2023)
 ---
 - (fixed) chuck audio I/O now correctly carries out extended probing

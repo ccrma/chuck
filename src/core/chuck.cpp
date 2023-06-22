@@ -630,7 +630,7 @@ t_CKBOOL ChucK::initChugins()
         // push indent level
         EM_pushlog();
         // load external libs
-        if( !compiler()->load_external_modules( ".chug", dl_search_path, named_dls ) )
+        if( !compiler()->load_external_modules( ".chug", dl_search_path, named_dls, true ) )
         {
             // pop indent level
             EM_poplog();
@@ -711,6 +711,77 @@ error: // 1.4.1.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
     return false;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: probeChugins()
+// desc: probe chugin system and print output
+//-----------------------------------------------------------------------------
+void ChucK::probeChugins()
+{
+    // ck files to pre load
+    std::list<std::string> ck_libs_to_preload;
+
+    // print whether chugins enabled
+    EM_log( CK_LOG_SYSTEM, "chugin system: %s", getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) ? "ON" : "OFF" );
+    // print host version
+    EM_log( CK_LOG_SYSTEM, "chuck host version: %d.%d", CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
+    // push
+    EM_pushlog();
+    // print host version
+    EM_log( CK_LOG_SYSTEM, "chugin major version must == host major version" );
+    EM_log( CK_LOG_SYSTEM, "chugin minor version must <= host major version" );
+    // pop
+    EM_poplog();
+
+    // chugin dur
+    std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
+    // list of search pathes (added 1.3.0.0)
+    std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES );
+    if( chuginDir != "" )
+    {
+        // add to search path
+        dl_search_path.push_back( chuginDir );
+    }
+    // list of individually named chug-ins (added 1.3.0.0)
+    std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
+
+    // log
+    EM_log( CK_LOG_SYSTEM, "probing chugins (.chug)..." );
+    // push indent level
+    EM_pushlog();
+    // load external libs
+    if( !Chuck_Compiler::probe_external_modules( ".chug", dl_search_path, named_dls, TRUE, ck_libs_to_preload ) )
+    {
+        // warning
+        EM_log( CK_LOG_SYSTEM, "error probing chugins..." );
+    }
+    // pop log
+    EM_poplog();
+
+    // log
+    EM_log( CK_LOG_SYSTEM, "probing auto-load chuck files (.ck)..." );
+    EM_pushlog();
+
+    // iterate over list of ck files that the compiler found
+    for( std::list<std::string>::iterator j = ck_libs_to_preload.begin();
+         j != ck_libs_to_preload.end(); j++ )
+    {
+        // the filename
+        std::string filename = *j;
+        // log
+        EM_log( CK_LOG_SYSTEM, "source '%s'...", filename.c_str() );
+    }
+
+    // check
+    if( ck_libs_to_preload.size() == 0 )
+        EM_log( CK_LOG_SYSTEM, "(none found)" );
+
+    // pop log
+    EM_poplog();
 }
 
 

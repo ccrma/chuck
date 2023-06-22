@@ -212,6 +212,10 @@ protected:
     // init OTF programming system
     t_CKBOOL initOTF();
 
+public:
+    // probe chugins (print info on all chugins as seen under current config)
+    void probeChugins(); // 1.5.0.4 (ge) added
+
 protected:
     // core elements: compiler, VM, etc.
     Chuck_Carrier * m_carrier;
