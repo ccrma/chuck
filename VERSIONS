@@ -7,6 +7,8 @@ ChucK VERSIONS log
 - (added) --chugin-probe command-line flag to probe (and verify version)
   for chugins and auto-load chuck sources in the search paths; print 
   results and any version mismatches
+- (added) chugins loading in search directories now will recursively
+  search in subdirectories
 - (updated) setting chuck log level is no longer logged below
   log level INFO
 
