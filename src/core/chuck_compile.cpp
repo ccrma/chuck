@@ -49,6 +49,7 @@
 #include "ulib_machine.h"
 #include "ulib_math.h"
 #include "ulib_std.h"
+#include "util_string.h"
 
 #ifndef __DISABLE_NETWORK__
 #include "ulib_opsc.h"
@@ -781,22 +782,6 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
         compiler->m_dlls.push_back(dll);
         return TRUE;
     }
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: extension_matches()
-// desc: ...
-//-----------------------------------------------------------------------------
-static t_CKBOOL extension_matches( const char * filename, const char * extension )
-{
-    t_CKUINT extension_length = strlen(extension);
-    t_CKUINT filename_length = strlen(filename);
-
-    return strncmp( extension, filename+(filename_length-extension_length),
-                    extension_length) == 0;
 }
 
 

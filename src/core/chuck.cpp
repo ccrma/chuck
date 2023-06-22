@@ -740,12 +740,8 @@ void ChucK::probeChugins()
     // list of individually named chug-ins (added 1.3.0.0)
     std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
 
-    //---------------------------------------------------------------------
-    // set origin hint | 1.5.0.0 (ge) added
-    m_carrier->compiler->m_originHint = te_originChugin;
-    //---------------------------------------------------------------------
     // log
-    EM_log( CK_LOG_SYSTEM, "loading chugins..." );
+    EM_log( CK_LOG_SYSTEM, "probing chugins..." );
     // push indent level
     EM_pushlog();
     // load external libs
@@ -759,18 +755,14 @@ void ChucK::probeChugins()
     // pop log
     EM_poplog();
 
-    //---------------------------------------------------------------------
-    // set origin hint | 1.5.0.0 (ge) added
-    m_carrier->compiler->m_originHint = te_originImport;
-    //---------------------------------------------------------------------
     // log
-    EM_log( CK_LOG_SYSTEM, "pre-loading ChucK libs..." );
+    EM_log( CK_LOG_SYSTEM, "probing pre-loading ChucK libs..." );
     EM_pushlog();
 
     // iterate over list of ck files that the compiler found
-    for(std::list<std::string>::iterator j =
-        compiler()->m_cklibs_to_preload.begin();
-        j != compiler()->m_cklibs_to_preload.end(); j++)
+    for( std::list<std::string>::iterator j =
+         compiler()->m_cklibs_to_preload.begin();
+         j != compiler()->m_cklibs_to_preload.end(); j++ )
     {
         // the filename
         std::string filename = *j;

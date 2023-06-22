@@ -723,3 +723,19 @@ t_CKBOOL is_absolute_path( const std::string & path )
     return( path.length() != 0 && path[0] == '/' );
 #endif
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: extension_matches()
+// desc: check whether a filename matches a particular extension
+//-----------------------------------------------------------------------------
+t_CKBOOL extension_matches( const char * filename, const char * extension )
+{
+    t_CKUINT extension_length = strlen( extension );
+    t_CKUINT filename_length = strlen( filename );
+
+    return strncmp( extension, filename+(filename_length-extension_length),
+        extension_length ) == 0;
+}
