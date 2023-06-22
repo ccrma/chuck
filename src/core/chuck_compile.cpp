@@ -1185,7 +1185,7 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const char * extension,
                                                  std::list<std::string> & ck_libs )
 {
     // print
-    EM_log( CK_LOG_SYSTEM, "probing specified chugins..." );
+    EM_log( CK_LOG_SYSTEM, "probing specified chugins (e.g., from --chugin)..." );
     // push
     EM_pushlog();
 
