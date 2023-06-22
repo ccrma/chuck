@@ -613,7 +613,7 @@ void EM_setlog( t_CKINT level )
     g_loglevel = level;
 
     // log this
-    EM_log( CK_LOG_SYSTEM, "setting log level to: %li (%s)...", level, g_str[level] );
+    EM_log( CK_LOG_INFO, "setting log level to: %li (%s)...", level, g_str[level] );
 }
 
 // push log

@@ -221,7 +221,8 @@ void usage()
     CK_FPRINTF_STDERR( "               srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
     CK_FPRINTF_STDERR( "               remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
     CK_FPRINTF_STDERR( "               callback|deprecate:{stop|warn|ignore}|\n" );
-    CK_FPRINTF_STDERR( "               chugin-load:{on|off}|chugin-path:<path>|chugin:<name>\n" );
+    CK_FPRINTF_STDERR( "               chugin-load:{on|off}|chugin-path:<path>|chugin:<name>|\n" );
+    CK_FPRINTF_STDERR( "               chugin-probe\n" );
     CK_FPRINTF_STDERR( "   [commands] = add|remove|replace|remove.all|status|time|kill\n" );
     CK_FPRINTF_STDERR( "   [+-=^] = shortcuts for add, remove, replace, status\n" );
     version();
@@ -471,6 +472,7 @@ bool go( int argc, const char ** argv )
     t_CKINT adc_chans_before_rtaudio = adc_chans; // added 1.5.0.0
     t_CKBOOL dump = FALSE;
     t_CKBOOL probe = FALSE;
+    t_CKBOOL probe_chugs = FALSE;
     t_CKBOOL set_priority = FALSE;
     t_CKBOOL auto_depend = FALSE;
     t_CKBOOL block = FALSE;
@@ -767,6 +769,8 @@ bool go( int argc, const char ** argv )
             }
             else if( !strcmp( argv[i], "--probe" ) )
                 probe = TRUE;
+            else if( !strcmp( argv[i], "--chugin-probe" ) )
+                probe_chugs = TRUE;
             else if( !strcmp( argv[i], "--poop" ) )
                 uh();
             else if( !strcmp( argv[i], "--caution-to-the-wind" ) )
@@ -832,9 +836,8 @@ bool go( int argc, const char ** argv )
         // probe HID devices
         HidInManager::probeHidIn();
 
-        // don't exit, wait to probe chugins, which needs a ChucK instance | 1.5.0.4
-        // exit
-        // exit( 0 );
+        // done probe
+        exit( 0 );
     }
 
     // set caution to wind
@@ -854,7 +857,7 @@ bool go( int argc, const char ** argv )
     // set adaptive size
     if( adaptive_size < 0 ) adaptive_size = buffer_size;
 
-    if( !files && vm_halt && !g_enable_shell )
+    if( !files && vm_halt && !g_enable_shell && !probe_chugs )
     {
         CK_FPRINTF_STDERR( "[chuck]: no input files... (try --help)\n" );
         exit( 1 );
@@ -884,7 +887,7 @@ bool go( int argc, const char ** argv )
     }
     
     // find dac_name if appropriate (added 1.3.0.0)
-    if( dac_name.size() > 0 )
+    if( !probe_chugs && dac_name.size() > 0 )
     {
         // check with RtAudio
         t_CKINT dev = ChuckAudio::device_named( audioDriver, dac_name, TRUE, FALSE );
@@ -901,7 +904,7 @@ bool go( int argc, const char ** argv )
     }
     
     // find adc_name if appropriate (added 1.3.0.0)
-    if( adc_name.size() > 0 )
+    if( !probe_chugs && adc_name.size() > 0 )
     {
         // check with RtAudio
         t_CKINT dev = ChuckAudio::device_named( audioDriver, adc_name, FALSE, TRUE );
@@ -917,16 +920,11 @@ bool go( int argc, const char ** argv )
         }
     }
 
-
     //-------------------- VIRTUAL MACHINE SETUP (PART 1) -------------------------
     // instantiate a ChucK!
     the_chuck = new ChucK();
     // set log level so things can start logging
     the_chuck->setLogLevel( log_level );
-    // log
-    EM_log( CK_LOG_SYSTEM, "booting up ChucK instance..." );
-    // push
-    EM_pushlog();
 
     // set chugins parameters
     the_chuck->setParam( CHUCK_PARAM_CHUGIN_ENABLE, chugin_load );
@@ -934,7 +932,7 @@ bool go( int argc, const char ** argv )
     the_chuck->setParam( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES, dl_search_path );
 
     // probe chugins | 1.5.0.4 (ge) added
-    if( probe )
+    if( probe_chugs )
     {
         // ensure log level is at least SYSTEM
         if( the_chuck->getLogLevel() < CK_LOG_SYSTEM )
@@ -947,6 +945,11 @@ bool go( int argc, const char ** argv )
         // done with probe
         exit( 0 );
     }
+
+    // log
+    EM_log( CK_LOG_SYSTEM, "booting up ChucK instance..." );
+    // push
+    EM_pushlog();
 
     //--------------------------- AUDIO I/O SETUP ---------------------------------
     // log

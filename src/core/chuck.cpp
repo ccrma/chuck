@@ -630,7 +630,7 @@ t_CKBOOL ChucK::initChugins()
         // push indent level
         EM_pushlog();
         // load external libs
-        if( !compiler()->load_external_modules( ".chug", dl_search_path, named_dls ) )
+        if( !compiler()->load_external_modules( ".chug", dl_search_path, named_dls, true ) )
         {
             // pop indent level
             EM_poplog();
@@ -722,11 +722,20 @@ error: // 1.4.1.0 (ge) added
 //-----------------------------------------------------------------------------
 void ChucK::probeChugins()
 {
-    Chuck_VM_Code * code = NULL;
-    Chuck_VM_Shred * shred = NULL;
+    // ck files to pre load
+    std::list<std::string> ck_libs_to_preload;
 
     // print whether chugins enabled
     EM_log( CK_LOG_SYSTEM, "chugin system: %s", getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) ? "ON" : "OFF" );
+    // print host version
+    EM_log( CK_LOG_SYSTEM, "chuck host version: %d.%d", CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
+    // push
+    EM_pushlog();
+    // print host version
+    EM_log( CK_LOG_SYSTEM, "chugin major version must == host major version" );
+    EM_log( CK_LOG_SYSTEM, "chugin minor version must <= host major version" );
+    // pop
+    EM_poplog();
 
     // chugin dur
     std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
@@ -741,61 +750,35 @@ void ChucK::probeChugins()
     std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
 
     // log
-    EM_log( CK_LOG_SYSTEM, "probing chugins..." );
+    EM_log( CK_LOG_SYSTEM, "probing chugins (.chug)..." );
     // push indent level
     EM_pushlog();
     // load external libs
-    if(!compiler()->load_external_modules( ".chug", dl_search_path, named_dls ))
+    if( !Chuck_Compiler::probe_external_modules( ".chug", dl_search_path, named_dls, TRUE, ck_libs_to_preload ) )
     {
-        // pop indent level
-        EM_poplog();
-        // clean up
-        // goto error;
+        // warning
+        EM_log( CK_LOG_SYSTEM, "error probing chugins..." );
     }
     // pop log
     EM_poplog();
 
     // log
-    EM_log( CK_LOG_SYSTEM, "probing pre-loading ChucK libs..." );
+    EM_log( CK_LOG_SYSTEM, "probing auto-load chuck files (.ck)..." );
     EM_pushlog();
 
     // iterate over list of ck files that the compiler found
-    for( std::list<std::string>::iterator j =
-         compiler()->m_cklibs_to_preload.begin();
-         j != compiler()->m_cklibs_to_preload.end(); j++ )
+    for( std::list<std::string>::iterator j = ck_libs_to_preload.begin();
+         j != ck_libs_to_preload.end(); j++ )
     {
         // the filename
         std::string filename = *j;
-
         // log
-        EM_log( CK_LOG_SEVERE, "preloading '%s'...", filename.c_str() );
-        // push indent
-        EM_pushlog();
-
-        // SPENCERTODO: what to do for full path
-        std::string full_path = filename;
-
-        // parse, type-check, and emit
-        if(compiler()->go( filename, NULL, NULL, full_path ))
-        {
-            // TODO: how to compilation handle?
-            //return 1;
-
-            // get the code
-            code = compiler()->output();
-            // name it - TODO?
-            // code->name += string(argv[i]);
-
-            // spork it
-            shred = vm()->spork( code, NULL, TRUE );
-        }
-
-        // pop indent
-        EM_poplog();
+        EM_log( CK_LOG_SYSTEM, "source '%s'...", filename.c_str() );
     }
 
-    // clear the list of chuck files to preload
-    compiler()->m_cklibs_to_preload.clear();
+    // check
+    if( ck_libs_to_preload.size() == 0 )
+        EM_log( CK_LOG_SYSTEM, "(none found)" );
 
     // pop log
     EM_poplog();

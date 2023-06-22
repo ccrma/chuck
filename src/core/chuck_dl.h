@@ -604,20 +604,30 @@ public:
     // get last error
     const char * last_error() const;
     // unload the ckx
-    t_CKBOOL unload( );
+    t_CKBOOL unload();
     // query the content of the dll
-    const Chuck_DL_Query * query( );
+    const Chuck_DL_Query * query();
+    // probe information about dll without fully loading it
+    t_CKBOOL probe();
     // is good
     t_CKBOOL good() const;
     // name
     const char * name() const;
+    // get version major
+    t_CKUINT versionMajor();
+    // get version minor
+    t_CKUINT versionMinor();
+    // is version compatible between dll and host
+    // major version must be same between chugin and host
+    // chugin minor version must less than or equal host minor version
+    t_CKBOOL compatible();
 
 public:
     // constructor
     Chuck_DLL( Chuck_Carrier * carrier, const char * xid = NULL )
         : m_handle(NULL), m_id(xid ? xid : ""),
-        m_query( carrier ),
-        m_done_query(FALSE), m_query_func(NULL), m_version_func(NULL)
+        m_query( carrier ), m_done_query(FALSE), m_query_func(NULL),
+        m_version_func(NULL), m_versionMajor(0), m_versionMinor(0)
     { }
     // destructor
     ~Chuck_DLL() { this->unload(); }
@@ -634,6 +644,10 @@ protected:
     f_ck_declversion m_version_func;
     f_ck_query m_query_func;
     Chuck_DL_Query m_query;
+
+protected: // addition info 1.5.0.4 (ge) added
+    t_CKUINT m_versionMajor;
+    t_CKUINT m_versionMinor;
 };
 
 

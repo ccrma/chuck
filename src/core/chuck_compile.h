@@ -123,10 +123,19 @@ public: // replace-dac | added 1.4.1.0 (jack)
     // of a new sample sucker.
     void setReplaceDac( t_CKBOOL shouldReplaceDac, const std::string & replacement );
 
-public: // chugin load | refactored 1.4.1.0 (ge)
+public:
+    // chugin load | 1.4.1.0 (ge) refactored
     t_CKBOOL load_external_modules( const char * extension,
                                     std::list<std::string> & chugin_search_paths,
-                                    std::list<std::string> & named_dls );
+                                    std::list<std::string> & named_dls,
+                                    t_CKBOOL recursiveSearch );
+
+    // chugin probe | 1.5.0.4 (ge) added
+    static t_CKBOOL probe_external_modules( const char * extension,
+                                            std::list<std::string> & chugin_search_paths,
+                                            std::list<std::string> & named_dls,
+                                            t_CKBOOL recursiveSearch,
+                                            std::list<std::string> & ck_libs );
 
 protected: // internal
     // do entire file
