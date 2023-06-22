@@ -731,11 +731,19 @@ t_CKBOOL is_absolute_path( const std::string & path )
 // name: extension_matches()
 // desc: check whether a filename matches a particular extension
 //-----------------------------------------------------------------------------
-t_CKBOOL extension_matches( const char * filename, const char * extension )
+t_CKBOOL extension_matches( const std::string & filename, const std::string & extension )
 {
-    t_CKUINT extension_length = strlen( extension );
-    t_CKUINT filename_length = strlen( filename );
+    // lowercase
+    string f = tolower( filename );
+    string e = tolower( extension );
+    // look for extension from the end
+    std::size_t pos = f.rfind( e );
+    // check result
+    return (pos != std::string::npos) && (pos == (f.length()-e.length()));
 
-    return strncmp( extension, filename+(filename_length-extension_length),
-        extension_length ) == 0;
+    // t_CKUINT extension_length = strlen( extension );
+    // t_CKUINT filename_length = strlen( filename );
+    //
+    // return strncmp( extension, filename+(filename_length-extension_length),
+    //    extension_length ) == 0;
 }

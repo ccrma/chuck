@@ -837,12 +837,12 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
     if( query_failed || !type_engine_add_dll2(env, dll, "global"))
     {
         EM_pushlog();
-        EM_log(CK_LOG_SEVERE, "cannot load chugin '%s', skipping...", name);
-        // EM_error2( 0, "error: cannot load chugin '%s', skipping...", name );
+        EM_log(CK_LOG_SEVERE, "cannot load '%s', skipping...", name);
+        // EM_error2( 0, "error: cannot load '%s', skipping...", name );
         if( query_failed )
         {
+            EM_log( CK_LOG_SEVERE, "reason: %s", dll->last_error() );
             // EM_error2( 0, "%s", dll->last_error() );
-            EM_log( CK_LOG_SEVERE, "%s", dll->last_error() );
         }
         delete dll;
         EM_poplog();
@@ -866,7 +866,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
 t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
                                              const char * directory,
                                              const char * extension,
-                                             t_CKBOOL recursiveSearch = FALSE )
+                                             t_CKBOOL recursiveSearch )
 {
     // expand directory path
     string path = expandFilePath( directory );
@@ -913,7 +913,8 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
                     load_external_module_at_path( compiler, de->d_name, absolute_path.c_str() );
                 }
             }
-            else if( recursiveSearch && is_directory )
+            // sub-directories (whose name doesn't end in .chug)
+            else if( recursiveSearch && is_directory && !extension_matches(de->d_name, extension))
             {
                 // recurse | TODO: max depth?
                 if( strncmp(de->d_name, ".", sizeof(".")) != 0 &&
@@ -922,7 +923,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
                     // construct absolute path
                     std::string absolute_path = std::string(directory) + "/" + de->d_name;
                     // search in sub-directory
-                    load_external_modules_in_directory( compiler, absolute_path.c_str(), extension);
+                    load_external_modules_in_directory( compiler, absolute_path.c_str(), extension, TRUE );
                 }
             }
 #ifdef __PLATFORM_MACOSX__
@@ -936,7 +937,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
                 // and look for a regular file. | 1.5.0.1 (dbraun) added
                 std::string absolute_path = std::string(directory) + "/" + de->d_name + "/Contents/MacOS";
                 const char * subdirectory = absolute_path.c_str();
-                load_external_modules_in_directory( compiler, subdirectory, "" );
+                load_external_modules_in_directory( compiler, subdirectory, "", FALSE );
             }
 #endif // #ifdef __PLATFORM_MACOSX__
 
@@ -1042,7 +1043,7 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
             EM_log( CK_LOG_SYSTEM, "[FAILED] chugin %s [version %d.%d]", name, dll->versionMajor(), dll->versionMinor() );
             // push
             EM_pushlog();
-            EM_log( CK_LOG_SYSTEM, "VERSION INCOMPATIBILITY with host %d.%d", CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
+            EM_log( CK_LOG_SYSTEM, "reason: %s", dll->last_error() );
             EM_poplog();
 
         }
@@ -1053,7 +1054,7 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
         EM_log( CK_LOG_SYSTEM, "[FAILED] chugin '%s' load...", name );
         // more info
         EM_pushlog();
-        EM_log( CK_LOG_SYSTEM, "more info: '%s'", dll->last_error() );
+        EM_log( CK_LOG_SYSTEM, "reason: %s", dll->last_error() );
         EM_poplog();
     }
 

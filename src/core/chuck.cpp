@@ -629,8 +629,8 @@ t_CKBOOL ChucK::initChugins()
         EM_log( CK_LOG_SYSTEM, "loading chugins..." );
         // push indent level
         EM_pushlog();
-        // load external libs
-        if( !compiler()->load_external_modules( ".chug", dl_search_path, named_dls, true ) )
+        // load external libs | 1.5.0.4 (ge) enabled recursive search
+        if( !compiler()->load_external_modules( ".chug", dl_search_path, named_dls, TRUE ) )
         {
             // pop indent level
             EM_poplog();

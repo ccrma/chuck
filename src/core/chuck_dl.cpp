@@ -758,17 +758,10 @@ const Chuck_DL_Query * Chuck_DLL::query()
     {
         // construct error string
         ostringstream oss;
-        oss << "chugin version mismatch:" << endl
-            << "filename: "
-            << m_filename << "'" << endl
-            << "versions: chugin: "
-            << CK_DLL_VERSION_GETMAJOR(dll_version)
-            << "."
-            << CK_DLL_VERSION_GETMINOR(dll_version)
-            << " vs. chuck host: "
-            << CK_DLL_VERSION_MAJOR
-            << "."
-            << CK_DLL_VERSION_MINOR;
+        oss << "chugin version incompatible..." << endl
+            << "chugin path: '" << m_filename << "'" << endl
+            << "chugin version: " << m_versionMajor << "." << m_versionMinor
+            << " VS host version: " << CK_DLL_VERSION_MAJOR << "." << CK_DLL_VERSION_MINOR;
         m_last_error = oss.str();
         return NULL;
     }
@@ -1005,7 +998,13 @@ t_CKBOOL Chuck_DLL::compatible()
     if( !this->probe() ) return FALSE;
     // major version must be same between chugin and host
     // chugin minor version must less than or equal host minor version
-    return ( m_versionMajor == CK_DLL_VERSION_MAJOR && m_versionMinor <= CK_DLL_VERSION_MINOR );
+    if( m_versionMajor == CK_DLL_VERSION_MAJOR && m_versionMinor <= CK_DLL_VERSION_MINOR )
+    { return TRUE; }
+    else {
+        m_last_error = string("version incompatible with host ") +
+                       itoa(CK_DLL_VERSION_MAJOR) + "." + itoa(CK_DLL_VERSION_MINOR);
+        return FALSE;
+    }
 }
 
 
