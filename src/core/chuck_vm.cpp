@@ -26,7 +26,7 @@
 // file: chuck_vm.cpp
 // desc: chuck virtual machine
 //
-// author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
+// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
 // date: Autumn 2002
 //-----------------------------------------------------------------------------
 #include "chuck_vm.h"
@@ -76,6 +76,32 @@ using namespace std;
 #else
 #define CK_VM_DEBUG(x)
 #endif // CK_VM_DEBUG_ENABLE
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct SortByID_LT()
+// desc: for sorting less than
+//-----------------------------------------------------------------------------
+struct SortByID_LT
+{
+    bool operator()( const Chuck_VM_Shred * lhs, const Chuck_VM_Shred * rhs )
+    { return lhs->xid < rhs->xid; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct SortByID_GT()
+// desc: for sorting greater than
+//-----------------------------------------------------------------------------
+struct SortByID_GT
+{
+    bool operator()( const Chuck_VM_Shred * lhs, const Chuck_VM_Shred * rhs )
+    { return lhs->xid > rhs->xid; }
+};
 
 
 
@@ -832,45 +858,21 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     }
     else if( msg->type == MSG_REMOVEALL )
     {
-        t_CKUINT xid = m_shred_id;
+        // print
         EM_error3( "[chuck](VM): removing all (%i) shreds...", m_num_shreds );
-        Chuck_VM_Shred * shred = NULL;
-
-        while( m_num_shreds && xid > 0 )
-        {
-            if( m_shreduler->remove( shred = m_shreduler->lookup( xid ) ) )
-                this->free( shred, TRUE );
-            xid--;
-        }
-
-        m_shred_id = 0;
-        m_num_shreds = 0;
+        // remove all shreds
+        this->removeAll();
     }
     else if( msg->type == MSG_CLEARVM ) // added 1.3.2.0
     {
-        // first removeall
-        t_CKUINT xid = m_shred_id;
+        // print
         EM_error3( "[chuck](VM): removing all shreds and resetting type system" );
-        Chuck_VM_Shred * shred = NULL;
-
-        while( m_num_shreds && xid > 0 )
-        {
-            if( m_shreduler->remove( shred = m_shreduler->lookup( xid ) ) )
-                this->free( shred, TRUE );
-            xid--;
-        }
-
-        // clear user type system
-        if( env() )
-        {
-            env()->clear_user_namespace();
-        }
-
+        // first, remove all shreds
+        this->removeAll();
+        // next, clear user type system
+        if( env() ) env()->clear_user_namespace();
         // 1.4.1.0 (jack): also clear any global variables
         m_globals_manager->cleanup_global_variables();
-
-        m_shred_id = 0;
-        m_num_shreds = 0;
     }
     else if( msg->type == MSG_CLEARGLOBALS ) // added chunity
     {
@@ -1068,6 +1070,39 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Shred * shred )
     m_num_shreds++;
 
     return shred;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: removeAll()
+// desc: remove all shreds from VM
+//-----------------------------------------------------------------------------
+void Chuck_VM::removeAll()
+{
+    // get list of active shreds
+    std::vector<Chuck_VM_Shred *> shreds;
+    // shred pointer
+    Chuck_VM_Shred * shred = NULL;
+
+    // get list from shreduler
+    m_shreduler->get_active_shreds( shreds );
+
+    // sort in descending ID order
+    SortByID_GT byid;
+    std::sort( shreds.begin(), shreds.end(), byid );
+
+    // itereate over sorted list
+    for( vector<Chuck_VM_Shred *>::iterator s = shreds.begin(); s != shreds.end(); s++ )
+    {
+        // remove and free
+        if( m_shreduler->remove( *s ) ) this->free( *s, TRUE );
+    }
+
+    // reset
+    m_shred_id = 0;
+    m_num_shreds = 0;
 }
 
 
@@ -2300,14 +2335,25 @@ Chuck_VM_Shred * Chuck_VM_Shreduler::lookup( t_CKUINT xid )
 
 
 //-----------------------------------------------------------------------------
-// name: struct SortByID()
-// desc: for sorting
+// name: get_active_shreds()
+// desc: retrieve list of active shreds
 //-----------------------------------------------------------------------------
-struct SortByID
+void Chuck_VM_Shreduler::get_active_shreds( std::vector<Chuck_VM_Shred *> & shreds )
 {
-    bool operator() ( const Chuck_VM_Shred * lhs, const Chuck_VM_Shred * rhs )
-    { return lhs->xid < rhs->xid; }
-};
+    // clear
+    shreds.clear();
+    // shred pointer
+    Chuck_VM_Shred * shred = shred_list;
+
+    // traverse shred list
+    while( shred )
+    {
+        // add
+        shreds.push_back( shred );
+        // next
+        shred = shred->next;
+    }
+}
 
 
 
@@ -2358,7 +2404,7 @@ void Chuck_VM_Shreduler::status( Chuck_VM_Status * status )
     if( temp ) list.push_back( temp );
 
     // sort the list
-    SortByID byid;
+    SortByID_LT byid;
     std::sort( list.begin(), list.end(), byid );
 
     // print status

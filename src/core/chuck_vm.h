@@ -26,11 +26,16 @@
 // file: chuck_vm.h
 // desc: chuck virtual machine
 //
-// author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
+// author: Ge Wang (https://ccrma.stanford.edu/~ge/)
 // date: Autumn 2002
 //-----------------------------------------------------------------------------
 #ifndef __CHUCK_VM_H__
 #define __CHUCK_VM_H__
+
+#include <string>
+#include <map>
+#include <vector>
+#include <list>
 
 #include "chuck_oo.h"
 #include "chuck_ugen.h"
@@ -41,11 +46,6 @@
 #ifdef __CHUCK_STAT_TRACK__
 #include "chuck_stats.h"
 #endif
-
-#include <string>
-#include <map>
-#include <vector>
-#include <list>
 
 
 #define CK_DEBUG_MEMORY_MGMT (0)
@@ -380,6 +380,8 @@ public: // high-level shred interface
     void status( );
     // get status
     void status( Chuck_VM_Status * status );
+    // retrieve list of active shreds
+    void get_active_shreds( std::vector<Chuck_VM_Shred *> & shreds );
 
 public: // for event related shred queue
     t_CKBOOL add_blocked( Chuck_VM_Shred * shred );
@@ -430,15 +432,22 @@ struct Chuck_VM : Chuck_Object
 // functions
 //-----------------------------------------------------------------------------
 public:
+    // constructor
     Chuck_VM();
+    // destructor
     virtual ~Chuck_VM();
 
-public: // init
+public:
+    // initialize VM
     t_CKBOOL initialize( t_CKUINT srate, t_CKUINT dac_chan, t_CKUINT adc_chan,
                          t_CKUINT adaptive, t_CKBOOL halt );
+    // initialize synthesis
     t_CKBOOL initialize_synthesis( );
+    // set carrier reference
     t_CKBOOL setCarrier( Chuck_Carrier * c ) { m_carrier = c; return TRUE; }
+    // shutdown VM
     t_CKBOOL shutdown();
+    // return whether VM is initialized
     t_CKBOOL has_init() { return m_init; }
 
 public: // run state; 1.3.5.3
@@ -541,6 +550,9 @@ public:
     Chuck_VM_Shred * spork( Chuck_VM_Shred * shred );
 
 protected:
+    // remove all shreds from VM
+    void removeAll();
+    // free shred
     t_CKBOOL free( Chuck_VM_Shred * shred, t_CKBOOL cascade,
                    t_CKBOOL dec = TRUE );
     void dump( Chuck_VM_Shred * shred );
