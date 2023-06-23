@@ -10,3 +10,5 @@ SinOsc bar[2][2];
 // test
 if( foo[1][1] == null && bar[1][1] != null ) 
     <<< "success" >>>;
+else
+    <<< foo[1][1], bar[1][1] >>>;

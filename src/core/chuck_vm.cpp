@@ -1745,7 +1745,6 @@ bool Chuck_VM_Shred::popLoopCounter()
 Chuck_VM_Shreduler::Chuck_VM_Shreduler()
 {
     now_system = 0;
-    rt_audio = FALSE;
     vm_ref = NULL;
     shred_list = NULL;
     m_current_shred = NULL;
