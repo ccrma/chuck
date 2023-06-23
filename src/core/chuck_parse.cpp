@@ -555,7 +555,20 @@ string absyn_binary2str( a_Exp_Binary binary )
 //-----------------------------------------------------------------------------
 string absyn_unary2str( a_Exp_Unary unary )
 {
-    return absyn_op2str(unary->op) + " " + absyn_exp2str(unary->exp);
+    string s;
+
+    // check
+    switch( unary->op )
+    {
+        case ae_op_new:
+            s = absyn_op2str(unary->op) + " " + unary->self->type->str();
+            break;
+        default:
+            s = absyn_op2str(unary->op) + " " + absyn_exp2str(unary->exp);
+            break;
+    }
+
+    return s;
 }
 
 
@@ -722,7 +735,7 @@ string absyn_decl2str( a_Exp_Decl decl )
     while( list )
     {
         // type
-        str += list->var_decl->value->type->name + " " + (decl->type->ref && !list->var_decl->array ? "@ " : "") + list->var_decl->value->name;
+        str += list->var_decl->value->type->name + " " + (decl->type->ref ? "@ " : "") + list->var_decl->value->name;
         // array?
         if( list->var_decl->array )
         {

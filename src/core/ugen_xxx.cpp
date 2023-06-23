@@ -3548,7 +3548,8 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         const char * format = (const char *)strrchr( filename, '.');
         if( format && strcmp( format, ".raw" ) == 0 )
         {
-            CK_FPRINTF_STDERR( "[chuck](via SndBuf) %s :: type is '.raw'...\n    assuming 16 bit signed mono (PCM)\n", filename );
+            CK_FPRINTF_STDERR( "[chuck](via SndBuf) %s :: type is '.raw'...\n", filename );
+            CK_FPRINTF_STDERR( "[chuck](via SndBuf)  |- assuming 16 bit signed mono (PCM)\n]" );
             info.format = SF_FORMAT_RAW | SF_FORMAT_PCM_16 | SF_ENDIAN_CPU ;
             info.channels = 1;
             info.samplerate = 44100;
@@ -3569,7 +3570,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         if( er )
         {
             CK_FPRINTF_STDERR( "[chuck](via SndBuf): sndfile error '%li' opening '%s'...\n", er, filename );
-            CK_FPRINTF_STDERR( "[chuck](via SndBuf): (reason: %s)\n", sf_strerror( d->fd ) );
+            CK_FPRINTF_STDERR( "[chuck](via SndBuf):  |- reason: %s\n", sf_strerror( d->fd ) );
             if( d->fd )
             {
                 sf_close( d->fd );

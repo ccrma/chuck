@@ -4,6 +4,21 @@ ChucK VERSIONS log
 
 1.5.0.4
 ---
+- (fixed) assignments into a full array declaration now results in a
+  compiler error (previously this would cause a crash). for example:
+  === code ===
+    [1,2] @=> int foo[2];
+  === resulting compiler error ===
+    cannot assign '@=>' to full array declaration...
+      |- hint: declare right-hand-side as empty array
+      |- e.g., int foo[]
+- (note) as before, assignments into a full non-array declaration still 
+  works, effectively treating the right-hand-side declaration as a 
+  reference:
+  === code ===
+    // effective same as new Object @=> Object @ foo;
+    // works as before
+    new Object @=> Object foo;
 - (added) --chugin-probe command-line flag to probe (and verify version)
   for chugins and auto-load chuck sources in the search paths; print 
   results and any version mismatches (e.g., `chuck --chugin-probe`)
@@ -13,6 +28,11 @@ ChucK VERSIONS log
   search in subdirectories
 - (updated) setting chuck log level is no longer logged below
   log level INFO
+- (fixed, developer) distinct notions of base type reference and array 
+  reference; for example SinOsc @ foo[] -> `SinOsc @` is base type 
+  reference and `foo[]` is array reference
+- (fixed, developer) instruction dumps (via +d flag) now more correctly 
+  prints reference-related (@) declarations and new operations
 
 
 1.5.0.3 (June 2023)

@@ -4331,15 +4331,17 @@ void Chuck_Instr_Assign_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     done = *obj;
     // copy popped value into memory
     *obj = (Chuck_VM_Object *)(*(reg_sp));
+
+    // hmm if need to debug
+    // CK_FPRINTF_STDERR( "obj: 0x%08x 0x%08x\n", *obj, done );
+
     // add reference
     if( *obj ) (*obj)->add_ref();
     // release
     if( done ) done->release();
 
-//    CK_FPRINTF_STDERR( "obj: 0x%08x\n", *obj );
-
-    // copy
-    // memcpy( (void *)*(reg_sp+1), *obj, sizeof(t_CKUINT) );
+    // FYI this instruction expects a variable address in obj
+    // but ends up pushing *obj (the value pointed to by obj)
     // push the reference value to reg stack
     push_( reg_sp, (t_CKUINT)*obj );
 }
@@ -7153,6 +7155,7 @@ void Chuck_Instr_UGen_Link::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     pop_( sp, 2 );
     // check for null
     if( !*(sp+1) || !(*sp) ) goto null_pointer;
+
     // go for it
     (*(sp + 1))->add( *sp, m_isUpChuck );
     // push the second
