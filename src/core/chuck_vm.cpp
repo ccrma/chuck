@@ -140,7 +140,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: Chuck_VM()
-// desc: ...
+// desc: constructor
 //-----------------------------------------------------------------------------
 Chuck_VM::Chuck_VM()
 {
@@ -979,9 +979,9 @@ t_CKUINT Chuck_VM::last_id( )
 
 //-----------------------------------------------------------------------------
 // name: shreduler()
-// desc: ...
+// desc: get the VM's shreduler
 //-----------------------------------------------------------------------------
-Chuck_VM_Shreduler * Chuck_VM::shreduler( ) const
+Chuck_VM_Shreduler * Chuck_VM::shreduler() const
 {
     return m_shreduler;
 }
@@ -991,7 +991,7 @@ Chuck_VM_Shreduler * Chuck_VM::shreduler( ) const
 
 //-----------------------------------------------------------------------------
 // name: srate()
-// desc: ...
+// desc: get VM sample rate
 //-----------------------------------------------------------------------------
 t_CKUINT Chuck_VM::srate() const
 {
@@ -1003,7 +1003,7 @@ t_CKUINT Chuck_VM::srate() const
 
 //-----------------------------------------------------------------------------
 // name: spork()
-// desc: ...
+// desc: spork shred from compiled VM code
 //-----------------------------------------------------------------------------
 Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
                                   t_CKBOOL immediate )
@@ -1047,7 +1047,7 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
 
 //-----------------------------------------------------------------------------
 // name: spork()
-// desc: ...
+// desc: spork a shred, shreduling it to run in the VM
 //-----------------------------------------------------------------------------
 Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Shred * shred )
 {
@@ -1075,7 +1075,7 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: free()
-// desc: ...
+// desc: deallocate a shred
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec )
 {
@@ -1132,7 +1132,7 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
 
 //-----------------------------------------------------------------------------
 // name: abort_current_shred()
-// desc: ...
+// desc: abort the current shred
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::abort_current_shred( )
 {
@@ -1161,7 +1161,7 @@ t_CKBOOL Chuck_VM::abort_current_shred( )
 
 //-----------------------------------------------------------------------------
 // name: dump()
-// desc: ...
+// desc: place a shred into the "dump" to be later released
 //-----------------------------------------------------------------------------
 void Chuck_VM::dump( Chuck_VM_Shred * shred )
 {
@@ -1185,7 +1185,7 @@ void Chuck_VM::dump( Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: release_dump()
-// desc: ...
+// desc: release the contents of the dump
 //-----------------------------------------------------------------------------
 void Chuck_VM::release_dump( )
 {
@@ -1205,56 +1205,9 @@ void Chuck_VM::release_dump( )
 
 
 
-
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: set_main_thread_hook()
-// desc: ...
-//-----------------------------------------------------------------------------
-//t_CKBOOL Chuck_VM::set_main_thread_hook( f_mainthreadhook hook,
-//                                         f_mainthreadquit quit,
-//                                         void * bindle )
-//{
-//    if( m_main_thread_hook == NULL && m_main_thread_quit == NULL )
-//    {
-//        m_main_thread_bindle = bindle;
-//        m_main_thread_hook = hook;
-//        m_main_thread_quit = quit;
-//
-//        return TRUE;
-//    }
-//    else
-//    {
-//        EM_log(CK_LOG_SEVERE, "[chuck](VM): attempt to register more than one main_thread_hook");
-//        return FALSE;
-//    }
-//}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: set_main_thread_hook()
-// desc: ...
-//-----------------------------------------------------------------------------
-//t_CKBOOL Chuck_VM::clear_main_thread_hook()
-//{
-//    m_main_thread_bindle = NULL;
-//    m_main_thread_hook = NULL;
-//    m_main_thread_quit = NULL;
-//
-//    return TRUE;
-//}
-
-
-
-
 //-----------------------------------------------------------------------------
 // name: Chuck_VM_Stack()
-// desc: ...
+// desc: constructor
 //-----------------------------------------------------------------------------
 Chuck_VM_Stack::Chuck_VM_Stack()
 {
@@ -1268,7 +1221,7 @@ Chuck_VM_Stack::Chuck_VM_Stack()
 
 //-----------------------------------------------------------------------------
 // name: ~Chuck_VM_Stack()
-// desc: ...
+// desc: desctructor
 //-----------------------------------------------------------------------------
 Chuck_VM_Stack::~Chuck_VM_Stack()
 {
@@ -1280,7 +1233,7 @@ Chuck_VM_Stack::~Chuck_VM_Stack()
 
 //-----------------------------------------------------------------------------
 // name: Chuck_VM_Code()
-// desc: ...
+// desc: constructor
 //-----------------------------------------------------------------------------
 Chuck_VM_Code::Chuck_VM_Code()
 {
@@ -1298,7 +1251,7 @@ Chuck_VM_Code::Chuck_VM_Code()
 
 //-----------------------------------------------------------------------------
 // name: ~Chuck_VM_Code()
-// desc: ...
+// desc: destructor
 //-----------------------------------------------------------------------------
 Chuck_VM_Code::~Chuck_VM_Code()
 {
@@ -1325,7 +1278,7 @@ Chuck_VM_Code::~Chuck_VM_Code()
 #define VM_STACK_PADDING_FACTOR 16
 //-----------------------------------------------------------------------------
 // name: initialize()
-// desc: ...
+// desc: initialize VM stack
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Stack::initialize( t_CKUINT size )
 {
@@ -1366,7 +1319,7 @@ out_of_memory:
 
 //-----------------------------------------------------------------------------
 // name: shutdown()
-// desc: ...
+// desc: shutdown and cleanup VM stack
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Stack::shutdown()
 {
@@ -1389,7 +1342,7 @@ t_CKBOOL Chuck_VM_Stack::shutdown()
 
 //-----------------------------------------------------------------------------
 // name: Chuck_VM_Shred()
-// desc: ...
+// desc: constructor
 //-----------------------------------------------------------------------------
 Chuck_VM_Shred::Chuck_VM_Shred()
 {
@@ -1429,7 +1382,7 @@ Chuck_VM_Shred::Chuck_VM_Shred()
 
 //-----------------------------------------------------------------------------
 // name: ~Chuck_VM_Shred()
-// desc: ...
+// desc: destructor
 //-----------------------------------------------------------------------------
 Chuck_VM_Shred::~Chuck_VM_Shred()
 {
@@ -1441,7 +1394,7 @@ Chuck_VM_Shred::~Chuck_VM_Shred()
 
 //-----------------------------------------------------------------------------
 // name: initialize()
-// desc: ...
+// desc: initialize a shred from VM code
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
                                      t_CKUINT mem_stack_size,
@@ -1482,7 +1435,7 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
 
 //-----------------------------------------------------------------------------
 // name: shutdown()
-// desc: ...
+// desc: shutdown a shred
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::shutdown()
 {
@@ -1579,7 +1532,7 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
 
 //-----------------------------------------------------------------------------
 // name: add()
-// desc: ...
+// desc: add a ugen to this shred's ugen map
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::add( Chuck_UGen * ugen )
 {
@@ -1601,7 +1554,7 @@ t_CKBOOL Chuck_VM_Shred::add( Chuck_UGen * ugen )
 
 //-----------------------------------------------------------------------------
 // name: remove()
-// desc: ...
+// desc: remove a ugen from this shred's ugen map
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::remove( Chuck_UGen * ugen )
 {
@@ -1644,7 +1597,7 @@ t_CKVOID Chuck_VM_Shred::add_parent_ref( Chuck_Object * obj )
 
 //-----------------------------------------------------------------------------
 // name: run()
-// desc: ...
+// desc: run this shred's VM code
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::run( Chuck_VM * vm )
 {
@@ -1696,33 +1649,41 @@ CK_VM_DEBUG(CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
 
 
 
+
 #ifndef __DISABLE_SERIAL__
 //-----------------------------------------------------------------------------
 // name: add_serialio()
-// desc: ...
+// desc: add serial IO (for event synchronization)
 //-----------------------------------------------------------------------------
 t_CKVOID Chuck_VM_Shred::add_serialio( Chuck_IO_Serial * serial )
 {
-    if(m_serials == NULL)
+    // instantiate list if needed
+    if( m_serials == NULL )
         m_serials = new list<Chuck_IO_Serial *>;
+    // add reference
     serial->add_ref();
+    // append to list
     m_serials->push_back( serial );
 }
 
 
 
+
 //-----------------------------------------------------------------------------
-// name: add_serialio()
-// desc: ...
+// name: remove_serialio()
+// desc: remove serial IO
 //-----------------------------------------------------------------------------
 t_CKVOID Chuck_VM_Shred::remove_serialio( Chuck_IO_Serial * serial )
 {
-    if(m_serials == NULL)
-        return;
+    // check
+    if( m_serials == NULL ) return;
+    // remove from list
     m_serials->remove( serial );
+    // release
     serial->release();
 }
 #endif
+
 
 
 
@@ -1779,7 +1740,7 @@ bool Chuck_VM_Shred::popLoopCounter()
 
 //-----------------------------------------------------------------------------
 // name: Chuck_VM_Shreduler()
-// desc: ...
+// desc: constructor
 //-----------------------------------------------------------------------------
 Chuck_VM_Shreduler::Chuck_VM_Shreduler()
 {
@@ -1802,7 +1763,7 @@ Chuck_VM_Shreduler::Chuck_VM_Shreduler()
 
 //-----------------------------------------------------------------------------
 // name: ~Chuck_VM_Shreduler()
-// desc: ...
+// desc: destructor
 //-----------------------------------------------------------------------------
 Chuck_VM_Shreduler::~Chuck_VM_Shreduler()
 {
@@ -1814,7 +1775,7 @@ Chuck_VM_Shreduler::~Chuck_VM_Shreduler()
 
 //-----------------------------------------------------------------------------
 // name: initialize()
-// desc: ...
+// desc: initialize shreduler
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shreduler::initialize()
 {
@@ -1826,7 +1787,7 @@ t_CKBOOL Chuck_VM_Shreduler::initialize()
 
 //-----------------------------------------------------------------------------
 // name: shutdown()
-// desc: ...
+// desc: shutdown shreduler
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shreduler::shutdown()
 {
@@ -1838,7 +1799,7 @@ t_CKBOOL Chuck_VM_Shreduler::shutdown()
 
 //-----------------------------------------------------------------------------
 // name: set_adaptive()
-// desc: ...
+// desc: set adaptive mode (and adapative mode max block size)
 //-----------------------------------------------------------------------------
 void Chuck_VM_Shreduler::set_adaptive( t_CKUINT max_block_size )
 {
@@ -1895,7 +1856,7 @@ t_CKBOOL Chuck_VM_Shreduler::remove_blocked( Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: shredule()
-// desc: ...
+// desc: shredule a shred in the shreduler
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shreduler::shredule( Chuck_VM_Shred * shred )
 {
@@ -1907,7 +1868,7 @@ t_CKBOOL Chuck_VM_Shreduler::shredule( Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: shredule()
-// desc: ...
+// desc: shredule a shred in the shreduler by wake time
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shreduler::shredule( Chuck_VM_Shred * shred,
                                        t_CKTIME wake_time )
@@ -1983,7 +1944,7 @@ t_CKBOOL Chuck_VM_Shreduler::shredule( Chuck_VM_Shred * shred,
 
 //-----------------------------------------------------------------------------
 // name: advance_v()
-// desc: ...
+// desc: advance the shreduler, v is for vectorize
 //-----------------------------------------------------------------------------
 void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
 {
@@ -2103,7 +2064,7 @@ void Chuck_VM_Shreduler::advance_v( t_CKINT & numLeft, t_CKINT & offset )
 
 //-----------------------------------------------------------------------------
 // name: advance()
-// desc: ...
+// desc: advance the shreduler
 //-----------------------------------------------------------------------------
 void Chuck_VM_Shreduler::advance( t_CKINT N )
 {
@@ -2209,7 +2170,7 @@ Chuck_VM_Shred * Chuck_VM_Shreduler::get( )
 
 //-----------------------------------------------------------------------------
 // name: highest()
-// desc: ...
+// desc: get the ID of the shred with the highst shred ID
 //-----------------------------------------------------------------------------
 t_CKUINT Chuck_VM_Shreduler::highest( )
 {
@@ -2237,7 +2198,7 @@ t_CKUINT Chuck_VM_Shreduler::highest( )
 
 //-----------------------------------------------------------------------------
 // name: replace()
-// desc: ...
+// desc: replace a shred in the shreduler with a new shred
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shreduler::replace( Chuck_VM_Shred * out, Chuck_VM_Shred * in )
 {
@@ -2271,7 +2232,7 @@ t_CKBOOL Chuck_VM_Shreduler::replace( Chuck_VM_Shred * out, Chuck_VM_Shred * in 
 
 //-----------------------------------------------------------------------------
 // name: remove()
-// desc: ...
+// desc: remove a shred from the shreduler
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shreduler::remove( Chuck_VM_Shred * out )
 {
@@ -2304,8 +2265,8 @@ t_CKBOOL Chuck_VM_Shreduler::remove( Chuck_VM_Shred * out )
 
 
 //-----------------------------------------------------------------------------
-// name: get()
-// desc: ...
+// name: lookup()
+// desc: look up a shred by ID
 //-----------------------------------------------------------------------------
 Chuck_VM_Shred * Chuck_VM_Shreduler::lookup( t_CKUINT xid )
 {
@@ -2340,8 +2301,8 @@ Chuck_VM_Shred * Chuck_VM_Shreduler::lookup( t_CKUINT xid )
 
 
 //-----------------------------------------------------------------------------
-// name: SortByID()
-// desc: ...
+// name: struct SortByID()
+// desc: for sorting
 //-----------------------------------------------------------------------------
 struct SortByID
 {
@@ -2354,7 +2315,7 @@ struct SortByID
 
 //-----------------------------------------------------------------------------
 // name: status()
-// desc: ...
+// desc: get VM shreduler status
 //-----------------------------------------------------------------------------
 void Chuck_VM_Shreduler::status( Chuck_VM_Status * status )
 {
@@ -2416,9 +2377,9 @@ void Chuck_VM_Shreduler::status( Chuck_VM_Status * status )
 
 //-----------------------------------------------------------------------------
 // name: status()
-// desc: ...
+// desc: output/print status
 //-----------------------------------------------------------------------------
-void Chuck_VM_Shreduler::status( )
+void Chuck_VM_Shreduler::status()
 {
     Chuck_VM_Shred_Status * shred = NULL;
 
@@ -2446,7 +2407,7 @@ void Chuck_VM_Shreduler::status( )
 
 //-----------------------------------------------------------------------------
 // name: Chuck_VM_Status()
-// desc: ...
+// desc: constructor
 //-----------------------------------------------------------------------------
 Chuck_VM_Status::Chuck_VM_Status()
 {
@@ -2460,7 +2421,7 @@ Chuck_VM_Status::Chuck_VM_Status()
 
 //-----------------------------------------------------------------------------
 // name: ~Chuck_VM_Status()
-// desc: ...
+// desc: destructor
 //-----------------------------------------------------------------------------
 Chuck_VM_Status::~Chuck_VM_Status()
 {
@@ -2472,7 +2433,7 @@ Chuck_VM_Status::~Chuck_VM_Status()
 
 //-----------------------------------------------------------------------------
 // name: clear()
-// desc: ...
+// desc: clear VM status
 //-----------------------------------------------------------------------------
 void Chuck_VM_Status::clear()
 {
