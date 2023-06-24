@@ -626,7 +626,7 @@ t_CKBOOL ChucK::initChugins()
 
         EM_pushlog();
         // print host version
-        EM_log( CK_LOG_SYSTEM, "host version: %d.%d", CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
+        EM_log( CK_LOG_SEVERE, "host version: %d.%d", CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
         EM_poplog();
 
         //---------------------------------------------------------------------
@@ -653,7 +653,7 @@ t_CKBOOL ChucK::initChugins()
         m_carrier->compiler->m_originHint = te_originImport;
         //---------------------------------------------------------------------
         // log
-        EM_log( CK_LOG_SYSTEM, "pre-loading ChucK libs..." );
+        EM_log( CK_LOG_SYSTEM, "loading chuck extensions..." );
         EM_pushlog();
 
         // iterate over list of ck files that the compiler found
@@ -948,7 +948,7 @@ t_CKBOOL ChucK::compileFile( const std::string & path, const std::string & argsT
     //-------------------------------------------------------------------------
 
     // log
-    EM_log( CK_LOG_FINE, "compiling '%s'...", path.c_str() );
+    EM_log( CK_LOG_INFO, "compiling '%s'...", path.c_str() );
     // push indent
     EM_pushlog();
 

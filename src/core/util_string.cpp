@@ -43,6 +43,7 @@
 #endif // #ifndef __CHUNREAL_ENGINE__
 #endif // #ifdef __PLATFORM_WIN32__
 
+#include <time.h>
 #include <limits.h>
 #include <stdio.h>
 using namespace std;
@@ -746,4 +747,37 @@ t_CKBOOL extension_matches( const std::string & filename, const std::string & ex
     //
     // return strncmp( extension, filename+(filename_length-extension_length),
     //    extension_length ) == 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: timestamp_formatted() | 1.5.0.4 (ge) added
+// desc: return formatted string of current local time; no newline
+//-----------------------------------------------------------------------------
+std::string timestamp_formatted()
+{
+    // timestamp
+    char datetime_buf[32];
+    // how computer sees time
+    time_t datetime;
+    // get local time
+    time( &datetime );
+    // format time
+    const char * timestr = ctime(&datetime);
+    // check if result ok
+    if( !timestr ) return "[unable to determine/format time]";
+
+    // copy formatted date; ctime() always returns fixed length
+    // e.g., "Sat Jun 24 04:18:42 2023" -- 24 characters... okay
+    // what happens when the year becomes 5 or more digits?
+    // in the year 10000...
+    // will there still be computers? or humans? computer music?!?
+    strncpy( datetime_buf, timestr, 24 );
+    // terminate the string
+    datetime_buf[24] = '\0';
+
+    // return the formatted timestamp
+    return datetime_buf;
 }

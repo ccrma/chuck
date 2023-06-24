@@ -89,7 +89,8 @@ void parse_path_list( std::string & str, std::list<std::string> & lst );
 // check whether a filename matches a particular extension
 t_CKBOOL extension_matches( const std::string & filename, const std::string & extension );
 
-
+// get formatted timestamp of current system time; no new line
+std::string timestamp_formatted(); // e.g., "Sat Jun 24 04:18:42 2023"
 
 
 #endif

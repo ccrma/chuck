@@ -920,7 +920,8 @@ bool go( int argc, const char ** argv )
         }
     }
 
-    //-------------------- VIRTUAL MACHINE SETUP (PART 1) -------------------------
+
+    //-------------------- VIRTUAL MACHINE SETUP (PART 1) ---------------------
     // instantiate a ChucK!
     the_chuck = new ChucK();
     // set log level so things can start logging
@@ -947,13 +948,14 @@ bool go( int argc, const char ** argv )
     }
 
     // log
-    EM_log( CK_LOG_SYSTEM, "booting up ChucK instance..." );
+    EM_log( CK_LOG_SYSTEM, "initializing chuck..." );
     // push
     EM_pushlog();
 
-    //--------------------------- AUDIO I/O SETUP ---------------------------------
+
+    //--------------------------- AUDIO I/O SETUP -----------------------------
     // log
-    EM_log( CK_LOG_SYSTEM, "initializing audio subsystem..." );
+    EM_log( CK_LOG_SYSTEM, "initializing system settings..." );
     // push
     EM_pushlog();
     // log
@@ -998,7 +1000,7 @@ bool go( int argc, const char ** argv )
     EM_poplog();
 
 
-    //-------------------- VIRTUAL MACHINE SETUP (PART 2) -------------------------
+    //-------------------- VIRTUAL MACHINE SETUP (PART 2) ---------------------
     // set params (some, like sample rate, could have been updated during
     // real-time audio initialization, so we are setting actual params here)
     // set the actual sample rate; needed to map to in-language durations
@@ -1023,10 +1025,13 @@ bool go( int argc, const char ** argv )
         exit( 1 );
     }
 
-    //------------------ PRINT VERIFIED AUDIO SETTING ---------------------------
+    // timestamp
+    EM_log( CK_LOG_SYSTEM, "local earth time: %s", timestamp_formatted().c_str() );
 
+
+    //------------------ PRINT VERIFIED AUDIO SETTING -------------------------
     // log
-    EM_log( CK_LOG_SYSTEM, "audio subsystem enabled..." );
+    EM_log( CK_LOG_SYSTEM, "initializing audio I/O..." );
     // push
     EM_pushlog();
     // log
@@ -1047,14 +1052,15 @@ bool go( int argc, const char ** argv )
     // pop
     EM_poplog();
 
-    //------------------------- HID RELATED SETUP --------------------------------
+
+    //------------------------- HID RELATED SETUP -----------------------------
 #ifndef __ALTER_HID__
     // pre-load hid
     if( load_hid ) HidInManager::init();
 #endif // __ALTER_HID__
 
     
-    //------------------------- CLI RELATED SETUP --------------------------------
+    //------------------------- CLI RELATED SETUP -----------------------------
     // catch SIGINT
     signal( SIGINT, signal_int );
 #ifndef __PLATFORM_WIN32__
@@ -1062,12 +1068,55 @@ bool go( int argc, const char ** argv )
     signal( SIGPIPE, signal_pipe );
 #endif
 
-    // version
-    EM_log( CK_LOG_SYSTEM, "ChucK version: %s", the_chuck->version() );
+    // boost priority
+    if( XThreadUtil::our_priority != 0x7fffffff )
+    {
+        // try
+        if( !XThreadUtil::set_priority( XThreadUtil::our_priority ) )
+        {
+            // error
+            CK_FPRINTF_STDERR( "[chuck]: error setting thread priority...\n" );
+            exit( 1 );
+        }
+    }
 
-    //------------------------- SOURCE COMPILATION --------------------------------
+    // -------------------------- SHELL SETUP ---------------------------------
+    // shell initialization
+    if( g_enable_shell )
+    {
+        // instantiate
+        g_shell = new Chuck_Shell;
+        // initialize
+        if( !init_shell( g_shell, new Chuck_Console(), the_chuck->vm() ) )
+            exit( 1 );
+
+        // flag
+        g_shutdown_shell = FALSE;
+
+        // NOTE: shell to be started later below
+    }
+
+    // version
+    EM_log( CK_LOG_SYSTEM, "chuck version: %s", the_chuck->version() );
+
+    // pop log
+    EM_poplog();
+
+
+    //----------------------- ENTERING CHUCK RUNTIME --------------------------
     // log
-    EM_log( CK_LOG_SEVERE, "starting compilation..." );
+    EM_log( CK_LOG_SYSTEM, "starting chuck..." );
+
+    // start it!
+    the_chuck->start();
+
+    // push indent
+    EM_pushlog();
+
+
+    //------------------------- SOURCE COMPILATION ----------------------------
+    // log
+    EM_log( CK_LOG_SYSTEM, "starting compilation..." );
     // push indent
     EM_pushlog();
 
@@ -1100,57 +1149,19 @@ bool go( int argc, const char ** argv )
     // pop indent
     EM_poplog();
     
+    // syntax check only mode
     if( syntax_check_only )
+    {
+        // pop log
+        EM_poplog();
+        // log message
+        EM_log( CK_LOG_SYSTEM, "syntax checking mode complete; exiting..." );
+        // done
         return TRUE;
-
-    // boost priority
-    if( XThreadUtil::our_priority != 0x7fffffff )
-    {
-        // try
-        if( !XThreadUtil::set_priority( XThreadUtil::our_priority ) )
-        {
-            // error
-            CK_FPRINTF_STDERR( "[chuck]: error setting thread priority...\n" );
-            exit( 1 );
-        }
-    }
-    
-    
-    //----------------------- SHELL SETUP -----------------------------
-
-    // shell initialization
-    if( g_enable_shell )
-    {
-        // instantiate
-        g_shell = new Chuck_Shell;
-        // initialize
-        if( !init_shell( g_shell, new Chuck_Console(), the_chuck->vm() ) )
-            exit( 1 );
-
-        // flag
-        g_shutdown_shell = FALSE;
-
-        // start shell on separate thread | REFACTOR-2017: per-VM?!?
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-        pthread_create( &g_tid_shell, NULL, shell_cb, g_shell );
-#else
-        g_tid_shell = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)shell_cb, g_shell, 0, 0 );
-#endif
     }
 
-    // pop log
-    EM_poplog();
-    
-    //-------------------------- MAIN CHUCK LOOP!!! -----------------------------
-    // log
-    EM_log( CK_LOG_SYSTEM, "running main loop..." );
 
-    // start it!
-    the_chuck->start();
-    
-    // push indent
-    EM_pushlog();
-    
+    //------------------------- STARTING AUDIO I/O ----------------------------
     // silent mode buffers
     SAMPLE * input = new SAMPLE[buffer_size*adc_chans];
     SAMPLE * output = new SAMPLE[buffer_size*dac_chans];
@@ -1166,14 +1177,29 @@ bool go( int argc, const char ** argv )
         // start real-time audio I/O
         ChuckAudio::start();
     }
+
     
+    //------------------------- MAIN CHUCK LOOP!!! ----------------------------
     // log
     EM_log( CK_LOG_SYSTEM, "starting virtual machine..." );
+    EM_log( CK_LOG_SYSTEM, "starting main loop..." );
 
     // pop indent
     EM_poplog();
 
-    // wait
+    // chuck shell
+    // (deferring as late as possible to minimize output conflict with log)
+    if( g_enable_shell )
+    {
+        // start shell on separate thread | REFACTOR-2017: per-VM?!?
+#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+        pthread_create( &g_tid_shell, NULL, shell_cb, g_shell );
+#else
+        g_tid_shell = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)shell_cb, g_shell, 0, 0 );
+#endif
+    }
+
+    // run loop
     while( the_chuck->vm_running() )
     {
         // real-time audio
