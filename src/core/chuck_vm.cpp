@@ -725,7 +725,7 @@ void Chuck_VM::destroy_event_buffer( CBufferSimple * buffer )
 
 //-----------------------------------------------------------------------------
 // name: get_reply()
-// desc: ...
+// desc: get reply from reply buffer
 // TODO: make thread safe for multiple consumers
 //-----------------------------------------------------------------------------
 Chuck_Msg * Chuck_VM::get_reply()

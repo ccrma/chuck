@@ -490,12 +490,14 @@ public: // garbage collection
     void gc();
     void gc( t_CKUINT amount );
 
-public: // msg
+public: // VM message queue
     t_CKBOOL queue_msg( Chuck_Msg * msg, int num_msg );
     // CBufferSimple added 1.3.0.0 to fix uber-crash
     t_CKBOOL queue_event( Chuck_Event * event, int num_msg, CBufferSimple * buffer = NULL );
+    // process a VM message
     t_CKUINT process_msg( Chuck_Msg * msg );
-    Chuck_Msg * get_reply( );
+    // get reply from reply buffer
+    Chuck_Msg * get_reply();
 
     // added 1.3.0.0 to fix uber-crash
     CBufferSimple * create_event_buffer();
