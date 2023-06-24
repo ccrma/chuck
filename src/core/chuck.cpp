@@ -607,6 +607,9 @@ t_CKBOOL ChucK::initChugins()
     Chuck_VM_Code * code = NULL;
     Chuck_VM_Shred * shred = NULL;
 
+    // print whether chugins enabled
+    EM_log( CK_LOG_SYSTEM, "chugin system: %s", getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) ? "ON" : "OFF" );
+
     // whether or not chug should be enabled (added 1.3.0.0)
     if( getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) != 0 )
     {
@@ -621,6 +624,11 @@ t_CKBOOL ChucK::initChugins()
         // list of individually named chug-ins (added 1.3.0.0)
         std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
 
+        EM_pushlog();
+        // print host version
+        EM_log( CK_LOG_SYSTEM, "host version: %d.%d", CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
+        EM_poplog();
+
         //---------------------------------------------------------------------
         // set origin hint | 1.5.0.0 (ge) added
         m_carrier->compiler->m_originHint = te_originChugin;
@@ -628,7 +636,7 @@ t_CKBOOL ChucK::initChugins()
         // log
         EM_log( CK_LOG_SYSTEM, "loading chugins..." );
         // push indent level
-        EM_pushlog();
+        // EM_pushlog();
         // load external libs | 1.5.0.4 (ge) enabled recursive search
         if( !compiler()->load_external_modules( ".chug", dl_search_path, named_dls, TRUE ) )
         {
@@ -638,7 +646,7 @@ t_CKBOOL ChucK::initChugins()
             goto error;
         }
         // pop log
-        EM_poplog();
+        // EM_poplog();
 
         //---------------------------------------------------------------------
         // set origin hint | 1.5.0.0 (ge) added
@@ -752,7 +760,7 @@ void ChucK::probeChugins()
     // log
     EM_log( CK_LOG_SYSTEM, "probing chugins (.chug)..." );
     // push indent level
-    EM_pushlog();
+    // EM_pushlog();
     // load external libs
     if( !Chuck_Compiler::probe_external_modules( ".chug", dl_search_path, named_dls, TRUE, ck_libs_to_preload ) )
     {
@@ -760,7 +768,7 @@ void ChucK::probeChugins()
         EM_log( CK_LOG_SYSTEM, "error probing chugins..." );
     }
     // pop log
-    EM_poplog();
+    // EM_poplog();
 
     // log
     EM_log( CK_LOG_SYSTEM, "probing auto-load chuck files (.ck)..." );

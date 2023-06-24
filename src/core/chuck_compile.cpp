@@ -951,10 +951,8 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
     else
     {
         // log (1.3.1.2: changed to 2 lines to stay within 80 chars)
-        EM_pushlog();
         EM_log( CK_LOG_INFO, "unable to open directory..." );
         EM_log( CK_LOG_INFO, "ignoring for chugins..." );
-        EM_poplog();
     }
 
     // pop log
@@ -1159,10 +1157,8 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
     else
     {
         // log (1.3.1.2: changed to 2 lines to stay within 80 chars)
-        EM_pushlog();
         EM_log( CK_LOG_SYSTEM, "unable to open directory..." );
         EM_log( CK_LOG_SYSTEM, "ignoring for chugins..." );
-        EM_poplog();
     }
 
     // pop log
