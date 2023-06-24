@@ -1035,12 +1035,12 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
         if( dll->compatible() )
         {
             // print
-            EM_log( CK_LOG_SYSTEM, "[OK] chugin %s [version %d.%d]", name, dll->versionMajor(), dll->versionMinor() );
+            EM_log( CK_LOG_SYSTEM, "[OK] chugin %s (%d.%d)", name, dll->versionMajor(), dll->versionMinor() );
         }
         else
         {
             // print
-            EM_log( CK_LOG_SYSTEM, "[FAILED] chugin %s [version %d.%d]", name, dll->versionMajor(), dll->versionMinor() );
+            EM_log( CK_LOG_SYSTEM, "[FAILED] chugin %s (%d.%d)", name, dll->versionMajor(), dll->versionMinor() );
             // push
             EM_pushlog();
             EM_log( CK_LOG_SYSTEM, "reason: %s", dll->last_error() );
@@ -1185,7 +1185,7 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const char * extension,
                                                  std::list<std::string> & ck_libs )
 {
     // print
-    EM_log( CK_LOG_SYSTEM, "probing specified chugins (e.g., from --chugin)..." );
+    EM_log( CK_LOG_SYSTEM, "probing specified chugins (e.g., via --chugin)..." );
     // push
     EM_pushlog();
 
