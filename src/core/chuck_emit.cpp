@@ -164,12 +164,12 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
     assert( emit->env->context->nspc->pre_ctor == NULL );
 
     // log
-    EM_log( CK_LOG_FINER, "(pass 4) emitting VM code '%s'...",
-        emit->env->context->filename.c_str() );
+    EM_log( CK_LOG_FINER, "(pass 4) emitting VM code..." );
+                          // emit->env->context->filename.c_str() );
     // push indent
     EM_pushlog();
     // log how much
-    EM_log( CK_LOG_FINER, "target: %s", howmuch2str( how_much ) );
+    EM_log( CK_LOG_FINEST, "target: %s", howmuch2str( how_much ) );
 
     // return
     t_CKBOOL ret = TRUE;
@@ -282,7 +282,7 @@ Chuck_VM_Code * emit_to_code( Chuck_Code * in,
                               t_CKBOOL dump )
 {
     // log
-    EM_log( CK_LOG_FINER, "emitting code: %d VM instructions...",
+    EM_log( CK_LOG_FINER, "emitting: %d VM instructions...",
             in->code.size() );
     // allocate the vm code
     Chuck_VM_Code * code = out ? out : new Chuck_VM_Code;

@@ -139,12 +139,12 @@ t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
         return FALSE;
 
     // log
-    EM_log( CK_LOG_FINER, "(pass 0) type discovery scan '%s'...",
-            env->context->filename.c_str() );
+    EM_log( CK_LOG_FINER, "(pass 0) type discovery scan..." );
+                          // env->context->filename.c_str() );
     // push indent
     EM_pushlog();
     // log how much
-    EM_log( CK_LOG_FINER, "target: %s", howmuch2str( how_much ) );
+    EM_log( CK_LOG_FINEST, "target: %s", howmuch2str( how_much ) );
 
     // go through each of the program sections
     while( prog && ret )
@@ -381,12 +381,12 @@ t_CKBOOL type_engine_scan1_prog( Chuck_Env * env, a_Program prog,
         return FALSE;
 
     // log
-    EM_log( CK_LOG_FINER, "(pass 1) type resolution scan '%s'...",
-        env->context->filename.c_str() );
+    EM_log( CK_LOG_FINER, "(pass 1) type resolution scan..." );
+                          // env->context->filename.c_str() );
     // push indent
     EM_pushlog();
     // log how much
-    EM_log( CK_LOG_FINER, "target: %s", howmuch2str( how_much ) );
+    EM_log( CK_LOG_FINEST, "target: %s", howmuch2str( how_much ) );
 
     // go through each of the program sections
     while( prog && ret )
@@ -1425,12 +1425,12 @@ t_CKBOOL type_engine_scan2_prog( Chuck_Env * env, a_Program prog,
         return FALSE;
 
     // log
-    EM_log( CK_LOG_FINER, "(pass 2) type verification scan '%s'...",
-        env->context->filename.c_str() );
+    EM_log( CK_LOG_FINER, "(pass 2) type verification scan..." );
+                          // env->context->filename.c_str() );
     // push indent
     EM_pushlog();
     // log how much
-    EM_log( CK_LOG_FINER, "target: %s", howmuch2str( how_much ) );
+    EM_log( CK_LOG_FINEST, "target: %s", howmuch2str( how_much ) );
 
     // go through each of the program sections
     while( prog && ret )

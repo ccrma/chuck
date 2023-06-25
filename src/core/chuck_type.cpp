@@ -786,12 +786,12 @@ t_CKBOOL type_engine_check_context( Chuck_Env * env,
     a_Program prog = NULL;
 
     // log
-    EM_log( CK_LOG_FINER, "(pass 3) type-checking context '%s'...",
-        context->filename.c_str() );
+    EM_log( CK_LOG_FINER, "(pass 3) type-checking context..." );
+                          // context->filename.c_str() );
     // push indent
     EM_pushlog();
     // how much
-    EM_log( CK_LOG_FINER, "target: %s", howmuch2str( how_much ) );
+    EM_log( CK_LOG_FINEST, "target: %s", howmuch2str( how_much ) );
 
     // make sure there is a context
     if( !env->context )
