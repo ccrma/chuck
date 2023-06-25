@@ -1865,6 +1865,10 @@ struct WinMidiData {
   HMIDIOUT outHandle;  // Handle to Midi Output Device
   DWORD lastTime;
   RtMidiIn::MidiMessage message;
+
+  // initialize
+  WinMidiData() : inHandle(NULL), outHandle(NULL), lastTime(0)
+  { }
 };
 
 //*********************************************************************//

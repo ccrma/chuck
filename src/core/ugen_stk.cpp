@@ -8327,9 +8327,13 @@ char waveNames[DRUM_NUMWAVES][32] =
 
 Drummer :: Drummer() : Instrmnt()
 {
-  for (int i=0; i<DRUM_POLYPHONY; i++)   {
+  for (int i=0; i<DRUM_POLYPHONY; i++) {
     filters[i] = new OnePole;
     sounding[i] = -1;
+
+    // this will crash if Drummer is used (currently doesn't seem to be)
+    // but better than trashing memory
+    waves[i] = NULL; // 1.5.0.4 (ge) added
   }
 
   // This counts the number of sounding voices.
@@ -9722,6 +9726,9 @@ FormSwep :: FormSwep() : BiQuad()
   deltaRadius = (MY_FLOAT) 0.0;
   sweepState = (MY_FLOAT) 0.0;
   sweepRate = (MY_FLOAT) 0.002;
+  startFrequency = (MY_FLOAT) 0.0; // 1.5.0.4 (ge) added
+  startGain = (MY_FLOAT)0.0; // 1.5.0.4 (ge) added
+  startRadius = (MY_FLOAT)0.0; // 1.5.0.4 (ge) added
   dirty = false;
   this->clear();
 }
@@ -11613,6 +11620,9 @@ Modulate :: Modulate()
 
   filter = new OnePole( 0.999 );
   filter->setGain( randomGain );
+
+  // initialize | 1.5.0.4 (ge) added
+  lastOutput = 0;
 }
 
 Modulate :: ~Modulate()
@@ -11703,6 +11713,7 @@ Moog :: Moog()
   adsr->setAllTimes((MY_FLOAT) 0.001,(MY_FLOAT) 1.5,(MY_FLOAT) 0.6,(MY_FLOAT) 0.250);
   filterQ = (MY_FLOAT) 0.85;
   filterRate = (MY_FLOAT) 0.0001;
+  filterStartFreq = (MY_FLOAT) 0.0;
   modDepth = (MY_FLOAT) 0.0;
 
   // chuck
@@ -12756,6 +12767,12 @@ PitShift :: PitShift()
   delayLine[1] = new DelayL(delay[1], (long) 1024);
   effectMix = (MY_FLOAT) 0.5;
   rate = 1.0;
+
+  // 1.5.0.4 (ge) added initialization
+  lastOutput = 0;
+  m_vibratoFreq = 0;
+  m_vibratoGain = 0;
+  m_volume = 0;
 }
 
 PitShift :: ~PitShift()
@@ -13205,6 +13222,7 @@ ReedTabl :: ReedTabl()
 {
   offSet = (MY_FLOAT) 0.6;  // Offset is a bias, related to reed rest position.
   slope = (MY_FLOAT) -0.8;  // Slope corresponds loosely to reed stiffness.
+  lastOutput = (MY_FLOAT) 0.0;
 }
 
 ReedTabl :: ~ReedTabl()
@@ -13414,6 +13432,9 @@ void Resonate :: controlChange(int number, MY_FLOAT value)
 
 Reverb :: Reverb()
 {
+    // 1.5.0.4 (ge) add initialization
+    effectMix = 0;
+    lastOutput[0] = lastOutput[1] = 0;
 }
 
 Reverb :: ~Reverb()
@@ -19328,7 +19349,7 @@ void WvOut :: openFile( const char *fileName, unsigned int nChannels, WvOut::FIL
 
 bool WvOut :: setRawFile( const char *fileName )
 {
-  char name[128];
+  char name[130];
   strncpy(name, fileName, 128);
   if ( strstr(name, ".raw") == NULL) strcat(name, ".raw");
   fd = fopen(name, "wb");
@@ -19353,7 +19374,7 @@ bool WvOut :: setRawFile( const char *fileName )
 
 bool WvOut :: setWavFile( const char *fileName )
 {
-  char name[128];
+  char name[130];
   strncpy(name, fileName, 128);
   if( strstr(name, ".wav") == NULL ) strcat(name, ".wav");
   fd = fopen( name, "wb" );
@@ -19441,7 +19462,7 @@ if( !little_endian )
 
 bool WvOut :: setSndFile( const char *fileName )
 {
-  char name[128];
+  char name[130];
   strncpy(name, fileName, 128);
   if ( strstr(name, ".snd") == NULL) strcat(name, ".snd");
   fd = fopen(name, "wb");
@@ -19508,7 +19529,7 @@ if( little_endian )
 
 bool WvOut :: setAifFile( const char *fileName )
 {
-  char name[128];
+  char name[130];
   strncpy(name, fileName, 128);
   if ( strstr(name, ".aif") == NULL) strcat(name, ".aif");
   fd = fopen(name, "wb");
@@ -19658,7 +19679,7 @@ if( little_endian )
 
 bool WvOut :: setMatFile( const char *fileName )
 {
-  char name[128];
+  char name[130];
   strncpy(name, fileName, 128);
   if ( strstr(name, ".mat") == NULL) strcat(name, ".mat");
   fd = fopen(name, "w+b");
@@ -19967,6 +19988,11 @@ MidiFileIn :: MidiFileIn( std::string fileName )
     bpm_ = 0;
     // 1.4.1.1 (ge) string buffer for error message
     std::stringstream msg;
+    // 1.5.0.4 (ge) add initialization
+    format_ = 0;
+    division_ = 0;
+    nTracks_ = 0;
+    usingTimeCode_ = false;
 
     // Attempt to open the file.
     file_.open( fileName.c_str(), std::ios::in | std::ios::binary );
@@ -20740,6 +20766,9 @@ struct BiQuad_
     t_CKFLOAT zfreq;
     t_CKFLOAT zrad;
     t_CKBOOL norm;
+
+    // constructor
+    BiQuad_() : pfreq(0), prad(0), zfreq(0), zrad(0), norm(FALSE) { }
 };
 
 
@@ -20750,12 +20779,6 @@ struct BiQuad_
 CK_DLL_CTOR( BiQuad_ctor )
 {
     BiQuad_ * d = new BiQuad_;
-    d->pfreq = 0.0;
-    d->prad = 0.0;
-    d->zfreq = 0.0;
-    d->zrad = 0.0;
-    d->norm = FALSE;
-
     OBJ_MEMBER_UINT(SELF, BiQuad_offset_data) = (t_CKUINT)d;
 }
 
@@ -26705,7 +26728,7 @@ CK_DLL_CTRL( Moog_ctrl_filterStartFreq )
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
     // m->filterStartFreq( f );
     m->filterStartFreq = f;
-    RETURN->v_float = (t_CKFLOAT)  m->filterStartFreq;
+    RETURN->v_float = (t_CKFLOAT)m->filterStartFreq;
 }
 
 
@@ -26716,7 +26739,7 @@ CK_DLL_CTRL( Moog_ctrl_filterStartFreq )
 CK_DLL_CGET( Moog_cget_filterStartFreq )
 {
     Moog * m = (Moog *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    RETURN->v_float = (t_CKFLOAT)  m->filterStartFreq;
+    RETURN->v_float = (t_CKFLOAT)m->filterStartFreq;
 }
 
 
