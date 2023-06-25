@@ -95,6 +95,8 @@ Chuck_Compiler::Chuck_Compiler()
 
     // REFACTOR-2017: add carrier
     m_carrier = NULL;
+    // initialize
+    m_auto_depend = FALSE;
 
     // origin hint | 1.5.0.0 (ge) added
     m_originHint = te_originUnknown;
