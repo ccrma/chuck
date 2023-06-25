@@ -875,35 +875,51 @@ t_CKBOOL ChucK::shutdown()
 
 #ifndef __DISABLE_OTF_SERVER__
     // cancel otf thread
-    if( m_carrier->otf_thread )
+    if( m_carrier!= NULL )
     {
+        // stop otf thread
+        if( m_carrier->otf_thread )
+        {
 #if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
-        pthread_cancel( m_carrier->otf_thread );
+            pthread_cancel( m_carrier->otf_thread );
 #else
-        CloseHandle( m_carrier->otf_thread ); // doesn't cancel thread
+            CloseHandle( m_carrier->otf_thread ); // doesn't cancel thread
 #endif
-        m_carrier->otf_thread = 0; // signals thread shutdown
+            m_carrier->otf_thread = 0; // signals thread shutdown
+        }
+
+        // close otf socket
+        if( m_carrier->otf_socket )
+        {
+            ck_close( m_carrier->otf_socket );
+        }
+
+        // reset
+        m_carrier->otf_socket = NULL;
+        m_carrier->otf_port = 0;
     }
-
-    // close otf socket
-    if( m_carrier->otf_socket ) ck_close( m_carrier->otf_socket );
-
-    // reset
-    m_carrier->otf_socket = NULL;
-    m_carrier->otf_port = 0;
 #endif // __DISABLE_OTF_SERVER__
 
     // TODO: a different way to unlock?
     // unlock all objects to delete chout, cherr
     Chuck_VM_Object::unlock_all();
-    SAFE_RELEASE( m_carrier->chout );
-    SAFE_RELEASE( m_carrier->cherr );
+    // ensure we have a carrier
+    if( m_carrier != NULL )
+    {
+        SAFE_RELEASE( m_carrier->chout );
+        SAFE_RELEASE( m_carrier->cherr );
+    }
     // relock
     Chuck_VM_Object::lock_all();
-    // clean up vm, compiler
-    SAFE_DELETE( m_carrier->vm );
-    SAFE_DELETE( m_carrier->compiler );
-    m_carrier->env = NULL;
+
+    // ensure we have a carrier
+    if( m_carrier != NULL )
+    {
+        // clean up vm, compiler
+        SAFE_DELETE( m_carrier->vm );
+        SAFE_DELETE( m_carrier->compiler );
+        m_carrier->env = NULL;
+    }
 
     // clear flag
     m_init = FALSE;

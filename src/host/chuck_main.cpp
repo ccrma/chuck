@@ -54,8 +54,8 @@ using namespace std;
 //-----------------------------------------------------------------------------
 t_CKBOOL init_shell( Chuck_Shell * shell, Chuck_Shell_UI * ui, Chuck_VM * vm );
 void * shell_cb( void * p );
-bool go( int argc, const char ** argv );
-void global_cleanup();
+t_CKBOOL go( int argc, const char ** argv );
+t_CKBOOL global_cleanup();
 void all_stop();
 void all_detach();
 void usage();
@@ -120,7 +120,7 @@ t_CKINT g_priority_low = 0x7fffffff;
 
 //-----------------------------------------------------------------------------
 // name: main()
-// desc: ...
+// desc: command line chuck entry point
 //-----------------------------------------------------------------------------
 #ifndef __CHUCK_NO_MAIN__
 int main( int argc, const char ** argv )
@@ -132,7 +132,13 @@ int chuck_main( int argc, const char ** argv )
     go( argc, argv );
 
     // clean up
-    global_cleanup();
+    if( !global_cleanup() )
+    {
+        // we got here possibly because global_cleanup() is underway on
+        // another thread; wait a bit and give actual cleaner a chance to
+        // finish | 1.5.0.4 (ge) added
+        usleep( 50000 );
+    }
     
     return 0;
 }
@@ -258,15 +264,24 @@ t_CKBOOL get_count( const char * arg, t_CKUINT * out )
 
 //-----------------------------------------------------------------------------
 // name: signal_int()
-// desc: handler for ctrl-c (SIGINT).  NB: on windows this is triggered
+// desc: handler for ctrl-c (SIGINT). NB: on windows this is triggered
 //       in a separate thread. global_cleanup requires a mutex.
+//       ... or another synchronization mechanism
 //-----------------------------------------------------------------------------
 extern "C" void signal_int( int sig_num )
 {
     // log
     CK_FPRINTF_STDERR( "[chuck]: cleaning up...\n" );
-    // clean up everything!
-    global_cleanup();
+
+    // clean up
+    if( !global_cleanup() )
+    {
+        // we got here possibly because global_cleanup() is underway on
+        // another thread; wait a bit and give actual cleaner a chance to
+        // finish | 1.5.0.4 (ge) added
+        usleep( 50000 );
+    }
+
     // exit with code
     exit( 130 ); // 130 -> terminated by ctrl-c
 }
@@ -280,9 +295,11 @@ extern "C" void signal_int( int sig_num )
 //-----------------------------------------------------------------------------
 extern "C" void signal_pipe( int sig_num )
 {
-    fprintf( stderr, "[chuck]: sigpipe handled - broken pipe (no connection)...\n" );
+    CK_FPRINTF_STDERR( "[chuck]: sigpipe handled - broken pipe (no connection)...\n" );
     if( g_sigpipe_mode )
     {
+        // log
+        CK_FPRINTF_STDERR( "[chuck]: cleaning up...\n" );
         // clean up everything!
         global_cleanup();
         // later
@@ -297,7 +314,7 @@ extern "C" void signal_pipe( int sig_num )
 // name: global_cleanup()
 // desc: ...
 //-----------------------------------------------------------------------------
-void global_cleanup()
+t_CKBOOL global_cleanup()
 {
     // make sure we don't double clean
     static bool s_already_cleaning = false;
@@ -308,7 +325,7 @@ void global_cleanup()
         // log | 1.5.0.0 (ge) added
         EM_log( CK_LOG_INFO, "additional global cleanup not needed..." );
         // done
-        return;
+        return FALSE;
     }
 
     // log | 1.5.0.0 (ge) added
@@ -351,8 +368,9 @@ void global_cleanup()
 
     // 1.5.0.0 (ge) | commented
     // s_mutex.release();
-}
 
+    return TRUE;
+}
 
 
 
@@ -456,7 +474,7 @@ void * shell_cb( void * p )
 // name: go()
 // desc: parse args, init stuff, run!
 //-----------------------------------------------------------------------------
-bool go( int argc, const char ** argv )
+t_CKBOOL go( int argc, const char ** argv )
 {
     t_CKBOOL vm_halt = TRUE;
     t_CKINT srate = SAMPLE_RATE_DEFAULT;
