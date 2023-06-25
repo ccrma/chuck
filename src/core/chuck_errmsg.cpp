@@ -586,7 +586,7 @@ void EM_log( t_CKINT level, const char * message, ... )
     #ifndef __DISABLE_THREADS__
     g_logmutex.acquire();
     #endif
-    CK_FPRINTF_STDERR( "[chuck](%i:%s) ", level, g_str[level] );
+    CK_FPRINTF_STDERR( "[chuck:%d:%s]: ", level, g_str[level] );
 
     // if( g_logstack ) CK_FPRINTF_STDERR( " " );
     for( int i = 0; i < g_logstack; i++ )
