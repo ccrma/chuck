@@ -85,10 +85,16 @@ public:
 
 public:
     // test for a thread cancellation request.
-    static void test( );
+    static void test();
 
+    // get thread ID from a handle
+    static t_CKUINT getID( THREAD_HANDLE t );
+
+public:
     // get internal thread reference
     THREAD_HANDLE getThread() { return thread; }
+    // get thread ID
+    t_CKUINT getID() { return getID( thread ); }
 
     // clear
     void clear() { thread = 0; }
