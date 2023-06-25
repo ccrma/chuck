@@ -26,8 +26,13 @@ ChucK VERSIONS log
   (e.g., `chuck --chugin:Foo.chug --chugin:Bar.chug --chugin-probe`) 
 - (added) chugins loading in search directories now will recursively
   search in subdirectories
+- (updated) chuck --verbose:[2-10] output now streamlined and more 
+  accurately describes what is happening under-the-hood; e.g.,
+    `chuck [FILENAMES] -v2` to see SYSTEM output
+    `chuck [FILENAMES] -v5` to see INFO!! output
+    `chuck [FILENAMES] -v10` to see ALL!!! output
 - (updated) setting chuck log level is no longer logged below
-  log level INFO
+  INFO!! log-level
 - (fixed, developer) distinct notions of base type reference and array 
   reference; for example SinOsc @ foo[] -> `SinOsc @` is base type 
   reference and `foo[]` is array reference
