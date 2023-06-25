@@ -508,13 +508,14 @@ t_CKBOOL go( int argc, const char ** argv )
     t_CKBOOL update_otf_vm = TRUE;
     string   filename = "";
     vector<string> args;
-    const char * audioDriver = NULL;
-    // default driver name | 1.5.0.1 (ge) added
-    if( g_enable_realtime_audio )
-        audioDriver = ChuckAudio::defaultDriverName();
-    // dac and adc devices names | 1.5.0.0 (ge) added
+    // audio driver | 1.5.0.0
+    string   audio_driver = "";
+    // dac and adc devices names | 1.5.0.0
     string   dac_device_name = "";
     string   adc_device_name = "";
+    // default driver name | 1.5.0.1
+    if( g_enable_realtime_audio )
+        audio_driver = ChuckAudio::defaultDriverName();
 
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path;
@@ -609,7 +610,7 @@ t_CKBOOL go( int argc, const char ** argv )
             else if( !strncmp(argv[i], "-n", 2) )
                 num_buffers = atoi( argv[i]+2 ) > 0 ? atoi( argv[i]+2 ) : num_buffers;
             else if( !strncmp(argv[i], "--driver:", 9))
-                audioDriver = argv[i]+9;
+                audio_driver = argv[i]+9;
             else if( !strncmp(argv[i], "--dac:", 6) ) // (added 1.3.0.0)
             {
                 // advance pointer to beginning of argument
@@ -840,7 +841,7 @@ t_CKBOOL go( int argc, const char ** argv )
     if( probe )
     {
         // probe default/selected audio driver
-        ChuckAudio::probe(audioDriver);
+        ChuckAudio::probe( audio_driver.c_str() );
     
 #ifndef __DISABLE_MIDI__
         // probe MIDI input and output devices
@@ -908,7 +909,7 @@ t_CKBOOL go( int argc, const char ** argv )
     if( !probe_chugs && dac_name.size() > 0 )
     {
         // check with RtAudio
-        t_CKINT dev = ChuckAudio::device_named( audioDriver, dac_name, TRUE, FALSE );
+        t_CKINT dev = ChuckAudio::device_named( audio_driver.c_str(), dac_name, TRUE, FALSE );
         if( dev >= 0 )
         {
             dac = dev;
@@ -925,7 +926,7 @@ t_CKBOOL go( int argc, const char ** argv )
     if( !probe_chugs && adc_name.size() > 0 )
     {
         // check with RtAudio
-        t_CKINT dev = ChuckAudio::device_named( audioDriver, adc_name, FALSE, TRUE );
+        t_CKINT dev = ChuckAudio::device_named( audio_driver.c_str(), adc_name, FALSE, TRUE );
         if( dev >= 0 )
         {
             adc = dev;
@@ -987,7 +988,7 @@ t_CKBOOL go( int argc, const char ** argv )
     {
         // initialize real-time audio
         t_CKBOOL retval = ChuckAudio::initialize( dac, adc, dac_chans, adc_chans,
-            srate, buffer_size, num_buffers, cb, (void *)the_chuck, force_srate, audioDriver );
+            srate, buffer_size, num_buffers, cb, (void *)the_chuck, force_srate, audio_driver.c_str() );
         // check return code
         if( !retval )
         {
@@ -1007,6 +1008,7 @@ t_CKBOOL go( int argc, const char ** argv )
         dac = ChuckAudio::m_dac_n+1;
         adc_chans = ChuckAudio::m_num_channels_in;
         dac_chans = ChuckAudio::m_num_channels_out;
+        audio_driver = ChuckAudio::m_driver_name;
         adc_device_name = ChuckAudio::m_adc_name;
         dac_device_name = ChuckAudio::m_dac_name;
         srate = ChuckAudio::m_sample_rate;
@@ -1061,7 +1063,7 @@ t_CKBOOL go( int argc, const char ** argv )
     {
         EM_log( CK_LOG_SYSTEM, "num buffers: %ld", num_buffers );
         EM_log( CK_LOG_SYSTEM, "adaptive block processing: %ld", adaptive_size > 1 ? adaptive_size : 0 );
-        EM_log( CK_LOG_SYSTEM, "audio driver: %s", audioDriver ? audioDriver : "(unspecified)");
+        EM_log( CK_LOG_SYSTEM, "audio driver: %s", audio_driver != "" ? audio_driver.c_str() : "(unspecified)");
         EM_log( CK_LOG_SYSTEM, "adc:[%d] \"%s\"", adc, adc_device_name.c_str() );
         EM_log( CK_LOG_SYSTEM, "dac:[%d] \"%s\"", dac, dac_device_name.c_str() );
         // EM_log( CK_LOG_SYSTEM, "adc: %ld dac: %d", adc, dac );
