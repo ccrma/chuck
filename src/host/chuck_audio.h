@@ -195,6 +195,7 @@ public: // data
     static t_CKINT m_adc_n; // 1.5.0.3 (ge) changed to signed
     static std::string m_dac_name;
     static std::string m_adc_name;
+    static std::string m_driver_name;
     static f_audio_cb m_audio_cb;
     static void * m_cb_user_data;
 };

@@ -91,6 +91,7 @@ t_CKINT ChuckAudio::m_dac_n = 0;
 t_CKINT ChuckAudio::m_adc_n = 0;
 std::string ChuckAudio::m_dac_name = "";
 std::string ChuckAudio::m_adc_name = "";
+std::string ChuckAudio::m_driver_name = "";
 RtAudio * ChuckAudio::m_rtaudio = NULL;
 f_audio_cb ChuckAudio::m_audio_cb = NULL;
 void * ChuckAudio::m_cb_user_data = NULL;
@@ -158,11 +159,11 @@ static RtAudio::Api driverNameToApi( const char * driver )
     // 1.5.0.0 (nshaheed) If the audio driver is UNSPECIFIED then
     // return a default driver. This will depend on OS and, in the
     // case of linux, which drivers chuck is being compiled with.
-    if(api == RtAudio::UNSPECIFIED)
+    if( api == RtAudio::UNSPECIFIED )
     {
     #if defined(__PLATFORM_WIN32__)
         // traditional chuck default behavior:
-        // DIRECT SOUND is most general albeit high-latency
+        // DirectSound is most general albeit high-latency
         api = RtAudio::WINDOWS_DS;
     #elif defined(__PLATFORM_LINUX__) && defined(__LINUX_PULSE__)
         api = RtAudio::LINUX_PULSE;
@@ -438,7 +439,9 @@ const char * ChuckAudio::defaultDriverName()
 //-----------------------------------------------------------------------------
 RtAudio::Api ChuckAudio::driverNameToApi( const char * driver )
 {
-    // pass it on
+    // if empty string, make the pointer null, which will retrieve default
+    if( driver != NULL && driver[0] == '\0' ) driver = NULL;
+    // get the driver enum
     return ::driverNameToApi( driver );
 }
 
@@ -764,7 +767,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
 
     // allocate RtAudio
     RtAudio::Api api = driverNameToApi(driver);
-    const char * dnm = apiToDriverName(api);
+    m_driver_name = apiToDriverName(api);
     RtAudioErrorType code = RTAUDIO_NO_ERROR;
     m_rtaudio = new RtAudio(api, rtAudioErrorHandler);
     if(!m_rtaudio)
@@ -1014,7 +1017,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
     { // was: try {
         // log
         EM_log( CK_LOG_FINE, "[%s] driver trying %d input %d output...",
-                dnm, m_num_channels_in, m_num_channels_out );
+                m_driver_name.c_str(), m_num_channels_in, m_num_channels_out );
 
         RtAudio::StreamParameters output_parameters;
         output_parameters.deviceId = (unsigned int)m_dac_n;
