@@ -256,7 +256,7 @@ void Chuck_VM_Object::lock_all()
 void Chuck_VM_Object::unlock_all()
 {
     // log
-    EM_log( CK_LOG_SYSTEM, "unprotecting special objects..." );
+    EM_log( CK_LOG_SEVERE, "unlocking special objects..." );
     // set flag
     our_locks_in_effect = FALSE;
 }
