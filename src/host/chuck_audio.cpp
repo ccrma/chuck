@@ -149,6 +149,11 @@ static RtAudio::Api driverNameToApi( const char * driver )
         if( driverLower == "coreaudio" || driverLower == "core" )
             api = RtAudio::MACOSX_CORE;
     #endif
+
+        // check for Dummy
+        if( driverLower == "(dummy)" )
+            api = RtAudio::RTAUDIO_DUMMY;
+
         // XXX: add swap between ALSA, PULSE, OSS? and JACK
         if( api == RtAudio::UNSPECIFIED ) 
         {
@@ -175,6 +180,7 @@ static RtAudio::Api driverNameToApi( const char * driver )
         api = RtAudio::MACOSX_CORE;
     #endif
     }
+
     return api;
 }
 
