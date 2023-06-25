@@ -495,7 +495,7 @@ std::string get_full_path( const std::string & fp )
     char * result = realpath(fp.c_str(), buf);
 
     // try with .ck extension
-    if(result == NULL && !str_endsin(fp.c_str(), ".ck"))
+    if( result == NULL && !extension_matches(fp, ".ck") )
         result = realpath((fp + ".ck").c_str(), buf);
 
     if(result == NULL)
@@ -514,7 +514,7 @@ std::string get_full_path( const std::string & fp )
 #endif
 
     // try with .ck extension
-    if(result == 0 && !str_endsin(fp.c_str(), ".ck"))
+    if( result == 0 && !extension_matches(fp, ".ck") )
     {
 #ifndef __CHUNREAL_ENGINE__
         result = GetFullPathName((fp + ".ck").c_str(), MAX_PATH, buf, NULL);
@@ -688,21 +688,6 @@ std::string normalize_directory_separator( const std::string & filepath )
 
 
 //-----------------------------------------------------------------------------
-// name: str_endsin()
-// desc: return true if the first string ends with the second
-//-----------------------------------------------------------------------------
-t_CKBOOL str_endsin( const char * str, const char * end )
-{
-    size_t len = strlen(str);
-    size_t endlen = strlen(end);
-
-    return strncmp(str+(len-endlen), end, endlen) == 0;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: is_absolute_path()
 // desc: return true if path names an absolute path on the underlying platform
 // added: 1.4.1.1 (ge)
@@ -730,23 +715,85 @@ t_CKBOOL is_absolute_path( const std::string & path )
 
 //-----------------------------------------------------------------------------
 // name: extension_matches()
-// desc: check whether a filename matches a particular extension
+// desc: test whether a filename ends in a particular extension
 //-----------------------------------------------------------------------------
-t_CKBOOL extension_matches( const std::string & filename, const std::string & extension )
+t_CKBOOL extension_matches( const std::string & filename,
+                            const std::string & extension,
+                            t_CKBOOL ignoreCase )
 {
-    // lowercase
-    string f = tolower( filename );
-    string e = tolower( extension );
+    // if ignore case, lower case both
+    string f = ignoreCase ? tolower(filename) : filename;
+    string e = ignoreCase ? tolower(extension) : extension;
     // look for extension from the end
     std::size_t pos = f.rfind( e );
     // check result
     return (pos != std::string::npos) && (pos == (f.length()-e.length()));
+}
 
-    // t_CKUINT extension_length = strlen( extension );
-    // t_CKUINT filename_length = strlen( filename );
-    //
-    // return strncmp( extension, filename+(filename_length-extension_length),
-    //    extension_length ) == 0;
+
+
+
+//-----------------------------------------------------------------------------
+// name: extension_removed()
+// desc: return filename without extension
+//-----------------------------------------------------------------------------
+std::string extension_removed( const std::string & filename,
+                               const std::string & extension,
+                               t_CKBOOL ignoreCase )
+{
+    // if ignore case, lower case both
+    string f = ignoreCase ? tolower(filename) : filename;
+    string e = ignoreCase ? tolower(extension) : extension;
+    // look for extension from the end
+    std::size_t pos = f.rfind( e );
+    // no match, return original
+    if( pos == std::string::npos ) return filename;
+    // return substring
+    return filename.substr( 0, pos );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: subdir_ok2recurse()
+// desc: test if a directory name is OK to recurse, e.g., in search for chugins
+//       the reason we have this function is for macOS bundles that are actually
+//       directories, e.g., if Faust.chug is directory and the actual chugin
+//       is located in side in /Contents/MacOS -- in which case we would not
+//       search for more chugins within the Faust.chug directory;
+//       HOWEVER, something like .chug (a directory name starting with '.') is
+//       okay, as that could be hidden directory
+//-----------------------------------------------------------------------------
+t_CKBOOL subdir_ok2recurse( const std::string & dirName,
+                            const std::string & extension,
+                            t_CKBOOL ignoreCase )
+{
+    // if ignore case, lower case both
+    string f = ignoreCase ? tolower(dirName) : dirName;
+    string e = ignoreCase ? tolower(extension) : extension;
+    // if the two are equal, e.g., ".chug". OK
+    if( f == e ) return TRUE;
+
+    // return the opposite of extension matches
+    // i.e., if extension matches, don't recurse
+    return !extension_matches( dirName, extension, ignoreCase );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: str_endsin()
+// desc: return true if the first string ends with the second
+//       *** CURRENTLY NOT USED; see extension_matches() ***
+//-----------------------------------------------------------------------------
+t_CKBOOL str_endsin( const char * str, const char * end )
+{
+    size_t len = strlen(str);
+    size_t endlen = strlen(end);
+
+    return strncmp(str+(len-endlen), end, endlen) == 0;
 }
 
 

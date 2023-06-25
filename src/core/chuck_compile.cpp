@@ -876,11 +876,11 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
     DIR * dir = opendir( path.c_str() );
 
     // log
-    EM_log( CK_LOG_INFO, "examining directory for chugins..." );
+    // EM_log( CK_LOG_INFO, "examining directory for chugins..." );
+    // print directory to examine
+    EM_log( CK_LOG_SEVERE, "searching '%s'", directory );
     // push
     EM_pushlog();
-    // print directory to examine
-    EM_log( CK_LOG_INFO, "'%s'", directory );
 
     // if successful
     if( dir )
@@ -915,8 +915,9 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
                     load_external_module_at_path( compiler, de->d_name, absolute_path.c_str() );
                 }
             }
-            // sub-directories (whose name doesn't end in .chug)
-            else if( recursiveSearch && is_directory && !extension_matches(de->d_name, extension))
+            // recursive search? into directories...
+            // (whose name doesn't end in .chug, unless it was precisely .chug)
+            else if( recursiveSearch && is_directory && subdir_ok2recurse(de->d_name, extension) )
             {
                 // recurse | TODO: max depth?
                 if( strncmp(de->d_name, ".", sizeof(".")) != 0 &&
@@ -938,8 +939,24 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
                 // If we see one of these directories, we can dive directly to the Contents/MacOS subfolder
                 // and look for a regular file. | 1.5.0.1 (dbraun) added
                 std::string absolute_path = std::string(directory) + "/" + de->d_name + "/Contents/MacOS";
+                // probe NAME.chug/Contents/MacOS/NAME
+                string actualName = extension_removed(de->d_name, extension);
+                // construct
+                absolute_path += "/" + actualName;
+                // get cstr
                 const char * subdirectory = absolute_path.c_str();
-                load_external_modules_in_directory( compiler, subdirectory, "", FALSE );
+                // load directly
+                t_CKBOOL retval = load_external_module_at_path( compiler, de->d_name, subdirectory );
+                // if no error
+                if( retval ) {
+                    // log
+                    EM_pushlog();
+                    EM_log( CK_LOG_INFO, "macOS bundle was detected..." );
+                    string shortenSubdir = subdirectory;
+                    shortenSubdir = shortenSubdir.substr( shortenSubdir.find(de->d_name) );
+                    EM_log( CK_LOG_INFO, "loaded %s", shortenSubdir.c_str() );
+                    EM_poplog();
+                }
             }
 #endif // #ifdef __PLATFORM_MACOSX__
 
@@ -1064,7 +1081,6 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
 
 
 
-
 //-----------------------------------------------------------------------------
 // name: probe_external_modules_in_directory()
 // desc: probe all external modules by extension within a directory
@@ -1082,7 +1098,7 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
     // log
     // EM_log( CK_LOG_SYSTEM, "examining directory for chugins..." );
     // print directory to examine
-    EM_log( CK_LOG_SYSTEM, "%s", directory );
+    EM_log( CK_LOG_SYSTEM, "searching '%s'", directory );
     // push
     EM_pushlog();
 
@@ -1122,7 +1138,9 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
                     probe_external_module_at_path( de->d_name, absolute_path.c_str() );
                 }
             }
-            else if( recursiveSearch && is_directory )
+            // recursive search? into directories...
+            // (whose name doesn't end in .chug, unless it was precisely .chug)
+            else if( recursiveSearch && is_directory && subdir_ok2recurse(de->d_name, extension) )
             {
                 // recurse | TODO: max depth?
                 if( strncmp(de->d_name, ".", sizeof(".")) != 0 &&
@@ -1144,8 +1162,24 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
                 // If we see one of these directories, we can dive directly to the Contents/MacOS subfolder
                 // and look for a regular file. | 1.5.0.1 (dbraun) added
                 std::string absolute_path = std::string(directory) + "/" + de->d_name + "/Contents/MacOS";
+                // probe NAME.chug/Contents/MacOS/NAME
+                string actualName = extension_removed(de->d_name, extension);
+                // construct
+                absolute_path += "/" + actualName;
+                // get cstr
                 const char * subdirectory = absolute_path.c_str();
-                probe_external_modules_in_directory( subdirectory, "", FALSE, ck_libs );
+                // load target file directly
+                t_CKBOOL retval = probe_external_module_at_path( de->d_name, subdirectory );
+                // if no error
+                if( retval ) {
+                    // log
+                    EM_pushlog();
+                    EM_log( CK_LOG_INFO, "macOS bundle was detected..." );
+                    string shortenSubdir = subdirectory;
+                    shortenSubdir = shortenSubdir.substr( shortenSubdir.find(de->d_name) );
+                    EM_log( CK_LOG_INFO, "loaded: %s", shortenSubdir.c_str() );
+                    EM_poplog();
+                }
             }
 #endif // #ifdef __PLATFORM_MACOSX__
 

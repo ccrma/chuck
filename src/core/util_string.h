@@ -76,18 +76,32 @@ std::string extract_filepath_dir(std::string &filepath);
 // convert \ to / (on Windows)
 std::string normalize_directory_separator(const std::string &filepath);
 
-// determine if the last characters of str match end exactly
-// e.g. to test file extension
-t_CKBOOL str_endsin(const char *str, const char *end);
-
 // check if path is absolute on the underlying platform
 t_CKBOOL is_absolute_path( const std::string & path );
 
 // split "x:y:z"-style path list into {"x","y","z"}
 void parse_path_list( std::string & str, std::list<std::string> & lst );
 
-// check whether a filename matches a particular extension
-t_CKBOOL extension_matches( const std::string & filename, const std::string & extension );
+// test whether a filename ends in a particular extension
+t_CKBOOL extension_matches( const std::string & filename,
+                            const std::string & extension,
+                            t_CKBOOL ignoreCase = TRUE );
+
+// return filename without the extension
+std::string extension_removed( const std::string & filename,
+                               const std::string & extension,
+                               t_CKBOOL ignoreCase = TRUE );
+
+// test if a directory name is OK to recurse, e.g., in search for chugins
+// the reason we have this function is for macOS bundles that are actually
+// directories, e.g., if Faust.chug is directory and the actual chugin
+// is located in side in /Contents/MacOS -- in which case we would not
+// search for more chugins within the Faust.chug directory;
+// HOWEVER, something like .chug (a directory name starting with '.') is
+// okay, as that could be hidden directory
+t_CKBOOL subdir_ok2recurse( const std::string & dirName,
+                            const std::string & extension,
+                            t_CKBOOL ignoreCase = TRUE );
 
 // get formatted timestamp of current system time; no new line
 std::string timestamp_formatted(); // e.g., "Sat Jun 24 04:18:42 2023"
