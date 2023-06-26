@@ -26,6 +26,19 @@ ChucK VERSIONS log
   (e.g., `chuck --chugin:Foo.chug --chugin:Bar.chug --chugin-probe`) 
 - (added) chugins loading in search directories now will recursively
   search in subdirectories
+- (added, macOS + Linux) ~/.chuck/lib added to the list of default
+  search directories; this makes it easier to locally install/organize
+  chugins (and auto-load .ck files) without administrator privilege
+  ---
+  macOS chugins search paths
+    /usr/local/lib/chuck
+    /Library/Application Support/ChucK/ChuGins
+    ~/Library/Application Support/ChucK/ChuGins
+    ~/.chuck/lib
+  Linux chugins search paths
+    /usr/local/lib/chuck
+    ~/.chuck/lib
+  ---
 - (updated) chuck --verbose:[2-10] output now streamlined and more 
   accurately describes what is happening under-the-hood; e.g.,
     `chuck [FILENAMES] -v2` to see SYSTEM output
