@@ -502,15 +502,16 @@ std::string expandFilePathWindows( const string & path )
 {
     // expansion
     string exp;
-
     // tokens
     vector<string> tokens;
+
+    // trim of white spaces
+    string thePath = trim( path );
+
     // tokenize
-    tokenize( path, tokens, "%" );
+    tokenize( thePath, tokens, "%" );
     // every other one is an environment variable
-    // HACK: this assumes 1) path does not begin with an env-var
-    //       and 2) path does not contain immediately consecutive env-vars
-    t_CKBOOL expand = FALSE;
+    t_CKBOOL expand = (thePath.length() && thePath[0] == '%');
     // loop
     for( t_CKINT i = 0; i < tokens.size(); i++ )
     {
@@ -520,9 +521,11 @@ std::string expandFilePathWindows( const string & path )
         {
             // get environment variable
             char * v = getenv( tokens[i].c_str() );
+            // if got something back
             if( v ) exp += v;
             else
             {
+                // error message
                 EM_log( CK_LOG_SYSTEM, "ERROR expanding %%%s%% in path...", tokens[i].c_str() );
                 // reset
                 exp = "";
@@ -530,12 +533,12 @@ std::string expandFilePathWindows( const string & path )
                 break;
             }
         }
-        // flip
+        // flip | HACK: path does not contain immediately consecutive env-vars
         expand = !expand;
     }
 
     // if exp still empty, no change
-    if( exp == "" ) exp = path;
+    if( exp == "" ) exp = thePath;
 
     // done
     return exp;
@@ -922,7 +925,7 @@ void tokenize( const std::string & str, std::vector<string> & tokens, const std:
             // substr len
             t_CKINT slen = i-start;
             // check
-            if( len > 0 )
+            if( slen > 0 )
             {
                 // push back the substr
                 tokens.push_back( str.substr( start, slen ) );
@@ -935,7 +938,7 @@ void tokenize( const std::string & str, std::vector<string> & tokens, const std:
     // get the remainder
     t_CKINT slen = len-start;
     // check
-    if( len > 0 )
+    if( slen > 0 )
     {
         // push back the substr
         tokens.push_back( str.substr( start, slen ) );
