@@ -905,9 +905,9 @@ t_CKBOOL scan_external_modules_in_directory( const char * directory,
             if( strncmp( de->d_name, ".", sizeof( "." ) ) != 0 &&
                 strncmp( de->d_name, "..", sizeof( ".." ) ) != 0 )
             {
-                // construct absolute path
-                std::string absolute_path = path + "/" + de->d_name;
-                // search in sub-directory
+                // construct absolute path (use the non-expanded path for consistency when printing)
+                std::string absolute_path = string(directory) + "/" + de->d_name;
+                // queue search in sub-directory
                 dirs2search.push_back( absolute_path );
             }
         }
@@ -1050,15 +1050,15 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
         compiler->m_cklibs_to_preload.push_back( ckfiles2load[i] );
     }
 
+    // pop log
+    EM_poplog();
+
     // loop over dirs2 to search | if not recursive, this should be empty
     for( t_CKINT i = 0; i < dirs2search.size(); i++ )
     {
         // search in dir
         load_external_modules_in_directory( compiler, dirs2search[i].c_str(), extension, recursiveSearch );
     }
-
-    // pop log
-    EM_poplog();
 
     return TRUE;
 }
@@ -1227,15 +1227,15 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
         ck_libs.push_back( ckfiles2load[i] );
     }
 
+    // pop log
+    EM_poplog();
+
     // loop over dirs2 to search | if not recursive, this should be empty
     for( t_CKINT i = 0; i < dirs2search.size(); i++ )
     {
         // search in dir
         probe_external_modules_in_directory( dirs2search[i].c_str(), extension, recursiveSearch, ck_libs );
     }
-
-    // pop log
-    EM_poplog();
 
     return TRUE;
 }
