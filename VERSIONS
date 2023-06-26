@@ -4,21 +4,20 @@ ChucK VERSIONS log
 
 1.5.0.4
 ---
-- (added) Math.randomize() -- implicitly randomize RNG seed;
+- (added) Math.randomize() -- implicitly randomize RNG seed
   ---
-  "Randomize the seed of the random number generator (RNG), using an 
-   non-deterministic mechanism. Whereas srandom() explicitly seeds the RNG 
-   and will produce a deterministic sequence of pseudo-random numbers, 
-   randomize() "shakes things up" and causes RNG to start generating 
-   from a practically unpredicable seed. The quality of randomize() 
-   depends on the underlying implementation."
+  "Randomize the seed of the random number generator (RNG), using an
+   non-deterministic mechanism. Whereas srandom() explicitly seeds the
+   RNG and will produce a deterministic sequence of pseudo-random
+   numbers, randomize() "shakes things up" and causes RNG to start
+   generating from a practically unpredicable seed. The quality of
+   randomize() depends on the underlying implementation."
 - (added) examples
     |- math/randomize.ck -- shows Math.randomize() in action
     |- math/maybe.ck -- can't decide? flip a coin with maybe
     |- math/int-dist.ck -- simulates distribution of Math.random2()
 - (updated) improved RNG behavior that probably no one will notice
-- (fixed) assignments into a full array 
-declaration now results in a
+- (fixed) assignments into a full array declaration now results in a
   compiler error (previously this would cause a crash). for example:
   === code ===
     [1,2] @=> int foo[2];
@@ -44,26 +43,31 @@ declaration now results in a
   search directories; this makes it easier to locally install/organize
   chugins (and auto-load .ck files) without administrator privilege
   ---
-  macOS chugins search paths
+  macOS
     /usr/local/lib/chuck
-    /Library/Application Support/ChucK/ChuGins
-    ~/Library/Application Support/ChucK/ChuGins
+    /Library/Application Support/ChucK/chugins
+    ~/Library/Application Support/ChucK/chugins
     ~/.chuck/lib
-  Linux chugins search paths
+  Linux
     /usr/local/lib/chuck
     ~/.chuck/lib
+  Windows
+    C:\Windows\system32\ChucK
+    C:\Program Files\ChucK\chugins
+    C:\Program Files (x86)\ChucK\chugins
+    C:\Users\%USERNAME%\Documents\ChucK\chugins
   ---
-- (updated) chuck --verbose:[2-10] output now streamlined and more 
-  accurately describes what is happening under-the-hood; e.g.,
+- (updated) chuck --verbose output now streamlined and more effectively
+  describes what is happening under-the-hood; e.g.,
     `chuck [FILENAMES] -v2` to see SYSTEM output
-    `chuck [FILENAMES] -v5` to see INFO!! output
+    `chuck [FILENAMES] -v5` to see INFORM output
     `chuck [FILENAMES] -v10` to see ALL!!! output
-- (updated) setting chuck log level is no longer logged below
-  INFO!! log-level
+- (updated) setting chuck log level is no longer logged below INFORM
+  log-level
 - (fixed, developer) distinct notions of base type reference and array 
   reference; for example SinOsc @ foo[] -> `SinOsc @` is base type 
   reference and `foo[]` is array reference
-- (fixed, developer) instruction dumps (via +d flag) now more correctly 
+- (fixed, developer) instruction dumps (via +d flag) more correctly
   prints reference-related (@) declarations and new operations
 
 
