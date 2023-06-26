@@ -804,12 +804,27 @@ struct ChuginFileInfo
         filename = f; path = p; isBundle = bundle;
     }
 };
-
+// compare function for sorting ChuginFileInfo
 static bool comp_func_chuginfileinfo( const ChuginFileInfo & a, const ChuginFileInfo & b )
 {
     return tolower( a.filename ) < tolower( b.filename );
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: format_dir_name_for_display()
+// desc: format directory name for display, considering underlying platform
+//-----------------------------------------------------------------------------
+static string format_dir_name_for_display( const string & path )
+{
+#ifndef __PLATFORM_WIN32__
+    return path;
+#else // not __PLATFORM_WIN32__
+    return expand_filepath( path );
+#endif
+}
 
 
 
@@ -963,10 +978,8 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
     vector<string> dirs2search;
     vector<string> ckfiles2load;
 
-    // log
-    // EM_log( CK_LOG_INFO, "examining directory for chugins..." );
     // print directory to examine
-    EM_log( CK_LOG_SEVERE, "searching '%s'", directory );
+    EM_log( CK_LOG_SEVERE, "searching '%s'", format_dir_name_for_display(directory).c_str() );
     // push
     EM_pushlog();
 
@@ -1140,10 +1153,8 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
     vector<string> dirs2search;
     vector<string> ckfiles2load;
 
-    // log
-    // EM_log( CK_LOG_INFO, "examining directory for chugins..." );
     // print directory to examine
-    EM_log( CK_LOG_SYSTEM, "searching '%s'", directory );
+    EM_log( CK_LOG_SYSTEM, "searching '%s'", format_dir_name_for_display( directory ).c_str() );
     // push
     EM_pushlog();
 

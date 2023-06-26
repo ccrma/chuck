@@ -494,6 +494,28 @@ std::string globTildePath( const std::string & path )
 // path expansion using homemade duct tape on Windows
 //-----------------------------------------------------------------------------
 #ifdef __PLATFORM_WIN32__
+
+//-----------------------------------------------------------------------------
+// name: getUserNameWindows()
+// desc: get the user name on windows
+//-----------------------------------------------------------------------------
+std::string getUserNameWindows()
+{
+    // allocate buffer
+    DWORD buflen = 128;
+    char * buf = new char[buflen];
+    // get user name
+    BOOL retval = GetUserNameA( buf, &buflen );
+    // result to return
+    string result;
+    // check if succeeded
+    if( retval ) result = buf;
+    // clean up
+    SAFE_DELETE_ARRAY( buf );
+    // return
+    return result;
+}
+
 //-----------------------------------------------------------------------------
 // name: expandFilePathWindows()
 // desc: expand file path (windows edition)
@@ -512,13 +534,28 @@ std::string expandFilePathWindows( const string & path )
     tokenize( thePath, tokens, "%" );
     // every other one is an environment variable
     t_CKBOOL expand = (thePath.length() && thePath[0] == '%');
-    // loop
-    for( t_CKINT i = 0; i < tokens.size(); i++ )
+    // loop; flip 'expand'
+    // HACK: assume path does not contain immediately consecutive env-vars
+    for( t_CKINT i = 0; i < tokens.size(); i++, expand = !expand )
     {
         // connstruct expansion
         if( !expand ) exp += tokens[i];
         else
         {
+            // check for special vars
+            if( tolower( tokens[i] ) == "username" )
+            {
+                // this is supposedly safer than querying the env-var, which is easier to spoof
+                string u = getUserNameWindows();
+                // if got something
+                if( u != "" )
+                {
+                    // append
+                    exp += u;
+                    // move to next token
+                    continue;
+                }
+            }
             // get environment variable
             char * v = getenv( tokens[i].c_str() );
             // if got something back
@@ -533,8 +570,6 @@ std::string expandFilePathWindows( const string & path )
                 break;
             }
         }
-        // flip | HACK: path does not contain immediately consecutive env-vars
-        expand = !expand;
     }
 
     // if exp still empty, no change
@@ -610,6 +645,7 @@ std::string expand_filepath( const std::string & fp, t_CKBOOL ensurePathExists )
     // no expansion in Emscripten (webchuck) or Android or iOS
     return fp;
 #elif defined(__PLATFORM_WIN32__)
+    // 1.5.0.4 (ge) added
     return expandFilePathWindows( fp );
 #else
     // expand ~ to full path
