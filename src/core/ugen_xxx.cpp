@@ -1909,8 +1909,8 @@ CK_DLL_CTOR( pan2_ctor )
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( noise_tick )
 {
-    // 1.5.0.1 (ge) updated to use ck_random()
-    *out = -1.0 + 2.0 * (SAMPLE)ck_random() / CK_RANDOM_MAX;
+    // 1.5.0.4 (ge) updated to use ck_random_f()
+    *out = (SAMPLE)( -1.0 + 2.0 * ck_random_f() );
     return TRUE;
 }
 

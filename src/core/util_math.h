@@ -52,10 +52,15 @@ extern "C" {
 double ck_remainder( double a, double b );
 
 
-// chuck random wrapper
+// chuck random wrapper, return t_CKINT in [0,CK_RANDOM_MAX]
 t_CKINT ck_random();
+// chuck random float wrapper, return t_CKFLOAT in [0,1]
+t_CKFLOAT ck_random_f();
 // chuck srandom wrapper
 void ck_srandom( unsigned seed );
+// randomizer wrapper (use this instead of seeding for initial)
+void ck_randomize();
+
 
 //-----------------------------------------------------------------------------
 #ifndef __OLDSCHOOL_RANDOM__
@@ -64,11 +69,11 @@ void ck_srandom( unsigned seed );
 //-----------------------------------------------------------------------------
 #else // __OLDSCHOOL_RANDOM__ (enable only for compatibility pre-c++11)
 //-----------------------------------------------------------------------------
-#ifdef __PLATFORM_WIN32__
-  #define CK_RANDOM_MAX RAND_MAX
-#else
-  #define CK_RANDOM_MAX 0x7fffffff
-#endif
+  #ifndef __PLATFORM_WIN32__
+    #define CK_RANDOM_MAX 0x7fffffff
+  #else // __PLATFORM_WIN32__
+    #define CK_RANDOM_MAX RAND_MAX
+  #endif
 //-----------------------------------------------------------------------------
 #endif // __OLDSCHOOL_RANDOM__
 //-----------------------------------------------------------------------------

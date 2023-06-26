@@ -87,6 +87,7 @@ CK_DLL_SFUN( randomf_impl );
 CK_DLL_SFUN( random2f_impl );
 CK_DLL_SFUN( random2_impl );
 CK_DLL_SFUN( srandom_impl );
+CK_DLL_SFUN( randomize_impl );
 
 CK_DLL_SFUN( gauss_impl );
 

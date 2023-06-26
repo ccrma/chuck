@@ -2199,7 +2199,7 @@ void Chuck_Instr_Reg_Push_Maybe::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
     t_CKINT *& reg_sp = (t_CKINT *&)shred->reg->sp;
 
     // push val into reg stack
-    t_CKFLOAT num = ck_random()/(t_CKFLOAT)CK_RANDOM_MAX;
+    t_CKFLOAT num = ck_random_f();
     push_( reg_sp, num > .5 );
 }
 

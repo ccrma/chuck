@@ -4,7 +4,21 @@ ChucK VERSIONS log
 
 1.5.0.4
 ---
-- (fixed) assignments into a full array declaration now results in a
+- (added) Math.randomize() -- implicitly randomize RNG seed;
+  ---
+  "Randomize the seed of the random number generator (RNG), using an 
+   non-deterministic mechanism. Whereas srandom() explicitly seeds the RNG 
+   and will produce a deterministic sequence of pseudo-random numbers, 
+   randomize() "shakes things up" and causes RNG to start generating 
+   from a practically unpredicable seed. The quality of randomize() 
+   depends on the underlying implementation."
+- (added) examples
+    |- math/randomize.ck -- shows Math.randomize() in action
+    |- math/maybe.ck -- can't decide? flip a coin with maybe
+    |- math/int-dist.ck -- simulates distribution of Math.random2()
+- (updated) improved RNG behavior that probably no one will notice
+- (fixed) assignments into a full array 
+declaration now results in a
   compiler error (previously this would cause a crash). for example:
   === code ===
     [1,2] @=> int foo[2];

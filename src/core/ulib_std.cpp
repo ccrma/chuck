@@ -654,15 +654,16 @@ CK_DLL_SFUN( rand_impl )
 // randf
 CK_DLL_SFUN( randf_impl )
 {
-    // 1.5.0.1 (ge) use ck_random() and CK_RANDOM_MAX
-    RETURN->v_float = ( 2.0 * ck_random() / (t_CKFLOAT)CK_RANDOM_MAX - 1.0 );
+    // 1.5.0.4 (ge) use ck_random_f()
+    RETURN->v_float = ( 2.0 * ck_random_f() - 1.0 );
 }
 
 // randf
 CK_DLL_SFUN( rand2f_impl )
 {
     t_CKFLOAT min = GET_CK_FLOAT(ARGS), max = *((t_CKFLOAT *)ARGS + 1);
-    RETURN->v_float = min + (max-min)*(::ck_random()/(t_CKFLOAT)CK_RANDOM_MAX);
+    // 1.5.0.4 (ge) use ck_random_f()
+    RETURN->v_float = min + (max-min)*::ck_random_f();
 }
 
 // randi

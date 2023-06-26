@@ -33,6 +33,8 @@
 //-----------------------------------------------------------------------------
 #include "util_math.h"
 #include <math.h>
+#include <stdlib.h>
+#include <time.h>
 #include <random>
 
 
@@ -45,17 +47,24 @@
 // desc: chuck wrappers for random number generators
 // 1.5.0.1 (ge) using mt19937 (requires c++11)
 //-----------------------------------------------------------------------------
+// non-deterministic thing
+static std::random_device g_ck_rd;
 // mersenne twister RNG, based on the Mersenne prime (2^19937-1)
 static std::mt19937 g_ck_global_rng;
+// int and real distributions
+static std::uniform_int_distribution<t_CKINT> g_ck_int_dist(0, CK_RANDOM_MAX);
+static std::uniform_real_distribution<t_CKFLOAT> g_ck_real_dist(0.0, 1.0);
 // ck_random() returns a signed int no greater than CK_RANDOM_MAX
 // to maintain parity between 64-bit and 32-bit systems, CK_RANDOM_MAX is set
 // to 0x7fffffff (or 2,147,483,647--the largest 32-bit signed number) rather
-// than mt19937's actual max of 0xffffffff (or 4,294,967,295, 2^32-1); this
-// is ensured using modulo; the slight skewing of the resulting RNG distribution
-// is considered acceptable
-t_CKINT ck_random() { return g_ck_global_rng() % CK_RANDOM_MAX; }
+// than mt19937's actual max of 0xffffffff (or 4,294,967,295, 2^32-1)
+t_CKINT ck_random() { return g_ck_int_dist(g_ck_global_rng); }
+// get t_CKFLOAT in [0,1]
+t_CKFLOAT ck_random_f() { return g_ck_real_dist(g_ck_global_rng); }
 // seed the random number generator
 void ck_srandom( unsigned s ) { g_ck_global_rng.seed(s); }
+// randomize using underlying mechanic
+void ck_randomize() { ck_srandom( g_ck_rd() ); }
 //-----------------------------------------------------------------------------
 #else // using old school random (pre-c++11)
 //-----------------------------------------------------------------------------
@@ -64,11 +73,15 @@ void ck_srandom( unsigned s ) { g_ck_global_rng.seed(s); }
 //-----------------------------------------------------------------------------
 #ifndef __PLATFORM_WIN32__
   t_CKINT ck_random() { return random(); }
+  t_CKFLOAT ck_random_f() { return random() / (t_CKFLOAT)CK_RANDOM_MAX; }
   void ck_srandom( unsigned s ) { srandom( s ); }
-#else // __WINDOWS_DS__
+#else // __PLATFORM_WIN32__
   t_CKINT ck_random() { return rand(); }
+  t_CKFLOAT ck_random_f() { return rand() / (t_CKFLOAT)CK_RANDOM_MAX; }
   void ck_srandom( unsigned s ) { srand( s ); }
 #endif
+// randomize using underlying mechanic
+void ck_randomize() { ck_srandom( (unsigned)time(NULL) ); }
 //-----------------------------------------------------------------------------
 #endif // __OLDSCHOOL_RANDOM__
 
