@@ -1046,7 +1046,7 @@ t_CKBOOL go( int argc, const char ** argv )
     }
 
     // timestamp
-    EM_log( CK_LOG_SYSTEM, "local earth time: %s", timestamp_formatted().c_str() );
+    EM_log( CK_LOG_SYSTEM, "local time: %s", timestamp_formatted().c_str() );
 
 
     //------------------ PRINT VERIFIED AUDIO SETTING -------------------------
