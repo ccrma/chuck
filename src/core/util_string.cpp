@@ -828,3 +828,50 @@ std::string timestamp_formatted()
     // return the formatted timestamp
     return datetime_buf;
 }
+
+
+
+static t_CKBOOL str_contains( const string & s, char c )
+{ return s.find( c ) != string::npos; }
+
+//-----------------------------------------------------------------------------
+// name: tokenize() | 1.5.0.4 (ge) added
+// desc: tokenize a string into a vector of strings, by delimiters
+//-----------------------------------------------------------------------------
+void tokenize( const std::string & str, std::vector<string> & tokens, const std::string & delimiters )
+{
+    // string length
+    t_CKINT len = str.length();
+    // clear vector
+    tokens.clear();
+    // token start index
+    t_CKINT start = 0;
+
+    // scan through str
+    for( t_CKINT i = 0; i < len; i++ )
+    {
+        // check for delimiters
+        if( str_contains( delimiters, str[i] ) )
+        {
+            // substr len
+            t_CKINT slen = i-start;
+            // check
+            if( len > 0 )
+            {
+                // push back the substr
+                tokens.push_back( str.substr( start, slen ) );
+            }
+            // update the start pos
+            start = i+1;
+        }
+    }
+
+    // get the remainder
+    t_CKINT slen = len-start;
+    // check
+    if( len > 0 )
+    {
+        // push back the substr
+        tokens.push_back( str.substr( start, slen ) );
+    }
+}

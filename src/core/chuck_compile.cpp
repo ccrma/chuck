@@ -755,7 +755,7 @@ error:
 // name: expandfilePath()
 // desc: expand file path, e.g., ~ on unix systems | 1.5.0.4 (ge) moved here
 //-----------------------------------------------------------------------------
-std::string expandFilePath( const string & directory )
+std::string expandFilePath( const string & path )
 {
     // expansion
     string exp;
@@ -772,10 +772,39 @@ std::string expandFilePath( const string & directory )
     // free
     wordfree( &exp_result );
 #endif
+#else // __PLATFORM_WIN32__
+    // tokens
+    vector<string> tokens;
+    // tokenize
+    tokenize( path, tokens, "%" );
+    // every other one is an environment variable
+    t_CKBOOL expand = FALSE;
+    // loop
+    for( t_CKINT i = 0; i < tokens.size(); i++ )
+    {
+        // connstruct expansion
+        if( !expand ) exp += tokens[i];
+        else
+        {
+            char * v = getenv( tokens[i].c_str() );
+            if( v ) exp += v;
+            else
+            {
+                EM_log( CK_LOG_SYSTEM, "ERROR expanding %%%s%% in path...", tokens[i].c_str() );
+                // reset
+                exp = "";
+                // outta here
+                break;
+            }
+        }
+        // flip
+        expand = !expand;
+    }
+
 #endif
 
     // if exp still empty, no change
-    if( exp == "" ) exp = directory;
+    if( exp == "" ) exp = path;
 
     // done
     return exp;

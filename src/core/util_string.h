@@ -71,7 +71,7 @@ std::string get_full_path( const std::string & fp );
 std::string expand_filepath( std::string & fp, t_CKBOOL ensurePathExists = TRUE );
 
 // get directory portion of a filepath (minus the file itself)
-std::string extract_filepath_dir(std::string &filepath);
+std::string extract_filepath_dir( std::string & filepath );
 
 // convert \ to / (on Windows)
 std::string normalize_directory_separator(const std::string &filepath);
@@ -105,6 +105,11 @@ t_CKBOOL subdir_ok2recurse( const std::string & dirName,
 
 // get formatted timestamp of current system time; no new line
 std::string timestamp_formatted(); // e.g., "Sat Jun 24 04:18:42 2023"
+
+// tokenize a string into a vector of strings, by delimiters
+void tokenize( const std::string & str, std::vector<std::string> & tokens, const std::string & delimiters );
+
+
 
 
 #endif
