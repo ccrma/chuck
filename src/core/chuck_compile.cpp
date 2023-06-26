@@ -67,6 +67,9 @@
 #include <sys/stat.h>
 //#endif
 
+#include <string>
+#include <vector>
+#include <algorithm>
 using namespace std;
 
 
