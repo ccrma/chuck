@@ -956,6 +956,7 @@ t_CKBOOL ChucK::compileFile( const std::string & path, const std::string & argsT
     std::vector<std::string> args;
     Chuck_VM_Code * code = NULL;
     Chuck_VM_Shred * shred = NULL;
+    std::string thePath;
     std::string full_path;
 
     //-------------------------------------------------------------------------
@@ -968,8 +969,14 @@ t_CKBOOL ChucK::compileFile( const std::string & path, const std::string & argsT
     // push indent
     EM_pushlog();
 
+    // path expansion (e.g., ~ for unix systems)
+    thePath = expand_filepath(path);
+    // log if the path exansion is different
+    if( path != thePath )
+    { EM_log( CK_LOG_FINE, "expanding path '%s'...", thePath.c_str() ); }
+
     // append
-    std::string theThing = path + ":" + argsTogether;
+    std::string theThing = thePath + ":" + argsTogether;
 #ifdef __ANDROID__
     if( theThing.rfind("jar:", 0) == 0 )
     {
