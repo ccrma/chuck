@@ -765,7 +765,7 @@ std::string expandFilePath( const string & path )
     // 1.5.0.0 (ge) added (for ~)
     wordexp_t exp_result;
     // "perform shell-style word expansions"
-    wordexp( directory.c_str(), &exp_result, 0 );
+    wordexp( path.c_str(), &exp_result, 0 );
     // concatenate in case there are spaces in the path
     for( t_CKINT i = 0; i < exp_result.we_wordc; i++ )
         exp += string(i > 0 ? " " : "") + exp_result.we_wordv[i];
