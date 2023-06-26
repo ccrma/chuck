@@ -57,10 +57,6 @@
 
 #if defined(__PLATFORM_WIN32__)
   #include "dirent_win32.h"
-#else
-  #ifndef __DISABLE_WORDEXP__
-  #include <wordexp.h> // 1.5.0.0 (ge) added
-  #endif
 #endif
 
 //#if defined(__WINDOWS_PTHREAD__)
@@ -752,68 +748,6 @@ error:
 
 
 //-----------------------------------------------------------------------------
-// name: expandfilePath()
-// desc: expand file path, e.g., ~ on unix systems | 1.5.0.4 (ge) moved here
-//-----------------------------------------------------------------------------
-std::string expandFilePath( const string & path )
-{
-    // expansion
-    string exp;
-
-#ifndef __PLATFORM_WIN32__
-#ifndef __DISABLE_WORDEXP__
-    // 1.5.0.0 (ge) added (for ~)
-    wordexp_t exp_result;
-    // "perform shell-style word expansions"
-    wordexp( path.c_str(), &exp_result, 0 );
-    // concatenate in case there are spaces in the path
-    for( t_CKINT i = 0; i < exp_result.we_wordc; i++ )
-        exp += string(i > 0 ? " " : "") + exp_result.we_wordv[i];
-    // free
-    wordfree( &exp_result );
-#endif
-#else // __PLATFORM_WIN32__
-    // tokens
-    vector<string> tokens;
-    // tokenize
-    tokenize( path, tokens, "%" );
-    // every other one is an environment variable
-    t_CKBOOL expand = FALSE;
-    // loop
-    for( t_CKINT i = 0; i < tokens.size(); i++ )
-    {
-        // connstruct expansion
-        if( !expand ) exp += tokens[i];
-        else
-        {
-            char * v = getenv( tokens[i].c_str() );
-            if( v ) exp += v;
-            else
-            {
-                EM_log( CK_LOG_SYSTEM, "ERROR expanding %%%s%% in path...", tokens[i].c_str() );
-                // reset
-                exp = "";
-                // outta here
-                break;
-            }
-        }
-        // flip
-        expand = !expand;
-    }
-
-#endif
-
-    // if exp still empty, no change
-    if( exp == "" ) exp = path;
-
-    // done
-    return exp;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: getDirEntryAttribute()
 // desc: get directory entry attribute | 1.5.0.4 (ge) moved into function
 //-----------------------------------------------------------------------------
@@ -889,7 +823,7 @@ t_CKBOOL scan_external_modules_in_directory( const char * directory,
     vector<string> & ckfiles2load )
 {
     // expand directory path
-    string path = expandFilePath( directory );
+    string path = expand_filepath( string(directory), FALSE );
     // open the directory
     DIR * dir = opendir( path.c_str() );
 

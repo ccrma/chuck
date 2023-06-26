@@ -388,7 +388,9 @@ done:
 
 
 
-/* from http://developer.apple.com/library/mac/#qa/qa1549/_index.html */
+//-----------------------------------------------------------------------------
+// path expansion using wordexp and glob on UNIX systems
+//-----------------------------------------------------------------------------
 #if !defined(__PLATFORM_WIN32__) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !defined(__CHIP_MODE__)
 
 #include <wordexp.h>
@@ -398,25 +400,29 @@ done:
 //-----------------------------------------------------------------------------
 std::string expandTildePath( const std::string & path )
 {
+    // wordexp result
     wordexp_t we;
-    // default is the original path
-    std::string result = path;
+    // the result
+    std::string exp;
 
-    // search for pathnames matching pattern
+    // "perform shell-style word expansions"
     if( wordexp(path.c_str(), &we, 0 ) == 0 ) // success
     {
-        // check results number
-        if( we.we_wordc > 0 )
+        // loop word wordc | 1.5.0.4 (ge) updated
+        for( t_CKINT i = 0; i < we.we_wordc; i++ )
         {
-            // number of matched pathnames
-            result = we.we_wordv[0];
+            // concatenate in case there are spaces in the path
+            exp += string(i > 0 ? " " : "") + we.we_wordv[i];
         }
         // free up
         wordfree( &we );
     }
 
+    // if still empty for any reason, default to original
+    if( exp == "" ) exp = path;
+
     // return result
-    return result;
+    return exp;
 }
 
 #include <glob.h>
@@ -449,6 +455,7 @@ std::string globTildePath( const std::string & path )
 }
 
 // original
+// from http://developer.apple.com/library/mac/#qa/qa1549/_index.html
 //char* CreatePathByExpandingTildePath(const char* path)
 //{
 //    glob_t globbuf;
@@ -479,6 +486,61 @@ std::string globTildePath( const std::string & path )
 //    return result;
 //}
 #endif // not __PLATFORM_WIN32__ && __EMSCRIPTEN__ && __ANDROID__ && __CHIP_MODE__
+
+
+
+
+//-----------------------------------------------------------------------------
+// path expansion using homemade duct tape on Windows
+//-----------------------------------------------------------------------------
+#ifdef __PLATFORM_WIN32__
+//-----------------------------------------------------------------------------
+// name: expandFilePathWindows()
+// desc: expand file path (windows edition)
+//-----------------------------------------------------------------------------
+std::string expandFilePathWindows( const string & path )
+{
+    // expansion
+    string exp;
+
+    // tokens
+    vector<string> tokens;
+    // tokenize
+    tokenize( path, tokens, "%" );
+    // every other one is an environment variable
+    // HACK: this assumes 1) path does not begin with an env-var
+    //       and 2) path does not contain immediately consecutive env-vars
+    t_CKBOOL expand = FALSE;
+    // loop
+    for( t_CKINT i = 0; i < tokens.size(); i++ )
+    {
+        // connstruct expansion
+        if( !expand ) exp += tokens[i];
+        else
+        {
+            // get environment variable
+            char * v = getenv( tokens[i].c_str() );
+            if( v ) exp += v;
+            else
+            {
+                EM_log( CK_LOG_SYSTEM, "ERROR expanding %%%s%% in path...", tokens[i].c_str() );
+                // reset
+                exp = "";
+                // outta here
+                break;
+            }
+        }
+        // flip
+        expand = !expand;
+    }
+
+    // if exp still empty, no change
+    if( exp == "" ) exp = path;
+
+    // done
+    return exp;
+}
+#endif // __PLATFORM_WIN32__
 
 
 
@@ -539,17 +601,21 @@ std::string get_full_path( const std::string & fp )
 // name: expand_filepath()
 // desc: if possible return expand path (e.g., from the unix ~)
 //-----------------------------------------------------------------------------
-std::string expand_filepath( std::string & fp, t_CKBOOL ensurePathExists )
+std::string expand_filepath( const std::string & fp, t_CKBOOL ensurePathExists )
 {
-#if defined(__PLATFORM_WIN32__) || defined(__EMSCRIPTEN__) || defined(__ANDROID__) || defined(__CHIP_MODE__)
-    // no expansion in Windows systems or Emscripten or Android or iOS
+#if defined(__EMSCRIPTEN__) || defined(__ANDROID__) || defined(__CHIP_MODE__)
+    // no expansion in Emscripten (webchuck) or Android or iOS
     return fp;
+#elif defined(__PLATFORM_WIN32__)
+    return expandFilePathWindows( fp );
 #else
     // expand ~ to full path
-    if( ensurePathExists )
-        return globTildePath( fp );
-    else
-        return expandTildePath( fp );
+    string ep = expandTildePath( fp );
+    // 1.5.0.4 (ge) always expand ~, since glob does not...
+
+    // if also ensure exists
+    if( ensurePathExists ) { return globTildePath( ep ); }
+    else { return ep; }
 #endif
 }
 

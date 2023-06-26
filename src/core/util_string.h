@@ -67,8 +67,8 @@ std::string dir_go_up( const std::string & dir, t_CKINT numUp );
 // get full path to file
 std::string get_full_path( const std::string & fp );
 
-// currently just expands ~ to HOME and ~user to user's home directory
-std::string expand_filepath( std::string & fp, t_CKBOOL ensurePathExists = TRUE );
+// perform filepath expansion (e.g., with ~ on unix systems and some windows)
+std::string expand_filepath( const std::string & fp, t_CKBOOL ensurePathExists = FALSE );
 
 // get directory portion of a filepath (minus the file itself)
 std::string extract_filepath_dir( std::string & filepath );
