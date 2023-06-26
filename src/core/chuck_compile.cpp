@@ -902,7 +902,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
                 if( extension_matches(de->d_name, ".ck") )
                 {
                     // construct absolute path
-                    std::string absolute_path = std::string(directory) + "/" + de->d_name;
+                    std::string absolute_path = path + "/" + de->d_name;
                     // append file path
                     compiler->m_cklibs_to_preload.push_back(absolute_path);
                 }
@@ -910,7 +910,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
                 else if( extension_matches(de->d_name, extension) )
                 {
                     // construct absolute path
-                    std::string absolute_path = std::string(directory) + "/" + de->d_name;
+                    std::string absolute_path = path + "/" + de->d_name;
                     // load module
                     load_external_module_at_path( compiler, de->d_name, absolute_path.c_str() );
                 }
@@ -924,7 +924,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
                     strncmp(de->d_name, "..", sizeof("..")) != 0 )
                 {
                     // construct absolute path
-                    std::string absolute_path = std::string(directory) + "/" + de->d_name;
+                    std::string absolute_path = path + "/" + de->d_name;
                     // search in sub-directory
                     load_external_modules_in_directory( compiler, absolute_path.c_str(), extension, TRUE );
                 }
@@ -938,7 +938,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
                 // on the filesystem it shows up as a directory ending in .chug.
                 // If we see one of these directories, we can dive directly to the Contents/MacOS subfolder
                 // and look for a regular file. | 1.5.0.1 (dbraun) added
-                std::string absolute_path = std::string(directory) + "/" + de->d_name + "/Contents/MacOS";
+                std::string absolute_path = path + "/" + de->d_name + "/Contents/MacOS";
                 // probe NAME.chug/Contents/MacOS/NAME
                 string actualName = extension_removed(de->d_name, extension);
                 // construct
@@ -1125,7 +1125,7 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
                     // EM_log( CK_LOG_SYSTEM, "module %s", de->d_name );
 
                     // construct absolute path
-                    std::string absolute_path = std::string(directory) + "/" + de->d_name;
+                    std::string absolute_path = path + "/" + de->d_name;
                     // append file path
                     ck_libs.push_back(absolute_path);
                 }
@@ -1133,7 +1133,7 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
                 else if( extension_matches(de->d_name, extension) )
                 {
                     // construct absolute path
-                    std::string absolute_path = std::string(directory) + "/" + de->d_name;
+                    std::string absolute_path = path + "/" + de->d_name;
                     // load module
                     probe_external_module_at_path( de->d_name, absolute_path.c_str() );
                 }
@@ -1147,7 +1147,7 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
                     strncmp(de->d_name, "..", sizeof("..")) != 0 )
                 {
                     // construct absolute path
-                    std::string absolute_path = std::string(directory) + "/" + de->d_name;
+                    std::string absolute_path = path + "/" + de->d_name;
                     // search in sub-directory
                     probe_external_modules_in_directory( absolute_path.c_str(), extension, TRUE, ck_libs );
                 }
@@ -1161,7 +1161,7 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
                 // on the filesystem it shows up as a directory ending in .chug.
                 // If we see one of these directories, we can dive directly to the Contents/MacOS subfolder
                 // and look for a regular file. | 1.5.0.1 (dbraun) added
-                std::string absolute_path = std::string(directory) + "/" + de->d_name + "/Contents/MacOS";
+                std::string absolute_path = path + "/" + de->d_name + "/Contents/MacOS";
                 // probe NAME.chug/Contents/MacOS/NAME
                 string actualName = extension_removed(de->d_name, extension);
                 // construct
