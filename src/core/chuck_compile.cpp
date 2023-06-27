@@ -448,16 +448,20 @@ t_CKBOOL Chuck_Compiler::do_normal_depend( const string & filename, FILE * fd,
     t_CKBOOL ret = TRUE;
     Chuck_Context * context = NULL;
 
+    // expand
+    string theFilename = expand_filepath(filename);
+    string theFullpath = expand_filepath(full_path);
+
     // parse the code
-    if( !chuck_parse( filename.c_str(), fd, str_src ) )
+    if( !chuck_parse( theFilename.c_str(), fd, str_src ) )
         return FALSE;
 
     // make the context
-    context = type_engine_make_context( g_program, filename );
+    context = type_engine_make_context( g_program, theFilename );
     if( !context ) return FALSE;
 
     // remember full path (added 1.3.0.0)
-    context->full_path = full_path;
+    context->full_path = theFullpath;
 
     // reset the env
     env()->reset();
