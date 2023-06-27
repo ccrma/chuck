@@ -35,7 +35,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-#include <random>
 
 
 
@@ -47,6 +46,7 @@
 // desc: chuck wrappers for random number generators
 // 1.5.0.1 (ge) using mt19937 (requires c++11)
 //-----------------------------------------------------------------------------
+#include <random>
 // non-deterministic thing
 static std::random_device g_ck_rd;
 // mersenne twister RNG, based on the Mersenne prime (2^19937-1)
