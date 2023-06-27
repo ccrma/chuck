@@ -851,7 +851,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
                 retval = 0;
                 goto done;
             }
-            EM_error3( "[chuck](VM) ----  removing shred: %i (%s)...",
+            EM_error3( "[chuck](VM): ----  removing shred: %i (%s)...",
                        msg->param, mini(shred->name.c_str()) );
             this->free( shred, TRUE );
             retval = msg->param;
