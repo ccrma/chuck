@@ -419,7 +419,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         EM_pushlog();
         do {
             // log
-            EM_log( CK_LOG_INFO, "sending file:args '%s' for add...", mini(argv[i]) );
+            EM_log( CK_LOG_INFO, "sending file:args '%s' for ADD...", mini(argv[i]) );
             msg.type = MSG_ADD;
             msg.param = 1;
             tasks_done += otf_send_file( argv[i], msg, "add", dest );
@@ -443,7 +443,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         EM_pushlog();
         do {
             // log
-            EM_log( CK_LOG_INFO, "requesting removal of shred '%i'..." );
+            EM_log( CK_LOG_INFO, "requesting REMOVE of shred '%i'..." );
             msg.param = atoi( argv[i] );
             msg.type = MSG_REMOVE;
             otf_hton( &msg );
@@ -457,7 +457,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         if( !(dest = otf_send_connect( host, port )) ) return 0;
         EM_pushlog();
         // log
-        EM_log( CK_LOG_INFO, "requesting removal of last shred..." );
+        EM_log( CK_LOG_INFO, "requesting REMOVE LAST shred..." );
         msg.param = CK_NO_VALUE;
         msg.type = MSG_REMOVE;
         otf_hton( &msg );
@@ -486,7 +486,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
 
         if( !(dest = otf_send_connect( host, port )) ) return 0;
         EM_pushlog();
-        EM_log( CK_LOG_INFO, "requesting replace shred '%i' with '%s'...", msg.param, mini(argv[i]) );
+        EM_log( CK_LOG_INFO, "requesting REPLACE shred '%i' with '%s'...", msg.param, mini(argv[i]) );
         msg.type = MSG_REPLACE;
         if( !otf_send_file( argv[i], msg, "replace", dest ) )
             goto error;
@@ -496,27 +496,29 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
     {
         if( !(dest = otf_send_connect( host, port )) ) return 0;
         EM_pushlog();
-        EM_log( CK_LOG_INFO, "requesting removeall..." );
+        EM_log( CK_LOG_INFO, "requesting REMOVE ALL..." );
         msg.type = MSG_REMOVEALL;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
         EM_poplog();
     }
-    else if( !strcmp( argv[i], "--clear.vm" ) )
+    else if( !strcmp( argv[i], "--clear.vm" ) || !strcmp( argv[i], "--clear-vm" ) )
     {
         if( !(dest = otf_send_connect( host, port )) ) return 0;
         EM_pushlog();
-        EM_log( CK_LOG_INFO, "requesting clearvm..." );
+        EM_log( CK_LOG_INFO, "requesting CLEAR VM..." );
         msg.type = MSG_CLEARVM;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
         EM_poplog();
     }
-    else if( !strcmp( argv[i], "--kill" ) )
+    else if( !strcmp( argv[i], "--kill" ) || !strcmp( argv[i], "--exit" ) )
     {
         if( !(dest = otf_send_connect( host, port )) ) return 0;
+        EM_pushlog();
+        EM_log( CK_LOG_INFO, "requesting EXIT..." );
         msg.type = MSG_REMOVEALL;
         msg.param = 0;
         otf_hton( &msg );
@@ -525,38 +527,51 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         msg.param = (i+1)<argc ? atoi(argv[++i]) : 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
+        EM_poplog();
     }
     else if( !strcmp( argv[i], "--time" ) )
     {
         if( !(dest = otf_send_connect( host, port )) ) return 0;
+        EM_pushlog();
+        EM_log( CK_LOG_INFO, "requesting TIME..." );
         msg.type = MSG_TIME;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
+        EM_poplog();
     }
-    else if( !strcmp( argv[i], "--rid" ) )
+    else if( !strcmp( argv[i], "--rid" ) || !strcmp( argv[i], "--reset.id" ) || !strcmp( argv[i], "--reset-id" ) )
     {
         if( !(dest = otf_send_connect( host, port )) ) return 0;
+        EM_pushlog();
+        EM_log( CK_LOG_INFO, "requesting RESET ID..." );
         msg.type = MSG_RESET_ID;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
+        EM_poplog();
     }
     else if( !strcmp( argv[i], "--status" ) || !strcmp( argv[i], "^" ) )
     {
         if( !(dest = otf_send_connect( host, port )) ) return 0;
+        EM_pushlog();
+        EM_log( CK_LOG_INFO, "requesting STATUS..." );
         msg.type = MSG_STATUS;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
+        EM_poplog();
     }
-    else if( !strcmp( argv[i], "--abort.shred" ) )
+    else if( !strcmp( argv[i], "--abort.shred" ) || !strcmp( argv[i], "--abort-shred" ) )
     {
         if( !(dest = otf_send_connect( host, port )) ) return 0;
+        EM_pushlog();
+        EM_log( CK_LOG_INFO, "requesting ABORT SHRED..." );
         msg.type = MSG_ABORT;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
+        EM_poplog();
     }
     else
     {

@@ -222,15 +222,15 @@ void usage()
 {
     // (note: optional colon added 1.3.0.0)
     CK_FPRINTF_STDERR( "usage: chuck --[options|commands] [+-=^] file1 file2 file3 ...\n" );
-    CK_FPRINTF_STDERR( "   [options] = halt|loop|audio|silent|dump|nodump|about|probe|\n" );
-    CK_FPRINTF_STDERR( "               channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|driver:<name>|\n" );
-    CK_FPRINTF_STDERR( "               srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
-    CK_FPRINTF_STDERR( "               remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
-    CK_FPRINTF_STDERR( "               callback|deprecate:{stop|warn|ignore}|\n" );
-    CK_FPRINTF_STDERR( "               chugin-load:{on|off}|chugin-path:<path>|chugin:<name>|\n" );
-    CK_FPRINTF_STDERR( "               chugin-probe\n" );
-    CK_FPRINTF_STDERR( "   [commands] = add|remove|replace|remove.all|status|time|kill\n" );
-    CK_FPRINTF_STDERR( "   [+-=^] = shortcuts for add, remove, replace, status\n" );
+    CK_FPRINTF_STDERR( "    [options] = halt|loop|audio|silent|dump|nodump|about|probe|\n" );
+    CK_FPRINTF_STDERR( "                channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|driver:<name>|\n" );
+    CK_FPRINTF_STDERR( "                srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
+    CK_FPRINTF_STDERR( "                remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
+    CK_FPRINTF_STDERR( "                callback|deprecate:{stop|warn|ignore}|chugin-probe|\n" );
+    CK_FPRINTF_STDERR( "                chugin-load:{on|off}|chugin-path:<path>|chugin:<name>\n" );
+    CK_FPRINTF_STDERR( "   [commands] = add|remove|replace|remove.all|status|time|\n" );
+    CK_FPRINTF_STDERR( "                clear.vm|reset.id|abort.shred|exit\n" );
+    CK_FPRINTF_STDERR( "       [+-=^] = shortcuts for add, remove, replace, status\n" );
     version();
 }
 
