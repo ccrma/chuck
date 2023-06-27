@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.0.4
+1.5.0.4 (June 2023)
 ---
 - (added) Math.randomize() -- implicitly randomize RNG seed
   ---
