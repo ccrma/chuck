@@ -1,15 +1,22 @@
-# NOTE: chuck_win32.h and chuck_win32.c come from the output of
-# chuck.lex and chuck.y
+# NOTE: chuck_yacc.h (was chuck_win32.h) and chuck_yacc.c (was chuck_win32.c)
+# come from the output of chuck.lex and chuck.y
 #
 # > flex -ochuck.yy.c chuck.lex
 # > bison -dv -b chuck chuck.y
 #
-# to create the chuck_win32 files:
+# to create the chuck_yacc files:
 #
-# > cat chuck.tab.c chuck.yy.c > chuck_win32.c
-# > cp chuck.tab.h chuck_win32.h
+# > cat chuck.tab.c chuck.yy.c > chuck_yacc.c
+# > cp chuck.tab.h chuck_yacc.h
 #
-# ALSO: we are actually now building in 64-bit, but yeah.
+# FYI these can be created using core/makefile:
+# > make chuck_yacc.h
+# > make chuck_yacc.c
+#
+# ALSO: when chuck_win32.h/c was first created in 2003, Win32 meant 32-bit;
+#       20 years later, when most machines are 64-bit (even phones, for over
+#       a decade now) "Win32" now officially refers to 32-bit and 64-bit
+#       Windows... So it goes.
 
 MSBUILD=msbuild.exe
 RTAUDIODIR=rtaudio
@@ -22,8 +29,7 @@ CONFIG=Release
 CHUCK_BIN=Release/chuck.exe
 endif
 
-CSRCS+= chuck_win32.c util_math.c util_network.c util_raw.c \
-	util_xforms.c
+CSRCS+= chuck_yacc.c util_math.c util_network.c util_raw.c util_xforms.c
 CXXSRCS+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	chuck_frame.cpp chuck_symbol.cpp chuck_table.cpp chuck_utils.cpp \
 	chuck_vm.cpp chuck_instr.cpp chuck_scan.cpp chuck_type.cpp chuck_emit.cpp \
@@ -60,4 +66,3 @@ $(CHUCK_BIN): $(SRCS)
 
 clean:
 	$(MSBUILD) visual-studio/chuck.sln /p:Configuration=$(CONFIG) /t:Clean
-
