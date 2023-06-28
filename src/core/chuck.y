@@ -67,7 +67,7 @@ a_Program g_program = NULL;
     int ival;
     double fval;
     c_str sval;
-    
+
     a_Program program;
     a_Section program_section;
     a_Stmt_List stmt_list;

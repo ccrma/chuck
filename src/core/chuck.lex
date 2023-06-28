@@ -53,7 +53,7 @@ IS          (u|U|l|L)*
 #include "chuck_absyn.h"
 #include "chuck_errmsg.h"
 
-#if !defined(__PLATFORM_WIN32__) && !defined(__ANDROID__)
+#if !defined(__PLATFORM_WIN32__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
   #include "chuck.tab.h"
 #else
   #include "chuck_win32.h"
@@ -80,9 +80,33 @@ extern "C" {
   int comment();
   int block_comment();
 
+  // 1.5.0.5 (ge) added
+  void yycleanup( void );
+  void yyinitial( void );
+
 #if defined(_cplusplus) || defined(__cplusplus)
 }
 #endif
+
+// yycleanup | 1.5.0.5 (ge)
+void yycleanup( void )
+{
+    // clean up the FILE
+    if( yyin )
+    {
+        fclose( yyin );
+        yyin = NULL;
+    }
+}
+
+// yyinitial | 1.5.0.5 (ge)
+void yyinitial( void )
+{
+    // flush the buffer
+    YY_FLUSH_BUFFER;
+    // set to initial
+    BEGIN(YY_START);
+}
 
 // yywrap()
 int yywrap( void )
