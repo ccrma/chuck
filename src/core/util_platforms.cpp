@@ -34,6 +34,16 @@
 #include "util_string.h"
 #include "chuck_errmsg.h"
 
+#ifdef __PLATFORM_WIN32__
+#ifndef __CHUNREAL_ENGINE__
+#include <windows.h> // for win32_tmpfile()
+#else
+  // 1.5.0.0 (ge) | #chunreal
+  // unreal engine on windows disallows including windows.h
+#include "Windows/MinWindows.h"
+#endif // #ifndef __CHUNREAL_ENGINE__
+#endif // #ifdef __PLATFORM_WIN32__
+
 #include <sys/stat.h>
 
 

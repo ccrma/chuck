@@ -208,6 +208,9 @@
     <ClCompile Include="..\core\ulib_doc.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="..\core\util_platforms.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\core\chuck.h">
@@ -445,6 +448,9 @@
       <Filter>host\RtAudio</Filter>
     </ClInclude>
     <ClInclude Include="..\core\ulib_doc.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\util_platforms.h">
       <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
