@@ -32,11 +32,11 @@
 //-----------------------------------------------------------------------------
 #include "chuck_parse.h"
 #include "chuck_errmsg.h"
-#include <string.h>
-
-#ifdef __ANDROID__
+#include "util_string.h"
 #include "util_platforms.h"
-#endif
+
+#include <string.h>
+#include <string>
 
 #ifdef __PLATFORM_WIN32__
 #ifndef __CHUNREAL_ENGINE__
@@ -48,226 +48,165 @@
 #endif // #ifndef __CHUNREAL_ENGINE__
 #endif // #ifdef __PLATFORM_WIN32__
 
+#include <sys/stat.h>
+#if defined(__PLATFORM_WIN32__)
+  #include "dirent_win32.h"
+#endif
+
 using namespace std;
 
-// max path len
-static const t_CKUINT MAX_FILENAME_LEN = 2048;
 // global
-static char g_filename[MAX_FILENAME_LEN+1] = "";
+static std::string g_filename;
+// file to parse
+static FILE * g_fd2parse = NULL;
+// whether to auto close
+static t_CKBOOL g_fd2autoClose = FALSE;
+// clean up function
+static void fd2parse_cleanup();
 
-// external
+// external from lexer
 extern "C" {
-    extern FILE *yyin;
+    extern FILE * yyin;
 }
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: open_cat_ck()
-// desc: ...
-//-----------------------------------------------------------------------------
-FILE * open_cat_ck( c_str fname )
-{
-#ifdef __ANDROID__
-    if( strncmp(fname, "jar:", strlen("jar:")) == 0 )
-    {
-        int fd = 0;
-        if( !ChuckAndroid::copyJARURLFileToTemporary(fname, &fd) )
-        {
-            EM_error2( 0, "unable to download from JAR URL: %s", fname );
-            return NULL;
-        }
-        return fdopen(fd, "rb");
-    }
-#endif // __ANDROID__
-
-    FILE * fd = fopen(fname, "rb");
-    if( !fd )
-    {
-        if( !strstr( fname, ".ck" ) && !strstr( fname, ".CK" ) )
-        {
-            strcat( fname, ".ck" );
-            fd = fopen( fname, "rb" );
-        }
-    }
-    return fd;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: win32_tmpfile()
-// desc: replacement for broken tmpfile() on Windows Vista + 7
-//-----------------------------------------------------------------------------
-#ifdef __PLATFORM_WIN32__
-FILE *win32_tmpfile()
-{
-    char tmp_path[MAX_PATH];
-    char file_path[MAX_PATH];
-    FILE * file = NULL;
-
-#ifndef __CHUNREAL_ENGINE__
-    if( GetTempPath(256, tmp_path) == 0 )
-#else
-    // 1.5.0.0 (ge) | #chunreal explicit call ASCII version
-    if( GetTempPathA(256, tmp_path) == 0 )
-#endif
-        return NULL;
-
-#ifndef __CHUNREAL_ENGINE__
-    if( GetTempFileName(tmp_path, "mA", 0, file_path) == 0 )
-#else
-    // 1.5.0.0 (ge) | #chunreal explicit call ASCII version
-    if( GetTempFileNameA(tmp_path, "mA", 0, file_path) == 0 )
-#endif
-        return NULL;
-
-    file = fopen( file_path, "wb+D" );
-
-    return file;
-}
-#endif // #ifdef __PLATFORM_WIN32__
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: android_tmpfile()
-// desc: replacement for broken tmpfile() on Android
-//-----------------------------------------------------------------------------
-#ifdef __ANDROID__
-
-FILE * android_tmpfile()
-{
-    return ChuckAndroid::getTemporaryFile();
-}
-
-#endif
 
 
 
 
 //-----------------------------------------------------------------------------
 // name: chuck_parse()
-// desc: ...
+// desc: INPUT: chuck code (either from file or actual code) to be parsed
+//       OUTPUT: abstract syntax tree representation of the code
 //-----------------------------------------------------------------------------
-t_CKBOOL chuck_parse( c_constr fname, FILE * fd, c_constr code )
+t_CKBOOL chuck_parse( const std::string & fname, const std::string & codeLiteral )
 {
-    t_CKBOOL clo = FALSE;
+    // return value
     t_CKBOOL ret = FALSE;
+    // file descriptor | normally NULL unless g_fd2parse is set
+    FILE * fd = g_fd2parse;
+    // our own lexer/parser buffer
+    YY_BUFFER_STATE yyCodeBuffer = NULL;
 
-    // sanity check
-    if( fd && code )
+    // check for conflict
+    if( fd && codeLiteral != "" )
     {
-        CK_FPRINTF_STDERR( "[chuck](via parser): (internal) both fd and code specified!\n" );
-        return FALSE;
+        CK_FPRINTF_STDERR( "[chuck](parser): (internal) code and FILE descriptor both present!\n" );
+        CK_FPRINTF_STDERR( "[chuck](parser):  |- ignoring FILE descriptor...\n" );
     }
 
-    // prepare code
-    if( code )
+    // copy it
+    g_filename = fname;
+
+    // if actual code was passed in
+    if( codeLiteral != "" )
     {
-        // !
-        assert( fd == NULL );
-        // generate temp file
-#ifdef __PLATFORM_WIN32__
-        fd = win32_tmpfile();
-#elif defined (__ANDROID__)
-        fd = android_tmpfile();
-#else
-        fd = tmpfile();
-#endif
-        // on some systems, tmpfile() can return NULL
-        if( !fd ) { EM_error2( 0, "unable to create temp file" ); return FALSE; }
-        // flag it to close
-        clo = TRUE;
-        // write
-        fwrite( code, sizeof(char), strlen(code), fd );
-    }
-
-    /*
-    // use code from memory buffer if its available
-    if( code )
-    {
-        // copy name
-        strcpy( g_filename, fname );
-        // reset
-        if( EM_reset( g_filename, NULL ) == FALSE ) goto cleanup;
-
-        // TODO: clean g_program
-        g_program = NULL;
-
-        // clean
+        // clean lexer
         yyrestart( NULL );
-
         // load string (yy_scan_string will copy the C string)
-        YY_BUFFER_STATE ybs = yy_scan_string( code );
-        if( !ybs ) goto cleanup;
-
-        // parse
-        if( !( yyparse() == 0 ) ) goto cleanup;
-
-        // delete the lexer buffer
-        yy_delete_buffer( ybs );
-
+        yyCodeBuffer = yy_scan_string( codeLiteral.c_str() );
+        // if could load
+        if( !yyCodeBuffer ) goto cleanup;
     }
-    */
-
-    // check length | 1.4.1.0 (ge) added
-    t_CKUINT len = strlen( fname );
-    if( len > MAX_FILENAME_LEN )
+    else
     {
-        EM_error2( 0, "filename length (%d) exceeds max (%d) set by compiler...",
-                   len, MAX_FILENAME_LEN );
-        EM_error2( 0, "filename in question: '%s'", fname );
-        EM_error2( 0, "compiler bailing out..." );
-        return FALSE;
-    }
-    // remember filename
-    strcpy( g_filename, fname );
+        // test it
+        if( !fd )
+        {
+            // open, could potentially change g_filename
+            fd = ck_openFileAutoExt( g_filename, ".ck" );
+            // check file open result
+            if( !fd ) // if couldn't open
+            { g_filename = fname; } // revert filename
+            else if( ck_isdir(g_filename) ) // check for directory; if so, clean up
+            { EM_error2( 0, "cannot parse file: '%s' is a directory", mini(fname.c_str()) ); goto cleanup; }
+        }
 
-    // test it
-    if( !fd ) {
-        fd = open_cat_ck( g_filename );
-        if( !fd ) strcpy( g_filename, fname );
-        else clo = TRUE;
+        // if still none
+        if( !fd ) { EM_error2( 0, "no such file: '%s'", mini(fname.c_str()) ); goto cleanup; }
+        // set to beginning0
+        else fseek( fd, 0, SEEK_SET );
+
+        // reset yyin to fd
+        yyrestart( fd );
+        // set to initial condition | 1.5.0.5 (ge) added
+        yyinitial();
+
+        // check
+        if( yyin == NULL ) goto cleanup;
     }
 
     // reset
-    if( EM_reset( g_filename, fd ) == FALSE ) goto cleanup;
-
-    // lexer/parser
-    // TODO: if( yyin ) { fclose( yyin ); yyin = NULL; }
-
-    // if no fd, open
-    if( !fd ) { fd = fopen( g_filename, "r" ); if( fd ) clo = TRUE; }
-    // if still none
-    if( !fd ) { EM_error2( 0, "no such file or directory" ); goto cleanup; }
-    // set to beginning
-    else fseek( fd, 0, SEEK_SET );
-
-    // reset yyin to fd
-    yyrestart( fd );
-
-    // check
-    if( yyin == NULL ) goto cleanup;
+    if( EM_reset( g_filename.c_str() ) == FALSE ) goto cleanup;
 
     // TODO: clean g_program
     g_program = NULL;
 
     // parse
-    if( !(yyparse( ) == 0) ) goto cleanup;
+    if( !(yyparse() == 0) ) goto cleanup;
 
     // flag success
     ret = TRUE;
 
 cleanup:
 
-    // done
-    if( clo ) fclose( fd );
+    // clean up the file descriptor
+    if( fd ) {
+        // check fd2parse
+        if( g_fd2parse ) { fd2parse_cleanup(); fd = NULL; }
+        else { fclose( fd ); fd = NULL; }
+    }
+
+    // set to NULL | 1.5.0.5 (ge) added to reset yyin
+    yyin = NULL;
+
+    // clean up lexer buffer, if we used one
+    if( yyCodeBuffer )
+    { yy_delete_buffer( yyCodeBuffer ); yyCodeBuffer = NULL; }
 
     return ret;
+}
+
+
+
+
+//------------------------------------------------------------------------------
+// name: fd2parse_cleanup()
+// desc: clean up fd2parse
+//------------------------------------------------------------------------------
+void fd2parse_cleanup()
+{
+    // check
+    if( g_fd2parse && g_fd2autoClose )
+    { fclose( g_fd2parse ); }
+
+    // reset
+    g_fd2parse = NULL;
+    g_fd2autoClose = FALSE;
+}
+
+
+
+
+//------------------------------------------------------------------------------
+// name: fd2parse_set()
+// desc: special FILE input mode | added 1.5.0.5 (ge)
+// set an already open FILE descriptor `fd` for one time use
+// by the next call to go(), which will use `fd` as the input
+// to the parser (NOTE in any invocation of go(), `codeLiteral`
+// and `fd` should not both be non-empty, otherwise a warning
+// will be output and the `codeLiteral` will take precedence
+// and the `fd` will be cleaned up and skipped
+// MEMORY: if `autoClose` is true, the compiler will automatically
+// call fclose() on `fd` on the next call to go(), regardless of
+// the aforementioned conflict with `codeLiteral`
+//------------------------------------------------------------------------------
+void fd2parse_set( FILE * fd, t_CKBOOL autoClose )
+{
+    // clean up
+    fd2parse_cleanup();
+
+    // copy
+    g_fd2parse = fd;
+    g_fd2autoClose = autoClose;
 }
 
 

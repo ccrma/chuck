@@ -673,7 +673,7 @@ t_CKBOOL ChucK::initChugins()
             std::string full_path = filename;
 
             // parse, type-check, and emit
-            if( compiler()->go( filename, NULL, NULL, full_path ) )
+            if( compiler()->go( filename, full_path ) )
             {
                 // TODO: how to compilation handle?
                 //return 1;
@@ -942,7 +942,9 @@ t_CKBOOL ChucK::shutdown()
 // name: compileFile()
 // desc: compile a file (can be called anytime)
 //-----------------------------------------------------------------------------
-t_CKBOOL ChucK::compileFile( const std::string & path, const std::string & argsTogether, t_CKINT count )
+t_CKBOOL ChucK::compileFile( const std::string & path,
+                             const std::string & argsTogether,
+                             t_CKINT count )
 {
     // sanity check
     if( !m_carrier->compiler )
@@ -1009,7 +1011,7 @@ t_CKBOOL ChucK::compileFile( const std::string & path, const std::string & argsT
     full_path = get_full_path(filename);
 
     // parse, type-check, and emit (full_path added 1.3.0.0)
-    if( !m_carrier->compiler->go( filename, NULL, NULL, full_path ) )
+    if( !m_carrier->compiler->go( filename, full_path ) )
         goto error;
 
     // get the code
@@ -1064,7 +1066,9 @@ error: // 1.5.0.0 (ge) added
 // name: compileCode()
 // desc: compile code directly
 //-----------------------------------------------------------------------------
-t_CKBOOL ChucK::compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count)
+t_CKBOOL ChucK::compileCode( const std::string & code,
+                             const std::string & argsTogether,
+                             t_CKINT count )
 {
     // sanity check
     if( !m_carrier->compiler )
@@ -1112,7 +1116,7 @@ t_CKBOOL ChucK::compileCode( const std::string & code, const std::string & argsT
     EM_log( CK_LOG_FINE, "full path: %s...", full_path.c_str() );
 
     // parse, type-check, and emit (full_path added 1.3.0.0)
-    if( !m_carrier->compiler->go( "<compiled.code>", NULL, code.c_str(), full_path ) )
+    if( !m_carrier->compiler->go( "<compiled.code>", full_path, code ) )
        goto error;
 
     // get the code

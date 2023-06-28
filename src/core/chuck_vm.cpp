@@ -894,9 +894,9 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         retval = xid;
         goto done;
     }
-    else if( msg->type == MSG_KILL )
+    else if( msg->type == MSG_EXIT )
     {
-        EM_error3( "[chuck](VM): KILL received...." );
+        EM_error3( "[chuck](VM): EXIT received...." );
         // close file handles and clean up
         // REFACTOR-2017: TODO all_detach function
         // all_detach();

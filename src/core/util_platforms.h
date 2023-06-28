@@ -24,15 +24,30 @@
 
 //-----------------------------------------------------------------------------
 // name: util_platforms.h
-// desc: platform-specific utilities (e.g., Android)
+// desc: platform-specific utilities, e.g., for Android and various
 //
-// author: Andriy Kunitsyn (kunitzin@gmail.com) ChuckAndroid
-//         Ge Wang (https://ccrma.stanford.edu/~ge/) added util_platforms.*
+// author: Andriy Kunitsyn (kunitzin@gmail.com) | ChuckAndroid
+//         Ge Wang (https://ccrma.stanford.edu/~ge/)
 // date: Summer 2021
 //-----------------------------------------------------------------------------
 #ifndef __UTIL_PLATFORMS_H__
 #define __UTIL_PLATFORMS_H__
 
+#include <stdio.h>
+#include <stdlib.h>
+#include "chuck_def.h"
+#include <string>
+
+
+// try to open a file by filname, adding extension if needed
+// filename argument is changed to name of actual opened file
+FILE * ck_openFileAutoExt( std::string & filenameMutable,
+                           const std::string & extension );
+// platform-abstracted temp file creation
+FILE * ck_tmpfile();
+
+// check if is dir
+t_CKBOOL ck_isdir( const std::string & path );
 
 
 

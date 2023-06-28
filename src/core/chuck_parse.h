@@ -37,8 +37,8 @@
 #include "chuck_absyn.h"
 
 #include <stdio.h>
-
 #include <string>
+
 
 // 'C' specification necessary for windows to link properly
 #ifdef __PLATFORM_WIN32__
@@ -50,18 +50,21 @@
 // link with the parser
 extern "C" int yyparse( void );
 extern "C" void yyrestart( FILE * );
+extern "C" void yyinitial( void );
 
 struct yy_buffer_state;
 typedef yy_buffer_state * YY_BUFFER_STATE;
 extern "C" YY_BUFFER_STATE yy_scan_string( const char * );
 extern "C" void yy_delete_buffer( YY_BUFFER_STATE );
 
-// open file with .ck append as appropriate
-FILE * open_cat_ck( c_str filename );
-// parse file
-t_CKBOOL chuck_parse( c_constr fname, FILE * fd = NULL, c_constr code = NULL );
+
+// parse ck file into abstract syntax tree (root at 'a_Program g_program')
+t_CKBOOL chuck_parse( const std::string & filename, const std::string & code = "" );
 // reset the parser
-void reset_parse( );
+void reset_parse();
+// set an open FILE descriptor to be parsed ONLY by the next call to chuck_parse()
+// `fd` will be closed using fclose(), if autoClose is set to true
+void fd2parse_set( FILE * fd, t_CKBOOL autoClose );
 
 // convert abstract syntax expression to string
 std::string absyn2str( a_Exp exp );
@@ -148,8 +151,6 @@ public:
     t_CKBOOL parseLine( const std::string & line,
                         SyntaxTokenList & tokens );
 };
-
-
 
 
 #endif

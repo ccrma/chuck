@@ -601,7 +601,7 @@ enum Chuck_Msg_Type
     MSG_REPLACE,
     MSG_STATUS,
     MSG_PAUSE,
-    MSG_KILL,
+    MSG_EXIT,
     MSG_TIME,
     MSG_RESET_ID,
     MSG_DONE,

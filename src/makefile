@@ -30,21 +30,20 @@ endif
 
 ############################## MAKE EMSCRIPTEN #################################
 EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
-    core/chuck.cpp core/chuck_absyn.cpp \
-    core/chuck_carrier.cpp core/chuck_compile.cpp core/chuck_dl.cpp \
-    core/chuck_emit.cpp core/chuck_errmsg.cpp core/chuck_frame.cpp \
-    core/chuck_globals.cpp core/chuck_instr.cpp core/chuck_io.cpp \
-    core/chuck_lang.cpp core/chuck_oo.cpp \
-    core/chuck_parse.cpp core/chuck_scan.cpp core/chuck_stats.cpp \
-    core/chuck_symbol.cpp core/chuck_table.cpp core/chuck_type.cpp \
-    core/chuck_ugen.cpp core/chuck_utils.cpp core/chuck_vm.cpp \
-    core/uana_extract.cpp core/uana_xform.cpp core/ugen_filter.cpp \
-    core/ugen_osc.cpp core/ugen_stk.cpp core/ugen_xxx.cpp \
-    core/ulib_ai.cpp core/ulib_doc.cpp core/ulib_machine.cpp \
-    core/ulib_math.cpp core/ulib_std.cpp \
-    core/util_buffers.cpp core/util_math.cpp core/util_raw.c \
-    core/util_string.cpp core/util_xforms.c core/chuck_win32.c \
-    core/util_sndfile.c
+    core/chuck.cpp core/chuck_absyn.cpp core/chuck_carrier.cpp \
+    core/chuck_compile.cpp core/chuck_dl.cpp core/chuck_emit.cpp \
+    core/chuck_errmsg.cpp core/chuck_frame.cpp core/chuck_globals.cpp \
+    core/chuck_instr.cpp core/chuck_io.cpp core/chuck_lang.cpp \
+    core/chuck_oo.cpp core/chuck_parse.cpp core/chuck_scan.cpp \
+    core/chuck_stats.cpp core/chuck_symbol.cpp core/chuck_table.cpp \
+    core/chuck_type.cpp core/chuck_ugen.cpp core/chuck_utils.cpp \
+    core/chuck_vm.cpp core/uana_extract.cpp core/uana_xform.cpp \
+    core/ugen_filter.cpp core/ugen_osc.cpp core/ugen_stk.cpp \
+    core/ugen_xxx.cpp core/ulib_ai.cpp core/ulib_doc.cpp \
+    core/ulib_machine.cpp core/ulib_math.cpp core/ulib_std.cpp \
+    core/util_buffers.cpp core/util_math.cpp core/util_platforms.cpp \
+    core/util_raw.c core/util_string.cpp core/util_xforms.c \
+    core/chuck_win32.c core/util_sndfile.c
 
 
 .PHONY: emscripten web
@@ -159,12 +158,12 @@ CXXOBJS_CORE+= chuck.o chuck_absyn.o chuck_parse.o chuck_errmsg.o \
 	chuck_vm.o chuck_instr.o chuck_scan.o chuck_type.o chuck_emit.o \
 	chuck_compile.o chuck_dl.o chuck_oo.o chuck_lang.o chuck_ugen.o \
 	chuck_otf.o chuck_stats.o chuck_shell.o chuck_io.o \
-	chuck_carrier.o chuck_globals.o \
-	hidio_sdl.o midiio_rtmidi.o rtmidi.o ugen_osc.o ugen_filter.o \
-	ugen_stk.o ugen_xxx.o ulib_ai.o ulib_doc.o ulib_machine.o \
-	ulib_math.o ulib_std.o ulib_opsc.o util_buffers.o \
-	util_console.o util_string.o util_thread.o util_opsc.o \
-	util_serial.o util_hid.o uana_xform.o uana_extract.o
+	chuck_carrier.o chuck_globals.o hidio_sdl.o midiio_rtmidi.o \
+	rtmidi.o ugen_osc.o ugen_filter.o ugen_stk.o ugen_xxx.o ulib_ai.o \
+	ulib_doc.o ulib_machine.o ulib_math.o ulib_std.o ulib_opsc.o \
+	util_buffers.o util_console.o util_hid.o util_platforms.o \
+	util_opsc.o util_serial.o util_string.o util_thread.o \
+	uana_xform.o uana_extract.o
 LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
 	lo/pattern_match.o lo/send.o lo/server.o lo/server_thread.o lo/timetag.o
 

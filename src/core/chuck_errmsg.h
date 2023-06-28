@@ -160,7 +160,7 @@ void EM_error2( t_CKINT, c_constr, ... );
 void EM_error2b( t_CKINT, c_constr, ... );
 void EM_error3( c_constr, ... );
 void EM_impossible( c_constr, ... );
-t_CKBOOL EM_reset( c_constr filename, FILE * fd );
+t_CKBOOL EM_reset( c_constr filename );
 void EM_change_file( c_constr filename );
 const char * EM_lasterror();
 void EM_reset_msg();

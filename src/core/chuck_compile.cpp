@@ -269,7 +269,9 @@ void Chuck_Compiler::set_auto_depend( t_CKBOOL v )
 // name: go()
 // desc: parse, type-check, and emit a program
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * str_src, const string & full_path )
+t_CKBOOL Chuck_Compiler::go( const string & filename,
+                             const string & full_path,
+                             const string & codeLiteral )
 {
     t_CKBOOL ret = TRUE;
     // Chuck_Context * context = NULL;
@@ -280,12 +282,12 @@ t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * st
     if( !m_auto_depend )
     {
         // normal (note: full_path added 1.3.0.0)
-        ret = this->do_normal_depend( filename, fd, str_src, full_path );
+        ret = this->do_normal_depend( filename, codeLiteral, full_path );
     }
     else // auto depend
     {
         // call auto-depend compile (1.4.1.0)
-        ret = this->do_auto_depend( filename, fd, str_src, full_path );
+        ret = this->do_auto_depend( filename, codeLiteral, full_path );
     }
 
     // 1.4.1.0 (ge) | added to unset the fileName reference, which determines
@@ -293,6 +295,19 @@ t_CKBOOL Chuck_Compiler::go( const string & filename, FILE * fd, const char * st
     EM_change_file( NULL );
 
     return ret;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: set_file2parse()
+// desc: set a FILE * for one-time use on next go(); see header for details
+//-----------------------------------------------------------------------------
+void Chuck_Compiler::set_file2parse( FILE * fd, t_CKBOOL autoClose )
+{
+    // call down to parser
+    ::fd2parse_set( fd, autoClose );
 }
 
 
@@ -442,8 +457,9 @@ t_CKBOOL Chuck_Compiler::do_all_except_classes( Chuck_Context * context )
 // name: do_normal_depend()
 // desc: compile normally without auto-depend
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::do_normal_depend( const string & filename, FILE * fd,
-                                          const char * str_src, const string & full_path )
+t_CKBOOL Chuck_Compiler::do_normal_depend( const string & filename,
+                                           const string & codeLiteral,
+                                           const string & full_path )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Context * context = NULL;
@@ -453,7 +469,7 @@ t_CKBOOL Chuck_Compiler::do_normal_depend( const string & filename, FILE * fd,
     string theFullpath = expand_filepath(full_path);
 
     // parse the code
-    if( !chuck_parse( theFilename.c_str(), fd, str_src ) )
+    if( !chuck_parse( theFilename, codeLiteral ) )
         return FALSE;
 
     // make the context
@@ -514,14 +530,15 @@ cleanup:
 // name: do_auto_depend()
 // desc: compile with auto-depend (TODO: this doesn't work yet, I don't think)
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::do_auto_depend( const string & filename, FILE * fd,
-                                         const char * str_src, const string & full_path )
+t_CKBOOL Chuck_Compiler::do_auto_depend( const string & filename,
+                                         const string & codeLiteral,
+                                         const string & full_path )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Context * context = NULL;
 
     // parse the code
-    if( !chuck_parse( filename.c_str(), fd, str_src ) )
+    if( !chuck_parse( filename, codeLiteral ) )
         return FALSE;
 
     // make the context

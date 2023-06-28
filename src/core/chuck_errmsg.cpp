@@ -629,7 +629,7 @@ void EM_poplog()
 }
 
 // prepare new file
-t_CKBOOL EM_reset( const char * fname, FILE * fd )
+t_CKBOOL EM_reset( const char * fname )
 {
     anyErrors = FALSE;
     fileName = fname ? fname : (c_str)"";

@@ -87,6 +87,7 @@
 		8615DFF9264D9AE20084EF86 /* chuck_globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8615DFF7264D9AE20084EF86 /* chuck_globals.cpp */; };
 		8615DFFA264D9AE20084EF86 /* chuck_globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8615DFF7264D9AE20084EF86 /* chuck_globals.cpp */; };
 		864617FA29F24FC60018DC65 /* ulib_doc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 864617F929F24FC60018DC65 /* ulib_doc.cpp */; };
+		8689D7912A4C13C9003BF32E /* util_platforms.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8689D7902A4C13C9003BF32E /* util_platforms.cpp */; };
 		86D8F47429419EBB00954EF4 /* ulib_ai.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 86D8F47329419EBB00954EF4 /* ulib_ai.cpp */; };
 /* End PBXBuildFile section */
 
@@ -435,6 +436,8 @@
 		8615DFF8264D9AE20084EF86 /* chuck_globals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chuck_globals.h; path = ../core/chuck_globals.h; sourceTree = "<group>"; };
 		864617F829F24FC60018DC65 /* ulib_doc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ulib_doc.h; path = ../core/ulib_doc.h; sourceTree = "<group>"; };
 		864617F929F24FC60018DC65 /* ulib_doc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ulib_doc.cpp; path = ../core/ulib_doc.cpp; sourceTree = "<group>"; };
+		8689D78F2A4C13C9003BF32E /* util_platforms.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util_platforms.h; path = ../core/util_platforms.h; sourceTree = "<group>"; };
+		8689D7902A4C13C9003BF32E /* util_platforms.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = util_platforms.cpp; path = ../core/util_platforms.cpp; sourceTree = "<group>"; };
 		86D8F47229419EBB00954EF4 /* ulib_ai.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ulib_ai.h; path = ../core/ulib_ai.h; sourceTree = "<group>"; };
 		86D8F47329419EBB00954EF4 /* ulib_ai.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ulib_ai.cpp; path = ../core/ulib_ai.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -941,6 +944,8 @@
 				09A40B5B0A9A54DA007604EA /* util_network.h */,
 				09A40B5C0A9A54DA007604EA /* util_opsc.cpp */,
 				09A40B5D0A9A54DA007604EA /* util_opsc.h */,
+				8689D7902A4C13C9003BF32E /* util_platforms.cpp */,
+				8689D78F2A4C13C9003BF32E /* util_platforms.h */,
 				09A40B5E0A9A54DA007604EA /* util_raw.c */,
 				09A40B5F0A9A54DA007604EA /* util_raw.h */,
 				09A40B600A9A54DA007604EA /* util_sndfile.c */,
@@ -1135,6 +1140,7 @@
 				091677261F7CAD1100248F78 /* hidio_sdl.cpp in Sources */,
 				091677271F7CAD1100248F78 /* midiio_rtmidi.cpp in Sources */,
 				091677281F7CAD1100248F78 /* rtmidi.cpp in Sources */,
+				8689D7912A4C13C9003BF32E /* util_platforms.cpp in Sources */,
 				091677291F7CAD1100248F78 /* ugen_filter.cpp in Sources */,
 				0916772A1F7CAD1100248F78 /* send.c in Sources */,
 				0916772B1F7CAD1100248F78 /* ugen_osc.cpp in Sources */,

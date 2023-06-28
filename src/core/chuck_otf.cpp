@@ -35,6 +35,7 @@
 #include "util_math.h"
 #include "util_thread.h"
 #include "util_string.h"
+#include "util_platforms.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -52,8 +53,6 @@
 #endif
 
 using namespace std;
-
-// extern "C" void signal_int( int );
 
 // log level
 t_CKUINT g_otf_log = CK_LOG_INFO;
@@ -105,8 +104,15 @@ FILE * recv_file( const Net_Msg & msg, ck_socket sock )
 
     // what is left
     // t_CKUINT left = msg.param2;
+
     // make a temp file
-    FILE * fd = tmpfile();
+    FILE * fd = ck_tmpfile();
+    // check if successful
+    if( !fd )
+    {
+        EM_error2( 0, "OTF nable to create temp file, skipping..." );
+        return NULL;
+    }
 
     do {
         // msg
@@ -190,8 +196,10 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         // construct full path to be associated with the file so me.sourceDir() works
         // (added 1.3.5.2)
         std::string full_path = get_full_path( msg->buffer );
+        // special FILE descriptor mode; set autoClose to true
+        compiler->set_file2parse( fd, TRUE );
         // parse, type-check, and emit
-        if( !compiler->go( msg->buffer, fd, NULL, full_path.c_str() ) )
+        if( !compiler->go( msg->buffer, full_path ) )
         {
             SAFE_DELETE(cmd);
             goto cleanup;
@@ -209,7 +217,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
             cmd->param = msg->param;
     }
     else if( msg->type == MSG_STATUS || msg->type == MSG_REMOVE || msg->type == MSG_REMOVEALL
-             || msg->type == MSG_KILL || msg->type == MSG_TIME || msg->type == MSG_RESET_ID
+             || msg->type == MSG_EXIT || msg->type == MSG_TIME || msg->type == MSG_RESET_ID
              || msg->type == MSG_CLEARVM )
     {
         cmd->type = msg->type;
@@ -263,7 +271,7 @@ t_CKINT otf_send_file( const char * fname, Net_Msg & msg, const char * op,
     struct stat fs;
     string filename;
     vector<string> args;
-    char buf[1024];
+    string buf;
 
     // parse out command line arguments
     if( !extract_args( fname, filename, args ) )
@@ -278,15 +286,15 @@ t_CKINT otf_send_file( const char * fname, Net_Msg & msg, const char * op,
     strcpy( msg.buffer, fname );
 
     // test it
-    strcpy( buf, filename.c_str() );
-    fd = open_cat_ck( buf );
+    buf = filename;
+    fd = ck_openFileAutoExt( buf, ".ck" );
     if( !fd )
     {
         CK_FPRINTF_STDERR( "[chuck]: cannot open file '%s' for [%s]...\n", filename.c_str(), op );
         return FALSE;
     }
 
-    if( !chuck_parse( (char *)filename.c_str(), fd ) )
+    if( !chuck_parse( filename ) )
     {
         CK_FPRINTF_STDERR( "[chuck]: skipping file '%s' for [%s]...\n", filename.c_str(), op );
         fclose( fd );
@@ -295,7 +303,7 @@ t_CKINT otf_send_file( const char * fname, Net_Msg & msg, const char * op,
 
     // stat it
     memset( &fs, 0, sizeof(fs) );
-    stat( buf, &fs );
+    stat( buf.c_str(), &fs );
     fseek( fd, 0, SEEK_SET );
 
     // log
@@ -523,7 +531,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
-        msg.type = MSG_KILL;
+        msg.type = MSG_EXIT;
         msg.param = (i+1)<argc ? atoi(argv[++i]) : 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );

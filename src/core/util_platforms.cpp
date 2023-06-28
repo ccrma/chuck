@@ -24,13 +24,148 @@
 
 //-----------------------------------------------------------------------------
 // name: util_platforms.cpp
-// desc: platform-specific utilities, e.g., tmpfile() for Android etc.
+// desc: platform-specific utilities, e.g., for Android and various
 //
-// author: Andriy Kunitsyn (kunitzin@gmail.com) original ChuckAndroid
-//         Ge Wang (https://ccrma.stanford.edu/~ge/) added util_platforms.*
+// author: Andriy Kunitsyn (kunitzin@gmail.com) | original ChuckAndroid
+//         Ge Wang (https://ccrma.stanford.edu/~ge/)
 // date: Summer 2021
 //-----------------------------------------------------------------------------
 #include "util_platforms.h"
+#include "util_string.h"
+#include "chuck_errmsg.h"
+
+#include <sys/stat.h>
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_openFileAutoExt()
+// desc: open a file by name, first as is, and if needed concatenateing ".ck"
+//       this potentially modifies the contents of fname
+//-----------------------------------------------------------------------------
+FILE * ck_openFileAutoExt( std::string & filenameMutable,
+                           const std::string & extension )
+{
+#ifdef __ANDROID__
+    if( strncmp(filenameMutable.c_str(), "jar:", strlen("jar:")) == 0 )
+    {
+        int fd = 0;
+        if( !ChuckAndroid::copyJARURLFileToTemporary(filenameMutable.c_str(), &fd) )
+        {
+            EM_error2( 0, "unable to download from JAR URL: %s", filenameMutable.c_str() );
+            return NULL;
+        }
+        return fdopen(fd, "rb");
+    }
+#endif // __ANDROID__
+
+    // try opening
+    FILE * fd = fopen( filenameMutable.c_str(), "rb" );
+    // file open?
+    if( !fd )
+    {
+        // check if filename has extension, ignoring case
+        if( !extension_matches( filenameMutable, extension, TRUE ) )
+        {
+            // concat
+            std::string tryThis = filenameMutable + extension;
+            // try opening again
+            fd = fopen( tryThis.c_str(), "rb" );
+            // if successful update filename
+            filenameMutable = tryThis;
+        }
+    }
+
+    return fd;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: win32_tmpfile()
+// desc: replacement for broken tmpfile() on Windows Vista + 7
+//-----------------------------------------------------------------------------
+#ifdef __PLATFORM_WIN32__
+FILE * win32_tmpfile()
+{
+    char tmp_path[MAX_PATH];
+    char file_path[MAX_PATH];
+    FILE * file = NULL;
+
+#ifndef __CHUNREAL_ENGINE__
+    if( GetTempPath(256, tmp_path) == 0 )
+#else
+    // 1.5.0.0 (ge) | #chunreal explicit call ASCII version
+    if( GetTempPathA(256, tmp_path) == 0 )
+#endif
+        return NULL;
+
+#ifndef __CHUNREAL_ENGINE__
+    if( GetTempFileName(tmp_path, "mA", 0, file_path) == 0 )
+#else
+    // 1.5.0.0 (ge) | #chunreal explicit call ASCII version
+    if( GetTempFileNameA(tmp_path, "mA", 0, file_path) == 0 )
+#endif
+        return NULL;
+
+    file = fopen( file_path, "wb+D" );
+
+    return file;
+}
+#endif // #ifdef __PLATFORM_WIN32__
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: android_tmpfile()
+// desc: replacement for broken tmpfile() on Android
+//-----------------------------------------------------------------------------
+#ifdef __ANDROID__
+FILE * android_tmpfile()
+{
+    return ChuckAndroid::getTemporaryFile();
+}
+#endif
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: android_tmpfile()
+// desc: replacement for broken tmpfile() on Android
+//-----------------------------------------------------------------------------
+FILE * ck_tmpfile()
+{
+    FILE * fd = NULL;
+#ifdef __PLATFORM_WIN32__
+    fd = win32_tmpfile();
+#elif defined (__ANDROID__)
+    fd = android_tmpfile();
+#else
+    fd = tmpfile();
+#endif
+
+    return fd;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_isdir()
+// desc: check if file is a directory
+//-----------------------------------------------------------------------------
+t_CKBOOL ck_isdir( const std::string & path )
+{
+    // shuttle
+    struct stat fs;
+    // stat the path and check flag (is path not there, also returns false)
+    return (stat( path.c_str(), &fs )==0 && fs.st_mode & S_IFDIR);
+}
+
 
 
 
@@ -461,5 +596,8 @@ bool ChuckAndroid::copyJARURLFileToTemporary(const char * jar_url, int * fd)
     *fd = ret;
     return true;
 }
+
+
+
 
 #endif // __ANDROID__
