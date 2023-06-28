@@ -129,11 +129,11 @@ chuck.lex: chuck.tab.h
 chuck.yy.c: chuck.lex
 	$(LEX) -ochuck.yy.c chuck.lex
 
-chuck_win32.c: chuck.yy.c
+chuck_yacc.c: chuck.yy.c
 	$(LEX) --nounistd -ochuck.yy.c chuck.lex
 	cat chuck.tab.c chuck.yy.c > $@
 
-chuck_win32.h: chuck.tab.h
+chuck_yacc.h: chuck.tab.h
 	cat chuck.tab.h > $@
 
 $(CXXOBJS): %.o: %.cpp

@@ -56,7 +56,7 @@ IS          (u|U|l|L)*
 #if !defined(__PLATFORM_WIN32__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
   #include "chuck.tab.h"
 #else
-  #include "chuck_win32.h"
+  #include "chuck_yacc.h"
 #endif
 
 

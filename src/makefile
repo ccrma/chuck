@@ -43,7 +43,7 @@ EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
     core/ulib_machine.cpp core/ulib_math.cpp core/ulib_std.cpp \
     core/util_buffers.cpp core/util_math.cpp core/util_platforms.cpp \
     core/util_raw.c core/util_string.cpp core/util_xforms.c \
-    core/chuck_win32.c core/util_sndfile.c
+    core/chuck_yacc.c core/util_sndfile.c
 
 
 .PHONY: emscripten web
