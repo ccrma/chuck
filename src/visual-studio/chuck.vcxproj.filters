@@ -85,7 +85,7 @@
     <ClCompile Include="..\core\chuck_vm.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\chuck_yacc.c">
+    <ClCompile Include="..\core\chuck_win32.c">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\core\hidio_sdl.cpp">
@@ -255,7 +255,7 @@
     <ClInclude Include="..\core\chuck_lang.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\core\chuck_yacc.h">
+    <ClInclude Include="..\core\chuck_win32.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="..\core\chuck_oo.h">
