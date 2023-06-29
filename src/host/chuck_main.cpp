@@ -506,6 +506,8 @@ t_CKBOOL go( int argc, const char ** argv )
     t_CKINT  chugin_load = 1; // 1 == auto (variable added 1.3.0.0)
     // whether to make this new VM the one that receives OTF commands
     t_CKBOOL update_otf_vm = TRUE;
+    // whether to print code quotes for compiler message
+    t_CKBOOL suppress_error_quote = FALSE;
     string   filename = "";
     vector<string> args;
     // audio driver | 1.5.0.0
@@ -794,6 +796,8 @@ t_CKBOOL go( int argc, const char ** argv )
                 uh();
             else if( !strcmp( argv[i], "--caution-to-the-wind" ) )
                 g_enable_system_cmd = TRUE;
+            else if( !strcmp( argv[i], "--suppress-highlight-on-error" ) )
+                suppress_error_quote = TRUE;
             else if( !strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")
                     || !strcmp(argv[i], "--about") )
             {
@@ -1037,6 +1041,8 @@ t_CKBOOL go( int argc, const char ** argv )
     the_chuck->setParam( CHUCK_PARAM_DEPRECATE_LEVEL, deprecate_level );
     // set hint, so internally can advise things like async data writes etc.
     the_chuck->setParam( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO, g_enable_realtime_audio );
+    // enable or disable highlighting code on compiler error
+    the_chuck->setParam( CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR, (t_CKINT)!suppress_error_quote );
 
     // initialize
     if( !the_chuck->init() )

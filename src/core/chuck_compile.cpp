@@ -32,7 +32,9 @@
 #include "chuck_compile.h"
 #include "chuck_lang.h"
 #include "chuck_errmsg.h"
+#include "chuck.h"
 #include "chuck_io.h"
+
 #ifndef  __DISABLE_OTF_SERVER__
 #include "chuck_otf.h"
 #endif
@@ -276,7 +278,10 @@ t_CKBOOL Chuck_Compiler::go( const string & filename,
     t_CKBOOL ret = TRUE;
     // Chuck_Context * context = NULL;
 
+    // clear any error messages
     EM_reset_msg();
+    // option: whether to highlight | 1.5.0.5 (ge) added
+    opt_highlight_on_error( m_carrier->chuck->getParamInt( CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR ) );
 
     // check to see if resolve dependencies automatically
     if( !m_auto_depend )
@@ -292,9 +297,24 @@ t_CKBOOL Chuck_Compiler::go( const string & filename,
 
     // 1.4.1.0 (ge) | added to unset the fileName reference, which determines
     // how messages print to console (e.g., [file.ck]: or [chuck]:)
-    EM_change_file( NULL );
+    EM_reset_filename();
 
     return ret;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: opt_highlight_on_error()
+// desc: whether to highligh code on compiler error
+//       this defaults to true, but may be disabled when helpful
+//       (e.g., to match output for automated testing)
+//-----------------------------------------------------------------------------
+void Chuck_Compiler::opt_highlight_on_error( t_CKBOOL yesOrNo )
+{
+    // pass to EM
+    EM_highlight_on_error( yesOrNo );
 }
 
 
@@ -1132,15 +1152,15 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
         if( dll->compatible() )
         {
             // print
-            EM_log( CK_LOG_SYSTEM, "[OK] chugin %s (%d.%d)", name, dll->versionMajor(), dll->versionMinor() );
+            EM_log( CK_LOG_SYSTEM, "[%s] chugin %s (%d.%d)", TC::green("OK",true).c_str(), name, dll->versionMajor(), dll->versionMinor() );
         }
         else
         {
             // print
-            EM_log( CK_LOG_SYSTEM, "[FAILED] chugin %s (%d.%d)", name, dll->versionMajor(), dll->versionMinor() );
+            EM_log( CK_LOG_SYSTEM, "[%s] chugin %s (%d.%d)", TC::red("FAILED",true).c_str(), name, dll->versionMajor(), dll->versionMinor() );
             // push
             EM_pushlog();
-            EM_log( CK_LOG_SYSTEM, "reason: %s", dll->last_error() );
+            EM_log( CK_LOG_SYSTEM, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
             EM_poplog();
 
         }
@@ -1148,10 +1168,10 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
     else
     {
         // print
-        EM_log( CK_LOG_SYSTEM, "[FAILED] chugin '%s' load...", name );
+        EM_log( CK_LOG_SYSTEM, "[%s] chugin '%s' load...", TC::red("FAILED",true).c_str(), name );
         // more info
         EM_pushlog();
-        EM_log( CK_LOG_SYSTEM, "reason: %s", dll->last_error() );
+        EM_log( CK_LOG_SYSTEM, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
         EM_poplog();
     }
 
