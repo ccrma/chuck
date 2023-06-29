@@ -49,8 +49,16 @@ FILE * ck_tmpfile();
 // check if is dir
 t_CKBOOL ck_isdir( const std::string & path );
 
-// set up console/terminal I/O
-t_CKBOOL ck_configureConsoleIO();
+// do any platform-specific setup to enable ANSI escape codes
+t_CKBOOL ck_configANSI_ESCcodes();
+
+// are we output to a TTY (teletype, character by character)
+// (vs say a file stream; helpful for determining if we should
+// suppress printing ANSI escapes codes, e.g., color codes
+// to the output stream
+t_CKBOOL ck_isatty( int fd );
+// get a general idea (typically stderr is used here)
+t_CKBOOL ck_isatty();
 
 // abstraction for getline, c edition
 size_t ck_getline( char ** lineptr, size_t * n, FILE * stream );

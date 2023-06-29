@@ -32,7 +32,9 @@
 #include "chuck_compile.h"
 #include "chuck_lang.h"
 #include "chuck_errmsg.h"
+#include "chuck.h"
 #include "chuck_io.h"
+
 #ifndef  __DISABLE_OTF_SERVER__
 #include "chuck_otf.h"
 #endif
@@ -276,7 +278,10 @@ t_CKBOOL Chuck_Compiler::go( const string & filename,
     t_CKBOOL ret = TRUE;
     // Chuck_Context * context = NULL;
 
+    // clear any error messages
     EM_reset_msg();
+    // option: whether to highlight | 1.5.0.5 (ge) added
+    opt_highlight_on_error( m_carrier->chuck->getParamInt( CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR ) );
 
     // check to see if resolve dependencies automatically
     if( !m_auto_depend )
@@ -290,11 +295,29 @@ t_CKBOOL Chuck_Compiler::go( const string & filename,
         ret = this->do_auto_depend( filename, codeLiteral, full_path );
     }
 
+
     // 1.4.1.0 (ge) | added to unset the fileName reference, which determines
     // how messages print to console (e.g., [file.ck]: or [chuck]:)
-    EM_change_file( NULL );
+    // EM_reset_filename();
+    // reset the parser, which also resets filename
+    reset_parse();
 
     return ret;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: opt_highlight_on_error()
+// desc: whether to highligh code on compiler error
+//       this defaults to true, but may be disabled when helpful
+//       (e.g., to match output for automated testing)
+//-----------------------------------------------------------------------------
+void Chuck_Compiler::opt_highlight_on_error( t_CKBOOL yesOrNo )
+{
+    // pass to EM
+    EM_highlight_on_error( yesOrNo );
 }
 
 
@@ -516,7 +539,7 @@ cleanup:
     // unload the context from the type-checker
     if( !type_engine_unload_context( env() ) )
     {
-        EM_error2( 0, "internal error unloading context...\n" );
+        EM_error2( 0, "internal error unloading context..." );
         return FALSE;
     }
 
@@ -575,7 +598,7 @@ cleanup:
     // unload the context from the type-checker
     if( !type_engine_unload_context( env() ) )
     {
-        EM_error2( 0, "internal error unloading context...\n" );
+        EM_error2( 0, "internal error unloading context..." );
         return FALSE;
     }
 
@@ -651,11 +674,10 @@ t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query que
     query_failed = !(dll->load( query ) && dll->query());
     if( query_failed || !type_engine_add_dll( env, dll, nspc ) )
     {
-        CK_FPRINTF_STDERR(
-                 "[chuck]: internal error loading module '%s.%s'...\n",
-                 nspc, name );
+        EM_error2( 0, "internal error loading module '%s.%s'...",
+                   nspc, name );
         if( query_failed )
-            CK_FPRINTF_STDERR( "       %s", dll->last_error() );
+        EM_error2( 0, " |- reason: %s", dll->last_error() );
 
         return FALSE;
     }
@@ -954,33 +976,73 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
 {
     Chuck_Env * env = compiler->env();
 
-    EM_log(CK_LOG_SEVERE, "loading chugin '%s'", name);
+    // EM_log(CK_LOG_SEVERE, "loading chugin '%s'", name);
 
     Chuck_DLL * dll = new Chuck_DLL( compiler->carrier(), name );
     t_CKBOOL query_failed = FALSE;
 
-    // try to load and query
-    query_failed = !(dll->load(dl_path) && dll->query());
-    if( query_failed || !type_engine_add_dll2(env, dll, "global"))
+    // load (but don't query yet; lazy mode == TRUE)
+    if( dll->load(dl_path, CK_QUERY_FUNC, TRUE) )
     {
-        EM_pushlog();
-        EM_log(CK_LOG_SEVERE, "cannot load '%s', skipping...", name);
-        // EM_error2( 0, "error: cannot load '%s', skipping...", name );
-        if( query_failed )
+        // probe it
+        dll->probe();
+        // if not compatible
+        if( !dll->compatible() )
         {
-            EM_log( CK_LOG_SEVERE, "reason: %s", dll->last_error() );
-            // EM_error2( 0, "%s", dll->last_error() );
+            // print
+            EM_log( CK_LOG_SEVERE, "[%s] loading chugin %s (%d.%d)", TC::red("FAILED",true).c_str(), name, dll->versionMajor(), dll->versionMinor() );
+            // push
+            EM_pushlog();
+            EM_log( CK_LOG_SEVERE, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
+            EM_poplog();
+            // go to error for cleanup
+            goto error;
         }
-        delete dll;
-        EM_poplog();
 
-        return FALSE;
+        // try to query the chugin
+        query_failed = !dll->query();
+        // try to add to type system
+        if( query_failed || !type_engine_add_dll2( env, dll, "global" ) )
+        {
+            // print
+            EM_log( CK_LOG_SEVERE, "[%s] loading chugin %s (%d.%d)", TC::red("FAILED",true).c_str(), name, dll->versionMajor(), dll->versionMinor() );
+            EM_pushlog();
+            // if add_dll2 failed, an error should have already been output
+            if( query_failed )
+            {
+                // print reason
+                EM_log( CK_LOG_SEVERE, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
+            }
+            EM_log(CK_LOG_SEVERE, "skipping chugin '%s'...", name);
+            EM_poplog();
+
+            goto error;
+        }
     }
     else
     {
-        compiler->m_dlls.push_back(dll);
-        return TRUE;
+        // print
+        EM_log( CK_LOG_SEVERE, "[%s] chugin '%s' load...", TC::red("FAILED",true).c_str(), name );
+        // more info
+        EM_pushlog();
+        EM_log( CK_LOG_SEVERE, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
+        EM_poplog();
+        // go to error for cleanup
+        goto error;
     }
+
+    // print
+    EM_log( CK_LOG_SEVERE, "[%s] chugin %s (%d.%d)", TC::green("OK",true).c_str(), name, dll->versionMajor(), dll->versionMinor() );
+    // add to compiler
+    compiler->m_dlls.push_back(dll);
+    // return home successful
+    return TRUE;
+
+error:
+    // clean up
+    SAFE_DELETE( dll );
+
+    return FALSE;
 }
 
 
@@ -1132,15 +1194,15 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
         if( dll->compatible() )
         {
             // print
-            EM_log( CK_LOG_SYSTEM, "[OK] chugin %s (%d.%d)", name, dll->versionMajor(), dll->versionMinor() );
+            EM_log( CK_LOG_SYSTEM, "[%s] chugin %s (%d.%d)", TC::green("OK",true).c_str(), name, dll->versionMajor(), dll->versionMinor() );
         }
         else
         {
             // print
-            EM_log( CK_LOG_SYSTEM, "[FAILED] chugin %s (%d.%d)", name, dll->versionMajor(), dll->versionMinor() );
+            EM_log( CK_LOG_SYSTEM, "[%s] chugin %s (%d.%d)", TC::red("FAILED",true).c_str(), name, dll->versionMajor(), dll->versionMinor() );
             // push
             EM_pushlog();
-            EM_log( CK_LOG_SYSTEM, "reason: %s", dll->last_error() );
+            EM_log( CK_LOG_SYSTEM, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
             EM_poplog();
 
         }
@@ -1148,10 +1210,10 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
     else
     {
         // print
-        EM_log( CK_LOG_SYSTEM, "[FAILED] chugin '%s' load...", name );
+        EM_log( CK_LOG_SYSTEM, "[%s] chugin '%s' load...", TC::red("FAILED",true).c_str(), name );
         // more info
         EM_pushlog();
-        EM_log( CK_LOG_SYSTEM, "reason: %s", dll->last_error() );
+        EM_log( CK_LOG_SYSTEM, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
         EM_poplog();
     }
 

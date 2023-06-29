@@ -35,15 +35,18 @@
 #include "chuck_errmsg.h"
 
 #ifdef __PLATFORM_WIN32__
-#ifndef __CHUNREAL_ENGINE__
-#include <windows.h> // for win32_tmpfile()
-#else
-  // 1.5.0.0 (ge) | #chunreal
-  // unreal engine on windows disallows including windows.h
-#include "Windows/MinWindows.h"
-#endif // #ifndef __CHUNREAL_ENGINE__
+  #ifndef __CHUNREAL_ENGINE__
+    #include <windows.h> // for win32_tmpfile()
+  #else
+    // 1.5.0.0 (ge) | #chunreal
+    // unreal engine on windows disallows including windows.h
+    #include "Windows/MinWindows.h"
+  #endif // #ifndef __CHUNREAL_ENGINE__
+#else // not windows
+  #include <unistd.h>
 #endif // #ifdef __PLATFORM_WIN32__
 
+#include <stdio.h>
 #include <sys/stat.h>
 
 
@@ -130,15 +133,13 @@ FILE * win32_tmpfile()
 
 
 //-----------------------------------------------------------------------------
-// name: ck_configureConsoleIO() | 1.5.0.5 (ge) added
-// desc: set up console/terminal I/O
+// name: ck_configANSI_ESCcodes() | 1.5.0.5 (ge) added
+// desc: do any platform-specific setup to enable ANSI escape codes
 //-----------------------------------------------------------------------------
-t_CKBOOL ck_configureConsoleIO()
+t_CKBOOL ck_configANSI_ESCcodes()
 {
 #ifndef __PLATFORM_WIN32__
-    // test for color capabilities?
 #else
-
     // get stderr handle; do this first as chuck tends to write to stderr
     HANDLE winStderr = GetStdHandle( STD_ERROR_HANDLE );
     // check handle
@@ -155,6 +156,34 @@ t_CKBOOL ck_configureConsoleIO()
 #endif
 
     return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_isatty() | 1.5.0.5 (ge) added
+// desc: are we output to a TTY (teletype, character by character)
+//       (vs say a file stream; helpful for determining if we should
+//       suppress printing ANSI escapes codes, e.g., color codes
+//       to the output stream
+//-----------------------------------------------------------------------------
+t_CKBOOL ck_isatty( int fd )
+{
+#ifndef __PLATFORM_WIN32__
+    return isatty( fd ) != 0;
+#else
+    // windows, until we can figure this out
+    return TRUE;
+#endif
+}
+//-----------------------------------------------------------------------------
+// get a general sense if current outputting to tty
+//-----------------------------------------------------------------------------
+t_CKBOOL ck_isatty()
+{
+    // use 2 for stderr
+    return ck_isatty( 2 );
 }
 
 

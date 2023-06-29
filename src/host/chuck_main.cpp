@@ -532,11 +532,11 @@ t_CKBOOL go( int argc, const char ** argv )
     string errorMessage1;
     string errorMessage2;
 
-    // do any console IO configurations | 1.5.0.5 (ge) added
+    // do any ANSI code config | 1.5.0.5 (ge) added
     // (e.g., windows need to explicitly be configured to process
     // escape sequences, e.g., for color console output)
     // NOTE: do this early in case printing is desired
-    ck_configureConsoleIO();
+    ck_configANSI_ESCcodes();
 
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path;
@@ -833,7 +833,7 @@ t_CKBOOL go( int argc, const char ** argv )
                 uh();
             else if( !strcmp( argv[i], "--caution-to-the-wind" ) )
                 g_enable_system_cmd = TRUE;
-            else if( !strcmp( argv[i], "--suppress-highlight-on-error" ) )
+            else if( !strcmp( argv[i], "--disable-error-show-code" ) )
                 suppress_error_quote = TRUE;
             else if( !strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")
                     || !strcmp(argv[i], "--about") )
@@ -861,7 +861,7 @@ t_CKBOOL go( int argc, const char ** argv )
                 if( is_otf ) exit( 1 );
                 
                 // done
-                errorMessage1 = string("invalid flag '") + argv[i] + "'"; doAbout = TRUE;
+                errorMessage1 = string("invalid flag '") + argv[i] + "' (see --help/-h)";
                 break;
             }
         }
@@ -872,6 +872,11 @@ t_CKBOOL go( int argc, const char ** argv )
         }
     }
 
+    // check if we output to TTY (teletype char at a time)
+    // if not disable color teriminal to avoid outputing
+    // ANSI escape codes to the output stream, which would
+    // show up in | and >
+    if( !ck_isatty() ) colorTerminal = false;
 
     //------------------ CHUCK PRE-INITIALIZATION ---------------------
     // instantiate a ChucK!
@@ -959,7 +964,7 @@ t_CKBOOL go( int argc, const char ** argv )
 
     if( !files && vm_halt && !g_enable_shell && !probe_chugs )
     {
-        EM_error2( 0, "no input files... (try --help)" );
+        EM_error2( 0, "no input files... (try --help/-h)" );
         exit( 1 );
     }
 
@@ -1197,7 +1202,7 @@ t_CKBOOL go( int argc, const char ** argv )
     }
 
     // version
-    EM_log( CK_LOG_SYSTEM, "chuck version: %s", the_chuck->version() );
+    EM_log( CK_LOG_SYSTEM,  "chuck version: %s", TC::green(the_chuck->version(), true).c_str() );
 
     // pop log
     EM_poplog();
