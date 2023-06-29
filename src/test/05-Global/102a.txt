@@ -1,5 +1,5 @@
 "no i'm foo" :(string)
-[chuck](VM): sporking incoming shred: 2 (102b.ck)...
+[chuck]: (VM) sporking incoming shred: 2 (102b.ck)...
 "no i'm foo" :(string)
 "no i'm foo" :(string)
 3 :(int)
