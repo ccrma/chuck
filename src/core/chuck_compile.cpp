@@ -1013,9 +1013,9 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
                 // print reason
                 EM_log( CK_LOG_SEVERE, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
             }
-            EM_log(CK_LOG_SEVERE, "skipping chugin '%s'...", name);
+            EM_log( CK_LOG_SEVERE, "%s '%s'...", TC::blue("skipping",true).c_str(), dl_path );
             EM_poplog();
-
+            // go to error for cleanup
             goto error;
         }
     }

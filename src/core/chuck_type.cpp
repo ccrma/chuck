@@ -6666,7 +6666,7 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
         if( !type_engine_add_class_from_dl(env, query->classes[i]) )
         {
             EM_log(CK_LOG_SEVERE,
-                   "error importing class '%s' from dynamic library (%s)",
+                   TC::orange("error importing class '%s' from chugin (%s)",true).c_str(),
                    query->classes[i]->name.c_str(), dll->name());
 
             return FALSE;
@@ -6691,11 +6691,11 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
     if( type_engine_find_type( env, c->name ) )
     {
         EM_log( CK_LOG_SYSTEM,
-                "** error importing class '%s'...",
+                TC::orange("error importing class '%s' from chugin...",true).c_str(),
                 c->name.c_str() );
         EM_pushlog();
         EM_log( CK_LOG_SYSTEM,
-                "type with the same name already exists" );
+                TC::orange("type with the same name already exists",true).c_str() );
         EM_poplog();
 
         // before ugen begin, can just return
