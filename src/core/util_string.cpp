@@ -980,3 +980,131 @@ void tokenize( const std::string & str, std::vector<string> & tokens, const std:
         tokens.push_back( str.substr( start, slen ) );
     }
 }
+
+
+// static instantiation
+t_CKBOOL TC::isEnabled = TRUE;
+t_CKBOOL TC::globalBypass = TRUE;
+
+
+//-----------------------------------------------------------------------------
+// on/off switches
+//-----------------------------------------------------------------------------
+void TC::on() { isEnabled = TRUE; }
+void TC::off() { isEnabled = FALSE; }
+//-----------------------------------------------------------------------------
+// a more global disable, overriding on() for the text transformation and TC::set*()
+// the former will bypass and return the input without modification;
+// the latter will return empty strings.
+// does not affect sequences constructed manually outside of TC
+// FYI this option is typically used on systems with no color terminal capabilities
+// also see command line flags --color --no-color
+//-----------------------------------------------------------------------------
+void TC::globalDisableOverride( t_CKBOOL setTrueToEngage )
+{
+    // set flag, as long as this is true, TC will always bypass,
+    // regardless of on() and off() and isEnabled state
+    globalBypass = setTrueToEngage;
+}
+
+
+//-----------------------------------------------------------------------------
+// get bold escape sequence
+//-----------------------------------------------------------------------------
+std::string TC::bold( const std::string & text )
+{
+    if( globalBypass || !isEnabled ) return text;
+    return TC::bold() + text + TC::reset();
+}
+
+
+//-----------------------------------------------------------------------------
+// get color escape sequences
+//-----------------------------------------------------------------------------
+std::string TC::green( const std::string & text, t_CKBOOL bold )
+{
+    if( globalBypass || !isEnabled ) return text;
+    return TC::set(FG_GREEN) + (bold?TC::bold():"") + text + TC::reset();
+}
+
+std::string TC::yellow( const std::string & text, t_CKBOOL bold )
+{
+    if( globalBypass || !isEnabled ) return text;
+    return TC::set(FG_YELLOW) + (bold?TC::bold():"") + text + TC::reset();
+}
+
+std::string TC::red( const std::string & text, t_CKBOOL bold )
+{
+    if( globalBypass || !isEnabled ) return text;
+    return TC::set(FG_RED) + (bold?TC::bold():"") + text + TC::reset();
+}
+
+std::string TC::blue( const std::string & text, t_CKBOOL bold )
+{
+    if( globalBypass || !isEnabled ) return text;
+    return std::string( "\033[38;5;39m" ) + (bold?TC::bold():"") + text + TC::reset();
+}
+
+std::string TC::orange( const std::string & text, t_CKBOOL bold )
+{
+    if( globalBypass || !isEnabled ) return text;
+    return std::string( "\033[38;5;208m" ) + (bold?TC::bold():"") + text + TC::reset();
+}
+
+// set custom color
+std::string TC::color( TC::TerminalCode code, const std::string & text, t_CKBOOL bold )
+{
+    if( globalBypass || !isEnabled ) return text;
+    return TC::set(code) + (bold?TC::bold():"") + text + TC::reset();
+}
+
+std::string TC::set_green( t_CKBOOL bold )
+{
+    if( globalBypass || !isEnabled ) return "";
+    return TC::set(FG_GREEN) + (bold?TC::bold():"");
+}
+
+std::string TC::set_orange( t_CKBOOL bold )
+{
+    if( globalBypass || !isEnabled ) return "";
+    return std::string( "\033[38;5;208m" ) + (bold?TC::bold():"");
+}
+
+std::string TC::set_blue( t_CKBOOL bold )
+{
+    if( globalBypass || !isEnabled ) return "";
+    return std::string( "\033[38;5;39m" ) + (bold?TC::bold():"");
+}
+
+
+//-----------------------------------------------------------------------------
+// set*() methods -- returns escape sequences o insert into output
+
+//-----------------------------------------------------------------------------
+// set a terminal code
+std::string TC::set( TerminalCode code )
+{
+    if( globalBypass || !isEnabled ) return "";
+    return std::string("\033[") + itoa(code) + "m";
+}
+
+// set using an integer
+std::string TC::seti( t_CKUINT code )
+{
+    if( globalBypass || !isEnabled ) return "";
+    return std::string("\033[") + itoa(code) + "m";
+}
+
+// set foreground default color
+std::string TC::set_fg_default()
+{
+    if( globalBypass || !isEnabled ) return "";
+    return TC::set(FG_DEFAULT);
+}
+
+// set background default color
+std::string TC::set_bg_default()
+{
+    if( globalBypass || !isEnabled ) return "";
+    return TC::set(BG_DEFAULT);
+}
