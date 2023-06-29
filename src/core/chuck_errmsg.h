@@ -25,12 +25,11 @@
 //-----------------------------------------------------------------------------
 // file: errmsg.h
 // desc: functions used in all phases of the compiler to give error messages
-//       2002 version by Ge Wang, based on Andrew Appel's Tiger code
-//       2017 addition by Jacy Atherton
-//       2023 refactor and code highlight by Ge Wang
+//       based on Andrew Appel's Tiger code
 //
 // author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
-// date: Summer 2002 to 2022 and ...
+// based on code by: Andrew Appel (appel@cs.princeton.edu)
+// date: Summer 2002
 //-----------------------------------------------------------------------------
 #ifndef __CHUCK_ERRORMSG_H__
 #define __CHUCK_ERRORMSG_H__
@@ -38,8 +37,22 @@
 #include "chuck_def.h"
 #include <stdio.h>
 
+#if defined(_cplusplus) || defined(__cplusplus)
+extern "C" {
+#endif
 
-// log levels
+
+extern t_CKBOOL EM_anyErrors;
+extern t_CKINT EM_tokPos;
+extern t_CKINT EM_lineNum;
+
+// EM_extLineNum is synced with EM_lineNum in lexer/parser phase, then synced
+// with scanner/typechecker (EM_lineNum is not synced with scanner/typechecker)
+extern t_CKINT EM_extLineNum;
+
+void EM_newline( );
+
+// levels
 #define CK_LOG_ALL              10 // set this to log everything
 #define CK_LOG_FINEST           9
 #define CK_LOG_FINER            8
@@ -51,68 +64,6 @@
 #define CK_LOG_SYSTEM           2
 #define CK_LOG_CORE             1
 #define CK_LOG_NONE             0  // set this to log nothing
-
-
-// C linkage
-#if defined(_cplusplus) || defined(__cplusplus)
-extern "C" {
-#endif
-
-//-----------------------------------------------------------------------------
-// the many ways to report errors; tools for an error prone world
-//-----------------------------------------------------------------------------
-// output log message
-void EM_log( t_CKINT, c_constr, ... );
-// set log level [CK_LOG_NONE, CK_LOG_ALL]
-void EM_setlog( t_CKINT );
-// push the log indentation
-void EM_pushlog();
-// pop log indentation
-void EM_poplog();
-// actual level
-extern t_CKINT g_loglevel;
-// macro to compare
-#define DO_LOG(x) ( x <= g_loglevel )
-
-// [%s]:line(%d).char(%d):
-void EM_error( t_CKINT, c_constr, ... );
-// [%s]:line(%d): (terminal colors mode)
-void EM_error2( t_CKINT, c_constr, ... );
-// [%s]:line(%d): (classic mode)
-void EM_error2b( t_CKINT, c_constr, ... );
-// prints message, no line number
-void EM_error3( c_constr, ... );
-
-// clear last error message
-void EM_reset_msg();
-// prepare for new file before a file
-void EM_start_filename( c_constr filename );
-// clear state after a file
-void EM_reset_filename();
-// get last erorr
-const char * EM_lasterror();
-// whether to highligh code on compiler error
-void EM_highlight_on_error( t_CKBOOL yesOrNo );
-
-// get filename portion of path; e.g., mini("foo/bar.ck") -> "bar.ck"
-const char * mini( const char * path );
-const char * mini_type( const char * str );
-
-
-//-----------------------------------------------------------------------------
-// things connected with lexer and parser
-//-----------------------------------------------------------------------------
-// variables
-extern t_CKBOOL EM_anyErrors;
-extern t_CKINT EM_tokPos;
-extern t_CKINT EM_lineNum;
-
-// EM_extLineNum is synced with EM_lineNum in lexer/parser phase, then synced
-// with scanner/typechecker (EM_lineNum is not synced with scanner/typechecker)
-extern t_CKINT EM_extLineNum;
-
-// advance state when new line is encountered
-void EM_newline( );
 
 
 //-----------------------------------------------------------------------------
@@ -130,7 +81,6 @@ void ck_vfprintf_stderr( const char * format, va_list args );
 void ck_set_stdout_callback( void (*callback)(const char *) );
 void ck_set_stderr_callback( void (*callback)(const char *) );
 
-// macros
 #define CK_FPRINTF_STDOUT(...) ck_fprintf_stdout(__VA_ARGS__)
 #define CK_FPRINTF_STDERR(...) ck_fprintf_stderr(__VA_ARGS__)
 #define CK_FFLUSH_STDOUT() ck_fflush_stdout()
@@ -138,24 +88,11 @@ void ck_set_stderr_callback( void (*callback)(const char *) );
 #define CK_VFPRINTF_STDOUT(message, ap) ck_vfprintf_stdout(message, ap)
 #define CK_VFPRINTF_STDERR(message, ap) ck_vfprintf_stderr(message, ap)
 
-#if defined(_cplusplus) || defined(__cplusplus)
-} // end C linkage
-#endif
-
-
-
-
-//-----------------------------------------------------------------------------
-// begin the callback printing (c++)
-//-----------------------------------------------------------------------------
-#if defined(_cplusplus) || defined(__cplusplus)
-extern "C++"
-{
+#ifdef __cplusplus
+// c++: custom stream-like thing
+extern "C++" {
 #include <sstream>
 
-//-----------------------------------------------------------------------------
-// c++: custom stream-like thing | REFACTOR-2017 (jack)
-//-----------------------------------------------------------------------------
 class ChuckOutStream
 {
 public:
@@ -185,6 +122,7 @@ private:
     bool m_isErr;
 };
 
+
 extern ChuckOutStream g_ck_stdoutstream;
 extern ChuckOutStream g_ck_stderrstream;
 
@@ -192,16 +130,14 @@ extern ChuckOutStream g_ck_stderrstream;
 #define CK_STDCERR g_ck_stderrstream
 #define CK_STDENDL std::string("\n")
 
-} // end C++
-
-#else // if not C++
-
+}
+#else
 // c: oh well
 #define CK_STDCOUT std::cout
 #define CK_STDCERR std::cerr
 #define CK_STDENDL std::endl
 
-#endif // #if defined(_cplusplus) || defined(__cplusplus)
+#endif
 //-----------------------------------------------------------------------------
 // here endeth the callback printing
 //-----------------------------------------------------------------------------
@@ -209,48 +145,36 @@ extern ChuckOutStream g_ck_stderrstream;
 
 
 
-//-----------------------------------------------------------------------------
-// more c++ in a mix c/c++ land
-//-----------------------------------------------------------------------------
+void EM_log( t_CKINT, c_constr, ... );
+void EM_setlog( t_CKINT );
+void EM_pushlog();
+void EM_poplog();
+
+// actual level
+extern t_CKINT g_loglevel;
+// macro to compare
+#define DO_LOG(x) ( x <= g_loglevel )
+
+void EM_error( t_CKINT, c_constr, ... );
+void EM_error2( t_CKINT, c_constr, ... );
+void EM_error2b( t_CKINT, c_constr, ... );
+void EM_error3( c_constr, ... );
+void EM_impossible( c_constr, ... );
+t_CKBOOL EM_reset( c_constr filename );
+void EM_change_file( c_constr filename );
+const char * EM_lasterror();
+void EM_reset_msg();
+
+const char * mini( const char * str );
+const char * mini_type( const char * str );
+
 #if defined(_cplusplus) || defined(__cplusplus)
-extern "C++" {
-//-----------------------------------------------------------------------------
-// 1.5.0.5 (ge) added
-// struct CompileFileSource
-// desc: information about file currently being compiled
-//       this is so we can load the file and give better compiler feedback
-//-----------------------------------------------------------------------------
-struct CompileFileSource
-{
-    // which of the following should we use?
-    t_CKINT which; // 1:filepath, 2:codeLiteral, 3:FILE
-    // file path
-    std::string path;
-    // pointer to code literal
-    const char * code;
-    // file descriptor
-    FILE * file;
+}
+#endif
 
-    // constructor
-    CompileFileSource( int w = 0, const std::string & p = "", const char * c = NULL, FILE * f = NULL )
-    : which(w), path(p), code(c), file(f)
-    { }
 
-    // reset
-    void reset() { which = 0; path = ""; code = NULL; file = NULL; }
-    // set
-    void setPath( const std::string & f ) { path = f; which = 1;}
-    void setCode( const char * c ) { code = c; which = 2;}
-    void setFile( FILE * f ) { file = f; which = 3;}
 
-    // get line from source
-    std::string getLine( t_CKUINT n );
-};
-
-// set
-void EM_setCurrentFileSource( const CompileFileSource & info );
-void EM_cleanupCurrentFileSource();
-
+#if defined(_cplusplus) || defined(__cplusplus)
 
 //-----------------------------------------------------------------------------
 // name: class SmartPushLog (added 1.4.1.0 spencer)
@@ -273,9 +197,7 @@ public:
     }
 };
 
-
-}
-#endif // #if defined(_cplusplus) || defined(__cplusplus)
+#endif
 
 
-#endif // __CHUCK_ERRORMSG_H__
+#endif

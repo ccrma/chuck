@@ -32,7 +32,6 @@
 #include "chuck_otf.h"
 #include "chuck_compile.h"
 #include "chuck_errmsg.h"
-#include "chuck.h"
 #include "util_math.h"
 #include "util_thread.h"
 #include "util_string.h"
@@ -197,7 +196,6 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         // construct full path to be associated with the file so me.sourceDir() works
         // (added 1.3.5.2)
         std::string full_path = get_full_path( msg->buffer );
-
         // special FILE descriptor mode; set autoClose to true
         compiler->set_file2parse( fd, TRUE );
         // parse, type-check, and emit

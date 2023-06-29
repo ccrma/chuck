@@ -45,7 +45,7 @@ def run_test(exe, path, filename, attempt):
         return
 
     try:
-        result = subprocess.check_output([exe, "--silent", "--suppress-highlight-on-error", "%s" % path], stderr=subprocess.STDOUT).decode("utf-8")
+        result = subprocess.check_output([exe, "--silent", "%s" % path], stderr=subprocess.STDOUT).decode("utf-8")
 
         if result.strip().endswith(("\"success\" :(string)",)):
             successes += 1

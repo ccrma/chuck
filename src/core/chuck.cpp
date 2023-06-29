@@ -87,8 +87,6 @@
 #endif // __PLATFORM_WIN32__
 #define CHUCK_PARAM_USER_CHUGINS_DEFAULT        std::list<std::string>()
 #define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT std::list<std::string>()
-#define CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR_DEFAULT "1"
-
 
 
 
@@ -214,25 +212,23 @@ void ChucK::initDefaultParams()
     m_listParams[CHUCK_PARAM_USER_CHUGINS] = CHUCK_PARAM_USER_CHUGINS_DEFAULT;
     m_listParams[CHUCK_PARAM_USER_CHUGIN_DIRECTORIES] = CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT;
     m_params[CHUCK_PARAM_HINT_IS_REALTIME_AUDIO] = CHUCK_PARAM_HINT_IS_REALTIME_AUDIO_DEFAULT;
-    m_params[CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR] = CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR_DEFAULT;
 
-    ck_param_types[CHUCK_PARAM_SAMPLE_RATE]              = ck_param_int;
-    ck_param_types[CHUCK_PARAM_INPUT_CHANNELS]           = ck_param_int;
-    ck_param_types[CHUCK_PARAM_OUTPUT_CHANNELS]          = ck_param_int;
-    ck_param_types[CHUCK_PARAM_VM_ADAPTIVE]              = ck_param_int;
-    ck_param_types[CHUCK_PARAM_VM_HALT]                  = ck_param_int;
-    ck_param_types[CHUCK_PARAM_OTF_ENABLE]               = ck_param_int;
-    ck_param_types[CHUCK_PARAM_OTF_PORT]                 = ck_param_int;
-    ck_param_types[CHUCK_PARAM_DUMP_INSTRUCTIONS]        = ck_param_int;
-    ck_param_types[CHUCK_PARAM_AUTO_DEPEND]              = ck_param_int;
-    ck_param_types[CHUCK_PARAM_DEPRECATE_LEVEL]          = ck_param_int;
-    ck_param_types[CHUCK_PARAM_WORKING_DIRECTORY]        = ck_param_string;
-    ck_param_types[CHUCK_PARAM_CHUGIN_DIRECTORY]         = ck_param_string;
-    ck_param_types[CHUCK_PARAM_CHUGIN_ENABLE]            = ck_param_int;
-    ck_param_types[CHUCK_PARAM_USER_CHUGINS]             = ck_param_string_list;
-    ck_param_types[CHUCK_PARAM_USER_CHUGIN_DIRECTORIES]  = ck_param_string_list;
-    ck_param_types[CHUCK_PARAM_HINT_IS_REALTIME_AUDIO]   = ck_param_int;
-    ck_param_types[CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR] = ck_param_int;
+    ck_param_types[CHUCK_PARAM_SAMPLE_RATE]             = ck_param_int;
+    ck_param_types[CHUCK_PARAM_INPUT_CHANNELS]          = ck_param_int;
+    ck_param_types[CHUCK_PARAM_OUTPUT_CHANNELS]         = ck_param_int;
+    ck_param_types[CHUCK_PARAM_VM_ADAPTIVE]             = ck_param_int;
+    ck_param_types[CHUCK_PARAM_VM_HALT]                 = ck_param_int;
+    ck_param_types[CHUCK_PARAM_OTF_ENABLE]              = ck_param_int;
+    ck_param_types[CHUCK_PARAM_OTF_PORT]                = ck_param_int;
+    ck_param_types[CHUCK_PARAM_DUMP_INSTRUCTIONS]       = ck_param_int;
+    ck_param_types[CHUCK_PARAM_AUTO_DEPEND]             = ck_param_int;
+    ck_param_types[CHUCK_PARAM_DEPRECATE_LEVEL]         = ck_param_int;
+    ck_param_types[CHUCK_PARAM_WORKING_DIRECTORY]       = ck_param_string;
+    ck_param_types[CHUCK_PARAM_CHUGIN_DIRECTORY]        = ck_param_string;
+    ck_param_types[CHUCK_PARAM_CHUGIN_ENABLE]           = ck_param_int;
+    ck_param_types[CHUCK_PARAM_USER_CHUGINS]            = ck_param_string_list;
+    ck_param_types[CHUCK_PARAM_USER_CHUGIN_DIRECTORIES] = ck_param_string_list;
+    ck_param_types[CHUCK_PARAM_HINT_IS_REALTIME_AUDIO]  = ck_param_int;
 }
 
 
@@ -740,7 +736,7 @@ void ChucK::probeChugins()
     // print whether chugins enabled
     EM_log( CK_LOG_SYSTEM, "chugin system: %s", getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) ? "ON" : "OFF" );
     // print host version
-    EM_log( CK_LOG_SYSTEM, TC::green("chuck host version: %d.%d", true).c_str(), CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
+    EM_log( CK_LOG_SYSTEM, "chuck host version: %d.%d", CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
     // push
     EM_pushlog();
     // print host version
@@ -785,7 +781,7 @@ void ChucK::probeChugins()
         // the filename
         std::string filename = *j;
         // log
-        EM_log( CK_LOG_SYSTEM, "[%s] '%s'...", TC::green("FOUND",true).c_str(), filename.c_str() );
+        EM_log( CK_LOG_SYSTEM, "[SOURCE] '%s'...", filename.c_str() );
     }
 
     // check
