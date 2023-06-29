@@ -33,7 +33,6 @@
 //-----------------------------------------------------------------------------
 #include "chuck_errmsg.h"
 #include "chuck_utils.h"
-#include "util_platforms.h"
 #include "util_string.h"
 
 #ifndef __DISABLE_THREADS__
@@ -41,7 +40,6 @@
 #endif
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <sstream>
@@ -592,8 +590,6 @@ std::string getLineFromCode( const std::string & code, t_CKUINT n )
 
 
 
-
-
 //-----------------------------------------------------------------------------
 // name: getLineFromFile()
 // desc: return a specific line from a presumed open FILE descriptor
@@ -615,7 +611,7 @@ std::string getLineFromFile( FILE * fd, t_CKUINT n )
     t_CKUINT theLine = 0;
     // get line; c getline includes the delimiter (e.g., '\n'), unless EOF
     // whereas c++ getline does not...so it goes
-    while( ck_getline( &line, &len, fd ) != -1 )
+    while( getline( &line, &len, fd ) != -1 )
     {
         theLine++;
         if( theLine == n ) { found = TRUE; break; };

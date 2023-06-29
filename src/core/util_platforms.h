@@ -49,13 +49,6 @@ FILE * ck_tmpfile();
 // check if is dir
 t_CKBOOL ck_isdir( const std::string & path );
 
-// set up console/terminal I/O
-t_CKBOOL ck_configureConsoleIO();
-
-// abstraction for getline, c edition
-size_t ck_getline( char ** lineptr, size_t * n, FILE * stream );
-
-
 
 
 //-----------------------------------------------------------------------------
