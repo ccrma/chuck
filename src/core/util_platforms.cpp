@@ -130,6 +130,37 @@ FILE * win32_tmpfile()
 
 
 //-----------------------------------------------------------------------------
+// name: ck_configureConsoleIO() | 1.5.0.5 (ge) added
+// desc: set up console/terminal I/O
+//-----------------------------------------------------------------------------
+t_CKBOOL ck_configureConsoleIO()
+{
+#ifndef __PLATFORM_WIN32__
+    // test for color capabilities?
+#else
+
+    // get stderr handle; do this first as chuck tends to write to stderr
+    HANDLE winStderr = GetStdHandle( STD_ERROR_HANDLE );
+    // check handle
+    if( winStderr == NULL || winStderr == INVALID_HANDLE_VALUE ) return FALSE;
+    // set windows console mode to process escape sequences + enable color terminal output
+    SetConsoleMode( winStderr, ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING );
+
+    // get stdout handle
+    HANDLE winStdout = GetStdHandle( STD_OUTPUT_HANDLE );
+    // check handle
+    if( winStdout == NULL || winStdout == INVALID_HANDLE_VALUE ) return FALSE;
+    // set windows console mode to process escape sequences + enable color terminal output
+    SetConsoleMode( winStdout, ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING );
+#endif
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: android_tmpfile()
 // desc: replacement for broken tmpfile() on Android
 //-----------------------------------------------------------------------------
@@ -176,6 +207,98 @@ t_CKBOOL ck_isdir( const std::string & path )
     return (stat( path.c_str(), &fs )==0 && fs.st_mode & S_IFDIR);
 }
 
+
+
+
+#ifdef __PLATFORM_WIN32__
+//-----------------------------------------------------------------------------
+// name: win32_getline()
+// desc: C getline using a FILE descriptor
+// thanks be to random people on the internet
+// https://stackoverflow.com/questions/735126/are-there-alternate-implementations-of-gnu-getline-interface/735472#735472
+// using version from Song "from Malaysia": "Better Answer with no Bug Here:"
+//-----------------------------------------------------------------------------
+size_t win32_getline( char ** lineptr, size_t * n, FILE * stream )
+{
+    char * bufptr = NULL;
+    char * p = bufptr;
+    size_t size;
+    int c;
+
+    if( lineptr == NULL )
+    {
+        return -1;
+    }
+    if( stream == NULL )
+    {
+        return -1;
+    }
+    if( n == NULL )
+    {
+        return -1;
+    }
+    bufptr = *lineptr;
+    size = *n;
+
+    c = fgetc( stream );
+    if( c == EOF )
+    {
+        return -1;
+    }
+    if( bufptr == NULL )
+    {
+        bufptr = (char *)malloc( 128 );
+        if( bufptr == NULL )
+        {
+            return -1;
+        }
+        size = 128;
+    }
+    p = bufptr;
+    while( c != EOF )
+    {
+        if( (p - bufptr) > (size - 1) )
+        {
+            size = size + 128;
+            bufptr = (char *)realloc( bufptr, size );
+            if( bufptr == NULL )
+            {
+                return -1;
+            }
+            p = bufptr + (size - 128);
+        }
+        *p++ = c;
+        if( c == '\n' )
+        {
+            break;
+        }
+        c = fgetc( stream );
+    }
+
+    *p++ = '\0';
+    *lineptr = bufptr;
+    *n = size;
+
+    return p - bufptr - 1;
+}
+#endif // __PLATFORM_WIN32
+
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_getline()
+// desc: redirect for c edition of getline
+//-----------------------------------------------------------------------------
+size_t ck_getline( char ** lineptr, size_t * n, FILE * stream )
+{
+#ifndef __PLATFORM_WIN32__
+    return getline( lineptr, n, stream );
+#else
+    return win32_getline( lineptr, n, stream );
+#endif
+}
 
 
 

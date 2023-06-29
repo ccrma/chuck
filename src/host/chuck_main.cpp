@@ -34,6 +34,7 @@
 #include "chuck.h"
 #include "chuck_audio.h"
 #include "chuck_console.h"
+#include "util_platforms.h"
 #include "util_string.h"
 #include <signal.h>
 
@@ -519,6 +520,12 @@ t_CKBOOL go( int argc, const char ** argv )
     if( g_enable_realtime_audio )
         audio_driver = ChuckAudio::defaultDriverName();
 
+    // do any console IO configurations | 1.5.0.5 (ge) added
+    // (e.g., windows need to explicitly be configured to process
+    // escape sequences, e.g., for color console output)
+    // NOTE: do this early in case printing is desired
+    ck_configureConsoleIO();
+
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path;
     // initial chug-in path (added 1.3.0.0)
@@ -538,7 +545,7 @@ t_CKBOOL go( int argc, const char ** argv )
     parse_path_list( initial_chugin_path, dl_search_path );
     // list of individually named chug-ins (added 1.3.0.0)
     std::list<std::string> named_dls;
-    
+
 #if defined(__DISABLE_WATCHDOG__)
     do_watchdog = FALSE;
 #elif defined(__MACOSX_CORE__)
