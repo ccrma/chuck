@@ -32,6 +32,7 @@
 #include "chuck_otf.h"
 #include "chuck_compile.h"
 #include "chuck_errmsg.h"
+#include "chuck.h"
 #include "util_math.h"
 #include "util_thread.h"
 #include "util_string.h"
@@ -165,8 +166,8 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         if( !extract_args( msg->buffer, filename, args ) )
         {
             // error
-            CK_FPRINTF_STDERR( "[chuck]: malformed filename with argument list...\n" );
-            CK_FPRINTF_STDERR( "    -->  '%s'", msg->buffer );
+            EM_error2( 0, "malformed filename with argument list..." );
+            EM_error2( 0, "    -->  '%s'", msg->buffer );
             SAFE_DELETE(cmd);
             goto cleanup;
         }
@@ -186,7 +187,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
             fd = recv_file( *msg, (ck_socket)data );
             if( !fd )
             {
-                CK_FPRINTF_STDERR( "[chuck]: incoming source transfer '%s' failed...\n",
+                EM_error2( 0, "incoming source transfer '%s' failed...",
                     mini(msg->buffer) );
                 SAFE_DELETE(cmd);
                 goto cleanup;
@@ -196,6 +197,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         // construct full path to be associated with the file so me.sourceDir() works
         // (added 1.3.5.2)
         std::string full_path = get_full_path( msg->buffer );
+
         // special FILE descriptor mode; set autoClose to true
         compiler->set_file2parse( fd, TRUE );
         // parse, type-check, and emit
@@ -207,8 +209,8 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
 
         // get the code
         code = compiler->output();
-        // name it
-        code->name += string(msg->buffer);
+        // (re) name it | 1.5.0.5 (ge) update from '+=' to '='
+        code->name = string(msg->buffer);
 
         // set the flags for the command
         cmd->type = msg->type;
@@ -234,7 +236,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
     }
     else
     {
-        CK_FPRINTF_STDERR( "[chuck]: unrecognized incoming command from network: '%li'\n", cmd->type );
+        EM_error2( 0, "unrecognized incoming command from network: '%li'", cmd->type );
         SAFE_DELETE(cmd);
         goto cleanup;
     }
@@ -277,8 +279,8 @@ t_CKINT otf_send_file( const char * fname, Net_Msg & msg, const char * op,
     if( !extract_args( fname, filename, args ) )
     {
         // error
-        CK_FPRINTF_STDERR( "[chuck]: malformed filename + argument list...\n" );
-        CK_FPRINTF_STDERR( "    -->  '%s'", fname );
+        EM_error2( 0, "malformed filename + argument list..." );
+        EM_error2( 0, "    -->  '%s'", fname );
         return FALSE;
     }
 
@@ -290,13 +292,13 @@ t_CKINT otf_send_file( const char * fname, Net_Msg & msg, const char * op,
     fd = ck_openFileAutoExt( buf, ".ck" );
     if( !fd )
     {
-        CK_FPRINTF_STDERR( "[chuck]: cannot open file '%s' for [%s]...\n", filename.c_str(), op );
+        EM_error2( 0, "cannot open file '%s' for [%s]...", filename.c_str(), op );
         return FALSE;
     }
 
     if( !chuck_parse( filename ) )
     {
-        CK_FPRINTF_STDERR( "[chuck]: skipping file '%s' for [%s]...\n", filename.c_str(), op );
+        EM_error2( 0, "skipping file '%s' for [%s]...", filename.c_str(), op );
         fclose( fd );
         return FALSE;
     }
@@ -331,7 +333,7 @@ t_CKINT otf_send_file( const char * fname, Net_Msg & msg, const char * op,
         if( !msg.param3 )
         {
             // error encountered
-            CK_FPRINTF_STDERR( "[chuck]: error while reading '%s'...\n", filename.c_str() );
+            EM_error2( 0, "error while reading '%s'...", filename.c_str() );
             // mark done
             left = 0;
             // error flag
@@ -376,7 +378,7 @@ ck_socket otf_send_connect( const char * host, t_CKINT port )
     ck_socket sock = ck_tcp_create( 0 );
     if( !sock )
     {
-        CK_FPRINTF_STDERR( "[chuck]: cannot open socket to send command...\n" );
+        EM_error2( 0, "cannot open socket to send command..." );
         return NULL;
     }
 
@@ -385,7 +387,7 @@ ck_socket otf_send_connect( const char * host, t_CKINT port )
 
     if( !ck_connect( sock, host, (int)port ) )
     {
-        CK_FPRINTF_STDERR( "cannot open TCP socket on %s:%i...\n", host, port );
+        EM_error2( 0, "cannot open TCP socket on %s:%i...", host, port );
         ck_close( sock );
         return NULL;
     }
@@ -419,7 +421,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
     {
         if( ++i >= argc )
         {
-            CK_FPRINTF_STDERR( "[chuck]: not enough arguments following [add]...\n" );
+            EM_error2( 0, "not enough arguments following [add]..." );
             goto error;
         }
 
@@ -443,7 +445,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
     {
         if( ++i >= argc )
         {
-            CK_FPRINTF_STDERR( "[chuck]: not enough arguments following [remove]...\n" );
+            EM_error2( 0, "not enough arguments following [remove]..." );
             goto error;
         }
 
@@ -477,7 +479,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
     {
         if( ++i >= argc )
         {
-            CK_FPRINTF_STDERR( "[chuck]: not enough arguments following [replace]...\n" );
+            EM_error2( 0, "not enough arguments following [replace]..." );
             goto error;
         }
 
@@ -488,7 +490,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
 
         if( ++i >= argc )
         {
-            CK_FPRINTF_STDERR( "[chuck]: not enough arguments following [replace]...\n" );
+            EM_error2( 0, "not enough arguments following [replace]..." );
             goto error;
         }
 
@@ -604,8 +606,8 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         otf_ntoh( &msg );
         if( !msg.param )
         {
-            CK_FPRINTF_STDERR( "[chuck(remote)]:operation failed (sorry)" );
-            CK_FPRINTF_STDERR( "...(reason: %s)\n",
+            EM_error2( 0, "REMOTE oeration failed..." );
+            EM_error2( 0, "reason: %s",
                 ( strstr( (char *)msg.buffer, ":" ) ? strstr( (char *)msg.buffer, ":" ) + 1 : (char *)msg.buffer ) );
         }
         else
@@ -615,7 +617,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
     }
     else
     {
-        CK_FPRINTF_STDERR( "[chuck]: remote operation timed out...\n" );
+        EM_error2( 0, "remote operation timed out..." );
     }
     // close the sock
     ck_close( dest );
@@ -678,7 +680,7 @@ void * otf_cb( void * p )
         if( !client )
         {
             if( carrier->vm )
-                EM_log( CK_LOG_INFO, "[chuck]: socket error during accept()...\n" );
+                EM_log( CK_LOG_INFO, "[chuck]: socket error during accept()..." );
             usleep( 40000 );
             // ck_close( client );  don't close NULL client
             continue;
@@ -690,7 +692,7 @@ void * otf_cb( void * p )
         otf_ntoh( &msg );
         if( n != sizeof(msg) )
         {
-            CK_FPRINTF_STDERR( "[chuck]: 0-length packet...\n" );
+            EM_error2( 0, "0-length packet..." );
             usleep( 40000 );
             ck_close( client );
             continue;
@@ -698,7 +700,7 @@ void * otf_cb( void * p )
 
         if( msg.header != NET_HEADER )
         {
-            CK_FPRINTF_STDERR( "[chuck]: header mismatch - possible endian lunacy...\n" );
+            EM_error2( 0, "header mismatch - possible endian lunacy..." );
             ck_close( client );
             continue;
         }

@@ -450,7 +450,7 @@ void EM_print2green( const char * message, ... )
 
     // print
     va_start( ap, message );
-    CK_VFPRINTF_STDERR( TC::green(message,false).c_str(), ap );
+    CK_VFPRINTF_STDERR( TC::green(message,true).c_str(), ap );
     va_end( ap );
 
     // flush
@@ -475,7 +475,7 @@ void EM_print2blue( const char * message, ... )
 
     // print
     va_start( ap, message );
-    CK_VFPRINTF_STDERR( TC::blue(message,false).c_str(), ap );
+    CK_VFPRINTF_STDERR( TC::blue(message,true).c_str(), ap );
     va_end( ap );
 
     // flush
@@ -500,7 +500,7 @@ void EM_print2orange( const char * message, ... )
 
     // print
     va_start( ap, message );
-    CK_VFPRINTF_STDERR( TC::orange(message,false).c_str(), ap );
+    CK_VFPRINTF_STDERR( TC::orange(message,true).c_str(), ap );
     va_end( ap );
 
     // flush

@@ -696,7 +696,7 @@ t_CKBOOL ChucK::initChugins()
                 // get the code
                 code = compiler()->output();
                 // name it - TODO?
-                // code->name += string(argv[i]);
+                // code->name = string(argv[i]);
 
                 // spork it
                 shred = vm()->spork( code, NULL, TRUE );
@@ -1031,8 +1031,8 @@ t_CKBOOL ChucK::compileFile( const std::string & path,
 
     // get the code
     code = m_carrier->compiler->output();
-    // name it
-    code->name += path;
+    // (re) name it | 1.5.0.5 (ge) update from '+=' to '='
+    code->name = path;
 
     // log
     EM_log( CK_LOG_FINE, "sporking %d %s...", count,
@@ -1133,8 +1133,8 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
 
     // get the code
     vm_code = m_carrier->compiler->output();
-    // name it (no path to append)
-    vm_code->name += "compiled.code";
+    // (re) name it (no path to append) | 1.5.0.5 (ge) update from '+=' to '='
+    vm_code->name = "compiled.code";
 
     // log
     EM_log( CK_LOG_FINE, "sporking %d %s...", count,

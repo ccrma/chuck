@@ -3958,8 +3958,8 @@ t_CKTYPE type_engine_check_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
     {
         // can't find member
         EM_error2( member->base->linepos,
-            "class '%s' has no member '%s'",
-            the_base->c_name(), S_name(member->xid) );
+                   "class '%s' has no member '%s'",
+                   the_base->c_name(), S_name(member->xid) );
         return NULL;
     }
 

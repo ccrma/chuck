@@ -36,6 +36,7 @@
 #include "chuck_instr.h"
 #include "chuck_globals.h" // added 1.4.1.0
 #include "chuck_parse.h" // added 1.5.0.0
+#include "util_string.h" // added 1.5.0.5
 #include <sstream>
 #include <iostream>
 
@@ -183,12 +184,13 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
     emit->func = NULL;
     // clear the code stack
     emit->stack.clear();
-    // name the code
-    // emit->code->name = "(main)";
     // whether code need this
     emit->code->need_this = TRUE;
     // keep track of full path (added 1.3.0.0)
     emit->code->filename = emit->context->full_path;
+    // name the code
+    // emit->code->name = "(main)";
+    emit->code->name = emit->code->filename != "" ? mini(emit->code->filename.c_str()) : "[anonymous]";
     // push global scope (added 1.3.0.0)
     emit->push_scope();
 
@@ -311,23 +313,23 @@ Chuck_VM_Code * emit_to_code( Chuck_Code * in,
     if( dump )
     {
         // name of what we are dumping
-        EM_error2( 0, "dumping %s:", in->name.c_str() );
+        EM_print2orange( "dumping %s:", in->name.c_str() );
 
         // uh
-        EM_error2( 0, "-------" );
+        EM_print2vanilla( "-------" );
         for( t_CKUINT i = 0; i < code->num_instr; i++ )
         {
             // check code str | 1.5.0.0 (ge) added
             if( code->instr[i]->m_codestr )
             {
                 // print the reconstructed code str
-                EM_error2( 0, "%s", code->instr[i]->m_codestr->c_str() );
+                EM_print2blue( "%s", code->instr[i]->m_codestr->c_str() );
             }
             // print the instruction
-            EM_error2( 0, "[%i] %s( %s )", i,
-                       code->instr[i]->name(), code->instr[i]->params() );
+            EM_print2vanilla( "[%i] %s( %s )", i,
+                              code->instr[i]->name(), code->instr[i]->params() );
         }
-        EM_error2( 0, "-------\n" );
+        EM_print2vanilla( "-------\n" );
     }
 
     return code;
